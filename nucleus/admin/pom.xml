@@ -46,30 +46,18 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.glassfish</groupId>
-        <artifactId>glassfish-parent</artifactId>
+        <artifactId>glassfish-nucleus-parent</artifactId>
         <version>3.2-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
-    <groupId>org.glassfish.common</groupId>
-    <artifactId>common</artifactId>
+    <groupId>org.glassfish.admin</groupId>
+    <artifactId>nucleus-admin</artifactId>
     <packaging>pom</packaging>
-    <name>GlassFish Common modules</name>  
+    <name>Admin Modules</name>
     <modules>
-        <module>mbeanserver</module>
-    	<module>stats77</module>
-    	<module>amx-core</module>
-    	<module>amx-core-impl</module>
-    	<module>amx-config</module>
-    	<module>amx-config-impl</module>
-    	<module>amx-j2ee</module>
-    	<module>amx-j2ee-impl</module>
-    	<module>amx-ext-impl</module>
-        <module>amx-all</module>
-	<module>mejb</module>
-	<module>mejb-frag</module>    	
-        <module>glassfish-ee-api</module>
-        <module>annotation-framework</module>
-        <module>container-common</module>
-        <module>glassfish-naming</module>        
+        <module>config-api</module>
+        <module>util</module>    
+        <module>cli</module>
+        <module>launcher</module>
     </modules>
 </project>

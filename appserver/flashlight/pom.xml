@@ -56,9 +56,6 @@
     <name>Flashlight</name>  
     <modules>
         <module>btrace</module>
-        <module>agent</module>
-        <module>flashlight-extra-jdk-packages</module>
-        <module>framework</module>
         <module>client</module>
     </modules>
 </project>

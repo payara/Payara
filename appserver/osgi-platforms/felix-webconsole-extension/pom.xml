@@ -46,7 +46,7 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.glassfish.osgi-platforms</groupId>
-        <artifactId>osgi-platforms</artifactId>
+        <artifactId>osgi-console-extensions</artifactId>
         <version>3.2-SNAPSHOT</version>
     </parent>
     <artifactId>felix-webconsole-extension</artifactId>

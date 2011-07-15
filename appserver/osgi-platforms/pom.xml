@@ -41,10 +41,6 @@
 
 -->
 
-<!--
-  A parent project that contains modules which are distribution fragements.
-  Each sub-module contain distribution details about exactly one OSGi runtime.
--->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
@@ -56,11 +52,9 @@
     </parent>
     <packaging>pom</packaging>
     <groupId>org.glassfish.osgi-platforms</groupId>
-    <artifactId>osgi-platforms</artifactId>
-    <name>Distribution Fragments for various OSGi platforms</name>
+    <artifactId>osgi-console-extensions</artifactId>
+    <name>Console extensions for OSGi platforms</name>
     <modules>
-        <module>felix</module>
-        <module>equinox</module>
         <module>felix-webconsole-extension</module>
         <module>glassfish-osgi-console-plugin</module>
     </modules>

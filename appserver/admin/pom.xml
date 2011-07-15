@@ -55,18 +55,14 @@
     <packaging>pom</packaging>
     <name>Admin Modules</name>
     <modules>
-        <module>config-api</module>
-        <module>util</module>
         <module>monitor</module>
         <module>admin-core</module>
         <module>server-mgmt</module>
-        <module>cli</module>
 	<module>cli-optional</module>
         <!-- not needed at the moment -->
         <!-- <module>jmx-remote</module> -->
         <module>backup</module> 
         <!-- not needed at the moment -->
-        <module>launcher</module>
         <module>javax.management.j2ee</module>
         <module>rest</module>
     </modules>

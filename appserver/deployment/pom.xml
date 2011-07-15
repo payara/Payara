@@ -59,11 +59,8 @@
         <module>schemas</module>
         <module>dol</module>
         <module>client</module>
-        <module>common</module>
         <module>javaee-core</module>
         <module>javaee-full</module>
-        <module>admin</module>
-        <module>autodeploy</module>
         <module>javax.enterprise.deploy</module>
         <module>jsr88-jar</module>
     </modules>
