@@ -1,0 +1,13 @@
+This tests the rollback logic of transaction. An EJB webservice is invoked by a servlet. This webservice method uses REQUIRED TX_Attribute. 
+
+Here is the flow-
+
+1. Standalone client invokes a servlet
+2. Servlet creates table CUSTOMER_rb1 
+3. Servlet starts a UserTransaction
+4. Servlet adds a row in the CUSTOMER_rb1 table
+5. Servlet calls the EJB webservice
+6. EJB webservice adds a row in the CUSTOMER_rb1 table
+7. Servlet rollback the transaction
+8. It is checked that the data is not updated in the table.
+9. Table CUSTOMER_rb1 is dropped

@@ -1,0 +1,141 @@
+<!--
+
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) 2010 Oracle and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+    or packager/legal/LICENSE.txt.  See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at packager/legal/LICENSE.txt.
+
+    GPL Classpath Exception:
+    Oracle designates this particular file as subject to the "Classpath"
+    exception as provided by Oracle in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+
+-->
+
+<target name="setJAXWSToolsForWin" if="isWindows">
+    <property name="WSGEN" value="${env.S1AS_HOME}/bin/wsgen.bat"/>
+    <property name="WSIMPORT" value="${env.S1AS_HOME}/bin/wsimport.bat"/>
+    <property name="ASAPT" value="${env.S1AS_HOME}/bin/asapt.bat"/>
+</target>
+
+<!-- TODO : need to check os type -->
+
+<target name="setJAXWSToolsForUnix">
+    <property name="WSGEN" value="${env.S1AS_HOME}/bin/wsgen"/>
+    <property name="WSIMPORT" value="${env.S1AS_HOME}/bin/wsimport"/>
+    <property name="ASAPT" value="${env.S1AS_HOME}/bin/asapt"/>
+</target>
+
+<target name="wsgen" depends="setJAXWSToolsForWin,setJAXWSToolsForUnix">
+    <exec executable="${WSGEN}" failonerror="true" >
+        <arg line="${wsgen.args}" />
+    </exec>
+</target>
+
+<target name="wsimport" depends="setJAXWSToolsForWin,setJAXWSToolsForUnix">
+    <exec executable="${WSIMPORT}" failonerror="true" >
+        <arg line="${wsimport.args}" />
+    </exec>
+</target>
+
+<target name="pkg-war">
+  <mkdir dir="${assemble.dir}"/>
+  <echo message="my build classes dir is:${build.classes.dir}" level="verbose"/>  <mkdir dir="${build.classes.dir}/tmp"/>
+  <mkdir dir="${build.classes.dir}/tmp/WEB-INF"/>
+  <mkdir dir="${build.classes.dir}/tmp/WEB-INF/classes"/>
+  <mkdir dir="${build.classes.dir}/tmp/wsit/web/WEB-INF/"/>
+  <copy file="${sun-web.xml}"
+      tofile="${build.classes.dir}/tmp/WEB-INF/sun-web.xml" failonerror="false"/>
+  <copy file="${webservices.xml}"
+        tofile="${build.classes.dir}/tmp/WEB-INF/webservices.xml"
+        failonerror="false"/>
+  <copy file="${wsdlfile.location}/${wsdlfile.name}"
+        tofile="${build.classes.dir}/tmp/WEB-INF/wsdl/${wsdlfile.name}"
+        failonerror="false"/>
+  <copy file="${schemafile.location}/${schemafile.name}"
+        tofile="${build.classes.dir}/tmp/WEB-INF/wsdl/${schemafile.name}"
+        failonerror="false"/>
+  <copy file="${catalog.location}/jax-ws-catalog.xml"
+        todir="${build.classes.dir}/tmp/WEB-INF/"
+        failonerror="false"/>
+  <copy file="${web.xml}"
+      tofile="${build.classes.dir}/tmp/WEB-INF/web.xml" failonerror="false"/>
+  <copy todir="${build.classes.dir}/tmp/WEB-INF/classes">
+      <fileset dir="${war.classes}">
+          <include name="**/*.class"/>
+          <include name="**/${handler.name}"/>
+      </fileset>
+  </copy>
+  <copy toDir="${build.classes.dir}/tmp/wsit/web/WEB-INF" failonerror="false">
+        <fileset dir="${web.wsit.descriptors}"/>
+  </copy>
+  <echo message="Creating war file ${war.file}" level="verbose"/>
+  <jar jarfile="${war.file}" update="true">
+    <fileset dir="${build.classes.dir}/tmp" casesensitive="yes">
+      <include name="**/*class*"/>
+      <include name="**/${handler.name}"/>
+    </fileset>
+    <fileset dir="${build.classes.dir}/tmp/" casesensitive="true">
+      <include name="WEB-INF/web.xml"/>
+      <include name="WEB-INF/sun-web.xml"/>
+      <include name="WEB-INF/webservices.xml"/>
+      <include name="WEB-INF/jax-ws-catalog.xml"/>
+      <include name="WEB-INF/wsdl/${wsdlfile.name}"/>
+      <include name="WEB-INF/wsdl/${schemafile.name}"/>
+    </fileset>
+    <!-- Put WSIT descriptors under WEB-INF -->
+    <fileset dir="${build.classes.dir}/tmp/wsit/web" casesensitive="true">
+      <include name="WEB-INF/**"/>
+    </fileset>
+  </jar>
+  <echo message="created war file ${war.file}" level="verbose"/>
+  <delete dir="${build.classes.dir}/tmp/WEB-INF" failonerror="false"/>
+  <echo message="my webclient war classes are:${webclient.war.classes}"
+      level="verbose"/>
+</target>
+
+<target name="pkg-ejb-jar">
+  <mkdir dir="${assemble.dir}"/>
+  <echo message="my build classes dir is:${build.classes.dir}" level="verbose"/>  <mkdir dir="${build.classes.dir}/tmp"/>
+  <mkdir dir="${build.classes.dir}/tmp/wsit/ejb/META-INF"/>
+  <copy toDir="${build.classes.dir}/tmp/wsit/ejb/META-INF" failonerror="false">
+        <fileset dir="${ejb.wsit.descriptors}"/>
+  </copy>
+  <jar destfile="${jar.file}">
+    <fileset dir="${build.classes.dir}" casesensitive="yes">
+      <include name="${jar.classes}/**"/>
+    </fileset>
+    <!-- Put WSIT descriptors under META-INF -->
+    <fileset dir="${build.classes.dir}/tmp/wsit/ejb" casesensitive="yes">
+      <include name="META-INF/**"/>
+    </fileset>
+  </jar>            
+</target>

@@ -1,0 +1,269 @@
+<!--
+
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+    or packager/legal/LICENSE.txt.  See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at packager/legal/LICENSE.txt.
+
+    GPL Classpath Exception:
+    Oracle designates this particular file as subject to the "Classpath"
+    exception as provided by Oracle in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+
+-->
+
+<tests>
+	<description>
+		SunONE Application Server EJB tests
+	</description>
+<!-- DOL Issue
+	<test>
+		<test-class>
+			com.sun.enterprise.tools.verifier.tests.ejb.runtime.ASEjbJarPublicID
+		</test-class>
+	</test>
+        <test>
+                <test-class>
+                        com.sun.enterprise.tools.verifier.tests.ejb.runtime.ASSecurityRoleMapping
+                </test-class>
+        </test>
+-->
+<!--  bug 4944433
+	<test>
+		<test-class>
+			com.sun.enterprise.tools.verifier.tests.ejb.runtime.ASEjbMDBResourceAdapter
+		</test-class>
+	</test>
+-->
+	<test>
+		<test-class>
+			com.sun.enterprise.tools.verifier.tests.ejb.runtime.ASEjbMessageDestination
+		</test-class>
+	</test>
+	<test>
+		<test-class>
+			com.sun.enterprise.tools.verifier.tests.ejb.runtime.ASEntBeanName
+		</test-class>
+	</test>
+<!-- BugId: 4865779. Test is not required
+	<test>
+		<test-class>
+			com.sun.enterprise.tools.verifier.tests.ejb.runtime.ASEntBeanUniqueID
+		</test-class>
+	</test>
+-->
+<!-- bugId: 4944751
+	<test>
+		<test-class>
+			com.sun.enterprise.tools.verifier.tests.ejb.runtime.ASEntBeanPmDescriptors
+		</test-class>
+	</test>
+-->
+	<test>
+		<test-class>
+			com.sun.enterprise.tools.verifier.tests.ejb.runtime.ASEntBeanCmpResource
+		</test-class>
+	</test> 
+	<test>
+		<test-class>
+			com.sun.enterprise.tools.verifier.tests.ejb.runtime.ASEjbName
+		</test-class>
+	</test>
+<!-- redesign issue
+	<test>
+		<test-class>
+			com.sun.enterprise.tools.verifier.tests.ejb.runtime.ASEjbJndiName
+		</test-class>
+	</test>  -->
+<!-- excluded because of bug 4943773
+	<test>
+		<test-class>
+			com.sun.enterprise.tools.verifier.tests.ejb.runtime.ASEjbRef
+		</test-class>
+	</test>
+-->
+	<test>
+		<test-class>
+			com.sun.enterprise.tools.verifier.tests.ejb.runtime.resource.ASEjbResRef
+		</test-class>
+	</test>
+	<test>
+		<test-class>
+			com.sun.enterprise.tools.verifier.tests.ejb.runtime.resource.ASEjbRRefName
+		</test-class>
+	</test>
+<!-- excluded because of bug 4943346
+	<test>
+		<test-class>
+			com.sun.enterprise.tools.verifier.tests.ejb.runtime.resource.ASEjbRRefJndiName
+		</test-class>
+	</test>
+-->
+<!-- excluded because of bug 4943773
+	<test>
+		<test-class>
+			com.sun.enterprise.tools.verifier.tests.ejb.runtime.resource.ASEjbRRefDefResPrincipal
+		</test-class>
+	</test>
+-->
+        <test>
+		<test-class>
+			com.sun.enterprise.tools.verifier.tests.ejb.runtime.resource.ASEjbResEnvRef
+		</test-class>
+	</test>
+	<test>
+		<test-class>
+			com.sun.enterprise.tools.verifier.tests.ejb.runtime.resource.ASEjbREnvRefJndiName
+		</test-class>
+	</test>
+<!-- DOL Issue
+	<test>
+		<test-class>
+			com.sun.enterprise.tools.verifier.tests.ejb.runtime.ASEjbCMP
+		</test-class>
+	</test>
+-->
+	<test>
+		<test-class>
+			com.sun.enterprise.tools.verifier.tests.ejb.runtime.cmpmapping.ASCmpMappingTest
+		</test-class>
+	</test>
+	<test>
+		<test-class>
+			com.sun.enterprise.tools.verifier.tests.ejb.runtime.ASEjbPrincipal
+		</test-class>
+	</test>
+<!-- excluded because of bug 4943346
+	<test>
+		<test-class>
+			com.sun.enterprise.tools.verifier.tests.ejb.runtime.ASEjbMDBConnFactory
+		</test-class>
+	</test>
+	<test>
+		<test-class>
+			com.sun.enterprise.tools.verifier.tests.ejb.runtime.ASEjbJMSDurableSubscriptionName
+		</test-class>
+	</test>
+-->
+	<test>
+		<test-class>
+			com.sun.enterprise.tools.verifier.tests.ejb.runtime.ASEjbJMSMaxMessagesLoad
+		</test-class>
+	</test>
+	<test>
+		<test-class>
+			com.sun.enterprise.tools.verifier.tests.ejb.runtime.ASEjbIORSecurityConfig
+		</test-class>
+	</test>
+	<test>
+		<test-class>
+			com.sun.enterprise.tools.verifier.tests.ejb.runtime.ASEjbIsReadOnlyBean
+		</test-class>
+	</test>
+	<test>
+		<test-class>
+			com.sun.enterprise.tools.verifier.tests.ejb.runtime.ASEjbRefreshPeriod
+		</test-class>
+	</test>
+	<test>
+		<test-class>
+			com.sun.enterprise.tools.verifier.tests.ejb.runtime.ASEjbCommitOption
+		</test-class>
+	</test>
+	<test>
+		<test-class>
+			com.sun.enterprise.tools.verifier.tests.ejb.runtime.beanpool.ASEjbBeanPool
+		</test-class>
+	</test>
+	<test>
+		<test-class>
+			com.sun.enterprise.tools.verifier.tests.ejb.runtime.beanpool.ASEjbBPMaxPoolSize
+		</test-class>
+	</test>
+	<test>
+		<test-class>
+			com.sun.enterprise.tools.verifier.tests.ejb.runtime.beanpool.ASEjbBPSteadyPoolSize
+		</test-class>
+	</test>
+	<test>
+		<test-class>
+			com.sun.enterprise.tools.verifier.tests.ejb.runtime.beanpool.ASEjbBPPoolResizeQty
+		</test-class>
+	</test>
+	<test>
+		<test-class>
+			com.sun.enterprise.tools.verifier.tests.ejb.runtime.beanpool.ASEjbBPPoolIdleTime
+		</test-class>
+	</test>
+	<!-- Deprecated 4738767 
+	<test>
+		<test-class>
+			com.sun.enterprise.tools.verifier.tests.ejb.runtime.beanpool.ASEjbBPMaxWaitTime
+		</test-class>
+	</test>
+	<test>
+		<test-class>
+			com.sun.enterprise.tools.verifier.tests.ejb.runtime.beancache.ASEjbBCIsCacheOverflowAllowed
+		</test-class>
+	</test>
+	End Deprecated -->
+    <test>
+		<test-class>
+			com.sun.enterprise.tools.verifier.tests.ejb.runtime.beancache.ASEjbBeanCache
+		</test-class>
+    </test>
+	<test>
+		<test-class>
+			com.sun.enterprise.tools.verifier.tests.ejb.runtime.beancache.ASEjbBCMaxCacheSize
+		</test-class>
+	</test>
+	<test>
+		<test-class>
+			com.sun.enterprise.tools.verifier.tests.ejb.runtime.beancache.ASEjbBCResizeQuantity
+		</test-class>
+	</test>
+	<test>
+		<test-class>
+			com.sun.enterprise.tools.verifier.tests.ejb.runtime.beancache.ASEjbBCCacheIdleTimeout
+		</test-class>
+	</test>
+	<test>
+		<test-class>
+			com.sun.enterprise.tools.verifier.tests.ejb.runtime.beancache.ASEjbBCRemovalTimeout
+		</test-class>
+	</test>
+	<test>
+		<test-class>
+			com.sun.enterprise.tools.verifier.tests.ejb.runtime.beancache.ASEjbBCVictimPolicy
+		</test-class>
+	</test>
+</tests>
+

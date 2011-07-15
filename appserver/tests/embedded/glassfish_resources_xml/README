@@ -1,0 +1,1 @@
+This test case is a variant of cdi_ejb_jpa test. It tests the same test scenariobut the datasource is created via glassfish-resources.xml.

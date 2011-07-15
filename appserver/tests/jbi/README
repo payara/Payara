@@ -1,0 +1,7 @@
+Running Devtests for javaee service engine.
+
+1. Set the environment variable S1AS_HOME to GlassFish-v3 installation directory.
+2. Set the environment variable APS_HOME the GlassFish workspace tests directory.
+3. Run ant setup.
+4. Start the domain.
+5. Run ant all.

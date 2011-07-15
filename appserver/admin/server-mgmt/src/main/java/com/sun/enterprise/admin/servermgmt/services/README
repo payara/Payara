@@ -1,0 +1,46 @@
+inittab describes
+
+OEL
+ls -l /etc
+lrwxrwxrwx  1 root     root         10 Aug 26 14:35 rc0.d -> rc.d/rc0.d
+lrwxrwxrwx  1 root     root         10 Aug 26 14:35 rc1.d -> rc.d/rc1.d
+lrwxrwxrwx  1 root     root         10 Aug 26 14:35 rc2.d -> rc.d/rc2.d
+lrwxrwxrwx  1 root     root         10 Aug 26 14:35 rc3.d -> rc.d/rc3.d
+lrwxrwxrwx  1 root     root         10 Aug 26 14:35 rc4.d -> rc.d/rc4.d
+lrwxrwxrwx  1 root     root         10 Aug 26 14:35 rc5.d -> rc.d/rc5.d
+lrwxrwxrwx  1 root     root         10 Aug 26 14:35 rc6.d -> rc.d/rc6.d
+
+==================================================================
+
+Ubuntu/Debian:
+
+ls -l /etc
+
+drwxr-xr-x  1 root     root         10 Aug 26 14:35 rc0.d -> rc.d/rc0.d/
+drwxr-xr-x  1 root     root         10 Aug 26 14:35 rc1.d -> rc.d/rc1.d/
+drwxr-xr-x  1 root     root         10 Aug 26 14:35 rc2.d -> rc.d/rc2.d/
+drwxr-xr-x  1 root     root         10 Aug 26 14:35 rc3.d -> rc.d/rc3.d/
+drwxr-xr-x  1 root     root         10 Aug 26 14:35 rc4.d -> rc.d/rc4.d/
+drwxr-xr-x  1 root     root         10 Aug 26 14:35 rc5.d -> rc.d/rc5.d/
+drwxr-xr-x  1 root     root         10 Aug 26 14:35 rc6.d -> rc.d/rc6.d/
+
+============================================================================
+
+SuSE
+
+inittab -->  "5" is default  normal is 3,5
+
+ls -l /etc/init.d  !!!! note how it is in /etc/init.d !!!!!
+
+drwxr-xr-x 2 root root  4096 Mar 24  2010 rc0.d
+drwxr-xr-x 2 root root  4096 Mar 24  2010 rc1.d
+drwxr-xr-x 2 root root  4096 Mar 24  2010 rc2.d
+drwxr-xr-x 2 root root  4096 Mar 24  2010 rc3.d
+drwxr-xr-x 2 root root  4096 Feb 20  2009 rc4.d
+drwxr-xr-x 2 root root  4096 Mar 24  2010 rc5.d
+drwxr-xr-x 2 root root  4096 Mar 24  2010 rc6.d
+drwxr-xr-x 2 root root  4096 Mar 24  2010 rcS.d
+
+============================================================================
+
+

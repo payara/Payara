@@ -1,0 +1,142 @@
+<!--
+
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+    or packager/legal/LICENSE.txt.  See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at packager/legal/LICENSE.txt.
+
+    GPL Classpath Exception:
+    Oracle designates this particular file as subject to the "Classpath"
+    exception as provided by Oracle in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+
+-->
+
+<!-- appServer/serverInstDomainAttrs.jsf -->
+
+<!initPage
+    setResourceBundle(key="i18nc" bundle="org.glassfish.common.admingui.Strings");
+    setResourceBundle(key="help_common" bundle="org.glassfish.common.admingui.Helplinks")
+/>
+<!composition template="/templates/default.layout"  guiTitle="$resource{i18nc.domain.DomainAttrsPageTitle}" >
+<!define name="content">
+    <event>
+        <!beforeCreate
+            setSessionAttribute(key="domainTabs" value="domainAttrs");
+            setPageSessionAttribute(key="selfPage" value="#{request.contextPath}/common/appServer/serverInstDomainAttrs.jsf?");
+            setPageSessionAttribute(key="selfUrl", value="#{sessionScope.REST_URL}");
+            gf.getEntityAttrs(endpoint="#{pageSession.selfUrl}.json", valueMap="#{pageSession.valueMap}");
+
+            //For GUI load-on-startup
+            setPageSessionAttribute(key="appPropertyEndpoint" value="#{sessionScope.REST_URL}/system-applications/application/__admingui/property.json")
+            gf.restRequest(endpoint="#{pageSession.appPropertyEndpoint}" method="GET" result="#{requestScope.propList}");
+            setPageSessionAttribute(key="appPropList" value="#{requestScope.propList.data.extraProperties.properties}");
+        />   
+    </event>
+            <sun:form id="propertyForm">
+#include "/common/appServer/domainTabs.inc"
+#include "/common/shared/alertMsg.inc"
+    <sun:title id="propertyContentPage" title="$resource{i18nc.domain.DomainAttrsPageTitle}" helpText="$resource{i18nc.domain.DomainAttrsPageTitleHelp}">
+    <!facet pageButtonsTop>
+        <sun:panelGroup id="topButtons">
+            <sun:button id="saveButton"  text="$resource{i18n.button.Save}"
+                    onClick="submitAndDisable(this, '$resource{i18n.button.Processing}'); return false;" >
+                <!command
+                    gf.restRequest(endpoint="#{pageSession.selfUrl}" attrs="#{pageSession.valueMap}" method="POST");
+                    if(!#{pageSession.loadOnStartup}){
+                        //will be null if checkbox is unchecked.
+                        setPageSessionAttribute(key="loadOnStartup" value="false");
+                    }
+                    setAttribute(key="found" value="false");
+                    if('! #{pageSession.loadOnStartup}=#{pageSession.origLoadOnStartup}'){
+                        foreach (var="oneProp" list="#{pageSession.appPropList}") {
+                            if (#{requestScope.oneProp.name}=load-system-app-on-startup){
+                                setAttribute(key="found" value="true");
+                                mapPut(map="#{requestScope.oneProp}" key="value" value="#{pageSession.loadOnStartup}")
+                            }
+                        }
+                        if (!#{requestScope.found}){
+                            createMap(result="#{requestScope.jmap}");
+                            mapPut(map="#{requestScope.jmap}" key="name" value="load-system-app-on-startup")
+                            mapPut(map="#{requestScope.jmap}" key="value" value="#{pageSession.loadOnStartup}")
+                            listAdd(list="#{pageSession.appPropList}" value="#{requestScope.jmap}");
+                        }
+                        javaToJSON(obj="#{pageSession.appPropList}" json="#{requestScope.tmpJSON}");
+                        gf.restRequest(endpoint="#{pageSession.appPropertyEndpoint}", method="POST", data="#{requestScope.tmpJSON}");
+                    }
+                    prepareSuccessfulMsg();
+                    gf.redirect(page="#{pageSession.selfPage}&alertType=${alertType}&alertSummary=${alertSummary}&alertDetail=${alertDetail}");
+                />
+            </sun:button>
+        </sun:panelGroup>
+    </facet>
+    </sun:title>
+
+<sun:propertySheet id="propertySheet">
+    <sun:propertySheetSection id="propertSectionTextField">
+
+        
+        <sun:property id="loadOnStartup"  labelAlign="left" noWrap="#{false}" overlapLabel="#{false}"
+                      label="$resource{i18nc.domain.loadOnStartup}"  helpText="$resource{i18nc.domain.loadOnStartupHelp}">
+            <sun:checkbox  label="$resource{i18n.common.Enabled}" selected="#{pageSession.loadOnStartup}" selectedValue="true"  >
+                <!beforeCreate
+                    setPageSessionAttribute(key="loadOnStartup" value="false");
+                    setPageSessionAttribute(key="origLoadOnStartup" value="false");
+                    foreach (var="oneProp" list="#{pageSession.appPropList}") {
+                        if (#{requestScope.oneProp.name}=load-system-app-on-startup){
+                            setPageSessionAttribute(key="loadOnStartup" value="#{requestScope.oneProp.value}");
+                            setPageSessionAttribute(key="origLoadOnStartup" value="#{requestScope.oneProp.value}");
+                        }
+                    }
+                />
+            </sun:checkbox>
+        </sun:property>
+            <sun:property id="dummy"  >
+                <sun:staticText id="dummy"  text=" " />
+        </sun:property>
+        <sun:property id="appRootProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.domain.AppRoot}" helpText="$resource{i18nc.domain.AppRootHelp}">
+            <sun:textField id="AppRoot" columns="$int{55}" maxLength="#{sessionScope.fieldLengths['maxLength.domain.AppRoot']}" text="#{pageSession.valueMap['applicationRoot']}"/>
+        </sun:property>
+        <sun:property id="logRootProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.domain.LogRoot}" helpText="$resource{i18nc.domain.LogRootHelp}">
+            <sun:textField id="LogRoot" columns="$int{55}" maxLength="#{sessionScope.fieldLengths['maxLength.domain.LogRoot']}" text="#{pageSession.valueMap['logRoot']}"/>
+        </sun:property>
+        <sun:property id="localeProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.domain.Locale}" helpText="$resource{i18nc.domain.LocaleHelp}">
+            <sun:textField id="Locale" columns="$int{55}" maxLength="#{sessionScope.fieldLengths['maxLength.domain.Locale']}" text="#{pageSession.valueMap['locale']}"/>
+        </sun:property>
+    "<br/>
+    </sun:propertySheetSection>
+
+</sun:propertySheet>
+
+<sun:hidden id="helpKey" value="$resource{help_common.serverInstDomainAttrs}" />
+    </sun:form>
+</define>
+</composition>

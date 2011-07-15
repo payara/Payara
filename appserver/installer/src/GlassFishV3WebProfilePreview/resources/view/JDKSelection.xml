@@ -1,0 +1,362 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) 2006, 2007-2010 Oracle and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+    or packager/legal/LICENSE.txt.  See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at packager/legal/LICENSE.txt.
+
+    GPL Classpath Exception:
+    Oracle designates this particular file as subject to the "Classpath"
+    exception as provided by Oracle in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+
+-->
+
+<apt:template apt:name="JDKSelection" xmlns:apt="http://www.sun.com/jds/apoc/2004/template"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xmlns:oor="http://openoffice.org/2001/registry"
+  xsi:schemaLocation="http://www.sun.com/jds/apoc/2004/template ../../../consumables/schemas/config/apoc/policytemplate.xsd">
+ <apt:category apt:name="JDKSelection" apt:label="JDKSelection" >
+
+ <apt:page apt:name="Install_page" apt:label="InstallHome" >
+
+  <apt:section apt:name="directory" apt:label="DirectorySelection" >
+      <apt:property apt:name="JDK_HOME_TEXT"
+         apt:dataPath=""
+         apt:type="xs:string">
+         <apt:prop-value>$JDK_HOME_TEXT</apt:prop-value>
+         <apt:visual>
+            <apt:htmlPanel/>
+         </apt:visual>
+        </apt:property>
+
+    <apt:property apt:name="JDK_FROM_LIST_CHOICE" apt:label=""
+         apt:dataPath="directory.JDK_FROM_LIST_CHOICE"
+         apt:type="xs:boolean">
+         <apt:prop-value>true</apt:prop-value>
+         <apt:visual>
+            <apt:checkBox apt:labelPost="$JDK_FROM_LIST_CHOICE_TEXT"/>
+         </apt:visual>
+         <apt:scriptHandler apt:scriptLanguage="beanshell" >
+           <apt:scriptCode><![CDATA[
+             theAL = new ActionListener() {
+               actionPerformed(e) {
+                 option = wizard.getComponentByName(content, "JDK_FROM_LIST_CHOICE");
+                 theCombo = wizard.getComponentByName(content, "JDK_LIST");
+                 theJDKTypeIn = wizard.getComponentByName(content, "JDK_TYPE_IN");
+                 theHiddenJDK = wizard.getComponentByName(content, "HIDDEN_JDK");
+                 theJDKTypeIn.setText("");
+                 theHiddenJDK.setText("");
+                 if(option.isSelected()) {
+                   theCombo.setEnabled(true);
+                   theJDKTypeIn.setEnabled(false);
+                   setValueForCombo(0);
+                 }
+               }
+             };
+             return theAL;
+           ]]></apt:scriptCode>
+         </apt:scriptHandler>
+    </apt:property>
+
+    <apt:property apt:name="JDK_LIST" apt:label=""
+         apt:dataPath="directory.JDK_LIST"
+         apt:type="xs:string">
+         <apt:prop-value></apt:prop-value>
+         <apt:visual>
+            <apt:comboBox apt:toolTip="$JDK_LIST_TOOLTIP"/>
+         </apt:visual>
+    </apt:property>
+    <apt:property apt:name="JDK_TYPED_IN_CHOICE" apt:label=""
+         apt:dataPath="directory.JDK_TYPED_IN_CHOICE"
+         apt:type="xs:boolean">
+       <apt:prop-value>false</apt:prop-value>
+       <apt:visual>
+          <apt:checkBox apt:labelPost="$JDK_TYPED_IN_CHOICE_TEXT"/>
+       </apt:visual>
+       <apt:scriptHandler apt:scriptLanguage="beanshell" >
+          <apt:scriptCode><![CDATA[
+             theAL = new ActionListener() {
+               actionPerformed(e) {
+                 option = wizard.getComponentByName(content, "JDK_TYPED_IN_CHOICE");
+                 theCombo = wizard.getComponentByName(content, "JDK_LIST");
+                 theJDKTypeIn = wizard.getComponentByName(content, "JDK_TYPE_IN");
+                 theHiddenJDK = wizard.getComponentByName(content, "HIDDEN_JDK");
+                 theJDKTypeIn.setText("");
+                 theHiddenJDK.setText("");
+                 if(option.isSelected()) {
+                   theCombo.setEnabled(false);
+                   theJDKTypeIn.setEnabled(true);
+                 }
+               }
+             };
+             return theAL;
+           ]]></apt:scriptCode>
+         </apt:scriptHandler>
+        </apt:property>
+        <apt:property apt:name="JDK_TYPE_IN" apt:label=""
+         apt:dataPath="directory.JDK_TYPE_IN"
+         apt:type="xs:string">
+         <apt:prop-value></apt:prop-value>
+         <apt:visual>
+           <apt:directorySelector apt:toolTip="$JDK_TYPE_IN_TOOLTIP"/>
+         </apt:visual>
+        </apt:property>
+        <apt:property apt:name="HIDDEN_JDK" apt:label=""
+         apt:dataPath="directory.HIDDEN_JDK"
+         apt:type="xs:string">
+         <apt:prop-value></apt:prop-value>
+         <apt:visual>
+           <apt:textField apt:columns="55"/>
+         </apt:visual>
+        </apt:property>
+  </apt:section>
+  <apt:scriptHandler apt:scriptLanguage="beanshell" >
+  <apt:scriptCode><![CDATA[
+  import java.io.File;
+  import java.util.List;
+  import java.util.ArrayList;
+  import java.util.StringTokenizer;
+  import org.openinstaller.util.*;
+  import org.openinstaller.util.Platform.OSType;
+  import org.openinstaller.provider.conf.ConfigHelper;
+  import org.openinstaller.provider.dependency.ComponentDetails;
+  import org.openinstaller.provider.dependency.DependencyControl;
+  import java.awt.Cursor;
+  import org.openinstaller.provider.dependency.JavaDetection;
+
+
+  initComponents() {
+      option2 = wizard.getComponentByName(content, "JDK_FROM_LIST_CHOICE");
+      option3 = wizard.getComponentByName(content, "JDK_TYPED_IN_CHOICE");
+      theCombo = wizard.getComponentByName(content, "JDK_LIST");
+      theJDKTypeIn = wizard.getComponentByName(content, "JDK_TYPE_IN");
+      theHiddenJDK = wizard.getComponentByName(content, "HIDDEN_JDK");
+      theHiddenJDK.setVisible(false);
+    }
+
+    setValueForCombo(int index) {
+     /* Do not do any processing on Mac/Silent install. */
+     if (isSilentMode()) 
+  		if (System.getProperty("os.name").toLowerCase().startsWith("mac")) 
+			return;
+  		if (System.getProperty("os.name").toLowerCase().startsWith("aix")) 
+			return;
+      theHiddenJDK = wizard.getComponentByName(content, "HIDDEN_JDK");
+      frame.setCursor(new Cursor(Cursor.WAIT_CURSOR));
+      theJava = new JavaDetection(ConfigHelper.getStringValue("JDKSelection.directory.JDK_VERSIONRANGE"));
+      theJDKComps = (List) theJava.getInstalledJDKDetails();
+      frame.setCursor(new Cursor(Cursor.DEFAULT_CURSOR)); 
+      ComponentDetails theJDKComp = theJDKComps.get(index);
+      File theFile = theJDKComp.getLocation();
+      theHiddenJDK.setText(theFile.getAbsolutePath());
+    }
+
+    boolean isProductIncluded(String prodName) {
+     final BusRequest theRequest = new BusRequest("PROD_CHECK",
+       new DependencyControl(DependencyControl.COMMAND.GET_PRODUCT_NODE, prodName));
+     final BusResponse theResponse = ControlBus.getInstance().publishRequest(
+       theRequest, "svc://general/Dependency");
+     return (theResponse.getResult() != null);
+    }
+
+    String getInfo(String prodName) {
+      final BusRequest theRequest = new BusRequest("GET_INFO",
+                                             new DependencyControl(
+                                                 DependencyControl.COMMAND.GET_COMPONENT_INFO,
+                                                 prodName));
+      final BusResponse theResponse = ControlBus.getInstance().publishRequest(
+                                          theRequest, "svc://general/Dependency");
+      return theResponse.getResult();
+    }
+
+   /* Helper to determine installation mode */
+   isSilentMode() {
+   /* get processing mode */
+   BusRequest modeReq = new BusRequest("ConfigRequest",
+   new EngineConfigCommand(EngineConfigCommand.COMMAND.GET_CONFIG, EngineConfigItem.DISPLAY_MODE));
+   BusResponse modeResp = bus.publishRequest(modeReq, "svc://general/EngineConfig");
+   String mode = (String)modeResp.getResult();
+   if ("SILENT".equals(mode)) 
+        return true;
+   return false;
+   }
+
+    run() {
+      option2 = wizard.getComponentByName(content, "JDK_FROM_LIST_CHOICE");
+      option3 = wizard.getComponentByName(content, "JDK_TYPED_IN_CHOICE");
+      theCombo = wizard.getComponentByName(content, "JDK_LIST");
+      theJDKTypeIn = wizard.getComponentByName(content, "JDK_TYPE_IN");
+      theHiddenJDK = wizard.getComponentByName(content, "HIDDEN_JDK");
+
+      ButtonGroup theGroup = new ButtonGroup();
+      theGroup.add(option2);
+      theGroup.add(option3);
+
+      theProdName = ConfigHelper.getValue("JDK.Installation.JDK_PRODUCT_NAME");
+
+      initComponents();
+
+      if (isProductIncluded(theProdName)) {
+        theInfo = getInfo(theProdName);
+        theVersionContent = new StringBuilder("<html><body><font face='Sans-Serif' size='3'><center>");
+        theVersionContent.append(theInfo);
+        theVersionContent.append("</center></font></body></html>");
+        theVersionHolder.setText(theVersionContent.toString());
+      } else {
+	option2.setSelected(true);
+        option2.requestFocus();
+      }
+
+      frame.setCursor(new Cursor(Cursor.WAIT_CURSOR));
+      theJava = new JavaDetection(ConfigHelper.getStringValue("JDKSelection.directory.JDK_VERSIONRANGE"));
+      theJDKComps = (List) theJava.getInstalledJDKDetails();
+      frame.setCursor(new Cursor(Cursor.DEFAULT_CURSOR)); 
+
+      /*
+       * See if we need to exclude any JDKs in 'theJDKComps':
+       *  - get value of 'Exclude-JVMs' property
+       *  - remove entries in 'theJDKComps' if needed
+       */
+
+      /*
+       * Get value of 'Exclude-JVMs' property if it was set
+       * Example value of this property:
+       *	/foo/bar:/thispath/thatpath (Unix)
+       *	C:\foo\bar;D:\thispath\thatpath
+       */
+       BusRequest opsReq = new BusRequest("ConfigRequest",
+           new EngineConfigCommand(EngineConfigCommand.COMMAND.GET_CONFIG, 
+						EngineConfigItem.EXCLUDE_JVMS));
+       BusResponse opsResp = bus.publishRequest(opsReq, "svc://general/EngineConfig");
+       String excludeJVMs = (String)opsResp.getResult();
+       List pathAList = null;
+
+      /*
+       * Store list of paths in ArrayList
+       */
+       if (excludeJVMs != null)  {
+         StringTokenizer st = new StringTokenizer(excludeJVMs, File.pathSeparator);
+         pathAList = new ArrayList();
+         excludeList = new ArrayList();
+    
+         while (st.hasMoreTokens()) {
+            String theNextToken = st.nextToken();
+            pathAList.add(theNextToken);
+         }
+
+         /*
+	  * Remove entries in theJDKComps as needed
+	  *  - build an exclude list i.e. a list of JDKs to remove from theJDKComps
+	  *  - use the exclude list to perform the actual removal
+	  *
+	  * The above need to be separate because removing an item from a list while
+	  * iterating through the list will give you a ConcurrentModificationException
+	  */
+         if (pathAList.size() > 0)  {
+           for (ComponentDetails theJDK : theJDKComps) {
+	      /*
+	       * Check if theJDK is in the exclude list
+	       */
+	      for (String oneExclude : pathAList)  {
+	          if (theJDK.getLabel().startsWith(oneExclude))  {
+		      /*
+		       * Add it to the exclude list
+		       */
+		      excludeList.add(theJDK);
+		      break;
+	          }
+	      }
+
+           }
+
+	   /*
+	    * If the exclude list was non empty, iterate through it, removing
+	    * entries from theJDKComps.
+	    */
+	   if (excludeList.size() > 0)  {
+	     for (ComponentDetails oneComp : excludeList)  {
+	       theJDKComps.remove(oneComp);
+	     }
+	   }
+         }
+       }
+
+      if (theJDKComps == null || theJDKComps.size() == 0) {
+        option2.setEnabled(false);
+        option2.setSelected(false);
+        if (!isProductIncluded(theProdName)) {
+          option3.setSelected(true);
+          theJDKTypeIn.setEnabled(true);
+          theMsg = StringUtils.wrap(Msg.get("NO_JDKS_DETECTED_OR_BUNDLED", null), 70);
+        } else {
+          option3.setSelected(true);
+          option3.requestFocus();
+          theMsg = StringUtils.wrap(Msg.get("NO_JDKS_DETECTED", null), 70);
+        }
+        JOptionPane.showMessageDialog(frame, theMsg, Msg.get("INFO", null), JOptionPane.INFORMATION_MESSAGE);
+      }
+      else {
+        for (ComponentDetails theJDK : theJDKComps) {
+          theCombo.addItem(theJDK.getLabel());
+        }
+        theCombo.setSelectedIndex(0);
+
+        setValueForCombo(0);
+
+        theListAL = new ActionListener() {
+          actionPerformed(e) {
+            theIndex = theCombo.getSelectedIndex();
+            setValueForCombo(theIndex);
+          }
+        };
+        theCombo.addActionListener(theListAL);
+      }
+      theTextListener = new ActionListener() {
+        actionPerformed(e) {
+          theHiddenJDK.setText(theJDKTypeIn.getText());
+        }
+      };
+      theJDKTypeIn.getTextField().addActionListener(theTextListener);
+
+      wizard.enableCancel(true);
+      wizard.enableHelp(true);
+      wizard.enableBack(true);
+      wizard.enableNext(true);
+   }
+    return (Runnable)this;
+  ]]></apt:scriptCode>
+  </apt:scriptHandler>
+ </apt:page>
+ </apt:category>
+</apt:template>
+

@@ -1,0 +1,254 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) 2007-2010 Oracle and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+    or packager/legal/LICENSE.txt.  See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at packager/legal/LICENSE.txt.
+
+    GPL Classpath Exception:
+    Oracle designates this particular file as subject to the "Classpath"
+    exception as provided by Oracle in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+
+-->
+
+<apt:template apt:name="InstallType" xmlns:apt="http://www.sun.com/jds/apoc/2004/template"
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xmlns:oor="http://openoffice.org/2001/registry"
+              xsi:schemaLocation="http://www.sun.com/jds/apoc/2004/template ../../../consumables/schemas/config/apoc/policytemplate.xsd">
+    <apt:category apt:name="InstallType" apt:label="Install or Configure" >
+
+        <apt:page apt:name="InstallType" apt:label="Install or Configure" >
+
+            <apt:section apt:name="Option" apt:label="Option" >
+
+                <apt:property apt:name="INSTALL_CONFIG_OPTIONS_HEADER" apt:dataPath="" apt:type="xs:string">
+                    <apt:prop-value>$INSTALL_CONFIG_OPTIONS_HEADER</apt:prop-value>
+                    <apt:visual>
+                        <apt:htmlPanel/>
+                    </apt:visual>
+                </apt:property>
+
+                <apt:property apt:name="INSTALL_AND_CONFIG"
+                              apt:label=""
+                              apt:dataPath="Option.INSTALL_AND_CONFIG"
+                              apt:type="xs:string">
+
+                    <apt:visual>
+                        <apt:radioButtons apt:toolTip=""/>
+                    </apt:visual>
+
+                    <apt:constraints>
+                        <apt:enumeration
+                            apt:value="INSTALL_AND_CONFIG"
+                            apt:label="$INSTALL_AND_CONFIG"/>
+                    </apt:constraints>
+
+                    <apt:scriptHandler apt:scriptLanguage="beanshell" >
+                        <apt:scriptCode><![CDATA[
+import java.lang.String;
+import java.util.List;
+import org.openinstaller.provider.conf.ConfigHelper;
+
+theAL = new ActionListener() {
+    actionPerformed(e) {
+        updateGlobalPageSkips("INSTALL_AND_CONFIG");
+    }
+};
+return theAL;
+                        ]]></apt:scriptCode>
+                    </apt:scriptHandler>
+                </apt:property>
+                
+               <apt:property apt:name="INSTALL_AND_CONFIG_OPTIONS_HEADER" apt:dataPath="" apt:type="xs:string">
+                    <apt:prop-value>$INSTALL_AND_CONFIG_OPTIONS_HEADER</apt:prop-value>
+                    <apt:visual>
+                        <apt:htmlPanel/>
+                    </apt:visual>
+                </apt:property>
+
+                <apt:property apt:name="INSTALL_ONLY"
+                              apt:label=""
+                              apt:dataPath="Option.INSTALL_ONLY"
+                              apt:type="xs:string">
+
+                    <apt:visual>
+                        <apt:radioButtons apt:toolTip=""/>
+                    </apt:visual>
+
+                    <apt:constraints>
+                        <apt:enumeration
+                            apt:value="INSTALL_ONLY"
+                            apt:label="$INSTALL_ONLY"/>
+                    </apt:constraints>
+
+                    <apt:scriptHandler apt:scriptLanguage="beanshell" >
+                        <apt:scriptCode><![CDATA[
+import java.lang.String;
+import java.util.List;
+import org.openinstaller.provider.conf.ConfigHelper;
+
+theAL = new ActionListener() {
+    actionPerformed(e) {
+        updateGlobalPageSkips("INSTALL_ONLY");
+    }
+};
+return theAL;
+                        ]]></apt:scriptCode>
+                    </apt:scriptHandler>
+                </apt:property>
+
+
+                <apt:property apt:name="INSTALL_ONLY_OPTIONS_HEADER" apt:dataPath="" apt:type="xs:string">
+                    <apt:prop-value>$INSTALL_ONLY_OPTIONS_HEADER</apt:prop-value>
+                    <apt:visual>
+                        <apt:htmlPanel/>
+                    </apt:visual>
+                </apt:property>
+
+                <apt:property apt:name="CONFIG_ONLY"
+                              apt:label=""
+                              apt:dataPath="Option.CONFIG_ONLY"
+                              apt:type="xs:string">
+
+                    <apt:visual>
+                        <apt:radioButtons apt:toolTip=""/>
+                    </apt:visual>
+
+                    <apt:constraints>
+                        <apt:enumeration
+                            apt:value="CONFIG_ONLY"
+                            apt:label="$CONFIG_ONLY"/>
+                    </apt:constraints>
+
+                    <apt:scriptHandler apt:scriptLanguage="beanshell" >
+                        <apt:scriptCode><![CDATA[
+import java.lang.String;
+import java.util.List;
+import org.openinstaller.provider.conf.ConfigHelper;
+
+theAL = new ActionListener() {
+    actionPerformed(e) {
+        updateGlobalPageSkips("CONFIG_ONLY");
+    }
+};
+return theAL;
+                        ]]></apt:scriptCode>
+                    </apt:scriptHandler>
+                </apt:property>
+
+                <apt:property apt:name="CONFIG_ONLY_OPTIONS_HEADER" apt:dataPath="" apt:type="xs:string">
+                    <apt:prop-value>$CONFIG_ONLY_OPTIONS_HEADER</apt:prop-value>
+                    <apt:visual>
+                        <apt:htmlPanel/>
+                    </apt:visual>
+                </apt:property>
+            </apt:section>
+
+            <apt:scriptHandler apt:scriptLanguage="beanshell" >
+                <apt:scriptCode><![CDATA[
+  import java.lang.String;
+  import java.util.List;
+  import java.util.HashMap;
+  import java.util.Properties;
+  import java.io.*;
+  import org.openinstaller.provider.conf.ConfigHelper;
+
+
+    getComponentByName(aParent, aName) {
+      if (aParent == null || ! (aParent instanceof Container)) {
+        return null;
+      }
+      Component[] theComponents = ((Container)aParent).getComponents();
+      for (Component theComp : theComponents) {
+        if (aName.equals(theComp.getName())) {
+          return theComp;
+        }
+      }
+      for (Component theComp : theComponents) {
+        if (theComp instanceof Container) {
+          Object theCompo = getComponentByName((Container) theComp, aName);
+          if (theCompo != null) {
+            return theCompo;
+          }
+        }
+      }
+      return null;
+    }
+
+    updateGlobalPageSkips(String pageSequence)  {
+        ConfigHelper.setValue("InstallType.Option.CONFIGURATION_MODE", pageSequence);
+
+        List activeModes = (List)ConfigHelper.getValue("PageFlow.Mode.ACTIVE_MODES_LIST");
+
+        if (activeModes.contains(pageSequence))  {
+            activeModes.remove(pageSequence);
+        }
+
+        activeModes.add(pageSequence);
+
+        ConfigHelper.setValue("PageFlow.Mode.ACTIVE_MODES_LIST", activeModes);
+    }
+
+    run() {
+      // Group the 2 separately create radio buttons
+      radio1 = getComponentByName(content, "INSTALL_AND_CONFIG");
+      radio2 = getComponentByName(content, "INSTALL_ONLY");
+      radio3 = getComponentByName(content, "CONFIG_ONLY");
+
+      ButtonGroup bg = new ButtonGroup();
+      bg.add(radio1);
+      bg.add(radio2);
+      bg.add(radio3);
+      radio1.requestFocus();
+
+      // Select first radio button when first displayed.
+      radio1.setSelected(true);
+      radio2.setSelected(false);
+      radio3.setSelected(false);
+
+        wizard.enableBack(true);
+        wizard.enableNext(true);
+        wizard.enableCancel(true);
+
+      updateGlobalPageSkips("INSTALL_AND_CONFIG");
+
+     }
+
+    return (Runnable)this;
+                ]]></apt:scriptCode>
+            </apt:scriptHandler>
+
+        </apt:page>
+    </apt:category>
+</apt:template>
+

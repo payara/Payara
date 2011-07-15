@@ -1,0 +1,143 @@
+//
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+//
+// Copyright (c) 2007-2010 Oracle and/or its affiliates. All rights reserved.
+//
+// The contents of this file are subject to the terms of either the GNU
+// General Public License Version 2 only ("GPL") or the Common Development
+// and Distribution License("CDDL") (collectively, the "License").  You
+// may not use this file except in compliance with the License.  You can
+// obtain a copy of the License at
+// https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+// or packager/legal/LICENSE.txt.  See the License for the specific
+// language governing permissions and limitations under the License.
+//
+// When distributing the software, include this License Header Notice in each
+// file and include the License file at packager/legal/LICENSE.txt.
+//
+// GPL Classpath Exception:
+// Oracle designates this particular file as subject to the "Classpath"
+// exception as provided by Oracle in the GPL Version 2 section of the License
+// file that accompanied this code.
+//
+// Modifications:
+// If applicable, add the following below the License Header, with the fields
+// enclosed by brackets [] replaced by your own identifying information:
+// "Portions Copyright [year] [name of copyright owner]"
+//
+// Contributor(s):
+// If you wish your version of this file to be governed by only the CDDL or
+// only the GPL Version 2, indicate your decision by adding "[Contributor]
+// elects to include this software in this distribution under the [CDDL or GPL
+// Version 2] license."  If you don't indicate a single choice of license, a
+// recipient has the option to distribute your version of this file under
+// either the CDDL, the GPL Version 2 or to extend the choice of license to
+// its licensees as provided above.  However, if you add GPL Version 2 code
+// and therefore, elected the GPL Version 2 license, then the option applies
+// only if the new code is made subject to such option by the copyright
+// holder.
+//
+
+//
+//Microsoft Developer Studio generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDI_ICON1               ICON    DISCARDABLE     "logo.ico"
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_DIALOGBAR DIALOG DISCARDABLE  0, 0, 200, 50
+STYLE DS_3DLOOK | DS_CENTER | WS_POPUP | WS_BORDER
+FONT 8, "MS Sans Serif"
+BEGIN
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO DISCARDABLE 
+BEGIN
+    IDD_DIALOGBAR, DIALOG
+    BEGIN
+        LEFTMARGIN, 5
+        RIGHTMARGIN, 195
+        TOPMARGIN, 5
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

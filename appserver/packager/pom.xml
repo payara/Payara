@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+    or packager/legal/LICENSE.txt.  See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at packager/legal/LICENSE.txt.
+
+    GPL Classpath Exception:
+    Oracle designates this particular file as subject to the "Classpath"
+    exception as provided by Oracle in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+
+-->
+
+<!--
+  modules used to build glassfish packages
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.glassfish</groupId>
+        <artifactId>glassfish-parent</artifactId>
+        <version>3.2-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <developers>
+        <developer>
+            <id>snjezana</id>
+            <name>Snjezana Sevo-Zenzerovic</name>
+            <url>http://blogs.sun.com/snjezana</url>
+            <organization>Oracle, Inc.</organization>
+            <roles>
+                <role>developer</role>
+            </roles>
+        </developer>
+    </developers>
+
+
+    <packaging>pom</packaging>
+    <groupId>org.glassfish.packager</groupId>
+    <artifactId>packages</artifactId>
+    <name>Glassfish packages</name>
+
+    <properties>
+        <install.dir.name>glassfish3</install.dir.name>
+        <findbugs.skip>true</findbugs.skip>
+        <packager.artifact.excludes>stax-api,stax,junit,jtype,tiger-types,servlet-api,jstl-api,el-api,jsp-api,org.osgi.core,org.osgi.compendium,concurrent,amx-core,amx-core-impl,amx-config,amx-config-impl,amx-j2ee,amx-j2ee-impl,amx-ext-impl,grizzly-utils,grizzly-lzma,gmbal-api-only,javax.servlet</packager.artifact.excludes>
+    </properties>
+
+    <modules>
+	<module>external</module>
+	<module>nucleus-base</module>
+	<module>legal</module>
+	<module>felix</module>
+	<module>glassfish-hk2</module>
+	<module>glassfish-grizzly</module>
+        <module>glassfish-nucleus</module>
+        <module>glassfish-grizzly-full</module>
+	<module>glassfish-corba-base</module>
+	<module>glassfish-common-tmp</module>
+	<module>shoal</module>
+	<module>glassfish-cluster</module>
+        <module>glassfish-ha</module>
+	<module>glassfish-javahelp</module>
+	<module>glassfish-registration</module>
+	<module>glassfish-management</module>
+	<module>glassfish-jca</module>
+	<module>glassfish-jpa</module>
+	<module>glassfish-corba</module>
+	<module>glassfish-jta</module>
+	<module>glassfish-jsf</module>
+	<module>glassfish-web</module>
+	<module>glassfish-osgi-http</module>
+	<module>glassfish-osgi-gui</module>
+	<!--module>glassfish-jcdi</module-->
+	<module>glassfish-jdbc</module>
+	<module>glassfish-gui</module>
+	<module>glassfish-ejb-lite</module>
+	<module>glassfish-common-full</module>
+	<module>glassfish-jts</module>
+	<module>glassfish-jms</module>
+	<module>glassfish-ejb</module>
+	<module>glassfish-cmp</module>
+	<module>metro</module>
+        <module>glassfish-verifier</module>	
+	<module>glassfish-appclient</module>
+	<module>javadb</module>
+	<module>jersey</module>
+	<module>glassfish-jcdi</module>
+	<module>mq</module>
+	<module>glassfish-common</module>
+	<module>glassfish-virtualization</module>
+	<module>glassfish-web-incorporation</module>
+	<module>glassfish-full-incorporation</module>
+	<module>glassfish-web-profile</module>
+	<module>glassfish-full-profile</module>
+        <module>glassfish-osgi-incorporation</module>
+        <module>glassfish-osgi-feature-pack</module>
+	<module>glassfish-ant-tasks</module>
+    </modules>
+
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-clean-plugin</artifactId>
+                <!-- automatically invokes clean during initialize phase -->
+                <executions>
+                    <execution>
+                        <id>auto-clean</id>
+                        <phase>initialize</phase>
+                        <goals><goal>clean</goal></goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins> 
+        <extensions>
+            <extension>
+                <groupId>org.glassfish.build</groupId>
+                <artifactId>maven-glassfishbuild-extension</artifactId>
+                <version>${project.version}</version>
+            </extension>
+        </extensions>
+    </build>
+
+    <profiles>
+        <profile>
+            <!--
+                Activate this profile with "mvn -Drepo.url=<ips-repository> -Dpython=<python> -P ips"
+             -->
+            <id>ips</id>
+	    <activation>
+	     <activeByDefault>false</activeByDefault>  
+	    </activation>
+            <properties>
+                <install.dir.name>glassfish3</install.dir.name>
+                <!-- if profile is ips then set property to do pack200 compression -->
+                <do.compression>true</do.compression>
+            </properties>
+
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-resources-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>copy-resources</id>
+                                <phase>validate</phase>
+                                <goals>
+                                    <goal>copy-resources</goal>
+                                </goals>
+                                <configuration>
+                                    <outputDirectory>${basedir}/..</outputDirectory>
+                                    <overwrite>true</overwrite>
+                                    <resources>          
+                                        <resource>
+                                            <directory>${basedir}/../resources</directory>
+                                            <filtering>true</filtering>
+                                            <includes>
+                                                <include>pkg_conf.py</include>
+                                           </includes>
+                                        </resource>
+                                    </resources>              
+                                </configuration>            
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-dependency-plugin</artifactId>
+                    </plugin>	
+                </plugins>
+            </build>
+        </profile>
+    </profiles>        
+</project>
+

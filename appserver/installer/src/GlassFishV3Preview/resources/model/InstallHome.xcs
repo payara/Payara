@@ -1,0 +1,375 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) 2006, 2007-2010 Oracle and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+    or packager/legal/LICENSE.txt.  See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at packager/legal/LICENSE.txt.
+
+    GPL Classpath Exception:
+    Oracle designates this particular file as subject to the "Classpath"
+    exception as provided by Oracle in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+
+-->
+
+<oor:component-schema oor:version="1.1" oor:name="InstallHome" oor:package="org.openinstaller.InstallHome"
+    xsi:schemaLocation="http://openoffice.org/2001/registry"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    xmlns:oor="http://openoffice.org/2001/registry"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xml:lang='en-US'>
+  <component>
+    <group oor:name="directory">
+      <prop oor:name="INSTALL_HOME" oor:type="xs:string">
+        <value/>
+        <constraints>
+          <minLength oor:value="1"/>
+        </constraints>
+        <actions>
+          <onSet><![CDATA[
+            import org.openinstaller.bus.BusRequest;
+            import org.openinstaller.bus.BusResponse;
+            import org.openinstaller.bus.ControlBus;
+            import org.openinstaller.bus.NoSuchMemberException;
+            import org.openinstaller.util.Platform;
+            import org.openinstaller.util.EnhancedException;
+            import org.openinstaller.core.EngineConfigCommand;
+            import org.openinstaller.core.EngineConfigCommand.COMMAND;
+            import org.openinstaller.core.EngineConfigItem;
+            import org.openinstaller.core.EngineConfigManager;
+            import org.openinstaller.provider.sims.SIMSControl;
+            import org.openinstaller.provider.sims.SIMSControl.SIMSCommand;
+            import org.openinstaller.sims.SystemProduct;
+            import org.openinstaller.provider.conf.ConfigHelper;
+            import org.openinstaller.provider.conf.ConfigControl;
+            import org.openinstaller.provider.conf.ConfigOORException;
+            import org.openinstaller.sims.Backend.EntityState;
+            import org.openinstaller.provider.operation.Operation;
+            import org.openinstaller.util.install.Common;
+            import org.openinstaller.core.PROCESSING_MODE;
+
+            import java.util.List;
+            import java.util.ArrayList;
+            import java.io.File;
+            import java.io.InputStream;
+            import java.io.BufferedReader;
+            import java.io.InputStreamReader;
+            import java.util.logging.Level;
+            import java.util.logging.Logger;
+
+            import org.openinstaller.provider.operation.Operation;
+            import org.openinstaller.provider.operation.ProductMap;
+            import org.openinstaller.provider.operation.Operation.OPTYPE;
+            import org.openinstaller.provider.operation.OpsControl;
+            import org.openinstaller.provider.operation.OperationImpossibleException;
+
+            import org.glassfish.installer.util.*;
+
+            public static Operation.OPTYPE gOpType = null;
+
+
+
+
+            /**
+             * This method checks if the installhome path specified refers to the root
+             * file path of a non-global zone on Solaris platform . If so, it prompts the
+             * user to enter a different path.
+             */
+            validatePathOnSolaris(String aPath){
+              /**
+               * Execute the zoneadm command and retrieve the list of zones.
+               * The following code executes the command
+               * zoneadm list -cp
+               * to retrieve a machine parseable list of zones along with
+               * their id, name, zonepaths and status. The retrieved zonepaths are then compared
+               * to the alternate root path (altroot + installhome) to make sure
+               * -R option does not reference any root file path of a non-global zone.
+               */
+               String[] theZoneadmCmd = new String[] {ZONEADM_CMD, "list", "-cp"};
+               Process theZoneProc = new ProcessBuilder(theZoneadmCmd).start();
+               String theOutput;
+               theIs = theZoneProc.getInputStream();
+               theBr = new BufferedReader(new InputStreamReader(theIs));
+               theOutput = theBr.readLine();
+               while (theOutput != null) {
+                String[] theZoneList = theOutput.split("\\:");
+                /**
+                 * The last column of the command
+                 * zoneadm list -cp
+                 * refers to the zonepath
+                 */
+                String theZonePath = theZoneList[theZoneList.length - 1];
+                /**
+                 * The second column of the zoneadm command represents the
+                 * name of the zone. If the name of the zone is "global"
+                 * then ignore the check as the installer will allow
+                 * installation in the global zone ("/");
+                 */
+                if (!theZoneList[1].equals("global")) {
+                  if (new File(theZonePath).compareTo(new File(aPath)) == 0){
+                    throw new EnhancedException("INVALID_INSTALLHOME_PATH", null,
+                      new String[]{"path=" + theZonePath});
+                  }
+                }
+                theOutput = theBr.readLine();
+               }
+            }
+
+           
+            /**
+             * Make sure the InstallHome exists and/or is writeable.
+             */
+            validateInstallHome(File aInstallHomePath) throws EnhancedException {
+
+              /*
+               * check to see if a previous instance of the current product is installed
+               * there.  If it is, and it's not damaged, and the user is doing an install,
+               * do not let the user proceed, since the only thing we currently support
+               * in this flow is repair, and repair is not needed in this case.  In the future,
+               * When we support incremental install, this code will simply detect damage and
+               * mark it so that we can offer the user the choice to repair later.
+               */
+
+              /* get processing mode (install or uninstall) */
+              // XXX : This doesn't do much. Remove?
+              String theDummyProcessingMode = Common.getProcessingMode();
+
+              BusRequest theReq = new BusRequest("DefaultProductReq",
+                new EngineConfigCommand(COMMAND.GET_CONFIG, EngineConfigItem.DEFAULT_PRODUCT_ID));
+              BusResponse theResp = ControlBus.getInstance().publishRequest(theReq,
+                  "svc://general/EngineConfig");
+              Object theDefProdObj = theResp.getResult();
+              String theProduct = "";
+              if (theDefProdObj != null) {
+                theProduct = (String) theDefProdObj;
+              }
+            }
+
+            /**
+             * Install Home location.
+             */
+            String ZONEADM_CMD="/usr/sbin/zoneadm";
+            /**
+             * Validate Install Home here.
+             */
+            InputStream theIs;
+            BufferedReader theBr;
+            File theInstallHomeDir;
+
+            /**
+             * Retrieve InstallHome first.
+             */
+            String theInstallHome = thisProperty.getUnconfirmedValue();
+            /**
+             * Retrieve alternate root.
+             */
+            BusRequest theReq = new BusRequest("ConfigRequest",
+              new EngineConfigCommand(COMMAND.GET_CONFIG, EngineConfigItem.ALTERNATE_ROOT));
+            BusResponse theResp = ControlBus.getInstance().publishRequest(theReq, "svc://general/EngineConfig");
+            String theAltRoot = (String)theResp.getResult();
+
+            /**
+             * Calculate InstallHome.
+             */
+            if (theAltRoot != null && theInstallHome != null) {
+              /**
+               * Case 1: Both Alternate Root and InstallHome specified.
+               * e.g., altroot = /a, InstallHome = /mysoftware
+               * Installation Path = /a/mysoftware
+               */
+              theInstallHomeDir = new File(new File(theAltRoot), theInstallHome);
+            } else if (theAltRoot == null && theInstallHome != null) {
+              /**
+               * Case 2: No alternate root specified but only installhome
+               * e.g., altroot = null and InstallHome = /mysoftware
+               * Installation Path = /mysoftware
+               */
+                theInstallHomeDir = new File(theInstallHome);
+            } else if (theAltRoot != null && theInstallHome == null) {
+              /**
+               * Case 3: Alternate specified but no InstallHome
+               * This should not be allowed.
+               */
+               throw new EnhancedException("MUST_SPECIFY_INSTALLHOME", null,
+                new String[] {"altroot=" + theAltRoot});
+            } else if (theAltRoot == null && theInstallHome == null) {
+              /**
+               * Case 4: Alternate root is null and InstallHome is null
+               * This should not be allowed.
+               */
+               throw new EnhancedException("MUST_SPECIFY_INSTALLHOME", null, new String[] {});
+            }
+
+            String aInstallHomePath = theInstallHomeDir.getAbsolutePath();
+            /*
+             * make sure directory is suitable
+             */
+
+            /**
+             * Set up SIMS to point to the right place.  SIMS needs to know the
+             * altroot, and the domain name.  The altroot is setup during Orchestrator,
+             * but the InstallHome is not known until now, so set that as SIMS' Domain Home.
+             */
+             theSIMSCntrl = new SIMSControl(SIMSCommand.SET_DOMAIN, theInstallHome);
+             theResponse = ControlBus.getInstance().publishRequest(new BusRequest("SIMSRequest",
+                theSIMSCntrl), "svc://general/sims");
+             if (theResponse.getException() != null) {
+               throw new EnhancedException("CANNOT_SET_SIMS_DOMAIN", theResponse.getException(), new String[] {"dir=" + theInstallHome});
+             }
+
+            /**
+             * Now re-initialize SIMS with the new domain
+             */
+             SIMSControl theSIMSCntrl = new SIMSControl(SIMSCommand.INITIALIZE, null);
+             theResponse = ControlBus.getInstance().publishRequest(new BusRequest("SIMSRequest",
+                theSIMSCntrl), "svc://general/sims");
+		/*
+             if (theResponse.getException() != null) {
+               throw new EnhancedException("CANNOT_SET_SIMS_DOMAIN", theResponse.getException(), new String[] {"dir=" + theInstallHome});
+             }
+            */
+  
+            validateInstallHome(theInstallHomeDir);
+            
+	     /*
+             * NOTE : PLEASE READ !!!!!!!!
+             * The following code determines if the upgrade page should be
+             * shown or skipped. If the operation is INSTALL the page
+             * will be skipped and shown in UPGRADE mode. The setting of the
+             * variable DO_NOT_SHOW_UPGRADE tells the openInstaller that the page
+             * with <skip when=DO_NOT_SHOW_UPGRADE/> should be skipped from display.
+             *
+             * IMPORTANT : READ IF THIS PAGE IS NOT IN THE PAGESEQUENCE
+             * If a product decides not to show this page, then the following
+             * code should be moved to a page in the pagesequence that is
+             * on or after the ProductSelection page and before ReadyToInstall page
+             */
+
+            /* Retrieve the Product Map */
+            OpsControl theOpsCmd = new OpsControl(OpsControl.OpsCommand.GET_PRODUCT_MAP,
+                theInstallHomeDir.getAbsolutePath());
+            BusResponse theProdMapResp = ControlBus.getInstance().publishRequest(
+                new BusRequest("ProductMapRequest", theOpsCmd), "svc://general/operation");
+
+            if (theProdMapResp == null) {
+              throw new EnhancedException("CANNOT_CREATE_PRODUCT_MAP", new String [] {});
+            } else if (theProdMapResp.getException() != null) {
+              throw new EnhancedException("CANNOT_CREATE_PRODUCT_MAP", theProdMapResp.getException(), new String[]{});
+            }
+
+            ProductMap theProdMap = (ProductMap) theProdMapResp.getResult();
+            if (theProdMap == null) {
+              throw new EnhancedException("CANNOT_CREATE_PRODUCT_MAP", new String [] {});
+            }
+ 	   /* Find out what kind of an operation it is */
+            gOpType = theProdMap.getOperation();
+            if (gOpType == Operation.OPTYPE.INSTALL) {
+            String installMode = ConfigHelper.getStringValue("InstallType.Option.CONFIGURATION_MODE");
+	    /* Validations in case of INSTALL_ONLY or INSTALL_AND_CONFIG Operations. */
+	     if (!installMode.equals("CONFIG_ONLY")) {
+	    if (theInstallHomeDir.exists() && theInstallHomeDir.isDirectory()){
+              if (!theInstallHomeDir.canWrite()) {
+                 /* TODO: Right approach would be to pop up a dialog box (gui)/or just display a
+                 * text message (cli) and give the user chance to select another install home
+                 * instead of throwing the exception. Only in silent mode the installer should
+                 * die silently.
+		 */
+	        throw new EnhancedException("INSTALL_HOME_NOT_WRITEABLE", null,
+                  new String[]{});
+              }
+              else {
+                 // If it is writable, then check if it is not empty.
+                     String[] files = theInstallHomeDir.list();
+                     if (files.length > 0) {
+                     	throw new EnhancedException("INSTALL_HOME_NOT_EMPTY", null,
+                        new String[]{});
+
+                      }
+              }
+            } else {
+                 // InstallHome directory does not exists. So, create one.
+                if (!theInstallHomeDir.mkdirs()) {
+                  throw new EnhancedException ("CANNOT_CREATE_INSTALLHOME_DIRECTORY", null,
+                    new String[] {});
+                }
+            }
+            }
+	    /* Validations in case of CONFIG_ONLY Operation. */
+            else {
+            if (theInstallHomeDir.exists() && theInstallHomeDir.isDirectory()){
+              if (!theInstallHomeDir.canWrite()) {
+                 /* TODO: Right approach would be to pop up a dialog box (gui)/or just display a
+                 * text message (cli) and give the user chance to select another install home
+                 * instead of throwing the exception. Only in silent mode the installer should
+                 * die silently.
+		 */ 
+                throw new EnhancedException("INSTALL_HOME_NOT_GLASSFISH", null,
+                  new String[]{});
+              }
+              else {
+                // Check if this is the GlassFish directory.
+                    if (!GlassFishUtils.isGlassFishInstalledHere(aInstallHomePath)) {
+                        throw new EnhancedException("INSTALL_HOME_NOT_GLASSFISH", null,
+                  new String[]{});
+                  }
+                }
+            } else {
+                 // InstallHome directory does not exists. 
+                 throw new EnhancedException("INSTALL_HOME_NOT_GLASSFISH", null,
+                  new String[]{});
+            }
+            } // end for Config only install validation.
+	  }
+            
+	      // Add all the defaults.
+              List theActiveModesList = (List)ConfigHelper.getValue("PageFlow.Mode.ACTIVE_MODES_LIST");
+              theActiveModesList.add("DO_NOT_SHOW_UPGRADE");
+   		BusRequest modeReq = new BusRequest("ConfigRequest",
+		new EngineConfigCommand(EngineConfigCommand.COMMAND.GET_CONFIG, EngineConfigItem.DISPLAY_MODE));
+		BusResponse modeResp = bus.publishRequest(modeReq, "svc://general/EngineConfig");
+		String mode = (String)modeResp.getResult();
+		if ("SILENT".equals(mode))  {
+              		theActiveModesList.add("BASIC_USER");
+              		theActiveModesList.add("INSTALL_AND_CONFIG");
+              		theActiveModesList.add("CREATE_DOMAIN");
+	      	}
+              ConfigHelper.setValue("PageFlow.Mode.ACTIVE_MODES_LIST", theActiveModesList);
+
+            ]]></onSet>
+        </actions>
+        <info>
+          <desc xml:lang="en-US">Home Directory Path.</desc>
+        </info>
+      </prop>
+    </group>
+  </component>
+</oor:component-schema>

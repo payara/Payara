@@ -1,0 +1,763 @@
+<!--
+ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ 
+ Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ 
+ The contents of this file are subject to the terms of either the GNU
+ General Public License Version 2 only ("GPL") or the Common Development
+ and Distribution License("CDDL") (collectively, the "License").  You
+ may not use this file except in compliance with the License. You can obtain
+ a copy of the License at https://glassfish.dev.java.net/public/CDDL+GPL.html
+ or glassfish/bootstrap/legal/LICENSE.txt.  See the License for the specific
+ language governing permissions and limitations under the License.
+ 
+ When distributing the software, include this License Header Notice in each
+ file and include the License file at glassfish/bootstrap/legal/LICENSE.txt.
+ Sun designates this particular file as subject to the "Classpath" exception
+ as provided by Sun in the GPL Version 2 section of the License file that
+ accompanied this code.  If applicable, add the following below the License
+ Header, with the fields enclosed by brackets [] replaced by your own
+ identifying information: "Portions Copyrighted [year]
+ [name of copyright owner]"
+ 
+ Contributor(s):
+ 
+ If you wish your version of this file to be governed by only the CDDL or
+ only the GPL Version 2, indicate your decision by adding "[Contributor]
+ elects to include this software in this distribution under the [CDDL or GPL
+ Version 2] license."  If you don't indicate a single choice of license, a
+ recipient has the option to distribute your version of this file under
+ either the CDDL, the GPL Version 2 or to extend the choice of license to
+ its licensees as provided above.  However, if you add GPL Version 2 code
+ and therefore, elected the GPL Version 2 license, then the option applies
+ only if the new code is made subject to such option by the copyright
+ holder.
+-->
+
+<!--
+This is the XML DTD for the Connector 1.6 deployment descriptor.
+All Connector 1.6 deployment descriptors must include a DOCTYPE
+of the following form:
+
+  <!DOCTYPE connector PUBLIC
+	"-//Sun Microsystems, Inc.//DTD Connector 1.6//EN"
+	"http://java.sun.com/dtd/connector_1_6.dtd">
+
+-->
+
+<!--
+The following conventions apply to all Java EE deployment descriptor
+elements unless indicated otherwise.
+
+- In elements that contain PCDATA, leading and trailing whitespace
+  in the data may be ignored.
+
+- In elements whose value is an "enumerated type", the value is
+  case sensitive.
+
+- In elements that specify a pathname to a file within the same
+  JAR file, relative filenames (i.e., those not starting with "/")
+  are considered relative to the root of the JAR file's namespace.
+  Absolute filenames (i.e., those starting with "/") also specify
+  names in the root of the JAR file's namespace.  In general, relative
+  names are preferred.  The exception is .war files where absolute
+  names are preferred for consistency with the servlet API.
+-->
+
+
+<!--
+The connector element is the root element of the deployment descriptor
+for the resource adapter. This element includes general information - vendor
+name, version, specification version supported, icon -  about the
+resource adapter module. It also includes information specific to the
+implementation of the resource adapter library as specified through
+the element resourceadapter.
+-->
+<!ELEMENT connector (display-name?, description?, icon?, vendor-name,
+spec-version, eis-type, version, license?, required-work-context*, 
+resourceadapter, metadata-complete?)>
+
+<!--
+The element activationspec specifies an activation specification.
+The information includes fully qualified Java class name of an activation
+specification and a set of required configuration property names.
+
+Used in: messagelistener
+-->
+<!ELEMENT activationspec (activationspec-class, required-config-property*, 
+config-property*)>
+
+<!--
+The element activationspec-class specifies the fully qualified Java class
+name of the activation specification class. This class must implement the
+javax.resource.spi.ActivationSpec interface. The implementation
+of this class is required to be a JavaBean.
+
+Used in: activationspec
+
+Example: <activationspec-class>com.wombat.ActivationSpecImpl
+         </activationspec-class>
+-->
+<!ELEMENT activationspec-class (#PCDATA)>
+
+<!--
+The element adminobject specifies information about an administered object.
+Administered objects are specific to a messaging style or message provider.
+This contains information on the Java type  of the interface implemented by
+an administered object, its Java class name, and configuration properties.
+
+Used in: resourceadapter
+-->
+<!ELEMENT adminobject (adminobject-interface, adminobject-class,
+config-property*)>
+
+<!--
+The element adminobject-class specifies the fully qualified
+Java class name of an administered object.
+
+Used in: adminobject
+
+Example: <adminobject-class>com.wombat.DestinationImpl
+         </adminobject-class>
+-->
+<!ELEMENT adminobject-class (#PCDATA)>
+
+<!--
+The element adminobject-interface specifies the fully qualified name of the
+Java type of the interface implemented by an administered object.
+
+Used in: adminobject
+
+Example: <adminobject-interface>javax.jms.Destination
+         </adminobject-interface>
+-->
+<!ELEMENT adminobject-interface (#PCDATA)>
+
+<!--
+The element authentication-mechanism specifies an authentication mechanism
+supported by the resource adapter. Note that this support is for
+the resource adapter and not for the underlying EIS instance. The
+optional description specifies any resource adapter specific requirement
+for the support of security contract and authentication mechanism.
+
+Note that BasicPassword mechanism type should support the
+javax.resource.spi.security.PasswordCredential interface.
+The Kerbv5 mechanism type should support the
+org.ietf.jgss.GSSCredential interface or the deprecated
+javax.resource.spi.security.GenericCredential interface.
+
+Used in: outbound-resourceadapter
+-->
+<!ELEMENT authentication-mechanism (
+description?, authentication-mechanism-type, credential-interface)>
+
+<!--
+The element authentication-mechanism-type specifies type of an authentication
+mechanism.
+
+The example values are:
+   <authentication-mechanism-type>BasicPassword
+                   </authentication-mechanism-type>
+   <authentication-mechanism-type>Kerbv5
+                   </authentication-mechanism-type>
+
+Any additional security mechanisms are outside the scope of the
+Connector architecture specification.
+
+Used in: authentication-mechanism
+-->
+<!ELEMENT authentication-mechanism-type (#PCDATA)>
+
+<!--
+The element config-property contains a declaration of a single
+configuration property that may be used for providing configuration
+information.
+
+The declaration consists of an optional description, name, type
+and an optional value of the configuration property. If the resource
+adapter provider does not specify a value than the deployer is
+responsible for providing a valid value for a configuration property.
+
+Any bounds or well-defined values of properties should be described
+in the description element.
+
+Used in: activationspec, adminobject, connection-definition, resourceadapter
+-->
+<!ELEMENT config-property (description?, config-property-name,
+config-property-type, config-property-value?, config-property-ignore?,
+config-property-supports-dynamic-updates?, config-property-confidential?
+)>
+
+<!--
+The element config-property-name contains the name of a configuration
+property.
+
+The connector architecture defines a set of well-defined properties
+all of type java.lang.String. These are as follows:
+     <config-property-name>ServerName</config-property-name>
+     <config-property-name>PortNumber</config-property-name>
+     <config-property-name>UserName</config-property-name>
+     <config-property-name>Password</config-property-name>
+     <config-property-name>ConnectionURL</config-property-name>
+
+A resource adapter provider can extend this property set to include
+properties specific to the resource adapter and its underlying EIS.
+
+Used in: config-property, required-config-property
+
+Example: <config-property-name>ServerName</config-property-name>
+-->
+<!ELEMENT config-property-name (#PCDATA)>
+
+<!--
+The element config-property-type contains the fully qualified Java
+type of a configuration property.
+
+The following are the legal values of config-property-type:
+   java.lang.Boolean, java.lang.String, java.lang.Integer,
+   java.lang.Double, java.lang.Byte, java.lang.Short,
+   java.lang.Long, java.lang.Float, java.lang.Character
+
+Used in: config-property
+
+Example: <config-property-type>java.lang.String</config-property-type>
+-->
+<!ELEMENT config-property-type (#PCDATA)>
+
+<!--
+The element config-property-value contains the value of a configuration
+entry. Note, it is possible for a resource adapter deployer to
+override this configuration information during deployment.
+
+Used in: config-property
+
+Example: <config-property-value>WombatServer</config-property-value>
+-->
+<!ELEMENT config-property-value (#PCDATA)>
+
+<!--
+The element ignore is used to specify whether the configuration tools must
+ignore considering the configuration property during auto-discovery of
+Configuration properties.
+
+This element, if specified, must be one of the following:
+	<config-property-ignore>true</config-property-ignore>
+	<config-property-ignore>false</config-property-ignore>
+	
+Used in: config-property
+	
+-->
+<!ELEMENT config-property-ignore (#PCDATA)>
+
+<!--
+The element supports-dynamic-updates is used to specify whether
+the configuration property allows its value to be updated, by
+application server's configuration tools, during the lifetime of
+the JavaBean instance.
+ 
+This element, if specified, must be one of the following:
+	<config-property-supports-dynamic-updates>true</config-property-supports-dynamic-updates>
+	<config-property-supports-dynamic-updates>false</config-property-supports-dynamic-updates>
+	
+Used in: config-property
+	
+-->
+<!ELEMENT config-property-supports-dynamic-updates (#PCDATA)>
+
+<!--
+The element confidential is used to specify whether the configuration 
+property is confidential and recommends application server's 
+configuration tools to use special visual aids for editing them. 
+
+This element, if specified, must be one of the following:
+	<config-property-confidential>true</config-property-confidential>
+	<config-property-confidential>false</config-property-confidential>
+	
+Used in: config-property
+	
+-->
+<!ELEMENT config-property-confidential (#PCDATA)>
+<!--
+The element connection-definition defines a  set of connection interfaces and
+classes pertaining to a particular connection type. This also includes
+configurable properties for ManagedConnectionFactory instances that may be
+produced out of this set.
+
+Used in: outbound-resourceadapter
+-->
+<!ELEMENT connection-definition (
+managedconnectionfactory-class, config-property*,
+connectionfactory-interface, connectionfactory-impl-class,
+connection-interface, connection-impl-class)>
+
+<!--
+The element connection-impl-class specifies the fully qualified
+name of the Connection class that implements resource adapter
+specific Connection interface.
+
+Used in: connection-definition
+
+Example: <connection-impl-class>com.wombat.ConnectionImpl
+         </connection-impl-class>
+-->
+<!ELEMENT connection-impl-class (#PCDATA)>
+
+<!--
+The element connection-interface specifies the fully qualified
+name of the Connection interface supported by the resource
+adapter.
+
+Used in: connection-definition
+
+Example: <connection-interface>javax.resource.cci.Connection
+         </connection-interface>
+-->
+<!ELEMENT connection-interface (#PCDATA)>
+
+<!--
+The element connectionfactory-impl-class specifies the fully qualified
+name of the ConnectionFactory class that implements resource adapter
+specific ConnectionFactory interface.
+
+Used in: connection-definition
+
+Example: <connectionfactory-impl-class>com.wombat.ConnectionFactoryImpl
+         </connectionfactory-impl-class>
+-->
+<!ELEMENT connectionfactory-impl-class (#PCDATA)>
+
+<!--
+The element connectionfactory-interface specifies the fully qualified
+name of the ConnectionFactory interface supported by the resource
+adapter.
+
+Used in: connection-definition
+
+Example: <connectionfactory-interface>com.wombat.ConnectionFactory
+         </connectionfactory-interface>
+OR
+<connectionfactory-interface>javax.resource.cci.ConnectionFactory
+         </connectionfactory-interface>
+-->
+<!ELEMENT connectionfactory-interface (#PCDATA)>
+
+<!--
+The element credential-interface specifies the interface that the
+resource adapter implementation supports for the representation
+of the credentials. This element should be used by application server
+to find out the Credential interface it should use as part of the
+security contract.
+
+The possible values are:
+   <credential-interface>javax.resource.spi.security.PasswordCredential
+        </credential-interface>
+   <credential-interface>org.ietf.jgss.GSSCredential
+        </credential-interface>
+   <credential-interface>javax.resource.spi.security.GenericCredential
+        </credential-interface>
+
+Used in: authentication-mechanism
+-->
+<!ELEMENT credential-interface (#PCDATA)>
+
+<!--
+The description element is used to provide text describing the parent
+element.  The description element should include any information that
+the resource adapter rar file producer wants to provide to the consumer of
+the resource adapter rar file (i.e., to the Deployer). Typically, the tools
+used by the resource adapter rar file consumer will display the description
+when processing the parent element that contains the description.
+
+Used in: authentication-mechanism, config-property, connector, license,
+required-config-property, security-permission
+-->
+<!ELEMENT description (#PCDATA)>
+
+<!--
+The display-name element contains a short name that is intended to be
+displayed by tools.  The display name need not be unique.
+
+Used in: connector
+
+Example:
+
+<display-name>Employee Self Service</display-name>
+-->
+<!ELEMENT display-name (#PCDATA)>
+
+<!--
+The element eis-type contains information about the type of the
+EIS. For example, the type of an EIS can be product name of EIS
+independent of any version info.
+
+This helps in identifying EIS instances that can be used with
+this resource adapter.
+
+Used in: connector
+-->
+<!ELEMENT eis-type (#PCDATA)>
+
+<!--
+The icon element contains small-icon and large-icon elements that
+specify the file names for small and a large GIF or JPEG icon images
+used to represent the parent element in a GUI tool.
+
+Used in: connector
+-->
+<!ELEMENT icon (small-icon?, large-icon?)>
+
+<!--
+The element inbound-resourceadapter specifies information about an inbound
+resource adapter. This contains information specific to the implementation
+of the resource adapter library as specified through the messageadapter
+element.
+
+Used in: resourceadapter
+-->
+<!ELEMENT inbound-resourceadapter (messageadapter?)>
+
+<!--
+The large-icon element contains the name of a file
+containing a large (32 x 32) icon image. The file
+name is a relative path within the resource adapter's
+rar file.
+
+The image may be either in the JPEG or GIF format.
+The icon can be used by tools.
+
+Used in: icon
+
+Example:
+
+<large-icon>employee-service-icon32x32.jpg</large-icon>
+-->
+<!ELEMENT large-icon (#PCDATA)>
+
+<!--
+The element license specifies licensing requirements for the resource
+adapter module. This element specifies whether a license is required
+to deploy and use this resource adapter, and an optional description
+of the licensing terms (examples: duration of license, number of
+connection restrictions).
+
+Used in: connector
+-->
+<!ELEMENT license (description?, license-required)>
+
+<!--
+The element license-required specifies whether a license is required
+to deploy and use the resource adapter. This element must be one of
+the following:
+
+	<license-required>true</license-required>
+	<license-required>false</license-required>
+
+Used in: license
+-->
+<!ELEMENT license-required (#PCDATA)>
+
+<!--
+The element managedconnectionfactory-class specifies the fully qualified
+name of the Java class that implements the javax.resource.spi.Managed-
+ConnectionFactory interface. This Java class is provided as part of
+resource adapter's implementation of connector architecture specified
+contracts. The implementation of this class is required to be a JavaBean.
+
+Used in: connection-definition
+
+Example:
+  <managedconnectionfactory-class>com.wombat.ManagedConnectionFactoryImpl
+  </managedconnectionfactory-class>
+-->
+<!ELEMENT managedconnectionfactory-class (#PCDATA)>
+
+<!--
+The element messageadapter specifies information about the messaging
+capabilities of the resource adapter. This contains information specific
+to the implementation of the resource adapter library as specified through
+the messagelistener element.
+
+Used in: inbound-resourceadapter
+-->
+<!ELEMENT messageadapter (messagelistener+)>
+
+<!--
+The element messagelistener specifies information about a specific message
+listener type supported by the messaging resource adapter. This contains
+information on the Java type of the message listener interface and an
+activation specification.
+
+Used in: messageadapter
+-->
+<!ELEMENT messagelistener (messagelistener-type, activationspec)>
+
+<!--
+The element messagelistener-type specifies the fully qualified
+name of the Java type of a message listener interface.
+
+Used in: messagelistener
+
+Example:
+  <messagelistener-type>javax.jms.MessageListener
+  </messagelistener-type>
+-->
+<!ELEMENT messagelistener-type (#PCDATA)>
+
+<!--
+      The metadata-complete element defines whether the deployment 
+      descriptor for the resource adapter module is complete, or whether
+      the class files available to the module and packaged with the resource 
+      adapter should be examined for annotations that specify deployment 
+      information.
+      
+      If metadata-complete is set to "true", the deployment tool of the 
+      application server must ignore any annotations that specify deployment 
+      information, which might be present in the class files of the 
+      application.If metadata-complete is not specified or is set to "false", 
+      the deployment tool must examine the class files of the application for 
+      annotations, as specified by this specification. If the 
+      deployment descriptor is not included or is included but not marked 
+      metadata-complete, the deployment tool will process annotations.
+      
+      Application servers must assume that metadata-complete is true for 
+      resource adapter modules with deployment descriptor version 
+      lower than 1.6.This element must be one of the following:
+		<metadata-complete>true</metadata-complete>
+		<metadata-complete>false</metadata-complete>
+
+Used in: connector
+-->
+<!ELEMENT metadata-complete (#PCDATA)>
+
+<!--
+The element outbound-resourceadapter specifies information about an outbound
+resource adapter. The information includes fully qualified names of
+classes/interfaces required as part of the connector architecture specified
+contracts for connection management, level of transaction support provided,
+one or more authentication mechanisms supported and additional
+required security permissions.
+
+If there is no authentication-mechanism specified as part of
+resource adapter element then the resource adapter does not
+support any standard security authentication mechanisms as part
+of security contract. The application server ignores the security
+part of the system contracts in this case.
+
+Used in: resourceadapter
+-->
+<!ELEMENT outbound-resourceadapter (
+connection-definition+, transaction-support,
+authentication-mechanism*, reauthentication-support, security-permission*)>
+
+<!--
+The element reauthentication-support specifies whether the resource
+adapter implementation supports re-authentication of existing Managed-
+Connection instance. Note that this information is for the resource
+adapter implementation and not for the underlying EIS instance.
+
+This element must be one of the following:
+        <reauthentication-support>true</reauthentication-support>
+        <reauthentication-support>false</reauthentication-support>
+Used in: outbound-resourceadapter
+-->
+<!ELEMENT reauthentication-support (#PCDATA)>
+
+<!--
+The element required-config-property contains a declaration of a single
+configuration property used for specifying a required configuration
+property name.
+
+Usage of required-config-property is deprecated since the Connectors 1.6 
+specification. The resource adapter implementation is recommended to use 
+the @NotNull Bean Validation annotation or its XML validation descriptor 
+equivalent to indicate that a configuration property is required to be 
+specified by the deployer. See the Connectors specification for more 
+information.
+
+Used in: activationspec
+
+Example: <required-config-property>Destination
+         </required-config-property>
+-->
+<!ELEMENT required-config-property (description?, config-property-name)>
+
+<!--
+The element resourceadapter specifies information about the resource
+adapter. The information includes fully qualified resource adapter Java
+class name, configuration properties, information specific
+to the implementation of the resource adapter library as specified
+through the outbound-resourceadapter and inbound-resourceadapter elements,
+and an optional set of administered objects.
+
+Used in: connector
+-->
+<!ELEMENT resourceadapter (resourceadapter-class?, config-property*,
+outbound-resourceadapter?, inbound-resourceadapter?, adminobject*)>
+
+<!--
+The element resourceadapter-class specifies the fully qualified
+name of a Java class that implements the javax.resource.spi.ResourceAdapter
+interface. This Java class is provided as part of
+resource adapter's implementation of connector architecture specified
+contracts. The implementation of this class is required to be a JavaBean.
+
+Used in: resourceadapter
+
+Example:
+  <resourceadapter-class>com.wombat.ResourceAdapterImpl
+  </resourceadapter-class>
+-->
+<!ELEMENT resourceadapter-class (#PCDATA)>
+
+<!--
+The element security permission specifies a security permission that
+is required by the resource adapter code.
+
+The security permission listed in the deployment descriptor are ones
+that are different from those required by the default permission set
+as specified in the connector specification. The optional description
+can mention specific reason that resource adapter requires a given
+security permission.
+
+Used in: outbound-resourceadapter
+-->
+<!ELEMENT security-permission (description?, security-permission-spec)>
+
+<!--
+The element permission-spec specifies a security permission based
+on the Security policy file syntax. Refer to the following URL for
+Sun's implementation of the security permission specification:
+
+http://java.sun.com/products/jdk/1.4/docs/guide/security/PolicyFiles.html#FileSyntax
+
+Used in: security-permission
+-->
+<!ELEMENT security-permission-spec (#PCDATA)>
+
+<!--
+The small-icon element contains the name of a file
+containing a small (16 x 16) icon image. The file
+name is a relative path within the resource adapter's
+rar file.
+
+The image may be either in the JPEG or GIF format.
+The icon can be used by tools.
+
+Used in: icon
+
+Example:
+
+<small-icon>employee-service-icon16x16.jpg</small-icon>
+-->
+<!ELEMENT small-icon (#PCDATA)>
+
+<!--
+The element spec-version specifies the version of the connector
+architecture specification that is supported by this resource
+adapter. This information enables deployer to configure the resource
+adapter to support deployment and runtime requirements of the
+corresponding connector architecture specification.
+
+Used in: connector
+
+Example:
+  <spec-version>1.5</spec-version>
+-->
+<!ELEMENT spec-version (#PCDATA)>
+
+<!--
+The transaction-support element specifies the level of transaction
+support provided by the resource adapter.
+The value of transaction-support must be one of the following:
+ <transaction-support>NoTransaction</transaction-support>
+ <transaction-support>LocalTransaction</transaction-support>
+ <transaction-support>XATransaction</transaction-support>
+
+Used in: outbound-resourceadapter
+-->
+<!ELEMENT transaction-support (#PCDATA)>
+
+<!--
+The element vendor-name specifies the name of resource adapter provider
+vendor.
+
+Used in: connector
+
+Example:
+  <vendor-name>Wombat Corp.</vendor-name>
+-->
+<!ELEMENT vendor-name (#PCDATA)>
+
+<!--
+The element version specifies a string-based version of the
+resource adapter from the resource adapter provider.
+
+Used in: connector
+
+Example:
+  <version>1.5</version>
+-->
+<!ELEMENT version (#PCDATA)>
+
+<!-- 
+The element required-work-context specifies a fully qualified class name 
+that implements the WorkContext interface that a resource adapter requires 
+the application server to support.
+
+Used in: connector
+-->
+<!ELEMENT required-work-context (#PCDATA)>
+
+<!--
+The ID mechanism is to allow tools that produce additional deployment
+information (i.e., information beyond the standard deployment
+descriptor information) to store the non-standard information in a
+separate file, and easily refer from these tool-specific files to the
+information in the standard deployment descriptor.
+
+Tools are not allowed to add the non-standard information into the
+standard deployment descriptor.
+-->
+
+<!ATTLIST activationspec id ID #IMPLIED>
+<!ATTLIST activationspec-class id ID #IMPLIED>
+<!ATTLIST adminobject id ID #IMPLIED>
+<!ATTLIST adminobject-class id ID #IMPLIED>
+<!ATTLIST adminobject-interface id ID #IMPLIED>
+<!ATTLIST authentication-mechanism id ID #IMPLIED>
+<!ATTLIST authentication-mechanism-type id ID #IMPLIED>
+<!ATTLIST config-property id ID #IMPLIED>
+<!ATTLIST config-property-name id ID #IMPLIED>
+<!ATTLIST config-property-type id ID #IMPLIED>
+<!ATTLIST config-property-value id ID #IMPLIED>
+<!ATTLIST connection-definition id ID #IMPLIED>
+<!ATTLIST connection-impl-class id ID #IMPLIED>
+<!ATTLIST connection-interface id ID #IMPLIED>
+<!ATTLIST connectionfactory-impl-class id ID #IMPLIED>
+<!ATTLIST connectionfactory-interface id ID #IMPLIED>
+<!ATTLIST connector id ID #IMPLIED>
+<!ATTLIST credential-interface id ID #IMPLIED>
+<!ATTLIST description id ID #IMPLIED>
+<!ATTLIST display-name id ID #IMPLIED>
+<!ATTLIST eis-type id ID #IMPLIED>
+<!ATTLIST icon id ID #IMPLIED>
+<!ATTLIST inbound-resourceadapter id ID #IMPLIED>
+<!ATTLIST large-icon id ID #IMPLIED>
+<!ATTLIST license id ID #IMPLIED>
+<!ATTLIST license-required id ID #IMPLIED>
+<!ATTLIST managedconnectionfactory-class id ID #IMPLIED>
+<!ATTLIST messageadapter id ID #IMPLIED>
+<!ATTLIST messagelistener id ID #IMPLIED>
+<!ATTLIST messagelistener-type id ID #IMPLIED>
+<!ATTLIST outbound-resourceadapter id ID #IMPLIED>
+<!ATTLIST reauthentication-support id ID #IMPLIED>
+<!ATTLIST required-config-property id ID #IMPLIED>
+<!ATTLIST resourceadapter id ID #IMPLIED>
+<!ATTLIST resourceadapter-class id ID #IMPLIED>
+<!ATTLIST security-permission id ID #IMPLIED>
+<!ATTLIST security-permission-spec id ID #IMPLIED>
+<!ATTLIST small-icon id ID #IMPLIED>
+<!ATTLIST spec-version id ID #IMPLIED>
+<!ATTLIST transaction-support id ID #IMPLIED>
+<!ATTLIST vendor-name id ID #IMPLIED>
+<!ATTLIST version id ID #IMPLIED>

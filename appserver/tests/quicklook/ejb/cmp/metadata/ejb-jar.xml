@@ -1,0 +1,1349 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE ejb-jar PUBLIC '-//Sun Microsystems, Inc.//DTD Enterprise JavaBeans 2.0//EN' 'http://java.sun.com/dtd/ejb-jar_2_0.dtd'>
+<!--
+
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) 2010 Oracle and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+    or packager/legal/LICENSE.txt.  See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at packager/legal/LICENSE.txt.
+
+    GPL Classpath Exception:
+    Oracle designates this particular file as subject to the "Classpath"
+    exception as provided by Oracle in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+
+-->
+
+<ejb-jar>
+  <display-name>RosterEJBJAR</display-name>
+  <enterprise-beans>
+    <session>
+      <display-name>RosterEJB</display-name>
+      <ejb-name>RosterEJB</ejb-name>
+      <local-home>roster.RosterHome</local-home>
+      <local>roster.Roster</local>
+      <ejb-class>roster.RosterBean</ejb-class>
+      <session-type>Stateful</session-type>
+      <transaction-type>Container</transaction-type>
+      <ejb-local-ref>
+        <ejb-ref-name>ejb/SimpleLeague</ejb-ref-name>
+        <ejb-ref-type>Entity</ejb-ref-type>
+        <local-home>team.LocalLeagueHome</local-home>
+        <local>team.LocalLeague</local>
+        <ejb-link>LeagueEJB</ejb-link>
+      </ejb-local-ref>
+      <ejb-local-ref>
+        <ejb-ref-name>ejb/SimpleTeam</ejb-ref-name>
+        <ejb-ref-type>Entity</ejb-ref-type>
+        <local-home>team.LocalTeamHome</local-home>
+        <local>team.LocalTeam</local>
+        <ejb-link>TeamEJB</ejb-link>
+      </ejb-local-ref>
+      <ejb-local-ref>
+        <ejb-ref-name>ejb/SimplePlayer</ejb-ref-name>
+        <ejb-ref-type>Entity</ejb-ref-type>
+        <local-home>team.LocalPlayerHome</local-home>
+        <local>team.LocalPlayer</local>
+        <ejb-link>PlayerEJB</ejb-link>
+      </ejb-local-ref>
+    </session>
+    <entity>
+      <display-name>LeagueEJB</display-name>
+      <ejb-name>LeagueEJB</ejb-name>
+      <local-home>team.LocalLeagueHome</local-home>
+      <local>team.LocalLeague</local>
+      <ejb-class>team.LeagueBean</ejb-class>
+      <persistence-type>Container</persistence-type>
+      <prim-key-class>java.lang.String</prim-key-class>
+      <reentrant>False</reentrant>
+      <cmp-version>2.x</cmp-version>
+      <abstract-schema-name>League</abstract-schema-name>
+      <cmp-field>
+        <description>no description</description>
+        <field-name>leagueId</field-name>
+      </cmp-field>
+      <cmp-field>
+        <description>no description</description>
+        <field-name>name</field-name>
+      </cmp-field>
+      <cmp-field>
+        <description>no description</description>
+        <field-name>sport</field-name>
+      </cmp-field>
+      <primkey-field>leagueId</primkey-field>
+      <security-identity>
+        <description></description>
+        <use-caller-identity></use-caller-identity>
+      </security-identity>
+      <query>
+        <description></description>
+        <query-method>
+          <method-name>findAll</method-name>
+          <method-params />
+        </query-method>
+        <ejb-ql>select object(l) from League l</ejb-ql>
+      </query>
+      <query>
+        <description></description>
+        <query-method>
+          <method-name>findByName</method-name>
+          <method-params>
+            <method-param>java.lang.String</method-param>
+          </method-params>
+        </query-method>
+        <ejb-ql>select object(l) from League l where l.name = ?1</ejb-ql>
+      </query>
+      <query>
+        <description>Selector returning SET</description>
+        <query-method>
+          <method-name>ejbSelectTeamsCity</method-name>
+          <method-params>
+            <method-param>team.LocalLeague</method-param>
+          </method-params>
+        </query-method>
+        <ejb-ql>select distinct t.city from Team t where t.league = ?1</ejb-ql>
+      </query>
+      <query>
+        <description>Selector single object LocalInterface</description>
+        <query-method>
+          <method-name>ejbSelectTeamByCity</method-name>
+          <method-params>
+            <method-param>java.lang.String</method-param>
+          </method-params>
+        </query-method>
+        <result-type-mapping>Local</result-type-mapping>
+        <ejb-ql>select distinct Object(t) from League l, in(l.teams) as t where t.city = ?1</ejb-ql>
+      </query>
+      <query>
+        <description>Selector single object String</description>
+        <query-method>
+          <method-name>ejbSelectTeamsNameByCity</method-name>
+          <method-params>
+            <method-param>java.lang.String</method-param>
+          </method-params>
+        </query-method>
+        <ejb-ql>select distinct t.name from League l, in(l.teams) as t where t.city = ?1</ejb-ql>
+      </query>
+      <query>
+        <description>Selector returning Set using multiple collection declarations</description>
+        <query-method>
+          <method-name>ejbSelectPlayersByLeague</method-name>
+          <method-params>
+            <method-param>team.LocalLeague</method-param>
+          </method-params>
+        </query-method>
+        <result-type-mapping>Local</result-type-mapping>
+        <ejb-ql>select Object(p) from League l, in(l.teams) as t, in(t.players) p where l = ?1</ejb-ql>
+      </query>
+    </entity>
+    <entity>
+      <display-name>TeamEJB</display-name>
+      <ejb-name>TeamEJB</ejb-name>
+      <local-home>team.LocalTeamHome</local-home>
+      <local>team.LocalTeam</local>
+      <ejb-class>team.TeamBean</ejb-class>
+      <persistence-type>Container</persistence-type>
+      <prim-key-class>java.lang.String</prim-key-class>
+      <reentrant>False</reentrant>
+      <cmp-version>2.x</cmp-version>
+      <abstract-schema-name>Team</abstract-schema-name>
+      <cmp-field>
+        <description>no description</description>
+        <field-name>name</field-name>
+      </cmp-field>
+      <cmp-field>
+        <description>no description</description>
+        <field-name>teamId</field-name>
+      </cmp-field>
+      <cmp-field>
+        <description>no description</description>
+        <field-name>city</field-name>
+      </cmp-field>
+      <primkey-field>teamId</primkey-field>
+      <security-identity>
+        <description></description>
+        <use-caller-identity></use-caller-identity>
+      </security-identity>
+      <query>
+        <description></description>
+        <query-method>
+          <method-name>findAll</method-name>
+          <method-params />
+        </query-method>
+        <ejb-ql>select object(t) from Team t</ejb-ql>
+      </query>
+      <query>
+        <description></description>
+        <query-method>
+          <method-name>findByPlayerAndLeague</method-name>
+          <method-params>
+            <method-param>team.LocalPlayer</method-param>
+            <method-param>team.LocalLeague</method-param>
+          </method-params>
+        </query-method>
+        <ejb-ql>select object(t) from Team t, in(t.players) as p where p = ?1 and t.league = ?2</ejb-ql>
+      </query>
+      <query>
+        <description>Selector single object int</description>
+        <query-method>
+          <method-name>ejbSelectSalaryOfPlayerInTeam</method-name>
+          <method-params>
+            <method-param>team.LocalTeam</method-param>
+            <method-param>java.lang.String</method-param>
+          </method-params>
+        </query-method>
+        <ejb-ql>select p.salary from Team t, in(t.players) as p where t = ?1 and p.name = ?2</ejb-ql>
+      </query>
+      <query>
+        <description>Selector single object String with CONCAT</description>
+        <query-method>
+          <method-name>ejbSelectByNameWithCONCAT</method-name>
+          <method-params>
+            <method-param>java.lang.String</method-param>
+            <method-param>java.lang.String</method-param>
+          </method-params>
+        </query-method>
+        <ejb-ql>select t.name from Team t where t.name = CONCAT(?1, ?2) </ejb-ql>
+      </query>
+      <query>
+        <description>Selector single object String with SUBSTRING</description>
+        <query-method>
+          <method-name>ejbSelectByNameSubstring</method-name>
+          <method-params>
+            <method-param>java.lang.String</method-param>
+          </method-params>
+        </query-method>
+        <ejb-ql>select t.name from Team t where t.name = SUBSTRING(?1, 5, 5)</ejb-ql>
+      </query>
+      <query>
+        <description>Selector single object String with LOCATE</description>
+        <query-method>
+          <method-name>ejbSelectNameLocate</method-name>
+          <method-params>
+            <method-param>java.lang.String</method-param>
+          </method-params>
+        </query-method>
+        <ejb-ql>select distinct t.name from Team t where LOCATE(?1, t.name) &gt; 0 AND LOCATE(?1, t.name) &lt; LENGTH(t.name)</ejb-ql>
+      </query>      
+    </entity>
+    <entity>
+      <display-name>PlayerEJB</display-name>
+      <ejb-name>PlayerEJB</ejb-name>
+      <local-home>team.LocalPlayerHome</local-home>
+      <local>team.LocalPlayer</local>
+      <ejb-class>team.PlayerBean</ejb-class>
+      <persistence-type>Container</persistence-type>
+      <prim-key-class>java.lang.String</prim-key-class>
+      <reentrant>False</reentrant>
+      <cmp-version>2.x</cmp-version>
+      <abstract-schema-name>Player</abstract-schema-name>
+      <cmp-field>
+        <description>no description</description>
+        <field-name>position</field-name>
+      </cmp-field>
+      <cmp-field>
+        <description>no description</description>
+        <field-name>playerId</field-name>
+      </cmp-field>
+      <cmp-field>
+        <description>no description</description>
+        <field-name>name</field-name>
+      </cmp-field>
+      <cmp-field>
+        <description>no description</description>
+        <field-name>salary</field-name>
+      </cmp-field>
+      <primkey-field>playerId</primkey-field>
+      <security-identity>
+        <description></description>
+        <use-caller-identity></use-caller-identity>
+      </security-identity>
+      <query>
+        <description></description>
+        <query-method>
+          <method-name>findNotOnTeam</method-name>
+          <method-params />
+        </query-method>
+        <ejb-ql>select object(p) from Player p 
+where p.teams is empty</ejb-ql>
+      </query>
+      <query>
+        <description></description>
+        <query-method>
+          <method-name>findAll</method-name>
+          <method-params />
+        </query-method>
+        <ejb-ql>select object(p) from Player p</ejb-ql>
+      </query>
+      <query>
+        <description></description>
+        <query-method>
+          <method-name>findBySport</method-name>
+          <method-params>
+            <method-param>java.lang.String</method-param>
+          </method-params>
+        </query-method>
+        <ejb-ql>select distinct object(p) from Player p,
+in (p.teams) as t
+where t.league.sport = ?1</ejb-ql>
+      </query>
+      <query>
+        <description></description>
+        <query-method>
+          <method-name>ejbSelectSports</method-name>
+          <method-params>
+            <method-param>team.LocalPlayer</method-param>
+          </method-params>
+        </query-method>
+        <ejb-ql>select distinct t.league.sport
+from Player p, in (p.teams) as t
+where p = ?1</ejb-ql>
+      </query>
+      <query>
+        <description></description>
+        <query-method>
+          <method-name>findBySalaryRange</method-name>
+          <method-params>
+            <method-param>double</method-param>
+            <method-param>double</method-param>
+          </method-params>
+        </query-method>
+        <ejb-ql>select distinct object(p) from Player p
+where p.salary between ?1 and ?2</ejb-ql>
+      </query>
+      <query>
+        <description></description>
+        <query-method>
+          <method-name>findByHigherSalary</method-name>
+          <method-params>
+            <method-param>java.lang.String</method-param>
+          </method-params>
+        </query-method>
+        <ejb-ql>select distinct object(p1)
+from Player p1, Player p2
+where p1.salary &gt; p2.salary and
+p2.name = ?1</ejb-ql>
+      </query>
+      <query>
+        <description></description>
+        <query-method>
+          <method-name>findByCity</method-name>
+          <method-params>
+            <method-param>java.lang.String</method-param>
+          </method-params>
+        </query-method>
+        <ejb-ql>select distinct object(p) from Player p,
+in (p.teams) as t
+where t.city = ?1</ejb-ql>
+      </query>
+      <query>
+        <description></description>
+        <query-method>
+          <method-name>findByPositionAndName</method-name>
+          <method-params>
+            <method-param>java.lang.String</method-param>
+            <method-param>java.lang.String</method-param>
+          </method-params>
+        </query-method>
+        <ejb-ql>select distinct object(p) from Player p
+where p.position = ?1 and p.name = ?2</ejb-ql>
+      </query>
+      <query>
+        <description></description>
+        <query-method>
+          <method-name>findByLeague</method-name>
+          <method-params>
+            <method-param>team.LocalLeague</method-param>
+          </method-params>
+        </query-method>
+        <ejb-ql>select distinct object(p) from Player p,
+in (p.teams) as t
+where t.league = ?1</ejb-ql>
+      </query>
+      <query>
+        <description></description>
+        <query-method>
+          <method-name>ejbSelectLeagues</method-name>
+          <method-params>
+            <method-param>team.LocalPlayer</method-param>
+          </method-params>
+        </query-method>
+        <result-type-mapping>Local</result-type-mapping>
+        <ejb-ql>select distinct t.league
+from Player p, in (p.teams) as t
+where p = ?1</ejb-ql>
+      </query>
+      <query>
+        <description></description>
+        <query-method>
+          <method-name>findByPosition</method-name>
+          <method-params>
+            <method-param>java.lang.String</method-param>
+          </method-params>
+        </query-method>
+        <ejb-ql>select distinct object(p) from Player p
+where p.position = ?1</ejb-ql>
+      </query>
+      <query>
+        <description></description>
+        <query-method>
+          <method-name>findByTest</method-name>
+          <method-params>
+            <method-param>java.lang.String</method-param>
+            <method-param>java.lang.String</method-param>
+            <method-param>java.lang.String</method-param>
+          </method-params>
+        </query-method>
+        <ejb-ql>select distinct object(p) from Player p
+where p.name = ?1</ejb-ql>
+      </query>
+      <query>
+        <description>Finder using the IN Expression</description>
+        <query-method>
+          <method-name>findByPositionsGoalkeeperOrDefender</method-name>
+          <method-params/>
+        </query-method>
+        <ejb-ql>select object(p) from Player p where p.position IN ('goalkeeper', 'defender')</ejb-ql>
+      </query>
+      <query>
+        <description>Finder using the LIKE Expression</description>
+        <query-method>
+          <method-name>findByNameEndingWithON</method-name>
+          <method-params/>
+        </query-method>
+        <ejb-ql>select object(p) from Player p where p.name LIKE '%on'</ejb-ql>
+      </query>
+      <query>
+        <description>Finder using the IS NULL Expression</description>
+        <query-method>
+          <method-name>findByNullName</method-name>
+          <method-params/>
+        </query-method>
+        <ejb-ql>select object(p) from Player p where p.name IS NULL</ejb-ql>
+      </query>
+      <query>
+        <description>Finder using the MEMBER OF Expression</description>
+        <query-method>
+          <method-name>findByTeam</method-name>
+          <method-params>
+            <method-param>team.LocalTeam</method-param>
+          </method-params>
+        </query-method>
+        <ejb-ql>select object(p) from Player p where ?1 MEMBER p.teams</ejb-ql>
+      </query>
+      <query>
+        <description>Finder using the ABS function</description>
+        <query-method>
+          <method-name>findBySalarayWithArithmeticFunctionABS</method-name>
+          <method-params>
+            <method-param>double</method-param>
+          </method-params>
+        </query-method>
+        <ejb-ql>select object(p) from Player p where p.salary = ABS(?1)</ejb-ql>
+      </query>
+      <query>
+        <description>Finder using the SQRT function</description>
+        <query-method>
+          <method-name>findBySalarayWithArithmeticFunctionSQRT</method-name>
+          <method-params>
+            <method-param>double</method-param>
+          </method-params>
+        </query-method>
+        <ejb-ql>select object(p) from Player p where p.salary = SQRT(?1)</ejb-ql>
+      </query>      
+    </entity>
+  </enterprise-beans>
+  <relationships>
+    <description>League-Team</description>
+    <ejb-relation>
+      <description>Team To Player</description>
+      <ejb-relation-name></ejb-relation-name>
+      <ejb-relationship-role>
+        <ejb-relationship-role-name>TeamEJB</ejb-relationship-role-name>
+        <multiplicity>Many</multiplicity>
+        <relationship-role-source>
+          <ejb-name>TeamEJB</ejb-name>
+        </relationship-role-source>
+        <cmr-field>
+          <cmr-field-name>players</cmr-field-name>
+          <cmr-field-type>java.util.Collection</cmr-field-type>
+        </cmr-field>
+      </ejb-relationship-role>
+      <ejb-relationship-role>
+        <ejb-relationship-role-name>PlayerEJB</ejb-relationship-role-name>
+        <multiplicity>Many</multiplicity>
+        <relationship-role-source>
+          <ejb-name>PlayerEJB</ejb-name>
+        </relationship-role-source>
+        <cmr-field>
+          <cmr-field-name>teams</cmr-field-name>
+          <cmr-field-type>java.util.Collection</cmr-field-type>
+        </cmr-field>
+      </ejb-relationship-role>
+    </ejb-relation>
+    <ejb-relation>
+      <description>League-Team</description>
+      <ejb-relation-name></ejb-relation-name>
+      <ejb-relationship-role>
+        <ejb-relationship-role-name>LeagueEJB</ejb-relationship-role-name>
+        <multiplicity>One</multiplicity>
+        <relationship-role-source>
+          <ejb-name>LeagueEJB</ejb-name>
+        </relationship-role-source>
+        <cmr-field>
+          <cmr-field-name>teams</cmr-field-name>
+          <cmr-field-type>java.util.Collection</cmr-field-type>
+        </cmr-field>
+      </ejb-relationship-role>
+      <ejb-relationship-role>
+        <ejb-relationship-role-name>TeamEJB</ejb-relationship-role-name>
+        <multiplicity>Many</multiplicity>
+        <cascade-delete />
+        <relationship-role-source>
+          <ejb-name>TeamEJB</ejb-name>
+        </relationship-role-source>
+        <cmr-field>
+          <cmr-field-name>league</cmr-field-name>
+        </cmr-field>
+      </ejb-relationship-role>
+    </ejb-relation>
+  </relationships>
+  <assembly-descriptor>
+    <method-permission>
+      <unchecked />
+      <method>
+        <ejb-name>LeagueEJB</ejb-name>
+        <method-intf>LocalHome</method-intf>
+        <method-name>remove</method-name>
+        <method-params>
+          <method-param>java.lang.Object</method-param>
+        </method-params>
+      </method>
+      <method>
+        <ejb-name>LeagueEJB</ejb-name>
+        <method-intf>Local</method-intf>
+        <method-name>getSport</method-name>
+        <method-params />
+      </method>
+      <method>
+        <ejb-name>LeagueEJB</ejb-name>
+        <method-intf>Local</method-intf>
+        <method-name>dropTeam</method-name>
+        <method-params>
+          <method-param>team.LocalTeam</method-param>
+        </method-params>
+      </method>
+      <method>
+        <ejb-name>LeagueEJB</ejb-name>
+        <method-intf>Local</method-intf>
+        <method-name>getEJBLocalHome</method-name>
+        <method-params />
+      </method>
+      <method>
+        <ejb-name>LeagueEJB</ejb-name>
+        <method-intf>LocalHome</method-intf>
+        <method-name>create</method-name>
+        <method-params>
+          <method-param>java.lang.String</method-param>
+          <method-param>java.lang.String</method-param>
+          <method-param>java.lang.String</method-param>
+        </method-params>
+      </method>
+      <method>
+        <ejb-name>LeagueEJB</ejb-name>
+        <method-intf>Local</method-intf>
+        <method-name>getName</method-name>
+        <method-params />
+      </method>
+      <method>
+        <ejb-name>LeagueEJB</ejb-name>
+        <method-intf>LocalHome</method-intf>
+        <method-name>findByPrimaryKey</method-name>
+        <method-params>
+          <method-param>java.lang.String</method-param>
+        </method-params>
+      </method>
+      <method>
+        <ejb-name>LeagueEJB</ejb-name>
+        <method-intf>Local</method-intf>
+        <method-name>getLeagueId</method-name>
+        <method-params />
+      </method>
+      <method>
+        <ejb-name>LeagueEJB</ejb-name>
+        <method-intf>Local</method-intf>
+        <method-name>getTeams</method-name>
+        <method-params />
+      </method>
+      <method>
+        <ejb-name>LeagueEJB</ejb-name>
+        <method-intf>Local</method-intf>
+        <method-name>addTeam</method-name>
+        <method-params>
+          <method-param>team.LocalTeam</method-param>
+        </method-params>
+      </method>
+      <method>
+        <ejb-name>LeagueEJB</ejb-name>
+        <method-intf>Local</method-intf>
+        <method-name>getPrimaryKey</method-name>
+        <method-params />
+      </method>
+      <method>
+        <ejb-name>LeagueEJB</ejb-name>
+        <method-intf>Local</method-intf>
+        <method-name>remove</method-name>
+        <method-params />
+      </method>
+      <method>
+        <ejb-name>LeagueEJB</ejb-name>
+        <method-intf>Local</method-intf>
+        <method-name>isIdentical</method-name>
+        <method-params>
+          <method-param>javax.ejb.EJBLocalObject</method-param>
+        </method-params>
+      </method>
+    </method-permission>
+    <method-permission>
+      <unchecked />
+      <method>
+        <ejb-name>TeamEJB</ejb-name>
+        <method-intf>Local</method-intf>
+        <method-name>getCopyOfPlayers</method-name>
+        <method-params />
+      </method>
+      <method>
+        <ejb-name>TeamEJB</ejb-name>
+        <method-intf>LocalHome</method-intf>
+        <method-name>remove</method-name>
+        <method-params>
+          <method-param>java.lang.Object</method-param>
+        </method-params>
+      </method>
+      <method>
+        <ejb-name>TeamEJB</ejb-name>
+        <method-intf>Local</method-intf>
+        <method-name>getLeague</method-name>
+        <method-params />
+      </method>
+      <method>
+        <ejb-name>TeamEJB</ejb-name>
+        <method-intf>Local</method-intf>
+        <method-name>getEJBLocalHome</method-name>
+        <method-params />
+      </method>
+      <method>
+        <ejb-name>TeamEJB</ejb-name>
+        <method-intf>Local</method-intf>
+        <method-name>dropPlayer</method-name>
+        <method-params>
+          <method-param>team.LocalPlayer</method-param>
+        </method-params>
+      </method>
+      <method>
+        <ejb-name>TeamEJB</ejb-name>
+        <method-intf>Local</method-intf>
+        <method-name>getTeamId</method-name>
+        <method-params />
+      </method>
+      <method>
+        <ejb-name>TeamEJB</ejb-name>
+        <method-intf>LocalHome</method-intf>
+        <method-name>create</method-name>
+        <method-params>
+          <method-param>java.lang.String</method-param>
+          <method-param>java.lang.String</method-param>
+          <method-param>java.lang.String</method-param>
+        </method-params>
+      </method>
+      <method>
+        <ejb-name>TeamEJB</ejb-name>
+        <method-intf>Local</method-intf>
+        <method-name>getPlayers</method-name>
+        <method-params />
+      </method>
+      <method>
+        <ejb-name>TeamEJB</ejb-name>
+        <method-intf>Local</method-intf>
+        <method-name>addPlayer</method-name>
+        <method-params>
+          <method-param>team.LocalPlayer</method-param>
+        </method-params>
+      </method>
+      <method>
+        <ejb-name>TeamEJB</ejb-name>
+        <method-intf>Local</method-intf>
+        <method-name>getName</method-name>
+        <method-params />
+      </method>
+      <method>
+        <ejb-name>TeamEJB</ejb-name>
+        <method-intf>LocalHome</method-intf>
+        <method-name>findByPrimaryKey</method-name>
+        <method-params>
+          <method-param>java.lang.String</method-param>
+        </method-params>
+      </method>
+      <method>
+        <ejb-name>TeamEJB</ejb-name>
+        <method-intf>Local</method-intf>
+        <method-name>getPrimaryKey</method-name>
+        <method-params />
+      </method>
+      <method>
+        <ejb-name>TeamEJB</ejb-name>
+        <method-intf>Local</method-intf>
+        <method-name>getCity</method-name>
+        <method-params />
+      </method>
+      <method>
+        <ejb-name>TeamEJB</ejb-name>
+        <method-intf>Local</method-intf>
+        <method-name>remove</method-name>
+        <method-params />
+      </method>
+      <method>
+        <ejb-name>TeamEJB</ejb-name>
+        <method-intf>Local</method-intf>
+        <method-name>isIdentical</method-name>
+        <method-params>
+          <method-param>javax.ejb.EJBLocalObject</method-param>
+        </method-params>
+      </method>
+    </method-permission>
+    <method-permission>
+      <unchecked />
+      <method>
+        <ejb-name>PlayerEJB</ejb-name>
+        <method-intf>Local</method-intf>
+        <method-name>getPrimaryKey</method-name>
+        <method-params />
+      </method>
+      <method>
+        <ejb-name>PlayerEJB</ejb-name>
+        <method-intf>Local</method-intf>
+        <method-name>getTeams</method-name>
+        <method-params />
+      </method>
+      <method>
+        <ejb-name>PlayerEJB</ejb-name>
+        <method-intf>LocalHome</method-intf>
+        <method-name>remove</method-name>
+        <method-params>
+          <method-param>java.lang.Object</method-param>
+        </method-params>
+      </method>
+      <method>
+        <ejb-name>PlayerEJB</ejb-name>
+        <method-intf>LocalHome</method-intf>
+        <method-name>findByPosition</method-name>
+        <method-params>
+          <method-param>java.lang.String</method-param>
+        </method-params>
+      </method>
+      <method>
+        <ejb-name>PlayerEJB</ejb-name>
+        <method-intf>LocalHome</method-intf>
+        <method-name>findBySport</method-name>
+        <method-params>
+          <method-param>java.lang.String</method-param>
+        </method-params>
+      </method>
+      <method>
+        <ejb-name>PlayerEJB</ejb-name>
+        <method-intf>LocalHome</method-intf>
+        <method-name>findAll</method-name>
+        <method-params />
+      </method>
+      <method>
+        <ejb-name>PlayerEJB</ejb-name>
+        <method-intf>Local</method-intf>
+        <method-name>getEJBLocalHome</method-name>
+        <method-params />
+      </method>
+      <method>
+        <ejb-name>PlayerEJB</ejb-name>
+        <method-intf>LocalHome</method-intf>
+        <method-name>findByPositionAndName</method-name>
+        <method-params>
+          <method-param>java.lang.String</method-param>
+          <method-param>java.lang.String</method-param>
+        </method-params>
+      </method>
+      <method>
+        <ejb-name>PlayerEJB</ejb-name>
+        <method-intf>Local</method-intf>
+        <method-name>getName</method-name>
+        <method-params />
+      </method>
+      <method>
+        <ejb-name>PlayerEJB</ejb-name>
+        <method-intf>LocalHome</method-intf>
+        <method-name>findByPrimaryKey</method-name>
+        <method-params>
+          <method-param>java.lang.String</method-param>
+        </method-params>
+      </method>
+      <method>
+        <ejb-name>PlayerEJB</ejb-name>
+        <method-intf>LocalHome</method-intf>
+        <method-name>findNotOnTeam</method-name>
+        <method-params />
+      </method>
+      <method>
+        <ejb-name>PlayerEJB</ejb-name>
+        <method-intf>Local</method-intf>
+        <method-name>isIdentical</method-name>
+        <method-params>
+          <method-param>javax.ejb.EJBLocalObject</method-param>
+        </method-params>
+      </method>
+      <method>
+        <ejb-name>PlayerEJB</ejb-name>
+        <method-intf>LocalHome</method-intf>
+        <method-name>create</method-name>
+        <method-params>
+          <method-param>java.lang.String</method-param>
+          <method-param>java.lang.String</method-param>
+          <method-param>java.lang.String</method-param>
+          <method-param>double</method-param>
+        </method-params>
+      </method>
+      <method>
+        <ejb-name>PlayerEJB</ejb-name>
+        <method-intf>Local</method-intf>
+        <method-name>getPlayerId</method-name>
+        <method-params />
+      </method>
+      <method>
+        <ejb-name>PlayerEJB</ejb-name>
+        <method-intf>Local</method-intf>
+        <method-name>getSalary</method-name>
+        <method-params />
+      </method>
+      <method>
+        <ejb-name>PlayerEJB</ejb-name>
+        <method-intf>LocalHome</method-intf>
+        <method-name>findBySalaryRange</method-name>
+        <method-params>
+          <method-param>double</method-param>
+          <method-param>double</method-param>
+        </method-params>
+      </method>
+      <method>
+        <ejb-name>PlayerEJB</ejb-name>
+        <method-intf>Local</method-intf>
+        <method-name>getPosition</method-name>
+        <method-params />
+      </method>
+      <method>
+        <ejb-name>PlayerEJB</ejb-name>
+        <method-intf>Local</method-intf>
+        <method-name>remove</method-name>
+        <method-params />
+      </method>
+      <method>
+        <ejb-name>PlayerEJB</ejb-name>
+        <method-intf>LocalHome</method-intf>
+        <method-name>findByCity</method-name>
+        <method-params>
+          <method-param>java.lang.String</method-param>
+        </method-params>
+      </method>
+      <method>
+        <ejb-name>PlayerEJB</ejb-name>
+        <method-intf>LocalHome</method-intf>
+        <method-name>findByHigherSalary</method-name>
+        <method-params>
+          <method-param>java.lang.String</method-param>
+        </method-params>
+      </method>
+      <method>
+        <ejb-name>PlayerEJB</ejb-name>
+        <method-intf>LocalHome</method-intf>
+        <method-name>findByTest</method-name>
+        <method-params>
+          <method-param>java.lang.String</method-param>
+          <method-param>java.lang.String</method-param>
+          <method-param>java.lang.String</method-param>
+        </method-params>
+      </method>
+      <method>
+        <ejb-name>PlayerEJB</ejb-name>
+        <method-intf>LocalHome</method-intf>
+        <method-name>findByLeague</method-name>
+        <method-params>
+          <method-param>team.LocalLeague</method-param>
+        </method-params>
+      </method>
+    </method-permission>
+    <container-transaction>
+      <method>
+        <ejb-name>LeagueEJB</ejb-name>
+        <method-intf>LocalHome</method-intf>
+        <method-name>remove</method-name>
+        <method-params>
+          <method-param>java.lang.Object</method-param>
+        </method-params>
+      </method>
+      <trans-attribute>Required</trans-attribute>
+    </container-transaction>
+    <container-transaction>
+      <method>
+        <ejb-name>LeagueEJB</ejb-name>
+        <method-intf>Local</method-intf>
+        <method-name>getSport</method-name>
+        <method-params />
+      </method>
+      <trans-attribute>Required</trans-attribute>
+    </container-transaction>
+    <container-transaction>
+      <method>
+        <ejb-name>LeagueEJB</ejb-name>
+        <method-intf>Local</method-intf>
+        <method-name>dropTeam</method-name>
+        <method-params>
+          <method-param>team.LocalTeam</method-param>
+        </method-params>
+      </method>
+      <trans-attribute>Required</trans-attribute>
+    </container-transaction>
+    <container-transaction>
+      <method>
+        <ejb-name>LeagueEJB</ejb-name>
+        <method-intf>LocalHome</method-intf>
+        <method-name>create</method-name>
+        <method-params>
+          <method-param>java.lang.String</method-param>
+          <method-param>java.lang.String</method-param>
+          <method-param>java.lang.String</method-param>
+        </method-params>
+      </method>
+      <trans-attribute>Required</trans-attribute>
+    </container-transaction>
+    <container-transaction>
+      <method>
+        <ejb-name>LeagueEJB</ejb-name>
+        <method-intf>Local</method-intf>
+        <method-name>getName</method-name>
+        <method-params />
+      </method>
+      <trans-attribute>Required</trans-attribute>
+    </container-transaction>
+    <container-transaction>
+      <method>
+        <ejb-name>LeagueEJB</ejb-name>
+        <method-intf>LocalHome</method-intf>
+        <method-name>findByPrimaryKey</method-name>
+        <method-params>
+          <method-param>java.lang.String</method-param>
+        </method-params>
+      </method>
+      <trans-attribute>Required</trans-attribute>
+    </container-transaction>
+    <container-transaction>
+      <method>
+        <ejb-name>LeagueEJB</ejb-name>
+        <method-intf>Local</method-intf>
+        <method-name>addTeam</method-name>
+        <method-params>
+          <method-param>team.LocalTeam</method-param>
+        </method-params>
+      </method>
+      <trans-attribute>Required</trans-attribute>
+    </container-transaction>
+    <container-transaction>
+      <method>
+        <ejb-name>LeagueEJB</ejb-name>
+        <method-intf>Local</method-intf>
+        <method-name>getTeams</method-name>
+        <method-params />
+      </method>
+      <trans-attribute>Required</trans-attribute>
+    </container-transaction>
+    <container-transaction>
+      <method>
+        <ejb-name>LeagueEJB</ejb-name>
+        <method-intf>Local</method-intf>
+        <method-name>getLeagueId</method-name>
+        <method-params />
+      </method>
+      <trans-attribute>Required</trans-attribute>
+    </container-transaction>
+    <container-transaction>
+      <method>
+        <ejb-name>LeagueEJB</ejb-name>
+        <method-intf>Local</method-intf>
+        <method-name>remove</method-name>
+        <method-params />
+      </method>
+      <trans-attribute>Required</trans-attribute>
+    </container-transaction>
+    <container-transaction>
+      <method>
+        <ejb-name>TeamEJB</ejb-name>
+        <method-intf>Local</method-intf>
+        <method-name>getCopyOfPlayers</method-name>
+        <method-params />
+      </method>
+      <trans-attribute>Required</trans-attribute>
+    </container-transaction>
+    <container-transaction>
+      <method>
+        <ejb-name>TeamEJB</ejb-name>
+        <method-intf>LocalHome</method-intf>
+        <method-name>remove</method-name>
+        <method-params>
+          <method-param>java.lang.Object</method-param>
+        </method-params>
+      </method>
+      <trans-attribute>Required</trans-attribute>
+    </container-transaction>
+    <container-transaction>
+      <method>
+        <ejb-name>TeamEJB</ejb-name>
+        <method-intf>Local</method-intf>
+        <method-name>getLeague</method-name>
+        <method-params />
+      </method>
+      <trans-attribute>Required</trans-attribute>
+    </container-transaction>
+    <container-transaction>
+      <method>
+        <ejb-name>TeamEJB</ejb-name>
+        <method-intf>Local</method-intf>
+        <method-name>dropPlayer</method-name>
+        <method-params>
+          <method-param>team.LocalPlayer</method-param>
+        </method-params>
+      </method>
+      <trans-attribute>Required</trans-attribute>
+    </container-transaction>
+    <container-transaction>
+      <method>
+        <ejb-name>TeamEJB</ejb-name>
+        <method-intf>Local</method-intf>
+        <method-name>getTeamId</method-name>
+        <method-params />
+      </method>
+      <trans-attribute>Required</trans-attribute>
+    </container-transaction>
+    <container-transaction>
+      <method>
+        <ejb-name>TeamEJB</ejb-name>
+        <method-intf>LocalHome</method-intf>
+        <method-name>create</method-name>
+        <method-params>
+          <method-param>java.lang.String</method-param>
+          <method-param>java.lang.String</method-param>
+          <method-param>java.lang.String</method-param>
+        </method-params>
+      </method>
+      <trans-attribute>Required</trans-attribute>
+    </container-transaction>
+    <container-transaction>
+      <method>
+        <ejb-name>TeamEJB</ejb-name>
+        <method-intf>Local</method-intf>
+        <method-name>getName</method-name>
+        <method-params />
+      </method>
+      <trans-attribute>Required</trans-attribute>
+    </container-transaction>
+    <container-transaction>
+      <method>
+        <ejb-name>TeamEJB</ejb-name>
+        <method-intf>Local</method-intf>
+        <method-name>addPlayer</method-name>
+        <method-params>
+          <method-param>team.LocalPlayer</method-param>
+        </method-params>
+      </method>
+      <trans-attribute>Required</trans-attribute>
+    </container-transaction>
+    <container-transaction>
+      <method>
+        <ejb-name>TeamEJB</ejb-name>
+        <method-intf>Local</method-intf>
+        <method-name>getPlayers</method-name>
+        <method-params />
+      </method>
+      <trans-attribute>Required</trans-attribute>
+    </container-transaction>
+    <container-transaction>
+      <method>
+        <ejb-name>TeamEJB</ejb-name>
+        <method-intf>LocalHome</method-intf>
+        <method-name>findByPrimaryKey</method-name>
+        <method-params>
+          <method-param>java.lang.String</method-param>
+        </method-params>
+      </method>
+      <trans-attribute>Required</trans-attribute>
+    </container-transaction>
+    <container-transaction>
+      <method>
+        <ejb-name>TeamEJB</ejb-name>
+        <method-intf>Local</method-intf>
+        <method-name>getCity</method-name>
+        <method-params />
+      </method>
+      <trans-attribute>Required</trans-attribute>
+    </container-transaction>
+    <container-transaction>
+      <method>
+        <ejb-name>TeamEJB</ejb-name>
+        <method-intf>Local</method-intf>
+        <method-name>remove</method-name>
+        <method-params />
+      </method>
+      <trans-attribute>Required</trans-attribute>
+    </container-transaction>
+    <container-transaction>
+      <method>
+        <ejb-name>PlayerEJB</ejb-name>
+        <method-intf>Local</method-intf>
+        <method-name>getTeams</method-name>
+        <method-params />
+      </method>
+      <trans-attribute>Required</trans-attribute>
+    </container-transaction>
+    <container-transaction>
+      <method>
+        <ejb-name>PlayerEJB</ejb-name>
+        <method-intf>LocalHome</method-intf>
+        <method-name>remove</method-name>
+        <method-params>
+          <method-param>java.lang.Object</method-param>
+        </method-params>
+      </method>
+      <trans-attribute>Required</trans-attribute>
+    </container-transaction>
+    <container-transaction>
+      <method>
+        <ejb-name>PlayerEJB</ejb-name>
+        <method-intf>LocalHome</method-intf>
+        <method-name>findByPosition</method-name>
+        <method-params>
+          <method-param>java.lang.String</method-param>
+        </method-params>
+      </method>
+      <trans-attribute>Required</trans-attribute>
+    </container-transaction>
+    <container-transaction>
+      <method>
+        <ejb-name>PlayerEJB</ejb-name>
+        <method-intf>LocalHome</method-intf>
+        <method-name>findBySport</method-name>
+        <method-params>
+          <method-param>java.lang.String</method-param>
+        </method-params>
+      </method>
+      <trans-attribute>Required</trans-attribute>
+    </container-transaction>
+    <container-transaction>
+      <method>
+        <ejb-name>PlayerEJB</ejb-name>
+        <method-intf>LocalHome</method-intf>
+        <method-name>findAll</method-name>
+        <method-params />
+      </method>
+      <trans-attribute>Required</trans-attribute>
+    </container-transaction>
+    <container-transaction>
+      <method>
+        <ejb-name>PlayerEJB</ejb-name>
+        <method-intf>LocalHome</method-intf>
+        <method-name>findByPositionAndName</method-name>
+        <method-params>
+          <method-param>java.lang.String</method-param>
+          <method-param>java.lang.String</method-param>
+        </method-params>
+      </method>
+      <trans-attribute>Required</trans-attribute>
+    </container-transaction>
+    <container-transaction>
+      <method>
+        <ejb-name>PlayerEJB</ejb-name>
+        <method-intf>Local</method-intf>
+        <method-name>getName</method-name>
+        <method-params />
+      </method>
+      <trans-attribute>Required</trans-attribute>
+    </container-transaction>
+    <container-transaction>
+      <method>
+        <ejb-name>PlayerEJB</ejb-name>
+        <method-intf>LocalHome</method-intf>
+        <method-name>findByPrimaryKey</method-name>
+        <method-params>
+          <method-param>java.lang.String</method-param>
+        </method-params>
+      </method>
+      <trans-attribute>Required</trans-attribute>
+    </container-transaction>
+    <container-transaction>
+      <method>
+        <ejb-name>PlayerEJB</ejb-name>
+        <method-intf>LocalHome</method-intf>
+        <method-name>findNotOnTeam</method-name>
+        <method-params />
+      </method>
+      <trans-attribute>Required</trans-attribute>
+    </container-transaction>
+    <container-transaction>
+      <method>
+        <ejb-name>PlayerEJB</ejb-name>
+        <method-intf>LocalHome</method-intf>
+        <method-name>create</method-name>
+        <method-params>
+          <method-param>java.lang.String</method-param>
+          <method-param>java.lang.String</method-param>
+          <method-param>java.lang.String</method-param>
+          <method-param>double</method-param>
+        </method-params>
+      </method>
+      <trans-attribute>Required</trans-attribute>
+    </container-transaction>
+    <container-transaction>
+      <method>
+        <ejb-name>PlayerEJB</ejb-name>
+        <method-intf>Local</method-intf>
+        <method-name>getPlayerId</method-name>
+        <method-params />
+      </method>
+      <trans-attribute>Required</trans-attribute>
+    </container-transaction>
+    <container-transaction>
+      <method>
+        <ejb-name>PlayerEJB</ejb-name>
+        <method-intf>Local</method-intf>
+        <method-name>getSports</method-name>
+        <method-params />
+      </method>
+      <trans-attribute>Required</trans-attribute>
+    </container-transaction>
+    <container-transaction>
+      <method>
+        <ejb-name>PlayerEJB</ejb-name>
+        <method-intf>Local</method-intf>
+        <method-name>getSalary</method-name>
+        <method-params />
+      </method>
+      <trans-attribute>Required</trans-attribute>
+    </container-transaction>
+    <container-transaction>
+      <method>
+        <ejb-name>PlayerEJB</ejb-name>
+        <method-intf>Local</method-intf>
+        <method-name>getLeagues</method-name>
+        <method-params />
+      </method>
+      <trans-attribute>Required</trans-attribute>
+    </container-transaction>
+    <container-transaction>
+      <method>
+        <ejb-name>PlayerEJB</ejb-name>
+        <method-intf>LocalHome</method-intf>
+        <method-name>findBySalaryRange</method-name>
+        <method-params>
+          <method-param>double</method-param>
+          <method-param>double</method-param>
+        </method-params>
+      </method>
+      <trans-attribute>Required</trans-attribute>
+    </container-transaction>
+    <container-transaction>
+      <method>
+        <ejb-name>PlayerEJB</ejb-name>
+        <method-intf>Local</method-intf>
+        <method-name>getPosition</method-name>
+        <method-params />
+      </method>
+      <trans-attribute>Required</trans-attribute>
+    </container-transaction>
+    <container-transaction>
+      <method>
+        <ejb-name>PlayerEJB</ejb-name>
+        <method-intf>LocalHome</method-intf>
+        <method-name>findByCity</method-name>
+        <method-params>
+          <method-param>java.lang.String</method-param>
+        </method-params>
+      </method>
+      <trans-attribute>Required</trans-attribute>
+    </container-transaction>
+    <container-transaction>
+      <method>
+        <ejb-name>PlayerEJB</ejb-name>
+        <method-intf>LocalHome</method-intf>
+        <method-name>findByHigherSalary</method-name>
+        <method-params>
+          <method-param>java.lang.String</method-param>
+        </method-params>
+      </method>
+      <trans-attribute>Required</trans-attribute>
+    </container-transaction>
+    <container-transaction>
+      <method>
+        <ejb-name>PlayerEJB</ejb-name>
+        <method-intf>Local</method-intf>
+        <method-name>remove</method-name>
+        <method-params />
+      </method>
+      <trans-attribute>Required</trans-attribute>
+    </container-transaction>
+    <container-transaction>
+      <method>
+        <ejb-name>PlayerEJB</ejb-name>
+        <method-intf>LocalHome</method-intf>
+        <method-name>findByTest</method-name>
+        <method-params>
+          <method-param>java.lang.String</method-param>
+          <method-param>java.lang.String</method-param>
+          <method-param>java.lang.String</method-param>
+        </method-params>
+      </method>
+      <trans-attribute>Required</trans-attribute>
+    </container-transaction>
+    <container-transaction>
+      <method>
+        <ejb-name>PlayerEJB</ejb-name>
+        <method-intf>LocalHome</method-intf>
+        <method-name>findByLeague</method-name>
+        <method-params>
+          <method-param>team.LocalLeague</method-param>
+        </method-params>
+      </method>
+      <trans-attribute>Required</trans-attribute>
+    </container-transaction>
+  </assembly-descriptor>
+</ejb-jar>

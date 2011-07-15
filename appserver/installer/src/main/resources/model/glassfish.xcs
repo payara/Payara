@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) 2008-2010 Oracle and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+    or packager/legal/LICENSE.txt.  See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at packager/legal/LICENSE.txt.
+
+    GPL Classpath Exception:
+    Oracle designates this particular file as subject to the "Classpath"
+    exception as provided by Oracle in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+
+-->
+
+<oor:component-schema oor:version="1.1" oor:name="glassfish" oor:package="com.sun.PH"
+ xsi:schemaLocation="http://openoffice.org/2001/registry"
+ xmlns:xs="http://www.w3.org/2001/XMLSchema"
+ xmlns:oor="http://openoffice.org/2001/registry"
+ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+ xmlns:if="http://openinstaller.org/config/V1"
+ xml:lang='en-US'>
+ <component>
+    <group oor:name="Administration">
+
+   <prop oor:name="ANONYMOUS" oor:type="xs:string" oor:transient="true">
+            <value>
+            ANONYMOUS
+            </value>
+            <info>
+                <desc xml:lang="en-US">Anonymous</desc>
+            </info>
+        </prop>
+        
+        <prop oor:name="NON_ANONYMOUS" oor:type="xs:string" oor:transient="true">
+            <value>
+            NON_ANONYMOUS
+            </value>
+            <info>
+                <desc xml:lang="en-US">Non Anonymous</desc>
+            </info>
+        
+        </prop>
+
+       <prop oor:name="ADMIN_PORT" oor:type="xs:string">
+           <value>4848</value>
+           <info>
+             <desc xml:lang="en-US">Admin Port</desc>
+           </info>
+	<actions>
+	<onSet><![CDATA[
+		import org.openinstaller.provider.conf.ConfigHelper;
+		import org.openinstaller.bus.*;
+		import org.openinstaller.core.*;
+   		BusRequest modeReq = new BusRequest("ConfigRequest",
+		new EngineConfigCommand(EngineConfigCommand.COMMAND.GET_CONFIG, EngineConfigItem.DISPLAY_MODE));
+		BusResponse modeResp = bus.publishRequest(modeReq, "svc://general/EngineConfig");
+		String mode = (String)modeResp.getResult();
+		if ("SILENT".equals(mode)) 
+		   System.out.println("");
+		else
+		   validateAdminPort(thisProperty);
+	]]></onSet>
+	</actions>
+       </prop> 
+
+       <prop oor:name="HTTP_PORT" oor:type="xs:string">
+           <value>8080</value>
+           <info>
+             <desc xml:lang="en-US">HTTP Port</desc>
+           </info>
+	<actions>
+	<onSet><![CDATA[
+		import org.openinstaller.provider.conf.ConfigHelper;
+		import org.openinstaller.bus.*;
+		import org.openinstaller.core.*;
+   		BusRequest modeReq = new BusRequest("ConfigRequest",
+		new EngineConfigCommand(EngineConfigCommand.COMMAND.GET_CONFIG, EngineConfigItem.DISPLAY_MODE));
+		BusResponse modeResp = bus.publishRequest(modeReq, "svc://general/EngineConfig");
+		String mode = (String)modeResp.getResult();
+		if ("SILENT".equals(mode)) 
+		   System.out.println("");
+		else
+		   validateHttpPort(thisProperty);
+	]]></onSet>
+	</actions>
+        </prop>       
+       <prop oor:name="ADMIN_USER" oor:type="xs:string" oor:transient="true">
+          <value/>
+          <info>
+            <desc xml:lang="en-US">User Name</desc>
+          </info>
+        <actions>
+          <onSet><![CDATA[
+import java.lang.String;
+import java.util.List;
+import org.openinstaller.provider.conf.ConfigHelper;
+
+String regOption = (String)ConfigHelper.getValue(
+                "glassfish.Administration.LOGIN_MODE");
+
+if (regOption.equals("NON_ANONYMOUS"))  {
+       String enteredValue = (String)thisProperty.getUnconfirmedValue();
+        if ((enteredValue == null) || enteredValue.equals("")) {
+            ConfigHelper.setValue("glassfish.Administration.STATUS", "ERROR");
+            throw new EnhancedException("NULL_OR_EMPTY_VALUE", new String[]{});
+        }
+}         
+          ]]></onSet>
+        </actions>
+        </prop>
+        
+       <prop oor:name="ADMIN_PASSWORD" oor:type="xs:string" oor:transient="true">
+          <value/>
+          <info>
+            <desc xml:lang="en-US">User Password</desc>
+          </info>
+        <actions>
+          <onSet><![CDATA[
+import java.lang.String;
+import java.util.List;
+import org.openinstaller.provider.conf.ConfigHelper;
+
+String regOption = (String)ConfigHelper.getValue(
+                "glassfish.Administration.LOGIN_MODE");
+
+if (regOption.equals("NON_ANONYMOUS"))  {
+       String enteredValue = (String)thisProperty.getUnconfirmedValue();
+        if ((enteredValue == null) || enteredValue.equals("")) {
+            ConfigHelper.setValue("glassfish.Administration.STATUS", "ERROR");
+            throw new EnhancedException("NULL_OR_EMPTY_VALUE", new String[]{});
+        }
+}         
+          ]]></onSet>
+        </actions>
+        </prop>
+
+         <prop oor:name="A_INSTALL_HOME" oor:type="xs:string" oor:transient="true">
+           <value if:eval=":[InstallHome.directory:INSTALL_HOME]"></value>
+           <info>
+             <desc xml:lang="en-US">Reference to InstallHome selected from InstallHome page</desc>
+           </info>
+	<actions>
+	</actions>
+        </prop>
+       <prop oor:name="LOGIN_MODE" oor:type="xs:string" oor:transient="true">
+          <value/>
+          <info>
+            <desc xml:lang="en-US">User Password</desc>
+          </info>
+        </prop>
+            
+        <prop oor:name="DUMMY_PROP" oor:type="xs:string" oor:transient="true">
+          <value/>
+          <info>
+            <desc xml:lang="en-US">Dummy Field</desc>
+          </info>
+        <actions>
+          <onSet><![CDATA[
+import org.openinstaller.provider.conf.ConfigHelper;
+          
+String inputStatus = (String)ConfigHelper.getValue("glassfish.Administration.STATUS");
+if ((inputStatus != null) && (inputStatus.equals("ERROR")))  {
+    ConfigHelper.setValue("glassfish.Administration.STATUS", "");
+}       
+          ]]></onSet>
+        </actions>
+        </prop>
+
+
+        <prop oor:name="STATUS" oor:type="xs:string" oor:transient="true">
+          <value/>
+          <info>
+            <desc xml:lang="en-US">Status</desc>
+          </info>
+        </prop>
+     </group>
+ </component>
+ <if:desktop>
+    <if:shortcut name="Start Application Server" type="APPLICATION" runInTerminal="true">
+	    <if:target path="glassfish/lib/asadmin-start-domain" relative="INSTALL_HOME"/>
+         <if:location path="GlassFish v3 Prelude" relative="USER_START_MENU"/>
+	 <if:icon path="glassfish/icons/startAppserv.ico" relative="INSTALL_HOME"/>
+    </if:shortcut>
+    <if:shortcut name="Stop Application Server" type="APPLICATION" runInTerminal="true">
+	    <if:target path="glassfish/lib/asadmin-stop-domain" relative="INSTALL_HOME"/>
+         <if:location path="GlassFish v3 Prelude" relative="USER_START_MENU"/>
+	 <if:icon path="glassfish/icons/stopAppserv.ico" relative="INSTALL_HOME"/>
+   </if:shortcut> 
+   
+  </if:desktop>
+</oor:component-schema>

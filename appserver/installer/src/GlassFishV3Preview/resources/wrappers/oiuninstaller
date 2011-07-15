@@ -1,0 +1,247 @@
+#!/bin/sh
+#
+# DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+#
+# Copyright (c) 2006-2010 Oracle and/or its affiliates. All rights reserved.
+#
+# The contents of this file are subject to the terms of either the GNU
+# General Public License Version 2 only ("GPL") or the Common Development
+# and Distribution License("CDDL") (collectively, the "License").  You
+# may not use this file except in compliance with the License.  You can
+# obtain a copy of the License at
+# https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+# or packager/legal/LICENSE.txt.  See the License for the specific
+# language governing permissions and limitations under the License.
+#
+# When distributing the software, include this License Header Notice in each
+# file and include the License file at packager/legal/LICENSE.txt.
+#
+# GPL Classpath Exception:
+# Oracle designates this particular file as subject to the "Classpath"
+# exception as provided by Oracle in the GPL Version 2 section of the License
+# file that accompanied this code.
+#
+# Modifications:
+# If applicable, add the following below the License Header, with the fields
+# enclosed by brackets [] replaced by your own identifying information:
+# "Portions Copyright [year] [name of copyright owner]"
+#
+# Contributor(s):
+# If you wish your version of this file to be governed by only the CDDL or
+# only the GPL Version 2, indicate your decision by adding "[Contributor]
+# elects to include this software in this distribution under the [CDDL or GPL
+# Version 2] license."  If you don't indicate a single choice of license, a
+# recipient has the option to distribute your version of this file under
+# either the CDDL, the GPL Version 2 or to extend the choice of license to
+# its licensees as provided above.  However, if you add GPL Version 2 code
+# and therefore, elected the GPL Version 2 license, then the option applies
+# only if the new code is made subject to such option by the copyright
+# holder.
+#
+
+ORIG_ARGS=$@
+
+# binaries needed on both Solaris, Linux, etc.
+BASENAME=/bin/basename
+CAT=/bin/cat
+#CD=/bin/cd
+CHMOD=/bin/chmod
+CP=/bin/cp
+CUT=/bin/cut
+DIRNAME=/usr/bin/dirname
+CPIO=/bin/cpio
+FIND=/usr/bin/find
+ECHO=/bin/echo
+EGREP=/bin/egrep
+GETTEXT=/usr/bin/gettext
+ID=/usr/bin/id
+MKDIR=/bin/mkdir
+PRINTF=/usr/bin/printf
+# PWD is a reserved variable name in many unix shells, so use _PWD
+_PWD=/bin/pwd
+RM=/bin/rm
+SED=/bin/sed
+SU=/bin/su
+TOUCH=/bin/touch
+XAUTH=/openwin/bin/xauth,/usr/X11R6/bin/xauth
+
+NAME=`basename $0`
+MYDIR=`dirname $0`
+MYDIR=`cd ${MYDIR}; ${_PWD}`
+
+ENGINE_DIR="${MYDIR}/.."
+ENGINE_DIR=`cd ${ENGINE_DIR}; ${_PWD}`
+
+TEXTDOMAINDIR=${ENGINE_DIR}/lib/resources/templates
+
+if [ "`uname -s`" = Darwin ] ; then
+  # Mac OS is.. different.  Contains no gettext, and utils are in other places
+  GETTEXT=echo
+fi
+
+if [ "`uname -s`" = HP-UX ] ; then
+  GETTEXT=echo
+fi
+
+# global settings
+JAVAHOME=""				# java home path
+JAVA_OPTIONS=""			# java options
+ADDITIONALCLASSPATHS=""
+INSTALLPROPS=""         # install specific properties
+
+# user options
+DRYRUN=
+ANSWERFILE=
+ALTROOT=
+DEBUGLEVEL="INFO"
+MEDIALOC=
+INSTALLABLES=
+LOGDIR=
+
+#-------------------------------------------------------------------------------
+# usage only: define what parameters are available here
+# input(s):  exitCode
+#-------------------------------------------------------------------------------
+usage() {
+  ${CAT} <<EOF
+Usage: <GlassFish uninstallation program.> [-options]
+where options include:
+    -l <Complete path to Log Directory>
+        log information goes to this directory
+    -q Logging level set to WARNING
+    -v Logging level set to FINEST
+    -s run this application in silent mode
+    -j <javahome>
+        JRE installation directory to be used by this program.
+    -h
+    -help
+        print this help message
+EOF
+  exit $1
+}
+
+#-------------------------------------------------------------------------------
+# perform actual operation for the script: install/uninstall
+# input(s):  none
+# output(s): instCode
+#-------------------------------------------------------------------------------
+perform() {
+
+if [ -n "${DRYRUN}" ] ; then
+    ENGINE_OPS="${ENGINE_OPS} -n ${DRYRUN}"
+fi
+
+if [ -d "${CONFIG_STATE_DIR}" ] ; then
+  ENGINE_OPS="${ENGINE_OPS} -s ${CONFIG_STATE_DIR}"
+fi
+
+if [ -n "${MEDIALOC}" ]; then
+  INSTALLPROPS="${INSTALLPROPS} -m ${MEDIALOC}"
+fi
+
+if [ -n "${ANSWERFILE}" ] ; then
+    ENGINE_OPS="${ENGINE_OPS} -a ${ANSWERFILE}"
+fi
+
+if [ -n "${LOGLEVEL}" ] ; then
+    ENGINE_OPS="${ENGINE_OPS} -l ${LOGLEVEL}"
+fi
+
+
+if [ -n "${LOGDIR}" ] ; then
+    ENGINE_OPS="${ENGINE_OPS} -p Logs-Location=${LOGDIR}"
+fi
+
+if [ -n "${JAVA_HOME}" ] ; then
+    ENGINE_OPS="${ENGINE_OPS} -j ${JAVA_HOME}"
+fi
+
+if [ -n "${ADDITIONALCLASSPATHS}" ]; then
+    ENGINE_OPS="${ENGINE_OPS} -C ${ADDITIONALCLASSPATHS}"
+fi
+
+if [ -n "${INSTALLPROPS}" ] ; then
+    ENGINE_OPS="${ENGINE_OPS} ${INSTALLPROPS}"
+fi
+
+${ENGINE_DIR}/bin/engine-wrapper -J "${JAVA_OPTIONS}" ${ENGINE_OPS}
+
+instCode=$?
+
+}
+
+#-------------------------------------------------------------------------------
+# ****************************** MAIN THREAD ***********************************
+#-------------------------------------------------------------------------------
+
+# Linux has no built-in support for long-style getopts so we use the short style only
+LONGOPT="h(help)l:(logdir)q(quiet)v(verbose)t(text)m:(media-location)n:(dry-run)s:(configstate)a:(answerfile)j:(javahome)J:(jvmoptions)C:(classpaths)p:(properties)"
+SHORTOPT="hl:m:nqvts:a:j:J:C:p:"
+
+export TEXTDOMAINDIR
+
+if [ "`uname -s`" = SunOS ] ; then
+    case "`uname -r`" in
+      2.* | 5.7 | 5.8)
+        echo `${GETTEXT} "openInstaller is only supported on Solaris 9 or later"`
+        exit 1
+        ;;
+      5.9)
+        OPTSTRING=${SHORTOPT}
+        ;;
+      *)
+        OPTSTRING=${LONGOPT}
+        ;;
+     esac
+else
+  # Linux has no built-in support for long-style getopts so we use the short style only
+  OPTSTRING=${SHORTOPT}
+fi
+
+# check arguments
+while getopts "${OPTSTRING}" opt ; do
+    case "${opt}" in
+
+	a) ANSWERFILE=${OPTARG}
+	;;
+
+	l) LOGDIR=${OPTARG}
+
+	    if [ ! -d ${LOGDIR} -o ! -w ${LOGDIR} ] ; then
+		${PRINTF} "`${GETTEXT} '%s is not a directory or is not writable'`\n" "${LOGDIR}"
+                exit 1
+	    fi
+	;;
+    s) CONFIG_STATE_DIR=${OPTARG}
+    ;;
+	m) MEDIALOC=${OPTARG}
+	;;
+	q) LOGLEVEL=WARNING
+	;;
+	v) LOGLEVEL=FINEST
+	;;
+    N) DRYRUN=${OPTARG}
+    ;;
+	j) JAVA_HOME=${OPTARG}
+
+	    if [ ! -d ${JAVA_HOME} -o ! -r ${JAVA_HOME} ] ; then
+		${PRINTF} "`${GETTEXT} '%s must be the root directory of a valid JVM installation'`\n" "${JAVA_HOME}"
+                exit 1
+	    fi
+	;;
+
+	J) JAVA_OPTIONS=${OPTARG}
+	;;
+	C) ADDITIONALCLASSPATHS=${OPTARG}
+	;;
+	p) INSTALLPROPS="${INSTALLPROPS} -p ${OPTARG}"
+	;;
+	?|h) usage
+	;;
+    esac
+done
+
+echo `${GETTEXT} "Entering Setup..."`
+perform
+
+exit $instCode

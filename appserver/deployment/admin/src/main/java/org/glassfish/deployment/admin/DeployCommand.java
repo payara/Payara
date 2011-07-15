@@ -1,0 +1,868 @@
+/*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright (c) 2008-2011 Oracle and/or its affiliates. All rights reserved.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common Development
+ * and Distribution License("CDDL") (collectively, the "License").  You
+ * may not use this file except in compliance with the License.  You can
+ * obtain a copy of the License at
+ * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+ * or packager/legal/LICENSE.txt.  See the License for the specific
+ * language governing permissions and limitations under the License.
+ *
+ * When distributing the software, include this License Header Notice in each
+ * file and include the License file at packager/legal/LICENSE.txt.
+ *
+ * GPL Classpath Exception:
+ * Oracle designates this particular file as subject to the "Classpath"
+ * exception as provided by Oracle in the GPL Version 2 section of the License
+ * file that accompanied this code.
+ *
+ * Modifications:
+ * If applicable, add the following below the License Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
+ * "Portions Copyright [year] [name of copyright owner]"
+ *
+ * Contributor(s):
+ * If you wish your version of this file to be governed by only the CDDL or
+ * only the GPL Version 2, indicate your decision by adding "[Contributor]
+ * elects to include this software in this distribution under the [CDDL or GPL
+ * Version 2] license."  If you don't indicate a single choice of license, a
+ * recipient has the option to distribute your version of this file under
+ * either the CDDL, the GPL Version 2 or to extend the choice of license to
+ * its licensees as provided above.  However, if you add GPL Version 2 code
+ * and therefore, elected the GPL Version 2 license, then the option applies
+ * only if the new code is made subject to such option by the copyright
+ * holder.
+ */
+
+package org.glassfish.deployment.admin;
+
+import java.net.URISyntaxException;
+import com.sun.enterprise.config.serverbeans.*;
+import com.sun.enterprise.deploy.shared.ArchiveFactory;
+import com.sun.enterprise.deploy.shared.FileArchive;
+import com.sun.enterprise.util.LocalStringManagerImpl;
+import com.sun.enterprise.util.io.FileUtils;
+import org.glassfish.api.ActionReport;
+import org.glassfish.api.I18n;
+import org.glassfish.api.admin.AdminCommand;
+import org.glassfish.api.admin.AdminCommandContext;
+import org.glassfish.api.admin.CommandRunner;
+import org.glassfish.api.admin.ExecuteOn;
+import org.glassfish.api.admin.RuntimeType;
+import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.api.deployment.DeployCommandParameters;
+import org.glassfish.api.deployment.DeploymentContext;
+import org.glassfish.api.deployment.archive.ArchiveHandler;
+import org.glassfish.api.deployment.archive.ReadableArchive;
+import org.glassfish.deployment.common.*;
+import org.glassfish.internal.data.ApplicationInfo;
+import org.glassfish.internal.deployment.*;
+import org.glassfish.config.support.TargetType;
+import org.glassfish.config.support.CommandTarget;
+import org.jvnet.hk2.annotations.Contract;
+import org.jvnet.hk2.annotations.Inject;
+import org.jvnet.hk2.annotations.Scoped;
+import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.component.PerLookup;
+import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.config.Transaction;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import org.glassfish.api.ActionReport.ExitCode;
+import org.glassfish.api.admin.ParameterMap;
+import org.glassfish.api.admin.Payload;
+import org.glassfish.api.event.EventListener;
+import org.glassfish.api.event.Events;
+import org.glassfish.deployment.versioning.VersioningSyntaxException;
+import org.glassfish.deployment.versioning.VersioningUtils;
+
+import org.glassfish.deployment.versioning.VersioningService;
+import org.jvnet.hk2.tracing.TracingUtilities;
+
+
+/**
+ * Deploy command
+ *
+ * @author Jerome Dochez
+ */
+@Service(name="deploy")
+@I18n("deploy.command")
+@Scoped(PerLookup.class)
+@ExecuteOn(value={RuntimeType.DAS})
+@TargetType(value={CommandTarget.DOMAIN, CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER})
+public class DeployCommand extends DeployCommandParameters implements AdminCommand, EventListener {
+
+    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(DeployCommand.class);
+    final private static String COPY_IN_PLACE_ARCHIVE_PROP_NAME = "copy.inplace.archive";
+    
+    @Inject
+    Applications apps;
+
+    @Inject
+    ServerEnvironment env;
+
+    @Inject
+    Habitat habitat;
+
+    @Inject
+    CommandRunner commandRunner;
+
+    @Inject
+    Deployment deployment;
+
+    @Inject
+    SnifferManager snifferManager;
+
+    @Inject
+    ArchiveFactory archiveFactory;
+
+    @Inject
+    Domain domain;
+
+    @Inject
+    Events events;
+
+    @Inject
+    VersioningService versioningService;
+
+    private File safeCopyOfApp = null;
+    private File safeCopyOfDeploymentPlan = null;
+    private File originalPathValue;
+    private List<String> previousTargets = new ArrayList<String>();
+    private Properties previousVirtualServers = new Properties();
+    private Properties previousEnabledAttributes = new Properties();
+
+    public DeployCommand() {
+        origin = Origin.deploy;
+    }
+
+    /**
+     * Entry point from the framework into the command execution
+     * @param context context for the command.
+     */
+    @Override
+    public void execute(AdminCommandContext context) {
+
+      events.register(this);
+
+      final DeployCommandSupplementalInfo suppInfo =
+              new DeployCommandSupplementalInfo();
+      context.getActionReport().
+              setResultType(DeployCommandSupplementalInfo.class, suppInfo);
+
+      try {
+          DeploymentTracing timing = new DeploymentTracing();
+          DeploymentTracing tracing=null;
+          if (System.getProperty("org.glassfish.deployment.trace")!=null) {
+            tracing = new DeploymentTracing();
+          }
+
+        final ActionReport report = context.getActionReport();
+        final Logger logger = context.getLogger();
+
+        originalPathValue = path;
+        if (!path.exists()) {
+            report.setMessage(localStrings.getLocalString("fnf","File not found", path.getAbsolutePath()));
+            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            return;
+        }
+
+        if (snifferManager.hasNoSniffers()) {
+            String msg = localStrings.getLocalString("nocontainer", "No container services registered, done...");
+            report.failure(logger,msg);
+            return;
+        }
+
+        ReadableArchive archive;
+        try {
+            archive = archiveFactory.openArchive(path, this);
+            if (tracing!=null) {
+                tracing.addMark(DeploymentTracing.Mark.ARCHIVE_OPENED);
+            }
+        } catch (IOException e) {
+            final String msg = localStrings.getLocalString("deploy.errOpeningArtifact",
+                    "deploy.errOpeningArtifact", path.getAbsolutePath());
+            if (logReportedErrors) {
+                report.failure(logger, msg, e);
+            } else {
+                report.setMessage(msg + path.getAbsolutePath() + e.toString());
+                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            }
+            return;
+        }
+        File expansionDir=null;
+        ExtendedDeploymentContext deploymentContext = null;
+        try {
+
+            ArchiveHandler archiveHandler = deployment.getArchiveHandler(archive, type);
+            if (tracing!=null) {
+                tracing.addMark(DeploymentTracing.Mark.ARCHIVE_HANDLER_OBTAINED);
+            }
+            if (archiveHandler==null) {
+                report.failure(logger,localStrings.getLocalString("deploy.unknownarchivetype","Archive type of {0} was not recognized",path.getName()));
+                return;
+            }
+
+            // create an initial  context
+            ExtendedDeploymentContext initialContext = new DeploymentContextImpl(report, logger, archive, this, env);
+            if (tracing!=null) {
+                initialContext.addModuleMetaData(tracing);
+                tracing.addMark(DeploymentTracing.Mark.INITIAL_CONTEXT_CREATED);
+            }
+            if (name==null) {
+                name = archiveHandler.getDefaultApplicationName(archive, initialContext);
+            } else {
+                DeploymentUtils.validateApplicationName(name);
+            }
+            if (tracing!=null) {
+                tracing.addMark(DeploymentTracing.Mark.APPNAME_DETERMINED);
+            }
+
+            boolean isUntagged = VersioningUtils.isUntagged(name);
+            // no GlassFish versioning support for OSGi budles
+            if ( name != null && !isUntagged && type != null && type.equals("osgi") ) {
+                ActionReport.MessagePart msgPart = context.getActionReport().getTopMessagePart();
+                msgPart.setChildrenType("WARNING");
+                ActionReport.MessagePart childPart = msgPart.addChild();
+                childPart.setMessage(VersioningUtils.LOCALSTRINGS.getLocalString(
+                        "versioning.deployment.osgi.warning",
+                        "OSGi bundles will not use the GlassFish versioning, any version information embedded as part of the name option will be ignored"));
+                name = VersioningUtils.getUntaggedName(name);
+            }
+
+            // if no version information embedded as part of application name
+            // we try to retrieve the version-identifier element's value from DD
+            if ( isUntagged ){
+                String versionIdentifier = archiveHandler.getVersionIdentifier(archive);
+
+                if ( versionIdentifier != null && !versionIdentifier.isEmpty() ) {
+                  StringBuilder sb = new StringBuilder(name).
+                          append(VersioningUtils.EXPRESSION_SEPARATOR).
+                          append(versionIdentifier);
+                  name = sb.toString();
+                }
+            }
+            // needs to be fixed in hk2, we don't generate the right innerclass index. it should use $
+            Collection<Interceptor> interceptors = habitat.getAllByContract("org.glassfish.deployment.admin.DeployCommand.Interceptor");
+            if (interceptors!=null) {
+                for (Interceptor interceptor : interceptors) {
+                    interceptor.intercept(this, initialContext);
+                }
+            }
+            
+            boolean isRegistered = deployment.isRegistered(name);
+            isredeploy = isRegistered && force;
+            deployment.validateDeploymentTarget(target, name, isredeploy);
+            if (tracing!=null) {
+                tracing.addMark(DeploymentTracing.Mark.TARGET_VALIDATED);
+            }
+
+            ActionReport.MessagePart part = report.getTopMessagePart();
+            part.addProperty(DeploymentProperties.NAME, name);
+
+            ApplicationConfigInfo savedAppConfig = 
+                    new ApplicationConfigInfo(apps.getModule(Application.class, name));
+            Properties undeployProps = handleRedeploy(name, report);
+            if (enabled == null) {
+                enabled = Boolean.TRUE;
+            }
+
+            // clean up any left over repository files
+            if ( ! keepreposdir.booleanValue()) {
+                final File reposDir = new File(env.getApplicationRepositoryPath(), VersioningUtils.getRepositoryName(name));
+                if (reposDir.exists()) {
+                    /*
+                     * Delete the repository directory as an archive to allow
+                     * any special processing (such as stale file handling)
+                     * to run.
+                     */
+                    final FileArchive arch = DeploymentUtils.openAsFileArchive(reposDir, archiveFactory);
+                    arch.delete();
+                }
+            }
+
+            if (!DeploymentUtils.isDomainTarget(target) && enabled) {
+                // try to disable the enabled version, if exist
+                try {
+                    versioningService.handleDisable(name,target, report);
+                } catch (VersioningSyntaxException e) {
+                    report.failure(logger, e.getMessage());
+                    return;
+                }
+            } 
+
+            File source = new File(archive.getURI().getSchemeSpecificPart());
+            boolean isDirectoryDeployed = true;
+            if (!source.isDirectory()) {
+                isDirectoryDeployed = false;
+                expansionDir = new File(domain.getApplicationRoot(), name);
+                path = expansionDir;
+            } else {
+                // test if a version is already directory deployed from this dir
+                String versionFromSameDir =
+                        versioningService.getVersionFromSameDir(source);
+                if (!force && versionFromSameDir != null) {
+                    report.failure(logger,
+                            VersioningUtils.LOCALSTRINGS.getLocalString(
+                                "versioning.deployment.dual.inplace",
+                                "GlassFish do not support versioning for directory deployment when using the same directory. The directory {0} is already assigned to the version {1}.",
+                                source.getPath(),
+                                versionFromSameDir));
+                    return;
+                }
+            }
+
+            // create the parent class loader
+            deploymentContext =
+                    deployment.getBuilder(logger, this, report).
+                            source(archive).archiveHandler(archiveHandler).build(initialContext);
+            if (tracing!=null) {
+                tracing.addMark(DeploymentTracing.Mark.CONTEXT_CREATED);
+                deploymentContext.addModuleMetaData(tracing);
+            }
+
+            // reset the properties (might be null) set by the deployers when undeploying.
+            if (undeployProps!=null) {
+                deploymentContext.getAppProps().putAll(undeployProps);
+            }
+
+            if (properties != null || property != null) {
+                // if one of them is not null, let's merge them 
+                // to properties so we don't need to always 
+                // check for both
+                if (properties == null) {
+                    properties = new Properties();
+                }
+                if (property != null) {
+                    properties.putAll(property);
+                }
+            }
+
+            if (properties != null) {
+                deploymentContext.getAppProps().putAll(properties);
+                validateDeploymentProperties(properties, deploymentContext);
+            }
+
+            // clean up any generated files
+            deploymentContext.clean();
+
+            Properties appProps = deploymentContext.getAppProps();
+            /*
+             * If the app's location is within the domain's directory then
+             * express it in the config as ${com.sun.aas.instanceRootURI}/rest-of-path
+             * so users can relocate the entire installation without having
+             * to modify the app locations.  Leave the location alone if
+             * it does not fall within the domain directory.
+             */
+            String appLocation = DeploymentUtils.relativizeWithinDomainIfPossible( deploymentContext.getSource().getURI());
+            
+            appProps.setProperty(ServerTags.LOCATION, appLocation);
+            // set to default "user", deployers can override it
+            // during processing
+            appProps.setProperty(ServerTags.OBJECT_TYPE, "user");
+            if (contextroot!=null) {
+                appProps.setProperty(ServerTags.CONTEXT_ROOT, contextroot);
+            }
+            appProps.setProperty(ServerTags.DIRECTORY_DEPLOYED, String.valueOf(isDirectoryDeployed));
+
+            savedAppConfig.store(appProps);
+
+            deploymentContext.addTransientAppMetaData(DeploymentProperties.PREVIOUS_TARGETS, previousTargets);
+            deploymentContext.addTransientAppMetaData(DeploymentProperties.PREVIOUS_VIRTUAL_SERVERS, previousVirtualServers);
+            deploymentContext.addTransientAppMetaData(DeploymentProperties.PREVIOUS_ENABLED_ATTRIBUTES, previousEnabledAttributes);
+
+            Transaction t = deployment.prepareAppConfigChanges(deploymentContext);
+            if (tracing!=null) {
+                tracing.addMark(DeploymentTracing.Mark.DEPLOY);
+            }
+            ApplicationInfo appInfo;
+            if (type==null) {
+                appInfo = deployment.deploy(deploymentContext);
+            } else {
+                appInfo = deployment.deploy(deployment.prepareSniffersForOSGiDeployment(type, deploymentContext), deploymentContext);
+            }
+
+            /*
+             * Various deployers might have added to the downloadable or
+             * generated artifacts.  Extract them and, if the command succeeded,
+             * persist both into the app properties (which will be recorded
+             * in domain.xml).
+             */
+            final Artifacts downloadableArtifacts =
+                    DeploymentUtils.downloadableArtifacts(deploymentContext);
+            final Artifacts generatedArtifacts =
+                    DeploymentUtils.generatedArtifacts(deploymentContext);
+            
+            if (report.getActionExitCode()==ActionReport.ExitCode.SUCCESS) {
+                try {
+                    moveAppFilesToPermanentLocation(
+                            deploymentContext, logger);
+                    recordFileLocations(appProps);
+
+                    downloadableArtifacts.record(appProps);
+                    generatedArtifacts.record(appProps);
+
+                    // register application information in domain.xml
+                    deployment.registerAppInDomainXML(appInfo, deploymentContext, t);
+                    suppInfo.setDeploymentContext(deploymentContext);
+                    //Fix for issue 14442
+                    //We want to report the worst subreport value.
+                    ActionReport.ExitCode worstExitCode = ExitCode.SUCCESS;
+                    for (ActionReport subReport : report.getSubActionsReport()) {
+                        ActionReport.ExitCode actionExitCode = subReport.getActionExitCode();
+
+                        if ( actionExitCode.isWorse(worstExitCode) ){
+                           worstExitCode = actionExitCode;
+                       }
+                    }
+                    report.setActionExitCode(worstExitCode);
+                    report.setResultType(String.class, name);
+
+                } catch (Exception e) {
+                    // roll back the deployment and re-throw the exception
+                    deployment.undeploy(name, deploymentContext);
+                    deploymentContext.clean();
+                    throw e;
+                }
+
+            }
+            if (tracing!=null) {
+                tracing.addMark(DeploymentTracing.Mark.REGISTRATION);
+            }
+            if(retrieve != null) {
+                retrieveArtifacts(context, downloadableArtifacts.getArtifacts(),
+                        retrieve, 
+                        false);
+            }
+        } catch(Throwable e) {
+            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            report.setMessage(e.getMessage());
+            report.setFailureCause(e);
+        } finally {
+            try {
+                archive.close();
+            } catch(IOException e) {
+                logger.log(Level.FINE, localStrings.getLocalString(
+                        "errClosingArtifact", 
+                        "Error while closing deployable artifact : ",
+                        path.getAbsolutePath()), e);
+            }
+            if (tracing!=null) {
+                tracing.print(System.out);
+                TracingUtilities.dump("org.glassfish.javaee.core.deployment.DolProvider", System.out);
+            }
+            if (report.getActionExitCode().equals(ActionReport.ExitCode.SUCCESS)) {
+                // Set the app name in the result so that embedded deployer can retrieve it.
+                report.setResultType(String.class, name);
+                report.setMessage(localStrings.getLocalString("deploy.command.success","Application deployed with name {0}", name));
+
+                logger.info(localStrings.getLocalString(
+                        "deploy.done", 
+                        "Deployment of {0} done is {1} ms",
+                        name,
+                        timing.elapsed()));
+            } else if (report.getActionExitCode().equals(ActionReport.ExitCode.FAILURE)) {
+                String errorMessage = report.getMessage();
+                Throwable cause = report.getFailureCause();
+                if (cause != null) {
+                    String causeMessage = cause.getMessage();
+                    if (causeMessage != null && 
+                        !causeMessage.equals(errorMessage)) {
+                        errorMessage = errorMessage + " : " + cause.getMessage();
+                    }
+                    logger.log(Level.SEVERE, errorMessage, cause.getCause());
+                }
+                report.setMessage(localStrings.getLocalString("deploy.errDuringDepl", "Error occur during deployment: {0}.", errorMessage));
+                // reset the failure cause so command framework will not try 
+                // to print the same message again
+                report.setFailureCause(null);
+                if (expansionDir!=null) {
+                    final FileArchive arch;
+                        try {
+                            /*
+                             * Open and then delete the expansion directory as
+                             * a file archive so stale file handling can run.
+                             */
+                            arch = DeploymentUtils.openAsFileArchive(expansionDir, archiveFactory);
+                            arch.delete();
+                        } catch (IOException ex) {
+                            final String msg = localStrings.getLocalString(
+                                    "deploy.errDelRepos",
+                                    "Error deleting repository directory {0}",
+                                    expansionDir.getAbsolutePath());
+                            report.failure(logger, msg, ex);
+                        }
+
+                }
+            }
+            if (deploymentContext != null) {
+                deploymentContext.postDeployClean(true);
+            }
+        }
+      } finally {
+          events.unregister(this);
+      }
+    }
+
+    /**
+     * Makes safe copies of the archive and deployment plan for later use
+     * during instance sync activity.
+     * <p>
+     * We rename any uploaded files from the temp directory to the permanent
+     * place, and we copy any archive files that were not uploaded.  This
+     * prevents any confusion that could result if the developer modified the
+     * archive file - changing its lastModified value - before redeploying it.
+     *
+     * @param deploymentContext
+     * @param logger logger
+     * @throws IOException
+     */
+    private void moveAppFilesToPermanentLocation(
+            final ExtendedDeploymentContext deploymentContext,
+            final Logger logger) throws IOException {
+        final File finalUploadDir = deploymentContext.getAppInternalDir();
+        if ( ! finalUploadDir.mkdirs()) {
+            logger.log(Level.FINE," Attempting to create upload directory {0} was reported as failed; attempting to continue",
+                    new Object[] {finalUploadDir.getAbsolutePath()});
+        }
+        safeCopyOfApp = renameUploadedFileOrCopyInPlaceFile(
+                finalUploadDir, originalPathValue, logger);
+        safeCopyOfDeploymentPlan = renameUploadedFileOrCopyInPlaceFile(
+                finalUploadDir, deploymentplan, logger);
+    }
+
+    private File renameUploadedFileOrCopyInPlaceFile(
+            final File finalUploadDir,
+            final File fileParam,
+            final Logger logger) throws IOException {
+        if (fileParam == null) {
+            return null;
+        }
+        /*
+         * If the fileParam resides within the applications directory then
+         * it has been uploaded.  In that case, rename it.
+         */
+        final File appsDir = env.getApplicationRepositoryPath();
+
+        /*
+         * The default answer is the in-place file, to handle the
+         * directory-deployment case or the in-place archive case if we ae
+         * not copying the in-place archive.
+         */
+        File result = fileParam;
+        
+        if ( ! fileParam.isDirectory() && ! appsDir.toURI().relativize(fileParam.toURI()).isAbsolute()) {
+            /*
+             * The file lies within the apps directory, so it was 
+             * uploaded.
+             */
+            result = new File(finalUploadDir, fileParam.getName());
+            FileUtils.renameFile(fileParam, result);
+            if ( ! result.setLastModified(fileParam.lastModified())) { 
+                    logger.log(Level.FINE, "In renaming {0} to {1} could not setLastModified; continuing",
+                            new Object[] {fileParam.getAbsolutePath(),
+                                result.getAbsolutePath()
+                            });
+            }
+        } else {
+            final boolean copyInPlaceArchive = Boolean.valueOf(
+                    System.getProperty(COPY_IN_PLACE_ARCHIVE_PROP_NAME, "true"));
+            if ( ! fileParam.isDirectory() && copyInPlaceArchive) {
+                /*
+                 * The file was not uploaded and the in-place file is not a directory,
+                 * so copy the archive to the permanent location.
+                 */
+                final long startTime = System.currentTimeMillis();
+                result = new File(finalUploadDir, fileParam.getName());
+                FileUtils.copy(fileParam, result);
+                if ( ! result.setLastModified(fileParam.lastModified())) {
+                    logger.log(Level.FINE, "Could not set lastModified for {0}; continuing",
+                            result.getAbsolutePath());
+                }
+                if (logger.isLoggable(Level.FINE)) {
+                    logger.log(Level.FINE, "*** In-place archive copy of {0} took {1} ms",
+                            new Object[]{
+                                fileParam.getAbsolutePath(),
+                                System.currentTimeMillis() - startTime});
+                }
+            }
+        }
+        return result;
+    }
+
+    private void recordFileLocations(
+            final Properties appProps) throws URISyntaxException {
+        /*
+         * Setting the properties in the appProps now will cause them to be
+         * stored in the domain.xml elements along with other properties when
+         * the entire config is saved.
+         */
+        if (safeCopyOfApp != null) {
+            appProps.setProperty(Application.APP_LOCATION_PROP_NAME,
+                    DeploymentUtils.relativizeWithinDomainIfPossible(
+                    safeCopyOfApp.toURI()));
+        }
+        if (safeCopyOfDeploymentPlan != null) {
+                appProps.setProperty(Application.DEPLOYMENT_PLAN_LOCATION_PROP_NAME,
+                        DeploymentUtils.relativizeWithinDomainIfPossible(
+                        safeCopyOfDeploymentPlan.toURI()));
+        }
+    }
+
+    /**
+     *  Check if the application is deployed or not.
+     *  If force option is true and appInfo is not null, then undeploy
+     *  the application and return false.  This will force deployment
+     *  if there's already a running application deployed.
+     *
+     *  @param name application name
+     *  @param report ActionReport, report object to send back to client.
+     * @return context properties that might have been set by the deployers
+     * while undeploying the application
+     *
+     */
+    private Properties handleRedeploy(final String name, final ActionReport report)
+        throws Exception {
+        if (isredeploy) 
+        {
+            //preserve settings first before undeploy
+            Application app = apps.getModule(Application.class, name);
+
+            // we save some of the old registration information in our deployment parameters
+            settingsFromDomainXML(app);
+
+            //if application is already deployed and force=true,
+            //then undeploy the application first.
+
+            // Use ParameterMap till we have a better way
+            // to invoke a command on both DAS and instance with the
+            // replication framework
+            final ParameterMap parameters = new ParameterMap();
+            parameters.add("DEFAULT", name);
+            parameters.add(DeploymentProperties.TARGET, target);
+            parameters.add(DeploymentProperties.KEEP_REPOSITORY_DIRECTORY, keepreposdir.toString());
+            parameters.add(DeploymentProperties.IS_REDEPLOY, isredeploy.toString());
+            if (dropandcreatetables != null) {
+                parameters.add(DeploymentProperties.DROP_TABLES, dropandcreatetables.toString());
+            }
+            parameters.add(DeploymentProperties.IGNORE_CASCADE, force.toString());
+            if (keepstate != null) {
+                parameters.add(DeploymentProperties.KEEP_STATE, keepstate.toString());
+            }
+
+            ActionReport subReport = report.addSubActionsReport();
+            subReport.setExtraProperties(new Properties());
+
+            List<String> propertyNames = new ArrayList<String>();
+            propertyNames.add(DeploymentProperties.KEEP_SESSIONS);
+            propertyNames.add(DeploymentProperties.PRESERVE_APP_SCOPED_RESOURCES);
+            populatePropertiesToParameterMap(parameters, propertyNames);
+
+            CommandRunner.CommandInvocation inv = commandRunner.getCommandInvocation("undeploy", subReport);
+
+            inv.parameters(parameters).execute();
+            return subReport.getExtraProperties();
+        }
+        return null;
+    }
+
+    private void populatePropertiesToParameterMap(ParameterMap parameters, List<String> propertyNamesList) {
+
+        Properties props = new Properties();
+        if (properties != null) {
+            for (String propertyName : propertyNamesList) {
+                if (properties.containsKey(propertyName)) {
+                    props.put(propertyName, properties.getProperty(propertyName));
+                }
+            }
+        }
+        parameters.add("properties", DeploymentUtils.propertiesValue(props, ':'));
+    }
+
+    /**
+     * Places into the outgoing payload the downloadable artifacts for an application.
+     * @param context the admin command context for the command requesting the artifacts download
+     * @param app the application of interest
+     * @param targetLocalDir the client-specified local directory to receive the downloaded files
+     */
+    public static void retrieveArtifacts(final AdminCommandContext context,
+            final Application app,
+            final String targetLocalDir) {
+        retrieveArtifacts(context, app, targetLocalDir, true);
+    }
+
+    /**
+     * Places into the outgoing payload the downloadable artifacts for an application.
+     * @param context the admin command context for the command currently running
+     * @param app the application of interest
+     * @param targetLocalDir the client-specified local directory to receive the downloaded files
+     * @param reportErrorsInTopReport whether to include error indications in the report's top-level
+     */
+    public static void retrieveArtifacts(final AdminCommandContext context,
+            final Application app,
+            final String targetLocalDir,
+            final boolean reportErrorsInTopReport) {
+        retrieveArtifacts(context,
+                DeploymentUtils.downloadableArtifacts(app).getArtifacts(),
+                targetLocalDir,
+                reportErrorsInTopReport);
+    }
+
+    private static void retrieveArtifacts(final AdminCommandContext context,
+            final Collection<Artifacts.FullAndPartURIs> artifactInfo,
+            final String targetLocalDir,
+            final boolean reportErrorsInTopReport) {
+
+        Logger logger = context.getLogger();
+        try {
+            Payload.Outbound outboundPayload = context.getOutboundPayload();
+            Properties props = new Properties();
+            /*
+             * file-xfer-root is used as a URI, so convert backslashes.
+             */
+            props.setProperty("file-xfer-root", targetLocalDir.replace('\\', '/'));
+            for (Artifacts.FullAndPartURIs uriPair : artifactInfo) {
+                if(logger.isLoggable(Level.FINE)) {
+                    logger.log(Level.FINE, "About to download artifact {0}", uriPair.getFull());
+                }
+                outboundPayload.attachFile("application/octet-stream",
+                        uriPair.getPart(),"files",props,
+                        new File(uriPair.getFull().getSchemeSpecificPart()));
+            }
+        } catch (Exception e) {
+            final String errorMsg = localStrings.getLocalString(
+                    "download.errDownloading", "Error while downloading generated files");
+            logger.log(Level.SEVERE, errorMsg, e);
+            ActionReport report = context.getActionReport();
+            if ( ! reportErrorsInTopReport) {
+                report = report.addSubActionsReport();
+                report.setActionExitCode(ExitCode.WARNING);
+            } else {
+                report.setActionExitCode(ExitCode.FAILURE);
+            }
+            report.setMessage(errorMsg);
+            report.setFailureCause(e);
+        }
+    }
+
+    
+    /**
+     *  Get settings from domain.xml and preserve the values.
+     *  This is a private api and its invoked when --force=true and if the app is registered.
+     *
+     *  @param app is the registration information about the previously deployed application
+     *
+     */
+    private void settingsFromDomainXML(Application app) {
+            //if name is null then cannot get the application's setting from domain.xml
+        if (name != null) {
+            if (contextroot == null) {            
+                if (app.getContextRoot() != null) {
+                    this.previousContextRoot = app.getContextRoot();
+                }
+            }
+            if (libraries == null) {
+                libraries = app.getLibraries();
+            }
+
+            previousTargets = domain.getAllReferencedTargetsForApplication(name);
+            if (virtualservers == null) {
+                if (DeploymentUtils.isDomainTarget(target)) {
+                    for (String tgt : previousTargets) {
+                        String vs = domain.getVirtualServersForApplication(tgt, name);
+                        if (vs != null) {
+                            previousVirtualServers.put(tgt, vs);
+                        }
+                    }
+                } else {
+                    virtualservers = domain.getVirtualServersForApplication(
+                        target, name);
+                }
+            }
+
+            if (enabled == null) {
+                if (DeploymentUtils.isDomainTarget(target)) {
+                    // save the enable attributes of the application-ref
+                    for (String tgt : previousTargets) {
+                        previousEnabledAttributes.put(tgt, domain.getEnabledForApplication(tgt, name));
+                    }
+                    // save the enable attribute of the application
+                    previousEnabledAttributes.put(DeploymentUtils.DOMAIN_TARGET_NAME, app.getEnabled());
+                    // set the enable command param for DAS
+                    enabled = deployment.isAppEnabled(app);
+                } else {
+                    enabled = Boolean.valueOf(domain.getEnabledForApplication(
+                        target, name));
+                }
+            }
+
+            String compatProp = app.getDeployProperties().getProperty(
+                DeploymentProperties.COMPATIBILITY);
+            if (compatProp != null) {
+                if (properties == null) {
+                    properties = new Properties();
+                }
+                // if user does not specify the compatibility flag 
+                // explictly in this deployment, set it to the old value
+                if (properties.getProperty(DeploymentProperties.COMPATIBILITY) == null) {
+                    properties.setProperty(DeploymentProperties.COMPATIBILITY, compatProp);
+                }
+            }
+            
+        }
+    }
+
+    @Override
+    public void event(Event event) {
+        if (event.is(Deployment.DEPLOYMENT_BEFORE_CLASSLOADER_CREATION)) {
+            // this is where we have processed metadata and 
+            // haven't created the application classloader yet
+            DeploymentContext context = (DeploymentContext)event.hook();
+            if (verify) {
+                Verifier verifier = habitat.getByContract(Verifier.class);
+                if (verifier != null) {
+                    verifier.verify(context);
+                } else  {
+                    context.getLogger().warning("Verifier is not installed yet. Install verifier module.");
+                }
+            }
+        }
+    }
+
+    private void validateDeploymentProperties(Properties properties, 
+        DeploymentContext context) {
+        String compatProp = properties.getProperty(
+            DeploymentProperties.COMPATIBILITY);
+        if (compatProp != null && !compatProp.equals("v2")) {
+            // this only allowed value for property compatibility is v2
+            String warningMsg = localStrings.getLocalString("compat.value.not.supported", "{0} is not a supported value for compatibility property.", compatProp);
+            ActionReport subReport = context.getActionReport().addSubActionsReport();
+            subReport.setActionExitCode(ActionReport.ExitCode.WARNING);
+            subReport.setMessage(warningMsg);
+            context.getLogger().log(Level.WARNING, warningMsg);
+        }
+    }
+
+    /**
+     * Crude interception mechanisms for deploy comamnd execution
+     */
+    @Contract
+    public interface Interceptor {
+        /**
+         * Called by the deployment command to intercept a deployment activity.
+         *
+         * @param self the deployment command in flight.
+         * @param context of the deployment
+         */
+        void intercept(DeployCommand self, DeploymentContext context);
+    }
+}

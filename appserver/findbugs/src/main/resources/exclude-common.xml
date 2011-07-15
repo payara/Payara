@@ -1,0 +1,108 @@
+<!--
+
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+    or packager/legal/LICENSE.txt.  See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at packager/legal/LICENSE.txt.
+
+    GPL Classpath Exception:
+    Oracle designates this particular file as subject to the "Classpath"
+    exception as provided by Oracle in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+
+-->
+
+<FindBugsFilter>
+    <!--
+        Sure, these inner classes might be more efficient if they
+        were static, but the code would be harder to read too.
+    -->
+    <Match>
+	<Bug pattern="SIC_INNER_SHOULD_BE_STATIC_ANON"/>
+    </Match>
+
+    <!--
+        We ignore Exception all over the place.  Mostly it's on purpose.
+    -->
+    <Match>
+	<Bug pattern="DE_MIGHT_IGNORE"/>
+    </Match>
+
+    <!--
+        And sometimes we catch Exception even though it's not throw,
+        just to be sure to catch any problems that might occur.
+    -->
+    <Match>
+	<Bug pattern="REC_CATCH_EXCEPTION"/>
+    </Match>
+
+    <!--
+        Arrays are passed in and out of internal APIs all over the place.
+        Mostly this is just fine.  Finding the few places where this might
+        be a real issue is a problem for another day.
+    -->
+    <Match>
+        <Or>
+            <Bug pattern="EI_EXPOSE_REP"/>
+            <Bug pattern="EI_EXPOSE_REP2"/>
+        </Or>
+    </Match>
+
+    <!--
+        Yes, zero length arrays are preferred, but this isn't worth fixing.
+    -->
+    <Match>
+	<Bug pattern="PZLA_PREFER_ZERO_LENGTH_ARRAYS"/>
+    </Match>
+
+    <!--
+        Lots of classes extend serializable classes but we never depend
+        on their serialized state, so we don't worry about this.
+    -->
+    <Match>
+	<Bug pattern="SE_NO_SERIALVERSIONID"/>
+    </Match>
+
+    <!--
+        Exclude all low priority bugs in the EJB CMP code,
+	which we really don't want to touch.
+    -->
+    <Match>
+	<Or>
+	    <Priority value="2"/>
+	    <Priority value="3"/>
+	</Or>
+	<Or>
+	    <Class name="~com\.sun\.jdo\.spi\.persistence\..*"/>
+	    <Class name="~com\.sun\.jdo\.api\.persistence\..*"/>
+	</Or>
+    </Match>
+</FindBugsFilter>

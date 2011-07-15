@@ -1,0 +1,195 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<HTML>
+<HEAD>
+<!--
+
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) 2009-2010 Oracle and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+    or packager/legal/LICENSE.txt.  See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at packager/legal/LICENSE.txt.
+
+    GPL Classpath Exception:
+    Oracle designates this particular file as subject to the "Classpath"
+    exception as provided by Oracle in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+
+-->
+
+</HEAD>
+<BODY BGCOLOR="white">
+
+<p>Contains annotations and interfaces for defining interceptor methods, interceptor
+classes and for binding interceptor classes to target classes.</p>
+
+<h3>Interceptor methods</h3>
+
+<p>An interceptor method may be defined on a target class itself or on an interceptor 
+class associated with the target class.</p>
+
+<p>There are three kinds of interceptor method:</p>
+
+<ul>
+  <li>{@linkplain javax.interceptor.AroundInvoke method interceptor methods} for 
+  methods of a target class (e.g. managed bean / EJB component)</li>
+  <li>{@linkplain javax.interceptor.AroundTimeout timeout method interceptor methods} 
+  for timeout methods of a target class (e.g. EJB component)</li>
+  <li>lifecycle callback interceptor methods for 
+  {@link javax.annotation.PostConstruct &#064;PostConstruct}
+  and {@link javax.annotation.PreDestroy &#064;PreDestroy} callbacks of managed beans 
+  and EJB components and for {@link javax.annotation.PrePassivate &#064;PrePassivate} and 
+  {@link javax.annotation.PostActivate &#064;PostActivate}
+  methods of EJB {@linkplain javax.ejb.Stateful stateful} session beans.</li>
+</ul>
+
+<p>An interceptor method may be defined by annotating the method, or using the EJB
+deployment descriptor. Interceptor methods may not be declared <tt>static</tt> or 
+<tt>final</tt>.</p>
+
+<p>An interceptor class or target class may have multiple interceptor methods. However, 
+an interceptor class or target class may have no more than one interceptor method for
+a certain type of interception: {@link javax.interceptor.AroundInvoke}, 
+{@link javax.interceptor.AroundTimeout}, {@code PostConstruct}, {@code PreDestroy}, 
+{@code PrePassivate} or {@code PostActivate}.</p>
+
+<h3>Interceptor classes</h3>
+
+<p>An interceptor class is a class (distinct from the target class) whose methods are 
+invoked in response to invocations and/or lifecycle events on the target class. Any 
+number of interceptor classes may be associated with a target class.</p>
+
+<p>An interceptor class must have a public constructor with no parameters.</p>
+
+<p>Interceptor classes may be annotated 
+{@link javax.interceptor.Interceptor &#064;Interceptor}, but this is not required
+when {@link javax.interceptor.Interceptors &#064;Interceptors} or the EJB deployment
+descriptor are used to bind the interceptor to its target classes.</p>
+
+<h3>Defining the interceptor classes of a target class</h3>
+
+<p>Interceptor classes of a target class or method of a target class may be defined in 
+several ways:</p>
+
+<ul>
+  <li>By annotating the target class or method of the target class with
+  {@link javax.interceptor.Interceptors &#064;Interceptors} and specifying the 
+  interceptor class.</li>
+  <li>If the target class is an EJB component, by using the EJB deployment descriptor.</li>
+  <li>If the target class is a {@linkplain javax.enterprise.inject CDI bean}, by 
+  annotating both the interceptor class and the target class with an 
+  {@linkplain javax.interceptor.InterceptorBinding interceptor binding}.</li>
+</ul>
+
+<p>Any interceptor class may be defined to apply to a target class at the class level. 
+In the case of method interceptors, the interceptor applies to all methods of the target 
+class. In the case of timeout method interceptors, the interceptor applies to all 
+timeout methods of the target class.</p>
+
+<p>{@link javax.interceptor.ExcludeClassInterceptors &#064;ExcludeClassInterceptors} 
+or the EJB deployment descriptor may be used to exclude the invocation of class level 
+interceptors for a method of a target class.</p>
+
+<p>A method interceptor may be defined to apply only to a specific method of the 
+target class. Likewise, a timeout method interceptor may be defined to apply only to 
+a specific timeout method of the target class. However, if an interceptor class that 
+defines lifecycle callback interceptor methods is defined to apply to a target class 
+at the method level, the lifecycle callback interceptor methods are not invoked.</p>
+
+<h3>Default Interceptors</h3>
+
+<p>Default interceptors may be defined to apply to a set of target classes using
+the EJB deployment descriptor. The default interceptors are invoked before any other 
+interceptors for a target class. The EJB deployment descriptor may be used to specify 
+alternative orderings.</p>
+
+<p>{@link javax.interceptor.ExcludeDefaultInterceptors &#064;ExcludeDefaultInterceptors} 
+or the EJB deployment descriptor may be used to exclude the invocation of default 
+interceptors for a target class or method of a target class.</p>
+
+<h3>Interceptor lifecycle</h3>
+
+<p>The lifecycle of an interceptor instance is the same as that of the target class 
+instance with which it is associated. When the target instance is created, a 
+corresponding interceptor instance is created for each associated interceptor class. 
+These interceptor instances are destroyed when the target instance is destroyed.</p>
+
+<p>Both the interceptor instance and the target instance are created before any 
+{@link javax.annotation.PostConstruct &#064;PostConstruct} callbacks are invoked. Any 
+{@link javax.annotation.PreDestroy &#064;PreDestroy} callbacks are invoked before the 
+destruction of either the target instance or interceptor instance.
+
+<p>An interceptor instance may hold state. An interceptor instance may be the target 
+of dependency injection. Dependency injection is performed when the interceptor instance 
+is created, using the naming context of the associated target class. The 
+{@link javax.annotation.PostConstruct &#064;PostConstruct} interceptor callback method 
+is invoked after this dependency injection has taken place on both the interceptor 
+instances and the target instance.</p>
+
+<p>An interceptor class shares the enterprise naming context of its associated target 
+class. Annotations and/or XML deployment descriptor elements for dependency injection or 
+for direct JNDI lookup refer to this shared naming context.</p>
+
+<h3>Interceptors for lifecycle callbacks</h3>
+
+<p>A lifecycle callback interceptor method is a non-final, non-static method with return
+type <tt>void</tt> of the target class (or superclass) or of any interceptor class. A 
+lifecycle callback interceptor method declared by the target class (or superclass) must 
+have no parameters. A lifecycle callback interceptor method declared by an interceptor 
+class must have a single parameter of type {@link javax.interceptor.InvocationContext}.</p>
+ 
+<pre>
+&#064;PostConstruct
+public void interceptPostConstruct(InvocationContext ctx) { ... }
+</pre>
+
+<p>A single lifecycle callback interceptor method may be used to interpose on multiple 
+callback events.</p>
+
+<pre>
+&#064;PostConstruct &#064;PreDestroy
+public void interceptLifecycle(InvocationContext ctx) { ... }
+</pre>
+
+<p>A class may not declare more than one lifecycle callback interceptor method for
+a particular lifecycle event.</p>
+ 
+<p>Lifecycle callback interceptor method invocations occur within unspecified 
+transaction and security contexts.</p>
+ 
+<p>Lifecycle callback interceptor methods may throw runtime exceptions but not checked
+exceptions.</p>
+
+@see javax.interceptor.AroundInvoke
+@see javax.interceptor.AroundTimeout
+@see javax.interceptor.Interceptors
+@see javax.interceptor.InvocationContext
+
+</BODY>
+</HTML>

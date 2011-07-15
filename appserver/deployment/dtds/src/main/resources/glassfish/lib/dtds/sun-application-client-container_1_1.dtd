@@ -1,0 +1,300 @@
+<!--
+ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ 
+ Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ 
+ The contents of this file are subject to the terms of either the GNU
+ General Public License Version 2 only ("GPL") or the Common Development
+ and Distribution License("CDDL") (collectively, the "License").  You
+ may not use this file except in compliance with the License. You can obtain
+ a copy of the License at https://glassfish.dev.java.net/public/CDDL+GPL.html
+ or glassfish/bootstrap/legal/LICENSE.txt.  See the License for the specific
+ language governing permissions and limitations under the License.
+ 
+ When distributing the software, include this License Header Notice in each
+ file and include the License file at glassfish/bootstrap/legal/LICENSE.txt.
+ Sun designates this particular file as subject to the "Classpath" exception
+ as provided by Sun in the GPL Version 2 section of the License file that
+ accompanied this code.  If applicable, add the following below the License
+ Header, with the fields enclosed by brackets [] replaced by your own
+ identifying information: "Portions Copyrighted [year]
+ [name of copyright owner]"
+ 
+ Contributor(s):
+ 
+ If you wish your version of this file to be governed by only the CDDL or
+ only the GPL Version 2, indicate your decision by adding "[Contributor]
+ elects to include this software in this distribution under the [CDDL or GPL
+ Version 2] license."  If you don't indicate a single choice of license, a
+ recipient has the option to distribute your version of this file under
+ either the CDDL, the GPL Version 2 or to extend the choice of license to
+ its licensees as provided above.  However, if you add GPL Version 2 code
+ and therefore, elected the GPL Version 2 license, then the option applies
+ only if the new code is made subject to such option by the copyright
+ holder.
+-->
+
+
+<!ENTITY % boolean "(yes | no | on | off | 1 | 0 | true | false)">
+<!ENTITY % severity "(FINEST|FINER|FINE|CONFIG|INFO|WARNING|SEVERE|ALERT|FATAL)">
+
+<!-- iAS Application client container configuration 
+    send-password   Specifies whether client authentication credentials should 
+                    be sent to the server. Without credential all accesses to 
+                    protected EJBs will result in exceptions.
+   message-security-config: Optional list of layer specific lists of
+     configured message security providers.
+-->
+<!ELEMENT client-container (target-server, auth-realm?, client-credential?, log-service?, message-security-config*, property*)>
+<!ATTLIST client-container send-password %boolean; "true"> 
+
+<!-- Target server's IIOP listener configuration 
+    name        Application server instance name 
+    address     ip address or hostname (resolvable by DNS) of the ORB
+    port        port number of the ORB
+-->
+<!ELEMENT target-server (description?, security?)>
+<!ATTLIST target-server name             CDATA     #REQUIRED
+                        address          CDATA     #REQUIRED
+                        port             CDATA     #REQUIRED>
+                                                  
+<!ELEMENT description (#PCDATA)>
+
+<!-- Default client credentials that will be sent to server. If this element 
+     is present, then it will be automatically sent to the server, without
+     prompting the user for usename and password on the client side. 
+     user-name  User name credential   
+     password   Password credential
+     realm      The realm (specified by name) where credentials are to be 
+                resolved.
+ -->
+<!ELEMENT client-credential (property*)>
+<!ATTLIST client-credential user-name CDATA   #REQUIRED
+                            password  CDATA   #REQUIRED
+                            realm     CDATA   #IMPLIED>
+                                
+<!-- Logging service configuration. 
+
+     file   By default log file will be at $APPCLIENT_ROOT/logs/client.log
+            Can use this attribute to specify an alternate location.
+     level  sets the base level of severity. Messages at or above this 
+            setting get logged into the log file.
+ -->
+<!ELEMENT log-service (property*)>
+<!ATTLIST log-service  file                      CDATA      #IMPLIED
+                       level                     %severity; "SEVERE">
+
+<!-- SSL security  configuration for IIOP/SSL communication with 
+     the target-server.
+ -->
+<!ELEMENT security (ssl, cert-db)>
+
+<!-- Define SSL processing parameters
+
+     cert-nickname nickname of the server certificate in the certificate database 
+                   or the PKCS#11 token. In the certificate, the name format is
+                   tokenname:nickname. Including the tokenname: part of the name 
+                   in this attribute is optional. 
+
+     ssl2-enabled  (optional) Determines whether SSL2 is enabled. 
+
+     ssl3-enabled  (optional) Determines whether SSL3 is enabled. 
+
+                   If both SSL2 and SSL3 are enabled for a virtual server, the server 
+                   tries SSL3 encryption first. If that fails, the server tries SSL2
+                   encryption. 
+
+    ssl2ciphers    (optional) A space-separated list of the SSL2 ciphers used, with 
+                   the prefix + to enable or - to disable, for example +rc4. Allowed 
+                   values are rc4, rc4export, rc2, rc2export, idea, des, desede3. 
+
+    ssl3-tls-ciphers (optional) A space-separated list of the SSL3 ciphers used, with 
+                     the prefix + to enable or - to disable, for example +rsa_des_sha.
+                     Allowed SSL3 values are rsa_rc4_128_md5, rsa3des_sha, rsa_des_sha, 
+                     rsa_rc4_40_md5, rsa_rc2_40_md5, rsa_null_md5. Allowed TLS values 
+                     are rsa_des_56_sha, rsa_rc4_56_sha. 
+
+    tls-enabled     (optional) Determines whether TLS is enabled. 
+
+    tls-rollback-enabled  (optional) Determines whether TLS rollback is enabled. TLS 
+                          rollback should be enabled for Microsoft Internet Explorer 
+                          5.0 and 5.5. 
+
+    client-auth-enabled   (optional) Determines whether SSL3 client authentication is 
+                          performed on every request, independent of ACL-based access 
+                          control.
+--> 
+<!ELEMENT ssl EMPTY>
+<!ATTLIST ssl cert-nickname        CDATA    #IMPLIED
+              ssl2-enabled         CDATA    "false"
+              ssl2-ciphers         CDATA    #IMPLIED
+              ssl3-enabled         CDATA    "true"
+              ssl3-tls-ciphers     CDATA    #IMPLIED
+              tls-enabled          CDATA    "true"
+              tls-rollback-enabled CDATA    "true">
+
+<!-- Location and password to read the Certificate Database. iAS
+     (actually NSS) will provide utilities with which a certificate 
+     database can be created.
+
+     path     Specifies the absolute path where the cert database (cert7.db) 
+              is stored. 
+     password needed to open and read a cert database
+ -->
+<!ELEMENT cert-db EMPTY>
+<!ATTLIST cert-db path       CDATA #REQUIRED
+                  password   CDATA #REQUIRED>
+
+<!-- JAAS is available on Application Client Container. 
+     Optional configuration for JAAS authentication realm.
+     
+     name       defines the name of this realm
+     classname  defines the java class which implements this realm
+ -->
+<!ELEMENT auth-realm (property*)>
+<!ATTLIST auth-realm name            CDATA   #REQUIRED
+                     classname       CDATA   #REQUIRED>
+               
+<!-- Syntax for supplying properties as name value pairs -->
+<!ELEMENT property EMPTY>
+<!ATTLIST property name  CDATA  #REQUIRED
+                   value CDATA  #REQUIRED>
+
+<!--
+The message-layer entity is used to define the value of the
+auth-layer attribute of message-security-config elements.
+
+Used in: message-security-config
+-->
+<!ENTITY % message-layer    "(SOAP)">
+
+<!--
+The message-security-config element defines the message layer
+specific provider configurations of the application server.
+
+All of the providers within a message-security-config element
+must be able to perform authentication processing at
+the message layer defined by the value of the auth-layer 
+attribute. 
+
+The default-provider attribute may be used to identify 
+the server provider to be invoked for any application 
+for which a specific server provider has not been bound.
+
+The default-client-provider attribute may be used to identify 
+the client provider to be invoked for any application 
+for which a specific client provider has not been bound.
+
+At most one (non-null) default server provider and at most one
+(non-null) default client provider may be identified 
+among all the same layer message-security-config elements. 
+
+When a default provider of a type is not defined for a message 
+layer, the container will only invoke a provider of the type
+(at the layer) for those applications for which a specific
+provider has been bound.
+
+Default: 
+Used in: security-service
+-->
+<!ELEMENT message-security-config ( provider-config+ )>
+<!ATTLIST message-security-config 
+          auth-layer %message-layer; #REQUIRED
+	  default-provider        CDATA #IMPLIED
+	  default-client-provider CDATA #IMPLIED>
+
+<!--
+The provider-config element defines the configuration of
+an authentication provider.
+
+The provider-id attibute contains an identifier that can be used to
+reference the provider-config.
+
+The request-policy and response-policy sub-elements define
+the authentication policy requirements associated 
+with the request and response processing performed by the
+authentication provider (respectively).
+
+the provider-type attribute defines whether the provider is a client
+authentication provider or a server authentication provider.
+
+The class-name attribute defines the java implementation class of the 
+provider. Client authentication providers must implement the 
+com.sun.enterprise.security.jauth.ClientAuthModule interface. Server-side
+providers must implement the com.sun.enterprise.security.jauth.ServerAuthModule
+interface. A provider may implement both interfaces, but it must implement
+the interface corresponding to its provider type.
+
+The optional list of property elements may be used to configure provider
+specific property values. These values will be passed to the provider
+when its initialize method is called.
+
+A provider-config with no contained request-policy or response-policy
+sub-elements, is a null provider. The container will not instantiate
+or invoke the methods of a null provider, and as such the implementation
+class of a null provider need not exist.
+
+Default: 
+Used in: message-security-config
+-->
+<!ELEMENT provider-config ( request-policy?, response-policy?, property* )>
+<!ATTLIST provider-config
+          provider-id CDATA                   #REQUIRED
+	  provider-type  (client | server | client-server) #REQUIRED
+          class-name      CDATA            #REQUIRED>
+
+<!--
+The request-policy element is used to define the authentication policy 
+requirements associated with the request processing performed by an 
+authentication provider (i.e. when a client provider's 
+ClientAuthModule.initiateRequest method is called or when a
+server provider's ServerAuthModule.validateRequest is called).
+
+The auth-source attribute defines a requirement for message layer
+sender authentication (e.g. username password) or content authentication 
+(e.g. digital signature).
+
+The auth-recipient attribute defines a requirement for message
+layer authentication of the reciever of a message to its sender (e.g. by 
+XML encryption).
+
+The before-content attribute value indicates that recipient
+authentication (e.g. encryption) is to occur before any 
+content authentication (e.g. encrypt then sign) with respect
+to the target of the containing auth-policy.
+
+Default: 
+Used in: provider-config
+-->
+<!ELEMENT request-policy EMPTY >
+<!ATTLIST request-policy 
+          auth-source (sender | content) #IMPLIED
+	  auth-recipient (before-content | after-content) #IMPLIED>
+<!--
+The response-policy element is used to define the authentication policy 
+requirements associated with the response processing performed by an 
+authentication provider (i.e. when a client provider's 
+ClientAuthModule.validateResponse method is called or when a
+server provider's ServerAuthModule.secureResponse method is called).
+
+The auth-source attribute defines a requirement for message layer
+sender authentication (e.g. username password) or content authentication 
+(e.g. digital signature).
+
+The auth-recipient attribute defines a requirement for message
+layer authentication of the reciever of a message to its sender (e.g. by 
+XML encryption).
+
+The before-content attribute value indicates that recipient
+authentication (e.g. encryption) is to occur before any 
+content authentication (e.g. encrypt then sign) with respect
+to the target of the containing auth-policy.
+
+Default: 
+Used in: provider-config
+-->
+<!ELEMENT response-policy EMPTY >
+<!ATTLIST response-policy 
+          auth-source (sender | content) #IMPLIED
+	  auth-recipient (before-content | after-content) #IMPLIED>
+

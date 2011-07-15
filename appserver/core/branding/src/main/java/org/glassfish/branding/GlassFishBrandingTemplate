@@ -1,0 +1,248 @@
+/*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright (c) 2008-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common Development
+ * and Distribution License("CDDL") (collectively, the "License").  You
+ * may not use this file except in compliance with the License.  You can
+ * obtain a copy of the License at
+ * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+ * or packager/legal/LICENSE.txt.  See the License for the specific
+ * language governing permissions and limitations under the License.
+ *
+ * When distributing the software, include this License Header Notice in each
+ * file and include the License file at packager/legal/LICENSE.txt.
+ *
+ * GPL Classpath Exception:
+ * Oracle designates this particular file as subject to the "Classpath"
+ * exception as provided by Oracle in the GPL Version 2 section of the License
+ * file that accompanied this code.
+ *
+ * Modifications:
+ * If applicable, add the following below the License Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
+ * "Portions Copyright [year] [name of copyright owner]"
+ *
+ * Contributor(s):
+ * If you wish your version of this file to be governed by only the CDDL or
+ * only the GPL Version 2, indicate your decision by adding "[Contributor]
+ * elects to include this software in this distribution under the [CDDL or GPL
+ * Version 2] license."  If you don't indicate a single choice of license, a
+ * recipient has the option to distribute your version of this file under
+ * either the CDDL, the GPL Version 2 or to extend the choice of license to
+ * its licensees as provided above.  However, if you add GPL Version 2 code
+ * and therefore, elected the GPL Version 2 license, then the option applies
+ * only if the new code is made subject to such option by the copyright
+ * holder.
+ */
+package org.glassfish.branding;
+
+import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.annotations.Scoped;
+import org.jvnet.hk2.component.Singleton;
+import org.glassfish.api.branding.Branding;
+import org.jvnet.hk2.component.PostConstruct;
+
+import java.util.PropertyResourceBundle;
+import java.util.MissingResourceException;
+
+/**
+ * Branding and Version information based on given distribution/OEM
+ * 
+ * @author Sreenivas Munnangi
+ */
+
+@Service
+@Scoped(Singleton.class) 
+public class GlassFishBranding implements Branding, PostConstruct { 
+
+    /**
+    * version strings populated during build
+    */
+    private String product_name          = "@PRODUCT_NAME@";
+    private String abbrev_product_name   = "@ABBREV_PRODUCT_NAME@";
+    private String full_version          = "@FULL_VERSION@";
+    private String major_version         = "@MAJOR_VERSION@";
+    private String minor_version         = "@MINOR_VERSION@"; 
+    private String update_version        = "@UPDATE_VERSION@";
+    private String build_id              = "@BUILD_ID@";
+    private String version_prefix        = "@VERSION_PREFIX@";
+    private String version_suffix        = "@VERSION_SUFFIX@";
+    private PropertyResourceBundle vRes;
+    private boolean fullVersionSet = false;
+
+    @Override
+    public void postConstruct() {
+        // check for resource bundle
+        try {
+            vRes = (PropertyResourceBundle) PropertyResourceBundle.getBundle("BrandingVersion");
+        }
+        catch(Exception e) {
+            return;
+        }
+
+        product_name = fetch("product_name", product_name);
+        abbrev_product_name = fetch("abbrev_product_name", abbrev_product_name);
+        major_version = fetch("major_version", major_version);
+        minor_version = fetch("minor_version", minor_version);
+        update_version = fetch("update_version", update_version);
+        build_id = fetch("build_id", build_id);
+        version_prefix = fetch("version_prefix", version_prefix);
+        version_suffix = fetch("version_suffix", version_suffix);
+        String s = fetch("full_version", full_version);
+
+        if(!s.equals(full_version)) {
+            full_version = s;
+            fullVersionSet = true;
+        }
+
+        // construct full version
+        if ((!fullVersionSet) && ok(minor_version)){
+            try {
+                if (Integer.parseInt(minor_version) > 0) {
+                    if (update_version.length() > 0) {
+                        if (Integer.parseInt(update_version) > 0) {
+                            full_version = major_version + "." + minor_version
+                                + "." + update_version;
+                        }
+                    }
+                    else {
+                        full_version = major_version + "." + minor_version;
+                    }
+                } else {
+                   if (update_version.length() > 0) {
+                        if (Integer.parseInt(update_version) > 0) {
+                            full_version = major_version + "." + minor_version
+                                + "." + update_version;
+                        }
+                    }
+                    else {
+                        full_version = major_version;
+                    }
+                }
+            } catch (NumberFormatException nfe) {
+                    full_version = major_version;
+            }
+        }
+    }
+
+    /**
+     * Returns version
+     */
+    @Override
+    public String getVersion() {
+        if(product_name == null)
+            return null;
+
+        StringBuffer sb = new StringBuffer(product_name);
+        if(ok(version_prefix))
+            sb.append(" ").append(version_prefix);
+        if (full_version != null)
+            sb.append(" ").append(full_version);
+        if(ok(version_suffix))
+            sb.append(" ").append(version_suffix);
+        return sb.toString();
+    }
+
+    /**
+     * Returns full version including build id
+     */
+    @Override
+    public String getFullVersion() {
+        return (getVersion() + " (build " + build_id + ")");
+    }
+
+    /**
+     * Returns abbreviated version.
+     */
+    @Override
+    public String getAbbreviatedVersion() {
+        return abbrev_product_name;
+    }
+
+    /**
+     * Returns Major version
+     */
+    @Override
+    public String getMajorVersion() {
+        return major_version;
+    }
+
+    /**
+     * Returns Minor version
+     */
+    @Override
+    public String getMinorVersion() {
+        return minor_version;
+    }
+
+    /**
+     * Returns Update version
+     */
+    @Override
+    public String getUpdateVersion() {
+        return update_version;
+    }
+
+    /**
+     * Returns Build version
+     */
+    @Override
+    public String getBuildVersion() {
+        return build_id;
+    }
+
+    /**
+     * Returns version prefix
+     */
+    @Override
+    public String getVersionPrefix() {
+        return version_prefix;
+    }
+
+    /**
+     * Returns version suffix
+     */
+    @Override
+    public String getVersionSuffix() {
+        return version_suffix;
+    }
+
+    /**
+     * Returns Proper Product Name
+     */
+    @Override
+    public String getProductName() {
+        return product_name;
+    }
+
+    /**
+     * Returns Abbreviated Product Name
+     */
+    @Override
+    public String getAbbrevProductName() {
+        return abbrev_product_name;
+    }
+
+    private String fetch(String name, String def) {
+        if(vRes == null)
+            return def;
+
+        try {
+            String s = vRes.getString(name);
+
+            if(ok(s))
+                return s;
+        }
+        catch(Exception e) {
+            // def is already set...
+        }
+        return def;
+    }
+
+    private static boolean ok(String s) {
+        return s != null && s.length() > 0;
+    }
+}

@@ -1,0 +1,1 @@
+This is a simple test that executes a calculator webservice. Nothing related to transaction is done here. This ensures that the normal path works fine.

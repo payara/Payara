@@ -1,0 +1,23 @@
+The sample tests that exceptions are properly propagated through JavaEE service
+engine to the JavaEE component that requested for the webservice. Service engine
+acts as a consumer in this test.
+
+There is a Calculator web service, deployed as a servlet, with only one 
+operation add which throws an exception. This webservice has it's jbi-enabled 
+flag as false. Another servlet is deployed which has it's jbi-enabled flag as 
+true. This servlet requests for the Calculator webservice and the call goes 
+through the service engine. 
+Client is a standalone java application which sends request to the servlet 
+which inturn calls the calculator webservice.
+
+ant all of this sample does the following : 
+ 
+1. compiles and deploys the web service on application server.
+
+2. compiles and deploys the servlet that requests for above web service,
+   deploys a consumer service unit on SOAP Binding
+
+2. runs the client which invokes the servlet.
+
+3. undeploy applications from app server and service assembly deployment from 
+   SOAP Binding.

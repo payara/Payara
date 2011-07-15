@@ -1,0 +1,26 @@
+This test demonstrates usage of a composite application when JavaEE SE is 
+consumer. There is a Calculator webservice with add operation that adds two 
+numbers. This calculator service is deployed in appserver with jbi-enabled set
+to false so that the service can not be called through JavaEE SE.
+
+The webservice client is a servlet that sends an add request to the calculator
+service. This servlet is deployed as part of a composite application.
+A standalone Java client is used to invoke this servlet and execute this test.
+
+ant all of this test does the following : 
+ 
+task setup: 
+  1. Calculator webservice is deployed in appserver and jbi-enabled flag is 
+     set to false
+  2. A service assembly is created and deployed that contains a JavaEE service 
+     unit consuming calculator service and a HTTP BC service unit that provides
+     calculator service.
+task runtest: 
+  Client invokes the test servlet which in calls the calculator 
+  service. This call goes through JavaEE SE. Below is the runtime call flow-
+
+TestClient --> Client(Servlet) --> JavaEE SE --> HTTP BC --> Calculator WS
+
+task undeploy: 
+  undeploys the calculator service from appserver and composite application 
+  from from JBI

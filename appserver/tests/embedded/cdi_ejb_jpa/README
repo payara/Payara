@@ -1,0 +1,3 @@
+This test case tests CDI, EJB3, JPA2 components with embedded glassfish.
+In this test case, EJB TestBean is injected to BasicCDITestServlet via CDI, and the TestBean is adding/retrieving entries to the Entity Bean Person via JPA.
+The datasource is created via @DataSourceDefinition.

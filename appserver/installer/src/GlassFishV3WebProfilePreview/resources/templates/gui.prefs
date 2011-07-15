@@ -1,0 +1,89 @@
+#
+# DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+#
+# Copyright (c) 2008-2010 Oracle and/or its affiliates. All rights reserved.
+#
+# The contents of this file are subject to the terms of either the GNU
+# General Public License Version 2 only ("GPL") or the Common Development
+# and Distribution License("CDDL") (collectively, the "License").  You
+# may not use this file except in compliance with the License.  You can
+# obtain a copy of the License at
+# https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+# or packager/legal/LICENSE.txt.  See the License for the specific
+# language governing permissions and limitations under the License.
+#
+# When distributing the software, include this License Header Notice in each
+# file and include the License file at packager/legal/LICENSE.txt.
+#
+# GPL Classpath Exception:
+# Oracle designates this particular file as subject to the "Classpath"
+# exception as provided by Oracle in the GPL Version 2 section of the License
+# file that accompanied this code.
+#
+# Modifications:
+# If applicable, add the following below the License Header, with the fields
+# enclosed by brackets [] replaced by your own identifying information:
+# "Portions Copyright [year] [name of copyright owner]"
+#
+# Contributor(s):
+# If you wish your version of this file to be governed by only the CDDL or
+# only the GPL Version 2, indicate your decision by adding "[Contributor]
+# elects to include this software in this distribution under the [CDDL or GPL
+# Version 2] license."  If you don't indicate a single choice of license, a
+# recipient has the option to distribute your version of this file under
+# either the CDDL, the GPL Version 2 or to extend the choice of license to
+# its licensees as provided above.  However, if you add GPL Version 2 code
+# and therefore, elected the GPL Version 2 license, then the option applies
+# only if the new code is made subject to such option by the copyright
+# holder.
+#
+
+# ResourceBundle properties file for the Installer Window
+
+# dynamic panel
+dynamic_component_viewportborder_color=WHITE
+
+# Size for panels
+frame_size=790,632
+contentpanel_size=558,443
+contentpanel_size_m1=558,443
+contentpanel_size_m2=558,443
+contentpanel_size_m3=558,443
+contentpanel_size_m4=558,443
+sizeAttr=preferredsize
+
+# Insets (GridBagConstraints) for panels
+mainpanel_insets=0,25,0,0
+leftpanel_insets=5,0,55,0
+logopanel_insets=0,25,0,0
+contentpanel_insets=11,11,0,36
+buttonpanel_insets=25,11,25,0
+leftpanel_button_insets=0,5,0,0
+
+shadow_border_color=BLACK
+
+#Background color of error field
+error_background_color=FF0000
+
+#insets for inline text and the label in the content panel.
+inline_insets=0,12,17,0
+noninline_insets=0,0,15,0
+label_insets=0,12,17,0
+nonlabel_insets=0,12,17,12
+buttongroup_insets=0,12,6,0
+
+# Insets (GridBagConstraints) for button panel
+btnPanel_constraints=insets="0,12,0,80"
+btnCancel_constraints=ipady="3" ipadx="30"
+btnHelp_constraints=ipady="3" ipadx="40" insets="0,10,0,0"
+btnBack_constraints=ipady="3" ipadx="40" insets="0,0,0,10"
+btnNext_constraints=ipady="3" ipadx="40"
+
+# left nav colors
+leftpanel_done_textcolor=595a5e
+leftpanel_active_textcolor=587993
+leftpanel_remaining_textcolor=595a5e
+
+# Desired wrap width for messages in dialog boxes
+wrap_width=80
+column_wrap_width=38

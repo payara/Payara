@@ -1,0 +1,110 @@
+Notes on running virtualization with Xen.
+
+Step 0 : 
+
+add glassfish.zip (glassfish installation that will be installed in each vm) in docroot.
+add id_dsa.pub to docroot (your ssh public key).
+
+Step 1 : create the master image.
+
+1. install master image with jeos .iso file
+2. sudo apt-get install wget
+
+Step 2 : install glassfish and related scripts
+
+3. wget http://<das-ip>:<das-port>/xen/ubuntu/configure-master.sh	
+4. sh configure-master.sh <das-ip> <das-http-port> // DO NOT RUN AS ROOT.
+5. add the DAS IP and name in the master /etc/hosts (not necessary if the DAS has a static IP).
+
+At this point, you have a glassfish master image that can be used for any
+GlassFish DAS. I don't support anything else than domain1 so far. 
+
+
+Step 3 : 
+5. Verify <GlassFishInstall>/domains/domain1/config/xen/virtualizations.xml image location that it is the one you specified in step 1.
+
+6. Run the DAS : 
+7. asadmin create-vm-cluser --type=xen cluster1
+8. asadmin create-vm-instance
+
+
+
+
+--------------
+For KVM/QEMU, in order to setup the network bridged which does not exist by default, this is what I have done.
+Links:
+http://wiki.ubuntu.org.cn/UbuntuHelp:KVM/Networking
+http://www.pavnay.fr/index.php/en/system-administration/41-systeme-machines-virtuelles-sous-kvm?tmpl=component&print=1&page=
+http://www.linux-kvm.org/page/Networking#public_bridge
+
+sudo apt-get install bridge-utils
+1/ get tuntap packages
+my /etc/network/interfaces is like: (see the br0 which has my static ip and eth0 just depends on it)
+---
+auto lo
+iface lo inet loopback
+
+#auto br0
+
+
+auto eth1
+iface eth1 inet static
+        address 10.132.180.171
+        netmask 255.255.254.0
+        network 10.132.180.0
+        broadcast 10.132.181.255
+        gateway 10.132.180.1
+        # dns-* options are implemented by the resolvconf package, if installed
+        dns-name-servers 130.35.249.52 130.35.249.41 138.2.202.15 129.145.155.220
+        dns-search us.oracle.com oraclecorp.com oracle.com sfbay.sun.com sun.com
+
+auto br0
+iface br0 inet static
+        address 10.132.180.47
+        netmask 255.255.254.0
+        network 10.132.180.0
+        broadcast 10.132.181.255
+        gateway 10.132.180.1
+        # dns-* options are implemented by the resolvconf package, if installed
+        dns-name-servers 130.35.249.52 130.35.249.41 138.2.202.15 129.145.155.220
+        dns-search us.oracle.com oraclecorp.com oracle.com sfbay.sun.com sun.com
+        bridge_ports eth0
+        bridge_fd 9
+        bridge_hello 2
+        bridge_maxage 12
+        bridge_stp off
+-----
+Maybe some extra route commands need to be done to correctly configure the default route.
+
+Also for user usages of the bridge, you need to use the tunctl command
+tunctl -u <USERNAME>   (in my case Ludo)
+
+KVM alternative configuration (from Jerome's Dell Laptop)
+
+1. install bridge-utils, kpartx
+2. disable automatic eth0 startup in network manager.
+3. you may have to manually disable the wireless adapter to avoid conflicts.
+4. set you /etc/network/interfaces to DHCP 
+
+auto lo
+iface lo inet loopback
+
+auto eth0
+iface eth0 inet manual
+
+auto br0
+iface br0 inet dhcp
+        bridge_ports eth0
+        bridge_stp off
+        bridge_fd 0
+        bridge_maxwait 0
+
+up route add default br0
+
+to manually add a gateway : sudo route add default gw 10.0.1.1 dev br0
+ethX is cached in ubuntu in the following file : /etc/udev/rules.d/70-persistent-net.rules (delete it to force the re-allocations of ethX at the next reboot).
+
+4. restart networking : sudo /etc/init.d/networking restart.
+5. install virt-manager on top of normal KVM installation
+6. go to step 0
+

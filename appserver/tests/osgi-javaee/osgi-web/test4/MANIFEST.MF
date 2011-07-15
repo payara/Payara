@@ -1,0 +1,5 @@
+Import-Package: javax.servlet; 
+Bundle-SymbolicName: sahoo.rfc66.test4
+Bundle-Version: 1.0
+Bundle-ClassPath: WEB-INF/classes
+Web-ContextPath: /test4

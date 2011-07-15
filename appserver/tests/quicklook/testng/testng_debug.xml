@@ -1,0 +1,132 @@
+<!--
+
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+    or packager/legal/LICENSE.txt.  See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at packager/legal/LICENSE.txt.
+
+    GPL Classpath Exception:
+    Oracle designates this particular file as subject to the "Classpath"
+    exception as provided by Oracle in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+
+-->
+
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
+ 
+<suite name="QuickLookTests" verbose="2" >
+  <parameter name="admin.url" value="http://localhost:4848/__asadmin"/>
+  <parameter name="admin.user" value="admin"/>
+  <parameter name="admin.password" value=""/>
+  <parameter name="admin.console.url" value="http://localhost:4848/"/>
+  <parameter name="resources.xml.relative.path" value="admin/resources/resources.xml"/>
+  
+<!-- AMX -->
+  <parameter name="amx.debug" value="true"/>
+<!-- AMX: port of the JMX RMI -->
+  <parameter name="amx.rmiport" value="8686"/>
+
+<!-- AMX -->
+  <test name="amx_tests">
+    <classes>
+      <class name="amxtest.AMXCoreTests"/>
+      <class name="amxtest.AMXProxyTests"/>
+      <class name="amxtest.AMXConfigProxyTests"/>
+      <class name="amxtest.AMXOtherTests"/>
+      </classes>
+  </test>
+  
+  <test name="adminconsole_tests">
+	<classes>
+		<class name="test.admin.AdminConsoleTests"/>
+	</classes>
+  </test>
+
+  <test name="classloader_jsf">
+        <classes>
+                <class name="test.classloader.hellojsf.helloJSFTestNG"/>
+        </classes>
+  </test>
+  <test name="web_jspservlet_war">
+    <classes>
+       <class name="test.web.jsp.hello.HelloJSPTestNG" />
+    </classes>
+  </test>
+  <test name="jsf_hello_world">
+    <classes>
+       <class name="test.jsf.astrologer.JSFWebTestNG" />
+    </classes>
+  </test>
+  <test name="jsf_injection">
+    <classes>
+       <class name="test.web.jsfinjection.JSFInjectionTestNG" />
+    </classes>
+  </test>
+  <test name="jdbc_user_tx">
+    <classes>
+       <class name="test.jdbc.jdbcusertx.JdbcUserTxTestNG" />
+    </classes>
+  </test>
+  <test name="jpa_inject_emf">
+    <classes>
+       <class name="test.jpa.jpainjectemf.JpaInjectEMFTestNG" />
+    </classes>
+  </test>
+  <test name="jpa_validation">
+    <classes>
+       <class name="test.jpa.jpavalidation.JpaValidationTestNG" />
+    </classes>
+  </test>
+  <test name="security_hello_jsp">
+    <classes>
+       <class name="test.security.hellojsp.HelloSecurityTestNG" />
+    </classes>
+  </test>
+  <test name="security_hello_basicauth">
+    <classes>
+       <class name="test.security.basicauth.BasicAuthTestNG" />
+    </classes>
+  </test>
+   <!--<test name="ejb30_session_hello">
+    <classes>
+       <class name="ejb30.session.hello.test.TestClient" />
+    </classes>
+  </test>--> 
+  <test name="asadmin_tests">
+    <classes>
+      <class name="test.admin.JvmOptionTests"/>
+      <class name="test.admin.JdbcConnectionPoolTests"/>
+      <class name="test.admin.WebtierTests"/>
+    </classes>
+  </test>
+ 
+</suite>
+

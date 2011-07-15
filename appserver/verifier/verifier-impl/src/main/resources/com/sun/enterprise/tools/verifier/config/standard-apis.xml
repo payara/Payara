@@ -1,0 +1,2152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+    or packager/legal/LICENSE.txt.  See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at packager/legal/LICENSE.txt.
+
+    GPL Classpath Exception:
+    Oracle designates this particular file as subject to the "Classpath"
+    exception as provided by Oracle in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+
+-->
+
+<!-- 
+Important note to whoever is updating this file: 
+After updating this file, please run the following command you ensure that 
+the state of this file is consistent:
+'java -classpath $S1AS_HOME/lib/appserv-rt.jar 
+   com.sun.enterprise.tools.verifier.apiscan.stdapis.APIRepository standard-apis.xml'
+The above command must not print any exceptions.
+ -->
+
+<root xmlns='http://java.sun.com/avk/apiscanning'
+    xmlns:xi='http://www.w3.org/2001/XInclude'
+    xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+    xsi:schemaLocation='http://java.sun.com/avk/apiscanning apis_1_0.xsd'>
+    
+    <!-- start of container related API definitions -->
+
+    <!-- Now J2EE 1.2 related stuff --> 
+
+    <!-- This is what an 1.1 EJB app is allowed to use -->
+    <api name_version="ejb_jar_1.1">
+        <api_ref api_name_version="J2SE_1.3"/>
+        <api_ref api_name_version="JDBCSE_2.0"/>
+        <api_ref api_name_version="RMI-IIOP_1.0"/>
+        <api_ref api_name_version="EJB_1.1"/>
+        <api_ref api_name_version="JMS_1.0"/>
+        <api_ref api_name_version="JNDI_1.2"/>
+        <api_ref api_name_version="JTA_1.0"/>
+        <api_ref api_name_version="JavaMail_1.1"/>
+        <api_ref api_name_version="JAF_1.0"/>
+    </api>
+
+    <!-- This is what a 2.2 Web app is allowed to use -->
+    <api name_version="web_app_2.2">
+        <api_ref api_name_version="J2EE_1.2"/>
+    </api>
+
+    <!-- This is what a 1.1 app client is allowed to use -->
+    <api name_version="appclient_1.2">
+        <api_ref api_name_version="J2SE_1.3"/>
+        <api_ref api_name_version="JDBCSE_2.0"/>
+        <api_ref api_name_version="RMI-IIOP_1.0"/>
+        <api_ref api_name_version="EJB_1.1"/>
+        <api_ref api_name_version="JMS_1.0"/>
+        <api_ref api_name_version="JNDI_1.2"/>
+    </api>
+    
+
+    <!-- Now J2EE 1.3 related stuff --> 
+
+    <!-- This is what a 2.0 EJB app is allowed to use -->
+    <api name_version="ejb_jar_2.0">
+        <api_ref api_name_version="J2SE_1.3"/>
+        <api_ref api_name_version="JDBCSE_2.0"/>
+        <api_ref api_name_version="EJB_2.0"/>
+        <api_ref api_name_version="JMS_1.0"/>
+        <api_ref api_name_version="JTA_1.0"/>
+        <api_ref api_name_version="JavaMail_1.2"/>
+        <api_ref api_name_version="JAF_1.0"/>
+        <!-- As per J2EE 1.3 spec says JAXP1.1 is what is available in J2EE 1.3, but 
+             when I see the J2EE 1.3 API javadocs 
+             at http://java.sun.com/j2ee/sdk_1.3/techdocs/api/index.html
+             I see the actual JAXP apis correspond to JAXP 1.2. So I am including JAXP 1.2 here -->
+        <api_ref api_name_version="JAXP_1.2"/>
+        <api_ref api_name_version="JCA_1.0"/>
+        <api_ref api_name_version="JAAS_1.0"/>    
+    </api>
+
+    <!-- This is what a 2.3 Web app is allowed to use -->
+    <api name_version="web_app_2.3">
+        <api_ref api_name_version="J2EE_1.3"/>
+    </api>
+ 
+    <!-- This is what a 1.3 app client is allowed to use -->
+    <api name_version="appclient_1.3">
+        <api_ref api_name_version="J2SE_1.3"/>
+        <api_ref api_name_version="JDBCSE_2.0"/>
+        <api_ref api_name_version="EJB_2.0"/>
+        <api_ref api_name_version="JMS_1.0"/>
+        <!-- As per J2EE 1.3 spec says JAXP1.1 is what is available in J2EE 1.3, but 
+             when I see the J2EE 1.3 API javadocs 
+             at http://java.sun.com/j2ee/sdk_1.3/techdocs/api/index.html
+             I see the actual JAXP apis correspond to JAXP 1.2. So I am including JAXP 1.2 here -->
+        <api_ref api_name_version="JAXP_1.2"/>
+        <api_ref api_name_version="JAAS_1.0"/>    
+    </api>
+    
+    <!-- This is what a 1.0 connector is allowed to use -->
+    <api name_version="connector_1.0">
+        <api_ref api_name_version="J2EE_1.3"/>
+    </api>
+    
+
+    <!-- Now J2EE 1.4 related stuff --> 
+
+    <!-- This is what a 2.1 EJB app is allowed to use -->
+    <api name_version="ejb_jar_2.1">
+        <api_ref api_name_version="J2SE_1.4"/>
+        <api_ref api_name_version="EJB_2.1"/>
+        <api_ref api_name_version="JMS_1.1"/>
+        <api_ref api_name_version="JTA_1.0"/>
+        <api_ref api_name_version="JavaMail_1.3"/>
+        <api_ref api_name_version="JAF_1.0"/>
+        <api_ref api_name_version="JAXP_1.2"/>
+        <api_ref api_name_version="JCA_1.5"/>
+        <api_ref api_name_version="WebServices_1.1"/>
+        <api_ref api_name_version="JAX-RPC_1.1"/>
+        <api_ref api_name_version="SAAJ_1.2"/>
+        <api_ref api_name_version="JAXR_1.0"/>
+        <api_ref api_name_version="J2EE-Management_1.0"/>
+        <api_ref api_name_version="JMX_1.2"/>
+        <api_ref api_name_version="JACC_1.0"/>
+        <!--See section #6.2.4.10 of J2EE 1.4 spec and section #18.1 of JCA 1.5 spec 
+            which requires JAAS to be apart of J2EE 1.4.
+            But given that J2SE 1.4 which is a required a platform for J2EE 1.4 
+            already includes JAAS 1.0, there is no need to add it here again.
+        <api_ref api_name_version="JAAS_1.0"/>
+        -->
+        <!-- I do not understand what is the original standard that defines the classes from the
+        following package, but it is a required API in J2EE 1.4. It looks to me that 
+        JAXP is the standard that defines this API, but I don't see any mention of this package in JAXP 1.2 standard
+        which is required by J2EE 1.4. So I am including it here directly.-->
+        <packages>
+            javax.xml.namespace
+        </packages>
+    </api>
+
+    <!-- This is what a 2.4 web app is allowed to use -->
+    <api name_version="web_app_2.4">
+        <!-- See section#6.1.2 of J2EE 1.3 spec-->
+        <api_ref api_name_version="J2SE_1.4"/>
+        <api_ref api_name_version="EJB_2.1"/>
+        <api_ref api_name_version="Servlet_2.4"/>
+        <api_ref api_name_version="JSP_2.0"/>
+        <api_ref api_name_version="JMS_1.1"/>
+        <api_ref api_name_version="JTA_1.0"/>
+        <api_ref api_name_version="JavaMail_1.3"/>
+        <api_ref api_name_version="JAF_1.0"/>
+        <api_ref api_name_version="JAXP_1.2"/>
+        <api_ref api_name_version="JCA_1.5"/>
+        <api_ref api_name_version="WebServices_1.1"/>
+        <api_ref api_name_version="JAX-RPC_1.1"/>
+        <api_ref api_name_version="SAAJ_1.2"/>
+        <api_ref api_name_version="JAXR_1.0"/>
+        <api_ref api_name_version="J2EE-Management_1.0"/>
+        <api_ref api_name_version="JMX_1.2"/>
+        <api_ref api_name_version="JACC_1.0"/>
+        <!--See section #6.2.4.10 of J2EE 1.4 spec and section #18.1 of JCA 1.5 spec 
+            which requires JAAS to be apart of J2EE 1.4.
+            But given that J2SE 1.4 which is a required a platform for J2EE 1.4 
+            already includes JAAS 1.0, there is no need to add it here again.
+        <api_ref api_name_version="JAAS_1.0"/>
+        -->
+        <!-- I do not understand what is the original standard that defines the classes from the
+        following package, but it is a required API in J2EE 1.4. It looks to me that 
+        JAXP is the standard that defines this API, but I don't see any mention of this package in JAXP 1.2 standard
+        which is required by J2EE 1.4. So I am including it here directly.-->
+        <packages>
+            javax.xml.namespace
+        </packages>
+    </api>
+
+    <!-- This is what a 1.4 app client is allowed to use -->
+    <api name_version="appclient_1.4">
+        <api_ref api_name_version="J2SE_1.4"/>
+        <api_ref api_name_version="JavaMail_1.3"/>
+        <api_ref api_name_version="JAF_1.0"/>
+        <api_ref api_name_version="EJB_2.1"/>
+        <api_ref api_name_version="JMS_1.1"/>
+        <api_ref api_name_version="JAXP_1.2"/>
+        <api_ref api_name_version="WebServices_1.1"/>
+        <api_ref api_name_version="JAX-RPC_1.1"/>
+        <api_ref api_name_version="SAAJ_1.2"/>
+        <api_ref api_name_version="JAXR_1.0"/>
+        <api_ref api_name_version="J2EE-Management_1.0"/>
+        <api_ref api_name_version="JMX_1.2"/>
+        <!--See section #6.2.4.10 of J2EE 1.4 spec and section #18.1 of JCA 1.5 spec 
+            which requires JAAS to be apart of J2EE 1.4.
+            But given that J2SE 1.4 which is a required a platform for J2EE 1.4 
+            already includes JAAS 1.0, there is no need to add it here again.
+        <api_ref api_name_version="JAAS_1.0"/>
+        -->
+        <!-- I do not understand what is the original standard that defines the classes from the
+        following package, but it is a required API in J2EE 1.4. It looks to me that 
+        JAXP is the standard that defines this API, but I don't see any mention of this package in JAXP 1.2 standard
+        which is required by J2EE 1.4. So I am including it here directly.-->
+        <packages>
+            javax.xml.namespace
+        </packages>
+    </api>
+
+    <!-- This is what a 1.5 connector is allowed to use -->
+    <api name_version="connector_1.5">
+        <api_ref api_name_version="J2EE_1.4"/>
+    </api>
+
+
+    <!-- Now Java EE 5 related stuff --> 
+
+    <!-- This is what a 3.0 EJB app is allowed to use -->
+    <api name_version="ejb_jar_3.0">
+        <api_ref api_name_version="J2SE_5.0"/>
+        <api_ref api_name_version="JavaMail_1.4"/>
+        <api_ref api_name_version="JAF_1.1"/>
+        <api_ref api_name_version="EJB_3.0"/>
+        <api_ref api_name_version="JMS_1.1"/>        
+        <api_ref api_name_version="JTA_1.1"/>
+        <api_ref api_name_version="JCA_1.5"/>
+        <api_ref api_name_version="WebServices_1.2"/>
+        <api_ref api_name_version="JAX-RPC_1.1"/>
+        <api_ref api_name_version="JAX-WS_2.0"/>
+        <api_ref api_name_version="JAXB_2.0"/>
+        <api_ref api_name_version="SAAJ_1.3"/>
+        <api_ref api_name_version="JAXR_1.0"/>
+        <api_ref api_name_version="JavaEE-Management_1.1"/>
+        <api_ref api_name_version="JACC_1.1"/>
+        <api_ref api_name_version="WSMetadata_1.1"/>
+        <!--JMX is not specified for 5.0
+        <api_ref api_name_version="JMX_1.2"/> -->
+        <api_ref api_name_version="CommonAnnotations_1.0"/>
+        <api_ref api_name_version="StAX_1.0"/>
+        <api_ref api_name_version="JavaPersistence_1.0"/>
+        
+        <packages>
+            javax.xml.namespace
+        </packages>
+    </api>
+
+    <!-- This is what a 2.5 web app is allowed to use -->
+    <api name_version="web_app_2.5">
+        <api_ref api_name_version="J2SE_5.0"/>
+        <api_ref api_name_version="JavaMail_1.4"/>
+        <api_ref api_name_version="JAF_1.1"/>
+        <api_ref api_name_version="EJB_3.0"/>
+        <api_ref api_name_version="Servlet_2.5"/>
+        <api_ref api_name_version="JSP_2.1"/>
+        <api_ref api_name_version="JSTL_1.2"/>
+        <api_ref api_name_version="JSF_1.2"/>
+        <api_ref api_name_version="JSPDebug_1.0"/>
+        <api_ref api_name_version="JMS_1.1"/>        
+        <api_ref api_name_version="JTA_1.1"/>
+        <api_ref api_name_version="JCA_1.5"/>
+        <api_ref api_name_version="WebServices_1.2"/>
+        <api_ref api_name_version="JAX-RPC_1.1"/>
+        <api_ref api_name_version="JAX-WS_2.0"/>
+        <api_ref api_name_version="JAXB_2.0"/>
+        <api_ref api_name_version="SAAJ_1.3"/>
+        <api_ref api_name_version="JAXR_1.0"/>
+        <api_ref api_name_version="JavaEE-Management_1.1"/>
+        <api_ref api_name_version="JACC_1.1"/>
+        <api_ref api_name_version="WSMetadata_1.1"/>
+        <!--JMX is not specified for 5.0
+        <api_ref api_name_version="JMX_1.2"/> -->
+        <api_ref api_name_version="CommonAnnotations_1.0"/>
+        <api_ref api_name_version="StAX_1.0"/>
+        <api_ref api_name_version="JavaPersistence_1.0"/>
+        
+        <packages>
+            javax.xml.namespace
+        </packages>
+    
+    </api>
+    
+    <!-- what version of connector should we provide -->
+    <!-- commenting this as connector_1.5 already refers to j2ee1.4 -->
+    <!--<api name_version="connector_1.5">
+        <api_ref api_name_version="JEE_1.5"/>
+    </api> -->
+
+    <!-- This is what a 5 app client is allowed to use -->
+    <api name_version="appclient_5">
+        <api_ref api_name_version="J2SE_5.0"/>
+        <api_ref api_name_version="JavaMail_1.4"/>
+        <api_ref api_name_version="JAF_1.1"/>
+        <api_ref api_name_version="EJB_3.0"/>
+        <api_ref api_name_version="JMS_1.1"/>        
+        <api_ref api_name_version="WebServices_1.2"/>
+        <api_ref api_name_version="JAX-RPC_1.1"/>
+        <api_ref api_name_version="JAX-WS_2.0"/>
+        <api_ref api_name_version="JAXB_2.0"/>
+        <api_ref api_name_version="SAAJ_1.3"/>
+        <api_ref api_name_version="JAXR_1.0"/>
+        <api_ref api_name_version="JavaEE-Management_1.1"/>
+        <api_ref api_name_version="WSMetadata_1.1"/>
+        <!--JMX is not specified for 5
+        <api_ref api_name_version="JMX_1.2"/> -->
+        
+         <!--NOT all annotations are required to be supprted, see Java EE 5 spec Table 6-6-->
+        <api_ref api_name_version="CommonAnnotations_1.0"/>
+        <api_ref api_name_version="StAX_1.0"/>
+        <api_ref api_name_version="JavaPersistence_1.0"/>
+                
+        <packages>
+            javax.xml.namespace
+        </packages>
+    </api>
+
+    <!-- end of container related API definitions -->
+
+    <!-- Start of Java EE API sets. These are not used by any one.
+         Instead the container specific API sets are used. -->
+
+    <api name_version="J2EE_1.2">
+        <!-- See chapter #6 of J2EE 1.2 spec-->
+        <!-- Ideally, a J2EE1.2.1 component should use J2SE 1.2 only, but
+             we have not yet populated the J2SE 1.2 api list, so in the mean while we use J2SE 1.3-->
+        <api_ref api_name_version="J2SE_1.3"/>
+        <api_ref api_name_version="JDBCSE_2.0"/>
+        <api_ref api_name_version="RMI-IIOP_1.0"/>
+        <api_ref api_name_version="EJB_1.1"/>
+        <api_ref api_name_version="Servlet_2.2"/>
+        <api_ref api_name_version="JSP_1.1"/>
+        <api_ref api_name_version="JMS_1.0"/>
+        <api_ref api_name_version="JNDI_1.2"/>
+        <api_ref api_name_version="JTA_1.0"/>
+        <api_ref api_name_version="JavaMail_1.1"/>
+        <api_ref api_name_version="JAF_1.0"/>
+    </api>
+    
+    <api name_version="J2EE_1.3">
+        <!-- See section#6.1.2 of J2EE 1.3 spec-->
+        <api_ref api_name_version="J2SE_1.3"/>
+        <api_ref api_name_version="JDBCSE_2.0"/>
+        <api_ref api_name_version="EJB_2.0"/>
+        <api_ref api_name_version="Servlet_2.3"/>
+        <api_ref api_name_version="JSP_1.2"/>
+        <api_ref api_name_version="JMS_1.0"/>
+        <api_ref api_name_version="JTA_1.0"/>
+        <api_ref api_name_version="JavaMail_1.2"/>
+        <api_ref api_name_version="JAF_1.0"/>
+        <!-- As per J2EE 1.3 spec says JAXP1.1 is what is available in J2EE 1.3, but 
+             when I see the J2EE 1.3 API javadocs 
+             at http://java.sun.com/j2ee/sdk_1.3/techdocs/api/index.html
+             I see the actual JAXP apis correspond to JAXP 1.2. So I am including JAXP 1.2 here -->
+        <api_ref api_name_version="JAXP_1.2"/>
+        <api_ref api_name_version="JCA_1.0"/>
+        <api_ref api_name_version="JAAS_1.0"/>    
+    </api>
+    
+    <api name_version="J2EE_1.4">
+        <!-- See section#6.1.2 of J2EE 1.4 spec-->
+        <api_ref api_name_version="J2SE_1.4"/>
+        <api_ref api_name_version="EJB_2.1"/>
+        <api_ref api_name_version="Servlet_2.4"/>
+        <api_ref api_name_version="JSP_2.0"/>
+        <api_ref api_name_version="JMS_1.1"/>
+        <api_ref api_name_version="JTA_1.0"/>
+        <api_ref api_name_version="JavaMail_1.3"/>
+        <api_ref api_name_version="JAF_1.0"/>
+        <api_ref api_name_version="JAXP_1.2"/>
+        <api_ref api_name_version="JCA_1.5"/>
+        <api_ref api_name_version="WebServices_1.1"/>
+        <api_ref api_name_version="JAX-RPC_1.1"/>
+        <api_ref api_name_version="SAAJ_1.2"/>
+        <api_ref api_name_version="JAXR_1.0"/>
+        <api_ref api_name_version="J2EE-Management_1.0"/>
+        <api_ref api_name_version="JMX_1.2"/>
+        <api_ref api_name_version="J2EE-Deployment_1.1"/>
+        <api_ref api_name_version="JACC_1.0"/>
+        <!--See section #6.2.4.10 of J2EE 1.4 spec and section #18.1 of JCA 1.5 spec 
+            which requires JAAS to be apart of J2EE 1.4.
+            But given that J2SE 1.4 which is a required a platform for J2EE 1.4 
+            already includes JAAS 1.0, there is no need to add it here again.
+        <api_ref api_name_version="JAAS_1.0"/>
+        -->
+        <!-- I do not understand what is the original standard that defines the classes from the
+        following package, but it is a required API in J2EE 1.4. It looks to me that 
+        JAXP is the standard that defines this API, but I don't see any mention of this package in JAXP 1.2 standard
+        which is required by J2EE 1.4. So I am including it here directly.-->
+        <packages>
+            javax.xml.namespace
+        </packages>
+    </api>
+    
+    <api name_version="JavaEE_5">
+        <api_ref api_name_version="J2EE_1.4"/>
+        <api_ref api_name_version="J2SE_5.0"/>
+        <api_ref api_name_version="EJB_3.0"/>
+        <api_ref api_name_version="JSP_2.1"/>
+        <api_ref api_name_version="JMS_1.1"/>
+        <api_ref api_name_version="JAF_1.1"/>
+        <api_ref api_name_version="JAX-WS_2.0"/>
+        <api_ref api_name_version="JAXB_2.0"/>
+        <api_ref api_name_version="SAAJ_1.3"/>
+        <api_ref api_name_version="JSPDebug_1.0"/>
+        <api_ref api_name_version="JSTL_1.2"/>
+        <api_ref api_name_version="WSMetadata_1.1"/> <!--jsr181-->
+        <api_ref api_name_version="JSF_1.2"/>
+        <api_ref api_name_version="CommonAnnotations_1.0"/> <!--jsr 250 -->
+        <api_ref api_name_version="StAX_1.0"/>
+    </api>
+    
+    <!-- End of Java EE API sets -->
+    
+    <!-- Now the API refs-->
+    
+    <api name_version="JSTL_1.2">
+        <classes package="javax.servlet.jsp.jstl.core">
+            <!--interface list-->
+            LoopTag
+            LoopTagStatus
+            <!--class list-->
+            ConditionalTagSupport
+            Config
+            IndexedValueExpression
+            IteratedExpression
+            IteratedValueExpression
+            LoopTagSupport
+            StringTokenValueExpression
+        </classes>
+        <classes package="javax.servlet.jsp.jstl.fmt">
+            LocaleSupport
+            LocalizationContext
+        </classes>
+        <classes package="javax.servlet.jsp.jstl.sql">
+            <!--interface list-->
+            Result
+            SQLExecutionTag
+            <!--class list-->
+            ResultSupport
+        </classes>
+        <classes package="javax.servlet.jsp.jstl.tlv">
+            PermittedTaglibsTLV
+            ScriptFreeTLV
+        </classes>
+    </api>    
+        
+    <api name_version="JSF_1.2">
+        <classes package="javax.faces">
+            <!--class list-->
+            FactoryFinder
+            <!--exception-->
+            FacesException
+        </classes>
+        <classes package="javax.faces.application">
+            <!--class list-->
+            Application
+            ApplicationFactory
+            FacesMessage
+            FacesMessage$Severity
+            NavigationHandler
+            StateManager
+            StateManager$SerializedView
+            StateManagerWrapper
+            ViewHandler
+            ViewHandlerWrapper
+            <!--exception-->
+            ViewExpiredException
+        </classes>
+        <classes package="javax.faces.component">
+            <!--interface list-->
+            ActionSource
+            ActionSource2
+            EditableValueHolder
+            NamingContainer
+            StateHolder
+            ValueHolder
+            <!--class list-->
+            UIColumn
+            UICommand
+            UIComponent
+            UIComponentBase
+            UIData
+            UIForm
+            UIGraphic
+            UIInput
+            UIMessage
+            UIMessages
+            UINamingContainer
+            UIOutput
+            UIPanel
+            UIParameter
+            UISelectBoolean
+            UISelectItem
+            UISelectItems
+            UISelectMany
+            UISelectOne
+            UIViewRoot                       
+        </classes>
+        <classes package="javax.faces.component.html">
+            <!--class list-->
+            HtmlColumn
+            HtmlCommandButton
+            HtmlCommandLink
+            HtmlDataTable
+            HtmlForm
+            HtmlGraphicImage
+            HtmlInputHidden
+            HtmlInputSecret
+            HtmlInputText
+            HtmlInputTextarea
+            HtmlMessage
+            HtmlMessages
+            HtmlOutputFormat
+            HtmlOutputLabel
+            HtmlOutputLink
+            HtmlOutputText
+            HtmlPanelGrid
+            HtmlPanelGroup
+            HtmlSelectBooleanCheckbox
+            HtmlSelectManyCheckbox
+            HtmlSelectManyListbox
+            HtmlSelectManyMenu
+            HtmlSelectOneListbox
+            HtmlSelectOneMenu
+            HtmlSelectOneRadio
+        </classes>
+        <classes package="javax.faces.context">
+            <!--class list-->
+            ExternalContext
+            FacesContext
+            FacesContextFactory
+            ResponseStream
+            ResponseWriter
+            ResponseWriterWrapper       
+       </classes>
+       <classes package="javax.faces.convert">
+            <!--interface list-->
+            Converter
+            <!--class list-->
+            BigDecimalConverter
+            BigIntegerConverter
+            BooleanConverter
+            ByteConverter
+            CharacterConverter
+            DateTimeConverter
+            DoubleConverter
+            FloatConverter
+            IntegerConverter
+            LongConverter
+            NumberConverter
+            ShortConverter            
+            <!--exception-->
+            ConverterException            
+       </classes>
+       <classes package="javax.faces.el">
+            <!--class list-->
+            PropertyResolver
+            MethodBinding
+            ValueBinding
+            VariableResolver            
+            <!--exception-->
+            EvaluationException
+            MethodNotFoundException
+            PropertyNotFoundException
+            ReferenceSyntaxException            
+      </classes>
+      <classes package="javax.faces.event ">
+            <!--interface list-->
+            ActionListener
+            FacesListener
+            PhaseListener
+            ValueChangeListener
+            <!--class list-->
+            ActionEvent
+            FacesEvent 
+            MethodExpressionActionListener
+            MethodExpressionValueChangeListener            
+            PhaseEvent
+            PhaseId
+            ValueChangeEvent
+            <!--exception-->
+            AbortProcessingException
+      </classes>
+      <classes package="javax.faces.lifecycle">
+            <!--class list-->
+            Lifecycle
+            LifecycleFactory
+      </classes>
+      <classes package="javax.faces.model">
+            <!--interface list-->
+            DataModelListener
+            <!--class list-->
+            ArrayDataModel
+            DataModel
+            DataModelEvent
+            ListDataModel
+            ResultDataModel
+            ResultSetDataModel
+            ScalarDataModel
+            SelectItem
+            SelectItemGroup            
+      </classes>
+      <classes package="javax.faces.render">
+            <!--class list-->
+            Renderer
+            RenderKit
+            RenderKitFactory
+            ResponseStateManager
+      </classes>
+      <classes package="javax.faces.validator">
+            <!--interface list-->
+            Validator
+            <!--class list-->
+            DoubleRangeValidator
+            LengthValidator
+            LongRangeValidator
+            MethodExpressionValidator
+            <!--exception-->
+            ValidatorException
+      </classes>
+      <classes package="javax.faces.webapp">
+            <!--interface list-->
+            
+            <!--class list-->
+            AttributeTag
+            ConverterELTag
+            ConverterTag
+            FacesServlet
+            FacetTag
+            UIComponentBodyTag
+            UIComponentClassicTagBase
+            UIComponentELTag
+            UIComponentTag
+            UIComponentTagBase
+            ValidatorELTag
+            ValidatorTag
+      </classes>
+    </api>
+    
+    <!--jsr 224-->
+    <api name_version="JAX-WS_2.0">
+      <classes package="javax.xml.ws">
+            <!--interface list-->
+            AsyncHandler
+            Binding
+            BindingProvider
+            Dispatch            
+            LogicalMessage
+            Provider
+            Response
+            WebServiceContext
+            <!--class list-->
+            Endpoint
+            Holder
+            Service
+            WebServicePermission
+            <!--exception-->
+            ProtocolException
+            WebServiceException
+            <!--Enums-->
+            Service$Mode
+            <!--Annotation Types-->
+            BindingType
+            RequestWrapper
+            ResponseWrapper
+            ServiceMode
+            WebEndpoint
+            WebFault
+            WebServiceClient
+            WebServiceProvider
+            WebServiceRef
+            WebServiceRefs
+      </classes>  
+      <classes package="javax.xml.ws.handler">
+            <!--interface list-->
+            Handler
+            HandlerResolver
+            LogicalHandler
+            LogicalMessageContext
+            MessageContext
+            PortInfo
+            <!--Enums-->
+            MessageContext$Scope
+      </classes>
+      <classes package="javax.xml.ws.handler.soap">
+            <!--interface list-->
+            SOAPHandler
+            SOAPMessageContext
+      </classes>
+      <classes package="javax.xml.ws.http">
+            <!--interface list-->
+            HTTPBinding
+            <!--exception-->
+            HTTPException
+      </classes>
+      <classes package="javax.xml.ws.soap">
+            <!--interface list-->
+            SOAPBinding
+            <!--exception-->
+            SOAPFaultException
+      </classes>
+      <classes package="javax.xml.ws.spi">
+            <!-- classes -->
+            Provider
+            ServiceDelegate
+      </classes>
+    </api>
+    
+    <!--jsr 222: API list is same as that found in public final draft.-->
+    <api name_version="JAXB_2.0">
+      <classes package="javax.xml.bind">
+            <!--interface list-->
+            DatatypeConverterInterface
+            Element
+            Marshaller
+            NotIdentifiableEvent
+            ParseConversionEvent
+            PrintConversionEvent
+            Unmarshaller
+            UnmarshallerHandler
+            ValidationEvent
+            ValidationEventHandler
+            ValidationEventLocator
+            Validator
+            <!--class list-->
+            Binder
+            DatatypeConverter
+            JAXBContext
+            JAXBElement
+            JAXBElement$GlobalScope
+            JAXBIntrospector
+            Marshaller$Listener
+            SchemaOutputResolver
+            Unmarshaller$Listener
+            <!--exception-->
+            JAXBException
+            MarshalException
+            PropertyException
+            TypeConstraintException
+            UnmarshalException
+            ValidationException
+      </classes>
+      <classes package="javax.xml.bind.annotation">
+            <!--interface list-->
+            DomHandler
+            <!--class list-->
+            W3CDomHandler
+            XmlElement$DEFAULT
+            XmlElementDecl$GLOBAL
+            XmlElementRef$DEFAULT
+            XmlSchemaType$DEFAULT
+            XmlType$DEFAULT
+            <!--Enums-->
+            AccessorOrder
+            AccessType
+            XmlNsForm
+            <!--Annotation Types-->
+            XmlAccessorOrder
+            XmlAccessorType
+            XmlAnyAttribute
+            XmlAnyElement
+            XmlAttachmentRef
+            XmlAttribute
+            XmlElement
+            XmlElementDecl
+            XmlElementRef
+            XmlElementRefs
+            XmlElements
+            XmlElementWrapper
+            XmlEnum
+            XmlEnumValue
+            XmlID
+            XmlIDREF
+            XmlInlineBinaryData
+            XmlList
+            XmlMimeType
+            XmlMixed
+            XmlNs
+            XmlRegistry
+            XmlRootElement
+            XmlSchema
+            XmlSchemaType
+            XmlSchemaTypes
+            XmlTransient
+            XmlType
+            XmlValue
+      </classes>
+      <classes package="javax.xml.bind.annotation.adapters">
+            <!--class list-->
+            CollapsedStringAdapter
+            HexBinaryAdapter
+            NormalizedStringAdapter
+            XmlAdapter
+            XmlJavaTypeAdapter$DEFAULT
+            <!--Annotation Types-->
+            XmlJavaTypeAdapter
+            XmlJavaTypeAdapters
+      </classes>
+      <classes package="javax.xml.bind.attachment">
+            <!--class list-->
+            AttachmentMarshaller
+            AttachmentUnmarshaller
+      </classes>
+      <classes package="javax.xml.bind.helpers">
+            <!--class list-->
+            AbstractMarshallerImpl
+            AbstractUnmarshallerImpl
+            DefaultValidationEventHandler
+            NotIdentifiableEventImpl
+            ParseConversionEventImpl
+            PrintConversionEventImpl
+            ValidationEventImpl
+            ValidationEventLocatorImpl
+      </classes>
+      <classes package="javax.xml.bind.util">
+            <!--class list-->
+            JAXBResult
+            JAXBSource
+            ValidationEventCollector
+      </classes>
+    </api> <!--End of JAXB2.0 -->
+        
+    <api name_version="WSMetadata_1.1"> <!--JSR181-->
+      <classes package="javax.jws">
+            <!--Enums-->
+            WebParam$Mode
+            <!--Annotation Types--> 
+            HandlerChain
+            Oneway
+            WebMethod
+            WebParam
+            WebResult
+            WebService
+      </classes>
+      <classes package="javax.jws.soap">
+            <!--Enums-->
+            SOAPBinding$ParameterStyle
+            SOAPBinding$Style
+            SOAPBinding$Use
+            <!--Annotation Types-->
+            InitParam
+            SOAPBinding
+            SOAPMessageHandler
+            SOAPMessageHandlers
+      </classes>      
+    </api> <!--End of jsr181-->
+    
+    <api name_version="StAX_1.0">
+      <classes package="javax.xml">
+            <!--class list-->
+            XMLConstants
+      </classes>
+      <classes package="javax.xml.namespace">
+            <!--interface list-->
+            NamespaceContext
+            <!--class list-->
+            QName
+      </classes>
+      <classes package="javax.xml.stream">
+            <!--interface list-->
+            EventFilter
+            Location
+            StreamFilter
+            XMLEventReader
+            XMLEventWriter
+            XMLReporter
+            XMLResolver
+            XMLStreamConstants
+            XMLStreamReader
+            XMLStreamWriter
+            <!--class list-->
+            XMLEventFactory
+            XMLInputFactory
+            XMLOutputFactory
+            <!--exception-->
+            XMLStreamException
+            <!--Error-->
+            FactoryConfigurationError
+      </classes>
+      <classes package="javax.xml.stream.events">
+            <!--interface list-->
+            Attribute
+            Characters
+            Comment
+            DTD
+            EndDocument
+            EndElement
+            EntityDeclaration
+            EntityReference
+            Namespace
+            NotationDeclaration
+            ProcessingInstruction
+            StartDocument
+            StartElement
+            XMLEvent
+      </classes>
+      <classes package="javax.xml.stream.util">
+            <!--interface list-->
+            XMLEventAllocator
+            XMLEventConsumer
+            <!--class list-->
+            EventReaderDelegate
+            StreamReaderDelegate
+      </classes>
+    </api> <!--End of StAX1.0-->
+    
+    <api name_version="CommonAnnotations_1.0"> <!--JSR 250-->
+      <classes package="javax.annotation">
+            <!--Enums-->
+            Resource$AuthenticationType
+            <!--Annotation Types-->
+            Generated
+            PostConstruct
+            PreDestroy
+            Resource
+            Resources
+      </classes>
+      <classes package="javax.annotation.security">
+            <!--Annotation Types-->
+            DeclareRoles
+            DenyAll
+            PermitAll
+            RolesAllowed
+            RunAs
+      </classes>
+    </api>
+
+    <api name_version="EJB_1.1">
+        <classes package="javax.ejb">
+            <!--interface list-->
+            EJBContext  
+            EJBHome  
+            EJBMetaData  
+            EJBObject  
+            EnterpriseBean  
+            EntityBean  
+            EntityContext  
+            Handle  
+            HomeHandle  
+            SessionBean  
+            SessionContext  
+            SessionSynchronization
+            <!--class list-->
+            CreateException  
+            DuplicateKeyException  
+            EJBException  
+            FinderException  
+            NoSuchEntityException
+            ObjectNotFoundException  
+            RemoveException
+        </classes>
+    </api> <!--ejb 1.1-->
+
+    <!-- Following is a list of interfaces in javax.ejb package that a component developer has access to-->
+    <api name_version="EJB_2.0">
+        <api_ref api_name_version="EJB_1.1"/>
+        <classes package="javax.ejb">
+            EJBLocalHome
+            EJBLocalObject
+            MessageDrivenBean
+            MessageDrivenContext
+            AccessLocalException
+            NoSuchObjectLocalException
+            TransactionRequiredLocalException
+            TransactionRolledbackLocalException
+        </classes>
+        <!-- The following package is an SPI, hence should not be accessed from components
+        <packages>
+            javax.ejb.spi
+        </packages>
+        -->
+    </api> <!-- ejb 2.0-->
+
+    <api name_version="EJB_2.1">
+        <api_ref api_name_version="EJB_2.0"/>
+        <classes package="javax.ejb">
+            TimedObject  
+            Timer  
+            TimerHandle  
+            TimerService
+        </classes>
+    </api> <!--ejb 2.1-->
+   
+    <!--Need to update after the final version of the spec comes--> 
+    <api name_version="EJB_3.0">
+       <api_ref api_name_version="EJB_2.1"/>
+       <classes package="javax.ejb">
+            <!--Annotations-->
+            ApplicationException
+            ActivationConfigProperty 
+            EJB
+            EJBs
+            Init
+            LocalHome
+            Local
+            MessageDriven
+            PostActivate
+            PrePassivate
+            RemoteHome
+            Remote
+            Remove
+            Stateful
+            Stateless
+            Timeout
+            TransactionAttribute
+            TransactionManagement
+            <!--Enum-->
+            TransactionAttributeType
+            TransactionManagementType
+            <!--Class list--> 
+            EJBTransactionRequiredException
+            EJBTransactionRolledbackException
+            NoSuchEJBException
+            ConcurrentAccessException
+			EJBAccessException
+       </classes>
+      <classes package="javax.interceptor">
+            AroundInvoke
+            ExcludeClassInterceptors
+            ExcludeDefaultInterceptors
+            Interceptors
+            InvocationContext
+      </classes>
+    </api>
+    
+    <api name_version="JDBCSE_2.0">
+        <classes package="javax.sql">
+            ConnectionEvent 
+            ConnectionEventListener 
+            ConnectionPoolDataSource 
+            DataSource 
+            PooledConnection 
+            RowSet 
+            RowSetEvent 
+            RowSetInternal 
+            RowSetListener 
+            RowSetMetaData 
+            RowSetReader 
+            RowSetWriter 
+            XAConnection 
+            XADataSource
+        </classes>
+    </api>
+    
+    <api name_version="JNDI_1.2">
+        <packages>
+            javax.naming
+            javax.naming.directory
+            javax.naming.event
+            javax.naming.ldap
+            javax.naming.spi
+        </packages>
+    </api>
+    
+    <api name_version="RMI-IIOP_1.0">
+        <!-- All RMI-IIOP_1.0 apis are taken care of in J2SE bundle-->
+    </api>
+    
+    <api name_version="Servlet_2.2">
+        <classes package="javax.servlet">
+            RequestDispatcher
+            Servlet
+            ServletConfig
+            ServletContext
+            ServletRequest
+            ServletResponse
+            SingleThreadModel
+            GenericServlet
+            ServletInputStream
+            ServletOutputStream
+            ServletException
+            UnavailableException
+        </classes>
+        <classes package="javax.servlet.http">
+            Cookie
+            HttpServletRequest
+            HttpServletResponse
+            HttpSession
+            HttpSessionBindingListener
+            HttpSessionContext
+            HttpServlet
+            HttpSessionBindingEvent
+            HttpUtils
+        </classes>
+    </api>
+
+    <api name_version="Servlet_2.3">
+        <api_ref api_name_version="Servlet_2.2"/>
+        <classes package="javax.servlet">
+            Filter
+            FilterChain
+            FilterConfig
+            ServletContextAttributeListener
+            ServletContextListener
+            ServletContextAttributeEvent
+            ServletContextEvent
+            ServletRequestWrapper
+            ServletResponseWrapper
+        </classes>
+        <classes package="javax.servlet.http">
+            HttpSessionActivationListener
+            HttpSessionAttributeListener
+            HttpSessionListener
+            HttpServletRequestWrapper
+            HttpServletResponseWrapper
+            HttpSessionEvent
+        </classes>
+    </api>
+    
+    <api name_version="Servlet_2.4">
+        <api_ref api_name_version="Servlet_2.3"/>
+        <classes package="javax.servlet">
+            ServletRequestAttributeListener
+            ServletRequestListener
+            ServletRequestAttributeEvent
+            ServletRequestEvent
+        </classes>
+    </api> <!--Servlet 2.4-->
+
+    <api name_version="Servlet_2.5">
+        <api_ref api_name_version="Servlet_2.4"/>
+    </api>
+    
+    <!-- taken from J2EE 1.2.1 api specs-->
+    <api name_version="JSP_1.1">
+        <classes package="javax.servlet.jsp">
+            <!--Interfaces -->
+            HttpJspPage
+            JspPage
+            <!-- Classes -->
+            JspEngineInfo
+            JspFactory
+            JspWriter
+            PageContext
+            <!--Exceptions -->
+            JspException
+            JspTagException
+        </classes>
+        <classes package="javax.servlet.jsp.tagext">
+            <!-- Interfaces -->
+            BodyTag
+            Tag
+            <!-- Classes -->
+            BodyContent
+            BodyTagSupport
+            TagAttributeInfo
+            TagData
+            TagExtraInfo
+            TagInfo
+            TagLibraryInfo
+            TagSupport
+            VariableInfo
+        </classes>
+    </api>
+    
+    <!-- taken from J2EE 1.3 api javadocs-->
+    <api name_version="JSP_1.2">
+        <api_ref api_name_version="JSP_1.1"/>
+        <classes package="javax.servlet.jsp.tagext">
+            IterationTag
+            TryCatchFinally
+            PageData
+            TagLibraryValidator
+            TagVariableInfo
+            ValidationMessage
+        </classes>
+    </api>
+    
+    <api name_version="JSP_2.0">
+        <api_ref api_name_version="JSP_1.2"/>
+        <classes package="javax.servlet.jsp">
+            ErrorData
+            JspContext
+            <!-- Exceptions -->
+            SkipPageException
+        </classes>
+        <classes package="javax.servlet.jsp.tagext">
+            DynamicAttributes
+            JspTag
+            SimpleTag
+            FunctionInfo
+            JspFragment
+            SimpleTagSupport
+            TagAdapter
+            TagFileInfo
+        </classes>
+        <classes package="javax.servlet.jsp.el">
+            <!-- Interfaces -->
+            FunctionMapper
+            VariableResolver
+            <!-- Classes -->
+            Expression
+            ExpressionEvaluator
+            <!-- Exceptions -->
+            ELException
+            ELParseException
+        </classes>
+    </api> <!-- JSP 2.0-->
+    
+    <api name_version="JSP_2.1">
+        <api_ref api_name_version="JSP_2.0"/>
+        <classes package="javax.servlet.jsp.el">
+            <!-- Classes -->
+            ImplicitObjectELResolver
+            ScopedAttributeELResolver
+        </classes>
+        <classes package="javax.servlet.jsp">
+            <!--interfaces-->
+            JspApplicationContext
+        </classes>
+        <classes package="javax.servlet.jsp.tagext">
+            <!--interfaces-->
+            JspIdConsumer        
+        </classes>
+        <!-- JSP 2.1 also include the javax.el package -->
+        <classes package="javax.el">
+               ArrayELResolver
+               BeanELResolver
+               CompositeELResolver
+               ELContext
+               ELContextEvent
+               ELContextListener
+               ELException
+               ELResolver
+               ELUtil
+               Expression
+               ExpressionFactory
+               FunctionMapper
+               ListELResolver
+               MapELResolver
+               MethodExpression
+               MethodInfo
+               MethodNotFoundException
+               PropertyNotFoundException
+               PropertyNotWritableException
+               ResourceBundleELResolver
+               ValueExpression
+               VariableMapper
+        </classes>
+    </api> <!-- JSP 2.1-->
+    
+    <api name_version="JMS_1.0">
+        <classes package="javax.jms">
+            <!--Interfaces -->
+            BytesMessage
+            Connection
+            <!-- The following classes is not accessible to components. 
+                 See section# 6.7 of J2EE 1.3 Spec.
+            ConnectionConsumer
+            -->
+            ConnectionFactory
+            ConnectionMetaData
+            DeliveryMode
+            Destination
+            ExceptionListener
+            MapMessage
+            Message
+            MessageConsumer
+            MessageListener
+            MessageProducer
+            ObjectMessage
+            Queue
+            QueueBrowser
+            QueueConnection
+            QueueConnectionFactory
+            QueueReceiver
+            QueueSender
+            QueueSession
+            <!-- The following classes is not accessible to components. 
+                 See section# 6.7 of J2EE 1.3 Spec.
+            ServerSession
+            ServerSessionPool
+            -->
+            Session
+            StreamMessage
+            TemporaryQueue
+            TemporaryTopic
+            TextMessage
+            Topic
+            TopicConnection
+            TopicConnectionFactory
+            TopicPublisher
+            TopicSession
+            TopicSubscriber
+            <!-- The following classes is not accessible to components. 
+                 See section# 6.7 of J2EE 1.4 Spec.
+            XAConnection
+            XAConnectionFactory
+            XAQueueConnection
+            XAQueueConnectionFactory
+            XAQueueSession
+            XASession
+            XATopicConnection
+            XATopicConnectionFactory
+            XATopicSession
+            -->
+            <!--Classes -->
+            QueueRequestor
+            TopicRequestor
+            <!--Exceptions -->
+            IllegalStateException
+            InvalidClientIDException
+            InvalidDestinationException
+            InvalidSelectorException
+            JMSException
+            JMSSecurityException
+            MessageEOFException
+            MessageFormatException
+            MessageNotReadableException
+            MessageNotWriteableException
+            ResourceAllocationException
+            TransactionInProgressException
+            TransactionRolledBackException
+        </classes>
+    </api>
+    
+    <api name_version="JMS_1.1">
+        <classes package="javax.jms">
+            <!-- interfaces-->
+            BytesMessage
+            Connection
+            <!-- The following class is not accessible to components. 
+                 See section# 6.7 of J2EE 1.4 Spec.
+            ConnectionConsumer
+            -->
+            ConnectionFactory
+            ConnectionMetaData
+            DeliveryMode
+            Destination
+            ExceptionListener
+            MapMessage
+            Message
+            MessageConsumer
+            MessageListener
+            MessageProducer
+            ObjectMessage
+            Queue
+            QueueBrowser
+            QueueConnection
+            QueueConnectionFactory
+            QueueReceiver
+            QueueSender
+            QueueSession
+            <!-- The following classes is not accessible to components. 
+                 See section# 6.6 of J2EE 1.4 Spec.
+            ServerSession
+            ServerSessionPool
+            -->
+            Session
+            StreamMessage
+            TemporaryQueue
+            TemporaryTopic
+            TextMessage
+            Topic
+            TopicConnection
+            TopicConnectionFactory
+            TopicPublisher
+            TopicSession
+            TopicSubscriber
+            <!-- The following XA api should not beused by components as these are SPIs. 
+                 See Section# 6.6 of J2EE 1.4 spec.
+            XAConnection
+            XAConnectionFactory
+            XAQueueConnection
+            XAQueueConnectionFactory
+            XAQueueSession
+            XASession
+            XATopicConnection
+            XATopicConnectionFactory
+            XATopicSession
+            -->
+            <!-- Classes -->
+            QueueRequestor
+            TopicRequestor
+            <!-- Exceptions -->
+            IllegalStateException
+            InvalidClientIDException
+            InvalidDestinationException
+            InvalidSelectorException
+            JMSException
+            JMSSecurityException
+            MessageEOFException
+            MessageFormatException
+            MessageNotReadableException
+            MessageNotWriteableException
+            ResourceAllocationException
+            TransactionInProgressException
+            TransactionRolledBackException
+        </classes>
+    </api> <!-- JMS 1.1 -->
+
+    <api name_version="JTA_1.0">
+        <classes package="javax.transaction">
+            Status
+            Synchronization
+            Transaction
+            TransactionManager
+            UserTransaction
+            <!--Exceptions -->
+            HeuristicCommitException
+            HeuristicMixedException
+            HeuristicRollbackException
+            InvalidTransactionException
+            NotSupportedException
+            RollbackException
+            SystemException
+            TransactionRequiredException
+            TransactionRolledbackException
+        </classes>
+        <classes package="javax.transaction.xa">
+        <!-- This seems to be an SPI, but I don't see any mention of this not being accessible to components-->
+            XAResource
+            Xid
+            XAException
+        </classes>
+    </api> <!-- JTA 1.0 -->
+    
+    <api name_version="JTA_1.1">
+        <api_ref api_name_version="JTA_1.0"/>
+        <classes package="javax.transaction">
+            TransactionSynchronizationRegistry
+        </classes>
+    </api>
+    
+    <api name_version="JavaMail_1.1">
+        <classes package="javax.mail">
+            <!--Interfaces -->
+            MessageAware
+            MultipartDataSource
+            Part
+            UIDFolder
+            <!--Classes -->
+            Address
+            Authenticator
+            BodyPart
+            FetchProfile
+            FetchProfile$Item
+            Flags
+            Flags$Flag
+            Folder
+            Header
+            Message
+            Message$RecipientType
+            MessageContext
+            Multipart
+            PasswordAuthentication
+            Provider
+            Provider$Type
+            Service
+            Session
+            Store
+            Transport
+            UIDFolder$FetchProfileItem
+            URLName
+            <!--Exceptions -->
+            AuthenticationFailedException
+            FolderClosedException
+            FolderNotFoundException
+            IllegalWriteException
+            MessageRemovedException
+            MessagingException
+            MethodNotSupportedException
+            NoSuchProviderException
+            SendFailedException
+            StoreClosedException
+        </classes>
+        <classes package="javax.mail.event">
+            <!--Interfaces -->
+            ConnectionListener
+            FolderListener
+            MessageChangedListener
+            MessageCountListener
+            StoreListener
+            TransportListener
+            <!--Classes -->
+            ConnectionAdapter
+            ConnectionEvent
+            FolderAdapter
+            FolderEvent
+            MailEvent
+            MessageChangedEvent
+            MessageCountAdapter
+            MessageCountEvent
+            StoreEvent
+            TransportAdapter
+            TransportEvent
+        </classes>
+        <classes package="javax.mail.internet">
+            <!--Interfaces -->
+            MimePart
+            <!--Classes -->
+            ContentType
+            HeaderTokenizer
+            HeaderTokenizer$Token
+            InternetAddress
+            InternetHeaders
+            MimeBodyPart
+            MimeMessage
+            MimeMessage$RecipientType
+            MimeMultipart
+            MimePartDataSource
+            MimeUtility
+            NewsAddress
+            ParameterList
+            <!--Exceptions -->
+            AddressException
+            ParseException
+        </classes>
+        <classes package="javax.mail.search">
+            <!--Classes -->
+            AddressStringTerm
+            AddressTerm
+            AndTerm
+            BodyTerm
+            ComparisonTerm
+            DateTerm
+            FlagTerm
+            FromStringTerm
+            FromTerm
+            HeaderTerm
+            IntegerComparisonTerm
+            MessageIDTerm
+            MessageNumberTerm
+            NotTerm
+            OrTerm
+            ReceivedDateTerm
+            RecipientStringTerm
+            RecipientTerm
+            SearchTerm
+            SentDateTerm
+            SizeTerm
+            StringTerm
+            SubjectTerm
+            <!--Exceptions -->
+            SearchException
+        </classes>
+    </api>
+
+    <api name_version="JavaMail_1.2">
+        <!-- All 1.2 apis are same as 1.1 apis -->
+        <api_ref api_name_version="JavaMail_1.1"/>
+        <classes package="javax.mail.internet">
+            <!-- interfaces -->
+            SharedInputStream
+            <!-- classses -->
+            ContentDisposition
+            MailDateFormat
+        </classes>
+    </api>
+        
+    <api name_version="JavaMail_1.3">
+        <api_ref api_name_version="JavaMail_1.2"/>
+        <classes package="javax.mail">
+            ReadOnlyFolderException
+        </classes>
+    </api> <!-- JavaMail 1.3 -->
+    
+    <api name_version="JavaMail_1.4">
+        <api_ref api_name_version="JavaMail_1.3"/>
+        <classes package="javax.mail">
+            <!-- interfaces -->
+            QuotaAwareStore
+            <!-- classes -->
+            Quota
+            Quota$Resource
+        </classes>
+        <classes package="javax.mail.internet">
+            <!-- classes -->
+            InternetHeaders$InternetHeader
+            PreencodedMimeBodyPart
+        </classes>
+        <classes package="javax.mail.util">
+            ByteArrayDataSource
+            SharedByteArrayInputStream
+            SharedFileInputStream
+        </classes>
+    </api>
+
+    <api name_version="JAF_1.0">
+        <classes package="javax.activation">
+            <!--Interfaces -->
+            CommandObject
+            DataContentHandler
+            DataContentHandlerFactory
+            DataSource
+            <!--Classes -->
+            ActivationDataFlavor
+            CommandInfo
+            CommandMap
+            DataHandler
+            FileDataSource
+            FileTypeMap
+            MailcapCommandMap
+            MimeType
+            MimeTypeParameterList
+            MimetypesFileTypeMap
+            URLDataSource
+            <!--Exceptions -->
+            MimeTypeParseException
+            UnsupportedDataTypeException
+        </classes>
+    </api> <!-- JAF 1.0 -->
+    
+    <api name_version="JAF_1.0.2">
+        <api_ref api_name_version="JAF_1.0"/>
+    </api> <!-- End of JAF_1.0.2-->
+    
+    <api name_version="JAF_1.1">
+        <api_ref api_name_version="JAF_1.0.2"/>
+        <classes package="javax.activation">
+            DataHandlerDataSource
+            DataSourceDataContentHandler
+            ObjectDataContentHandler
+            SecuritySupport
+        </classes>
+    </api>
+    
+    <api name_version="JAXP_1.2">
+        <packages>
+            javax.xml.parsers
+            javax.xml.transform
+            javax.xml.transform.dom
+            javax.xml.transform.sax
+            javax.xml.transform.stream
+            org.w3c.dom
+            org.xml.sax
+            org.xml.sax.ext
+            org.xml.sax.helpers
+        </packages>
+    </api> <!-- JAXP 1.2-->
+
+    <api name_version="JCA_1.0">
+        <classes package="javax.resource">
+            <!--Interfaces -->
+            Referenceable
+            <!--Exceptions -->
+            NotSupportedException
+            ResourceException
+        </classes>
+        <classes package="javax.resource.cci">
+            <!--Interfaces -->
+            Connection
+            ConnectionFactory
+            ConnectionMetaData
+            ConnectionSpec
+            IndexedRecord
+            Interaction
+            InteractionSpec
+            LocalTransaction
+            MappedRecord
+            Record
+            RecordFactory
+            ResourceAdapterMetaData
+            ResultSet
+            ResultSetInfo
+            Streamable
+            <!--Exceptions -->
+            ResourceWarning
+        </classes>
+        <classes package="javax.resource.spi">
+            <!--Interfaces -->
+            ConnectionEventListener
+            ConnectionManager
+            ConnectionRequestInfo
+            LocalTransaction
+            ManagedConnection
+            ManagedConnectionFactory
+            ManagedConnectionMetaData
+            <!--Classes -->
+            ConnectionEvent
+            <!--Exceptions -->
+            ApplicationServerInternalException
+            CommException
+            EISSystemException
+            IllegalStateException
+            LocalTransactionException
+            ResourceAdapterInternalException
+            ResourceAllocationException
+            SecurityException
+        </classes>
+        <classes package="javax.resource.spi.security">
+            <!--Interfaces -->
+            GenericCredential
+            <!--Classes -->
+            PasswordCredential
+        </classes>
+    </api>
+    
+    <api name_version="JCA_1.5">
+        <api_ref api_name_version="JCA_1.0"/>
+        <classes package="javax.resource.cci">
+            MessageListener
+        </classes>
+        <classes package="javax.resource.spi">
+            ActivationSpec
+            BootstrapContext
+            DissociatableManagedConnection
+            LazyAssociatableConnectionManager
+            LazyEnlistableConnectionManager
+            LazyEnlistableManagedConnection
+            ResourceAdapter
+            ResourceAdapterAssociation
+            ValidatingManagedConnectionFactory
+            XATerminator
+            InvalidPropertyException
+            SharingViolationException
+            UnavailableException
+        </classes>
+        <classes package="javax.resource.spi.endpoint">
+            <!--Interfaces -->
+            MessageEndpoint
+            MessageEndpointFactory
+        </classes>
+        <classes package="javax.resource.spi.work">
+            <!--Interfaces -->
+            Work
+            WorkListener
+            WorkManager
+            <!--Classes -->
+            ExecutionContext
+            WorkAdapter
+            WorkEvent
+            <!--Exceptions -->
+            WorkCompletedException
+            WorkException
+            WorkRejectedException
+        </classes>
+    </api> <!-- JCA 1.5 -->
+
+    <api name_version="JAAS_1.0">
+        <packages>
+            javax.security.auth
+            javax.security.auth.callback
+            javax.security.auth.login
+            javax.security.auth.spi
+        </packages>
+    </api>
+    
+    <api name_version="SAAJ_1.2">
+        <!-- taken from Chapter# 1 of SAAJ 1.2 specification -->
+        <packages>
+            javax.xml.soap
+        </packages>
+    </api>
+    
+    <api name_version="SAAJ_1.3">
+        <api_ref api_name_version="SAAJ_1.2"/>
+        <!--update when the spec finalises -->    
+    </api>
+    
+    <api name_version="JSPDebug_1.0">
+        <!--no apis specific to JSPDebug-->    
+    </api>
+
+    <api name_version="JavaPersistence_1.0">
+        <classes package="javax.persistence">
+            <!-- interfaces -->
+            EntityManager
+            EntityManagerFactory
+            EntityTransaction
+            Query
+            
+            <!-- classes -->
+            Persistence
+            
+            <!-- enums -->
+            CascadeType
+            DiscriminatorType
+            EnumType
+            FetchType
+            FlushModeType
+            GenerationType
+            InheritanceType
+            LockModeType
+            PersistenceContextType
+            TemporalType
+            
+            <!-- exceptions -->
+            EntityExistsException
+            EntityNotFoundException
+            NonUniqueResultException
+            NoResultException
+            OptimisticLockException
+            PersistenceException
+            RollbackException
+            TransactionRequiredException
+            
+            <!-- annotation types -->
+            AssociationOverride
+            AssociationOverrides
+            AttributeOverride
+            AttributeOverrides
+            Basic
+            Column
+            ColumnResult
+            DiscriminatorColumn
+            DiscriminatorValue
+            Embeddable
+            Embedded
+            EmbeddedId
+            Entity
+            EntityListeners
+            EntityResult
+            Enumerated
+            ExcludeDefaultListeners
+            ExcludeSupeListeners
+            FieldResult
+            GeneratedValue
+            Id
+            IdClass
+            Inheritance
+            JoinColumn
+            JoinColumns
+            JoinTable
+            Lob
+            ManyToMany
+            ManyToOne
+            MapKey
+            MappedSupe
+            NamedNativeQueries
+            NamedNativeQuery
+            NamedQueries
+            NamedQuery
+            OneToMany
+            OneToOne
+            OrderBy
+            PersistenceContext
+            PersistenceContexts
+            PersistenceProperty
+            PersistenceUnit
+            PersistenceUnits
+            PostLoad
+            PostPersist
+            PostRemove
+            PostUpdate
+            PrePersist
+            PreRemove
+            PreUpdate
+            PrimaryKeyJoinColumn
+            PrimaryKeyJoinColumns
+            QueryHint
+            SecondaryTable
+            SecondaryTables
+            SequenceGenerator
+            SqlResultSetMapping
+            SqlResultSetMappings
+            Table
+            TableGenerator
+            Temporal
+            Transient
+            UniqueConstraint
+            Version
+        </classes>
+    </api>
+    
+    <api name_version="JAXR_1.0">
+        <!-- taken from J2EE 1.4 api documented at http://java.sun.com/j2ee/1.4/docs/api/index.html -->
+        <packages>
+            javax.xml.registry
+            javax.xml.registry.infomodel
+        </packages>
+    </api>
+    
+    <api name_version="WebServices_1.1">
+        <!-- no apis specific to web service-->
+    </api>
+
+    <api name_version="WebServices_1.2">
+        <api_ref api_name_version="WebServices_1.1"/>
+        <!-- no apis specific to web service-->
+    </api>
+        
+    <api name_version="JAX-RPC_1.1">
+        <packages>
+            javax.xml.rpc
+            javax.xml.rpc.encoding
+            javax.xml.rpc.handler
+            javax.xml.rpc.handler.soap
+            javax.xml.rpc.holders
+            javax.xml.rpc.server
+            javax.xml.rpc.soap
+        </packages>
+    </api>
+
+    <api name_version="JMX_1.2">
+        <!-- JMX is not a part of J2SE 1.4. JMX provids basic infrastructure for J2EE-Management framework-->
+        <packages>
+            javax.management
+            javax.management.loading
+            javax.management.modelmbean
+            javax.management.monitor
+            javax.management.openmbean
+            javax.management.relation
+            javax.management.timer
+        </packages>
+    </api>
+
+    <api name_version="J2EE-Management_1.0">
+        <packages>
+            javax.management.j2ee
+            javax.management.j2ee.statistics
+        </packages>
+    </api>
+
+    <api name_version="JavaEE-Management_1.1">
+        <api_ref api_name_version="J2EE-Management_1.0"/>
+    </api>
+    
+    <api name_version="J2EE-Deployment_1.1">
+        <packages>
+            javax.enterprise.deploy.model
+            javax.enterprise.deploy.shared
+            javax.enterprise.deploy.shared.factories
+            <!-- The following is a list of spis targetted for J2EE product vendors and hence should not
+                accessed by components 
+            javax.enterprise.deploy.spi
+            javax.enterprise.deploy.spi.exceptions
+            javax.enterprise.deploy.spi.factories
+            javax.enterprise.deploy.spi.status
+            -->
+        </packages>
+    </api>
+    <api name_version="JACC_1.0">
+        <classes package="javax.security.jacc">
+            <!-- interfaces -->
+            PolicyConfiguration
+            PolicyContextHandler
+            <!-- Classes -->
+            EJBMethodPermission
+            EJBRoleRefPermission
+            PolicyConfigurationFactory
+            PolicyContext
+            WebResourcePermission
+            WebRoleRefPermission
+            WebUserDataPermission
+            <!-- Exceptions -->
+            PolicyContextException
+        </classes>
+    </api>
+
+    <api name_version="JACC_1.1">
+        <api_ref api_name_version="JACC_1.0"/>
+    </api>
+    
+    <api name_version="J2SE_1.3">
+        <packages>
+            java.applet
+            java.awt
+            java.awt.color
+            java.awt.datatransfer
+            java.awt.dnd
+            java.awt.event
+            java.awt.font
+            java.awt.geom
+            java.awt.im
+            java.awt.im.spi
+            java.awt.image
+            java.awt.image.renderable
+            java.awt.print
+            java.beans
+            java.beans.beancontext
+            java.io
+            java.lang
+            java.lang.ref
+            java.lang.reflect
+            java.math
+            java.net
+            java.rmi
+            java.rmi.activation
+            java.rmi.dgc
+            java.rmi.registry
+            java.rmi.server
+            java.security
+            java.security.acl
+            java.security.cert
+            java.security.interfaces
+            java.security.spec
+            java.sql
+            java.text
+            java.util
+            java.util.jar
+            java.util.zip
+            javax.accessibility
+            javax.naming
+            javax.naming.directory
+            javax.naming.event
+            javax.naming.ldap
+            javax.naming.spi
+            javax.rmi
+            javax.rmi.CORBA
+            javax.sound.midi
+            javax.sound.midi.spi
+            javax.sound.sampled
+            javax.sound.sampled.spi
+            javax.swing
+            javax.swing.border
+            javax.swing.colorchooser
+            javax.swing.event
+            javax.swing.filechooser
+            javax.swing.plaf
+            javax.swing.plaf.basic
+            javax.swing.plaf.metal
+            javax.swing.plaf.multi
+            javax.swing.table
+            javax.swing.text
+            javax.swing.text.html
+            javax.swing.text.html.parser
+            javax.swing.text.rtf
+            javax.swing.tree
+            javax.swing.undo
+            javax.transaction
+            org.omg.CORBA
+            org.omg.CORBA_2_3
+            org.omg.CORBA_2_3.portable
+            org.omg.CORBA.DynAnyPackage
+            org.omg.CORBA.ORBPackage
+            org.omg.CORBA.portable
+            org.omg.CORBA.TypeCodePackage
+            org.omg.CosNaming
+            org.omg.CosNaming.NamingContextPackage
+            org.omg.SendingContext
+            org.omg.stub.java.rmi
+        </packages>
+    </api>
+    <api name_version="J2SE_1.4">
+        <!-- This set of packages are taken from http://java.sun.com/j2se/1.4.2/docs/api/index.html
+        -->
+        <api_ref api_name_version="J2SE_1.3"/>
+        <packages>
+            java.nio
+            java.nio.channels
+            java.nio.channels.spi
+            java.nio.charset
+            java.nio.charset.spi
+            java.util.logging
+            java.util.prefs
+            java.util.regex
+            javax.crypto
+            javax.crypto.interfaces
+            javax.crypto.spec
+            javax.imageio
+            javax.imageio.event
+            javax.imageio.metadata
+            javax.imageio.plugins.jpeg
+            javax.imageio.spi
+            javax.imageio.stream
+            javax.net
+            javax.net.ssl
+            javax.print
+            javax.print.attribute
+            javax.print.attribute.standard
+            javax.print.event
+            javax.security.auth
+            javax.security.auth.callback
+            javax.security.auth.kerberos
+            javax.security.auth.login
+            javax.security.auth.spi
+            javax.security.auth.x500
+            javax.security.cert
+            javax.sql
+            javax.transaction.xa
+            javax.xml.parsers
+            javax.xml.transform
+            javax.xml.transform.dom
+            javax.xml.transform.sax
+            javax.xml.transform.stream
+            org.ietf.jgss
+            org.omg.CosNaming.NamingContextExtPackage
+            org.omg.Dynamic
+            org.omg.DynamicAny
+            org.omg.DynamicAny.DynAnyFactoryPackage
+            org.omg.DynamicAny.DynAnyPackage
+            org.omg.IOP
+            org.omg.IOP.CodecFactoryPackage
+            org.omg.IOP.CodecPackage
+            org.omg.Messaging
+            org.omg.PortableInterceptor
+            org.omg.PortableInterceptor.ORBInitInfoPackage
+            org.omg.PortableServer
+            org.omg.PortableServer.CurrentPackage
+            org.omg.PortableServer.POAManagerPackage
+            org.omg.PortableServer.POAPackage
+            org.omg.PortableServer.portable
+            org.omg.PortableServer.ServantLocatorPackage
+            org.w3c.dom
+            org.xml.sax
+            org.xml.sax.ext
+            org.xml.sax.helpers
+        </packages>
+    </api> <!-- J2SE 1.4-->
+    <api name_version="J2SE_5.0">
+       <api_ref api_name_version="J2SE_1.4"/>
+        <packages>
+            java.lang.annotation
+            java.lang.instrument
+            java.lang.management
+            java.util.concurrent
+            java.util.concurrent.atomic
+            java.util.concurrent.locks
+            javax.activity
+            javax.imageio.plugins.bmp
+            javax.management
+            javax.management.loading
+            javax.management.modelmbean
+            javax.management.monitor
+            javax.management.openmbean
+            javax.management.relation
+            javax.management.remote
+            javax.management.remote.rmi
+            javax.management.timer
+            javax.rmi.ssl
+            javax.security.sasl
+            javax.sql.rowset
+            javax.sql.rowset.serial
+            javax.sql.rowset.spi
+            javax.swing.plaf.synth
+            javax.xml
+            javax.xml.datatype
+            javax.xml.namespace
+            javax.xml.validation
+            javax.xml.xpath
+            org.w3c.dom.bootstrap
+            org.w3c.dom.events
+            org.w3c.dom.ls
+        </packages>
+    </api>
+
+</root>
+

@@ -1,0 +1,90 @@
+<!--
+
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) 1997, 2010 Oracle and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+    or packager/legal/LICENSE.txt.  See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at packager/legal/LICENSE.txt.
+
+    GPL Classpath Exception:
+    Oracle designates this particular file as subject to the "Classpath"
+    exception as provided by Oracle in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+
+-->
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>Upgrade Tool: An Overview</title>
+</head>
+<body style="background-color: rgb(255, 255, 255);">
+<h1>Upgrade Tool: An Overview</h1>
+<p>Use the Upgrade Tool to transfer configuration information from an
+Application Server 9.1 or GlassFish Prelude
+installation to a GlassFish Server Open Source Edition 3.1 installation.
+Information that is transferred includes data
+about
+deployed applications, the file realm, security certificates, and other
+resource and server configuration settings.</p>
+<p>The tool automatically detects the version of the specified source
+server installation.</p>
+<blockquote>
+  <p><b>Note: </b><em>Before starting the upgrade process, make sure
+that both the source server (the server from which you are upgrading)
+and the target server (the server to which you are upgrading) are
+stopped.</em></p>
+</blockquote>
+<p>
+</p>
+<h2 class="sol">Upgrade Terminology</h2>
+<p>The following are important terms related to the upgrade process:</p>
+<ul>
+  <li>
+    <p>Source Domain Directory: the old domain that will be upgraded to
+    the new server. The original domain is not changed; it is copied
+    and the copy is upgraded.</p>
+  </li>
+  <li>
+    <p>Target Domains Root Directory: the domains directory of installation to
+      which you are upgrading. This can be any directory, but if the source
+    domain is being moved from one SERVER_HOME/domains directory to the
+    other, 3rd part jar files can be copied from the source server to the
+    target server.</p>
+  </li>
+  <li>
+    <p>Master Password: the master password of the target server. Leave
+      blank for the default.</p>
+  </li>
+</ul>
+<a href="copyright.html" target="main">Legal Notices</a>
+</body>
+</html>

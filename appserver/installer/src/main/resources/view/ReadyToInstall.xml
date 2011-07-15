@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) 2007-2010 Oracle and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+    or packager/legal/LICENSE.txt.  See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at packager/legal/LICENSE.txt.
+
+    GPL Classpath Exception:
+    Oracle designates this particular file as subject to the "Classpath"
+    exception as provided by Oracle in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+
+-->
+
+<apt:template apt:name="ReadyToInstall" xmlns:apt="http://www.sun.com/jds/apoc/2004/template"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:oor="http://openoffice.org/2001/registry"
+    xsi:schemaLocation="http://www.sun.com/jds/apoc/2004/template ../../../consumables/schemas/config/apoc/policytemplate.xsd">
+  <apt:category apt:name="ReadyToInstall" apt:label="Ready To Install">
+
+    <apt:page apt:name="ReadyToInstall" apt:label="Ready To Install">
+
+      <apt:section apt:name="ReadyToInstall" apt:label="Ready To Install">
+        <apt:property apt:name="TO_OPERATE_ON"
+          apt:dataPath=""
+          apt:type="xs:string">
+          <apt:prop-value><![CDATA[<HTML><BODY>
+          </BODY></HTML>]]></apt:prop-value>
+          <apt:visual>
+            <apt:htmlPanel/>
+          </apt:visual>
+        </apt:property>
+      </apt:section>
+      <apt:scriptHandler apt:scriptLanguage="beanshell">
+        <apt:scriptCode><![CDATA[
+          import org.openinstaller.provider.ui.sequencer.GlobalPageSequence;
+          import org.openinstaller.provider.dependency.DependencyControl;
+          import org.openinstaller.contracts.product.ProductNodeInterface;
+          import org.openinstaller.provider.sims.SIMSControl;
+          import org.openinstaller.bus.BusRequest;
+          import org.openinstaller.sims.SystemProduct;
+          import org.openinstaller.bus.BusResponse;
+          import org.openinstaller.bus.ControlBus;
+          import org.openinstaller.sims.Backend;
+          import org.openinstaller.util.Msg;
+          import org.openinstaller.util.Platform;
+          import org.openinstaller.util.TemplateProcessor;
+          import org.openinstaller.provider.operation.Operation;
+          import org.openinstaller.provider.operation.ProductMap;
+          import org.openinstaller.provider.operation.OpsControl;
+          import org.openinstaller.provider.operation.OpsProvider;
+          import org.openinstaller.provider.operation.OperationImpossibleException;
+          import org.openinstaller.provider.operation.Operation.OPTYPE;
+          import org.openinstaller.provider.sims.SIMSControl.SIMSCommand;
+          import org.openinstaller.provider.dependency.DependencyProvider;
+          import org.openinstaller.provider.dependency.DependencyManager;
+          import org.openinstaller.provider.dependency.PlatformInstUnit;
+          import org.openinstaller.util.install.Common;
+          import org.openinstaller.core.PROCESSING_MODE;
+          import java.util.HashSet;
+          import java.util.List;
+          import java.util.ArrayList;
+
+            toProperCase(aString) {
+              if (aString == null || aString.equals("")) {
+                return "";
+              } else if (aString.length() == 1) {
+                return aString.toUpperCase();
+              }
+              return aString.substring(0, 1).toUpperCase() + aString.substring(1).toLowerCase();
+            }
+
+            run(){
+              if (! GlobalPageSequence.getCurrentPageName().equals("ReadyToInstall")) {
+                return;
+              }
+              toOperateOn = wizard.getComponentByName((Container)content, "TO_OPERATE_ON");
+
+               theOperations = (java.util.List )Scripting.getInterpreter().get("gOperations");
+               String theProductList = "<HTML><body><font face='Sans-Serif' size='3'>";
+               theProductList = theProductList + "GlassFish v3 Prelude" + "<ul>";
+               //  FIXME: This is temporary solution to remove duplicate operation entries.
+               theSeenSet = new HashSet();
+               boolean theRepairFlag = false;
+               for (Operation op : theOperations) {
+                 if (op.getOperation() == Operation.OPTYPE.UNREGISTER @and op.getSystemProduct() != null) {
+                   theID = op.getSystemProduct().getName() + " " + op.getSystemProduct().getDescription().toString();
+                   theDesc = op.getSystemProduct().getName();
+                   if (! theSeenSet.contains(theID)) {
+                     theProductList = theProductList + "<li>" + Msg.get("uninstall", new Object[]{theDesc});
+                     theSeenSet.add(theID);
+                   }
+                 } else if (op.getOperation() == Operation.OPTYPE.REGISTER @and op.getMediaPackage() == null @and op.getMediaProduct() != null) {
+                   theID = op.getMediaProduct().getID();
+                   theDesc = op.getMediaProduct().getDescription();
+                   if (! theSeenSet.contains(theID)) {
+                     theProductList = theProductList + "<li>" + Msg.get("install", new Object[]{theDesc});
+                     theSeenSet.add(theID);
+                   }
+                 } else if (op.getOperation() == Operation.OPTYPE.CONFIGURE @and op.getMediaProduct() != null) {
+                   theID = op.getMediaProduct().getID();
+                   theDesc = op.getMediaProduct().getDescription();
+                   theProductList = theProductList + "<li>" + Msg.get("configure", new Object[]{theDesc});
+                 } else if (op.getOperation() == Operation.OPTYPE.UNCONFIGURE @and op.getSystemProduct() != null) {
+                   theID = op.getSystemProduct().getName();
+                   theDesc = op.getSystemProduct().getName();
+                   theProductList = theProductList + "<li>" + Msg.get("unconfigure", new Object[]{theDesc});
+                 } else if (op.getOperation() == Operation.OPTYPE.REPAIR @and op.getMediaProduct() != null @and op.getSystemProduct() != null) {
+                   theID = op.getMediaProduct().getID();
+                   theDesc = op.getMediaProduct().getDescription();
+                   if (! theSeenSet.contains(theID)) {
+                     theProductList = theProductList + "<li>" + Msg.get("repair", new Object[]{theDesc});
+                     theSeenSet.add(theID);
+                     theRepairFlag = true;
+                   }
+                 }
+               }
+               theProductList += "</ul></font></body></HTML>";
+               toOperateOn.setText(theProductList);
+               toOperateOn.repaint();
+
+              /* get processing mode */
+              String theMode = Common.getProcessingMode();
+              String theOpName;
+              if (theMode.equals(PROCESSING_MODE.INSTALL.name()) || theMode.equals(PROCESSING_MODE.REMOVE.name())) {
+                theOpName = Enum.valueOf(Operation.OPTYPE.class, theMode).name();
+              } else {
+                throw new EnhancedException("UNEXPECTED_PROCESSING_MODE", "mode=" + theMode);
+              }
+              if (theOpName.equalsIgnoreCase("Install") && theRepairFlag) {
+                theOpName = Operation.OPTYPE.REPAIR.name();
+              }
+
+              wizard.setNextButtonText(Msg.get(theOpName, new String[] {}));
+              wizard.enableCancel(true);
+              wizard.enableHelp(true);
+              wizard.enableBack(true);
+              wizard.enableNext(true);
+            }
+            return (Runnable)this;
+          ]]></apt:scriptCode>
+      </apt:scriptHandler>
+    </apt:page>
+  </apt:category>
+</apt:template>

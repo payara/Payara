@@ -1,0 +1,290 @@
+/*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright (c) 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common Development
+ * and Distribution License("CDDL") (collectively, the "License").  You
+ * may not use this file except in compliance with the License.  You can
+ * obtain a copy of the License at
+ * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+ * or packager/legal/LICENSE.txt.  See the License for the specific
+ * language governing permissions and limitations under the License.
+ *
+ * When distributing the software, include this License Header Notice in each
+ * file and include the License file at packager/legal/LICENSE.txt.
+ *
+ * GPL Classpath Exception:
+ * Oracle designates this particular file as subject to the "Classpath"
+ * exception as provided by Oracle in the GPL Version 2 section of the License
+ * file that accompanied this code.
+ *
+ * Modifications:
+ * If applicable, add the following below the License Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
+ * "Portions Copyright [year] [name of copyright owner]"
+ *
+ * Contributor(s):
+ * If you wish your version of this file to be governed by only the CDDL or
+ * only the GPL Version 2, indicate your decision by adding "[Contributor]
+ * elects to include this software in this distribution under the [CDDL or GPL
+ * Version 2] license."  If you don't indicate a single choice of license, a
+ * recipient has the option to distribute your version of this file under
+ * either the CDDL, the GPL Version 2 or to extend the choice of license to
+ * its licensees as provided above.  However, if you add GPL Version 2 code
+ * and therefore, elected the GPL Version 2 license, then the option applies
+ * only if the new code is made subject to such option by the copyright
+ * holder.
+ */
+
+package com.sun.enterprise.v3.server;
+
+import org.jvnet.hk2.config.TransactionListener;
+import org.jvnet.hk2.config.Transactions;
+import org.jvnet.hk2.config.UnprocessedChangeEvents;
+import org.jvnet.hk2.config.types.Property;
+import org.jvnet.hk2.annotations.Inject;
+import org.jvnet.hk2.annotations.Scoped;
+import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.component.Singleton;
+import org.jvnet.hk2.component.PostConstruct;
+import com.sun.enterprise.module.bootstrap.StartupContext;
+
+import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.api.ActionReport;
+import org.glassfish.api.deployment.UndeployCommandParameters;
+import org.glassfish.internal.api.PostStartup;
+import org.glassfish.internal.data.ApplicationRegistry;
+import org.glassfish.internal.data.ApplicationInfo;
+import org.glassfish.internal.deployment.Deployment;
+
+import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.config.serverbeans.Server;
+import com.sun.enterprise.config.serverbeans.Applications;
+import com.sun.enterprise.config.serverbeans.Application;
+import com.sun.enterprise.config.serverbeans.ApplicationRef;
+import com.sun.enterprise.config.serverbeans.Cluster;
+import com.sun.enterprise.config.serverbeans.ServerTags;
+import com.sun.enterprise.util.LocalStringManagerImpl;
+import com.sun.logging.LogDomains;
+import com.sun.enterprise.v3.common.HTMLActionReporter;
+
+import java.beans.PropertyChangeEvent;
+import java.util.List;
+import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.Map;
+import java.util.Calendar;
+import java.io.File;
+import java.io.IOException;
+import java.net.URI;
+
+@Service
+@Scoped(Singleton.class)
+public class ApplicationConfigListener implements TransactionListener, 
+    PostStartup, PostConstruct {
+
+    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ApplicationConfigListener.class);
+
+    final private Logger logger = LogDomains.getLogger(ApplicationConfigListener.class, LogDomains.CORE_LOGGER);
+
+    @Inject
+    Transactions transactions;
+
+    @Inject
+    Domain domain;
+
+    @Inject
+    Applications applications;
+
+    @Inject
+    ApplicationRegistry appRegistry;
+
+    @Inject
+    Deployment deployment;
+
+    @Inject
+    StartupContext startupContext;
+
+    @Inject(name= ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    Server server;
+
+    private final static String UPGRADE_PARAM = "-upgrade";
+
+    public void transactionCommited( final List<PropertyChangeEvent> changes) {
+        for (PropertyChangeEvent event : changes) {
+            if (event.getSource() instanceof Application || 
+                event.getSource() instanceof ApplicationRef) {
+                Object oldValue = event.getOldValue();
+                Object newValue = event.getNewValue();
+                if (oldValue != null && newValue != null && 
+                    oldValue instanceof String && 
+                    newValue instanceof String &&
+                    !((String)oldValue).equals((String)newValue)) {
+                    // if it's an attribute change of the application
+                    // element or application-ref element
+                    Object parent = event.getSource();
+                    String appName = null;
+                    if (parent instanceof Application) {
+                        appName = ((Application)parent).getName();
+                    } else if (parent instanceof ApplicationRef) {
+                        appName = ((ApplicationRef)parent).getRef();
+                    }
+                    // if it's not a user application, let's not do
+                    // anything
+                    if (applications.getApplication(appName) == null) {
+                        return;
+                    }
+                    if (event.getPropertyName().equals(ServerTags.ENABLED)) {
+                        // enable or disable application accordingly
+                        handleAppEnableChange(event.getSource(), 
+                            appName, Boolean.valueOf((String)newValue));
+                    } else if (event.getPropertyName().equals(ServerTags.CONTEXT_ROOT) || event.getPropertyName().equals(ServerTags.VIRTUAL_SERVERS) || event.getPropertyName().equals(ServerTags.AVAILABILITY_ENABLED)) {
+                        // for other changes, reload the application
+                        handleOtherAppConfigChanges(event.getSource(), 
+                            appName);
+                    }
+                }
+            }
+        }
+    }
+
+    public void unprocessedTransactedEvents(
+        List<UnprocessedChangeEvents> changes) {
+    }
+
+    public void postConstruct() {
+        Properties arguments = startupContext.getArguments(); 
+        if (arguments != null) {
+            boolean isUpgrade = Boolean.valueOf(
+                arguments.getProperty(UPGRADE_PARAM));  
+            if (isUpgrade) {
+                // we don't want to register this listener for the upgrade
+                // start up
+                return;
+            }
+        }
+        transactions.addTransactionsListener(this);
+    }
+
+    private void handleAppEnableChange(Object parent, 
+        String appName, boolean enabled) {
+        Application application = applications.getApplication(appName);
+        if (application.isLifecycleModule()) {
+            return;
+        }
+        if (enabled) {
+            if (isCurrentInstanceMatchingTarget(parent)) {
+                enableApplication(appName);
+            }
+        } else {
+            if (isCurrentInstanceMatchingTarget(parent)) {
+                disableApplication(appName);
+            }
+        }
+    }
+
+    private void handleOtherAppConfigChanges(Object parent, String appName) {
+        Application application = applications.getApplication(appName);
+        if (application.isLifecycleModule()) {
+            return;
+        }
+        // reload the application for other application related 
+        // config changes if the application is in enabled state
+        if (isCurrentInstanceMatchingTarget(parent) && 
+            deployment.isAppEnabled(application)) {
+            disableApplication(appName); 
+            enableApplication(appName);
+        }
+    }
+
+
+    private boolean isCurrentInstanceMatchingTarget(Object parent) {
+        // DAS receive all the events, so we need to figure out 
+        // whether we should take action on DAS depending on the event
+        if (parent instanceof ApplicationRef) {
+            Object grandparent = ((ApplicationRef)parent).getParent();
+            if (grandparent instanceof Server) {
+                Server gpServer = (Server)grandparent;      
+                if ( ! server.getName().equals(gpServer.getName())) {
+                    return false; 
+                }
+            } else if (grandparent instanceof Cluster) {
+                if (server.isDas()) {
+                    return false; 
+                }
+            }
+        }
+        return true;
+    }
+
+    private void enableApplication(String appName) {        
+        Application app = applications.getApplication(appName);
+        ApplicationRef appRef = domain.getApplicationRefInServer(server.getName(), appName);
+        // if the application does not exist or application is not referenced
+        // by the current server instance, do not load
+        if (app == null || appRef == null) {
+            return;
+        }
+
+        // if the application is not in enable state, do not load 
+        if (!deployment.isAppEnabled(app)) {
+            return;
+        }
+
+        long operationStartTime = 
+            Calendar.getInstance().getTimeInMillis();
+
+        try {
+            ActionReport report = new HTMLActionReporter();
+
+            deployment.enable(server.getName(), app, appRef, report, logger);
+
+            if (report.getActionExitCode().equals(ActionReport.ExitCode.SUCCESS)) {
+                logger.log(Level.INFO, "loading.application.time", new Object[] { appName, (Calendar.getInstance().getTimeInMillis() - operationStartTime)});
+            } else if (report.getActionExitCode().equals(ActionReport.ExitCode.WARNING)){
+                logger.warning(report.getMessage());
+            } else if (report.getActionExitCode().equals(ActionReport.ExitCode.FAILURE)) {
+                throw new Exception(report.getMessage());
+            }
+        } catch(Exception e) {
+            logger.log(Level.SEVERE, "Error during enabling: ", e);
+            RuntimeException re = new RuntimeException(e.getMessage());
+            re.initCause(e); 
+            throw re;
+        }
+    }
+
+    private void disableApplication(String appName) {
+        Application app = applications.getApplication(appName);
+        ApplicationRef appRef = domain.getApplicationRefInServer(server.getName(), appName);
+        // if the application does not exist or application is not referenced
+        // by the current server instance, do not unload
+        if (app == null || appRef == null) {
+            return;
+        }
+
+        ApplicationInfo appInfo = appRegistry.get(appName);
+
+        try {
+            ActionReport report = new HTMLActionReporter();
+            UndeployCommandParameters commandParams =
+                new UndeployCommandParameters();
+            commandParams.name = appName;
+            commandParams.target = server.getName();
+            commandParams.origin = UndeployCommandParameters.Origin.unload;
+            deployment.disable(commandParams, app, appInfo, report, logger);
+
+            if (report.getActionExitCode().equals(ActionReport.ExitCode.FAILURE)) {
+                throw new Exception(report.getMessage());
+            }
+        } catch(Exception e) {
+            logger.log(Level.SEVERE, "Error during disabling: ", e);
+            RuntimeException re = new RuntimeException(e.getMessage());
+            re.initCause(e); 
+            throw re;
+        }
+    }
+}

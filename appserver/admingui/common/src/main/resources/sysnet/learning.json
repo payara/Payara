@@ -1,0 +1,46 @@
+{
+    "dataType" : "jmakiRSS",
+    "channel" : {
+	"title" : "Java EE Reference Documents",
+	"link" : "/common/sysnet/learning.json",
+	"date" : "",
+	"description" : "Java EE Reference Documents and Resources",
+	"items" : [
+	    {
+		"title" : "Java EE API",
+		"link" : "http://java.sun.com/javaee/5/docs/api/",
+		"date" : "",
+		"description" : "Java Platform Enterprise Edition, v 5.0 API Specifications",
+		"content" : ""
+	    },
+	    {
+		"title" : "Tutorials",
+		"link" : "http://java.sun.com/javaee/5/docs/tutorial/doc/",
+		"date" : "",
+		"description" : "Works with Sun Java System Application Server 9.0 Update Release 1 (or GlassFish v1) and Sun Java System Application Server 9.1 FCS (or GlassFish v2).",
+		"content" : ""
+	    },
+	    {
+		"title" : "Samples",
+		"link" : "https://glassfish-samples.dev.java.net/",
+		"date" : "",
+		"description" : "Developers can use and contribute to the sample applications that demonstrate Java EE technology using the Java EE SDK built by the GlassFish Community.",
+		"content" : ""
+	    },
+	    {
+		"title" : "Case Studies",
+		"link" : "http://java.sun.com/reference/casestudies/index.html",
+		"date" : "",
+		"description" : "These case studies on the Java platforms and Java technologies offer an in-depth look at Java technology in action in the real world.",
+		"content" : ""
+	    },
+	    {
+		"title" : "Testimonials",
+		"link" : "http://java.sun.com/javaee/overview/testimonials.jsp",
+		"date" : "",
+		"description" : "A collection of Java EE Testimonials",
+		"content" : ""
+	    }
+	]
+    }
+}

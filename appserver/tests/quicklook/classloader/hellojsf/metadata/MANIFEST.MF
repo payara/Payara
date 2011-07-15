@@ -1,0 +1,8 @@
+Manifest-Version: 1.0
+Archiver-Version: Plexus Archiver
+Built-By: anilam
+Build-Jdk: 1.5.0_13
+Created-By: Apache Maven
+Glassfish-require-services: 
+HK2-Import-Bundles: com.sun.jsftemplating
+

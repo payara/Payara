@@ -1,0 +1,106 @@
+{"xhp": {
+     "version": "1.0",
+     "services": [
+     {"id": "yahoogeocoder",
+      "url":"http://api.local.yahoo.com/MapsService/V1/geocode",
+      "apikey" : "appid=jmaki-key",
+      "xslStyleSheet": "yahoo-geocoder.xsl",
+      "defaultURLParams": "location=santa+clara,+ca"
+     },
+     {"id": "flickrtagsearch",
+      "url":"http://www.flickr.com/services/rest/?method=flickr.photos.search",
+      "apikey" : "api_key=06d3805b73897217be9e0b532c85b15e",
+      "xslStyleSheet": "flickr-search.xsl",
+      "defaultURLParams": "tags=theKt"
+     },
+     {"id": "yahoosearch",
+      "url":"http://api.search.yahoo.com/WebSearchService/V1/webSearch",
+      "apikey" : "appid=jmaki-key",
+      "defaultURLParams": "query=jMaki"
+     },
+     {"id": "yahoospell",
+      "url":"http://api.search.yahoo.com/WebSearchService/V1/spellingSuggestion",
+      "apikey" : "appid=jmaki-key",
+      "defaultURLParams": "query=jMaki"
+     },     
+     {"id": "yahooweather",
+      "url":"http://weather.yahooapis.com/forecastrss",
+      "xslStyleSheet": "yahoo-weather.xsl"
+     },
+     {"id": "rss",
+      "url":"http://weblogs.java.net/blog/ludo/index.rdf",
+      "xslStyleSheet": "rss.xsl"
+     },
+{"id": "javaee",
+      "url":"http://developers.sun.com/rss/javaee.xml",
+      "xslStyleSheet": "rss.xsl"
+     },
+{"id": "aquarium",
+      "url":"http://feeds.feedburner.com/TheAquarium_en",
+      "xslStyleSheet": "rss.xsl"
+     },
+{"id": "events",
+      "url":"http://developers.sun.com/rss/techdaysreg.xml",
+      "xslStyleSheet": "rss.xsl"
+     },
+{"id": "gfbusiness",
+      "url":"http://blogs.sun.com/GlassFishForBusiness/feed/entries/atom",
+      "xslStyleSheet": "rss.xsl"
+     },
+{"id": "stories",
+      "url":"http://blogs.sun.com/stories/feed/entries/atom",
+      "xslStyleSheet": "rss.xsl"
+     },
+{"id": "techtips",
+      "url":"http://blogs.sun.com/enterprisetechtips/feed/entries/atom",
+      "xslStyleSheet": "rss.xsl"
+     },
+
+
+
+{"id": "sdnevents",
+      "url":"http://blogs.sun.com/SDNProgramNews/feed/entries/atom?cat=%2FEvents",
+      "xslStyleSheet": "rss.xsl"
+     },
+{"id": "sdndevnews",
+      "url":"http://blogs.sun.com/SDNProgramNews/feed/entries/atom",
+      "xslStyleSheet": "rss.xsl"
+     },
+{"id": "sdndevjsenews",
+      "url":"http://blogs.sun.com/SDNProgramNews/feed/entries/atom?cat=%2FJava+SE+6+Update+N",
+      "xslStyleSheet": "rss.xsl"
+     },
+{"id": "sunevents",
+      "url":"http://www.sun.com/rss/events-rss.xml",
+      "xslStyleSheet": "rss.xsl"
+     },
+{"id": "podcast",
+      "url":"http://feeds.feedburner.com/glassfishpodcast",
+      "xslStyleSheet": "rss.xsl"
+     },
+{"id": "coretechtips",
+      "url":"http://blogs.sun.com/CoreJavaTechTips/feed/entries/atom",
+      "xslStyleSheet": "rss.xsl"
+     },
+{"id": "amzn",
+      "url":"http://xml-us.amznxslt.com/onca/xml3?t=onfocus&dev-t=amznRss&KeywordSearch=glassfish&mode=books&bcm=&type=lite&page=1&ct=text%2Fxml&sort=%20salesrank&f=http%3A%2F%2Fxml.amazon.com%2Fxsl%2Fxml-rss091.xsl",
+      "xslStyleSheet": "rss.xsl"
+     },
+{"id": "sdnShare",
+      "url":"http://sdnshare.com/index_rss.jsp?by=date&filter=or%3Acategory%3A%253D%253D%3A61",
+      "xslStyleSheet": "rss.xsl"
+     },
+{"id": "issues",
+      "url":"https://glassfish.dev.java.net/quality/RomeRSS.xml",
+      "xslStyleSheet": "rss.xsl"
+     },
+{"id": "sdnEENews",
+      "url":"http://blogs.sun.com/SDNProgramNews/feed/entries/atom?cat=%2FEnterprise+Java",
+      "xslStyleSheet": "rss.xsl"
+     },
+
+
+
+     ]
+   }
+ }

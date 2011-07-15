@@ -1,0 +1,434 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+    or packager/legal/LICENSE.txt.  See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at packager/legal/LICENSE.txt.
+
+    GPL Classpath Exception:
+    Oracle designates this particular file as subject to the "Classpath"
+    exception as provided by Oracle in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+
+-->
+
+<ejb-jar xmlns="http://java.sun.com/xml/ns/j2ee" version="2.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/ejb-jar_2_1.xsd">
+  <display-name>MEJB JAR</display-name>
+  <enterprise-beans>
+    <session>
+      <display-name>MEJBBean</display-name>
+      <ejb-name>MEJBBean</ejb-name>
+      <home>javax.management.j2ee.ManagementHome</home>
+      <remote>javax.management.j2ee.Management</remote>
+      <ejb-class>org.glassfish.admin.mejb.MEJBBean</ejb-class>
+      <session-type>Stateless</session-type>
+      <transaction-type>Bean</transaction-type>
+
+      <security-role-ref>
+        <role-name>admin-role</role-name>
+        <role-link>admin-role</role-link>
+      </security-role-ref>
+      <security-identity>
+        <description></description>
+        <use-caller-identity></use-caller-identity>
+      </security-identity>
+
+    </session>
+  </enterprise-beans>
+
+  <assembly-descriptor>
+    <security-role>
+      <role-name>admin-role</role-name>
+    </security-role>
+    <method-permission>
+     <role-name>admin-role</role-name> 
+      <method>
+        <ejb-name>MEJBBean</ejb-name>
+        <method-intf>Remote</method-intf>
+        <method-name>isIdentical</method-name>
+        <method-params>
+          <method-param>javax.ejb.EJBObject</method-param>
+        </method-params>
+      </method>
+      <method>
+        <ejb-name>MEJBBean</ejb-name>
+        <method-intf>Remote</method-intf>
+        <method-name>getObjectInstance</method-name>
+        <method-params>
+          <method-param>javax.management.ObjectName</method-param>
+        </method-params>
+      </method>
+      <method>
+        <ejb-name>MEJBBean</ejb-name>
+        <method-intf>Remote</method-intf>
+        <method-name>getDefaultDomain</method-name>
+        <method-params />
+      </method>
+      <method>
+        <ejb-name>MEJBBean</ejb-name>
+        <method-intf>Remote</method-intf>
+        <method-name>isRegistered</method-name>
+        <method-params>
+          <method-param>javax.management.ObjectName</method-param>
+        </method-params>
+      </method>
+      <method>
+        <ejb-name>MEJBBean</ejb-name>
+        <method-intf>Remote</method-intf>
+        <method-name>remove</method-name>
+        <method-params />
+      </method>
+      <method>
+        <ejb-name>MEJBBean</ejb-name>
+        <method-intf>Remote</method-intf>
+        <method-name>createMBean</method-name>
+        <method-params>
+          <method-param>java.lang.String</method-param>
+          <method-param>javax.management.ObjectName</method-param>
+          <method-param>java.lang.Object[]</method-param>
+          <method-param>java.lang.String[]</method-param>
+        </method-params>
+      </method>
+      <method>
+        <ejb-name>MEJBBean</ejb-name>
+        <method-intf>Remote</method-intf>
+        <method-name>createMBean</method-name>
+        <method-params>
+          <method-param>java.lang.String</method-param>
+          <method-param>javax.management.ObjectName</method-param>
+          <method-param>javax.management.ObjectName</method-param>
+        </method-params>
+      </method>
+      <method>
+        <ejb-name>MEJBBean</ejb-name>
+        <method-intf>Home</method-intf>
+        <method-name>remove</method-name>
+        <method-params>
+          <method-param>javax.ejb.Handle</method-param>
+        </method-params>
+      </method>
+      <method>
+        <ejb-name>MEJBBean</ejb-name>
+        <method-intf>Remote</method-intf>
+        <method-name>getPrimaryKey</method-name>
+        <method-params />
+      </method>
+      <method>
+        <ejb-name>MEJBBean</ejb-name>
+        <method-intf>Remote</method-intf>
+        <method-name>removeNotificationListener</method-name>
+        <method-params>
+          <method-param>javax.management.ObjectName</method-param>
+          <method-param>javax.management.ObjectName</method-param>
+        </method-params>
+      </method>
+      <method>
+        <ejb-name>MEJBBean</ejb-name>
+        <method-intf>Remote</method-intf>
+        <method-name>instantiate</method-name>
+        <method-params>
+          <method-param>java.lang.String</method-param>
+        </method-params>
+      </method>
+      <method>
+        <ejb-name>MEJBBean</ejb-name>
+        <method-intf>Remote</method-intf>
+        <method-name>registerAppClient</method-name>
+        <method-params>
+          <method-param>com.sun.enterprise.deployment.ApplicationClientDescriptor</method-param>
+        </method-params>
+      </method>
+      <method>
+        <ejb-name>MEJBBean</ejb-name>
+        <method-intf>Remote</method-intf>
+        <method-name>addNotificationListener</method-name>
+        <method-params>
+          <method-param>javax.management.ObjectName</method-param>
+          <method-param>javax.management.ObjectName</method-param>
+          <method-param>javax.management.NotificationFilter</method-param>
+          <method-param>java.lang.Object</method-param>
+        </method-params>
+      </method>
+      <method>
+        <ejb-name>MEJBBean</ejb-name>
+        <method-intf>Remote</method-intf>
+        <method-name>removeNotificationListener</method-name>
+        <method-params>
+          <method-param>javax.management.ObjectName</method-param>
+          <method-param>javax.management.NotificationListener</method-param>
+        </method-params>
+      </method>
+      <method>
+        <ejb-name>MEJBBean</ejb-name>
+        <method-intf>Remote</method-intf>
+        <method-name>isInstanceOf</method-name>
+        <method-params>
+          <method-param>javax.management.ObjectName</method-param>
+          <method-param>java.lang.String</method-param>
+        </method-params>
+      </method>
+      <method>
+        <ejb-name>MEJBBean</ejb-name>
+        <method-intf>Remote</method-intf>
+        <method-name>deserialize</method-name>
+        <method-params>
+          <method-param>java.lang.String</method-param>
+          <method-param>javax.management.ObjectName</method-param>
+          <method-param>byte[]</method-param>
+        </method-params>
+      </method>
+      <method>
+        <ejb-name>MEJBBean</ejb-name>
+        <method-intf>Remote</method-intf>
+        <method-name>getMBeanCount</method-name>
+        <method-params />
+      </method>
+      <method>
+        <ejb-name>MEJBBean</ejb-name>
+        <method-intf>Remote</method-intf>
+        <method-name>getEJBHome</method-name>
+        <method-params />
+      </method>
+      <method>
+        <ejb-name>MEJBBean</ejb-name>
+        <method-intf>Remote</method-intf>
+        <method-name>instantiate</method-name>
+        <method-params>
+          <method-param>java.lang.String</method-param>
+          <method-param>javax.management.ObjectName</method-param>
+        </method-params>
+      </method>
+      <method>
+        <ejb-name>MEJBBean</ejb-name>
+        <method-intf>Remote</method-intf>
+        <method-name>queryNames</method-name>
+        <method-params>
+          <method-param>javax.management.ObjectName</method-param>
+          <method-param>javax.management.QueryExp</method-param>
+        </method-params>
+      </method>
+      <method>
+        <ejb-name>MEJBBean</ejb-name>
+        <method-intf>Remote</method-intf>
+        <method-name>getListenerRegistry</method-name>
+        <method-params />
+      </method>
+      <method>
+        <ejb-name>MEJBBean</ejb-name>
+        <method-intf>Remote</method-intf>
+        <method-name>deserialize</method-name>
+        <method-params>
+          <method-param>java.lang.String</method-param>
+          <method-param>byte[]</method-param>
+        </method-params>
+      </method>
+      <method>
+        <ejb-name>MEJBBean</ejb-name>
+        <method-intf>Remote</method-intf>
+        <method-name>queryMBeans</method-name>
+        <method-params>
+          <method-param>javax.management.ObjectName</method-param>
+          <method-param>javax.management.QueryExp</method-param>
+        </method-params>
+      </method>
+      <method>
+        <ejb-name>MEJBBean</ejb-name>
+        <method-intf>Remote</method-intf>
+        <method-name>getHandle</method-name>
+        <method-params />
+      </method>
+      <method>
+        <ejb-name>MEJBBean</ejb-name>
+        <method-intf>Remote</method-intf>
+        <method-name>deserialize</method-name>
+        <method-params>
+          <method-param>javax.management.ObjectName</method-param>
+          <method-param>byte[]</method-param>
+        </method-params>
+      </method>
+      <method>
+        <ejb-name>MEJBBean</ejb-name>
+        <method-intf>Remote</method-intf>
+        <method-name>addNotificationListener</method-name>
+        <method-params>
+          <method-param>javax.management.ObjectName</method-param>
+          <method-param>javax.management.NotificationListener</method-param>
+          <method-param>javax.management.NotificationFilter</method-param>
+          <method-param>java.lang.Object</method-param>
+        </method-params>
+      </method>
+      <method>
+        <ejb-name>MEJBBean</ejb-name>
+        <method-intf>Remote</method-intf>
+        <method-name>instantiate</method-name>
+        <method-params>
+          <method-param>java.lang.String</method-param>
+          <method-param>javax.management.ObjectName</method-param>
+          <method-param>java.lang.Object[]</method-param>
+          <method-param>java.lang.String[]</method-param>
+        </method-params>
+      </method>
+      <method>
+        <ejb-name>MEJBBean</ejb-name>
+        <method-intf>Remote</method-intf>
+        <method-name>unregisterMBean</method-name>
+        <method-params>
+          <method-param>javax.management.ObjectName</method-param>
+        </method-params>
+      </method>
+      <method>
+        <ejb-name>MEJBBean</ejb-name>
+        <method-intf>Remote</method-intf>
+        <method-name>getMBeanInfo</method-name>
+        <method-params>
+          <method-param>javax.management.ObjectName</method-param>
+        </method-params>
+      </method>
+      <method>
+        <ejb-name>MEJBBean</ejb-name>
+        <method-intf>Home</method-intf>
+        <method-name>remove</method-name>
+        <method-params>
+          <method-param>java.lang.Object</method-param>
+        </method-params>
+      </method>
+      <method>
+        <ejb-name>MEJBBean</ejb-name>
+        <method-intf>Home</method-intf>
+        <method-name>getHomeHandle</method-name>
+        <method-params />
+      </method>
+      <method>
+        <ejb-name>MEJBBean</ejb-name>
+        <method-intf>Remote</method-intf>
+        <method-name>getAttribute</method-name>
+        <method-params>
+          <method-param>javax.management.ObjectName</method-param>
+          <method-param>java.lang.String</method-param>
+        </method-params>
+      </method>
+      <method>
+        <ejb-name>MEJBBean</ejb-name>
+        <method-intf>Home</method-intf>
+        <method-name>create</method-name>
+        <method-params />
+      </method>
+      <method>
+        <ejb-name>MEJBBean</ejb-name>
+        <method-intf>Remote</method-intf>
+        <method-name>setAttributes</method-name>
+        <method-params>
+          <method-param>javax.management.ObjectName</method-param>
+          <method-param>javax.management.AttributeList</method-param>
+        </method-params>
+      </method>
+      <method>
+        <ejb-name>MEJBBean</ejb-name>
+        <method-intf>Remote</method-intf>
+        <method-name>registerMBean</method-name>
+        <method-params>
+          <method-param>java.lang.Object</method-param>
+          <method-param>javax.management.ObjectName</method-param>
+        </method-params>
+      </method>
+      <method>
+        <ejb-name>MEJBBean</ejb-name>
+        <method-intf>Remote</method-intf>
+        <method-name>createMBean</method-name>
+        <method-params>
+          <method-param>java.lang.String</method-param>
+          <method-param>javax.management.ObjectName</method-param>
+        </method-params>
+      </method>
+      <method>
+        <ejb-name>MEJBBean</ejb-name>
+        <method-intf>Remote</method-intf>
+        <method-name>getAttributes</method-name>
+        <method-params>
+          <method-param>javax.management.ObjectName</method-param>
+          <method-param>java.lang.String[]</method-param>
+        </method-params>
+      </method>
+      <method>
+        <ejb-name>MEJBBean</ejb-name>
+        <method-intf>Remote</method-intf>
+        <method-name>invoke</method-name>
+        <method-params>
+          <method-param>javax.management.ObjectName</method-param>
+          <method-param>java.lang.String</method-param>
+          <method-param>java.lang.Object[]</method-param>
+          <method-param>java.lang.String[]</method-param>
+        </method-params>
+      </method>
+      <method>
+        <ejb-name>MEJBBean</ejb-name>
+        <method-intf>Remote</method-intf>
+        <method-name>instantiate</method-name>
+        <method-params>
+          <method-param>java.lang.String</method-param>
+          <method-param>java.lang.Object[]</method-param>
+          <method-param>java.lang.String[]</method-param>
+        </method-params>
+      </method>
+      <method>
+        <ejb-name>MEJBBean</ejb-name>
+        <method-intf>Remote</method-intf>
+        <method-name>setAttribute</method-name>
+        <method-params>
+          <method-param>javax.management.ObjectName</method-param>
+          <method-param>javax.management.Attribute</method-param>
+        </method-params>
+      </method>
+      <method>
+        <ejb-name>MEJBBean</ejb-name>
+        <method-intf>Remote</method-intf>
+        <method-name>createMBean</method-name>
+        <method-params>
+          <method-param>java.lang.String</method-param>
+          <method-param>javax.management.ObjectName</method-param>
+          <method-param>javax.management.ObjectName</method-param>
+          <method-param>java.lang.Object[]</method-param>
+          <method-param>java.lang.String[]</method-param>
+        </method-params>
+      </method>
+      <method>
+        <ejb-name>MEJBBean</ejb-name>
+        <method-intf>Home</method-intf>
+        <method-name>getEJBMetaData</method-name>
+        <method-params />
+      </method>
+    </method-permission>
+  </assembly-descriptor>
+
+
+</ejb-jar>
+

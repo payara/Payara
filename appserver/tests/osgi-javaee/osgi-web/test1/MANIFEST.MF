@@ -1,0 +1,5 @@
+Bundle-SymbolicName: sahoo.rfc66.test1
+Bundle-Version: 1.0
+Bundle-ClassPath: WEB-INF/classes
+DynamicImport-Package: *
+Web-ContextPath: /test1

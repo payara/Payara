@@ -1,0 +1,224 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) 2008-2010 Oracle and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+    or packager/legal/LICENSE.txt.  See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at packager/legal/LICENSE.txt.
+
+    GPL Classpath Exception:
+    Oracle designates this particular file as subject to the "Classpath"
+    exception as provided by Oracle in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+
+-->
+
+<oor:component-schema oor:version="1.1" oor:name="Domain" oor:package="com.sun.PH"
+ xsi:schemaLocation="http://openoffice.org/2001/registry"
+ xmlns:xs="http://www.w3.org/2001/XMLSchema"
+ xmlns:oor="http://openoffice.org/2001/registry"
+ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+ xmlns:if="http://openinstaller.org/config/V1"
+ xml:lang='en-US'>
+ <component>
+    <group oor:name="Configuration">
+
+       <prop oor:name="DOMAIN_NAME" oor:type="xs:string">
+           <value>domain1</value>
+          <info>
+            <desc xml:lang="en-US">Domain Name</desc>
+          </info>
+        <actions>
+          <onSet><![CDATA[
+import java.lang.String;
+import java.util.List;
+import org.openinstaller.provider.conf.ConfigHelper;
+
+       String enteredValue = (String)thisProperty.getUnconfirmedValue();
+        if ((enteredValue == null) || enteredValue.equals("")) {
+            ConfigHelper.setValue("Domain.Configuration.STATUS", "ERROR");
+            throw new EnhancedException("NULL_OR_EMPTY_VALUE", new String[]{});
+        }
+          ]]></onSet>
+        </actions>
+        </prop>
+        
+       <prop oor:name="ADMIN_PORT" oor:type="xs:string">
+           <value>4848</value>
+           <info>
+             <desc xml:lang="en-US">Admin Port</desc>
+           </info>
+	<actions>
+	<onSet><![CDATA[
+		import org.openinstaller.provider.conf.ConfigHelper;
+		import org.openinstaller.bus.*;
+		import org.openinstaller.core.*;
+   		BusRequest modeReq = new BusRequest("ConfigRequest",
+		new EngineConfigCommand(EngineConfigCommand.COMMAND.GET_CONFIG, EngineConfigItem.DISPLAY_MODE));
+		BusResponse modeResp = bus.publishRequest(modeReq, "svc://general/EngineConfig");
+		String mode = (String)modeResp.getResult();
+		if ("SILENT".equals(mode)) 
+		   System.out.println("");
+		else
+		   validateAdminPort(thisProperty);
+	]]></onSet>
+	</actions>
+       </prop> 
+
+       <prop oor:name="HTTP_PORT" oor:type="xs:string">
+           <value>8080</value>
+           <info>
+             <desc xml:lang="en-US">HTTP Port</desc>
+           </info>
+	<actions>
+	<onSet><![CDATA[
+		import org.openinstaller.provider.conf.ConfigHelper;
+		import org.openinstaller.bus.*;
+		import org.openinstaller.core.*;
+   		BusRequest modeReq = new BusRequest("ConfigRequest",
+		new EngineConfigCommand(EngineConfigCommand.COMMAND.GET_CONFIG, EngineConfigItem.DISPLAY_MODE));
+		BusResponse modeResp = bus.publishRequest(modeReq, "svc://general/EngineConfig");
+		String mode = (String)modeResp.getResult();
+		if ("SILENT".equals(mode)) 
+		   System.out.println("");
+		else
+		   validateHttpPort(thisProperty);
+	]]></onSet>
+	</actions>
+        </prop>       
+       <prop oor:name="ADMIN_USER" oor:type="xs:string">
+           <value>admin</value>
+          <info>
+            <desc xml:lang="en-US">User Name</desc>
+          </info>
+        <actions>
+          <onSet><![CDATA[
+import java.lang.String;
+import java.util.List;
+import org.openinstaller.provider.conf.ConfigHelper;
+
+       String enteredValue = (String)thisProperty.getUnconfirmedValue();
+        if ((enteredValue == null) || enteredValue.equals("")) {
+            ConfigHelper.setValue("Domain.Configuration.STATUS", "ERROR");
+            throw new EnhancedException("NULL_OR_EMPTY_VALUE", new String[]{});
+        }
+          ]]></onSet>
+        </actions>
+        </prop>
+        
+       <prop oor:name="ADMIN_PASSWORD" oor:transient="true" oor:type="xs:string">
+          <value/>
+          <info>
+            <desc xml:lang="en-US">User Password</desc>
+          </info>
+        </prop>
+
+       <prop oor:name="ADMIN_PASSWORD_REENTER" oor:transient="true" oor:type="xs:string">
+          <value/>
+          <info>
+            <desc xml:lang="en-US">Reenter Password</desc>
+          </info>
+        <actions>
+          <onSet><![CDATA[
+import java.lang.String;
+import java.util.List;
+import org.openinstaller.provider.conf.ConfigHelper;
+
+        String reenterPassword = (String)thisProperty.getUnconfirmedValue();
+	String Password  = ConfigHelper.getValue("Domain.Configuration.ADMIN_PASSWORD");
+        if (!reenterPassword.equals(Password)) {
+            ConfigHelper.setValue("Domain.Configuration.STATUS", "ERROR");
+            throw new EnhancedException("PASSWORDS_DONOT_MATCH", new String[]{});
+   }
+          ]]></onSet>
+        </actions>
+        </prop>
+       <prop oor:name="CREATE_SERVICE" oor:type="xs:boolean">
+          <value/>
+          <info>
+            <desc xml:lang="en-US">Create service or not</desc>
+          </info>
+        <actions>
+        </actions>
+        </prop>
+
+       <prop oor:name="START_SERVER" oor:type="xs:boolean">
+          <value/>
+          <info>
+            <desc xml:lang="en-US">Start Server or not</desc>
+          </info>
+        <actions>
+        </actions>
+        </prop>
+
+        <prop oor:name="STARTUP_TYPE" oor:type="xs:string">
+          <value>
+            AUTOMATIC
+          </value>
+          <info>
+            <desc xml:lang="en-US">Start Server automatically or not</desc>
+          </info>
+        <actions>
+        </actions>
+        </prop>
+
+       <prop oor:name="SERVICE_NAME" oor:type="xs:string">
+         <value>domain1Service</value>
+          <info>
+            <desc xml:lang="en-US">Name of the service</desc>
+          </info>
+        <actions>
+          <onSet><![CDATA[
+import java.lang.String;
+import java.util.List;
+import org.openinstaller.provider.conf.ConfigHelper;
+
+	boolean createService  = ConfigHelper.getValue("Domain.Configuration.CREATE_SERVICE");
+if (createService)  {
+       String enteredValue = (String)thisProperty.getUnconfirmedValue();
+        if ((enteredValue == null) || enteredValue.equals("")) {
+            ConfigHelper.setValue("Domain.Configuration.STATUS", "ERROR");
+            throw new EnhancedException("NULL_OR_EMPTY_VALUE", new String[]{});
+        }
+   }
+          ]]></onSet>
+        </actions>
+        </prop>
+
+        <prop oor:name="STATUS" oor:type="xs:string" oor:transient="true">
+          <value/>
+          <info>
+            <desc xml:lang="en-US">Status</desc>
+          </info>
+        </prop>
+     </group>
+ </component>
+</oor:component-schema>

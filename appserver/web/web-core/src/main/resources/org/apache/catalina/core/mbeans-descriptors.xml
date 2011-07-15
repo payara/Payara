@@ -1,0 +1,1445 @@
+<?xml version="1.0"?>
+<!--
+
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+    or packager/legal/LICENSE.txt.  See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at packager/legal/LICENSE.txt.
+
+    GPL Classpath Exception:
+    Oracle designates this particular file as subject to the "Classpath"
+    exception as provided by Oracle in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+
+
+    This file incorporates work covered by the following copyright and
+    permission notice:
+
+    Copyright 2004 The Apache Software Foundation
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+
+<mbeans-descriptors>
+
+
+<mbean name="WebModule"
+         description="Standard WebModule Component"
+         domain="com.sun.appserv"
+         group="Context"
+         type="com.sun.enterprise.web.WebModule">
+    
+    <attribute name="allowLinking"
+               description="Allow symlinking to outside the webapp root directory, if the webapp is an exploded directory"
+               is="true"
+               type="boolean"/>
+      
+    <attribute name="cacheMaxSize"
+               description="Maximum cache size in KB"
+               type="int"/>
+      
+    <attribute name="cacheTTL"
+               description="Time interval in ms between cache refeshes"
+               type="int"/>
+      
+    <attribute name="cachingAllowed"
+               description="Should we cache static resources for this webapp"
+               is="true"
+               type="boolean"/>
+      
+    <attribute name="caseSensitive"
+               description="Should case sensitivity checks be performed"
+               is="true"
+               type="boolean"/>
+      
+    <attribute name="children"
+               description="Object names of all children"
+               type="[Ljavax.management.ObjectName;"/>
+    <attribute   name="cookies"
+               description="Should we attempt to use cookies for session id
+               communication?"
+               type="boolean"/>
+      
+    <attribute name="compilerClasspath"
+               description="The compiler classpath to use"
+               type="java.lang.String"/>
+      
+    <attribute name="crossContext"
+               description="Should we allow the ServletContext.getContext() method to access the context of other web applications in this server?"
+               type="boolean"/>
+
+    <attribute name="debug"
+               description="The debugging detail level for this component"
+               type="int"/>
+               
+    <attribute name="defaultWebXml"
+               description="Location of the default web.xml resource or file"
+               type="java.lang.String"/>
+               
+    <attribute name="delegate"
+               description=""
+               type="boolean"/>
+               
+    <attribute name="deploymentDescriptor"
+               description="String deployment descriptor "
+               type="java.lang.String"/>
+                     
+    <attribute name="docBase"
+               description="The document root for this web application"
+               type="java.lang.String"/>
+
+    <attribute name="endpointAddresses"
+               description="An array of URL addresses defined in this Web Module to invoke web services endpoints implementations"
+               type="[Ljava.lang.String;"/>
+
+    <attribute name="engineName"
+               description="Name of the engine domain, if different from the context domain"
+               type="java.lang.String"/>
+
+    <attribute name="environments"
+               description="MBean Names of the set of defined environment entries for this web application"
+               type="[Ljava.lang.String;"
+               writeable="false"/>
+
+    <attribute name="eventProvider"
+               description="Event provider support for this managed object"
+               is="true"
+               type="boolean"/>
+
+    <attribute name="hasWebServices"
+               description="True if the web module implements web services endpoints"
+               type="boolean"/>
+                              
+    <attribute name="javaVMs"
+               description="The Java virtual machines on which this module is running"
+               type="[Ljava.lang.String;"/>
+
+    <attribute name="managerChecksFrequency"
+               description="The frequency of the manager checks (expiration and passivation)"
+               type="int"/>
+
+    <attribute name="name"
+               description="Name of the web module"
+               type="java.lang.String"/>
+
+    <attribute name="objectName"
+               description="Object name of the web module"
+               type="java.lang.String"/>
+      
+    <attribute name="override"
+               description="The DefaultContext override flag for this web application"
+               type="boolean"/>
+      
+    <attribute name="path"
+               description="The context path for this Context"
+               type="java.lang.String"/>
+               
+    <attribute name="privileged"
+               description="Access to tomcat internals"
+               type="boolean"/>
+      
+    <attribute name="reloadable"
+               description="The reloadable flag for this web application"
+               type="boolean"/>
+
+    <attribute name="resourceNames"
+               description="MBean Names of all the defined resource references for this application."
+               type="[Ljava.lang.String;"
+               writeable="false"/>
+
+    <attribute name="server"
+               description="The J2EE Server this module is deployed on"
+               type="java.lang.String"/>
+                              
+    <attribute name="servlets"
+               description="JSR77 list of servlets"
+               type="[Ljava.lang.String;"
+               writeable="false"/>
+               
+    <attribute name="startupTime"
+               description="Time (in milliseconds) it took to start this context"
+               type="long"/>
+
+    <attribute name="startTimeMillis"
+               description="Time (in milliseconds since January 1, 1970, 00:00:00) when this context was started"
+               type="long"/>
+
+    <attribute name="processingTimeMillis"
+               description="Cumulative execution times of all servlets in this context"
+               type="long"
+               writeable="false" />
+
+    <attribute name="state"
+               description="Current state of this component"
+               type="int"/>
+                     
+    <attribute name="stateManageable"
+               description="State management support for this managed object"
+               is="true"
+               type="boolean"/>
+               
+    <attribute name="statisticsProvider"
+               description="Performance statistics support for this managed object"
+               is="true"
+               type="boolean"/>
+               
+    <attribute name="swallowOutput"
+               description="Flag to set to cause the system.out and system.err to be redirected to the logger when executing a servlet"
+               type="boolean"/>
+               
+    <attribute name="tldScanTime"
+               description="Time spend scanning jars for TLDs for this context"
+               type="long"/>
+
+    <attribute name="useNaming"
+               description="Create a JNDI naming context for this application?"
+               is="true"
+               type="boolean"/>
+               
+    <attribute name="valveObjectNames"
+               description="ObjectNames for the valves associated with this container"
+               type="[Ljavax.management.ObjectName;"
+               writeable="false"/>
+
+    <attribute name="welcomeFiles"
+               description="The welcome files for this context"
+               type="[Ljava.lang.String;"
+               writeable="false"/>
+      
+    <attribute name="workDir"
+               description="The pathname to the work directory for this context"
+               type="java.lang.String"/>
+      
+    <operation name="addEnvironment"
+               description="Add an environment entry for this web application"
+               impact="ACTION"
+               returnType="void">
+      <parameter name="envName"
+                 description="New environment entry name"
+                 type="java.lang.String"/>
+    </operation>
+
+    <operation   name="addResource"
+               description="Add a resource reference for this web application"
+               impact="ACTION"
+               returnType="void">
+      <parameter name="resourceName"
+                 description="New resource reference name"
+                 type="java.lang.String"/>
+    </operation>
+    
+    <operation   name="addValve"
+               description="Add a valve to this Context"
+               impact="ACTION"
+               returnType="void">
+      <parameter name="valve"
+                 description="New valve to be added"
+                 type="org.apache.catalina.Valve"/>
+    </operation>
+    
+    <operation   name="removeEnvironment"
+               description="Remove any environment entry with the specified name"
+               impact="ACTION"
+               returnType="void">
+      <parameter name="envName"
+                 description="Name of the environment entry to remove"
+                 type="java.lang.String"/>
+    </operation>
+    
+    <operation   name="removeResource"
+               description="Remove any resource reference with the specified name"
+               impact="ACTION"
+               returnType="void">
+      <parameter name="resourceName"
+                 description="Name of the resource reference to remove"
+                 type="java.lang.String"/>
+    </operation>
+
+    <operation   name="removeValve"
+               description="Remove a valve from this Context"
+               impact="ACTION"
+               returnType="void">
+      <parameter name="valve"
+                 description="New valve to be removed"
+                 type="org.apache.catalina.Valve"/>
+    </operation>
+    
+    <operation   name="reload"
+               description="Reload the webapplication"
+               impact="ACTION"
+               returnType="void">
+    </operation>
+    
+    <operation   name="init"
+               description="Register the context into the running server"
+               impact="ACTION"
+               returnType="void">
+    </operation>
+    
+    <operation   name="start"
+               description="Start the contex"
+               impact="ACTION"
+               returnType="void">
+    </operation>
+    
+    <operation name="stop"
+               description="Stop the contex"
+               impact="ACTION"
+               returnType="void">
+    </operation>
+    
+    <operation name="destroy"
+               description="Destroy the contex"
+               impact="ACTION"
+               returnType="void">
+    </operation>
+
+    <operation name="findMappingObject"
+               description="Return an object which may be utilized for mapping to this component"
+               impact="INFO"
+               returnType="org.apache.catalina.Context">    
+    </operation>    
+    
+    <operation name="findStaticResources"
+               description="Return the naming resources associated with this web application"
+               impact="INFO"
+               returnType="javax.naming.directory.DirContext">    
+    </operation>
+
+  </mbean>
+
+
+  <mbean name="VirtualServer"
+         description="Standard Virtual Server Component"
+         domain="com.sun.appserv"
+         group="Host"
+         type="com.sun.enterprise.web.VirtualServer">
+    
+    <attribute name="appBase"
+               description="The application root for this Host"
+               type="java.lang.String"/>
+      
+    <attribute name="autoDeploy"
+               description="The auto deploy flag for this Host"
+               type="boolean"/>
+                 
+    <attribute name="debug"
+               description="The debugging detail level for this component"
+               type="int"/>
+      
+    <attribute name="deployOnStartup"
+               description="The deploy on startup flag for this Host"
+               type="boolean"/>
+
+    <attribute name="deployXML"
+               description="deploy Context XML config files property"
+               is="true"
+               type="boolean"/>
+      
+    <attribute name="name"
+               description="Unique name of this Host"
+               type="java.lang.String"/>
+      
+    <attribute name="unpackWARs"
+               description="Unpack WARs property"
+               is="true"
+               type="boolean"/>
+    
+    <attribute name="xmlNamespaceAware"
+               description="Attribute value used to turn on/off XML namespace awareness"
+               type="boolean"/>
+      
+    <attribute name="xmlValidation"
+               description="Attribute value used to turn on/off XML validation"
+               type="boolean"/>
+
+    <attribute name="children"
+               description="Object names of all children"
+               type="[Ljavax.management.ObjectName;"/>
+      
+    <attribute name="aliases"
+               description="Host aliases"
+               type="[Ljava.lang.String;"/>
+      
+    <attribute name="valveNames"
+               description="Return the MBean Names of the Valves associated with this Host"
+               type="[Ljava.lang.String;"/>
+      
+    <attribute name="valveObjectNames"
+               description="Return the MBean ObjectNames of the Valves associated with this Host"
+               type="[Ljavax.management.ObjectName;"/>
+      
+    <operation name="addAlias"
+               description="Add an alias name that should be mapped to this Host"
+               impact="ACTION"
+               returnType="void">
+      <parameter name="alias"
+                 description="The alias to be added"
+                 type="java.lang.String"/>
+    </operation>
+
+    <operation name="findAliases"
+               description="Return the set of alias names for this Host"
+               impact="INFO"
+               returnType="[Ljava.lang.String;"/>
+
+    <operation name="addChild"
+               description="Add a context"
+               impact="ACTION">
+      <parameter name="child"
+                 description="Context to be added"
+                 type="org.apache.catalina.Container"/>
+    </operation>
+      
+    <operation   name="removeAlias"
+               description="Remove the specified alias name from the aliases for this  Host"
+               impact="ACTION"
+               returnType="void">
+      <parameter name="alias"
+                 description="Alias name to be removed"
+                 type="java.lang.String"/>
+    </operation>
+
+    <operation name="findPorts"
+               description="Return the port numbers with which this StandardHost is associated."
+               impact="INFO"
+               returnType="[Lint;">
+    </operation>
+
+    <operation name="findMappingObject"
+               description="Return an object which may be utilized for mapping to this component"
+               impact="INFO"
+               returnType="org.apache.catalina.Host">    
+    </operation>
+    
+    <operation name="start" description="Start" impact="ACTION" returnType="void" />
+    <operation name="stop" description="Stop" impact="ACTION" returnType="void" />
+    <operation name="init" description="Init" impact="ACTION" returnType="void" />
+    <operation name="destroy" description="Destroy" impact="ACTION" returnType="void" />
+  </mbean>
+
+
+  <mbean         name="PECoyoteConnector"
+          description="Implementation of a PE Coyote connector"
+               domain="com.sun.appserv"
+                group="Connector"
+                 type="com.sun.enterprise.web.connector.coyote.PECoyoteConnector">
+
+    <attribute   name="acceptCount"
+          description="The accept count for this Connector"
+                 type="int"/>
+
+    <attribute   name="address"
+          description="The IP address on which to bind"
+                 type="java.lang.String"/>
+
+    <attribute   name="algorithm"
+          description="The certificate encoding algorithm to be used"
+                 type="java.lang.String"/>
+
+    <attribute   name="bufferSize"
+          description="The input buffer size we should create on input streams"
+                 type="int"/>
+
+    <attribute   name="className"
+          description="Fully qualified class name of the managed object"
+                 type="java.lang.String"
+            writeable="false"/>
+
+    <attribute   name="clientAuth"
+          description="Should we require client authentication?"
+                 type="boolean"/>
+
+    <attribute   name="ciphers"
+          description="Comma-separated list of SSL cipher suites to be enabled"
+                 type="java.lang.String"/>
+
+    <attribute   name="compression"
+          description="Compression value"
+                 type="java.lang.String"/>
+
+    <attribute   name="connectionLinger"
+          description="Linger value on the incoming connection"
+                 type="int"/>
+
+    <attribute   name="connectionTimeout"
+          description="Timeout value on the incoming connection"
+                 type="int"/>
+
+    <attribute   name="connectionUploadTimeout"
+          description="Timeout value on the incoming connection during request processing"
+                 type="int"/>
+
+    <attribute   name="debug"
+          description="The debugging detail level for this component"
+                 type="int"/>
+
+    <attribute    name="disableUploadTimeout"
+           description="Should Tomcat ignore setting a timeout for uploads?" 
+                  type="boolean"/>
+
+    <attribute   name="enableLookups"
+          description="The 'enable DNS lookups' flag for this Connector"
+                 type="boolean"/>
+
+    <attribute   name="keystoreFile"
+          description="Pathname to the key store file to be used"
+                 type="java.lang.String"/>
+
+    <attribute   name="keystorePass"
+          description="Password for accessing the key store file"
+                 type="java.lang.String"/>
+
+    <attribute   name="keystoreType"
+          description="Type of keystore file to be used for the server certificate"
+                 type="java.lang.String"/>
+
+    <attribute   name="keyAlias"
+          description="Alias name of this connector's keypair and supporting certificate chain"
+                 type="java.lang.String"/>
+
+    <attribute   name="maxKeepAliveRequests"
+          description="Maximum number of Keep-Alive requests to honor per connection"
+                 type="int"/>
+
+    <attribute   name="maxPostSize"
+          description="Maximum size in bytes of a POST which will be handled by the servlet API provided features"
+                 type="int"/>
+
+    <attribute   name="maxProcessors"
+          description="The maximum number of processors allowed"
+                 type="int"/>
+
+    <attribute   name="minProcessors"
+          description="The minimum number of processors to start at
+                       initialization time"
+                 type="int"/>
+
+    <attribute   name="maxSpareThreads"
+          description="The maximum number of unused request processing threads"
+                 type="int"/>
+
+    <attribute   name="maxThreads"
+          description="The maximum number of request processing threads to be created"
+                 type="int"/>
+
+    <attribute   name="minSpareThreads"
+          description="The number of request processing threads that will be created"
+                 type="int"/>
+
+    <attribute   name="minProcessors"
+          description="The minimum number of processors to start at
+                       initialization time"
+                 type="int"/>
+
+    <attribute   name="port"
+          description="The port number on which we listen for ajp13 requests"
+                type="int"/>
+
+    <attribute   name="protocol"
+          description="Coyote protocol handler in use"
+                 type="java.lang.String"/>
+
+    <attribute   name="protocolHandlerClassName"
+          description="Coyote Protocol handler class name"
+                 type="java.lang.String"
+            writeable="false"/>
+
+    <attribute   name="proxyName"
+          description="Ther Server name to which we should pretend requests to this Connector"
+                 type="java.lang.String"/>
+
+    <attribute   name="proxyPort"
+          description="Ther Server port to which we should pretend requests to this Connector"
+                 type="int"/>
+
+    <attribute   name="redirectPort"
+          description="The redirect port for non-SSL to SSL redirects"
+                 type="int"/>
+
+    <attribute   name="scheme"
+          description="Protocol name for this Connector (http, https)"
+                 type="java.lang.String"/>
+
+    <attribute   name="secure"
+          description="Is this a secure (SSL) Connector?"
+                 type="boolean"/>
+
+    <attribute   name="sslProtocol"
+          description="SSL protocol variant to be used"
+                 type="java.lang.String"/>
+
+    <attribute   name="sslProtocols"
+          description="Comma-separated list of SSL protocol variants to be enabled"
+                 type="java.lang.String"/>
+
+    <attribute   name="tcpNoDelay"
+          description="Should we use TCP no delay?"
+                 type="boolean"/>
+
+    <attribute    name="tomcatAuthentication"
+           description="Should Tomcat perform all authentications?"
+                  type="boolean"/>
+
+    <attribute    name="xpoweredBy"
+           description="Is generation of X-Powered-By response header enabled/disabled?"
+                    is="true"
+                  type="boolean"/>
+
+    <operation name="start" description="Start" impact="ACTION" returnType="void" />
+    <operation name="stop" description="Stop" impact="ACTION" returnType="void" />
+    <operation name="init" description="Init" impact="ACTION" returnType="void" />
+    <operation name="destroy" description="Destroy" impact="ACTION" returnType="void" />
+
+  </mbean>
+
+
+  <mbean         name="RequestInfo"
+          description="Structure holding the Request and Response objects"
+               domain="Catalina"
+                group="Connector"
+                 type="org.apache.coyote.RequestInfo">
+
+    <attribute    name="method"
+                  type="java.lang.String"
+             writeable="false"/>
+
+    <attribute    name="currentUri"
+                  type="java.lang.String"
+             writeable="false"/>
+
+    <attribute    name="currentQueryString"
+                  type="java.lang.String"
+             writeable="false"/>
+
+    <attribute    name="protocol"
+                  type="java.lang.String"
+             writeable="false"/>
+
+    <attribute    name="virtualHost"
+                  type="java.lang.String"
+             writeable="false"/>
+
+    <attribute    name="serverPort"
+                  type="int"
+             writeable="false"/>
+
+    <attribute    name="remoteAddr"
+                  type="java.lang.String"
+             writeable="false"/>
+
+    <attribute    name="contentLength"
+                  type="int"
+             writeable="false"/>
+
+    <attribute    name="requestBytesReceived"
+                  type="long"
+             writeable="false"/>
+
+    <attribute    name="requestBytesSent"
+                  type="long"
+             writeable="false"/>
+
+    <attribute    name="requestProcessingTime"
+                  type="long"
+             writeable="false"/>
+
+    <attribute   name="stage"
+                 type="int"/>
+
+    <attribute   name="bytesSent"
+                 type="long"/>
+
+    <attribute   name="bytesReceived"
+                 type="long"/>
+
+    <attribute   name="processingTime"
+                 type="long"/>
+
+    <attribute   name="maxTime"
+                 type="long"/>
+
+    <attribute   name="maxRequestUri"
+                 type="java.lang.String"/>
+
+    <attribute   name="requestCount"
+                 type="int"/>
+
+    <attribute   name="errorCount"
+                 type="int"/>
+
+    <attribute   name="workerThreadID"
+                 type="long"/>
+
+    <attribute   name="requestCompletionTime"
+                 type="long"/>
+
+
+  </mbean>
+
+
+  <mbean name="DefaultContext"
+         description="Used to store the default configuration a Host will use when creating a Context"
+         domain="Catalina"
+         group="Default-Context"
+         type="org.apache.catalina.core.StandardDefaultContext">
+
+    <attribute name="cookies"
+               description="Should we attempt to use cookies for session id communication?"
+               type="boolean"/>
+      
+    <attribute name="crossContext"
+               description="Should we allow the ServletContext.getContext() method to access the context of other web applications in this server?"
+               type="boolean"/>
+      
+    <attribute name="reloadable"
+               description="The reloadable flag for this web application"
+               type="boolean"/>
+
+    <attribute name="swallowOutput"
+               description="Flag to set to cause the system.out and system.err to be redirected to the logger when executing a servlet"
+               type="boolean"/>
+
+    <attribute name="useNaming"
+               description="Create JNDI naming context?"
+               is="true"
+               type="boolean"/>
+
+    <attribute name="resourceNames"
+               description="Object names for the resources"
+               is="true"
+               type="[Ljava.lang.String;"/>
+                 
+    <operation name="addEnvironment"
+               description="Add an environment entry for this web application"
+               impact="ACTION"
+               returnType="void">
+      <parameter name="envName"
+                 description="New environment entry name"
+                 type="java.lang.String"/>
+    </operation>
+
+    <operation name="addResource"
+               description="Add a resource reference for this web application"
+               impact="ACTION"
+               returnType="void">
+      <parameter name="resourceName"
+                 description="New resource reference name"
+                 type="java.lang.String"/>
+    </operation>
+    
+    <operation name="removeEnvironment"
+               description="Remove any environment entry with the specified name"
+               impact="ACTION"
+               returnType="void">
+      <parameter name="envName"
+                 description="Name of the environment entry to remove"
+                 type="java.lang.String"/>
+    </operation>
+    
+    <operation name="removeResource"
+               description="Remove any resource reference with the specified name"
+               impact="ACTION"
+               returnType="void">
+      <parameter name="resourceName"
+                 description="Name of the resource reference to remove"
+                 type="java.lang.String"/>
+    </operation>
+    
+  </mbean>
+  
+  <mbean name="NamingContextListener"
+         description="Helper class used to initialize and populate the JNDI context associated with each context and server"
+         domain="Catalina"
+         group="Listener"
+         type="org.apache.catalina.core.NamingContextListener">
+    
+    <attribute name="className"
+               description="Fully qualified class name of the managed object"
+               type="java.lang.String"
+               writeable="false"/>
+      
+    <attribute name="debug"
+               description="The debugging detail level for this component"
+               type="int"/>
+      
+  </mbean>
+
+  <mbean name="StandardContext"
+         description="Standard Context Component"
+         domain="Catalina"
+         group="Context"
+         type="org.apache.catalina.core.StandardContext">
+    
+    <attribute name="children"
+               description="Object names of all children"
+               type="[Ljavax.management.ObjectName;"/>
+               
+    <attribute   name="cookies"
+               description="Should we attempt to use cookies for session id
+               communication?"
+               type="boolean"/>
+      
+    <attribute name="compilerClasspath"
+               description="The compiler classpath to use"
+               type="java.lang.String"/>
+      
+    <attribute name="crossContext"
+               description="Should we allow the ServletContext.getContext() method to access the context of other web applications in this server?"
+               type="boolean"/>
+
+    <attribute name="debug"
+               description="The debugging detail level for this component"
+               type="int"/>
+               
+    <attribute name="defaultWebXml"
+               description="Location of the default web.xml resource or file"
+               type="java.lang.String"/>
+               
+    <attribute name="deploymentDescriptor"
+               description="String deployment descriptor "
+               type="java.lang.String"/>
+                     
+    <attribute name="docBase"
+               description="The document root for this web application"
+               type="java.lang.String"/>
+
+    <attribute name="endpointAddresses"
+               description="An array of URL addresses defined in this Web Module to invoke web services endpoints implementations"
+               type="[Ljava.lang.String;"/> 
+      
+    <attribute name="engineName"
+               description="Name of the engine domain, if different from the context domain"
+               type="java.lang.String"/>
+
+    <attribute name="environments"
+               description="MBean Names of the set of defined environment entries for this web application"
+               type="[Ljava.lang.String;"
+               writeable="false"/>
+
+    <attribute name="eventProvider"
+               description="Event provider support for this managed object"
+               is="true"
+               type="boolean"/>
+
+    <attribute name="hasWebServices"
+               description="True if the web module implements web services endpoints"
+               type="boolean"/>
+                              
+    <attribute name="javaVMs"
+               description="The Java virtual machines on which this module is running"
+               type="[Ljava.lang.String;"/>
+
+    <attribute name="loader"
+               description="Associated loader."
+               type="org.apache.catalina.Loader" />
+      
+    <attribute name="managedResource"
+               description="The managed resource this MBean is associated with"
+               type="java.lang.Object"/>
+      
+    <attribute name="mappingObject"
+               description="The object used for mapping"
+               type="java.lang.Object"/>
+      
+    <attribute name="objectName"
+               description="Name of the object"
+               type="java.lang.String"/>
+      
+    <attribute name="override"
+               description="The DefaultContext override flag for this web application"
+               type="boolean"/>
+      
+    <attribute name="parentClassLoader"
+               description="Parent class loader."
+               type="java.lang.ClassLoader" />
+      
+    <attribute name="path"
+               description="The context path for this Context"
+               type="java.lang.String"/>
+               
+    <attribute name="privileged"
+               description="Access to tomcat internals"
+               type="boolean"/>
+      
+    <attribute name="reloadable"
+               description="The reloadable flag for this web application"
+               type="boolean"/>
+
+    <attribute name="resourceNames"
+               description="MBean Names of all the defined resource references for this application."
+               type="[Ljava.lang.String;"
+               writeable="false"/>
+
+    <attribute name="server"
+               description="The J2EE Server this module is deployed on"
+               type="java.lang.String"/>
+                              
+    <attribute name="servlets"
+               description="JSR77 list of servlets"
+               type="[Ljava.lang.String;"
+               writeable="false"/>
+               
+    <attribute name="startupTime"
+               description="Startup time for this context"
+               type="long"/>
+               
+    <attribute name="state"
+               description="Current state of this component"
+               type="int"/>
+                     
+    <attribute name="stateManageable"
+               description="State management support for this managed object"
+               is="true"
+               type="boolean"/>
+               
+    <attribute name="statisticsProvider"
+               description="Performance statistics support for this managed object"
+               is="true"
+               type="boolean"/>
+               
+    <attribute name="staticResources"
+               description="Static resources associated with the context."
+               type="javax.naming.directory.DirContext"
+               writeable="false"/>
+      
+    <attribute   name="swallowOutput"
+               description="Flag to set to cause the system.out and system.err to be redirected to the logger when executing a servlet"
+               type="boolean"/>
+               
+    <attribute name="tldScanTime"
+               description="Time spend scanning jars for TLDs for this context"
+               type="long"/>
+
+    <attribute name="useNaming"
+               description="Create a JNDI naming context for this application?"
+               is="true"
+               type="boolean"/>
+               
+    <attribute name="valveObjectNames"
+               description="ObjectNames for the valves associated with this container"
+               type="[Ljavax.management.ObjectName;"
+               writeable="false"/>
+
+    <attribute name="welcomeFiles"
+               description="The welcome files for this context"
+               type="[Ljava.lang.String;"
+               writeable="false"/>
+      
+    <attribute name="workDir"
+               description="The pathname to the work directory for this context"
+               type="java.lang.String"/>
+      
+    <operation name="addEnvironment"
+               description="Add an environment entry for this web application"
+               impact="ACTION"
+               returnType="void">
+      <parameter name="envName"
+                 description="New environment entry name"
+                 type="java.lang.String"/>
+    </operation>
+    
+    <operation   name="addResource"
+               description="Add a resource reference for this web application"
+               impact="ACTION"
+               returnType="void">
+      <parameter name="resourceName"
+                 description="New resource reference name"
+                 type="java.lang.String"/>
+    </operation>
+    
+    <operation   name="removeEnvironment"
+               description="Remove any environment entry with the specified name"
+               impact="ACTION"
+               returnType="void">
+      <parameter name="envName"
+                 description="Name of the environment entry to remove"
+                 type="java.lang.String"/>
+    </operation>
+    
+    <operation   name="removeResource"
+               description="Remove any resource reference with the specified name"
+               impact="ACTION"
+               returnType="void">
+      <parameter name="resourceName"
+                 description="Name of the resource reference to remove"
+                 type="java.lang.String"/>
+    </operation>
+    
+    <operation   name="setRealm"
+               description="Configures the realm for this webapp"
+               impact="ACTION" returnType="void">
+      <parameter name="realm"  
+                 description="Realm object"
+                 type="org.apache.catalina.Realm"/>
+    </operation>
+    
+    <operation   name="reload"
+               description="Reload the webapplication"
+               impact="ACTION"
+               returnType="void">
+    </operation>
+    
+    <operation   name="init"
+               description="Register the context into the running server"
+               impact="ACTION"
+               returnType="void">
+    </operation>
+    
+    <operation   name="start"
+               description="Start the contex"
+               impact="ACTION"
+               returnType="void">
+    </operation>
+    
+    <operation name="stop"
+               description="Stop the contex"
+               impact="ACTION"
+               returnType="void">
+    </operation>
+    
+    <operation name="destroy"
+               description="Destroy the contex"
+               impact="ACTION"
+               returnType="void">
+    </operation>
+    
+    <operation name="findMappingObject"
+               description="Return an object which may be utilized for mapping to this component"
+               impact="INFO"
+               returnType="org.apache.catalina.Context">    
+    </operation>    
+    
+    <operation name="findStaticResources"
+               description="Return the naming resources associated with this web application"
+               impact="INFO"
+               returnType="javax.naming.directory.DirContext">    
+    </operation>
+    
+  </mbean>
+  
+  <mbean name="StandardContextValve"
+         description="Valve that implements the default basic behavior for the
+         StandardContext container implementation"
+         domain="Catalina"
+         group="Valve"
+         type="org.apache.catalina.core.StandardContextValve">
+    
+    <attribute name="className"
+               description="Fully qualified class name of the managed object"
+               type="java.lang.String"
+               writeable="false"/>
+      
+    <attribute name="debug"
+               description="The debugging detail level for this component"
+               type="int"/>
+      
+  </mbean>
+  
+  <mbean name="StandardEngine"
+         type="org.apache.catalina.core.StandardEngine"
+         description="Standard Engine Component"
+         domain="Catalina"
+         group="Engine">
+    
+    <attribute name="debug"
+               description="The debugging detail level for this component"
+               type="int"/>
+      
+    <attribute name="defaultHost"
+               description="Name of the default Host for this Engine"
+               type="java.lang.String"/>
+      
+    <attribute   name="managedResource"
+               description="The managed resource this MBean is associated with"
+               type="java.lang.Object"/>
+      
+    <attribute   name="name"
+               description="Unique name of this Engine"
+               type="java.lang.String"/>
+      
+    <attribute   name="baseDir"
+               description="Base dir for this engine, typically same as catalina.base system property"
+               type="java.lang.String"/>
+      
+    <attribute   name="jvmRoute"
+               description="Route used for load balancing"
+               type="java.lang.String"/>
+      
+    <attribute name="valveObjectNames"
+               description="ObjectNames for the valves associated with this container"
+               type="[Ljavax.management.ObjectName;"
+               writeable="false"/>
+
+    <operation name="addChild"
+               description="Add a virtual host"
+               impact="ACTION"
+               returnType="void">
+      <parameter name="child"
+                 description="Host object"
+                 type="org.apache.catalina.Container"/>
+    </operation>
+    
+    <operation   name="setRealm"
+               description="Configures the realm for this engine"
+               impact="ACTION" returnType="void">
+      <parameter name="realm"  description="Realm object"
+                 type="org.apache.catalina.Realm"/>
+    </operation>
+    
+
+    <operation name="start" description="Start" impact="ACTION" returnType="void" />
+    <operation name="stop" description="Stop" impact="ACTION" returnType="void" />
+      
+  </mbean>
+
+  
+  <mbean name="StandardEngineValve"
+         description="Valve that implements the default basic behavior for the
+         StandardEngine container implementation"
+         domain="Catalina"
+         group="Valve"
+         type="org.apache.catalina.core.StandardEngineValve">
+    
+    <attribute   name="className"
+               description="Fully qualified class name of the managed object"
+               type="java.lang.String"
+               writeable="false"/>
+      
+    <attribute   name="debug"
+               description="The debugging detail level for this component"
+               type="int"/>
+      
+  </mbean>
+  
+  <mbean name="StandardHost"
+         description="Standard Host Component"
+         domain="Catalina"
+         group="Host"
+         type="org.apache.catalina.core.StandardHost">
+    
+    <attribute name="appBase"
+               description="The application root for this Host"
+               type="java.lang.String"/>
+      
+    <attribute name="autoDeploy"
+               description="The auto deploy flag for this Host"
+               type="boolean"/>
+                 
+    <attribute name="debug"
+               description="The debugging detail level for this component"
+               type="int"/>
+      
+    <attribute name="deployOnStartup"
+               description="The deploy on startup flag for this Host"
+               type="boolean"/>
+
+    <attribute name="deployXML"
+               description="deploy Context XML config files property"
+               is="true"
+               type="boolean"/>
+      
+    <attribute name="managedResource"
+               description="The managed resource this MBean is associated with"
+               type="java.lang.Object"/>
+      
+    <attribute name="name"
+               description="Unique name of this Host"
+               type="java.lang.String"/>
+      
+    <attribute name="unpackWARs"
+               description="Unpack WARs property"
+               is="true"
+               type="boolean"/>
+      
+    <attribute name="xmlNamespaceAware"
+               description="Attribute value used to turn on/off XML namespace awareness"
+               type="boolean"/>
+      
+    <attribute name="xmlValidation"
+               description="Attribute value used to turn on/off XML validation"
+               type="boolean"/>
+
+    <attribute name="children"
+               description="Object names of all children"
+               type="[Ljavax.management.ObjectName;"/>
+      
+    <attribute name="aliases"
+               description="Host aliases"
+               type="[Ljava.lang.String;"/>
+      
+    <attribute name="ports"
+               description="Ports with which this StandardHost is associated"
+               type="[I;"/>
+
+    <attribute name="valveNames"
+               description="Return the MBean Names of the Valves associated with this Host"
+               type="[Ljava.lang.String;"/>
+      
+    <attribute name="valveObjectNames"
+               description="Return the MBean ObjectNames of the Valves associated with this Host"
+               type="[Ljavax.management.ObjectName;"/>
+      
+    <operation name="addAlias"
+               description="Add an alias name that should be mapped to this Host"
+               impact="ACTION"
+               returnType="void">
+      <parameter name="alias"
+                 description="The alias to be added"
+                 type="java.lang.String"/>
+    </operation>
+    
+    <operation name="findAliases"
+               description="Return the set of alias names for this Host"
+               impact="INFO"
+               returnType="[Ljava.lang.String;"/>
+
+    <operation name="findPorts"
+               description="Returns the ports that this StandardHost is associated with"
+               impact="INFO"
+               returnType="[I;"/>
+
+    <operation name="findMappingObject"
+               description="Return an object which may be utilized for mapping to this component"
+               impact="INFO"
+               returnType="org.apache.catalina.Host">    
+    </operation>
+
+    <operation name="addChild"
+               description="Add a context"
+               impact="ACTION">
+      <parameter name="child"
+                 description="Context to be added"
+                 type="org.apache.catalina.Container"/>
+    </operation>
+      
+    <operation   name="removeAlias"
+               description="Remove the specified alias name from the aliases for this  Host"
+               impact="ACTION"
+               returnType="void">
+      <parameter name="alias"
+                 description="Alias name to be removed"
+                 type="java.lang.String"/>
+    </operation>
+    
+    <operation   name="setRealm"
+               description="Configures the realm for this host"
+               impact="ACTION" returnType="void">
+      <parameter name="realm"  description="Realm object"
+                 type="org.apache.catalina.Realm"/>
+    </operation>
+    
+    <operation name="start" description="Start" impact="ACTION" returnType="void" />
+    <operation name="stop" description="Stop" impact="ACTION" returnType="void" />
+    <operation name="init" description="Init" impact="ACTION" returnType="void" />
+    <operation name="destroy" description="Destroy" impact="ACTION" returnType="void" />
+  </mbean>
+  
+  <mbean name="StandardHostValve"
+         description="Valve that implements the default basic behavior for the
+         StandardHost container implementation"
+         domain="Catalina"
+         group="Valve"
+         type="org.apache.catalina.core.StandardHostValve">
+    
+    <attribute name="className"
+               description="Fully qualified class name of the managed object"
+               type="java.lang.String"
+               writeable="false"/>
+
+    <attribute name="debug"
+               description="The debugging detail level for this component"
+               type="int"/>
+
+  </mbean>
+
+  <mbean name="StandardServer"
+         description="Standard Server Component"
+         domain="Catalina"
+         group="Server"
+         type="org.apache.catalina.core.StandardServer">
+    
+    <attribute name="debug"
+               description="The debugging detail level for this component"
+               type="int"/>
+      
+    <attribute name="managedResource"
+               description="The managed resource this MBean is associated with"
+               type="java.lang.Object"/>
+      
+    <attribute name="port"
+               description="TCP port for shutdown messages"
+               type="int"/>
+      
+    <attribute name="shutdown"
+               description="Shutdown password"
+               type="java.lang.String"/>
+      
+    <attribute name="serviceNames"
+               description="Object names of all services we know about"
+               type="[Ljavax.management.ObjectName;"/>
+      
+    <operation name="await"
+               description="Wait for the shutdown message"
+               impact="ACTION"
+               returnType="void" />
+  </mbean>
+
+  
+  <mbean name="StandardService"
+         description="Standard Service Component"
+         domain="Catalina"
+         group="Service"
+         type="org.apache.catalina.core.StandardService">
+    
+    <attribute name="debug"
+               description="The debugging detail level for this component"
+               type="int"/>
+      
+    <attribute name="name"
+               description="Unique name of this Service"
+               type="java.lang.String"/>
+      
+    <attribute name="connectorNames"
+               description="ObjectNames of the connectors"
+               type="[Ljavax.management.ObjectName;"
+               writeable="false" />
+      
+    <attribute name="containerName"
+               description="ObjectNames of the engine"
+               type="javax.management.ObjectName"
+               writeable="false" />
+
+    <operation name="addConnector"
+               description="Add a new connector"
+               impact="ACTION"
+               returnType="void">
+      <parameter name="connector"
+                 description="Connector object"
+                 type="org.apache.catalina.Connector"/>
+    </operation>
+    
+    <operation name="setContainer"
+               description="Set the servlet engine that will process the requests "
+               impact="ACTION"
+               returnType="void">
+      <parameter name="engine"
+                 description="Engine object"
+                 type="org.apache.catalina.Container"/>
+    </operation>
+    
+    <operation name="start" description="Start" impact="ACTION" returnType="void" />
+    <operation name="stop" description="Stop" impact="ACTION" returnType="void" />
+  </mbean>
+
+  <mbean name="StandardWrapper"
+         description="Wrapper that represents an individual servlet definition"
+         domain="Catalina"
+         group="Wrapper"
+         type="org.apache.catalina.core.StandardWrapper">
+               
+    <attribute name="engineName"
+               description="Fully qualified class name of the managed object"
+               type="java.lang.String"
+               writeable="false"/>
+               
+    <attribute name="eventProvider"
+               description="Event provider support for this managed object"
+               is="true"
+               type="boolean"/>
+
+    <attribute name="objectName"
+               description="Name of the object"
+               type="java.lang.String"/>
+
+    <attribute name="stateManageable"
+               description="State management support for this managed object"
+               is="true"
+               type="boolean"/>
+
+    <attribute name="statisticsProvider"
+               description="Performance statistics support for this managed object"
+               is="true"
+               type="boolean"/>
+
+    <attribute name="loadTime"
+               description="Load time"
+               type="long"
+               writeable="false" />
+
+    <attribute name="classLoadTime"
+               description="Class loading time"
+               type="int"
+               writeable="false" />
+
+    <operation name="findMappings"
+               description="Return the mappings associated with this wrapper"
+               impact="INFO"
+               returnType="[Ljava.lang.String;">
+    </operation>
+               
+    <operation name="findMappingObject"
+               description="Return an object which may be utilized for mapping to this component"
+               impact="INFO"
+               returnType="org.apache.catalina.Wrapper">
+    </operation>
+    
+  </mbean>
+  
+  <mbean name="StandardWrapperValve"
+         description="Valve that implements the default basic behavior for the
+         StandardWrapper container implementation"
+         domain="Catalina"
+         group="Valve"
+         type="org.apache.catalina.core.StandardWrapperValve">
+         
+    <attribute name="className"
+               description="Fully qualified class name of the managed object"
+               type="java.lang.String"
+               writeable="false"/>  
+                    
+    <attribute name="debug"
+               description="The debugging detail level for this component"
+               type="int"/>
+  </mbean>
+
+</mbeans-descriptors>

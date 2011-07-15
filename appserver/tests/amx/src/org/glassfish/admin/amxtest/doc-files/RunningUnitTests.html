@@ -1,0 +1,1517 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<!--
+
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) 2010 Oracle and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+    or packager/legal/LICENSE.txt.  See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at packager/legal/LICENSE.txt.
+
+    GPL Classpath Exception:
+    Oracle designates this particular file as subject to the "Classpath"
+    exception as provided by Oracle in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+
+-->
+
+    <meta http-equiv="content-type"
+          content="text/html; charset=ISO-8859-1">
+    <title>MBean API Unit Tests README</title>
+</head>
+<body bgcolor="#ffffff">
+<div style="text-align: center;">
+    <h1><span style="font-weight: bold;">Running MBean API (AMX) JUnit
+Tests </span></h1>
+</div>
+<p><span style="font-weight: bold;"><br>
+</span><span style="font-family: monospace;">contact: </span><a
+        href="mailto:lloyd.chambers@sun.com?subject=Running%20AMX%20unit%20tests"
+        style="font-family: monospace;">lloyd.chambers@sun.com</a><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">Last updated: 26 April 2007<br>
+</span><span style="font-family: monospace;"><br>
+</span><span style="font-weight: bold;">NOTE</span>: the
+    hyperlinks in this document <span style="color: rgb(255, 0, 0);">assume
+you are reading it from its location
+in the <span style="font-weight: bold;">source </span>tree</span> eg <span
+        style="font-family: monospace;">glassfish/admin/mbeanapi-impl/tests/org.glassfish.admin.amxtest</span>.</p>
+
+<p><strong>JUNIT</strong>: You must check out glassfish/appserv-tests in order to make junit.jar available. The easiest
+    way
+    to do this is:</p>
+
+<p><span
+        style="font-family: monospace;">$ <strong>cd glassfish/bootstrap<br>
+    $ <strong>maven checkout-quicklook</strong></strong></span><br>
+    <span style="font-weight: bold;"></span></p>
+
+<h2><span style="font-weight: bold;">Step 0: Start the server</span><br>
+</h2>
+
+<p>Ensure that sources in <span style="font-family: monospace;">admin/mbeanapi-impl</span>
+    and <span style="font-family: monospace;">admin-core/mbeanapi</span>
+    are up-to-date and built.&nbsp; Then start the server.<br>
+</p>
+
+<h2>Step 1: The amxtest.properties file</h2>
+
+<p>You will need to change the following properties in <a
+        target="_blank" href="../../../../../../amxtest.properties">admin/mbeanapi-impl/amxtest.properties</a>
+    to match your own host/port/user/password:<br>
+</p>
+<span style="font-family: monospace;">amxtest.connect.host=<span
+        style="font-style: italic;">yourhost</span><br
+        style="font-style: italic;">
+</span><span style="font-family: monospace;">amxtest.connect.port=8686</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">amxtest.connect.user=admin</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">amxtest.connect.password=<span
+        style="font-style: italic;">admin-password</span><br>
+</span><span style="font-family: monospace;">amxtest.connect.useTLS=true<br>
+<br>
+</span>If <span style="font-family: monospace;">amxtest.connect.useTLS=true</span>,
+then you also need these two properties, but the defaults should be
+fine:<br>
+<br>
+<span style="font-family: monospace;">amxtest.connect.truststore=./amx-test-truststore<br>
+amxtest.connect.truststorePassword=changeme</span><br>
+<span style="font-family: monospace;"></span><br>
+
+<p>The java constants for all the amxtest.properties keys may be found
+    in&nbsp; <a target="_blank" href="../PropertyKeys.java">PropertyKeys.java</a>.
+    The only
+    required properties are those necessary to connect to the server as
+    shown above.&nbsp; Most of the options are self-explanatory.&nbsp; The
+    tests will obviously fail if the useTLS value does not match the
+    server's state. <br>
+</p>
+<table style="text-align: left; width: 100%; height: 100%;" border="1"
+       cellpadding="2" cellspacing="2">
+<tbody>
+<tr>
+    <td style="vertical-align: top; font-weight: bold;">Option<br>
+    </td>
+    <td style="vertical-align: top; font-weight: bold;">Discussion<br>
+    </td>
+</tr>
+<tr>
+    <td style="vertical-align: top;"><span
+            style="font-family: monospace;">amxtest.connect</span></td>
+    <td style="vertical-align: top;">If <span
+            style="font-family: monospace;">true</span>, a connection is made,
+        if false, no connection is made. If set to false, be sure to modify
+        your test classes to remove any that require a connection to the
+        server.&nbsp; You can set <span style="font-family: monospace;">amxtest.testClasses=myamxtest.classes</span>
+        and modify your own copy of the file.<br>
+    </td>
+</tr>
+<tr>
+    <td style="vertical-align: top;"><span
+            style="font-family: monospace;">amxtest.connect.useTLS</span></td>
+    <td style="vertical-align: top;">Set <span
+            style="font-family: monospace;">amxtest.connect.useTLS=</span><span
+            style="font-family: monospace;">true</span> if the server
+        is using TLS.<br>
+    </td>
+</tr>
+<tr>
+    <td style="vertical-align: top;"><span
+            style="font-family: monospace;">amxtest.connect.truststore</span></td>
+    <td style="vertical-align: top;">Any file will do here and it
+        need not exist in advance.&nbsp; Just make sure the name is valid for
+        your platform.&nbsp; The file will be created in the course of testing
+        if it does not already exist.<br>
+    </td>
+</tr>
+<tr>
+    <td style="vertical-align: top;"><span
+            style="font-family: monospace;">amxtest.threaded</span></td>
+    <td style="vertical-align: top;">If <span
+            style="font-family: monospace;">true</span>, then within any single
+        test class the tests are run using <span
+            style="font-family: monospace;">junit.extensions.ActiveTestSuite</span>;
+        otherwise they are run using <span style="font-family: monospace;">junit.framework.TestSuite</span>.&nbsp;
+        Running the tests threaded can be confusing if they are failing (due to
+        overlapping output);
+        otherwise it speeds things up significantly.<br>
+    </td>
+</tr>
+<tr>
+    <td style="vertical-align: top;"><span
+            style="font-family: monospace;">amxtest.classes</span><br>
+    </td>
+    <td style="vertical-align: top;">By default, all tests will be
+        run unless you set the property "<span style="font-family: monospace;">amxtest.classes</span>"
+        (shown commented-out above).&nbsp; This property is the name of a file
+        containing a lister of test classes.&nbsp; If you wish to run specific
+        tests, you can copy the output from a run into a file, then comment-out
+        any tests you don't want to run.&nbsp; See the <a target="_blank"
+                                                          href="../Tests.java">default
+        test list</a>.
+    </td>
+</tr>
+<tr>
+    <td style="vertical-align: top;"><span
+            style="font-family: monospace;">amxtest.verbose</span><br>
+    </td>
+    <td style="vertical-align: top;">For the most part, this displays
+        the time it takes to run various tests.&nbsp; Useful to see how things
+        are performing remotely versus locally, etc.&nbsp; If you are just
+        looking for correctness, leave it set to "false".<br>
+    </td>
+</tr>
+<tr>
+    <td style="vertical-align: top;"><span
+            style="font-family: monospace;">amxtest.iterations</span></td>
+    <td style="vertical-align: top;">Specifies the number of times to
+        run the tests.&nbsp; All the tests are run, then all the tests are
+        repeated, etc.&nbsp; Always run 2 iterations if there are any
+        repeatability issues (sporadic problems in
+        server code, not necessarily AMX code, have been seen in the past).<br>
+    </td>
+</tr>
+<tr>
+    <td style="vertical-align: top;"><span
+            style="font-family: monospace;">amxtest.deploy.files</span></td>
+    <td style="vertical-align: top;">Comma-separated list of archives
+        to deploy during <font face="Courier New, Courier, mono">DeploymentMgrTest</font></td>
+</tr>
+<tr>
+    <td style="vertical-align: top;"><span
+            style="font-family: monospace;">amxtest.deploy.numThreads</span></td>
+    <td style="vertical-align: top;">The number of threads to run for
+        <font face="Courier New, Courier, mono">DeploymentMgrTest.testDeployHeavilyThreaded.</font></td>
+</tr>
+<tr>
+    <td style="vertical-align: top;"><span
+            style="font-family: monospace;">amxtest.deploy.deployDummies</span></td>
+    <td style="vertical-align: top;">Controls whether certain tests
+        requiring the deployment of dummy (garbage) files are run.
+    </td>
+</tr>
+<tr>
+    <td style="vertical-align: top;"><span
+            style="font-family: monospace;">amxtest.UploadDownloadMgrTest.numThreads</span></td>
+    <td style="vertical-align: top;">The number of threads used in <font
+            face="Courier New, Courier, mono">UploadDownloadMgrTest.<br>
+        testHeavilyThreaded()</font></td>
+</tr>
+<tr>
+    <td style="vertical-align: top;"><span
+            style="font-family: monospace;">amxtest.UploadDownloadMgrTest.bigFileKB</span></td>
+    <td style="vertical-align: top;"> The size, in KB, of <font
+            face="Courier New, Courier, mono">UploadDownloadMgrTest.<br>
+        testDownloadBigFile()</font></td>
+</tr>
+</tbody>
+</table>
+<p>You can cause the tests to be run as many times as you like by
+    setting <span style="font-family: monospace;">amxtest.loopCount</span>.&nbsp;
+    It is generally a good practise to use a count of 2, just in case there
+    are any repeatability issues.
+</p>
+
+<h2>Step 2: Run the tests<br>
+</h2>
+
+<p>Here is how to run the tests; note the directory:<br>
+</p>
+
+<p><span style="font-family: monospace;">G:\glassfish\admin\mbeanapi-impl&gt;maven
+run-tests</span><br>
+</p>
+
+<p>Be sure to use 'maven' and not 'ant'.&nbsp; If you use ant, the
+    classpath won't contain required classes for certain com.sun.appserv
+    unit tests.&nbsp; Perhaps a build wizard can figure this out and fix it.<br>
+</p>
+
+<p>See a <a href="#SampleOutput">sample
+    run</a>.&nbsp;
+    The tests take just a few minutes to run, or as much as 30 minutes over
+    VPN to a remote, slow server!&nbsp; Probably you'll want to run them
+    locally.&nbsp; The tests do test all AMX MBeans, so if you have
+    multiple
+    running servers and/or clusters, and are testing against the Domain
+    Admin Server (DAS), then you will be testing all AMX MBeans for all
+    running instances.<br>
+    <br>
+</p>
+
+<h2><b><font color="#ff0000"><a name="KnownIssues"></a>Appendex A:
+    Known Issues</font></b></h2>
+<table style="height: 1448px; width: 100%;" border="1">
+<tbody>
+<tr>
+    <td style="width: 36%;"><b>Test/issue</b></td>
+    <td width="64%"><b>Comments</b></td>
+</tr>
+<tr>
+    <td style="font-family: monospace;" width="36%">&nbsp;j2EEType=X-CallFlowMonitor</td>
+    <td style="width: 64%;">18 July 2005<br>
+        <br>
+        &nbsp;<span style="font-family: monospace;">[java] Warning: MBean
+"amx:j2eeType=X-CallFlowMonitor,<br>
+name=server,X-ServerRootMonitor=server" <br>
+did not supply the 1 attributes {RequestInformation</span><span
+            style="font-family: monospace;">}<br>
+      </span><span style="font-weight: bold;">Note that other
+operations are also unimplemented.</span><span
+            style="font-family: monospace;"><br style="font-family: monospace;">
+      </span> <br>
+    </td>
+</tr>
+<tr>
+    <td style="vertical-align: top;"><span
+            style="font-family: monospace;">j2eeType=X-UploadDownloadMgr</span><br>
+    </td>
+    <td style="vertical-align: top;">&nbsp;18 July 2005&nbsp;
+        sporadic
+        failure, not a new bug, I've seen it in the past<br>
+        <br>
+      <span style="font-family: monospace;">1)
+testHeavilyThreaded(<br>
+org.glassfish.admin.amxtest.support.UploadDownloadMgrTest<br>
+java.lang.Asse</span><span style="font-family: monospace;">rtionError:
+$Proxy90.downloadBytes(Unknown Source)</span><br
+            style="font-family: monospace;">
+      <span style="font-family: monospace;">org.glassfish.admin.amxtest.support.UploadDownloadMgrTest.<br>
+testDownloadFile(UploadDownloadMgrTes</span><span
+            style="font-family: monospace;">t.java:145)</span><br
+            style="font-family: monospace;">
+      <span style="font-family: monospace;">org.glassfish.admin.amxtest.support.UploadDownloadMgrTest$<br>
+UploadDownloadTestThread.run(UploadDo</span><span
+            style="font-family: monospace;">wnloadMgrTest.java:227)</span><br
+            style="font-family: monospace;">
+      <span style="font-family: monospace;">at
+org.glassfish.admin.amxtest.support.UploadDownloadMgrTest.<br>
+testHeavilyThreaded(UploadDownloa</span><span
+            style="font-family: monospace;">dMgrTest.java:315)</span><br
+            style="font-family: monospace;">
+        <span style="font-family: monospace;"></span><br>
+    </td>
+</tr>
+<tr>
+    <td style="vertical-align: top;"><span
+            style="font-family: monospace;">j2eeType=X-Logging</span><br>
+    </td>
+    <td style="vertical-align: top;">The AMX <span
+            style="font-family: monospace;">Logging </span>MBean now lives in all
+        server instances.<br>
+        However, its <span style="font-family: monospace;">Container</span>, <span
+            style="font-family: monospace;">X-ServerRootMonitor</span> and <span
+            style="font-family: monospace;">DomainRoot </span>do not yet exist in
+        non-DAS instances.<br>
+        Thisordinarily causes some of the generic
+        tests to fail (ProxyTest, AMXTest, ContainerTest). <br>
+        So the <span style="font-style: italic;">generic </span>testing of
+        remote <span style="font-family: monospace;">Logging </span>MBeans
+        has been temporarily disabled via:<br>
+        <br>
+        <span style="font-family: monospace;">AMXTestBase.isRemoteIncomplete()</span>.
+        <br>
+        <br>
+        You may safely ignore all lines that say "<span
+            style="font-family: monospace;">remoteIncomplete: ...</span>" so long
+        as the ObjectName has j2eeType=X-Logging.<br>
+        <br>
+        The Logging MBeans are all being tested specifically, just not
+        generically.<br>
+        <br>
+    </td>
+</tr>
+<tr>
+    <td style="vertical-align: top;"><span
+            style="font-family: monospace;">org.glassfish.admin.amxtest.<br>
+j2ee.J2EETest</span><br>
+    </td>
+    <td style="vertical-align: top;">24 June 2005<br>
+        <br>
+        Very recent changes have broken something in the underlying
+        com.sun.appserv MBeans. This is a regression.<br>
+        <br>
+        &nbsp;<span style="font-family: monospace;">WARNING: MBean
+"amx:j2eeType=Servlet,WebModule=//server/__JWSappclients,<br>
+J2EEServer=server,name=default,J2EEApplication=__JWSapp</span><br
+            style="font-family: monospace;">
+      <span style="font-family: monospace;">clients" does not have its
+statisticProvider set to true,<br>
+monitoring peer = null</span><br style="font-family: monospace;">
+      <span style="font-family: monospace;">&nbsp;WARNING: MBean
+"amx:j2eeType=WebModule,J2EEServer=server,<br>
+name=//server/__JWSappclients,J2EEApplication=__JWSappclients"
+does no</span><br style="font-family: monospace;">
+      <span style="font-family: monospace;">t have its
+statisticProvider set to true, monitoring peer = null</span><span
+            style="font-family: monospace;"></span><br
+            style="font-family: monospace;">
+      <span style="font-family: monospace;">&nbsp;WARNING: MBean
+"amx:j2eeType=Servlet,WebModule=//server/__JWSappclients,<br>
+J2EEServer=server,name=jsp,J2EEApplication=__JWSappclie</span><br
+            style="font-family: monospace;">
+      <span style="font-family: monospace;">nts" does not have its
+statisticProvider set to true, monitoring peer = null</span><span
+            style="font-family: monospace;"></span><br
+            style="font-family: monospace;">
+      <span style="font-family: monospace;">WARNING: MBean
+"amx:j2eeType=Servlet,WebModule=//server/__JWSappclients,<br>
+J2EEServer=server,name=JWSSystemServlet,J2EEApplication</span><br
+            style="font-family: monospace;">
+      <span style="font-family: monospace;">=__JWSappclients" does not
+have its statisticProvider set to true, <br>
+monitoring peer = null</span><br style="font-family: monospace;">
+      <span style="font-family: monospace;">&nbsp;FAILURE: Failures in
+the following MBeans:
+amx:j2eeType=Servlet,<br>
+WebModule=//server/__JWSappclients,<br>
+J2EEServer=server,name=JWSSy</span><br style="font-family: monospace;">
+        <span style="font-family: monospace;">stemServlet,J2EEApplication=__JWSappclients</span><br
+            style="font-family: monospace;">
+      <span style="font-family: monospace;">&nbsp;amx:j2eeType=Servlet,WebModule=//server/__JWSappclients,<br>
+J2EEServer=server,name=jsp,J2EEApplication=__JWSappclients</span><br
+            style="font-family: monospace;">
+      <span style="font-family: monospace;">&nbsp;amx:j2eeType=Servlet,WebModule=//server/__JWSappclients,<br>
+J2EEServer=server,name=default,J2EEApplication=__JWSappclients</span><br
+            style="font-family: monospace;">
+      <span style="font-family: monospace;">&nbsp;amx:j2eeType=WebModule,J2EEServer=server,<br>
+name=//server/__JWSappclients,J2EEApplication=__JWSappclients</span><br>
+    </td>
+</tr>
+<tr>
+    <td style="vertical-align: top;"><span
+            style="font-family: monospace;">ConnectorResourceConfigTest</span><br>
+    </td>
+    <td style="vertical-align: top;">Unit tests fail the 2nd time due
+        to a bug in <span style="font-family: monospace;">com.sun.appserv</span>
+        mbean code that auto-creates, AND fails to delete, ResourceRefs for the
+        ConnectorResource.<br>
+      <span style="font-family: monospace;">testCreateRemove(
+org.glassfish.admin.amxtest.config.ConnectorResourceConfigTest)
+java.lang.reflect.UndeclaredThrowableExcep</span><br
+            style="font-family: monospace;">
+      <span style="font-family: monospace;">tion<br>
+Caused by: java.lang.RuntimeException: Can't remove dangling
+ResourceRef: amx:j2eeType=X-ResourceRefConfig,X-StandaloneServerCo<br>
+nfig=server,name=jndi/ConnectorResourceConfigTest from
+amx:j2eeType=X-StandaloneServerConfig,name=server<br>
+      </span></td>
+</tr>
+<tr>
+    <td style="vertical-align: top; font-family: monospace;">CustomMBeanConfigTest<br>
+    </td>
+    <td style="vertical-align: top;">This is a bug in the custom
+        MBean implementation, not AMX:<br>
+        <br>
+      <span style="font-family: monospace;">WARNING: after removing
+custom MBeans, they are still registered:</span><br
+            style="font-family: monospace;">
+        <span style="font-family: monospace;">user:name=custom4,type=CustomMBeanConfigTest</span><br
+            style="font-family: monospace;">
+        <span style="font-family: monospace;">user:name=custom6,type=CustomMBeanConfigTest</span><br
+            style="font-family: monospace;">
+        <span style="font-family: monospace;">user:name=custom2,type=CustomMBeanConfigTest</span><br
+            style="font-family: monospace;">
+        <span style="font-family: monospace;">user:name=custom3,type=CustomMBeanConfigTest</span><br
+            style="font-family: monospace;">
+        <span style="font-family: monospace;">user:name=custom7,type=CustomMBeanConfigTest</span><br
+            style="font-family: monospace;">
+        <span style="font-family: monospace;">user:name=custom9,type=CustomMBeanConfigTest</span><br
+            style="font-family: monospace;">
+        <span style="font-family: monospace;">user:name=custom8,type=CustomMBeanConfigTest</span><br
+            style="font-family: monospace;">
+        <span style="font-family: monospace;">user:name=custom0,type=CustomMBeanConfigTest</span><br
+            style="font-family: monospace;">
+        <span style="font-family: monospace;">user:name=custom5,type=CustomMBeanConfigTest</span><br
+            style="font-family: monospace;">
+        <span style="font-family: monospace;">user:name=custom1,type=CustomMBeanConfigTest</span><br>
+    </td>
+</tr>
+<tr>
+    <td style="vertical-align: top; font-family: monospace;">TestDanglingRefsTest<br>
+    </td>
+    <td style="vertical-align: top;">Issues warnings about dangling
+        references (such as for X-ConnectorResourceConfig).&nbsp; Runs before
+        the config unit tests, and also runs at the very end of the unit tests
+        (invoked by RunMeLastTest).<br>
+        <br>
+    </td>
+</tr>
+</tbody>
+</table>
+<br>
+
+<h2><span style="font-weight: bold;">Appendix B: Sample Output<a
+        name="SampleOutput"></a></span></h2>
+
+<p>This output was from a test
+    run on 06 June 2005:<br>
+</p>
+
+<p><br>
+<span style="font-family: monospace;">G:\glassfish\admin\mbeanapi-impl&gt;maven
+run-tests</span><br style="font-family: monospace;">
+<span style="font-family: monospace;">Buildfile: build.xml</span><br
+        style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">init:</span><br
+        style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">compile:</span><br
+        style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">compile-tests:</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp; [mkdir]
+Created dir: G:\glassfish\admin\mbeanapi-impl\build\tests</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp; [javac]
+Compiling 80 source files to
+G:\glassfish\admin\mbeanapi-impl\build\tests</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp; [javac] Note:
+* uses or overrides a deprecated API.</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp; [javac] Note:
+Recompile with -Xlint:deprecation for details.</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp; [javac] Note:
+Some input files use unchecked or unsafe operations.</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp; [javac] Note:
+Recompile with -Xlint:unchecked for details.</span><br
+        style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">run-tests:</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+Reading properties from: "amxtest.properties"</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+Properties:</span><br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+amxtest.threaded=false</span><br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+amxtest.connect.host=localhost</span><br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+amxtest.connect.truststorePassword=changeme</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+amxtest.deploy.files=./tests/bookstore.war</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+amxtest.deploy.numThreads=10</span><br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+amxtest.connect.port=8686</span><br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+amxtest.loopCount=1</span><br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+amxtest.UploadDownloadMgrTest.bigFileKB=8192</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+amxtest.UploadDownloadMgrTest.numThreads=10</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+amxtest.connect.user=admin</span><br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+amxtest.connect.useTLS=true</span><br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+amxtest.testClasses=amxtest.classes</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+amxtest.connect.truststore=./amx-test-truststore</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+amxtest.deploy.deployDummies=false</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+amxtest.connect=true</span><br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+amxtest.verbose=false</span><br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+amxtest.connect.password=admin123</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+Connecting: host=localhost, port=8686, user=admin, password=admin123,
+tls=true...</span><br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+Connected: host=localhost, port=8686, user=admin, password=admin123,
+tls=true</span><br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+HandshakeCompletedEvent:
+javax.net.ssl.HandshakeCompletedEvent[source=50d89c[SSL_RSA_WITH_RC4_128_MD5:
+Socket[addr=129.150.30.112/129.150.</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">30.112,port=2278,localport=2286]]]</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+Reading test classes from: "amxtest.classes"</span><br
+        style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+--- 56 TEST CLASSES ---</span><br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+org.glassfish.admin.amxtest.util.misc.SetUtilTest</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+org.glassfish.admin.amxtest.ext.logging.LogQueryEntryImplTest</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+org.glassfish.admin.amxtest.ext.logging.LogQueryResultImplTest</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+org.glassfish.admin.amxtest.support.ParamNameMapperTest</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+org.glassfish.admin.amxtest.util.misc.CircularListTest</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+org.glassfish.admin.amxtest.SerializableTest</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+org.glassfish.admin.amxtest.ProxyTest</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+org.glassfish.admin.amxtest.ProxyFactoryTest</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+org.glassfish.admin.amxtest.AMXTest</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+org.glassfish.admin.amxtest.ContainerTest</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+org.glassfish.admin.amxtest.GenericTest</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+org.glassfish.admin.amxtest.PropertiesTest</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+org.glassfish.admin.amxtest.ext.logging.LogMBeanTest</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+org.glassfish.admin.amxtest.ext.logging.LoggingTest</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+org.glassfish.admin.amxtest.ext.logging.LoggingHelperTest</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+org.glassfish.admin.amxtest.ext.logging.StatefulLoggingHelperTest</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+org.glassfish.admin.amxtest.TestTemplateTest</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+org.glassfish.admin.amxtest.DomainRootTest</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+org.glassfish.admin.amxtest.support.UploadDownloadMgrTest</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+org.glassfish.admin.amxtest.BulkAccessTest</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+org.glassfish.admin.amxtest.QueryMgrTest</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+org.glassfish.admin.amxtest.NotificationEmitterServiceTest</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+org.glassfish.admin.amxtest.NotificationServiceMgrTest</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+org.glassfish.admin.amxtest.NotificationServiceTest</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+org.glassfish.admin.amxtest.MiscTest</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+org.glassfish.admin.amxtest.monitor.StatisticTest</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+org.glassfish.admin.amxtest.monitor.MonitorTest</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+org.glassfish.admin.amxtest.monitor.JMXMonitorMgrTest</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+org.glassfish.admin.amxtest.j2ee.J2EETest</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+org.glassfish.admin.amxtest.deploy.DeploymentProgressTest</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+org.glassfish.admin.amxtest.deploy.DeploymentSourceTest</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+org.glassfish.admin.amxtest.deploy.DeploymentStatusTest</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+org.glassfish.admin.amxtest.deploy.DeploymentMgrTest</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+org.glassfish.admin.amxtest.config.DomainConfigTest</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+org.glassfish.admin.amxtest.config.ReferencesTest</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+org.glassfish.admin.amxtest.config.HTTPServiceConfigTest</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+org.glassfish.admin.amxtest.config.HTTPListenerConfigTest</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+org.glassfish.admin.amxtest.config.ClusterConfigTest</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+org.glassfish.admin.amxtest.config.SSLConfigTest</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+org.glassfish.admin.amxtest.config.JMXConnectorConfigMgrTest</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+org.glassfish.admin.amxtest.config.IIOPListenerConfigMgrTest</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+org.glassfish.admin.amxtest.config.HTTPListenerConfigMgrTest</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+org.glassfish.admin.amxtest.config.AuditModuleConfigMgrTest</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+org.glassfish.admin.amxtest.config.AuthRealmConfigMgrTest</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+org.glassfish.admin.amxtest.config.JavaConfigTest</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+org.glassfish.admin.amxtest.config.VirtualServerConfigMgrTest</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+org.glassfish.admin.amxtest.config.JACCProviderConfigMgrTest</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+org.glassfish.admin.amxtest.config.AdminObjectResourceConfigMgrTest</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+org.glassfish.admin.amxtest.config.JDBCResourceConfigMgrTest</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+org.glassfish.admin.amxtest.config.MailResourceConfigMgrTest</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+org.glassfish.admin.amxtest.config.ConnectorConnectionPoolConfigMgrTest</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+org.glassfish.admin.amxtest.config.JDBCConnectionPoolConfigMgrTest</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+org.glassfish.admin.amxtest.config.PersistenceManagerFactoryResourceConfigMgrTest</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+org.glassfish.admin.amxtest.config.JNDIResourceConfigMgrTest</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+org.glassfish.admin.amxtest.config.ThreadPoolConfigMgrTest</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+org.glassfish.admin.amxtest.PerformanceTest</span><br
+        style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+--- BEGIN TESTS ---</span><br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+*** testing org.glassfish.admin.amxtest.util.misc.SetUtilTest ***</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+...</span><br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+Time: 0</span><br style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+OK (3 tests)</span><br style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+*** testing
+org.glassfish.admin.amxtest.ext.logging.LogQueryEntryImplTest ***</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+.....</span><br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+Time: 0.187</span><br style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+OK (5 tests)</span><br style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+*** testing
+org.glassfish.admin.amxtest.ext.logging.LogQueryResultImplTest ***</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+....</span><br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+Time: 0.016</span><br style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+OK (4 tests)</span><br style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+*** testing org.glassfish.admin.amxtest.support.ParamNameMapperTest
+***</span><br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+.............</span><br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+Time: 0</span><br style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+OK (13 tests)</span><br style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+*** testing org.glassfish.admin.amxtest.util.misc.CircularListTest ***</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+..........</span><br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+Time: 0.015</span><br style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+OK (10 tests)</span><br style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+*** testing org.glassfish.admin.amxtest.SerializableTest ***</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+...</span><br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+Time: 0.016</span><br style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+OK (3 tests)</span><br style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+*** testing org.glassfish.admin.amxtest.ProxyTest ***</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+.....failure: getRequestInformation =
+java.lang.reflect.InvocationTargetException</span><br
+        style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+MBean
+"amx:j2eeType=X-CallFlowMonitor,name=server,X-ServerRootMonitor=server"
+failed for:</span><br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+testProxyGetters: failure from: getRequestInformation:
+javax.management.AttributeNotFoundException</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+failure: getLBWeight = java.lang.reflect.InvocationTargetException</span><br
+        style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+MBean "amx:j2eeType=X-StandaloneServerConfig,name=server" failed for:</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+testProxyGetters: failure from: getLBWeight:
+javax.management.AttributeNotFoundException</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+....</span><br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+Time: 9.812</span><br style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+OK (9 tests)</span><br style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+*** testing org.glassfish.admin.amxtest.ProxyFactoryTest ***</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java] ..</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+Time: 0.063</span><br style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+OK (2 tests)</span><br style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+*** testing org.glassfish.admin.amxtest.AMXTest ***</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java] ..</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+amx:j2eeType=X-StandaloneServerConfig,name=server contains the
+following int/long Attributes which perhaps ought to be String due to
+the t</span><br style="font-family: monospace;">
+<span style="font-family: monospace;">emplatizing of config: LBWeight</span><br
+        style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+...............</span><br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+Time: 14.844</span><br style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+OK (17 tests)</span><br style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+*** testing org.glassfish.admin.amxtest.ContainerTest ***</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+....</span><br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+Time: 5.078</span><br style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+OK (4 tests)</span><br style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+*** testing org.glassfish.admin.amxtest.GenericTest ***</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+.Validating:</span><br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java] -
+MBeanInfo</span><br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java] -
+Attributes</span><br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java] -
+Operations (getters)</span><br style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+Warning: MBean
+"amx:j2eeType=X-CallFlowMonitor,name=server,X-ServerRootMonitor=server"
+did not supply the 1 attributes {RequestInformation</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">}</span><br
+        style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+Warning: MBean "amx:j2eeType=X-StandaloneServerConfig,name=server" did
+not supply the 1 attributes {LBWeight}</span><br
+        style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+Total mbeans failing: 0</span><br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java] .</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+Time: 10.297</span><br style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+OK (2 tests)</span><br style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+*** testing org.glassfish.admin.amxtest.PropertiesTest ***</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+....</span><br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+Time: 0.765</span><br style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+OK (4 tests)</span><br style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+*** testing org.glassfish.admin.amxtest.ext.logging.LogMBeanTest ***</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+.....</span><br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+Time: 2.531</span><br style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+OK (5 tests)</span><br style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+*** testing org.glassfish.admin.amxtest.ext.logging.LoggingTest ***</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+.........</span><br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+Time: 3.266</span><br style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+OK (9 tests)</span><br style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+*** testing org.glassfish.admin.amxtest.ext.logging.LoggingHelperTest
+***</span><br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+.........</span><br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+Time: 0.391</span><br style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+OK (9 tests)</span><br style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+*** testing
+org.glassfish.admin.amxtest.ext.logging.StatefulLoggingHelperTest ***</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+...</span><br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+Time: 0.015</span><br style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+OK (3 tests)</span><br style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+*** testing org.glassfish.admin.amxtest.TestTemplateTest ***</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java] .</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+Time: 0</span><br style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+OK (1 test)</span><br style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+*** testing org.glassfish.admin.amxtest.DomainRootTest ***</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+.......</span><br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+Time: 0</span><br style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+OK (7 tests)</span><br style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+*** testing org.glassfish.admin.amxtest.support.UploadDownloadMgrTest
+***</span><br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+............</span><br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+Time: 6.703</span><br style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+OK (12 tests)</span><br style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+*** testing org.glassfish.admin.amxtest.BulkAccessTest ***</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+........</span><br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+Time: 3.047</span><br style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+OK (8 tests)</span><br style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+*** testing org.glassfish.admin.amxtest.QueryMgrTest ***</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+..............</span><br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+Time: 4.296</span><br style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+OK (14 tests)</span><br style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+*** testing
+org.glassfish.admin.amxtest.NotificationEmitterServiceTest ***</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+..E.</span><br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+Time: 0.016</span><br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+There was 1 error:</span><br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+1)
+testEmit(org.glassfish.admin.amxtest.NotificationEmitterServiceTest)java.lang.AssertionError</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;
+[java]&nbsp;&nbsp;&nbsp;&nbsp; at
+org.glassfish.admin.amxtest.NotificationEmitterServiceTest.testEmit(NotificationEmitterServiceTest.java:84)</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;
+[java]&nbsp;&nbsp;&nbsp;&nbsp; at
+sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;
+[java]&nbsp;&nbsp;&nbsp;&nbsp; at
+sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:39)</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;
+[java]&nbsp;&nbsp;&nbsp;&nbsp; at
+sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;
+[java]&nbsp;&nbsp;&nbsp;&nbsp; at
+org.glassfish.admin.amxtest.TestRunner.runSuite(TestRunner.java:70)</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;
+[java]&nbsp;&nbsp;&nbsp;&nbsp; at
+org.glassfish.admin.amxtest.TestRunner.testClass(TestRunner.java:79)</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;
+[java]&nbsp;&nbsp;&nbsp;&nbsp; at
+org.glassfish.admin.amxtest.TestRunner.runTests(TestRunner.java:98)</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;
+[java]&nbsp;&nbsp;&nbsp;&nbsp; at
+org.glassfish.admin.amxtest.TestRunner.runAll(TestRunner.java:300)</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;
+[java]&nbsp;&nbsp;&nbsp;&nbsp; at
+org.glassfish.admin.amxtest.TestMain.&lt;init&gt;(TestMain.java:508)</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;
+[java]&nbsp;&nbsp;&nbsp;&nbsp; at
+org.glassfish.admin.amxtest.TestMain.main(TestMain.java:113)</span><br
+        style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+FAILURES!!!</span><br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+Tests run: 3,&nbsp; Failures: 0,&nbsp; Errors: 1</span><br
+        style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+*** testing org.glassfish.admin.amxtest.NotificationServiceMgrTest ***</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+...</span><br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+Time: 0.031</span><br style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+OK (3 tests)</span><br style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+*** testing org.glassfish.admin.amxtest.NotificationServiceTest ***</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+....</span><br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+Time: 5.125</span><br style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+OK (4 tests)</span><br style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+*** testing org.glassfish.admin.amxtest.MiscTest ***</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java] ..</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+Time: 0.047</span><br style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+OK (2 tests)</span><br style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+*** testing org.glassfish.admin.amxtest.monitor.StatisticTest ***</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+...</span><br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+Time: 0.016</span><br style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+OK (3 tests)</span><br style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+*** testing org.glassfish.admin.amxtest.monitor.MonitorTest ***</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java] ..</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+Time: 8.875</span><br style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+OK (2 tests)</span><br style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+*** testing org.glassfish.admin.amxtest.monitor.JMXMonitorMgrTest ***</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+...</span><br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+Time: 0.047</span><br style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+OK (3 tests)</span><br style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+*** testing org.glassfish.admin.amxtest.j2ee.J2EETest ***</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+.....</span><br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+Time: 2.422</span><br style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+OK (5 tests)</span><br style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+*** testing org.glassfish.admin.amxtest.deploy.DeploymentProgressTest
+***</span><br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+...</span><br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+Time: 0</span><br style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+OK (3 tests)</span><br style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+*** testing org.glassfish.admin.amxtest.deploy.DeploymentSourceTest
+***</span><br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java] ..</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+Time: 0</span><br style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+OK (2 tests)</span><br style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+*** testing org.glassfish.admin.amxtest.deploy.DeploymentStatusTest
+***</span><br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+......</span><br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+Time: 0</span><br style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+OK (6 tests)</span><br style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+*** testing org.glassfish.admin.amxtest.deploy.DeploymentMgrTest ***</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+....</span><br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+Time: 4.407</span><br style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+OK (4 tests)</span><br style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+*** testing org.glassfish.admin.amxtest.config.DomainConfigTest ***</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+......</span><br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+Time: 0.047</span><br style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+OK (6 tests)</span><br style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+*** testing org.glassfish.admin.amxtest.config.ReferencesTest ***</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java] .</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+WARNING: ReferencesTest: server 'testServer' does not exist, SKIPPING
+TEST</span><br style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java] .</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+Time: 0</span><br style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+OK (2 tests)</span><br style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+*** testing org.glassfish.admin.amxtest.config.HTTPServiceConfigTest
+***</span><br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+.......</span><br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+Time: 0</span><br style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+OK (7 tests)</span><br style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+*** testing org.glassfish.admin.amxtest.config.HTTPListenerConfigTest
+***</span><br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java] ..</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+Time: 0.015</span><br style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+OK (2 tests)</span><br style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+*** testing org.glassfish.admin.amxtest.config.ClusterConfigTest ***</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java] ..</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+Time: 0</span><br style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+OK (2 tests)</span><br style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+*** testing org.glassfish.admin.amxtest.config.SSLConfigTest ***</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java] ..</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+Time: 0.032</span><br style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+OK (2 tests)</span><br style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+*** testing
+org.glassfish.admin.amxtest.config.JMXConnectorConfigMgrTest ***</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+....</span><br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+Time: 0.375</span><br style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+OK (4 tests)</span><br style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+*** testing
+org.glassfish.admin.amxtest.config.IIOPListenerConfigMgrTest ***</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+....</span><br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+Time: 0.312</span><br style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+OK (4 tests)</span><br style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+*** testing
+org.glassfish.admin.amxtest.config.HTTPListenerConfigMgrTest ***</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+....</span><br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+Time: 0.766</span><br style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+OK (4 tests)</span><br style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+*** testing
+org.glassfish.admin.amxtest.config.AuditModuleConfigMgrTest ***</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+...</span><br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+Time: 0.25</span><br style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+OK (3 tests)</span><br style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+*** testing org.glassfish.admin.amxtest.config.AuthRealmConfigMgrTest
+***</span><br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+...</span><br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+Time: 0.218</span><br style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+OK (3 tests)</span><br style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+*** testing org.glassfish.admin.amxtest.config.JavaConfigTest ***</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java] ..</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+Time: 0.079</span><br style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+OK (2 tests)</span><br style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+*** testing
+org.glassfish.admin.amxtest.config.VirtualServerConfigMgrTest ***</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+....</span><br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+Time: 0.859</span><br style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+OK (4 tests)</span><br style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+*** testing
+org.glassfish.admin.amxtest.config.JACCProviderConfigMgrTest ***</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+...</span><br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+Time: 0.094</span><br style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+OK (3 tests)</span><br style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+*** testing
+org.glassfish.admin.amxtest.config.AdminObjectResourceConfigMgrTest
+***</span><br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+...</span><br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+Time: 0.125</span><br style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+OK (3 tests)</span><br style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+*** testing
+org.glassfish.admin.amxtest.config.JDBCResourceConfigMgrTest ***</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+...</span><br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+Time: 0.234</span><br style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+OK (3 tests)</span><br style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+*** testing
+org.glassfish.admin.amxtest.config.MailResourceConfigMgrTest ***</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+...</span><br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+Time: 0.094</span><br style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+OK (3 tests)</span><br style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+*** testing
+org.glassfish.admin.amxtest.config.ConnectorConnectionPoolConfigMgrTest
+***</span><br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+...</span><br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+Time: 0.109</span><br style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+OK (3 tests)</span><br style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+*** testing
+org.glassfish.admin.amxtest.config.JDBCConnectionPoolConfigMgrTest ***</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+...</span><br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+Time: 0.078</span><br style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+OK (3 tests)</span><br style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+*** testing
+org.glassfish.admin.amxtest.config.PersistenceManagerFactoryResourceConfigMgrTest
+***</span><br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+...</span><br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+Time: 0.094</span><br style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+OK (3 tests)</span><br style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+*** testing
+org.glassfish.admin.amxtest.config.JNDIResourceConfigMgrTest ***</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+...</span><br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+Time: 0.094</span><br style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+OK (3 tests)</span><br style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+*** testing
+org.glassfish.admin.amxtest.config.ThreadPoolConfigMgrTest ***</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+...</span><br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+Time: 0.125</span><br style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+OK (3 tests)</span><br style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+*** testing org.glassfish.admin.amxtest.PerformanceTest ***</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+...</span><br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+Time: 1.781</span><br style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+OK (3 tests)</span><br style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; [java]
+Time to run tests: 89 seconds</span><br style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">BUILD SUCCESSFUL</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">Total time: 1 minute 37 seconds</span><br>
+</p>
+
+<p><span style="font-family: monospace;"></span><br
+        style="font-family: monospace;">
+    <br>
+</p>
+
+<p><br>
+<span style="font-family: monospace;"><br>
+</span><br>
+</p>
+</body>
+</html>

@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!--
+
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) 2010-2011 Oracle and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+    or packager/legal/LICENSE.txt.  See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at packager/legal/LICENSE.txt.
+
+    GPL Classpath Exception:
+    Oracle designates this particular file as subject to the "Classpath"
+    exception as provided by Oracle in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+
+-->
+
+<project name="common-targets">
+    <property name="install.dir.name" value="glassfish3"/>
+
+    <target name="init">
+        <available property="present" 
+                   file="target/stage/${install.dir.name}/glassfish/modules" type="dir" />
+    </target> 
+
+    <target name="pack.compression" depends="init" if="present">
+	<!-- pack200 compression -->
+        <apply executable="pack200" 
+               dest="target/stage/${install.dir.name}/glassfish/modules" parallel="false">
+            <targetfile/>
+            <srcfile/>
+            <fileset dir="target/stage/${install.dir.name}/glassfish/modules" 
+		    includes="**/*.jar"
+		    excludes="**/javahelp.jar,**/org.eclipse.persistence.*.jar" />
+            <mapper type="glob" from="*.jar" to="*.pack.gz"/>
+        </apply>
+        <apply executable="unpack200" 
+               dest="target/stage/${install.dir.name}/glassfish/modules" parallel="false">
+            <srcfile/>
+            <targetfile/>
+            <fileset dir="target/stage/${install.dir.name}/glassfish/modules" 
+                     includes="**/*.pack.gz" />
+            <mapper type="glob" from="*.pack.gz" to="*.jar"/>
+        </apply>
+	<!-- remove *.pack.gz files -->
+        <delete>
+            <fileset dir="target/stage/${install.dir.name}/glassfish/modules" 
+                     includes="**/*.pack.gz"/>
+        </delete>
+   </target>
+
+   <macrodef name="stage-distribution-fragments">
+        <sequential> 
+             <mkdir dir="target/artifacts/distribution-fragments"/>           
+             <unzip dest="target/stage/${install.dir.name}">
+                <patternset>
+                    <exclude name="META-INF/**"/>
+                </patternset>
+                <fileset dir="target/artifacts/distribution-fragments" includes="*.zip"/>
+             </unzip>
+        </sequential>
+   </macrodef>
+
+
+   <macrodef name="stage-module-jars">
+       <sequential>
+                <copy todir="target/stage/${install.dir.name}/glassfish/modules" failonerror="false">
+                    <fileset dir="target/artifacts/jars" includes="*.jar"/>
+ 	        </copy>  
+       </sequential>
+   </macrodef>
+
+   <macrodef name="stage-lib-jars">
+       <sequential>
+                <copy todir="target/stage/${install.dir.name}/glassfish/lib" failonerror="false">
+                    <fileset dir="target/artifacts/jars" includes="*.jar"/>
+ 	        </copy>  
+       </sequential>
+   </macrodef>
+
+   <macrodef name="stage-module-autostart-jars">
+       <sequential>
+                <copy todir="target/stage/${install.dir.name}/glassfish/modules/autostart" failonerror="false">
+                    <fileset dir="target/artifacts/jars" includes="*.jar"/>
+ 	        </copy>  
+       </sequential>
+   </macrodef>
+
+   <target name="filter-module-artifacts">
+       <resolveArtifact artifactId="${previous.package.name}" classifier="artifacts" type="properties"
+           property="artifacts.properties.file" />
+       <copy file="${artifacts.properties.file}" tofile="target/artifacts.properties"
+           overwrite="true" />
+
+       <delete quiet="true">
+           <fileset dir="target/artifacts" includesfile="target/artifacts.properties" />
+       </delete>
+       
+   </target>
+
+   <target name="create-list-artifact">
+       <fileset id="package.artifacts" dir="target/artifacts" />
+               
+       <echo file="target/artifacts.properties" append="true" message=";${toString:package.artifacts}"/>
+
+       <replace file="target/artifacts.properties" token=";">
+           <replacevalue><![CDATA[
+]]></replacevalue>
+       </replace>
+
+       <attachArtifact file="target/artifacts.properties" classifier="artifacts" type="properties"/>             
+   </target>
+
+   <target name="create-zip-artifact">
+       <zip file="target/${package.name}.zip" basedir="target/stage"/>
+           
+       <attachArtifact file="target/${package.name}.zip"/>
+   </target>
+
+</project>

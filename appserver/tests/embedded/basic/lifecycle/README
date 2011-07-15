@@ -1,0 +1,11 @@
+Tests newGlassFish(), start(), stop(), dispose() lifecyle operations.
+
+1. Two instances of GlassFish are created.
+
+2. On each instance, start(), stop() is called multiple times.
+
+3. Both the instances are disposed.
+
+4. Checks whether the temp dirs are cleaned up or not.
+
+Check the <dependency> and <plugins> sections to check the artifacts used.

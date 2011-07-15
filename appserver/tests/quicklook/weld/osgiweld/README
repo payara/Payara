@@ -1,0 +1,26 @@
+This test is meant to do two things:
+
+1. Verify that the weld-osgi-bundle.jar has been installed and is 
+   running in a GlassFish instance.
+
+2. Verify the exported packages in the osgi bundle.  It does this 
+   by comparing the exported packages in the running bundle against
+   a "golden file" (weld-osgi.properties) that contains the expected
+   exported packages for the current release of Weld for GlassFish.
+
+3. Verify that the bundle-symbolic-name is "org.jboss.weld.osgi-bundle".
+
+
+PREPARING A NEW TEST
+
+When a new Weld GlassFish release is done, the following must be dne:
+
+1. Make sure GlassFish is started with the weld-osgi-bundle running.
+
+2. Use a tool (such as "bnd") to capture the exported packages in the
+   weld-osgi-bundle at run time.  It can be found here: 
+   http://www.aqute.biz/Code/Download Just execute the 
+   bnd.jar (java -jar bnd.jar).
+
+3. Put the captured exported packages information from the output 
+   from this tool into the metadata/weld-osgi.properties file.

@@ -1,0 +1,7 @@
+Manifest-Version: 1.0
+Bundle-ClassPath: WEB-INF/classes
+Bundle-SymbolicName: sahoo.rfc66.test6
+Created-By: 1.6.0_07 (Sun Microsystems Inc.)
+Web-ContextPath: /test6
+Import-Package: javax.servlet; javax.servlet.http; version=2.5
+

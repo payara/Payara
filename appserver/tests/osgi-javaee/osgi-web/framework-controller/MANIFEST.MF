@@ -1,0 +1,5 @@
+Bundle-SymbolicName: TestREST 
+Bundle-Version: 1.0
+Bundle-ClassPath: WEB-INF/classes
+DynamicImport-Package: *
+Web-ContextPath: /testREST

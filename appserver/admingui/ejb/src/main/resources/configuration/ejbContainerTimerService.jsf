@@ -1,0 +1,112 @@
+<!--
+
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) 2009-2010 Oracle and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+    or packager/legal/LICENSE.txt.  See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at packager/legal/LICENSE.txt.
+
+    GPL Classpath Exception:
+    Oracle designates this particular file as subject to the "Classpath"
+    exception as provided by Oracle in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+
+-->
+
+<!-- configuration/ejbContainerTimerSettings.jsf -->
+
+
+
+<!initPage
+    setResourceBundle(key="i18n_ejb" bundle="org.glassfish.ejb.admingui.Strings");
+    setResourceBundle(key="help_ejb" bundle="org.glassfish.ejb.admingui.Helplinks");
+    setResourceBundle(key="i18n_ejbLite" bundle="org.glassfish.ejb-lite.admingui.Strings");
+/>
+<!composition template="/templates/default.layout"  guiTitle="$resource{i18n_ejb.headings.ejbTimerSettings}" >
+<!define name="content">
+<event>
+    <!beforeCreate
+        setSessionAttribute(key="ejbContainerTabs" value="ejbTimerTab");
+        getRequestValue(key="configName" value=>$page{configName} default="server-config");
+        setPageSessionAttribute(key="childType" value="ejb-timer-service");
+        setPageSessionAttribute(key="parentUrl", value="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/ejb-container");
+        setPageSessionAttribute(key="selfUrl", value="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/ejb-container/ejb-timer-service");
+        setPageSessionAttribute(key="rest-api" value="true");
+        gf.getEntityAttrs(endpoint="#{pageSession.selfUrl}.json", valueMap="#{pageSession.valueMap}");
+
+        gf.restRequest(endpoint="#{pageSession.selfUrl}/property.json" method="GET" result="#{requestScope.propTable}");
+        setPageSessionAttribute(key="tableList" value="#{requestScope.propTable.data.extraProperties.properties}");
+
+        setPageSessionAttribute(key="selfPage" value="#{request.contextPath}/ejb/configuration/ejbContainerTimerService.jsf?configName=#{pageSession.configName}");
+        //set the following for including buttons.inc
+        setPageSessionAttribute(key="edit" value="#{true}" );
+        setPageSessionAttribute(key="showDefaultButton" value="#{true}" );
+        setPageSessionAttribute(key="showCancelButton" value="#{false}" );
+        setPageSessionAttribute(key="hasPropertySheet" value="#{true}" );
+        setPageSessionAttribute(key="hasPropertyTable" value="#{true}" );
+    />
+    </event>
+
+    <sun:form id="form1">
+#include "/ejb-lite/configuration/ejbContainerTabs.inc"
+#include "/common/shared/alertMsg.inc"
+<sun:title id="propertyContentPage" title="$resource{i18n_ejb.headings.ejbTimerSettings}" helpText="$resource{i18n_ejb.ejb.ejbTimerSettingsInfo}" >
+#include "/common/shared/editPageButtons.inc"
+</sun:title>
+
+     <!-- PropertySheet .... -->
+     <sun:propertySheet id="propertySheet">
+#include "/common/shared/configNameSection.inc"
+         <!-- Text Field section -->
+         <sun:propertySheetSection id="propertySectionTextField">
+            <sun:property id="MinDeliveryProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_ejb.ejbTimerSettings.minDeliveryLabel}" helpText="$resource{i18n_ejb.ejbTimerSettings.minDeliveryHelp}">
+                <sun:textField id="MinDelivery" styleClass="integer"  columns="$int{20}" maxLength="#{sessionScope.fieldLengths['maxLength.ejbTimerSettings.minDelivery']}" text="#{pageSession.valueMap['minimumDeliveryIntervalInMillis']}" />
+                <sun:staticText id="msecs" style="padding: 8pt" text="$resource{i18n.common.Milliseconds}"/>
+            </sun:property>
+            <sun:property id="MaxRedeliveryProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_ejb.ejbTimerSettings.maxRedeliveryLabel}" helpText="$resource{i18n_ejb.ejbTimerSettings.maxRedeliveryHelp}">
+                <sun:textField id="MaxRedelivery" styleClass="integer"  columns="$int{20}" maxLength="#{sessionScope.fieldLengths['maxLength.ejbTimerSettings.maxRedelivery']}" text="#{pageSession.valueMap['maxRedeliveries']}" />
+            </sun:property>
+            <sun:property id="RedeliveryIntrProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_ejb.ejbTimerSettings.redeliveryIntrLabel}" helpText="$resource{i18n_ejb.ejbTimerSettings.redeliveryIntrHelp}">
+                <sun:textField id="RedeliveryIntr" styleClass="integer"  columns="$int{20}" maxLength="#{sessionScope.fieldLengths['maxLength.ejbTimerSettings.redeliveryIntr']}" text="#{pageSession.valueMap['redeliveryIntervalInternalInMillis']}" />
+                <sun:staticText id="msecs" style="padding: 8pt" text="$resource{i18n.common.Milliseconds}"/>
+            </sun:property>
+            <sun:property id="TimerDatasourceProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_ejb.ejbTimerSettings.timerDatasourceLabel}" helpText="$resource{i18n_ejb.ejbTimerSettings.timerDatasourceLabelHelp}">
+                <sun:textField id="TimerDatasource"  columns="$int{50}" maxLength="#{sessionScope.fieldLengths['maxLength.ejbTimerSettings.timerDatasource']}" text="#{pageSession.valueMap['timerDatasource']}" />
+            </sun:property>
+         </sun:propertySheetSection>
+     </sun:propertySheet>
+
+#include "/common/shared/propertyDescTable.inc"
+
+	<sun:hidden id="helpKey" value="$resource{help_ejb.ejbContainerTimerService}" />
+    </sun:form>
+    "<br/>
+</define>
+</composition>

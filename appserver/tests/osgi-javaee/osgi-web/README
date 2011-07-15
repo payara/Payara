@@ -1,0 +1,11 @@
+Running the tests :
+
+1. Set the following environment varaibles:
+TEST_HOME : path to the directory where osgi-javaee is present.
+S1AS_HOME : path to GlassFish install directory.
+
+2. use asadmin commands to start the domain and start database.
+3. run "ant setup", to setup the osgi framework controller.
+4. run "ant all" for executing the tests.
+5. run "ant unsetup" for deactivating the osgi framework controller.
+6. stop-domain, stop-database. 

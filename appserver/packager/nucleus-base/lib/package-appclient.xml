@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!--
+
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) 2006-2010 Oracle and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+    or packager/legal/LICENSE.txt.  See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at packager/legal/LICENSE.txt.
+
+    GPL Classpath Exception:
+    Oracle designates this particular file as subject to the "Classpath"
+    exception as provided by Oracle in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+
+-->
+
+<!-- This file is used by the package-appclient script -->
+
+<project name="package-appclient" default="all" basedir=".">
+
+<property name="install.home" value="${basedir}/.."/>
+<property name="appclientjar" value="${user.dir}/appclient.jar"/>
+
+<!-- package-appclient script should override the following properties -->
+<property name="mq.home" value="${install.home}/imq"/>
+<property name="domain.dir" value="${install.home}/domains"/>
+
+<target name="all">
+
+    <echo message="Creating ${appclientjar} ... "/>
+
+    <condition property="windows">
+        <os family="windows" />
+    </condition>
+    <condition property="unix">
+        <os family="unix" />
+    </condition>
+
+    <delete file="${appclientjar}" quiet="true"/>
+    <tempfile destdir="${java.io.tmpdir}" prefix="pkgac" property="tmp.dir"/>
+    
+    <!--
+        There is a small but non-zero chance that a concurrent user could have
+        created the same temp file.  If the file exists abort the task.
+    -->
+    <available file="${tmp.dir}" property="tmp.dir.exists"/>
+    <fail if="tmp.dir.exists">Temporary directory ${tmp.dir} already exists - aborting.  Please try again.</fail>
+    
+    <delete dir="${tmp.dir}" quiet="true"/>
+    <mkdir dir="${tmp.dir}"/>
+
+    <antcall target="do.copy"/>
+
+    <zip destfile="${appclientjar}">
+        <zipfileset dir="${install.home}"
+                    prefix="appclient">
+            <include name="lib/dtds/*.dtd"/>
+            <include name="lib/schemas/*"/>
+            <include name="lib/appclient/client.policy"/>
+            <include name="lib/appclient/appclientlogin.conf"/>
+            <include name="lib/appclient/wss-client-config-2.0.xml"/>
+            <include name="lib/endorsed/*.jar"/>
+
+            <include name="lib/*.jar"/>
+            <include name="lib/install/applications/jmsra/imqjmsra.jar"/>
+            <exclude name="lib/appserv-assemblytool.jar"/>
+            <exclude name="lib/appserv-jstl.jar"/>
+            <exclude name="lib/appserv-tags.jar"/>
+            <exclude name="lib/commons-launcher.jar"/>
+            <exclude name="lib/deployhelp.jar"/>
+            <exclude name="lib/j2ee-svc.jar"/>
+            <exclude name="lib/jhall.jar"/>
+            <exclude name="lib/sun-appserv-ant.jar"/>
+        </zipfileset>
+        <zipfileset dir="${tmp.dir}"
+                    prefix="appclient"
+                    filemode="755">
+            <include name="bin/appclient"/>
+        </zipfileset>
+        <zipfileset dir="${tmp.dir}"
+                    prefix="appclient">
+            <include name="config/asenv.conf"/>
+            <include name="config/asenv.bat"/>
+            <include name="bin/appclient.bat"/>
+        </zipfileset>
+ 
+		<zipfileset dir="${install.home}/lib/install/applications/jmsra" 
+					prefix="appclient/imq/lib">
+            <include name="imq.jar"/>
+            <include name="imqadmin.jar"/>
+            <include name="imqutil.jar"/>
+        </zipfileset>
+
+        <zipfileset dir="${mq.home}"
+                    prefix="appclient/imq">
+            <include name="lib/fscontext.jar"/>
+        </zipfileset>
+        <zipfileset dir="${domain.dir}/domain1"
+                    prefix="appclient">
+            <include name="config/sun-acc.xml"/>
+        </zipfileset>
+        <zipfileset dir="${install.home}/lib/install/templates"
+                     prefix="appclient/config">
+            <include name="sun-acc.xml.template"/>
+        </zipfileset>
+    </zip>
+
+    <delete dir="${tmp.dir}" quiet="true"/>
+
+    <echo message="File created: ${appclientjar}"/>
+    
+</target>
+
+<target name="do.copy" depends="do.copy.windows, do.copy.unix"/>
+
+<target name="do.copy.windows" if="windows">
+    <!-- token-replace asenv.bat and appclient.bat -->
+    <copy file="${install.home}/lib/install/templates/asenv.bat.template" 
+          tofile="${tmp.dir}/config/asenv.bat"/>
+    <copy file="${install.home}/lib/install/templates/appclient.bat.template" 
+          tofile="${tmp.dir}/bin/appclient.bat"/>
+    <replace token="%CONFIG_HOME%"
+             value="..\config"
+             file="${tmp.dir}/bin/appclient.bat"/>
+    <replace file="${tmp.dir}/config/asenv.bat">
+        <replacefilter token="%ANT_HOME%" value=""/>
+        <replacefilter token="%ANT_LIB%" value=""/>
+        <replacefilter token="%PERL_HOME%" value=""/>
+        <replacefilter token="%POINTBASE_HOME%" value=""/>
+        <replacefilter token="%WEBSERVICES_LIB%" value=""/>
+        <replacefilter token="%NSS_HOME%" value=""/>
+        <replacefilter token="%NSS_BIN_HOME%" value=""/>
+        <replacefilter token="%IMQ_LIB%" value="..\imq\lib"/>
+        <replacefilter token="%IMQ_BIN%" value="..\imq\bin"/>
+        <replacefilter token="%CONFIG_HOME%" value="..\config"/>
+        <replacefilter token="%INSTALL_HOME%" value=".."/>
+        <replacefilter token="%JAVA_HOME%" value="${java.home}\.."/>
+        <replacefilter token="%JHELP_HOME%" value=""/>
+        <replacefilter token="%ICU_LIB%" value=""/>
+        <replacefilter token="%LOCALE%" value=""/>
+        <replacefilter token="%DEF_DOMAINS_PATH%" value=""/>
+        <replacefilter token="%ACC_CONFIG%" value="..\config\sun-acc.xml"/>
+    </replace>
+</target>
+
+<target name="do.copy.unix" if="unix">
+    <!-- token-replace asenv.conf and appclient -->
+    <copy file="${install.home}/lib/install/templates/asenv.conf.template" 
+          tofile="${tmp.dir}/config/asenv.conf"/>
+    <copy file="${install.home}/lib/install/templates/appclient.template" 
+          tofile="${tmp.dir}/bin/appclient"/>
+    <replace token="%CONFIG_HOME%"
+             value="../config"
+             file="${tmp.dir}/bin/appclient"/>
+    <replace file="${tmp.dir}/config/asenv.conf">
+        <replacefilter token="%ANT_HOME%" value=""/>
+        <replacefilter token="%ANT_LIB%" value=""/>
+        <replacefilter token="%PERL_HOME%" value=""/>
+        <replacefilter token="%POINTBASE_HOME%" value=""/>
+        <replacefilter token="%WEBSERVICES_LIB%" value=""/>
+        <replacefilter token="%NSS_HOME%" value=""/>
+        <replacefilter token="%NSS_BIN_HOME%" value=""/>
+        <replacefilter token="%IMQ_LIB%" value="${mq.home}/lib"/>
+        <replacefilter token="%IMQ_BIN%" value=""/>
+        <replacefilter token="%CONFIG_HOME%" value="../config"/>
+        <replacefilter token="%INSTALL_HOME%" value=".."/>
+        <replacefilter token="%JAVA_HOME%" value="${java.home}/.."/>
+        <replacefilter token="%JHELP_HOME%" value=""/>
+        <replacefilter token="%ICU_LIB%" value=""/>
+        <replacefilter token="%LOCALE%" value=""/>
+        <replacefilter token="%DEF_DOMAINS_PATH%" value=""/>
+        <replacefilter token="%ACC_CONFIG%" value="../config/sun-acc.xml"/>
+    </replace>
+</target>
+
+</project>

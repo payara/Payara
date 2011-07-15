@@ -1,0 +1,28 @@
+The jdbc resource templates directory contains example resource templates for various databases which can be modified and used. 
+The purpose is to avoid having to remember the syntax and various options which are needed for the definition of connection-pools and resources.
+
+Pl. refer to User Commands for the syntax of adding resources using an xml script
+http://docs.sun.com/app/docs/doc/819-3662
+ 
+Add resources with a XML file.
+
+SYNTAX :
+=====================================================================================================================
+add-resources [--target target] xml_file_path
+
+target          in case of EE, name of target being operated on.  
+The valid targets for this command are instance, cluster, 'domain' or 'server'. By default the target is the 'server'.
+
+xml_file_path   path to the XML file containing  the resource(s) to be registered.
+
+=====================================================================================================================
+
+STEPS TO CREATE JDBC CONNECTION POOL AND RESOURCE :
+
+1)  copy the jdbc-driver to AS_INSTALL_DIR/domains/<DOMAIN_NAME>/lib/ext
+2)  restart appserver
+3)  edit the appropriate jdbc-driver template to fill username, password, hostname, databasename, portnumber etc.,
+3a) [Optional] select appropriate resource-type & datasource-classname. Templates are provided with the list of 
+    datasource-classnames for respective resource-types of the jdbc-vendor, if available.
+4)  asadmin add-resources jdbc-driver-template.xml (eg: AS_INSTALL_DIR/lib/install/templates/resources/jdbc/javadb_type4_datasource.xml)
+5)  asadmin ping-connection-pool connection-pool-name

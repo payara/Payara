@@ -1,0 +1,177 @@
+<!--
+
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) 2010 Oracle and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+    or packager/legal/LICENSE.txt.  See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at packager/legal/LICENSE.txt.
+
+    GPL Classpath Exception:
+    Oracle designates this particular file as subject to the "Classpath"
+    exception as provided by Oracle in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+
+-->
+
+<h:form id="tagPanelForm">
+    <!beforeCreate
+	setPageSessionAttribute(key="guiTitle" value="#{guiTitle}");
+	if ("!#{pageSession.guiTitle}") {
+	    setPageSessionAttribute(key="guiTitle" value="Untitled");
+	}
+	setPageSessionAttribute(key="tagViewId" value="#{tagViewId}");
+	if ("!#{pageSession.tagViewId}") {
+	    // Page did not specify a tagViewId!  Use default (viewId)
+	    setPageSessionAttribute(key="tagViewId" value="#{view.viewId}");
+	}
+	gf.normalizeTagViewId(viewId="#{pageSession.tagViewId}" tagViewId=>$pageSession{tagViewId});
+	gf.queryTags(tagViewId="#{pageSession.tagViewId}" results=>$pageSession{pageTags});
+	if ("!#{pageSession.pageTags}") {
+	    setPageSessionAttribute(key="pageTags" value={});
+	}
+	if ("!#{sessionScope.tagResults}") {
+// FIXME: Disable initial search until 2 bugs are fixed:
+// 1) Remove duplicate pages (i.e. same page, different tags)
+// 2) Limit result set to a reasonable # (or allow results to scroll)
+//	    gf.queryTags(results=>$session{tagResults});
+	}
+    />
+    <h:inputHidden id="tagViewId" value="#{pageSession.tagViewId}" />
+
+"<div class="tagDiv">
+"<h2>'#{guiTitle}' Page Tags</h2>
+
+"<ul class="tagList">
+    <foreach key="_tag" list="#{pageSession.pageTags}">
+	<!-- FIXME: I need this to loop at create time, it's looping at render-time (messes up id's) -->
+	"<li>
+	<h:commandLink styleClass="tagLink" href="#{request.contextPath}/#{_tag.tagViewId}">
+	    <f:param name="tagName" value="#{_tag.tagName}" />
+	    <h:outputText escape="true" value="#{_tag.tagName}" />
+	    <!command
+                getRequestValue(key="tagName" value="#{requestScope.tagName}" );
+		setSessionAttribute(key="queryTag", value="#{requestScope.tagName}");
+		gf.queryTags(tagName="#{requestScope.tagName}", results=>$session{tagResults});
+		redirect("#{request.contextPath}/#{pageSession.tagViewId}");
+	    />
+	</h:commandLink>
+	<h:commandLink id="delTag" styleClass="removeTag" value="X" title="Delete Tag">
+	    <f:param name="tagToDel" value="#{_tag.tagName}" />
+	    <!command
+                getRequestValue(key="tagToDel" value="#{requestScope.tagToDel}" );
+		gf.removeTag(tagName="#{requestScope.tagToDel}", tagViewId="#{pageSession.tagViewId}");
+		redirect("#{request.contextPath}/#{pageSession.tagViewId}");
+	    />
+	</h:commandLink>
+	"</li>
+    </foreach>
+"</ul>
+
+"<p>&nbsp;</p>
+
+<!-- Add Tag -->
+<sun:textField id="newTagField" value="#{requestScope.newTagName}" columns="17" />
+<sun:button id="newTagButton" value="Add Tag">
+    <!-- FIXME: Enable Ajax -->
+    <!command
+	gf.addTag(tagName="#{requestScope.newTagName}", tagViewId="#{pageSession.tagViewId}", displayName="#{pageSession.guiTitle}");
+	redirect("#{request.contextPath}/#{pageSession.tagViewId}");
+    />
+</sun:button>
+
+"<br /><p>&nbsp;</p>
+
+"<h2>Related Pages</h2>
+"<ul class="tagList">
+    <foreach key="_pageTag" list="#{pageSession.pageTags}">
+	<staticText value="">
+	    <!beforeEncode
+		gf.queryTags(tagName="#{_pageTag.tagName}", results=>$pageSession{relatedPages});
+		println("###########Encoding for #{_pageTag.tagName} results: $pageSession{relatedPages}");
+	    />
+	</staticText>
+	<!if "$pageSession{relatedPages}">
+	    <foreach key="_tag" list="#{pageSession.relatedPages}">
+		"<li><a href="#{request.contextPath}/#{_tag.tagViewId}" class="tagLink">#{_tag.displayName}</a></li>
+	    </foreach>
+	</if>
+    </foreach>
+"</ul>
+
+/*
+<!-- Search Tags -->
+<sun:textField id="queryTagField" value="#{sessionScope.queryTag}" columns="17" />
+<sun:button id="queryTagButton" value="Search">
+    <!-- FIXME: Enable Ajax -->
+    <!command
+	if ("#{requestScope.queryMe}") {
+	    setAttribute(key="qUser", value="#{request.principalUser}");
+	}
+	if ("!#{requestScope.queryMe}") {
+	    setAttribute(key="qUser", value="#{null}");
+	}
+	gf.queryTags(tagName="#{sessionScope.queryTag}", user="#{requestScope.qUser}", results=>$session{tagResults});
+	redirect("#{request.contextPath}/#{pageSession.tagViewId}");
+    />
+</sun:button>
+"<br />&nbsp;&nbsp;&nbsp;
+<sun:checkbox id="onlyMe" value="#{requestScope.queryMe}" label=" Query only my tags." />
+*/
+
+"<p>&nbsp;</p>
+
+<!-- Search Results -->
+<if condition="#{sessionScope.tagResults}">
+    "<h2>Pages Tagged "#{sessionScope.queryTag}"</h2>
+    "<ul class="tagList">
+	<foreach key="_tag" list="#{sessionScope.tagResults}">
+	    "<li><a href="#{request.contextPath}/#{_tag.tagViewId}" class="tagLink">#{_tag.displayName}</a></li>
+	</foreach>
+    "</ul>
+</if>
+"<p>&nbsp;</p>
+<sun:button id="queryTagButton" value="Show All Tags">
+    <!-- FIXME: Enable Ajax -->
+    <!command
+	if ("#{requestScope.queryMe}") {
+	    setAttribute(key="qUser", value="#{request.principalUser}");
+	}
+	if ("!#{requestScope.queryMe}") {
+	    setAttribute(key="qUser", value="#{null}");
+	}
+	setSessionAttribute(key="queryTag" value="(all)");
+	gf.queryTags(user="#{requestScope.qUser}", results=>$session{tagResults});
+	redirect("#{request.contextPath}/#{pageSession.tagViewId}");
+    />
+</sun:button>
+
+
+"</div>
+</h:form>

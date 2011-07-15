@@ -1,0 +1,6 @@
+Bundle-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-SymbolicName: Client_Assembly 
+Bundle-Name: Client_Assembly
+Dynamic-Update: false
+DynamicImport-Package: *

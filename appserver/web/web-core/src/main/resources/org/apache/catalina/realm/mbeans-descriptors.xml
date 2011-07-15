@@ -1,0 +1,321 @@
+<?xml version="1.0"?>
+<!--
+
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+    or packager/legal/LICENSE.txt.  See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at packager/legal/LICENSE.txt.
+
+    GPL Classpath Exception:
+    Oracle designates this particular file as subject to the "Classpath"
+    exception as provided by Oracle in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+
+
+    This file incorporates work covered by the following copyright and
+    permission notice:
+
+    Copyright 2004 The Apache Software Foundation
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+
+<mbeans-descriptors>
+  <mbean         name="JAASRealm"
+          description="Implmentation of Realm that authenticates users via the
+                       Java Authentication and Authorization Service (JAAS)"
+               domain="Catalina"
+                group="Realm"
+                 type="org.apache.catalina.realm.JAASRealm">
+
+    <attribute   name="appName"
+          description="The application name passed to the JAAS LoginContext,
+                       which uses it to select the set of relevant
+                       LoginModules"
+                 type="java.lang.String"/>
+
+    <attribute   name="className"
+          description="Fully qualified class name of the managed object"
+                 type="java.lang.String"
+            writeable="false"/>
+
+    <attribute   name="debug"
+          description="The debugging detail level for this component"
+                 type="int"/>
+
+    <attribute   name="digest"
+          description="Digest algorithm used in storing passwords in a
+                       non-plaintext format"
+                 type="java.lang.String"/>
+
+    <attribute   name="roleClassNames"
+          description="Comma-delimited list of javax.security.Principal classes
+                       that represent security roles"
+                 type="java.lang.String"/>
+
+    <attribute   name="userClassNames"
+          description="Comma-delimited list of javax.security.Principal classes
+                       that represent individual users"
+                 type="java.lang.String"/>
+
+    <attribute   name="validate"
+          description="Should we validate client certificate chains when they
+                       are presented?"
+                 type="java.lang.String"/>
+
+
+    <operation name="start" description="Start" impact="ACTION" returnType="void" />
+    <operation name="stop" description="Stop" impact="ACTION" returnType="void" />
+    <operation name="init" description="Init" impact="ACTION" returnType="void" />
+    <operation name="destroy" description="Destroy" impact="ACTION" returnType="void" />
+  </mbean>
+
+
+  <mbean         name="JDBCRealm"
+          description="Implementation of Realm that works with any JDBC
+                       supported database"
+               domain="Catalina"
+                group="Realm"
+                 type="org.apache.catalina.realm.JDBCRealm">
+
+    <attribute   name="className"
+          description="Fully qualified class name of the managed object"
+                 type="java.lang.String"
+            writeable="false"/>
+
+    <attribute   name="connectionName"
+          description="The connection username to use when trying to connect to
+                       the database"
+                 type="java.lang.String"/>
+
+    <attribute   name="connectionPassword"
+          description="The connection URL to use when trying to connect to the
+                       database"
+                 type="java.lang.String"/>
+
+    <attribute   name="connectionURL"
+          description="The connection URL to use when trying to connect to the
+                       database"
+                 type="java.lang.String"/>
+
+    <attribute   name="debug"
+          description="The debugging detail level for this component"
+                 type="int"/>
+
+    <attribute   name="digest"
+          description="Digest algorithm used in storing passwords in a
+                       non-plaintext format"
+                 type="java.lang.String"/>
+
+    <attribute   name="driverName"
+          description="The JDBC driver to use"
+                 type="java.lang.String"/>
+
+    <attribute   name="roleNameCol"
+          description="The column in the user role table that names a role"
+                 type="java.lang.String"/>
+
+    <attribute   name="userCredCol"
+          description="The column in the user table that holds the user's
+                       credentials"
+                 type="java.lang.String"/>
+
+    <attribute   name="userNameCol"
+          description="The column in the user table that holds the user's
+                       username"
+                 type="java.lang.String"/>
+
+    <attribute   name="userRoleTable"
+          description="The table that holds the relation between user's and
+                       roles"
+                 type="java.lang.String"/>
+
+    <attribute   name="userTable"
+          description="The table that holds user data"
+                 type="java.lang.String"/>
+
+
+    <operation name="start" description="Start" impact="ACTION" returnType="void" />
+    <operation name="stop" description="Stop" impact="ACTION" returnType="void" />
+    <operation name="init" description="Init" impact="ACTION" returnType="void" />
+    <operation name="destroy" description="Destroy" impact="ACTION" returnType="void" />
+  </mbean>
+
+  <mbean         name="JNDIRealm"
+          description="Implementation of Realm that works with a directory
+                       server accessed via the Java Naming and Directory
+                       Interface (JNDI) APIs"
+               domain="Catalina"
+                group="Realm"
+                 type="org.apache.catalina.realm.JNDIRealm">
+
+    <attribute   name="className"
+          description="Fully qualified class name of the managed object"
+                 type="java.lang.String"
+            writeable="false"/>
+
+    <attribute   name="connectionName"
+          description="The connection username for the server we will contact"
+                 type="java.lang.String"/>
+
+    <attribute   name="connectionPassword"
+          description="The connection password for the server we will contact"
+                 type="java.lang.String"/>
+
+    <attribute   name="connectionURL"
+          description="The connection URL for the server we will contact"
+                 type="java.lang.String"/>
+
+    <attribute   name="contextFactory"
+          description="The JNDI context factory for this Realm"
+                 type="java.lang.String"/>
+
+    <attribute   name="debug"
+          description="The debugging detail level for this component"
+                 type="int"/>
+
+    <attribute   name="digest"
+          description="Digest algorithm used in storing passwords in a
+                       non-plaintext format"
+                 type="java.lang.String"/>
+
+    <attribute   name="roleBase"
+          description="The base element for role searches"
+                 type="java.lang.String"/>
+
+    <attribute   name="roleName"
+          description="The name of the attribute containing roles held elsewhere"
+                 type="java.lang.String"/>
+
+    <attribute   name="roleSearch"
+          description="The message format used to select roles for a user"
+                 type="java.lang.String"/>
+
+    <attribute   name="roleSubtree"
+          description="Should we search the entire subtree for matching
+                       memberships?"
+                 type="boolean"/>
+
+    <attribute   name="userBase"
+          description="The base element for user searches"
+                 type="java.lang.String"/>
+
+    <attribute   name="userPassword"
+          description="The attribute name used to retrieve the user password"
+                 type="java.lang.String"/>
+
+    <attribute   name="userPattern"
+          description="The message format used to select a user"
+                 type="java.lang.String"/>
+
+     <attribute   name="userRoleName"
+          description="The name of the attribute in the user's entry containing
+                       roles for that user"
+                 type="java.lang.String"/>
+
+   <attribute   name="userSearch"
+         description="The message format used to search for a user"
+                type="java.lang.String"/>
+
+    <attribute   name="userSubtree"
+          description="Should we search the entire subtree for matching
+                       users?"
+                 type="boolean"/>
+
+
+    <operation name="start" description="Start" impact="ACTION" returnType="void" />
+    <operation name="stop" description="Stop" impact="ACTION" returnType="void" />
+    <operation name="init" description="Init" impact="ACTION" returnType="void" />
+    <operation name="destroy" description="Destroy" impact="ACTION" returnType="void" />
+  </mbean>
+
+  <mbean         name="MemoryRealm"
+          description="Simple implementation of Realm that reads an XML file to
+                       configure the valid users, passwords, and roles"
+               domain="Catalina"
+                group="Realm"
+                 type="org.apache.catalina.realm.MemoryRealm">
+
+    <attribute   name="className"
+          description="Fully qualified class name of the managed object"
+                 type="java.lang.String"
+            writeable="false"/>
+
+    <attribute   name="debug"
+          description="The debugging detail level for this component"
+                 type="int"/>
+
+    <attribute   name="pathname"
+          description="The pathname of the XML file containing our database
+                       information"
+                 type="java.lang.String"/>
+
+    <operation name="start" description="Start" impact="ACTION" returnType="void" />
+    <operation name="stop" description="Stop" impact="ACTION" returnType="void" />
+    <operation name="init" description="Init" impact="ACTION" returnType="void" />
+    <operation name="destroy" description="Destroy" impact="ACTION" returnType="void" />
+
+  </mbean>
+
+  <mbean         name="UserDatabaseRealm"
+          description="Realm connected to a UserDatabase as a global JNDI
+                       resource"
+               domain="Catalina"
+                group="Realm"
+                 type="org.apache.catalina.realm.UserDatabaseRealm">
+
+    <attribute   name="className"
+          description="Fully qualified class name of the managed object"
+                 type="java.lang.String"
+            writeable="false"/>
+
+    <attribute   name="debug"
+          description="The debugging detail level for this component"
+                 type="int"/>
+
+    <attribute   name="resourceName"
+          description="The global JNDI name of the UserDatabase resource to use"
+                 type="java.lang.String"/>
+
+  </mbean>
+
+</mbeans-descriptors>

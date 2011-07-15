@@ -1,0 +1,6 @@
+Set the following before running 'mvn clean verify':
+
+MAVEN_OPTS="-Xmx1024m -XX:MaxPermSize=384m"
+
+(See http://jira.codehaus.org/browse/MCOMPILER-64)
+

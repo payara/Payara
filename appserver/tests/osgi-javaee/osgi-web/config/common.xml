@@ -1,0 +1,194 @@
+<!--
+
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) 2010 Oracle and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+    or packager/legal/LICENSE.txt.  See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at packager/legal/LICENSE.txt.
+
+    GPL Classpath Exception:
+    Oracle designates this particular file as subject to the "Classpath"
+    exception as provided by Oracle in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+
+-->
+
+<target name="clean-common">
+  <echo message="common.xml: Cleaning test build files: ${build.base.dir}"
+        level="verbose"/>
+  <delete dir="${build.base.dir}"/>
+</target>
+
+<target name="common-setup">
+   <mkdir dir="${TEST_HOME_WEB}/common/classes"/>
+   <javac srcdir="${TEST_HOME_WEB}/common"
+    destdir="${TEST_HOME_WEB}/common/classes"
+    debug="on"
+    failonerror="true"/>
+</target>
+
+<target name="common-unsetup">
+  <delete dir="${TEST_HOME_WEB}/common/classes" failonerror="false"/>
+</target>
+
+<target name="compile-common">
+  <mkdir dir="${build.base.dir}"/>
+  <echo message="common.xml: Compiling test source files" level="verbose"/>
+  <javac srcdir="${basedir}/src"
+    destdir="${build.base.dir}"
+    classpath="${env.S1AS_HOME}/modules/javax.servlet.jar:${env.S1AS_HOME}/osgi/felix/bin/felix.jar:${env.S1AS_HOME}/modules/jersey-core.jar"
+    debug="on"
+    failonerror="true"/>
+</target>
+
+<target name="package">
+  <exec executable="mvn" failonerror="false" resultproperty="PackageFailure">
+     <arg value="package"/>
+  </exec>
+
+<!-- Check if the packaging has failed and set the Failure property accordingly -->
+  <condition property="FailStatus" value="${package.fail.status}">
+    <not>
+      <equals arg1="${PackageFailure}" arg2="0"/>
+    </not>
+  </condition>
+
+  <antcall target="report"/>
+</target>
+
+<target name="package-war">  
+  <echo message="Creating ${appname}.war file"/>
+  <copy toDir="${build.classes.dir}/WEB-INF/classes" failonerror="false">
+        <fileset dir="${build.base.dir}"/>
+  </copy>
+  <jar destfile="${destfile}" manifest="${manifest.mf}">
+	<fileset dir="${build.classes.dir}"
+	     excludes="**/main/**"
+	/>
+  </jar>
+  <delete dir="${build.classes.dir}/WEB-INF/classes" failonerror="false"/>
+</target>
+
+<target name="deploy-application">
+  <echo message="common.xml: Deploying Application : ${app.path}"
+	level="verbose"/>
+  <antcall target="autodeploy-app"/>
+<!--  <antcall target="asadmin-deploy-app"/ -->
+</target>
+
+<target name="autodeploy-app">
+  <copy file="${app.path}" todir="${deploy.dir}" failonerror="false"/>
+  <sleep seconds="10"/>
+</target>
+
+<target name="asadmin-deploy-app">
+   <echo message="Deploying ${app.path}" level="verbose"/>
+   <exec executable="${ASADMIN}" failonerror="false" resultproperty="DeploymentFailure">
+     <arg line="--user ${admin.user}"/>
+     <arg line="--host ${admin.host}"/>
+     <arg line="--port ${admin.port}"/>
+     <arg line="deploy"/>
+     <arg line="--type osgi"/>
+     <arg line="${app.path}"/>
+   </exec>
+
+<!-- Check if the deployment has failed and set the failure status accordingly -->
+  <condition property="FailStatus" value="${deployment.fail.status}">
+    <not>
+      <equals arg1="${DeploymentFailure}" arg2="0"/>
+    </not>
+  </condition>
+
+  <antcall target="report"/>
+</target>
+
+<target name="undeploy-application">
+  <echo message="common.xml: Undeploying Application : ${appname}"
+	level="verbose"/>
+  <antcall target="autoundeploy-app"/>
+<!--  <antcall target="asadmin-undeploy-app"/ -->
+</target>
+
+<target name="autoundeploy-app">
+  <delete file="${deploy.dir}/${appname}.war" failonerror="false"/>
+  <sleep seconds="7"/>
+</target> 
+
+<target name="asadmin-undeploy-app">
+   <echo message="Deploying ${appname}" level="verbose"/>
+   <exec executable="${ASADMIN}" failonerror="false" resultproperty="DeploymentFailure">
+     <arg line="--user ${admin.user}"/>
+     <arg line="--host ${admin.host}"/>
+     <arg line="--port ${admin.port}"/>
+     <arg line="undeploy"/>
+     <arg line="${appname}"/>
+   </exec>
+
+<!-- Check if the deployment has failed and set the failure status accordingly -->
+  <condition property="FailStatus" value="${deployment.fail.status}">
+    <not>
+      <equals arg1="${DeploymentFailure}" arg2="0"/>
+    </not>
+  </condition>
+
+  <antcall target="report"/>
+</target>
+
+<target name="report" if="FailStatus"> 
+   <java classname="Reporter">
+      <classpath>
+        <pathelement path="${TEST_HOME_WEB}/common/classes"/>
+      </classpath>
+      <arg value="${testname}"/>
+      <arg value="${FailStatus}"/>
+      <arg value="${TestResultFile}"/>
+   </java>
+</target>
+
+<target name="test">
+   <java classname="TestClient">
+      <classpath>
+        <pathelement path="${TEST_HOME_WEB}/common/classes"/>
+      </classpath>
+      <arg value="${testURL}"/>
+      <arg value="${testname}"/>
+      <arg value="${TestResultFile}"/>
+   </java>
+</target>
+
+<target name="generateSummary">
+   <java classname="Reporter">
+      <classpath>
+        <pathelement path="${TEST_HOME_WEB}/common/classes"/>
+      </classpath>
+      <arg value="${TestResultFile}"/>
+      <arg value="${TestSummaryFile}"/>
+   </java>
+</target>
