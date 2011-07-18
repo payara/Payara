@@ -100,6 +100,7 @@ import org.glassfish.flashlight.provider.ProbeProviderFactory;
 import org.glassfish.flashlight.provider.ProbeProviderEventListener;
 import org.glassfish.flashlight.provider.ProbeRegistry;
 import org.glassfish.internal.api.Init;
+import org.jvnet.hk2.config.Transactions;
 
 /**
  *
@@ -110,8 +111,6 @@ import org.glassfish.internal.api.Init;
 public class MonitoringBootstrap implements Init, PostConstruct, PreDestroy, EventListener, ModuleLifecycleListener, ConfigListener {
     @Inject
     private MonitoringRuntimeDataRegistry mrdr;
-    @Inject
-    private Domain domain;
     @Inject
     private ModulesRegistry registry;
     @Inject
@@ -128,6 +127,13 @@ public class MonitoringBootstrap implements Init, PostConstruct, PreDestroy, Eve
     MonitoringService monitoringService = null;
     @Inject
     private org.glassfish.flashlight.provider.ProbeRegistry probeRegistry;
+    @Inject
+    Habitat habitat;
+    @Inject 
+    Transactions transactions;
+    
+    //Don't inject ConfigBeans to avoid getting every event on them
+    private Domain domain;
 
 
     Map<String,Module> map = Collections.synchronizedMap(new WeakHashMap<String,Module>());
@@ -145,6 +151,11 @@ public class MonitoringBootstrap implements Init, PostConstruct, PreDestroy, Eve
     private boolean hasDiscoveredXMLProviders = false;
 
     public void postConstruct() {
+        domain = habitat.getComponent(Domain.class);
+        transactions.addListenerForType(ContainerMonitoring.class, this);
+        transactions.addListenerForType(MonitoringService.class, this);
+        transactions.addListenerForType(ModuleMonitoringLevels.class, this);
+        
         // wbn: This value sticks for the life of the bootstrapping.  If the user changes it
         // somehow during bootstrapping we would have some problems so we just get the value
         // and run with it...

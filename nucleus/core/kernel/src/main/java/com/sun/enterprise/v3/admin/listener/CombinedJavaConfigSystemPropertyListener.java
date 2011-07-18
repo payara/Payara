@@ -64,6 +64,7 @@ import org.glassfish.api.Startup;
 import org.glassfish.api.admin.ServerEnvironment;
 
 import org.jvnet.hk2.annotations.*;
+import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.PostConstruct;
 import org.jvnet.hk2.config.Changed;
 import org.jvnet.hk2.config.Changed.TYPE;
@@ -73,6 +74,7 @@ import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.ConfigView;
 import org.jvnet.hk2.config.NotProcessed;
 import org.jvnet.hk2.config.ObservableBean;
+import org.jvnet.hk2.config.Transactions;
 import org.jvnet.hk2.config.UnprocessedChangeEvents;
 
 /**
@@ -113,20 +115,19 @@ import org.jvnet.hk2.config.UnprocessedChangeEvents;
 
 @Service
 public final class CombinedJavaConfigSystemPropertyListener implements PostConstruct, ConfigListener, Startup {
-    /* The following objects are injected so that this
-     * ConfigListener receives config events related to those objects.
-     */   
     @Inject
+    Habitat habitat;
+    
+    @Inject
+    Transactions transactions;
+    
+    /* The following objects are not injected so that this
+     * ConfigListener doesn't become a listener for those objects.
+     */   
     private Domain domain; //note: this should be current, and does contain the already modified values!
-    
-    @Inject(name=ServerEnvironment.DEFAULT_INSTANCE_NAME, optional=true)
-    Cluster cluster;
-    
-    @Inject(name=ServerEnvironment.DEFAULT_INSTANCE_NAME)
-    Config config; // this is the server's Config
-    
-    @Inject(name=ServerEnvironment.DEFAULT_INSTANCE_NAME)
-    Server server;
+    private Cluster cluster; 
+    private Config config; // this is the server's Config
+    private Server server;
     
     // The JavaConfig cannot be injected because it might not be the right 
     // one that gets injected.  The JavaConfig is obtained from the Config
@@ -144,6 +145,10 @@ public final class CombinedJavaConfigSystemPropertyListener implements PostConst
     
     @Override
     public void postConstruct() {
+        domain = habitat.getComponent(Domain.class);
+        cluster = habitat.getComponent(Cluster.class, ServerEnvironment.DEFAULT_INSTANCE_NAME);
+        config = habitat.getComponent(Config.class, ServerEnvironment.DEFAULT_INSTANCE_NAME);
+        server = habitat.getComponent(Server.class, ServerEnvironment.DEFAULT_INSTANCE_NAME);
         jc = config.getJavaConfig();
         if (jc != null) {
             // register to listen for config events on the JavaConfig
@@ -153,6 +158,7 @@ public final class CombinedJavaConfigSystemPropertyListener implements PostConst
             oldProps = new ArrayList<String>(jc.getJvmOptions()); //defensive copy
             oldAttrs = collectAttrs(jc);
         }
+        transactions.addListenerForType(SystemProperty.class, this);
     }
 
     @Override
