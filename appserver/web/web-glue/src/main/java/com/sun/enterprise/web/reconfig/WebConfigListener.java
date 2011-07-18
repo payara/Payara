@@ -108,7 +108,7 @@ public class WebConfigListener implements ConfigListener, MapperUpdateListener {
      * @param events the PropertyChangeEvent
      */
     @Override
-    public UnprocessedChangeEvents changed(PropertyChangeEvent[] events) {
+    public synchronized UnprocessedChangeEvents changed(PropertyChangeEvent[] events) {
         return ConfigSupport.sortAndDispatch(events, new Changed() {         
             @Override
             public <T extends ConfigBeanProxy> NotProcessed changed(TYPE type, Class<T> tClass, T t) {
@@ -116,7 +116,9 @@ public class WebConfigListener implements ConfigListener, MapperUpdateListener {
                     logger.fine("Web container config changed "+type+" "+tClass+" "+t);
                 }
                 try {
-                    if (tClass == NetworkListener.class) {
+                    if (tClass == HttpService.class) {
+                        container.updateHttpService((HttpService) t);
+                    } else if (tClass == NetworkListener.class) {
                         if (type==TYPE.ADD) {
                             container.addConnector((NetworkListener) t, httpService, true);
                         } else if (type==TYPE.REMOVE) {

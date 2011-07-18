@@ -94,7 +94,6 @@ public class WebContainerStarter
 
     private static final String TRACE_ENABLED_PROP = "traceEnabled";
 
-    @Inject
     private Domain domain;
 
     @Inject
@@ -106,7 +105,6 @@ public class WebContainerStarter
     @Inject
     private ModulesRegistry modulesRegistry;
 
-    @Inject(name=ServerEnvironment.DEFAULT_INSTANCE_NAME)
     private Config serverConfig;
 
     @Inject
@@ -119,6 +117,9 @@ public class WebContainerStarter
      * the web container
      */ 
     public void postConstruct() {
+        domain = habitat.getComponent(Domain.class);
+        serverConfig = habitat.getComponent(Config.class, ServerEnvironment.DEFAULT_INSTANCE_NAME);
+
         boolean isStartNeeded = false;
         if (serverConfig != null) {
             if (isStartNeeded(serverConfig.getHttpService())) {
@@ -149,19 +150,19 @@ public class WebContainerStarter
         return ConfigSupport.sortAndDispatch(events, new Changed() {
             public <T extends ConfigBeanProxy> NotProcessed changed(
                     TYPE type, Class<T> tClass, T t) {
-                if (t instanceof HttpService) {
+                if (tClass == HttpService.class) {
                     if (type == TYPE.CHANGE) {
                         if (isStartNeeded((HttpService) t)) {
                             startWebContainer();
                         }
                     }
-                } else if (t instanceof VirtualServer) {
+                } else if (tClass == VirtualServer.class) {
                     if (type == TYPE.ADD || type == TYPE.CHANGE) {
                         if (isStartNeeded((VirtualServer) t)) {
                             startWebContainer();
                         }
                     }
-                } else if (t instanceof NetworkListener) {
+                } else if (tClass == NetworkListener.class) {
                     if (type == TYPE.ADD || type == TYPE.CHANGE) {
                         if (isStartNeeded((NetworkListener) t)) {
                             startWebContainer();

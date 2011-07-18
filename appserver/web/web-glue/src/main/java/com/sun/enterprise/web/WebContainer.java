@@ -72,7 +72,7 @@ import org.glassfish.grizzly.config.ContextRootInfo;
 import org.glassfish.grizzly.config.dom.NetworkConfig;
 import org.glassfish.grizzly.config.dom.NetworkListener;
 import org.glassfish.grizzly.config.dom.NetworkListeners;
-import com.sun.hk2.component.ConstructorWomb;
+import com.sun.hk2.component.ConstructorCreator;
 import com.sun.logging.LogDomains;
 import org.apache.catalina.*;
 import org.apache.catalina.Engine;
@@ -105,6 +105,7 @@ import org.jvnet.hk2.component.PostConstruct;
 import org.jvnet.hk2.component.PreDestroy;
 import org.jvnet.hk2.component.Singleton;
 import org.jvnet.hk2.config.ConfigSupport;
+import org.jvnet.hk2.config.Transactions;
 import org.jvnet.hk2.config.ObservableBean;
 import org.jvnet.hk2.config.types.Property;
 import org.xml.sax.EntityResolver;
@@ -212,14 +213,13 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
     CommandRunner runner;
 
     @Inject(name = ServerEnvironment.DEFAULT_INSTANCE_NAME)
-    private Server server;
-
-    @Inject(name = ServerEnvironment.DEFAULT_INSTANCE_NAME)
     private Config serverConfig;
 
     @Inject
     ServerContext _serverContext;
 
+    @Inject
+    private Transactions transactions;
 
     private HashMap<String, WebConnector> connectorMap = new HashMap<String, WebConnector>();
 
@@ -502,8 +502,8 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
 
         initInstanceSessionProperties();
 
-        ConstructorWomb<WebConfigListener> womb =
-                new ConstructorWomb<WebConfigListener>(
+        ConstructorCreator<WebConfigListener> womb =
+                new ConstructorCreator<WebConfigListener>(
                         WebConfigListener.class,
                         habitat,
                         null);
@@ -523,12 +523,9 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
             bean.addListener(configListener);
         }
 
-        bean = (ObservableBean) ConfigSupport.getImpl(server);
-        bean.addListener(configListener);
+        transactions.addListenerForType(SystemProperty.class, configListener);
 
-        String instanceConfig = server.getConfigRef();
-        Config config = configs.getConfigByName(instanceConfig);
-        configListener.setNetworkConfig(config.getNetworkConfig());
+        configListener.setNetworkConfig(serverConfig.getNetworkConfig());
 
         // embedded mode does not have manager-propertie in domain.xml
         if (configListener.managerProperties != null) {

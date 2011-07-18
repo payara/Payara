@@ -61,6 +61,7 @@ import com.sun.enterprise.config.serverbeans.IiopListener;
 import com.sun.enterprise.config.serverbeans.IiopService;
 import com.sun.enterprise.config.serverbeans.JmsHost;
 import com.sun.enterprise.config.serverbeans.JmsService;
+import com.sun.enterprise.config.serverbeans.SystemProperty;
 import com.sun.enterprise.config.serverbeans.VirtualServer;
 import com.sun.enterprise.util.Result;
 import com.sun.enterprise.util.StringUtils;
@@ -93,6 +94,7 @@ import org.jvnet.hk2.component.Singleton;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.ObservableBean;
+import org.jvnet.hk2.config.Transactions;
 
 /**
  * The Network Service is responsible for starting grizzly and register the
@@ -114,6 +116,9 @@ public class GrizzlyService implements Startup, RequestDispatcher, PostConstruct
 
     @Inject
     ProbeProviderFactory probeProviderFactory;
+
+    @Inject
+    Transactions transactions;
 
     final Logger logger = LogDomains.getLogger(GrizzlyService.class, LogDomains.CORE_LOGGER);
 
@@ -337,14 +342,12 @@ public class GrizzlyService implements Startup, RequestDispatcher, PostConstruct
     @Override
     public void postConstruct() {
         NetworkConfig networkConfig = config.getNetworkConfig();
-
         configListener = new DynamicConfigListener(config, logger);
-        
         ObservableBean bean = (ObservableBean) ConfigSupport.getImpl(networkConfig.getNetworkListeners());
         bean.addListener(configListener);
         bean = (ObservableBean) ConfigSupport.getImpl(config.getHttpService());
         bean.addListener(configListener);
-
+        transactions.addListenerForType(SystemProperty.class, configListener);
         configListener.setGrizzlyService(this);
 
         try {
