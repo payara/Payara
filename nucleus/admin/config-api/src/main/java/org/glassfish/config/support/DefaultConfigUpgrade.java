@@ -1077,7 +1077,11 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
      * <jacc-provider policy-provider="com.sun.enterprise.security.jacc.provider.SimplePolicyProvider" name="simple" policy-configuration-factory-provider="com.sun.enterprise.security.jacc.provider.SimplePolicyConfigurationFactory"/>
      */
     private void createJaccProvider(SecurityService ss) throws PropertyVetoException {
-        while (!(parser.getEventType() == START_ELEMENT && parser.getLocalName().equals("audit-module"))) {
+        while (!(parser.getEventType() == START_ELEMENT &&
+                (parser.getLocalName().equals("audit-module") ||
+                 parser.getLocalName().equals("message-security-config") ||
+                 parser.getLocalName().equals("transaction-service") ||
+                 parser.getLocalName().equals("java-config")))) {
             try {
                 if (parser.getEventType() == START_ELEMENT || parser.next() == START_ELEMENT) {
                     if (parser.getLocalName().equals("jacc-provider") && ss != null) {
