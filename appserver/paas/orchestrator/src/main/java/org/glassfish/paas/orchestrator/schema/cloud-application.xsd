@@ -46,7 +46,7 @@
     <xs:complexType name="cloudApplication">
         <xs:sequence>
             <xs:element name="service-reference" type="serviceReference" minOccurs="0" maxOccurs="unbounded"/>
-            <xs:element name="service-defintion" type="serviceDefinition" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="service-definition" type="serviceDefinition" minOccurs="0" maxOccurs="unbounded"/>
         </xs:sequence>
     </xs:complexType>
 

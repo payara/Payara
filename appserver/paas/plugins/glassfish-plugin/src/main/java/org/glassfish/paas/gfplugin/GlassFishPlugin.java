@@ -133,15 +133,15 @@ public class GlassFishPlugin implements Plugin<JavaEEServiceType> {
     public ProvisionedService provisionService(ServiceDefinition svcDefn) {
         if (svcDefn instanceof SimpleServiceDefinition) {
             // TODO :: Figure out that it is for GlassFish.
-            SimpleServiceDefinition serviceDefintion = (SimpleServiceDefinition) svcDefn;
+            SimpleServiceDefinition serviceDefinition = (SimpleServiceDefinition) svcDefn;
             CommandResult result = commandRunner.run("create-glassfish-service",
-                    "--instancecount=" + serviceDefintion.getProperties().getProperty("min-cluster-size"),
+                    "--instancecount=" + serviceDefinition.getProperties().getProperty("min-cluster-size"),
                     "--waitforcompletion=true",
-                    serviceDefintion.getProperties().getProperty("servicename"));
+                    serviceDefinition.getProperties().getProperty("servicename"));
             System.out.println("create-glassfish-service command output [" + result.getOutput() + "]");
             if (result.getExitStatus() == CommandResult.ExitStatus.SUCCESS) {
                 String domainName = serviceUtil.getDomainName(
-                        serviceDefintion.getProperties().getProperty("servicename"));
+                        serviceDefinition.getProperties().getProperty("servicename"));
                 String dasIPAddress = serviceUtil.getIPAddress(domainName, ServiceUtil.SERVICE_TYPE.APPLICATION_SERVER);
                 GlassFishProvisioner gfProvisioner = (GlassFishProvisioner)
                         cloudRegistryService.getAppServerProvisioner(dasIPAddress);
@@ -149,7 +149,7 @@ public class GlassFishPlugin implements Plugin<JavaEEServiceType> {
                 GlassFish provisionedGlassFish = gfProvisioner.getGlassFish();
 
                 glassfishProvisionedService =
-                        new GlassFishProvisionedService(serviceDefintion, provisionedGlassFish);
+                        new GlassFishProvisionedService(serviceDefinition, provisionedGlassFish);
 
                 return glassfishProvisionedService;
             } else {

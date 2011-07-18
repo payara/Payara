@@ -60,7 +60,7 @@ public class CloudApplication {
         return serviceReferences == null ? new ArrayList<ServiceReference>() : serviceReferences;
     }
 
-    @XmlElement(name = "service-defintion")
+    @XmlElement(name = "service-definition")
     public List<ServiceDefinition> getServiceDefinitions() {
         return serviceDefinitions == null ? new ArrayList<ServiceDefinition>() : serviceDefinitions;
     }

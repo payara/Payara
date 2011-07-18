@@ -73,7 +73,7 @@ public class CloudXMLParserImpl implements CloudXMLParser {
         Set<ServiceReference> serviceReferences = new HashSet<ServiceReference>();
 
         try {
-            InputStream cloudXml = ra.getEntry("META-INF/cloud.xml");
+            InputStream cloudXml = ra.getEntry("META-INF/gf-cloud.xml");
             if (cloudXml != null) {
                 JAXBContext jaxbContext = JAXBContext.newInstance(
                         CloudApplication.class);
