@@ -41,12 +41,12 @@
 
 -->
 
-<project name="glassfish nucleus package creation" default="create.package" basedir=".">
+<project name="nucleus package creation" default="create.package" basedir=".">
     <import file="${basedir}/../common-targets.xml"/>
 
    <target name="create.package">
-	  <property name="package.name" value="glassfish-nucleus"/> 
-          <property name="previous.package.name" value="glassfish-grizzly" />
+	  <property name="package.name" value="nucleus"/> 
+          <property name="previous.package.name" value="nucleus-grizzly" />
         
        <antcall target="filter-module-artifacts"/>
        
@@ -54,7 +54,7 @@
        <stage-distribution-fragments/>
  
        <!-- explicitly moving flashlight-agent.jar to lib/monitor -->
-       <move file="target/stage/${install.dir.name}/glassfish/modules/flashlight-agent.jar" todir="target/stage/${install.dir.name}/glassfish/lib/monitor" failonerror="false"/>
+       <move file="target/stage/${install.dir.name}/modules/flashlight-agent.jar" todir="target/stage/${install.dir.name}/lib/monitor" failonerror="false"/>
 
        <!-- leaving custom handling of top level scripts/config -->
        <resolveArtifact artifactId="nucleus-base" property="nucleus-base.zip"/>
@@ -65,14 +65,9 @@
            </patternset>
         </unzip>
 
-        <mkdir dir="target/stage/${install.dir.name}/glassfish/domains" />
-
-        <copy todir="target/stage/${install.dir.name}/bin">
-		<fileset dir="src/main/resources/bin"/>
-	</copy>
+        <mkdir dir="target/stage/${install.dir.name}/domains" />
 
 	<chmod file="target/stage/${install.dir.name}/bin/*" perm="ugo+rx"/>
-	<chmod file="target/stage/${install.dir.name}/glassfish/bin/*" perm="ugo+rx"/>
 
        <if test="${compression}">
 	       <antcall target="pack.compression" />

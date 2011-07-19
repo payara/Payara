@@ -59,7 +59,7 @@
        <!-- leaving custom handling of top level scripts/config -->
        <resolveArtifact artifactId="nucleus-base" property="nucleus-base.zip"/>
        
-	<unzip src="${nucleus-base.zip}" dest="target/stage/${install.dir.name}">
+	<unzip src="${nucleus-base.zip}" dest="target/stage/${install.dir.name}/glassfish">
            <patternset>
 		   <exclude name="**/domains/**"/>
            </patternset>

@@ -41,10 +41,10 @@
 
 -->
 
-<project name="felix package creation" default="create.package" basedir=".">
+<project name="nucleus felix package creation" default="create.package" basedir=".">
    <import file="${basedir}/../common-targets.xml"/>
    <target name="create.package">
-       <property name="package.name" value="felix"/>
+       <property name="package.name" value="nucleus-felix"/>
 
        <stage-module-jars/>
        <stage-distribution-fragments/> 

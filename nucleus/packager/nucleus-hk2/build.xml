@@ -41,12 +41,12 @@
 
 -->
 
-<project name="hk2 package creation" default="create.package" basedir=".">
+<project name="nucleus hk2 package creation" default="create.package" basedir=".">
     <import file="${basedir}/../common-targets.xml"/>
 
     <target name="create.package">
-	    <property name="package.name" value="glassfish-hk2"/>
-            <property name="previous.package.name" value="felix" />
+	    <property name="package.name" value="nucleus-hk2"/>
+            <property name="previous.package.name" value="nucleus-felix" />
        
        <antcall target="filter-module-artifacts"/>
     

@@ -54,14 +54,14 @@
         </copy>
 
         <zip file="target/nucleus-base.zip">
-            <zipfileset prefix="glassfish" dir="target/resources" filemode="755"
+            <zipfileset dir="target/resources" filemode="755"
                     includes="bin/*"
                     excludes="bin/*.bat" />
-            <zipfileset prefix="glassfish" dir="target/resources">
+            <zipfileset  dir="target/resources">
                 <include name="bin/*.bat" />
                 <include name="lib/templates/*" />
             </zipfileset>
-            <zipfileset prefix="glassfish" dir=".">
+            <zipfileset  dir=".">
                 <include name="*.txt"/>
                 <include name="config/**"/>
                 <include name="lib/**"/>

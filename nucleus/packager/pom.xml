@@ -80,6 +80,10 @@
 
     <modules>
 	<module>nucleus-base</module>
+	<module>nucleus-felix</module>
+	<module>nucleus-hk2</module>
+	<module>nucleus-grizzly</module>
+	<module>nucleus</module>
     </modules>
 
     <build>
