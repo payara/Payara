@@ -246,7 +246,7 @@ public class VirtualServerFacade implements org.glassfish.embeddable.web.Virtual
         return config;
     }
 
-    public void setVirtualSever(VirtualServer vs) {
+    public void setVirtualServer(VirtualServer vs) {
         this.vs = vs;
     }
 

@@ -420,8 +420,6 @@ public class WebContainerImpl implements WebContainer {
 
     private void removeListener(String name) {
 
-        final String listenerName = name;
-
         try {
 
             NetworkListeners networkListeners = networkConfig.getNetworkListeners();
@@ -1004,7 +1002,9 @@ public class WebContainerImpl implements WebContainer {
                 log.info("Added virtual server " + id +
                         " docroot " + docRoot + " networklisteners " + nl);
             }
-            ((VirtualServerFacade)virtualServer).setVirtualSever(vs);
+            if (virtualServer instanceof VirtualServerFacade) {
+                ((VirtualServerFacade)virtualServer).setVirtualServer(vs);
+            }
             vs.setNetworkListenerNames(names.toArray(new String[names.size()]));
         } else {
             log.severe("Could not add virtual server "+id);
@@ -1074,8 +1074,11 @@ public class WebContainerImpl implements WebContainer {
         if (!initialized) {
             init();
         }
-
-        engine.removeChild((Container)virtualServer);
+        if (virtualServer instanceof Container) {
+            engine.removeChild((Container)virtualServer);
+        } else if (virtualServer instanceof VirtualServerFacade) {
+            engine.removeChild(((VirtualServerFacade)virtualServer).getVirtualServer());
+        }
 
     }
     
