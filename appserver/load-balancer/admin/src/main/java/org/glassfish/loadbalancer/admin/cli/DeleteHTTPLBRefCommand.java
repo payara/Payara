@@ -203,7 +203,7 @@ public final class DeleteHTTPLBRefCommand extends LBCommandsBase
             }
             List<ApplicationRef> appRefs = domain.getApplicationRefsInTarget(target);
 
-            if (appRefs == null  || appRefs.isEmpty() ) {
+            if (appRefs == null) {
                 String msg = localStrings.getLocalString("AppRefsNotDefined",
                         "Application refs does not exist in server {0}", target);
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
