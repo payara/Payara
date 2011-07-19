@@ -135,7 +135,13 @@ public interface Template extends ConfigBeanProxy, Named {
                         context.getActionReport().failure(RuntimeContext.logger, "File not found : " + source.getAbsolutePath());
                         return;
                     }
-                    FileUtils.copy(source, new File(templateLocation, instance.getName() + ".img"));
+                    // Preserve filename extension if there is one
+                    String extension = "";
+                    int index = location.lastIndexOf('.');
+                    if (index > 0) {
+                        extension = location.substring(index);
+                    }
+                    FileUtils.copy(source, new File(templateLocation, instance.getName() + extension));
                 } catch(IOException e) {
                     context.getActionReport().failure(RuntimeContext.logger, "Error copying template " + location, e);
                 }
