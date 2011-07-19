@@ -1779,7 +1779,7 @@ public class EJBTimerService
             // to do a database read before each delivery.  This can have 
             // significant performance implications, so investigate possible 
             // reduced consistency tradeoffs.  
-            if( performDBReadBeforeTimeout) {
+            if( timerState.isPersistent() && performDBReadBeforeTimeout) {
 
                 if( logger.isLoggable(Level.FINE) ) {
                     logger.log(Level.FINE, "For Timer :" + timerId + 
