@@ -77,7 +77,8 @@
                 listAdd(list="#{pageSession.skipAttrsList}" value="target");
                 gf.createEntity(endpoint="${newProxy}/#{pageSession.valueMap['Name']}/http"
                         attrs="#{pageSession.httpMap}"
-                        convertToFalse={"uploadTimeoutEnabled", "cometSupportEnabled", "dnsLookupEnabled", "rcmSupportEnabled", "traceEnabled", "authPassThroughEnabled", "chunkingEnabled", "xpoweredBy"},
+                        convertToFalse={"uploadTimeoutEnabled", "cometSupportEnabled", "dnsLookupEnabled", "rcmSupportEnabled", "traceEnabled", "authPassThroughEnabled", 
+                                "chunkingEnabled",  "encodedSlashEnabled", "websocketsSupport", "xpoweredBy"},
                         skipAttrs="#{pageSession.skipAttrsList}"
                         result => $attribute{newHttp});
 
