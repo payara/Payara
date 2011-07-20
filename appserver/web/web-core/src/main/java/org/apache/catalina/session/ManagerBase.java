@@ -176,7 +176,7 @@ public abstract class ManagerBase implements Manager, MBeanRegistration {
     /**
      * A random number generator to use when generating session identifiers.
      */
-    protected Random random = null;
+    private Random random = null;
     
     
     /**
@@ -575,41 +575,44 @@ public abstract class ManagerBase implements Manager, MBeanRegistration {
      */
     public synchronized Random getRandom() {
         if (this.random == null) {
-            synchronized (this) {
-                if (this.random == null) {
-                    // Calculate the new random number generator seed
-                    long seed = System.currentTimeMillis();
-                    long t1 = seed;
-                    char entropy[] = getEntropy().toCharArray();
-                    for (int i = 0; i < entropy.length; i++) {
-                        long update = ((byte) entropy[i]) << ((i % 8) * 8);
-                        seed ^= update;
-                    }
-                    try {
-                        // Construct and seed a new random number generator
-                        Class<?> clazz = Class.forName(randomClass);
-                        this.random = (Random) clazz.newInstance();
-                        this.random.setSeed(seed);
-                    } catch (Exception e) {
-                        // Fall back to the simple case
-                        log.log(Level.SEVERE,
-                                sm.getString("managerBase.random",
-                                             randomClass),
-                                e);
-                        this.random = new java.util.Random();
-                        this.random.setSeed(seed);
-                    }
-                    long t2=System.currentTimeMillis();
-                    if( (t2-t1) > 100 )
-                        if (log.isLoggable(Level.FINE)) {
-                            log.fine(sm.getString("managerBase.seeding",
-                                                  randomClass) + " " + (t2-t1));
-                        }
-                }
+            // Calculate the new random number generator seed
+            long seed = System.currentTimeMillis();
+            long t1 = seed;
+            char entropy[] = getEntropy().toCharArray();
+            for (int i = 0; i < entropy.length; i++) {
+                 long update = ((byte) entropy[i]) << ((i % 8) * 8);
+                 seed ^= update;
             }
+            try {
+                 // Construct and seed a new random number generator
+                 Class<?> clazz = Class.forName(randomClass);
+                 this.random = (Random) clazz.newInstance();
+                 this.random.setSeed(seed);
+            } catch (Exception e) {
+                 // Fall back to the simple case
+                 log.log(Level.SEVERE,
+                         sm.getString("managerBase.random",
+                                      randomClass),
+                         e);
+                 this.random = new java.util.Random();
+                 this.random.setSeed(seed);
+            }
+            long t2=System.currentTimeMillis();
+            if( (t2-t1) > 100 )
+                 if (log.isLoggable(Level.FINE)) {
+                     log.fine(sm.getString("managerBase.seeding",
+                                           randomClass) + " " + (t2-t1));
+                 }
         }
 
         return (this.random);
+    }
+
+    /**
+     * Reset the random number generator instance to null.
+     */
+    protected synchronized void resetRandom() {
+        this.random = null;
     }
 
 
