@@ -468,8 +468,6 @@ public class GFServerConfigProvider implements AuthConfigProvider {
          * @param responsePolicy the response policy assigned to the module
          *                listed in this entry, which may be null.
          *
-         * @param moduleClass the fully qualified class name of the module.
-         *
          * @param options the options configured for this module.
          */
         Entry(String moduleClassName, MessagePolicy requestPolicy,
@@ -1233,14 +1231,14 @@ public class GFServerConfigProvider implements AuthConfigProvider {
         private GFClientAuthConfig config;
         private ClientAuthModule module;
         private com.sun.enterprise.security.jauth.ClientAuthModule oldModule;
-        private Map map;
+       // private Map map;
 
         GFClientAuthContext(GFClientAuthConfig config, 
                                       ClientAuthModule module, Map map) {
             this.config = config;
             this.module = module;
             this.oldModule = null;
-            this.map = map;
+           // this.map = map;
         }
 
         GFClientAuthContext(GFClientAuthConfig config, 
@@ -1248,7 +1246,7 @@ public class GFServerConfigProvider implements AuthConfigProvider {
             this.config = config;
             this.module = null;
             this.oldModule = module;
-            this.map = map;
+        //    this.map = map;
         }
 
         public AuthStatus secureRequest(MessageInfo messageInfo,

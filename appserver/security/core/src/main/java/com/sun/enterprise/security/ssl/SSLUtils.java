@@ -293,19 +293,17 @@ public final class SSLUtils implements PostConstruct {
             }
 
             if (count != -1 && kstores.length >= count) {
-                Key key = secSupp.getPrivateKeyForAlias(aliasName, count);
-                if (key instanceof PrivateKey) {
-                    PrivateKey privKey = (PrivateKey)key;
+                PrivateKey privKey = secSupp.getPrivateKeyForAlias(aliasName, count);
+                if (privKey != null) {
                     Certificate[] certs = kstores[count].getCertificateChain(
                             aliasName);
                     privKeyEntry = new PrivateKeyEntry(privKey, certs);
                 }
             } else {
                 for (int i = 0; i < kstores.length; i++) {
-                    Key key = secSupp.getPrivateKeyForAlias(aliasName, i);
-                    if (key != null && key instanceof PrivateKey) {
-                        PrivateKey privKey = (PrivateKey)key;
-                        Certificate[] certs =
+                    PrivateKey privKey = secSupp.getPrivateKeyForAlias(aliasName, i);
+                    if (privKey != null) {
+                       Certificate[] certs =
                                 kstores[i].getCertificateChain(
                                 aliasName);
                         privKeyEntry = new PrivateKeyEntry(privKey, certs);

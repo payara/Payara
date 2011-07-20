@@ -176,9 +176,7 @@ public class ClientCertificateLoginModule implements LoginModule {
 	    callbackHandler.handle(callbacks);
 	    String[] choices = ((ChoiceCallback)callbacks[0]).getChoices();
 	    int[] idx = ((ChoiceCallback)callbacks[0]).getSelectedIndexes();
-	    if (choices == null) {
-		// figure out
-	    }
+
 	    if (idx == null) {
 		throw new LoginException ("No certificate selected!");
 	    } else if (idx[0] == -1){
@@ -333,7 +331,7 @@ public class ClientCertificateLoginModule implements LoginModule {
         sslUtils.setAppclientSsl(ssl);
 	subject.getPrincipals().remove(userPrincipal);
 	succeeded = false;
-	succeeded = commitSucceeded;
+	commitSucceeded = false;
 	alias = null;
 	userPrincipal = null;
 	return true;

@@ -272,10 +272,12 @@ public class SecurityUpgradeService implements ConfigurationUpgrade, PostConstru
                 for(File file:files) {
                     if(file.isDirectory()){
                         deleteFile(file);
-                        file.delete();
+                        if(file.delete())
+                            continue;
                     }
                     else {
-                        file.delete();
+                        if(file.delete())
+                            continue;
                     }
                 }
             }

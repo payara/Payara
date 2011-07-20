@@ -56,7 +56,7 @@ import static com.sun.enterprise.security.auth.digest.api.Constants.*;
  */
 public abstract class DigestRealmBase extends IASRealm implements DigestRealm {
 
-    private DigestValidatorImpl validator = null;
+//    private DigestValidatorImpl validator = null;
 
     public DigestRealmBase() {
     }

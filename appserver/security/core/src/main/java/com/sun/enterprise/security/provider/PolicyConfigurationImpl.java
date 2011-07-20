@@ -221,9 +221,6 @@ public class PolicyConfigurationImpl implements PolicyConfiguration {
 	throws PolicyContextException
     {
         assertStateIsOpen();
-
-	assert roleName != null;
-	assert permissions != null;
 	
 	if (roleName != null && permissions != null) {
 	    checkSetPolicyPermission();
@@ -269,9 +266,6 @@ public class PolicyConfigurationImpl implements PolicyConfiguration {
 
         assertStateIsOpen();
 
-	assert permission != null;
-	assert roleName != null;
-	
 	if (roleName != null && permission != null) {
 	    checkSetPolicyPermission();
 	    this.getRolePermissions(roleName).add(permission);
@@ -307,8 +301,6 @@ public class PolicyConfigurationImpl implements PolicyConfiguration {
 
         assertStateIsOpen();
 
-	assert permissions != null;
-	
 	if (permissions != null) {
 	    checkSetPolicyPermission();
 	    for(Enumeration e = permissions.elements(); e.hasMoreElements();){
@@ -346,7 +338,6 @@ public class PolicyConfigurationImpl implements PolicyConfiguration {
 	
         assertStateIsOpen();
 
-	assert permission != null;
 
 	if (permission != null) {
 	    checkSetPolicyPermission();
@@ -382,8 +373,6 @@ public class PolicyConfigurationImpl implements PolicyConfiguration {
 	throws PolicyContextException {
 
         assertStateIsOpen();
-
-	assert permissions != null;
 
 	if (permissions != null) {
 	    checkSetPolicyPermission();
@@ -422,7 +411,6 @@ public class PolicyConfigurationImpl implements PolicyConfiguration {
 
         assertStateIsOpen();
 
-	assert permission != null;
 
 	if (permission != null) {
 	    checkSetPolicyPermission();
@@ -459,8 +447,6 @@ public class PolicyConfigurationImpl implements PolicyConfiguration {
 	throws PolicyContextException{
 
         assertStateIsOpen();
-
-	assert roleName != null;
 
 	if(roleName != null && rolePermissionsTable != null) {
 	    checkSetPolicyPermission();
@@ -658,7 +644,7 @@ public class PolicyConfigurationImpl implements PolicyConfiguration {
         assertStateIsOpen();
 
 	String linkId = link.getContextID();
-	if (this.CONTEXT_ID == linkId) {
+	if (this.CONTEXT_ID.equals(linkId)) {
             String defMsg="Operation attempted to link PolicyConfiguration to itself.";
             String msg=localStrings.getLocalString("pc.unsupported_link_operation",defMsg);
 	    logger.log(Level.WARNING,msg);
@@ -1231,8 +1217,8 @@ public class PolicyConfigurationImpl implements PolicyConfiguration {
 		    Iterator pit = rolePrincipals.getPrincipals().iterator();
 		    while (pit.hasNext()){
 			Principal prin = (Principal) pit.next();
-			assert prin instanceof java.security.Principal;
-			if (prin instanceof java.security.Principal) {
+
+			if (prin != null) {
 			    withPrincipals = true;
 			    PrincipalEntry prinEntry = 
 				new PrincipalEntry(prin.getClass().getName(),

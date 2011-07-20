@@ -134,6 +134,7 @@ public class JarSigner {
             InvalidKeyException, UnrecoverableKeyException, SignatureException {
 
         JarFile jf = new JarFile(input);
+        ZipOutputStream zout = null;
         try {
             Enumeration<JarEntry> jes;
             // manifestEntries is content of META-INF/MANIFEST.MF
@@ -224,7 +225,7 @@ public class JarSigner {
             pkcs7.encodeSignedData(bout);
 
             // Write output
-            ZipOutputStream zout = new ZipOutputStream(
+            zout = new ZipOutputStream(
                     new FileOutputStream(output));
             zout.putNextEntry((signed)
                     ? getZipEntry(jf.getJarEntry(JarFile.MANIFEST_NAME))
@@ -249,9 +250,10 @@ public class JarSigner {
                     zout.write(data);
                 }
             }
-            zout.close();
+
         } finally {
             jf.close();
+            zout.close();
         }
     }
 

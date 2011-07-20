@@ -152,17 +152,23 @@ public class Util {
                 localFile.createNewFile();
             }
         }
-        FileOutputStream oStream = new FileOutputStream(localFile);
-        InputStream iStream = Util.class.getResourceAsStream("/config/" + fileName);
+        FileOutputStream oStream = null;
+        InputStream iStream = null;
+        try {
+            oStream = new FileOutputStream(localFile);
+            iStream = Util.class.getResourceAsStream("/config/" + fileName);
 
-        while (iStream != null && iStream.available() > 0) {
-            oStream.write(iStream.read());
+            while (iStream != null && iStream.available() > 0) {
+                oStream.write(iStream.read());
+            }
+        } finally {
+            oStream.close();
+            if  (iStream != null) {
+                iStream.close();
+            }
+
         }
 
-        oStream.close();
-        if  (iStream != null) {
-            iStream.close();
-        }
         return localFile;
 
     }

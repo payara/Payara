@@ -111,8 +111,7 @@ public class SecurityLifecycle implements  PostConstruct, PreDestroy {
 
     @Inject
     private RealmsManager realmsManager;
-    
-    private static WebSecurityDeployerStatsProvider webStatsProvider = null;
+
 
     private EventListener listener = null;
 
@@ -167,9 +166,7 @@ public class SecurityLifecycle implements  PostConstruct, PreDestroy {
              if (_logger.isLoggable(Level.INFO)) {
                  _logger.log(Level.INFO, "sec.service.startup.enter");
              }
-             
-             webStatsProvider = new WebSecurityDeployerStatsProvider();
-             StatsProviderManager.register("security", PluginPoint.SERVER, "security/web", webStatsProvider);
+
              
 
             //TODO:V3 LoginContextDriver has a static variable dependency on AuditManager
@@ -226,7 +223,7 @@ public class SecurityLifecycle implements  PostConstruct, PreDestroy {
  	}
     }
 
-    private void registerPolicyHandlers()
+/*    private void registerPolicyHandlers()
             throws javax.security.jacc.PolicyContextException {
         PolicyContextHandler pch = PolicyContextHandlerImpl.getInstance();
         PolicyContext.registerHandler(PolicyContextHandlerImpl.ENTERPRISE_BEAN,
@@ -234,13 +231,13 @@ public class SecurityLifecycle implements  PostConstruct, PreDestroy {
         PolicyContext.registerHandler(PolicyContextHandlerImpl.SUBJECT, pch, true);
         PolicyContext.registerHandler(PolicyContextHandlerImpl.EJB_ARGUMENTS,
             pch, true);
-        /*V3 Commented: PolicyContext.registerHandler(PolicyContextHandlerImpl.SOAP_MESSAGE,
+        *//*V3 Commented: PolicyContext.registerHandler(PolicyContextHandlerImpl.SOAP_MESSAGE,
             pch, true);
-         */
+         *//*
         PolicyContext.registerHandler(PolicyContextHandlerImpl.HTTP_SERVLET_REQUEST,
             pch, true);
         PolicyContext.registerHandler(PolicyContextHandlerImpl.REUSE, pch, true);
-    }
+    }*/
 
     public Lifecycle getLifecycle() {
         return Lifecycle.START;

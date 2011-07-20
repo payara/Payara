@@ -308,16 +308,16 @@ class ConfigFile extends AuthConfig {
 			" -- "
 			+ id);
 
-            if (logger != null && logger.isLoggable(Level.FINE)) {
-                for (int i = 0; i < entries.length; i++) {
+
+            for (int i = 0; i < entries.length; i++) {
                     logger.fine("Entry " + (i+1) + ":" +
                         "\n    module class: " + entries[i].getLoginModuleName() +
                         "\n    flag: " + entries[i].getControlFlag() +
                         "\n    options: " + entries[i].getOptions() +
                         "\n    request policy: " + entries[i].requestPolicy +
                         "\n    response policy: " + entries[i].responsePolicy);
-                }
             }
+
 	}
 
 	return entries;
@@ -443,7 +443,7 @@ class ConfigFile extends AuthConfig {
 
 	private AuthPolicy requestPolicy;
 	private AuthPolicy responsePolicy;
-	Object module;	// convenience location to store instance -
+	Object module = null;	// convenience location to store instance -
 			// package private for AuthContext
 
 	/**

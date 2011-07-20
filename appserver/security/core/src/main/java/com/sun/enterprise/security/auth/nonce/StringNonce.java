@@ -75,7 +75,7 @@ public class StringNonce implements Nonce{
             return false;
         }
         final StringNonce other = (StringNonce) obj;
-        if (this.nonce != other.getNonce() && (this.nonce == null || !this.nonce.equals(other.getNonce()))) {
+        if (!this.nonce.equals(other.getNonce()) && (this.nonce == null || !this.nonce.equals(other.getNonce()))) {
             return false;
         }
         return true;

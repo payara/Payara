@@ -68,7 +68,10 @@ public class GlassfishSSLImpl extends SSLImplementation {
     }
 
     public SSLSupport getSSLSupport(Socket socket) {
-        return new GlassfishSSLSupport((SSLSocket)socket);
+        if(socket instanceof SSLSocket) {
+            return new GlassfishSSLSupport((SSLSocket)socket);
+        }
+        return null;
     }
 
     public SSLSupport getSSLSupport(SSLEngine ssle) {

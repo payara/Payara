@@ -58,6 +58,7 @@ import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
+import org.glassfish.internal.api.Target;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
@@ -105,7 +106,7 @@ public class LDAPAdminAccessConfigurator implements AdminCommand {
     public volatile String ldapGroupName;
     
     @Inject
-    private Configs allConfigs;
+    Target targetService;
 
     //TODO: not sure what to do with --target here
     @Param(name = "target", optional = true, defaultValue =
@@ -174,13 +175,8 @@ public class LDAPAdminAccessConfigurator implements AdminCommand {
     private void configure(StringBuilder sb) throws TransactionFailure, PropertyVetoException {
         Server s = ConfigBeansUtilities.getServerNamed(ADMIN_SERVER);
         String ac = s.getConfigRef();
-        Config asc = null; //admin server config, that needs the configuration
-        for (Config cfg : allConfigs.getConfig()) {
-            if (cfg.getName().equals(ac)) {
-                asc = cfg;
-                break;
-            }
-        }
+        Config asc = targetService.getConfig(ac);
+
         //following things should happen transactionally - TODO replace SingleConfigCode by ConfigCode ...
         //createBackupRealm(sb, getAdminRealm(asc.getSecurityService()), getNewRealmName(asc.getSecurityService()));
         deleteRealm(asc.getSecurityService(), sb);
@@ -189,7 +185,7 @@ public class LDAPAdminAccessConfigurator implements AdminCommand {
         //configure(asc.getSecurityService(), asc.getAdminService(), sb);
     }
 
-    private String getNewRealmName(SecurityService ss) {
+/*    private String getNewRealmName(SecurityService ss) {
         List<AuthRealm> realms = ss.getAuthRealm();
         String pref = ORIG_ADMIN_REALM_NAME + "-";
         int index = 0;  //last one
@@ -199,7 +195,7 @@ public class LDAPAdminAccessConfigurator implements AdminCommand {
             }
         }
         return pref + (index+1);
-    }
+    }*/
 
     private AuthRealm getAdminRealm(SecurityService ss) {
         List<AuthRealm> realms = ss.getAuthRealm();
@@ -257,7 +253,7 @@ public class LDAPAdminAccessConfigurator implements AdminCommand {
     }
 
     // this had been called renameRealm, but in the SecurityConfigListener, the method authRealmUpdated actually does a create...
-    private void createBackupRealm(final StringBuilder sb, AuthRealm realm, final String to) throws PropertyVetoException, TransactionFailure {
+/*    private void createBackupRealm(final StringBuilder sb, AuthRealm realm, final String to) throws PropertyVetoException, TransactionFailure {
         SingleConfigCode<AuthRealm> scc = new SingleConfigCode<AuthRealm>() {
             @Override
             public Object run(AuthRealm realm) throws PropertyVetoException, TransactionFailure {
@@ -267,7 +263,7 @@ public class LDAPAdminAccessConfigurator implements AdminCommand {
             }
         };
         ConfigSupport.apply(scc, realm);
-    }
+    }*/
 
     private AuthRealm createLDAPRealm(SecurityService ss) throws TransactionFailure, PropertyVetoException {
         AuthRealm ar = ss.createChild(AuthRealm.class);

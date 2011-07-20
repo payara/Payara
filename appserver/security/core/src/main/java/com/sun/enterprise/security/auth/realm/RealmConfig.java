@@ -104,9 +104,6 @@ public class RealmConfig {
         } else {
             try {
                 Realm def = Realm.getInstance(defaultRealm);
-                if (def == null) {
-                    defaultRealm = goodRealm;
-                }
             } catch (Exception e) {
                 defaultRealm = goodRealm;
             }

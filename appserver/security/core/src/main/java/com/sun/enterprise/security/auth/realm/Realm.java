@@ -330,17 +330,15 @@ public abstract class Realm implements Comparable {
                     r = (Realm) obj;
                 }
             }
-            if (r != null) {
-                r.setName(name);
-                r.init(props);
-                if (mgr == null) {
-                    throw new BadRealmException("Unable to locate RealmsManager Service");
-                }
-                _logger.log(Level.INFO,"realm.loaded.successfully" ,new Object[]{name, className});
-                return r;
-            } else {
-                throw new BadRealmException("Unable to locate Realm class " + className);
+
+            r.setName(name);
+            r.init(props);
+            if (mgr == null) {
+                throw new BadRealmException("Unable to locate RealmsManager Service");
             }
+            _logger.log(Level.INFO,"realm.loaded.successfully" ,new Object[]{name, className});
+            return r;
+
 
         } catch (NoSuchRealmException ex) {
             throw new BadRealmException(ex);

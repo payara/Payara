@@ -885,7 +885,9 @@ public final class FileRealm extends IASRealm
         if ((file != null) && !filePath.exists()) {
             try {
                 if ((instanceRoot != null) && (filePath.getCanonicalPath().startsWith(instanceRoot))) {
-                    filePath.createNewFile();
+                    if(!filePath.createNewFile()) {
+                        throw new IOException();
+                    }
                 }
             } catch (IOException ex) {
                 //ignore any exception, so the code below

@@ -144,7 +144,7 @@ public class PasswordCredential {
 	if(o instanceof PasswordCredential) {
 	    PasswordCredential pc = (PasswordCredential) o;
 	    if(pc.getUser().equals(username) && 
-		pc.getPassword().equals(password) && 
+		Arrays.equals(pc.getPassword(),password) &&
 		pc.getRealm().equals(realm)) {
 		return true;
 	    }
@@ -158,7 +158,7 @@ public class PasswordCredential {
      * @return the hash code.
      */
     public int hashCode() {
-	return username.hashCode() + password.hashCode() + realm.hashCode();
+	return username.hashCode() + Arrays.hashCode(password) + realm.hashCode();
     }
 
     

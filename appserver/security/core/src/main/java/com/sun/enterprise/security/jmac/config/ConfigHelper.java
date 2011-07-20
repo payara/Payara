@@ -74,7 +74,7 @@ public abstract class ConfigHelper /*implements RegistrationListener*/ {
     private static final String DEFAULT_HANDLER_CLASS =
         "com.sun.enterprise.security.jmac.callback.ContainerCallbackHandler"; 
 
-    private static String handlerClassName = null;
+//    private static String handlerClassName = null;
     protected static final AuthConfigFactory factory = AuthConfigFactory.getFactory();
 
     private ReadWriteLock rwLock;

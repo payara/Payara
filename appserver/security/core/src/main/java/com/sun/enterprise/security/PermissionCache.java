@@ -254,7 +254,7 @@ public class PermissionCache extends Object {
 	String oldpcID = null;
 	try {
 	    oldpcID = PolicyContext.getContextID();
-	    if (this.pcID != oldpcID && 
+	    if (!this.pcID.equals(oldpcID) &&
 		(this.pcID == null || !this.pcID.equals(oldpcID))) { 
 		setPc = true;
 	    }

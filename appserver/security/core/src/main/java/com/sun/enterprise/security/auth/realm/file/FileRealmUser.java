@@ -223,6 +223,12 @@ public class FileRealmUser extends PrincipalImpl implements User
         this.algo = algo;
     }
 
+    //Just to document the fact the subclass equals invokes the superclass equals
+    @Override
+    public boolean equals(Object o) {
+         return super.equals(o);
+     }
+
 
     
 }

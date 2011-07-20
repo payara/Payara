@@ -36,7 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
- */
+ *//*
+
 
 package com.sun.enterprise.security;
 
@@ -52,13 +53,15 @@ import com.sun.enterprise.util.*;
 import java.util.logging.*;
 import com.sun.logging.*;
 
+*/
 /**
  * Wraps the J2SE's keytool after adding our provider.
  * Provides the PKCS12 functionality - read a PKCS12 format
  * keystore and replicate it into a "JKS" type keystore.
  * @author Harish Prabandham
  * @author Harpreet Singh
- */
+ *//*
+
 public final class KeyTool {
 
     private static Logger _logger=null;
@@ -95,7 +98,8 @@ public final class KeyTool {
     private static LocalStringManagerImpl localStrings =
 	new LocalStringManagerImpl(KeyTool.class);
 
-    /**
+    */
+/**
      * The class is only instantiated for PKCS12 - all other 
      * keytool functionality is passed to the sun.security.tools.KeyTool
      * @param the file name of the PKCS12 file
@@ -107,7 +111,8 @@ public final class KeyTool {
      * @param password to the key in the JKS keystore
      * currently it has to be the same as the JKS keystore password
      * @exception Problem in loading the keystores
-     */
+     *//*
+
     public KeyTool (String infile, String outfile, String pkcsKeyStorePass,
 		    String pkcsKeyPass, String jksKeyStorePass, 
 		    String jksKeyPass,
@@ -134,11 +139,13 @@ public final class KeyTool {
 	    }
 	    readKeyStores ();  
     }
-    /**
+    */
+/**
      * Load both the keystore's into memory.
      * The PKCS12 is loaded from the file and the JKS file
      * is created.
-     */
+     *//*
+
     public void readKeyStores() throws IOException {
 	FileInputStream pkcsFis = null;
 	FileInputStream jksFis = null;
@@ -167,10 +174,12 @@ public final class KeyTool {
             }
         }
     }   
-    /**
+    */
+/**
      * Write the JKS keystore that is populated with values from 
      * the PKCS12 keystore to the outputfile.
-     */
+     *//*
+
     public void writeJksKeyStore() throws IOException {
 	FileOutputStream fos = null;
 	try {
@@ -190,21 +199,25 @@ public final class KeyTool {
 		fos.close();
         }
     }   
-    /** 
+    */
+/**
      * Copies the keys and certificates in the PKCS12 file to 
      * the in-memory JKS keystore
      * @exception If the keystore has not been instantiated or
      * the password to the key is'nt proper
-     */
+     *//*
+
     public void replicatePkcs12ToJks () throws Exception {
 	Enumeration e = pkcs12KeyStore.aliases ();
 	for (; e.hasMoreElements (); ){
 	    String alias = (String)e.nextElement ();
 	    if (pkcs12KeyStore.isKeyEntry (alias)){
 		
-		/* Get the key and associated certificate chain
+		*/
+/* Get the key and associated certificate chain
 		 * from PKCS12 keystore and put in JKS keystore
-		 */
+		 *//*
+
 		Key key = pkcs12KeyStore.getKey (alias, pkcsKeyPass);
 		Certificate[] certs = 
 		    pkcs12KeyStore.getCertificateChain (alias);
@@ -216,9 +229,11 @@ public final class KeyTool {
 	    }
 	}
     }
-    /**
+    */
+/**
      * Prints the information in the PKCS12 keystore
-     */
+     *//*
+
     public void info () throws Exception{
         _logger.log(Level.FINEST," Keystore Information");
         _logger.log(Level.FINEST," Type = " + pkcs12KeyStore.getType ());
@@ -239,9 +254,11 @@ public final class KeyTool {
 	}
         _logger.log(Level.FINEST," End of Information");
     }
-    /** 
+    */
+/**
      * Initializes the provider to be the JSSE provider
-     */
+     *//*
+
     public static void initProvider() {
 	try { 
 	    Provider p =
@@ -252,9 +269,11 @@ public final class KeyTool {
 	    _logger.log(Level.SEVERE,"java_security.provider_exception",e);
 	}
     } 
-    /**
+    */
+/**
      * Gets the provider name for JSSE
-     */
+     *//*
+
     public static String getProviderName (){
 	try{
 	    Provider p = 
@@ -279,9 +298,11 @@ public final class KeyTool {
 			    " "+PKCSKEYPASS +" password" +
 			    " "+OUTFILE+ " outputFileName"+
 			    " "+JKSKEYSTOREPASS + " password"); 
-	/* uncomment when support for this present in JSSE
-	   System.Out.Println (" "+JKSKEYPASS+ " password"); 
 	*/
+/* uncomment when support for this present in JSSE
+	   System.Out.Println (" "+JKSKEYPASS+ " password"); 
+	*//*
+
 	if (exit)
 	    System.exit (-1);
     }
@@ -321,14 +342,16 @@ public final class KeyTool {
 		
 		jksKeyStorePass = args[10];
 		jksKeyPass = jksKeyStorePass;
-		/*
+		*/
+/*
 		// Uncomment the following when support
 		// for different keystore and key pass present in JSSE
 
 		if (!args[11].equalsIgnoreCase (JKSKEYPASS))
 		    help ();
 		jksKeyPass = args[12];
-		*/
+		*//*
+
 	    }
 	    if (!pkcs){
 		sun.security.tools.KeyTool.main(args);
@@ -349,3 +372,4 @@ public final class KeyTool {
 
 
 
+*/

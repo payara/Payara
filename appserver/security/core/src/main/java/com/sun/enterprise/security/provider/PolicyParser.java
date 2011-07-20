@@ -952,7 +952,15 @@ public class PolicyParser {
 	}
 
 	public Object clone() {
-	    GrantEntry ge = new GrantEntry();
+        try {
+            super.clone();
+        } catch (CloneNotSupportedException e) {
+            if(debug != null) {
+                debug.println(e.getMessage());
+            }
+        }
+
+        GrantEntry ge = new GrantEntry();
 	    ge.codeBase = this.codeBase;
 	    ge.signedBy = this.signedBy;
 	    ge.principals = new LinkedList(this.principals);

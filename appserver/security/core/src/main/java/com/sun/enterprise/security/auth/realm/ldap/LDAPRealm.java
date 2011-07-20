@@ -297,7 +297,7 @@ public final class LDAPRealm extends IASRealm
         String usePool = props.getProperty(SUN_JNDI_POOL, "true");
         ldapBindProps.setProperty(SUN_JNDI_POOL, usePool);
         
-        if(url != null && url.startsWith(LDAPS_URL)) {
+        if( url.startsWith(LDAPS_URL)) {
             ldapBindProps.setProperty(LDAP_SOCKET_FACTORY,
                     DEFAULT_SSL_LDAP_SOCKET_FACTORY);
             if (System.getProperty(SUN_JNDI_POOL_PROTOCOL) == null) {
@@ -518,7 +518,7 @@ public final class LDAPRealm extends IASRealm
             _logger.log(Level.FINE, "LDAP:Group search filter: " + srcFilter);
             StringBuffer gb = new StringBuffer();
             gb.append("Group memberships found: ");
-            if (grpList != null) {
+            if (grpList.length > 0) {
                 for (int i=0; i<grpList.length; i++) {
                     gb.append(" "+grpList[i]);
                 }
