@@ -47,6 +47,7 @@ import com.sun.enterprise.config.serverbeans.SecurityService;
 import com.sun.enterprise.security.AppCNonceCacheMap;
 import java.util.HashMap;
 import java.util.Map;
+import org.glassfish.api.admin.ServerEnvironment;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
@@ -65,7 +66,7 @@ public class CNonceCacheFactoryImpl implements CNonceCacheFactory, PostConstruct
     @Inject
     private Habitat habitat;
 
-    @Inject
+    @Inject(name=ServerEnvironment.DEFAULT_INSTANCE_NAME)
     private SecurityService secService;
 
     /**

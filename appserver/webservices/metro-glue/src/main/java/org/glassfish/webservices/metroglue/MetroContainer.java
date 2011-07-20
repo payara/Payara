@@ -64,6 +64,7 @@ import com.sun.xml.ws.tx.dev.WSATRuntimeConfig;
 import com.sun.xml.wss.impl.config.SecurityConfigProvider;
 
 import org.glassfish.api.ActionReport;
+import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.container.Container;
 import org.glassfish.api.deployment.DeployCommandParameters;
 import org.glassfish.api.deployment.Deployer;
@@ -114,9 +115,9 @@ public class MetroContainer implements PostConstruct, Container, WebServiceDeplo
     JavaEETransactionManager txManager;    
     @Inject
     GMSAdapterService gmsAdapterService;
-    @Inject(optional = true)
+    @Inject(name=ServerEnvironment.DEFAULT_INSTANCE_NAME, optional = true)
     private AvailabilityService availabilityService;
-    @Inject
+    @Inject(name=ServerEnvironment.DEFAULT_INSTANCE_NAME)
     private SecurityService secService;
 
     @Override

@@ -68,6 +68,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.text.MessageFormat;
+import org.glassfish.api.admin.ServerEnvironment;
 
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.PostConstruct;
@@ -80,7 +81,7 @@ import org.jvnet.hk2.component.PostConstruct;
 @Service
 public class FlashlightProbeProviderFactory
         implements ProbeProviderFactory, PostConstruct {
-    @Inject
+    @Inject(name=ServerEnvironment.DEFAULT_INSTANCE_NAME)
     MonitoringService monitoringServiceConfig;
 
     @Inject

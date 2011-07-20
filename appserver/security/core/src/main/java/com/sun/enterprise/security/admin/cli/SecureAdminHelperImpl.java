@@ -55,6 +55,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.security.common.MasterPassword;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
@@ -80,7 +81,7 @@ public class SecureAdminHelperImpl implements SecureAdminHelper {
     @Inject(name="Security SSL Password Provider Service")
     private MasterPassword masterPasswordHelper;
     
-    @Inject
+    @Inject(name=ServerEnvironment.DEFAULT_INSTANCE_NAME)
     private volatile AdminService as;
 
     /**

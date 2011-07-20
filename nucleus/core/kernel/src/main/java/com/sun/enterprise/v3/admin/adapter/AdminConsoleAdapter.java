@@ -76,7 +76,6 @@ import java.net.InetAddress;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.Arrays;
-import java.util.Enumeration;
 import java.util.List;
 import java.util.Locale;
 import java.util.MissingResourceException;
@@ -122,10 +121,9 @@ public final class AdminConsoleAdapter extends HttpHandler implements Adapter, P
     @Inject
     ServerEnvironmentImpl env;
 
-    @Inject
-    AdminService adminService; //need to take care of injecting the right AdminService
+    @Inject(name=ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    AdminService adminService; 
 
-    
     private String contextRoot;
     private File warFile;    // GF Admin Console War File Location
     private AdapterState stateMsg = AdapterState.UNINITIAZED;
@@ -134,7 +132,6 @@ public final class AdminConsoleAdapter extends HttpHandler implements Adapter, P
     private AdminConsoleConfigUpgrade adminConsoleConfigUpgrade=null;
 
     private final CountDownLatch latch = new CountDownLatch(1);
-
     
     @Inject
     ApplicationRegistry appRegistry;
@@ -144,9 +141,6 @@ public final class AdminConsoleAdapter extends HttpHandler implements Adapter, P
 
     @Inject
     Habitat habitat;
-
-    @Inject
-    volatile AdminService as = null;
 
     @Inject
     Events events;

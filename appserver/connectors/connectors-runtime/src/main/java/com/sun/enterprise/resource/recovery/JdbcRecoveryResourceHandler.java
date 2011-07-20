@@ -64,6 +64,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.*;
 import java.security.Principal;
+import org.glassfish.api.admin.ServerEnvironment;
 
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Inject;
@@ -77,7 +78,7 @@ import org.jvnet.hk2.component.Habitat;
 @Service
 public class JdbcRecoveryResourceHandler implements RecoveryResourceHandler {
 
-    @Inject
+    @Inject(name=ServerEnvironment.DEFAULT_INSTANCE_NAME)
     private TransactionService txService;
 
     @Inject

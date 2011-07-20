@@ -41,7 +41,6 @@
 package org.glassfish.config.support;
 
 import com.sun.enterprise.config.serverbeans.Cluster;
-import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.module.ModulesRegistry;
 import com.sun.enterprise.module.bootstrap.BootException;
@@ -147,8 +146,7 @@ public abstract class DomainXml implements Populator {
         habitat.addIndex(new ExistingSingletonInhabitant<Server>(server),
                 Server.class.getName(), ServerEnvironment.DEFAULT_INSTANCE_NAME);
 
-        habitat.addIndex(new ExistingSingletonInhabitant<Config>(habitat.getComponent(Config.class, server.getConfigRef())),
-                Config.class.getName(), ServerEnvironment.DEFAULT_INSTANCE_NAME);
+        server.getConfig().addIndex(habitat, ServerEnvironment.DEFAULT_INSTANCE_NAME);
         
         Cluster c = server.getCluster();
         if (c != null) {

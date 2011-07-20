@@ -247,27 +247,6 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
     @Inject
     Habitat habitat;
 
-    /*@Inject
-     ServerEnvironmentImpl env;
-
-    @Inject
-    ServerContext serverContxt;
-
-    @Inject
-    AdminService adminService;
-
-    @Inject
-    private Resources allResources;
-
-    @Inject
-    private Servers servers;
-
-    @Inject
-    private Domain domain;
-
-    @Inject
-    private JmsService jmsService;
-    */
     @Inject
     private ConnectorRuntime connectorRuntime;
 

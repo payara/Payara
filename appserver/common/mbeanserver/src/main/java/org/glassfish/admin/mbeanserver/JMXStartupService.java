@@ -76,6 +76,7 @@ import javax.management.remote.JMXServiceURL;
 import java.io.IOException;
 import java.util.Set;
 import javax.management.JMException;
+import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.EventTypes;
 import org.glassfish.api.event.Events;
@@ -95,7 +96,7 @@ public final class JMXStartupService implements PostStartup, PostConstruct {
     private MBeanServer mMBeanServer;
     @Inject
     private Domain mDomain;
-    @Inject
+    @Inject(name=ServerEnvironment.DEFAULT_INSTANCE_NAME)
     private AdminService mAdminService;
     @Inject
     private Habitat mHabitat;

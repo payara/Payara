@@ -104,8 +104,8 @@ public abstract class RestAdapter extends HttpHandler implements Adapter, PostCo
 
     public final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(RestAdapter.class);
 
-    @Inject
-    volatile AdminService as = null;
+    @Inject(name=ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    volatile AdminService as;
 
     @Inject
     Events events;

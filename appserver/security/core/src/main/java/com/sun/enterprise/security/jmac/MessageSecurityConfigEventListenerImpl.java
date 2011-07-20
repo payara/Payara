@@ -47,6 +47,7 @@ import com.sun.logging.LogDomains;
 import java.beans.PropertyChangeEvent;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.glassfish.api.admin.ServerEnvironment;
 import org.jvnet.hk2.annotations.ContractProvided;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
@@ -71,7 +72,7 @@ public class MessageSecurityConfigEventListenerImpl implements ConfigListener {
 
     private static Logger logger = LogDomains.getLogger(MessageSecurityConfigEventListenerImpl.class,LogDomains.SECURITY_LOGGER);
     
-    @Inject
+    @Inject(name=ServerEnvironment.DEFAULT_INSTANCE_NAME)
     private SecurityService service;
     
     /**

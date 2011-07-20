@@ -130,7 +130,6 @@ public abstract class AdminAdapter extends StaticHttpHandler implements Adapter,
     @Inject
     ServerEnvironmentImpl env;
 
-
     @Inject
     Events events;
     
@@ -145,8 +144,8 @@ public abstract class AdminAdapter extends StaticHttpHandler implements Adapter,
     @Inject
     Habitat habitat;
 
-    @Inject
-    volatile AdminService as = null;
+    @Inject(name=ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    volatile AdminService as;
 
     @Inject
     volatile Domain domain;

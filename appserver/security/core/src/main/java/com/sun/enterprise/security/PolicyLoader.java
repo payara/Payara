@@ -51,6 +51,7 @@ import org.jvnet.hk2.config.types.Property;
 import com.sun.enterprise.config.serverbeans.SecurityService;
 import com.sun.enterprise.util.i18n.StringManager;
 import java.util.List;
+import org.glassfish.api.admin.ServerEnvironment;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
@@ -67,7 +68,7 @@ import org.jvnet.hk2.component.Singleton;
 @Scoped(Singleton.class)
 public class PolicyLoader{
     
-    @Inject 
+    @Inject(name=ServerEnvironment.DEFAULT_INSTANCE_NAME)
     private SecurityService securityService;
     
     @Inject

@@ -55,6 +55,7 @@ import org.glassfish.internal.api.ServerContext;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Inject;
 import java.util.concurrent.TimeUnit;
+import org.glassfish.api.admin.ServerEnvironment;
 
 /**
  * A util class to read the bean cache related entries from
@@ -75,7 +76,7 @@ public class CacheProperties {
 
     private String victimSelectionPolicy;
 
-    @Inject
+    @Inject(name=ServerEnvironment.DEFAULT_INSTANCE_NAME)
     EjbContainer ejbContainer;
 
     public CacheProperties() {

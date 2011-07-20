@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -54,6 +54,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.internal.embedded.EmbeddedFileSystem;
 import org.glassfish.internal.embedded.EmbeddedLifecycle;
 import org.glassfish.internal.embedded.Server;
@@ -74,7 +75,7 @@ public class EmbeddedSecurityLifeCycle
     @Inject
     private EmbeddedSecurity embeddedSecurity;
 
-    @Inject
+    @Inject(name=ServerEnvironment.DEFAULT_INSTANCE_NAME)
     private SecurityService securityService;
 
     @Override

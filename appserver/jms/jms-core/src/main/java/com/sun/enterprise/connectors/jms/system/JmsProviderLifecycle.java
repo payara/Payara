@@ -82,9 +82,6 @@ public class JmsProviderLifecycle implements  PostStartup, PostConstruct{
     @Inject
     Habitat habitat;
 
-    //@Inject
-    //MonitoringService monitoringService;
-
     public void postConstruct()
     {
        if (eagerStartupRequired())

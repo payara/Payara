@@ -68,6 +68,7 @@ import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.deployment.EjbDescriptor;
 
 import com.sun.ejb.spi.container.SFSBContainerInitialization;
+import org.glassfish.api.admin.ServerEnvironment;
 
 import org.glassfish.api.deployment.DeployCommandParameters;
 import org.glassfish.api.deployment.DeploymentContext;
@@ -118,13 +119,13 @@ public class StatefulContainerBuilder
     @Inject
     private EJBServerConfigLookup ejbConfigLookup;
 
-    @Inject(optional = true)
+    @Inject(name=ServerEnvironment.DEFAULT_INSTANCE_NAME, optional = true)
     private AvailabilityService availabilityService;
 
     @Inject(optional = true)
     private EjbContainerAvailability ejbAvailability;
 
-    @Inject
+    @Inject(name=ServerEnvironment.DEFAULT_INSTANCE_NAME)
     EjbContainer ejbContainerConfig;
 
     @Inject(optional = true)

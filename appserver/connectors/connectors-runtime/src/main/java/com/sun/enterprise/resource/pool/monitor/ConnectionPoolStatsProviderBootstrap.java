@@ -95,9 +95,6 @@ public class ConnectionPoolStatsProviderBootstrap implements PostConstruct,
     @Inject
     private Habitat habitat;
     
-    //@Inject
-    //MonitoringService monitoringService;
-
     //List of all jdbc pool stats providers that are created and stored.
     private List<JdbcConnPoolStatsProvider> jdbcStatsProviders = null;
     

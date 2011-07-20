@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -60,6 +60,7 @@ import com.sun.enterprise.transaction.JavaEETransactionManagerSimplified;
 import com.sun.jts.CosTransactions.DelegatedRecoveryManager;
 import com.sun.jts.CosTransactions.Configuration;
 import com.sun.jts.CosTransactions.RecoveryManager;
+import org.glassfish.api.admin.ServerEnvironment;
 
 import org.jvnet.hk2.annotations.*;
 import org.jvnet.hk2.component.Habitat;
@@ -73,7 +74,7 @@ import org.jvnet.hk2.component.PostConstruct;
 @Service
 public class ResourceRecoveryManagerImpl implements PostConstruct, ResourceRecoveryManager {
 
-    @Inject
+    @Inject(name=ServerEnvironment.DEFAULT_INSTANCE_NAME)
     private TransactionService txnService;
 
     @Inject 

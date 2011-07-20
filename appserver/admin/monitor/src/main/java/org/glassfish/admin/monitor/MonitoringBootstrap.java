@@ -123,7 +123,7 @@ public class MonitoringBootstrap implements Init, PostConstruct, PreDestroy, Eve
     @Inject
     ServerEnvironment serverEnv;
 
-    @Inject(optional=true)
+    @Inject(name=ServerEnvironment.DEFAULT_INSTANCE_NAME, optional=true)
     MonitoringService monitoringService = null;
     @Inject
     private org.glassfish.flashlight.provider.ProbeRegistry probeRegistry;

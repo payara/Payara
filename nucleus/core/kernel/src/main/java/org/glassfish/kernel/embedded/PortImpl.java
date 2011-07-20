@@ -56,6 +56,7 @@ import org.glassfish.grizzly.config.dom.Transport;
 import org.glassfish.grizzly.config.dom.Transports;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.CommandRunner;
+import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.internal.embedded.Port;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
@@ -75,9 +76,9 @@ public class PortImpl implements Port {
     ActionReport report = null;
     @Inject
     PortsImpl ports;
-    @Inject
+    @Inject(name=ServerEnvironment.DEFAULT_INSTANCE_NAME)
     NetworkConfig config;
-    @Inject
+    @Inject(name=ServerEnvironment.DEFAULT_INSTANCE_NAME)
     HttpService httpService;
     String listenerName;
     int number;

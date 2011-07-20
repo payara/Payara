@@ -87,6 +87,7 @@ import org.jvnet.hk2.config.types.Property;
 import org.apache.catalina.Container;
 import org.apache.catalina.Engine;
 import org.apache.catalina.core.StandardHost;
+import org.glassfish.api.admin.ServerEnvironment;
 
 
 /**
@@ -109,13 +110,13 @@ public class WebContainerImpl implements WebContainer {
     @Inject
     Habitat habitat;
 
-    @Inject
+    @Inject(name=ServerEnvironment.DEFAULT_INSTANCE_NAME)
     HttpService httpService;
 
     private static Logger log =
             Logger.getLogger(WebContainerImpl.class.getName());
 
-    @Inject
+    @Inject(name=ServerEnvironment.DEFAULT_INSTANCE_NAME)
     NetworkConfig networkConfig;
 
     @Inject

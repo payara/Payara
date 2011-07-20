@@ -40,6 +40,7 @@
 
 package com.sun.enterprise.transaction;
 
+import com.sun.enterprise.config.serverbeans.Config;
 import java.util.*;
 import java.util.logging.*;
 import java.beans.PropertyChangeEvent;
@@ -59,6 +60,11 @@ import com.sun.enterprise.config.serverbeans.TransactionService;
 import com.sun.enterprise.config.serverbeans.ServerTags;
 
 import com.sun.enterprise.transaction.api.JavaEETransactionManager;
+import org.glassfish.api.admin.ServerEnvironment;
+import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.PostConstruct;
+import org.jvnet.hk2.config.ConfigSupport;
+import org.jvnet.hk2.config.ObservableBean;
 
 /**
  * ConfigListener class for TransactionService and TransactionService 
@@ -67,17 +73,18 @@ import com.sun.enterprise.transaction.api.JavaEETransactionManager;
  * @author Marina Vatkina
  */
 @Service
-public class TransactionServiceConfigListener implements ConfigListener {
+public class TransactionServiceConfigListener implements ConfigListener, PostConstruct {
 
     private static final Logger _logger = LogDomains.getLogger(
             TransactionServiceConfigListener.class, LogDomains.JTA_LOGGER);
 
     // Injecting @Configured type triggers the corresponding change 
     // events to be sent to this instance
-    @Inject private TransactionService ts;
+    @Inject(name=ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    private TransactionService ts;
 
-    // Listen to monitoring level changes
-    @Inject(optional=true) private ModuleMonitoringLevels ml = null;
+    @Inject
+    private Habitat habitat;
 
     private JavaEETransactionManager tm;
 
@@ -92,9 +99,18 @@ public class TransactionServiceConfigListener implements ConfigListener {
         this.tm = tm;
     }
 
-/****************************************************************************/
+    @Override
+    public void postConstruct() {
+        // Listen to monitoring level changes
+        Config c = habitat.getComponent(Config.class, ServerEnvironment.DEFAULT_INSTANCE_NAME);
+        ModuleMonitoringLevels mml = c.getMonitoringService().getModuleMonitoringLevels();
+        ((ObservableBean)ConfigSupport.getImpl(mml)).addListener(this);
+    }
+
+    /****************************************************************************/
 /** Implementation of org.jvnet.hk2.config.ConfigListener *********************/
 /****************************************************************************/
+    @Override
     public UnprocessedChangeEvents changed(PropertyChangeEvent[] events) {
 
         // Events that we can't process now because they require server restart.
@@ -106,13 +122,12 @@ public class TransactionServiceConfigListener implements ConfigListener {
             Object newValue = event.getNewValue();
             boolean accepted = true;
 
-            _logger.log(Level.FINE, "Got TransactionService change event ==== "
-                    + event.getSource() + " " 
-                    + eventName + " " + oldValue + " " + newValue);
+            _logger.log(Level.FINE, "Got TransactionService change event ==== {0} {1} {2} {3}", 
+                    new Object[]{event.getSource(), eventName, oldValue, newValue});
 
             if (oldValue != null && oldValue.equals(newValue)) {
-                _logger.log(Level.FINE, "Event " + eventName 
-                        + " did not change existing value of " + oldValue);
+                _logger.log(Level.FINE, "Event {0} did not change existing value of {1}", 
+                        new Object[]{eventName, oldValue});
                 continue;
             }
 
@@ -129,7 +144,7 @@ public class TransactionServiceConfigListener implements ConfigListener {
            } else if (eventName.equals(ServerTags.TIMEOUT_IN_SECONDS)) {
                 try {
                     tm.setDefaultTransactionTimeout(Integer.parseInt((String)newValue,10));
-                    _logger.log(Level.FINE," Transaction Timeout interval event processed for: " + newValue);
+                    _logger.log(Level.FINE, " Transaction Timeout interval event processed for: {0}", newValue);
                 } catch (Exception ex) {
                     _logger.log(Level.WARNING,"transaction.reconfig_txn_timeout_failed",ex);
                 } // timeout-in-seconds
@@ -137,11 +152,12 @@ public class TransactionServiceConfigListener implements ConfigListener {
             } else if (eventName.equals(ServerTags.KEYPOINT_INTERVAL)
                     || eventName.equals(ServerTags.RETRY_TIMEOUT_IN_SECONDS)) {
                 tm.handlePropertyUpdate(eventName, newValue);
-                _logger.log(Level.FINE, eventName + " reconfig event processed for new value: " + newValue);
+                _logger.log(Level.FINE, "{0} reconfig event processed for new value: {1}", 
+                        new Object[]{eventName, newValue});
 
             } else if (event.getPropertyName().equals("value")) {
                 eventName = ((Property)event.getSource()).getName();
-                _logger.log(Level.FINE, "Got Property change event for " + eventName);
+                _logger.log(Level.FINE, "Got Property change event for {0}", eventName);
                 if (eventName.equals("purge-cancelled-transactions-after")) {
                     String v = (String)newValue;
                     if (v == null || v.length() == 0) {

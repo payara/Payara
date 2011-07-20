@@ -108,10 +108,10 @@ public class GenericAdminAuthenticator implements AdminAccessController, JMXAuth
     @Inject(name="security", optional=true)
     Sniffer snif;
 
-    @Inject
+    @Inject(name=ServerEnvironment.DEFAULT_INSTANCE_NAME)
     volatile SecurityService ss;
 
-    @Inject
+    @Inject(name=ServerEnvironment.DEFAULT_INSTANCE_NAME)
     volatile AdminService as;
 
     @Inject

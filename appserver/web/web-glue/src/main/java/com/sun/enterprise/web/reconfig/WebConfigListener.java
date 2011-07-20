@@ -59,6 +59,7 @@ import java.beans.PropertyChangeEvent;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.grizzly.config.dom.NetworkConfig;
 import org.glassfish.grizzly.config.dom.NetworkListeners;
 import org.glassfish.grizzly.http.server.util.Mapper;
@@ -71,7 +72,7 @@ import org.glassfish.grizzly.http.server.util.Mapper;
  */
 public class WebConfigListener implements ConfigListener, MapperUpdateListener {
 
-    @Inject
+    @Inject(name=ServerEnvironment.DEFAULT_INSTANCE_NAME)
     public HttpService httpService;
     
     @Inject(optional=true)

@@ -48,6 +48,7 @@ import org.glassfish.internal.embedded.Ports;
 
 import java.io.IOException;
 import java.util.*;
+import org.glassfish.api.admin.ServerEnvironment;
 
 import org.glassfish.grizzly.config.dom.NetworkConfig;
 import org.glassfish.grizzly.config.dom.NetworkListener;
@@ -59,7 +60,7 @@ import org.glassfish.grizzly.config.dom.NetworkListener;
 public class PortsImpl implements Ports {
 
 
-    @Inject
+    @Inject(name=ServerEnvironment.DEFAULT_INSTANCE_NAME)
     NetworkConfig network;
 
     @Inject

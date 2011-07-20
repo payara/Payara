@@ -86,10 +86,10 @@ public final class EJBServerConfigLookup {
 
     private static final String REPLICATED_TYPE = "replicated";
 
-    //@Inject
+    @Inject(name=ServerEnvironment.DEFAULT_INSTANCE_NAME)
     AvailabilityService availabilityService;
 
-    @Inject
+    @Inject(name=ServerEnvironment.DEFAULT_INSTANCE_NAME)
     EjbContainer ejbContainer;
 
     @Inject

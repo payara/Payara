@@ -59,16 +59,17 @@ import org.glassfish.internal.api.ServerContext;
 
 import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.connectors.jms.util.JmsRaUtil;
+import org.glassfish.api.admin.ServerEnvironment;
 
 @Service
 public class JMSConfigListener implements ConfigListener{
     // Injecting @Configured type triggers the corresponding change
     // events to be sent to this instance
 
-    @Inject 
-	private JmsService jmsservice;
+    @Inject(name=ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    private JmsService jmsservice;
    
-   @Inject
+    @Inject
     private Servers servers;
 
     //private Cluster cluster;

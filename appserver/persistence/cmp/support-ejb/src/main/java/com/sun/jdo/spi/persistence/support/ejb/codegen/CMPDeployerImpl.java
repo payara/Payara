@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -74,6 +74,7 @@ import org.glassfish.ejb.spi.CMPDeployer;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.deployment.common.DeploymentException;
 import com.sun.enterprise.config.serverbeans.JavaConfig;
+import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.loader.util.ASClassLoaderUtil;
 
 /**
@@ -85,8 +86,8 @@ import org.glassfish.loader.util.ASClassLoaderUtil;
 @Service
 public class CMPDeployerImpl implements CMPDeployer {
 
-    @Inject(optional=true)
-    private JavaConfig javaConfig=null;
+    @Inject(name=ServerEnvironment.DEFAULT_INSTANCE_NAME, optional=true)
+    private JavaConfig javaConfig;
 
     @Inject
     private Habitat habitat;

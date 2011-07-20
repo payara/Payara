@@ -62,6 +62,7 @@ import org.jvnet.hk2.component.Habitat;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.glassfish.api.admin.ServerEnvironment;
 
 @Service
 public final class ContainerFactoryImpl implements ContainerFactory {
@@ -69,7 +70,7 @@ public final class ContainerFactoryImpl implements ContainerFactory {
     @Inject
     private Habitat habitat;
 
-    @Inject
+    @Inject(name=ServerEnvironment.DEFAULT_INSTANCE_NAME)
     private EjbContainer ejbContainerDesc;
     
     private static final Logger _logger = 

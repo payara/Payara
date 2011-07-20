@@ -109,6 +109,7 @@ import java.util.Vector;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.SynchronousQueue;
+import org.glassfish.api.admin.ServerEnvironment;
 
 /**
  * @author Mahesh Kannan
@@ -164,7 +165,7 @@ public class EjbContainerUtilImpl
     @Inject
     private JavaEETransactionManager txMgr;
 
-    @Inject
+    @Inject(name=ServerEnvironment.DEFAULT_INSTANCE_NAME)
     private EjbContainer ejbContainer;
 
     @Inject
