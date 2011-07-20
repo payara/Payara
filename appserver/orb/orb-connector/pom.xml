@@ -73,6 +73,11 @@
             <artifactId>glassfish-corba-orbgeneric</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.glassfish.admin</groupId>
+            <artifactId>admin-util</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
             <groupId>com.sun.corba</groupId>
             <artifactId>glassfish-corba-omgapi</artifactId>
         </dependency>

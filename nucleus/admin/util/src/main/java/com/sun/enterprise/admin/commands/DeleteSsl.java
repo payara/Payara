@@ -38,16 +38,14 @@
  * holder.
  */
 
-package com.sun.enterprise.v3.admin;
+package com.sun.enterprise.admin.commands;
 
 import org.glassfish.internal.api.Target;
 import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
-import org.glassfish.grizzly.config.dom.NetworkListener;
 import org.glassfish.grizzly.config.dom.NetworkListeners;
-import org.glassfish.grizzly.config.dom.NetworkConfig;
-import org.glassfish.grizzly.config.dom.Protocol;
+
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
@@ -65,7 +63,6 @@ import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
 
 import java.beans.PropertyVetoException;
-import java.util.List;
 
 /**
  * Delete Ssl command
@@ -87,19 +84,19 @@ public class DeleteSsl implements AdminCommand {
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(DeleteSsl.class);
 
     @Param(name="type", acceptableValues="network-listener, http-listener, iiop-listener, iiop-service, jmx-connector")
-    String type;
+    public String type;
     
     @Param(name="listener_id", primary=true, optional=true)
-    String listenerId;
+    public String listenerId;
 
     @Param(name = "target", optional = true, defaultValue = SystemPropertyConstants.DEFAULT_SERVER_INSTANCE_NAME)
-    String target;
+    public String target;
 
     @Inject
     NetworkListeners networkListeners;
     
     @Inject(name = ServerEnvironment.DEFAULT_INSTANCE_NAME)
-    Config config;
+    public Config config;
     
     @Inject
     Domain domain;
@@ -120,7 +117,6 @@ public class DeleteSsl implements AdminCommand {
         if (newConfig!=null) {
             config = newConfig;
         }
-        IiopService iiopService = config.getIiopService();
 
         if (!type.equals("iiop-service")) {
             if (listenerId == null) {
@@ -134,83 +130,9 @@ public class DeleteSsl implements AdminCommand {
         }
         
         try {
-            if ("http-listener".equals(type) || "network-listener".equals(type)) {
-                NetworkConfig netConfig = config.getNetworkConfig();
-                NetworkListener networkListener =
-                    netConfig.getNetworkListener(listenerId);
-
-                if (networkListener == null) {
-                    report.setMessage(localStrings.getLocalString(
-                        "delete.ssl.http.listener.notfound", 
-                        "HTTP Listener named {0} not found", listenerId));
-                    report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-                    return;
-                }
-
-                Protocol protocol = networkListener.findHttpProtocol();
-                if (protocol.getSsl() == null) {
-                    report.setMessage(localStrings.getLocalString(
-                        "delete.ssl.element.doesnotexist", "Ssl element does " +
-                        "not exist for Listener named {0}", listenerId));
-                    report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-                    return;
-                }
-
-                ConfigSupport.apply(new SingleConfigCode<Protocol>() {
-                    public Object run(Protocol param) {
-                        param.setSsl(null);
-                        return null;
-                    }
-                }, networkListener.findHttpProtocol());
-                
-            } else if ("iiop-listener".equals(type)) {
-                IiopListener iiopListener = null;
-                for (IiopListener listener : iiopService.getIiopListener()) {
-                    if (listener.getId().equals(listenerId)) {
-                        iiopListener = listener;
-                    }
-                }
-                
-                if (iiopListener == null) {
-                    report.setMessage(localStrings.getLocalString(
-                        "delete.ssl.iiop.listener.notfound", 
-                        "Iiop Listener named {0} not found", listenerId));
-                    report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-                    return;
-                }
-
-                if (iiopListener.getSsl() == null) {
-                    report.setMessage(localStrings.getLocalString(
-                        "delete.ssl.element.doesnotexist", "Ssl element does " +
-                        "not exist for Listener named {0}", listenerId));
-                    report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-                    return;
-                }
-
-                ConfigSupport.apply(new SingleConfigCode<IiopListener>() {
-                    public Object run(IiopListener param) 
-                    throws PropertyVetoException {
-                        param.setSsl(null);
-                        return null;
-                    }
-                }, iiopListener);
-            } else if ("iiop-service".equals(type)) {
-
-                if (config.getIiopService().getSslClientConfig() == null) {
-                    report.setMessage(localStrings.getLocalString(
-                        "delete.ssl.element.doesnotexistforiiop",
-                        "Ssl element does not exist for IIOP service"));
-                    report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-                    return;
-                }
-                
-                ConfigSupport.apply(new SingleConfigCode<IiopService>() {
-                    public Object run(IiopService param)
-                    throws PropertyVetoException {
-                        param.setSslClientConfig(null);
-                        return null;
-                    }
-                }, config.getIiopService());
+            SslConfigHandler sslConfigHandler = habitat.getComponent(SslConfigHandler.class, type);
+            if (sslConfigHandler!=null) {
+                sslConfigHandler.delete(this, report);
             } else if ("jmx-connector".equals(type)) {
                 JmxConnector jmxConnector = null;
                 for (JmxConnector listener : config.getAdminService().getJmxConnector()) {
@@ -244,11 +166,15 @@ public class DeleteSsl implements AdminCommand {
                 }, jmxConnector);
             }
         } catch(TransactionFailure e) {
-            report.setMessage(localStrings.getLocalString("delete.ssl.fail", "Deletion of Ssl in {0} failed", listenerId));
-            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            report.setFailureCause(e);
+            reportError(report, e);
         }
 
         report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
+    }
+
+    public void reportError(ActionReport report, Exception e) {
+        report.setMessage(localStrings.getLocalString("delete.ssl.fail", "Deletion of Ssl in {0} failed", listenerId));
+        report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+        report.setFailureCause(e);
     }
 }

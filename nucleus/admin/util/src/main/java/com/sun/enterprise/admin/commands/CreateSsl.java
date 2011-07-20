@@ -38,21 +38,17 @@
  * holder.
  */
 
-package com.sun.enterprise.v3.admin;
+package com.sun.enterprise.admin.commands;
 
 import java.beans.PropertyVetoException;
 
 import com.sun.enterprise.config.serverbeans.AdminService;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
-import com.sun.enterprise.config.serverbeans.IiopListener;
-import com.sun.enterprise.config.serverbeans.IiopService;
 import com.sun.enterprise.config.serverbeans.JmxConnector;
-import com.sun.enterprise.config.serverbeans.SslClientConfig;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import org.glassfish.grizzly.config.dom.NetworkConfig;
-import org.glassfish.grizzly.config.dom.NetworkListener;
 import org.glassfish.grizzly.config.dom.Protocol;
 import org.glassfish.grizzly.config.dom.Protocols;
 import org.glassfish.grizzly.config.dom.Ssl;
@@ -117,9 +113,9 @@ public class CreateSsl implements AdminCommand {
     @Param(name = "target", optional = true, defaultValue = SystemPropertyConstants.DAS_SERVER_NAME)
     String target;
     @Param(name = "listener_id", primary = true, optional = true)
-    String listenerId;
+    public String listenerId;
     @Inject(name = ServerEnvironment.DEFAULT_INSTANCE_NAME)
-    Config config;
+    public Config config;
     @Inject
     Domain domain;
     @Inject
@@ -147,138 +143,26 @@ public class CreateSsl implements AdminCommand {
                 return;
             }
         }
-        if ("http-listener".equals(type) || "network-listener".equals(type)) {
-            addSslToNetworkListener(config, report);
-        } else if ("iiop-listener".equals(type)) {
-            addSslToIIOPListener(config, report);
-        } else if ("iiop-service".equals(type)) {
-            addSslToIIOPService(config, report);
+        SslConfigHandler configHandler = habitat.getComponent(SslConfigHandler.class, type);
+        if (configHandler!=null) {
+            configHandler.create(this, report);
         } else if ("jmx-connector".equals(type)) {
             addSslToJMXConnector(config, report);
         }
     }
 
-    private void addSslToIIOPListener(Config config, ActionReport report) {
-        IiopService iiopService = config.getIiopService();
-        // ensure we have the specified listener
-        IiopListener iiopListener = null;
-        for (IiopListener listener : iiopService.getIiopListener()) {
-            if (listener.getId().equals(listenerId)) {
-                iiopListener = listener;
-            }
-        }
-        if (iiopListener == null) {
-            report.setMessage(
-                localStrings.getLocalString("create.ssl.iiop.notfound",
-                    "IIOP Listener named {0} to which this ssl element is " +
-                        "being added does not exist.", listenerId));
-            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            return;
-        }
-        if (iiopListener.getSsl() != null) {
-            report.setMessage(
-                localStrings.getLocalString("create.ssl.iiop.alreadyExists",
-                    "IIOP Listener named {0} to which this ssl element is " +
-                        "being added already has an ssl element.", listenerId));
-            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            return;
-        }
-        try {
-            ConfigSupport.apply(new SingleConfigCode<IiopListener>() {
-                public Object run(IiopListener param)
-                    throws PropertyVetoException, TransactionFailure {
-                    Ssl newSsl = param.createChild(Ssl.class);
-                    populateSslElement(newSsl);
-                    param.setSsl(newSsl);
-                    return newSsl;
-                }
-            }, iiopListener);
-
-        } catch (TransactionFailure e) {
-            reportError(report, e);
-        }
-        reportSuccess(report);
-    }
-
-    private void addSslToIIOPService(Config config, ActionReport report) {
-        IiopService iiopSvc = config.getIiopService();
-        if (iiopSvc.getSslClientConfig() != null) {
-            report.setMessage(
-                localStrings.getLocalString(
-                    "create.ssl.iiopsvc.alreadyExists", "IIOP Service " +
-                        "already has been configured with SSL configuration."));
-            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            return;
-        }
-        try {
-            ConfigSupport.apply(new SingleConfigCode<IiopService>() {
-                public Object run(IiopService param)
-                    throws PropertyVetoException, TransactionFailure {
-                    SslClientConfig newSslClientCfg =
-                        param.createChild(SslClientConfig.class);
-                    Ssl newSsl = newSslClientCfg.createChild(Ssl.class);
-                    populateSslElement(newSsl);
-                    newSslClientCfg.setSsl(newSsl);
-                    param.setSslClientConfig(newSslClientCfg);
-                    return newSsl;
-                }
-            }, iiopSvc);
-
-        } catch (TransactionFailure e) {
-            reportError(report, e);
-        }
-    }
-
-    private void addSslToNetworkListener(Config config, ActionReport report) {
-        NetworkConfig netConfig = config.getNetworkConfig();
-        // ensure we have the specified listener
-        NetworkListener listener = netConfig.getNetworkListener(listenerId);
-        Protocol httpProtocol;
-        try {
-            if (listener == null) {
-                report.setMessage(
-                    localStrings.getLocalString("create.ssl.http.notfound",
-                        "Network Listener named {0} does not exist.  Creating or using the named protocol element instead.",
-                        listenerId));
-                httpProtocol = findOrCreateProtocol(listenerId);
-            } else {
-                httpProtocol = listener.findHttpProtocol();
-                Ssl ssl = httpProtocol.getSsl();
-                if (ssl != null) {
-                    report.setMessage(localStrings.getLocalString("create.ssl.http.alreadyExists",
-                        "Network Listener named {0} to which this ssl element is being added already has an ssl element.",
-                        listenerId));
-                    report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-                    return;
-                }
-            }
-            ConfigSupport.apply(new SingleConfigCode<Protocol>() {
-                public Object run(Protocol param) throws TransactionFailure {
-                    Ssl newSsl = param.createChild(Ssl.class);
-                    populateSslElement(newSsl);
-                    param.setSsl(newSsl);
-                    return newSsl;
-                }
-            }, httpProtocol);
-
-        } catch (TransactionFailure e) {
-            reportError(report, e);
-        }
-        reportSuccess(report);
-    }
-
-    private void reportError(ActionReport report, TransactionFailure e) {
+    public void reportError(ActionReport report, TransactionFailure e) {
         report.setMessage(localStrings.getLocalString("create.ssl.fail",
             "Creation of Ssl in {0} failed", listenerId));
         report.setActionExitCode(ActionReport.ExitCode.FAILURE);
         report.setFailureCause(e);
     }
 
-    private void reportSuccess(ActionReport report) {
+    public void reportSuccess(ActionReport report) {
         report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
     }
 
-    private void populateSslElement(Ssl newSsl) {
+    public void populateSslElement(Ssl newSsl) {
         newSsl.setCertNickname(certName);
         newSsl.setClientAuthEnabled(clientauthenabled.toString());
         newSsl.setSsl2Ciphers(ssl2ciphers);
@@ -290,7 +174,7 @@ public class CreateSsl implements AdminCommand {
         newSsl.setTlsRollbackEnabled(tlsrollbackenabled.toString());
     }
 
-    private Protocol findOrCreateProtocol(final String name) throws TransactionFailure {
+    public Protocol findOrCreateProtocol(final String name) throws TransactionFailure {
         NetworkConfig networkConfig = config.getNetworkConfig();
         Protocol protocol = networkConfig.findProtocol(name);
         if (protocol == null) {
