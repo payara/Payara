@@ -78,6 +78,7 @@ import com.sun.ejb.monitoring.stats.MessageDrivenBeanStatsProvider;
 import java.util.logging.*;
 
 import com.sun.logging.*;
+import org.glassfish.api.admin.ServerEnvironment;
 
 import org.glassfish.api.invocation.ComponentInvocation;
 
@@ -253,7 +254,8 @@ public final class MessageBeanContainer extends BaseContainer implements
 		}
 
 		MdbContainer mdbc = ejbContainerUtilImpl.getDefaultHabitat()
-				.getComponent(MdbContainer.class);
+				.getComponent(MdbContainer.class,
+                                ServerEnvironment.DEFAULT_INSTANCE_NAME);
 
 		int maxPoolSize = beanPoolDesc_.getMaxPoolSize();
 		if (maxPoolSize < 0) {

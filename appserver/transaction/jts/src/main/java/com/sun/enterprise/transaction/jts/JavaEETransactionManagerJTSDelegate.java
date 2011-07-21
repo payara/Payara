@@ -87,6 +87,7 @@ import com.sun.enterprise.transaction.JavaEETransactionImpl;
 
 import com.sun.enterprise.util.i18n.StringManager;
 import com.sun.logging.LogDomains;
+import org.glassfish.api.admin.ServerEnvironment;
 
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Inject;
@@ -506,7 +507,8 @@ public class JavaEETransactionManagerJTSDelegate
 
     public void initTransactionProperties() {
         if (habitat != null) {
-            txnService = habitat.getComponent(TransactionService.class);
+            txnService = habitat.getComponent(TransactionService.class,
+                    ServerEnvironment.DEFAULT_INSTANCE_NAME);
 
             if (txnService != null) {
                 String value = txnService.getPropertyValue("use-last-agent-optimization");

@@ -1404,7 +1404,8 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
      */
     public long getShutdownTimeout() {
         return ConnectorsUtil.getShutdownTimeout(
-                habitat.getComponent(com.sun.enterprise.config.serverbeans.ConnectorService.class));
+                habitat.getComponent(com.sun.enterprise.config.serverbeans.ConnectorService.class,
+                    ServerEnvironment.DEFAULT_INSTANCE_NAME));
     }
 
     /**

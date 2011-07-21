@@ -61,6 +61,7 @@ import org.glassfish.deployment.common.SecurityRoleMapper;
 import com.sun.enterprise.config.serverbeans.SecurityService;
 import com.sun.enterprise.security.common.AppservAccessController;
 import com.sun.logging.*;
+import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.security.common.Group;
 
@@ -120,7 +121,8 @@ public class RoleMapper implements Serializable, SecurityRoleMapper {
     
     RoleMapper(String appName) {
         this.appName = appName;
-        secService = Globals.getDefaultHabitat().getComponent(SecurityService.class);
+        secService = Globals.getDefaultHabitat().getComponent(SecurityService.class,
+                ServerEnvironment.DEFAULT_INSTANCE_NAME);
         defaultP2RMappingClassName = getDefaultP2RMappingClassName();
         postConstruct();
     }

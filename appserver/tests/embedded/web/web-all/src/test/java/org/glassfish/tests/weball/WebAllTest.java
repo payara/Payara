@@ -54,6 +54,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLConnection;
+import org.glassfish.api.admin.ServerEnvironment;
 
 /**
  * @author Vivek Pandey
@@ -77,7 +78,8 @@ public class WebAllTest {
         Server.Builder builder = new Server.Builder("WebAllTest");
         builder.embeddedFileSystem(fs);                
         server = builder.build();
-        server.getHabitat().getComponent(NetworkConfig.class);
+        server.getHabitat().getComponent(NetworkConfig.class,
+                ServerEnvironment.DEFAULT_INSTANCE_NAME);
         http = server.createPort(8080);
         Assert.assertNotNull("Failed to create port 8080!", http);
         ContainerBuilder b = server.createConfig(ContainerBuilder.Type.web);

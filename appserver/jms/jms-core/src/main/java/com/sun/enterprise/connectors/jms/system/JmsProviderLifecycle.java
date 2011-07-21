@@ -62,6 +62,7 @@ import com.sun.hk2.component.Holder;
 import org.glassfish.internal.api.PostStartup;
 
 import java.util.List;
+import org.glassfish.api.admin.ServerEnvironment;
 //import com.sun.enterprise.config.serverbeans.MonitoringService;
 
 //import java.beans.PropertyVetoException;
@@ -154,12 +155,7 @@ public class JmsProviderLifecycle implements  PostStartup, PostConstruct{
     }
 
         private JmsService getJmsService(){
-        //    return habitat.getComponent(JmsService.class);
-            Domain domain = Globals.get(Domain.class);
-            String serverName = System.getProperty(SystemPropertyConstants.SERVER_NAME);
-            Server server = domain.getServerNamed(serverName);
-            Config config = server.getConfig();
-            return config.getJmsService();
-
+            return habitat.getComponent(JmsService.class,
+                    ServerEnvironment.DEFAULT_INSTANCE_NAME);
         }
 }

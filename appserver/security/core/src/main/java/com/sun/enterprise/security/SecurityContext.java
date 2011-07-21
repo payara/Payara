@@ -61,6 +61,7 @@ import com.sun.enterprise.security.auth.login.DistinguishedPrincipalCredential;
 //V3:Comment import com.sun.enterprise.server.ApplicationServer;
 import com.sun.logging.*;
 import java.security.AccessController;
+import org.glassfish.api.admin.ServerEnvironment;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
@@ -247,12 +248,8 @@ public class SecurityContext extends AbstractSecurityContext  {
 		    guestUser = (String)
 			AppservAccessController.doPrivileged(new PrivilegedExceptionAction() {
 				public java.lang.Object run() throws Exception {
-                                    /*V3:Commented
-                                    assert(_serverContext != null);
-                                    SecurityService securityService = _serverContext.getDefaultHabitat().getComponent(SecurityService.class);
-				    assert(securityService != null);
-				    return securityService.getDefaultPrincipal();*/
-                                    SecurityService securityService = SecurityServicesUtil.getInstance().getHabitat().getComponent(SecurityService.class);
+                                    SecurityService securityService = SecurityServicesUtil.getInstance().getHabitat().getComponent(SecurityService.class,
+                                            ServerEnvironment.DEFAULT_INSTANCE_NAME);
                                     if(securityService==null)   return null;
                                     return securityService.getDefaultPrincipal();
 				}

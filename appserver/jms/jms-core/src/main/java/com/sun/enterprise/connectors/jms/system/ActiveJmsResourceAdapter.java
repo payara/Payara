@@ -74,6 +74,7 @@ import java.security.PrivilegedExceptionAction;
 import java.nio.channels.SelectableChannel;
 import java.nio.channels.SocketChannel;
 import javax.resource.spi.*;
+import org.glassfish.api.admin.ServerEnvironment;
 
 import org.glassfish.internal.api.ServerContext;
 import org.glassfish.internal.api.Globals;
@@ -2125,7 +2126,7 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
     }
 
     private AdminService getAdminService() {
-        return habitat.getComponent(AdminService.class);
+        return habitat.getComponent(AdminService.class, ServerEnvironment.DEFAULT_INSTANCE_NAME);
     }
 
     private Servers getServers(){
@@ -2133,12 +2134,8 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
     }
 
     private JmsService getJmsService(){
-        //return habitat.getComponent(JmsService.class);
-        Domain domain = Globals.get(Domain.class);
-        String serverName = System.getProperty(SystemPropertyConstants.SERVER_NAME);
-        Server server = domain.getServerNamed(serverName);
-        Config config = server.getConfig();
-        return config.getJmsService();
+        return habitat.getComponent(JmsService.class,
+                ServerEnvironment.DEFAULT_INSTANCE_NAME);
     }
 
     private ServerContext getServerContext(){

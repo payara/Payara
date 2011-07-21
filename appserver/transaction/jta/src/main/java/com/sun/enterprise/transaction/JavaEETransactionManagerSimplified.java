@@ -75,6 +75,7 @@ import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.api.invocation.InvocationException;
 import org.glassfish.api.invocation.ResourceHandler;
+import org.glassfish.api.admin.ServerEnvironment;
 
 import org.glassfish.external.probe.provider.PluginPoint;
 import org.glassfish.external.probe.provider.StatsProviderManager;
@@ -199,7 +200,8 @@ public class JavaEETransactionManagerSimplified
         // END IASRI 4705808 TTT001
 
         if (habitat != null) {
-            TransactionService txnService = habitat.getComponent(TransactionService.class);
+            TransactionService txnService = habitat.getComponent(TransactionService.class,
+                   ServerEnvironment.DEFAULT_INSTANCE_NAME);
             // running on the server side ?
             if (txnService != null) {
                 transactionTimeout = Integer.parseInt(txnService.getTimeoutInSeconds());

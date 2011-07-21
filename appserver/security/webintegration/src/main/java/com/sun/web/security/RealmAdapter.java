@@ -126,6 +126,7 @@ import com.sun.enterprise.util.net.NetUtils;
 import java.net.InetAddress;
 import java.net.URLEncoder;
 import javax.security.jacc.PolicyContext;
+import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.grizzly.config.dom.NetworkConfig;
 import org.glassfish.grizzly.config.dom.NetworkListener;
 import org.glassfish.grizzly.config.dom.NetworkListeners;
@@ -1827,6 +1828,6 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
 
     public void postConstruct() {
         webSecurityManagerFactory = habitat.getComponent(WebSecurityManagerFactory.class);
-        nwListeners = habitat.getComponent(NetworkConfig.class).getNetworkListeners();
+        nwListeners = habitat.getComponent(NetworkConfig.class, ServerEnvironment.DEFAULT_INSTANCE_NAME).getNetworkListeners();
     }
 }

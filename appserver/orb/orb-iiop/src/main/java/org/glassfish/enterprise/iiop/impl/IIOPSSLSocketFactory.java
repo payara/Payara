@@ -76,6 +76,7 @@ import org.glassfish.internal.api.Globals;
 import org.glassfish.security.common.CipherInfo;
 import org.glassfish.enterprise.iiop.api.IIOPSSLUtil;
 import com.sun.enterprise.security.integration.AppClientSSL;
+import org.glassfish.api.admin.ServerEnvironment;
 
 
 /**
@@ -133,7 +134,8 @@ public class IIOPSSLSocketFactory  implements ORBSocketFactory
             //if (Switch.getSwitch().getContainerType() == Switch.EJBWEB_CONTAINER) {
             if((processType != null) && (processType.isServer())) {
                 //this is the EJB container
-                IiopService iiopBean = Globals.getDefaultHabitat().getComponent(IiopService.class);
+                IiopService iiopBean = Globals.getDefaultHabitat().getComponent(IiopService.class,
+                        ServerEnvironment.DEFAULT_INSTANCE_NAME);
                 List<IiopListener> iiopListeners = iiopBean.getIiopListener();
                 for (IiopListener listener : iiopListeners) {
                     Ssl ssl = listener.getSsl(); 

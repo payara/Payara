@@ -72,6 +72,7 @@ import java.net.URLConnection;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.IOException;
+import org.glassfish.api.admin.ServerEnvironment;
 
 public class EmbeddedTest {
 
@@ -83,7 +84,8 @@ public class EmbeddedTest {
         Server.Builder builder = new Server.Builder("build");
 
         server = builder.build();
-        NetworkConfig nc = server.getHabitat().getComponent(NetworkConfig.class);
+        NetworkConfig nc = server.getHabitat().getComponent(NetworkConfig.class,
+                ServerEnvironment.DEFAULT_INSTANCE_NAME);
         List<NetworkListener> listeners = nc.getNetworkListeners().getNetworkListener();
         System.out.println("Network listener size before creation " + listeners.size());
         for (NetworkListener nl : listeners) {

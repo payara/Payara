@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -68,6 +68,7 @@ import com.sun.enterprise.server.ApplicationServer;
 import org.glassfish.internal.api.ServerContext;
 import com.sun.logging.LogDomains;
 import com.sun.enterprise.util.LocalStringManagerImpl;
+import org.glassfish.api.admin.ServerEnvironment;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
@@ -122,17 +123,9 @@ public final class AuditManager {
      */
     public void loadAuditModules() {
         try {
-            SecurityService securityBean = serverContext.getDefaultHabitat().getComponent(SecurityService.class);
-            /*V3:Commented
-            ConfigContext configContext =
-                ApplicationServer.getServerContext().getConfigContext();
-            assert(configContext != null);
-
-            Server configBean = ServerBeansFactory.getServerBean(configContext);
-            assert(configBean != null);
-
-            SecurityService securityBean =
-                ServerBeansFactory.getSecurityServiceBean(configContext);*/
+            SecurityService securityBean = serverContext.getDefaultHabitat().getComponent(SecurityService.class,
+                    ServerEnvironment.DEFAULT_INSTANCE_NAME);
+            
             assert(securityBean != null);
             // @todo will be removed to incorporate the new structure.
             //v3:Commented boolean auditFlag = securityBean.isAuditEnabled();

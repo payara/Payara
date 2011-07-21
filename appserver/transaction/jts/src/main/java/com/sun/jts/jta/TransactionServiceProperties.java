@@ -61,6 +61,7 @@ import com.sun.enterprise.config.serverbeans.SystemProperty;
 import com.sun.enterprise.config.serverbeans.SystemPropertyBag;
 import com.sun.enterprise.util.i18n.StringManager;
 import com.sun.logging.LogDomains;
+import org.glassfish.api.admin.ServerEnvironment;
 
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.types.Property;
@@ -98,7 +99,8 @@ public class TransactionServiceProperties {
             jtsProperties.put(HABITAT, habitat);
             ProcessEnvironment processEnv = habitat.getComponent(ProcessEnvironment.class);
             if( processEnv.getProcessType().isServer()) {
-                TransactionService txnService = habitat.getComponent(TransactionService.class);
+                TransactionService txnService = habitat.getComponent(TransactionService.class,
+                        ServerEnvironment.DEFAULT_INSTANCE_NAME);
 
                 if (txnService != null) {
                     jtsProperties.put(Configuration.HEURISTIC_DIRECTION, txnService.getHeuristicDecision());

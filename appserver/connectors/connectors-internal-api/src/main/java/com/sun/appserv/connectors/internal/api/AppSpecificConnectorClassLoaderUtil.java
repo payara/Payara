@@ -62,6 +62,7 @@ import com.sun.logging.LogDomains;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.glassfish.api.admin.ServerEnvironment;
 
 
 @Service
@@ -417,7 +418,8 @@ public class AppSpecificConnectorClassLoaderUtil {
 
     public boolean useGlobalConnectorClassLoader() {
         boolean flag = false;
-        ConnectorService connectorService = habitat.getComponent(ConnectorService.class);
+        ConnectorService connectorService = habitat.getComponent(ConnectorService.class, 
+                ServerEnvironment.DEFAULT_INSTANCE_NAME);
         //it is possible that connector-service is not yet defined in domain.xml
         if(connectorService != null){
             String classLoadingPolicy = connectorService.getClassLoadingPolicy();
@@ -432,7 +434,8 @@ public class AppSpecificConnectorClassLoaderUtil {
     public Collection<String> getRequiredResourceAdapters(String appName) {
         List<String> requiredRars = new ArrayList<String>();
         if (appName != null) {
-            ConnectorService connectorService = habitat.getComponent(ConnectorService.class);
+            ConnectorService connectorService = habitat.getComponent(ConnectorService.class,
+                    ServerEnvironment.DEFAULT_INSTANCE_NAME);
             //it is possible that connector-service is not yet defined in domain.xml
 
             if (connectorService != null) {

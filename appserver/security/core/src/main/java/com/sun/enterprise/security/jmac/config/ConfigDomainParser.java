@@ -62,6 +62,7 @@ import com.sun.enterprise.security.common.Util;
 import com.sun.enterprise.security.jmac.AuthMessagePolicy;
 
 import com.sun.logging.LogDomains;
+import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.internal.api.Globals;
 
 import sun.security.util.PropertyExpander;
@@ -87,7 +88,8 @@ public class ConfigDomainParser implements ConfigParser {
 
     public void initialize(Object service) throws IOException {
 	if (service == null && Globals.getDefaultHabitat() != null) {
-	    service = Globals.getDefaultHabitat().getComponent(SecurityService.class);
+	    service = Globals.getDefaultHabitat().getComponent(SecurityService.class,
+                    ServerEnvironment.DEFAULT_INSTANCE_NAME);
 	}
 
 	if (service instanceof SecurityService) {

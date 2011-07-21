@@ -60,6 +60,7 @@ import com.sun.enterprise.deployment.EjbDescriptor;
 import com.sun.enterprise.deployment.EjbBundleDescriptor;
 import com.sun.enterprise.deployment.util.TypeUtil;
 import com.sun.enterprise.util.OS;
+import org.glassfish.api.admin.ServerEnvironment;
 
 /**
  * This class is used to generate the RMI-IIOP version of a 
@@ -132,7 +133,8 @@ public class StaticRmiStubGenerator {
             }
         }
 
-        JavaConfig jc = h.getComponent(JavaConfig.class);
+        JavaConfig jc = h.getComponent(JavaConfig.class,
+                ServerEnvironment.DEFAULT_INSTANCE_NAME);
         String rmicOptions = jc.getRmicOptions();
 
         rmicOptionsList = new ArrayList<String>();
