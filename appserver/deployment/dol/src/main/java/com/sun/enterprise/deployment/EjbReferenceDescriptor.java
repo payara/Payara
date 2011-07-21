@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -178,14 +178,14 @@ public class EjbReferenceDescriptor extends EnvironmentProperty implements com.s
                     !ejbDescriptor.isLocalBean()) {
                      throw new RuntimeException(localStrings.getLocalString(
                      "entreprise.deployment.invalidLocalInterfaceReference",
-                     "Trying to set an ejb-local-ref on an EJB while the EJB does not define local interfaces"));
+                     "Trying to set an ejb-local-ref on an EJB while the EJB [{0}] does not define local interfaces", new Object[] {ejbDescriptor.getName()}));
                 }
             } else {
                 if (!ejbDescriptor.isRemoteInterfacesSupported() &&
                     !ejbDescriptor.isRemoteBusinessInterfacesSupported()) {
                     throw new RuntimeException(localStrings.getLocalString(
                     "entreprise.deployment.invalidRemoteInterfaceReference",
-                    "Trying to set an ejb-ref on an EJB, while the EJB does not define remote interfaces"));
+                    "Trying to set an ejb-ref on an EJB, while the EJB [{0}] does not define remote interfaces", new Object[] {ejbDescriptor.getName()}));
                 }
             }
 	}
