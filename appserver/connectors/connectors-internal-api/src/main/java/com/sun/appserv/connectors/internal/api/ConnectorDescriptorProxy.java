@@ -38,7 +38,7 @@
  * holder.
  */
 
-package org.glassfish.javaee.services;
+package com.sun.appserv.connectors.internal.api;
 
 import org.glassfish.api.naming.NamingObjectProxy;
 import org.jvnet.hk2.annotations.Service;

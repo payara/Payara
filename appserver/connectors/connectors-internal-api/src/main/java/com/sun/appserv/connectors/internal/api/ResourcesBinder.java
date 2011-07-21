@@ -38,9 +38,8 @@
  * holder.
  */
 
-package org.glassfish.javaee.services;
+package com.sun.appserv.connectors.internal.api;
 
-import com.sun.appserv.connectors.internal.api.ResourceNamingService;
 import org.glassfish.resource.common.ResourceInfo;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Inject;
