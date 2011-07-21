@@ -600,10 +600,12 @@ public class WebappLoader
             }
         }
 
+        /*
         if( container == null ) {
             // JMX created the loader
             // TODO
         }
+        */
     }
 
     public void destroy() {

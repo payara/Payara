@@ -946,7 +946,6 @@ public class StandardClassLoader
             !repository.endsWith("/")) {
             JarFile jarFile = null;
             try {
-                Manifest manifest = null;
                 if (repository.startsWith("jar:")) {
                     URL url = new URL(null, repository, streamHandler);
                     JarURLConnection conn =
@@ -966,7 +965,7 @@ public class StandardClassLoader
                     JarInputStream jis =
                         new JarInputStream(conn.getInputStream());
                     try {
-                        manifest = jis.getManifest();
+                        jis.getManifest();
                     } finally {
                         try {
                             jis.close();

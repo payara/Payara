@@ -662,9 +662,8 @@ public class DigestAuthenticator
                 if (nc.length() != 8) {
                     return false;
                 }
-                long count;
                 try {
-                    count = Long.parseLong(nc, 16);
+                    Long.parseLong(nc, 16);
                 } catch (NumberFormatException nfe) {
                     return false;
                 }

@@ -760,9 +760,8 @@ public class WebdavServlet
         }
 
         boolean exists = true;
-        Object object = null;
         try {
-            object = resources.lookup(path);
+            resources.lookup(path);
         } catch (NamingException e) {
             exists = false;
         }
@@ -783,7 +782,7 @@ public class WebdavServlet
         if (req.getInputStream().available() > 0) {
             DocumentBuilder documentBuilder = getDocumentBuilder();
             try {
-                Document document = documentBuilder.parse
+                documentBuilder.parse
                     (new InputSource(req.getInputStream()));
                 // TODO : Process this request body
                 resp.sendError(WebdavStatus.SC_NOT_IMPLEMENTED);
