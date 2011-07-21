@@ -42,7 +42,7 @@ package com.sun.enterprise.connectors.module;
 
 import com.sun.appserv.connectors.internal.api.ConnectorRuntime;
 import com.sun.enterprise.config.serverbeans.*;
-import com.sun.enterprise.connectors.deployment.util.ApplicationScopedResourcesManager;
+import org.glassfish.resources.ApplicationScopedResourcesManager;
 import com.sun.logging.LogDomains;
 import java.util.logging.Level;
 import org.glassfish.api.deployment.*;

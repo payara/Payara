@@ -38,8 +38,10 @@
  * holder.
  */
 
-package org.glassfish.javaee.services;
+package org.glassfish.resources;
 
+import com.sun.appserv.connectors.internal.api.ConnectorDescriptorProxy;
+import com.sun.appserv.connectors.internal.api.ResourcesBinder;
 import org.glassfish.resource.common.ResourceInfo;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.jvnet.hk2.annotations.Scoped;

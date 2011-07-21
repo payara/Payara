@@ -42,6 +42,7 @@ package com.sun.enterprise.connectors;
 
 import com.sun.appserv.connectors.internal.api.ResourceNamingService;
 import com.sun.enterprise.config.serverbeans.Application;
+import org.glassfish.resources.ResourceManager;
 import com.sun.enterprise.connectors.module.ResourcesDeployer;
 import com.sun.enterprise.connectors.util.*;
 
@@ -89,7 +90,6 @@ import com.sun.enterprise.security.jmac.callback.ContainerCallbackHandler;
 import com.sun.enterprise.security.SecurityServicesUtil;
 import com.sun.enterprise.transaction.api.JavaEETransactionManager;
 import org.glassfish.admin.monitor.MonitoringBootstrap;
-import org.glassfish.javaee.services.ResourceManager;
 import org.glassfish.resource.common.PoolInfo;
 import org.glassfish.resource.common.ResourceInfo;
 import org.jvnet.hk2.config.types.Property;

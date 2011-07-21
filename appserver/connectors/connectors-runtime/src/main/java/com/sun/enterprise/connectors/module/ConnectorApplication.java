@@ -42,7 +42,7 @@ package com.sun.enterprise.connectors.module;
 
 import com.sun.appserv.connectors.internal.api.ConnectorConstants;
 import com.sun.enterprise.config.serverbeans.*;
-import com.sun.enterprise.connectors.deployment.util.ApplicationScopedResourcesManager;
+import org.glassfish.resources.ApplicationScopedResourcesManager;
 import com.sun.enterprise.connectors.util.ResourcesUtil;
 import com.sun.enterprise.deployment.ConnectorDescriptor;
 import com.sun.enterprise.util.i18n.StringManager;
@@ -53,7 +53,7 @@ import org.glassfish.api.deployment.*;
 import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.Events;
 import org.glassfish.api.ActionReport;
-import org.glassfish.javaee.services.ResourceManager;
+import org.glassfish.resources.ResourceManager;
 import org.glassfish.internal.deployment.Deployment;
 
 import java.util.logging.Level;

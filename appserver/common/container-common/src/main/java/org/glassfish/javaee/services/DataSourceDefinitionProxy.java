@@ -60,7 +60,7 @@ import java.util.Collection;
 
 /**
  * This resource proxy will not bind the actual object upon first lookup unlike
- * org.glassfish.javaee.services.ResourceProxy. <br><br>
+ * com.sun.appserv.connectors.internal.api.ResourceProxy. <br><br>
  * It holds the information required to get the actual object upon requests.<br>
  *
  * This is used for @DataSourceDefinition<br>
