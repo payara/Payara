@@ -53,6 +53,10 @@
             </fileset>
         </copy>
 
+        <copy file="bin/nadmin" todir="lib"/>
+        <chmod file="lib/nadmin" perm="755"/>
+        <copy file="bin/nadmin.bat" todir="lib"/>
+
         <zip file="target/nucleus-base.zip">
             <zipfileset dir="target/resources" filemode="755"
                     includes="bin/*"

@@ -68,6 +68,7 @@
         <mkdir dir="target/stage/${install.dir.name}/domains" />
 
 	<chmod file="target/stage/${install.dir.name}/bin/*" perm="ugo+rx"/>
+	<chmod file="target/stage/${install.dir.name}/lib/nadmin" perm="ugo+rx"/>
 
        <if test="${compression}">
 	       <antcall target="pack.compression" />
