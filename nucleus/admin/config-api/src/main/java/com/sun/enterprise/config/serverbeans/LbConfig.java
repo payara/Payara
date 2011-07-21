@@ -46,12 +46,14 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Properties;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import java.beans.PropertyVetoException;
 
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.logging.LogDomains;
+import java.util.Date;
 
 import org.glassfish.config.support.*;
 import org.glassfish.quality.ToDo;
@@ -84,6 +86,9 @@ import javax.validation.constraints.Min;
 @Configured
 @RefConstraint(message="{ref.invalid}", payload= RefValidator.class)
 public interface LbConfig extends ConfigBeanProxy, Injectable, PropertyBag {
+
+    String LAST_APPLIED_PROPERTY = "last-applied";
+    String LAST_EXPORTED_PROPERTY = "last-exported";
 
     /**
      * Gets the value of the name property.
@@ -258,6 +263,18 @@ public interface LbConfig extends ConfigBeanProxy, Injectable, PropertyBag {
     @DuckTyped
     <T> T getRefByRef(Class<T> type, String ref);   
 
+    @DuckTyped
+    Date getLastExported();
+
+    @DuckTyped
+    Date getLastApplied();
+
+    @DuckTyped
+    boolean setLastExported();
+
+    @DuckTyped
+    boolean setLastApplied();
+
     public class Duck {
         public static <T> List<T> getRefs(LbConfig lc, Class<T> type) {
             List<T> refs = new ArrayList<T>();
@@ -282,6 +299,67 @@ public interface LbConfig extends ConfigBeanProxy, Injectable, PropertyBag {
 
             return null;
         }
+
+        public static Date getLastExported(LbConfig lc) {
+            return getInternalPropertyValue(lc, LAST_EXPORTED_PROPERTY);
+        }
+
+        public static Date getLastApplied(LbConfig lc) {
+            return getInternalPropertyValue(lc, LAST_APPLIED_PROPERTY);
+        }
+
+        private static Date getInternalPropertyValue(LbConfig lc,
+                String propertyName) {
+            String propertyValue = lc.getPropertyValue(propertyName);
+            if(propertyValue == null){
+                return null;
+            }
+            return new Date(Long.valueOf(propertyValue));
+        }
+
+        public static boolean setLastExported(LbConfig lc) {
+            return setInternalProperty(lc, LAST_EXPORTED_PROPERTY);
+        }
+
+        public static boolean setLastApplied(LbConfig lc) {
+            return setInternalProperty(lc, LAST_APPLIED_PROPERTY);
+        }
+
+        private static boolean setInternalProperty(LbConfig lc,
+                String propertyName) {
+            Property property = lc.getProperty(propertyName);
+            Transaction transaction = new Transaction();
+            try {
+                if (property == null) {
+                    ConfigBeanProxy lcProxy = transaction.enroll(lc);
+                    property = lcProxy.createChild(Property.class);
+                    property.setName(propertyName);
+                    property.setValue(String.valueOf((new Date()).getTime()));
+                    ((LbConfig)lcProxy).getProperty().add(property);
+                } else {
+                    ConfigBeanProxy propertyProxy = transaction.enroll(property);
+                    ((Property)propertyProxy).setValue(String.valueOf(
+                            (new Date()).getTime()));
+                }
+                transaction.commit();
+            } catch (Exception ex) {
+                transaction.rollback();
+                Logger logger = LogDomains.getLogger(LbConfig.class,
+                        LogDomains.ADMIN_LOGGER);
+                LocalStringManagerImpl localStrings =
+                        new LocalStringManagerImpl(LbConfig.class);
+                String msg = localStrings.getLocalString(
+                        "UnableToSetPropertyInLbconfig",
+                        "Unable to set property {0} in lbconfig with name {1}",
+                        new String[]{propertyName, lc.getName()});
+                logger.log(Level.SEVERE, msg);
+                logger.log(Level.FINE, "Exception when trying to set property "
+                        + propertyName + " in lbconfig " + lc.getName(), ex);
+                return false;
+            }
+            return true;
+        }
+
     }
     
     @Service

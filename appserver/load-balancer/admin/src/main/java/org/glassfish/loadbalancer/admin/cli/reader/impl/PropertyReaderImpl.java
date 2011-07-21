@@ -151,6 +151,10 @@ public class PropertyReaderImpl implements PropertyReader {
         Iterator<Property> propertyList = _lbConfig.getProperty().iterator();
         while(propertyList.hasNext()){
             Property property = propertyList.next();
+            if(property.getName().equals(LbConfig.LAST_APPLIED_PROPERTY) ||
+                    property.getName().equals(LbConfig.LAST_EXPORTED_PROPERTY)){
+                continue;
+            }
             properties.setProperty(property.getName(), property.getValue());
         }
         return getPropertyReaders(properties);

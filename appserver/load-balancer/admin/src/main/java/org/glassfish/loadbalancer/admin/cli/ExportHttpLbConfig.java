@@ -183,6 +183,7 @@ public class ExportHttpLbConfig implements AdminCommand {
             if(retrieveFile){
                 retrieveLbXml(context, lbXmlFile, tmpLbXmlFile);
             }
+            lbr.getLbConfig().setLastExported();
             String msg = LbLogUtil.getStringManager().getString(
                     "GeneratedFileLocation", lbXmlFile.toString());
             return msg;

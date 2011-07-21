@@ -40,6 +40,8 @@
 
 package org.glassfish.loadbalancer.admin.cli.reader.api;
 
+import com.sun.enterprise.config.serverbeans.LbConfig;
+
 /**
  * Reader class to get information about load balancer configuration.
  *
@@ -69,6 +71,14 @@ public interface LoadbalancerReader extends BaseReader {
      * @return String               name of the LB
      */
     public String getName() throws LbReaderException;
+
+    /**
+     * Returns the lbconfig associated with the load balancer
+     *
+     * @return LbConfig               lbconfig of the LB
+     */
+    public LbConfig getLbConfig();
+
     /*** Supported Attribute names for Load balancer **/
     public static final String RESP_TIMEOUT = "response-timeout-in-seconds";
     public static final String RESP_TIMEOUT_VALUE = "60";

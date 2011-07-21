@@ -198,6 +198,11 @@ public class LoadbalancerReaderImpl implements LoadbalancerReader {
         LoadbalancerVisitor cv = (LoadbalancerVisitor) v;
         cv.visit(this);
     }
+
+    @Override
+    public LbConfig getLbConfig() {
+        return _lbConfig;
+    }
     
     // --- PRIVATE VARS -----
     private LbConfig _lbConfig = null;

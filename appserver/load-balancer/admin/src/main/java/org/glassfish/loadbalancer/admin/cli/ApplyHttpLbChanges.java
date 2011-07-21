@@ -158,6 +158,7 @@ public class ApplyHttpLbChanges implements AdminCommand {
             out = conn.getOutputStream();
             LbConfigHelper.exportXml(lbr, out);
             out.flush();
+            lbr.getLbConfig().setLastApplied();
         } catch (UnknownHostException uhe) {
             throw new IOException(LbLogUtil.getStringManager().getString("CannotConnectToLBHost", uhe.getMessage()), uhe);
         } catch (Exception e) {
