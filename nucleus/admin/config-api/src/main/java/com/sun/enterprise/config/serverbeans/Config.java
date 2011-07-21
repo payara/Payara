@@ -631,7 +631,6 @@ public interface Config extends ConfigBeanProxy, Injectable, Named, PropertyBag,
             
             // directly referenced objects
             ConfigBeanProxy dirref[] = {
-                c.getAdminListener(),
                 c.getAdminService(),
                 c.getAlertService(),
                 c.getAvailabilityService(),
