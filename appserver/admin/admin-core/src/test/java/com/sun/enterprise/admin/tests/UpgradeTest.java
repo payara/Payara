@@ -38,7 +38,7 @@
  * holder.
  */
 
-package com.sun.enterprise.configapi.tests;
+package com.sun.enterprise.admin.tests;
 
 import java.util.logging.Logger;
 import java.util.List;
