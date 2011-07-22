@@ -56,6 +56,7 @@ import com.sun.enterprise.transaction.api.JavaEETransaction;
 import com.sun.enterprise.transaction.api.JavaEETransactionManager;
 import com.sun.enterprise.transaction.api.TransactionAdminBean;
 import com.sun.enterprise.transaction.api.XAResourceWrapper;
+import com.sun.enterprise.transaction.config.TransactionService;
 import com.sun.enterprise.transaction.spi.JavaEETransactionManagerDelegate;
 import com.sun.enterprise.transaction.spi.TransactionalResource;
 import com.sun.enterprise.transaction.spi.TransactionInternal;
@@ -80,7 +81,6 @@ import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.external.probe.provider.PluginPoint;
 import org.glassfish.external.probe.provider.StatsProviderManager;
 
-import com.sun.enterprise.config.serverbeans.TransactionService;
 import com.sun.enterprise.config.serverbeans.ModuleMonitoringLevels;
 
 /**

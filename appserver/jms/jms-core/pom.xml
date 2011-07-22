@@ -48,7 +48,7 @@
         <artifactId>jms</artifactId>
         <version>3.2-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
-    </parent>    
+    </parent>
 
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.glassfish.jms</groupId>
@@ -56,7 +56,7 @@
     <name>JMS Module</name>
     <packaging>hk2-jar</packaging>
     <version>3.2-SNAPSHOT</version>
- <developers>
+    <developers>
         <developer>
             <id>sats</id>
             <name>Satish Kumar</name>
@@ -82,33 +82,37 @@
         </resources>
     </build>
 
-  <dependencies>
-      <dependency>
-          <groupId>org.glassfish.common</groupId>
-          <artifactId>internal-api</artifactId>
-	  <version>3.2-SNAPSHOT</version>
-      </dependency>		    
-      <dependency>
-          <groupId>org.glassfish.connectors</groupId>
-          <artifactId>connectors-internal-api</artifactId>
-	  <version>3.2-SNAPSHOT</version>
-      </dependency>		    
-         <dependency>
-             <groupId>org.glassfish.connectors</groupId>
-             <artifactId>connectors-inbound-runtime</artifactId>
-             <version>3.2-SNAPSHOT</version>
-         </dependency>
-         <dependency>
-	      <groupId>org.glassfish.connectors</groupId>
-	      <artifactId>connectors-runtime</artifactId>
-	      <version>3.2-SNAPSHOT</version>
-         </dependency>
-         <dependency>
-	 	<groupId>org.glassfish.admin</groupId>
-	 	<artifactId>admin-util</artifactId>
-		<version>3.2-SNAPSHOT</version>
-         </dependency>
-         
-   </dependencies>
-  
+    <dependencies>
+        <dependency>
+            <groupId>org.glassfish.common</groupId>
+            <artifactId>internal-api</artifactId>
+            <version>3.2-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.connectors</groupId>
+            <artifactId>connectors-internal-api</artifactId>
+            <version>3.2-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.connectors</groupId>
+            <artifactId>connectors-inbound-runtime</artifactId>
+            <version>3.2-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.connectors</groupId>
+            <artifactId>connectors-runtime</artifactId>
+            <version>3.2-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.admin</groupId>
+            <artifactId>admin-util</artifactId>
+            <version>3.2-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.transaction</groupId>
+            <artifactId>transaction-internal-api</artifactId>
+            <version>3.2-SNAPSHOT</version>
+        </dependency>
+    </dependencies>
+
 </project>

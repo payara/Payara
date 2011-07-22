@@ -41,6 +41,7 @@
 package com.sun.enterprise.connectors.jms.system;
 
 import com.sun.enterprise.config.serverbeans.*;
+import com.sun.enterprise.transaction.config.TransactionService;
 import com.sun.enterprise.transaction.spi.RecoveryResourceHandler;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.logging.LogDomains;

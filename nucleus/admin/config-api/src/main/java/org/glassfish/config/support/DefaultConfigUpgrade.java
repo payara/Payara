@@ -54,12 +54,12 @@ import java.io.FileNotFoundException;
 import java.io.InputStreamReader;
 
 import com.sun.enterprise.config.serverbeans.*;
-import com.sun.enterprise.util.EarlyLogger;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.grizzly.config.dom.*;
 import org.glassfish.api.admin.config.ConfigurationUpgrade;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.PostConstruct;
 import org.jvnet.hk2.config.*;
 import org.jvnet.hk2.config.types.Property;
@@ -84,6 +84,10 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
 
     @Inject
     Configs configs;
+
+    @Inject
+    Habitat habitat;
+
     private static final String DEFAULT_CONFIG = "default-config";
     private static final String INSTALL_ROOT = "com.sun.aas.installRoot";
     private static final LocalStringManagerImpl localStrings =
@@ -145,6 +149,18 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
             createThreadPools(defaultConfig);
 
             createSystemProperties(defaultConfig);
+
+            while(true) {
+                if (parser.next() == START_ELEMENT) {
+                    String elementName = parser.getLocalName();
+                    DefaultComponentUpgrade componentUpgrade =
+                            habitat.getComponent(DefaultComponentUpgrade.class,
+                                                elementName);
+                    if (componentUpgrade!=null) {
+                        componentUpgrade.apply(parser, defaultConfig);
+                    }
+                }
+            }
 
         } catch (TransactionFailure ex) {
             Logger.getLogger(DefaultConfigUpgrade.class.getName()).log(

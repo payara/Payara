@@ -43,7 +43,6 @@ package com.sun.enterprise.transaction.jts.recovery;
 import java.io.Serializable;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 
@@ -51,25 +50,20 @@ import com.sun.jts.jta.TransactionServiceProperties;
 import com.sun.jts.CosTransactions.Configuration;
 import com.sun.jts.CosTransactions.DefaultTransactionService;
 
-import com.sun.enterprise.config.serverbeans.TransactionService;
 import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.config.serverbeans.Servers;
 
 import com.sun.enterprise.transaction.api.ResourceRecoveryManager;
-import com.sun.enterprise.transaction.api.RecoveryResourceRegistry;
-import com.sun.enterprise.transaction.spi.RecoveryEventListener;
 import com.sun.enterprise.transaction.jts.api.DelegatedTransactionRecoveryFence;
 
 import org.glassfish.gms.bootstrap.GMSAdapter;
 import org.glassfish.gms.bootstrap.GMSAdapterService;
 import com.sun.enterprise.ee.cms.core.CallBack;
 import com.sun.enterprise.ee.cms.core.DistributedStateCache;
-import com.sun.enterprise.ee.cms.core.GMSConstants;
 import com.sun.enterprise.ee.cms.core.GroupManagementService;
 import com.sun.enterprise.ee.cms.core.FailureRecoverySignal;
 import com.sun.enterprise.ee.cms.core.Signal;
 
-import com.sun.enterprise.util.i18n.StringManager;
 import com.sun.logging.LogDomains;
 
 import org.jvnet.hk2.component.Habitat;

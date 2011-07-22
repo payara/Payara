@@ -43,6 +43,7 @@ package com.sun.enterprise.resource.recovery;
 import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
 import org.glassfish.resource.common.PoolInfo;
 import com.sun.enterprise.config.serverbeans.*;
+import com.sun.enterprise.transaction.config.TransactionService;
 import com.sun.enterprise.deployment.ResourcePrincipal;
 import com.sun.enterprise.transaction.api.XAResourceWrapper;
 import com.sun.enterprise.transaction.spi.RecoveryResourceHandler;

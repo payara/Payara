@@ -45,7 +45,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.transaction.xa.XAResource;
 
-import com.sun.enterprise.config.serverbeans.TransactionService;
+import com.sun.enterprise.transaction.config.TransactionService;
 import com.sun.enterprise.util.i18n.StringManager;
 import com.sun.logging.LogDomains;
 

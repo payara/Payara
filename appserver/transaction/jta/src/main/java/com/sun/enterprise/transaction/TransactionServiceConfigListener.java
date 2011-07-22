@@ -56,7 +56,7 @@ import org.jvnet.hk2.config.UnprocessedChangeEvents;
 import org.jvnet.hk2.config.types.Property;
 
 import com.sun.enterprise.config.serverbeans.ModuleMonitoringLevels;
-import com.sun.enterprise.config.serverbeans.TransactionService;
+import com.sun.enterprise.transaction.config.TransactionService;
 import com.sun.enterprise.config.serverbeans.ServerTags;
 
 import com.sun.enterprise.transaction.api.JavaEETransactionManager;

@@ -337,23 +337,6 @@ public interface Config extends ConfigBeanProxy, Injectable, Named, PropertyBag,
     void setSecurityService(SecurityService value) throws PropertyVetoException;
 
     /**
-     * Gets the value of the transactionService property.
-     *
-     * @return possible object is
-     *         {@link TransactionService }
-     */
-    @Element(required=true)
-    TransactionService getTransactionService();
-
-    /**
-     * Sets the value of the transactionService property.
-     *
-     * @param value allowed object is
-     *              {@link TransactionService }
-     */
-    void setTransactionService(TransactionService value) throws PropertyVetoException;
-
-    /**
      * Gets the value of the monitoringService property.
      *
      * @return possible object is
@@ -649,7 +632,6 @@ public interface Config extends ConfigBeanProxy, Injectable, Named, PropertyBag,
                 c.getNetworkConfig(),
                 c.getSecurityService(),
                 c.getThreadPools(),
-                c.getTransactionService(),
                 c.getWebContainer(),
             };
             for (ConfigBeanProxy cbp : dirref) {

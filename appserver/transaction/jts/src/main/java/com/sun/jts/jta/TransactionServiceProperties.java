@@ -45,6 +45,7 @@ import java.util.Properties;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 
+import com.sun.enterprise.transaction.config.TransactionService;
 import com.sun.jts.CosTransactions.Configuration;
 import com.sun.jts.CosTransactions.RecoveryManager;
 import com.sun.jts.utils.RecoveryHooks.FailureInducer;
@@ -53,7 +54,6 @@ import org.glassfish.internal.api.ServerContext;
 import org.glassfish.api.admin.ProcessEnvironment;
 import org.glassfish.enterprise.iiop.api.GlassFishORBHelper;
 import com.sun.enterprise.transaction.api.ResourceRecoveryManager;
-import com.sun.enterprise.config.serverbeans.TransactionService;
 import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Server;

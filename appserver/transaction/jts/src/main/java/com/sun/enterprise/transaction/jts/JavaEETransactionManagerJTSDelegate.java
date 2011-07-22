@@ -42,10 +42,8 @@ package com.sun.enterprise.transaction.jts;
 
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Properties;
-import java.util.Set;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.util.concurrent.locks.Lock;
@@ -57,6 +55,7 @@ import javax.transaction.xa.*;
 import javax.resource.spi.XATerminator;
 import javax.resource.spi.work.WorkException;
 
+import com.sun.enterprise.transaction.config.TransactionService;
 import com.sun.jts.jta.TransactionManagerImpl;
 import com.sun.jts.jta.TransactionServiceProperties;
 import com.sun.jts.CosTransactions.Configuration;
@@ -67,7 +66,6 @@ import com.sun.jts.CosTransactions.RWLock;
 import com.sun.jts.CosTransactions.LogControl;
 
 import com.sun.enterprise.config.serverbeans.ServerTags;
-import com.sun.enterprise.config.serverbeans.TransactionService;
 
 import com.sun.enterprise.transaction.api.JavaEETransaction;
 import com.sun.enterprise.transaction.api.JavaEETransactionManager;
@@ -80,7 +78,6 @@ import com.sun.enterprise.transaction.spi.TransactionInternal;
 import com.sun.enterprise.transaction.jts.recovery.OracleXAResource;
 import com.sun.enterprise.transaction.jts.recovery.SybaseXAResource;
 import com.sun.enterprise.transaction.jts.recovery.GMSCallBack;
-import com.sun.enterprise.transaction.jts.iiop.TransactionIIOPInterceptorFactory;
 
 import com.sun.enterprise.transaction.JavaEETransactionManagerSimplified;
 import com.sun.enterprise.transaction.JavaEETransactionImpl;
