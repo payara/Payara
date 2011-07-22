@@ -38,7 +38,7 @@
  * holder.
  */
 
-package org.glassfish.config.support;
+package com.sun.enterprise.admin;
 
 import java.beans.PropertyVetoException;
 import java.util.logging.Level;
