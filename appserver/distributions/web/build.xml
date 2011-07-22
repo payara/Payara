@@ -82,7 +82,7 @@
 		    includes="${install.dir.name}/bin/*"
 		    excludes="${install.dir.name}/bin/*.bat" />
 	    <zipfileset dir="target/stage" filemode="755"
-		    includes="${install.dir.name}/glassfish/bin/*"
+		    includes="${install.dir.name}/glassfish/bin/*, ${install.dir.name}/glassfish/lib/nadmin"
 		    excludes="${install.dir.name}/glassfish/bin/*.bat" />
             <zipfileset dir="target/stage">
 		    <include name="${install.dir.name}/bin/*.bat" />
