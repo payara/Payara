@@ -78,12 +78,15 @@
    <macrodef name="stage-distribution-fragments">
         <sequential> 
              <mkdir dir="target/artifacts/distribution-fragments"/>           
-             <unzip dest="target/stage/${install.dir.name}">
+             <unzip dest="target/stage">
                 <patternset>
                     <exclude name="META-INF/**"/>
                 </patternset>
-                <fileset dir="target/artifacts/distribution-fragments" includes="*.zip"/>
+                <fileset dir="target/artifacts/distribution-fragments" includes="*.zip"/>             
              </unzip>
+             <move todir="target/stage/${install.dir.name}" failonerror="false">
+                 <fileset dir="target/stage/glassfish"/>
+             </move>
         </sequential>
    </macrodef>
 
