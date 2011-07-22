@@ -150,18 +150,6 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
 
             createSystemProperties(defaultConfig);
 
-            while(true) {
-                if (parser.next() == START_ELEMENT) {
-                    String elementName = parser.getLocalName();
-                    DefaultComponentUpgrade componentUpgrade =
-                            habitat.getComponent(DefaultComponentUpgrade.class,
-                                                elementName);
-                    if (componentUpgrade!=null) {
-                        componentUpgrade.apply(parser, defaultConfig);
-                    }
-                }
-            }
-
         } catch (TransactionFailure ex) {
             Logger.getLogger(DefaultConfigUpgrade.class.getName()).log(
                     Level.SEVERE, localStrings.getLocalString(
