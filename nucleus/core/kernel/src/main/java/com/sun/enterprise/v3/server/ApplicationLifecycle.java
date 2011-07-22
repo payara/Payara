@@ -999,7 +999,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
         if (info.isLoaded()) {
             info.stop(context, context.getLogger());
             info.unload(context);
-            events.send(new Event<ApplicationInfo>(Deployment.APPLICATION_DISABLED, info));
+            events.send(new Event<ApplicationInfo>(Deployment.APPLICATION_DISABLED, info), false);
         }
 
         try {
