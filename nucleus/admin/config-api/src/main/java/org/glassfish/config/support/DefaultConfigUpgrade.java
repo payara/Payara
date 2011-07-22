@@ -128,21 +128,11 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
 
             createHttpServiceConfig(defaultConfig);
 
-            createIiopServiceConfig(defaultConfig);
-
             createAdminServiceConfig(defaultConfig);
-
-            createWebContainerConfig(defaultConfig);
-
-            createEjbContainerConfig(defaultConfig);
-
-            createJmsServiceConfig(defaultConfig);
 
             createLogServiceConfig(defaultConfig);
 
             createSecurityServiceConfig(defaultConfig);
-
-            createTransactionServiceConfig(defaultConfig);
 
             createDiagnosticServiceConfig(defaultConfig);
 
@@ -153,8 +143,6 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
             createNetworkConfig(defaultConfig);
 
             createThreadPools(defaultConfig);
-
-            createManagementRules(defaultConfig);
 
             createSystemProperties(defaultConfig);
 
@@ -231,56 +219,11 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
         }
     }
 
-    private void createIiopServiceConfig(Config defaultConfig) throws TransactionFailure, XMLStreamException {
-        while (true) {
-            if (parser.next() == START_ELEMENT) {
-                if (parser.getLocalName().equals("iiop-service")) {
-                    ConfigSupport.apply(new IiopServiceConfigCode(), defaultConfig);
-                    break;
-                }
-            }
-        }
-    }
-
     private void createAdminServiceConfig(Config defaultConfig) throws TransactionFailure, XMLStreamException {
         while (true) {
             if (parser.next() == START_ELEMENT) {
                 if (parser.getLocalName().equals("admin-service")) {
                     ConfigSupport.apply(new AdminServiceConfigCode(), defaultConfig);
-                    break;
-                }
-            }
-        }
-    }
-
-    private void createWebContainerConfig(Config defaultConfig) throws TransactionFailure, XMLStreamException {
-        while (true) {
-            if (parser.next() == START_ELEMENT) {
-                if (parser.getLocalName().equals("web-container")) {
-                    SessionManager sm = defaultConfig.getWebContainer().getSessionConfig().getSessionManager();
-                    ConfigSupport.apply(new WebContainerConfigCode(), sm);
-                    break;
-                }
-            }
-        }
-    }
-
-    private void createEjbContainerConfig(Config defaultConfig) throws TransactionFailure, XMLStreamException {
-        while (true) {
-            if (parser.next() == START_ELEMENT) {
-                if (parser.getLocalName().equals("ejb-container")) {
-                    ConfigSupport.apply(new EjbContainerConfigCode(), defaultConfig);
-                    break;
-                }
-            }
-        }
-    }
-
-    private void createJmsServiceConfig(Config defaultConfig) throws TransactionFailure, XMLStreamException {
-        while (true) {
-            if (parser.next() == START_ELEMENT) {
-                if (parser.getLocalName().equals("jms-service")) {
-                    ConfigSupport.apply(new JmsServiceConfigCode(), defaultConfig);
                     break;
                 }
             }
@@ -313,17 +256,6 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
             } catch (XMLStreamException ex) {
                 Logger.getLogger(DefaultConfigUpgrade.class.getName()).log(
                         Level.SEVERE, "Problem parsing security-service", ex);
-            }
-        }
-    }
-
-    private void createTransactionServiceConfig(Config defaultConfig) throws TransactionFailure, XMLStreamException {
-        while (true) {
-            if (parser.next() == START_ELEMENT) {
-                if (parser.getLocalName().equals("transaction-service")) {
-                    ConfigSupport.apply(new TransactionServiceConfigCode(), defaultConfig);
-                    break;
-                }
             }
         }
     }
@@ -381,10 +313,6 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
                 }
             }
         }
-    }
-
-    private void createManagementRules(Config defaultConfig) throws TransactionFailure, XMLStreamException {
-        ConfigSupport.apply(new ManagementRulesConfigCode(), defaultConfig);
     }
 
     private void createSystemProperties(Config defaultConfig) throws TransactionFailure, XMLStreamException {
@@ -493,132 +421,6 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
     }
 
     /*
-     * Creates the iiop-service object using data from glassfish3\glassfish\lib\templates\domain.xml
-     * <iiop-service>
-     *  <orb use-thread-pool-ids="thread-pool-1"/>
-     *  <iiop-listener port="${IIOP_LISTENER_PORT}" id="orb-listener-1" address="0.0.0.0"/>
-     *  <iiop-listener port="${IIOP_SSL_LISTENER_PORT}" id="SSL" address="0.0.0.0" security-enabled="true">
-     *      <ssl classname="com.sun.enterprise.security.ssl.GlassfishSSLImpl" cert-nickname="s1as"/>
-     *  </iiop-listener>
-     *  <iiop-listener port="${IIOP_SSL_MUTUALAUTH_PORT}" id="SSL_MUTUALAUTH" address="0.0.0.0" security-enabled="true">
-     *      <ssl classname="com.sun.enterprise.security.ssl.GlassfishSSLImpl" cert-nickname="s1as" client-auth-enabled="true"/>
-     *  </iiop-listener>
-     *</iiop-service>
-     */
-    private class IiopServiceConfigCode implements SingleConfigCode<Config> {
-
-        public Object run(Config config) throws PropertyVetoException, TransactionFailure {
-
-            IiopService iiopService = config.createChild(IiopService.class);
-            config.setIiopService(iiopService);
-
-            createOrb(iiopService);
-            createIiopListener(iiopService);
-
-            return null;
-        }
-    }
-
-    /* <orb use-thread-pool-ids="thread-pool-1"/> */
-    private void createOrb(IiopService is) throws PropertyVetoException {
-        while (true) {
-            try {
-                if (parser.next() == START_ELEMENT) {
-                    if (parser.getLocalName().equals("orb")) {
-                        Orb orb = is.createChild(Orb.class);
-                        is.setOrb(orb);
-                        for (int i = 0; i < parser.getAttributeCount(); i++) {
-                            String attr = parser.getAttributeLocalName(i);
-                            if (attr.equals("use-thread-pool-ids")) {
-                                orb.setUseThreadPoolIds(parser.getAttributeValue(i));
-                            }
-                        }
-                        break;
-                    }
-                }
-            } catch (TransactionFailure ex) {
-                Logger.getLogger(DefaultConfigUpgrade.class.getName()).log(
-                        Level.SEVERE, "Failure creating IiopService Orb config object", ex);
-            } catch (XMLStreamException ex) {
-                Logger.getLogger(DefaultConfigUpgrade.class.getName()).log(
-                        Level.SEVERE, "Problem parsing iiop-service orb element in domain.xml template", ex);
-            }
-        }
-    }
-
-    /* Loop through all iiop-listener elements in template and create IiopListener config objects.
-     * <iiop-listener port="${IIOP_SSL_MUTUALAUTH_PORT}" id="SSL_MUTUALAUTH" address="0.0.0.0" security-enabled="true">
-     *      <ssl classname="com.sun.enterprise.security.ssl.GlassfishSSLImpl" cert-nickname="s1as" client-auth-enabled="true"/>
-     *  </iiop-listener>  (1 example)
-     */
-    private void createIiopListener(IiopService is) throws PropertyVetoException {
-        while (!(parser.getEventType() == END_ELEMENT && parser.getLocalName().equals("iiop-service"))) {
-            try {
-                if (parser.next() == START_ELEMENT) {
-                    if (parser.getLocalName().equals("iiop-listener")) {
-                        IiopListener il = is.createChild(IiopListener.class);
-                        is.getIiopListener().add(il);
-
-                        for (int i = 0; i < parser.getAttributeCount(); i++) {
-                            String attr = parser.getAttributeLocalName(i);
-                            if (attr.equals("port")) {
-                                il.setPort(parser.getAttributeValue(i));
-                            }
-                            if (attr.equals("id")) {
-                                il.setId(parser.getAttributeValue(i));
-                            }
-                            if (attr.equals("address")) {
-                                il.setAddress(parser.getAttributeValue(i));
-                            }
-                            if (attr.equals("security-enabled")) {
-                                il.setSecurityEnabled(parser.getAttributeValue(i));
-                            }
-                        }
-                        createIiopListenerSsl(il);
-                    }
-                }
-            } catch (TransactionFailure ex) {
-                Logger.getLogger(DefaultConfigUpgrade.class.getName()).log(
-                        Level.SEVERE, "Failure creating IiopService IiopListener config object", ex);
-            } catch (XMLStreamException ex) {
-                Logger.getLogger(DefaultConfigUpgrade.class.getName()).log(
-                        Level.SEVERE, "Problem parsing iiop-service iiop-listener element in domain.xml template", ex);
-            }
-        }
-    }
-
-    private void createIiopListenerSsl(IiopListener il) throws PropertyVetoException {
-        while (!(parser.getEventType() == END_ELEMENT && parser.getLocalName().equals("iiop-listener"))) {
-            try {
-                if (parser.next() == START_ELEMENT) {
-                    if (parser.getLocalName().equals("ssl") && il != null) {
-                        Ssl ssl = il.createChild(Ssl.class);
-                        il.setSsl(ssl);
-                        for (int i = 0; i < parser.getAttributeCount(); i++) {
-                            String attr = parser.getAttributeLocalName(i);
-                            if (attr.equals("classname")) {
-                                ssl.setClassname(parser.getAttributeValue(i));
-                            }
-                            if (attr.equals("cert-nickname")) {
-                                ssl.setCertNickname(parser.getAttributeValue(i));
-                            }
-                            if (attr.equals("client-auth-enabled")) {
-                                ssl.setClientAuthEnabled(parser.getAttributeValue(i));
-                            }
-                        }
-                    }
-                }
-            } catch (TransactionFailure ex) {
-                Logger.getLogger(DefaultConfigUpgrade.class.getName()).log(
-                        Level.SEVERE, "Failed to create IiopListener Ssl config object", ex);
-            } catch (XMLStreamException ex) {
-                Logger.getLogger(DefaultConfigUpgrade.class.getName()).log(
-                        Level.SEVERE, "Problem parsing iiop-listner ssl element in domain.xml template", ex);
-            }
-        }
-    }
-
-    /*
      * Creates the admin-service object using data from glassfish3\glassfish\lib\templates\domain.xml
      * <admin-service system-jmx-connector-name="system" type="server">
      *  <!-- JSR 160  "system-jmx-connector" -->
@@ -648,56 +450,10 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
                     adminService.setType(val);
                 }
             }
-
-            createJmxConnector(adminService);
+            
             createAdminServiceProperty(adminService);
 
             return null;
-        }
-    }
-
-    /* <jmx-connector address="0.0.0.0" auth-realm-name="admin-realm" name="system"
-     * port="${JMX_SYSTEM_CONNECTOR_PORT}" protocol="rmi_jrmp" security-enabled="false"/>
-     */
-    private void createJmxConnector(AdminService as) throws PropertyVetoException {
-        while (true) {
-            try {
-                if (parser.next() == START_ELEMENT) {
-                    if (parser.getLocalName().equals("jmx-connector")) {
-                        JmxConnector jc = as.createChild(JmxConnector.class);
-                        as.getJmxConnector().add(jc);
-                        for (int i = 0; i < parser.getAttributeCount(); i++) {
-                            String attr = parser.getAttributeLocalName(i);
-                            String val = parser.getAttributeValue(i);
-                            if (attr.equals("address")) {
-                                jc.setAddress(val);
-                            }
-                            if (attr.equals("auth-realm-name")) {
-                                jc.setAuthRealmName(val);
-                            }
-                            if (attr.equals("name")) {
-                                jc.setName(val);
-                            }
-                            if (attr.equals("port")) {
-                                jc.setPort(val);
-                            }
-                            if (attr.equals("protocol")) {
-                                jc.setProtocol(val);
-                            }
-                            if (attr.equals("security-enabled")) {
-                                jc.setSecurityEnabled(val);
-                            }
-                        }
-                        break;
-                    }
-                }
-            } catch (TransactionFailure ex) {
-                Logger.getLogger(DefaultConfigUpgrade.class.getName()).log(
-                        Level.SEVERE, "Failed to create AdminService JmxConnector config object.", ex);
-            } catch (XMLStreamException ex) {
-                Logger.getLogger(DefaultConfigUpgrade.class.getName()).log(Level.SEVERE,
-                        "Problem parsing admin-service jmx-connector", ex);
-            }
         }
     }
 
@@ -722,159 +478,6 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
                 Logger.getLogger(DefaultConfigUpgrade.class.getName()).log(
                         Level.SEVERE, "Problem parsing asadmin-service property element in domain.xml template", ex);
             }
-        }
-    }
-
-    /*
-     * Creates the web-container object using data from glassfish3\glassfish\lib\templates\domain.xml
-     * The required elements elements were already created in MinDefaultConfigCode, so only
-     * need to add store-properties.
-     * <web-container>
-     *  <session-config>
-     *      <session-manager>
-     *          <manager-properties/>
-     *          <store-properties/>
-     *      </session-manager>
-     *      <session-properties/>
-     *  </session-config>
-     * </web-container>
-     */
-    private class WebContainerConfigCode implements SingleConfigCode<SessionManager> {
-
-        public Object run(SessionManager sm) throws PropertyVetoException {
-            try {
-                /* <store-properties/> */
-                while (true) {
-                    if (parser.next() == START_ELEMENT) {
-                        if (parser.getLocalName().equals("session-manager") && sm != null) {
-                            StoreProperties sp = sm.createChild(StoreProperties.class);
-                            sm.setStoreProperties(sp);
-                            break;
-                        }
-                    }
-                }
-
-            } catch (TransactionFailure ex) {
-                Logger.getLogger(DefaultConfigUpgrade.class.getName()).log(
-                        Level.SEVERE, "Failure creating WebContainer SessionManager StoreProperties config object", ex);
-            } catch (XMLStreamException ex) {
-                Logger.getLogger(DefaultConfigUpgrade.class.getName()).log(
-                        Level.SEVERE, "Problem parsing web-container session-manager element in domain.xml template", ex);
-            }
-
-            return null;
-        }
-    }
-
-    /*
-     * Creates the ejb-container object using data from glassfish3\glassfish\lib\templates\domain.xml
-     * <ejb-container session-store="${com.sun.aas.instanceRoot}/session-store">
-     *      <ejb-timer-service/>
-     * </ejb-container>
-     */
-    private class EjbContainerConfigCode implements SingleConfigCode<Config> {
-
-        public Object run(Config config) throws PropertyVetoException {
-            try {
-                EjbContainer ec = config.createChild(EjbContainer.class);
-                config.setEjbContainer(ec);
-                EjbTimerService ets = ec.createChild(EjbTimerService.class);
-                ec.setEjbTimerService(ets);
-                /* <ejb-container session-store="${com.sun.aas.instanceRoot}/session-store"> */
-                for (int i = 0; i < parser.getAttributeCount(); i++) {
-                    String attr = parser.getAttributeLocalName(i);
-                    String val = parser.getAttributeValue(i);
-                    if (attr.equals("session-store")) {
-                        ec.setSessionStore(val);
-                    }
-                }
-
-            } catch (TransactionFailure ex) {
-                Logger.getLogger(DefaultConfigUpgrade.class.getName()).log(
-                        Level.SEVERE, "Failure creating EjbContainer EjbTimerService config objects", ex);
-            }
-            return null;
-        }
-    }
-
-    /*
-     * Creates the jms-service object using data from glassfish3\glassfish\lib\templates\domain.xml
-     * <jms-service type="EMBEDDED" default-jms-host="default_JMS_host" addresslist-behavior="priority">
-     *  <jms-host name="default_JMS_host" host="localhost" port="${JMS_PROVIDER_PORT}" admin-user-name="admin" admin-password="admin" lazy-init="true"/>
-     * </jms-service>
-     */
-    private class JmsServiceConfigCode implements SingleConfigCode<Config> {
-
-        public Object run(Config config) throws PropertyVetoException, TransactionFailure {
-            JmsService js = config.createChild(JmsService.class);
-            config.setJmsService(js);
-
-            /* <jms-service type="EMBEDDED" default-jms-host="default_JMS_host"
-            addresslist-behavior="priority"> */
-            for (int i = 0; i < parser.getAttributeCount(); i++) {
-                String attr = parser.getAttributeLocalName(i);
-                String val = parser.getAttributeValue(i);
-                if (attr.equals("type")) {
-                    js.setType(val);
-                }
-                if (attr.equals("default-jms-host")) {
-                    js.setDefaultJmsHost(val);
-                }
-                if (attr.equals("addresslist-behavior")) {
-                    js.setAddresslistBehavior(val);
-                }
-            }
-
-            createJmsHost(js);
-
-            return null;
-        }
-    }
-
-    /* <jms-host name="default_JMS_host" host="localhost" port="${JMS_PROVIDER_PORT}"
-     *       admin-user-name="admin" admin-password="admin" lazy-init="true"/>
-     */
-    private void createJmsHost(JmsService js) throws PropertyVetoException {
-        try {
-            while (true) {
-                if (parser.next() == START_ELEMENT) {
-                    if (parser.getLocalName().equals("jms-host") && js != null) {
-                        JmsHost jh = js.createChild(JmsHost.class);
-                        js.getJmsHost().add(jh);
-
-                        for (int i = 0; i < parser.getAttributeCount(); i++) {
-                            String attr = parser.getAttributeLocalName(i);
-                            String val = parser.getAttributeValue(i);
-                            if (attr.equals("name")) {
-                                jh.setName(val);
-                            }
-                            if (attr.equals("host")) {
-                                jh.setHost(val);
-                            }
-                            if (attr.equals("port")) {
-                                jh.setPort(val);
-                            }
-                            if (attr.equals("admin-user-name")) {
-                                jh.setAdminUserName(val);
-                            }
-                            if (attr.equals("admin-password")) {
-                                jh.setAdminPassword(val);
-                            }
-                            if (attr.equals("lazy-init")) {
-                                jh.setLazyInit(val);
-                            }
-                        }
-                        break;
-                    }
-                }
-            }
-
-        } catch (TransactionFailure ex) {
-            Logger.getLogger(DefaultConfigUpgrade.class.getName()).log(
-                    Level.SEVERE, "Failure creating JmsHost config object", ex);
-        } catch (XMLStreamException ex) {
-            Logger.getLogger(DefaultConfigUpgrade.class.getName()).log(
-                    Level.SEVERE, "Problem parsing jms-host element in domain.xml template", ex);
         }
     }
 
@@ -1360,34 +963,6 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
     }
 
     /*
-     * Creates the transaction-service object using data from glassfish3\glassfish\lib\templates\domain.xml
-     * <transaction-service tx-log-dir="${com.sun.aas.instanceRoot}/logs" automatic-recovery="true"/>
-     */
-    private class TransactionServiceConfigCode implements SingleConfigCode<Config> {
-
-        public Object run(Config config) throws PropertyVetoException {
-            try {
-                TransactionService ts = config.createChild(TransactionService.class);
-                config.setTransactionService(ts);
-                for (int i = 0; i < parser.getAttributeCount(); i++) {
-                    String attr = parser.getAttributeLocalName(i);
-                    String val = parser.getAttributeValue(i);
-                    if (attr.equals("tx-log-dir")) {
-                        ts.setTxLogDir(val);
-                    }
-                    if (attr.equals("automatic-recovery")) {
-                        ts.setAutomaticRecovery(val);
-                    }
-                }
-            } catch (TransactionFailure ex) {
-                Logger.getLogger(DefaultConfigUpgrade.class.getName()).log(
-                        Level.SEVERE, "Failure create TransactionService config object", ex);
-            }
-            return null;
-        }
-    }
-
-    /*
      * Creates the diagnostic-service object using data from glassfish3\glassfish\lib\templates\domain.xml
      * <diagnostic-service/>
      */
@@ -1466,112 +1041,12 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
             try {
                 AvailabilityService as = config.createChild(AvailabilityService.class);
                 config.setAvailabilityService(as);
-
-                createWebContainerAvailability(as);
-                createEjbContainerAvailability(as);
-                createJmsAvailability(as);
             } catch (TransactionFailure ex) {
                 Logger.getLogger(DefaultConfigUpgrade.class.getName()).log(
                         Level.SEVERE, "Failure creating AvailabilityService config object", ex);
             }
 
             return null;
-        }
-    }
-
-    /* <web-container-availability availability-enabled="true" persistence-frequency="web-method"
-     * persistence-scope="session" persistence-type="replicated" sso-failover-enabled="false"/>
-     */
-    private void createWebContainerAvailability(AvailabilityService as) throws PropertyVetoException {
-        while (true) {
-            try {
-                if (parser.next() == START_ELEMENT) {
-                    if (parser.getLocalName().equals("web-container-availability") && as != null) {
-                        WebContainerAvailability wca = as.createChild(WebContainerAvailability.class);
-                        as.setWebContainerAvailability(wca);
-                        for (int i = 0; i < parser.getAttributeCount(); i++) {
-                            String attr = parser.getAttributeLocalName(i);
-                            String val = parser.getAttributeValue(i);
-                            if (attr.equals("availability-enabled")) {
-                                wca.setAvailabilityEnabled(val);
-                            }
-                            if (attr.equals("persistence-frequency")) {
-                                wca.setPersistenceFrequency(val);
-                            }
-                            if (attr.equals("persistence-scope")) {
-                                wca.setPersistenceScope(val);
-                            }
-                        }
-                        break;
-                    }
-                }
-            } catch (XMLStreamException ex) {
-                Logger.getLogger(DefaultConfigUpgrade.class.getName()).log(
-                        Level.SEVERE, "Problem parsing web-container-availability element in domain.xml", ex);
-            } catch (TransactionFailure ex) {
-                Logger.getLogger(DefaultConfigUpgrade.class.getName()).log(
-                        Level.SEVERE, "Failure creating WebContainerAvailability config object", ex);
-            }
-        }
-    }
-
-    /* <ejb-container-availability availability-enabled="true" sfsb-store-pool-name="jdbc/hastore"/> */
-    private void createEjbContainerAvailability(AvailabilityService as) throws PropertyVetoException {
-        while (true) {
-            try {
-                if (parser.next() == START_ELEMENT) {
-                    if (parser.getLocalName().equals("ejb-container-availability") && as != null) {
-
-                        EjbContainerAvailability eca = as.createChild(EjbContainerAvailability.class);
-                        as.setEjbContainerAvailability(eca);
-                        for (int i = 0; i < parser.getAttributeCount(); i++) {
-                            String attr = parser.getAttributeLocalName(i);
-                            String val = parser.getAttributeValue(i);
-                            if (attr.equals("availability-enabled")) {
-                                eca.setAvailabilityEnabled(val);
-                            }
-                            if (attr.equals("sfsb-store-pool-name")) {
-                                eca.setSfsbStorePoolName(val);
-                            }
-                        }
-                        break;
-                    }
-                }
-            } catch (XMLStreamException ex) {
-                Logger.getLogger(DefaultConfigUpgrade.class.getName()).log(
-                        Level.SEVERE, "Problem parsing ejb-container-availability element in domain.xml template", ex);
-            } catch (TransactionFailure ex) {
-                Logger.getLogger(DefaultConfigUpgrade.class.getName()).log(
-                        Level.SEVERE, "Failure creating EjbContainerAvailability config object", ex);
-            }
-        }
-    }
-
-    /* <jms-availability availability-enabled="false"/> */
-    private void createJmsAvailability(AvailabilityService as) throws PropertyVetoException {
-        while (true) {
-            try {
-                if (parser.next() == START_ELEMENT) {
-                    if (parser.getLocalName().equals("jms-availability") && as != null) {
-                        JmsAvailability ja = as.createChild(JmsAvailability.class);
-                        as.setJmsAvailability(ja);
-                        for (int i = 0; i < parser.getAttributeCount(); i++) {
-                            String attr = parser.getAttributeLocalName(i);
-                            String val = parser.getAttributeValue(i);
-                            if (attr.equals("availability-enabled")) {
-                                ja.setAvailabilityEnabled(val);
-                            }
-                        }
-                        break;
-                    }
-                }
-            } catch (TransactionFailure ex) {
-                Logger.getLogger(DefaultConfigUpgrade.class.getName()).log(
-                        Level.SEVERE, "Failure creating JmsAvailability config object", ex);
-            } catch (XMLStreamException ex) {
-                Logger.getLogger(DefaultConfigUpgrade.class.getName()).log(
-                        Level.SEVERE, "Problem parsing jms-availability element in domain.xml", ex);
-            }
         }
     }
 
@@ -1946,24 +1421,6 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
                 Logger.getLogger(DefaultConfigUpgrade.class.getName()).log(
                         Level.SEVERE, "Problem parsing thread-pool element in domain.xml template", ex);
             }
-        }
-    }
-
-    /*
-     * Creates the management-rules object using data from glassfish3\glassfish\lib\templates\domain.xml
-     * <management-rules/>
-     */
-    private static class ManagementRulesConfigCode implements SingleConfigCode<Config> {
-
-        public Object run(Config config) throws PropertyVetoException {
-            try {
-                ManagementRules mr = config.createChild(ManagementRules.class);
-                config.setManagementRules(mr);
-            } catch (TransactionFailure ex) {
-                Logger.getLogger(DefaultConfigUpgrade.class.getName()).log(
-                        Level.SEVERE, "Failure creating ManagementRules config object", ex);
-            }
-            return null;
         }
     }
 
