@@ -116,7 +116,7 @@
         <!-- previous package - required for dependency graph calculation -->
         <dependency>
             <groupId>org.glassfish.packager</groupId>
-	    <artifactId>glassfish-nucleus</artifactId>
+	    <artifactId>nucleus</artifactId>
 	    <version>${project.version}</version>
 	    <classifier>artifacts</classifier>
 	    <type>properties</type>

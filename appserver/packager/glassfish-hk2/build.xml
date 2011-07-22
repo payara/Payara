@@ -46,19 +46,23 @@
 
     <target name="create.package">
 	    <property name="package.name" value="glassfish-hk2"/>
-            <property name="previous.package.name" value="felix" />
-       
-       <antcall target="filter-module-artifacts"/>
     
-       <stage-module-jars/>
-       <stage-distribution-fragments/>
+        <resolveArtifact artifactId="nucleus-hk2" property="nucleus-hk2.zip"/>
+       
+	<unzip src="${nucleus-hk2.zip}" dest="target/stage/${install.dir.name}">
+        </unzip>   
+
+        <move file="target/stage/${install.dir.name}/nucleus"
+            tofile="target/stage/${install.dir.name}/glassfish" 
+            failonerror="false" />
+       
 
        <if test="${compression}">
 	       <antcall target="pack.compression" />
        </if>
 
        <antcall target="create-zip-artifact"/>
-       <antcall target="create-list-artifact"/>
+ 
    </target>
 
 </project>

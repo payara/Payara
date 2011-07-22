@@ -68,41 +68,20 @@
                     </tasks>
                 </configuration>               
              </plugin>
-             <plugin>
-               <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>copy-dependencies</id>
-                        <goals>
-                            <goal>copy-dependencies</goal>
-                        </goals>
-                        <configuration>
-                            <outputDirectory>${project.build.directory}/artifacts</outputDirectory>
-                            <useSubDirectoryPerType>true</useSubDirectoryPerType>
-                            <overWriteReleases>false</overWriteReleases>
-                            <overWriteSnapshots>true</overWriteSnapshots>                            
-                            <includeScope>compile</includeScope>
-                            <includeScope>runtime</includeScope>
-                            <excludeArtifactIds>${packager.artifact.excludes}</excludeArtifactIds>
-                            <stripVersion>true</stripVersion>
-                        </configuration>
-                   </execution>                  
-               </executions>
-           </plugin>
         </plugins>
     </build>
 
     <dependencies>
         <!--
-          modules to be included in this bundle
+          modules to be included in this bundle - reusing nucleus-felix staged
+          content as-is
         -->       
         <dependency>
-           <groupId>org.glassfish.osgi-platforms</groupId>
-           <artifactId>felix</artifactId>
+           <groupId>org.glassfish.packager</groupId>
+           <artifactId>nucleus-felix</artifactId>
            <version>${project.version}</version>
-           <type>distribution-fragment</type>
-       </dependency>
+           <type>zip</type>
+       </dependency>    
     </dependencies>
 
     <profiles>

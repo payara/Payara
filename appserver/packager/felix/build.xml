@@ -46,15 +46,21 @@
    <target name="create.package">
        <property name="package.name" value="felix"/>
 
-       <stage-module-jars/>
-       <stage-distribution-fragments/> 
+       <resolveArtifact artifactId="nucleus-felix" property="nucleus-felix.zip"/>
+       
+	<unzip src="${nucleus-felix.zip}" dest="target/stage/${install.dir.name}">
+        </unzip>   
+
+        <move file="target/stage/${install.dir.name}/nucleus"
+            tofile="target/stage/${install.dir.name}/glassfish" 
+            failonerror="false" />
 
        <if test="${compression}">
 	       <antcall target="pack.compression" />
        </if>
 
        <antcall target="create-zip-artifact"/>
-       <antcall target="create-list-artifact"/>
+ 
    </target>
 </project>
 

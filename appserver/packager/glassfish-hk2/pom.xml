@@ -68,28 +68,6 @@
                     </tasks>
                 </configuration>               
              </plugin>
-             <plugin>
-               <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>copy-dependencies</id>
-                        <goals>
-                            <goal>copy-dependencies</goal>
-                        </goals>
-                        <configuration>
-                            <outputDirectory>${project.build.directory}/artifacts</outputDirectory>
-                            <useSubDirectoryPerType>true</useSubDirectoryPerType>
-                            <overWriteReleases>false</overWriteReleases>
-                            <overWriteSnapshots>true</overWriteSnapshots>                            
-                            <includeScope>compile</includeScope>
-                            <includeScope>runtime</includeScope>
-                            <excludeArtifactIds>${packager.artifact.excludes}</excludeArtifactIds>
-                            <stripVersion>true</stripVersion>
-                        </configuration>
-                   </execution>                  
-               </executions>
-           </plugin>
         </plugins>
     </build>
 
@@ -97,48 +75,15 @@
 
     <dependencies>
         <!--
-          modules to be included in this bundle
+          modules to be included in this bundle - reusing nucleus-hk2 staged
+          content as-is
         -->       
         <dependency>
-            <groupId>com.sun.enterprise</groupId>
-            <artifactId>hk2</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>javax.xml.stream</groupId>
-                    <artifactId>stax-api</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.googlecode.jtype</groupId>
-                    <artifactId>jtype</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.jvnet</groupId>
-                    <artifactId>tiger-types</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>junit</groupId>
-                    <artifactId>junit</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <!-- file list artifact for previous package - used to avoid duplicate
-             package content -->
-        <dependency>
-            <groupId>org.glassfish.packager</groupId>
-	    <artifactId>felix</artifactId>
-	    <version>${project.version}</version>
-            <classifier>artifacts</classifier>
-	    <type>properties</type>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <!-- This bundle is used to provide support for META-INF/services in OSGi environment.
-                 Since we are changing StAX, JAXB, JAX-RS bundles to use this facility, nucleus distro
-                 seems to be the best place to package this bundle.
-            -->
-            <groupId>org.glassfish.hk2</groupId>
-	    <artifactId>osgi-resource-locator</artifactId>
-        </dependency>
+           <groupId>org.glassfish.packager</groupId>
+           <artifactId>nucleus-hk2</artifactId>
+           <version>${project.version}</version>
+           <type>zip</type>
+       </dependency>
    </dependencies>
 
     <profiles>

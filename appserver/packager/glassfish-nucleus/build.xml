@@ -46,40 +46,34 @@
 
    <target name="create.package">
 	  <property name="package.name" value="glassfish-nucleus"/> 
-          <property name="previous.package.name" value="glassfish-grizzly" />
-        
-       <antcall target="filter-module-artifacts"/>
+         
+        <resolveArtifact artifactId="nucleus" property="nucleus.zip"/>
        
-       <stage-module-jars/>
-       <stage-distribution-fragments/>
- 
-       <!-- explicitly moving flashlight-agent.jar to lib/monitor -->
-       <move file="target/stage/${install.dir.name}/glassfish/modules/flashlight-agent.jar" todir="target/stage/${install.dir.name}/glassfish/lib/monitor" failonerror="false"/>
+	<unzip src="${nucleus.zip}" dest="target/stage/${install.dir.name}">
+        </unzip>   
 
-       <!-- leaving custom handling of top level scripts/config -->
-       <resolveArtifact artifactId="nucleus-base" property="nucleus-base.zip"/>
-       
-	<unzip src="${nucleus-base.zip}" dest="target/stage/${install.dir.name}/glassfish">
-           <patternset>
-		   <exclude name="**/domains/**"/>
-           </patternset>
-        </unzip>
-
-        <mkdir dir="target/stage/${install.dir.name}/glassfish/domains" />
+        <move file="target/stage/${install.dir.name}/nucleus"
+            tofile="target/stage/${install.dir.name}/glassfish" 
+            failonerror="false" />
 
         <copy todir="target/stage/${install.dir.name}/bin">
 		<fileset dir="src/main/resources/bin"/>
 	</copy>
 
+       <!-- remove glassfish/bin/nadmin.* files which came from nucleus -->
+
+        <delete file="target/stage/${install.dir.name}/glassfish/bin/nadmin" failonerror="false" />
+        <delete file="target/stage/${install.dir.name}/glassfish/bin/nadmin.bat" failonerror="false" />
+        
 	<chmod file="target/stage/${install.dir.name}/bin/*" perm="ugo+rx"/>
 	<chmod file="target/stage/${install.dir.name}/glassfish/bin/*" perm="ugo+rx"/>
+        <chmod file="target/stage/${install.dir.name}/glassfish/lib/nadmin" perm="ugo+rx"/>
 
        <if test="${compression}">
 	       <antcall target="pack.compression" />
        </if>
 
        <antcall target="create-zip-artifact"/>		
-       <antcall target="create-list-artifact"/>
 
    </target>
 </project>
