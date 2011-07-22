@@ -57,6 +57,7 @@
 
         <chmod file="target/stage/${install.dir.name}/bin/*" perm="ugo+rx"/>
 	<chmod file="target/stage/${install.dir.name}/glassfish/bin/*" perm="ugo+rx"/>
+        <chmod file="target/stage/${install.dir.name}/glassfish/lib/nadmin" perm="ugo+rx"/>
 	<chmod file="target/stage/${install.dir.name}/mq/bin/*" perm="ugo+rx"/>
 
 	 <!-- stage servicetag registry file and set source value -->
