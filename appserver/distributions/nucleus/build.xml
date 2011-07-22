@@ -44,6 +44,16 @@
 <project name="glassfish Nucleus distribution creation" default="create.distribution" basedir=".">
     <import file="../distributions.xml"/>
     <property name="source.distribution.name" value="GlassFish Open Source Edition 3.2 Nucleus"/>
+
+    <target name="init">
+        <condition property="windows">
+            <os family="windows" />
+        </condition>
+        <condition property="unix">
+            <os family="unix" />
+        </condition>
+    </target>
+
     <target name="create.distribution">
         <echo message="Creating distribution: nucleus"/>
         <unzip dest="target/stage">
@@ -116,6 +126,7 @@
         <!-- deploy distribution artifact to maven repository" -->
         <attachArtifact file="target/nucleus.zip"/>
    </target>
+
    <target name="create-domain" depends="create-domain-on-windows, create-domain-on-unix"/>
 
    <target name="create-domain-on-windows" depends="init" if="windows">
