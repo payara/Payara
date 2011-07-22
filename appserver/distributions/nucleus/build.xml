@@ -56,6 +56,44 @@
 
         <chmod file="target/stage/${install.dir.name}/bin/*" perm="ugo+rx"/>
 	<chmod file="target/stage/${install.dir.name}/glassfish/bin/*" perm="ugo+rx"/>
+        <chmod file="target/stage/${install.dir.name}/glassfish/lib/nadmin" perm="ugo+rx"/>
+
+
+        <!-- stage servicetag registry file and set source value -->
+
+        <resolveArtifact artifactId="servicetag-registry" groupId="org.glassfish.registration" property="servicetag-registry.zip"/>
+
+
+        <unzip src="${servicetag-registry.zip}"
+           dest="target/stage/${install.dir.name}">
+          <patternset>
+                 <exclude name="META-INF/**"/>
+         </patternset>
+        </unzip>
+
+       <replace file="target/stage/${install.dir.name}/glassfish/lib/registration/servicetag-registry.xml"
+               token="%%%SOURCE%%%" value="${source.distribution.name}"/>
+
+        <!-- stage appropriate legal content for this distribution -->
+
+        <resolveArtifact artifactId="legal-fragment" groupId="org.glassfish.packager" property="legal-fragment.zip"/>
+
+
+        <unzip src="${legal-fragment.zip}"
+           dest="target/stage/${install.dir.name}">
+          <patternset>
+                  <exclude name="META-INF/**"/>
+          </patternset>
+        </unzip>
+
+        <!-- use web profile 3rd party licence file -->
+
+        <delete file="target/stage/${install.dir.name}/glassfish/legal/3RD-PARTY-LICENSE.txt" quiet="true" />
+        <move file="target/stage/${install.dir.name}/glassfish/legal/3RD-PARTY-LICENSE-WEB-PROFILE.txt"
+                tofile="target/stage/${install.dir.name}/glassfish/legal/3RD-PARTY-LICENSE.txt" />
+
+        <!-- create domain -->
+        <antcall target="create-domain"/>
 
         <!-- create distribution zip-->
        	<zip file="target/nucleus.zip" duplicate="preserve">
@@ -63,7 +101,7 @@
 		    includes="${install.dir.name}/bin/*"
 		    excludes="${install.dir.name}/bin/*.bat" />
 	    <zipfileset dir="target/stage" filemode="755"
-		    includes="${install.dir.name}/glassfish/bin/*"
+		    includes="${install.dir.name}/glassfish/bin/*, ${install.dir.name}/glassfish/lib/nadmin"
 		    excludes="${install.dir.name}/glassfish/bin/*.bat" />
             <zipfileset dir="target/stage">
 		    <include name="${install.dir.name}/bin/*.bat" />
@@ -77,5 +115,20 @@
         </zip> 
         <!-- deploy distribution artifact to maven repository" -->
         <attachArtifact file="target/nucleus.zip"/>
+   </target>
+   <target name="create-domain" depends="create-domain-on-windows, create-domain-on-unix"/>
+
+   <target name="create-domain-on-windows" depends="init" if="windows">
+       <ant antfile="../distributions.xml" target="create-domain">
+           <property name="exec.dir" value="${basedir}/target/stage/${install.dir.name}/glassfish/bin"/>
+           <property name="exec.executable" value="${basedir}/target/stage/${install.dir.name}/glassfish/bin/asadmin.bat"/>
+       </ant>
+   </target>
+
+   <target name="create-domain-on-unix" depends="init" if="unix">
+       <ant antfile="../distributions.xml" target="create-domain">
+           <property name="exec.dir" value="${basedir}/target/stage/${install.dir.name}/glassfish/bin"/>
+           <property name="exec.executable" value="${basedir}/target/stage/${install.dir.name}/glassfish/bin/asadmin"/>
+       </ant>
    </target>
 </project>

@@ -44,7 +44,7 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.glassfish.distributions</groupId>
-        <artifactId>distributions</artifactId>
+        <artifactId>nucleus-distributions</artifactId>
         <version>3.2-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
@@ -115,31 +115,6 @@
         </plugins>
     </build>
 
-    <!--
-    Activate this profile with "mvn -P ips"
-    <profiles>
-        <profile>
-            <id>ips</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-            </activation>
-            <build>
-            <plugins>
-            <plugin>
-                <groupId>org.jvnet.maven-antrun-extended-plugin</groupId>
-                <artifactId>maven-antrun-extended-plugin</artifactId>
-                <configuration>
-                    <tasks>
-                        <ant dir="." antfile="build.xml" target="create.distribution"/>
-                        <ant dir="." antfile="../distributions.xml" target="create-nucleus-distributions"/>
-                    </tasks>
-                </configuration>
-             </plugin>
-            </plugins>
-            </build>
-        </profile>
-   </profiles>
-    -->
 
     <dependencies>
         <!-- Artifacts to be included in the distribution -->
@@ -148,25 +123,25 @@
 
         <dependency>
             <groupId>org.glassfish.packager</groupId>
-            <artifactId>felix</artifactId>
+            <artifactId>nucleus-felix</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>
         <dependency>
             <groupId>org.glassfish.packager</groupId>
-            <artifactId>glassfish-hk2</artifactId>
+            <artifactId>nucleus-hk2</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>
         <dependency>
             <groupId>org.glassfish.packager</groupId>
-            <artifactId>glassfish-grizzly</artifactId>
+            <artifactId>nucleus-grizzly</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>
         <dependency>
             <groupId>org.glassfish.packager</groupId>
-            <artifactId>glassfish-nucleus</artifactId>
+            <artifactId>nucleus</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>
@@ -186,20 +161,6 @@
             <scope>provided</scope>
             <type>jar</type>
         </dependency>
-        <!-- additional servicetag registry dependency -->
-        <dependency>
-            <groupId>org.glassfish.registration</groupId>
-            <artifactId>servicetag-registry</artifactId>
-            <version>${project.version}</version>
-            <type>distribution-fragment</type>
-        </dependency>
-        <!-- additional legal content dependency -->
-        <dependency>
-            <groupId>org.glassfish.packager</groupId>
-            <artifactId>legal-fragment</artifactId>
-            <version>${project.version}</version>
-            <type>zip</type>
-        </dependency>
-
+  
     </dependencies>
 </project>

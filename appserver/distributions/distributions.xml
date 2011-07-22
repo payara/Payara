@@ -73,14 +73,7 @@
     
 </target>
 
-<target name="create-atomic-distributions"> 
-    <ant antfile="../atomic/atomic-distributions.xml"/>
-    <antcall target="create-distributions"> 
-         <param name="image.name" value="atomic"/>
-    </antcall>
-</target>
-
-<target name="create-nucleus-distributions" depends="create-atomic-distributions"> 
+<target name="create-nucleus-distributions"> 
     <ant antfile="../nucleus/nucleus-distributions.xml"/>
     <antcall target="create-distributions"> 
          <param name="image.name" value="nucleus"/>

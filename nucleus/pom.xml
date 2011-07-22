@@ -121,6 +121,7 @@
                 <module>flashlight</module>
                 <module>deployment</module>
                 <module>packager</module>
+                <module>distributions</module>
             </modules>
             <build>
                 <plugins>
@@ -161,6 +162,7 @@
                 <module>flashlight</module>
                 <module>deployment</module>
                 <module>packager</module>    
+                <module>distributions</module>    
             </modules>
         </profile>        
         <profile>
@@ -201,6 +203,7 @@
                 <module>flashlight</module>
                 <module>deployment</module>
                 <module>packager</module>
+                <module>distributions</module>
             </modules>
        </profile>
 
@@ -217,6 +220,7 @@
                 <module>flashlight</module>
                 <module>deployment</module>
                 <module>packager</module> 
+                <module>distributions</module> 
             </modules>
         </profile>
     </profiles>

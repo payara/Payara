@@ -49,7 +49,7 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.glassfish</groupId>
-        <artifactId>glassfish-parent</artifactId>
+        <artifactId>glassfish-nucleus-parent</artifactId>
         <version>3.2-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
@@ -68,15 +68,11 @@
 
     <packaging>pom</packaging>
     <groupId>org.glassfish.distributions</groupId>
-    <artifactId>distributions</artifactId>
-    <name>Glassfish distributions</name>
+    <artifactId>nucleus-distributions</artifactId>
+    <name>Nucleus distributions</name>
 
     <modules>
-	<module>nucleus</module>
-	<module>web</module>
-	<module>glassfish</module>
-<!-- disable appclient distribution build since we're not using it yet -->
-<!-- 	<module>appclient</module> -->
+	<module>atomic</module>
     </modules>
 
      <build>
