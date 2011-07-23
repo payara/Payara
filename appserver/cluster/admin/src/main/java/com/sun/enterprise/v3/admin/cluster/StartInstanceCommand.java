@@ -303,7 +303,9 @@ public class StartInstanceCommand implements AdminCommand {
     private String makeCommandHuman(List<String> command) {
         StringBuilder fullCommand = new StringBuilder();
 
-        fullCommand.append("asadmin ");
+        fullCommand.append("lib");
+        fullCommand.append(System.getProperty("file.separator"));
+        fullCommand.append("nadmin ");
 
         for (String s : command) {
             fullCommand.append(" ");

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -250,7 +250,9 @@ public class DeleteInstanceCommand implements AdminCommand {
     private String makeCommandHuman(List<String> command) {
         StringBuilder fullCommand = new StringBuilder();
 
-        fullCommand.append("asadmin ");
+        fullCommand.append("lib");
+        fullCommand.append(System.getProperty("file.separator"));
+        fullCommand.append("nadmin ");
 
         for (String s : command) {
             if (s.equals("_delete-instance-filesystem")) {

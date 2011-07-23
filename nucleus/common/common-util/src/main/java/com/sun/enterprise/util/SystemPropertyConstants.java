@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,6 +41,7 @@
 package com.sun.enterprise.util;
 
 import com.sun.enterprise.util.i18n.StringManager;
+import java.io.File;
 
 public class SystemPropertyConstants
 {
@@ -320,14 +321,18 @@ public class SystemPropertyConstants
      * the INSTALL_ROOT_PROPERTY is not defined
      */
     public static final String getAsAdminScriptLocation() {
-        return getAsAdminScriptLocation(System.getProperty(SystemPropertyConstants.INSTALL_ROOT_PROPERTY));
+        return getAdminScriptLocation(System.getProperty(SystemPropertyConstants.INSTALL_ROOT_PROPERTY));
     }
 
     public static final String getAsAdminScriptLocation(String installRoot) {
+        return getAdminScriptLocation(installRoot);
+    }
+
+    public static final String getAdminScriptLocation(String installRoot) {
         final StringBuilder sb = new StringBuilder();
         final String ext = OS.isWindows() ? OS.WINDOWS_BATCH_FILE_EXTENSION : "";
-        final String ASADMIN = "asadmin";
-        final String suffix = new StringBuilder("bin").append(System.getProperty("file.separator")).append(ASADMIN).append(ext).toString();
+        final String ASADMIN = "nadmin";
+        final String suffix = new StringBuilder("lib").append(System.getProperty("file.separator")).append(ASADMIN).append(ext).toString();
         sb.append(installRoot);
         final String fs = System.getProperty("file.separator");
         if (!sb.toString().endsWith(fs))
@@ -337,5 +342,14 @@ public class SystemPropertyConstants
         return ( sb.toString() );
     }
 
-
+    /** Returns the component identifier associated with the INSTALL_ROOT.
+     *  For example if INSTALL_ROOT is /home/glassfish3/glassfish the
+     *  component name will "glassfish".
+     * @return String representing the component identifier.
+     */
+    public static final String getComponentName() {
+        final File installRootFile = new File(System.getProperty(
+            SystemPropertyConstants.INSTALL_ROOT_PROPERTY));
+        return installRootFile.getName();
+    }
 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -169,7 +169,8 @@ public class NodeRunner  {
             ProcessManagerException {
 
         List<String> fullcommand = new ArrayList<String>();
-        String installDir = node.getInstallDirUnixStyle() + "/glassfish";
+        String installDir = node.getInstallDirUnixStyle() + "/" +
+            SystemPropertyConstants.getComponentName();
         if (!StringUtils.ok(installDir)) {
             throw new IllegalArgumentException("Node does not have an installDir");
         }
@@ -220,16 +221,17 @@ public class NodeRunner  {
                     "Node is not of type SSH");
         }
 
-        String installDir = node.getInstallDirUnixStyle() + "/glassfish";
+        String installDir = node.getInstallDirUnixStyle() + "/" +
+            SystemPropertyConstants.getComponentName();
         if (!StringUtils.ok(installDir)) {
             throw new IllegalArgumentException("Node does not have an installDir");
         }
 
         List<String> fullcommand = new ArrayList<String>();
 
-        // We can just use "asadmin" even on Windows since the SSHD provider
+        // We can just use "nadmin" even on Windows since the SSHD provider
         // will locate the command (.exe or .bat) for us
-        fullcommand.add(installDir + "/bin/asadmin");
+        fullcommand.add(installDir + "/lib/nadmin");
         fullcommand.addAll(args);
 
         try{

@@ -245,7 +245,7 @@ public class InstallNodeCommand extends SSHCommandsBase {
             try {
                 if (binDirFiles.isEmpty()) {
                     //binDirFiles can be empty if the archive isn't a fresh one
-                    String cmd = "cd '" + installDir + "/glassfish/bin'; chmod 0755 *";
+                    String cmd = "cd '" + installDir + "/" + SystemPropertyConstants.getComponentName() + "/bin'; chmod 0755 *";
                     int status = sshLauncher.runCommand(cmd, outStream);
                     if (status != 0){
                         logger.info (Strings.get("jar.failed", host, outStream.toString()));
@@ -257,6 +257,15 @@ public class InstallNodeCommand extends SSHCommandsBase {
                     }
                 }
                 logger.finer("Fixed file permissions of all files under " + host + ":" + installDir + "/bin");
+            } catch (IOException ioe){
+                logger.info(Strings.get("fix.permissions.failed", host, installDir));
+                throw new IOException(ioe);
+            }
+
+            logger.info("Fixing file permissions for nadmin file under " + host + ":" + installDir + "/lib");
+            try {
+                sftpClient.chmod((installDir + "/" + SystemPropertyConstants.getComponentName() + "/lib/nadmin"), 0755);
+                logger.finer("Fixed file permission for nadmin under " + host + ":" + installDir + "/" + SystemPropertyConstants.getComponentName() + "/lib/nadmin");
             } catch (IOException ioe){
                 logger.info(Strings.get("fix.permissions.failed", host, installDir));
                 throw new IOException(ioe);
@@ -314,7 +323,7 @@ public class InstallNodeCommand extends SSHCommandsBase {
             }
             if (fileName.contains("domains") || fileName.contains("nodes")) {
                 iter.remove();
-            } else if (fileName.startsWith("bin") || fileName.startsWith("glassfish/bin")) {
+            } else if (fileName.startsWith("bin") || fileName.startsWith(SystemPropertyConstants.getComponentName() + "/bin")) {
                 binDirFiles.add(fileName);
             }
         }
@@ -345,7 +354,7 @@ public class InstallNodeCommand extends SSHCommandsBase {
         boolean res = false;
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
         try {
-            String cmd = "'" + installDir + "/glassfish/bin/asadmin' version --local --terse";
+            String cmd = "'" + installDir + "/" + SystemPropertyConstants.getComponentName() + "/lib/nadmin' version --local --terse";
             int status = sshLauncher.runCommand(cmd, outStream);
             if (status == 0){
                 logger.finer(host + ":'" + cmd + "'" + " returned ["+ outStream.toString() + "]");
