@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,20 +38,21 @@
  * holder.
  */
 
-package com.sun.enterprise.config.serverbeans;
+package org.glassfish.web.config.serverbeans;
+
+import org.jvnet.hk2.config.Attribute;
+import org.jvnet.hk2.config.ConfigBeanProxy;
+import org.jvnet.hk2.component.Injectable;
+import org.jvnet.hk2.config.Configured;
+import org.jvnet.hk2.config.Element;
 
 import java.beans.PropertyVetoException;
 import java.util.List;
-import javax.validation.constraints.Max;
+
 import org.glassfish.api.admin.config.PropertiesDesc;
-import org.glassfish.quality.ToDo;
-import org.jvnet.hk2.component.Injectable;
-import org.jvnet.hk2.config.Attribute;
-import org.jvnet.hk2.config.ConfigBeanProxy;
-import org.jvnet.hk2.config.Configured;
-import org.jvnet.hk2.config.Element;
 import org.jvnet.hk2.config.types.Property;
 import org.jvnet.hk2.config.types.PropertyBag;
+import org.glassfish.quality.ToDo;
 
 /**
  *
@@ -62,31 +63,44 @@ import org.jvnet.hk2.config.types.PropertyBag;
 }) */
 
 @Configured
-public interface SessionProperties extends ConfigBeanProxy, Injectable, PropertyBag {
+public interface StoreProperties extends ConfigBeanProxy, Injectable, PropertyBag {
 
     /**
-     * Gets the value of the timeoutInSeconds property.
-     *
-     * <p>A value of zero or less indicates that the session should
-     * never timeout
+     * Gets the value of the directory property.
      *
      * @return possible object is
      *         {@link String }
      */
-    @Attribute(defaultValue="1800")
-    @Max(value=Integer.MAX_VALUE)
-    String getTimeoutInSeconds();
+    @Attribute
+    public String getDirectory();
 
     /**
-     * Sets the value of the timeoutInSeconds property.
+     * Sets the value of the directory property.
      *
      * @param value allowed object is
      *              {@link String }
      */
-    void setTimeoutInSeconds(String value) throws PropertyVetoException;
+    public void setDirectory(String value) throws PropertyVetoException;
+
+    /**
+     * Gets the value of the reapIntervalInSeconds property.
+     *
+     * @return possible object is
+     *         {@link String }
+     */
+    @Attribute(dataType=Integer.class)
+    public String getReapIntervalInSeconds();
+
+    /**
+     * Sets the value of the reapIntervalInSeconds property.
+     *
+     * @param value allowed object is
+     *              {@link String }
+     */
+    public void setReapIntervalInSeconds(String value) throws PropertyVetoException;
     
     /**
-    	Properties as per {@link PropertyBag}
+    	Properties as per {@link org.jvnet.hk2.config.types.PropertyBag}
      */
     @ToDo(priority=ToDo.Priority.IMPORTANT, details="Provide PropertyDesc for legal props" )
     @PropertiesDesc(props={})

@@ -49,13 +49,13 @@ import java.util.regex.Pattern;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.web.TldProvider;
 import org.glassfish.internal.api.ServerContext;
+import org.glassfish.web.config.serverbeans.WebContainer;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.component.PostConstruct;
 import org.jvnet.hk2.component.Singleton;
 import com.sun.enterprise.config.serverbeans.Config;
-import com.sun.enterprise.config.serverbeans.WebContainer;
 import com.sun.enterprise.util.net.JarURIPattern;
 import com.sun.enterprise.module.Module;
 import com.sun.enterprise.module.ModulesRegistry;
@@ -116,7 +116,7 @@ public class GlassFishTldProvider
          */        
         Config cfg = serverContext.getDefaultHabitat().getComponent(
             Config.class, ServerEnvironment.DEFAULT_INSTANCE_NAME);
-        WebContainer webContainer = cfg.getWebContainer();
+        WebContainer webContainer = cfg.getExtensionByType(WebContainer.class);
         if (webContainer == null) {
             return;
         }

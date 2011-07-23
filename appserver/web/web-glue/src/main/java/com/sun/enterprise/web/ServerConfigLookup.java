@@ -41,13 +41,14 @@
 package com.sun.enterprise.web;
 
 import com.sun.enterprise.config.serverbeans.*;
-import com.sun.enterprise.config.serverbeans.WebContainer;
 import com.sun.enterprise.web.session.PersistenceType;
 import com.sun.logging.LogDomains;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.deployment.DeployCommandParameters;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.internal.api.ClassLoaderHierarchy;
+import org.glassfish.web.config.serverbeans.*;
+import org.glassfish.web.config.serverbeans.WebContainer;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
@@ -83,7 +84,7 @@ public class ServerConfigLookup {
         }
         
         WebContainer webContainerBean
-            = configBean.getWebContainer();
+            = configBean.getExtensionByType(WebContainer.class);
         if (webContainerBean == null) {
             return null;
         }
@@ -134,7 +135,7 @@ public class ServerConfigLookup {
         }
         
         WebContainer webContainerBean
-            = configBean.getWebContainer();
+            = configBean.getExtensionByType(WebContainer.class);
         if (webContainerBean == null) {
             return null;
         }

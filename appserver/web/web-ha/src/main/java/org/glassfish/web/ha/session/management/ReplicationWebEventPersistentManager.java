@@ -48,7 +48,6 @@
 package org.glassfish.web.ha.session.management;
 
 import com.sun.enterprise.config.serverbeans.Config;
-import com.sun.enterprise.config.serverbeans.WebContainer;
 import com.sun.logging.LogDomains;
 import org.apache.catalina.Context;
 import org.apache.catalina.LifecycleException;
@@ -61,6 +60,7 @@ import org.glassfish.ha.common.NoopHAReplicaPredictor;
 import org.glassfish.ha.store.api.BackingStoreConfiguration;
 import org.glassfish.ha.store.api.BackingStoreException;
 import org.glassfish.ha.store.api.BackingStoreFactory;
+import org.glassfish.web.config.serverbeans.WebContainer;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;

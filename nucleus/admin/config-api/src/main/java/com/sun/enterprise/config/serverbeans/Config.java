@@ -232,24 +232,6 @@ public interface Config extends ConfigBeanProxy, Injectable, Named, PropertyBag,
     void setConnectorService(ConnectorService value) throws PropertyVetoException;
 
     /**
-     * Gets the value of the webContainer property.
-     *
-     * @return possible object is
-     *         {@link WebContainer }
-     */
-    @Element(required=true)
-    @NotNull
-    WebContainer getWebContainer();
-
-    /**
-     * Sets the value of the webContainer property.
-     *
-     * @param value allowed object is
-     *              {@link WebContainer }
-     */
-    void setWebContainer(WebContainer value) throws PropertyVetoException;
-
-    /**
      * Gets the value of the ejbContainer property.
      *
      * @return possible object is
@@ -632,7 +614,6 @@ public interface Config extends ConfigBeanProxy, Injectable, Named, PropertyBag,
                 c.getNetworkConfig(),
                 c.getSecurityService(),
                 c.getThreadPools(),
-                c.getWebContainer(),
             };
             for (ConfigBeanProxy cbp : dirref) {
                 if (cbp != null) {

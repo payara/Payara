@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,21 +38,20 @@
  * holder.
  */
 
-package com.sun.enterprise.config.serverbeans;
-
-import org.jvnet.hk2.config.Attribute;
-import org.jvnet.hk2.config.ConfigBeanProxy;
-import org.jvnet.hk2.component.Injectable;
-import org.jvnet.hk2.config.Configured;
-import org.jvnet.hk2.config.Element;
+package org.glassfish.web.config.serverbeans;
 
 import java.beans.PropertyVetoException;
 import java.util.List;
-
+import javax.validation.constraints.Max;
 import org.glassfish.api.admin.config.PropertiesDesc;
+import org.glassfish.quality.ToDo;
+import org.jvnet.hk2.component.Injectable;
+import org.jvnet.hk2.config.Attribute;
+import org.jvnet.hk2.config.Element;
+import org.jvnet.hk2.config.Configured;
+import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.types.Property;
 import org.jvnet.hk2.config.types.PropertyBag;
-import org.glassfish.quality.ToDo;
 
 /**
  *
@@ -63,24 +62,25 @@ import org.glassfish.quality.ToDo;
 }) */
 
 @Configured
-public interface StoreProperties extends ConfigBeanProxy, Injectable, PropertyBag {
+public interface ManagerProperties extends ConfigBeanProxy, Injectable, PropertyBag {
+
 
     /**
-     * Gets the value of the directory property.
+     * Gets the value of the sessionFileName property.
      *
      * @return possible object is
      *         {@link String }
      */
     @Attribute
-    public String getDirectory();
+    public String getSessionFileName();
 
     /**
-     * Sets the value of the directory property.
+     * Sets the value of the sessionFileName property.
      *
      * @param value allowed object is
      *              {@link String }
      */
-    public void setDirectory(String value) throws PropertyVetoException;
+    public void setSessionFileName(String value) throws PropertyVetoException;
 
     /**
      * Gets the value of the reapIntervalInSeconds property.
@@ -88,7 +88,7 @@ public interface StoreProperties extends ConfigBeanProxy, Injectable, PropertyBa
      * @return possible object is
      *         {@link String }
      */
-    @Attribute(dataType=Integer.class)
+    @Attribute(defaultValue="60",dataType=Integer.class)
     public String getReapIntervalInSeconds();
 
     /**
@@ -98,6 +98,42 @@ public interface StoreProperties extends ConfigBeanProxy, Injectable, PropertyBa
      *              {@link String }
      */
     public void setReapIntervalInSeconds(String value) throws PropertyVetoException;
+
+    /**
+     * Gets the value of the maxSessions property.
+     *
+     * @return possible object is
+     *         {@link String }
+     */
+    @Attribute(defaultValue="-1")
+    @Max(value=Integer.MAX_VALUE)
+    public String getMaxSessions();
+
+    /**
+     * Sets the value of the maxSessions property.
+     *
+     * @param value allowed object is
+     *              {@link String }
+     */
+    public void setMaxSessions(String value) throws PropertyVetoException;
+
+    /**
+     * Gets the value of the sessionIdGeneratorClassname property.
+     *
+     * @return possible object is
+     *         {@link String }
+     */
+    @Attribute
+    public String getSessionIdGeneratorClassname();
+
+    /**
+     * Sets the value of the sessionIdGeneratorClassname property.
+     *
+     * @param value allowed object is
+     *              {@link String }
+     */
+    public void setSessionIdGeneratorClassname(String value) throws PropertyVetoException;
+    
     
     /**
     	Properties as per {@link org.jvnet.hk2.config.types.PropertyBag}

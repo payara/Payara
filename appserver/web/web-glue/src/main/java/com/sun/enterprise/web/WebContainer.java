@@ -44,7 +44,6 @@ import com.sun.appserv.server.util.Version;
 import com.sun.common.util.logging.LoggingConfigImpl;
 import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.config.serverbeans.Server;
-import com.sun.enterprise.config.serverbeans.SessionProperties;
 import com.sun.enterprise.container.common.spi.JCDIService;
 import com.sun.enterprise.container.common.spi.util.ComponentEnvManager;
 import com.sun.enterprise.container.common.spi.util.InjectionManager;
@@ -96,6 +95,8 @@ import org.glassfish.internal.data.ApplicationRegistry;
 import org.glassfish.internal.deployment.Deployment;
 import org.glassfish.internal.grizzly.ContextMapper;
 import org.glassfish.web.admin.monitor.*;
+import org.glassfish.web.config.serverbeans.*;
+import org.glassfish.web.config.serverbeans.SessionProperties;
 import org.glassfish.web.valve.GlassFishValve;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
@@ -417,8 +418,11 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
         setDebugLevel();
 
         String maxDepth = null;
-        if (serverConfig.getWebContainer() != null)
-            maxDepth = serverConfig.getWebContainer().getPropertyValue(DISPATCHER_MAX_DEPTH);
+        org.glassfish.web.config.serverbeans.WebContainer configWC =
+               serverConfig.getExtensionByType(
+               org.glassfish.web.config.serverbeans.WebContainer.class); 
+        if (configWC != null)
+            maxDepth = configWC.getPropertyValue(DISPATCHER_MAX_DEPTH);
         if (maxDepth != null) {
             int depth = -1;
             try {

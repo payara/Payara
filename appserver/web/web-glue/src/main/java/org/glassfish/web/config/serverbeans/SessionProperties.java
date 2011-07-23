@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,64 +38,58 @@
  * holder.
  */
 
-package com.sun.enterprise.config.serverbeans;
-
-import org.jvnet.hk2.config.Configured;
-import org.jvnet.hk2.config.Element;
-import org.jvnet.hk2.config.ConfigBeanProxy;
-import org.jvnet.hk2.config.Attribute;
-import org.jvnet.hk2.config.types.Property;
-import org.jvnet.hk2.config.types.PropertyBag;
-import org.jvnet.hk2.component.Injectable;
+package org.glassfish.web.config.serverbeans;
 
 import java.beans.PropertyVetoException;
 import java.util.List;
-
-import org.glassfish.config.support.datatypes.PositiveInteger;
-
+import javax.validation.constraints.Max;
 import org.glassfish.api.admin.config.PropertiesDesc;
-import org.glassfish.api.admin.config.PropertyDesc;
+import org.glassfish.quality.ToDo;
+import org.jvnet.hk2.component.Injectable;
+import org.jvnet.hk2.config.Attribute;
+import org.jvnet.hk2.config.ConfigBeanProxy;
+import org.jvnet.hk2.config.Configured;
+import org.jvnet.hk2.config.Element;
+import org.jvnet.hk2.config.types.Property;
+import org.jvnet.hk2.config.types.PropertyBag;
 
-import javax.validation.constraints.NotNull;
+/**
+ *
+ */
 
+/* @XmlType(name = "", propOrder = {
+    "property"
+}) */
 
 @Configured
-public interface WebContainer extends ConfigBeanProxy, Injectable, PropertyBag {
+public interface SessionProperties extends ConfigBeanProxy, Injectable, PropertyBag {
 
     /**
-     * Gets the value of the sessionConfig property.
+     * Gets the value of the timeoutInSeconds property.
+     *
+     * <p>A value of zero or less indicates that the session should
+     * never timeout
      *
      * @return possible object is
-     *         {@link SessionConfig }
+     *         {@link String }
      */
-    @Element
-    @NotNull
-    SessionConfig getSessionConfig();
+    @Attribute(defaultValue="1800")
+    @Max(value=Integer.MAX_VALUE)
+    String getTimeoutInSeconds();
 
     /**
-     * Sets the value of the sessionConfig property.
+     * Sets the value of the timeoutInSeconds property.
      *
      * @param value allowed object is
-     *              {@link SessionConfig }
+     *              {@link String }
      */
-    void setSessionConfig(SessionConfig value) throws PropertyVetoException;
-
-    @Attribute(defaultValue = "false")
-    String getJspCachingEnabled();
-
-    void setJspCachingEnabled(String value) throws PropertyVetoException;
-
+    void setTimeoutInSeconds(String value) throws PropertyVetoException;
+    
     /**
-        Properties.
+    	Properties as per {@link PropertyBag}
      */
-@PropertiesDesc(
-    props={
-        @PropertyDesc(name="dispatcher-max-depth", defaultValue="20", dataType=PositiveInteger.class,
-            description="Prevents recursive include or forward statements from creating an infinite loop by setting a maximum " +
-                "nested dispatch level. If this level is exceeded, the following message is written to the server log: " +
-                "Exceeded maximum depth for nested request dispatches")
-    }
-    )
+    @ToDo(priority=ToDo.Priority.IMPORTANT, details="Provide PropertyDesc for legal props" )
+    @PropertiesDesc(props={})
     @Element
     List<Property> getProperty();
 }

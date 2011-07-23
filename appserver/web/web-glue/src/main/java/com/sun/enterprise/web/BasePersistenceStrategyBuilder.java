@@ -40,7 +40,6 @@
 
 package com.sun.enterprise.web;
 
-import com.sun.enterprise.config.serverbeans.SessionProperties;
 import com.sun.enterprise.deployment.runtime.web.ManagerProperties;
 import com.sun.enterprise.deployment.runtime.web.SessionManager;
 import com.sun.enterprise.deployment.runtime.web.StoreProperties;
@@ -48,6 +47,7 @@ import com.sun.enterprise.deployment.runtime.web.WebProperty;
 import com.sun.logging.LogDomains;
 import org.apache.catalina.Context;
 import org.apache.catalina.core.StandardContext;
+import org.glassfish.web.config.serverbeans.SessionProperties;
 import org.jvnet.hk2.config.types.Property;
 
 import java.io.File;
@@ -147,14 +147,14 @@ public abstract class BasePersistenceStrategyBuilder
     
     public void readInstanceLevelParams(ServerConfigLookup serverConfigLookup) {
 
-        com.sun.enterprise.config.serverbeans.SessionManager smBean =
+        org.glassfish.web.config.serverbeans.SessionManager smBean =
             serverConfigLookup.getInstanceSessionManager();
      
         if (smBean != null) {
             // The persistence-type controls what properties of the 
             // session manager can be configured
             
-            com.sun.enterprise.config.serverbeans.ManagerProperties mgrBean =
+            org.glassfish.web.config.serverbeans.ManagerProperties mgrBean =
                 smBean.getManagerProperties();
             if (mgrBean != null) {
                 // manager reap-interval-in-seconds
@@ -229,7 +229,7 @@ public abstract class BasePersistenceStrategyBuilder
                 }
             }            
             
-            com.sun.enterprise.config.serverbeans.StoreProperties storeBean =
+            org.glassfish.web.config.serverbeans.StoreProperties storeBean =
                 smBean.getStoreProperties();
             
             if (storeBean != null) {
