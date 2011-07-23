@@ -54,12 +54,6 @@
     <artifactId>libvirt</artifactId>
     <packaging>hk2-jar</packaging>
     <name>libvirt plugin</name>
-    <repositories>
-        <repository>
-            <id>libvirt</id>
-            <url>http://www.libvirt.org/maven2/</url>
-        </repository>
-    </repositories>
 
     <properties>
         <findbugs.exclude>${project.basedir}/exclude.xml</findbugs.exclude>
