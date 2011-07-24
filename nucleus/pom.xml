@@ -129,7 +129,7 @@
                     <plugin>
                         <groupId>org.glassfish.build</groupId>
                         <artifactId>maven-glassfishbuild-plugin</artifactId>
-                        <version>${project.version}</version>
+                        <version>${glassfishbuild.version}</version>
                         <executions>
                             <execution>
                                 <id>echo</id>

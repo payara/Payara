@@ -147,7 +147,7 @@
             <extension>
                 <groupId>org.glassfish.build</groupId>
                 <artifactId>maven-glassfishbuild-extension</artifactId>
-                <version>${project.version}</version>
+                <version>${glassfishbuild.version}</version>
             </extension>
         </extensions>
     </build>

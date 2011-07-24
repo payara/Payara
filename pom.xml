@@ -165,6 +165,7 @@
         <asm.version>3.1</asm.version>
         <shoal.version>1.6.06</shoal.version>
         <ha-api.version>3.1.8</ha-api.version>
+        <glassfishbuild.version>3.2.1</glassfishbuild.version>
     </properties>
 
 
@@ -196,7 +197,7 @@
                     <plugin>
                         <groupId>org.glassfish.build</groupId>
                         <artifactId>maven-glassfishbuild-plugin</artifactId>
-                        <version>${project.version}</version>
+                        <version>${glassfishbuild.version}</version>
                         <executions>
                             <execution>
                                 <id>echo</id>
@@ -360,7 +361,7 @@
                 <plugin>
                     <groupId>org.glassfish.build</groupId>
                     <artifactId>maven-glassfishbuild-plugin</artifactId>
-                    <version>${project.version}</version>
+                    <version>${glassfishbuild.version}</version>
                     <configuration>
                         <!-- configuration for the checkout mojo -->
                         <checkoutDirectory>.</checkoutDirectory>
