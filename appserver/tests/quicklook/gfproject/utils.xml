@@ -218,7 +218,7 @@
                 </filterchain>
             </loadfile>
 
-            <property name="@{property}" value="(none)"/>
+            <property name="@{property}" value="(PASSED: no problems found)"/>
             <echo message="@{text}${@{property}}${line.separator}"/>
         </sequential>
     </macrodef>
