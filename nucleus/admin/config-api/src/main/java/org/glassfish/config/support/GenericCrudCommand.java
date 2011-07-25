@@ -439,7 +439,7 @@ public abstract class GenericCrudCommand implements CommandModelProvider, PostCo
                 ConfigModel childCM = ((ConfigModel.Node) prop).getModel();
                 String childTypeName = childCM.targetTypeName;
                 if (childTypeName.equals(child.getName())) {
-                    return elementName;
+                    return childCM.getTagName();
                 }
                 // check the inheritance hierarchy
                 List<ConfigModel> subChildrenModels = document.getAllModelsImplementing(
@@ -447,7 +447,7 @@ public abstract class GenericCrudCommand implements CommandModelProvider, PostCo
                 if (subChildrenModels!=null) {
                     for (ConfigModel subChildModel : subChildrenModels) {
                         if (subChildModel.targetTypeName.equals(child.getName())) {
-                            return elementName;
+                            return subChildModel.getTagName();
                         }
                     }
                 }
