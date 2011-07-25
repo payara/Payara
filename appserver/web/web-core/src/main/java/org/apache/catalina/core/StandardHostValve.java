@@ -87,7 +87,7 @@ import java.util.logging.Logger;
  * @version $Revision: 1.21 $ $Date: 2007/04/10 17:12:22 $
  */
 
-final class StandardHostValve
+public final class StandardHostValve
     extends ValveBase {
 
 
@@ -586,7 +586,7 @@ final class StandardHostValve
 
 
     // START SJSAS 6374691
-    void setErrorReportValve(GlassFishValve errorReportValve) {
+    public void setErrorReportValve(GlassFishValve errorReportValve) {
         this.errorReportValve = errorReportValve;
     }
     // END SJSAS 6374691
