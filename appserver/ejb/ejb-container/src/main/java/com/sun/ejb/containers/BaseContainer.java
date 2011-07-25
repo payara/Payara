@@ -3670,7 +3670,6 @@ public abstract class BaseContainer
     }
     
     private EJBHomeImpl instantiateEJBHomeImpl() throws Exception {
-
         EJBHomeInvocationHandler handler =
             new EJBHomeInvocationHandler(ejbDescriptor, homeIntf,
                                          proxyInvocationInfoMap);
@@ -3689,15 +3688,17 @@ public abstract class BaseContainer
         Class[] proxyInterfaces = (Class [])
             proxyInterfacesSet.toArray(new Class[proxyInterfacesSet.size()]);
 
-        EJBHome ejbHomeProxy = (EJBHome) 
-            Proxy.newProxyInstance( loader, proxyInterfaces, handler);
-        
-        handler.setProxy(ejbHomeProxy);
+        try {
+            EJBHome ejbHomeProxy = (EJBHome) Proxy.newProxyInstance(loader, proxyInterfaces, handler);
+            handler.setProxy(ejbHomeProxy);
+        } catch (ClassCastException e) {
+            String msg = localStrings.getLocalString("ejb.basecontainer_invalid_home_interface",
+                    "Home interface [{0}] is invalid since it does not extend javax.ejb.EJBHome.", homeIntf);
+            throw new IllegalArgumentException(msg, e);
+        }
 
         homeImpl.setContainer(this);
-            
         return homeImpl;
-
     }
 
     private EJBHomeImpl instantiateEJBRemoteBusinessHomeImpl() 
@@ -3755,13 +3756,16 @@ public abstract class BaseContainer
             proxyInterfacesSet.toArray(new Class[proxyInterfacesSet.size()]);
         
         // Client's EJBLocalHome object
-        EJBLocalHome proxy = (EJBLocalHome) Proxy.newProxyInstance
-            (loader, proxyInterfaces, invHandler);
-            
-        invHandler.setProxy(proxy);
+        try {
+            EJBLocalHome proxy = (EJBLocalHome) Proxy.newProxyInstance(loader, proxyInterfaces, invHandler);
+            invHandler.setProxy(proxy);
+        } catch (ClassCastException e) {
+            String msg = localStrings.getLocalString("ejb.basecontainer_invalid_local_home_interface",
+                    "Local home interface [{0}] is invalid since it does not extend javax.ejb.EJBLocalHome.", localHomeIntf);
+            throw new IllegalArgumentException(msg, e);
+        }
 
         homeImpl.setContainer(this);
-
         return homeImpl;
     }
 
@@ -3812,18 +3816,21 @@ public abstract class BaseContainer
     protected EJBLocalObjectImpl instantiateEJBLocalObjectImpl() 
         throws Exception {
         EJBLocalObjectImpl localObjImpl = null;
-
         EJBLocalObjectInvocationHandler handler = 
             new EJBLocalObjectInvocationHandler(proxyInvocationInfoMap,
                                                 localIntf);
-
         localObjImpl = handler;
-        EJBLocalObject localObjectProxy = (EJBLocalObject) 
-                ejbLocalObjectProxyCtor.newInstance( new Object[] { handler });
-        handler.setProxy(localObjectProxy);
+        
+        try {
+            EJBLocalObject localObjectProxy = (EJBLocalObject) ejbLocalObjectProxyCtor.newInstance(new Object[]{handler});
+            handler.setProxy(localObjectProxy);
+        } catch (ClassCastException e) {
+            String msg = localStrings.getLocalString("ejb.basecontainer_invalid_local_interface",
+                    "Local component interface [{0}] is invalid since it does not extend javax.ejb.EJBLocalObject.", localIntf);
+            throw new IllegalArgumentException(msg, e);
+        }
 
         localObjImpl.setContainer(this);
-
         return localObjImpl;
     }
 
@@ -3889,20 +3896,21 @@ public abstract class BaseContainer
     }
     
     protected EJBObjectImpl instantiateEJBObjectImpl() throws Exception {
-        
         EJBObjectInvocationHandler handler =
             new EJBObjectInvocationHandler(proxyInvocationInfoMap,
                                            remoteIntf);        
-
         EJBObjectImpl ejbObjImpl = handler;
 
-        EJBObject ejbObjectProxy = (EJBObject)
-            ejbObjectProxyCtor.newInstance( new Object[] { handler });
-
-        handler.setEJBObject(ejbObjectProxy);
+        try {
+            EJBObject ejbObjectProxy = (EJBObject) ejbObjectProxyCtor.newInstance(new Object[]{handler});
+            handler.setEJBObject(ejbObjectProxy);
+        } catch (ClassCastException e) {
+            String msg = localStrings.getLocalString("ejb.basecontainer_invalid_remote_interface", 
+                "Remote component interface [{0}] is invalid since it does not extend javax.ejb.EJBObject.", remoteIntf);
+            throw new IllegalArgumentException(msg, e);
+        }
 
         ejbObjImpl.setContainer(this);
-
         return ejbObjImpl;
     }
 
