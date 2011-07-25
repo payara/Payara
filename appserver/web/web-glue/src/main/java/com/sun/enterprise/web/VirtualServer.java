@@ -68,7 +68,6 @@ import org.apache.catalina.authenticator.AuthenticatorBase;
 import org.apache.catalina.authenticator.SingleSignOn;
 import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.core.StandardHost;
-import org.apache.catalina.core.StandardHostValve;
 import org.apache.catalina.deploy.ErrorPage;
 import org.apache.catalina.valves.RemoteAddrValve;
 import org.apache.catalina.valves.RemoteHostValve;
@@ -1163,7 +1162,7 @@ public class VirtualServer extends StandardHost
      * @param valveName The valve's fully qualified class nam
      */
     protected void addValve(String valveName) {
-        Object valve = loadInstance(valveName);
+        Object valve = safeLoadInstance(valveName);
         if (valve instanceof Valve) {
             addValve((Valve) valve);
         } else if (valve instanceof GlassFishValve) {
@@ -1180,7 +1179,7 @@ public class VirtualServer extends StandardHost
      * @param listenerName The fully qualified class name of the listener
      */
     protected void addListener(String listenerName) {
-        Object listener = loadInstance(listenerName);
+        Object listener = safeLoadInstance(listenerName);
 
         if ( listener == null ) return;
 
@@ -1194,11 +1193,16 @@ public class VirtualServer extends StandardHost
         }
     }
 
-    private Object loadInstance(String className){
+    @Override
+    protected Object loadInstance(String className) throws Exception {
+        // See IT 11674 for why CommonClassLoader must be used
+        Class clazz = serverContext.getCommonClassLoader().loadClass(className);
+        return clazz.newInstance();
+    }
+
+    private Object safeLoadInstance(String className){
         try{
-            // See IT 11674 for why CommonClassLoader must be used
-            Class clazz = serverContext.getCommonClassLoader().loadClass(className);
-            return clazz.newInstance();
+            return loadInstance(className);
         } catch (Throwable ex){
             _logger.log(Level.SEVERE,"webcontainer.unableToLoadExtension",ex);
         }
@@ -1863,24 +1867,6 @@ public class VirtualServer extends StandardHost
 
     void setServerContext(ServerContext serverContext) {
         this.serverContext = serverContext;
-    }
-
-    @Override
-    public void configureStandardHostValve(StandardHostValve host) {
-        // Set error report valve
-        if ((getErrorReportValveClass() != null)
-            && !"".equals(getErrorReportValveClass())) {
-            try {
-                // See IT 11674 for why CommonClassLoader must be used
-                Class clazz = serverContext.getCommonClassLoader().loadClass(getErrorReportValveClass());
-                GlassFishValve valve = (GlassFishValve) clazz.newInstance();
-                host.setErrorReportValve(valve);
-            } catch (Throwable t) {
-                _logger.log(Level.SEVERE,
-                        "standardHost.invalidErrorReportValveClass",
-                        t);
-            }
-        }
     }
       
     // ----------------------------------------------------- embedded methods
