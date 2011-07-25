@@ -41,7 +41,7 @@
 package com.sun.web.security;
 
 import com.sun.enterprise.security.ee.SecurityUtil;
-import com.sun.enterprise.security.ee.jmac.config.HttpServletHelper;
+import com.sun.enterprise.security.jmac.config.HttpServletHelper;
 import com.sun.enterprise.security.web.integration.WebPrincipal;
 import com.sun.enterprise.security.web.integration.WebSecurityManager;
 import com.sun.enterprise.security.web.integration.WebSecurityManagerFactory;

@@ -43,14 +43,10 @@
                         com.sun.enterprise.security; \
                         com.sun.enterprise.security.auth; \
                         com.sun.enterprise.security.auth.nonce; \
-                        com.sun.enterprise.security.jauth; \
                         com.sun.enterprise.security.audit; \
                         com.sun.enterprise.security.auth.login; \
                         com.sun.enterprise.security.authorize; \
                         com.sun.enterprise.security.factory; \
-                        com.sun.enterprise.security.jmac; \
-                        com.sun.enterprise.security.jmac.callback; \
-                        com.sun.enterprise.security.jmac.config; \
                         com.sun.enterprise.security.provider; \
                         com.iplanet.ias.security.auth.realm; \
                         com.sun.appserv.security; \

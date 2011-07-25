@@ -40,23 +40,16 @@
 
 package com.sun.enterprise.security;
 
-import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import java.security.Security;
-import javax.security.auth.message.config.AuthConfigFactory;
-import javax.security.jacc.PolicyContext;
-import javax.security.jacc.PolicyContextHandler;
 
 import org.jvnet.hk2.component.PostConstruct;
 import org.jvnet.hk2.component.PreDestroy;
 
 import com.sun.enterprise.security.audit.AuditManager;
 import com.sun.enterprise.security.auth.realm.RealmsManager;
-import com.sun.enterprise.security.authorize.PolicyContextHandlerImpl;
 import com.sun.enterprise.security.common.Util;
-import com.sun.enterprise.security.jmac.config.GFAuthConfigFactory;
 import com.sun.enterprise.security.ssl.SSLUtils;
 import org.glassfish.internal.api.ServerContext;
 import com.sun.logging.LogDomains;
@@ -64,8 +57,6 @@ import org.glassfish.api.Startup.Lifecycle;
 import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.EventTypes;
 import org.glassfish.api.event.Events;
-import org.glassfish.external.probe.provider.PluginPoint;
-import org.glassfish.external.probe.provider.StatsProviderManager;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
@@ -112,6 +103,8 @@ public class SecurityLifecycle implements  PostConstruct, PreDestroy {
     @Inject
     private RealmsManager realmsManager;
 
+    @Inject(optional=true)
+    private ContainerSecurityLifecycle eeSecLifecycle;
 
     private EventListener listener = null;
 
@@ -178,9 +171,6 @@ public class SecurityLifecycle implements  PostConstruct, PreDestroy {
             //replaced with SharedSecureRandom API
             //secServUtil.initSecureSeed();
 
-            //jmac
-            initializeJMAC();
-
             // jacc
             //registerPolicyHandlers();
             // assert(policyLoader != null);
@@ -209,19 +199,7 @@ public class SecurityLifecycle implements  PostConstruct, PreDestroy {
         }
     }
 
-    private void initializeJMAC() throws IOException {
-
-	// define default factory if it is not already defined
-	// factory will be constructed on first getFactory call.
-
-	String defaultFactory = Security.getProperty
-	    (AuthConfigFactory.DEFAULT_FACTORY_SECURITY_PROPERTY);
-	if (defaultFactory == null) {
-	    Security.setProperty
-		(AuthConfigFactory.DEFAULT_FACTORY_SECURITY_PROPERTY,
-		 GFAuthConfigFactory.class.getName());
- 	}
-    }
+    
 
 /*    private void registerPolicyHandlers()
             throws javax.security.jacc.PolicyContextException {

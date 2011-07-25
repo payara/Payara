@@ -187,6 +187,11 @@
             <artifactId>security</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.glassfish.security</groupId>
+            <artifactId>security-ee</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 
         <!--dependency>
             <groupId>org.glassfish.connectors</groupId>

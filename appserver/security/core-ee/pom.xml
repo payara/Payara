@@ -288,18 +288,8 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.external</groupId>
-            <artifactId>ldapbp-repackaged</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
             <groupId>org.glassfish.connectors</groupId>
             <artifactId>connectors-internal-api</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.external</groupId>
-            <artifactId>libpam4j-repackaged</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
