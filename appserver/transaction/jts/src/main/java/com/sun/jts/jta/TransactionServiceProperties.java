@@ -203,6 +203,9 @@ public class TransactionServiceProperties {
                     String serverId = String.valueOf(DEFAULT_SERVER_ID);
                     System.setProperty(J2EE_SERVER_ID_PROP, serverId);
     
+                    ServerContext ctx = habitat.getByContract(ServerContext.class);
+                    String instanceName = ctx.getInstanceName();
+
                     /**
                      * if the auto recovery is true, always transaction logs will be written irrespective of
                      * disable_distributed_transaction_logging.
@@ -212,11 +215,9 @@ public class TransactionServiceProperties {
                      **/
                     if (!isAutomaticRecovery && disable_distributed_transaction_logging) {
                         Configuration.disableFileLogging();
-                    }
+                    } else {
 
-                    ServerContext ctx = habitat.getByContract(ServerContext.class);
-                    String instanceName = ctx.getInstanceName();
-                    if (dbLoggingResource == null) {
+                       // if (dbLoggingResource == null) {
                         Domain domain = habitat.getComponent(Domain.class);
                         Server server = domain.getServerNamed(instanceName);
 

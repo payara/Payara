@@ -745,11 +745,8 @@ public class Configuration extends Object {
         return isAppClient;
     }
 
-   static boolean isDBLoggingEnabled() {
-       if (dbLogResource == null)
-           return false;
-       else
-           return true;
+   public static boolean isDBLoggingEnabled() {
+       return (dbLogResource != null);
    }
    
    public static void disableFileLogging() {

@@ -1848,7 +1848,7 @@ public class TopCoordinator extends CoordinatorImpl {
 		if (overallResult == Vote.VoteCommit || 
 				overallResult == Vote.VoteReadOnly) {
 		    
-		    if (participants.getLAOResource() != null) {
+		    //if (participants.getLAOResource() != null) {
 	                if (logRecord == null && Configuration.isDBLoggingEnabled()) {
                             if (!(LogDBHelper.getInstance().addRecord(
 				  tranState.localTID.longValue(),
@@ -1856,6 +1856,7 @@ public class TopCoordinator extends CoordinatorImpl {
                                 overallResult = Vote.VoteRollback;
                             }
 			}	
+		    if (participants.getLAOResource() != null) {
 			if (overallResult != Vote.VoteRollback) {
                             participants.getLAOResource().commit();
 		        }

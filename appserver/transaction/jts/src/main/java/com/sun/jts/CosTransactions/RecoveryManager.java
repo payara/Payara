@@ -1182,8 +1182,17 @@ public class RecoveryManager {
             return;
         }
 
+        dbXARecovery(Configuration.getServerName(), xaResources);
+
+        try {
+        resyncComplete(false, false);
+        } catch (Throwable ex) { ex.printStackTrace(); }
+
+	}
+
+    static void dbXARecovery(String serverName, Enumeration xaResources) {
         // Get global TIDs
-        Map gtidMap = LogDBHelper.getInstance().getGlobalTIDMap();
+        Map gtidMap = LogDBHelper.getInstance().getGlobalTIDMap(serverName);
 
         Set uniqueXids = new HashSet();
 
@@ -1207,7 +1216,7 @@ public class RecoveryManager {
 
                     String branchQualifier =
                         new String(inDoubtXids[i].getBranchQualifier());
-                    String serverName = Configuration.getServerName();
+                    //String serverName = Configuration.getServerName();
                     
                     if (branchQualifier.startsWith(serverName)) {
 
@@ -1239,7 +1248,7 @@ public class RecoveryManager {
                                  xaResource.rollback(inDoubtXids[i]);
                             } else {
                                  xaResource.commit(inDoubtXids[i], one_phase);
-                                 LogDBHelper.getInstance().deleteRecord(localTID.longValue());
+                                 LogDBHelper.getInstance().deleteRecord(localTID.longValue(), serverName);
                             }
                             } catch (Exception ex) { ex.printStackTrace(); }
                         } else {
@@ -1263,9 +1272,11 @@ public class RecoveryManager {
                     }
                 }
         }
+/**
         try {
         resyncComplete(false, false);
         } catch (Throwable ex) { ex.printStackTrace(); }
+**/
     }
 
 
@@ -1850,7 +1861,8 @@ class ResyncThread extends Thread  {
 	}
         try {
             if (Configuration.isDBLoggingEnabled()) {
-                RecoveryManager.dbXARecovery();
+                // DB recovery on startup fails to lookup the logging resource - GLASSFISH-16505
+                // RecoveryManager.dbXARecovery();
             } else {
                 if (RecoveryManager.recover()) {
                     RecoveryManager.resync();

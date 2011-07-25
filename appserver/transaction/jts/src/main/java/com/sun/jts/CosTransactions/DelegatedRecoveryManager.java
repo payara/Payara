@@ -201,13 +201,18 @@ public class DelegatedRecoveryManager {
     
     public static boolean delegated_recover(String logPath, XAResource[] resources) throws Exception  {
        try {
-            File recoveryFile = new File(logPath,LogControl.RECOVERY_STRING_FILE_NAME);
-            RandomAccessFile raf = new RandomAccessFile(recoveryFile,"r");
-            long length = raf.length();
-            byte b1[] = new byte[(int)length]; // length is very small
-            raf.readFully(b1);
-            String serverName = new String(b1);
-            raf.close();
+            String serverName = null;
+            if (Configuration.isDBLoggingEnabled()) {
+                serverName = LogDBHelper.getInstance().getServerNameForInstanceName(logPath);
+            } else {
+                File recoveryFile = new File(logPath,LogControl.RECOVERY_STRING_FILE_NAME);
+                RandomAccessFile raf = new RandomAccessFile(recoveryFile,"r");
+                long length = raf.length();
+                byte b1[] = new byte[(int)length]; // length is very small
+                raf.readFully(b1);
+                serverName = new String(b1);
+                raf.close();
+            }
             return delegated_recover(serverName,logPath,resources);
        } catch (IOException ex) {
            _logger.log(Level.WARNING,"jts.exception_in_recovery_file_handling",ex);
@@ -220,6 +225,11 @@ public class DelegatedRecoveryManager {
             return false;
         }
         Configuration.setServerName(logPath,serverName);
+        if (Configuration.isDBLoggingEnabled()) {
+            RecoveryManager.dbXARecovery(serverName, Collections.enumeration(Arrays.asList(resources)));
+            return true;
+        }
+
         boolean result = false;
         boolean keypointRequired = false;
         RecoveryStateHolder state = new RecoveryStateHolder();
