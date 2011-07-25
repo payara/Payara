@@ -57,6 +57,7 @@ import org.glassfish.quality.ToDo;
 
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
+import org.jvnet.hk2.config.DuckTyped;
 
 /**
  *
@@ -281,23 +282,6 @@ public interface AvailabilityService extends ConfigBeanProxy, Injectable, Proper
     void setHaStoreHealthcheckIntervalInSeconds(String value) throws PropertyVetoException;
 
     /**
-     * Gets the value of the webContainerAvailability property.
-     *
-     * @return possible object is
-     *         {@link WebContainerAvailability }
-     */
-    @Element
-    WebContainerAvailability getWebContainerAvailability();
-
-    /**
-     * Sets the value of the webContainerAvailability property.
-     *
-     * @param value allowed object is
-     *              {@link WebContainerAvailability }
-     */
-    void setWebContainerAvailability(WebContainerAvailability value) throws PropertyVetoException;
-
-    /**
      * Gets the value of the ejbContainerAvailability property.
      *
      * @return possible object is
@@ -331,11 +315,31 @@ public interface AvailabilityService extends ConfigBeanProxy, Injectable, Proper
      */
     void setJmsAvailability(JmsAvailability value) throws PropertyVetoException;
     
+    @Element("*")
+    List<AvailabilityServiceExtension> getExtensions();
+
+    @DuckTyped
+    <T extends AvailabilityServiceExtension> T getExtensionByType(Class<T> type);
+
     /**
     	Properties as per {@link PropertyBag}
      */
     @ToDo(priority=ToDo.Priority.IMPORTANT, details="Provide PropertyDesc for legal props" )
     @PropertiesDesc(props={})
     @Element
+    @Override
     List<Property> getProperty();
+
+    class Duck {
+            public static <T extends AvailabilityServiceExtension> T getExtensionByType(AvailabilityService as, Class<T> type) {
+            for (AvailabilityServiceExtension extension : as.getExtensions()) {
+                try {
+                    return type.cast(extension);
+                } catch (Exception e) {
+                    // ignore, not the right type.
+                }
+            }
+            return null;
+        }
+    }
 }

@@ -65,7 +65,7 @@ import org.glassfish.quality.ToDo;
 
 @Configured
 public interface WebContainerAvailability extends ConfigBeanProxy, Injectable,
-        PropertyBag {
+        PropertyBag, AvailabilityServiceExtension {
 
     /**
      * Gets the value of the availabilityEnabled property.

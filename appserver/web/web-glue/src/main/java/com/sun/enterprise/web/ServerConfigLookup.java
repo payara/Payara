@@ -183,7 +183,7 @@ public class ServerConfigLookup {
      */     
     private WebContainerAvailability getWebContainerAvailability() {
         AvailabilityService as = getAvailabilityService();
-        return ((as != null)? as.getWebContainerAvailability() : null);
+        return ((as != null)? as.getExtensionByType(WebContainerAvailability.class) : null);
     }
     
     /**

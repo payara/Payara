@@ -37,28 +37,18 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+package com.sun.enterprise.config.serverbeans;
 
-package org.glassfish.admin.amx.intf.config;
+import org.jvnet.hk2.config.ConfigBeanProxy;
+import org.jvnet.hk2.config.Configured;
 
-@Deprecated
-public interface AvailabilityService
-        extends ConfigElement, PropertiesAccess {
-
-
-    public String getAvailabilityEnabled();
-
-    public void setAvailabilityEnabled(String param1);
-
-    public String getStorePoolName();
-
-    public void setStorePoolName(String param1);
-
-    public JmsAvailability getJmsAvailability();
-
-    public EjbContainerAvailability getEjbContainerAvailability();
-
-    public void setEjbContainerAvailability(EjbContainerAvailability param1);
-
-    public void setJmsAvailability(JmsAvailability param1);
-
+/**
+ * Tag interface to extend the availability-service configuration
+ * Any implementation of this interface will be stored under the domain.xml
+ * availability-service element.
+ *
+ * @author Tom Mueller
+ */
+@Configured
+public interface AvailabilityServiceExtension extends ConfigBeanProxy {
 }
