@@ -151,8 +151,10 @@ public class InstallNodeCommand extends SSHCommandsBase {
             throw new CommandException(e);
         } finally {
             if (!save && delete) {
-                if (zipFile != null)
-                    zipFile.delete();
+                if (zipFile != null) {
+                    if(!zipFile.delete())
+                        zipFile.deleteOnExit();
+                }
             }
         }
 
