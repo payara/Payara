@@ -66,6 +66,7 @@
         </delete>
     </target>
     
+    <!-- classpath at QL runtime (i.e. not for building of testing apps) -->
     <path id="run.testng.classpath">
         <fileset dir="${glassfish.home}/modules">
             <include name="**/hk2*.jar"/>
@@ -83,10 +84,24 @@
         </fileset>        
     </path>
 
-    
+
+    <!-- classpath at QL build time for building testing apps -->
     <path id="class.path">
         <fileset dir="${glassfish.home}/modules">
             <include name="**/*.jar"/>
+            <!-- excluding some obviously unnecessary jars to reduce classpath length (> 32kB causes javac to fail on WinXP) -->
+            <exclude name="cmp*.jar"/>
+            <exclude name="connectors-*.jar"/>
+            <exclude name="console-*.jar"/>
+            <exclude name="deployment-*.jar"/>
+            <exclude name="*help.jar"/>
+            <exclude name="orb-*.jar"/>
+            <exclude name="org.apache.felix.*"/>
+            <exclude name="org.eclipse.persistence.*"/>
+            <exclude name="stats77.jar"/>
+            <exclude name="trilead-ssh2-repackaged.jar"/>
+            <exclude name="virt-core.jar"/>
+            <exclude name="woodstox-osgi.jar"/>
         </fileset>
         <pathelement location="${class.output}"/>
         <pathelement location="${test.class.output}"/>
