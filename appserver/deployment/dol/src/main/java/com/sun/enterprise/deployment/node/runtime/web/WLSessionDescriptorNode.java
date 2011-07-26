@@ -96,11 +96,11 @@ public class WLSessionDescriptorNode extends RuntimeDescriptorNode {
             timeoutSecs = Integer.parseInt(value);
         } else if (name.equals(RuntimeTagNames.INVALIDATION_INTERVAL_SECS)) {
             // make sure that it is an integer
-            int reapIntervalSeconds = Integer.parseInt(value);
+            Integer.parseInt(value);
             addManagerProperty(REAP_INTERVAL_SECONDS, value);
         } else if (name.equals(RuntimeTagNames.MAX_IN_MEMORY_SESSIONS)) {
             // make sure that it is an integer
-            int maxSessions = Integer.parseInt(value);
+            Integer.parseInt(value);
             addManagerProperty(MAX_SESSIONS, value);
         } else if (name.equals(RuntimeTagNames.COOKIE_NAME)) {
             CookieConfig cookieConfig = getCookieConfig();
