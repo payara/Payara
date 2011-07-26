@@ -111,7 +111,7 @@ public class SecurityUpgradeService implements ConfigurationUpgrade, PostConstru
             File[] applicationDirs = genPolicyDir.listFiles();
             if(applicationDirs != null) {
                 for(File policyDir:applicationDirs) {
-                    deleteFile(genPolicyDir);
+                    deleteFile(policyDir);
                 }
             }
         }
@@ -281,7 +281,9 @@ public class SecurityUpgradeService implements ConfigurationUpgrade, PostConstru
                     }
                 }
             }
-            path.delete();
+            if(!path.delete()) {
+                return false;
+            }
         }
         return true;
     }

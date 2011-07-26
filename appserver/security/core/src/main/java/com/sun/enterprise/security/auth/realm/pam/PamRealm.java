@@ -104,8 +104,7 @@ public final class PamRealm extends AppservRealm {
     @Override
     public Enumeration getGroupNames(String username) throws NoSuchUserException {   
         try {
-            Set<String> groupsSet = Collections.EMPTY_SET;
-            groupsSet = new PAM(PAM_SERVICE).getGroupsOfUser(username);
+            Set<String> groupsSet = new PAM(PAM_SERVICE).getGroupsOfUser(username);
             return Collections.enumeration(groupsSet);
         } catch (PAMException ex) {
             Logger.getLogger(PamRealm.class.getName()).log(Level.SEVERE,

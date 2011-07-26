@@ -43,6 +43,7 @@ package com.sun.enterprise.security.provider;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import javax.security.jacc.*;
 
+import java.io.IOException;
 import java.util.logging.*;
 import com.sun.logging.LogDomains;
 
@@ -375,7 +376,9 @@ public class PolicyConfigurationFactoryImpl extends PolicyConfigurationFactory {
 		    if(logger.isLoggable(Level.FINE)){
 			logger.fine("JACC Policy Provider: creating new policy repository");
 		    }
-		    rf.mkdirs();
+		    if(!rf.mkdirs()) {
+                throw new IOException();
+            }
 		}
 	    }
 	} catch (Exception e) {

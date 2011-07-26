@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -1101,7 +1101,7 @@ public final class FileRealm extends IASRealm
      * Test method. Not for production use.
      *
      */
-    public static void main(String[] args)
+/*    public static void main(String[] args)
     {
         if (args.length==0) {
             help();
@@ -1135,7 +1135,7 @@ public final class FileRealm extends IASRealm
         } catch (Exception e) {
             e.printStackTrace(System.out);
         }
-    } 
+    } */
     /**
      * Show help for the test command line tool.
      *

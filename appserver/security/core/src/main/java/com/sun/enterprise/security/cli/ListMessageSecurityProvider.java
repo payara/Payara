@@ -135,7 +135,7 @@ public class ListMessageSecurityProvider implements AdminCommand {
             }
         }
         final SecurityService secService = config.getSecurityService();
-        List<MessageSecurityConfig> mscs = secService.getMessageSecurityConfig();
+        secService.getMessageSecurityConfig();
 
         report.getTopMessagePart().setMessage(
             localStrings.getLocalString(

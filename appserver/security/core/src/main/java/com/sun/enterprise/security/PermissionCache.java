@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -254,8 +254,7 @@ public class PermissionCache extends Object {
 	String oldpcID = null;
 	try {
 	    oldpcID = PolicyContext.getContextID();
-	    if (!this.pcID.equals(oldpcID) &&
-		(this.pcID == null || !this.pcID.equals(oldpcID))) { 
+	    if (this.pcID == null || !this.pcID.equals(oldpcID)) {
 		setPc = true;
 	    }
 	} catch (Exception ex) {

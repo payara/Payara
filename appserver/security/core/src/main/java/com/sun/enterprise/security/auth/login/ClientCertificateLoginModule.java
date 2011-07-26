@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -148,8 +148,6 @@ public class ClientCertificateLoginModule implements LoginModule {
      * @return true in all cases since this <code>LoginModule</code>
      *		should not be ignored.
      *
-     * @exception FailedLoginException if the authentication fails. <p>
-     *
      * @exception LoginException if this <code>LoginModule</code>
      *		is unable to perform the authentication.
      */
@@ -174,7 +172,7 @@ public class ClientCertificateLoginModule implements LoginModule {
 	    callbacks[0] = new ChoiceCallback(localStrings.getLocalString("login.certificate", "Choose from list of certificates: "),  as, 0, false);
  
 	    callbackHandler.handle(callbacks);
-	    String[] choices = ((ChoiceCallback)callbacks[0]).getChoices();
+
 	    int[] idx = ((ChoiceCallback)callbacks[0]).getSelectedIndexes();
 
 	    if (idx == null) {

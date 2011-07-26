@@ -492,14 +492,14 @@ public abstract class SecureAdminCommand implements AdminCommand {
                     /*
                      * Get an existing or create a new writeable http child under the new protocol.
                      */
-                    final Http http = writeableHttpWithFileCacheChild(context.t, secAdminListenerProtocol_w);
+                    writeableHttpWithFileCacheChild(context.t, secAdminListenerProtocol_w);
 
                     /*
                      * Get an existing or create a new writeable ssl child under the new protocol.
                      * Which cert nickname we set depends on whether this is the DAS's config
                      * we're working on or an instance's.  
                      */
-                    final Ssl ssl = writeableSsl(context.t, secAdminListenerProtocol_w,
+                    writeableSsl(context.t, secAdminListenerProtocol_w,
                             chooseCertNickname(
                                 context.config_w.getName(),
                                 context.topLevelContext.writableSecureAdmin().dasAlias(),
@@ -653,7 +653,7 @@ public abstract class SecureAdminCommand implements AdminCommand {
                         return true;
                     }
 
-                    final HttpRedirect httpRedirect_w = writeableHttpRedirect(
+                    writeableHttpRedirect(
                             context.t, adminHttpRedirectProtocol_w);
 
                     final Protocol puProtocol_w = context.writableProtocol(
@@ -663,10 +663,10 @@ public abstract class SecureAdminCommand implements AdminCommand {
                     final PortUnification portUnif_w = writeablePortUnification(
                             context.t, puProtocol_w);
 
-                    final ProtocolFinder httpFinder = writeableProtocolFinder(
+                    writeableProtocolFinder(
                             context.t, portUnif_w, ProtocolFinderInfo.HTTP_FINDER);
 
-                    final ProtocolFinder adminHttpRedirectFinder = writeableProtocolFinder(
+                    writeableProtocolFinder(
                             context.t, portUnif_w, ProtocolFinderInfo.ADMIN_HTTP_REDIRECT_FINDER);
 
                     assignAdminListenerProtocol(context.t, context.config_w, PORT_UNIF_PROTOCOL_NAME);

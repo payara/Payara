@@ -125,7 +125,9 @@ public class EmbeddedSecurityUtil implements EmbeddedSecurity {
 
             File toConfigDir = new File(toInstanceDir, "config");
             if (!toConfigDir.exists()) {
-                toConfigDir.mkdir();
+                if(!toConfigDir.mkdir()) {
+                    throw new IOException();
+                }
             }
 
             //Copy files into new directory

@@ -42,6 +42,7 @@ package com.sun.enterprise.security.provider;
 
 import javax.security.jacc.*;
 
+import java.io.*;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -55,8 +56,6 @@ import java.lang.reflect.Constructor;
 
 import java.security.*;
 import javax.security.auth.Subject;
-import java.io.File;
-import java.io.FileReader;
 
 import java.util.logging.*;
 import com.sun.logging.LogDomains;
@@ -69,9 +68,6 @@ import com.sun.enterprise.security.provider.PolicyParser.PermissionEntry;
 import com.sun.enterprise.security.provider.PolicyParser.PrincipalEntry;
 import org.glassfish.deployment.common.SecurityRoleMapper;
 import org.glassfish.deployment.common.SecurityRoleMapperFactory;
-
-import java.io.FileOutputStream;
-import java.io.OutputStreamWriter;
 
 /** 
  * Implementation of Jacc PolicyConfiguration Interface
@@ -392,7 +388,7 @@ public class PolicyConfigurationImpl implements PolicyConfiguration {
     *
     * @throws java.lang.SecurityException
     * if called by an AccessControlContext that has not been
-    * granted the "setPolicy" SecurityPermission.
+    * granted the "setPolicy" SecurityPermission.                  fa
     *
     * @throws java.lang.UnsupportedOperationException
     * if the state of the policy context whose interface is this
@@ -916,7 +912,11 @@ public class PolicyConfigurationImpl implements PolicyConfiguration {
             File[] files = f.listFiles();
             if (files != null && files.length > 0) {
                 for (int i = 0; i < files.length; i++) {
-                    files[i].delete();
+                    if(!files[i].delete()) {
+                        String msg = localStrings.getLocalString("pc.file_delete_error","Error while deleting policy file");
+                        logger.log(Level.SEVERE,msg);
+                        throw new RuntimeException(msg);
+                    }
                 }
              }
              //WORKAROUND: End 
@@ -1279,18 +1279,23 @@ public class PolicyConfigurationImpl implements PolicyConfiguration {
 
     private void createPolicyContextDirectory() {
 
-	String contextDirectoryName = getContextDirectoryName();
-	File d = new File(contextDirectoryName);
-	if (d.exists()) {
-	    if(!d.isDirectory()) {
-                String defMsg="unable to create policy context directory";
-                String msg=localStrings.getLocalString("pc.unable_to_create_context_directory",
-                      defMsg,new Object []{contextDirectoryName});
-		logger.log(Level.SEVERE,msg);
-		throw new RuntimeException(defMsg);
-	    } 
-	} else {
-	    d.mkdirs();
+        String contextDirectoryName = getContextDirectoryName();
+        File d = new File(contextDirectoryName);
+
+        String defMsg = "unable to create policy context directory";
+        String msg = localStrings.getLocalString("pc.unable_to_create_context_directory",
+                defMsg, new Object[]{contextDirectoryName});
+        if (d.exists()) {
+            if (!d.isDirectory()) {
+
+                logger.log(Level.SEVERE, msg);
+                throw new RuntimeException(defMsg);
+            }
+        } else {
+            if (!d.mkdirs()) {
+                logger.log(Level.SEVERE, msg);
+                throw new RuntimeException(defMsg);
+            }
 	}
     }
 

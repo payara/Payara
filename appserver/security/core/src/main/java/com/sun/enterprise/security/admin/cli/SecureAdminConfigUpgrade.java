@@ -157,8 +157,8 @@ public class SecureAdminConfigUpgrade implements ConfigurationUpgrade, PostConst
                 @Override
                 public Object run(Config config_w) throws PropertyVetoException, TransactionFailure {
                     
-                    final NetworkListener nl_w = createAdminNetworkListener(t, nc);
-                    final VirtualServer vs_w = createAdminVirtualServer(t, config_w);
+                    createAdminNetworkListener(t, nc);
+                    createAdminVirtualServer(t, config_w);
                     return config_w;
                 }
                 
