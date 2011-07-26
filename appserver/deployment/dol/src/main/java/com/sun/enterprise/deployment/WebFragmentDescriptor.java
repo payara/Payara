@@ -164,7 +164,7 @@ public class WebFragmentDescriptor extends WebBundleDescriptor
                 if (envProp.isConflict((EnvironmentProperty)enve)) {
                     conflictEnvironmentEntry = true;
                 }
-                unionInjectionTargets(envProp, (EnvironmentProperty)enve);
+                combineInjectionTargets(envProp, (EnvironmentProperty)enve);
             } else {
                 addEnvironmentEntry(enve);
             }
@@ -181,7 +181,7 @@ public class WebFragmentDescriptor extends WebBundleDescriptor
                 if (ejbRefDesc.isConflict((EjbReferenceDescriptor)ejbRef)) {
                     conflictEjbReference = true;
                 }
-                unionInjectionTargets(ejbRefDesc, (EnvironmentProperty)ejbRef);
+                combineInjectionTargets(ejbRefDesc, (EnvironmentProperty)ejbRef);
             } else {
                 addEjbReferenceDescriptor(ejbRef);
             }
@@ -198,7 +198,7 @@ public class WebFragmentDescriptor extends WebBundleDescriptor
                 if (sr.isConflict((ServiceReferenceDescriptor)serviceRef)) {
                     conflictServiceReference = true;
                 }
-                unionInjectionTargets(sr, serviceRef);
+                combineInjectionTargets(sr, serviceRef);
             } else {
                 addServiceReferenceDescriptor(serviceRef);
             }
@@ -215,7 +215,7 @@ public class WebFragmentDescriptor extends WebBundleDescriptor
                 if (resRef.isConflict(rrd)) {
                     conflictResourceReference = true;
                 }
-                unionInjectionTargets(rrd, resRef);
+                combineInjectionTargets(rrd, resRef);
             } else {
                 addResourceReferenceDescriptor(resRef);
             }
@@ -232,7 +232,7 @@ public class WebFragmentDescriptor extends WebBundleDescriptor
                 if (jdr.isConflict((JmsDestinationReferenceDescriptor)jdRef)) {
                     conflictJmsDestinationReference = true;
                 }
-                unionInjectionTargets(jdr, jdRef);   
+                combineInjectionTargets(jdr, jdRef);   
             } else {
                 addJmsDestinationReferenceDescriptor(jdRef);
             }
@@ -250,7 +250,7 @@ public class WebFragmentDescriptor extends WebBundleDescriptor
                 if (mdr.isConflict(mdRef)) {
                     conflictMessageDestinationReference = true;
                 }
-                unionInjectionTargets(mdr, mdRef);
+                combineInjectionTargets(mdr, mdRef);
             } else {
                 addMessageDestinationReferenceDescriptor(mdRef);
             }
@@ -267,7 +267,7 @@ public class WebFragmentDescriptor extends WebBundleDescriptor
                 if (emr.isConflict(emRef)) {
                     conflictEntityManagerReference = true;
                 }
-                unionInjectionTargets(emr, emRef);
+                combineInjectionTargets(emr, emRef);
             } else {
                 addEntityManagerReferenceDescriptor(emRef);
             }
@@ -284,7 +284,7 @@ public class WebFragmentDescriptor extends WebBundleDescriptor
                 if (emfr.isConflict(emfRef)) {
                     conflictEntityManagerFactoryReference = true;
                 }
-                unionInjectionTargets(emfr, emfRef);
+                combineInjectionTargets(emfr, emfRef);
             } else {
                 addEntityManagerFactoryReferenceDescriptor(emfRef);
             }
@@ -312,18 +312,6 @@ public class WebFragmentDescriptor extends WebBundleDescriptor
             } else {
                 getDataSourceDefinitionDescriptors().add(ddd);
             }
-        }
-    }
-
-    /**
-     * Copy all injection targets from env2 to env1.
-     *
-     * @param env1
-     * @param env2
-     */
-    private void unionInjectionTargets(EnvironmentProperty env1, EnvironmentProperty env2) {
-        for (InjectionTarget injTarget: env2.getInjectionTargets()) {
-            env1.addInjectionTarget(injTarget);
         }
     }
 

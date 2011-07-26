@@ -2101,7 +2101,7 @@ public class WebBundleDescriptor extends BundleDescriptor
      * @param env1
      * @param env2
      */
-    private void combineInjectionTargets(EnvironmentProperty env1, EnvironmentProperty env2) {
+    void combineInjectionTargets(EnvironmentProperty env1, EnvironmentProperty env2) {
         for (InjectionTarget injTarget: env2.getInjectionTargets()) {
             env1.addInjectionTarget(injTarget);
         }
