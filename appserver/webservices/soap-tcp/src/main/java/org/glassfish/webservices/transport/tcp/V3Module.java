@@ -78,7 +78,9 @@ public class V3Module extends WSTCPModule {
 
             @Override
             public void onDeployed(WebServiceEndpoint endpoint) {
-                endpoint.getWebComponentImpl().setLoadOnStartUp(0);
+                if (endpoint.getWebComponentImpl() != null) {
+                    endpoint.getWebComponentImpl().setLoadOnStartUp(0);
+                }
             }
 
             @Override
