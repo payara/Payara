@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -345,17 +345,5 @@ public class SessionStatsProvider{
         if (moduleName.equals(mName) && vsName.equals(hostName))
             return true;
         return false;
-    }
-
-    private void resetStats() {
-        activeSessionsCount.setCurrent(0L);
-        activeSessionsCount.setLowWaterMark(0L);
-        activeSessionsCount.setHighWaterMark(0L);
-        sessionsTotal.setCount(0);
-        expiredSessionsTotal.setCount(0);
-        rejectedSessionsTotal.setCount(0);
-        persistedSessionsTotal.setCount(0);
-        passivatedSessionsTotal.setCount(0);
-        activatedSessionsTotal.setCount(0);
     }
 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -193,14 +193,5 @@ public class JspStatsProvider {
         }
         
         return false;
-    }
-
-    private void resetStats() {
-        jspCount.setCurrent(0L);
-        jspCount.setLowWaterMark(0L);
-        jspCount.setHighWaterMark(0L);
-        totalJspCount.setCount(0);
-        jspReloadedCount.setCount(0);
-        jspErrorCount.setCount(0);
     }
 }
