@@ -48,7 +48,7 @@
         removeListElement(list="#{pageSession.tmpList}" name="list-sub-components" finalList="#{pageSession.tmpList}");
         gf.getChildrenNamesList(endpoint="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/http-service/virtual-server" result="#{pageSession.vsList}");
         addToMonitorList(oldList="#{pageSession.loginList}", newList="#{pageSession.tmpList}"  result="#{pageSession.appList}");
-        populateApplicationsMonitorDropDown(AppsList="#{appList}", MonitorList=>$attribute{monitorList} FirstItem=>$attribute{firstVal});
+        populateApplicationsMonitorDropDown(monitorURL="#{pageSession.monitorURL}" AppsList="#{appList}", MonitorList=>$attribute{monitorList} FirstItem=>$attribute{firstVal});
         if(!#{viewVal}) {
             setAttribute(key="viewVal" value="#{firstVal}");
         }
@@ -61,15 +61,17 @@
         getAppName(endpoint="#{sessionScope.REST_URL}/applications/application" name="#{viewVal}", appName=>$attribute{appValue}, appFullName=>$attribute{appFullName});
         //To get the sub components of a module
         if(#{viewVal}) {
-            createMap(result="#{requestScope.attrsMap}");
-            mapPut(map="#{requestScope.attrsMap}"  key="modulename" value="#{viewVal}");
-            mapPut(map="#{requestScope.attrsMap}"  key="appname"  value="#{appValue}");
-            gf.restRequest(
-                endpoint="#{sessionScope.REST_URL}/applications/application/list-sub-components"
-                attrs="#{requestScope.attrsMap}"
-                method="GET"
-                result="#{requestScope.result}" );
-            setPageSessionAttribute(key="propsMap" value="#{requestScope.result.data.properties}");
+            if("!(#{viewVal}=#{appValue})") {
+                createMap(result="#{requestScope.attrsMap}");
+                mapPut(map="#{requestScope.attrsMap}"  key="modulename" value="#{viewVal}");
+                mapPut(map="#{requestScope.attrsMap}"  key="appname"  value="#{appValue}");
+                gf.restRequest(
+                    endpoint="#{sessionScope.REST_URL}/applications/application/list-sub-components"
+                    attrs="#{requestScope.attrsMap}"
+                    method="GET"
+                    result="#{requestScope.result}" );
+                setPageSessionAttribute(key="propsMap" value="#{requestScope.result.data.properties}");
+            }
         }
 
         getWebStatsUrl(app="#{appFullName}", 
@@ -250,6 +252,15 @@
         groupToggleButton="$boolean{true}" collapsed="$boolean{false}" aboveColumnHeader="$boolean{true}" emptyDataMsg="$resource{i18nc.monitoring.webContainer.NoStats}">
         <!beforeCreate
             getStats(endpoint="#{statUrl}", statType="#{statType}", type="BeanPool", result=>$attribute{EjbPoolStatsList}  hasStats=>$attribute{hasStatsEjbPool});
+         />
+
+#include "/common/monitor/monitoringTableRows.inc"
+        "<br/>
+    </sun:tableRowGroup>
+         <sun:tableRowGroup id="appScopedResStats" rendered="#{hasStatsAppScopedRes}" data={"$attribute{AppScopedResStatsList}"}  sourceVar="td" headerText="$resource{i18nc.monitoring.AppScopedResource} : #{viewVal}/#{cVal} "
+        groupToggleButton="$boolean{true}" collapsed="$boolean{false}" aboveColumnHeader="$boolean{true}" emptyDataMsg="$resource{i18nc.monitoring.webContainer.NoStats}">
+        <!beforeCreate
+            getStats(endpoint="#{statUrl}", statType="#{statType}", type="AppScopedResource", result=>$attribute{AppScopedResStatsList}  hasStats=>$attribute{hasStatsAppScopedRes});
          />
 
 #include "/common/monitor/monitoringTableRows.inc"

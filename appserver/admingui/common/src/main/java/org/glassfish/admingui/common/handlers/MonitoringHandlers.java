@@ -531,7 +531,7 @@ public class MonitoringHandlers {
         StringBuilder statUrl = new StringBuilder();
         String statType = "";
 
-        if (comp != null) {
+        if (comp != null && !(comp.trim().equals(""))) {
             String[] compStrs = comp.split("/");
             try {
                 statUrl = statUrl.append(monitorURL).append("/applications/").append(app);
@@ -548,6 +548,8 @@ public class MonitoringHandlers {
             if (RestUtil.doesProxyExist(statUrl.toString())) {
                 if (compStrs.length == 1) {
                     statType = (String) moduleProps.get(compStrs[0]);
+                } else if (compStrs[0].equals("resources")) {
+                    statType="AppScopedResource";
                 } else {
                     statType = modifyStatType(compStrs[1]);
                 }

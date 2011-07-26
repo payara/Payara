@@ -397,12 +397,14 @@ public class WoodstockHandler {
      */
   @Handler(id="populateApplicationsMonitorDropDown",
         input={
-            @HandlerInput(name="AppsList", type=List.class, required=true)},
+            @HandlerInput(name="AppsList", type=List.class, required=true),
+            @HandlerInput(name="monitorURL", type=String.class, required=true)},
         output={
             @HandlerOutput(name="MonitorList", type=Option[].class),
             @HandlerOutput(name="FirstItem", type=String.class)})
     public void populateApplicationsMonitorDropDown(HandlerContext handlerCtx) {
         List aList = (List) handlerCtx.getInputValue("AppsList");
+        String monitorURL = (String) handlerCtx.getInputValue("monitorURL");
         ArrayList menuList = new ArrayList();
         String firstItem = null;
         String title = null;
@@ -411,6 +413,10 @@ public class WoodstockHandler {
             while (al.hasNext()) {
                 ArrayList moduleList = new ArrayList();
                 String appName = (String) al.next();
+                //Add the application name link in the dropdown if there are any app scoped resources.
+                if (RestUtil.doesProxyExist(monitorURL+"/applications/"+appName+"/resources")) {
+                    moduleList.add(appName);
+                }
                 Set<String> modules = new HashSet<String>();
                 try {
                     modules = RestUtil.getChildMap(GuiUtil.getSessionValue("REST_URL") + "/applications/application/" + appName + "/module").keySet();
@@ -421,7 +427,7 @@ public class WoodstockHandler {
                     if (MonitoringHandlers.doesAppProxyExist(appName, moduleName)) {
                         moduleList.add(moduleName);
                     }
-                }
+                }                
                if (moduleList.isEmpty()) {
                     menuList.add(new Option(appName, appName));
                     if (firstItem == null) {
@@ -469,15 +475,21 @@ public class WoodstockHandler {
             List servletInstanceMenuOptions = getWebComponentMenuOptions(appname, moduleName, vsList, monitorURL, handlerCtx);
             menuList.addAll(servletInstanceMenuOptions);
             //EJB Menu options.
-            Map<String, Object> compsMap = MonitoringHandlers.getSubComponents(appname, moduleName);
-            if (compsMap != null && compsMap.size() > 0) {
-                for(Map.Entry<String,Object> e : compsMap.entrySet()){
-                    if (!e.getValue().equals("Servlet")) {
-                        List compMenuOptions = getEJBComponentMenuOptions(appname, moduleName, e.getKey(), monitorURL, handlerCtx);
-                        menuList.addAll(compMenuOptions);
+            if (!appname.equals(moduleName)) {
+                Map<String, Object> compsMap = MonitoringHandlers.getSubComponents(appname, moduleName);
+                if (compsMap != null && compsMap.size() > 0) {
+                    for (Map.Entry<String, Object> e : compsMap.entrySet()) {
+                        if (!e.getValue().equals("Servlet")) {
+                            List compMenuOptions = getEJBComponentMenuOptions(appname, moduleName, e.getKey(), monitorURL, handlerCtx);
+                            menuList.addAll(compMenuOptions);
+                        }
                     }
                 }
             }
+        }
+        List resMenuOptions = getAppScopedResourcesMenuOptions(appname, moduleName, monitorURL, handlerCtx);
+        if (resMenuOptions.size() > 0) {
+            menuList.addAll(resMenuOptions);
         }
         // Add Menu Options.
         jumpMenuOptions = (Option[]) menuList.toArray(new Option[menuList.size()]);
@@ -518,6 +530,25 @@ public class WoodstockHandler {
         compMenuList.add(0, compName);
         OptionGroup compMenuOptions = getMenuOptions(compMenuList, compName, "", true);
         menuList.add(0, compMenuOptions);
+        return menuList;
+    }
+
+    private static List getAppScopedResourcesMenuOptions(String appname, String modulename, String monitorURL, HandlerContext handlerCtx) {
+        String endpoint = monitorURL + "/applications/" + appname + "/" + modulename + "/resources";
+        List menuList = new ArrayList();
+        Set<String> resChildSet = null;
+        try {
+            if (appname.equals(modulename)) {
+                endpoint = monitorURL + "/applications/" + appname + "/resources";
+            }
+            resChildSet = RestUtil.getChildMap(endpoint).keySet();
+        } catch (Exception ex) {
+            GuiUtil.getLogger().severe("Error in getAppScopedResourcesMenuOptions ; \nendpoint = " + endpoint + "method=GET");
+        }
+        if (resChildSet != null && resChildSet.size() > 0){
+            OptionGroup childResMenuOptions = getMenuOptions(new ArrayList(resChildSet), "resources", "", true);
+            menuList.add(childResMenuOptions);
+        }
         return menuList;
     }
 
