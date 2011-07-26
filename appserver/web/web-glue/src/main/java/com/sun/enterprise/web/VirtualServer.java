@@ -1935,7 +1935,7 @@ public class VirtualServer extends StandardHost
                     contextRoot+" is already registered");
         }
 
-        try {
+        if (context instanceof ContextFacade) {
             ContextFacade facade = (ContextFacade) context;
             File docRoot = facade.getDocRoot();
             ClassLoader classLoader = facade.getClassLoader();
@@ -1958,50 +1958,54 @@ public class VirtualServer extends StandardHost
                         "--contextroot=" + contextRoot + "--name=" + name);
             }
 
-            File file = null;
-            boolean delete = true;
-            Applications apps = domain.getApplications();
-            com.sun.enterprise.config.serverbeans.Application app = apps.getApplication(name);
-            if (app != null) {
-                file = new File(app.application().getAbsolutePath(), "/WEB-INF/web.xml");
-                if (file.exists()) {
-                    delete = false;
-                }
-            }
-            updateWebXml(facade, file);
+            try {
 
-            if (runner != null) {
-                runner.run("enable", appName);
-            }
-
-            if (delete) {
-                if (!FileUtils.deleteFileMaybe(file)) {
-                    String path = null;
-                    if (file != null) {
-                        path = file.toString();
+                File file = null;
+                boolean delete = true;
+                Applications apps = domain.getApplications();
+                com.sun.enterprise.config.serverbeans.Application app = apps.getApplication(name);
+                if (app != null) {
+                    file = new File(app.application().getAbsolutePath(), "/WEB-INF/web.xml");
+                    if (file.exists()) {
+                        delete = false;
                     }
-                    _logger.log(Level.WARNING,
-                            "webcontainer.unableToDelete",
-                            path);
                 }
-            }
 
-            WebModule wm = (WebModule) findChild(contextName);
-            if (wm != null) {
-                if (classLoader != null) {
-                    wm.setParentClassLoader(classLoader);
-                } else {
-                    wm.setParentClassLoader(serverContext.getSharedClassLoader());
-                }
-                facade.setUnwrappedContext(wm);
-                wm.setEmbedded(true);
-                if (config != null) {
-                    wm.setDefaultWebXml(config.getDefaultWebXml());
-                }
-            }
+                updateWebXml(facade, file);
 
-        } catch (Exception ex) {
-            throw new GlassFishException(ex);
+                if (runner != null) {
+                    runner.run("enable", appName);
+                }
+
+                if (delete) {
+                    if (!FileUtils.deleteFileMaybe(file)) {
+                        String path = null;
+                        if (file != null) {
+                            path = file.toString();
+                        }
+                        _logger.log(Level.WARNING,
+                                "webcontainer.unableToDelete",
+                                path);
+                    }
+                }
+
+                WebModule wm = (WebModule) findChild(contextName);
+                if (wm != null) {
+                    if (classLoader != null) {
+                        wm.setParentClassLoader(classLoader);
+                    } else {
+                        wm.setParentClassLoader(serverContext.getSharedClassLoader());
+                    }
+                    facade.setUnwrappedContext(wm);
+                    wm.setEmbedded(true);
+                    if (config != null) {
+                        wm.setDefaultWebXml(config.getDefaultWebXml());
+                    }
+                }
+
+            } catch (Exception ex) {
+                throw new GlassFishException(ex);
+            }
         }
     }
 
