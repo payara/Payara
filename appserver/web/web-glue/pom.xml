@@ -113,7 +113,7 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.sun.enterprise</groupId>
+            <groupId>org.glassfish.hk2</groupId>
             <artifactId>hk2</artifactId>
         </dependency>
         

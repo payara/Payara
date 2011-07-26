@@ -118,7 +118,7 @@
     <dependencies>
 	<!-- Dependencies on other modules/jars -->
         <dependency>
-            <groupId>com.sun.enterprise</groupId>
+            <groupId>org.glassfish.hk2</groupId>
             <artifactId>hk2</artifactId>
         </dependency>
         <dependency>
