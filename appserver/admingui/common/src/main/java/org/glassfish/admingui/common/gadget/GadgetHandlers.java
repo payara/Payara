@@ -258,6 +258,7 @@ public class GadgetHandlers {
         Map newMap = new HashMap();
         String[] strs = test.split(",");
         for (String str : strs) {
+            str = str.trim();
             int end = str.length();
             int index = str.indexOf("=");
             newMap.put(str.substring(0, index), str.substring(index+1, end));

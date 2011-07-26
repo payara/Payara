@@ -100,7 +100,7 @@
         setPageSessionAttribute(key="skipAttrsList", value={"jndiName"});
         gf.createAttributeMap(keys={"poolName"} values={"$pageSession{encodedName}"} map="#{pageSession.attrMap}");
         if(#{pageSession.isAppScopedRes}){
-            mapPut(map="#{pageSession.attrMap}" key="applicationName" value="#{pageSession.encodedAppName}");
+            mapPut(map="#{pageSession.attrMap}" key="appName" value="#{pageSession.encodedAppName}");
             if(#{pageSession.moduleName}){
                 mapPut(map="#{pageSession.attrMap}" key="modulename" value="#{pageSession.encodedModuleName}");
             }
