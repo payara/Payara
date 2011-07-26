@@ -48,9 +48,6 @@ import org.glassfish.api.admin.*;
 import com.sun.enterprise.admin.cli.remote.RemoteCommand;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 
-import java.awt.Robot;
-import java.awt.event.KeyEvent;
-
 public class MonitorTask extends TimerTask {
     private String type = null;
     private String filter = null;
@@ -65,6 +62,7 @@ public class MonitorTask extends TimerTask {
             Logger.getLogger(MonitorTask.class.getPackage().getName());
     private final static LocalStringsImpl strings =
             new LocalStringsImpl(MonitorTask.class);
+    volatile Boolean allOK = null;
 
     public MonitorTask(final Timer timer, final String[] remoteArgs,
             ProgramOptions programOpts, Environment env,
@@ -127,21 +125,12 @@ public class MonitorTask extends TimerTask {
 
     void cancelMonitorTask() {
         timer.cancel();
-        try {
-            Robot robot = new Robot();
-            robot.keyPress(KeyEvent.VK_Q);
-            robot.keyRelease(KeyEvent.VK_Q);
-            robot.keyPress(KeyEvent.VK_ENTER);
-            robot.keyRelease(KeyEvent.VK_ENTER);
-        }
-        catch (java.awt.AWTException e) {
-            logger.severe(strings.get("awt.error", e.getMessage()));
-        }
     }
 
     public void run() {
         try {
             cmd.execute(remoteArgs);
+            allOK = new Boolean(true);
             if (counter == NUM_ROWS) {
                 displayHeader(type);
                 counter = 0;
@@ -151,6 +140,7 @@ public class MonitorTask extends TimerTask {
         catch (Exception e) {
             //logger.severe(
             //strings.get("monitorCommand.errorRemote", e.getMessage()));
+            allOK = new Boolean(false);
             cancelMonitorTask();
             exceptionMessage = e.getMessage();
         }

@@ -37,7 +37,6 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
 package com.sun.enterprise.admin.cli;
 
 import java.io.*;
@@ -54,50 +53,48 @@ import com.sun.enterprise.universal.i18n.LocalStringsImpl;
  * A local Monitor Command (this will call the remote 'monitor' command).
  * The reason for having to implement this as local is to interpret the options
  * --interval and --filename(TBD) options.
- * 
+ *
  * @author Prashanth
  * @author Bill Shannon
  */
 @Service(name = "monitor")
 @Scoped(PerLookup.class)
 public class MonitorCommand extends CLICommand {
-
     @Param(optional = true, defaultValue = "30")
     private int interval = 30;	// default 30 seconds
-
     @Param
     private String type;
-
     @Param(optional = true)
     private String filter;
-
     @Param(optional = true)
     private File fileName;
-
     @Param(primary = true, optional = true)
     private String target;	// XXX - not currently used
-
     private static final LocalStringsImpl strings =
             new LocalStringsImpl(MonitorCommand.class);
 
     @Override
-    protected int executeCommand() 
+    protected int executeCommand()
             throws CommandException, CommandValidationException {
         // Based on interval, loop the subject to print the output
         Timer timer = new Timer();
         try {
             MonitorTask monitorTask = new MonitorTask(timer, getRemoteArgs(),
-                            programOpts, env, type, filter, fileName);
-            timer.scheduleAtFixedRate(monitorTask, 0, (long)interval * 1000);
-
+                    programOpts, env, type, filter, fileName);
+            timer.scheduleAtFixedRate(monitorTask, 0, (long) interval * 1000);
             boolean done = false;
-            // detect if a q or Q key is entered
+            final BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+
             while (!done) {
-                // The native doesn't exist yet
-                //final char c = new CliUtil().getKeyboardInput();
-                //final char c = 'p';
-                final String str = new BufferedReader(
-                                new InputStreamReader(System.in)).readLine(); 
+                String str = "";
+
+                if (monitorTask.allOK == null)
+                    str = ""; // not ready yet
+                else if (monitorTask.allOK == false)
+                    str = "Q";
+                else if (System.in.available() > 0)
+                    str = in.readLine();
+
                 if (str == null || str.equals("q") || str.equals("Q")) {
                     timer.cancel();
                     done = true;
@@ -105,14 +102,22 @@ public class MonitorCommand extends CLICommand {
                     if (exceptionMessage != null) {
                         throw new CommandException(exceptionMessage);
                     }
-                } else if (str.equals("h") || str.equals("H")) {
+                }
+                else if (str.equals("h") || str.equals("H")) {
                     monitorTask.displayDetails();
                 }
             }
-        } catch (Exception e) {
+            try {
+                Thread.sleep(500);
+            }
+            catch(Exception e) {
+                // ignore
+            }
+        }
+        catch (Exception e) {
             timer.cancel();
             throw new CommandException(
-                strings.get("monitorCommand.errorRemote", e.getMessage()));
+                    strings.get("monitorCommand.errorRemote", e.getMessage()));
         }
         return 0;
     }
@@ -120,7 +125,7 @@ public class MonitorCommand extends CLICommand {
     private String[] getRemoteArgs() {
         List<String> list = new ArrayList<String>(5);
         list.add("monitor");
- 
+
         if (ok(type)) {
             list.add("--type");
             list.add(type);
