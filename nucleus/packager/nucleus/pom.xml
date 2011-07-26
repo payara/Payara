@@ -99,7 +99,7 @@
           modules to be included in this bundle
         -->       
         <dependency>
-           <groupId>org.glassfish.hk2</groupId>
+           <groupId>com.sun.enterprise</groupId>
            <artifactId>osgi-adapter</artifactId>
        </dependency>
        <dependency>

@@ -55,7 +55,7 @@
 
     <dependencies>
         <dependency>
-          <groupId>org.glassfish.hk2</groupId>
+          <groupId>com.sun.enterprise</groupId>
           <artifactId>auto-depends</artifactId>
         </dependency>
     </dependencies>

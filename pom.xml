@@ -113,8 +113,8 @@
         <grizzly.version>2.1.1</grizzly.version>
         <jsr181-api.version>1.0-MR1</jsr181-api.version>
         <saaj-api.version>1.3</saaj-api.version>
-        <hk2.version>1.6.10</hk2.version>
-        <hk2.plugin.version>1.6.10</hk2.plugin.version>
+        <hk2.version>1.6.9</hk2.version>
+        <hk2.plugin.version>1.6.9</hk2.plugin.version>
         <trilead-ssh2.version>build212-hudson-6</trilead-ssh2.version>
         <product.name>GlassFish Server Open Source Edition</product.name>
         <abbrev_product_name>glassfish</abbrev_product_name>
@@ -311,19 +311,19 @@
         <pluginManagement>
             <plugins>
                 <plugin>
-                    <groupId>org.glassfish.hk2</groupId>
+                    <groupId>com.sun.enterprise</groupId>
                     <artifactId>hk2-maven-plugin</artifactId>
                     <version>${hk2.plugin.version}</version>
                 </plugin>
 
                 <plugin>
-                    <groupId>org.glassfish.hk2</groupId>
+                    <groupId>com.sun.enterprise</groupId>
                     <artifactId>osgiversion-maven-plugin</artifactId>
                     <version>${hk2.plugin.version}</version>
                 </plugin>
 
                 <plugin>
-                    <groupId>org.glassfish.hk2</groupId>
+                    <groupId>com.sun.enterprise</groupId>
                     <artifactId>consolidatedbundle-maven-plugin</artifactId>
                     <version>${hk2.plugin.version}</version>
                 </plugin>
@@ -534,7 +534,7 @@
                 </configuration>
             </plugin>
             <plugin>
-                <groupId>org.glassfish.hk2</groupId>
+                <groupId>com.sun.enterprise</groupId>
                 <artifactId>hk2-maven-plugin</artifactId>
                 <extensions>true</extensions>
                 <configuration>
@@ -545,7 +545,7 @@
                 </configuration>
             </plugin>
             <plugin>
-                <groupId>org.glassfish.hk2</groupId>
+                <groupId>com.sun.enterprise</groupId>
                 <artifactId>osgiversion-maven-plugin</artifactId>
                 <executions>
                     <!-- Since we don't want qualifier like b05 or SNAPSHOT to appear
@@ -636,43 +636,43 @@
     <dependencyManagement>
         <dependencies>
             <dependency>
-                <groupId>org.glassfish.hk2</groupId>
+                <groupId>com.sun.enterprise</groupId>
                 <artifactId>hk2</artifactId>
                 <version>${hk2.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.glassfish.hk2</groupId>
+                <groupId>com.sun.enterprise</groupId>
                 <artifactId>hk2-core</artifactId>
                 <version>${hk2.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.glassfish.hk2</groupId>
+                <groupId>com.sun.enterprise</groupId>
                 <artifactId>hk2-maven</artifactId>
                 <version>${hk2.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.glassfish.hk2</groupId>
+                <groupId>com.sun.enterprise</groupId>
                 <artifactId>osgi-adapter</artifactId>
                 <version>${hk2.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.glassfish.hk2</groupId>
+                <groupId>com.sun.enterprise</groupId>
                 <artifactId>stax-osgi</artifactId>
                 <version>${hk2.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.glassfish.hk2</groupId>
+                <groupId>com.sun.enterprise</groupId>
                 <artifactId>auto-depends</artifactId>
                 <version>${hk2.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.glassfish.hk2</groupId>
+                <groupId>com.sun.enterprise</groupId>
                 <artifactId>config-types</artifactId>
                 <version>${hk2.version}</version>
             </dependency>

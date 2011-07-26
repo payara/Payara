@@ -63,7 +63,7 @@
     <build>
         <plugins>
             <plugin>
-                <groupId>org.glassfish.hk2</groupId>
+                <groupId>com.sun.enterprise</groupId>
                 <artifactId>hk2-maven-plugin</artifactId>
                 <configuration>
                     <processors>

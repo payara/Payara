@@ -129,7 +129,7 @@
                 </executions>
             </plugin>
             <plugin>
-              <groupId>org.glassfish.hk2</groupId>
+              <groupId>com.sun.enterprise</groupId>
               <artifactId>hk2-maven-plugin</artifactId>
               <configuration>
                 <archive>
@@ -144,7 +144,7 @@
     <dependencies>
 
         <dependency>
-            <groupId>org.glassfish.hk2</groupId>
+            <groupId>com.sun.enterprise</groupId>
             <artifactId>hk2</artifactId>
         </dependency>
         <dependency>
