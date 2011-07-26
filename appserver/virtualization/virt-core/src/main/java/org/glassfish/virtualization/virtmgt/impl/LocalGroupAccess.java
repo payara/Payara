@@ -40,13 +40,13 @@
 
 package org.glassfish.virtualization.virtmgt.impl;
 
+import org.glassfish.hk2.inject.Injector;
 import org.glassfish.virtualization.config.Template;
 import org.glassfish.virtualization.runtime.VirtualCluster;
 import org.glassfish.virtualization.spi.PhysicalGroup;
 import org.glassfish.virtualization.spi.VirtException;
 import org.glassfish.virtualization.spi.VirtualMachine;
 import org.glassfish.virtualization.virtmgt.GroupAccess;
-import org.jvnet.hk2.component.Injector;
 
 import java.util.concurrent.Future;
 
@@ -61,7 +61,8 @@ public class LocalGroupAccess implements GroupAccess {
 
     static LocalGroupAccess from(Injector injector, PhysicalGroup group) {
         LocalGroupAccess instance = new LocalGroupAccess(group);
-        return injector.inject(instance);
+        injector.inject(instance);
+        return instance;
     }
 
     private LocalGroupAccess(PhysicalGroup group) {

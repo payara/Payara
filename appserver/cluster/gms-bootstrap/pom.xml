@@ -56,7 +56,7 @@
     <build>
       <plugins>
         <plugin>
-          <groupId>com.sun.enterprise</groupId>
+          <groupId>org.glassfish.hk2</groupId>
           <artifactId>hk2-maven-plugin</artifactId>
           <configuration>
             <archive>
@@ -70,7 +70,7 @@
     </build>
     <dependencies>
         <dependency>
-            <groupId>com.sun.enterprise</groupId>
+            <groupId>org.glassfish.hk2</groupId>
             <artifactId>hk2</artifactId>
         </dependency>
         <dependency>

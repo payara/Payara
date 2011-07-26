@@ -39,13 +39,13 @@
  */
 package org.glassfish.virtualization.virtmgt.impl;
 
+import org.glassfish.hk2.inject.Injector;
 import org.glassfish.virtualization.spi.PhysicalGroup;
 import org.glassfish.virtualization.spi.GroupManagement;
 import org.glassfish.virtualization.virtmgt.GroupAccess;
 import org.glassfish.virtualization.virtmgt.GroupsAccess;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Injector;
 import org.jvnet.hk2.component.PostConstruct;
 
 import java.util.HashMap;

@@ -72,13 +72,13 @@
     <build>
         <plugins>
             <plugin>
-                <groupId>com.sun.enterprise</groupId>
+                <groupId>org.glassfish.hk2</groupId>
                 <artifactId>hk2-maven-plugin</artifactId>
                 <configuration>
                     <archive>
                         <manifestEntries>
                             <probe-provider-class-names>
-                                com.sun.enterprise.transaction.monitoring.TransactionServiceProbeProvider
+                                org.glassfish.hk2.transaction.monitoring.TransactionServiceProbeProvider
                             </probe-provider-class-names>
                         </manifestEntries>
                     </archive>
@@ -116,7 +116,7 @@
     <dependencies>
 	<!-- Dependencies on other modules/jars -->
         <dependency>
-            <groupId>com.sun.enterprise</groupId>
+            <groupId>org.glassfish.hk2</groupId>
             <artifactId>hk2</artifactId>
         </dependency>
         <dependency>

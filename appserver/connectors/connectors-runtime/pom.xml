@@ -79,12 +79,12 @@
         </resources>
         <plugins>
             <plugin>
-                <groupId>com.sun.enterprise</groupId>
+                <groupId>org.glassfish.hk2</groupId>
                 <artifactId>hk2-maven-plugin</artifactId>
                 <configuration>
                     <archive>
 		        <manifestEntries>
-			    <probe-provider-class-names>com.sun.enterprise.resource.pool.monitor.JdbcConnPoolProbeProvider,com.sun.enterprise.resource.pool.monitor.ConnectorConnPoolProbeProvider,com.sun.enterprise.resource.pool.monitor.JdbcConnPoolAppProbeProvider,com.sun.enterprise.resource.pool.monitor.ConnectorConnPoolAppProbeProvider</probe-provider-class-names>
+			    <probe-provider-class-names>org.glassfish.hk2.resource.pool.monitor.JdbcConnPoolProbeProvider,org.glassfish.hk2.resource.pool.monitor.ConnectorConnPoolProbeProvider,org.glassfish.hk2.resource.pool.monitor.JdbcConnPoolAppProbeProvider,org.glassfish.hk2.resource.pool.monitor.ConnectorConnPoolAppProbeProvider</probe-provider-class-names>
                         </manifestEntries>
                     </archive>
                 </configuration>
@@ -130,7 +130,7 @@
         </dependency>
 
         <dependency>
-            <groupId>com.sun.enterprise</groupId>
+            <groupId>org.glassfish.hk2</groupId>
             <artifactId>hk2</artifactId>
         </dependency>
 

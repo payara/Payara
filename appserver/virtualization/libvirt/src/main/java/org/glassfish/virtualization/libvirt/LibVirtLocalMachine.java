@@ -39,6 +39,7 @@
  */
 package org.glassfish.virtualization.libvirt;
 
+import org.glassfish.hk2.inject.Injector;
 import org.glassfish.virtualization.config.*;
 import org.glassfish.virtualization.libvirt.jna.Connect;
 import org.glassfish.virtualization.libvirt.jna.Domain;
@@ -48,7 +49,6 @@ import org.glassfish.virtualization.spi.*;
 import org.glassfish.virtualization.util.RuntimeContext;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.component.Habitat;
-import org.jvnet.hk2.component.Injector;
 import org.jvnet.hk2.component.PostConstruct;
 
 import org.w3c.dom.Document;

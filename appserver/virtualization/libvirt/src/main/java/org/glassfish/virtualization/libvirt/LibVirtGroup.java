@@ -39,6 +39,7 @@
  */
 package org.glassfish.virtualization.libvirt;
 
+import org.glassfish.hk2.inject.Injector;
 import org.glassfish.virtualization.config.*;
 import org.glassfish.virtualization.runtime.VMTemplate;
 import org.glassfish.virtualization.runtime.VirtualCluster;
@@ -48,7 +49,6 @@ import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
-import org.jvnet.hk2.component.Injector;
 import org.jvnet.hk2.component.PerLookup;
 import org.jvnet.hk2.config.*;
 

@@ -56,6 +56,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.common.util.admin.AuthTokenManager;
+import org.glassfish.hk2.inject.Injector;
 import org.glassfish.virtualization.config.Emulator;
 import org.glassfish.virtualization.config.MachineConfig;
 import org.glassfish.virtualization.config.Template;
@@ -72,8 +73,6 @@ import org.glassfish.virtualization.util.Host;
 import org.glassfish.virtualization.util.RuntimeContext;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.component.Habitat;
-import org.jvnet.hk2.component.Injector;
-
 
 
 /**
