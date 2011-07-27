@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -45,7 +45,13 @@ import java.net.URL;
 
 import com.sun.enterprise.admin.cli.*;
 import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.module.ModulesRegistry;
+import com.sun.enterprise.module.single.StaticModulesRegistry;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
+import com.sun.enterprise.util.SystemPropertyConstants;
+import java.net.URLClassLoader;
+import java.util.ArrayList;
+import java.util.logging.Level;
 
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
@@ -88,9 +94,22 @@ public final class VerifyDomainXmlCommand extends LocalDomainCommand {
             throws CommandException, CommandValidationException {
 
         File domainXMLFile = getDomainXml();
-        logger.finer("Domain XML file = " + domainXMLFile);
+        logger.log(Level.FINER, "Domain XML file = {0}", domainXMLFile);
         try {
-            Habitat habitat = Globals.getStaticHabitat();
+            // get the list of JAR files from the modules directory
+            ArrayList<URL> urls = new ArrayList<URL>();
+            File idir = new File(System.getProperty(SystemPropertyConstants.INSTALL_ROOT_PROPERTY));
+            File mdir = new File(idir, "modules");
+            for (File f : mdir.listFiles()) {
+                if (f.toString().endsWith(".jar")) {
+                    urls.add(f.toURI().toURL());
+                }
+            }
+                       
+            URL[] urlsA = urls.toArray(new URL[0]);          
+            ClassLoader cl = new URLClassLoader(urlsA, Globals.class.getClassLoader());
+            ModulesRegistry registry = new StaticModulesRegistry(cl);
+            Habitat habitat = registry.createHabitat("default");
             ConfigParser parser = new ConfigParser(habitat);
             URL domainURL = domainXMLFile.toURI().toURL();
             DomDocument doc = parser.parse(domainURL);
@@ -100,7 +119,7 @@ public final class VerifyDomainXmlCommand extends LocalDomainCommand {
 
             if (validator.invokeConfigValidator()) return 1;
         } catch (Exception e) {
-            throw new CommandException(e.getMessage());
+            throw new CommandException(e);
         }
         return 0;
     }

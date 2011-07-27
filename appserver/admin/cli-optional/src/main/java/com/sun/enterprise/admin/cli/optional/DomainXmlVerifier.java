@@ -40,30 +40,13 @@
 
 package com.sun.enterprise.admin.cli.optional;
 
-import com.sun.enterprise.config.serverbeans.AuditModule;
-import com.sun.enterprise.config.serverbeans.AuthRealm;
-import com.sun.enterprise.config.serverbeans.JaccProvider;
 import java.util.ArrayList;
 import java.util.WeakHashMap;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.Dom;
 
 // config imports
-import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
-import com.sun.enterprise.config.serverbeans.IiopListener;
-import com.sun.enterprise.config.serverbeans.JmsHost;
-import com.sun.enterprise.config.serverbeans.JmxConnector;
-import com.sun.enterprise.config.serverbeans.Resources;
-import com.sun.enterprise.config.serverbeans.ConnectorConnectionPool;
-import com.sun.enterprise.config.serverbeans.Configs;
-import com.sun.enterprise.config.serverbeans.HttpService;
-import com.sun.enterprise.config.serverbeans.IiopService;
-import com.sun.enterprise.config.serverbeans.JmsService;
-import com.sun.enterprise.config.serverbeans.SecurityMap;
-import com.sun.enterprise.config.serverbeans.AdminService;
-import com.sun.enterprise.config.serverbeans.SecurityService;
-import com.sun.enterprise.config.serverbeans.VirtualServer;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 import com.sun.enterprise.util.Result;
 
@@ -71,15 +54,16 @@ import java.io.PrintStream;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
- * Does basic level verification of domain.xml. This is helpful as in v3 there
+ * Does basic level verification of domain.xml. This is helpful as there
  * is no DTD to validate the domain's config i.e. domain.xml
  * 
  * @author Nandini Ektare
  */
 public class DomainXmlVerifier {
-
+    
     private Domain domain;
     public boolean error;
     PrintStream _out;
@@ -112,7 +96,7 @@ public class DomainXmlVerifier {
 
     public boolean validate() {
         try {
-            checkUnique(domain);
+            checkUnique(Dom.unwrap(domain));
             if (!error)
                _out.println(strings.get("VerifySuccess"));
         } catch(Exception e) {
@@ -122,102 +106,38 @@ public class DomainXmlVerifier {
         return error;
     }
     
-    public void checkUnique(Domain domain) {
+    private void checkUnique(Dom d) {
 
         try {
-            // Resources
-            Resources resources = domain.getResources();
-            Collection<ConnectorConnectionPool> connectionPoolList =
-                resources.getResources(ConnectorConnectionPool.class);
-            checkDuplicate(connectionPoolList);
-
-            for (ConnectorConnectionPool ccp : connectionPoolList) {
-                List<SecurityMap> secMapList = ccp.getSecurityMap();
-                checkDuplicate(secMapList);
-            }
-
-            // Servers -- commented out as of now because Server 
-            // element does not have a key. See bugs 6039 and 6040
-            /*
-            Servers servers = domain.getServers();
-            List<Server> serversList = servers.getServer();
-            checkDuplicate(serversList);
-            */
-            
-            // Configs
-            Configs configs = domain.getConfigs();
-            if (configs != null) {
-                List<Config> configList = configs.getConfig();
-                checkDuplicate(configList);
-                if (configList != null) {
-                    // Children of each Config viz: HttpService, IiopService
-                    for (Config cfg : configList) {
-                        // config-->http-service
-                        HttpService httpSvc = cfg.getHttpService();
-                        if (httpSvc != null) {
-                            List<VirtualServer> virtualServers = httpSvc.getVirtualServer();
-                            checkDuplicate(virtualServers);
-                        }
-
-                        // config-->iiop-service
-                        IiopService iiopSvc = cfg.getIiopService();
-                        if (iiopSvc != null) {
-                            List<IiopListener> iiopListeners = iiopSvc.getIiopListener();
-                            checkDuplicate(iiopListeners);
-                        }
-
-                        // config-->admin-service-->jmx-connector
-                        AdminService adminsvc = cfg.getAdminService();
-                        if (adminsvc != null) {
-                            List<JmxConnector> jmxConnectors = adminsvc.getJmxConnector();
-                            checkDuplicate(jmxConnectors);
-                        }
-
-                        // config-->jms-service-->jms-host
-                        JmsService jmsService = cfg.getJmsService();
-                        if (jmsService != null) {
-                            List<JmsHost> jmsHosts = jmsService.getJmsHost();
-                            checkDuplicate(jmsHosts);
-                        }
-
-                        // Now sub elements of Security Service
-                        SecurityService securitysvc = cfg.getSecurityService();
-
-                        if (securitysvc != null) {
-                            // config-->security-service-->audit-module
-                            List<AuditModule> auditModules = securitysvc.getAuditModule();
-                            checkDuplicate(auditModules);
-
-                            // config-->security-service-->audit-module
-                            List<AuthRealm> authrealms = securitysvc.getAuthRealm();
-                            checkDuplicate(authrealms);
-
-                            // config-->security-service-->audit-module
-                            List<JaccProvider> providers = securitysvc.getJaccProvider();
-                            checkDuplicate(providers);
-                        }
-                    }
+            Set<String> eltnames = d.getElementNames();
+            Set<String> leafeltnames = d.model.getLeafElementNames();
+            for (String elt : eltnames) {
+                if (leafeltnames.contains(elt)) continue;
+                List<Dom> eltlist = d.nodeElements(elt);
+                checkDuplicate(eltlist);
+                for (Dom subelt : eltlist) {
+                    checkUnique(subelt);
                 }
             }
-        } catch(Exception e) {
+         } catch(Exception e) {
             error = true;
             e.printStackTrace();
         }
     }
     
-    public void output(Result result) {
+    private void output(Result result) {
         _out.println(strings.get("VerifyError", result.result()));
     }
 
-    public void checkDuplicate(Collection <? extends ConfigBeanProxy> beans) {
-        if (beans == null) {
+    private void checkDuplicate(Collection <? extends Dom> beans) {
+        if (beans == null || beans.size() <= 1) {
             return;
         }
         WeakHashMap keyBeanMap = new WeakHashMap();
         ArrayList<String> keys = new ArrayList<String>(beans.size());
-        for (ConfigBeanProxy cbp : beans) {
-            String key = Dom.unwrap(cbp).getKey();
-            keyBeanMap.put(key,Dom.unwrap(cbp));
+        for (Dom b : beans) {
+            String key = b.getKey();
+            keyBeanMap.put(key, b);
             keys.add(key);
         }
 
@@ -226,10 +146,10 @@ public class DomainXmlVerifier {
         String[] strKeys = keys.toArray(new String[beans.size()]);
         for (int i = 0; i < strKeys.length; i++) {
             boolean foundDuplicate = false;
-            for (int j = 0; j < strKeys.length; j++) {
+            for (int j = i + 1; j < strKeys.length; j++) {
                 // If the keys are same and if the indexes don't match
                 // we have a duplicate. So output that error
-                if ( (strKeys[i].equals(strKeys[j])) && (i!=j) ) {
+                if ( (strKeys[i].equals(strKeys[j]))) {
                     foundDuplicate = true;
                     errorKeyBeanMap.put(strKeys[i],
                         ((Dom)keyBeanMap.get(strKeys[i])).getProxyType());
