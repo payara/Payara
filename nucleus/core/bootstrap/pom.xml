@@ -82,7 +82,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>org.glassfish.hk2.glassfish.bootstrap.ASMain</mainClass>
+                            <mainClass>com.sun.enterprise.glassfish.bootstrap.ASMain</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
