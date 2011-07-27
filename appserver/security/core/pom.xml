@@ -220,11 +220,6 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.deployment</groupId>
-            <artifactId>dol</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
             <groupId>org.glassfish.common</groupId>
             <artifactId>common-util</artifactId>
             <version>${project.version}</version>
@@ -260,24 +255,8 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>javax.servlet-api</artifactId>
-            <!-- Don't set scope as provided. See issue #5992 -->
-        </dependency>
-        <dependency>
             <groupId>org.glassfish.common</groupId>
             <artifactId>glassfish-api</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish</groupId>
-            <artifactId>javax.ejb</artifactId>
-            <version>${project.version}</version>
-            <!-- Don't set scope as provided. See issue #5992 -->
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.ejb</groupId>
-            <artifactId>ejb-internal-api</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

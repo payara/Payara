@@ -39,6 +39,7 @@
  */
 
 package com.sun.enterprise.security.auth.login;
+import com.sun.enterprise.security.auth.login.DigestCredentials;
 import org.glassfish.security.common.Group;
 import java.util.Set;
 import java.util.Iterator;

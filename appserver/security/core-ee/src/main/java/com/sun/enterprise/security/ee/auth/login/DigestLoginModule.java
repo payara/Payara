@@ -38,19 +38,17 @@
  * holder.
  */
 
-package com.sun.enterprise.security.auth.login;
+package com.sun.enterprise.security.ee.auth.login;
 
 import com.sun.enterprise.security.PrincipalGroupFactory;
 import com.sun.enterprise.security.auth.realm.NoSuchRealmException;
 import com.sun.logging.LogDomains;
-import java.util.Enumeration;
 import java.util.Map;
 import java.util.logging.Logger;
 import javax.security.auth.Subject;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.login.LoginException;
 import javax.security.auth.spi.LoginModule;
-import com.sun.enterprise.util.i18n.StringManager;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.logging.Level;
@@ -58,9 +56,8 @@ import org.glassfish.internal.api.Globals;
 import org.glassfish.security.common.PrincipalImpl;
 import org.glassfish.security.common.Group;
 import com.sun.enterprise.security.auth.digest.api.DigestAlgorithmParameter;
-import com.sun.enterprise.security.auth.digest.api.Password;
-import com.sun.enterprise.security.auth.realm.DigestRealm;
 import com.sun.enterprise.security.auth.realm.Realm;
+import com.sun.enterprise.security.ee.auth.realm.DigestRealm;
 import java.util.Enumeration;
 
 
@@ -74,8 +71,7 @@ public abstract class DigestLoginModule implements LoginModule {
     private CallbackHandler handler = null;
     private Map<String, ?> sharedState = null;
     private Map<String, ?> options = null;
-    protected Logger _logger = LogDomains.getLogger(DigestLoginModule.class, LogDomains.SECURITY_LOGGER);
-    protected static final StringManager sm = StringManager.getManager(DigestLoginModule.class);
+    protected static final Logger _logger = LogDomains.getLogger(DigestLoginModule.class, LogDomains.SECURITY_LOGGER);
     protected boolean _succeeded = false;
     protected boolean _commitSucceeded = false;
     protected PrincipalImpl _userPrincipal;

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2006-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,59 +40,53 @@
 
 package com.sun.enterprise.security.auth.digest.impl;
 
-
-
+import com.sun.enterprise.security.auth.digest.api.Key;
+import com.sun.enterprise.security.auth.digest.api.DigestAlgorithmParameter;
 
 /**
- * Implementation class for Digest algorithm parameters. 
- * @author K.Venugopal@sun.com
+ *
+ *  @author K.Venugopal@sun.com
  */
+public class KeyDigestAlgoParamImpl implements DigestAlgorithmParameter, Key {
 
-public class DigestAlgorithmParameterImpl implements  com.sun.enterprise.security.auth.digest.api.DigestAlgorithmParameter {
-    
+    private String userName;
+    private String realmName;
+    private String algorithm = null;
+    private String name = "A1";
     private static byte[] delimeter = ":".getBytes();
-    private String algorithm = "";
-    private byte[] data = null;          
-    private String name = "";
 
-    public DigestAlgorithmParameterImpl(String name,byte[] data) {        
-        this.data = data;
-        this.name = name;
+    public KeyDigestAlgoParamImpl(String user, String realm) {
+        this.userName = user;
+        this.realmName = realm;
     }
-    
-    public DigestAlgorithmParameterImpl(String name,byte[] data,byte delimiter) {        
-        this.data = data;
-        this.delimeter = delimeter;
-        this.name = name;
-    }
-    
-    
-    public DigestAlgorithmParameterImpl(String name,String algorithm, byte[] data) {
+
+    public KeyDigestAlgoParamImpl(String algorithm, String user, String realm) {
+        this.userName = user;
+        this.realmName = realm;
         this.algorithm = algorithm;
-        this.data = data;
-        this.name = name;
     }
-    
-    public DigestAlgorithmParameterImpl(String name,String algorithm, byte[] data,byte [] delimiter) {
-        this.algorithm = algorithm;
-        this.data = data;
-        this.delimeter = delimeter;
-        this.name = name;
+
+    public String getUsername() {
+        return userName;
     }
-    
+
+    public String getRealmName() {
+        return realmName;
+    }
+
+    public byte[] getValue() {
+        throw new UnsupportedOperationException();
+    }
+
     public String getAlgorithm() {
-        return this.algorithm;
+        return algorithm;
     }
-    
-    public  byte[] getValue() {
-        return data;
-    }    
-   
+
     public byte[] getDelimiter() {
         return delimeter;
     }
 
     public String getName() {
-        return this.name;
+        return name;
     }
 }

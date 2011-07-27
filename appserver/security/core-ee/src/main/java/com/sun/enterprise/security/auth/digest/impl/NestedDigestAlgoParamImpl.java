@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2006-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,50 +40,58 @@
 
 package com.sun.enterprise.security.auth.digest.impl;
 
-import com.sun.enterprise.security.auth.digest.api.Key;
-import com.sun.enterprise.security.auth.digest.api.DigestAlgorithmParameter;
+import com.sun.enterprise.security.auth.digest.api.NestedDigestAlgoParam;
+import java.security.spec.AlgorithmParameterSpec;
 
 /**
  *
- *  @author K.Venugopal@sun.com
+ * @author K.Venugopal@sun.com
  */
-public class KeyDigestAlgoParamImpl implements DigestAlgorithmParameter, Key {
+public class NestedDigestAlgoParamImpl implements NestedDigestAlgoParam {
 
-    private String userName;
-    private String realmName;
-    private String algorithm = null;
-    private String name = "A1";
-    private static byte[] delimeter = ":".getBytes();
+    private byte[] delimeter = ":".getBytes();
+    private String algorithm = "";
+    private AlgorithmParameterSpec[] params = null;
+    private String name = "";
 
-    public KeyDigestAlgoParamImpl(String user, String realm) {
-        this.userName = user;
-        this.realmName = realm;
-    }
-
-    public KeyDigestAlgoParamImpl(String algorithm, String user, String realm) {
-        this.userName = user;
-        this.realmName = realm;
+    public NestedDigestAlgoParamImpl(String algorithm, String name,AlgorithmParameterSpec[] values) {
         this.algorithm = algorithm;
+        this.params = values;
+        this.name = name;
     }
 
-    public String getUsername() {
-        return userName;
+    public NestedDigestAlgoParamImpl(String name,AlgorithmParameterSpec[] values) {
+        this.params = values;
+        this.name = name;
     }
 
-    public String getRealmName() {
-        return realmName;
+    public NestedDigestAlgoParamImpl(String algorithm,String name, AlgorithmParameterSpec[] values, byte[] delimiter) {
+        this.algorithm = algorithm;
+        this.params = values;
+        this.delimeter = delimiter;
+        this.name = name;
     }
 
-    public byte[] getValue() {
-        throw new UnsupportedOperationException();
+    public NestedDigestAlgoParamImpl(AlgorithmParameterSpec[] values,String name,  byte[] delimiter) {
+        this.params = values;
+        this.delimeter = delimiter;
+        this.name = name;
     }
+
+    public AlgorithmParameterSpec[] getNestedParams() {
+        return params;
+    }
+
+    public byte[] getDelimiter() {
+        return delimeter;
+    } 
 
     public String getAlgorithm() {
         return algorithm;
     }
 
-    public byte[] getDelimiter() {
-        return delimeter;
+    public byte[] getValue() {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     public String getName() {

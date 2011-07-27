@@ -69,7 +69,7 @@ import com.sun.enterprise.security.auth.realm.NoSuchRealmException;
 import com.sun.enterprise.security.auth.realm.InvalidOperationException;
 import com.sun.enterprise.security.auth.digest.api.DigestAlgorithmParameter;
 import com.sun.enterprise.security.auth.digest.api.Password;
-import com.sun.enterprise.security.auth.realm.DigestRealmBase;
+import com.sun.enterprise.security.ee.auth.realm.DigestRealmBase;
 import com.sun.enterprise.security.common.Util;
 import com.sun.enterprise.util.Utility;
 
@@ -324,6 +324,7 @@ public final class JDBCRealm extends DigestRealmBase {
         return groups;
     }
 
+    @Override
     public boolean validate(String username, DigestAlgorithmParameter[] params) {
         final Password pass = getPassword(username);
         if (pass == null) {

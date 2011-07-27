@@ -41,7 +41,6 @@
 package com.sun.enterprise.security.ee.auth.login;
 
 import com.sun.appserv.security.ProgrammaticLoginPermission;
-import com.sun.enterprise.security.common.ProgrammaticLoginInterface;
 import com.sun.enterprise.security.SecurityServicesUtil;
 import java.util.logging.Logger;
 import java.util.logging.Level;
@@ -90,7 +89,7 @@ import com.sun.enterprise.security.common.Util;
  */
 @Service
 @Scoped(PerLookup.class)
-public class ProgrammaticLogin implements ProgrammaticLoginInterface
+public class ProgrammaticLogin 
 {
     private WebProgrammaticLogin webProgrammaticLogin;
     

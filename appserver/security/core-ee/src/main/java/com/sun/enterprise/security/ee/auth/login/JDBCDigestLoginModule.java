@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2006-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,33 +38,32 @@
  * holder.
  */
 
-package com.sun.enterprise.security.auth.digest.api;
+package com.sun.enterprise.security.ee.auth.login;
 
-import com.sun.enterprise.security.auth.digest.*;
-import com.sun.enterprise.security.auth.digest.impl.HttpDigestParamGenerator;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.spec.AlgorithmParameterSpec;
+
+import com.sun.enterprise.security.auth.realm.InvalidOperationException;
+import com.sun.enterprise.security.auth.realm.NoSuchUserException;
+import java.util.Enumeration;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
- * This Factory provides DigestParameterGenerator instances to generate 
- * DigestAlgorithmParameter objects from Http and Sip servlet requests. 
  *
  * @author K.Venugopal@sun.com
  */
-public abstract class DigestParameterGenerator {
+public class JDBCDigestLoginModule extends DigestLoginModule {
 
-    public static final String HTTP_DIGEST="HttpDigest";
-    public static final String SIP_DIGEST="SIPDigest";
-    public DigestParameterGenerator() {
+    public JDBCDigestLoginModule() {
     }
 
-    //TODO: Ability to return implementations through services mechanism.
-    public static DigestParameterGenerator getInstance(String algorithm) {
-        if (HTTP_DIGEST.equals(algorithm)) {
-            return new HttpDigestParamGenerator();
-        }
-        return new HttpDigestParamGenerator();
+    protected Enumeration getGroups(String username) {
+        try {
+            return this.getRealm().getGroupNames(username);
+        } catch (InvalidOperationException ex) {
+            Logger.getLogger("global").log(Level.SEVERE, null, ex);
+        } catch (NoSuchUserException ex) {
+            Logger.getLogger("global").log(Level.SEVERE, null, ex);
+        } 
+        return null;
     }
-    
-    public abstract DigestAlgorithmParameter[] generateParameters(AlgorithmParameterSpec value)throws InvalidAlgorithmParameterException;
 }

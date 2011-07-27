@@ -47,7 +47,6 @@
 package com.sun.appserv.security;
 
 import java.util.Properties;
-import javax.servlet.http.HttpServletRequest;
 /**
  * Base class that should be extended by all classes that wish to provide their
  * own Audit support.
@@ -84,7 +83,7 @@ public abstract class AuditModule {
      * or hasResourcePermission.
      * @param success the status of the web authorization request
      */
-    public void webInvocation(String user, HttpServletRequest req, 
+    public void webInvocation(String user, Object req,
             String type, boolean success) {
     }
     /**

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,34 +38,32 @@
  * holder.
  */
 
-package com.sun.enterprise.security.auth.login;
-import com.sun.enterprise.security.auth.digest.api.DigestAlgorithmParameter;
+/*
+ * HttpAlgorithmParameterSpec.java
+ * 
+ * Created on 10 Aug, 2007, 4:40:22 PM
+ * 
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+
+package com.sun.enterprise.security.auth.digest.impl;
+
+import java.security.spec.AlgorithmParameterSpec;
+import javax.servlet.http.HttpServletRequest;
 
 /**
- *
+ * represents HttpServlet request parameter
  * @author K.Venugopal@sun.com
  */
-public class DigestCredentials {
+public class HttpAlgorithmParameterImpl implements AlgorithmParameterSpec {
 
-    private String realmName = "";
-    private String username = "";
-    private DigestAlgorithmParameter [] params = null;    
-
-    public DigestCredentials(String realmName, String username,DigestAlgorithmParameter [] params) {
-        this.realmName = realmName;
-        this.username = username;        
-        this.params = params;
+    private HttpServletRequest req = null;
+    public HttpAlgorithmParameterImpl(HttpServletRequest req) {
+        this.req = req;
     }
 
-    public String getRealmName() {
-        return this.realmName;
-    }
-
-    public String getUserName() {
-        return this.username;
-    }
-
-    public DigestAlgorithmParameter [] getParameters(){
-        return params;
-    }
+    public HttpServletRequest getValue(){
+        return req;
+    } 
 }

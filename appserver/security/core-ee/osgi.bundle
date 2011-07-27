@@ -40,15 +40,16 @@
 
 -exportcontents: \
                         com.sun.enterprise.security.acl; \
-                        com.sun.enterprise.security.auth.nonce; \
                         com.sun.enterprise.security.ee; \
                         com.sun.enterprise.security.ee.auth.login; \
-                        com.sun.enterprise.security.ee.realm.jdbc; \
+                        com.sun.enterprise.security.ee.auth.realm.jdbc; \
                         com.sun.enterprise.security.ee.authorize; \
                         com.sun.enterprise.security.jauth; \
                         com.sun.enterprise.security.jmac; \
                         com.sun.enterprise.security.jmac.callback; \
                         com.sun.enterprise.security.jmac.config; \
+                        com.sun.enterprise.security.authorize; \
+                        com.sun.enterprise.security.auth.digest.impl; \
                         com.sun.enterprise.security.web.integration; version=${project.osgi.version}
 
 # dependent flashlight package resolved at runtime

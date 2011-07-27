@@ -38,8 +38,9 @@
  * holder.
  */
 
-package com.sun.enterprise.security.auth.realm;
+package com.sun.enterprise.security.ee.auth.realm;
 
+import com.sun.enterprise.security.auth.realm.IASRealm;
 import com.sun.enterprise.security.auth.digest.impl.DigestProcessor;
 import com.sun.enterprise.security.auth.digest.api.Password;
 import com.sun.enterprise.security.auth.digest.api.DigestAlgorithmParameter;
@@ -62,7 +63,7 @@ public abstract class DigestRealmBase extends IASRealm implements DigestRealm {
     }
 
 
-    protected final boolean validate(final Password passwd, DigestAlgorithmParameter[] params) {
+    protected  boolean validate(final Password passwd, DigestAlgorithmParameter[] params) {
         try {
             return new DigestValidatorImpl().validate(passwd, params);
         } catch (NoSuchAlgorithmException ex) {            

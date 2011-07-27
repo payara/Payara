@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,15 +38,61 @@
  * holder.
  */
 
-package com.sun.enterprise.security.auth.realm;
+package com.sun.enterprise.security.auth.digest.impl;
 
-import com.sun.enterprise.security.auth.digest.api.DigestAlgorithmParameter;
+
 
 
 /**
- *
+ * Implementation class for Digest algorithm parameters. 
  * @author K.Venugopal@sun.com
  */
-public interface DigestRealm {
-    public boolean validate(String username,DigestAlgorithmParameter params[]);
+
+public class DigestAlgorithmParameterImpl implements  com.sun.enterprise.security.auth.digest.api.DigestAlgorithmParameter {
+    
+    private static byte[] delimeter = ":".getBytes();
+    private String algorithm = "";
+    private byte[] data = null;          
+    private String name = "";
+
+    public DigestAlgorithmParameterImpl(String name,byte[] data) {        
+        this.data = data;
+        this.name = name;
+    }
+    
+    public DigestAlgorithmParameterImpl(String name,byte[] data,byte delimiter) {        
+        this.data = data;
+        this.delimeter = delimeter;
+        this.name = name;
+    }
+    
+    
+    public DigestAlgorithmParameterImpl(String name,String algorithm, byte[] data) {
+        this.algorithm = algorithm;
+        this.data = data;
+        this.name = name;
+    }
+    
+    public DigestAlgorithmParameterImpl(String name,String algorithm, byte[] data,byte [] delimiter) {
+        this.algorithm = algorithm;
+        this.data = data;
+        this.delimeter = delimeter;
+        this.name = name;
+    }
+    
+    public String getAlgorithm() {
+        return this.algorithm;
+    }
+    
+    public  byte[] getValue() {
+        return data;
+    }    
+   
+    public byte[] getDelimiter() {
+        return delimeter;
+    }
+
+    public String getName() {
+        return this.name;
+    }
 }

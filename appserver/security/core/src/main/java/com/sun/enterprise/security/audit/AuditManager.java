@@ -54,7 +54,6 @@ import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.servlet.http.HttpServletRequest;
 
 import com.sun.appserv.security.AuditModule;
 import org.jvnet.hk2.config.types.Property;
@@ -273,7 +272,7 @@ public final class AuditManager {
      * logs the web authorization call for all loaded modules
      * @see com.sun.appserv.security.AuditModule.webInvocation
      */
-    public void webInvocation(String user, HttpServletRequest req, 
+    public void webInvocation(String user, Object req,
         String type, boolean success){
         if(auditOn){
             List list = instances;
