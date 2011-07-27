@@ -73,9 +73,7 @@
     </developers>
 
     <properties>
-        <!-- commenting temporarily since exclude file does not exist - 
         <findbugs.exclude>${project.basedir}/exclude.xml</findbugs.exclude>
-        -->
     </properties>
 
     <build>
