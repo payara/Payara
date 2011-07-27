@@ -112,15 +112,6 @@
         <property name="adminConsoleDownloadLocation" value="glassfish/lib/install/applications/admingui.war" />
         <property name="ipsRoot" value="${com.sun.aas.installRoot}/.." />
       </admin-service>
-      <web-container>
-        <session-config>
-          <session-manager>
-            <manager-properties />
-            <store-properties />
-          </session-manager>
-          <session-properties />
-        </session-config>
-      </web-container>
       <ejb-container pool-resize-quantity="8" max-pool-size="32" steady-pool-size="0" session-store="${com.sun.aas.instanceRoot}/session-store">
         <ejb-timer-service />
       </ejb-container>
@@ -183,7 +174,6 @@
           </provider-config>
         </message-security-config>
       </security-service>
-      <transaction-service tx-log-dir="${com.sun.aas.instanceRoot}/logs" />
       <monitoring-service>
         <module-monitoring-levels />
       </monitoring-service>

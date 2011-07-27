@@ -312,8 +312,6 @@ public final class ConfigBeansUtilities {
 
         if (module instanceof Application) {
             return ((Application)module).getContextRoot();
-        } else if (module instanceof WebModule) {
-            return ((WebModule)module).getContextRoot(); 
         } else {
             return null;
         }
@@ -327,12 +325,6 @@ public final class ConfigBeansUtilities {
 
         if (module instanceof Application) {
             return ((Application)module).getLibraries();
-        } else if (module instanceof WebModule) {
-            return ((WebModule)module).getLibraries();
-        } else if (module instanceof EjbModule) {
-            return ((EjbModule)module).getLibraries();
-        } else if (module instanceof J2eeApplication) {
-            return ((J2eeApplication)module).getLibraries();
         } else {
             return null;
         }
@@ -347,16 +339,6 @@ public final class ConfigBeansUtilities {
         String location = null; 
         if (module instanceof Application) {
             location =  ((Application)module).getLocation();
-        } else if (module instanceof WebModule) {
-            location = ((WebModule)module).getLocation();
-        } else if (module instanceof EjbModule) {
-            location = ((EjbModule)module).getLocation();
-        } else if (module instanceof ConnectorModule) {
-            location = ((ConnectorModule)module).getLocation();
-        } else if (module instanceof AppclientModule) {
-            location = ((AppclientModule)module).getLocation();
-        } else if (module instanceof J2eeApplication) {
-            location =  ((J2eeApplication)module).getLocation();
         }
 
         try { 
@@ -378,16 +360,6 @@ public final class ConfigBeansUtilities {
 
         if (module instanceof Application) {
             return ((Application)module).getDirectoryDeployed();
-        } else if (module instanceof WebModule) {
-            return ((WebModule)module).getDirectoryDeployed();
-        } else if (module instanceof EjbModule) {
-            return ((EjbModule)module).getDirectoryDeployed();
-        } else if (module instanceof ConnectorModule) {
-            return ((ConnectorModule)module).getDirectoryDeployed();
-        } else if (module instanceof AppclientModule) {
-            return ((AppclientModule)module).getDirectoryDeployed();
-        } else if (module instanceof J2eeApplication) {
-            return ((J2eeApplication)module).getDirectoryDeployed();
         } else {
             return null;
         }

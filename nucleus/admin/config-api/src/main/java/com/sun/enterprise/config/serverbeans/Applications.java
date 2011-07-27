@@ -50,29 +50,12 @@ import org.jvnet.hk2.config.Element;
 import java.util.*;
 import org.glassfish.api.admin.config.ApplicationName;
 
-/**
- *
- */
-
-/* @XmlType(name = "", propOrder = {
-    "lifecycleModuleOrJ2EeApplicationOrEjbModuleOrWebModuleOrConnectorModuleOrAppclientModuleOrMbeanOrExtensionModule"
-}) */
-
-
 @Configured
 public interface Applications extends ConfigBeanProxy, Injectable  {
 
     /**
-     * Gets the value of the lifecycleModuleOrJ2EeApplicationOrEjbModuleOrWebModuleOrConnectorModuleOrAppclientModuleOrMbeanOrExtensionModuleorApplication property.
+     * Gets the value of the MbeanorApplication property.
      * Objects of the following type(s) are allowed in the list
-     * {@link LifecycleModule }
-     * {@link J2eeApplication }
-     * {@link EjbModule }
-     * {@link WebModule }
-     * {@link ConnectorModule }
-     * {@link AppclientModule }
-     * {@link Mbean }
-     * {@link ExtensionModule }
      * {@link Application }
      */             
     @Element("*")

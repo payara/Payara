@@ -51,7 +51,6 @@ import org.jvnet.hk2.config.Dom;
 // config imports
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
-import com.sun.enterprise.config.serverbeans.HttpListener;
 import com.sun.enterprise.config.serverbeans.IiopListener;
 import com.sun.enterprise.config.serverbeans.JmsHost;
 import com.sun.enterprise.config.serverbeans.JmxConnector;
@@ -156,8 +155,6 @@ public class DomainXmlVerifier {
                         // config-->http-service
                         HttpService httpSvc = cfg.getHttpService();
                         if (httpSvc != null) {
-                            List<HttpListener> httpListeners = httpSvc.getHttpListener();
-                            checkDuplicate(httpListeners);
                             List<VirtualServer> virtualServers = httpSvc.getVirtualServer();
                             checkDuplicate(virtualServers);
                         }

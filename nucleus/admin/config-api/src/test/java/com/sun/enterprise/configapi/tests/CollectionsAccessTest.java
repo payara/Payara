@@ -47,7 +47,7 @@ import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.glassfish.api.admin.config.ApplicationName;
 import com.sun.enterprise.config.serverbeans.Applications;
-import com.sun.enterprise.config.serverbeans.EjbModule;
+import com.sun.enterprise.config.serverbeans.Application;
 
 import java.util.List;
 import java.beans.PropertyVetoException;
@@ -80,7 +80,7 @@ public class CollectionsAccessTest extends ConfigApiTest  {
             public Object run(Applications param) throws PropertyVetoException, TransactionFailure {
                 // this is the bug, we should not get the list from apps but from param.
                 List<ApplicationName> modules = apps.getModules();
-                EjbModule m = param.createChild(EjbModule.class);
+                Application m = param.createChild(Application.class);
                 modules.add(m); // should throw an exception
                 return m;
             }
@@ -94,9 +94,10 @@ public class CollectionsAccessTest extends ConfigApiTest  {
         ConfigSupport.apply(new SingleConfigCode<Applications>() {
             public Object run(Applications param) throws PropertyVetoException, TransactionFailure {
                 List<ApplicationName> modules = param.getModules();
-                EjbModule m = param.createChild(EjbModule.class);
+                Application m = param.createChild(Application.class);
                 m.setName( "ejb-test" );
                 m.setLocation("test-location");
+                m.setObjectType("ejb");
                 modules.add(m);
                 modules.remove(m);
                 return m;

@@ -65,7 +65,7 @@ import org.glassfish.api.admin.ServerEnvironment;
 @Service
 @Scoped(PerLookup.class)
 public final class EJBServerConfigLookup {
-
+   
     /**
      * The default store-pool-jndi-name (used by Ejb Container for
      * Stateful Session Bean checkpointing and passivation to HADB
@@ -183,22 +183,16 @@ public final class EJBServerConfigLookup {
                 this.getEjbContainerAvailabilityEnabledFromConfig(globalAvailability);
         boolean ejbDescriptorAvailability = true;
         if (isVirtual) {
-            boolean ejbModuleAvailability =
-                    this.getEjbModuleAvailability(appName, ejbContainerAvailability);
             ejbDescriptorAvailability =
-                    this.getAvailabilityEnabledFromEjbDescriptor(ejbModuleAvailability);
+                    this.getAvailabilityEnabledFromEjbDescriptor();
             _haEnabled = globalAvailability
                     && ejbContainerAvailability
-                    && ejbModuleAvailability
                     && ejbDescriptorAvailability;
         } else {
-            boolean j2eeApplicationAvailability =
-                    this.getJ2eeApplicationAvailability(appName, ejbContainerAvailability);
             ejbDescriptorAvailability =
-                    this.getAvailabilityEnabledFromEjbDescriptor(j2eeApplicationAvailability);
+                    this.getAvailabilityEnabledFromEjbDescriptor();
             _haEnabled = globalAvailability
                     && ejbContainerAvailability
-                    && j2eeApplicationAvailability
                     && ejbDescriptorAvailability;
         }
 
@@ -271,48 +265,6 @@ public final class EJBServerConfigLookup {
         } else {
             return bool.booleanValue();
         }
-    }
-
-    /**
-     * return availability-enabled for the deployed ejb module
-     * from domain.xml based on the name
-     * return inheritedValue if module not found or module availability
-     * is not defined
-     *
-     * @param name
-     * @param inheritedValue
-     */
-    private boolean getEjbModuleAvailability(String name, boolean inheritedValue) {
-        boolean result = false;
-        EjbModule ejbModule = (applications == null)
-                ? null : applications.getModule(EjbModule.class, name);
-
-        if (ejbModule != null) {
-            result = Boolean.valueOf(ejbModule.getAvailabilityEnabled());
-        }
-
-        return result;
-    }
-
-    /**
-     * return availability-enabled for the deployed j2ee application
-     * from domain.xml based on the app name
-     * return inheritedValue if module not found or j2ee application
-     * availability is not defined
-     *
-     * @param appName
-     * @param inheritedValue
-     */
-    private boolean getJ2eeApplicationAvailability(String appName, boolean inheritedValue) {
-        boolean result = false;
-        J2eeApplication j2eeApp = (applications == null)
-                ? null : applications.getModule(J2eeApplication.class, appName);
-
-        if (j2eeApp != null) {
-            result = Boolean.valueOf(j2eeApp.getAvailabilityEnabled());
-        }
-
-        return result;
     }
 
     /**

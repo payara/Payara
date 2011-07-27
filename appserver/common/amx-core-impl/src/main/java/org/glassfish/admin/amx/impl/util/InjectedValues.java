@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2008-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -53,7 +53,6 @@ import org.jvnet.hk2.component.Habitat;
 import com.sun.enterprise.module.ModulesRegistry;
 
 import com.sun.enterprise.config.serverbeans.Domain;
-import com.sun.enterprise.config.serverbeans.AmxPref;
 
 /**
 Utility class that gets various useful values injected into it for use
@@ -79,15 +78,6 @@ public class InjectedValues {
 
     public MBeanServer getMBeanServer() {
         return mMBeanServer;
-    }
-
-    /** might return null */
-    public AmxPref getAMXPrefs() {
-        final AmxPref prefs = mDomain.getAmxPref();
-        if (prefs == null) {
-            // create one?
-        }
-        return prefs;
     }
 
     public Habitat getHabitat() {

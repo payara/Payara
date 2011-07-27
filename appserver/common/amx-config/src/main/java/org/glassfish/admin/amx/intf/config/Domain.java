@@ -66,8 +66,6 @@ public interface Domain
 
     public NodeAgents getNodeAgents();
 
-    public AmxPref getAmxPref();
-
     public String getVersion();
 
     public LbConfigs getLbConfigs();
@@ -127,8 +125,6 @@ public interface Domain
     public void setLbConfigs(LbConfigs param1);
 
     public void setLoadBalancers(LoadBalancers param1);
-
-    public void setAmxPref(AmxPref param1);
 
     public Config getConfigNamed(String param1);
 

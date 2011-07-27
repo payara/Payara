@@ -80,30 +80,6 @@ public interface HttpService extends ConfigBeanProxy, Injectable, PropertyBag {
     void setAccessLog(AccessLog value) throws PropertyVetoException;
 
     /**
-     * Gets the value of the httpListener property.
-     * <p/>
-     * <p/>
-     * This accessor method returns a reference to the live list,
-     * not a snapshot. Therefore any modification you make to the
-     * returned list will be present inside the JAXB object.
-     * This is why there is not a <CODE>set</CODE> method for the httpListener property.
-     * <p/>
-     * <p/>
-     * For example, to add a new item, do as follows:
-     * <pre>
-     *    getHttpListener().add(newItem);
-     * </pre>
-     * <p/>
-     * <p/>
-     * <p/>
-     * Objects of the following type(s) are allowed in the list
-     * {@link HttpListener }
-     */
-    @Deprecated
-    @Element(required=true)
-    List<HttpListener> getHttpListener();
-
-    /**
      * Gets the value of the virtualServer property.
      * <p/>
      * <p/>
@@ -126,111 +102,12 @@ public interface HttpService extends ConfigBeanProxy, Injectable, PropertyBag {
     @Element(required=true)
     List<VirtualServer> getVirtualServer();
 
-    /**
-     * Gets the value of the requestProcessing property.
-     *
-     * @return possible object is
-     *         {@link RequestProcessing }
-     */
-    @Element
-    @Deprecated
-    RequestProcessing getRequestProcessing();
-
-    /**
-     * Sets the value of the requestProcessing property.
-     *
-     * @param value allowed object is
-     *              {@link RequestProcessing }
-     */
-    @Deprecated
-    void setRequestProcessing(RequestProcessing value) throws PropertyVetoException;
-
-    /**
-     * Gets the value of the keepAlive property.
-     *
-     * @return possible object is
-     *         {@link KeepAlive }
-     */
-    @Element
-    @Deprecated
-    KeepAlive getKeepAlive();
-
-    /**
-     * Sets the value of the keepAlive property.
-     *
-     * @param value allowed object is
-     *              {@link KeepAlive }
-     */
-    @Deprecated
-    void setKeepAlive(KeepAlive value) throws PropertyVetoException;
-
-    /**
-     * Gets the value of the connectionPool property.
-     *
-     * @return possible object is
-     *         {@link ConnectionPool }
-     */
-    @Element
-    @Deprecated
-    ConnectionPool getConnectionPool();
-
-    /**
-     * Sets the value of the connectionPool property.
-     *
-     * @param value allowed object is
-     *              {@link ConnectionPool }
-     */
-    @Deprecated
-    void setConnectionPool(ConnectionPool value) throws PropertyVetoException;
-
-    /**
-     * Gets the value of the httpProtocol property.
-     *
-     * @return possible object is
-     *         {@link HttpProtocol }
-     */
-    @Element
-    @Deprecated
-    HttpProtocol getHttpProtocol();
-
-    /**
-     * Sets the value of the httpProtocol property.
-     *
-     * @param value allowed object is
-     *              {@link HttpProtocol }
-     */
-    @Deprecated
-    void setHttpProtocol(HttpProtocol value) throws PropertyVetoException;
-
-    /**
-     * Gets the value of the httpFileCache property.
-     *
-     * @return possible object is
-     *         {@link HttpFileCache }
-     */
-    @Element
-    @Deprecated
-    HttpFileCache getHttpFileCache();
-
-    /**
-     * Sets the value of the httpFileCache property.
-     *
-     * @param value allowed object is
-     *              {@link HttpFileCache }
-     */
-    @Deprecated
-    void setHttpFileCache(HttpFileCache value) throws PropertyVetoException;
-
     @DuckTyped
     VirtualServer getVirtualServerByName(String name);
 
     @DuckTyped
     List<String> getNonAdminVirtualServerList();
     
-    @DuckTyped
-    @Deprecated
-    HttpListener getHttpListenerById(String id);
-
     @Attribute(defaultValue = "false")
     @Pattern(regexp="(false|true|on|off)")
     String getAccessLoggingEnabled();
@@ -278,15 +155,6 @@ public interface HttpService extends ConfigBeanProxy, Injectable, PropertyBag {
             return Collections.unmodifiableList(nonAdminVSList);
         }
 
-        @Deprecated
-        public static HttpListener getHttpListenerById(HttpService target, String id) {
-            for (HttpListener v : target.getHttpListener()) {
-                if (v.getId().equals(id)) {
-                    return v;
-                }
-            }
-            return null;
-        }    
     }
     
     

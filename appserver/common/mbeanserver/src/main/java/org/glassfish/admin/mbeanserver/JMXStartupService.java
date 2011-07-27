@@ -65,7 +65,6 @@ import java.util.ArrayList;
 import java.lang.management.ManagementFactory;
 import com.sun.enterprise.config.serverbeans.AdminService;
 import com.sun.enterprise.config.serverbeans.JmxConnector;
-import com.sun.enterprise.config.serverbeans.AmxPref;
 import com.sun.enterprise.config.serverbeans.Domain;
 
 import org.glassfish.grizzly.config.dom.Ssl;
@@ -126,9 +125,7 @@ public final class JMXStartupService implements PostStartup, PostConstruct {
 
         final List<JmxConnector> configuredConnectors = mAdminService.getJmxConnector();
 
-        // AmxPref might not exist
-        final AmxPref amxPref = mDomain.getAmxPref();
-        final boolean autoStart = amxPref == null ? AmxPref.AUTO_START_DEFAULT : Boolean.valueOf(amxPref.getAutoStart());
+        final boolean autoStart = false;
 
         mConnectorsStarterThread = new JMXConnectorsStarterThread(mMBeanServer, configuredConnectors, mBootAMX, !autoStart);
         mConnectorsStarterThread.start();

@@ -47,7 +47,6 @@ import java.util.ArrayList;
 import com.sun.enterprise.config.serverbeans.Application;
 import com.sun.enterprise.config.serverbeans.Applications;
 import com.sun.enterprise.config.serverbeans.Domain;
-import com.sun.enterprise.config.serverbeans.J2eeApplication;
 import com.sun.enterprise.config.serverbeans.Module;
 import com.sun.enterprise.config.serverbeans.Config;
 import org.glassfish.grizzly.config.dom.ThreadPool;
@@ -100,9 +99,4 @@ public class UpgradeTest extends ConfigApiTest {
         }
     }
 
-    @Test
-    public void j2eeApplicationUpgrade() {
-        J2eeApplication application = getHabitat().getComponent(J2eeApplication.class);
-        assertTrue("/foo/bar".equals(application.getLocation()));
-    }
-}
+ }

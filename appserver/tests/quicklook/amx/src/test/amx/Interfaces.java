@@ -81,7 +81,6 @@ class Interfaces {
             ServerMon.class,
             
             // config MBeans
-            AmxPref.class,
             AccessLog.class,
             Action.class,
             AdminObjectResource.class,
@@ -133,7 +132,6 @@ class Interfaces {
             JmxConnector.class,
             org.glassfish.admin.amx.intf.config.JndiResource.class,
             JavaConfig.class,
-            KeepAlive.class,
             LogService.class,
             MdbContainer.class,
             MailResource.class,

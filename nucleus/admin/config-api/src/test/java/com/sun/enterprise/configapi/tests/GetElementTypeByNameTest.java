@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -45,7 +45,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.ConfigSupport;
-import com.sun.enterprise.config.serverbeans.HttpService;
+import com.sun.enterprise.config.serverbeans.Config;
 
 /**
  * Test the getElementTypeByName ConfigSupport API
@@ -61,14 +61,14 @@ public class GetElementTypeByNameTest extends ConfigApiTest {
 
     @Test
     public void testAppRoot() {
-        HttpService domain = getHabitat().getComponent(HttpService.class);
+        Config c = getHabitat().getComponent(Config.class);
         Class<? extends ConfigBeanProxy> elementType = null;
         try {
-            elementType = ConfigSupport.getElementTypeByName(domain, "http-listener");
+            elementType = ConfigSupport.getElementTypeByName(c, "admin-service");
         } catch (Exception e) {
             e.printStackTrace();
         }
         assertNotNull(elementType);
-        assertTrue(elementType.getName().endsWith("HttpListener"));
+        assertTrue(elementType.getName().endsWith("AdminService"));
     }
 }

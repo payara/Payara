@@ -135,19 +135,6 @@ public class ResourcesUtil {
         return getRuntime().getApplications();
     }
 
-    private ConnectorModule getConnectorModuleByName(String name){
-        ConnectorModule module = null;
-        List<ConnectorModule> modules = getApplications().getModules(ConnectorModule.class);
-        for(ConnectorModule connectorModule : modules){
-            if(connectorModule.getName().equals(name)){
-                module = connectorModule;
-                break;
-            }
-        }
-        return module;
-    }
-
-
     private Application getApplicationByName(String name){
         Application application = null;
         List<Application> apps = getApplications().getApplications();
@@ -176,8 +163,7 @@ public class ResourcesUtil {
 
 
     public boolean belongToStandAloneRar(String resourceAdapterName) {
-        ConnectorModule connectorModule = getConnectorModuleByName(resourceAdapterName);
-        return connectorModule != null;
+        return false;
     }
 
     public static ResourcesUtil createInstance() {

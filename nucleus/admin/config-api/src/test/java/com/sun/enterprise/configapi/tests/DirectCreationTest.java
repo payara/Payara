@@ -40,10 +40,11 @@
 
 package com.sun.enterprise.configapi.tests;
 
-import com.sun.enterprise.config.serverbeans.AccessLog;
-import com.sun.enterprise.config.serverbeans.HttpService;
+import com.sun.enterprise.config.serverbeans.DasConfig;
 import com.sun.enterprise.config.serverbeans.JavaConfig;
 import com.sun.enterprise.config.serverbeans.Profiler;
+import com.sun.enterprise.config.serverbeans.AdminService;
+
 import org.glassfish.tests.utils.Utils;
 import static org.junit.Assert.assertTrue;
 import org.junit.Test;
@@ -84,7 +85,7 @@ public class DirectCreationTest extends ConfigPersistence {
 
     public void doTest() throws TransactionFailure {
 
-        HttpService service = habitat.getComponent(HttpService.class);
+        AdminService service = habitat.getComponent(AdminService.class);
 
         ConfigBean serviceBean = (ConfigBean) ConfigBean.unwrap(service);
         Class<?>[] subTypes = null;
@@ -99,19 +100,16 @@ public class DirectCreationTest extends ConfigPersistence {
 
         for (Class<?> subType : subTypes) {
             // TODO:  JL force compilation error to mark this probably edit point for grizzly config
-            if (subType.getName().endsWith("HttpListener")) {
+            if (subType.getName().endsWith("DasConfig")) {
                 Map<String, String> configChanges = new HashMap<String, String>();
-                configChanges.put("id", "funky-listener");
-                configChanges.put("server-name", "server");
-                configChanges.put("default-virtual-server", "servre");
-                configChanges.put("address", "124.2.4.6");
-                configChanges.put("port", "8034");
+                configChanges.put("dynamic-reload-enabled", "true");
+                configChanges.put("autodeploy-dir", "funky-dir");
                 support.createAndSet(serviceBean, (Class<? extends ConfigBeanProxy>)subType, configChanges);
                 break;
             }
         }
 
-        support.createAndSet(serviceBean, AccessLog.class, (List) null);
+        support.createAndSet(serviceBean, DasConfig.class, (List) null);
 
         List<ConfigSupport.AttributeChanges> profilerChanges = new ArrayList<ConfigSupport.AttributeChanges>();
         String[] values = { "-Xmx512m", "-RFtrq", "-Xmw24" };
@@ -137,6 +135,6 @@ public class DirectCreationTest extends ConfigPersistence {
     }
 
     public boolean assertResult(String s) {
-        return s.contains("id=\"funky-listener\"");
+        return s.contains("autodeploy-dir=\"funky-dir\"");
     }
 }

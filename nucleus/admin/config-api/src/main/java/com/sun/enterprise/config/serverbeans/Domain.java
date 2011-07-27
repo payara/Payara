@@ -283,11 +283,6 @@ public interface Domain extends ConfigBeanProxy, Injectable, PropertyBag, System
      */
     void setNodeAgents(NodeAgents value) throws PropertyVetoException;
 
-    @Element
-    public AmxPref  getAmxPref();
-    
-    public void  setAmxPref(final AmxPref amxPrefs) throws PropertyVetoException;
-
     /**
      * Gets the value of the systemProperty property.
      * <p/>

@@ -50,27 +50,13 @@ public interface HttpService
         extends Singleton, ConfigElement, PropertiesAccess {
 
 
-    public void setKeepAlive(KeepAlive param1);
-
-    public KeepAlive getKeepAlive();
-
     public Map<String, VirtualServer> getVirtualServer();
 
     public AccessLog getAccessLog();
 
-    public HttpProtocol getHttpProtocol();
-
     public String getSsoEnabled();
 
     public String getAccessLoggingEnabled();
-
-    public ConnectionPool getConnectionPool();
-
-    public HttpFileCache getHttpFileCache();
-
-    public Map<String, HttpListener> getHttpListener();
-
-    public RequestProcessing getRequestProcessing();
 
     public void setSsoEnabled(String param1);
 
@@ -78,18 +64,8 @@ public interface HttpService
 
     public void setAccessLog(AccessLog param1);
 
-    public void setRequestProcessing(RequestProcessing param1);
-
-    public void setConnectionPool(ConnectionPool param1);
-
-    public void setHttpProtocol(HttpProtocol param1);
-
-    public void setHttpFileCache(HttpFileCache param1);
-
     public VirtualServer getVirtualServerByName(String param1);
 
     public List getNonAdminVirtualServerList();
-
-    public HttpListener getHttpListenerById(String param1);
 
 }

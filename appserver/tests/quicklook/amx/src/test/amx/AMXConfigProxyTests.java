@@ -369,24 +369,7 @@ public final class AMXConfigProxyTests extends AMXTestBase
         parent.removeChild( type, name );
         assert parent.childrenMap(type).get(name) == null;
     }
-    
-    @Test
-    public void testAmxPref()
-    {
-        final Domain domain = getDomainConfig();
         
-        if ( domain.getAmxPref() == null )
-        {
-            domain.createChild( Util.deduceType(AmxPref.class), null );
-        }
-        final AmxPref prefs = domain.getAmxPref();
-        assert prefs != null;
-        final String validationLevel = prefs.getValidationLevel();
-        assert validationLevel.equalsIgnoreCase("full") || validationLevel.equalsIgnoreCase("off");
-        
-        assert prefs.getUnregisterNonCompliant() != null;
-    }
-    
     @Test
     public void testCreateProperties()
     {

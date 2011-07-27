@@ -39,7 +39,6 @@
  */
 package org.glassfish.admin.amx.impl;
 
-import com.sun.enterprise.config.serverbeans.AmxPref;
 import com.sun.logging.LogDomains;
 import org.glassfish.admin.amx.base.DomainRoot;
 import org.glassfish.admin.amx.base.MBeanTracker;
@@ -162,8 +161,7 @@ public final class AMXStartupService
 
             mMBeanTracker = new MBeanTracker(AMXGlassfish.DEFAULT.amxJMXDomain());
 
-            final AmxPref amxPref = InjectedValues.getInstance().getAMXPrefs();
-            mMBeanTracker.setEmitMBeanStatus(amxPref == null ? false : Boolean.valueOf(amxPref.getEmitRegisrationStatus()));
+            mMBeanTracker.setEmitMBeanStatus(false);
 
             //final StandardMBean supportMBean = new StandardMBean(mMBeanTracker, MBeanTrackerMBean.class);
             mMBeanServer.registerMBean(mMBeanTracker, MBeanTrackerMBean.MBEAN_TRACKER_OBJECT_NAME);

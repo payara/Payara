@@ -39,7 +39,6 @@
  */
 package org.glassfish.admin.amx.impl.mbean;
 
-import com.sun.enterprise.config.serverbeans.AmxPref;
 import com.sun.logging.LogDomains;
 import org.glassfish.admin.amx.base.DomainRoot;
 import org.glassfish.admin.amx.core.AMXValidator;
@@ -80,16 +79,10 @@ public final class ComplianceMonitor implements NotificationListener {
 
         mServer = (MBeanServer) domainRoot.extra().mbeanServerConnection();
 
-        final AmxPref amxPrefs = InjectedValues.getInstance().getAMXPrefs();
-        if (amxPrefs == null) {
-            mValidationLevel = AmxPref.VALIDATION_LEVEL_FULL;
-            mUnregisterNonCompliant = false;
-            mLogInaccessibleAttributes = true;
-        } else {
-            mValidationLevel = amxPrefs.getValidationLevel();
-            mUnregisterNonCompliant = Boolean.valueOf(amxPrefs.getUnregisterNonCompliant());
-            mLogInaccessibleAttributes = Boolean.valueOf(amxPrefs.getLogInaccessibleAttributes());
-        }
+
+        mValidationLevel = "full";
+        mUnregisterNonCompliant = false;
+        mLogInaccessibleAttributes = true;
 
         mValidatorThread = new ValidatorThread(mServer, mValidationLevel, mUnregisterNonCompliant, mLogInaccessibleAttributes);
 
@@ -118,7 +111,7 @@ public final class ComplianceMonitor implements NotificationListener {
     }
 
     boolean shouldValidate() {
-        return !AmxPref.VALIDATION_LEVEL_OFF.equals(mValidationLevel);
+        return !"off".equals(mValidationLevel);
     }
 
     private void validate(final ObjectName objectName) {
