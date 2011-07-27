@@ -84,7 +84,7 @@
                 <configuration>
                     <archive>
 		        <manifestEntries>
-                           <probe-provider-class-names>org.glassfish.hk2.connectors.work.monitor.WorkManagementProbeProvider</probe-provider-class-names>
+                    <probe-provider-class-names>com.sun.enterprise.connectors.work.monitor.WorkManagementProbeProvider</probe-provider-class-names>
                         </manifestEntries>
                     </archive>
                 </configuration>

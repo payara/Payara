@@ -78,7 +78,7 @@
                     <archive>
                         <manifestEntries>
                             <probe-provider-class-names>
-                                org.glassfish.hk2.transaction.monitoring.TransactionServiceProbeProvider
+                                com.sun.enterprise.transaction.monitoring.TransactionServiceProbeProvider
                             </probe-provider-class-names>
                         </manifestEntries>
                     </archive>

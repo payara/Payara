@@ -117,7 +117,7 @@
                 <configuration>
                     <archive>
                         <manifestEntries>
-                            <probe-provider-class-names>org.glassfish.hk2.v3.services.impl.monitor.probes.ThreadPoolProbeProvider,org.glassfish.hk2.v3.services.impl.monitor.probes.FileCacheProbeProvider,org.glassfish.hk2.v3.services.impl.monitor.probes.KeepAliveProbeProvider,org.glassfish.hk2.v3.services.impl.monitor.probes.ConnectionQueueProbeProvider</probe-provider-class-names>
+                            <probe-provider-class-names>com.sun.enterprise.v3.services.impl.monitor.probes.ThreadPoolProbeProvider,com.sun.enterprise.v3.services.impl.monitor.probes.FileCacheProbeProvider,com.sun.enterprise.v3.services.impl.monitor.probes.KeepAliveProbeProvider,com.sun.enterprise.v3.services.impl.monitor.probes.ConnectionQueueProbeProvider</probe-provider-class-names>
                             <Class-Path>kernel-l10n.jar</Class-Path>
                         </manifestEntries>
                     </archive>
