@@ -37,23 +37,23 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+
 package org.glassfish.virtualization.spi;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-
 /**
- * An allocation strategy is responsible for allocating virtual machines given
- * a set of groups and machines within these groups.
+ * Definition of a listener of a task completion.
+ *
+ * @param <T> task phases as an enumeration
+ * @param <U> token type used to qualify the task
  *
  * @author Jerome Dochez
  */
-public interface AllocationStrategy {
+public interface Listener<T extends Enum> {
 
-    Map<Group, ListenableFuture<AllocationPhase, VirtualMachine>> allocate(Collection<Group> groups,
-                                                                    VMOrder order,
-                                                                    List<Listener<AllocationPhase>> listeners);
-
-    GroupAllocationStrategy getGroupStrategy(Group group);
+    /**
+     * Notification of a phase completion of a task
+     *
+     * @param phase the completed phase
+     */
+    void notify(T phase);
 }

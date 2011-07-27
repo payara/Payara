@@ -49,5 +49,5 @@ public interface GroupAllocationStrategy {
 
     Group group();
 
-    Map<Machine, VMResponse> allocate(VMOrder order);
+    Map<Machine, ListenableFuture<AllocationPhase, VirtualMachine>> allocate(VMOrder order);
 }

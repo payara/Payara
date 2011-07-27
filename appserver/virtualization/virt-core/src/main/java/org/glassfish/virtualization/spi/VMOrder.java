@@ -49,23 +49,13 @@ import java.util.*;
  */
 public class VMOrder {
 
-    final int number;
     final Template template;
     final List<Group> groups = new ArrayList<Group>();
     final List<VirtualMachine> noColocationList = new ArrayList<VirtualMachine>();
     final Properties vmProps = new Properties();
 
     public VMOrder(Template template, int number) {
-        this.number = number;
         this.template = template;
-    }
-
-    /**
-     *
-     * @return the desired number of machines
-     */
-    public int number() {
-        return number;
     }
 
     /**
@@ -110,9 +100,9 @@ public class VMOrder {
      * will be passed to the virtual machine through a provider specific mechanism. Such
      * properties can be used by the virtual machine to configure itself.
      *
-     * @return the properties or an empty collection
+     * @return the virtual machine properties
      */
-    public Properties getVirtualMachineProperties(int machineNumber) {
+    public Properties getVirtualMachineProperties() {
         return vmProps;
     }
 

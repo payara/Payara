@@ -37,17 +37,33 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+
 package org.glassfish.virtualization.spi;
 
-import java.util.List;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 
 /**
- * Response from a virtual machine fulfillment order.
+ * A listenable future is a {@link Future} which provides phases completion
+ * notification to listeners.
+ *
+ * @param <T> the phases definition as an {@link Enum}
+ * @param <U> the result type returned by the {@link java.util.concurrent.Future#get()}
+ *
+ * @author Jerome Dochez
  */
-public interface VMResponse {
+public interface ListenableFuture<T extends Enum, U> extends Future<U> {
 
-    VMOrder request();
+    /**
+     * Registration of a task phase completion listener. Each phase completion
+     * will trigger a {@link Listener#notify(Enum)} call using the
+     * passed {@link java.util.concurrent.ExecutorService#submit(Runnable)} method.
+     *
+     * @param listener the listener instance
+     * @param executor the executor to use to invoke {@link Listener#notify(Enum)}
+     * methods.
+     */
+    void addListener(Listener<T> listener, ExecutorService executor);
 
-    List<Future<VirtualMachine>> getVirtualMachines();
+
 }

@@ -41,6 +41,8 @@ package org.glassfish.virtualization.spi;
 
 import org.jvnet.hk2.annotations.Contract;
 
+import java.util.List;
+
 /**
  * Defines the Infrastructure Management Service
  * @author Jerome Dochez
@@ -56,19 +58,32 @@ public interface IAAS extends Iterable<Group> {
     Group byName(String groupName);
 
     /**
-     * Allocates number of virtual machines based on the provided template.
-     * @param order the allocation constraints and number of desired virtual machines
-     * @return  VirtualMachines instances
+     * Allocate a virtual machine based on the provided template.
+     *
+     * @param order the allocation constraints for the virtual machine allocation
+     * @return a {@link ListenableFuture} to get asynchronous phases completion notification and the
+     * {@link VirtualMachine} instance upon allocation completion.
+     * @param listeners list of synchronous {@link Listener} to register before starting any allocation
+     * work.
      * @throws VirtException when the virtual machine creation failed.
      */
-    VMResponse allocate(VMOrder order) throws VirtException;
+    ListenableFuture<AllocationPhase, VirtualMachine> allocate(VMOrder order,
+                                                               List<Listener<AllocationPhase>> listeners)
+            throws VirtException;
 
     /**
-     * Allocates number of virtual machines based on the provided template.
-     * @param strategy strategy to allocate the virtual machines within the groups pools.
-     * @param order the allocation constraints and number of desired virtual machines
-     * @return  VirtualMachines instances
+     * Allocate a virtual machine based on the provided template.
+     *
+     * @param strategy strategy to allocate the virtual machines within the machine pools.
+     * @param order the allocation constraints for the virtual machine allocation
+     * @return a {@link ListenableFuture} to get asynchronous phases completion notification and the
+     * {@link VirtualMachine} instance upon allocation completion.
+     * @param listeners list of synchronous {@link Listener} to register before starting any allocation
+     * work.
      * @throws VirtException when the virtual machine creation failed.
      */
-    VMResponse allocate(AllocationStrategy strategy, VMOrder order) throws VirtException;
+    ListenableFuture<AllocationPhase, VirtualMachine> allocate(AllocationStrategy strategy,
+                                                               VMOrder order,
+                                                               List<Listener<AllocationPhase>> listeners)
+            throws VirtException;
 }

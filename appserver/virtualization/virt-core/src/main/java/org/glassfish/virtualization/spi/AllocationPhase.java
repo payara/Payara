@@ -37,23 +37,20 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+
 package org.glassfish.virtualization.spi;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-
 /**
- * An allocation strategy is responsible for allocating virtual machines given
- * a set of groups and machines within these groups.
+ * Dummy phases definition for VirtualMachine allocation.
  *
  * @author Jerome Dochez
  */
-public interface AllocationStrategy {
+public enum AllocationPhase  {
 
-    Map<Group, ListenableFuture<AllocationPhase, VirtualMachine>> allocate(Collection<Group> groups,
-                                                                    VMOrder order,
-                                                                    List<Listener<AllocationPhase>> listeners);
+    // we probably need more phases, etc..
 
-    GroupAllocationStrategy getGroupStrategy(Group group);
+    VM_PREPARE,
+    VM_SPAWN,
+    VM_START,
+    VM_READY
 }
