@@ -283,42 +283,6 @@ public interface Domain extends ConfigBeanProxy, Injectable, PropertyBag, System
      */
     void setNodeAgents(NodeAgents value) throws PropertyVetoException;
 
-    /**
-     * Gets the value of the lbConfigs property.
-     *
-     * @return possible object is
-     *         {@link LbConfigs }
-     */
-    @Element
-    @NotNull
-    LbConfigs getLbConfigs();
-
-    /**
-     * Sets the value of the lbConfigs property.
-     *
-     * @param value allowed object is
-     *              {@link LbConfigs }
-     */
-    void setLbConfigs(LbConfigs value) throws PropertyVetoException;
-
-    /**
-     * Gets the value of the loadBalancers property.
-     *
-     * @return possible object is
-     *         {@link LoadBalancers }
-     */
-    @Element
-    @NotNull
-    LoadBalancers getLoadBalancers();
-
-    /**
-     * Sets the value of the loadBalancers property.
-     *
-     * @param value allowed object is
-     *              {@link LoadBalancers }
-     */
-    void setLoadBalancers(LoadBalancers value) throws PropertyVetoException;
-    
     @Element
     public AmxPref  getAmxPref();
     

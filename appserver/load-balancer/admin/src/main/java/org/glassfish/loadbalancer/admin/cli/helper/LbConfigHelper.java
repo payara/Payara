@@ -43,9 +43,11 @@ package org.glassfish.loadbalancer.admin.cli.helper;
 import java.io.OutputStream;
 import java.util.Date;
 
-import com.sun.enterprise.config.serverbeans.LbConfig;
+import org.glassfish.loadbalancer.config.LbConfig;
 import com.sun.enterprise.config.serverbeans.Domain;
-import com.sun.enterprise.config.serverbeans.LoadBalancer;
+import org.glassfish.loadbalancer.config.LoadBalancer;
+import org.glassfish.loadbalancer.config.LbConfigs;
+import org.glassfish.loadbalancer.config.LoadBalancers;
 
 import org.glassfish.loadbalancer.admin.cli.reader.api.LoadbalancerReader;
 import org.glassfish.loadbalancer.admin.cli.reader.impl.LoadbalancerReaderImpl;
@@ -71,7 +73,11 @@ public class LbConfigHelper {
     public static LoadbalancerReader getLbReader(Domain domain, ApplicationRegistry appRegistry,
             String lbConfigName) throws Exception {
         // reads the load balancer related data
-        LbConfig lbConfig = domain.getLbConfigs().getLbConfig(lbConfigName);
+        LbConfigs lbConfigs = domain.getExtensionByType(LbConfigs.class);
+        if (lbConfigs == null) {
+            throw new Exception(LbLogUtil.getStringManager().getString("UnableToGetLbConfig", lbConfigName));
+        }
+        LbConfig lbConfig = lbConfigs.getLbConfig(lbConfigName);
         if (lbConfig == null) {
             throw new Exception(LbLogUtil.getStringManager().getString("UnableToGetLbConfig", lbConfigName));
         }
@@ -79,7 +85,11 @@ public class LbConfigHelper {
     }
 
     public static LoadBalancer getLoadBalancer(Domain domain, String lbName) throws Exception {
-        LoadBalancer loadBalancer = domain.getLoadBalancers().getLoadBalancer(lbName);
+        LoadBalancers loadBalancers = domain.getExtensionByType(LoadBalancers.class);
+        if (loadBalancers == null) {
+            throw new Exception(LbLogUtil.getStringManager().getString("UnableToGetLoadbalancer", lbName));
+        }
+        LoadBalancer loadBalancer = loadBalancers.getLoadBalancer(lbName);
         if (loadBalancer == null) {
             throw new Exception(LbLogUtil.getStringManager().getString("UnableToGetLoadbalancer", lbName));
         }

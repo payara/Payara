@@ -51,7 +51,7 @@ import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.component.PerLookup;
 import com.sun.enterprise.config.serverbeans.Domain;
-import com.sun.enterprise.config.serverbeans.LoadBalancer;
+import org.glassfish.loadbalancer.config.LoadBalancer;
 import java.net.URI;
 import org.glassfish.api.admin.AdminCommandContext;
 

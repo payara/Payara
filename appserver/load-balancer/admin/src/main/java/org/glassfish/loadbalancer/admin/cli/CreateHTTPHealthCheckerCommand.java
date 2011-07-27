@@ -58,8 +58,8 @@ import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.ClusterRef;
 import com.sun.enterprise.config.serverbeans.ServerRef;
 import com.sun.enterprise.config.serverbeans.HealthChecker;
-import com.sun.enterprise.config.serverbeans.LbConfigs;
-import com.sun.enterprise.config.serverbeans.LbConfig;
+import org.glassfish.loadbalancer.config.LbConfigs;
+import org.glassfish.loadbalancer.config.LbConfig;
 
 import org.glassfish.api.admin.*;
 import org.glassfish.config.support.TargetType;
@@ -95,9 +95,6 @@ public final class CreateHTTPHealthCheckerCommand implements AdminCommand {
     Domain domain;
 
     @Inject
-    LbConfigs lbconfigs;
-
-    @Inject
     Target tgt;
 
     @Inject
@@ -114,6 +111,15 @@ public final class CreateHTTPHealthCheckerCommand implements AdminCommand {
         report = context.getActionReport();
 
         report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
+
+        LbConfigs lbconfigs = domain.getExtensionByType(LbConfigs.class);
+        if (lbconfigs == null) {
+            String msg = localStrings.getLocalString("NoLbConfigsElement",
+                    "Empty lb-configs");
+            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            report.setMessage(msg);
+            return;
+        }
          
         if (config != null) {
             LbConfig lbConfig = lbconfigs.getLbConfig(config);

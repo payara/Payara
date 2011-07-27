@@ -51,8 +51,8 @@ import org.glassfish.api.Param;
 import org.glassfish.api.ActionReport;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.config.serverbeans.ServerRef;
-import com.sun.enterprise.config.serverbeans.LbConfigs;
-import com.sun.enterprise.config.serverbeans.LbConfig;
+import org.glassfish.loadbalancer.config.LbConfigs;
+import org.glassfish.loadbalancer.config.LbConfig;
 
 import org.glassfish.api.admin.*;
 import org.glassfish.config.support.TargetType;
@@ -78,9 +78,6 @@ public final class EnableHTTPLBServerCommand extends LBCommandsBase
     @Inject
     Target tgt;
 
-    @Inject
-    LbConfigs lbconfigs;
-
     final private static LocalStringManagerImpl localStrings =
         new LocalStringManagerImpl(EnableHTTPLBServerCommand.class);
 
@@ -92,6 +89,15 @@ public final class EnableHTTPLBServerCommand extends LBCommandsBase
         
         report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
 
+        LbConfigs lbconfigs = domain.getExtensionByType(LbConfigs.class);
+        if (lbconfigs == null) {
+            String msg = localStrings.getLocalString("NoLbConfigsElement",
+                    "Empty lb-configs");
+            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            report.setMessage(msg);
+            return;
+        }
+        
         if (tgt.isCluster(target)) {
             //enable all servers in cluster
             updateLBForCluster(report, target, "true", null);

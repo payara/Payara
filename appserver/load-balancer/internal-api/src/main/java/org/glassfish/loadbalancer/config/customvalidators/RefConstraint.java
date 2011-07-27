@@ -38,40 +38,25 @@
  * holder.
  */
 
-package com.sun.enterprise.config.serverbeans.customvalidators;
+package org.glassfish.loadbalancer.config.customvalidators;
 
-import com.sun.enterprise.config.serverbeans.ClusterRef;
-import com.sun.enterprise.config.serverbeans.LbConfig;
-import com.sun.enterprise.config.serverbeans.ServerRef;
-import java.util.List;
-
-import javax.validation.ConstraintValidator;
-import javax.validation.ConstraintValidatorContext;
+import javax.validation.Constraint;
 import javax.validation.Payload;
+import java.lang.annotation.Documented;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
 
-/**
- * A simple constraint that validates lb-config children.
- * @author yamini
- */
-public class RefValidator
-    implements ConstraintValidator<RefConstraint, LbConfig>, Payload {
+import static java.lang.annotation.ElementType.FIELD;
+import static java.lang.annotation.ElementType.METHOD;
+import static java.lang.annotation.ElementType.TYPE;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
-    @Override
-    public void initialize(final RefConstraint constraint) {       
-    }
-
-    @Override
-    public boolean isValid(final LbConfig bean,
-        final ConstraintValidatorContext constraintValidatorContext) {
-        if (bean == null) return true;
-        
-        List<ServerRef> sRefs = bean.getRefs(ServerRef.class);
-        List<ClusterRef> cRefs = bean.getRefs(ClusterRef.class);
-        
-        if (sRefs.size() > 0 && cRefs.size() > 0) {
-            return false;
-        }
-        return true;
-    }
+@Retention(RUNTIME)
+@Target({METHOD, FIELD, TYPE})
+@Documented
+@Constraint(validatedBy = RefValidator.class)
+public @interface RefConstraint {
+    String message() default "{ref.invalid}";
+    Class<?>[] groups() default {};
+    Class<? extends Payload>[] payload() default {};
 }
-

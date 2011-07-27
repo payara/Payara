@@ -59,9 +59,10 @@ import com.sun.enterprise.config.serverbeans.ClusterRef;
 import com.sun.enterprise.config.serverbeans.ServerRef;
 import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.config.serverbeans.Cluster;
-import com.sun.enterprise.config.serverbeans.LbConfigs;
-import com.sun.enterprise.config.serverbeans.LbConfig;
-import com.sun.enterprise.config.serverbeans.LoadBalancer;
+import org.glassfish.loadbalancer.config.LbConfigs;
+import org.glassfish.loadbalancer.config.LbConfig;
+import org.glassfish.loadbalancer.config.LoadBalancer;
+import org.glassfish.loadbalancer.config.LoadBalancers;
 import com.sun.enterprise.config.serverbeans.Applications;
 
 import org.glassfish.api.admin.*;
@@ -123,9 +124,6 @@ public final class CreateHTTPLBRefCommand extends LBCommandsBase
     String target;
 
     @Inject
-    LbConfigs lbconfigs;
-
-    @Inject
     Target tgt;
 
     @Inject
@@ -167,6 +165,15 @@ public final class CreateHTTPLBRefCommand extends LBCommandsBase
             return;
         }
 
+        LbConfigs lbconfigs = domain.getExtensionByType(LbConfigs.class);
+        if (lbconfigs == null) {
+            String msg = localStrings.getLocalString("NoLbConfigsElement",
+                    "Empty lb-configs");
+            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            report.setMessage(msg);
+            return;
+        }
+
         if (config != null) {
             if (lbconfigs.getLbConfig(config) == null) {
                 String msg = localStrings.getLocalString("LbConfigDoesNotExist",
@@ -176,10 +183,18 @@ public final class CreateHTTPLBRefCommand extends LBCommandsBase
                 return;
             }
         } else if (lbname != null) {
-            LoadBalancer lb = domain.getLoadBalancers().getLoadBalancer(lbname);
+            LoadBalancers lbs = domain.getExtensionByType(LoadBalancers.class);
+            if (lbs == null) {
+                String msg = localStrings.getLocalString("NoLoadBalancersElement",
+                        "No Load balancers defined.");
+                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                report.setMessage(msg);
+                return;
+            }
+            LoadBalancer lb = lbs.getLoadBalancer(lbname);
             if (lb == null) {
-                String msg = localStrings.getLocalString("LoadBalancerConfigNotDefined",
-                        "Load balancer configuration [{0}] not found.", lbname);
+                String msg = localStrings.getLocalString("LoadBalancerNotDefined",
+                        "Load balancer [{0}] not found.", lbname);
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                 report.setMessage(msg);
                 return;
@@ -220,7 +235,7 @@ public final class CreateHTTPLBRefCommand extends LBCommandsBase
         }
 
         // create lb ref
-        createLBRef(target, config);
+        createLBRef(lbconfigs, target, config);
         if (report.getActionExitCode() != ActionReport.ExitCode.SUCCESS) {
             return;
         }
@@ -276,19 +291,19 @@ public final class CreateHTTPLBRefCommand extends LBCommandsBase
         }
     }
 
-    public void createLBRef(String target, String configName) {
+    public void createLBRef(LbConfigs lbconfigs, String target, String configName) {
         logger.fine("[LB-ADMIN] createLBRef called for target " + target);
 
         // target is a cluster
         if (tgt.isCluster(target)) {
-            addClusterToLbConfig(configName, target);
+            addClusterToLbConfig(lbconfigs, configName, target);
             logger.info(localStrings.getLocalString("http_lb_admin.AddClusterToConfig",
                     "Added cluster {0} to load balancer {1}", target, configName));
 
 
         // target is a server
         } else if (domain.isServer(target)) {
-            addServerToLBConfig(configName, target);
+            addServerToLBConfig(lbconfigs, configName, target);
             logger.info(localStrings.getLocalString("http_lb_admin.AddServerToConfig",
                     "Added server {0} to load balancer {1}", target, configName));
 
@@ -300,7 +315,7 @@ public final class CreateHTTPLBRefCommand extends LBCommandsBase
         }
     }
 
-    private void addServerToLBConfig(final String configName, final String serverName) {
+    private void addServerToLBConfig(final LbConfigs lbconfigs, final String configName, final String serverName) {
         LbConfig lbConfig = lbconfigs.getLbConfig(configName);
 
         ServerRef sRef = lbConfig.getRefByRef(ServerRef.class, serverName);
@@ -342,7 +357,7 @@ public final class CreateHTTPLBRefCommand extends LBCommandsBase
         }
     }
 
-    private void addClusterToLbConfig(final String configName, final String clusterName) {
+    private void addClusterToLbConfig(final LbConfigs lbconfigs, final String configName, final String clusterName) {
         LbConfig lbConfig = lbconfigs.getLbConfig(configName);
 
         ClusterRef cRef = lbConfig.getRefByRef(ClusterRef.class, clusterName);

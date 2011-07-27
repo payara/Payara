@@ -55,9 +55,10 @@ import org.glassfish.api.ActionReport;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.internal.api.Target;
 
-import com.sun.enterprise.config.serverbeans.LoadBalancers;
-import com.sun.enterprise.config.serverbeans.LoadBalancer;
+import org.glassfish.loadbalancer.config.LoadBalancers;
+import org.glassfish.loadbalancer.config.LoadBalancer;
 import com.sun.enterprise.config.serverbeans.Applications;
+import com.sun.enterprise.config.serverbeans.Domain;
 
 import org.glassfish.api.admin.*;
 import org.glassfish.config.support.TargetType;
@@ -187,7 +188,8 @@ public final class CreateHTTPLoadBalancerCommand extends LBCommandsBase
             return;
         }
 
-        if (domain.getLoadBalancers().getLoadBalancer(load_balancer_name) != null) {
+        LoadBalancers loadBalancers = domain.getExtensionByType(LoadBalancers.class);
+        if (loadBalancers != null && loadBalancers.getLoadBalancer(load_balancer_name) != null) {
             String msg = localStrings.getLocalString("LBExists", "Load balancer {0} already exists", load_balancer_name);
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setMessage(msg);
@@ -276,6 +278,32 @@ public final class CreateHTTPLoadBalancerCommand extends LBCommandsBase
     }
 
    private void addLoadBalancer(final String lbConfigName) {
+       LoadBalancers loadBalancers = domain.getExtensionByType(LoadBalancers.class);
+       //create load-balancers parent element if it does not exist
+       if (loadBalancers == null) {
+           Transaction transaction = new Transaction();
+           try {
+               ConfigBeanProxy domainProxy = transaction.enroll(domain);
+               loadBalancers = domainProxy.createChild(LoadBalancers.class);
+               ((Domain) domainProxy).getExtensions().add(loadBalancers);
+               transaction.commit();
+           } catch (TransactionFailure ex) {
+               transaction.rollback();
+               String msg = localStrings.getLocalString("FailedToUpdateLB",
+                       "Failed to update load-balancers");
+               report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+               report.setMessage(msg);
+               return;
+           } catch (RetryableException ex) {
+               transaction.rollback();
+               String msg = localStrings.getLocalString("FailedToUpdateLB",
+                       "Failed to update load-balancers");
+               report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+               report.setMessage(msg);
+               return;
+           }
+       }
+
         try {
             ConfigSupport.apply(new SingleConfigCode<LoadBalancers>() {
                     @Override
@@ -312,7 +340,7 @@ public final class CreateHTTPLoadBalancerCommand extends LBCommandsBase
                         param.getLoadBalancer().add(lb);
                         return Boolean.TRUE;
                     }
-            }, domain.getLoadBalancers());
+            }, loadBalancers);
         } catch (TransactionFailure ex) {
             String msg = localStrings.getLocalString("FailedToUpdateLB",
                     "Failed to update load-balancers");

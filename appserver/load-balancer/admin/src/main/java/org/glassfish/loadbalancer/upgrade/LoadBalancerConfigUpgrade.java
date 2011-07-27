@@ -44,8 +44,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.glassfish.api.admin.config.ConfigurationUpgrade;
 import com.sun.enterprise.config.serverbeans.Domain;
-import com.sun.enterprise.config.serverbeans.LoadBalancer;
-import com.sun.enterprise.config.serverbeans.LoadBalancers;
+import org.glassfish.loadbalancer.config.LoadBalancer;
+import org.glassfish.loadbalancer.config.LoadBalancers;
 
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
@@ -79,7 +79,11 @@ public class LoadBalancerConfigUpgrade implements PostConstruct,
     }
 
     private void updateLoadBalancerElements() {
-        LoadBalancers loadBalancers = domain.getLoadBalancers();
+        LoadBalancers loadBalancers = domain.getExtensionByType(LoadBalancers.class);
+        if(loadBalancers == null){
+            return;
+        }
+        
         List<LoadBalancer> loadBalancerList =
                 loadBalancers.getLoadBalancer();
 

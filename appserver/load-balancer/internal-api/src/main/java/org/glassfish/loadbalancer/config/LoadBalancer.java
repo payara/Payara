@@ -38,7 +38,7 @@
  * holder.
  */
 
-package com.sun.enterprise.config.serverbeans;
+package org.glassfish.loadbalancer.config;
 
 import java.beans.PropertyVetoException;
 import java.util.List;
@@ -46,6 +46,7 @@ import java.util.logging.Logger;
 import java.util.logging.Level;
 
 import com.sun.enterprise.util.LocalStringManagerImpl;
+import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.logging.LogDomains;
 import org.glassfish.api.admin.config.PropertiesDesc;
 import org.jvnet.hk2.config.types.Property;
@@ -201,10 +202,10 @@ public interface LoadBalancer extends ConfigBeanProxy, Injectable, PropertyBag {
             String lbName = child.getName();
 
             String lbConfigName = child.getLbConfigName();
-            LbConfig lbConfig = domain.getLbConfigs().getLbConfig(lbConfigName);
+            LbConfig lbConfig = domain.getExtensionByType(LbConfigs.class).getLbConfig(lbConfigName);
 
             //check if lb-config is used by any other load-balancer
-            for (LoadBalancer lb:domain.getLoadBalancers().getLoadBalancer()) {
+            for (LoadBalancer lb:domain.getExtensionByType(LoadBalancers.class).getLoadBalancer()) {
                 if (!lb.getName().equals(lbName) &&
                         lb.getLbConfigName().equals(lbConfigName)) {
                     String msg = localStrings.getLocalString("LbConfigIsInUse", lbConfigName);
@@ -215,7 +216,7 @@ public interface LoadBalancer extends ConfigBeanProxy, Injectable, PropertyBag {
             }
 
             //remove lb-config corresponding to this load-balancer
-            LbConfigs configs = domain.getLbConfigs();
+            LbConfigs configs = domain.getExtensionByType(LbConfigs.class);
             try {
                 if (t != null) {
                     LbConfigs c = t.enroll(configs);

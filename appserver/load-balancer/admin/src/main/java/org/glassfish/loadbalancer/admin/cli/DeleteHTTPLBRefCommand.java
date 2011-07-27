@@ -58,9 +58,10 @@ import com.sun.enterprise.config.serverbeans.ClusterRef;
 import com.sun.enterprise.config.serverbeans.ServerRef;
 import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.config.serverbeans.Cluster;
-import com.sun.enterprise.config.serverbeans.LbConfigs;
-import com.sun.enterprise.config.serverbeans.LbConfig;
-import com.sun.enterprise.config.serverbeans.LoadBalancer;
+import org.glassfish.loadbalancer.config.LbConfigs;
+import org.glassfish.loadbalancer.config.LbConfig;
+import org.glassfish.loadbalancer.config.LoadBalancer;
+import org.glassfish.loadbalancer.config.LoadBalancers;
 
 import org.glassfish.api.I18n;
 import org.glassfish.api.admin.*;
@@ -92,9 +93,6 @@ public final class DeleteHTTPLBRefCommand extends LBCommandsBase
 
     @Param(primary=true)
     String target;
-
-    @Inject
-    LbConfigs lbconfigs;
 
     @Inject
     Target tgt;
@@ -133,6 +131,15 @@ public final class DeleteHTTPLBRefCommand extends LBCommandsBase
             report.setMessage(msg);
             return;
         }
+
+        LbConfigs lbconfigs = domain.getExtensionByType(LbConfigs.class);
+        if (lbconfigs == null) {
+            String msg = localStrings.getLocalString("NoLbConfigsElement",
+                    "Empty lb-configs");
+            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            report.setMessage(msg);
+            return;
+        }
         
         if (config != null) {
             if (lbconfigs.getLbConfig(config) == null) {
@@ -143,20 +150,35 @@ public final class DeleteHTTPLBRefCommand extends LBCommandsBase
                 return;
             }
         } else if (lbname != null) {
-            LoadBalancer lb = domain.getLoadBalancers().getLoadBalancer(lbname);
+            LoadBalancers lbs = domain.getExtensionByType(LoadBalancers.class);
+            if (lbs == null) {
+                String msg = localStrings.getLocalString("NoLoadBalancersElement",
+                        "No Load balancers defined.");
+                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                report.setMessage(msg);
+                return;
+            }
+            LoadBalancer lb = lbs.getLoadBalancer(lbname);
+            if (lb == null) {
+                String msg = localStrings.getLocalString("LoadBalancerNotDefined",
+                        "Load balancer [{0}] not found.", lbname);
+                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                report.setMessage(msg);
+                return;
+            }
             config = lb.getLbConfigName();
         }
 
         // target is a cluster
         if (isCluster) {
-            deleteClusterFromLBConfig(config, target);
+            deleteClusterFromLBConfig(lbconfigs, config, target);
             String msg = localStrings.getLocalString("http_lb_admin.DeleteClusterFromConfig",
                     "Deleted cluster {0} from Lb", target, config);
             logger.info(msg);
 
         // target is a server
         } else if (domain.isServer(target)) {
-            deleteServerFromLBConfig(config, target);
+            deleteServerFromLBConfig(lbconfigs, config, target);
             String msg = localStrings.getLocalString("http_lb_admin.DeleteServerFromConfig",
                     "Deleted server {0} from Lb", target, config);
             logger.info(msg);
@@ -168,7 +190,7 @@ public final class DeleteHTTPLBRefCommand extends LBCommandsBase
         }
     }
 
-    private void deleteServerFromLBConfig(String configName,String serverName) {
+    private void deleteServerFromLBConfig(LbConfigs lbconfigs, String configName,String serverName) {
         LbConfig lbConfig = lbconfigs.getLbConfig(configName);
 
         ServerRef  sRef = lbConfig.getRefByRef(ServerRef.class, serverName);
@@ -230,7 +252,7 @@ public final class DeleteHTTPLBRefCommand extends LBCommandsBase
         removeServerRef(lbConfig, sRef);
     }
 
-    private void deleteClusterFromLBConfig(String configName, String clusterName) {
+    private void deleteClusterFromLBConfig(LbConfigs lbconfigs, String configName, String clusterName) {
         LbConfig lbConfig = lbconfigs.getLbConfig(configName);
 
         ClusterRef cRef = lbConfig.getRefByRef(ClusterRef.class, clusterName);

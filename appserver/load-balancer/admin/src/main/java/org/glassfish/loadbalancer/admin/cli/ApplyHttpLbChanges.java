@@ -59,7 +59,7 @@ import org.jvnet.hk2.component.PerLookup;
 import com.sun.enterprise.config.serverbeans.Domain;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
-import com.sun.enterprise.config.serverbeans.LoadBalancer;
+import org.glassfish.loadbalancer.config.LoadBalancer;
 import java.util.logging.Level;
 import org.glassfish.api.ActionReport;
 import org.glassfish.internal.data.ApplicationRegistry;

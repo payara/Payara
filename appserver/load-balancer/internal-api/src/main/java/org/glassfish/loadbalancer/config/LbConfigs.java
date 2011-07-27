@@ -38,77 +38,80 @@
  * holder.
  */
 
-package com.sun.enterprise.config.serverbeans;
+package org.glassfish.loadbalancer.config;
 
 import org.glassfish.api.I18n;
+import org.glassfish.api.admin.RuntimeType;
+import org.glassfish.config.support.*;
 import org.jvnet.hk2.config.Configured;
 import org.jvnet.hk2.config.Element;
 import org.jvnet.hk2.config.ConfigBeanProxy;
-import org.jvnet.hk2.component.Injectable;
 import org.jvnet.hk2.config.DuckTyped;
-
-import org.glassfish.config.support.*;
+import org.jvnet.hk2.component.Injectable;
 
 import java.util.List;
+
+import com.sun.enterprise.config.serverbeans.DomainExtension;
 
 /**
  *
  */
 
 /* @XmlType(name = "", propOrder = {
-    "loadBalancer"
+    "lbConfig"
 }) */
 
-// general solution needed; this is intermediate solution
 @Configured
-public interface LoadBalancers extends ConfigBeanProxy, Injectable  {
+public interface LbConfigs extends ConfigBeanProxy, Injectable, DomainExtension {
+
 
     /**
-     * Gets the value of the loadBalancer property.
+     * Gets the value of the lbConfig property.
      * <p/>
      * <p/>
      * This accessor method returns a reference to the live list,
      * not a snapshot. Therefore any modification you make to the
      * returned list will be present inside the JAXB object.
-     * This is why there is not a <CODE>set</CODE> method for the loadBalancer property.
+     * This is why there is not a <CODE>set</CODE> method for the lbConfig property.
      * <p/>
      * <p/>
      * For example, to add a new item, do as follows:
      * <pre>
-     *    getLoadBalancer().add(newItem);
+     *    getLbConfig().add(newItem);
      * </pre>
      * <p/>
      * <p/>
      * <p/>
      * Objects of the following type(s) are allowed in the list
-     * {@link LoadBalancer }
+     * {@link LbConfig }
      */
     @Element
-    @Delete(value="delete-http-lb", resolver= TypeAndNameResolver.class,
-            decorator=LoadBalancer.DeleteDecorator.class,
-            i18n=@I18n("delete.http.lb.command"))
-    @Listing(value="list-http-lbs", i18n=@I18n("list.http.lbs.command"))
-    public List<LoadBalancer> getLoadBalancer();
+    @Create(value="create-http-lb-config", decorator=LbConfig.Decorator.class,
+            cluster=@org.glassfish.api.admin.ExecuteOn(value = RuntimeType.DAS),
+            i18n=@I18n("create.http.lb.config.command"))
+    @Delete(value="delete-http-lb-config", resolver= TypeAndNameResolver.class,
+            decorator=LbConfig.DeleteDecorator.class,
+            i18n=@I18n("delete.http.lb.config.command"))
+    public List<LbConfig> getLbConfig();
 
     /**
-     * Return the load balancer config with the given name,
-     * or null if no such load balancer exists.
+     * Return the lb config with the given name, or null if no such lb config exists.
      *
      * @param   name    the name of the lb config
-     * @return          the LoadBalancer object, or null if no such lb config
+     * @return          the LbConfig object, or null if no such lb config
      */
-
+    
     @DuckTyped
-    public LoadBalancer getLoadBalancer(String name);
+    public LbConfig getLbConfig(String name);
 
     class Duck {
-        public static LoadBalancer getLoadBalancer(LoadBalancers instance, String name) {
-            for (LoadBalancer lb : instance.getLoadBalancer()) {
-                if (lb.getName().equals(name)) {
-                    return lb;
+        public static LbConfig getLbConfig(LbConfigs instance, String name) {
+            for (LbConfig lbconfig : instance.getLbConfig()) {
+                if (lbconfig.getName().equals(name)) {
+                    return lbconfig;
                 }
             }
             return null;
         }
-    }
+    }  
 }

@@ -54,8 +54,8 @@ import org.glassfish.internal.api.Target;
 import com.sun.enterprise.config.serverbeans.ClusterRef;
 import com.sun.enterprise.config.serverbeans.ServerRef;
 import com.sun.enterprise.config.serverbeans.Domain;
-import com.sun.enterprise.config.serverbeans.LbConfigs;
-import com.sun.enterprise.config.serverbeans.LbConfig;
+import org.glassfish.loadbalancer.config.LbConfigs;
+import org.glassfish.loadbalancer.config.LbConfig;
 
 import org.glassfish.api.admin.*;
 
@@ -83,9 +83,6 @@ public final class ListLBConfigsCommand implements AdminCommand {
 
     @Inject
     Domain domain;
-    
-    @Inject
-    LbConfigs lbconfigs;
 
     @Inject
     Target tgt;
@@ -107,15 +104,22 @@ public final class ListLBConfigsCommand implements AdminCommand {
 
         boolean isCluster = tgt.isCluster(list_target);
 
-        List<LbConfig> lbConfigs = lbconfigs.getLbConfig();
-        if (lbConfigs.size() == 0) {
+        LbConfigs lbconfigs = domain.getExtensionByType(LbConfigs.class);
+        if (lbconfigs == null) {
+                logger.fine(localStrings.getLocalString(
+                        "http_lb_admin.NoLbConfigs", "No lb configs"));
+                return;
+        }
+
+        List<LbConfig> lbconfigsList = lbconfigs.getLbConfig();
+        if (lbconfigsList.size() == 0) {
                 logger.fine(localStrings.getLocalString(
                         "http_lb_admin.NoLbConfigs", "No lb configs"));
                 return;
         }
         
         if (list_target == null) {
-            for (LbConfig lbc: lbConfigs) {
+            for (LbConfig lbc: lbconfigsList) {
                 ActionReport.MessagePart childPart = part.addChild();
                 childPart.setMessage(lbc.getName());
             }
@@ -123,7 +127,7 @@ public final class ListLBConfigsCommand implements AdminCommand {
             // target is a cluster
             if (isCluster) {
                 
-                for (LbConfig lbc: lbConfigs) {
+                for (LbConfig lbc: lbconfigsList) {
                     List<ClusterRef> refs = lbc.getRefs(ClusterRef.class);
                     for (ClusterRef cRef:refs) {
                        if (cRef.getRef().equals(list_target) ) {
@@ -137,7 +141,7 @@ public final class ListLBConfigsCommand implements AdminCommand {
             // target is a server
             } else if (domain.isServer(list_target)) {
                 
-                for (LbConfig lbc: lbConfigs) {
+                for (LbConfig lbc: lbconfigsList) {
                     List<ServerRef> refs = lbc.getRefs(ServerRef.class);
                     for (ServerRef sRef:refs) {
                        if (sRef.getRef().equals(list_target) ) {

@@ -49,7 +49,7 @@ import org.glassfish.loadbalancer.admin.cli.reader.api.PropertyReader;
 import org.glassfish.loadbalancer.admin.cli.reader.api.LoadbalancerReader;
 import org.glassfish.loadbalancer.admin.cli.reader.api.LbReaderException;
 
-import com.sun.enterprise.config.serverbeans.LbConfig;
+import org.glassfish.loadbalancer.config.LbConfig;
 import com.sun.enterprise.config.serverbeans.ClusterRef;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Ref;

@@ -32,16 +32,16 @@
  * Version 2] license."  If you don't indicate a single choice of license, a
  * recipient has the option to distribute your version of this file under
  * either the CDDL, the GPL Version 2 or to extend the choice of license to
- * its licensees as provided above.  However, if you add GPL Version 2 code
+ * its licensees as provided above.  However, if you add GPL Version 2 codeO
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
 
-package com.sun.enterprise.config.serverbeans;
+package org.glassfish.loadbalancer.config;
 
-import com.sun.enterprise.config.serverbeans.customvalidators.RefConstraint;
-import com.sun.enterprise.config.serverbeans.customvalidators.RefValidator;
+import org.glassfish.loadbalancer.config.customvalidators.RefConstraint;
+import org.glassfish.loadbalancer.config.customvalidators.RefValidator;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -52,6 +52,10 @@ import java.util.logging.Logger;
 import java.beans.PropertyVetoException;
 
 import com.sun.enterprise.util.LocalStringManagerImpl;
+import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.config.serverbeans.Ref;
+import com.sun.enterprise.config.serverbeans.ServerRef;
+import com.sun.enterprise.config.serverbeans.ClusterRef;
 import com.sun.logging.LogDomains;
 import java.util.Date;
 
@@ -393,9 +397,6 @@ public interface LbConfig extends ConfigBeanProxy, Injectable, PropertyBag {
         @Inject
         Domain domain;
 
-        @Inject
-        LbConfigs lbconfigs;
-
         /**
          * Create lb-config entries
          * tasks :
@@ -420,6 +421,26 @@ public interface LbConfig extends ConfigBeanProxy, Injectable, PropertyBag {
             // generate lb config name if not specified
             if (config_name == null) {
                 config_name = target + "_LB_CONFIG";
+            }
+            
+            LbConfigs lbconfigs = domain.getExtensionByType(LbConfigs.class);
+            //create load-balancers parent element if it does not exist
+            if (lbconfigs == null) {
+                Transaction transaction = new Transaction();
+                try {
+                    ConfigBeanProxy domainProxy = transaction.enroll(domain);
+                    lbconfigs = domainProxy.createChild(LbConfigs.class);
+                    ((Domain) domainProxy).getExtensions().add(lbconfigs);
+                    transaction.commit();
+                } catch (TransactionFailure ex) {
+                    transaction.rollback();
+                    String msg = localStrings.getLocalString("LbConfigsCreationFailed", "Creation of parent element lb-configs failed");
+                    throw new TransactionFailure(msg, ex);
+                } catch (RetryableException ex) {
+                    transaction.rollback();
+                    String msg = localStrings.getLocalString("LbConfigsCreationFailed", "Creation of parent element lb-configs failed");
+                    throw new TransactionFailure(msg, ex);
+                }
             }
 
             if (lbconfigs.getLbConfig(config_name) != null) {
@@ -477,7 +498,7 @@ public interface LbConfig extends ConfigBeanProxy, Injectable, PropertyBag {
             LocalStringManagerImpl localStrings = new LocalStringManagerImpl(LbConfig.class);
 
             String lbConfigName = child.getName();
-            LbConfig lbConfig = domain.getLbConfigs().getLbConfig(lbConfigName);
+            LbConfig lbConfig = domain.getExtensionByType(LbConfigs.class).getLbConfig(lbConfigName);
 
             //Ensure there are no refs 
             if ( (lbConfig.getClusterRefOrServerRef().size() != 0 ) ) {

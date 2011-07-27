@@ -40,7 +40,7 @@
 
 package org.glassfish.loadbalancer.admin.cli.reader.api;
 
-import com.sun.enterprise.config.serverbeans.LbConfig;
+import org.glassfish.loadbalancer.config.LbConfig;
 
 /**
  * Reader class to get information about load balancer configuration.
