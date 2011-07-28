@@ -43,7 +43,7 @@ package com.sun.enterprise.security.authorize;
 
 import javax.servlet.http.HttpServletRequest;
 
-import com.sun.enterprise.security.PermissionCacheFactory;
+import com.sun.enterprise.security.ee.PermissionCacheFactory;
 import com.sun.enterprise.security.SecurityContext;
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.internal.api.Globals;

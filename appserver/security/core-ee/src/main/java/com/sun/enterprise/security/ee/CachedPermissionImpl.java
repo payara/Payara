@@ -38,7 +38,7 @@
  * holder.
  */
 
-package com.sun.enterprise.security;
+package com.sun.enterprise.security.ee;
 
 import java.security.Permission;
 

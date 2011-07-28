@@ -42,16 +42,12 @@ package com.sun.enterprise.security.common;
 
 import com.sun.enterprise.config.serverbeans.SecurityService;
 import com.sun.enterprise.security.EmbeddedSecurity;
-import com.sun.enterprise.security.embedded.EmbeddedSecurityUtil;
 import com.sun.enterprise.server.pluggable.SecuritySupport;
 import com.sun.enterprise.util.io.FileUtils;
 import com.sun.logging.LogDomains;
 import java.io.File;
-import java.io.FilenameFilter;
 import java.io.IOException;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.glassfish.api.admin.ServerEnvironment;

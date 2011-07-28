@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,28 +38,51 @@
  * holder.
  */
 
-package com.sun.enterprise.security;
+package com.sun.enterprise.security.jmac.callback;
 
-import java.security.Permission;
+import com.sun.enterprise.security.common.AppservAccessController;
+import java.security.Principal;
+import java.security.PrivilegedAction;
+import java.util.Set;
+import javax.security.auth.Subject;
+import javax.security.auth.callback.Callback;
+import javax.security.auth.message.callback.GroupPrincipalCallback;
+import org.glassfish.security.common.Group;
 
 /**
- * This class is 
- * @author Ron Monzillo
+ *
+ * @author vbkumarjayanti
  */
+public class ServerLoginCBHUtil {
 
-public interface CachedPermission {
+    private static void processGP(GroupPrincipalCallback gpCallback) {
+        final Subject fs = gpCallback.getSubject();
+        final String[] groups = gpCallback.getGroups();
+        if (groups != null && groups.length > 0) {
+            AppservAccessController.doPrivileged(new PrivilegedAction(){
+                public java.lang.Object run() {
+                    for (String group : groups) {
+                        fs.getPrincipals().add(new Group(group));
+                    }
+                    return fs;
+                }
+            });
+        } else if (groups == null) {
+            AppservAccessController.doPrivileged(new PrivilegedAction(){
+                public java.lang.Object run() {
+                    Set<Principal> principalSet = fs.getPrincipals();
+                    principalSet.removeAll(fs.getPrincipals(Group.class));
+                    return fs;
+                }
+            });
+        }
+    }
 
-    // every implementation class should implement a constructor that
-    // takes 2 arguments as follows
-    // public CachedPermissionImpl(PermissionCache c, Permission p);
-
-    public Permission getPermission();
-
-    public PermissionCache getPermissionCache();
-
-    public boolean checkPermission();
+    //NOTE: this method is called by reflection from ServerLoginCallbackHandler
+    public static void processGroupPrincipal(Callback gpCallback) {
+        if (gpCallback instanceof GroupPrincipalCallback) {
+            processGP((GroupPrincipalCallback) gpCallback);
+        }
+    }
 
 }
-
-
-

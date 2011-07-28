@@ -41,7 +41,7 @@
 package com.sun.ejb;
 
 import com.sun.enterprise.deployment.EjbRemovalInfo;
-import com.sun.enterprise.security.CachedPermission;
+import com.sun.enterprise.security.ee.CachedPermission;
 
 import java.lang.reflect.Method;
 import java.util.concurrent.TimeUnit;

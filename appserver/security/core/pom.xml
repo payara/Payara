@@ -230,21 +230,13 @@
             <artifactId>deployment-common</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <dependency>
-            <groupId>org.glassfish</groupId>
-            <artifactId>javax.security.auth.message</artifactId>
-            <version>${project.version}</version>
-        </dependency>
+        <!--
         <dependency>
             <groupId>org.glassfish</groupId>
             <artifactId>javax.security.jacc</artifactId>
             <version>${project.version}</version>
         </dependency>
-         <dependency>
-            <groupId>org.glassfish.security</groupId>
-            <artifactId>jaspic.provider.framework</artifactId>
-            <version>${project.version}</version>
-        </dependency>
+        -->
         <dependency>
             <groupId>org.glassfish.common</groupId>
             <artifactId>internal-api</artifactId>

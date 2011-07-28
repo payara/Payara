@@ -38,64 +38,28 @@
  * holder.
  */
 
-package com.sun.ejb;
+package com.sun.enterprise.security.ee;
 
-import com.sun.enterprise.deployment.EjbRemovalInfo;
-import com.sun.enterprise.security.ee.CachedPermission;
-
-import java.lang.reflect.Method;
-import java.util.concurrent.TimeUnit;
-import javax.ejb.LockType;
+import java.security.Permission;
 
 /**
- * MethodLockInfo caches various attributes of lock attributes
- *
- * @author Mahesh Kannan
+ * This class is 
+ * @author Ron Monzillo
  */
 
-public class MethodLockInfo {
+public interface CachedPermission {
 
-    private static final int NO_TIMEOUT = -32767;
+    // every implementation class should implement a constructor that
+    // takes 2 arguments as follows
+    // public CachedPermissionImpl(PermissionCache c, Permission p);
 
-    private LockType lockType = LockType.WRITE;
+    public Permission getPermission();
 
-    private long timeout = NO_TIMEOUT;
+    public PermissionCache getPermissionCache();
 
-    private TimeUnit timeUnit;
-
-    public MethodLockInfo() {}
-
-    public void setLockType(LockType type) {
-        lockType = type;
-    }
-
-    public void setTimeout(long value, TimeUnit unit) {
-        timeout = value;
-        timeUnit = unit;
-    }
-
-    public boolean isReadLockedMethod() {
-        return (lockType == LockType.READ);
-    }
-
-    public boolean isWriteLockedMethod() {
-        return (lockType == LockType.WRITE);
-    }
-
-    public boolean hasTimeout() {
-        return (timeout != NO_TIMEOUT);
-    }
-
-    public long getTimeout() {
-        return timeout;
-    }
-
-    public TimeUnit getTimeUnit() {
-        return timeUnit;
-    }
-
-    public String toString() {
-        return lockType + ":" + timeout + ":" + timeUnit;
-    }
+    public boolean checkPermission();
 
 }
+
+
+

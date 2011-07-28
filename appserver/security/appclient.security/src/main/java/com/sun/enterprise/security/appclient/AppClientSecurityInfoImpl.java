@@ -40,7 +40,7 @@
 
 package com.sun.enterprise.security.appclient;
 
-import com.sun.enterprise.security.J2EESecurityManager;
+import com.sun.enterprise.security.ee.J2EESecurityManager;
 import com.sun.enterprise.security.SecurityServicesUtil;
 import com.sun.enterprise.security.UsernamePasswordStore;
 import com.sun.enterprise.security.appclient.integration.AppClientSecurityInfo;

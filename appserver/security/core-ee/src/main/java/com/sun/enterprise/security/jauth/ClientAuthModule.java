@@ -42,7 +42,6 @@ package com.sun.enterprise.security.jauth;
 
 import java.util.Map;
 import javax.security.auth.Subject;
-import javax.security.auth.login.Configuration;
 import javax.security.auth.callback.CallbackHandler;
 
 /**

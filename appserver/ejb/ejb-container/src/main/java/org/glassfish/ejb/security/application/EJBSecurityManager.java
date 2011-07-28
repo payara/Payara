@@ -68,14 +68,15 @@ import com.sun.enterprise.security.SecurityContext;
 import com.sun.enterprise.security.auth.login.LoginContextDriver;
 import com.sun.enterprise.security.authorize.PolicyContextHandlerImpl;
 import com.sun.enterprise.security.audit.AuditManager;
-import com.sun.enterprise.security.CachedPermission;
-import com.sun.enterprise.security.CachedPermissionImpl;
-import com.sun.enterprise.security.PermissionCache;
-import com.sun.enterprise.security.PermissionCacheFactory;
+
 import java.util.logging.*;
 
 import com.sun.logging.LogDomains;
 import com.sun.ejb.EjbInvocation;
+import com.sun.enterprise.security.ee.PermissionCacheFactory;
+import com.sun.enterprise.security.ee.CachedPermission;
+import com.sun.enterprise.security.ee.CachedPermissionImpl;
+import com.sun.enterprise.security.ee.PermissionCache;
 
 import java.security.*;
 

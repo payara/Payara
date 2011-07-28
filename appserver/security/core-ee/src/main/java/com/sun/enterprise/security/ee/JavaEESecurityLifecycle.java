@@ -43,8 +43,10 @@ package com.sun.enterprise.security.ee;
 
 import com.sun.enterprise.security.ContainerSecurityLifecycle;
 import com.sun.enterprise.security.jmac.config.GFAuthConfigFactory;
-import java.io.IOException;
+import com.sun.logging.LogDomains;
 import java.security.Security;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.security.auth.message.config.AuthConfigFactory;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
@@ -59,9 +61,24 @@ import org.jvnet.hk2.component.Singleton;
 @Scoped(Singleton.class)
 public class JavaEESecurityLifecycle implements ContainerSecurityLifecycle, PostConstruct {
 
+    private static final Logger _logger = LogDomains.getLogger(JavaEESecurityLifecycle.class, LogDomains.SECURITY_LOGGER);
+
     @Override
     public void onInitialization() {
-       initializeJMAC();
+        java.lang.SecurityManager secMgr = System.getSecurityManager();
+        //TODO: need someway to not override the SecMgr if the EmbeddedServer was
+        //run with a different non-default SM.
+        //right now there seems no way to find out if the SM is the VM's default SM.
+        if (secMgr != null
+                && !(J2EESecurityManager.class.equals(secMgr.getClass()))) {
+            J2EESecurityManager mgr = new J2EESecurityManager();
+            try {
+                System.setSecurityManager(mgr);
+            } catch (SecurityException ex) {
+                _logger.log(Level.WARNING, "security.secmgr.could.not.override");
+            }
+        }
+        initializeJMAC();
     }
 
     private void initializeJMAC()  {

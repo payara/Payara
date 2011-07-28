@@ -134,10 +134,16 @@
         </dependency>
 
         <dependency>
+            <groupId>org.glassfish</groupId>
+            <artifactId>javax.security.auth.message</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
             <groupId>org.glassfish.security</groupId>
             <artifactId>security</artifactId>
-            <version>${project.parent.version}</version>
-    	</dependency>
+            <version>${project.version}</version>
+        </dependency>
 
         <dependency>
 	    <groupId>org.glassfish.orb</groupId>

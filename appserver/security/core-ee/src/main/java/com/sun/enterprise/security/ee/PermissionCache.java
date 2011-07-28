@@ -38,7 +38,7 @@
  * holder.
  */
 
-package com.sun.enterprise.security;
+package com.sun.enterprise.security.ee;
 
 import com.sun.enterprise.security.common.AppservAccessController;
 import java.security.CodeSource;
@@ -57,7 +57,7 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import javax.security.jacc.PolicyContext;
-import com.sun.enterprise.security.CachedPermissionImpl.Epoch;
+import com.sun.enterprise.security.ee.CachedPermissionImpl.Epoch;
 
 import com.sun.logging.LogDomains;
 

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,15 +41,10 @@
 package com.sun.enterprise.security.auth.login.common;
 
 import com.sun.enterprise.security.auth.realm.certificate.CertificateRealm;
-import com.sun.enterprise.security.common.AppservAccessController;
 import java.io.*;
-import java.security.Principal;
-import java.security.PrivilegedAction;
-import java.util.Set;
-import javax.security.auth.Subject;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import javax.security.auth.callback.*;
-import javax.security.auth.message.callback.GroupPrincipalCallback;
-import org.glassfish.security.common.Group;
 
 
 /**
@@ -60,6 +55,9 @@ import org.glassfish.security.common.Group;
  */
 public class ServerLoginCallbackHandler implements CallbackHandler 
 {
+    private static final String GP_CB="javax.security.auth.message.callback.GroupPrincipalCallback";
+    private static final String GPCBH_UTIL = "com.sun.enterprise.security.jmac.callback.ServerLoginCBHUtil";
+    private static final String GPCBH_UTIL_METHOD="processGroupPrincipal";
     private String username = null;
     private String password = null;
     private String moduleID = null;
@@ -109,35 +107,36 @@ public class ServerLoginCallbackHandler implements CallbackHandler
 		pswd.setPassword(password.toCharArray());
 	    } else if (callbacks[i] instanceof CertificateRealm.AppContextCallback){
                 ((CertificateRealm.AppContextCallback) callbacks[i]).setModuleID(moduleID);
-            } else if (callbacks[i] instanceof GroupPrincipalCallback){
-                processGroupPricipal((GroupPrincipalCallback) callbacks[i]);
+            } else if (GP_CB.equals(callbacks[i].getClass().getName())){
+                processGroupPrincipal(callbacks[i]);
             } else {
                 throw new UnsupportedCallbackException(callbacks[i]);
             }
 	}
     }
 
-    private void processGroupPricipal(GroupPrincipalCallback gpCallback) {
-        final Subject fs = gpCallback.getSubject();
-        final String[] groups = gpCallback.getGroups();
-        if (groups != null && groups.length > 0) {
-            AppservAccessController.doPrivileged(new PrivilegedAction(){
-                public java.lang.Object run() {
-                    for (String group : groups) {
-                        fs.getPrincipals().add(new Group(group));
-                    }
-                    return fs;
-                }
-            });
-        } else if (groups == null) {
-            AppservAccessController.doPrivileged(new PrivilegedAction(){
-                public java.lang.Object run() {
-                    Set<Principal> principalSet = fs.getPrincipals();
-                    principalSet.removeAll(fs.getPrincipals(Group.class));
-                    return fs;
-                }
-            });
+    private static void processGroupPrincipal(Callback callback) throws UnsupportedCallbackException {
+        ClassLoader loader = Thread.currentThread().getContextClassLoader();
+        try {
+            Class clazz = loader.loadClass(GPCBH_UTIL);
+            Method meth = clazz.getMethod(GPCBH_UTIL_METHOD, Callback.class);
+            meth.invoke(null, callback);
+        } catch (IllegalAccessException ex) {
+            throw new UnsupportedCallbackException(callback);
+        } catch (IllegalArgumentException ex) {
+            throw new UnsupportedCallbackException(callback);
+        } catch (InvocationTargetException ex) {
+            throw new UnsupportedCallbackException(callback);
+        } catch (NoSuchMethodException ex) {
+            throw new UnsupportedCallbackException(callback);
+        } catch (SecurityException ex) {
+            throw new UnsupportedCallbackException(callback);
+        } catch (ClassNotFoundException ex) {
+             throw new UnsupportedCallbackException(callback);
         }
+
     }
+
+    
 }
 

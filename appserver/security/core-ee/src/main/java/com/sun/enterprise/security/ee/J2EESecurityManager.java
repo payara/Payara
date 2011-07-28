@@ -38,8 +38,9 @@
  * holder.
  */
 
-package com.sun.enterprise.security;
+package com.sun.enterprise.security.ee;
 
+import com.sun.enterprise.security.ee.CachedPermissionImpl;
 import com.sun.enterprise.security.ssl.SSLUtils;
 import java.net.SocketPermission;
 
