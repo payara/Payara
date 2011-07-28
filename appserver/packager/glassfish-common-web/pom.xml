@@ -106,6 +106,22 @@
             <type>pom</type> 
         </dependency>
 
+        <!-- javaee.jar containing Manifest Classpath of JavaEE API jars -->
+        <dependency>
+           <groupId>org.glassfish.extras</groupId>
+           <artifactId>javaee-frag</artifactId>
+           <version>${project.version}</version>
+           <type>distribution-fragment</type>
+        </dependency>
+
+        <!-- appserv-rt.jar containing Manifest Classpath of gf-client.jar -->
+        <dependency>
+           <groupId>org.glassfish.extras</groupId>
+           <artifactId>appserv-rt-frag</artifactId>
+           <version>${project.version}</version>
+           <type>distribution-fragment</type>
+        </dependency>
+
    	<!-- now, listing package dependencies so that their content
              can be excluded during staging -->	
       
