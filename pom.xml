@@ -227,35 +227,6 @@
                 <module>appserver</module>
             </modules>
         </profile>        
-        <profile>
-            <!--
-                The GlassFish build depends on maven-glassfishbuild-plugin as an extension,
-                so it causes a chicken and egg problem during a release;
-                Maven tries to resolve all extensions early on, but it fails
-                because the maven-glassfishbuild-plugin is not built yet.
-
-                So the work around is a release in two-phase. First we
-                do "mvn release:prepare", which fails due to the problem described above.
-                At this point the workspace is left with POM that has non-SNAPSHOT version.
-                So now we run "mvn -P release-phase1" and builds the build module.
-                This puts maven-glassfishbuild-plugin in local repo,
-                so the retry of "mvn release:prepare" now works.
-            -->
-            <id>release-phase1</id>
-            <modules>
-                <!-- To avoid JVM crash while using JDK 6, we are
-                     building this module in this profile only.
-                     See bug #6766662 for more details.
-                -->
-                <module>appserver/build</module>
-                <!--
-                    The resource provided by the findbugs module is needed
-                    before running "mvn findbugs:findbugs".  To ensure that,
-                    we build it in in this separate phase.
-                -->
-                <module>appserver/findbugs</module>
-            </modules>
-        </profile>
 
         <profile>
             <!--

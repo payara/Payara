@@ -121,18 +121,7 @@ if [ "$maven_repo" != "" ]; then
 fi
 
 if [ "$maven_repo" = "" ]; then
-    mvn $mvn_env $update -Prelease-phase1 install | tee gfbuild.log
-    _status=$?
-    if [ "$_status" -ne 0 ]; then
-	echo "Build failed..."
-	exit "$_status"
-    fi
     mvn $mvn_env $update "$@" | tee gfbuild.log
 else
-    mvn -Dmaven.repo.local=$maven_repo $mvn_env $update -Prelease-phase1 install | tee gfbuild.log
-    if [ "$_status" -ne 0 ]; then
-	echo "Build failed..."
-	exit "$_status"
-    fi
     mvn -Dmaven.repo.local=$maven_repo $mvn_env $update "$@" | tee gfbuild.log
 fi
