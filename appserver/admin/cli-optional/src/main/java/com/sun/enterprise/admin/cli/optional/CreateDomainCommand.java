@@ -166,7 +166,7 @@ public final class CreateDomainCommand extends CLICommand {
     protected Collection<ParamModel> usageOptions() {
         Collection<ParamModel> opts = commandModel.getParameters();
         Set<ParamModel> uopts = new LinkedHashSet<ParamModel>();
-	ParamModel aPort = new ParamModelData(ADMIN_PORT, String.class, true, 
+	ParamModel aPort = new ParamModelData(ADMIN_PORT, String.class, true,
             Integer.toString(CLIConstants.DEFAULT_ADMIN_PORT));
 	ParamModel iPort = new ParamModelData(INSTANCE_PORT, String.class, true,
             Integer.toString(DEFAULT_INSTANCE_PORT));
@@ -228,7 +228,7 @@ public final class CreateDomainCommand extends CLICommand {
         if (usePortBase()) {
             final int portbase = convertPortStr(portBase);
             setOptionsWithPortBase(portbase);
-        } 
+        }
     }
 
     private void setOptionsWithPortBase(final int portbase)
@@ -382,6 +382,16 @@ public final class CreateDomainCommand extends CLICommand {
             throws CommandException, CommandValidationException {
 
         final int portToVerify = convertPortStr(portNum);
+
+        if (!NetUtils.isPortValid(portToVerify))
+            throw new CommandException(strings.get("InvalidPortRange", portNum));
+
+        if (checkPorts == false) {
+            // do NOT make any network calls!
+            logger.log(Level.FINER, "Port ={0}", portToVerify);
+            return;
+        }
+
         NetUtils.PortAvailability avail = NetUtils.checkPort(portToVerify);
 
         switch (avail) {
@@ -390,22 +400,13 @@ public final class CreateDomainCommand extends CLICommand {
                 strings.get("InvalidPortRange", portNum));
 
         case inUse:
-            if (checkPorts)
                 throw new CommandException(
                     strings.get("PortInUseError", domainName, portNum));
-            else
-                logger.warning(strings.get("PortInUseWarning", portNum));
-            break;
 
         case noPermission:
-            if (checkPorts)
                 throw new CommandException(
-                    strings.get("NoPermissionForPortError", 
+                    strings.get("NoPermissionForPortError",
                     portNum, domainName));
-            else
-                logger.warning(strings.get("NoPermissionForPortWarning", 
-                    portNum, domainName));
-            break;
 
         case unknown:
             throw new CommandException(strings.get("UnknownPortMsg", portNum));
