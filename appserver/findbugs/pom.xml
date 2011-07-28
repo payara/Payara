@@ -45,14 +45,10 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
 			    http://maven.apache.org/maven-v4_0_0.xsd">
-    <parent>
-	<groupId>org.glassfish</groupId>
-	<artifactId>glassfish-parent</artifactId>
-	<version>3.2-SNAPSHOT</version>
-    </parent>
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.glassfish</groupId>
     <artifactId>findbugs</artifactId>
+    <version>3.2-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>GlassFish FindBugs resources</name>
 
