@@ -50,17 +50,12 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Future;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.ConfigBeansUtilities;
 import com.sun.enterprise.config.serverbeans.HttpService;
-import com.sun.enterprise.config.serverbeans.IiopListener;
-import com.sun.enterprise.config.serverbeans.IiopService;
-import com.sun.enterprise.config.serverbeans.JmsHost;
-import com.sun.enterprise.config.serverbeans.JmsService;
 import com.sun.enterprise.config.serverbeans.SystemProperty;
 import com.sun.enterprise.config.serverbeans.VirtualServer;
 import com.sun.enterprise.util.Result;
@@ -123,8 +118,6 @@ public class GrizzlyService implements Startup, RequestDispatcher, PostConstruct
     final Logger logger = LogDomains.getLogger(GrizzlyService.class, LogDomains.CORE_LOGGER);
 
     private final Collection<NetworkProxy> proxies = new LinkedBlockingQueue<NetworkProxy>();
-    private final String JMS_DEFAULT_LISTENER_IP="0.0.0.0";
-    private final String JMS_DEFAULT_HOST="localhost";
 
     List<Future<Result<Thread>>> futures;
 
@@ -356,57 +349,6 @@ public class GrizzlyService implements Startup, RequestDispatcher, PostConstruct
                 createNetworkProxy(listener);
             }
             
-            /*
-             * Ideally (and ultimately), all services that need lazy Init will add a network-listener element
-             * in the domain.xml with protocol = "light-weight-listener". And a LWL instance would have been created
-             * by the above loop. But for v3-FCS, IIOP and JMS listener will not
-             * be able to reach that stage - hence we create a dummy network listener object here and use that
-             * to create proxies etc. Whenever, IIOP and JMS listeners move to use network-listener elements,
-             * then this code can be removed
-             */
-
-            final IiopService iiopService = config.getIiopService();
-            if (iiopService != null) {
-                List<IiopListener> iiopListenerList = iiopService.getIiopListener();
-                for (IiopListener oneListener : iiopListenerList) {
-                    if (Boolean.valueOf(oneListener.getEnabled()) && Boolean.valueOf(oneListener.getLazyInit())) {
-                        NetworkListener dummy = new DummyNetworkListener();
-                        dummy.setPort(oneListener.getPort());
-                        dummy.setAddress(oneListener.getAddress());
-                        dummy.setProtocol("light-weight-listener");
-                        dummy.setTransport("tcp");
-                        dummy.setName("iiop-service");
-                        createNetworkProxy(dummy);
-                    }
-                }
-            }
-
-            /*
-             * Do the same as above for JMS listeners also but only for MQ's EMBEDDED MODE
-             */
-            final JmsService jmsService = config.getJmsService();
-            if (jmsService != null) {
-                if ("EMBEDDED".equalsIgnoreCase(jmsService.getType())) {
-                    List<JmsHost> jmsHosts = jmsService.getJmsHost();
-                    for (JmsHost oneHost : jmsHosts) {
-                        if (Boolean.valueOf(oneHost.getLazyInit())) {
-                            String jmsHost = null;
-                            if (oneHost.getHost() != null && JMS_DEFAULT_HOST.equals(oneHost.getHost()))
-                                jmsHost = JMS_DEFAULT_LISTENER_IP;
-                            else
-                                jmsHost = oneHost.getHost();
-                            NetworkListener dummy = new DummyNetworkListener();
-                            dummy.setPort(oneHost.getPort());
-                            dummy.setAddress(jmsHost);
-                            dummy.setProtocol("light-weight-listener");
-                            dummy.setTransport("tcp");
-                            dummy.setName("mq-service");
-                            createNetworkProxy(dummy);
-                        }
-                    }
-                }
-            }
-
             registerNetworkProxy(); 
         } catch(RuntimeException e) { // So far postConstruct can not throw any other exception type
             logger.log(Level.SEVERE, "Unable to start v3. Closing all ports",e);
@@ -537,6 +479,7 @@ public class GrizzlyService implements Startup, RequestDispatcher, PostConstruct
     /**
      * The component is about to be removed from commission
      */
+    @Override
     public void preDestroy() {
         for (NetworkProxy proxy : proxies) {
             try {
@@ -684,7 +627,7 @@ public class GrizzlyService implements Startup, RequestDispatcher, PostConstruct
                 config.getHttpService().getVirtualServerByName(vs);
             if (virtualServer == null) {
                 // non-existent virtual server
-                logger.warning("Skip registering endpoint with non existent virtual server: " + vs);
+                logger.log(Level.WARNING, "Skip registering endpoint with non existent virtual server: {0}", vs);
                 continue;
             }
             String vsNetworkListeners = virtualServer.getNetworkListeners();

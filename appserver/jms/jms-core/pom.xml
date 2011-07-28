@@ -118,6 +118,11 @@
             <artifactId>ejb-internal-api</artifactId>
             <version>3.2-SNAPSHOT</version>
         </dependency>
+    	<dependency>
+            <groupId>org.glassfish.core</groupId>
+            <artifactId>kernel</artifactId>
+            <version>${project.version}</version>
+        </dependency>        
     </dependencies>
 
 </project>

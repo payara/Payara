@@ -61,6 +61,13 @@ import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
 import com.sun.hk2.component.Holder;
 import org.glassfish.internal.api.PostStartup;
 
+import com.sun.enterprise.config.serverbeans.Config;
+import com.sun.enterprise.config.serverbeans.JmsHost;
+import com.sun.enterprise.config.serverbeans.JmsService;
+import com.sun.enterprise.v3.services.impl.DummyNetworkListener;
+import com.sun.enterprise.v3.services.impl.GrizzlyService;
+import org.glassfish.grizzly.config.dom.NetworkListener;
+
 import java.util.List;
 import org.glassfish.api.admin.ServerEnvironment;
 //import com.sun.enterprise.config.serverbeans.MonitoringService;
@@ -80,11 +87,21 @@ public class JmsProviderLifecycle implements  PostStartup, PostConstruct{
     public static final String JMS_SERVICE = "jms-service";
     //static Logger _logger = LogDomains.getLogger(JmsProviderLifecycle.class, LogDomains.RSR_LOGGER);
 
+    private final String JMS_DEFAULT_LISTENER_IP="0.0.0.0";
+    private final String JMS_DEFAULT_HOST="localhost";
+
+    @Inject(name = ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    Config config;
+    
+    @Inject
+    private GrizzlyService grizzlyService;
+    
     @Inject
     Habitat habitat;
 
     public void postConstruct()
     {
+       initializeLazyListener();
        if (eagerStartupRequired())
        {
         try {
@@ -154,7 +171,40 @@ public class JmsProviderLifecycle implements  PostStartup, PostConstruct{
         return false;
     }
 
-        private JmsService getJmsService(){
+    /**
+     * Start Grizzly based JMS lazy listener, which is going to initialize
+     * JMS container on first request.
+     */
+    private void initializeLazyListener() {
+        /*
+         * Do the same as above for JMS listeners also but only for MQ's EMBEDDED MODE
+         */
+        final JmsService jmsService = config.getJmsService();
+        if (jmsService != null) {
+            if ("EMBEDDED".equalsIgnoreCase(jmsService.getType())) {
+                List<JmsHost> jmsHosts = jmsService.getJmsHost();
+                for (JmsHost oneHost : jmsHosts) {
+                    if (Boolean.valueOf(oneHost.getLazyInit())) {
+                        String jmsHost = null;
+                        if (oneHost.getHost() != null && JMS_DEFAULT_HOST.equals(oneHost.getHost())) {
+                            jmsHost = JMS_DEFAULT_LISTENER_IP;
+                        } else {
+                            jmsHost = oneHost.getHost();
+                        }
+                        NetworkListener dummy = new DummyNetworkListener();
+                        dummy.setPort(oneHost.getPort());
+                        dummy.setAddress(jmsHost);
+                        dummy.setProtocol("light-weight-listener");
+                        dummy.setTransport("tcp");
+                        dummy.setName("mq-service");
+                        grizzlyService.createNetworkProxy(dummy);
+                    }
+                }
+            }
+        }
+    }    
+
+    private JmsService getJmsService() {
             return habitat.getComponent(JmsService.class,
                     ServerEnvironment.DEFAULT_INSTANCE_NAME);
         }

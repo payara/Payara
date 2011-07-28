@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -44,6 +44,16 @@ import org.glassfish.api.Startup;
 import org.jvnet.hk2.component.PostConstruct;
 
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.annotations.Inject;
+
+import com.sun.enterprise.config.serverbeans.Config;
+import com.sun.enterprise.config.serverbeans.IiopListener;
+import com.sun.enterprise.config.serverbeans.IiopService;
+import com.sun.enterprise.v3.services.impl.DummyNetworkListener;
+import com.sun.enterprise.v3.services.impl.GrizzlyService;
+import java.util.List;
+import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.grizzly.config.dom.NetworkListener;
 
 import org.omg.CORBA.ORB ;
 
@@ -83,11 +93,16 @@ public class ORBConnectorStartup implements Startup, PostConstruct {
     private static final String RMI_PRO_CLASS =
                "com.sun.corba.ee.impl.javax.rmi.PortableRemoteObject";
 
+    @Inject(name=ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    Config config;
 
+    @Inject
+    private GrizzlyService grizzlyService;
 
     public void postConstruct()
     {
         setORBSystemProperties();    
+        initializeLazyListener();        
     }
 
     public Startup.Lifecycle getLifecycle() { return Startup.Lifecycle.START; }
@@ -144,5 +159,25 @@ public class ORBConnectorStartup implements Startup, PostConstruct {
         );
     }
 
-
+    /**
+     * Start Grizzly based ORB lazy listener, which is going to initialize
+     * ORB container on first request.
+     */
+    private void initializeLazyListener() {
+        final IiopService iiopService = config.getIiopService();
+        if (iiopService != null) {
+            List<IiopListener> iiopListenerList = iiopService.getIiopListener();
+            for (IiopListener oneListener : iiopListenerList) {
+                if (Boolean.valueOf(oneListener.getEnabled()) && Boolean.valueOf(oneListener.getLazyInit())) {
+                    NetworkListener dummy = new DummyNetworkListener();
+                    dummy.setPort(oneListener.getPort());
+                    dummy.setAddress(oneListener.getAddress());
+                    dummy.setProtocol("light-weight-listener");
+                    dummy.setTransport("tcp");
+                    dummy.setName("iiop-service");
+                    grizzlyService.createNetworkProxy(dummy);
+                }
+            }
+        }
+    }
 }
