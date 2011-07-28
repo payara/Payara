@@ -40,11 +40,9 @@
 
 package org.glassfish.admin.cli.resources;
 
-import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
 import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.resource.common.ResourceStatus;
-import org.glassfish.resources.config.*;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Inject;
 
@@ -109,27 +107,28 @@ public class BindableResourcesHelper {
                                                           Class<? extends BindableResource> resourceTypeToValidate){
         // ensure we don't already have one of this name
         BindableResource duplicateResource = (BindableResource)
-                ConnectorsUtil.getResourceByName(resources, BindableResource.class, jndiName);
+                getResourceByName(resources, jndiName);
+                //ConnectorsUtil.getResourceByName(resources, BindableResource.class, jndiName);
         if (duplicateResource != null) {
             String msg ;
-            if(validateResourceRef && (getResourceByClass(duplicateResource).equals(resourceTypeToValidate))){
+            if(validateResourceRef && (/*getResourceByClass*/(duplicateResource).equals(resourceTypeToValidate))){
                 if(target.equals("domain")){
                     msg = localStrings.getLocalString("duplicate.resource.found",
-                            "A {0} by name {1} already exists.", getResourceTypeName(duplicateResource), jndiName);
+                            "A {0} by name {1} already exists.", /*getResourceTypeName*/(duplicateResource), jndiName);
                 }else if(resourceUtil.getTargetsReferringResourceRef(jndiName).contains(target)){
                     msg = localStrings.getLocalString("duplicate.resource.found.in.target",
                             "A {0} by name {1} already exists with resource reference in target {2}.",
-                            getResourceTypeName(duplicateResource), jndiName, target);
+                            /*getResourceTypeName*/(duplicateResource), jndiName, target);
                 }else{
                     msg = localStrings.getLocalString("duplicate.resource.need.to.create.resource.ref",
                             "A {0} named {1} already exists. If you are trying to create the existing resource" +
                                     "configuration in target {2}, please use 'create-resource-ref' command " +
                                     "(or create resource-ref using admin console).",
-                            getResourceTypeName(duplicateResource), jndiName, target);
+                            /*getResourceTypeName*/(duplicateResource), jndiName, target);
                 }
             }else{
                 msg = localStrings.getLocalString("duplicate.resource.found",
-                        "A {0} by name {1} already exists.", getResourceTypeName(duplicateResource), jndiName);
+                        "A {0} by name {1} already exists.", /*getResourceTypeName*/(duplicateResource), jndiName);
             }
             return new ResourceStatus(ResourceStatus.FAILURE, msg, true);
         }else{
@@ -137,6 +136,7 @@ public class BindableResourcesHelper {
         }
     }
 
+/*
     public Class getResourceByClass(BindableResource resource){
         Class<? extends BindableResource> type = BindableResource.class;
         if (resource instanceof JdbcResource) {
@@ -154,7 +154,9 @@ public class BindableResourcesHelper {
         }
         return type;
     }
+*/
 
+/*
     public String getResourceTypeName(BindableResource resource){
         String type = "Resource";
         if (resource instanceof JdbcResource) {
@@ -172,4 +174,17 @@ public class BindableResourcesHelper {
         }
         return type;
     }
+*/
+
+    public BindableResource getResourceByName(Resources resources, String jndiName){
+        for(Resource resource : resources.getResources()){
+            if(resource instanceof BindableResource){
+                if(((BindableResource)resource).getJndiName().equals(jndiName)){
+                    return (BindableResource)resource;
+                }
+            }
+        }
+        return null;
+    }
+
 }

@@ -40,7 +40,6 @@
 
 package org.glassfish.admin.cli.resources;
 
-import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
 import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.util.LocalStringManagerImpl;
@@ -162,6 +161,14 @@ public class CreateResourceRef implements AdminCommand {
 
     private boolean isResourceExists(String jndiName) {
         //resource-ref is created only for a BindableResource
-        return ConnectorsUtil.getResourceByName(domain.getResources(), BindableResource.class, jndiName) != null;
+        //return ConnectorsUtil.getResourceByName(domain.getResources(), BindableResource.class, jndiName) != null;
+        for(Resource resource : domain.getResources().getResources()){
+            if(resource instanceof BindableResource){
+                if(((BindableResource)resource).getJndiName().equals(jndiName)){
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }
