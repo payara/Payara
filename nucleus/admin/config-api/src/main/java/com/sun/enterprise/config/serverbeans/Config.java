@@ -56,6 +56,7 @@ import com.sun.enterprise.config.util.ServerHelper;
 import com.sun.hk2.component.ExistingSingletonInhabitant;
 import org.glassfish.api.admin.config.*;
 import static org.glassfish.config.support.Constants.NAME_SERVER_REGEX;
+
 import org.jvnet.hk2.config.types.Property;
 import org.jvnet.hk2.config.types.PropertyBag;
 import org.glassfish.config.support.datatypes.Port;
@@ -212,24 +213,6 @@ public interface Config extends ConfigBeanProxy, Injectable, Named, PropertyBag,
      *              {@link AdminService }
      */
     void setAdminService(AdminService value) throws PropertyVetoException;
-
-    /**
-     * Gets the value of the connectorService property.
-     *
-     * @return possible object is
-     *         {@link ConnectorService }
-     */
-    @Element
-    @NotNull
-    ConnectorService getConnectorService();
-
-    /**
-     * Sets the value of the connectorService property.
-     *
-     * @param value allowed object is
-     *              {@link ConnectorService }
-     */
-    void setConnectorService(ConnectorService value) throws PropertyVetoException;
 
     /**
      * Gets the value of the jmsService property.
@@ -564,7 +547,7 @@ public interface Config extends ConfigBeanProxy, Injectable, Named, PropertyBag,
                 c.getAdminService(),
                 c.getAlertService(),
                 c.getAvailabilityService(),
-                c.getConnectorService(),
+                //c.getConnectorService(),
                 c.getDiagnosticService(),
                 c.getGroupManagementService(),
                 c.getHttpService(),

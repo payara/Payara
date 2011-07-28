@@ -92,6 +92,9 @@ import com.sun.enterprise.transaction.api.JavaEETransactionManager;
 import org.glassfish.admin.monitor.MonitoringBootstrap;
 import org.glassfish.resource.common.PoolInfo;
 import org.glassfish.resource.common.ResourceInfo;
+import org.glassfish.resources.config.ResourceAdapterConfig;
+import org.glassfish.resources.config.SecurityMap;
+import org.glassfish.resources.config.WorkSecurityMap;
 import org.jvnet.hk2.config.types.Property;
 import org.glassfish.api.admin.*;
 import com.sun.logging.LogDomains;
@@ -1404,7 +1407,7 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
      */
     public long getShutdownTimeout() {
         return ConnectorsUtil.getShutdownTimeout(
-                habitat.getComponent(com.sun.enterprise.config.serverbeans.ConnectorService.class,
+                habitat.getComponent(org.glassfish.resources.config.ConnectorService.class,
                     ServerEnvironment.DEFAULT_INSTANCE_NAME));
     }
 

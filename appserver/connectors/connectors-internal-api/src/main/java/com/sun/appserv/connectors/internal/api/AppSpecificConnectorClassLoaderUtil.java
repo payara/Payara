@@ -43,6 +43,8 @@ package com.sun.appserv.connectors.internal.api;
 import org.glassfish.deployment.common.ModuleDescriptor;
 import org.glassfish.deployment.common.Descriptor;
 import org.glassfish.deployment.common.RootDeploymentDescriptor;
+import com.sun.enterprise.config.serverbeans.Resource;
+import org.glassfish.resources.config.*;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.component.Habitat;
@@ -56,7 +58,6 @@ import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.deployment.runtime.connector.SunConnector;
 import com.sun.enterprise.deployment.runtime.connector.ResourceAdapter;
 import com.sun.enterprise.config.serverbeans.*;
-import com.sun.enterprise.config.serverbeans.Resource;
 import com.sun.logging.LogDomains;
 
 import java.util.*;
@@ -229,7 +230,7 @@ public class AppSpecificConnectorClassLoaderUtil {
             ApplicationInfo appInfo = appRegistry.get(app.getName());
             res = getModuleScopedResource(jndiName, moduleName, BindableResource.class, appInfo);
         }else{
-            res = getResources().getResourceByName(BindableResource.class, jndiName);
+            res = ConnectorsUtil.getResourceByName(getResources(), BindableResource.class, jndiName);
         }
         //embedded ra's resources may not be created yet as they can be created only after .ear deploy
         //  (and .ear may refer to these resources in DD)
@@ -244,7 +245,7 @@ public class AppSpecificConnectorClassLoaderUtil {
                 } else if(jndiName.startsWith(ConnectorConstants.JAVA_MODULE_SCOPE_PREFIX)){
                     pool = getModuleScopedResource(poolName, moduleName, ResourcePool.class, appInfo);
                 } else{
-                    pool = getResources().getResourceByName(ResourcePool.class, poolName);
+                    pool = ConnectorsUtil.getResourceByName(getResources(), ResourcePool.class, poolName);
                 }
                 if (ConnectorConnectionPool.class.isAssignableFrom(pool.getClass())) {
                     String raName = ((ConnectorConnectionPool) pool).getResourceAdapterName();
@@ -418,7 +419,7 @@ public class AppSpecificConnectorClassLoaderUtil {
 
     public boolean useGlobalConnectorClassLoader() {
         boolean flag = false;
-        ConnectorService connectorService = habitat.getComponent(ConnectorService.class, 
+        ConnectorService connectorService = habitat.getComponent(ConnectorService.class,
                 ServerEnvironment.DEFAULT_INSTANCE_NAME);
         //it is possible that connector-service is not yet defined in domain.xml
         if(connectorService != null){

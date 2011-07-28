@@ -97,8 +97,8 @@ public class MailResourceDeployer extends GlobalResourceDeployer
      * {@inheritDoc}
      */
     public synchronized void deployResource(Object resource, String applicationName, String moduleName) throws Exception {
-        com.sun.enterprise.config.serverbeans.MailResource mailRes =
-                (com.sun.enterprise.config.serverbeans.MailResource) resource;
+        org.glassfish.resources.config.MailResource mailRes =
+                (org.glassfish.resources.config.MailResource) resource;
 
 
         if (mailRes == null) {
@@ -125,8 +125,8 @@ public class MailResourceDeployer extends GlobalResourceDeployer
      * {@inheritDoc}
      */
     public synchronized void deployResource(Object resource) throws Exception {
-        com.sun.enterprise.config.serverbeans.MailResource mailResource =
-                (com.sun.enterprise.config.serverbeans.MailResource)resource;
+        org.glassfish.resources.config.MailResource mailResource =
+                (org.glassfish.resources.config.MailResource)resource;
         ResourceInfo resourceInfo = ConnectorsUtil.getResourceInfo(mailResource);
         deployResource(resource, resourceInfo.getApplicationName(), resourceInfo.getModuleName());
     }
@@ -138,7 +138,7 @@ public class MailResourceDeployer extends GlobalResourceDeployer
      * @param mailResource The mail resource to be installed.
      * @throws Exception when not able to create a resource
      */
-    void installResource(com.sun.enterprise.config.serverbeans.MailResource mailResource,
+    void installResource(org.glassfish.resources.config.MailResource mailResource,
                          ResourceInfo resourceInfo) throws Exception {
         // Converts the config data to j2ee resource ;
         // retieves the resource installer ; installs the resource ;
@@ -152,8 +152,8 @@ public class MailResourceDeployer extends GlobalResourceDeployer
      * {@inheritDoc}
      */
     public void undeployResource(Object resource, String applicationName, String moduleName) throws Exception{
-        com.sun.enterprise.config.serverbeans.MailResource mailRes =
-                (com.sun.enterprise.config.serverbeans.MailResource) resource;
+        org.glassfish.resources.config.MailResource mailRes =
+                (org.glassfish.resources.config.MailResource) resource;
         // converts the config data to j2ee resource
         ResourceInfo resourceInfo = new ResourceInfo(mailRes.getJndiName(), applicationName, moduleName);
         deleteResource(mailRes, resourceInfo);
@@ -164,14 +164,14 @@ public class MailResourceDeployer extends GlobalResourceDeployer
      * {@inheritDoc}
      */
     public synchronized void undeployResource(Object resource) throws Exception {
-        com.sun.enterprise.config.serverbeans.MailResource mailRes =
-                (com.sun.enterprise.config.serverbeans.MailResource) resource;
+        org.glassfish.resources.config.MailResource mailRes =
+                (org.glassfish.resources.config.MailResource) resource;
         // converts the config data to j2ee resource
         ResourceInfo resourceInfo = ConnectorsUtil.getResourceInfo(mailRes);
         deleteResource(mailRes, resourceInfo);
     }
 
-    private void deleteResource(com.sun.enterprise.config.serverbeans.MailResource mailRes, ResourceInfo resourceInfo)
+    private void deleteResource(org.glassfish.resources.config.MailResource mailRes, ResourceInfo resourceInfo)
             throws NamingException {
         if (ResourcesUtil.createInstance().isEnabled(mailRes, resourceInfo)){
             //JavaEEResource javaEEResource = toMailJavaEEResource(mailRes, resourceInfo);
@@ -203,7 +203,7 @@ public class MailResourceDeployer extends GlobalResourceDeployer
      * {@inheritDoc}
      */
     public boolean handles(Object resource){
-        return resource instanceof com.sun.enterprise.config.serverbeans.MailResource;
+        return resource instanceof org.glassfish.resources.config.MailResource;
     }
 
     /**
@@ -271,7 +271,7 @@ public class MailResourceDeployer extends GlobalResourceDeployer
      *
      */
     public static JavaEEResource toMailJavaEEResource(
-        com.sun.enterprise.config.serverbeans.MailResource mailResourceConfig, ResourceInfo resourceInfo) {
+        org.glassfish.resources.config.MailResource mailResourceConfig, ResourceInfo resourceInfo) {
 
         com.sun.enterprise.resource.beans.MailResource mailResource = new MailResource(resourceInfo);
 

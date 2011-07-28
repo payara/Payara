@@ -40,7 +40,6 @@
 
 package org.glassfish.connectors.admin.cli;
 
-import com.sun.enterprise.config.serverbeans.CustomResource;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Resource;
 import com.sun.enterprise.config.serverbeans.Resources;
@@ -88,7 +87,7 @@ public class ListCustomResourcesTest extends ConfigApiTest {
         Resources resources = habitat.getComponent(Domain.class).getResources();
         assertTrue(resources != null);
         for (Resource resource : resources.getResources()) {
-            if (resource instanceof CustomResource) {
+            if (resource instanceof org.glassfish.resources.config.CustomResource) {
                 origNum = origNum + 1;
             }
         }

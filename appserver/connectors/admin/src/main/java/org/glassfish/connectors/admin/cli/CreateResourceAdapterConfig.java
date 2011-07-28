@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,34 +40,33 @@
 
 package org.glassfish.connectors.admin.cli;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
 import com.sun.enterprise.config.serverbeans.*;
-import org.glassfish.resource.common.ResourceStatus;
-import org.glassfish.api.admin.AdminCommand;
-import org.glassfish.api.admin.AdminCommandContext;
+import com.sun.enterprise.util.LocalStringManagerImpl;
+import com.sun.enterprise.util.SystemPropertyConstants;
+import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
-import org.glassfish.api.ActionReport;
-import static org.glassfish.resource.common.ResourceConstants.*;
-
+import org.glassfish.api.admin.AdminCommand;
+import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.ExecuteOn;
 import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.resource.common.ResourceStatus;
-import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.annotations.Scoped;
+import org.glassfish.resources.config.ResourceAdapterConfig;
 import org.jvnet.hk2.annotations.Inject;
+import org.jvnet.hk2.annotations.Scoped;
+import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
-import com.sun.enterprise.util.SystemPropertyConstants;
-import com.sun.enterprise.util.LocalStringManagerImpl;
 
-import static org.glassfish.connectors.admin.cli.CLIConstants.RAC.*;
-import static org.glassfish.connectors.admin.cli.CLIConstants.*;
-
-import java.util.Properties;
 import java.util.HashMap;
+import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import static org.glassfish.connectors.admin.cli.CLIConstants.*;
+import static org.glassfish.connectors.admin.cli.CLIConstants.RAC.*;
+import static org.glassfish.resource.common.ResourceConstants.RESOURCE_ADAPTER_CONFIG_NAME;
+import static org.glassfish.resource.common.ResourceConstants.THREAD_POOL_IDS;
 
 /**
  * Create RA Config Command
@@ -178,7 +177,7 @@ public class CreateResourceAdapterConfig implements AdminCommand {
     }
 
     private boolean hasDuplicate(Resources resources, ActionReport report) {
-        if(resources.getResourceByName(ResourceAdapterConfig.class, raName) != null){
+        if(ConnectorsUtil.getResourceByName(resources, ResourceAdapterConfig.class, raName) != null){
             String msg = localStrings.getLocalString("create.resource.adapter.config.duplicate",
                     "Resource adapter config already exists for RAR", raName);
             report.setMessage(msg);

@@ -41,6 +41,7 @@
 package com.sun.appserv.connectors.internal.api;
 
 import com.sun.appserv.connectors.internal.api.ResourceNamingService;
+import com.sun.enterprise.config.serverbeans.Resource;
 import org.glassfish.resource.common.ResourceInfo;
 import org.glassfish.api.naming.NamingObjectProxy;
 import org.jvnet.hk2.annotations.Inject;
@@ -53,7 +54,6 @@ import javax.naming.Context;
 import javax.naming.NamingException;
 
 import com.sun.appserv.connectors.internal.spi.ResourceDeployer;
-import com.sun.enterprise.config.serverbeans.Resource;
 
 import java.util.Collection;
 

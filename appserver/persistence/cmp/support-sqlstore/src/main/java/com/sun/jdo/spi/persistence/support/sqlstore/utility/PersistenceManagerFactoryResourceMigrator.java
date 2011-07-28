@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,6 +40,10 @@
 
 package com.sun.jdo.spi.persistence.support.sqlstore.utility;
 
+import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
+import com.sun.enterprise.config.serverbeans.Resources;
+import org.glassfish.resources.config.JdbcResource;
+import org.glassfish.resources.config.PersistenceManagerFactoryResource;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.component.PostConstruct;
@@ -47,7 +51,6 @@ import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
 import org.glassfish.api.admin.config.ConfigurationUpgrade;
-import com.sun.enterprise.config.serverbeans.*;
 
 import java.util.Collection;
 import java.util.logging.Logger;
@@ -67,7 +70,7 @@ public class PersistenceManagerFactoryResourceMigrator implements ConfigurationU
         for (final PersistenceManagerFactoryResource pmfResource : pmfResources) {
             String jdbcResourceName = pmfResource.getJdbcResourceJndiName();
 
-            final JdbcResource jdbcResource = (JdbcResource )resources.getResourceByName(JdbcResource.class, jdbcResourceName);
+            final JdbcResource jdbcResource = (JdbcResource) ConnectorsUtil.getResourceByName(resources, JdbcResource.class, jdbcResourceName);
 
             try {
                 ConfigSupport.apply(new SingleConfigCode<Resources>() {

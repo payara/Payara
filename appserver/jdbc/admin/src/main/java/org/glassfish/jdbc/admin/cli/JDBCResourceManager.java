@@ -45,13 +45,14 @@ import java.util.*;
 
 import static org.glassfish.resource.common.ResourceConstants.*;
 
+import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
 import com.sun.enterprise.config.serverbeans.*;
 import org.glassfish.admin.cli.resources.BindableResourcesHelper;
 import org.glassfish.admin.cli.resources.ResourceUtil;
-import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.resource.common.ResourceStatus;
 import org.glassfish.api.I18n;
+import org.glassfish.resources.config.JdbcResource;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigSupport;
@@ -147,7 +148,7 @@ public class JDBCResourceManager implements ResourceManager {
             return status;
         }
         
-        if(resources.getResourceByName(ResourcePool.class, poolName) == null){
+        if(ConnectorsUtil.getResourceByName(resources, ResourcePool.class, poolName) == null){
             String msg = localStrings.getLocalString("create.jdbc.resource.connPoolNotFound",
                 "Attribute value (pool-name = {0}) is not found in list of jdbc connection pools.", poolName);
             return new ResourceStatus(ResourceStatus.FAILURE, msg);
@@ -210,7 +211,7 @@ public class JDBCResourceManager implements ResourceManager {
         }
     }
 
-    public ResourceStatus delete (final Resources resources, final String jndiName, final String target) 
+    public ResourceStatus delete (final Resources resources, final String jndiName, final String target)
             throws Exception {
         
         if (jndiName == null) {
@@ -220,7 +221,7 @@ public class JDBCResourceManager implements ResourceManager {
         }
 
         // ensure we already have this resource
-        if(resources.getResourceByName(JdbcResource.class, jndiName) == null){
+        if(ConnectorsUtil.getResourceByName(resources, JdbcResource.class, jndiName) == null){
             String msg = localStrings.getLocalString("delete.jdbc.resource.notfound",
                     "A JDBC resource named {0} does not exist.", jndiName);
             return new ResourceStatus(ResourceStatus.FAILURE, msg);
@@ -261,7 +262,7 @@ public class JDBCResourceManager implements ResourceManager {
             // delete jdbc-resource
             if (ConfigSupport.apply(new SingleConfigCode<Resources>() {
                 public Object run(Resources param) throws PropertyVetoException, TransactionFailure {
-                    JdbcResource resource = (JdbcResource) resources.getResourceByName(JdbcResource.class, jndiName);
+                    JdbcResource resource = (JdbcResource) ConnectorsUtil.getResourceByName(resources, JdbcResource.class, jndiName);
                     return param.getResources().remove(resource);
                 }
             }, resources) == null) {

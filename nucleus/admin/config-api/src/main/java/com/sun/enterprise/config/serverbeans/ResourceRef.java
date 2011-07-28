@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -84,7 +84,7 @@ public interface ResourceRef extends ConfigBeanProxy, Injectable  {
     void setEnabled(String value) throws PropertyVetoException;
 
     /**
-     * References the name attribute of a resources, such as an {@link JdbcResource} or {@link JdbcConnectionPool}.
+     * References the name attribute of a resources, such as an {@link org.glassfish.resources.config.JdbcResource} or {@link org.glassfish.resources.config.JdbcConnectionPool}.
      *
      * @return possible object is
      *         {@link String }

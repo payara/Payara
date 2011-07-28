@@ -40,20 +40,25 @@
 
 package org.glassfish.connectors.admin.cli;
 
-import org.glassfish.api.admin.*;
+import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
+import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.config.serverbeans.Resources;
+import com.sun.enterprise.util.LocalStringManagerImpl;
+import com.sun.enterprise.util.SystemPropertyConstants;
+import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
-import org.glassfish.api.ActionReport;
-import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.annotations.Scoped;
+import org.glassfish.api.admin.AdminCommand;
+import org.glassfish.api.admin.AdminCommandContext;
+import org.glassfish.api.admin.RuntimeType;
+import org.glassfish.resources.config.ResourceAdapterConfig;
 import org.jvnet.hk2.annotations.Inject;
+import org.jvnet.hk2.annotations.Scoped;
+import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
-import com.sun.enterprise.config.serverbeans.*;
-import com.sun.enterprise.util.SystemPropertyConstants;
-import com.sun.enterprise.util.LocalStringManagerImpl;
 
 import java.beans.PropertyVetoException;
 
@@ -96,7 +101,7 @@ public class DeleteResourceAdapterConfig implements AdminCommand {
         }
 
         // ensure we already have this resource
-        if(domain.getResources().getResourceByName(ResourceAdapterConfig.class, raName) == null){
+        if(ConnectorsUtil.getResourceByName(domain.getResources(), ResourceAdapterConfig.class, raName) == null){
             report.setMessage(localStrings.getLocalString("delete.resource.adapter.config.notfound",
                     "Resource-Adapter-Config for {0} does not exist.", raName));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
@@ -108,7 +113,7 @@ public class DeleteResourceAdapterConfig implements AdminCommand {
             if (ConfigSupport.apply(new SingleConfigCode<Resources>() {
                 public Object run(Resources param) throws PropertyVetoException, TransactionFailure {
                     ResourceAdapterConfig resource = (ResourceAdapterConfig)
-                            domain.getResources().getResourceByName(ResourceAdapterConfig.class, raName);
+                            ConnectorsUtil.getResourceByName(domain.getResources(), ResourceAdapterConfig.class, raName);
                     if (resource != null && resource.getResourceAdapterName().equals(raName)) {
                         return param.getResources().remove(resource);
                     }

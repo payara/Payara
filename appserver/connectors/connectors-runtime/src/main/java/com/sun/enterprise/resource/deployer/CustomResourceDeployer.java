@@ -42,7 +42,7 @@ package com.sun.enterprise.resource.deployer;
 
 import com.sun.appserv.connectors.internal.api.*;
 import com.sun.enterprise.connectors.util.ResourcesUtil;
-import com.sun.enterprise.resource.beans.CustomResource;
+import org.glassfish.resources.config.CustomResource;
 
 import java.util.logging.Logger;
 import java.util.logging.Level;
@@ -100,8 +100,8 @@ public class CustomResourceDeployer implements ResourceDeployer {
      */
     public synchronized void deployResource(Object resource, String applicationName, String moduleName)
             throws Exception {
-        com.sun.enterprise.config.serverbeans.CustomResource customResource =
-                (com.sun.enterprise.config.serverbeans.CustomResource)resource;
+        CustomResource customResource =
+                (CustomResource)resource;
         ResourceInfo resourceInfo = new ResourceInfo(customResource.getJndiName(), applicationName, moduleName);
         deployResource(resource, resourceInfo);
     }
@@ -110,23 +110,23 @@ public class CustomResourceDeployer implements ResourceDeployer {
      * {@inheritDoc}
      */
 	public synchronized void deployResource(Object resource) throws Exception {
-        com.sun.enterprise.config.serverbeans.CustomResource customResource =
-                (com.sun.enterprise.config.serverbeans.CustomResource)resource;
+        CustomResource customResource =
+                (CustomResource)resource;
         ResourceInfo resourceInfo = ConnectorsUtil.getResourceInfo(customResource);
         deployResource(customResource, resourceInfo);
     }
 
     private void deployResource(Object resource, ResourceInfo resourceInfo){
 
-        com.sun.enterprise.config.serverbeans.CustomResource customRes =
-            (com.sun.enterprise.config.serverbeans.CustomResource) resource;
+        CustomResource customRes =
+            (CustomResource) resource;
 
         if (ResourcesUtil.createInstance().isEnabled(customRes, resourceInfo)){
             // converts the config data to j2ee resource
             JavaEEResource j2eeResource = toCustomJavaEEResource(customRes, resourceInfo);
 
             // installs the resource
-            installCustomResource((CustomResource) j2eeResource, resourceInfo);
+            installCustomResource((com.sun.enterprise.resource.beans.CustomResource) j2eeResource, resourceInfo);
 
         } else {
             _logger.log(Level.INFO, "core.resource_disabled",
@@ -140,8 +140,8 @@ public class CustomResourceDeployer implements ResourceDeployer {
      * {@inheritDoc}
      */
     public void undeployResource(Object resource, String applicationName, String moduleName) throws Exception{
-        com.sun.enterprise.config.serverbeans.CustomResource customResource =
-            (com.sun.enterprise.config.serverbeans.CustomResource) resource;
+        CustomResource customResource =
+            (CustomResource) resource;
         ResourceInfo resourceInfo = new ResourceInfo(customResource.getJndiName(), applicationName, moduleName);
         deleteResource(customResource, resourceInfo);
     }
@@ -151,13 +151,13 @@ public class CustomResourceDeployer implements ResourceDeployer {
 	public synchronized void undeployResource(Object resource)
             throws Exception {
 
-        com.sun.enterprise.config.serverbeans.CustomResource customResource =
-            (com.sun.enterprise.config.serverbeans.CustomResource) resource;
+        CustomResource customResource =
+            (CustomResource) resource;
         ResourceInfo resourceInfo = ConnectorsUtil.getResourceInfo(customResource);
         deleteResource(customResource, resourceInfo);
     }
 
-    private void deleteResource(com.sun.enterprise.config.serverbeans.CustomResource customResource,
+    private void deleteResource(CustomResource customResource,
                                 ResourceInfo resourceInfo) throws NamingException {
         if (ResourcesUtil.createInstance().isEnabled(customResource, resourceInfo)){
             // converts the config data to j2ee resource
@@ -174,7 +174,7 @@ public class CustomResourceDeployer implements ResourceDeployer {
      * {@inheritDoc}
      */
     public boolean handles(Object resource){
-        return resource instanceof com.sun.enterprise.config.serverbeans.CustomResource;
+        return resource instanceof CustomResource;
     }
 
     /**
@@ -223,7 +223,7 @@ public class CustomResourceDeployer implements ResourceDeployer {
      *
      * @param customRes custom resource
      */
-    public void installCustomResource(CustomResource customRes, ResourceInfo resourceInfo) {
+    public void installCustomResource(com.sun.enterprise.resource.beans.CustomResource customRes, ResourceInfo resourceInfo) {
 
         try {
             if (_logger.isLoggable(Level.FINE)) {
@@ -263,10 +263,11 @@ public class CustomResourceDeployer implements ResourceDeployer {
      * @return   new instance of j2ee custom resource
      */
     public static JavaEEResource toCustomJavaEEResource(
-            com.sun.enterprise.config.serverbeans.CustomResource rbean, ResourceInfo resourceInfo) {
+            CustomResource rbean, ResourceInfo resourceInfo) {
 
 
-        CustomResource jr = new CustomResource(resourceInfo);
+        com.sun.enterprise.resource.beans.CustomResource jr =
+                new com.sun.enterprise.resource.beans.CustomResource(resourceInfo);
 
         //jr.setDescription(rbean.getDescription()); // FIXME: getting error
 

@@ -40,17 +40,16 @@
 
 package org.glassfish.connectors.admin.cli;
 
-import java.beans.PropertyVetoException;
-import java.util.HashMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.Properties;
-
+import com.sun.appserv.connectors.internal.api.ConnectorRuntime;
+import com.sun.appserv.connectors.internal.api.ConnectorRuntimeException;
 import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
 import com.sun.enterprise.config.serverbeans.*;
+import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.admin.cli.resources.ResourceManager;
 import org.glassfish.api.I18n;
 import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.resource.common.ResourceStatus;
+import org.glassfish.resources.config.ConnectorConnectionPool;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
@@ -59,15 +58,16 @@ import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
 import org.jvnet.hk2.config.types.Property;
-import static org.glassfish.resource.common.ResourceConstants.*;
-import org.glassfish.resource.common.ResourceStatus;
-
-import static com.sun.appserv.connectors.internal.api.ConnectorConstants.*;
-import com.sun.appserv.connectors.internal.api.ConnectorRuntime;
-import com.sun.appserv.connectors.internal.api.ConnectorRuntimeException;
-import com.sun.enterprise.util.LocalStringManagerImpl;
 
 import javax.resource.ResourceException;
+import java.beans.PropertyVetoException;
+import java.util.HashMap;
+import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import static com.sun.appserv.connectors.internal.api.ConnectorConstants.EMBEDDEDRAR_NAME_DELIMITER;
+import static org.glassfish.resource.common.ResourceConstants.*;
 
 
 /**
@@ -165,7 +165,7 @@ public class ConnectorConnectionPoolManager implements ResourceManager {
             return new ResourceStatus(ResourceStatus.FAILURE, msg);
         }
         // ensure we don't already have one of this name
-        if(resources.getResourceByName(ConnectorConnectionPool.class, poolname) != null){
+        if(ConnectorsUtil.getResourceByName(resources, ConnectorConnectionPool.class, poolname) != null){
             String errMsg = localStrings.getLocalString("create.connector.connection.pool.duplicate",
                     "A resource named {0} already exists.", poolname);
             return new ResourceStatus(ResourceStatus.FAILURE, errMsg);

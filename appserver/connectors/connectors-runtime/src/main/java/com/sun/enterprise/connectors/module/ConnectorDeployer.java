@@ -68,6 +68,7 @@ import org.glassfish.javaee.core.deployment.JavaEEDeployer;
 import org.glassfish.internal.api.ClassLoaderHierarchy;
 import org.glassfish.internal.api.ConnectorClassFinder;
 import org.glassfish.internal.api.DelegatingClassLoader;
+import org.glassfish.resources.config.*;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PostConstruct;

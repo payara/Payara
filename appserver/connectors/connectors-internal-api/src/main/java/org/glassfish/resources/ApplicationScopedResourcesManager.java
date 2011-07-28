@@ -42,6 +42,7 @@ package org.glassfish.resources;
 
 import com.sun.appserv.connectors.internal.api.ResourcesBinder;
 import org.glassfish.resource.common.ResourceInfo;
+import org.glassfish.resources.config.ResourceAdapterConfig;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Inject;

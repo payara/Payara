@@ -45,7 +45,7 @@ import com.sun.appserv.connectors.internal.api.ConnectorRuntimeException;
 import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
 import com.sun.enterprise.connectors.util.ResourcesUtil;
 import org.glassfish.resource.common.ResourceInfo;
-import com.sun.enterprise.config.serverbeans.AdminObjectResource;
+import org.glassfish.resources.config.AdminObjectResource;
 import com.sun.enterprise.connectors.ConnectorRuntime;
 import com.sun.logging.LogDomains;
 import com.sun.appserv.connectors.internal.spi.ResourceDeployer;

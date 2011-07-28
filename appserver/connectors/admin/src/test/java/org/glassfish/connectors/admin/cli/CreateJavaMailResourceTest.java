@@ -48,7 +48,10 @@ import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.CommandRunner;
 import org.glassfish.api.admin.ParameterMap;
-import org.glassfish.server.ServerEnvironmentImpl;
+import org.glassfish.resources.config.MailResource;
+import com.sun.enterprise.config.serverbeans.Resource;
+import com.sun.enterprise.config.serverbeans.ResourceRef;
+import com.sun.enterprise.config.serverbeans.Resources;
 import org.glassfish.tests.utils.ConfigApiTest;
 import org.junit.After;
 import static org.junit.Assert.assertEquals;
@@ -243,7 +246,7 @@ public class CreateJavaMailResourceTest extends ConfigApiTest {
         boolean isCreated = false;
         for (Resource resource : resources.getResources()) {
             if (resource instanceof MailResource) {
-                MailResource r = (MailResource) resource;
+                org.glassfish.resources.config.MailResource r = (MailResource) resource;
                 if (r.getJndiName().equals("mail/MyMailSession")) {
                     //expect enabled for the resource to be true as resource-ref's enabled
                     //would be set to false

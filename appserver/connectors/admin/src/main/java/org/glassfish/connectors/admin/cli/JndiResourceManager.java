@@ -39,13 +39,17 @@
  */
 package org.glassfish.connectors.admin.cli;
 
-import com.sun.enterprise.config.serverbeans.*;
+import com.sun.enterprise.config.serverbeans.Resource;
+import com.sun.enterprise.config.serverbeans.Resources;
+import com.sun.enterprise.config.serverbeans.ServerTags;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.admin.cli.resources.BindableResourcesHelper;
 import org.glassfish.admin.cli.resources.ResourceManager;
 import org.glassfish.admin.cli.resources.ResourceUtil;
 import org.glassfish.api.I18n;
 import org.glassfish.resource.common.ResourceStatus;
+import org.glassfish.resources.config.AdminObjectResource;
+import org.glassfish.resources.config.ExternalJndiResource;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
@@ -62,7 +66,6 @@ import java.util.Map;
 import java.util.Properties;
 
 import static org.glassfish.resource.common.ResourceConstants.*;
-import static org.glassfish.resource.common.ResourceConstants.ENABLED;
 
 
 @Service(name = ServerTags.EXTERNAL_JNDI_RESOURCE)

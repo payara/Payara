@@ -166,7 +166,7 @@ public class ConnectorObjectFactory implements ObjectFactory {
                     Resources resources = getRuntime().getResources(poolInfo);
                     ResourcePool resourcePool = null;
                     if (resources != null) {
-                        resourcePool = (ResourcePool) resources.getResourceByName(ResourcePool.class, poolInfo.getName());
+                        resourcePool = (ResourcePool) ConnectorsUtil.getResourceByName(resources, ResourcePool.class, poolInfo.getName());
                         if (resourcePool != null) {
                             ResourceDeployer deployer = getRuntime().getResourceDeployer(resourcePool);
                             if (deployer != null && deployer.supportsDynamicReconfiguration() &&

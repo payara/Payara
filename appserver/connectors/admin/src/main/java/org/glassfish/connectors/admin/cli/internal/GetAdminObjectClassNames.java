@@ -51,7 +51,6 @@ import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Properties;
 

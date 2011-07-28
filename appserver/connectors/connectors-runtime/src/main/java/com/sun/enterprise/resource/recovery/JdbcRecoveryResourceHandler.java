@@ -51,6 +51,8 @@ import com.sun.logging.LogDomains;
 import com.sun.appserv.connectors.internal.api.ConnectorRuntime;
 import com.sun.enterprise.connectors.util.ResourcesUtil;
 import org.glassfish.resource.common.ResourceInfo;
+import org.glassfish.resources.config.JdbcConnectionPool;
+import org.glassfish.resources.config.JdbcResource;
 import org.jvnet.hk2.config.types.Property;
 
 import javax.naming.InitialContext;

@@ -40,30 +40,31 @@
 
 package org.glassfish.connectors.admin.cli;
 
+import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
+import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.config.serverbeans.Resources;
+import com.sun.enterprise.util.LocalStringManagerImpl;
+import com.sun.enterprise.util.SystemPropertyConstants;
 import org.glassfish.admin.cli.resources.ResourceUtil;
-import org.glassfish.api.admin.AdminCommand;
-import org.glassfish.api.admin.AdminCommandContext;
+import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
-import org.glassfish.api.ActionReport;
+import org.glassfish.api.admin.AdminCommand;
+import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
-import org.glassfish.resource.common.ResourceStatus;
-import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.annotations.Scoped;
+import org.glassfish.resources.config.MailResource;
 import org.jvnet.hk2.annotations.Inject;
+import org.jvnet.hk2.annotations.Scoped;
+import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
-import com.sun.enterprise.config.serverbeans.*;
-import com.sun.enterprise.util.SystemPropertyConstants;
-import com.sun.enterprise.util.LocalStringManagerImpl;
 
 import java.beans.PropertyVetoException;
-import java.util.Set;
 
 /**
  * Delete Mail Resource object
@@ -154,7 +155,8 @@ public class DeleteJavaMailResource implements AdminCommand {
             ConfigSupport.apply(new SingleConfigCode<Resources>() {
                 public Object run(Resources param) throws PropertyVetoException,
                         TransactionFailure {
-                    MailResource resource = (MailResource)domain.getResources().getResourceByName(MailResource.class, jndiName);
+                    MailResource resource = (MailResource)
+                            ConnectorsUtil.getResourceByName(domain.getResources(), MailResource.class, jndiName);
                     return param.getResources().remove(resource);
                 }
             }, domain.getResources());
@@ -174,6 +176,6 @@ public class DeleteJavaMailResource implements AdminCommand {
     }
 
     private boolean isResourceExists(Resources resources, String jndiName) {
-        return resources.getResourceByName(MailResource.class, jndiName) != null;
+        return ConnectorsUtil.getResourceByName(resources, MailResource.class, jndiName) != null;
     }
 }

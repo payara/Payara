@@ -43,6 +43,7 @@ package com.sun.enterprise.connectors.work.context;
 import com.sun.enterprise.connectors.work.WorkCoordinator;
 import com.sun.enterprise.connectors.work.OneWork;
 import com.sun.appserv.connectors.internal.api.ConnectorRuntime;
+import org.glassfish.resources.config.WorkSecurityMap;
 import org.glassfish.security.common.PrincipalImpl;
 import org.glassfish.security.common.Group;
 import org.jvnet.hk2.annotations.Service;
@@ -50,9 +51,8 @@ import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.component.PerLookup;
 import com.sun.enterprise.transaction.api.JavaEETransactionManager;
-import com.sun.enterprise.config.serverbeans.PrincipalMap;
+import org.glassfish.resources.config.PrincipalMap;
 import com.sun.enterprise.config.serverbeans.GroupMap;
-import com.sun.enterprise.config.serverbeans.WorkSecurityMap;
 import com.sun.logging.LogDomains;
 
 import javax.resource.spi.work.*;

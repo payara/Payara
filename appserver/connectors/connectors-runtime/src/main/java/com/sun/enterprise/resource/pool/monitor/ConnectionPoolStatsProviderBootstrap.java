@@ -57,6 +57,8 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.glassfish.api.monitoring.ContainerMonitoring;
+import org.glassfish.resources.config.ConnectorConnectionPool;
+import org.glassfish.resources.config.JdbcConnectionPool;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;

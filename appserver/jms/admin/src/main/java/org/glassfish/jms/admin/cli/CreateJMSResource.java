@@ -40,6 +40,7 @@
 
 package org.glassfish.jms.admin.cli;
 
+import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.CommandRunner;
@@ -56,6 +57,7 @@ import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.component.PerLookup;
 import com.sun.enterprise.config.serverbeans.*;
+import org.glassfish.resources.config.*;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 
@@ -164,7 +166,8 @@ public class CreateJMSResource implements AdminCommand {
         ActionReport subReport = report.addSubActionsReport();
 
       if (resourceType.equals(TOPIC_CF) || resourceType.equals(QUEUE_CF) || resourceType.equals(UNIFIED_CF)) {
-          ConnectorConnectionPool cpool = (ConnectorConnectionPool) domain.getResources().getResourceByName(ConnectorConnectionPool.class, jndiName);
+          ConnectorConnectionPool cpool = (ConnectorConnectionPool) ConnectorsUtil.getResourceByName(
+                  domain.getResources(), ConnectorConnectionPool.class, jndiName);
 
           boolean createdPool = false;
            // If pool is already existing, do not try to create it again

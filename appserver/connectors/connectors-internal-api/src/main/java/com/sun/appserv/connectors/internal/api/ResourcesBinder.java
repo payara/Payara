@@ -40,12 +40,12 @@
 
 package com.sun.appserv.connectors.internal.api;
 
+import com.sun.enterprise.config.serverbeans.Resource;
 import org.glassfish.resource.common.ResourceInfo;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.component.Habitat;
 import org.glassfish.api.naming.GlassfishNamingManager;
-import com.sun.enterprise.config.serverbeans.*;
 
 import javax.naming.NamingException;
 import java.util.logging.Logger;

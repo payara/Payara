@@ -65,6 +65,10 @@ import org.glassfish.internal.data.ApplicationRegistry;
 import org.glassfish.internal.deployment.Deployment;
 import org.glassfish.javaee.core.deployment.JavaEEDeployer;
 import org.glassfish.resource.common.*;
+import org.glassfish.resources.config.AdminObjectResource;
+import org.glassfish.resources.config.ConnectorConnectionPool;
+import org.glassfish.resources.config.ConnectorResource;
+import org.glassfish.resources.config.WorkSecurityMap;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PostConstruct;
@@ -358,12 +362,12 @@ public class ResourcesDeployer extends JavaEEDeployer<ResourcesContainer, Resour
         return actualModuleName;
     }
 
-    private static Collection<com.sun.enterprise.config.serverbeans.Resource>
+    private static Collection<Resource>
     createConfig(Resources resources, Collection<org.glassfish.resource.common.Resource> resourcesToRegister,
                  boolean embedded)
     throws ResourceException {
-        List<com.sun.enterprise.config.serverbeans.Resource> resourceConfigs =
-                new ArrayList<com.sun.enterprise.config.serverbeans.Resource>();
+        List<Resource> resourceConfigs =
+                new ArrayList<Resource>();
         for (org.glassfish.resource.common.Resource resource : resourcesToRegister) {
             final HashMap attrList = resource.getAttributes();
             final Properties props = resource.getProperties();
@@ -375,7 +379,7 @@ public class ResourcesDeployer extends JavaEEDeployer<ResourcesContainer, Resour
             try {
                 final ResourceManager rm = resourceFactory.getResourceManager(resource);
                 if(embedded && isEmbeddedResource(resource, resourcesToRegister)){
-                    com.sun.enterprise.config.serverbeans.Resource configBeanResource =
+                    Resource configBeanResource =
                             rm.createConfigBean(resources, attrList, props, false);
                     resources.getResources().add(configBeanResource);
                     resourceConfigs.add(configBeanResource);
@@ -569,7 +573,7 @@ public class ResourcesDeployer extends JavaEEDeployer<ResourcesContainer, Resour
     public static void deployResources(String applicationName, String moduleName,
                                 Collection<com.sun.enterprise.config.serverbeans.Resource> configBeanResources,
                                 boolean embedded) throws Exception {
-        for(com.sun.enterprise.config.serverbeans.Resource configBeanResource : configBeanResources){
+        for(Resource configBeanResource : configBeanResources){
             if(configBeanResource instanceof ResourcePool){
                 ResourcePool resourcePool = (ResourcePool)configBeanResource;
                 if(embedded){
@@ -612,8 +616,8 @@ public class ResourcesDeployer extends JavaEEDeployer<ResourcesContainer, Resour
     //TODO what if the module being deployed is a RAR and has gf-resources.xml ?
     //TODO can the RAR define its own resources ? eg: connector-resource, pool, a-o-r ?
     public static ConnectorConstants.TriState
-    isEmbeddedRarResource(com.sun.enterprise.config.serverbeans.Resource configBeanResource,
-                                          Collection<com.sun.enterprise.config.serverbeans.Resource> configBeanResources) {
+    isEmbeddedRarResource(Resource configBeanResource,
+                                          Collection<Resource> configBeanResources) {
         TriState result = TriState.FALSE;
         if(configBeanResource instanceof ConnectorResource){
             String poolName = ((ConnectorResource)configBeanResource).getPoolName();
@@ -648,9 +652,9 @@ public class ResourcesDeployer extends JavaEEDeployer<ResourcesContainer, Resour
     }
 
     public static ConnectorConnectionPool getPool(
-            Collection<com.sun.enterprise.config.serverbeans.Resource> configBeanResources, String poolName) {
+            Collection<Resource> configBeanResources, String poolName) {
         ConnectorConnectionPool result = null;
-        for(com.sun.enterprise.config.serverbeans.Resource res : configBeanResources){
+        for(Resource res : configBeanResources){
             if(res instanceof ConnectorConnectionPool){
                 if(((ConnectorConnectionPool)res).getName().equals(poolName)){
                     result = (ConnectorConnectionPool)res;

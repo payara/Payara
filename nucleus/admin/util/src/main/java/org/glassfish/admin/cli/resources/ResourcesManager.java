@@ -40,14 +40,13 @@
 
 package org.glassfish.admin.cli.resources;
 
+import com.sun.enterprise.config.serverbeans.Resources;
 import org.glassfish.resource.common.Resource;
 import org.glassfish.resource.common.ResourceStatus;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Iterator;
-import com.sun.enterprise.config.serverbeans.Resources;
-import com.sun.enterprise.config.serverbeans.Server;
 import java.util.HashMap;
 import java.util.Properties;
 import java.io.File;

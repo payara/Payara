@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,9 +40,11 @@
 
 package org.glassfish.admin.cli.resources;
 
+import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
 import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.resource.common.ResourceStatus;
+import org.glassfish.resources.config.*;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Inject;
 
@@ -107,7 +109,7 @@ public class BindableResourcesHelper {
                                                           Class<? extends BindableResource> resourceTypeToValidate){
         // ensure we don't already have one of this name
         BindableResource duplicateResource = (BindableResource)
-                resources.getResourceByName(BindableResource.class, jndiName);
+                ConnectorsUtil.getResourceByName(resources, BindableResource.class, jndiName);
         if (duplicateResource != null) {
             String msg ;
             if(validateResourceRef && (getResourceByClass(duplicateResource).equals(resourceTypeToValidate))){

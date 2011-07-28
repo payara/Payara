@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2008-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -46,7 +46,9 @@ import java.util.HashMap;
 import java.util.Properties;
 import java.util.Map;
 
+import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
 import com.sun.enterprise.config.serverbeans.*;
+import org.glassfish.resources.config.*;
 import org.glassfish.api.I18n;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigSupport;
@@ -349,7 +351,7 @@ public class JDBCConnectionPoolManager implements ResourceManager {
             if (ConfigSupport.apply(new SingleConfigCode<Resources>() {
                 public Object run(Resources param) throws PropertyVetoException, TransactionFailure {
                     JdbcConnectionPool cp = (JdbcConnectionPool)
-                            resources.getResourceByName(JdbcConnectionPool.class, poolName);
+                            ConnectorsUtil.getResourceByName(resources, JdbcConnectionPool.class, poolName);
                     return param.getResources().remove(cp);
                 }
             }, resources) == null) {
@@ -373,7 +375,7 @@ public class JDBCConnectionPoolManager implements ResourceManager {
     }
 
     private boolean isResourceExists(Resources resources, String poolName) {
-        return resources.getResourceByName(JdbcConnectionPool.class, poolName) != null;
+        return ConnectorsUtil.getResourceByName(resources, JdbcConnectionPool.class, poolName) != null;
     }
 
     private Object deleteAssociatedResources(final Server[] servers, final Cluster[] clusters, Resources resources,
@@ -381,7 +383,7 @@ public class JDBCConnectionPoolManager implements ResourceManager {
         if (cascade) {
             ConfigSupport.apply(new SingleConfigCode<Resources>() {
                 public Object run(Resources param) throws PropertyVetoException, TransactionFailure {
-                    Collection<BindableResource> referringResources = param.getResourcesOfPool(poolName);
+                    Collection<BindableResource> referringResources = ConnectorsUtil.getResourcesOfPool(param, poolName);
                     for (BindableResource referringResource : referringResources) {
                         // delete resource-refs
                         deleteResourceRefs(servers, referringResource.getJndiName());
@@ -393,7 +395,7 @@ public class JDBCConnectionPoolManager implements ResourceManager {
                 }
             }, resources);
         }else{
-            Collection<BindableResource> referringResources = resources.getResourcesOfPool(poolName);
+            Collection<BindableResource> referringResources = ConnectorsUtil.getResourcesOfPool(resources, poolName);
             if(referringResources.size() > 0){
                 return ResourceStatus.FAILURE;
             }

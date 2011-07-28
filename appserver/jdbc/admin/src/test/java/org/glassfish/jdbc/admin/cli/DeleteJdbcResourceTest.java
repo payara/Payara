@@ -49,6 +49,7 @@ import com.sun.logging.LogDomains;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.CommandRunner;
 import org.glassfish.api.admin.ParameterMap;
+import org.glassfish.resources.config.JdbcResource;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -58,7 +59,6 @@ import org.jvnet.hk2.component.Habitat;
 import org.glassfish.api.ActionReport;
 import org.glassfish.tests.utils.Utils;
 import org.glassfish.tests.utils.ConfigApiTest;
-import org.glassfish.server.ServerEnvironmentImpl;
 import org.jvnet.hk2.config.DomDocument;
 
 /**

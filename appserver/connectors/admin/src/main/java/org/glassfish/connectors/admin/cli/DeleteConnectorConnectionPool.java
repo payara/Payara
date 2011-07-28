@@ -40,24 +40,26 @@
 
 package org.glassfish.connectors.admin.cli;
 
+import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
 import com.sun.enterprise.config.serverbeans.*;
-import org.glassfish.api.admin.AdminCommand;
-import org.glassfish.api.admin.AdminCommandContext;
+import com.sun.enterprise.util.LocalStringManagerImpl;
+import com.sun.enterprise.util.SystemPropertyConstants;
+import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
-import org.glassfish.api.ActionReport;
+import org.glassfish.api.admin.AdminCommand;
+import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.ExecuteOn;
 import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.resource.common.ResourceStatus;
-import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.annotations.Scoped;
+import org.glassfish.resources.config.ConnectorConnectionPool;
 import org.jvnet.hk2.annotations.Inject;
+import org.jvnet.hk2.annotations.Scoped;
+import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
-import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.enterprise.util.SystemPropertyConstants;
 
 import java.beans.PropertyVetoException;
 import java.util.Collection;
@@ -112,7 +114,7 @@ public class DeleteConnectorConnectionPool implements AdminCommand {
         }
 
         // ensure we already have this resource
-        if(domain.getResources().getResourceByName(ConnectorConnectionPool.class, poolname) == null){
+        if(ConnectorsUtil.getResourceByName(domain.getResources(), ConnectorConnectionPool.class, poolname) == null){
             report.setMessage(localStrings.getLocalString("delete.connector.connection.pool.notfound",
                     "A connector connection pool named {0} does not exist.", poolname));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
@@ -139,7 +141,7 @@ public class DeleteConnectorConnectionPool implements AdminCommand {
             if (ConfigSupport.apply(new SingleConfigCode<Resources>() {
                 public Object run(Resources param) throws PropertyVetoException, TransactionFailure {
                     ConnectorConnectionPool cp = (ConnectorConnectionPool)
-                            domain.getResources().getResourceByName(ConnectorConnectionPool.class, poolname);
+                            ConnectorsUtil.getResourceByName(domain.getResources(),ConnectorConnectionPool.class, poolname);
                     if(cp != null){
                         return param.getResources().remove(cp);
                     }
@@ -174,7 +176,7 @@ public class DeleteConnectorConnectionPool implements AdminCommand {
         if (cascade) {
             ConfigSupport.apply(new SingleConfigCode<Resources>() {
                 public Object run(Resources param) throws PropertyVetoException, TransactionFailure {
-                    Collection<BindableResource> referringResources = param.getResourcesOfPool(poolName);
+                    Collection<BindableResource> referringResources = ConnectorsUtil.getResourcesOfPool(param, poolName);
                     for (BindableResource referringResource : referringResources) {
                         // delete resource-refs
                         deleteResourceRefs(servers, referringResource.getJndiName());
@@ -187,7 +189,7 @@ public class DeleteConnectorConnectionPool implements AdminCommand {
                 }
             }, resources);
         }else{
-            Collection<BindableResource> referringResources = resources.getResourcesOfPool(poolName);
+            Collection<BindableResource> referringResources = ConnectorsUtil.getResourcesOfPool(resources, poolName);
             if(referringResources.size() > 0){
                 return ResourceStatus.FAILURE;
             }

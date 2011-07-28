@@ -232,10 +232,11 @@
             <groupId>org.glassfish.fighterfish</groupId>
             <artifactId>osgi-javaee-base</artifactId>
         </dependency>
-       <dependency>
+<!-- disabling due to config bean changes for jdbc and connector resources -->
+<!--       <dependency>
             <groupId>org.glassfish.fighterfish</groupId>
             <artifactId>osgi-ee-resources</artifactId>
-        </dependency>
+        </dependency>-->
         <!-- schema2beans - both CMP and LB admin now depend on it -->
         <dependency>
             <groupId>org.glassfish.external</groupId>

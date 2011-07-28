@@ -41,8 +41,7 @@
 package com.sun.enterprise.resource.pool.monitor;
 
 import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
-import com.sun.enterprise.config.serverbeans.ConnectorConnectionPool;
-import com.sun.enterprise.config.serverbeans.JdbcConnectionPool;
+import org.glassfish.resources.config.ConnectorConnectionPool;
 import com.sun.enterprise.config.serverbeans.ResourcePool;
 import com.sun.enterprise.connectors.ConnectorRuntime;
 import org.glassfish.resource.common.PoolInfo;
@@ -60,6 +59,7 @@ import javax.naming.NamingException;
 import org.glassfish.api.monitoring.ContainerMonitoring;
 import org.glassfish.external.probe.provider.PluginPoint;
 import org.glassfish.external.probe.provider.StatsProviderManager;
+import org.glassfish.resources.config.JdbcConnectionPool;
 
 /**
  * Implementation of PoolLifeCycleListener interface to listen to events related

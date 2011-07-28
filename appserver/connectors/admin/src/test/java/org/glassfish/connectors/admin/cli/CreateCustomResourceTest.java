@@ -48,6 +48,9 @@ import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.CommandRunner;
 import org.glassfish.api.admin.ParameterMap;
+import org.glassfish.resources.config.CustomResource;
+import com.sun.enterprise.config.serverbeans.Resource;
+import com.sun.enterprise.config.serverbeans.ResourceRef;
 import org.glassfish.tests.utils.ConfigApiTest;
 import org.glassfish.tests.utils.Utils;
 import org.junit.After;
@@ -100,7 +103,7 @@ public class CreateCustomResourceTest extends ConfigApiTest {
             public Object run(Resources param) throws PropertyVetoException, TransactionFailure {
                 Resource target = null;
                 for (Resource resource : param.getResources()) {
-                    if (resource instanceof CustomResource) {
+                    if (resource instanceof org.glassfish.resources.config.CustomResource) {
                         CustomResource r = (CustomResource) resource;
                         if (r.getJndiName().equals("sample_custom_resource") ||
                                 r.getJndiName().equals("dupRes")) {

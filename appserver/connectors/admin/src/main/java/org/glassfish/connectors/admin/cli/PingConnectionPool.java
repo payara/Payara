@@ -40,20 +40,19 @@
 
 package org.glassfish.connectors.admin.cli;
 
-import com.sun.enterprise.util.SystemPropertyConstants;
-import org.glassfish.api.admin.*;
-import org.glassfish.resource.common.PoolInfo;
+import com.sun.appserv.connectors.internal.api.ConnectorRuntime;
 import com.sun.enterprise.config.serverbeans.*;
-import org.glassfish.api.admin.ExecuteOn;
+import com.sun.enterprise.util.LocalStringManagerImpl;
+import com.sun.enterprise.util.SystemPropertyConstants;
+import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
-import org.glassfish.api.ActionReport;
+import org.glassfish.api.admin.*;
+import org.glassfish.resource.common.PoolInfo;
 import org.jvnet.hk2.annotations.Inject;
-import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
+import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
-import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.appserv.connectors.internal.api.ConnectorRuntime;
 
 /**
  * Ping Connection Pool Command

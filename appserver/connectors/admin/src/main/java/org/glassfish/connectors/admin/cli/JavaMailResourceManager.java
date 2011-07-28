@@ -40,10 +40,18 @@
 
 package org.glassfish.connectors.admin.cli;
 
+import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
+import com.sun.enterprise.config.serverbeans.BindableResource;
+import com.sun.enterprise.config.serverbeans.Resource;
+import com.sun.enterprise.config.serverbeans.Resources;
+import com.sun.enterprise.config.serverbeans.ServerTags;
+import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.admin.cli.resources.BindableResourcesHelper;
 import org.glassfish.admin.cli.resources.ResourceManager;
 import org.glassfish.admin.cli.resources.ResourceUtil;
+import org.glassfish.api.I18n;
 import org.glassfish.resource.common.ResourceStatus;
+import org.glassfish.resources.config.MailResource;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigSupport;
@@ -51,17 +59,12 @@ import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
 import org.jvnet.hk2.config.types.Property;
 
-import org.glassfish.api.I18n;
-
-import static org.glassfish.resource.common.ResourceConstants.*;
-
-import com.sun.enterprise.config.serverbeans.*;
-import com.sun.enterprise.util.LocalStringManagerImpl;
-
 import javax.resource.ResourceException;
+import java.beans.PropertyVetoException;
 import java.util.HashMap;
 import java.util.Properties;
-import java.beans.PropertyVetoException;
+
+import static org.glassfish.resource.common.ResourceConstants.*;
 
 
 @Service(name = ServerTags.MAIL_RESOURCE)
@@ -105,7 +108,7 @@ public class JavaMailResourceManager implements ResourceManager {
         }
 
         // ensure we don't already have one of this name
-        if (resources.getResourceByName(BindableResource.class, jndiName) != null) {
+        if (ConnectorsUtil.getResourceByName(resources, BindableResource.class, jndiName) != null) {
             String msg = localStrings.getLocalString(
                     "create.mail.resource.duplicate.1",
                     "A Mail Resource named {0} already exists.",

@@ -40,7 +40,9 @@
 
 package org.glassfish.jms.admin.cli;
 
+import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
 import com.sun.enterprise.config.serverbeans.*;
+import org.glassfish.resources.config.*;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
 import org.glassfish.api.ActionReport;
@@ -58,9 +60,6 @@ import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.component.PerLookup;
-
-import javax.management.ObjectName;
-import java.util.Properties;
 
 
 /**
@@ -106,7 +105,7 @@ public class DeleteJMSResource implements AdminCommand {
             ActionReport subReport = report.addSubActionsReport();
 
             ConnectorResource cresource = null;
-            Resource res = domain.getResources().getResourceByName(ConnectorResource.class, jndiName);
+            Resource res = ConnectorsUtil.getResourceByName(domain.getResources(), ConnectorResource.class, jndiName);
             if (res instanceof ConnectorResource)
                     cresource = (ConnectorResource)res;
             /* for (ConnectorResource cr : connResources) {

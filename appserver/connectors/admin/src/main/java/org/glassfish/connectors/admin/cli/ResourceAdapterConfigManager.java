@@ -45,16 +45,15 @@
 
 package org.glassfish.connectors.admin.cli;
 
-import java.beans.PropertyVetoException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
+import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
+import com.sun.enterprise.config.serverbeans.Resource;
+import com.sun.enterprise.config.serverbeans.Resources;
+import com.sun.enterprise.config.serverbeans.ServerTags;
+import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.admin.cli.resources.ResourceManager;
-import org.glassfish.resource.common.ResourceStatus;
 import org.glassfish.api.I18n;
+import org.glassfish.resource.common.ResourceStatus;
+import org.glassfish.resources.config.ResourceAdapterConfig;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
@@ -63,16 +62,16 @@ import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
 import org.jvnet.hk2.config.types.Property;
 
-import static org.glassfish.resource.common.ResourceConstants.*;
-
-import com.sun.enterprise.config.serverbeans.ResourceAdapterConfig;
-import com.sun.enterprise.config.serverbeans.Resources;
-import com.sun.enterprise.config.serverbeans.Resource;
-import com.sun.enterprise.config.serverbeans.Server;
-import com.sun.enterprise.config.serverbeans.ServerTags;
-import com.sun.enterprise.util.LocalStringManagerImpl;
-
 import javax.resource.ResourceException;
+import java.beans.PropertyVetoException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import static org.glassfish.resource.common.ResourceConstants.RESOURCE_ADAPTER_CONFIG_NAME;
+import static org.glassfish.resource.common.ResourceConstants.THREAD_POOL_IDS;
 
 
 /**
@@ -137,7 +136,7 @@ public class ResourceAdapterConfigManager implements ResourceManager {
             return new ResourceStatus(ResourceStatus.FAILURE, msg);
         }
         // ensure we don't already have one of this name
-        if (resources.getResourceByName(ResourceAdapterConfig.class, raName) != null) {
+        if (ConnectorsUtil.getResourceByName(resources, ResourceAdapterConfig.class, raName) != null) {
             String msg = localStrings.getLocalString("create.resource.adapter.config.duplicate",
                     "Resource adapter config already exists for RAR", raName);
             return new ResourceStatus(ResourceStatus.FAILURE, msg);

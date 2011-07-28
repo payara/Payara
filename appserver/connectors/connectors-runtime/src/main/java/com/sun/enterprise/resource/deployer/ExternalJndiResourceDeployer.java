@@ -62,7 +62,6 @@ import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.component.Singleton;
 import org.jvnet.hk2.config.types.Property;
-import org.glassfish.api.naming.GlassfishNamingManager;
 
 import javax.naming.Context;
 import javax.naming.NamingException;
@@ -99,8 +98,8 @@ public class ExternalJndiResourceDeployer implements ResourceDeployer {
      * {@inheritDoc}
      */
     public synchronized void deployResource(Object resource, String applicationName, String moduleName) throws Exception {
-        com.sun.enterprise.config.serverbeans.ExternalJndiResource jndiRes =
-                (com.sun.enterprise.config.serverbeans.ExternalJndiResource) resource;
+        org.glassfish.resources.config.ExternalJndiResource jndiRes =
+                (org.glassfish.resources.config.ExternalJndiResource) resource;
         ResourceInfo resourceInfo = new ResourceInfo(jndiRes.getJndiName(), applicationName, moduleName);
         createExternalJndiResource(jndiRes, resourceInfo);
     }
@@ -110,13 +109,13 @@ public class ExternalJndiResourceDeployer implements ResourceDeployer {
      */
 	public synchronized void deployResource(Object resource) throws Exception {
 
-        com.sun.enterprise.config.serverbeans.ExternalJndiResource jndiRes =
-                (com.sun.enterprise.config.serverbeans.ExternalJndiResource) resource;
+        org.glassfish.resources.config.ExternalJndiResource jndiRes =
+                (org.glassfish.resources.config.ExternalJndiResource) resource;
         ResourceInfo resourceInfo = ConnectorsUtil.getResourceInfo(jndiRes);
         createExternalJndiResource(jndiRes, resourceInfo);
     }
 
-    private void createExternalJndiResource(com.sun.enterprise.config.serverbeans.ExternalJndiResource jndiRes,
+    private void createExternalJndiResource(org.glassfish.resources.config.ExternalJndiResource jndiRes,
                                             ResourceInfo resourceInfo) {
         if (ResourcesUtil.createInstance().isEnabled(jndiRes, resourceInfo)){
             // converts the config data to j2ee resource
@@ -137,8 +136,8 @@ public class ExternalJndiResourceDeployer implements ResourceDeployer {
      * {@inheritDoc}
      */
     public void undeployResource(Object resource, String applicationName, String moduleName) throws Exception{
-        com.sun.enterprise.config.serverbeans.ExternalJndiResource jndiRes =
-            (com.sun.enterprise.config.serverbeans.ExternalJndiResource) resource;
+        org.glassfish.resources.config.ExternalJndiResource jndiRes =
+            (org.glassfish.resources.config.ExternalJndiResource) resource;
         ResourceInfo resourceInfo = new ResourceInfo(jndiRes.getJndiName(), applicationName, moduleName);
         deleteResource(jndiRes, resourceInfo);
     }
@@ -149,13 +148,13 @@ public class ExternalJndiResourceDeployer implements ResourceDeployer {
 	public synchronized void undeployResource(Object resource)
             throws Exception {
 
-        com.sun.enterprise.config.serverbeans.ExternalJndiResource jndiRes =
-            (com.sun.enterprise.config.serverbeans.ExternalJndiResource) resource;
+        org.glassfish.resources.config.ExternalJndiResource jndiRes =
+            (org.glassfish.resources.config.ExternalJndiResource) resource;
         ResourceInfo resourceInfo = ConnectorsUtil.getResourceInfo(jndiRes);
         deleteResource(jndiRes, resourceInfo);
     }
 
-    private void deleteResource(com.sun.enterprise.config.serverbeans.ExternalJndiResource jndiResource,
+    private void deleteResource(org.glassfish.resources.config.ExternalJndiResource jndiResource,
                                 ResourceInfo resourceInfo) {
         if (ResourcesUtil.createInstance().isEnabled(jndiResource, resourceInfo)){
             // converts the config data to j2ee resource
@@ -182,7 +181,7 @@ public class ExternalJndiResourceDeployer implements ResourceDeployer {
      * {@inheritDoc}
      */
     public boolean handles(Object resource){
-        return resource instanceof com.sun.enterprise.config.serverbeans.ExternalJndiResource;
+        return resource instanceof org.glassfish.resources.config.ExternalJndiResource;
     }
 
     /**
@@ -345,7 +344,7 @@ public class ExternalJndiResourceDeployer implements ResourceDeployer {
      *
      */
     public static JavaEEResource toExternalJndiJavaEEResource(
-            com.sun.enterprise.config.serverbeans.ExternalJndiResource rbean, ResourceInfo resourceInfo) {
+            org.glassfish.resources.config.ExternalJndiResource rbean, ResourceInfo resourceInfo) {
 
         ExternalJndiResource jr = new com.sun.enterprise.resource.beans.ExternalJndiResource(resourceInfo);
 

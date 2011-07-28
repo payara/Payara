@@ -49,6 +49,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.io.File;
+
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.jvnet.hk2.config.ConfigBeanProxy;
@@ -583,12 +584,12 @@ public class VersioningUtilsTest {
         }
 
         @Override
-        public void setResources(com.sun.enterprise.config.serverbeans.Resources resources){
+        public void setResources(Resources resources){
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
         @Override
-        public com.sun.enterprise.config.serverbeans.Resources  getResources(){
+        public Resources getResources(){
             throw new UnsupportedOperationException("Not supported yet.");
         }
 

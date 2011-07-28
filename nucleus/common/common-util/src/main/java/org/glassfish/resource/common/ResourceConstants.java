@@ -201,11 +201,11 @@ public final class ResourceConstants {
 
     public static final String SECURITY_MAP_NAME = "name";
 
-    public static final String PRINCIPAL = "principal";
+    public static final String SECURITY_MAP_PRINCIPAL = "principal";
 
-    public static final String USERGROUP = "user-group";
+    public static final String SECURITY_MAP_USER_GROUP = "user-group";
 
-    public static final String BACKEND_PRINCIPAL = "backend-principal";
+    public static final String SECURITY_MAP_BACKEND_PRINCIPAL = "backend-principal";
 
     //Resource -Adapter config attributes.
     public static final String RES_ADAPTER_CONFIG = "resource-adapter-config";
@@ -218,7 +218,6 @@ public final class ResourceConstants {
     public static final String USER_NAME = "user-name";
 
     public static final String PASSWORD = "password";
-
 
     //work security map elements.
     public static final String WORK_SECURITY_MAP = "work-security-map";

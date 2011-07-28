@@ -1347,15 +1347,15 @@ public class ResourcesXMLParser implements EntityResolver
             for (int i=0; i<children.getLength(); i++){
                 Node gChild = children.item(i);
                 String strNodeName = gChild.getNodeName();
-                if(strNodeName.equals(PRINCIPAL)){
+                if(strNodeName.equals(SECURITY_MAP_PRINCIPAL)){
                     String p = (gChild.getFirstChild()).getNodeValue();
                     principal.append(p).append(",");
                 }
-                if(strNodeName.equals(USERGROUP)){
+                if(strNodeName.equals(SECURITY_MAP_USER_GROUP)){
                     String u = (gChild.getFirstChild()).getNodeValue();
                     usergroup.append(u).append(",");
                 }
-                if((strNodeName.equals(BACKEND_PRINCIPAL))){
+                if((strNodeName.equals(SECURITY_MAP_BACKEND_PRINCIPAL))){
                     NamedNodeMap attributes1 = (children.item(i)).getAttributes();    
                     if(attributes1 != null){
                         Node userNode = attributes1.getNamedItem(USER_NAME);
@@ -1372,7 +1372,7 @@ public class ResourcesXMLParser implements EntityResolver
                 }
             }
         }
-            map.setAttribute(PRINCIPAL,convertToStringArray(principal.toString()));
+            map.setAttribute(SECURITY_MAP_PRINCIPAL,convertToStringArray(principal.toString()));
             map.setAttribute("user_group",convertToStringArray(usergroup.toString()));
        vResources.add(map);
     }//end of generateSecurityMap....     

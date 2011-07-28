@@ -48,6 +48,10 @@ import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.CommandRunner;
 import org.glassfish.api.admin.ParameterMap;
+import org.glassfish.resources.config.MailResource;
+import com.sun.enterprise.config.serverbeans.Resource;
+import com.sun.enterprise.config.serverbeans.ResourceRef;
+import com.sun.enterprise.config.serverbeans.Resources;
 import org.glassfish.tests.utils.ConfigApiTest;
 import org.junit.After;
 import static org.junit.Assert.assertEquals;
@@ -137,7 +141,7 @@ public class DeleteJavaMailResourceTest extends ConfigApiTest {
         assertEquals(ActionReport.ExitCode.SUCCESS, context.getActionReport().getActionExitCode());
         boolean isDeleted = true;
         for (Resource resource : resources.getResources()) {
-            if (resource instanceof MailResource) {
+            if (resource instanceof org.glassfish.resources.config.MailResource) {
                 MailResource jr = (MailResource) resource;
                 if (jr.getJndiName().equals("mail/MyMailSession")) {
                     isDeleted = false;

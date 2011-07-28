@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,20 +41,23 @@
 package org.glassfish.connectors.admin.cli;
 
 import com.sun.appserv.connectors.internal.api.ConnectorConstants;
-import org.glassfish.resource.common.PoolInfo;
-import com.sun.enterprise.config.serverbeans.*;
-import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.annotations.Inject;
-import org.jvnet.hk2.component.PerLookup;
-import org.glassfish.api.I18n;
-import org.glassfish.api.Param;
-import org.glassfish.api.ActionReport;
-import org.glassfish.api.admin.AdminCommand;
-import org.glassfish.api.admin.AdminCommandContext;
-import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.appserv.connectors.internal.api.ConnectorRuntime;
 import com.sun.appserv.connectors.internal.api.ConnectorRuntimeException;
+import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
+import com.sun.enterprise.config.serverbeans.*;
+import com.sun.enterprise.util.LocalStringManagerImpl;
+import org.glassfish.api.ActionReport;
+import org.glassfish.api.I18n;
+import org.glassfish.api.Param;
+import org.glassfish.api.admin.AdminCommand;
+import org.glassfish.api.admin.AdminCommandContext;
+import org.glassfish.resource.common.PoolInfo;
+import org.glassfish.resources.config.ConnectorConnectionPool;
+import org.glassfish.resources.config.JdbcConnectionPool;
+import org.jvnet.hk2.annotations.Inject;
+import org.jvnet.hk2.annotations.Scoped;
+import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.component.PerLookup;
 
 
 @Service(name = "flush-connection-pool")
@@ -113,7 +116,7 @@ public class FlushConnectionPool implements AdminCommand {
 
         boolean poolingEnabled = false;
         ResourcePool pool =
-                (ResourcePool)resources.getResourceByName(ResourcePool.class, poolName);
+                (ResourcePool) ConnectorsUtil.getResourceByName(resources, ResourcePool.class, poolName);
         if(pool instanceof ConnectorConnectionPool){
             ConnectorConnectionPool ccp = (ConnectorConnectionPool)pool;
             poolingEnabled = Boolean.valueOf(ccp.getPooling());

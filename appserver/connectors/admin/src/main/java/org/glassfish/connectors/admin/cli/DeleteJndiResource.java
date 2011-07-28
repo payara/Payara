@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,29 +40,31 @@
 
 package org.glassfish.connectors.admin.cli;
 
+import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
+import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.config.serverbeans.Resources;
+import com.sun.enterprise.util.LocalStringManagerImpl;
+import com.sun.enterprise.util.SystemPropertyConstants;
 import org.glassfish.admin.cli.resources.ResourceUtil;
-import org.glassfish.api.admin.AdminCommand;
-import org.glassfish.api.admin.AdminCommandContext;
+import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
-import org.glassfish.api.ActionReport;
+import org.glassfish.api.admin.AdminCommand;
+import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
-import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.annotations.Scoped;
+import org.glassfish.resources.config.ExternalJndiResource;
 import org.jvnet.hk2.annotations.Inject;
+import org.jvnet.hk2.annotations.Scoped;
+import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
-import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.enterprise.util.SystemPropertyConstants;
-import com.sun.enterprise.config.serverbeans.*;
 
 import java.beans.PropertyVetoException;
-import java.util.Set;
 
 /**
  * Delete Jndi Resource object
@@ -154,7 +156,7 @@ public class DeleteJndiResource implements AdminCommand {
                 public Object run(Resources param) throws PropertyVetoException,
                         TransactionFailure {
                     ExternalJndiResource resource = (ExternalJndiResource)
-                            domain.getResources().getResourceByName(ExternalJndiResource.class, jndiName);
+                            ConnectorsUtil.getResourceByName(domain.getResources(), ExternalJndiResource.class, jndiName);
                     if (resource.getJndiName().equals(jndiName)) {
                         return param.getResources().remove(resource);
                     }
@@ -178,6 +180,6 @@ public class DeleteJndiResource implements AdminCommand {
     }
 
     private boolean isResourceExists(Resources resources, String jndiName) {
-        return resources.getResourceByName(ExternalJndiResource.class, jndiName) != null;
+        return ConnectorsUtil.getResourceByName(resources, ExternalJndiResource.class, jndiName) != null;
     }
 }

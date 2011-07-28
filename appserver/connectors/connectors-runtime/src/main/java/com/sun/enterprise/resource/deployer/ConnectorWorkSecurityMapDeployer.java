@@ -40,11 +40,11 @@
 
 package com.sun.enterprise.resource.deployer;
 
+import org.glassfish.resources.config.WorkSecurityMap;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.component.Singleton;
 import com.sun.appserv.connectors.internal.spi.ResourceDeployer;
-import com.sun.enterprise.config.serverbeans.WorkSecurityMap;
 
 @Service
 @Scoped(Singleton.class)

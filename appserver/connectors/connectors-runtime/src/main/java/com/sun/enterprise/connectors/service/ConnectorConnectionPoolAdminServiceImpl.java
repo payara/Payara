@@ -56,9 +56,9 @@ import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
 import org.glassfish.resource.common.PoolInfo;
 import com.sun.appserv.connectors.internal.api.PoolingException;
 import org.glassfish.resource.common.ResourceInfo;
-import com.sun.enterprise.config.serverbeans.JdbcResource;
+import org.glassfish.resources.config.JdbcResource;
 import com.sun.enterprise.config.serverbeans.ResourcePool;
-import com.sun.enterprise.config.serverbeans.SecurityMap;
+import org.glassfish.resources.config.SecurityMap;
 import com.sun.enterprise.connectors.ActiveResourceAdapter;
 import com.sun.enterprise.connectors.*;
 import com.sun.enterprise.connectors.authentication.ConnectorSecurityMap;
@@ -643,7 +643,7 @@ public class ConnectorConnectionPoolAdminServiceImpl extends ConnectorService {
                         logFine("getUnpooledConnection :: isConnectorConnectionPoolDeployed is false");
                         try {
                             poolToDeploy = (ResourcePool)
-                                    runtime.getResources(poolInfo).getResourceByName(ResourcePool.class, poolInfo.getName());
+                                    ConnectorsUtil.getResourceByName(runtime.getResources(poolInfo), ResourcePool.class, poolInfo.getName());
                             runtime.getResourceDeployer(poolToDeploy).deployResource(poolToDeploy);
                             logFine("getUnpooledConnection :: force deployed the ConnectionPool : " + poolInfo);
                             needToUndeployPool = true;
@@ -1659,8 +1659,8 @@ public class ConnectorConnectionPoolAdminServiceImpl extends ConnectorService {
         actualResourceInfo =
                 new ResourceInfo(jndiName, resourceInfo.getApplicationName(), resourceInfo.getModuleName());
         ConnectorRuntime runtime = ConnectorRuntime.getRuntime();
-        jdbcResource = (JdbcResource) runtime.getResources(actualResourceInfo).getResourceByName
-                (JdbcResource.class, actualResourceInfo.getName());
+        jdbcResource = (JdbcResource) ConnectorsUtil.getResourceByName(runtime.getResources(actualResourceInfo),
+                JdbcResource.class, actualResourceInfo.getName());
         if(jdbcResource == null){
             String suffix = ConnectorsUtil.getValidSuffix(jndiName);
             if(suffix != null){
@@ -1669,8 +1669,8 @@ public class ConnectorConnectionPoolAdminServiceImpl extends ConnectorService {
                         new ResourceInfo(jndiName, resourceInfo.getApplicationName(), resourceInfo.getModuleName());
             }
         }
-        jdbcResource = (JdbcResource) runtime.getResources(actualResourceInfo).getResourceByName
-                (JdbcResource.class, actualResourceInfo.getName());
+        jdbcResource = (JdbcResource) ConnectorsUtil.getResourceByName(runtime.getResources(actualResourceInfo),
+                JdbcResource.class, actualResourceInfo.getName());
 
         if (jdbcResource != null) {
             if (_logger.isLoggable(Level.FINE)) {

@@ -55,6 +55,8 @@ import org.glassfish.api.admin.*;
 import org.glassfish.config.support.*;
 import static org.glassfish.config.support.Constants.NAME_SERVER_REGEX;
 
+import com.sun.enterprise.config.serverbeans.BindableResource;
+import com.sun.enterprise.config.serverbeans.ResourceRef;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
@@ -592,7 +594,8 @@ public interface Cluster extends ConfigBeanProxy, Injectable, PropertyBag, Named
                 }
             }
 
-            for (Resource resource : domain.getResources().getResources()) {
+            Resources resources = domain.getResources();
+            for (Resource resource : resources.getResources()) {
                 if (resource.getObjectType().equals("system-all") || resource.getObjectType().equals("system-instance")) {
                     String name=null;
                     if (resource instanceof BindableResource) {

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,8 +40,7 @@
 
 package com.sun.enterprise.resource.deployer;
 
-import com.sun.enterprise.config.serverbeans.ResourceAdapterConfig;
-import com.sun.enterprise.config.serverbeans.Resources;
+import org.glassfish.resources.config.ResourceAdapterConfig;
 import com.sun.enterprise.connectors.ConnectorRuntime;
 import com.sun.logging.LogDomains;
 import com.sun.appserv.connectors.internal.spi.ResourceDeployer;
@@ -76,7 +75,7 @@ public class ResourceAdapterConfigDeployer implements ResourceDeployer {
     public synchronized void deployResource(Object resource) throws Exception {
 
         ResourceAdapterConfig domainConfig =
-                (com.sun.enterprise.config.serverbeans.ResourceAdapterConfig) resource;
+                (ResourceAdapterConfig) resource;
         String rarName = domainConfig.getResourceAdapterName();
         ConnectorRuntime crt = ConnectorRuntime.getRuntime();
         if (_logger.isLoggable(Level.FINE)) {
@@ -103,7 +102,7 @@ public class ResourceAdapterConfigDeployer implements ResourceDeployer {
     public synchronized void undeployResource(Object resource)
             throws Exception {
         ResourceAdapterConfig domainConfig =
-                (com.sun.enterprise.config.serverbeans.ResourceAdapterConfig) resource;
+                (ResourceAdapterConfig) resource;
         String rarName = domainConfig.getResourceAdapterName();
         ConnectorRuntime crt = ConnectorRuntime.getRuntime();
         crt.deleteResourceAdapterConfig(rarName);

@@ -98,7 +98,13 @@
             <artifactId>internal-api</artifactId>
             <version>${project.version}</version>
         </dependency>
-         <dependency>
+        <dependency>
+            <groupId>org.glassfish.tests</groupId>
+            <artifactId>utils</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.glassfish.deployment</groupId>
             <artifactId>dol</artifactId>
             <version>${project.parent.version}</version>

@@ -188,7 +188,7 @@ public class ResourceManager implements PostStartup, PostConstruct, PreDestroy, 
     private boolean isBindableResourceEnabled(String jndiName) {
         boolean resourceEnabled = false;
         BindableResource res = (BindableResource)
-                domain.getResources().getResourceByName(BindableResource.class, jndiName); 
+                ConnectorsUtil.getResourceByName(domain.getResources(), BindableResource.class, jndiName);
         if(res != null){
             resourceEnabled = Boolean.valueOf(res.getEnabled());
         }
@@ -397,7 +397,7 @@ public class ResourceManager implements PostStartup, PostConstruct, PreDestroy, 
                         //method on deployer.
                         if ("enabled".equalsIgnoreCase(propertyName)) {
                             bindableResource = (BindableResource)
-                                    domain.getResources().getResourceByName(BindableResource.class, refName);
+                                    ConnectorsUtil.getResourceByName(domain.getResources(), BindableResource.class, refName);
                             deployer = getResourceDeployer(bindableResource);
                             if (deployer != null) {
                                 //both cannot be true or false
@@ -448,7 +448,7 @@ public class ResourceManager implements PostStartup, PostConstruct, PreDestroy, 
                 //create-resource-ref
                 ResourceRef ref = (ResourceRef)instance;
                 BindableResource resource = (BindableResource)
-                        domain.getResources().getResourceByName(BindableResource.class, ref.getRef());
+                        ConnectorsUtil.getResourceByName(domain.getResources(), BindableResource.class, ref.getRef());
                 if(Boolean.valueOf(ref.getEnabled()) && Boolean.valueOf(resource.getEnabled())){
                     ResourceInfo resourceInfo = new ResourceInfo(resource.getJndiName());
                     resourcesBinder.deployResource(resourceInfo, resource);
@@ -477,7 +477,7 @@ public class ResourceManager implements PostStartup, PostConstruct, PreDestroy, 
                     //delete-resource-ref
                     ResourceRef ref = (ResourceRef)instance;
                     BindableResource resource = (BindableResource)
-                            domain.getResources().getResourceByName(BindableResource.class, ref.getRef());
+                            ConnectorsUtil.getResourceByName(domain.getResources(), BindableResource.class, ref.getRef());
                     //get appropriate deployer and undeploy resource
                     getResourceDeployer(resource).undeployResource(resource);
                     //Remove listener from the removed instance

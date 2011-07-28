@@ -40,9 +40,11 @@
 
 package com.sun.appserv.connectors.internal.api;
 
+import com.sun.enterprise.config.serverbeans.ResourcePool;
 import org.glassfish.api.admin.ProcessEnvironment;
 import org.glassfish.resource.common.PoolInfo;
 import org.glassfish.resource.common.ResourceInfo;
+import org.glassfish.resources.config.WorkSecurityMap;
 import org.jvnet.hk2.annotations.Contract;
 import org.glassfish.api.invocation.InvocationManager;
 
@@ -53,8 +55,6 @@ import javax.resource.spi.ResourceAdapterAssociation;
 import javax.security.auth.callback.CallbackHandler;
 import java.util.*;
 
-import com.sun.enterprise.config.serverbeans.ResourcePool;
-import com.sun.enterprise.config.serverbeans.WorkSecurityMap;
 import com.sun.enterprise.transaction.api.JavaEETransactionManager;
 import com.sun.enterprise.deployment.ConnectorDescriptor;
 import com.sun.appserv.connectors.internal.spi.ConnectorNamingEventListener;

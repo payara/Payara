@@ -71,6 +71,8 @@ import com.sun.enterprise.deployment.ResourcePrincipal;
 import com.sun.enterprise.resource.deployer.ConnectorResourceDeployer;
 import com.sun.enterprise.transaction.spi.RecoveryResourceHandler;
 import org.glassfish.resource.common.ResourceInfo;
+import org.glassfish.resources.config.ConnectorConnectionPool;
+import org.glassfish.resources.config.ConnectorResource;
 import org.jvnet.hk2.config.types.Property;
 import com.sun.logging.LogDomains;
 import org.glassfish.api.Startup;
@@ -153,7 +155,7 @@ public class ConnectorsRecoveryResourceHandler implements RecoveryResourceHandle
                         //So we need to explicitly load that rar and create the resources
                         try {
                             ResourceInfo resourceInfo = ConnectorsUtil.getResourceInfo(connResource);
-                            com.sun.enterprise.config.serverbeans.ConnectorConnectionPool connConnectionPool =
+                            ConnectorConnectionPool connConnectionPool =
                                     ResourcesUtil.createInstance().getConnectorConnectionPoolOfResource(resourceInfo);
                             if(connConnectionPool != null){
                                 //TODO V3 ideally this should not happen if connector modules (and embedded rars)

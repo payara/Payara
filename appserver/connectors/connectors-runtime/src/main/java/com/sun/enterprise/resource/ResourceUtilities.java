@@ -40,12 +40,13 @@
 
 package com.sun.enterprise.resource;
 
+import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
+import com.sun.enterprise.config.serverbeans.Resources;
 import org.glassfish.admin.cli.resources.ResourceConflictException;
 import org.glassfish.admin.cli.resources.SunResourcesXML;
 import org.glassfish.resource.common.Resource;
 import com.sun.logging.LogDomains;
 import com.sun.enterprise.util.i18n.StringManager;
-import com.sun.enterprise.config.serverbeans.Resources;
 
 import java.util.logging.Logger;
 import java.util.logging.Level;
@@ -97,7 +98,7 @@ public class ResourceUtilities {
 
     private static boolean hasDuplicate(Resources resources, Resource res) {
         final String id = getIdToCompare(res);
-        return resources.getResourceByName(res.getClass(), id) != null;
+        return ConnectorsUtil.getResourceByName(resources, res.getClass(), id) != null;
     }
 
     private static String getIdToCompare(final Resource res) {
@@ -223,7 +224,7 @@ public class ResourceUtilities {
                  Resource res = iterRes.next();
                  final String id = getIdToCompare(res);
 
-                 if (resources.getResourceByName(res.getClass(), id) != null) {
+                 if (ConnectorsUtil.getResourceByName(resources, res.getClass(), id) != null) {
                      conflictingResources.append("\n");
                      String message = localStrings.getString("conflict.resource.with.domain.xml",
                              getIdToCompare(res));

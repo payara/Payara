@@ -42,6 +42,7 @@ package org.glassfish.deployment.admin;
 
 import java.io.File;
 import static org.junit.Assert.*;
+
 import org.junit.Test;
 import org.junit.Before;
 import org.jvnet.hk2.config.DuckTyped;
@@ -186,8 +187,8 @@ public class ListComponentsCommandTest {
         }
 
        public List<Property> getProperty() {return null;}
-  public void setResources(com.sun.enterprise.config.serverbeans.Resources res){}
-        public Resources  getResources(){return null;}
+  public void setResources(Resources res){}
+        public Resources getResources(){return null;}
 
 
     }
@@ -198,8 +199,8 @@ public class ListComponentsCommandTest {
         public String getName() {
             return "hello";
         }
-        public void setResources(com.sun.enterprise.config.serverbeans.Resources res){}
-        public Resources  getResources(){return null;}
+        public void setResources(Resources res){}
+        public Resources getResources(){return null;}
         public void setName(String value) throws PropertyVetoException {}
         public String getContextRoot() { return "hello";}
         public void setContextRoot(String value) throws PropertyVetoException {}

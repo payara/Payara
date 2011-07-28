@@ -43,11 +43,11 @@ package com.sun.enterprise.resource.deployer;
 import com.sun.appserv.connectors.internal.api.ConnectorConstants;
 import com.sun.appserv.connectors.internal.api.ConnectorRuntimeException;
 import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
-import com.sun.enterprise.config.serverbeans.Domain;
-import org.glassfish.resource.common.PoolInfo;
 import com.sun.enterprise.config.serverbeans.BindableResource;
-import com.sun.enterprise.config.serverbeans.JdbcConnectionPool;
+import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Resources;
+import org.glassfish.resource.common.PoolInfo;
+import org.glassfish.resources.config.JdbcConnectionPool;
 import com.sun.enterprise.connectors.ConnectorRegistry;
 import com.sun.enterprise.resource.DynamicallyReconfigurableResource;
 import com.sun.enterprise.resource.pool.ResourcePool;
@@ -872,7 +872,7 @@ public class JdbcConnectionPoolDeployer implements ResourceDeployer {
         } else if(oldPool.getReconfigWaitTime() > 0){
             //reconfig is being switched off, invalidate proxies
             Collection<BindableResource> resources =
-                    runtime.getResources(oldPool.getPoolInfo()).getResourcesOfPool(oldPool.getPoolInfo().getName());
+                    ConnectorsUtil.getResourcesOfPool(runtime.getResources(oldPool.getPoolInfo()), oldPool.getPoolInfo().getName());
             ConnectorRegistry registry = ConnectorRegistry.getInstance();
             for(BindableResource resource : resources){
                 ResourceInfo resourceInfo = ConnectorsUtil.getResourceInfo(resource);
@@ -904,11 +904,11 @@ public class JdbcConnectionPoolDeployer implements ResourceDeployer {
 
         Collection<BindableResource> resourcesList ;
         if(!connConnPool.isApplicationScopedResource()){
-            resourcesList = domain.getResources().getResourcesOfPool(connConnPool.getName());
+            resourcesList = ConnectorsUtil.getResourcesOfPool(domain.getResources(), connConnPool.getName());
         }else{
             PoolInfo poolInfo = connConnPool.getPoolInfo();
             Resources resources = ResourcesUtil.createInstance().getResources(poolInfo);
-            resourcesList = resources.getResourcesOfPool(connConnPool.getName());
+            resourcesList = ConnectorsUtil.getResourcesOfPool(resources, connConnPool.getName());
         }
         for (BindableResource bindableResource : resourcesList) {
 

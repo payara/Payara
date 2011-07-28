@@ -40,6 +40,7 @@
 
 package org.glassfish.jms.admin.cli;
 
+import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
@@ -47,13 +48,14 @@ import org.glassfish.api.admin.CommandLock;
 import org.glassfish.api.I18n;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
+import org.glassfish.resources.config.AdminObjectResource;
+import org.glassfish.resources.config.ConnectorConnectionPool;
+import org.glassfish.resources.config.ConnectorResource;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.component.PerLookup;
 import com.sun.enterprise.config.serverbeans.*;
-import com.sun.enterprise.config.serverbeans.ConnectorConnectionPool;
-import com.sun.enterprise.config.serverbeans.AdminObjectResource;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 
 import java.util.ArrayList;
@@ -128,7 +130,8 @@ public class ListJMSResources implements AdminCommand {
 
             for (Object c: connectorResources) {
                 ConnectorResource cr = (ConnectorResource) c;
-                ConnectorConnectionPool cp = (ConnectorConnectionPool) domain.getResources().getResourceByName(ConnectorConnectionPool.class, cr.getPoolName());
+                ConnectorConnectionPool cp = (ConnectorConnectionPool) ConnectorsUtil.getResourceByName(
+                        domain.getResources(), ConnectorConnectionPool.class, cr.getPoolName());
 
                 if (cp  != null && JMSRA.equalsIgnoreCase(cp.getResourceAdapterName())){
                       list.add(cr.getJndiName());
@@ -171,7 +174,8 @@ public class ListJMSResources implements AdminCommand {
 
             for (Object c : connectorResources) {
                ConnectorResource cr = (ConnectorResource)c;
-               ConnectorConnectionPool cp = (ConnectorConnectionPool) domain.getResources().getResourceByName(ConnectorConnectionPool.class, cr.getPoolName());
+               ConnectorConnectionPool cp = (ConnectorConnectionPool)
+                       ConnectorsUtil.getResourceByName(domain.getResources(), ConnectorConnectionPool.class, cr.getPoolName());
                if(cp != null && resourceType.equals(cp.getConnectionDefinitionName()) && JMSRA.equalsIgnoreCase(cp.getResourceAdapterName()))
                     list.add(cp.getName());
             }

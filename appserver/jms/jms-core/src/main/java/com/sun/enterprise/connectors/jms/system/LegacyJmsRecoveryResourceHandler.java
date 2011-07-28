@@ -40,7 +40,7 @@
 
 package com.sun.enterprise.connectors.jms.system;
 
-import com.sun.enterprise.config.serverbeans.*;
+import com.sun.enterprise.config.serverbeans.Resources;
 import com.sun.enterprise.transaction.config.TransactionService;
 import com.sun.enterprise.transaction.spi.RecoveryResourceHandler;
 import com.sun.enterprise.util.LocalStringManagerImpl;
@@ -58,6 +58,7 @@ import java.lang.reflect.Method;
 import org.glassfish.api.admin.ServerEnvironment;
 
 
+import org.glassfish.resources.config.ExternalJndiResource;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.component.Habitat;

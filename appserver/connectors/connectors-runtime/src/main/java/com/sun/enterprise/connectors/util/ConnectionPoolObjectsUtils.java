@@ -343,7 +343,7 @@ public final class ConnectionPoolObjectsUtils {
         return tempSubject;
     }
 
-    public static boolean isPoolSystemPool(com.sun.enterprise.config.serverbeans.ConnectorConnectionPool
+    public static boolean isPoolSystemPool(org.glassfish.resources.config.ConnectorConnectionPool
             domainCcp) {
         String poolName = domainCcp.getName();
         return isPoolSystemPool(poolName);

@@ -40,14 +40,15 @@
 
 package org.glassfish.connectors.admin.cli;
 
+import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
 import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.ServerEnvironment;
+import org.jvnet.hk2.annotations.Inject;
+import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Singleton;
-import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.annotations.Inject;
 
 @Service
 @Scoped(Singleton.class)
@@ -120,7 +121,7 @@ public class ConnectionPoolUtil {
     public boolean isValidPool(Resources resources, String poolName, String prefix, ActionReport report) {
         boolean isValid = false;
         if (resources != null) {
-            if (resources.getResourceByName(ResourcePool.class, poolName) != null) {
+            if (ConnectorsUtil.getResourceByName(resources, ResourcePool.class, poolName) != null) {
                 isValid = true;
             } else {
                 setResourceNotFoundErrorMessage(report, poolName);

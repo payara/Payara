@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -76,15 +76,15 @@ public interface Resources extends ConfigBeanProxy, Injectable  {
      * <p/>
      * <p/>
      * Objects of the following type(s) are allowed in the list
-     * {@link CustomResource }
-     * {@link ExternalJndiResource }
-     * {@link JdbcResource }                                       �
-     * {@link MailResource }
-     * {@link AdminObjectResource }
-     * {@link ConnectorResource }
-     * {@link ResourceAdapterConfig }
-     * {@link JdbcConnectionPool }
-     * {@link ConnectorConnectionPool }
+     * {@link org.glassfish.resources.config.CustomResource }
+     * {@link org.glassfish.resources.config.ExternalJndiResource }
+     * {@link org.glassfish.resources.config.JdbcResource }                                       �
+     * {@link org.glassfish.resources.config.MailResource }
+     * {@link org.glassfish.resources.config.AdminObjectResource }
+     * {@link org.glassfish.resources.config.ConnectorResource }
+     * {@link org.glassfish.resources.config.ResourceAdapterConfig }
+     * {@link org.glassfish.resources.config.JdbcConnectionPool }
+     * {@link org.glassfish.resources.config.ConnectorConnectionPool }
      */
     @Element("*")
     public List<Resource> getResources();
@@ -92,11 +92,15 @@ public interface Resources extends ConfigBeanProxy, Injectable  {
     @DuckTyped
     public <T> Collection<T> getResources(Class<T> type);
 
+/*
     @DuckTyped
     public <T> Resource getResourceByName(Class<T> type, String name);
+*/
 
+/*
     @DuckTyped
     public Collection<BindableResource> getResourcesOfPool(String connectionPoolName);
+*/
 
     public class Duck {
 
@@ -108,81 +112,6 @@ public interface Resources extends ConfigBeanProxy, Injectable  {
                 }
             }
             return filteredResources;
-        }
-
-        public static Collection<BindableResource> getResourcesOfPool(Resources resources, String connectionPoolName){
-            Set<BindableResource> resourcesReferringPool = new HashSet<BindableResource>();
-            ResourcePool pool = (ResourcePool) resources.getResourceByName(ResourcePool.class, connectionPoolName);
-            if (pool != null) {
-                Collection<BindableResource> bindableResources = getResources(resources, BindableResource.class);
-                for (BindableResource resource : bindableResources) {
-                    if (ConnectorResource.class.isAssignableFrom(resource.getClass())) {
-                        if ((((ConnectorResource) resource).getPoolName()).equals(connectionPoolName)) {
-                            resourcesReferringPool.add(resource);
-                        }
-                    } else if (JdbcResource.class.isAssignableFrom(resource.getClass())) {
-                        if ((((JdbcResource) resource).getPoolName()).equals(connectionPoolName)) {
-                            resourcesReferringPool.add(resource);
-                        }
-                    }
-                }
-            }
-            return resourcesReferringPool;
-        }
-
-        public static <T> Resource getResourceByName(Resources resources, Class<T> type, String name){
-            Resource foundRes = null;
-            Collection<T> typedResources ;
-            boolean bindableResource = BindableResource.class.isAssignableFrom(type);
-            boolean poolResource = ResourcePool.class.isAssignableFrom(type);
-
-            boolean workSecurityMap = WorkSecurityMap.class.isAssignableFrom(type);
-            boolean rac = ResourceAdapterConfig.class.isAssignableFrom(type);
-
-
-
-            Class c;
-            if(bindableResource){
-                c = BindableResource.class;
-            }else if(poolResource){
-                c = ResourcePool.class;
-            }else if(workSecurityMap){
-                c = WorkSecurityMap.class;
-            }else if(rac){
-                c = ResourceAdapterConfig.class;
-            }else{
-                //do not handle any other resource type
-                return null;
-            }
-            typedResources = resources.getResources(c);
-
-            Iterator itr = typedResources.iterator();
-            while(itr.hasNext()){
-                String resourceName = null;
-                Resource res = (Resource)itr.next();
-                if(bindableResource){
-                    resourceName = ((BindableResource)res).getJndiName();
-                } else if(poolResource){
-                    resourceName = ((ResourcePool)res).getName();
-                } else if(rac){
-                    resourceName = ((ResourceAdapterConfig)res).getResourceAdapterName();
-                } else if(workSecurityMap){
-                    resourceName = ((WorkSecurityMap)res).getName();
-                }
-                if(name.equals(resourceName)){
-                    foundRes = res;
-                    break;
-                }
-            }
-            // make sure that the "type" provided and the matched resource are compatible.
-            // eg: its possible that the requested resource is "ConnectorResource",
-            // and matching resource is "JdbcResource" as we filter based on
-            // the generic type (in this case BindableResource) and not on exact type.
-            if(type != null && foundRes != null && type.isAssignableFrom(foundRes.getClass())){
-                return foundRes;
-            }else{
-                return null;
-            }
         }
     }
 }

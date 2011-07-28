@@ -41,8 +41,7 @@
 package com.sun.enterprise.connectors;
 
 import org.glassfish.resource.common.PoolInfo;
-import com.sun.enterprise.config.serverbeans.ResourceAdapterConfig;
-import com.sun.enterprise.config.serverbeans.SecurityMap;
+import org.glassfish.resources.config.ResourceAdapterConfig;
 import com.sun.enterprise.deployment.ConnectorDescriptor;
 import com.sun.enterprise.connectors.authentication.RuntimeSecurityMap;
 import com.sun.enterprise.connectors.module.ConnectorApplication;
@@ -544,7 +543,7 @@ public class ConnectorRegistry {
      *  @param poolInfo pool information
      *  @return runtimeSecurityMap in the form of HashMap of
      *   HashMaps (user and groups). 
-     *  @see SecurityMapUtils.processSecurityMaps(SecurityMap[])
+     *  @see SecurityMapUtils.processSecurityMaps( SecurityMap[])
      */
 
 

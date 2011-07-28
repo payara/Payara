@@ -41,22 +41,22 @@
 package com.sun.enterprise.resource.deployer;
 
 import com.sun.appserv.connectors.internal.api.ConnectorConstants;
+import com.sun.enterprise.config.serverbeans.Resources;
 import org.glassfish.resource.common.PoolInfo;
 import org.glassfish.resource.common.ResourceInfo;
 import com.sun.enterprise.connectors.ConnectorRegistry;
 import com.sun.enterprise.connectors.ConnectorRuntime;
 import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
 import com.sun.appserv.connectors.internal.spi.ResourceDeployer;
-import com.sun.enterprise.config.serverbeans.JdbcConnectionPool;
+import org.glassfish.resources.config.JdbcConnectionPool;
 import com.sun.enterprise.util.i18n.StringManager;
-import com.sun.enterprise.config.serverbeans.JdbcResource;
-import com.sun.enterprise.config.serverbeans.Resources;
 import com.sun.enterprise.connectors.util.ResourcesUtil;
 import com.sun.logging.LogDomains;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.glassfish.resources.config.JdbcResource;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Inject;
@@ -94,8 +94,8 @@ public class JdbcResourceDeployer implements ResourceDeployer {
         //deployResource is not synchronized as there is only one caller
         //ResourceProxy which is synchronized
 
-        com.sun.enterprise.config.serverbeans.JdbcResource jdbcRes =
-                (com.sun.enterprise.config.serverbeans.JdbcResource) resource;
+        JdbcResource jdbcRes =
+                (JdbcResource) resource;
 
         String jndiName = jdbcRes.getJndiName();
         String poolName = jdbcRes.getPoolName();
@@ -241,7 +241,7 @@ public class JdbcResourceDeployer implements ResourceDeployer {
                     }
 
                     JdbcConnectionPool jcp = (JdbcConnectionPool)
-                            resources.getResourceByName(JdbcConnectionPool.class, poolName);
+                            ConnectorsUtil.getResourceByName(resources, JdbcConnectionPool.class, poolName);
                     //Delete/Undeploy Pool
                     runtime.getResourceDeployer(jcp).undeployResource(jcp);
                 }

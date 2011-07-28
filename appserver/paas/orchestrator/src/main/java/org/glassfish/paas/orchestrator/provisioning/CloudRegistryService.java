@@ -40,13 +40,14 @@
 
 package org.glassfish.paas.orchestrator.provisioning;
 
+import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
 import com.sun.enterprise.config.serverbeans.Domain;
-import com.sun.enterprise.config.serverbeans.JdbcResource;
 import com.sun.enterprise.config.serverbeans.Resources;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.CommandRunner;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceUtil;
 import org.glassfish.paas.orchestrator.provisioning.iaas.CloudProvisioner;
+import org.glassfish.resources.config.JdbcResource;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
@@ -111,7 +112,7 @@ public class CloudRegistryService implements PostConstruct {
     public void postConstruct() {
 
         Resources resources = domain.getResources();
-        if (resources.getResourceByName(JdbcResource.class, RESOURCE_NAME) == null) {
+        if (ConnectorsUtil.getResourceByName(resources, JdbcResource.class, RESOURCE_NAME) == null) {
             debug("initializing resources");
             initializeRegistry();
         }
@@ -129,7 +130,7 @@ public class CloudRegistryService implements PostConstruct {
         createJdbcConnectionPool();
         createJdbcResource();
         Resources resources = domain.getResources();
-        if (resources.getResourceByName(JdbcResource.class, RESOURCE_NAME) == null) {
+        if (ConnectorsUtil.getResourceByName(resources, JdbcResource.class, RESOURCE_NAME) == null) {
             throw new RuntimeException("Unable to find resource by name : " + RESOURCE_NAME);
         } else {
             debug("resource " + RESOURCE_NAME + " found");

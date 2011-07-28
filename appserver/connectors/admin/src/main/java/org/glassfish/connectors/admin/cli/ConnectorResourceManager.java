@@ -40,17 +40,19 @@
 
 package org.glassfish.connectors.admin.cli;
 
-import java.beans.PropertyVetoException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
-
-import com.sun.enterprise.config.serverbeans.*;
+import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
+import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.config.serverbeans.Resource;
+import com.sun.enterprise.config.serverbeans.Resources;
+import com.sun.enterprise.config.serverbeans.ServerTags;
+import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.admin.cli.resources.BindableResourcesHelper;
 import org.glassfish.admin.cli.resources.ResourceManager;
 import org.glassfish.admin.cli.resources.ResourceUtil;
 import org.glassfish.api.I18n;
 import org.glassfish.resource.common.ResourceStatus;
+import org.glassfish.resources.config.ConnectorConnectionPool;
+import org.glassfish.resources.config.ConnectorResource;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
@@ -59,13 +61,15 @@ import org.jvnet.hk2.component.PerLookup;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
-
-import static org.glassfish.resource.common.ResourceConstants.*;
-
 import org.jvnet.hk2.config.types.Property;
-import com.sun.enterprise.util.LocalStringManagerImpl;
 
 import javax.resource.ResourceException;
+import java.beans.PropertyVetoException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
+
+import static org.glassfish.resource.common.ResourceConstants.*;
 
 /**
  * @author Jennifer Chou, Jagadish Ramu
@@ -206,7 +210,7 @@ public class ConnectorResourceManager implements ResourceManager {
     }
 
     private boolean isConnPoolExists(Resources resources, String poolName) {
-        return resources.getResourceByName(ConnectorConnectionPool.class, poolName) != null;
+        return ConnectorsUtil.getResourceByName(resources, ConnectorConnectionPool.class, poolName) != null;
     }
 
     public Resource createConfigBean(Resources resources, HashMap attributes, Properties properties, boolean validate)

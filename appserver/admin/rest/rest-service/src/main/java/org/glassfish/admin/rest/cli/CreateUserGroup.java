@@ -40,8 +40,8 @@
 
 package org.glassfish.admin.rest.cli;
 
-import com.sun.enterprise.config.serverbeans.ConnectorConnectionPool;
-import com.sun.enterprise.config.serverbeans.SecurityMap;
+import org.glassfish.resources.config.ConnectorConnectionPool;
+import org.glassfish.resources.config.SecurityMap;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.v3.common.ActionReporter;
 import java.beans.PropertyVetoException;
