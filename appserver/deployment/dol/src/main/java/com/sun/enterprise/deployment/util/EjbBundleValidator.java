@@ -66,7 +66,7 @@ public class EjbBundleValidator  extends ComponentValidator implements EjbBundle
     protected EjbDescriptor ejb = null;
     private static LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(EjbBundleValidator.class);
-    private Logger _logger = LogDomains.getLogger(DOLUtils.class, LogDomains.DPL_LOGGER);
+    private static final Logger _logger = LogDomains.getLogger(DOLUtils.class, LogDomains.DPL_LOGGER);
             
     /** visits an ejb bundle descriptor
      * @param bundleDescriptor ejb bundle descriptor
@@ -94,11 +94,23 @@ public class EjbBundleValidator  extends ComponentValidator implements EjbBundle
         InterceptorBindingTranslator bindingTranslator = 
             new InterceptorBindingTranslator(bundleDescriptor);
 
-        for(Iterator<EjbDescriptor> iter = bundleDescriptor.getEjbs().iterator();
-            iter.hasNext();) {
-            EjbDescriptor ejb = iter.next();
-            if(!EjbEntityDescriptor.TYPE.equals(ejb.getType())) {
-                ejb.applyInterceptors(bindingTranslator);
+        for(Iterator<EjbDescriptor> iter = bundleDescriptor.getEjbs().iterator(); iter.hasNext();) {
+            EjbDescriptor ejb0 = iter.next();
+            if(ejb0.isRemoteInterfacesSupported() && 
+                (ejb0.getRemoteClassName() == null || ejb0.getRemoteClassName().trim().isEmpty())) {
+                throw new IllegalArgumentException(localStrings.getLocalString(
+                        "enterprise.deployment.util.componentInterfaceMissing", 
+                        "{0} Component interface is missing in EJB [{1}]", "Remote", ejb0.getName()));
+            }
+            if(ejb0.isLocalInterfacesSupported() && 
+                (ejb0.getLocalClassName() == null || ejb0.getLocalClassName().trim().isEmpty())) {
+                throw new IllegalArgumentException(localStrings.getLocalString(
+                        "enterprise.deployment.util.componentInterfaceMissing", 
+                        "{0} Component interface is missing in EJB [{1}]", "Local", ejb0.getName()));
+            }
+            
+            if(!EjbEntityDescriptor.TYPE.equals(ejb0.getType())) {
+                ejb0.applyInterceptors(bindingTranslator);
             }
         }
     }
