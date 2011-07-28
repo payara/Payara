@@ -153,6 +153,12 @@
 	<!-- all previous web-nb distribution packages -->
         <dependency>
             <groupId>org.glassfish.packager</groupId>
+            <artifactId>glassfish-common-web</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.packager</groupId>
             <artifactId>glassfish-virtualization</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
