@@ -3,7 +3,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -49,10 +49,10 @@
         <version>3.2-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
-    <artifactId>glassfish-jca</artifactId>
-    <name>Glassfish Connector Package</name>
+    <artifactId>glassfish-common-web</artifactId>
+    <name>Glassfish Commons for Web Profile Distribution </name>
     <packaging>distribution-base-zip</packaging>
-    <description>This pom describes how to assemble the GlassFish Connector package</description>
+    <description>This pom describes how to assemble the GlassFish Commons for Web Profile Distribution package</description>
 
     <build>
         <plugins>
@@ -97,54 +97,27 @@
     <dependencies>
         <!--
           modules to be included in this bundle
-	  -->   
-         <dependency>
-            <groupId>org.glassfish.connectors</groupId>
-            <artifactId>descriptors</artifactId>
+        -->       
+        
+       <dependency>
+            <groupId>org.glassfish.security</groupId>
+            <artifactId>security-all</artifactId>
             <version>${project.version}</version>
-            <type>distribution-fragment</type>
+            <type>pom</type> 
         </dependency>
-        <dependency>
-           <groupId>org.glassfish.connectors</groupId>
-           <artifactId>gf-connectors-connector</artifactId>
-           <version>${project.version}</version>
-        </dependency>	  
-        <dependency>
-            <groupId>org.glassfish.connectors</groupId>
-            <artifactId>work-management</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.connectors</groupId>
-            <artifactId>connectors-runtime</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-    	<dependency>
-            <groupId>org.glassfish.connectors</groupId>
-            <artifactId>connectors-admin</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.admingui</groupId>
-	    <artifactId>console-jca-plugin</artifactId>
-            <version>${project.version}</version>
-        </dependency> 
-        <dependency>
-            <groupId>org.glassfish.admingui</groupId>
-	    <artifactId>console-jca-plugin-help</artifactId>
-        </dependency> 
 
-	<!-- now, listing package dependencies so that their content
+   	<!-- now, listing package dependencies so that their content
              can be excluded during staging -->	
-        <dependency>        
+      
+       <dependency>        
            <groupId>org.glassfish.packager</groupId>
-           <artifactId>glassfish-common-web</artifactId>
+           <artifactId>glassfish-management</artifactId>
            <version>${project.version}</version>
-           <classifier>artifacts</classifier>
+	   <classifier>artifacts</classifier>
 	   <type>properties</type>
            <scope>provided</scope>
-        </dependency>
- 
+       </dependency> 
+     
     </dependencies>
 
     <profiles>
@@ -154,7 +127,7 @@
              -->
             <id>ips</id>
 	    <activation>
-	       <activeByDefault>false</activeByDefault>  
+	       <activeByDefault>false</activeByDefault> 
 	    </activation>
 	    <build>
             <plugins>

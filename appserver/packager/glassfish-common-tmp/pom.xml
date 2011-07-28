@@ -202,9 +202,8 @@
         <!-- moving stuff from killed glassfish-security package -->
         <dependency>
             <groupId>org.glassfish.security</groupId>
-            <artifactId>security-all</artifactId>
+            <artifactId>security</artifactId>
             <version>${project.version}</version>
-            <type>pom</type> 
         </dependency>
            <dependency>
             <groupId>org.glassfish.external</groupId>

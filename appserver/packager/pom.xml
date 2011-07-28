@@ -94,6 +94,7 @@
 	<module>glassfish-javahelp</module>
 	<module>glassfish-registration</module>
 	<module>glassfish-management</module>
+        <module>glassfish-common-web</module>
 	<module>glassfish-jca</module>
 	<module>glassfish-jpa</module>
 	<module>glassfish-corba</module>
