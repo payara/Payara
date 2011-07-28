@@ -42,13 +42,10 @@ package com.sun.ejb.containers;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.io.*;
 import java.rmi.RemoteException;
 
 import java.util.*;
 import java.util.logging.*;
-import java.lang.reflect.Proxy;
-import java.lang.reflect.InvocationHandler;
 
 import javax.ejb.*;
 import javax.transaction.*;
@@ -68,8 +65,6 @@ import com.sun.ejb.containers.util.cache.EJBObjectCacheListener;
 import com.sun.ejb.containers.util.cache.FIFOEJBObjectCache;
 import com.sun.ejb.containers.util.cache.UnboundedEJBObjectCache;
 
-import com.sun.enterprise.*;
-import com.sun.enterprise.config.serverbeans.EjbContainer;
 import com.sun.enterprise.deployment.*;
 import com.sun.enterprise.deployment.runtime.IASEjbExtraDescriptors;
 import com.sun.enterprise.deployment.runtime.BeanCacheDescriptor;
@@ -77,10 +72,7 @@ import com.sun.enterprise.deployment.runtime.BeanPoolDescriptor;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.admin.monitor.callflow.ComponentType;
 
-import com.sun.logging.*;
 
-import com.sun.enterprise.admin.monitor.*;
-import com.sun.enterprise.util.io.FileUtils;
 import com.sun.enterprise.transaction.api.JavaEETransaction;
 
 import com.sun.ejb.spi.container.BeanStateSynchronization;
@@ -88,6 +80,7 @@ import com.sun.ejb.monitoring.stats.EntityBeanStatsProvider;
 import com.sun.ejb.monitoring.stats.EjbMonitoringStatsProvider;
 import com.sun.ejb.monitoring.stats.EjbPoolStatsProvider;
 import com.sun.ejb.monitoring.stats.EjbCacheStatsProvider;
+import org.glassfish.ejb.config.EjbContainer;
 
 /**
  * This class implements the Container interface for EntityBeans.

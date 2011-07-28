@@ -46,8 +46,6 @@ import com.sun.enterprise.container.common.spi.util.ComponentEnvManager;
 import com.sun.enterprise.container.common.spi.util.InjectionManager;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
-import com.sun.enterprise.config.serverbeans.EjbContainer;
-import com.sun.enterprise.config.serverbeans.EjbTimerService;
 import com.sun.enterprise.config.serverbeans.ServerTags;
 import com.sun.enterprise.deployment.EjbDescriptor;
 import com.sun.enterprise.admin.monitor.callflow.Agent;
@@ -110,6 +108,8 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.SynchronousQueue;
 import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.ejb.config.EjbContainer;
+import org.glassfish.ejb.config.EjbTimerService;
 
 /**
  * @author Mahesh Kannan
@@ -652,7 +652,7 @@ public class EjbContainerUtilImpl
                     _logger.fine("Found " + config);
                 }
                 if (config != null) {
-                    ejbt = config.getEjbContainer().getEjbTimerService();
+                    ejbt = config.getExtensionByType(EjbContainer.class).getEjbTimerService();
                 }
             }
         }

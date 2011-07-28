@@ -51,7 +51,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 
@@ -73,15 +72,12 @@ import javax.ejb.EJBException;
 import javax.ejb.FinderException;
 import javax.ejb.CreateException;
 import javax.ejb.TimerConfig;
-import javax.ejb.Schedule;
 import javax.ejb.ScheduleExpression;
 import javax.sql.DataSource;
 
 import com.sun.enterprise.admin.monitor.callflow.RequestType;
 import com.sun.enterprise.admin.monitor.callflow.Agent;
 
-import com.sun.enterprise.config.serverbeans.EjbContainer;
-import com.sun.enterprise.config.serverbeans.EjbTimerService;
 import com.sun.enterprise.config.serverbeans.ConfigBeansUtilities;
 import org.glassfish.server.ServerEnvironmentImpl;
 
@@ -94,6 +90,8 @@ import javax.transaction.TransactionManager;
 import javax.transaction.Transaction;
 import javax.transaction.Synchronization;
 import javax.transaction.Status;
+import org.glassfish.ejb.config.EjbContainer;
+import org.glassfish.ejb.config.EjbTimerService;
 
 /*
  * EJBTimerService is the central controller of the EJB timer service.  

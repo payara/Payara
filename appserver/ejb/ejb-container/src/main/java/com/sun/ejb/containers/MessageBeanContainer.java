@@ -40,6 +40,7 @@
 
 package com.sun.ejb.containers;
 
+import org.glassfish.ejb.config.MdbContainer;
 import java.lang.reflect.Method;
 
 import java.lang.reflect.InvocationTargetException;
@@ -64,7 +65,6 @@ import com.sun.enterprise.deployment.MethodDescriptor;
 import com.sun.enterprise.deployment.EjbMessageBeanDescriptor;
 import static com.sun.enterprise.deployment.LifecycleCallbackDescriptor.CallbackType;
 import com.sun.enterprise.deployment.runtime.BeanPoolDescriptor;
-import com.sun.enterprise.config.serverbeans.MdbContainer;
 import com.sun.enterprise.admin.monitor.callflow.ComponentType;
 import com.sun.ejb.monitoring.stats.EjbPoolStatsProvider;
 import org.glassfish.ejb.api.MessageBeanProtocolManager;

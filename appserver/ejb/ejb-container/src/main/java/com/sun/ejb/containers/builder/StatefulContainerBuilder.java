@@ -72,13 +72,14 @@ import org.glassfish.api.admin.ServerEnvironment;
 
 import org.glassfish.api.deployment.DeployCommandParameters;
 import org.glassfish.api.deployment.DeploymentContext;
+import org.glassfish.ejb.config.EjbContainer;
+import org.glassfish.ejb.config.EjbContainerAvailability;
 import org.glassfish.gms.bootstrap.GMSAdapter;
 import org.glassfish.gms.bootstrap.GMSAdapterService;
 import org.glassfish.ha.store.api.BackingStore;
 import org.glassfish.ha.store.api.BackingStoreConfiguration;
 import org.glassfish.ha.store.api.BackingStoreException;
 import org.glassfish.ha.store.api.BackingStoreFactory;
-import org.glassfish.ha.store.util.KeyTransformer;
 import org.glassfish.ha.store.util.SimpleMetadata;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;

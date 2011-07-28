@@ -232,41 +232,6 @@ public interface Config extends ConfigBeanProxy, Injectable, Named, PropertyBag,
     void setConnectorService(ConnectorService value) throws PropertyVetoException;
 
     /**
-     * Gets the value of the ejbContainer property.
-     *
-     * @return possible object is
-     *         {@link EjbContainer }
-     */
-    @Element(required=true)
-    EjbContainer getEjbContainer();
-
-    /**
-     * Sets the value of the ejbContainer property.
-     *
-     * @param value allowed object is
-     *              {@link EjbContainer }
-     */
-    void setEjbContainer(EjbContainer value) throws PropertyVetoException;
-
-    /**
-     * Gets the value of the mdbContainer property.
-     *
-     * @return possible object is
-     *         {@link MdbContainer }
-     */
-    @Element(required=true)
-    @NotNull
-    MdbContainer getMdbContainer();
-
-    /**
-     * Sets the value of the mdbContainer property.
-     *
-     * @param value allowed object is
-     *              {@link MdbContainer }
-     */
-    void setMdbContainer(MdbContainer value) throws PropertyVetoException;
-
-    /**
      * Gets the value of the jmsService property.
      *
      * @return possible object is
@@ -601,7 +566,6 @@ public interface Config extends ConfigBeanProxy, Injectable, Named, PropertyBag,
                 c.getAvailabilityService(),
                 c.getConnectorService(),
                 c.getDiagnosticService(),
-                c.getEjbContainer(),
                 c.getGroupManagementService(),
                 c.getHttpService(),
                 c.getIiopService(),
@@ -609,7 +573,6 @@ public interface Config extends ConfigBeanProxy, Injectable, Named, PropertyBag,
                 c.getJmsService(),
                 c.getLogService(),
                 c.getManagementRules(),
-                c.getMdbContainer(),
                 c.getMonitoringService(),
                 c.getNetworkConfig(),
                 c.getSecurityService(),

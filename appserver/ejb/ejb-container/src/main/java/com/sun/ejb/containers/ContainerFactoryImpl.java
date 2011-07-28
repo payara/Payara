@@ -43,7 +43,6 @@ package com.sun.ejb.containers;
 import com.sun.ejb.Container;
 import com.sun.ejb.ContainerFactory;
 import com.sun.ejb.containers.builder.StatefulContainerBuilder;
-import com.sun.enterprise.config.serverbeans.EjbContainer;
 import com.sun.enterprise.deployment.EjbDescriptor;
 import com.sun.enterprise.deployment.EjbEntityDescriptor;
 import com.sun.enterprise.deployment.EjbMessageBeanDescriptor;
@@ -52,7 +51,6 @@ import com.sun.enterprise.deployment.runtime.IASEjbExtraDescriptors;
 import com.sun.enterprise.security.SecurityContext;
 import com.sun.logging.LogDomains;
 
-import org.glassfish.api.deployment.DeployCommandParameters;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.ejb.security.application.EJBSecurityManager;
 import org.jvnet.hk2.annotations.Service;
@@ -63,6 +61,7 @@ import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.ejb.config.EjbContainer;
 
 @Service
 public final class ContainerFactoryImpl implements ContainerFactory {

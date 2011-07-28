@@ -282,23 +282,6 @@ public interface AvailabilityService extends ConfigBeanProxy, Injectable, Proper
     void setHaStoreHealthcheckIntervalInSeconds(String value) throws PropertyVetoException;
 
     /**
-     * Gets the value of the ejbContainerAvailability property.
-     *
-     * @return possible object is
-     *         {@link EjbContainerAvailability }
-     */
-    @Element
-    EjbContainerAvailability getEjbContainerAvailability();
-
-    /**
-     * Sets the value of the ejbContainerAvailability property.
-     *
-     * @param value allowed object is
-     *              {@link EjbContainerAvailability }
-     */
-    void setEjbContainerAvailability(EjbContainerAvailability value) throws PropertyVetoException;
-
-    /**
      * Gets the value of the jmsAvailability property.
      *
      * @return possible object is

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,7 +38,7 @@
  * holder.
  */
 
-package com.sun.enterprise.config.serverbeans;
+package org.glassfish.ejb.config;
 
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.Element;
@@ -53,11 +53,8 @@ import java.util.List;
 
 import org.glassfish.api.admin.config.PropertiesDesc;
 import org.glassfish.quality.ToDo;
+import com.sun.enterprise.config.serverbeans.AvailabilityServiceExtension;
 
-
-/**
- *
- */
 
 /* @XmlType(name = "", propOrder = {
     "property"
@@ -65,7 +62,7 @@ import org.glassfish.quality.ToDo;
 
 @Configured
 public interface EjbContainerAvailability extends ConfigBeanProxy, Injectable,
-        PropertyBag {
+        PropertyBag, AvailabilityServiceExtension {
     
     /**
      * Gets the value of the availabilityEnabled property.

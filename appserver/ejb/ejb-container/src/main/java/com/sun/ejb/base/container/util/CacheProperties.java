@@ -41,21 +41,19 @@
 package com.sun.ejb.base.container.util;
 
 import java.util.logging.Logger;
-import java.util.logging.Level;
 
 import com.sun.enterprise.deployment.EjbDescriptor;
 import com.sun.enterprise.deployment.runtime.IASEjbExtraDescriptors;
 import com.sun.enterprise.deployment.runtime.BeanCacheDescriptor;
-import com.sun.enterprise.config.serverbeans.EjbContainer;
 
 import com.sun.enterprise.deployment.EjbSessionDescriptor;
 
 import com.sun.logging.LogDomains;
-import org.glassfish.internal.api.ServerContext;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Inject;
 import java.util.concurrent.TimeUnit;
 import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.ejb.config.EjbContainer;
 
 /**
  * A util class to read the bean cache related entries from

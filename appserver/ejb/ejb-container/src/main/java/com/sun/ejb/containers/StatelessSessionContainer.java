@@ -48,15 +48,11 @@ import com.sun.ejb.containers.util.pool.ObjectFactory;
 
 import com.sun.enterprise.admin.monitor.callflow.ComponentType;
 import com.sun.ejb.monitoring.stats.EjbPoolStatsProvider;
-import com.sun.enterprise.config.serverbeans.EjbContainer;
-import com.sun.enterprise.config.serverbeans.Server;
 
 import static com.sun.enterprise.deployment.LifecycleCallbackDescriptor.CallbackType;
 import com.sun.enterprise.deployment.*;
-import com.sun.enterprise.deployment.runtime.BeanCacheDescriptor;
 import com.sun.enterprise.deployment.runtime.BeanPoolDescriptor;
 import com.sun.enterprise.deployment.runtime.IASEjbExtraDescriptors;
-import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.api.invocation.ComponentInvocation;
 
 import com.sun.ejb.monitoring.stats.StatelessSessionBeanStatsProvider;
@@ -70,6 +66,7 @@ import java.rmi.RemoteException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
+import org.glassfish.ejb.config.EjbContainer;
 
 /** This class provides container functionality specific to stateless 
  *  SessionBeans.

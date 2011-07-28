@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,7 +38,7 @@
  * holder.
  */
 
-package com.sun.enterprise.config.serverbeans;
+package org.glassfish.ejb.config;
 
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.Element;
@@ -51,23 +51,19 @@ import org.jvnet.hk2.component.Injectable;
 import java.beans.PropertyVetoException;
 import java.util.List;
 
-
 import org.glassfish.config.support.datatypes.NonNegativeInteger;
-
+import org.glassfish.api.admin.config.ConfigExtension;
 import org.glassfish.api.admin.config.PropertiesDesc;
 import org.glassfish.api.admin.config.PropertyDesc;
 
 import javax.validation.constraints.Min;
-/**
- *
- */
 
 /* @XmlType(name = "", propOrder = {
     "property"
 }) */
 
 @Configured
-public interface MdbContainer extends ConfigBeanProxy, Injectable, PropertyBag {
+public interface MdbContainer extends ConfigBeanProxy, Injectable, PropertyBag, ConfigExtension {
 
 
     /**

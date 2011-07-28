@@ -38,7 +38,7 @@
  * holder.
  */
 
-package com.sun.enterprise.config.serverbeans;
+package org.glassfish.ejb.config;
 
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.Configured;
@@ -57,6 +57,7 @@ import org.glassfish.quality.ToDo;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.Pattern;
 import org.glassfish.api.admin.config.PropertyDesc;
+import org.glassfish.api.admin.config.ConfigExtension;
 
 /**
  * Configuration of EJB Container
@@ -68,7 +69,7 @@ import org.glassfish.api.admin.config.PropertyDesc;
 }) */
 
 @Configured
-public interface EjbContainer extends ConfigBeanProxy, Injectable, PropertyBag {
+public interface EjbContainer extends ConfigBeanProxy, Injectable, PropertyBag, ConfigExtension {
     public static final int DEFAULT_THREAD_CORE_POOL_SIZE = 16;
     public static final int DEFAULT_THREAD_MAX_POOL_SIZE = 32;
     public static final long DEFAULT_THREAD_KEEP_ALIVE_SECONDS = 60;

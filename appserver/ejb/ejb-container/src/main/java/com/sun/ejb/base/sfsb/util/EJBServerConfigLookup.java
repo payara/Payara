@@ -55,8 +55,9 @@ import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.component.PerLookup;
-import org.jvnet.hk2.component.PostConstruct;
 import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.ejb.config.EjbContainer;
+import org.glassfish.ejb.config.EjbContainerAvailability;
 
 /**
  * @author lwhite
@@ -274,7 +275,7 @@ public final class EJBServerConfigLookup {
         if (availabilityService == null) {
             return null;
         }
-        return availabilityService.getEjbContainerAvailability();
+        return availabilityService.getExtensionByType(EjbContainerAvailability.class);
     }
 
     /**
@@ -289,7 +290,7 @@ public final class EJBServerConfigLookup {
             return true;
         }
         String availabilityEnabledString =
-                extraDescriptors.getAttributeValue(extraDescriptors.AVAILABILITY_ENABLED);
+                extraDescriptors.getAttributeValue(IASEjbExtraDescriptors.AVAILABILITY_ENABLED);
 
         Boolean bool = this.toBoolean(availabilityEnabledString);
         if (bool == null) {
@@ -312,7 +313,7 @@ public final class EJBServerConfigLookup {
             return inheritedValue;
         }
         String availabilityEnabledString =
-                extraDescriptors.getAttributeValue(extraDescriptors.AVAILABILITY_ENABLED);
+                extraDescriptors.getAttributeValue(IASEjbExtraDescriptors.AVAILABILITY_ENABLED);
 
         Boolean bool = this.toBoolean(availabilityEnabledString);
         if (bool == null) {

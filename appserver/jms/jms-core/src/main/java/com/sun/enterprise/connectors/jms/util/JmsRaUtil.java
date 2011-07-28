@@ -59,6 +59,7 @@ import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.enterprise.util.zip.ZipFile;
 import com.sun.enterprise.util.zip.ZipFileException;
 import com.sun.logging.LogDomains;
+import org.glassfish.ejb.config.MdbContainer;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.api.RelativePathResolver;
 import org.glassfish.internal.api.ServerContext;
@@ -108,8 +109,8 @@ public class JmsRaUtil {
     JmsService js = null;
     MQAddressList list = null;
 
-    static Logger _mdblogger = LogDomains.getLogger(JmsRaUtil.class, LogDomains.MDB_LOGGER);
-    static Logger _rarlogger = LogDomains.getLogger(JmsRaUtil.class, LogDomains.RSR_LOGGER);
+    static final Logger _mdblogger = LogDomains.getLogger(JmsRaUtil.class, LogDomains.MDB_LOGGER);
+    static final Logger _rarlogger = LogDomains.getLogger(JmsRaUtil.class, LogDomains.RSR_LOGGER);
 
     public JmsRaUtil() throws ConnectorRuntimeException {
         this(null);
