@@ -77,7 +77,7 @@ public class JAXWSAdapterRegistry {
         ContextAdapter contextRtInfo = 
                 (ContextAdapter)store.get(contextRoot);
         if(contextRtInfo == null) {
-            contextRtInfo = new ContextAdapter(contextRoot);
+            contextRtInfo = new ContextAdapter();
         }        
         contextRtInfo.addAdapter(urlPattern, info);
         store.put(contextRoot, contextRtInfo);
@@ -103,12 +103,12 @@ public class JAXWSAdapterRegistry {
      }
      
     class  ContextAdapter {
-        String contextRoot;
+
         Map fixedUrlPatternEndpoints;
         List<Adapter> pathUrlPatternEndpoints;
 
-        ContextAdapter(String contextRoot) {
-            this.contextRoot = contextRoot;
+        ContextAdapter() {
+
             fixedUrlPatternEndpoints = new HashMap();
             pathUrlPatternEndpoints = new ArrayList();
         }

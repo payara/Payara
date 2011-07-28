@@ -351,7 +351,7 @@ public class ServiceInvocationHandler implements InvocationHandler {
 
             Method getCalls = serviceClass.getDeclaredMethod
                     ("getCalls", new Class[] { QName.class });
-            serviceMethodTypes.put(getCalls, new Integer(GET_CALLS));
+            serviceMethodTypes.put(getCalls,  Integer.valueOf(GET_CALLS));
 
             Method getHandlerRegistry = serviceClass.getDeclaredMethod
                     ("getHandlerRegistry", noParams);
@@ -418,7 +418,7 @@ public class ServiceInvocationHandler implements InvocationHandler {
         Set illegalMethods = fullWsdl ?
                 fullWsdlIllegalMethods : noWsdlIllegalMethods;
 
-        if( illegalMethods.contains(new Integer(methodType)) ) {
+        if( illegalMethods.contains( Integer.valueOf(methodType)) ) {
             throw new UnsupportedOperationException();
         }
 

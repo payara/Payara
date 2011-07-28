@@ -201,7 +201,7 @@ public class WebServicesApplication implements ApplicationContainer {
         return MessageFormat.format(key, (Object[]) values);
     }
 
-    class EjbEndpoint {
+    static class EjbEndpoint {
         private final String contextRoot;
 
         private boolean isSecure;

@@ -107,7 +107,7 @@ public class EjbWebServiceServlet extends HttpServlet {
                 (new WsUtil()).writeInvalidMethodType(hresp, message);
                 return;
             }
-            if (endpoint!=null && Boolean.parseBoolean(endpoint.getDescriptor().getDebugging())) {
+            if ( Boolean.parseBoolean(endpoint.getDescriptor().getDebugging())) {
                 dispatch = false;
                 WebServiceTesterServlet.invoke(hreq, hresp,
                         endpoint.getDescriptor());
