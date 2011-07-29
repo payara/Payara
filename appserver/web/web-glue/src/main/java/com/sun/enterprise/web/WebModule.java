@@ -1541,7 +1541,7 @@ public class WebModule extends PwcWebModule implements Context {
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try {
-            manager.writeSessions(baos);
+            manager.writeSessions(baos, false);
             props.setProperty(getObjectName(),
                               gfEncoder.encode(baos.toByteArray()));
         } catch (Exception ex) {

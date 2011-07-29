@@ -646,7 +646,7 @@ public class StandardManager
      * @param doExpire true if the sessions that were written should also be
      * expired, false otherwise
      */
-    private void writeSessions(OutputStream os, boolean doExpire) 
+    public void writeSessions(OutputStream os, boolean doExpire) 
             throws IOException {
         ObjectOutputStream oos = null;
         try {
