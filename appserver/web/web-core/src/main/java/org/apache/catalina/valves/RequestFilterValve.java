@@ -61,13 +61,21 @@ package org.apache.catalina.valves;
 
 import org.apache.catalina.Request;
 import org.apache.catalina.Response;
+import org.apache.catalina.core.ApplicationDispatcher;
+import org.apache.catalina.core.StandardHost;
+import org.apache.catalina.deploy.ErrorPage;
 import org.apache.catalina.util.StringManager;
 
+import javax.servlet.DispatcherType;
+import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
@@ -112,6 +120,7 @@ public abstract class RequestFilterValve
 
     // ----------------------------------------------------- Class Variables
 
+    private static Logger log = Logger.getLogger(RequestFilterValve.class.getName());
 
     /**
      * The descriptive information related to this implementation.
@@ -298,7 +307,7 @@ public abstract class RequestFilterValve
         // Check the deny patterns, if any
         for (int i = 0; i < denies.length; i++) {
             if (denies[i].matcher(property).matches()) {
-                ServletResponse sres = response.getResponse();
+                //ServletResponse sres = response.getResponse();
                 /* GlassFish 6386229 
                 if (sres instanceof HttpServletResponse) {
                     HttpServletResponse hres = (HttpServletResponse) sres;
@@ -307,8 +316,9 @@ public abstract class RequestFilterValve
                 }
                 */
                 // START GlassFish 6386229 
-                HttpServletResponse hres = (HttpServletResponse) sres;
-                hres.sendError(HttpServletResponse.SC_FORBIDDEN);
+                //HttpServletResponse hres = (HttpServletResponse) sres;
+                //hres.sendError(HttpServletResponse.SC_FORBIDDEN);
+                handleError(request, response, HttpServletResponse.SC_FORBIDDEN);
                 // END GlassFish 6386229                 
                 return END_PIPELINE;
                 // GlassFish 638622                   
@@ -328,7 +338,7 @@ public abstract class RequestFilterValve
         }
 
         // Deny this request
-        ServletResponse sres = response.getResponse();
+        //ServletResponse sres = response.getResponse();
         /* GlassFish 6386229 
         if (sres instanceof HttpServletResponse) {
             HttpServletResponse hres = (HttpServletResponse) sres;
@@ -337,11 +347,55 @@ public abstract class RequestFilterValve
         }
         */
         // START GlassFish 6386229 
-        HttpServletResponse hres = (HttpServletResponse) sres;
-        hres.sendError(HttpServletResponse.SC_FORBIDDEN);
+        //HttpServletResponse hres = (HttpServletResponse) sres;
+        //hres.sendError(HttpServletResponse.SC_FORBIDDEN);
+        handleError(request, response, HttpServletResponse.SC_FORBIDDEN);
         // END GlassFish 6386229        
         return END_PIPELINE;
     }
 
+    private void handleError(Request request, Response response, int statusCode)
+            throws IOException {
 
+        ServletRequest sreq = request.getRequest();
+        ServletResponse sres = response.getResponse();
+        HttpServletResponse hres = (HttpServletResponse)sres;
+
+        ErrorPage errorPage = ((StandardHost)getContainer()).findErrorPage(statusCode);
+        if (errorPage != null) {
+            try {
+                request.lockSession();
+                hres.setStatus(statusCode);   
+                ServletContext servletContext =
+                    request.getContext().getServletContext();
+                ApplicationDispatcher dispatcher = (ApplicationDispatcher)
+                    servletContext.getRequestDispatcher(errorPage.getLocation());
+
+                if (hres.isCommitted()) {
+                    // Response is committed - including the error page is the
+                    // best we can do 
+                    dispatcher.include(sreq, sres);
+                } else {
+                    // Reset the response (keeping the real error code and message)
+                    response.resetBuffer(true);
+
+                    dispatcher.dispatch(sreq, sres, DispatcherType.ERROR);
+
+                    // If we forward, the response is suspended again
+                    response.setSuspended(false);
+                }
+                sres.flushBuffer();
+            } catch(Throwable t) {
+                if (log.isLoggable(Level.INFO)) {
+                    String message = sm.getString("requestFilterValve.errorPage",
+                            errorPage.getLocation());
+                    log.log(Level.INFO, message, t);
+                }
+            } finally {
+                request.unlockSession();
+            }
+        } else {
+            hres.sendError(statusCode);
+        }
+    }
 }
