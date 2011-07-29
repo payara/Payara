@@ -50,15 +50,12 @@
         <version>3.2-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
-    <groupId>org.glassfish.extras</groupId>
-    <artifactId>extras</artifactId>
+    <groupId>org.glassfish.grizzly</groupId>
+    <artifactId>glassfish-grizzly</artifactId>
     <packaging>pom</packaging>
-    <name>GlassFish Extras modules</name>  
+    <name>Grizzly Glassfish Extra modules</name>  
     <modules>
-        <!--module>grizzly-container</module-->
-        <module>osgi-container</module>
-        <!--module>embedded-shell</module-->
-        <module>javaee</module>
-        <module>appserv-rt</module>
+        <module>grizzly-container</module>
+        <module>glassfish-grizzly-extra-all</module>
     </modules>
 </project>

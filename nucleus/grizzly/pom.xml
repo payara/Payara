@@ -46,19 +46,15 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.glassfish</groupId>
-        <artifactId>glassfish-parent</artifactId>
+        <artifactId>glassfish-nucleus-parent</artifactId>
         <version>3.2-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
+        <relativePath>../pom.xml</relativePath>        
     </parent>
-    <groupId>org.glassfish.extras</groupId>
-    <artifactId>extras</artifactId>
+    <groupId>org.glassfish.grizzly</groupId>
+    <artifactId>nucleus-grizzly</artifactId>
     <packaging>pom</packaging>
-    <name>GlassFish Extras modules</name>  
+    <name>GlassFish Nucleus Grizzly modules</name>  
     <modules>
-        <!--module>grizzly-container</module-->
-        <module>osgi-container</module>
-        <!--module>embedded-shell</module-->
-        <module>javaee</module>
-        <module>appserv-rt</module>
+        <module>nucleus-grizzly-all</module>
     </modules>
 </project>

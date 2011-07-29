@@ -119,6 +119,7 @@
                 <module>core</module>
                 <module>admin</module>
                 <module>flashlight</module>
+                <module>grizzly</module>
                 <module>deployment</module>
                 <module>packager</module>
                 <module>distributions</module>
@@ -160,6 +161,7 @@
                 <module>core</module>
                 <module>admin</module>
                 <module>flashlight</module>
+                <module>grizzly</module>
                 <module>deployment</module>
                 <module>packager</module>    
                 <module>distributions</module>    
@@ -201,6 +203,7 @@
                 <module>core</module>
                 <module>admin</module>
                 <module>flashlight</module>
+                <module>grizzly</module>
                 <module>deployment</module>
                 <module>packager</module>
                 <module>distributions</module>
@@ -218,6 +221,7 @@
                 <module>core</module>
                 <module>admin</module>
                 <module>flashlight</module>
+                <module>grizzly</module>
                 <module>deployment</module>
                 <module>packager</module> 
                 <module>distributions</module> 

@@ -141,6 +141,7 @@
                 <module>tests</module>
                 <module>osgi-platforms</module>
                 <module>flashlight</module>
+                <module>grizzly</module>
                 <module>webservices</module>
                 <module>orb</module>
                 <module>appclient</module>
@@ -203,6 +204,7 @@
                 <module>tests</module>
                 <module>osgi-platforms</module>
                 <module>flashlight</module>
+                <module>grizzly</module>
                 <module>webservices</module>
             </modules>
         </profile>        
@@ -259,6 +261,7 @@
                 <module>tests</module>
                 <module>osgi-platforms</module>
                 <module>flashlight</module>
+                <module>grizzly</module>
                 <module>webservices</module>
                 <module>virtualization</module>
                 <module>paas</module>
@@ -314,6 +317,7 @@
                 <module>tests</module>
                 <module>osgi-platforms</module>
                 <module>flashlight</module>
+                <module>grizzly</module>
                 <module>webservices</module>
                 <module>orb</module>
                 <module>installer</module>
