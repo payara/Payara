@@ -212,10 +212,6 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>com.sun.pkg</groupId>
-            <artifactId>pkg-client</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.glassfish.flashlight</groupId>
             <artifactId>flashlight-framework</artifactId>
             <version>${project.version}</version>
