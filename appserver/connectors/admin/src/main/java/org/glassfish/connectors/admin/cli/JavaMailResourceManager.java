@@ -46,7 +46,7 @@ import com.sun.enterprise.config.serverbeans.Resource;
 import com.sun.enterprise.config.serverbeans.Resources;
 import com.sun.enterprise.config.serverbeans.ServerTags;
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import org.glassfish.admin.cli.resources.BindableResourcesHelper;
+import org.glassfish.resources.BindableResourcesHelper;
 import org.glassfish.admin.cli.resources.ResourceManager;
 import org.glassfish.admin.cli.resources.ResourceUtil;
 import org.glassfish.api.I18n;

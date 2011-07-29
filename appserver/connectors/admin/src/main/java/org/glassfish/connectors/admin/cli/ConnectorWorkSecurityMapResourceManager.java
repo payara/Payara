@@ -41,7 +41,6 @@
 package org.glassfish.connectors.admin.cli;
 
 
-import com.sun.enterprise.config.serverbeans.GroupMap;
 import com.sun.enterprise.config.serverbeans.Resource;
 import com.sun.enterprise.config.serverbeans.Resources;
 import com.sun.enterprise.util.LocalStringManagerImpl;
@@ -50,6 +49,7 @@ import org.glassfish.api.I18n;
 import org.glassfish.resource.common.ResourceConstants;
 import org.glassfish.resource.common.ResourceStatus;
 import org.glassfish.resources.config.PrincipalMap;
+import org.glassfish.resources.config.GroupMap;
 import org.glassfish.resources.config.WorkSecurityMap;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigSupport;

@@ -94,6 +94,11 @@
             <version>${project.parent.version}</version>
         </dependency>
          <dependency>
+            <groupId>org.glassfish.admin</groupId>
+            <artifactId>admin-util</artifactId>
+            <version>${project.version}</version>
+         </dependency>
+         <dependency>
             <groupId>org.glassfish.common</groupId>
             <artifactId>internal-api</artifactId>
             <version>${project.version}</version>

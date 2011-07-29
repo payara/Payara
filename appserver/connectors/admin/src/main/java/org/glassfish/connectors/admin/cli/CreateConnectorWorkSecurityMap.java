@@ -51,6 +51,7 @@ import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.ExecuteOn;
 import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.resources.config.PrincipalMap;
+import org.glassfish.resources.config.GroupMap;
 import org.glassfish.resources.config.WorkSecurityMap;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;

@@ -47,11 +47,11 @@ import static org.glassfish.resource.common.ResourceConstants.*;
 
 import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
 import com.sun.enterprise.config.serverbeans.*;
-import org.glassfish.admin.cli.resources.BindableResourcesHelper;
 import org.glassfish.admin.cli.resources.ResourceUtil;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.resource.common.ResourceStatus;
 import org.glassfish.api.I18n;
+import org.glassfish.resources.BindableResourcesHelper;
 import org.glassfish.resources.config.JdbcResource;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;

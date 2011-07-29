@@ -42,7 +42,6 @@ package org.glassfish.jdbc.admin.cli;
 
 import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.util.SystemPropertyConstants;
-import org.glassfish.admin.cli.resources.BindableResourcesHelper;
 import org.glassfish.api.admin.*;
 import org.glassfish.api.I18n;
 import org.glassfish.api.ActionReport;
@@ -50,6 +49,7 @@ import org.glassfish.api.Param;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.api.admin.ExecuteOn;
+import org.glassfish.resources.BindableResourcesHelper;
 import org.glassfish.resources.config.JdbcResource;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;

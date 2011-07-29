@@ -172,6 +172,11 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
+            <groupId>org.glassfish.deployment</groupId>
+            <artifactId>dol</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.glassfish.loadbalancer</groupId>
             <artifactId>load-balancer-internal-api</artifactId>
             <version>${project.version}</version>
