@@ -80,6 +80,10 @@ import org.glassfish.flashlight.client.ProbeClientMediator;
 import org.glassfish.flashlight.client.ProbeClientMethodHandle;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.component.Singleton;
+import org.jvnet.hk2.config.SingleConfigCode;
+import org.jvnet.hk2.config.ConfigSupport;
+import org.jvnet.hk2.config.TransactionFailure;
+import java.beans.PropertyVetoException;
 import org.glassfish.admin.monitor.StatsProviderRegistry.StatsProviderRegistryElement;
 
 import org.glassfish.external.amx.MBeanListener;
@@ -170,12 +174,19 @@ public class StatsProviderManagerDelegateImpl extends MBeanListener.CallbackImpl
      * note the default visibility so that MonitoringBootstrap can call it.
      */
     void tryToRegister(StatsProviderInfo spInfo) {
-        String configElement = spInfo.getConfigElement();
+        final String configElement = spInfo.getConfigElement();
         Object statsProvider = spInfo.getStatsProvider();
         // register the statsProvider
         if (logger.isLoggable(Level.FINE))
             logger.fine("registering a statsProvider");
         StatsProviderRegistryElement spre;
+        // If configElement is null, create it
+        if (monitoringService != null
+                && monitoringService.getContainerMonitoring(configElement) == null
+                && monitoringService.getMonitoringLevel(configElement) == null) {
+            createConfigElement(configElement);
+        }
+
         // First check if the configElement associated for statsProvider is 'ON'
         if (getMonitoringEnabled() && getEnabledValue(configElement)) {
             if (logger.isLoggable(Level.FINE))
@@ -203,6 +214,25 @@ public class StatsProviderManagerDelegateImpl extends MBeanListener.CallbackImpl
         if (logger.isLoggable(Level.FINE)) {
             logger.fine(spre.toString());
             logger.fine("=========================================================");
+        }
+    }
+
+    private void createConfigElement(final String configElement) {
+        try {
+            ConfigSupport.apply(new SingleConfigCode<MonitoringService>() {
+
+                public Object run(MonitoringService param)
+                        throws PropertyVetoException, TransactionFailure {
+                    ContainerMonitoring newItem = param.createChild(ContainerMonitoring.class);
+                    newItem.setName(configElement);
+                    param.getContainerMonitoring().add(newItem);
+                    return newItem;
+                }
+            }, monitoringService);
+        } catch (TransactionFailure tf) {
+            String msg = localStrings.getLocalString("cannotCreateConfigElement",
+                    "Unable to create container-monitoring for", configElement);
+            logger.log(Level.SEVERE, msg, tf);
         }
     }
 
