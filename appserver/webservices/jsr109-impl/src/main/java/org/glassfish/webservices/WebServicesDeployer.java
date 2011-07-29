@@ -573,16 +573,16 @@ public class WebServicesDeployer extends JavaEEDeployer<WebServicesContainer,Web
                     "services. There are " +
                     wsDesc.getWebServices().size() +
                     ". The app has total of " +
-                    app.getWebServiceDescriptors().size());
+                    getWebServiceDescriptors(app).size());
             }
             webServices.addAll(wsDesc.getWebServices());
         } else {
             if (logger.isLoggable(Level.FINE)) {
                 logger.fine("In doWebServicesDeployment: using app web " +
                     " services, local ws descriptor is null. Total numer: " +
-                    app.getWebServiceDescriptors().size());
+                    getWebServiceDescriptors(app).size());
             }
-            webServices.addAll(app.getWebServiceDescriptors());
+            webServices.addAll(getWebServiceDescriptors(app));
         }
 
         // swap the deployment descriptors context-root with the one
@@ -739,7 +739,7 @@ public class WebServicesDeployer extends JavaEEDeployer<WebServicesContainer,Web
         final WebServiceDeploymentNotifier notifier = getDeploymentNotifier();
         deletePublishedFiles(container.getPublishedFiles());
         Application app = container.getApplication();
-        for(WebService svc : app.getWebServiceDescriptors()) {
+        for(WebService svc : getWebServiceDescriptors(app)) {
             for(WebServiceEndpoint endpoint : svc.getEndpoints()) {
                 if (notifier != null) {
                     notifier.notifyUndeployed(endpoint);
@@ -765,7 +765,7 @@ public class WebServicesDeployer extends JavaEEDeployer<WebServicesContainer,Web
         Set<String> publishedFiles = null;
         Application app = context.getModuleMetaData(Application.class);
         try {
-            publishedFiles = populateWsdlFilesForPublish(context, app.getWebServiceDescriptors());
+            publishedFiles = populateWsdlFilesForPublish(context, getWebServiceDescriptors(app));
         } catch(Exception e) {
             throw new RuntimeException(e);
         }
@@ -880,6 +880,20 @@ public class WebServicesDeployer extends JavaEEDeployer<WebServicesContainer,Web
     private String stripWsdlDir(String entry, BundleDescriptor bundle) {
         String wsdlDir = bundle.getWsdlDir();
         return entry.substring(wsdlDir.length()+1);
+    }
+
+    /**
+     * Return a set of all com.sun.enterprise.deployment.WebService
+     * descriptors in the application.
+     */
+    private Set<WebService> getWebServiceDescriptors(Application app) {
+        Set<WebService> webServiceDescriptors = new HashSet<WebService>();
+        for (BundleDescriptor next : app.getBundleDescriptors()) {
+            WebServicesDescriptor webServicesDesc =
+                    next.getWebServices();
+            webServiceDescriptors.addAll(webServicesDesc.getWebServices());
+        }
+        return webServiceDescriptors;
     }
 
 }

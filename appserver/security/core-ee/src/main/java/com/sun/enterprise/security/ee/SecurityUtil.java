@@ -354,8 +354,8 @@ public class SecurityUtil{
     private static String createUniquePseudoModuleID(EjbBundleDescriptor ejbDesc) {
 
         Application app = ejbDesc.getApplication();
-        Collection<WebBundleDescriptor> webModules = app.getWebBundleDescriptors();
-        Collection<EjbBundleDescriptor> ejbModules = app.getEjbBundleDescriptors();
+        Collection<WebBundleDescriptor> webModules = app.getBundleDescriptors(WebBundleDescriptor.class);
+        Collection<EjbBundleDescriptor> ejbModules = app.getBundleDescriptors(EjbBundleDescriptor.class);
 
         String moduleName = ejbDesc.getUniqueFriendlyId();
         String pseudonym;

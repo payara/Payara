@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -70,7 +70,7 @@ public class AppClientURI extends ApplicationTest implements AppCheck {
         
         // java element specifies the URI of a java application
         // client module, relative to the top level of the application package
-        for (Iterator itr = descriptor.getApplicationClientDescriptors().iterator(); itr.hasNext();) {
+        for (Iterator itr = descriptor.getBundleDescriptors(ApplicationClientDescriptor.class).iterator(); itr.hasNext();) {
             ApplicationClientDescriptor acd = (ApplicationClientDescriptor) itr.next();
             
             // not sure what we can do to test this string?

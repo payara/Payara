@@ -120,7 +120,7 @@ public class WebArchivist extends Archivist<WebBundleDescriptor> {
      * for a particular Archivst type
      */
     public void setDescriptor(Application descriptor) {
-        java.util.Set webBundles = descriptor.getWebBundleDescriptors();
+        java.util.Set webBundles = descriptor.getBundleDescriptors(WebBundleDescriptor.class);
         if (webBundles.size()>0) {
             this.descriptor = (WebBundleDescriptor) webBundles.iterator().next();
             if (this.descriptor.getModuleDescriptor().isStandalone())

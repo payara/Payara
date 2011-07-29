@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -71,9 +71,9 @@ public class ModulesExistWeb extends ApplicationTest implements AppCheck {
 
   
          
-	if (descriptor.getWebBundleDescriptors().size() > 0) {
+	if (descriptor.getBundleDescriptors(WebBundleDescriptor.class).size() > 0) {
 	    boolean oneFailed = false;
-	    for (Iterator itr = descriptor.getWebBundleDescriptors().iterator(); itr.hasNext();) {
+	    for (Iterator itr = descriptor.getBundleDescriptors(WebBundleDescriptor.class).iterator(); itr.hasNext();) {
 		WebBundleDescriptor wbd = (WebBundleDescriptor) itr.next();
 
 		if (!(wbd.getModuleDescriptor().getArchiveUri().equals(""))) {

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -91,7 +91,7 @@ public class EjbLinkElement extends WebTest implements WebCheck {
 //                        File tmpFile = new File(System.getProperty("java.io.tmpdir"));
 //                        tmpFile = new File(tmpFile, Verifier.TMPFILENAME + ".tmp");
                         // iterate through the ejb jars in this J2EE Application
-                        Set ejbBundles = application.getEjbBundleDescriptors();
+                        Set ejbBundles = application.getBundleDescriptors(EjbBundleDescriptor.class);
                         Iterator ejbBundlesIterator = ejbBundles.iterator();
                         EjbBundleDescriptor ejbBundle = null;
                         while (ejbBundlesIterator.hasNext()) {

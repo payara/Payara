@@ -421,9 +421,9 @@ public class Audit extends AuditModule
             logger.finest("Standalone module.");
         }
         logger.finest("EJB components: "+
-                           app.getEjbComponentCount());
+                           getEjbComponentCount(app));
         logger.finest("Web components: " +
-                           app.getWebComponentCount());
+                           getWebComponentCount(app));
 
         Iterator i;
         StringBuffer sb;
@@ -470,7 +470,7 @@ public class Audit extends AuditModule
 
         // Process all EJB modules
 
-        Set ejbDescriptorSet = app.getEjbBundleDescriptors() ;
+        Set ejbDescriptorSet = app.getBundleDescriptors(EjbBundleDescriptor.class) ;
 
         i = ejbDescriptorSet.iterator();
         while (i.hasNext()) {
@@ -613,7 +613,7 @@ public class Audit extends AuditModule
 
         // Process all Web modules
 
-        Set webDescriptorSet = app.getWebBundleDescriptors() ;
+        Set webDescriptorSet = app.getBundleDescriptors(WebBundleDescriptor.class) ;
 
         i = webDescriptorSet.iterator();
         while (i.hasNext()) {
@@ -714,5 +714,32 @@ public class Audit extends AuditModule
         logger.finest("======================================");
     }
     
+    /**
+     * The number of Web Components in this application.
+     * Current implementation only return the number of servlets
+     * inside the application, and not the JSPs since we cannot
+     * get that information from deployment descriptors.
+     *
+     * @return the number of Web Components
+     */
+    private static int getWebComponentCount(Application app) {
+        int count = 0;
+        for (WebBundleDescriptor wbd : app.getBundleDescriptors(WebBundleDescriptor.class)) {
+            count = count + wbd.getWebComponentDescriptors().size();
+        }
+        return count;
+    }
 
+    /**
+     * The number of EJB JARs in this application.
+     *
+     * @return the number of EJB JARS
+     */
+    private static int getEjbComponentCount(Application app) {
+        int count = 0;
+        for (EjbBundleDescriptor ejbd : app.getBundleDescriptors(EjbBundleDescriptor.class)) {
+            count = count + ejbd.getEjbs().size();
+        }
+        return count;
+    }
 }

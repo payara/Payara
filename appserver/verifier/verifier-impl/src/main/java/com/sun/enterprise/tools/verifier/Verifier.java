@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -316,22 +316,21 @@ public class Verifier implements org.glassfish.internal.deployment.Verifier
             runVerifier(new ApplicationVerifier(verifierFrameworkContext));
         }
 
-        for (Iterator itr = getApplication().getEjbBundleDescriptors().iterator();
+        for (Iterator itr = getApplication().getBundleDescriptors(EjbBundleDescriptor.class).iterator();
              itr.hasNext();)
         {
             EjbBundleDescriptor ejbd = (EjbBundleDescriptor) itr.next();
             runVerifier(new EjbVerifier(verifierFrameworkContext, ejbd));
         }
 
-        for (Iterator itr = getApplication().getWebBundleDescriptors().iterator();
+        for (Iterator itr = getApplication().getBundleDescriptors(WebBundleDescriptor.class).iterator();
              itr.hasNext();)
         {
             WebBundleDescriptor webd = (WebBundleDescriptor) itr.next();
             runVerifier(new WebVerifier(verifierFrameworkContext, webd));
         }
 
-        for (Iterator itr = getApplication().getApplicationClientDescriptors()
-                .iterator();
+        for (Iterator itr = getApplication().getBundleDescriptors(ApplicationClientDescriptor.class).iterator();
              itr.hasNext();)
         {
             ApplicationClientDescriptor appClientDescriptor =
@@ -339,7 +338,7 @@ public class Verifier implements org.glassfish.internal.deployment.Verifier
             runVerifier(new AppClientVerifier(verifierFrameworkContext, appClientDescriptor));
         }
 
-        for (Iterator itr = getApplication().getRarDescriptors().iterator();
+        for (Iterator itr = getApplication().getBundleDescriptors(ConnectorDescriptor.class).iterator();
              itr.hasNext();)
         {
             ConnectorDescriptor cond = (ConnectorDescriptor) itr.next();

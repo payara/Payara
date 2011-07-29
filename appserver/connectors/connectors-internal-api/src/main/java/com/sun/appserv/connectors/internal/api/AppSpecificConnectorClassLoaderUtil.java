@@ -269,7 +269,7 @@ public class AppSpecificConnectorClassLoaderUtil {
                         String appName = application.getName();
                         ApplicationInfo appInfo = appRegistry.get(appName);
                         Application dolApp = appInfo.getMetaData(Application.class);
-                        Collection<ConnectorDescriptor> rarDescriptors = dolApp.getRarDescriptors();
+                        Collection<ConnectorDescriptor> rarDescriptors = dolApp.getBundleDescriptors(ConnectorDescriptor.class);
                         for (ConnectorDescriptor desc : rarDescriptors) {
                             SunConnector sunraDesc = desc.getSunDescriptor();
                             if (sunraDesc != null) {

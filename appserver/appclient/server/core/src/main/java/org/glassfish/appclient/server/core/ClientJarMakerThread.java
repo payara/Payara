@@ -206,7 +206,7 @@ public class ClientJarMakerThread extends Thread {
         }
 
         Application app = Application.class.cast(descriptor);
-        Set appClients = app.getApplicationClientDescriptors();
+        Set appClients = app.getBundleDescriptors(ApplicationClientDescriptor.class);
         if (appClients != null) {
     
             // create ear format of appclient if there are more than

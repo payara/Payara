@@ -112,7 +112,7 @@ public class NestedAppClientInfo extends AppClientInfo {
          */
         Set<ApplicationClientDescriptor> embeddedAppClients = 
             (Set<ApplicationClientDescriptor>) 
-                app.getApplicationClientDescriptors();
+                app.getBundleDescriptors(ApplicationClientDescriptor.class);
 
         /*
          *Make sure the application module contains at least one app client.

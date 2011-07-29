@@ -958,7 +958,7 @@ public class ResourcesUtil {
             in.open(new URI(appDeployLocation));
             ApplicationArchivist archivist = ConnectorRuntime.getRuntime().getApplicationArchivist();
             com.sun.enterprise.deployment.Application application = archivist.open(in);
-            return application.getRarDescriptorByUri(raLoc);
+            return application.getModuleByTypeAndUri(ConnectorDescriptor.class, raLoc);
         } catch (Exception e) {
             Object params[] = new Object[]{rarName, e};
             _logger.log(Level.WARNING, "error.getting.connector.descriptor", params);

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -66,9 +66,9 @@ public class EjbURI extends ApplicationTest implements AppCheck {
 	Result result = getInitializedResult();
 
   
-	if (descriptor.getEjbBundleDescriptors().size() > 0) {
+	if (descriptor.getBundleDescriptors(EjbBundleDescriptor.class).size() > 0) {
 	    boolean oneFailed = false;
-	    for (Iterator itr = descriptor.getEjbBundleDescriptors().iterator(); itr.hasNext();) {
+	    for (Iterator itr = descriptor.getBundleDescriptors(EjbBundleDescriptor.class).iterator(); itr.hasNext();) {
 		EjbBundleDescriptor ejbd = (EjbBundleDescriptor) itr.next();
     
 

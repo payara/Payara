@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -67,10 +67,10 @@ public class AppAltDDWeb extends ApplicationTest implements AppCheck {
 	Result result = getInitializedResult();
 
  
-	if (descriptor.getWebBundleDescriptors().size() > 0) {
+	if (descriptor.getBundleDescriptors(WebBundleDescriptor.class).size() > 0) {
 	    boolean oneFailed = false;
             int na = 0;
-	    for (Iterator itr = descriptor.getWebBundleDescriptors().iterator(); itr.hasNext();) {
+	    for (Iterator itr = descriptor.getBundleDescriptors(WebBundleDescriptor.class).iterator(); itr.hasNext();) {
 		WebBundleDescriptor wbd = (WebBundleDescriptor) itr.next();
 
 		if (wbd.getModuleDescriptor().getAlternateDescriptor()!=null) {
@@ -150,7 +150,7 @@ public class AppAltDDWeb extends ApplicationTest implements AppCheck {
 	    }
             if (oneFailed) {
                 result.setStatus(Result.FAILED);
-            } else if (na == descriptor.getWebBundleDescriptors().size()) {
+            } else if (na == descriptor.getBundleDescriptors(WebBundleDescriptor.class).size()) {
                 result.setStatus(Result.NOT_APPLICABLE);
             } else {
                 result.setStatus(Result.PASSED);

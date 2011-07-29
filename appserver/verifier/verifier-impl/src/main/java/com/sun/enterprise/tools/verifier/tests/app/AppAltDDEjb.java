@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -66,10 +66,10 @@ public class AppAltDDEjb extends ApplicationTest implements AppCheck {
     public Result check(Application descriptor) {
 
 	Result result = getInitializedResult();
-	if (descriptor.getEjbBundleDescriptors().size() > 0) {
+	if (descriptor.getBundleDescriptors(EjbBundleDescriptor.class).size() > 0) {
 	    boolean oneFailed = false;
             int na = 0;
-	    for (Iterator itr = descriptor.getEjbBundleDescriptors().iterator(); itr.hasNext();) {
+	    for (Iterator itr = descriptor.getBundleDescriptors(EjbBundleDescriptor.class).iterator(); itr.hasNext();) {
 		EjbBundleDescriptor ejbd = (EjbBundleDescriptor) itr.next();
 
 		if (ejbd.getModuleDescriptor().getAlternateDescriptor()!=null) {
@@ -152,7 +152,7 @@ public class AppAltDDEjb extends ApplicationTest implements AppCheck {
 	    }
             if (oneFailed) {
                 result.setStatus(Result.FAILED);
-            } else if (na == descriptor.getEjbBundleDescriptors().size()) {
+            } else if (na == descriptor.getBundleDescriptors(EjbBundleDescriptor.class).size()) {
                 result.setStatus(Result.NOT_APPLICABLE);
             } else {
                 result.setStatus(Result.PASSED);

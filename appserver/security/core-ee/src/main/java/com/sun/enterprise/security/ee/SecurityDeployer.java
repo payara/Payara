@@ -123,7 +123,7 @@ public class SecurityDeployer extends SimpleDeployer<SecurityContainer, DummyApp
                     return;
                 }
 
-                Set<WebBundleDescriptor> webDesc = app.getWebBundleDescriptors();
+                Set<WebBundleDescriptor> webDesc = app.getBundleDescriptors(WebBundleDescriptor.class);
                 linkPolicies(app, webDesc);
                 commitEjbs(app);
                 if (webDesc != null && !webDesc.isEmpty()) {
@@ -150,7 +150,7 @@ public class SecurityDeployer extends SimpleDeployer<SecurityContainer, DummyApp
         String appName = params.name();
         try {
             Application app = dc.getModuleMetaData(Application.class);
-            Set<WebBundleDescriptor> webDesc = app.getWebBundleDescriptors();
+            Set<WebBundleDescriptor> webDesc = app.getBundleDescriptors(WebBundleDescriptor.class);
             if (webDesc == null) {
                 return;
             }
@@ -184,7 +184,7 @@ public class SecurityDeployer extends SimpleDeployer<SecurityContainer, DummyApp
     public DummyApplication load(SecurityContainer container, DeploymentContext context) {
         DeployCommandParameters dparams = context.getCommandParameters(DeployCommandParameters.class);
         Application app = context.getModuleMetaData(Application.class);
-        handleCNonceCacheBSInit(app.getAppName(), app.getWebBundleDescriptors(), dparams.availabilityenabled);
+        handleCNonceCacheBSInit(app.getAppName(), app.getBundleDescriptors(WebBundleDescriptor.class), dparams.availabilityenabled);
 
         return new DummyApplication();
     }
@@ -258,7 +258,7 @@ public class SecurityDeployer extends SimpleDeployer<SecurityContainer, DummyApp
      * @param ejbs
      */
     private void commitEjbs(Application app) throws DeploymentException {
-        Set<EjbBundleDescriptor> ejbDescriptors = app.getEjbBundleDescriptors();
+        Set<EjbBundleDescriptor> ejbDescriptors = app.getBundleDescriptors(EjbBundleDescriptor.class);
         try {
             for (EjbBundleDescriptor ejbBD : ejbDescriptors) {
                 String pcid = SecurityUtil.getContextID(ejbBD);
@@ -294,7 +294,7 @@ public class SecurityDeployer extends SimpleDeployer<SecurityContainer, DummyApp
                 linkName = name;
             }
 
-            Set<EjbBundleDescriptor> ejbs = app.getEjbBundleDescriptors();
+            Set<EjbBundleDescriptor> ejbs = app.getBundleDescriptors(EjbBundleDescriptor.class);
             for (EjbBundleDescriptor ejbd : ejbs) {
                 String name = SecurityUtil.getContextID(ejbd);
                 lastInService =

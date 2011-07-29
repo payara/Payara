@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -71,9 +71,9 @@ public class ModulesExistAppClient extends ApplicationTest implements AppCheck {
 
   
          
-	if (descriptor.getApplicationClientDescriptors().size() > 0) {
+	if (descriptor.getBundleDescriptors(ApplicationClientDescriptor.class).size() > 0) {
 	    boolean oneFailed = false;
-	    for (Iterator itr = descriptor.getApplicationClientDescriptors().iterator(); itr.hasNext();) {
+	    for (Iterator itr = descriptor.getBundleDescriptors(ApplicationClientDescriptor.class).iterator(); itr.hasNext();) {
 		ApplicationClientDescriptor acd = (ApplicationClientDescriptor) itr.next();
 
 		if (!(acd.getModuleDescriptor().getArchiveUri().equals(""))) {

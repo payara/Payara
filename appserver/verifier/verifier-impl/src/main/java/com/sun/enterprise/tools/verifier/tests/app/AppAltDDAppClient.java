@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -68,10 +68,10 @@ public class AppAltDDAppClient extends ApplicationTest implements AppCheck {
 	Result result = getInitializedResult();
 
  
-	if (descriptor.getApplicationClientDescriptors().size() > 0) {
+	if (descriptor.getBundleDescriptors(ApplicationClientDescriptor.class).size() > 0) {
 	    boolean oneFailed = false;
             int na = 0;
-	    for (Iterator itr = descriptor.getApplicationClientDescriptors().iterator(); itr.hasNext();) {
+	    for (Iterator itr = descriptor.getBundleDescriptors(ApplicationClientDescriptor.class).iterator(); itr.hasNext();) {
 		ApplicationClientDescriptor acd = (ApplicationClientDescriptor) itr.next();
 
 		if (acd.getModuleDescriptor().getAlternateDescriptor()!=null) {
@@ -151,7 +151,7 @@ public class AppAltDDAppClient extends ApplicationTest implements AppCheck {
 	    }
             if (oneFailed) {
                 result.setStatus(Result.FAILED);
-            } else if (na == descriptor.getApplicationClientDescriptors().size()) {
+            } else if (na == descriptor.getBundleDescriptors(ApplicationClientDescriptor.class).size()) {
                 result.setStatus(Result.NOT_APPLICABLE);
             } else {
                 result.setStatus(Result.PASSED);

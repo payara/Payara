@@ -74,7 +74,7 @@ public class GlassFishCloudArchiveProcessor {
             Application application = applicationFactory.openArchive(cloudArchive.getURI());
 
             boolean isDistributable = false;
-            for (WebBundleDescriptor descriptor : application.getWebBundleDescriptors()) {
+            for (WebBundleDescriptor descriptor : application.getBundleDescriptors(WebBundleDescriptor.class)) {
                 if (descriptor.isDistributable()) {
                     isDistributable = true;
                 }
@@ -83,10 +83,10 @@ public class GlassFishCloudArchiveProcessor {
             if (isDistributable) {
                 serviceReferences.add(new ServiceReference(application.getName() + "-lbs", "HTTP_LOAD_BALANCER", null));
             }
-            for (EjbBundleDescriptor descriptor : application.getEjbBundleDescriptors()) {
+            for (EjbBundleDescriptor descriptor : application.getBundleDescriptors(EjbBundleDescriptor.class)) {
                 resRefs.addAll(descriptor.getResourceReferenceDescriptors());
             }
-            for (ApplicationClientDescriptor descriptor : application.getApplicationClientDescriptors()) {
+            for (ApplicationClientDescriptor descriptor : application.getBundleDescriptors(ApplicationClientDescriptor.class)) {
                 resRefs.addAll(descriptor.getResourceReferenceDescriptors());
             }
 

@@ -116,7 +116,7 @@ public class AppClientArchivist extends Archivist<ApplicationClientDescriptor> {
 
         // this is acceptable if the application actually represents
         // a standalone module
-        java.util.Set appClientBundles = application.getApplicationClientDescriptors();
+        java.util.Set appClientBundles = application.getBundleDescriptors(ApplicationClientDescriptor.class);
         if (appClientBundles.size() > 0) {
             this.descriptor = (ApplicationClientDescriptor) appClientBundles.iterator().next();
             if (this.descriptor.getModuleDescriptor().isStandalone())

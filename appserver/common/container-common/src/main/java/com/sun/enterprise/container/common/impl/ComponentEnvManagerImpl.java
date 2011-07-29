@@ -203,7 +203,7 @@ public class ComponentEnvManagerImpl
             // Add any java:app entries defined by any app clients.  These must
             // live in the server so they are accessible by other modules in the .ear.  Likewise,
             // those same entries will not be registered within the app client JVM itself.
-            for(JndiNameEnvironment next : app.getApplicationClientDescriptors()) {
+            for(JndiNameEnvironment next : app.getBundleDescriptors(ApplicationClientDescriptor.class)) {
                 addJNDIBindings(next, ScopeType.APP, bindings);
             }
 
@@ -230,7 +230,7 @@ public class ComponentEnvManagerImpl
                 // Add any java:global entries defined by any app clients.  These must
                 // live in the server so they are accessible by other modules in the .ear.  Likewise,
                 // those same entries will not be registered within the app client JVM itself.
-                for(JndiNameEnvironment next : app.getApplicationClientDescriptors()) {
+                for(JndiNameEnvironment next : app.getBundleDescriptors(ApplicationClientDescriptor.class)) {
                     addJNDIBindings(next, ScopeType.GLOBAL, globalBindings);
                 }
             }

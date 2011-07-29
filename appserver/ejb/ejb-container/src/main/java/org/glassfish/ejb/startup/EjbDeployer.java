@@ -499,7 +499,7 @@ public class EjbDeployer
             }
 
             boolean isTimedApp = false;
-            for (EjbBundleDescriptor ejbBundle : app.getEjbBundleDescriptors()) {
+            for (EjbBundleDescriptor ejbBundle : app.getBundleDescriptors(EjbBundleDescriptor.class)) {
                 if (checkEjbBundleForTimers(ejbBundle, createTimers, target)) { 
                     isTimedApp = true;
                 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -137,8 +137,8 @@ public class PortComponentLinkValidCheck  extends WSClientTest implements WSClie
          String relativeModuleUri = linkName.substring(0, hashIndex);
          String portName = linkName.substring(hashIndex + 1);
 // == get bundle(s)
-         Set webBundles = application.getWebBundleDescriptors();
-         Set ejbBundles = application.getEjbBundleDescriptors();
+         Set webBundles = application.getBundleDescriptors(WebBundleDescriptor.class);
+         Set ejbBundles = application.getBundleDescriptors(EjbBundleDescriptor.class);
 // ==
          // iterate through the ejb jars in this J2EE Application
          Iterator ejbBundlesIterator = ejbBundles.iterator();

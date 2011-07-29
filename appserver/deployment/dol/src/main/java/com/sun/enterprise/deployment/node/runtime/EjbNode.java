@@ -113,15 +113,7 @@ public class EjbNode extends DeploymentDescriptorNode {
     public void setElementValue(XMLElement element, String value) {        
         if (RuntimeTagNames.EJB_NAME.equals(element.getQName())) {
             Object parentDesc = getParentNode().getDescriptor();
-            if (parentDesc==null) {
-		// In J2EE 1.2.x, all ejbs in app were clubbed under
-		// one <enterprise-beans> element.
-		// So we get the ejbDescriptor from the application
-                Object application = getParentNode().getParentNode().getDescriptor();
-                if (application!=null && application instanceof Application) {
-                    descriptor = ((Application) application).getEjbByName(value);
-                } 
-            } else {
+            if (parentDesc != null) {
                 if (parentDesc instanceof EjbBundleDescriptor) {
                     descriptor = ((EjbBundleDescriptor) parentDesc).getEjbByName(value);
                 }

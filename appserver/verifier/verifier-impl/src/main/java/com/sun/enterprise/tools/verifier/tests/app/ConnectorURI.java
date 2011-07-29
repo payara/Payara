@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -67,7 +67,7 @@ public class ConnectorURI extends ApplicationTest implements AppCheck {
         ComponentNameConstructor compName = getVerifierContext().getComponentNameConstructor();
         Result result = getInitializedResult();
         
-        for (Iterator itr = descriptor.getRarDescriptors().iterator(); itr.hasNext();) {
+        for (Iterator itr = descriptor.getBundleDescriptors(ConnectorDescriptor.class).iterator(); itr.hasNext();) {
             ConnectorDescriptor cond = (ConnectorDescriptor) itr.next();
             
             if (!cond.getModuleDescriptor().getArchiveUri().endsWith(".rar")) {

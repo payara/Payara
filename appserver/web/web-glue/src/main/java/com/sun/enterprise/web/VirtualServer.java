@@ -655,7 +655,7 @@ public class VirtualServer extends StandardHost
                     return wmInfo;
                 }
 
-                WebBundleDescriptor wbd = app.getWebBundleDescriptorByUri(moduleID);
+                WebBundleDescriptor wbd = app.getModuleByTypeAndUri(WebBundleDescriptor.class, moduleID);
                 String webUri = wbd.getModuleDescriptor().getArchiveUri();
                 String contextRoot = wbd.getModuleDescriptor().getContextRoot();
                 if (moduleID.equals(webUri)) {

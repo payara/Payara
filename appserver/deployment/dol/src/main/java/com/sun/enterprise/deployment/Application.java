@@ -114,10 +114,6 @@ public class Application extends BundleDescriptor
      */
     private Boolean passByReference = null;
 
-    // table of EJB2.0 CMP descriptors (EntityBeans) 
-    // keyed on their class names
-    private HashMap cmpDescriptors = null;
-
     // use a String object as lock so it can be serialized as part
     // of the Application object
     private String cmpDescriptorsLock = "cmp descriptors lock";
@@ -810,14 +806,9 @@ public class Application extends BundleDescriptor
      */
     public Set<Role> getRoles() {
         Set<Role> roles = new HashSet<Role>();
-        for (WebBundleDescriptor wbd : getWebBundleDescriptors()) {
-            if (wbd != null) {
-                roles.addAll(wbd.getRoles());
-            }
-        }
-        for (EjbBundleDescriptor ejbd : getEjbBundleDescriptors()) {
-            if (ejbd != null) {
-                roles.addAll(ejbd.getRoles());
+        for (BundleDescriptor bd : getBundleDescriptors()) {
+            if (bd != null) {
+                roles.addAll(bd.getRoles());
             }
         }
         return roles;
@@ -845,11 +836,8 @@ public class Application extends BundleDescriptor
      * Adds a new abstract role
      */
     public void addRole(Role role) {
-        for (WebBundleDescriptor wbd : getWebBundleDescriptors()) {
-            wbd.addRole(role);
-        }
-        for (EjbBundleDescriptor ejbd : getEjbBundleDescriptors()) {
-            ejbd.addRole(role);
+        for (BundleDescriptor bd : getBundleDescriptors()) {
+            bd.addRole(role);
         }
     }
 
@@ -858,11 +846,8 @@ public class Application extends BundleDescriptor
      */
     public void removeRole(Role role) {
         getAppRoles().remove(role);
-        for (WebBundleDescriptor wbd : getWebBundleDescriptors()) {
-            wbd.removeRole(role);
-        }
-        for (EjbBundleDescriptor ejbd : getEjbBundleDescriptors()) {
-            ejbd.removeRole(role);
+        for (BundleDescriptor bd : getBundleDescriptors()) {
+            bd.removeRole(role);
         }
     }
 
@@ -905,22 +890,6 @@ public class Application extends BundleDescriptor
         return libraryDirectory;
     }
 
-    /**
-     * The number of Web Components in this application.
-     * Current implementation only return the number of servlets
-     * inside the application, and not the JSPs since we cannot
-     * get that information from deployment descriptors.
-     *
-     * @return the number of Web Components
-     */
-    public int getWebComponentCount() {
-        int count = 0;
-        for (WebBundleDescriptor wbd : getWebBundleDescriptors()) {
-            count = count + wbd.getWebComponentDescriptors().size();
-        }
-        return count;
-    }
-
     public void removeModule(ModuleDescriptor<BundleDescriptor> descriptor) {
         if (modules.contains(descriptor)) {
             if (descriptor.getDescriptor() != null) {
@@ -944,42 +913,6 @@ public class Application extends BundleDescriptor
      */
     public Set<ModuleDescriptor<BundleDescriptor>> getModules() {
         return modules;
-    }
-
-    /**
-     * The number of EJB JARs in this application.
-     *
-     * @return the number of EJB JARS
-     */
-    public int getEjbComponentCount() {
-        int count = 0;
-        for (EjbBundleDescriptor ejbd : this.getEjbBundleDescriptors()) {
-            count = count + ejbd.getEjbs().size();
-        }
-        return count;
-    }
-
-
-    public int getRarComponentCount() {
-        return getBundleDescriptors(ConnectorDescriptor.class).size();
-    }
-
-    /**
-     * Obtain the EJB-JAR in this application of the given name.
-     * If the JAR is not
-     * present, throw an IllegalArgumentException.
-     *
-     * @return the EjbBundleDescriptor object with the given name
-     */
-    public EjbBundleDescriptor getEjbBundleByName(String name) {
-        for (EjbBundleDescriptor ejbd : getEjbBundleDescriptors()) {
-            if (ejbd.getDisplayName().equals(name))
-                return ejbd;
-        }
-        throw new IllegalArgumentException(localStrings.getLocalString(
-                "enterprise.deployment.exceptionapphasnoejbjarnamed",
-                "This application has no ejb jars of name {0}",
-                name));
     }
 
     /**
@@ -1065,20 +998,6 @@ public class Application extends BundleDescriptor
     }
 
     /**
-     * Get EJB-JAR of the given URI (filename within EAR)
-     */
-    public EjbBundleDescriptor getEjbBundleByUri(String name) {
-        EjbBundleDescriptor desc = getModuleByTypeAndUri(EjbBundleDescriptor.class, name);
-        if (desc != null) {
-            return desc;        
-        }
-        throw new IllegalArgumentException(localStrings.getLocalString(
-                "enterprise.deployment.exceptionapphasnoejbjarnamed",
-                "This application has no ejb jars of name {0}",
-                name));
-    }
-
-    /**
      * Lookup module by uri.
      *
      * @param uri the module path in the application archive
@@ -1158,7 +1077,7 @@ public class Application extends BundleDescriptor
      * @return the EjbDescriptor object with the given display name
      */
     public EjbDescriptor getEjbByName(String ejbName) {
-        for (EjbBundleDescriptor ejbd : getEjbBundleDescriptors()) {
+        for (EjbBundleDescriptor ejbd : getBundleDescriptors(EjbBundleDescriptor.class)) {
             if (ejbd.hasEjbByName(ejbName)) {
                 return ejbd.getEjbByName(ejbName);
             }
@@ -1181,120 +1100,6 @@ public class Application extends BundleDescriptor
             }
         }
         return false;
-    }
-
-    /**
-     * Obtain the application client in this application of the given display name. If the application client is not
-     * present, throw an IllegalArgumentException.
-     *
-     * @return the ApplicationClientDescriptor object with the given display name
-     */
-    public ApplicationClientDescriptor getApplicationClientByName(String name) {
-        for (ApplicationClientDescriptor acd : getBundleDescriptors(ApplicationClientDescriptor.class)) {
-            if (acd.getDisplayName().equals(name)) {
-                return acd;
-            }
-        }
-        throw new IllegalArgumentException(localStrings.getLocalString(
-                "enterprise.deployment.exceptionapphasnoappclientname",
-                "This application has no application clients of name {0}", name));
-    }
-
-    /**
-     * Obtain an application client descriptor in this application of the given URI. If the appclient is not
-     * present, throw an IllegalArgumentException.
-     */
-    public ApplicationClientDescriptor getApplicationClientByUri(String name) {
-        ApplicationClientDescriptor desc = getModuleByTypeAndUri(ApplicationClientDescriptor.class, name);
-        if (desc != null) {
-            return desc;
-        }
-        throw new IllegalArgumentException(name);
-    }
-
-    /**
-     * Obtain the WAR in this application of the given display name. If the WAR is not
-     * present, throw an IllegalArgumentException.
-     *
-     * @return the WebBundleDescriptor object with the given display name
-     */
-    public WebBundleDescriptor getWebBundleDescriptorByName(String name) {
-        for (WebBundleDescriptor wbd : getBundleDescriptors(WebBundleDescriptor.class)) {
-            if (wbd.getDisplayName().equals(name)) {
-                return wbd;
-            }
-        }
-        throw new IllegalArgumentException(localStrings.getLocalString(
-                "enterprise.deployment.exceptionapphasnowebappname",
-                "This application has no web app of name {0}", name));
-    }
-
-    /**
-     * Get WAR of a given URI (filename within EAR)
-     */
-    public WebBundleDescriptor getWebBundleDescriptorByUri(String name) {
-        WebBundleDescriptor desc = getModuleByTypeAndUri(WebBundleDescriptor.class, name);
-        if (desc != null){
-            return desc;
-        }
-        throw new IllegalArgumentException(localStrings.getLocalString(
-                "enterprise.deployment.exceptionapphasnowebappname",
-                "This application has no web app of name {0}", name));
-    }
-
-
-    /**
-     * Obtain the RAR in this application of the given URI. If the RAR is not
-     * present, throw an IllegalArgumentException.
-     */
-    public ConnectorDescriptor getRarDescriptorByUri(String name) {
-        ConnectorDescriptor desc = getModuleByTypeAndUri(ConnectorDescriptor.class, name);
-        if (desc != null) {
-            return desc;
-        }
-        throw new IllegalArgumentException(name);
-    }
-
-
-    /**
-     * Obtain the full set of all the subcomponents of this application that use
-     * a JNDI name environment..
-     *
-     * @return the Set of JndiNameEnvironment objects.
-     */
-    public Set<JndiNameEnvironment> getJndiNameEnvironments() {
-        Set<JndiNameEnvironment> jndiNameEnvironments = new HashSet<JndiNameEnvironment>();
-        jndiNameEnvironments.add(this);
-        jndiNameEnvironments.addAll(getWebBundleDescriptors());
-        jndiNameEnvironments.addAll(getApplicationClientDescriptors());
-        jndiNameEnvironments.addAll(getEjbDescriptors());
-        return jndiNameEnvironments;
-    }
-
-    /**
-     * Return a set of all com.sun.enterprise.deployment.WebService
-     * descriptors in the application.
-     */
-    public Set<WebService> getWebServiceDescriptors() {
-        Set<WebService> webServiceDescriptors = new HashSet<WebService>();
-        Set<BundleDescriptor> bundles = new HashSet<BundleDescriptor>();
-        bundles.addAll(getEjbBundleDescriptors());
-        bundles.addAll(getWebBundleDescriptors());
-        for (BundleDescriptor next : bundles) {
-            WebServicesDescriptor webServicesDesc =
-                    next.getWebServices();
-            webServiceDescriptors.addAll(webServicesDesc.getWebServices());
-        }
-        return webServiceDescriptors;
-    }
-
-    /**
-     * Obtain the full set of all the WARs in this application.
-     *
-     * @return the Set of WebBundleDescriptor objects.
-     */
-    public Set<WebBundleDescriptor> getWebBundleDescriptors() {
-        return getBundleDescriptors(WebBundleDescriptor.class);
     }
 
     /**
@@ -1379,55 +1184,7 @@ public class Application extends BundleDescriptor
      */
     public void removeBundleDescriptor(BundleDescriptor bundleDescriptor) {
         bundleDescriptor.setApplication(null);
-        getWebBundleDescriptors().remove(bundleDescriptor);
-    }
-
-
-    /**
-     * Obtain the full set of all the Ejb JAR deployment information in this application.
-     *
-     * @return the Set of EjbBundleDescriptor objects.
-     */
-    public Set<EjbBundleDescriptor> getEjbBundleDescriptors() {
-        return getBundleDescriptors(EjbBundleDescriptor.class);
-    }
-
-    /**
-     * Obtain the full set of all the Ejb JAR deployment information in this application.
-     *
-     * @return the Set of EjbBundleDescriptor objects.
-     */
-    public Set<ConnectorDescriptor> getRarDescriptors() {
-        return getBundleDescriptors(ConnectorDescriptor.class);
-    }
-
-    /**
-     * Return the Set of app client deploymenbt objects.
-     */
-    public Set<ApplicationClientDescriptor> getApplicationClientDescriptors() {
-        return getBundleDescriptors(ApplicationClientDescriptor.class);
-    }
-
-    /**
-     * Return the EjbCMPEntityDescriptor for a bean
-     * for the given classname.
-     * It is assumed that there is a 1-to-1 mapping
-     * from class to descriptor.
-     * This is called at runtime from the Persistence Manager.
-     */
-    public EjbCMPEntityDescriptor getCMPDescriptorFor(String className) {
-        synchronized(cmpDescriptorsLock) {
-        if (cmpDescriptors == null) {
-            cmpDescriptors = new HashMap();
-            for (EjbBundleDescriptor bundle : getBundleDescriptors(EjbBundleDescriptor.class)) {
-                for (EjbDescriptor ejb : bundle.getEjbs()) {
-                    if (ejb instanceof EjbCMPEntityDescriptor)
-                        cmpDescriptors.put(ejb.getEjbImplClassName(), ejb);
-                }
-            }
-        }
-        return (EjbCMPEntityDescriptor) cmpDescriptors.get(className);
-        }
+        getBundleDescriptors().remove(bundleDescriptor);
     }
 
     /**
@@ -1704,15 +1461,10 @@ public class Application extends BundleDescriptor
             toStringBuffer.append("\n  Module : ");
             aModule.print(toStringBuffer);
         }
-        toStringBuffer.append("\n EjbBundles: \n");
-        if (this.getEjbBundleDescriptors() != null)
-            printDescriptorSet(this.getEjbBundleDescriptors(), toStringBuffer);
-        toStringBuffer.append("\n WebBundleDescriptors ");
-        if (this.getWebBundleDescriptors() != null)
-            printDescriptorSet(this.getWebBundleDescriptors(), toStringBuffer);
-        toStringBuffer.append("\n applicationClientDescriptors ");
-        if (this.getApplicationClientDescriptors() != null)
-            printDescriptorSet(this.getApplicationClientDescriptors(), toStringBuffer);
+        toStringBuffer.append("\n Bundles: \n");
+        if (this.getBundleDescriptors() != null) {
+            printDescriptorSet(this.getBundleDescriptors(), toStringBuffer);
+        }
         toStringBuffer.append("\n roles ").append(getRoles());
         toStringBuffer.append("\n RoleMapper ").append(this.getRoleMapper());
         toStringBuffer.append("\n Realm ").append(realm);

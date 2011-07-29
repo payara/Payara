@@ -97,7 +97,7 @@ public class EjbArchivist extends Archivist<EjbBundleDescriptor> {
     public void setDescriptor(Application descriptor) {
         // this is acceptable if the application actually represents
         // a standalone module
-        Set ejbBundles = ((Application) descriptor).getEjbBundleDescriptors();
+        Set ejbBundles = ((Application) descriptor).getBundleDescriptors(EjbBundleDescriptor.class);
         if (ejbBundles.size()>0) {
             this.descriptor = (EjbBundleDescriptor) ejbBundles.iterator().next();
             if (this.descriptor.getModuleDescriptor().isStandalone())

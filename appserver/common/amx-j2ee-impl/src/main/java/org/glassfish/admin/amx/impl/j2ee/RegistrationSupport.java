@@ -211,7 +211,7 @@ final class RegistrationSupport
             top = parentMBean;
         }
 
-        for (final EjbBundleDescriptor desc : application.getEjbBundleDescriptors())
+        for (final EjbBundleDescriptor desc : application.getBundleDescriptors(EjbBundleDescriptor.class))
         {
             final ObjectName objectName = registerEjbModuleAndItsComponents(parentMBean, meta, appConfig, desc);
             if (isStandalone)
@@ -221,7 +221,7 @@ final class RegistrationSupport
             }
         }
 
-        for (final WebBundleDescriptor desc : application.getWebBundleDescriptors())
+        for (final WebBundleDescriptor desc : application.getBundleDescriptors(WebBundleDescriptor.class))
         {
             final ObjectName objectName = registerWebModuleAndItsComponents(parentMBean, meta, appConfig, desc);
             if (isStandalone)
@@ -231,13 +231,13 @@ final class RegistrationSupport
             }
         }
 
-        for (final ConnectorDescriptor desc : application.getRarDescriptors())
+        for (final ConnectorDescriptor desc : application.getBundleDescriptors(ConnectorDescriptor.class))
         {
             assert top == null;
             top = registerResourceAdapterModuleAndItsComponents(parentMBean, meta, appConfig, desc, appLocation);
         }
 
-        for (final ApplicationClientDescriptor desc : application.getApplicationClientDescriptors())
+        for (final ApplicationClientDescriptor desc : application.getBundleDescriptors(ApplicationClientDescriptor.class))
         {
             assert top == null;
             top = registerAppClient(parentMBean, meta, appConfig, desc);
