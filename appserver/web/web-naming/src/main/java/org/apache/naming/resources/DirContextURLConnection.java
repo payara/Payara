@@ -58,11 +58,13 @@
 
 package org.apache.naming.resources;
 
-import java.net.URL;
-import java.net.URLConnection;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.FileNotFoundException;
+import java.net.URL;
+import java.net.URLConnection;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.security.Permission;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -200,6 +202,7 @@ public class DirContextURLConnection
                         }
                     }
                 }
+                path = URLDecoder.decode(path, "UTF-8");
                 object = context.lookup(path);
                 attributes = context.getAttributes(path);
                 if (object instanceof Resource)
@@ -401,7 +404,8 @@ public class DirContextURLConnection
         } else {
             // Reopen resource
             try {
-                resource = (Resource) context.lookup(getURL().getFile());
+                resource = (Resource) context.lookup(
+                        URLDecoder.decode(getURL().getFile(), "UTF-8"));
             } catch (NamingException e) {
             }
         }
@@ -435,7 +439,8 @@ public class DirContextURLConnection
         }
         
         if ((resource == null) && (collection == null)) {
-            throw new FileNotFoundException();
+            throw new FileNotFoundException(
+                    (getURL() == null)? "null" : getURL().toString());
         }
         
         Vector<String> result = new Vector<String>();
@@ -446,11 +451,13 @@ public class DirContextURLConnection
                     context.list(getURL().getFile());
                 while (enumeration.hasMoreElements()) {
                     NameClassPair ncp = enumeration.nextElement();
-                    result.addElement(ncp.getName());
+                    result.addElement(
+                            URLEncoder.encode(ncp.getName(), "UTF-8"));
                 }
             } catch (NamingException e) {
                 // Unexpected exception
-                throw new FileNotFoundException();
+                throw new FileNotFoundException(
+                        (getURL() == null)? "null" : getURL().toString());
             }
         }
         
