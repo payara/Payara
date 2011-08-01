@@ -295,7 +295,8 @@ public class UniformLogFormatter extends Formatter {
                 recordBuffer.append(recordNumber++).append(NVPAIR_SEPARATOR);
             }
 
-            getNameValuePairs(recordBuffer, record);
+            // Not needed as per the current logging message format. Fixing bug 16849.
+            // getNameValuePairs(recordBuffer, record);
 
             if (_delegate != null) {
                 _delegate.format(recordBuffer, level);
