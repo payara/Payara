@@ -40,6 +40,9 @@
 
 package com.sun.enterprise.configapi.tests;
 
+import com.sun.enterprise.config.serverbeans.Cluster;
+import com.sun.enterprise.config.serverbeans.Server;
+import com.sun.hk2.component.ExistingSingletonInhabitant;
 import org.glassfish.config.support.GlassFishDocument;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.DomDocument;
@@ -47,6 +50,7 @@ import org.junit.Ignore;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
+import org.glassfish.api.admin.ServerEnvironment;
 
 /**
  * User: Jerome Dochez
@@ -69,5 +73,22 @@ public abstract class ConfigApiTest extends org.glassfish.tests.utils.ConfigApiT
                     }));
         }
         return doc;
+    }
+    
+    @Override
+    public void decorate(Habitat habitat) {
+        Server server = habitat.getComponent(Server.class, "server");
+        if (server != null) {
+            habitat.addIndex(new ExistingSingletonInhabitant<Server>(server),
+                Server.class.getName(), ServerEnvironment.DEFAULT_INSTANCE_NAME);
+
+            server.getConfig().addIndex(habitat, ServerEnvironment.DEFAULT_INSTANCE_NAME);
+        
+            Cluster c = server.getCluster();
+            if (c != null) {
+                habitat.addIndex(new ExistingSingletonInhabitant<Cluster>(c),
+                    Cluster.class.getName(), ServerEnvironment.DEFAULT_INSTANCE_NAME);
+            }
+        }
     }
 }

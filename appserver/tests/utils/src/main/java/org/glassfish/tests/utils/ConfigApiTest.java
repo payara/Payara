@@ -76,4 +76,9 @@ public abstract class ConfigApiTest {
 
     public abstract DomDocument getDocument(Habitat habitat);    
     
+    /* 
+     * Decorate the habitat after parsing.  This is called on the habitat
+     * just after parsing of the XML file is complete.
+     */
+    public void decorate(Habitat habitat) {}  
 }

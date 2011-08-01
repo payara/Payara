@@ -40,14 +40,22 @@
 
 package com.sun.enterprise.configapi.tests;
 
+import com.sun.enterprise.config.serverbeans.AlertService;
+import com.sun.enterprise.config.serverbeans.Config;
+import java.beans.PropertyVetoException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.glassfish.grizzly.config.dom.NetworkListener;
 import com.sun.hk2.component.ConstructorWomb;
+import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.config.support.ConfigConfigBeanListener;
 import org.glassfish.tests.utils.Utils;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.Test;
 import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.Inhabitant;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.ObservableBean;
 import org.jvnet.hk2.config.SingleConfigCode;
@@ -61,13 +69,19 @@ public class ConfigListenerTest extends ConfigApiTest {
 
     Habitat habitat;
 
+    @Override
     public String getFileName() {
         return "DomainTest";
     }
 
     @Before
     public void setup() {
-        habitat = Utils.getNewHabitat(this);    
+        habitat = Utils.getNewHabitat(this);
+        
+        // make sure the ConfigConfigListener exists
+        Inhabitant<ConfigConfigBeanListener> i = habitat.getInhabitantByType(ConfigConfigBeanListener.class);
+        ConfigConfigBeanListener ccbl = i.get();
+        assertTrue(ccbl != null);
     }
 
 
@@ -81,6 +95,7 @@ public class ConfigListenerTest extends ConfigApiTest {
 
         ConfigSupport.apply(new SingleConfigCode<NetworkListener>() {
 
+            @Override
             public Object run(NetworkListener param) {
                 param.setPort("8989");
                 return null;
@@ -95,6 +110,7 @@ public class ConfigListenerTest extends ConfigApiTest {
         // put back the right values in the domain to avoid test collisions
         ConfigSupport.apply(new SingleConfigCode<NetworkListener>() {
 
+            @Override
             public Object run(NetworkListener param) {
                 param.setPort("8080");
                 return null;
@@ -115,6 +131,7 @@ public class ConfigListenerTest extends ConfigApiTest {
 
         ConfigSupport.apply(new SingleConfigCode<NetworkListener>() {
 
+            @Override
             public Object run(NetworkListener param) {
                 param.setPort("8989");
                 return null;
@@ -127,10 +144,57 @@ public class ConfigListenerTest extends ConfigApiTest {
         // put back the right values in the domain to avoid test collisions        
         ConfigSupport.apply(new SingleConfigCode<NetworkListener>() {
 
+            @Override
             public Object run(NetworkListener param) {
                 param.setPort("8080");
                 return null;
             }
         }, container.httpListener);
+    }
+    
+    @Test
+    public void addDeleteConfigElementTest() throws TransactionFailure {
+        Transactions transactions = getHabitat().getComponent(Transactions.class);
+        Config config = habitat.getComponent(Config.class, ServerEnvironment.DEFAULT_INSTANCE_NAME);
+        assertTrue(config != null);
+        
+        ConfigSupport.apply(new SingleConfigCode<Config>() {
+            @Override
+            public Object run(Config c) throws TransactionFailure {
+                try {
+                    AlertService as = c.createChild(AlertService.class);
+                    c.setAlertService(as);
+                } catch (PropertyVetoException ex) {
+                    Logger.getLogger(ConfigListenerTest.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                return null;
+            }
+        }, config);
+        transactions.waitForDrain();
+        
+        // At this point, the AlertService should be available with the 
+        // ServerEnvironment.DEFAULT_INSTANCE_NAME because of the ConfigConfigListener
+        AlertService as1 = habitat.getComponent(AlertService.class, ServerEnvironment.DEFAULT_INSTANCE_NAME);
+        assertTrue(as1 != null);
+        assertTrue(ConfigSupport.getImpl(as1).getMasterView() == 
+                ConfigSupport.getImpl(config.getAlertService()).getMasterView());
+                
+        // Now remove the alert-service
+        ConfigSupport.apply(new SingleConfigCode<Config>() {
+            @Override
+            public Object run(Config c) {
+                try {
+                    c.setAlertService(null);
+                } catch (PropertyVetoException ex) {
+                    Logger.getLogger(ConfigListenerTest.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                return null;
+            }
+        }, config);
+        transactions.waitForDrain();
+
+        as1 = habitat.getComponent(AlertService.class, ServerEnvironment.DEFAULT_INSTANCE_NAME);
+        assertTrue(as1 == null);
+        assertTrue(config.getAlertService() == null);
     }
 }

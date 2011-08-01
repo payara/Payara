@@ -43,22 +43,7 @@
 <domain log-root="${com.sun.aas.instanceRoot}/logs" application-root="${com.sun.aas.instanceRoot}/applications" version="dochez-private">
   <system-applications />
   <applications />
-  <resources>
-    <jdbc-resource pool-name="__TimerPool" jndi-name="jdbc/__TimerPool" object-type="system-admin" />
-    <jdbc-resource pool-name="DerbyPool" jndi-name="jdbc/__default" />
-    <jdbc-connection-pool datasource-classname="org.apache.derby.jdbc.EmbeddedXADataSource" res-type="javax.sql.XADataSource" name="__TimerPool">
-      <property name="databaseName" value="${com.sun.aas.instanceRoot}/lib/databases/ejbtimer" />
-      <property name="connectionAttributes" value=";create=true" />
-    </jdbc-connection-pool>
-    <jdbc-connection-pool datasource-classname="org.apache.derby.jdbc.ClientDataSource" is-isolation-level-guaranteed="false" res-type="javax.sql.DataSource" name="DerbyPool">
-      <property name="PortNumber" value="1527" />
-      <property name="Password" value="APP" />
-      <property name="User" value="APP" />
-      <property name="serverName" value="localhost" />
-      <property name="DatabaseName" value="sun-appserv-samples" />
-      <property name="connectionAttributes" value=";create=true" />
-    </jdbc-connection-pool>
-  </resources>
+  <resources/>
   <servers>
     <server name="server" config-ref="server-config">
       <resource-ref ref="jdbc/__TimerPool" />
@@ -89,11 +74,6 @@
         <property name="adminConsoleDownloadLocation" value="${com.sun.aas.installRoot}/lib/install/applications/admingui.war" />
         <property name="ipsRoot" value="${com.sun.aas.installRoot}/.." />
       </admin-service>
-      <connector-service />
-      <ejb-container session-store="${com.sun.aas.instanceRoot}/session-store">
-        <ejb-timer-service />
-      </ejb-container>
-      <mdb-container />
       <jms-service default-jms-host="default_JMS_host" type="EMBEDDED">
         <jms-host host="localhost" name="default_JMS_host" lazy-init="true" />
       </jms-service>
@@ -235,11 +215,6 @@
         <property name="adminConsoleDownloadLocation" value="${com.sun.aas.installRoot}/lib/install/applications/admingui.war" />
         <property name="ipsRoot" value="${com.sun.aas.installRoot}/.." />
       </admin-service>
-      <connector-service />
-      <ejb-container session-store="${com.sun.aas.instanceRoot}/session-store">
-        <ejb-timer-service />
-      </ejb-container>
-      <mdb-container />
       <jms-service default-jms-host="default_JMS_host" type="EMBEDDED">
         <jms-host host="localhost" name="default_JMS_host" lazy-init="true" />
       </jms-service>
@@ -381,11 +356,6 @@
         <property name="adminConsoleDownloadLocation" value="${com.sun.aas.installRoot}/lib/install/applications/admingui.war" />
         <property name="ipsRoot" value="${com.sun.aas.installRoot}/.." />
       </admin-service>
-      <connector-service />
-      <ejb-container session-store="${com.sun.aas.instanceRoot}/session-store">
-        <ejb-timer-service />
-      </ejb-container>
-      <mdb-container />
       <jms-service default-jms-host="default_JMS_host" type="EMBEDDED">
         <jms-host host="localhost" name="default_JMS_host" lazy-init="true" />
       </jms-service>

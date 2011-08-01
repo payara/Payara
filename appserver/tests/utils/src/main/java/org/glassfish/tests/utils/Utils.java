@@ -102,12 +102,14 @@ public class Utils {
                     try {
                         DomDocument document = parser.parse(url,  test.getDocument(habitat));
                         habitat.addComponent(document);
+                        test.decorate(habitat);
                     } catch(Exception e) {
                         e.printStackTrace();
                     }
                     Logger.getAnonymousLogger().fine("time to parse domain.xml : " + String.valueOf(System.currentTimeMillis() - now));
                 }
             }
+            
         }).run(configParser);
         return habitat;
     }
