@@ -60,7 +60,7 @@ import java.net.MalformedURLException;
  */
 public interface ExtendedDeploymentContext extends DeploymentContext {
     
-    public enum Phase { UNKNOWN, PREPARE, PREPARED, LOAD, START, STOP, UNLOAD, CLEAN }
+    public enum Phase { UNKNOWN, PREPARE, PREPARED, LOAD, START, STOP, UNLOAD, CLEAN, REPLICATION }
 
     public static final String IS_TEMP_CLASSLOADER = "isTempClassLoader";
     public static final String TRACKER = "tracker";
