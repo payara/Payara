@@ -52,7 +52,7 @@ import org.jvnet.hk2.annotations.Contract;
 public interface PhysicalGroup extends Group {
 
     /**
-     * Returns the currenctly attached machines to this group
+     * Returns the currently attached machines to this group
      *
      * @return iterable of machines attached to this group
      */

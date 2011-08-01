@@ -73,7 +73,7 @@ public interface Virtualizations extends DomainExtension {
 
 
     @Element("group-managers")
-    @Create(value = "create-group-manager", resolver = VirtResolver.class, i18n = @I18n("org.glassfish.virtualization.create-group-manager"))
+//    @Create(value = "create-group-manager", resolver = VirtResolver.class, i18n = @I18n("org.glassfish.virtualization.create-group-manager"))
     @Listing(value = "list-group-managers", resolver = VirtResolver.class, i18n = @I18n("org.glassfish.virtualization.list-group-managers"))
     @Delete(value="delete-group-manager", resolver= TypeAndNameResolver.class, i18n = @I18n("org.glassfish.virtualization.delete-group-manager"))
     List<GroupManager> getGroupManagers();

@@ -40,10 +40,12 @@
 
 package org.glassfish.virtualization.config;
 
+import com.sun.enterprise.config.serverbeans.Domain;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.config.support.*;
+import org.jvnet.hk2.annotations.Decorate;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.*;
@@ -55,6 +57,8 @@ import java.util.List;
  * Provides configuration for a group of machines.
  */
 @Configured
+@Create(value = "create-group-manager", resolver = Virtualization.VirtResolver.class, i18n = @I18n("org.glassfish.virtualization.create-group-manager"))
+@Decorate(targetType = Domain.class, methodName = "getExtensions", with = { Create.class } )
 public interface GroupConfig extends ConfigBeanProxy {
 
     @Attribute(key = true)

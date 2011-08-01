@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2008-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,25 +41,17 @@
 package org.glassfish.internal.data;
 
 import com.sun.enterprise.config.serverbeans.ApplicationConfig;
-import org.glassfish.internal.data.EngineInfo;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
 import org.glassfish.api.deployment.ApplicationContainer;
-import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.Deployer;
 import org.glassfish.api.deployment.ApplicationContext;
 import org.glassfish.api.ActionReport;
-import org.glassfish.api.container.Adapter;
-import org.glassfish.api.container.EndpointRegistrationException;
-import org.glassfish.api.container.RequestDispatcher;
 import org.jvnet.hk2.config.TransactionFailure;
 
-import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.beans.PropertyVetoException;
 
-import com.sun.enterprise.config.serverbeans.Module;
 import com.sun.enterprise.config.serverbeans.Engine;
-import com.sun.hk2.component.Holder;
 
 /**
  * When a module is attached to a LoadedEngine, it creates an Engine reference. Each module

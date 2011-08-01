@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -100,11 +100,39 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
  * default mapping and all resources must be located in the target
  * type module local strings properties file.
  *
+ * Sometimes, the @Create annotation cannot be used in the parent
+ * configuration object because the parent cannot have a direct
+ * reference its children types.
+ *
+ * For instance, if you have a declaration like
+ * <code>
+ *     public interface ParentContainer {
+ *      @Element("*)
+ *      List<ParentConfigType> children();
+ *     }
+ * </code>
+ *
+ * you cannot use the @Create annotation in such declaration because
+ * you do not know which subtypes of ParentConfigType will exist.
+ *
+ * In such cases, you should place the @Create on the child type
+ * and use the @Decorate annotation alongside to specify the parent's
+ * method used to add the element to the parent.
+ *
+ * <code>
+ *     @Create(....)
+ *     @Decorate(parentType=ParentContainer.class, methodName="children",
+ *      with={Create.class})
+ *     public interface SomeChild extends ParentConfigType {
+ *      ...
+ *     }
+ * </code>
+ *
  * @author Jerome Dochez
  */
 @Contract
 @Retention(RUNTIME)
-@Target(ElementType.METHOD)
+@Target({ElementType.METHOD, ElementType.TYPE})
 @InhabitantAnnotation("default")
 @ContractProvided(AdminCommand.class)
 @ServiceProvider(GenericCreateCommand.class)

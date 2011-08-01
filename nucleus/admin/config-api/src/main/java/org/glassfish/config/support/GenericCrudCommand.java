@@ -84,8 +84,8 @@ public abstract class GenericCrudCommand implements CommandModelProvider, PostCo
     final protected static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(GenericCrudCommand.class);
 
     String commandName;
-    Class<ConfigBeanProxy> parentType=null;
-    Class<ConfigBeanProxy> targetType=null;
+    Class parentType=null;
+    Class targetType=null;
     Method targetMethod;
     // default level of noise, useful for just swithching these classes in debugging.
     protected final Level level = Level.FINE;
@@ -116,13 +116,19 @@ public abstract class GenericCrudCommand implements CommandModelProvider, PostCo
             throw new ComponentException(msg);            
         }
         commandName = index.substring(index.indexOf(":")+1);
-        String parentTypeName = myself.metadata().get(InhabitantsFile.TARGET_TYPE).get(0);
+        String parentTypeName = myself.metadata().getOne(InhabitantsFile.TARGET_TYPE);
+        String decoratedTypeName = myself.metadata().getOne(InhabitantsFile.DECORATED_TYPE);
         if (logger.isLoggable(level)) {
             logger.log(level,"Generic method parent targeted type is " + parentTypeName);
         }
 
         try {
-            parentType = (Class<ConfigBeanProxy>) loadClass(parentTypeName);
+            if (decoratedTypeName==null) {
+                parentType = loadClass(parentTypeName);
+            } else {
+                parentType = loadClass(decoratedTypeName);
+                targetType = loadClass(parentTypeName);
+            }
         } catch(ClassNotFoundException e) {
             String msg = localStrings.getLocalString(GenericCrudCommand.class,
                     "GenericCrudCommand.configbean_not_found",
@@ -153,16 +159,18 @@ public abstract class GenericCrudCommand implements CommandModelProvider, PostCo
             throw new ComponentException(msg);
         }
 
-        if (targetMethod.getParameterTypes().length==0) {
-            if (targetMethod.getGenericReturnType() instanceof ParameterizedType) {
-                targetType = Types.erasure(Types.getTypeArgument(
-                            targetMethod.getGenericReturnType(),0));
-            } else {
-                targetType =(Class<ConfigBeanProxy>) targetMethod.getReturnType();
-            }
+        if (targetType==null) {
+            if (targetMethod.getParameterTypes().length==0) {
+                if (targetMethod.getGenericReturnType() instanceof ParameterizedType) {
+                    targetType = Types.erasure(Types.getTypeArgument(
+                                targetMethod.getGenericReturnType(),0));
+                } else {
+                    targetType =targetMethod.getReturnType();
+                }
 
-        } else {
-            targetType = (Class<ConfigBeanProxy>) targetMethod.getParameterTypes()[0];
+            } else {
+                targetType = targetMethod.getParameterTypes()[0];
+            }
         }
     }
 
@@ -194,6 +202,21 @@ public abstract class GenericCrudCommand implements CommandModelProvider, PostCo
                     }
                 }
             }
+            // still not found, it may have been placed on the target type using a @Decorate.
+            String decoratedTypeName = myself.metadata().getOne(InhabitantsFile.TARGET_TYPE);
+            try {
+                if (decoratedTypeName!=null) {
+                    Class decoratedType = myself.getClassLoader().loadClass(decoratedTypeName);
+                    annotation = (T) decoratedType.getAnnotation(type);
+                }
+            } catch(Exception e) {
+                e.printStackTrace();
+            }
+
+            if (annotation!=null) {
+                return annotation;
+            }
+
             String msg = localStrings.getLocalString(GenericCrudCommand.class,
                     "GenericCrudCommand.annotation_not_found",
                     "Cannot find annotation {0} with value {1} on method {2}",
