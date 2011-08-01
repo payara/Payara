@@ -79,12 +79,16 @@ public class DeployService implements AdminCommand {
     ArchiveFactory archiveFactory;
 
     public void execute(AdminCommandContext context) {
-        //final ActionReport report = context.getActionReport();
+        final ActionReport report = context.getActionReport();
 
         try {
             orchestrator.deployApplication(archiveFactory.openArchive(new File(application)));
         } catch (Exception ex) {
             ex.printStackTrace();
+            // As long as the command is synchronous we can propagate the failure back to the client,
+            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            report.setMessage(ex.toString());
+            report.setFailureCause(ex);
         }
 
 /*
