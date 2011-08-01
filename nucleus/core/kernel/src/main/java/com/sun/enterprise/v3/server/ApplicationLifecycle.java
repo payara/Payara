@@ -999,8 +999,8 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
         if (info.isLoaded()) {
             info.stop(context, context.getLogger());
             info.unload(context);
-            events.send(new Event<ApplicationInfo>(Deployment.APPLICATION_DISABLED, info), false);
         }
+        events.send(new Event<ApplicationInfo>(Deployment.APPLICATION_DISABLED, info), false);
 
         try {
             info.clean(context);
@@ -1951,8 +1951,10 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
         Application app, ApplicationInfo appInfo, ActionReport report, 
         Logger logger) throws Exception {
         // if the application is not loaded, do not unload
-        if (appInfo == null || !appInfo.isLoaded()) {
-            return;
+        if (domain.isCurrentInstanceMatchingTarget(commandParams.target, commandParams.name, server.getName(), null)) {
+            if (appInfo == null || !appInfo.isLoaded()) {
+                return;
+            }
         }
 
         final ExtendedDeploymentContext deploymentContext =
@@ -1979,10 +1981,11 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
             DeployCommandParameters commandParams = app.getDeployParameters(appRef);
             // if the application is already loaded, do not load again
             ApplicationInfo appInfo = appRegistry.get(commandParams.name);
-            if (appInfo != null && appInfo.isLoaded()) {
-                return;
+            if (domain.isCurrentInstanceMatchingTarget(target, commandParams.name, server.getName(), null)) {
+                if (appInfo != null && appInfo.isLoaded()) {
+                    return;
+                }
             }
-
             commandParams.origin = DeployCommandParameters.Origin.load;
             commandParams.target = target;
             commandParams.enabled = Boolean.TRUE;

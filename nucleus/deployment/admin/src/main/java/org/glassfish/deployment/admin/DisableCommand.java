@@ -264,23 +264,6 @@ public class DisableCommand extends UndeployCommandParameters implements AdminCo
             }
         }
 
-
-        if (!domain.isCurrentInstanceMatchingTarget(target, appName, server.getName(), null)) {
-            if (!isundeploy) {
-                try {
-                    deployment.updateAppEnabledAttributeInDomainXML(appName, target, false);
-                } catch(TransactionFailure e) {
-                    logger.warning("failed to set enable attribute for " + appName);
-                }
-            }
-            if (env.isDas()) {
-                // if it's non DAS target, we should still send this 
-                // DISABLE event on DAS so proper clean up can be triggered
-                events.send(new Event<ApplicationInfo>(Deployment.APPLICATION_DISABLED, appInfo));
-            }
-            return;
-        }
-
         try {
             Application app = applications.getApplication(appName);
             this.name = appName;

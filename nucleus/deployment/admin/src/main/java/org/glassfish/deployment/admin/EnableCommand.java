@@ -186,17 +186,6 @@ public class EnableCommand extends StateCommandParameters implements AdminComman
             }
         }
 
-
-        if (!domain.isCurrentInstanceMatchingTarget(target, name(), server.getName(), null)) {
-            // update the domain.xml
-            try {
-                deployment.updateAppEnabledAttributeInDomainXML(name(), target, true);
-            } catch(TransactionFailure e) {
-                logger.warning("failed to set enable attribute for " + name());
-            }
-            return;  
-        }
-
         try {
             Application app = applications.getApplication(name()); 
             ApplicationRef appRef = domain.getApplicationRefInServer(server.getName(), name());
