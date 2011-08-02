@@ -43,6 +43,7 @@ package com.sun.logging;
 import java.util.Locale;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
+import java.util.Vector;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
@@ -294,6 +295,8 @@ public class LogDomains {
     // Lock to ensure the Logger creation is synchronized (JDK 6U10 and before can deadlock)
     static Lock lock = new ReentrantLock();
 
+    // Use to store clazz name for which resource bundle is not found.
+    static Vector<String> vectorClazz = new Vector<String>();
 
     /**
      * This is temporary and needed so that IAS can run with or without
@@ -411,8 +414,12 @@ public class LogDomains {
                         } catch (MissingResourceException me) {
                         }
 
-                        Logger l = LogManager.getLogManager().getLogger(name);
-                        l.log(Level.FINE, "Can not find resource bundle for this logger. " + " class name that failed: " + clazz.getName());
+                        if(!vectorClazz.contains(clazz.getName())) {
+                            Logger l = LogManager.getLogManager().getLogger(name);
+                            l.log(Level.FINE, "Can not find resource bundle for this logger. " + " class name that failed: " + clazz.getName());
+                            vectorClazz.add(clazz.getName());
+                        }
+
 
                         //throw e;
                         return null;
