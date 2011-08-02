@@ -293,6 +293,12 @@ public interface Application extends Injectable, ApplicationName, PropertyBag {
     Resources getResources();
 
     void setResources(Resources resources) throws PropertyVetoException;
+    
+    @Element("*")
+    List<ApplicationExtension> getExtensions();
+    
+    @DuckTyped    
+    <T extends ApplicationExtension> T getExtensionByType(Class<T> type);
 
     @DuckTyped
     Module getModule(String moduleName);
@@ -457,6 +463,17 @@ public interface Application extends Injectable, ApplicationName, PropertyBag {
             for (Property p : instance.getProperty()) {
                 if (p.getName().equals(propName)) {
                     return new File(URI.create(p.getValue()));
+                }
+            }
+            return null;
+        }
+
+        public static <T extends ApplicationExtension> T getExtensionByType(Application a, Class<T> type) {
+            for (ApplicationExtension extension : a.getExtensions()) {
+                try {
+                    return type.cast(extension);
+                } catch (Exception e) {
+                    // ignore, not the right type.
                 }
             }
             return null;
