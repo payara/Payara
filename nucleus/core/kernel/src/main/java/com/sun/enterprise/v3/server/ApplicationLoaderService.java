@@ -440,13 +440,6 @@ public class ApplicationLoaderService implements Startup, PreDestroy, PostConstr
     private void stopApplication(Application app, ApplicationInfo appInfo) {
         final ActionReport dummy = new HTMLActionReporter();
         if (appInfo!=null) {
-
-            // send this disable event on the DAS when the application  
-            // is not loaded on DAS
-            if (!appInfo.isLoaded() && env.isDas()) {
-                events.send(new Event<ApplicationInfo>(Deployment.APPLICATION_DISABLED, appInfo));
-            }
-
             UndeployCommandParameters parameters = new UndeployCommandParameters(appInfo.getName());
             parameters.origin = UndeployCommandParameters.Origin.unload;
 

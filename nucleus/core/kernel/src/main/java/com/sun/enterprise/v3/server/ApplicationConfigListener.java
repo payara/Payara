@@ -234,6 +234,11 @@ public class ApplicationConfigListener implements TransactionListener,
             return;
         }
 
+        ApplicationInfo appInfo = appRegistry.get(appName);
+        if (appInfo == null || appInfo.isLoaded()) {
+            return;
+        }
+
         long operationStartTime = 
             Calendar.getInstance().getTimeInMillis();
 
@@ -267,6 +272,9 @@ public class ApplicationConfigListener implements TransactionListener,
         }
 
         ApplicationInfo appInfo = appRegistry.get(appName);
+        if (appInfo == null || !appInfo.isLoaded()) {
+            return;
+        }
 
         try {
             ActionReport report = new HTMLActionReporter();

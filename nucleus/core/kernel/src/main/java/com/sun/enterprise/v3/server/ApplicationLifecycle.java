@@ -84,6 +84,7 @@ import org.glassfish.internal.data.*;
 import org.glassfish.internal.api.*;
 import org.glassfish.internal.deployment.Deployment;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
+import org.glassfish.internal.deployment.ApplicationLifecycleInterceptor;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
@@ -170,10 +171,14 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
 
     private ExecutorService executorService = null;
 
+    private ApplicationLifecycleInterceptor alcInterceptor = null;
+
     public void postConstruct() {
         executorService = createExecutorService();
         deploymentLifecycleProbeProvider = 
             new DeploymentLifecycleProbeProvider();
+        alcInterceptor = habitat.getComponent(
+            ApplicationLifecycleInterceptor.class);
     }
 
     /**
@@ -399,6 +404,11 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                 context.createApplicationClassLoader(clh, handler);
                 if (tracing!=null) {
                     tracing.addMark(DeploymentTracing.Mark.CLASS_LOADER_CREATED);
+                }
+
+                if (alcInterceptor != null) {
+                    alcInterceptor.before(
+                        ExtendedDeploymentContext.Phase.PREPARE, context);
                 }
 
 
@@ -996,10 +1006,17 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
             report.failure(context.getLogger(), "Application not registered", null);
             return null;
         }
+
+        if (alcInterceptor != null) {
+            alcInterceptor.before(
+                ExtendedDeploymentContext.Phase.STOP, context);
+        }
+
         if (info.isLoaded()) {
             info.stop(context, context.getLogger());
             info.unload(context);
         }
+
         events.send(new Event<ApplicationInfo>(Deployment.APPLICATION_DISABLED, info), false);
 
         try {
@@ -1950,11 +1967,15 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
     public void disable(UndeployCommandParameters commandParams, 
         Application app, ApplicationInfo appInfo, ActionReport report, 
         Logger logger) throws Exception {
-        // if the application is not loaded, do not unload
-        if (domain.isCurrentInstanceMatchingTarget(commandParams.target, commandParams.name, server.getName(), null)) {
-            if (appInfo == null || !appInfo.isLoaded()) {
-                return;
-            }
+        if (appInfo == null) {
+            report.failure(logger, "Application not registered", null);
+            return;
+        }
+
+        // if it's not on DAS and the application is not loaded, do not unload
+        // when it's on DAS, there is some necessary clean up we need to do
+        if (!env.isDas() && !appInfo.isLoaded()) {
+            return;
         }
 
         final ExtendedDeploymentContext deploymentContext =
@@ -1981,10 +2002,8 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
             DeployCommandParameters commandParams = app.getDeployParameters(appRef);
             // if the application is already loaded, do not load again
             ApplicationInfo appInfo = appRegistry.get(commandParams.name);
-            if (domain.isCurrentInstanceMatchingTarget(target, commandParams.name, server.getName(), null)) {
-                if (appInfo != null && appInfo.isLoaded()) {
-                    return;
-                }
+            if (appInfo != null && appInfo.isLoaded()) {
+                return;
             }
             commandParams.origin = DeployCommandParameters.Origin.load;
             commandParams.target = target;
