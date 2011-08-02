@@ -82,6 +82,7 @@ javassist has fixed the issue in JASSIST-104, and as part of WELD-570, the new j
 org.jboss.weld.proxy.util,
 org.jboss.weld.bean.proxy.util,
 org.jboss.weld.context.http,
+org.jboss.weld.context.cache,
 org.jboss.weld.bean.builtin.ee,
 javassist.util.proxy
                             </Export-Package>
