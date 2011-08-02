@@ -251,6 +251,14 @@ public class ListComponentsCommandTest {
         public File application() {return null;}
         public File deploymentPlan() {return null;}
         public void recordFileLocations(File appFile, File deploymentPlanFile) {}
+
+        @Override
+        public List<ApplicationExtension> getExtensions() {return null;}
+
+        @Override
+        public <T extends ApplicationExtension> T getExtensionByType(Class<T> type) {
+            return null;
+        }
     }
 
             //mock-up Engine object
