@@ -42,7 +42,12 @@
 
 <domain log-root="${com.sun.aas.instanceRoot}/logs" application-root="${com.sun.aas.instanceRoot}/applications" version="10.0">
   <system-applications />
-  <applications />
+  <applications>
+      <application>
+          <an-application-extension some-attribute="tae1"/>
+          <an-application-extension some-attribute="tae2"/>
+      </application>
+  </applications>
   <resources/>
   <servers>
     <server config-ref="server-config" name="server">

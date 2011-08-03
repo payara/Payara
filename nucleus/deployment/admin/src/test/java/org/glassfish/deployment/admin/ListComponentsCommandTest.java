@@ -259,6 +259,10 @@ public class ListComponentsCommandTest {
         public <T extends ApplicationExtension> T getExtensionByType(Class<T> type) {
             return null;
         }
+        @Override
+        public <T extends ApplicationExtension> List<T> getExtensionsByType(Class<T> type) {
+            return null;
+        }
     }
 
             //mock-up Engine object

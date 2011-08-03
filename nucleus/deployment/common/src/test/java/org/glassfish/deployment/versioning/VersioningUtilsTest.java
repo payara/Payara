@@ -811,5 +811,10 @@ public class VersioningUtilsTest {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
+        @Override
+        public <T extends ApplicationExtension> List<T> getExtensionsByType(Class<T> type) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
     }
 }

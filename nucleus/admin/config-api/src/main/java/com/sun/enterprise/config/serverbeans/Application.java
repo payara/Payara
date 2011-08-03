@@ -37,7 +37,6 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
 package com.sun.enterprise.config.serverbeans;
 
 import java.beans.PropertyVetoException;
@@ -64,12 +63,10 @@ import org.jvnet.hk2.config.DuckTyped;
 import org.jvnet.hk2.config.Element;
 
 @Configured
-@RestRedirects(
-        {
-          @RestRedirect(opType= RestRedirect.OpType.DELETE, commandName="undeploy"),
-          @RestRedirect(opType= RestRedirect.OpType.POST, commandName = "redeploy")
-        }
-)
+@RestRedirects({
+    @RestRedirect(opType = RestRedirect.OpType.DELETE, commandName = "undeploy"),
+    @RestRedirect(opType = RestRedirect.OpType.POST, commandName = "redeploy")
+})
 public interface Application extends Injectable, ApplicationName, PropertyBag {
 
     public static final String APP_LOCATION_PROP_NAME = "appLocation";
@@ -91,7 +88,7 @@ public interface Application extends Injectable, ApplicationName, PropertyBag {
      * @return possible object is
      *         {@link String }
      */
-    @Attribute    
+    @Attribute
     String getContextRoot();
 
     /**
@@ -125,8 +122,8 @@ public interface Application extends Injectable, ApplicationName, PropertyBag {
      * @return possible object is
      *         {@link String }
      */
-    @Attribute(required=true)
-    @NotNull 
+    @Attribute(required = true)
+    @NotNull
     String getObjectType();
 
     /**
@@ -143,7 +140,7 @@ public interface Application extends Injectable, ApplicationName, PropertyBag {
      * @return possible object is
      *         {@link String }
      */
-    @Attribute(defaultValue="true", dataType=Boolean.class)
+    @Attribute(defaultValue = "true", dataType = Boolean.class)
     String getEnabled();
 
     /**
@@ -177,7 +174,7 @@ public interface Application extends Injectable, ApplicationName, PropertyBag {
      * @return possible object is
      *         {@link String }
      */
-    @Attribute(defaultValue="false", dataType=Boolean.class)
+    @Attribute(defaultValue = "false", dataType = Boolean.class)
     String getAvailabilityEnabled();
 
     /**
@@ -194,7 +191,7 @@ public interface Application extends Injectable, ApplicationName, PropertyBag {
      * @return possible object is
      *         {@link String }
      */
-    @Attribute(defaultValue="true", dataType=Boolean.class)
+    @Attribute(defaultValue = "true", dataType = Boolean.class)
     String getAsyncReplication();
 
     /**
@@ -211,7 +208,7 @@ public interface Application extends Injectable, ApplicationName, PropertyBag {
      * @return possible object is
      *         {@link String }
      */
-    @Attribute(defaultValue="false", dataType=Boolean.class)
+    @Attribute(defaultValue = "false", dataType = Boolean.class)
     String getDirectoryDeployed();
 
     /**
@@ -239,10 +236,9 @@ public interface Application extends Injectable, ApplicationName, PropertyBag {
      */
     void setDescription(String value) throws PropertyVetoException;
 
-
     @Element
     List<Module> getModule();
-    
+
     /**
      * Gets the value of the engine property.
      * <p/>
@@ -293,12 +289,23 @@ public interface Application extends Injectable, ApplicationName, PropertyBag {
     Resources getResources();
 
     void setResources(Resources resources) throws PropertyVetoException;
-    
+
     @Element("*")
     List<ApplicationExtension> getExtensions();
-    
-    @DuckTyped    
+
+    /*
+     * Get an extension of the specified type. If there is more than one, it is
+     * undefined as to which one is returned.
+     */
+    @DuckTyped
     <T extends ApplicationExtension> T getExtensionByType(Class<T> type);
+
+    /*
+     * Get all extensions of the specified type.  If there are none, and empty
+     * list is returned.
+     */
+    @DuckTyped
+    <T extends ApplicationExtension> List<T> getExtensionsByType(Class<T> type);
 
     @DuckTyped
     Module getModule(String moduleName);
@@ -326,14 +333,15 @@ public interface Application extends Injectable, ApplicationName, PropertyBag {
 
     @DuckTyped
     void recordFileLocations(File app, File plan);
-    
+
     @DuckTyped
     File application();
-    
+
     @DuckTyped
     File deploymentPlan();
-    
+
     class Duck {
+
         public static Module getModule(Application instance, String name) {
             for (Module module : instance.getModule()) {
                 if (module.getName().equals(name)) {
@@ -349,16 +357,16 @@ public interface Application extends Injectable, ApplicationName, PropertyBag {
                 deploymentProps.put(prop.getName(), prop.getValue());
             }
             deploymentProps.setProperty(ServerTags.OBJECT_TYPE,
-                instance.getObjectType());
+                    instance.getObjectType());
             if (instance.getContextRoot() != null) {
                 deploymentProps.setProperty(ServerTags.CONTEXT_ROOT,
-                    instance.getContextRoot());
+                        instance.getContextRoot());
             }
             if (instance.getDirectoryDeployed() != null) {
                 deploymentProps.setProperty(ServerTags.DIRECTORY_DEPLOYED,
-                    instance.getDirectoryDeployed());
+                        instance.getDirectoryDeployed());
             }
-            return deploymentProps;            
+            return deploymentProps;
         }
 
         public static DeployCommandParameters getDeployParameters(Application app, ApplicationRef appRef) {
@@ -368,7 +376,7 @@ public interface Application extends Injectable, ApplicationName, PropertyBag {
                 uri = new URI(app.getLocation());
             } catch (URISyntaxException e) {
                 Logger.getAnonymousLogger().log(
-                    Level.SEVERE, e.getMessage(), e);
+                        Level.SEVERE, e.getMessage(), e);
             }
 
             if (uri == null) {
@@ -378,8 +386,8 @@ public interface Application extends Injectable, ApplicationName, PropertyBag {
             DeployCommandParameters deploymentParams = new DeployCommandParameters(new File(uri));
             deploymentParams.name = app.getName();
             deploymentParams.description = app.getDescription();
-            if (Boolean.valueOf(app.getEnabled()) && appRef != null && 
-                Boolean.valueOf(appRef.getEnabled())) { 
+            if (Boolean.valueOf(app.getEnabled()) && appRef != null
+                    && Boolean.valueOf(appRef.getEnabled())) {
                 deploymentParams.enabled = Boolean.TRUE;
             } else {
                 deploymentParams.enabled = Boolean.FALSE;
@@ -398,15 +406,15 @@ public interface Application extends Injectable, ApplicationName, PropertyBag {
         }
 
         public static Map<String, Properties> getModulePropertiesMap(
-            Application me) {
-            Map<String, Properties> modulePropertiesMap = 
-                new HashMap<String, Properties>();
-            for (Module module: me.getModule()) {
+                Application me) {
+            Map<String, Properties> modulePropertiesMap =
+                    new HashMap<String, Properties>();
+            for (Module module : me.getModule()) {
                 if (module.getProperty() != null) {
                     Properties moduleProps = new Properties();
                     for (Property property : module.getProperty()) {
-                        moduleProps.put(property.getName(), 
-                            property.getValue());
+                        moduleProps.put(property.getName(),
+                                property.getValue());
                     }
                     modulePropertiesMap.put(module.getName(), moduleProps);
                 }
@@ -415,29 +423,26 @@ public interface Application extends Injectable, ApplicationName, PropertyBag {
         }
 
         public static boolean isStandaloneModule(Application me) {
-            return !(Boolean.valueOf(me.getDeployProperties().getProperty
-                (ServerTags.IS_COMPOSITE)));
+            return !(Boolean.valueOf(me.getDeployProperties().getProperty(ServerTags.IS_COMPOSITE)));
         }
 
         public static boolean isLifecycleModule(Application me) {
-            return Boolean.valueOf(me.getDeployProperties().getProperty
-                (ServerTags.IS_LIFECYCLE));
+            return Boolean.valueOf(me.getDeployProperties().getProperty(ServerTags.IS_LIFECYCLE));
         }
 
         public static boolean isOSGiModule(Application me) {
             return me.containsSnifferType(OSGI_SNIFFER_TYPE);
         }
 
-
-        public static boolean containsSnifferType(Application app, 
-            String snifferType) {
+        public static boolean containsSnifferType(Application app,
+                String snifferType) {
             List<Engine> engineList = new ArrayList<Engine>();
 
             // first add application level engines
             engineList.addAll(app.getEngine());
 
             // now add module level engines
-            for (Module module: app.getModule()) {
+            for (Module module : app.getModule()) {
                 engineList.addAll(module.getEngines());
             }
 
@@ -448,16 +453,16 @@ public interface Application extends Injectable, ApplicationName, PropertyBag {
             }
             return false;
         }
-        
+
         public static File application(final Application instance) {
             return fileForProp(instance, APP_LOCATION_PROP_NAME);
-            
+
         }
-        
+
         public static File deploymentPlan(final Application instance) {
             return fileForProp(instance, DEPLOYMENT_PLAN_LOCATION_PROP_NAME);
         }
-        
+
         private static File fileForProp(final Application instance,
                 final String propName) {
             for (Property p : instance.getProperty()) {
@@ -478,13 +483,26 @@ public interface Application extends Injectable, ApplicationName, PropertyBag {
             }
             return null;
         }
+
+        public static <T extends ApplicationExtension> List<T> getExtensionsByType(Application a, Class<T> type) {
+            ArrayList<T> exts = new ArrayList<T>();
+            for (ApplicationExtension extension : a.getExtensions()) {
+                try {
+                    exts.add(type.cast(extension));
+                } catch (Exception e) {
+                    // ignore, not the right type.
+                }
+            }
+            return exts;
+        }
     }
-    
+
     /**
-    	Properties as per {@link PropertyBag}
+    Properties as per {@link PropertyBag}
      */
-    @ToDo(priority=ToDo.Priority.IMPORTANT, details="Provide PropertyDesc for legal props" )
-    @PropertiesDesc(props={})
+    @ToDo(priority = ToDo.Priority.IMPORTANT, details = "Provide PropertyDesc for legal props")
+    @PropertiesDesc(props = {})
     @Element
+    @Override
     List<Property> getProperty();
 }
