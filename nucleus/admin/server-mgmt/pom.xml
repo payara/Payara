@@ -42,58 +42,64 @@
 -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-    <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.glassfish</groupId>
-        <artifactId>glassfish-parent</artifactId>
+        <groupId>org.glassfish.admin</groupId>
+        <artifactId>nucleus-admin</artifactId>
         <version>3.2-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
-    <groupId>org.glassfish.cluster</groupId>
-    <artifactId>cluster</artifactId>
-    <packaging>pom</packaging>
-    <name>Cluster</name>
-    <developers>
-        <developer>
-            <id>tmueller</id>
-            <name>Tom Mueller</name>
-            <organization>Oracle, Inc.</organization>
-            <roles>
-                <role>lead</role>
-                <role>developer</role>
-            </roles>
-        </developer>
-        <developer>
-            <id>shannon</id>
-            <name>Bill Shannon</name>
-            <organization>Oracle, Inc.</organization>
-            <roles>
-                <role>developer</role>
-            </roles>
-        </developer>
-        <developer>
-            <id>bnevins</id>
-            <name>Byron Nevins</name>
-            <organization>Oracle Corporation</organization>
-            <roles>
-                <role>developer</role>
-            </roles>
-        </developer>
-        <developer>
-            <id>bbissett</id>
-            <name>Bobby Bissett</name>
-            <organization>Oracle Corporation</organization>
-            <roles>
-                <role>developer</role>
-            </roles>
-        </developer>
-    </developers>
-    <modules>
-        <module>common</module>
-        <module>admin</module>
-        <module>cli</module>
-        <module>gms-bootstrap</module>
-        <module>gms-adapter</module>
-    </modules>
-</project>
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>server-mgmt</artifactId>
+    <packaging>hk2-jar</packaging>
+    <name>admin-server-management</name>
+    <description>Server Management</description>
 
+    <build>
+        <resources>
+            <resource>
+                <directory>src/main/java</directory>
+                <includes>
+                    <include>**/*.properties</include>
+                    <include>**/*.xml</include>
+                </includes>
+            </resource>
+            <resource>
+                <directory>src/main/resources</directory>
+                <includes>
+                    <include>**/*.template</include>
+                    <include>**/*.exe</include>
+                </includes>
+            </resource>
+        </resources>
+        <plugins>
+            <plugin>
+                <groupId>org.glassfish.hk2</groupId>
+                <artifactId>hk2-maven-plugin</artifactId>
+                <configuration>
+                    <archive>
+		        <manifestEntries>
+			    <Class-Path>common-l10n.jar</Class-Path>
+                        </manifestEntries>
+                    </archive>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+    <dependencies>
+        <dependency>
+            <groupId>org.glassfish.common</groupId>
+            <artifactId>common-util</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.admin</groupId>
+            <artifactId>admin-util</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.admin</groupId>
+            <artifactId>admin-cli</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+    </dependencies>
+</project>

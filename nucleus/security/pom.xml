@@ -45,55 +45,16 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.glassfish</groupId>
-        <artifactId>glassfish-parent</artifactId>
+        <artifactId>glassfish-nucleus-parent</artifactId>
         <version>3.2-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
+        <relativePath>../pom.xml</relativePath>        
     </parent>
-    <groupId>org.glassfish.cluster</groupId>
-    <artifactId>cluster</artifactId>
+    <groupId>org.glassfish.security</groupId>
+    <artifactId>nucleus-security</artifactId>
     <packaging>pom</packaging>
-    <name>Cluster</name>
-    <developers>
-        <developer>
-            <id>tmueller</id>
-            <name>Tom Mueller</name>
-            <organization>Oracle, Inc.</organization>
-            <roles>
-                <role>lead</role>
-                <role>developer</role>
-            </roles>
-        </developer>
-        <developer>
-            <id>shannon</id>
-            <name>Bill Shannon</name>
-            <organization>Oracle, Inc.</organization>
-            <roles>
-                <role>developer</role>
-            </roles>
-        </developer>
-        <developer>
-            <id>bnevins</id>
-            <name>Byron Nevins</name>
-            <organization>Oracle Corporation</organization>
-            <roles>
-                <role>developer</role>
-            </roles>
-        </developer>
-        <developer>
-            <id>bbissett</id>
-            <name>Bobby Bissett</name>
-            <organization>Oracle Corporation</organization>
-            <roles>
-                <role>developer</role>
-            </roles>
-        </developer>
-    </developers>
+    <name>GlassFish Security Infrastructure and Technology Integration Modules</name>  
     <modules>
-        <module>common</module>
-        <module>admin</module>
-        <module>cli</module>
-        <module>gms-bootstrap</module>
-        <module>gms-adapter</module>
-    </modules>
+        <module>core</module>
+        <module>ssl-impl</module>
+  </modules>
 </project>
-

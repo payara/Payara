@@ -63,7 +63,7 @@ import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 public final class ListBackupsCommand extends BackupCommands {
 
     private static final LocalStringsImpl strings =
-            new LocalStringsImpl(ListDomainsCommand.class);
+            new LocalStringsImpl(ListBackupsCommand.class);
 
     @Override
     protected void validate()

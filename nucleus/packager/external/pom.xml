@@ -50,29 +50,24 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
       <groupId>org.glassfish</groupId>
-      <artifactId>glassfish-parent</artifactId>
+      <artifactId>glassfish-nucleus-parent</artifactId>
       <version>3.2-SNAPSHOT</version>
       <relativePath>../../pom.xml</relativePath>
     </parent>
     
     <packaging>pom</packaging>
     <groupId>org.glassfish.external</groupId>
-    <artifactId>external</artifactId>
-    <name>Repackaged external modules</name>
+    <artifactId>nucleus-external</artifactId>
+    <name>Repackaged nucleus external modules</name>
 
     <properties>
         <findbugs.skip>true</findbugs.skip>
     </properties>
 
     <modules>
-        <module>ant</module>
-        <module>javadb</module>    
-        <module>jmxremote_optional</module>
-        <module>dbschema</module>
-        <module>schema2beans</module>
-	<module>antlr</module>
-	<module>jmsra</module>
-        <module>jaxr_ra</module>
+        <module>ldapbp</module>
+        <module>libpam4j</module>
+        <module>trilead-ssh2</module>
     </modules>
     <build>
         <plugins>
