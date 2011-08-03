@@ -43,7 +43,7 @@ package org.glassfish.admin.rest;
 import com.sun.jersey.api.client.ClientResponse;
 import org.junit.Test;
 
-import javax.transaction.Status;
+
 import java.util.HashMap;
 import java.util.Map;
 
