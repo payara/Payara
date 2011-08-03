@@ -64,7 +64,7 @@ import com.sun.corba.ee.spi.ior.IOR;
 import com.sun.corba.ee.spi.ior.iiop.IIOPProfile;
 import com.sun.corba.ee.spi.ior.iiop.IIOPProfileTemplate;
 
-import com.sun.corba.ee.spi.orbutil.generic.UnaryFunction;
+import org.glassfish.pfl.basic.func.UnaryFunction ;
 
 import com.sun.corba.ee.spi.folb.SocketInfo ;
 

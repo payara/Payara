@@ -62,7 +62,7 @@ import com.sun.corba.ee.spi.orb.ORB;
 import com.sun.corba.ee.spi.orb.ORBConfigurator;
 import com.sun.corba.ee.spi.transport.SocketInfo;
 
-import com.sun.corba.ee.spi.orbutil.ORBConstants;
+import com.sun.corba.ee.spi.misc.ORBConstants;
 import com.sun.corba.ee.spi.ior.iiop.IIOPProfileTemplate ;
 import com.sun.corba.ee.spi.ior.iiop.IIOPAddress ;
 

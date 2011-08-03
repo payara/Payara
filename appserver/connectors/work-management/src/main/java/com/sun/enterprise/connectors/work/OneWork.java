@@ -53,7 +53,7 @@ import com.sun.enterprise.connectors.work.context.WorkContextHandler;
  *
  * @author Binod P.G
  */
-public final class OneWork implements com.sun.corba.ee.spi.orbutil.threadpool.Work {
+public final class OneWork implements com.sun.corba.ee.spi.threadpool.Work {
 
     private final Work work;
     private final WorkCoordinator coordinator;

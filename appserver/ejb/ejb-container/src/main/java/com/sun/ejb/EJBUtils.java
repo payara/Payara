@@ -65,7 +65,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 
-import static com.sun.corba.ee.spi.orbutil.codegen.Wrapper.*;
+import static org.glassfish.pfl.dynamic.codegen.spi.Wrapper.*;
 import com.sun.logging.LogDomains;
 
 /**

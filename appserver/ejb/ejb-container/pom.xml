@@ -244,9 +244,8 @@
             <version>${hk2.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.sun.corba</groupId>
-            <artifactId>glassfish-corba-codegen</artifactId>
-            <version>${glassfish-corba.version}</version>
+            <groupId>org.glassfish.pfl</groupId>
+            <artifactId>pfl-dynamic</artifactId>
 	    <optional>true</optional> 
         </dependency>
         <dependency>

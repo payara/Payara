@@ -103,16 +103,16 @@
             <type>jar</type>
         </dependency>
         <dependency>
-            <groupId>com.sun.corba</groupId>
-            <artifactId>glassfish-corba-orbgeneric</artifactId>
+            <groupId>org.glassfish.pfl</groupId>
+            <artifactId>pfl-basic</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.sun.corba</groupId>
-            <artifactId>glassfish-corba-codegen</artifactId>
+            <groupId>org.glassfish.pfl</groupId>
+            <artifactId>pfl-dynamic</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.sun.corba</groupId>
-            <artifactId>glassfish-corba-asm</artifactId>
+            <groupId>org.glassfish.pfl</groupId>
+            <artifactId>pfl-asm</artifactId>
         </dependency>
         <dependency>
             <groupId>org.glassfish.orb</groupId>

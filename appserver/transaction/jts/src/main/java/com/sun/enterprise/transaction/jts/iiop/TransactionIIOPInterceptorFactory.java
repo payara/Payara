@@ -57,6 +57,8 @@ import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
 
+import org.glassfish.pfl.basic.func.NullaryFunction ;
+
 import org.omg.CORBA.*;
 import org.omg.IOP.Codec;
 import org.omg.PortableInterceptor.Current;
@@ -65,8 +67,7 @@ import org.omg.PortableInterceptor.ORBInitInfo;
 import org.omg.PortableInterceptor.ServerRequestInterceptor;
 
 import com.sun.corba.ee.spi.costransactions.TransactionService;
-import com.sun.corba.ee.spi.orbutil.ORBConstants;
-import com.sun.corba.ee.spi.orbutil.closure.ClosureFactory;
+import com.sun.corba.ee.spi.misc.ORBConstants;
 import com.sun.corba.ee.spi.legacy.interceptor.ORBInitInfoExt;
 import com.sun.corba.ee.spi.logging.POASystemException;
 import com.sun.corba.ee.impl.txpoa.TSIdentificationImpl;
@@ -154,13 +155,14 @@ public class TransactionIIOPInterceptorFactory implements IIOPInterceptorFactory
                         org.omg.CosTransactions.Current transactionCurrent =
                                 jts.get_current();
 
-                        theORB.getLocalResolver().register(
-                                ORBConstants.TRANSACTION_CURRENT_NAME,
-                                ClosureFactory.makeConstant(transactionCurrent));
+                        theORB.getLocalResolver().register( ORBConstants.TRANSACTION_CURRENT_NAME,
+                            NullaryFunction.Factory.makeConstant(
+                                (org.omg.CORBA.Object)transactionCurrent));
 
                         // the JTS PI use this to call the proprietary hooks
-                        theORB.getLocalResolver().register(
-                                "TSIdentification", ClosureFactory.makeConstant(tsIdent));
+                        theORB.getLocalResolver().register( "TSIdentification", 
+                            NullaryFunction.Factory.makeConstant(
+                                (org.omg.CORBA.Object)tsIdent));
                         txServiceInitialized = true;
                     } catch (Exception ex) {
                         throw new INITIALIZE("JTS Exception: " + ex,

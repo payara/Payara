@@ -69,13 +69,13 @@
     </developers>
     <dependencies>
         <dependency>
-            <groupId>com.sun.corba</groupId>
-            <artifactId>glassfish-corba-orbgeneric</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.glassfish.admin</groupId>
             <artifactId>admin-util</artifactId>
             <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.pfl</groupId>
+            <artifactId>pfl-basic</artifactId>
         </dependency>
         <dependency>
             <groupId>com.sun.corba</groupId>

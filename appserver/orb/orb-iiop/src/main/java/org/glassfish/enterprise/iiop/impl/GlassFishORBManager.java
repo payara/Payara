@@ -47,7 +47,7 @@ import com.sun.corba.ee.impl.orb.ORBImpl;
 import com.sun.corba.ee.impl.orb.ORBSingleton;
 import com.sun.corba.ee.spi.oa.rfm.ReferenceFactoryManager;
 import com.sun.corba.ee.spi.osgi.ORBFactory;
-import com.sun.corba.ee.spi.orbutil.ORBConstants;
+import com.sun.corba.ee.spi.misc.ORBConstants;
 import com.sun.corba.ee.spi.orb.ORB ;
 import com.sun.corba.ee.impl.folb.InitialGroupInfoService ;
 

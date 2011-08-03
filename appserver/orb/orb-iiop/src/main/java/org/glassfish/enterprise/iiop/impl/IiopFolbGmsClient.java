@@ -60,7 +60,7 @@ import com.sun.corba.ee.spi.folb.GroupInfoService;
 import com.sun.corba.ee.impl.folb.GroupInfoServiceBase;
 import com.sun.corba.ee.spi.folb.GroupInfoServiceObserver;
 import com.sun.corba.ee.spi.folb.SocketInfo;
-import com.sun.corba.ee.spi.orbutil.ORBConstants;
+import com.sun.corba.ee.spi.misc.ORBConstants;
 import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Configs;

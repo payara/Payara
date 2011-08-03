@@ -73,7 +73,7 @@ import com.sun.corba.ee.spi.orb.ORB;
 import com.sun.corba.ee.spi.presentation.rmi.PresentationManager;
 import com.sun.corba.ee.spi.presentation.rmi.StubAdapter;
 
-import com.sun.corba.ee.spi.orbutil.ORBConstants;
+import com.sun.corba.ee.spi.misc.ORBConstants;
 import com.sun.logging.LogDomains;
 import java.util.ArrayList;
 import java.util.List;

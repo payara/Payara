@@ -47,8 +47,8 @@ import com.sun.ejb.EJBUtils;
 
 import static java.lang.reflect.Modifier.*;
 
-import static com.sun.corba.ee.spi.orbutil.codegen.Wrapper.*;
-import com.sun.corba.ee.spi.orbutil.codegen.Type;
+import static org.glassfish.pfl.dynamic.codegen.spi.Wrapper.*;
+import org.glassfish.pfl.dynamic.codegen.spi.Type ;
 
 import com.sun.enterprise.util.LocalStringManagerImpl;
 

@@ -48,8 +48,7 @@ import com.sun.enterprise.util.LocalStringManagerImpl;
 
 import static java.lang.reflect.Modifier.*;
 
-import static com.sun.corba.ee.spi.orbutil.codegen.Wrapper.*;
-
+import static org.glassfish.pfl.dynamic.codegen.spi.Wrapper.*;
 
 /**
  * This class is used to generate a sub-interface of the

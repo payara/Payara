@@ -78,7 +78,7 @@ import com.sun.corba.ee.spi.presentation.rmi.StubAdapter;
 import com.sun.corba.ee.spi.oa.rfm.ReferenceFactory ;
 import com.sun.corba.ee.spi.oa.rfm.ReferenceFactoryManager ;
 
-import com.sun.corba.ee.spi.orbutil.ORBConstants;
+import com.sun.corba.ee.spi.misc.ORBConstants;
 import com.sun.corba.ee.org.omg.CORBA.SUNVMCID;
 import com.sun.corba.ee.spi.ior.IOR;
 import com.sun.corba.ee.spi.ior.ObjectKey;
@@ -87,7 +87,7 @@ import com.sun.corba.ee.spi.orb.ORB;
 
 import com.sun.enterprise.util.Utility;
 
-import com.sun.corba.ee.spi.orbutil.codegen.Wrapper ;
+import org.glassfish.pfl.dynamic.codegen.spi.Wrapper ;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.logging.Level;

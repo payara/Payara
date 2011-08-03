@@ -157,6 +157,10 @@
             <version>${project.parent.version}</version>
         </dependency>
         <dependency>
+            <groupId>org.glassfish.pfl</groupId>
+            <artifactId>pfl-basic</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.sun.corba</groupId>
             <artifactId>glassfish-corba-omgapi</artifactId>
         </dependency>

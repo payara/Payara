@@ -40,14 +40,14 @@
 
 package org.glassfish.enterprise.iiop.impl;
 
-import com.sun.corba.ee.impl.orbutil.ORBUtility;
-import com.sun.corba.ee.spi.transport.CorbaAcceptor;
+import com.sun.corba.ee.impl.misc.ORBUtility;
+import com.sun.corba.ee.spi.transport.Acceptor;
 import java.util.Hashtable;
 import java.util.Map;
 import java.util.logging.Logger;
 import javax.net.ssl.SSLContext;
 import com.sun.corba.ee.spi.orb.ORB;
-import com.sun.corba.ee.spi.orbutil.ORBConstants;
+import com.sun.corba.ee.spi.misc.ORBConstants;
 import com.sun.corba.ee.spi.transport.ORBSocketFactory;
 import com.sun.enterprise.config.serverbeans.IiopListener;
 import com.sun.enterprise.config.serverbeans.IiopService;
@@ -343,7 +343,7 @@ public class IIOPSSLSocketFactory  implements ORBSocketFactory
 	}
     }
 
-    public void setAcceptedSocketOptions(CorbaAcceptor acceptor,
+    public void setAcceptedSocketOptions(Acceptor acceptor,
             ServerSocket serverSocket, Socket socket)  {
 	if (_logger.isLoggable(Level.FINE)) {
 	    _logger.log(Level.FINE, "setAcceptedSocketOptions: " + acceptor

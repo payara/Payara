@@ -126,7 +126,11 @@
         <build.id>${user.name}-private</build.id><!-- on Hudson and RE, this gets replaced by real build ID -->
         <stax-api.version>1.0-2</stax-api.version>
         <jsftemplating.version>2.1.0</jsftemplating.version>
-        <glassfish-corba.version>3.2.0-b002</glassfish-corba.version>
+
+        <pfl.version>3.2.0-b001</pfl.version>
+        <gmbal.version>3.2.0-b003</gmbal.version>
+        <glassfish-corba.version>3.2.0-b005</glassfish-corba.version>
+
         <uc-pkg-client.version>1.122-54.2834</uc-pkg-client.version>
         <uc-pkg-bootstrap.version>1.122-54.2834</uc-pkg-bootstrap.version>
         <webservices.version>2.1</webservices.version>
@@ -151,7 +155,6 @@
         <jersey.version>1.9-ea03</jersey.version>
         <jbi.version>1.0</jbi.version>
         <wsdl4j.version>1.6.2</wsdl4j.version>
-        <gmbal.version>3.1.0-b001</gmbal.version>
         <glassfish-management-api.version>3.1.0-b001</glassfish-management-api.version>
         <mimepull.version>1.5</mimepull.version>
         <findbugs.skip>false</findbugs.skip>
@@ -1107,27 +1110,7 @@
             </dependency>
             <dependency>
                 <groupId>com.sun.corba</groupId>
-                <artifactId>glassfish-corba-orbgeneric</artifactId>
-                <version>${glassfish-corba.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.sun.corba</groupId>
                 <artifactId>glassfish-corba-omgapi</artifactId>
-                <version>${glassfish-corba.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.sun.corba</groupId>
-                <artifactId>glassfish-corba-internal-api</artifactId>
-                <version>${glassfish-corba.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.sun.corba</groupId>
-                <artifactId>glassfish-corba-codegen</artifactId>
-                <version>${glassfish-corba.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.sun.corba</groupId>
-                <artifactId>glassfish-corba-asm</artifactId>
                 <version>${glassfish-corba.version}</version>
             </dependency>
             <dependency>
@@ -1137,8 +1120,39 @@
             </dependency>
             <dependency>
                 <groupId>com.sun.corba</groupId>
-                <artifactId>glassfish-corba-newtimer</artifactId>
+                <artifactId>glassfish-corba-internal-api</artifactId>
                 <version>${glassfish-corba.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.glassfish.pfl</groupId>
+                <artifactId>pfl-basic</artifactId>
+                <version>${pfl.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.glassfish.pfl</groupId>
+                <artifactId>pfl-dynamic</artifactId>
+                <version>${pfl.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.glassfish.pfl</groupId>
+                <artifactId>pfl-basic-tools</artifactId>
+                <version>${pfl.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.glassfish.pfl</groupId>
+                <artifactId>pfl-asm</artifactId>
+                <version>${pfl.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.glassfish.pfl</groupId>
+                <artifactId>pfl-tf</artifactId>
+                <version>${pfl.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.glassfish.pfl</groupId>
+                <artifactId>pfl-tf-tools</artifactId>
+                <version>${pfl.version}</version>
             </dependency>
 
             <dependency>

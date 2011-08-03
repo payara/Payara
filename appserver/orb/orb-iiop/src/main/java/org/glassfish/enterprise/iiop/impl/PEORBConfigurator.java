@@ -40,17 +40,18 @@
 
 package org.glassfish.enterprise.iiop.impl;
 
+// import org.glassfish.pfl.dynamic.copyobject.spi.CopyobjectDefaults ;
+import com.sun.corba.ee.spi.copyobject.CopyobjectDefaults ;
+import org.glassfish.pfl.dynamic.copyobject.spi.ObjectCopierFactory ;
 import com.sun.corba.ee.spi.copyobject.CopierManager;
-import com.sun.corba.ee.spi.copyobject.CopyobjectDefaults;
 import com.sun.corba.ee.spi.orb.DataCollector;
 import com.sun.corba.ee.spi.orb.ORB;
 import com.sun.corba.ee.spi.orb.ORBConfigurator;
-import com.sun.corba.ee.spi.orbutil.copyobject.ObjectCopierFactory;
-import com.sun.corba.ee.spi.orbutil.threadpool.NoSuchWorkQueueException;
-import com.sun.corba.ee.spi.orbutil.threadpool.ThreadPoolManager;
+import com.sun.corba.ee.spi.threadpool.NoSuchWorkQueueException;
+import com.sun.corba.ee.spi.threadpool.ThreadPoolManager;
 import com.sun.corba.ee.spi.presentation.rmi.InvocationInterceptor;
-import com.sun.corba.ee.spi.transport.CorbaTransportManager;
-import com.sun.corba.ee.spi.transport.CorbaAcceptor;
+import com.sun.corba.ee.spi.transport.TransportManager;
+import com.sun.corba.ee.spi.transport.Acceptor;
 import com.sun.corba.ee.spi.transport.TransportDefault;
 import com.sun.logging.LogDomains;
 import com.sun.enterprise.config.serverbeans.IiopListener;
@@ -72,7 +73,7 @@ import com.sun.corba.ee.impl.naming.cosnaming.TransientNameService;
 
 // TODO import com.sun.corba.ee.impl.txpoa.TSIdentificationImpl;
 
-import com.sun.corba.ee.spi.orbutil.threadpool.ThreadPool;
+import com.sun.corba.ee.spi.threadpool.ThreadPool;
 import java.util.logging.Level;
 import java.util.Set;
 import java.util.HashSet;
@@ -98,7 +99,7 @@ public class PEORBConfigurator implements ORBConfigurator {
     private static ThreadPoolManager threadpoolMgr = null;
     private static boolean txServiceInitialized = false;
 
-    private CorbaAcceptor lazyAcceptor = null;
+    private Acceptor lazyAcceptor = null;
 
     static {
         // TODO tsIdent = new TSIdentificationImpl();
@@ -179,7 +180,7 @@ public class PEORBConfigurator implements ORBConfigurator {
         ObjectCopierFactory stream = 
             CopyobjectDefaults.makeORBStreamObjectCopierFactory(orb) ;
         ObjectCopierFactory reflect = 
-            CopyobjectDefaults.makeReflectObjectCopierFactory( orb ) ;
+            CopyobjectDefaults.makeReflectObjectCopierFactory(orb) ;
         ObjectCopierFactory fallback = 
             CopyobjectDefaults.makeFallbackObjectCopierFactory( reflect, stream ) ;
         ObjectCopierFactory reference = 
@@ -222,12 +223,12 @@ public class PEORBConfigurator implements ORBConfigurator {
         );
     }
 
-    private CorbaAcceptor addAcceptor( org.omg.CORBA.ORB orb, boolean isLazy, 
+    private Acceptor addAcceptor( org.omg.CORBA.ORB orb, boolean isLazy, 
         String host, String type, int port ) {
 
         com.sun.corba.ee.spi.orb.ORB theOrb = (com.sun.corba.ee.spi.orb.ORB) orb;
-        CorbaTransportManager ctm = theOrb.getTransportManager() ;
-        CorbaAcceptor acceptor ;
+        TransportManager ctm = theOrb.getTransportManager() ;
+        Acceptor acceptor ;
         if (isLazy) {
             acceptor = TransportDefault.makeLazyCorbaAcceptor( 
                 theOrb, port, host, type );
@@ -280,7 +281,7 @@ public class PEORBConfigurator implements ORBConfigurator {
                 String host = handleAddrAny( ilb.getAddress() ) ;
 
                 if (!securityEnabled || ilb.getSsl() == null) {
-                    CorbaAcceptor acceptor = addAcceptor( orb, isLazy, host, 
+                    Acceptor acceptor = addAcceptor( orb, isLazy, host, 
                             IIOP_CLEAR_TEXT_CONNECTION, port ) ;
                     if( isLazy ) {
                         lazyAcceptor = acceptor;
@@ -312,9 +313,9 @@ public class PEORBConfigurator implements ORBConfigurator {
     private static class AcceptorDelegateImpl 
         implements GlassFishORBHelper.SelectableChannelDelegate {
 
-        private CorbaAcceptor acceptor;
+        private Acceptor acceptor;
 
-        AcceptorDelegateImpl(CorbaAcceptor lazyAcceptor) {
+        AcceptorDelegateImpl(Acceptor lazyAcceptor) {
             acceptor = lazyAcceptor;
         }
 
