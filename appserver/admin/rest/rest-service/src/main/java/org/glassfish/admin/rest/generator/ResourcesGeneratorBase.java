@@ -576,8 +576,8 @@ public abstract class ResourcesGeneratorBase implements ResourcesGenerator {
 
                 {
                     put("JvmOptions", new CollectionLeafMetaData("create-jvm-options", "delete-jvm-options", "JvmOption"));
-                    put("Principal", new CollectionLeafMetaData("__create-principal", "__delete-principal", "Principal"));
-                    put("UserGroup", new CollectionLeafMetaData("__create-user-group", "__delete-user-group", "User Group"));
+          //          put("Principal", new CollectionLeafMetaData("__create-principal", "__delete-principal", "Principal"));
+          //          put("UserGroup", new CollectionLeafMetaData("__create-user-group", "__delete-user-group", "User Group"));
                 }
             };
 }
