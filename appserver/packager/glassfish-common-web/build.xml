@@ -53,6 +53,12 @@
        <stage-module-jars/>
        <stage-distribution-fragments/>
 
+       <!-- overriding nucleus-base content with appserver-base -->
+       <resolveArtifact artifactId="appserver-base" property="appserver-base.zip"/>
+       
+       <unzip src="${appserver-base.zip}" dest="target/stage/${install.dir.name}"
+           overwrite="true"/>          
+
   
        <if test="${compression}">
 	       <antcall target="pack.compression" />

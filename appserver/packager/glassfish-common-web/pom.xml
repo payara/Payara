@@ -105,12 +105,16 @@
             <version>${project.version}</version>
             <type>pom</type> 
         </dependency>
-
         <dependency>
             <groupId>com.sun.pkg</groupId>
             <artifactId>pkg-client</artifactId>
         </dependency>
-
+        <dependency>
+           <groupId>org.glassfish.packager</groupId>
+           <artifactId>appserver-base</artifactId>
+           <version>${project.version}</version>
+           <type>zip</type>
+       </dependency>
         <!-- javaee.jar containing Manifest Classpath of JavaEE API jars -->
         <dependency>
            <groupId>org.glassfish.extras</groupId>
