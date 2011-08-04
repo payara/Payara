@@ -137,6 +137,18 @@
            <version>${project.version}</version>
            <type>distribution-fragment</type>
   	</dependency>
+        <!-- TODO: move cluster plugin jars back to glassfish-cluster package
+             once nucleus distro assembly moves to its own workspace -->
+        <dependency>
+           <groupId>org.glassfish.admingui</groupId>
+           <artifactId>console-cluster-plugin</artifactId>
+           <version>${project.version}</version>
+        </dependency>
+        <dependency>
+           <groupId>org.glassfish.admingui</groupId>
+           <artifactId>console-cluster-plugin-help</artifactId>
+        </dependency>
+
     	<!-- now, listing package dependencies so that their content
              can be excluded during staging -->	
    

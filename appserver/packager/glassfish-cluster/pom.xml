@@ -105,15 +105,6 @@
               <version>${project.version}</version>
           </dependency>
           <dependency>
-              <groupId>org.glassfish.admingui</groupId>
-              <artifactId>console-cluster-plugin</artifactId>
-              <version>${project.version}</version>
-          </dependency>
-          <dependency>
-              <groupId>org.glassfish.admingui</groupId>
-              <artifactId>console-cluster-plugin-help</artifactId>
-          </dependency>
-          <dependency>
               <groupId>org.glassfish.cluster</groupId>
               <artifactId>cluster-admin</artifactId>
               <version>${project.version}</version>
@@ -128,12 +119,7 @@
               <artifactId>gms-adapter</artifactId>
               <version>${project.version}</version>
           </dependency>
-          <dependency>
-              <groupId>org.glassfish.loadbalancer</groupId>
-              <artifactId>load-balancer-admin</artifactId>
-              <version>${project.version}</version>
-          </dependency>
-
+          
     	<!-- now, listing package dependencies so that their content
              can be excluded during staging -->	
 	<!-- package level dependency -->
