@@ -149,13 +149,6 @@
         <!-- additional dependencies required to create default domain -->
         <dependency>
             <groupId>org.glassfish.admin</groupId>
-            <artifactId>cli-optional</artifactId>
-            <version>${project.version}</version>
-            <scope>provided</scope>
-            <type>jar</type>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.admin</groupId>
             <artifactId>server-mgmt</artifactId>
             <version>${project.version}</version>
             <scope>provided</scope>

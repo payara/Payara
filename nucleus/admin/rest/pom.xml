@@ -41,22 +41,24 @@
 
 -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-    <modelVersion>4.0.0</modelVersion>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <parent>
-        <groupId>org.glassfish</groupId>
-        <artifactId>glassfish-parent</artifactId>
+        <groupId>org.glassfish.admin</groupId>
+        <artifactId>nucleus-admin</artifactId>
         <version>3.2-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
-    <groupId>org.glassfish.cluster</groupId>
-    <artifactId>cluster</artifactId>
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>rest-service-parent</artifactId>
     <packaging>pom</packaging>
-    <name>Cluster</name>
+    <name>GlassFish Admin REST Parent</name>
+    <description>Parent module for GlassFish REST interface</description>
+
     <developers>
         <developer>
-            <id>tmueller</id>
-            <name>Tom Mueller</name>
+            <id>jdlee</id>
+            <name>Jason Lee</name>
             <organization>Oracle, Inc.</organization>
             <roles>
                 <role>lead</role>
@@ -64,36 +66,26 @@
             </roles>
         </developer>
         <developer>
-            <id>shannon</id>
-            <name>Bill Shannon</name>
+            <id>ludo</id>
+            <name>Ludovic Champenois</name>
+            <url>http://weblogs.java.net/blog/ludo/</url>
             <organization>Oracle, Inc.</organization>
             <roles>
                 <role>developer</role>
             </roles>
         </developer>
         <developer>
-            <id>bnevins</id>
-            <name>Byron Nevins</name>
-            <organization>Oracle Corporation</organization>
-            <roles>
-                <role>developer</role>
-            </roles>
-        </developer>
-        <developer>
-            <id>bbissett</id>
-            <name>Bobby Bissett</name>
-            <organization>Oracle Corporation</organization>
+            <id>mm110999</id>
+            <name>Mitesh Meswani</name>
+            <organization>Oracle, Inc.</organization>
             <roles>
                 <role>developer</role>
             </roles>
         </developer>
     </developers>
+
     <modules>
-        <module>common</module>
-        <module>admin</module>
-        <module>cli</module>
-        <module>gms-bootstrap</module>
-        <module>gms-adapter</module>
+        <module>rest-client</module>
+        <module>rest-service</module>
     </modules>
 </project>
-

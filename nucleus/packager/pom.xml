@@ -84,6 +84,7 @@
 	<module>nucleus-hk2</module>
 	<module>nucleus-grizzly</module>
 	<module>nucleus</module>
+	<module>external</module>
     </modules>
 
     <build>

@@ -50,7 +50,7 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
     <groupId>org.glassfish.cluster</groupId>
-    <artifactId>nucleus-cluster</artifactId>
+    <artifactId>cluster</artifactId>
     <packaging>pom</packaging>
     <name>Cluster</name>
     <developers>
@@ -89,6 +89,11 @@
         </developer>
     </developers>
     <modules>
+        <module>common</module>
+        <module>admin</module>
+        <module>cli</module>
+        <module>gms-bootstrap</module>
+        <module>gms-adapter</module>
         <module>ssh</module>
     </modules>
 </project>

@@ -114,7 +114,6 @@
             <modules>
                 <!-- Every time you change module list, please change
                      the same under release profiles as well (below) -->
-                <module>cluster</module>
                 <module>javaee-api</module>
                 <module>common</module>
                 <module>ha</module>

@@ -62,6 +62,5 @@
         <!-- <module>jmx-remote</module> -->
         <!-- not needed at the moment -->
         <module>javax.management.j2ee</module>
-        <module>rest</module>
     </modules>
 </project>
