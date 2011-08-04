@@ -253,6 +253,11 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
+            <groupId>org.glassfish.external</groupId>
+            <artifactId>libpam4j-repackaged</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
 	    <groupId>org.glassfish.external</groupId>
 	    <artifactId>management-api</artifactId>
         </dependency>
