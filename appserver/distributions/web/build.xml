@@ -47,9 +47,19 @@
 
     <target name="create.distribution">
         <echo message="Creating distribution: web"/>
+        <!-- making sure that nucleus distro is staged first and web content
+             later so that we ensure appserver-base clobbering nucleus-base 
+             Can be removed once nucleus distribution assembly moves into 
+             nucleus workspace and glassfish-nucleus packaging does this -->
         <unzip dest="target/stage">
             <fileset dir="target/stage">
+                <include name="nucleus*.zip"/>
+            </fileset>
+        </unzip>
+        <unzip dest="target/stage" overwrite="true">
+            <fileset dir="target/stage">
                 <include name="*.zip"/>
+                <exclude name="nucleus*.zip">
             </fileset>
         </unzip>
        
