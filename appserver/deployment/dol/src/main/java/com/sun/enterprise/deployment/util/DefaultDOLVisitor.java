@@ -56,10 +56,10 @@ import java.util.Iterator;
  * @version 
  */
 
-public class DefaultDOLVisitor implements ApplicationVisitor, EjbBundleVisitor, EjbVisitor, ManagedBeanVisitor, ConnectorVisitor, WebBundleVisitor, AppClientVisitor {
+public class DefaultDOLVisitor implements ApplicationVisitor, EjbBundleVisitor, EjbVisitor, ManagedBeanVisitor, WebBundleVisitor {
    protected BundleDescriptor bundleDescriptor = null;
 
-    /** Creates new TraceVisitor */
+    /** Creates new DefaultDOLVisitor */
     public DefaultDOLVisitor() {
     }
     
@@ -77,7 +77,7 @@ public class DefaultDOLVisitor implements ApplicationVisitor, EjbBundleVisitor, 
     public void accept(EjbBundleDescriptor bundleDescriptor) {
         this.bundleDescriptor = bundleDescriptor;
     }
-    
+
     /**
      * visits an ejb descriptor
      * @param ejb descriptor
@@ -85,13 +85,6 @@ public class DefaultDOLVisitor implements ApplicationVisitor, EjbBundleVisitor, 
     public void accept(EjbDescriptor ejb) {
     }
 
-    /**
-     * visits a connector descriptor
-     * @param connectordescriptor
-     */
-    public void accept(ConnectorDescriptor conDesc) {
-    }
-        
     public void accept(InjectionCapable injectable) {
     }
     
@@ -171,49 +164,19 @@ public class DefaultDOLVisitor implements ApplicationVisitor, EjbBundleVisitor, 
     }
 
     /**
+     * @return a EjbVisitor (if ejbs should be visited)
+     */
+    public EjbVisitor getEjbVisitor() {
+        return this;
+    }
+
+    /**
      * visits an message destination for the last J2EE component visited
      * @param the message destination
      */
     public void accept(MessageDestinationDescriptor msgDest) {
     }
 
-    /**
-     * visits a appclient descriptor
-     * @param appclientdescriptor
-     */
-    public void accept(ApplicationClientDescriptor appclientdescriptor) {
-       bundleDescriptor = appclientdescriptor;
-    }
-
-     /**
-     * @return an implementation of the ejbBundleVisitor (if any)
-     * to visit ejb bundle descriptors
-     */
-    public EjbBundleVisitor getEjbBundleVisitor() {
-        return this;
-    }
-    
-    /**
-     * @return a EjbVisitor (if ejbs should be visited) 
-     */ 
-    public EjbVisitor getEjbVisitor() {
-        return this;
-    }
-
-    /**
-     * @return a ConnectorVisitor (if connector should be visited) 
-     */ 
-    public ConnectorVisitor getConnectorVisitor() {
-        return this;
-    }
-
-    /**
-     * @return a AppClientVisitor (if app client should be visited) 
-     */ 
-    public AppClientVisitor getAppClientVisitor() {
-        return this;
-    }
-    
     /**
      * visits a CMP field definition (for CMP entity beans)
      * @param field descriptor for the CMP field
@@ -241,14 +204,6 @@ public class DefaultDOLVisitor implements ApplicationVisitor, EjbBundleVisitor, 
      * @param the descriptor
      */
     public void accept(Descriptor descriptor) {
-    }
-    
-    /**
-     * @return an implementation of the ejbBundleVisitor (if any)
-     * to visit ejb bundle descriptors
-     */
-    public WebBundleVisitor getWebBundleVisitor() {
-        return this;
     }
     
     /**

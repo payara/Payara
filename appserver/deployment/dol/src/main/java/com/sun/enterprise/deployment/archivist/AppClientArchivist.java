@@ -47,7 +47,7 @@ import com.sun.enterprise.deployment.io.AppClientDeploymentDescriptorFile;
 import com.sun.enterprise.deployment.io.DeploymentDescriptorFile;
 import com.sun.enterprise.deployment.io.runtime.AppClientRuntimeDDFile;
 import com.sun.enterprise.deployment.io.runtime.GFAppClientRuntimeDDFile;
-import com.sun.enterprise.deployment.util.ApplicationValidator;
+import com.sun.enterprise.deployment.util.AppClientValidator;
 import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.deployment.util.ModuleContentValidator;
 import org.glassfish.deployment.common.XModuleType;
@@ -179,7 +179,7 @@ public class AppClientArchivist extends Archivist<ApplicationClientDescriptor> {
             return;
         }
         descriptor.setClassLoader(cl);
-        descriptor.visit(new ApplicationValidator());
+        descriptor.visit(new AppClientValidator());
     }
 
     /**

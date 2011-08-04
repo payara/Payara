@@ -1338,7 +1338,11 @@ public abstract class Archivist<T extends RootDeploymentDescriptor> {
      * print the current descriptor associated with this archivist
      */
     public void printDescriptor() {
-        getDescriptor().visit((DescriptorVisitor) new TracerVisitor());
+        DescriptorVisitor tracerVisitor = getDescriptor().getTracerVisitor();
+        if (tracerVisitor == null) {
+            tracerVisitor = new TracerVisitor();
+        }
+        getDescriptor().visit(tracerVisitor);
     }
 
     /**

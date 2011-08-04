@@ -170,6 +170,13 @@ public abstract class RootDeploymentDescriptor extends Descriptor {
     public abstract XModuleType getModuleType();
 
     /**
+     * @return the tracer visitor for this descriptor
+     */
+    public DescriptorVisitor getTracerVisitor() {
+        return null;
+    }
+
+    /**
      * Sets the class loader for this application
      */
     public void setClassLoader(ClassLoader classLoader) {

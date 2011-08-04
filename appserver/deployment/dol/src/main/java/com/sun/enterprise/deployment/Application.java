@@ -1151,6 +1151,32 @@ public class Application extends BundleDescriptor
     }
 
     /**
+     * Obtain a full set of bundle descriptors for a particular type
+     *
+     * @param bundleType the bundle descriptor type requested
+     * @return the set of bundle descriptors
+     */
+    private Set<BundleDescriptor> getBundleDescriptorsOfType(XModuleType bundleType) {
+        if (bundleType == null) {
+            return null;
+        }
+        Set<BundleDescriptor> bundleSet = new OrderedSet<BundleDescriptor>();
+        for (ModuleDescriptor aModule : getModules()) {
+            if (aModule.getDescriptor().getModuleType()== bundleType) {
+                bundleSet.add((BundleDescriptor)aModule.getDescriptor());
+            }
+            for (RootDeploymentDescriptor rd : aModule.getDescriptor().getExtensionsDescriptors()) {
+                if (rd instanceof BundleDescriptor) {
+                     if (((BundleDescriptor)rd).getModuleType()== bundleType){
+                         bundleSet.add((BundleDescriptor)rd); 
+                     }
+                }
+            }
+        }
+        return bundleSet;
+    }
+
+    /**
      * Obtain a set of all bundle descriptors, regardless of type
      *
      * @return the set of bundle descriptors
@@ -1197,18 +1223,6 @@ public class Application extends BundleDescriptor
         }
 
         return ejbDescriptors;
-    }
-
-    /**
-     * @return true if this bundle descriptor contains at least one CMP
-     *         EntityBean
-     */
-    public boolean containsCMPEntity() {
-        for (EjbBundleDescriptor ebd : getBundleDescriptors(EjbBundleDescriptor.class)) {
-            if (ebd.containsCMPEntity())
-                return true;
-        }
-        return false;
     }
 
     // START OF IASRI 4718761 - pass-by-ref need to compare DD from previous
@@ -1500,37 +1514,25 @@ public class Application extends BundleDescriptor
      */
     public void visit(ApplicationVisitor aVisitor) {
         aVisitor.accept(this);
-        EjbBundleVisitor ejbBundleVisitor = aVisitor.getEjbBundleVisitor();
-        if (ejbBundleVisitor != null) {
-            for (EjbBundleDescriptor ebd : getBundleDescriptors(EjbBundleDescriptor.class)) {
-                ebd.visit(ejbBundleVisitor);
+        for (BundleDescriptor ebd : getBundleDescriptorsOfType(XModuleType.EJB)) {
+            ebd.visit(ebd.getBundleVisitor());
+        }
+        for (BundleDescriptor wbd : getBundleDescriptorsOfType(XModuleType.WAR)) {
+            // This might be null in the case of an appclient 
+            // processing a client stubs .jar whose original .ear contained
+            // a .war.  This will be fixed correctly in the deployment
+            // stage but until then adding a non-null check will prevent
+            // the validation step from bombing.
+            if (wbd != null) {
+                wbd.visit(wbd.getBundleVisitor());
             }
         }
-        WebBundleVisitor webVisitor = aVisitor.getWebBundleVisitor();
-        if (webVisitor != null) {
-            for (WebBundleDescriptor wbd : getBundleDescriptors(WebBundleDescriptor.class)) {
-                // This might be null in the case of an appclient 
-                // processing a client stubs .jar whose original .ear contained
-                // a .war.  This will be fixed correctly in the deployment
-                // stage but until then adding a non-null check will prevent
-                // the validation step from bombing.
-                if (wbd != null) {
-                    wbd.visit(webVisitor);
-                }
-            }
-        }
-        ConnectorVisitor connectorVisitor = aVisitor.getConnectorVisitor();
-        if (connectorVisitor != null) {
-            for (ConnectorDescriptor cd :  getBundleDescriptors(ConnectorDescriptor.class)) {
-                cd.visit(connectorVisitor);
-            }
+        for (BundleDescriptor cd :  getBundleDescriptorsOfType(XModuleType.RAR)) {
+            cd.visit(cd.getBundleVisitor());
         }
 
-        AppClientVisitor appclientVisitor = aVisitor.getAppClientVisitor();
-        if (appclientVisitor != null) {
-            for (ApplicationClientDescriptor acd : getBundleDescriptors(ApplicationClientDescriptor.class)) {
-                acd.visit(appclientVisitor);
-            }
+        for (BundleDescriptor acd : getBundleDescriptorsOfType(XModuleType.CAR)) {
+            acd.visit(acd.getBundleVisitor());
         }
 
         // Visit all injectables first.  In some cases, basic type information

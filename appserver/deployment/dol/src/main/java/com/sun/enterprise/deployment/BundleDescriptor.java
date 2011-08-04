@@ -42,6 +42,8 @@ package com.sun.enterprise.deployment;
 
 import com.sun.enterprise.deployment.types.EntityManagerFactoryReference;
 import com.sun.enterprise.deployment.types.EntityManagerReference;
+import com.sun.enterprise.deployment.util.ComponentVisitor;
+import com.sun.enterprise.deployment.util.ApplicationValidator;
 import org.glassfish.deployment.common.RootDeploymentDescriptor;
 import org.glassfish.deployment.common.XModuleType;
 import com.sun.enterprise.util.LocalStringManagerImpl;
@@ -590,6 +592,13 @@ public abstract class BundleDescriptor extends RootDeploymentDescriptor implemen
      * @return the  type of this bundle descriptor
      */
     public abstract XModuleType getModuleType();
+
+    /**
+     * @return the visitor for this bundle descriptor
+     */
+    public ComponentVisitor getBundleVisitor() {
+        return new ApplicationValidator();
+    }
 
     /**
      * @return the module ID for this module descriptor

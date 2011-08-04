@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,23 +40,36 @@
 
 package com.sun.enterprise.deployment.util;
 
-
-import com.sun.enterprise.deployment.Application;
-import org.jvnet.hk2.annotations.Contract;
+import com.sun.enterprise.deployment.ApplicationClientDescriptor;
+import com.sun.enterprise.deployment.LifecycleCallbackDescriptor;
 
 /**
- * This interface defines a cisitor API for the Application related DOL descriptors
+ * This class validates an application client descriptor
  *
- * @author  Jerome Dochez
- * @version 
  */
-@Contract
-public interface ApplicationVisitor extends ComponentVisitor {
-    
-    /**
-     * visit an application object
-     * @param application the application descriptor
-     */
-    public void accept(Application application);
-}
+public class AppClientValidator extends ApplicationValidator implements AppClientVisitor {
+    public AppClientValidator() {
+    }
 
+    /**
+     * visits a appclient descriptor
+     * @param appclientdescriptor the application client descriptor
+     */
+    public void accept(ApplicationClientDescriptor appclientdescriptor) {
+        bundleDescriptor = appclientdescriptor;
+        application = appclientdescriptor.getApplication();
+
+        // set the default lifecycle callback class
+        for (LifecycleCallbackDescriptor next :
+            appclientdescriptor.getPreDestroyDescriptors()) {
+            next.setDefaultLifecycleCallbackClass(
+                appclientdescriptor.getMainClassName());
+        }
+
+        for (LifecycleCallbackDescriptor next :
+            appclientdescriptor.getPostConstructDescriptors()) {
+            next.setDefaultLifecycleCallbackClass(
+                appclientdescriptor.getMainClassName());
+        }
+    }
+}

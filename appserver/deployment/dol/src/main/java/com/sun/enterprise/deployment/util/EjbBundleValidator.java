@@ -887,41 +887,6 @@ public class EjbBundleValidator  extends ComponentValidator implements EjbBundle
         }          
     }        
 
-    public void accept(ResourceReferenceDescriptor resRef) {
-        computeRuntimeDefault(resRef);
-    }
-
-    public void accept(JmsDestinationReferenceDescriptor jmsDestRef) {
-
-        if (jmsDestRef.getJndiName() == null ||
-                jmsDestRef.getJndiName().length() == 0) {
-            Map<String, ManagedBeanDescriptor> managedBeanMap = getManagedBeanMap();
-            String refType = jmsDestRef.getRefType();
-            if( managedBeanMap.containsKey(refType) ) {
-                ManagedBeanDescriptor desc = managedBeanMap.get(refType);
-
-                // In app-client, keep lookup local to JVM so it doesn't need to access
-                // server's global JNDI namespace for managed bean.
-                String jndiName = ( bundleDescriptor instanceof ApplicationClientDescriptor )
-                        ?  desc.getAppJndiName() : desc.getGlobalJndiName();
-
-                jmsDestRef.setJndiName(jndiName);
-                jmsDestRef.setIsManagedBean(true);
-                jmsDestRef.setManagedBeanDescriptor(desc);
-            }
-        }
-
-        computeRuntimeDefault(jmsDestRef);
-    }
-
-    public void accept(MessageDestinationReferenceDescriptor msgDestRef) {
-        computeRuntimeDefault(msgDestRef);
-    }
-
-    public void accept(MessageDestinationDescriptor msgDest) {
-        computeRuntimeDefault(msgDest);
-    }
-
     /**
      * Returns a map of interface name -> EjbIntfInfo based on all the ejbs
      * within the application or stand-alone module.  Only RemoteHome, 
@@ -970,37 +935,6 @@ public class EjbBundleValidator  extends ComponentValidator implements EjbBundle
         return intfInfoMap;
     }
 
-    /**
-     * Get a map of bean class to managed bean descriptor for the managed beans
-     * defined within the current module.
-     */
-    private Map<String, ManagedBeanDescriptor> getManagedBeanMap() {
-        BundleDescriptor thisBundle = getBundleDescriptor();
-
-        Set<ManagedBeanDescriptor> managedBeans = new HashSet<ManagedBeanDescriptor>();
-
-        // Make sure we're dealing with the top-level bundle descriptor when looking
-        // for managed beans
-        if( thisBundle != null ) {
-            Object desc = thisBundle.getModuleDescriptor().getDescriptor();
-            if( desc instanceof BundleDescriptor ) {
-                managedBeans = ((BundleDescriptor)desc).getManagedBeans();
-            }
-        }
-
-        Map<String, ManagedBeanDescriptor> managedBeanMap = new HashMap<String, ManagedBeanDescriptor>();
-
-        for(ManagedBeanDescriptor managedBean : managedBeans ) {
-
-            String beanClassName = managedBean.getBeanClassName();
-            managedBeanMap.put(beanClassName, managedBean);
-
-        }
-
-        return managedBeanMap;
-
-    }
-    
     private void addIntfInfo(Map<String, EjbIntfInfo> intfInfoMap,
                              String intf, EjbIntfType intfType,
                              EjbDescriptor ejbDesc) {
@@ -1146,68 +1080,6 @@ public class EjbBundleValidator  extends ComponentValidator implements EjbBundle
             computeRunAsPrincipalDefault(
                 ejb.getRunAsIdentity(), ejb.getApplication());
         }
-    }
-
-    /**
-     * Set runtime default value for ResourceReferenceDescriptor.
-     */
-    private void computeRuntimeDefault(ResourceReferenceDescriptor resRef) {
-        if (resRef.getType() != null && resRef.getType().equals("org.omg.CORBA.ORB")) {
-            resRef.setJndiName("java:comp/ORB");
-        }
-
-        else if (resRef.getJndiName() == null ||
-                resRef.getJndiName().length() == 0) {
-            resRef.setJndiName(getDefaultResourceJndiName(resRef.getName()));
-        } 
-    }
-
-    /**
-     * Set runtime default value for JmsDestinationReferenceDescriptor. 
-     */
-    private void computeRuntimeDefault(JmsDestinationReferenceDescriptor jmsDestRef) {
-        if (jmsDestRef.getRefType() != null && jmsDestRef.getRefType().equals(
-            "javax.transaction.UserTransaction")) {
-            jmsDestRef.setJndiName("java:comp/UserTransaction");
-        }
-
-        else if (jmsDestRef.getRefType() != null && jmsDestRef.getRefType().equals("javax.transaction.TransactionSynchronizationRegistry")) {
-            jmsDestRef.setJndiName(
-                "java:comp/TransactionSynchronizationRegistry");
-        }
-
-        else if (jmsDestRef.getJndiName() == null ||
-                jmsDestRef.getJndiName().length() == 0) {
-            jmsDestRef.setJndiName(getDefaultResourceJndiName(jmsDestRef.getName()));
-        }
-    }
-    
-    /**
-     * Set runtime default value for MessageDestinationReferenceDescriptor.
-     */
-    private void computeRuntimeDefault(MessageDestinationReferenceDescriptor msgDestRef) {
-        if (msgDestRef.getJndiName() == null ||
-                msgDestRef.getJndiName().length() == 0) {
-            msgDestRef.setJndiName(getDefaultResourceJndiName(msgDestRef.getName()));
-        }
-    }
-
-    /**
-     * Set runtime default value for MessageDestinationDescriptor. 
-     */
-    private void computeRuntimeDefault(MessageDestinationDescriptor msgDest) {
-        if (msgDest.getJndiName() == null ||
-                msgDest.getJndiName().length() == 0) {
-            msgDest.setJndiName(getDefaultResourceJndiName(msgDest.getName()));
-        }
-    }
-
-    /**
-     * @param resName
-     * @return default jndi name for a given interface resource name
-     */
-    private String getDefaultResourceJndiName(String resName) {
-        return resName;
     }
 
     /**

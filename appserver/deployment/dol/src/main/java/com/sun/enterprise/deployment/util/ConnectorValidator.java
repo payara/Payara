@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,23 +40,20 @@
 
 package com.sun.enterprise.deployment.util;
 
-
-import com.sun.enterprise.deployment.Application;
-import org.jvnet.hk2.annotations.Contract;
+import com.sun.enterprise.deployment.ConnectorDescriptor;
 
 /**
- * This interface defines a cisitor API for the Application related DOL descriptors
+ * This class validates a connector descriptor
  *
- * @author  Jerome Dochez
- * @version 
  */
-@Contract
-public interface ApplicationVisitor extends ComponentVisitor {
-    
-    /**
-     * visit an application object
-     * @param application the application descriptor
-     */
-    public void accept(Application application);
-}
+public class ConnectorValidator extends ComponentValidator implements ConnectorVisitor {
+    public ConnectorValidator() {
+    }
 
+    /**
+     * visits a connector descriptor
+     * @param connectordescriptor
+     */
+    public void accept(ConnectorDescriptor connDesc) {
+    }
+}

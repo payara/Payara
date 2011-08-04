@@ -65,7 +65,7 @@ public class ApplicationValidator extends EjbBundleValidator
     implements ApplicationVisitor, EjbBundleVisitor, EjbVisitor, ManagedBeanVisitor {
     
 
-    private Application application;
+    protected Application application;
     
     /**
      * visit an application object
@@ -125,6 +125,7 @@ public class ApplicationValidator extends EjbBundleValidator
     public void accept(EjbBundleDescriptor bundleDescriptor) {
         
         this.bundleDescriptor = bundleDescriptor;
+        application = bundleDescriptor.getApplication();
         super.accept(bundleDescriptor);
         /** set the realm name on each ejb to match the ones on this application
          * this is required right now to pass the stringent CSIv2 criteria 
@@ -163,6 +164,7 @@ public class ApplicationValidator extends EjbBundleValidator
      */
     public void accept(WebBundleDescriptor descriptor) {
         bundleDescriptor = descriptor;
+        application = descriptor.getApplication();
         
         if (descriptor.getSessionConfig() == null) {
             descriptor.setSessionConfig(new SessionConfigDescriptor());
@@ -172,27 +174,6 @@ public class ApplicationValidator extends EjbBundleValidator
         }
     }   
     
-    /**
-     * visits a appclient descriptor
-     * @param appclientdescriptor the application client descriptor
-     */
-    public void accept(ApplicationClientDescriptor appclientdescriptor) {
-        bundleDescriptor = appclientdescriptor;        
-
-        // set the default lifecycle callback class
-        for (LifecycleCallbackDescriptor next :
-            appclientdescriptor.getPreDestroyDescriptors()) {
-            next.setDefaultLifecycleCallbackClass(
-                appclientdescriptor.getMainClassName());
-        }
-
-        for (LifecycleCallbackDescriptor next :
-            appclientdescriptor.getPostConstructDescriptors()) {
-            next.setDefaultLifecycleCallbackClass(
-                appclientdescriptor.getMainClassName());
-        }
-    }    
-
     /**
      * visit a web component descriptor
      *

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,23 +40,42 @@
 
 package com.sun.enterprise.deployment.util;
 
+import com.sun.enterprise.deployment.WebBundleDescriptor;
+import com.sun.enterprise.deployment.WebComponentDescriptor;
+import com.sun.enterprise.deployment.ServletFilterDescriptor;
 
-import com.sun.enterprise.deployment.Application;
-import org.jvnet.hk2.annotations.Contract;
+public class WebBundleTracerVisitor extends DefaultDOLVisitor {
 
-/**
- * This interface defines a cisitor API for the Application related DOL descriptors
- *
- * @author  Jerome Dochez
- * @version 
- */
-@Contract
-public interface ApplicationVisitor extends ComponentVisitor {
-    
-    /**
-     * visit an application object
-     * @param application the application descriptor
+    public WebBundleTracerVisitor() {
+    }
+
+   /**
+     * visit a web bundle descriptor
+     *
+     * @param the web bundle descriptor
      */
-    public void accept(Application application);
+    public void accept(WebBundleDescriptor descriptor) {
+        DOLUtils.getDefaultLogger().info(descriptor.toString());
+    }
+
+   /**
+     * visit a web component descriptor
+     *
+     * @param the web component
+     */
+    public void accept(WebComponentDescriptor descriptor) {
+        DOLUtils.getDefaultLogger().info("==================");
+        DOLUtils.getDefaultLogger().info(descriptor.toString());
+    }
+
+   /**
+     * visit a servlet filter descriptor
+     *
+     * @param the servlet filter
+     */
+    public void accept(ServletFilterDescriptor descriptor) {
+        DOLUtils.getDefaultLogger().info("==================");
+        DOLUtils.getDefaultLogger().info(descriptor.toString());
+    }
 }
 

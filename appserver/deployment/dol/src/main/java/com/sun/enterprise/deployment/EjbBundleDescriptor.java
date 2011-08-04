@@ -802,7 +802,7 @@ public class EjbBundleDescriptor extends BundleDescriptor implements WritableJnd
     public XModuleType getModuleType() {
         return XModuleType.EJB;
     }  
-    
+
     public void setPersistenceManagerInuse(String id,String ver)
     {
 	pm_inuse=new PersistenceManagerInUse(id, ver);

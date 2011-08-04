@@ -44,6 +44,9 @@ import com.sun.enterprise.deployment.node.appclient.AppClientNode;
 import com.sun.enterprise.deployment.runtime.JavaWebStartAccessDescriptor;
 import com.sun.enterprise.deployment.types.*;
 import com.sun.enterprise.deployment.util.AppClientVisitor;
+import com.sun.enterprise.deployment.util.AppClientTracerVisitor;
+import com.sun.enterprise.deployment.util.AppClientValidator;
+import com.sun.enterprise.deployment.util.ComponentVisitor;
 import org.glassfish.deployment.common.DescriptorVisitor;
 import org.glassfish.deployment.common.XModuleType;
 import com.sun.enterprise.util.LocalStringManagerImpl;
@@ -705,7 +708,21 @@ public class ApplicationClientDescriptor extends BundleDescriptor
     public XModuleType getModuleType() {
         return XModuleType.CAR;
     }
-    
+
+    /**
+     * @return the visitor for this bundle descriptor
+     */
+    public ComponentVisitor getBundleVisitor() {
+        return new AppClientValidator();
+    }
+
+    /**
+     * @return the tracer visitor for this descriptor
+     */
+    public DescriptorVisitor getTracerVisitor() {
+        return new AppClientTracerVisitor();
+    }
+
     public JavaWebStartAccessDescriptor getJavaWebStartAccessDescriptor() {
         if (jwsAccessDescriptor == null) {
             jwsAccessDescriptor = new JavaWebStartAccessDescriptor();

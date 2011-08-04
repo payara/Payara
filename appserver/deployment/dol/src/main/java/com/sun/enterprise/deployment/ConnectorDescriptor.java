@@ -43,7 +43,10 @@
 import com.sun.enterprise.deployment.node.connector.ConnectorNode;
 import com.sun.enterprise.deployment.runtime.connector.SunConnector;
 import com.sun.enterprise.deployment.util.ConnectorVisitor;
+import com.sun.enterprise.deployment.util.ConnectorTracerVisitor;
+import com.sun.enterprise.deployment.util.ConnectorValidator;
 import com.sun.enterprise.deployment.util.DOLUtils;
+import com.sun.enterprise.deployment.util.ComponentVisitor;
 import org.glassfish.deployment.common.DescriptorVisitor;
 import org.glassfish.deployment.common.XModuleType;
 
@@ -851,6 +854,20 @@ public class ConnectorDescriptor extends BundleDescriptor {
      */
     public XModuleType getModuleType() {
         return XModuleType.RAR;
+    }
+
+    /**
+     * @return the tracer visitor for this descriptor
+     */
+    public DescriptorVisitor getTracerVisitor() {
+        return new ConnectorTracerVisitor();
+    }
+
+    /**
+     * @return the visitor for this bundle descriptor
+     */
+    public ComponentVisitor getBundleVisitor() {
+        return new ConnectorValidator();
     }
     
     /**

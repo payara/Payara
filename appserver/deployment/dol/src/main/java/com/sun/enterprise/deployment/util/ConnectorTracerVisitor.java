@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,23 +40,20 @@
 
 package com.sun.enterprise.deployment.util;
 
+import com.sun.enterprise.deployment.ConnectorDescriptor;
 
-import com.sun.enterprise.deployment.Application;
-import org.jvnet.hk2.annotations.Contract;
+public class ConnectorTracerVisitor extends DefaultDOLVisitor {
 
-/**
- * This interface defines a cisitor API for the Application related DOL descriptors
- *
- * @author  Jerome Dochez
- * @version 
- */
-@Contract
-public interface ApplicationVisitor extends ComponentVisitor {
-    
+    public ConnectorTracerVisitor() {
+    }
+
     /**
-     * visit an application object
-     * @param application the application descriptor
+     * visits an connector descriptor
+     * @param connector descriptor
      */
-    public void accept(Application application);
+    public void accept(ConnectorDescriptor conDesc) {
+        DOLUtils.getDefaultLogger().info("==================");
+        DOLUtils.getDefaultLogger().info(conDesc.toString());
+    }
 }
 
