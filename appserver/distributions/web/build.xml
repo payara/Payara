@@ -59,7 +59,7 @@
         <unzip dest="target/stage" overwrite="true">
             <fileset dir="target/stage">
                 <include name="*.zip"/>
-                <exclude name="nucleus*.zip">
+                <exclude name="nucleus*.zip"/>
             </fileset>
         </unzip>
        
