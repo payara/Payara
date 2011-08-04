@@ -310,6 +310,15 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                         // ignore
                     }
                 }
+                if (alcInterceptor != null) {
+                    try {
+                        alcInterceptor.after(
+                            ExtendedDeploymentContext.Phase.REPLICATION, context);
+                    } catch (Exception e) {
+                        // ignore
+                    }
+                }
+
                 if (!commandParams.keepfailedstubs) {
                     try {
                         context.clean();
@@ -450,6 +459,11 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                 appInfo.setIsJavaEEApp(sortedEngineInfos);
                 appRegistry.add(appName, appInfo);
 
+                if (alcInterceptor != null) {
+                    alcInterceptor.after(
+                        ExtendedDeploymentContext.Phase.PREPARE, context);
+                }
+
                 if (tracing!=null) {
                     tracing.addMark(DeploymentTracing.Mark.PREPARED);
                 }
@@ -469,8 +483,24 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                 if (loadOnCurrentInstance(context)) {
                     appInfo.setLibraries(commandParams.libraries());
                     try {
+                        if (alcInterceptor != null) {
+                            alcInterceptor.before(
+                                ExtendedDeploymentContext.Phase.LOAD, context);
+                        }
                         appInfo.load(context, tracker);
+                        if (alcInterceptor != null) {
+                            alcInterceptor.after(
+                                ExtendedDeploymentContext.Phase.LOAD, context);
+                        }
+                        if (alcInterceptor != null) {
+                            alcInterceptor.before(
+                                ExtendedDeploymentContext.Phase.START, context);
+                        }
                         appInfo.start(context, tracker);
+                        if (alcInterceptor != null) {
+                            alcInterceptor.after(
+                                ExtendedDeploymentContext.Phase.START, context);
+                        }
                     } catch(Throwable loadException) {
                         report.failure(logger, "Exception while loading the app", null);
                         report.setFailureCause(loadException);
@@ -1014,13 +1044,33 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
 
         if (info.isLoaded()) {
             info.stop(context, context.getLogger());
+            if (alcInterceptor != null) {
+                alcInterceptor.after(
+                    ExtendedDeploymentContext.Phase.STOP, context);
+            }
+            if (alcInterceptor != null) {
+                alcInterceptor.before(
+                    ExtendedDeploymentContext.Phase.UNLOAD, context);
+            }
             info.unload(context);
+            if (alcInterceptor != null) {
+                alcInterceptor.after(
+                    ExtendedDeploymentContext.Phase.UNLOAD, context);
+            }
         }
 
         events.send(new Event<ApplicationInfo>(Deployment.APPLICATION_DISABLED, info), false);
 
         try {
+            if (alcInterceptor != null) {
+                alcInterceptor.before(
+                    ExtendedDeploymentContext.Phase.CLEAN, context);
+            }
             info.clean(context);
+            if (alcInterceptor != null) {
+                alcInterceptor.after(
+                    ExtendedDeploymentContext.Phase.CLEAN, context);
+            }
         } catch(Exception e) {
             report.failure(context.getLogger(), "Exception while cleaning", e);
             return info;
