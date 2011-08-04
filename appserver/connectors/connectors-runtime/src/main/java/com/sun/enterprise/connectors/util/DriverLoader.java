@@ -90,26 +90,26 @@ public class DriverLoader implements ConnectorConstants {
     private static final String DATABASE_VENDOR_JAVADB = "JAVADB";
     private static final String DATABASE_VENDOR_EMBEDDED_DERBY = "EMBEDDED-DERBY";
     private static final String DATABASE_VENDOR_MSSQLSERVER = "MICROSOFTSQLSERVER";
-    private String DATABASE_VENDOR_SUN_SQLSERVER = "SUN-SQLSERVER";
-    private String DATABASE_VENDOR_SUN_ORACLE = "SUN-ORACLE";
-    private String DATABASE_VENDOR_SUN_DB2 = "SUN-DB2";
-    private String DATABASE_VENDOR_SUN_SYBASE = "SUN-SYBASE";
-    private String DATABASE_VENDOR_SYBASE = "SYBASE";
-    private String DATABASE_VENDOR_ORACLE = "ORACLE";
-    private String DATABASE_VENDOR_DB2 = "DB2";
-    private String DATABASE_VENDOR_EMBEDDED = "EMBEDDED";
-    private String DATABASE_VENDOR_30 = "30";
-    private String DATABASE_VENDOR_40 = "40";
+    private static final String DATABASE_VENDOR_SUN_SQLSERVER = "SUN-SQLSERVER";
+    private static final String DATABASE_VENDOR_SUN_ORACLE = "SUN-ORACLE";
+    private static final String DATABASE_VENDOR_SUN_DB2 = "SUN-DB2";
+    private static final String DATABASE_VENDOR_SUN_SYBASE = "SUN-SYBASE";
+    private static final String DATABASE_VENDOR_SYBASE = "SYBASE";
+    private static final String DATABASE_VENDOR_ORACLE = "ORACLE";
+    private static final String DATABASE_VENDOR_DB2 = "DB2";
+    private static final String DATABASE_VENDOR_EMBEDDED = "EMBEDDED";
+    private static final String DATABASE_VENDOR_30 = "30";
+    private static final String DATABASE_VENDOR_40 = "40";
     
     private static final String DATABASE_VENDOR_SQLSERVER = "SQLSERVER";
     private static final String DBVENDOR_MAPPINGS_ROOT = 
             System.getProperty(ConnectorConstants.INSTALL_ROOT) + File.separator + 
             "lib" + File.separator + "install" + File.separator + "databases" +
             File.separator + "dbvendormapping" + File.separator;
-    private final String DS_PROPERTIES = "ds.properties";
-    private final String CPDS_PROPERTIES = "cpds.properties";
-    private final String XADS_PROPERTIES = "xads.properties";
-    private final String DRIVER_PROPERTIES = "driver.properties";
+    private final static String DS_PROPERTIES = "ds.properties";
+    private final static String CPDS_PROPERTIES = "cpds.properties";
+    private final static String XADS_PROPERTIES = "xads.properties";
+    private final static String DRIVER_PROPERTIES = "driver.properties";
     private final String VENDOR_PROPERTIES = "dbvendor.properties";
 
     /**
@@ -118,30 +118,9 @@ public class DriverLoader implements ConnectorConstants {
      */
     public Set<String> getDatabaseVendorNames() {
         File dbVendorFile = new File(DBVENDOR_MAPPINGS_ROOT + VENDOR_PROPERTIES);
-        Properties fileProperties = new Properties();
+        Properties fileProperties = loadFile(dbVendorFile);
         Set<String> dbvendorNames = new TreeSet<String>();
 
-        if (dbVendorFile != null && dbVendorFile.exists()) {
-            try {
-
-                FileInputStream fis = new FileInputStream(dbVendorFile);
-                try {
-                    fileProperties.load(fis);
-                } finally {
-                    fis.close();
-                }
-            } catch (IOException ioe) {
-                if (logger.isLoggable(Level.FINE)) {
-                    logger.fine("IO Exception during properties load : "
-                            + dbVendorFile.getAbsolutePath());
-                }
-            }
-        } else {
-            if(logger.isLoggable(Level.FINE)) {
-                logger.fine("File not found : " + dbVendorFile.getAbsolutePath());
-            }
-        }
-        
         Enumeration e = fileProperties.propertyNames();
         while(e.hasMoreElements()) {
             String vendor = (String) e.nextElement();
@@ -150,11 +129,8 @@ public class DriverLoader implements ConnectorConstants {
         return dbvendorNames;
     }
 
-
-    private String getImplClassNameFromMapping(String dbVendor, String resType) {
-        File mappingFile = null;        
-        Properties fileProperties = new Properties();
-        
+    public static File getResourceTypeFile(String resType) {
+        File mappingFile = null;
         if(ConnectorConstants.JAVAX_SQL_DATASOURCE.equals(resType)) {
             mappingFile = new File(DBVENDOR_MAPPINGS_ROOT + DS_PROPERTIES);
         } else if(ConnectorConstants.JAVAX_SQL_XA_DATASOURCE.equals(resType)) {
@@ -164,8 +140,11 @@ public class DriverLoader implements ConnectorConstants {
         } else if(ConnectorConstants.JAVA_SQL_DRIVER.equals(resType)) {
             mappingFile = new File(DBVENDOR_MAPPINGS_ROOT + DRIVER_PROPERTIES);
         }
-        
-        
+        return mappingFile;
+    }
+
+    public static Properties loadFile(File mappingFile) {
+        Properties fileProperties = new Properties();
         if (mappingFile != null && mappingFile.exists()) {
             try {
 
@@ -176,18 +155,24 @@ public class DriverLoader implements ConnectorConstants {
                     fis.close();
                 }
             } catch (IOException ioe) {
-                if(logger.isLoggable(Level.FINE)) {
-                    logger.fine("IO Exception during properties load : " +
-                        mappingFile.getAbsolutePath());
+                if (logger.isLoggable(Level.FINE)) {
+                    logger.fine("IO Exception during properties load : "
+                            + mappingFile.getAbsolutePath());
                 }
             }
         } else {
-            if(logger.isLoggable(Level.FINE)) {
+            if (logger.isLoggable(Level.FINE)) {
                 logger.fine("File not found : " + mappingFile.getAbsolutePath());
             }
         }
-        return fileProperties.getProperty(
-                dbVendor.toUpperCase(Locale.getDefault()));
+        return fileProperties;
+    }
+
+
+    private String getImplClassNameFromMapping(String dbVendor, String resType) {
+        File mappingFile = getResourceTypeFile(resType);
+        Properties fileProperties = loadFile(mappingFile);
+        return fileProperties.getProperty(dbVendor.toUpperCase(Locale.getDefault()));
     }
     
     /**
@@ -204,12 +189,12 @@ public class DriverLoader implements ConnectorConstants {
         } else if (dbVendor.equalsIgnoreCase(DATABASE_VENDOR_MSSQLSERVER) ||
                 dbVendor.equalsIgnoreCase(DATABASE_VENDOR_SUN_SQLSERVER)) {
             return DATABASE_VENDOR_SQLSERVER;
-        } else if (dbVendor.equalsIgnoreCase(this.DATABASE_VENDOR_SUN_DB2)) {
+        } else if (dbVendor.equalsIgnoreCase(DATABASE_VENDOR_SUN_DB2)) {
             return DATABASE_VENDOR_DB2;
-        } else if (dbVendor.equalsIgnoreCase(this.DATABASE_VENDOR_SUN_ORACLE)) {
-            return this.DATABASE_VENDOR_ORACLE;
-        } else if (dbVendor.equalsIgnoreCase(this.DATABASE_VENDOR_SUN_SYBASE)) {
-            return this.DATABASE_VENDOR_SYBASE;
+        } else if (dbVendor.equalsIgnoreCase(DATABASE_VENDOR_SUN_ORACLE)) {
+            return DATABASE_VENDOR_ORACLE;
+        } else if (dbVendor.equalsIgnoreCase(DATABASE_VENDOR_SUN_SYBASE)) {
+            return DATABASE_VENDOR_SYBASE;
         }
         return null;    
     }
@@ -501,7 +486,6 @@ public class DriverLoader implements ConnectorConstants {
     /**
      * This method should be executed before driverLoaders are queries for 
      * classloader to load the classname.
-     * @param f
      * @param classname
      * @return
      */
@@ -605,8 +589,8 @@ public class DriverLoader implements ConnectorConstants {
      * This method is used for jar files that do not have a manifest file to 
      * look up the classname.
      * @param dbVendor
-     * @param f
-     * @return true if f is vendor specific.
+     * @param className
+     * @return true if className is vendor specific.
      */
     private boolean isVendorSpecific(String dbVendor, String className) {
         return className.toUpperCase(Locale.getDefault()).indexOf(

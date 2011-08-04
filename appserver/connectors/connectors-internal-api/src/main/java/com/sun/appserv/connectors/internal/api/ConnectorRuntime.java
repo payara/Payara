@@ -669,12 +669,12 @@ public interface ConnectorRuntime extends ConnectorConstants{
             boolean introspect);
 
     /**
-     * Get Validation class names list for the database vendor that the jdbc 
+     * Get Validation class names list for the datasource/driver class name that the jdbc
      * connection pool refers to. This is used for custom connection validation.
-     * @param dbVendor database vendor
+     * @param className class name
      * @return all validation class names.
      */        
-    public Set<String> getValidationClassNames(String dbVendor);
+    public Set<String> getValidationClassNames(String className);
     
     /**
      * Check if Ping attribute is on during pool creation. This is used for

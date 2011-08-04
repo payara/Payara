@@ -41,16 +41,18 @@
 package com.sun.enterprise.connectors.service;
 
 import com.sun.appserv.connectors.internal.api.ConnectorConstants;
+import com.sun.enterprise.connectors.ConnectorRuntime;
+import com.sun.enterprise.connectors.util.DriverLoader;
 import org.glassfish.resource.common.PoolInfo;
 import com.sun.enterprise.connectors.ConnectorConnectionPool;
 import com.sun.enterprise.connectors.util.ConnectionPoolObjectsUtils;
 
+import java.io.File;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.sql.DatabaseMetaData;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.logging.Level;
-import javax.naming.Context;
 import javax.naming.NamingException;
 import javax.resource.ResourceException;
 import javax.resource.spi.ManagedConnection;
@@ -65,7 +67,17 @@ import javax.security.auth.Subject;
 public class JdbcAdminServiceImpl extends ConnectorService {
 
     private ConnectorConnectionPoolAdminServiceImpl ccPoolAdmService;
-    
+    private static final String DBVENDOR_MAPPINGS_ROOT =
+            System.getProperty(ConnectorConstants.INSTALL_ROOT) + File.separator +
+            "lib" + File.separator + "install" + File.separator + "databases" +
+            File.separator + "dbvendormapping" + File.separator;
+    private final String JDBC40_CONNECTION_VALIDATION = "org.glassfish.api.jdbc.validation.JDBC40ConnectionValidation";
+    private final static String DS_PROPERTIES = "ds.properties";
+    private final static String CPDS_PROPERTIES = "cpds.properties";
+    private final static String XADS_PROPERTIES = "xads.properties";
+    private final static String DRIVER_PROPERTIES = "driver.properties";
+    private final static String CONVAL_PROPERTIES = "validationclassnames.properties";
+
     /**
      * Default constructor
      */
@@ -78,23 +90,108 @@ public class JdbcAdminServiceImpl extends ConnectorService {
     }
 
     /**
-     * Get Validation class names list for the database vendor that the jdbc 
+     * Get Validation class names list for the classname that the jdbc 
      * connection pool refers to. This is used for custom connection validation.
-     * @param dbVendor
+     * @param className
      * @return all validation class names.
      */        
-    public Set<String> getValidationClassNames(String dbVendor) {
+    public Set<String> getValidationClassNames(String className) {
         SortedSet classNames = new TreeSet();
-        if(dbVendor.equalsIgnoreCase("DERBY")) {
-            classNames.add("org.glassfish.api.jdbc.validation.DerbyConnectionValidation");
-        } else if(dbVendor.equalsIgnoreCase("MYSQL")) {
-            classNames.add("org.glassfish.api.jdbc.validation.MySQLConnectionValidation");
-        } else if(dbVendor.equalsIgnoreCase("ORACLE")) {
-            classNames.add("org.glassfish.api.jdbc.validation.OracleConnectionValidation");
-        } else if(dbVendor.equalsIgnoreCase("POSTGRES")) {
-            classNames.add("org.glassfish.api.jdbc.validation.PostgresConnectionValidation");
+        if(className == null) {
+            _logger.log(Level.WARNING, "jdbc.admin.service.ds_class_name_null");
+            return classNames;
+        }
+        File validationClassMappingFile;
+        String dbVendor = getDatabaseVendorName(className);
+
+        //Retrieve validation classnames from the properties file based on the retrieved
+        //dbvendor name
+        if (dbVendor != null) {
+            validationClassMappingFile = new File(DBVENDOR_MAPPINGS_ROOT + CONVAL_PROPERTIES);
+            Properties validationClassMappings = DriverLoader.loadFile(validationClassMappingFile);
+            String validationClassName = validationClassMappings.getProperty(dbVendor);
+            if (validationClassName != null) {
+                classNames.add(validationClassName);
+            }
+            //If JDBC40 runtime, add the jdbc40 validation classname
+            if (detectJDBC40(className)) {
+                classNames.add(JDBC40_CONNECTION_VALIDATION);
+            }
         }
         return classNames;
+    }
+
+    private String getDatabaseVendorName(String className) {
+        String dbVendor = getDatabaseVendorName(DriverLoader.loadFile(
+                new File(DBVENDOR_MAPPINGS_ROOT + DS_PROPERTIES)), className);
+        if(dbVendor == null) {
+            dbVendor = getDatabaseVendorName(DriverLoader.loadFile(
+                new File(DBVENDOR_MAPPINGS_ROOT + CPDS_PROPERTIES)), className);
+        }
+        if(dbVendor == null) {
+            dbVendor = getDatabaseVendorName(DriverLoader.loadFile(
+                new File(DBVENDOR_MAPPINGS_ROOT + XADS_PROPERTIES)), className);
+        }
+        if(dbVendor == null) {
+            dbVendor = getDatabaseVendorName(DriverLoader.loadFile(
+                new File(DBVENDOR_MAPPINGS_ROOT + DRIVER_PROPERTIES)), className);
+        }
+        return dbVendor;
+    }
+
+    private String getDatabaseVendorName(Properties classNameProperties, String className) {
+        String dbVendor = null;
+        Enumeration e = classNameProperties.propertyNames();
+        while(e.hasMoreElements()) {
+            String key = (String) e.nextElement();
+            String value = classNameProperties.getProperty(key);
+            if(className.equalsIgnoreCase(value)){
+                //There could be multiple keys for a particular value.
+                dbVendor = key;
+                break;
+            }
+        }
+        return dbVendor;
+    }
+
+    private boolean detectJDBC40(String className) {
+        boolean jdbc40 = true;
+        ClassLoader commonClassLoader =
+                ConnectorRuntime.getRuntime().getClassLoaderHierarchy().getCommonClassLoader();
+        Class cls = null;
+        try {
+            cls = commonClassLoader.loadClass(className);
+        } catch (ClassNotFoundException e) {
+            if(_logger.isLoggable(Level.FINEST)) {
+                _logger.log(Level.FINEST, "jdbc.admin.service.ex_detect_jdbc40");
+            }
+            return false;
+        }
+        Method method;
+        try {
+            method = cls.getMethod("isWrapperFor", Class.class);
+            method.invoke(cls.newInstance(), javax.sql.DataSource.class);
+        } catch (NoSuchMethodException e) {
+            jdbc40 = false;
+            if(_logger.isLoggable(Level.FINEST)) {
+                _logger.log(Level.FINEST, "jdbc.admin.service.ex_detect_jdbc40");
+            }
+        } catch (InvocationTargetException e) {
+            if(e.getCause() instanceof AbstractMethodError) {
+                jdbc40 = false;
+            }
+        } catch (InstantiationException e) {
+            if(_logger.isLoggable(Level.FINEST)) {
+                _logger.log(Level.FINEST, "jdbc.admin.service.ex_detect_jdbc40");
+            }
+            jdbc40 = false;
+        } catch (IllegalAccessException e) {
+            if(_logger.isLoggable(Level.FINEST)) {
+                _logger.log(Level.FINEST, "jdbc.admin.service.ex_detect_jdbc40");
+            }
+            jdbc40 = false;
+        }
+        return jdbc40;
     }
 
     /**
@@ -222,7 +319,7 @@ public class JdbcAdminServiceImpl extends ConnectorService {
      * @param con
      * @return accessibility status of the table.
      */
-    private static boolean isPingable(String tableName, java.sql.Connection con) {
+    /*private static boolean isPingable(String tableName, java.sql.Connection con) {
         java.sql.PreparedStatement stmt = null;
         java.sql.ResultSet rs = null;
         final String sql = "SELECT COUNT(*) FROM " + tableName;
@@ -249,5 +346,5 @@ public class JdbcAdminServiceImpl extends ConnectorService {
             }
         }
         return true;
-    }
+    } */
 }

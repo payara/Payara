@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -643,18 +643,18 @@ public final class ConnectorRuntimeAPIProviderImpl extends AMXImplBase
     }
 
     /**
-     * Obtain a set of connection validation class names for the database
-     * vendor that the jdbc connection pool refers to. This API is used when
+     * Obtain a set of connection validation class names for the datasource/driver class
+     * name that the jdbc connection pool refers to. This API is used when
      * custom-validation is chosen as the connection validation method, to list
-     * the various custom validation implementations available for this dbvendor.
+     * the various custom validation implementations available.
 
-     * @param poolName
+     * @param className
      * @return a map containing a VALIDATION_CLASS_NAMES_KEY with a set of
      * validation class names. If VALIDATION_CLASS_NAMES_KEY is null, an 
      * exception has occured and REASON_FAILED_KEY would give the reason
      * why getting connection validation classnames failed.
      */
-    public Map<String, Object> getValidationClassNames(final String dbVendor) {
+    public Map<String, Object> getValidationClassNames(final String className) {
         final Map<String, Object> result = new HashMap<String, Object>();
 
         if (mHabitat == null)
@@ -666,7 +666,7 @@ public final class ConnectorRuntimeAPIProviderImpl extends AMXImplBase
 
         try {
             final ConnectorRuntime connRuntime = mHabitat.getComponent(ConnectorRuntime.class, null);
-            final Set<String> valClassNames = connRuntime.getValidationClassNames(dbVendor);
+            final Set<String> valClassNames = connRuntime.getValidationClassNames(className);
             result.put(ConnectorRuntimeAPIProvider.VALIDATION_CLASS_NAMES_KEY, valClassNames);
         } catch (ComponentException e) {
             result.put(ConnectorRuntimeAPIProvider.VALIDATION_CLASS_NAMES_KEY, null);

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -67,8 +67,7 @@ public class GetValidationClassNames implements AdminCommand {
     private ConnectorRuntime connectorRuntime;
 
     @Param
-    private String dbVendor;
-
+    private String className;
 
     /**
      * @inheritDoc
@@ -77,7 +76,7 @@ public class GetValidationClassNames implements AdminCommand {
         final ActionReport report = context.getActionReport();
 
         try {
-            Set<String> validationClassNames = connectorRuntime.getValidationClassNames(dbVendor);
+            Set<String> validationClassNames = connectorRuntime.getValidationClassNames(className);
             Properties extraProperties = new Properties();
             extraProperties.put("validationClassNames", new ArrayList(validationClassNames));
             report.setExtraProperties(extraProperties);
