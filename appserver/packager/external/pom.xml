@@ -67,12 +67,12 @@
     <modules>
         <module>ant</module>
         <module>javadb</module>    
-        <module>jmxremote_optional</module>
         <module>dbschema</module>
         <module>schema2beans</module>
 	<module>antlr</module>
 	<module>jmsra</module>
         <module>jaxr_ra</module>
+        <module>libpam4j</module>
     </modules>
     <build>
         <plugins>

@@ -59,6 +59,7 @@
     	<module>internal-api</module>
     	<module>common-util</module>
     	<module>glassfish-api</module>
+        <module>mbeanserver</module>
     	<module>scattered-archive-api</module>       
     </modules>
 </project>

@@ -55,7 +55,6 @@
     <packaging>pom</packaging>
     <name>GlassFish Common modules</name>  
     <modules>
-        <module>mbeanserver</module>
     	<module>stats77</module>
     	<module>amx-core</module>
     	<module>amx-core-impl</module>

@@ -65,8 +65,8 @@
     </properties>
 
     <modules>
+        <module>jmxremote_optional</module>
         <module>ldapbp</module>
-        <module>libpam4j</module>
         <module>trilead-ssh2</module>
     </modules>
     <build>
