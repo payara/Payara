@@ -96,12 +96,12 @@ public class WebServiceEjbEndpointRegistry implements WSEjbEndpointRegistry {
     public void registerEndpoint(WebServiceEndpoint webserviceEndpoint,
                                   EjbEndpointFacade ejbContainer,
                                   Object servant, Class tieClass)  {
-        String ctxtRoot = null;
+        String uri = null;
         EjbRuntimeEndpointInfo endpoint = createEjbEndpointInfo(webserviceEndpoint, ejbContainer,servant,tieClass);
         synchronized(webServiceEjbEndpoints) {
             String uriRaw = endpoint.getEndpointAddressUri();
             if (uriRaw != null ) {
-                String uri = (uriRaw.charAt(0)=='/') ? uriRaw.substring(1) : uriRaw;
+                uri = (uriRaw.charAt(0)=='/') ? uriRaw.substring(1) : uriRaw;
                 if (webServiceEjbEndpoints.containsKey(uri)) {
                     logger.log(Level.SEVERE,
                             format(rb.getString("enterprise.webservice.duplicateService"),
@@ -109,10 +109,10 @@ public class WebServiceEjbEndpointRegistry implements WSEjbEndpointRegistry {
                 }
                 webServiceEjbEndpoints.put(uri, endpoint);
                 regenerateEjbContextRoots();
-                ctxtRoot = getContextRootForUri(uri);
-                if(adapterListMap.get(ctxtRoot) == null) {
+
+                if(adapterListMap.get(uri) == null) {
                     ServletAdapterList list = new ServletAdapterList();
-                    adapterListMap.put(ctxtRoot, list);
+                    adapterListMap.put(uri, list);
                 }
             } else throw new WebServiceException(rb.getString("ejb.endpointuri.error"));
         }
@@ -125,7 +125,7 @@ public class WebServiceEjbEndpointRegistry implements WSEjbEndpointRegistry {
         } else {
             engine.createHandler(endpoint.getEndpoint());
             try {
-                endpoint.initRuntimeInfo((ServletAdapterList)adapterListMap.get(ctxtRoot));
+                endpoint.initRuntimeInfo((ServletAdapterList)adapterListMap.get(uri));
             } catch (Exception e) {
                 logger.log(Level.WARNING,
                        "Unexpected error in EJB WebService endpoint post processing", e);
@@ -141,8 +141,8 @@ public class WebServiceEjbEndpointRegistry implements WSEjbEndpointRegistry {
         synchronized(webServiceEjbEndpoints) {
             String uriRaw = endpointAddressUri;
             String uri = (uriRaw.charAt(0)=='/') ? uriRaw.substring(1) : uriRaw;
-            String ctxtRoot = getContextRootForUri(uri);
-            ServletAdapterList list = (ServletAdapterList)adapterListMap.get(ctxtRoot);
+
+            ServletAdapterList list = (ServletAdapterList)adapterListMap.get(uri);
             if (list != null) {
             	//bug12540102: remove only the data related to the endpoint that is unregistered
             	Iterator<ServletAdapter> it = list.iterator();
@@ -155,7 +155,7 @@ public class WebServiceEjbEndpointRegistry implements WSEjbEndpointRegistry {
                 }
                 //Fix for issue 9523
                 if (list.isEmpty()) {
-                	adapterListMap.remove(ctxtRoot);
+                	adapterListMap.remove(uri);
                 }
             }
             endpoint = (EjbRuntimeEndpointInfo) webServiceEjbEndpoints.remove(uri);
