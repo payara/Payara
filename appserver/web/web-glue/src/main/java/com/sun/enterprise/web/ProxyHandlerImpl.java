@@ -47,6 +47,7 @@ import java.io.ByteArrayInputStream;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import org.apache.catalina.connector.Constants;
 
 /**
  * Default ProxyHandler implementation.
@@ -75,7 +76,7 @@ public class ProxyHandlerImpl extends ProxyHandler {
 
         X509Certificate[] certs = null;
 
-        String clientCert = request.getHeader("Proxy-auth-cert");
+        String clientCert = request.getHeader(Constants.PROXY_AUTH_CERT);
         if (clientCert != null) {
             clientCert = clientCert.replaceAll("% d% a", "\n");
             clientCert = "-----BEGIN CERTIFICATE-----\n" + clientCert
@@ -107,7 +108,7 @@ public class ProxyHandlerImpl extends ProxyHandler {
 
         int keySize = -1;
 
-        String header = request.getHeader("Proxy-keysize");
+        String header = request.getHeader(Constants.PROXY_KEYSIZE);
         if (header != null) {
             keySize = Integer.parseInt(header);
         }
@@ -126,6 +127,6 @@ public class ProxyHandlerImpl extends ProxyHandler {
      * information is not available from the given request
      */
     public String getRemoteAddress(HttpServletRequest request) {
-        return request.getHeader("Proxy-ip");
+        return request.getHeader(Constants.PROXY_IP);
     }
 }

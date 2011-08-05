@@ -84,6 +84,9 @@ public final class Constants {
     // S1AS 4703023
     public static final int DEFAULT_MAX_DISPATCH_DEPTH = 20;
 
+    public final static String PROXY_AUTH_CERT = "Proxy-auth-cert";
+    public final static String PROXY_IP = "Proxy-ip";
+    public final static String PROXY_KEYSIZE = "Proxy-keysize";
 
     // START SJSAS 6337561
     public final static String PROXY_JROUTE = "proxy-jroute";
