@@ -174,11 +174,25 @@ public interface InjectionManager {
      * Invoke any @PreDestroy methods defined on the instance's class
      * (and super-classes).  Invocation information will be retrieved from
      * the current component invocation context.
-     *
+     * 
      * @exception InjectionException Thrown if an error occurs
      * 
      */
     public void invokeInstancePreDestroy(Object instance)
+            throws InjectionException;
+    
+    /**
+     *
+     * Invoke any @PreDestroy methods defined on the instance's class
+     * (and super-classes).  Invocation information will be retrieved from
+     * the current component invocation context.
+     * 
+     * @param validate if false, do nothing if the instance is not registered
+     *
+     * @exception InjectionException Thrown if an error occurs
+     * 
+     */
+    public void invokeInstancePreDestroy(Object instance, boolean validate)
         throws InjectionException;
 
 

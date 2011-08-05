@@ -226,26 +226,41 @@ public class InjectionManagerImpl implements InjectionManager, PostConstruct {
     {
         invokePostConstruct(instance.getClass(), instance, componentEnv);
     }
-
+    
     public void invokeInstancePreDestroy(Object instance)
-        throws InjectionException {
+            throws InjectionException {
+        invokeInstancePreDestroy(instance, true);
+    }
 
+    public void invokeInstancePreDestroy(Object instance, boolean validate)
+        throws InjectionException {
         ComponentInvocation inv = invocationMgr.getCurrentInvocation();
         
+        //if ComponentInv is null and validate is true, throw InjectionException;
+        //if component JndiNameEnvironment is null and validate is true, throw InjectionException;
+        //if validate is false, the above 2 null conditions are basically ignored,
+        //except that when fine logging is enabled, fine-log a message.
         if( inv != null ) {
-
             JndiNameEnvironment componentEnv = compEnvManager.getJndiNameEnvironment(inv.getComponentId());
 
-            if( componentEnv != null ) {
+            if (componentEnv != null) {
                 invokePreDestroy(instance.getClass(), instance, componentEnv);
-            } else {
-                throw new InjectionException(localStrings.getLocalString(
+            } else if (validate || _logger.isLoggable(Level.FINE)) {
+                String msg1 = localStrings.getLocalString(
                         "injection-manager.no-descriptor-registered-for-invocation",
-                        "No descriptor registered for current invocation: {0}", inv));
+                        "No descriptor registered for current invocation: {0}", inv);
+                if (validate) {
+                    throw new InjectionException(msg1);
+                }
+                _logger.log(Level.FINE, msg1);
             }
-        } else {
-            throw new InjectionException(localStrings.getLocalString(
-                    "injection-manager.null-invocation-context", "Null invocation context"));
+        } else if (validate || _logger.isLoggable(Level.FINE)) {
+            String msg2 = localStrings.getLocalString(
+                    "injection-manager.null-invocation-context", "Null invocation context");
+            if (validate) {
+                throw new InjectionException(msg2);
+            }
+            _logger.log(Level.FINE, msg2);
         }
     }
 
@@ -405,7 +420,7 @@ public class InjectionManagerImpl implements InjectionManager, PostConstruct {
      * PreDestroy methods will be called.
      *
      * @param managedObject
-     * @param validate if false, do nothing if the instance is not registred
+     * @param validate if false, do nothing if the instance is not registered
      * @throws InjectionException
      */
     public void destroyManagedObject(Object managedObject, boolean validate)
@@ -437,7 +452,7 @@ public class InjectionManagerImpl implements InjectionManager, PostConstruct {
 
             } else {
 
-                this.invokeInstancePreDestroy(managedObject);
+                this.invokeInstancePreDestroy(managedObject, validate);
             }
         }
 
