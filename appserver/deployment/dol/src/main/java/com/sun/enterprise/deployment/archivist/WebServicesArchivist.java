@@ -38,7 +38,7 @@
  * holder.
  */
 
-package org.glassfish.webservices.archivist;
+package com.sun.enterprise.deployment.archivist;
 
 import com.sun.enterprise.deployment.io.DeploymentDescriptorFile;
 import com.sun.enterprise.deployment.io.WebServicesDeploymentDescriptorFile;
@@ -49,9 +49,6 @@ import org.glassfish.deployment.common.XModuleType;
 import com.sun.enterprise.deployment.io.runtime.WLWebServicesDeploymentDescriptorFile;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.jvnet.hk2.annotations.Service;
-import com.sun.enterprise.deployment.archivist.ExtensionsArchivist;
-import com.sun.enterprise.deployment.archivist.Archivist;
-
 
 import java.io.IOException;
 import org.xml.sax.SAXParseException;
