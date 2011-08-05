@@ -163,22 +163,22 @@ public class WoodstockHandler {
     @Handler(id = "setDisableConnectionPoolTableField",
         input = {
             @HandlerInput(name = "tableDD", type = com.sun.webui.jsf.component.DropDown.class),
-            @HandlerInput(name = "validationField", type = com.sun.webui.jsf.component.Field.class),
+            @HandlerInput(name = "validationField", type = com.sun.webui.jsf.component.DropDown.class),
             @HandlerInput(name = "methodValue", type = String.class)})
     public static void setDisableConnectionPoolTableField(HandlerContext handlerCtx) {
         String methodValue = (String) handlerCtx.getInputValue("methodValue");
         DropDown tableDD = (DropDown) handlerCtx.getInputValue("tableDD");
-        Field validationField = (Field) handlerCtx.getInputValue("validationField");
+        DropDown validationDD = (DropDown) handlerCtx.getInputValue("validationField");
         if ("table".equals(methodValue)) {
             tableDD.setDisabled(false);
-            validationField.setDisabled(true);
+            validationDD.setDisabled(true);
         } else if ("custom-validation".equals(methodValue)) {
             tableDD.setDisabled(true);
-            validationField.setDisabled(false);
+            validationDD.setDisabled(false);
 
         } else {
             tableDD.setDisabled(true);
-            validationField.setDisabled(true);
+            validationDD.setDisabled(true);
         }
     }
 

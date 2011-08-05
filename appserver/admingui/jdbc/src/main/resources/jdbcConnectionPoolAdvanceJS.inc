@@ -42,85 +42,101 @@
 
 <f:verbatim>
     <script type="text/javascript">
-        function disableTableField(selStr) {
+        function disableTableField(selStr, selValidCNVal) {
             var val = document.getElementById("$pageSession{valMethod}").value;
-            if (val == 'table'){
-                var isConnValidation = document.getElementById("$pageSession{conValidationId}").checked;
-                if (isConnValidation) {
-                    disableRadioButtons(false);
-                    var dropDownVal = document.getElementById("$pageSession{dropdownTextId}").value;
-                    if (dropDownVal == '') {
-                        enableRadioButtonFields('text');
-                    } else {
-                        if(dropDownVal == selStr) {
-                            document.getElementById('$pageSession{textId}').value='';
-                            enableRadioButtonFields('dropdown');
-                        }
-                        else if('$pageSession{myOption}' == 'dropdown') {
-                            enableRadioButtonFields('dropdown');
-                        } else {
-                            enableRadioButtonFields('text');
-                        }
-                    }
-                    disableComponent('$pageSession{validCNTextField}', 'text');
+            var isConnValidation = document.getElementById("$pageSession{conValidationId}").checked;
+            if (isConnValidation && val == 'table'){                
+                disableAllJdbcRadioButtons(false, 'table');
+                var dropDownVal = document.getElementById("$pageSession{tableDropdownTextId}").value;
+                if (dropDownVal == '') {
+                    enableJdbcRadioButtons('text', 'table');
                 } else {
-                    disableComponent('$pageSession{dropdownTextId}', 'select');
-                    disableTextComponent('$pageSession{textId}');
-                    disableComponent('$pageSession{validCNTextField}', 'text');
-                    disableRadioButtons(true);
+                    if(dropDownVal == selStr) {
+                        document.getElementById('$pageSession{tableTextId}').value='';
+                        enableJdbcRadioButtons('dropdown', 'table');
+                    }
+                    else if('$pageSession{myTableOption}' == 'dropdown') {
+                        enableJdbcRadioButtons('dropdown', 'table');
+                    } else {
+                        enableJdbcRadioButtons('text', 'table');
+                    }
                 }
-            }else
-            if (val == 'custom-validation') {
-                disableComponent('$pageSession{dropdownTextId}', 'select');
-                disableTextComponent('$pageSession{textId}');
-                disableRadioButtons(true);
-                enableComponent('$pageSession{validCNTextField}', 'text');
+                disableComponent('$pageSession{validCNDropdownTextId}', 'select');
+                disableTextComponent('$pageSession{validCNTextId}');
+                disableAllJdbcRadioButtons(true, 'validCN');
+            }else if (isConnValidation && val == 'custom-validation') {
+                disableAllJdbcRadioButtons(false, 'validCN');
+                var dropDownVal = document.getElementById("$pageSession{validCNDropdownTextId}").value;
+                if (dropDownVal == '') {
+                    enableJdbcRadioButtons('text', 'validCN');
+                } else {
+                    if(dropDownVal == selValidCNVal) {
+                        document.getElementById('$pageSession{validCNTextId}').value='';
+                        enableJdbcRadioButtons('dropdown', 'validCN');
+                    }
+                    else if('$pageSession{myValidCNOption}' == 'dropdown') {
+                        enableJdbcRadioButtons('dropdown', 'validCN');
+                    } else {
+                        enableJdbcRadioButtons('text', 'validCN');
+                    }
+                }
+                disableComponent('$pageSession{tableDropdownTextId}', 'select');
+                disableTextComponent('$pageSession{tableTextId}');
+                disableAllJdbcRadioButtons(true, 'table');
             }else{
-                disableComponent('$pageSession{dropdownTextId}', 'select');
-                disableTextComponent('$pageSession{textId}');
-                disableComponent('$pageSession{validCNTextField}', 'text');
-                disableRadioButtons(true);
+                disableComponent('$pageSession{tableDropdownTextId}', 'select');
+                disableTextComponent('$pageSession{tableTextId}');
+                disableAllJdbcRadioButtons(true, 'table');
+                disableComponent('$pageSession{validCNDropdownTextId}', 'select');
+                disableTextComponent('$pageSession{validCNTextId}');
+                disableAllJdbcRadioButtons(true, 'validCN');
             }
         }
         function disableTextComponent(textId) {
             var textVal = document.getElementById(textId).value;
-            disableComponent('$pageSession{textId}', 'text');
-            document.getElementById('$pageSession{textId}').value=textVal;
+            disableComponent(textId, 'text');
+            document.getElementById(textId).value=textVal;
         }
-        function getValidationTableInfo(map, selStr) {
-            var b= map.toString();
+        function getDropdownInfo(tableAttrs, validCNAttrs, tableVal, validCNVal) {
+            var isConnValidation = document.getElementById("$pageSession{conValidationId}").checked;
             var methodVal = document.getElementById("$pageSession{valMethod}").value;
-            if (methodVal == 'table'){
-                var isConnValidation = document.getElementById("$pageSession{conValidationId}").checked;
-                if (isConnValidation) {
-                    admingui.ajax.invoke("gf.restRequest", {
-                        endpoint:"#{sessionScope.REST_URL}/resources/get-validation-table-names",
-                        attrs:b,
-                        method:"get",
-                        result:""}, function(result) {
-                        processValidationTableNamesResult(result, selStr);
-                    }, 3, false);
-                }
+            if (isConnValidation && methodVal == 'table'){
+                var b= tableAttrs.toString();
+                admingui.ajax.invoke("gf.restRequest", {
+                    endpoint:"#{sessionScope.REST_URL}/resources/get-validation-table-names",
+                    attrs:b,
+                    method:"get",
+                    result:""}, function(result) {
+                    processResult(result, tableVal, "validationTableNames=", "$pageSession{tableDropdownTextId}");
+                }, 3, false);
+            } else if (isConnValidation && methodVal == 'custom-validation'){
+                var c= validCNAttrs.toString();
+                admingui.ajax.invoke("gf.restRequest", {
+                    endpoint:"#{sessionScope.REST_URL}/resources/get-validation-class-names",
+                    attrs:c,
+                    method:"get",
+                    result:""}, function(result) {
+                    processResult(result, validCNVal, "validationClassNames=", "$pageSession{validCNDropdownTextId}");
+                }, 3, false);
             }
         }
 
-        function processValidationTableNamesResult(result, selStr) {
+        function processResult(result, selStr, searchStr, dropdownId) {
             if(result.result.data != undefined){
                 var exitCode = result.result.data.exit_code.toString();
                 if (exitCode == "SUCCESS") {
                     var res = result.result.data.extraProperties.toString();                 
                     if (res != null) {
-                        var searchStr = "validationTableNames=";
                         var index = res.indexOf(searchStr);
                         if (index != -1) {
                             var tableNamesStr = res.substring(index + searchStr.length + 1, (res.length) - 2);
-                            setTableOptions(tableNamesStr, selStr);
+                            setDropdownOptions(tableNamesStr, selStr, dropdownId);
                         }
                     }
                 }
             }
         }
-        function setTableOptions(tableNamesStr, selStr) {
+        function setDropdownOptions(tableNamesStr, selStr, dropdownId) {
             var strs = tableNamesStr.split(", ");
             for (var i = 0; i < strs.length; i++){
                 var optn;
@@ -129,8 +145,45 @@
                 if(selStr == strs[i]) {
                     optn.selected = true;
                 }
-                document.getElementById("$pageSession{dropdownTextId}").options.add(optn);
+                document.getElementById(dropdownId).options.add(optn);
             }            
         }
+        function disableAllJdbcRadioButtons(opt, type) {
+            if (type=='table') {
+                disableTwoRadioButtons(opt, '$pageSession{tablePropId}', '$pageSession{tableOptionId}');
+            } else {
+                disableTwoRadioButtons(opt, '$pageSession{validCNPropId}', '$pageSession{validCNOptionId}');
+            }
+        }
+        function enableJdbcRadioButtons(opt, type) {
+            if (type=='table') {
+                enableRadioButtons(opt, '$pageSession{tableTextId}', '$pageSession{tableDropdownTextId}', '$pageSession{tablePropId}', '$pageSession{tableOptionId}');
+            } else {
+                enableRadioButtons(opt, '$pageSession{validCNTextId}', '$pageSession{validCNDropdownTextId}', '$pageSession{validCNPropId}', '$pageSession{validCNOptionId}');
+            }
+        }
+        function enableRadioButtons(opt, textId, dropdownId, propId, optionId){
+            if(opt == 'dropdown') {
+                var textVal = document.getElementById(textId).value;
+                disableComponent(textId, 'text');
+                document.getElementById(textId).value=textVal;
+                enableComponent(dropdownId, 'select');
+                #{themeJavascript.JS_PREFIX}.radiobutton.setChecked(propId+':optB', false);
+                #{themeJavascript.JS_PREFIX}.radiobutton.setChecked(propId+':optA', true);
+                document.getElementById(optionId).value='dropdown';
+            }else{
+                enableComponent(textId, 'text');
+                disableComponent(dropdownId, 'select');
+                getTextElement(textId).focus();
+                #{themeJavascript.JS_PREFIX}.radiobutton.setChecked(propId+':optB', true);
+                #{themeJavascript.JS_PREFIX}.radiobutton.setChecked(propId+':optA', false);
+                document.getElementById(optionId).value='text';
+            }         
+      }
+      function disableTwoRadioButtons(opt, propId, optionId){
+          #{themeJavascript.JS_PREFIX}.radiobutton.setDisabled(propId+':optA', opt);
+          #{themeJavascript.JS_PREFIX}.radiobutton.setDisabled(propId+':optB', opt);
+          document.getElementById(optionId).value='';
+      }
     </script>
 </f:verbatim>   

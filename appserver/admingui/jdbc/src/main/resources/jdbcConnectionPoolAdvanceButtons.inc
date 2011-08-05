@@ -47,11 +47,23 @@
         <sun:button id="saveButton"  text="$resource{i18n.button.Save}"
                 onClick="if (checkPoolAttr('#{timeoutId}', '#{reqInt}') && guiValidate('#{reqMsg}','#{reqInt}','#{reqPort}')) {submitAndDisable(this, '$resource{i18n.button.Processing}');}; return false;" >
             <!command
-                if ("#{pageSession.myOption}=dropdown") {
-                    setValueExpression(expression="#{pageSession.valueMap['validationTableName']}", value="#{pageSession.tableDropDownValue}");
-                }
-                if ("#{pageSession.myOption}=text") {
-                    setValueExpression(expression="#{pageSession.valueMap['validationTableName']}", value="#{pageSession.tableTextValue}");
+                if ("#{pageSession.valueMap.isConnectionValidationRequired}=true") {
+                    if ("#{pageSession.valueMap.connectionValidationMethod}=table") {
+                        if ("#{pageSession.myTableOption}=dropdown") {
+                            setValueExpression(expression="#{pageSession.valueMap['validationTableName']}", value="#{pageSession.tableDropDownValue}");
+                        }
+                        if ("#{pageSession.myTableOption}=text") {
+                            setValueExpression(expression="#{pageSession.valueMap['validationTableName']}", value="#{pageSession.tableTextValue}");
+                        }
+                    }
+                    if ("#{pageSession.valueMap.connectionValidationMethod}=custom-validation") {
+                        if ("#{pageSession.myValidCNOption}=dropdown") {
+                            setValueExpression(expression="#{pageSession.valueMap['validationClassname']}", value="#{pageSession.validCNDropDownValue}");
+                        }
+                        if ("#{pageSession.myValidCNOption}=text") {
+                            setValueExpression(expression="#{pageSession.valueMap['validationClassname']}", value="#{pageSession.validCNTextValue}");
+                        }
+                    }
                 }
                 
                 if ("#{pageSession.valueMap['lazyConnectionAssociation']}") {

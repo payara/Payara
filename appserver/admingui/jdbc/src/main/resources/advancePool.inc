@@ -137,7 +137,7 @@
     <sun:propertySheetSection id="connectionValidationPropertySheet" label="$resource{i18njdbc.jdbcPool.Validation}">
 
         <sun:property id="conValidationProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18njdbc.jdbcPool.conValidation}" helpText="$resource{i18njdbc.jdbcPool.conValidationHelp}">
-            <sun:checkbox label="$resource{i18n.common.Required}" selected="#{pageSession.valueMap.isConnectionValidationRequired}" selectedValue="true" onChange="javascript: getValidationTableInfo('#{pageSession.attrMap}', '#{pageSession.valueMap.validationTableName}'); disableTableField('#{pageSession.valueMap.validationTableName}');" >
+            <sun:checkbox label="$resource{i18n.common.Required}" selected="#{pageSession.valueMap.isConnectionValidationRequired}" selectedValue="true" onChange="javascript: getDropdownInfo('#{pageSession.attrMap}', '#{pageSession.validCNAttrMap}', '#{pageSession.valueMap.validationTableName}', '#{pageSession.valueMap.validationClassName}'); disableTableField('#{pageSession.valueMap.validationTableName}','#{pageSession.valueMap.validationClassName}');" >
                 <!afterCreate
                     getClientId(component="$this{component}" clientId=>$page{conValidationId});
                 />
@@ -146,7 +146,7 @@
 
         <sun:property id="methodProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18njdbc.jdbcPool.valMethod}" >
             <sun:dropDown id="valMethod" selected="#{pageSession.valueMap.connectionValidationMethod}"
-                labels={"auto-commit" "meta-data"  "custom-validation" "table"} onChange="javascript: getValidationTableInfo('#{pageSession.attrMap}', '#{pageSession.valueMap.validationTableName}'); disableTableField('#{pageSession.valueMap.validationTableName}');">
+                labels={"auto-commit" "meta-data"  "custom-validation" "table"} onChange="javascript: getDropdownInfo('#{pageSession.attrMap}', '#{pageSession.validCNAttrMap}', '#{pageSession.valueMap.validationTableName}', '#{pageSession.valueMap.validationClassName}'); disableTableField('#{pageSession.valueMap.validationTableName}', '#{pageSession.valueMap.validationClassName}');">
                 <!afterCreate
                     getClientId(component="$this{component}" clientId=>$page{valMethod});
                 />
@@ -155,32 +155,48 @@
 
         <sun:property id="tableProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18njdbc.jdbcPool.tableName}" helpText="$resource{i18njdbc.jdbcPool.tableNameHelp}">
             <!afterCreate
-                getClientId(component="$this{component}" clientId=>$page{propId});
+                getClientId(component="$this{component}" clientId=>$page{tablePropId});
             />
-            <sun:hidden id="option" value="#{pageSession.myOption}">
+            <sun:hidden id="option" value="#{pageSession.myTableOption}">
                 <!afterCreate
-                    getClientId(component="$this{component}" clientId=>$page{optionId});
+                    getClientId(component="$this{component}" clientId=>$page{tableOptionId});
                 />
             </sun:hidden>
-            <sun:radioButton id="optA"  name="dropDownOption" onClick="javascript: enableRadioButtonFields('dropdown');" />
+            <sun:radioButton id="optA"  name="dropDownOption" onClick="javascript: enableJdbcRadioButtons('dropdown', 'table');" />
             <sun:dropDown id="tableTextField"  labels="$pageSession{tableNameList}"  values="$pageSession{tableNameList}" selected="#{pageSession.tableDropDownValue}" >
                 <!afterCreate
-                    getClientId(component="$this{component}" clientId=>$page{dropdownTextId});
+                    getClientId(component="$this{component}" clientId=>$page{tableDropdownTextId});
                 />                
             </sun:dropDown>
             "<br />
-            <sun:radioButton id="optB"  name="textOption" onClick="javascript: enableRadioButtonFields('text');" />
+            <sun:radioButton id="optB"  name="textOption" onClick="javascript: enableJdbcRadioButtons('text', 'table');" />
             <sun:textField id="tableText" columns="$int{55}" maxLength="#{sessionScope.fieldLengths['maxLength.jdbcPool.tableText']}" text="#{pageSession.tableTextValue}" >
                 <!afterCreate
-                    getClientId(component="$this{component}" clientId=>$page{textId});
+                    getClientId(component="$this{component}" clientId=>$page{tableTextId});
                 />
             </sun:textField>
         </sun:property>
         <sun:property id="validCNProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18njdbc.jdbcPool.valCN}" helpText="$resource{i18njdbc.jdbcPool.valCNHelp}">
-            <sun:textField id="validCNTextField"  columns="$int{55}" maxLength="#{sessionScope.fieldLengths['maxLength.jdbcPool.valCN']}" text="#{pageSession.valueMap.validationClassname}" >
             <!afterCreate
-                getClientId(component="$this{component}" clientId=>$page{validCNTextField});
+                getClientId(component="$this{component}" clientId=>$page{validCNPropId});
             />
+            <sun:hidden id="option" value="#{pageSession.myValidCNOption}">
+                <!afterCreate
+                    getClientId(component="$this{component}" clientId=>$page{validCNOptionId});
+                />
+            </sun:hidden>
+            <sun:radioButton id="optA"  name="dropDownOption" onClick="javascript: enableJdbcRadioButtons('dropdown', 'validCN');" />
+            <sun:dropDown id="validCNTextField"  labels="$pageSession{classNameList}"  values="$pageSession{classNameList}" selected="#{pageSession.validCNDropDownValue}" >
+                <!afterCreate
+                    getClientId(component="$this{component}" clientId=>$page{validCNDropdownTextId});
+                />
+            </sun:dropDown>
+            "<br />
+            <sun:radioButton id="optB"  name="textOption" onClick="javascript: enableJdbcRadioButtons('text', 'validCN');" />
+            <sun:textField id="validCNText" columns="$int{55}" maxLength="#{sessionScope.fieldLengths['maxLength.jdbcPool.validationClassNameText']}" text="#{pageSession.validCNTextValue}" >
+                <!afterCreate
+                    getClientId(component="$this{component}" clientId=>$page{validCNTextId});
+                />
             </sun:textField>
         </sun:property>
 
