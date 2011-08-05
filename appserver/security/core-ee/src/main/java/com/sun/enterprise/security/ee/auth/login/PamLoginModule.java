@@ -38,10 +38,10 @@
  * holder.
  */
 
-package com.sun.enterprise.security.auth.login;
+package com.sun.enterprise.security.ee.auth.login;
 
 import com.sun.appserv.security.AppservPasswordLoginModule;
-import com.sun.enterprise.security.auth.realm.pam.PamRealm;
+import com.sun.enterprise.security.ee.auth.realm.pam.PamRealm;
 import java.util.Set;
 import java.util.logging.Level;
 import javax.security.auth.login.LoginException;
