@@ -41,14 +41,13 @@
 package org.glassfish.virtualization.spi;
 
 import org.glassfish.virtualization.config.MachineConfig;
-import org.glassfish.virtualization.config.Template;
 import org.glassfish.virtualization.config.VirtUser;
 import org.glassfish.virtualization.os.FileOperations;
 import org.glassfish.virtualization.runtime.VirtualCluster;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Map;
-import java.util.concurrent.Future;
 
 /**
  * Represents a machine
@@ -64,7 +63,7 @@ public interface Machine {
 
     String getIpAddress();
 
-    PhysicalGroup getGroup();
+    PhysicalServerPool getServerPool();
 
     State getState();
 
@@ -76,7 +75,7 @@ public interface Machine {
 
     void sleep() throws IOException, InterruptedException;
 
-    Iterable<? extends VirtualMachine> getVMs() throws VirtException;
+    Collection<? extends VirtualMachine> getVMs() throws VirtException;
 
     StoragePool addStoragePool(String name, long capacity) throws VirtException;
 
@@ -84,5 +83,6 @@ public interface Machine {
 
     VirtualMachine byName(String name) throws VirtException;
 
-    Future<VirtualMachine> create(Template template, VirtualCluster cluster) throws VirtException, IOException;
+    ListenableFuture<AllocationPhase, VirtualMachine> create(TemplateInstance template, VirtualCluster cluster)
+            throws VirtException, IOException;
 }

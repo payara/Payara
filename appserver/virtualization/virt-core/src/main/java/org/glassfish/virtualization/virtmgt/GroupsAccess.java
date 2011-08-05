@@ -42,21 +42,21 @@ package org.glassfish.virtualization.virtmgt;
 import org.jvnet.hk2.annotations.Contract;
 
 /**
- * Defines access to configured group masters.
+ * Defines access to configured serverPool masters.
  * @author Jerome Dochez
  */
 @Contract
 public interface GroupsAccess {
 
     /**
-     * Returns an iterable collection of group access instances
-     * @return  a iterable collection of configured group access.
+     * Returns an iterable collection of serverPool access instances
+     * @return  a iterable collection of configured serverPool access.
      */
     Iterable<GroupAccess> groups();
 
     /**
-     * Returns a group access instance given its name
-     * @param name the group name
+     * Returns a serverPool access instance given its name
+     * @param name the serverPool name
      * @return the @see GroupAccess if found or null otherwise.
      */
     GroupAccess byName(String name);

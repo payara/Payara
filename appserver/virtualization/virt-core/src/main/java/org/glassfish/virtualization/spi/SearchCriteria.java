@@ -37,57 +37,27 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package org.glassfish.virtualization.commands;
 
-import org.glassfish.api.ActionReport;
-import org.glassfish.api.Param;
-import org.glassfish.api.admin.AdminCommandContext;
-import org.glassfish.virtualization.spi.*;
-import org.glassfish.virtualization.util.RuntimeContext;
-import org.jvnet.hk2.annotations.Inject;
+package org.glassfish.virtualization.spi;
 
-import java.util.logging.Logger;
+import java.util.Collection;
 
 /**
- * Super class for machine management related commands.
- * @author Jerome Dochez
+ * Created by IntelliJ IDEA.
+ * User: dochez
+ * Date: 8/2/11
+ * Time: 10:34 PM
+ * To change this template use File | Settings | File Templates.
  */
-public abstract class MachineMgt {
+public interface SearchCriteria {
 
-    @Param(name="serverPool")
-    String groupName;
+    SearchCriteria and(TemplateCondition... indexes);
 
-    @Param(name="machine")
-    String machineName;
+    Collection<TemplateCondition> and();
 
-    @Inject
-    IAAS gm;
+    SearchCriteria or(TemplateCondition... indexes);
 
-    protected ActionReport report;
+    Collection<TemplateCondition> or();
 
-    public void execute(AdminCommandContext context) {
-
-        this.report = context.getActionReport();
-
-        ServerPool vmProvider = gm.byName(groupName);
-        if (vmProvider!=null && vmProvider instanceof PhysicalServerPool) {
-            PhysicalServerPool group = (PhysicalServerPool) vmProvider;
-            Machine machine = group.byName(machineName);
-            if (machine==null) {
-                context.getActionReport().failure(Logger.getAnonymousLogger(), "Don't know about machine " + machineName);
-                return;
-            }
-            try {
-                doWork(machine);
-            } catch(VirtException e) {
-                context.getActionReport().failure(Logger.getAnonymousLogger(), e.getMessage(), e);
-            }
-        } else {
-            context.getActionReport().failure(RuntimeContext.logger, "serverPool does not exist or does not contain physical machines");
-        }
-
-    }
-
-    abstract void doWork(Machine machine) throws VirtException;
-
+    SearchCriteria optionally(TemplateCondition... indexes);
 }

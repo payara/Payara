@@ -79,7 +79,7 @@ public class SupplementStartInstance implements AdminCommand {
     String instanceName;
 
     @Inject
-    GroupManagement groups;
+    IAAS groups;
 
     @Inject
     VirtualMachineLifecycle vmLifecycle;
@@ -104,7 +104,7 @@ public class SupplementStartInstance implements AdminCommand {
         String machineName = instanceName.substring(instanceName.indexOf("_")+1, instanceName.lastIndexOf("_"));
         String vmName = instanceName.substring(instanceName.lastIndexOf("_")+1, instanceName.length()-"Instance".length());
 
-        Group group = groups.byName(groupName);
+        ServerPool group = groups.byName(groupName);
         try {
             VirtualMachine vm = group.vmByName(vmName);
             VirtualMachineInfo vmInfo = vm.getInfo();
@@ -122,7 +122,7 @@ public class SupplementStartInstance implements AdminCommand {
         File custFile = new File(custDir, "customization");
 
         try {
-            if (custFile.exists() && group instanceof PhysicalGroup) {
+            if (custFile.exists() && group instanceof PhysicalServerPool) {
 
                 // only if ISO customization is present (ie not for JRVE)
                 // this needs to be moved to virtualization specific code.
@@ -156,7 +156,7 @@ public class SupplementStartInstance implements AdminCommand {
                 File custISOFile = new File(machineDisks, vmName + "cust.iso");
                 custDisk.createISOFromDirectory(custDir, custISOFile);
 
-                PhysicalGroup physicalGroup = (PhysicalGroup) group;
+                PhysicalServerPool physicalGroup = (PhysicalServerPool) group;
                 Machine machine = physicalGroup.byName(machineName);
                 machine.getFileOperations().delete(machine.getConfig().getDisksLocation() + "/" + vmName + "cust.iso");
                 machine.getFileOperations().copy(custISOFile, new File(machine.getConfig().getDisksLocation()));

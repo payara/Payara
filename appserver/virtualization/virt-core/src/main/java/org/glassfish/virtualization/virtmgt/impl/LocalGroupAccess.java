@@ -41,37 +41,32 @@
 package org.glassfish.virtualization.virtmgt.impl;
 
 import org.glassfish.hk2.inject.Injector;
-import org.glassfish.virtualization.config.Template;
 import org.glassfish.virtualization.runtime.VirtualCluster;
-import org.glassfish.virtualization.spi.PhysicalGroup;
-import org.glassfish.virtualization.spi.VirtException;
-import org.glassfish.virtualization.spi.VirtualMachine;
+import org.glassfish.virtualization.spi.*;
 import org.glassfish.virtualization.virtmgt.GroupAccess;
 
-import java.util.concurrent.Future;
-
 /**
- * Defines a local group access. This mean this process is configured to be a group master
+ * Defines a local serverPool access. This mean this process is configured to be a serverPool master
  * and this implementation allows the current process to interface with it.
  * @author Jerome Dochez
  */
 public class LocalGroupAccess implements GroupAccess {
 
-    final PhysicalGroup group;
+    final ServerPool group;
 
-    static LocalGroupAccess from(Injector injector, PhysicalGroup group) {
+    static LocalGroupAccess from(Injector injector, ServerPool group) {
         LocalGroupAccess instance = new LocalGroupAccess(group);
         injector.inject(instance);
         return instance;
     }
 
-    private LocalGroupAccess(PhysicalGroup group) {
+    private LocalGroupAccess(ServerPool group) {
         this.group = group;
     }
 
     @Override
-    public Iterable<Future<VirtualMachine>> allocate(Template template, VirtualCluster cluster, int number) throws VirtException {
-        return group.allocate(template, cluster,  number);
+    public ListenableFuture<AllocationPhase, VirtualMachine> allocate(TemplateInstance template, VirtualCluster cluster) throws VirtException {
+        return group.allocate(template, cluster);
     }
 
     @Override

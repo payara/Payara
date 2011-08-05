@@ -43,10 +43,7 @@ package org.glassfish.virtualization.commands;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
-import org.glassfish.virtualization.spi.PhysicalGroup;
-import org.glassfish.virtualization.spi.GroupManagement;
-import org.glassfish.virtualization.spi.Machine;
-import org.glassfish.virtualization.spi.OsInterface;
+import org.glassfish.virtualization.spi.*;
 import org.glassfish.virtualization.util.RuntimeContext;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
@@ -62,6 +59,9 @@ import java.io.IOException;
 @Scoped(PerLookup.class)
 public class SuspendMachine  implements AdminCommand {
 
+    @Param(optional=true)
+    String groupName=null;
+
     @Param(primary=true)
     String machineName;
 
@@ -69,18 +69,32 @@ public class SuspendMachine  implements AdminCommand {
     OsInterface os;
 
     @Inject
-    GroupManagement groups;
+    IAAS groups;
 
     @Override
     public void execute(AdminCommandContext context) {
-        for (PhysicalGroup group : groups) {
-            for (Machine machine : group.machines()) {
-                if (machine.getName().equals(machineName)) {
-                    try {
-                        os.suspend(machine);
-                    } catch (IOException e) {
-                        context.getActionReport().failure(RuntimeContext.logger, e.getMessage(), e);
-                    }
+
+        ServerPool group;
+        if (groupName==null) {
+            group = groups.iterator().next();
+        } else {
+            group = groups.byName(groupName);
+        }
+        if (group==null) {
+            if (groupName!=null) {
+                context.getActionReport().failure(RuntimeContext.logger, "Cannot find serverPool named " + groupName);
+            } else {
+                context.getActionReport().failure(RuntimeContext.logger, "No serverPool defined");
+            }
+            return;
+        }
+        if (group instanceof PhysicalServerPool) {
+            Machine machine = ((PhysicalServerPool) group).byName(machineName);
+            if (machine!=null) {
+                try {
+                    os.suspend(machine);
+                } catch (IOException e) {
+                    context.getActionReport().failure(RuntimeContext.logger, e.getMessage(), e);
                 }
             }
         }

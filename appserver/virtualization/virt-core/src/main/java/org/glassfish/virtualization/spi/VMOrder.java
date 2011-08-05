@@ -39,7 +39,7 @@
  */
 package org.glassfish.virtualization.spi;
 
-import org.glassfish.virtualization.config.Template;
+import org.glassfish.virtualization.runtime.VirtualCluster;
 
 import java.util.*;
 
@@ -49,13 +49,23 @@ import java.util.*;
  */
 public class VMOrder {
 
-    final Template template;
-    final List<Group> groups = new ArrayList<Group>();
+    final TemplateInstance template;
+    final VirtualCluster targetCluster;
+    final List<ServerPool> groups = new ArrayList<ServerPool>();
     final List<VirtualMachine> noColocationList = new ArrayList<VirtualMachine>();
     final Properties vmProps = new Properties();
 
-    public VMOrder(Template template, int number) {
+    public VMOrder(TemplateInstance template, VirtualCluster targetCluster) {
         this.template = template;
+        this.targetCluster = targetCluster;
+    }
+
+    /**
+     * Returns the virtual cluster this allocation is targeted to
+     * @return the target virtual cluster
+     */
+    public VirtualCluster getTargetCluster() {
+        return targetCluster;
     }
 
     /**
@@ -69,14 +79,14 @@ public class VMOrder {
     }
 
     /**
-     * Specifies the group in which the number of virtual machines should be allocated.
-     * If no group is specified, it's left to the Infrastructure Management Service to
+     * Specifies the serverPool in which the number of virtual machines should be allocated.
+     * If no serverPool is specified, it's left to the Infrastructure Management Service to
      * decide in which groups those Virtual Machines will be allocated.
      *
-     * @param groups desired group instance
+     * @param groups desired serverPool instance
      * @return itself
      */
-    public VMOrder in(Group... groups) {
+    public VMOrder in(ServerPool... groups) {
         this.groups.addAll(Arrays.asList(groups));
         return this;
     }
@@ -111,7 +121,7 @@ public class VMOrder {
      *
      * @return the groups we should use to allocate the virtual machines if possible.
      */
-    public Collection<Group> affinities() {
+    public Collection<ServerPool> affinities() {
         return Collections.unmodifiableList(groups);
     }
 
@@ -130,7 +140,7 @@ public class VMOrder {
      *
      * @return the template to use for the virtual machines allocation.
      */
-    public Template getTemplate() {
+    public TemplateInstance getTemplate() {
         return template;
     }
 }

@@ -70,7 +70,7 @@ public interface OsInterface {
     /**
      * populate the ip to mac address map
      */
-    Map<String, String> populateMacToIpsTable(PhysicalGroup group);
+    Map<String, String> populateMacToIpsTable(PhysicalServerPool group);
 
     /**
      * Generates a new unique mac address
@@ -83,7 +83,7 @@ public interface OsInterface {
     String userId();
 
     /**
-     * Returns the current group id
+     * Returns the current serverPool id
      */
     String groupId();
 

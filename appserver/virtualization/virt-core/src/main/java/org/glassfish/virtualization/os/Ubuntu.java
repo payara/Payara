@@ -41,10 +41,10 @@
 package org.glassfish.virtualization.os;
 
 import org.glassfish.virtualization.ShellExecutor;
-import org.glassfish.virtualization.spi.PhysicalGroup;
+import org.glassfish.virtualization.spi.PhysicalServerPool;
 import org.glassfish.virtualization.spi.Machine;
 import org.glassfish.virtualization.spi.OsInterface;
-import org.glassfish.virtualization.config.GroupConfig;
+import org.glassfish.virtualization.config.ServerPoolConfig;
 import org.glassfish.virtualization.util.RuntimeContext;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
@@ -89,9 +89,9 @@ public class Ubuntu implements OsInterface {
     }
 
     @Override
-    public Map<String, String> populateMacToIpsTable(PhysicalGroup group) {
+    public Map<String, String> populateMacToIpsTable(PhysicalServerPool group) {
 
-        GroupConfig groupConfig = group.getConfig();
+        ServerPoolConfig groupConfig = group.getConfig();
         String subNet = groupConfig.getSubNet();
         Map<String, String> macToIps = new HashMap<String, String>();
         RuntimeContext.logger.info("Populating IP addresses tables, this may take a while...");

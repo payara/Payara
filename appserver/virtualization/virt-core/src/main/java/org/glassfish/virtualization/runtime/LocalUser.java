@@ -91,7 +91,7 @@ public class LocalUser implements VirtUser {
 
     @Override
     public void setGroupId(String id) {
-        throw new RuntimeException("Cannot change local group id !");
+        throw new RuntimeException("Cannot change local serverPool id !");
     }
 
     @Override

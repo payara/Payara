@@ -65,7 +65,7 @@ public class DeleteVirtualMachine implements AdminCommand {
     String clusterName;
 
     @Inject(optional = true)
-    GroupManagement groups=null;
+    IAAS groups=null;
 
     @Inject
     RuntimeContext rtContext;
@@ -106,19 +106,15 @@ public class DeleteVirtualMachine implements AdminCommand {
             // searching the target vm needs to be improved
             String vmName = instanceName.substring(instanceName.lastIndexOf("_")+1, instanceName.length()-"Instance".length());
             if (groups!=null) {
-                for (PhysicalGroup group : groups) {
-                    for (Machine machine : group.machines()) {
-                        try {
-                            for (VirtualMachine vm : machine.getVMs()) {
-                                if (vm.getName().equals(vmName)) {
-                                    vm.delete();
-                                    break;
-                                }
-                            }
-                        } catch (VirtException e) {
-                            RuntimeContext.logger.log(Level.WARNING,
-                                    "Exception while talking to machine " + machine.getName(), e);
+                for (ServerPool group : groups) {
+                    try {
+                        VirtualMachine vm = group.vmByName(vmName);
+                        if (vm != null) {
+                            vm.delete();
                         }
+                    } catch (VirtException e) {
+                        RuntimeContext.logger.log(Level.WARNING,
+                                "Exception while deleting virtual machine " + vmName, e);
                     }
                 }
             }

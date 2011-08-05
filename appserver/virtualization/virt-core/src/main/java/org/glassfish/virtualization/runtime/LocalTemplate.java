@@ -48,6 +48,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Defines a local template, installed on *this* machine.
@@ -62,29 +63,31 @@ public class LocalTemplate extends VMTemplate {
     @Override
     public synchronized void copyTo(Machine destination, String destDir) throws IOException {
 
-        String destPath = destDir + "/" + config.getName() + ".img";
-        File source = new File(getLocation() + "/" + config.getName() + ".img");
-        if (!source.exists()) {
-            RuntimeContext.logger.severe("Cannot find template " + source.getAbsolutePath());
-            throw new FileNotFoundException("Cannot find template " + source.getAbsolutePath());
-        }
 
+        String destinationDirectory = destination.getConfig().getTemplatesLocation() + "/" + config.getName();
+        File sourceDirectory = new File(getLocation(), config.getName());
         FileOperations files = destination.getFileOperations();
-
-        try {
-            if (!files.exists(destPath)) {
-                files.mkdir(destination.getConfig().getTemplatesLocation());
-                RuntimeContext.logger.info("Copying template " + getDefinition().getName() + " on "
-                    + destination.getName());
-                files.copy(source, new File(destination.getConfig().getTemplatesLocation()));
-                RuntimeContext.logger.info("Finished copying template " + getDefinition().getName() + " on "
-                    + destination.getName());
-            }
-        } catch (IOException e) {
-            RuntimeContext.logger.log(Level.SEVERE, "Cannot copy template on " + config.getName(),e);
-            throw e;
+        if (!sourceDirectory.exists()) {
+            RuntimeContext.logger.severe("Cannot find template directory " + sourceDirectory.getAbsolutePath());
+            return;
         }
+        for (File file : sourceDirectory.listFiles()) {
+            String destPath = destinationDirectory + "/" + file.getName();
 
+            try {
+                if (!files.exists(destPath)) {
+                    files.mkdir(destinationDirectory);
+                    RuntimeContext.logger.info("Copying template " + getDefinition().getName() + " on "
+                        + destination.getName());
+                    files.copy(file, new File(destinationDirectory));
+                    RuntimeContext.logger.info("Finished copying template " + getDefinition().getName() + " on "
+                        + destination.getName());
+                }
+            } catch (IOException e) {
+                RuntimeContext.logger.log(Level.SEVERE, "Cannot copy template on " + config.getName(),e);
+                throw e;
+            }
+        }
     }
 
     @Override

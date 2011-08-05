@@ -37,38 +37,71 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+
 package org.glassfish.virtualization.spi;
+
+import org.glassfish.virtualization.config.ServerPoolConfig;
+import org.glassfish.virtualization.runtime.VMTemplate;
+import org.glassfish.virtualization.runtime.VirtualCluster;
 
 import java.util.Collection;
 import java.util.List;
 
 /**
- * An allocation strategy is responsible for allocating virtual machines given
- * a set of server pools and machines within these server pools.
+ * Abstract a set of servers than can be used to provide {@link VirtualMachine}
  *
  * @author Jerome Dochez
  */
-public interface AllocationStrategy {
+public interface ServerPool {
 
     /**
-     * allocate a virtual machine within the provided server pools, notifying of progress all listeners
+     * Returns the configuration for this server pool.
      *
-     * @param serverPools the server pools elligible to run the virtual machine
-     * @param order the virtual machine requested characteristics
-     * @param listeners listeners to register before any work is performed
-     * @return a listenable future implementation that can be used to monitor progress and get the
-     * result of the allocation as {@link VirtualMachine} instance.
-     * @throws VirtException if the allocation failed.
+     * @return  the server pool's configuration.
      */
-    ListenableFuture<AllocationPhase, VirtualMachine> allocate(Collection<ServerPool> serverPools,
-                                                               VMOrder order,
-                                                               List<Listener<AllocationPhase>> listeners)
-        throws VirtException;
+    ServerPoolConfig getConfig();
+    void setConfig(ServerPoolConfig config);
+
 
     /**
-     * Returns the server pool allocation strategy for a particular server pool instance.
-     * @param serverPool the server pool instance
-     * @return the server pool allocation strategy
+     * Returns this pool's name.
+     * @return  this pool's name
      */
-    ServerPoolAllocationStrategy getServerPoolStrategy(ServerPool serverPool);
+    String getName();
+
+    /**
+     * Returns all allocated virtual machine in this server pool
+     * @return the list of allocated virtual machines
+     */
+    Collection<VirtualMachine> getVMs() throws VirtException;
+
+    /**
+     * Returns an allocated virtual machine in this server pool using its name.
+     * @param name virtual machine name
+     * @return virtual machine instance if found or null otherwise.
+     * @throws VirtException if the vm cannot be obtained
+     */
+    VirtualMachine vmByName(String name) throws VirtException;
+
+    /**
+     * Allocates number of virtual machines on any machine belonging to this server pool, each virtual machine
+     * should be based on the provided template.
+     * @param template  template for the virtual machines
+     * @param cluster the virtual cluster instance to allocated virtual machines for
+     * @return Listenable future for the VirtualMachine instance
+     * @throws VirtException when the virtual machine creation failed.
+     */
+    ListenableFuture<AllocationPhase, VirtualMachine> allocate(TemplateInstance template, VirtualCluster cluster) throws VirtException;
+
+    /**
+     * Returns the list of templates installed.
+     * @return list of installed templates or empty list if none
+     */
+    List<VMTemplate> getInstalledTemplates();
+
+    /**
+     * Install a template in this server pool
+     * @param template to install
+     */
+    void install(VMTemplate template);
 }

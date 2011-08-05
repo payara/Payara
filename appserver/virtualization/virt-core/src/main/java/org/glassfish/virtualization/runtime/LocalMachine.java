@@ -39,6 +39,7 @@
  */
 package org.glassfish.virtualization.runtime;
 
+import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.util.io.FileUtils;
 import org.glassfish.grizzly.config.dom.NetworkListener;
@@ -65,7 +66,7 @@ import org.glassfish.virtualization.config.Virtualizations;
 import org.glassfish.virtualization.os.Disk;
 import org.glassfish.virtualization.os.FileOperations;
 import org.glassfish.virtualization.spi.Machine;
-import org.glassfish.virtualization.spi.PhysicalGroup;
+import org.glassfish.virtualization.spi.PhysicalServerPool;
 import org.glassfish.virtualization.spi.StoragePool;
 import org.glassfish.virtualization.spi.StorageVol;
 import org.glassfish.virtualization.spi.VirtException;
@@ -85,7 +86,7 @@ import org.jvnet.hk2.component.Habitat;
 public abstract class LocalMachine implements Machine, FileOperations {
 
     final protected MachineConfig config;
-    final protected PhysicalGroup group;
+    final protected PhysicalServerPool serverPool;
 
     final protected Map<String, VMTemplate> installedTemplates = new HashMap<String, VMTemplate>();
 
@@ -104,8 +105,8 @@ public abstract class LocalMachine implements Machine, FileOperations {
 
     final Injector injector;
 
-    protected  LocalMachine(Injector injector, PhysicalGroup group, MachineConfig config) {
-        this.group = group;
+    protected  LocalMachine(Injector injector, PhysicalServerPool serverPool, MachineConfig config) {
+        this.serverPool = serverPool;
         this.config = config;
         this.injector = injector;
     }
@@ -126,8 +127,8 @@ public abstract class LocalMachine implements Machine, FileOperations {
     }
 
     @Override
-    public PhysicalGroup getGroup() {
-        return group;
+    public PhysicalServerPool getServerPool() {
+        return serverPool;
     }
 
     public void setState(Machine.State state) {
@@ -184,7 +185,7 @@ public abstract class LocalMachine implements Machine, FileOperations {
 
     protected Emulator getEmulator() {
         if (config.getEmulator()==null) {
-            return group.getConfig().getVirtualization().getDefaultEmulator();
+            return serverPool.getConfig().getVirtualization().getDefaultEmulator();
         }
         return config.getEmulator();
     }
@@ -244,7 +245,8 @@ public abstract class LocalMachine implements Machine, FileOperations {
         // 1. copy the template to the destination machine.
         mkdir(config.getDisksLocation());
 
-        final File sourceFile = new File(virtualizations.getTemplatesLocation(), template.getName() + ".img");
+        final File sourceFile = new File(new File(virtualizations.getTemplatesLocation(), template.getName())
+                , template.getName() + ".img");
 
         delete(config.getDisksLocation() + "/" + name + "-cust.img");
         delete(config.getDisksLocation() + "/" + name + ".img");
@@ -319,9 +321,9 @@ public abstract class LocalMachine implements Machine, FileOperations {
         return volumes;
     }
 
-    protected File prepareCustDirectory(String name, VirtualCluster cluster, Template template ) throws IOException {
+    protected File prepareCustDirectory(String name, Cluster cluster, Template template ) throws IOException {
 
-        File machineDisks = absolutize(new File(virtualizations.getDisksLocation(), group.getName()));
+        File machineDisks = absolutize(new File(virtualizations.getDisksLocation(), serverPool.getName()));
         machineDisks = new File(machineDisks, getName());
         File custDir = new File(machineDisks, name + "cust");
         if (!custDir.exists()) {
@@ -347,21 +349,21 @@ public abstract class LocalMachine implements Machine, FileOperations {
      * return a File pointing to this entry.
      */
     
-    protected File createCustomizationFile (File customizationDir, VirtualCluster cluster, String name , Template template) throws IOException{
+    protected File createCustomizationFile (File customizationDir, Cluster cluster, String name , Template template) throws IOException{
          // create the customized properties.
         Properties customizedProperties = new Properties();
         Config configuration = habitat.getComponent(Config.class, ServerEnvironment.DEFAULT_INSTANCE_NAME);
         NetworkListener nl = configuration.getNetworkConfig().getNetworkListener("admin-listener");
         // soon enough, I need to replace this with a token and keep this information from being stored in the
         // customization disk.
-        customizedProperties.put("Group", group.getName());
-        customizedProperties.put("Cluster", cluster.getConfig().getName());
+        customizedProperties.put("Group", serverPool.getName());
+        customizedProperties.put("Cluster", cluster.getName());
         customizedProperties.put("Machine", getName());
         customizedProperties.put("MachineAlias", name);
         customizedProperties.put("GroupMasterPort", nl.getPort() );
-        customizedProperties.put("GroupMasterMachine", host.getHostAddress(group.getConfig().getPortName()));
+        customizedProperties.put("GroupMasterMachine", host.getHostAddress(serverPool.getConfig().getPortName()));
         customizedProperties.put("DAS", System.getProperty("com.sun.aas.hostName"));
-        customizedProperties.put("DASAddress", host.getHostAddress(group.getConfig().getPortName()));
+        customizedProperties.put("DASAddress", host.getHostAddress(serverPool.getConfig().getPortName()));
         VirtUser vmUser = getUser();
         if (template.getUser()!=null) {
             vmUser = template.getUser();

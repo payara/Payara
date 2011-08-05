@@ -72,6 +72,7 @@ public interface MachineConfig extends ConfigBeanProxy {
 
     @Element
     String getIpAddress();
+    @Param(optional = true, name="ip")
     void setIpAddress(String ipAddress);
 
     @Element
@@ -120,8 +121,8 @@ public interface MachineConfig extends ConfigBeanProxy {
     /**
      * Defines the user identify on the remote  machine that can be used to connect to the virtualization
      * layer and manipulate virtual machines, storage pools etc...
-     * If not defined, the group's user will be used.
-     * @see org.glassfish.virtualization.config.GroupConfig#getUser()
+     * If not defined, the serverPool's user will be used.
+     * @see ServerPoolConfig#getUser()
      *
      * @return  the machine user information
      */
@@ -132,7 +133,7 @@ public interface MachineConfig extends ConfigBeanProxy {
 
     @Service
     public class MachineResolver implements CrudResolver {
-        @Param(name="group")
+        @Param(name="serverPool")
         String group;
 
         @Param(name="machine")
@@ -143,7 +144,7 @@ public interface MachineConfig extends ConfigBeanProxy {
 
         @Override
         public <T extends ConfigBeanProxy> T resolve(AdminCommandContext context, Class<T> type)  {
-            for (GroupConfig provider : virt.getGroupConfigs()) {
+            for (ServerPoolConfig provider : virt.getGroupConfigs()) {
                 if (provider.getName().equals(group)) {
                     for (MachineConfig mc : provider.getMachines()) {
                         if (mc.getName().equals(machine)) {

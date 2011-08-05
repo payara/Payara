@@ -59,20 +59,17 @@ import java.util.logging.Logger;
 public class ListVirtualMachines implements AdminCommand {
 
     @Inject
-    GroupManagement gm;
+    IAAS gm;
 
     @Override
     public void execute(AdminCommandContext context) {
         //To change body of implemented methods use File | Settings | File Templates.
         try {
-            for (PhysicalGroup group : gm) {
+            for (ServerPool group : gm) {
                 context.getActionReport().setMessage("For Group : " + group.getName());
-                for (Machine machine : group.machines()) {
-                    System.out.println("  LibVirtMachine " + machine.getName() + " at " + machine.getIpAddress());
-                    for (VirtualMachine vm : machine.getVMs()) {
-                        context.getActionReport().getTopMessagePart().addChild().setMessage(
-                                "Virtual Machine: " + vm.getName() + " is "  + vm.getInfo().getState());
-                    }
+                for (VirtualMachine vm : group.getVMs()) {
+                    context.getActionReport().getTopMessagePart().addChild().setMessage(
+                            "Virtual Machine: " + vm.getName() + " is "  + vm.getInfo().getState());
                 }
             }
         } catch(VirtException e) {

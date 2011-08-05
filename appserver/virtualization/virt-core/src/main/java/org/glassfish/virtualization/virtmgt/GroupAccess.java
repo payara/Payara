@@ -39,32 +39,29 @@
  */
 package org.glassfish.virtualization.virtmgt;
 
-import org.glassfish.virtualization.config.Template;
 import org.glassfish.virtualization.runtime.VirtualCluster;
-import org.glassfish.virtualization.spi.VirtException;
-import org.glassfish.virtualization.spi.VirtualMachine;
+import org.glassfish.virtualization.spi.*;
 
 import java.util.concurrent.Future;
 
 /**
- * Access to a configured group master
+ * Access to a configured serverPool master
  * @author Jerome Dochez
  */
 public interface GroupAccess {
 
     /**
-     * Allocates number virtual machines in the configured group using the provided template
+     * Allocates number virtual machines in the configured serverPool using the provided template
      * under the allocationToken naming scheme.
      * @param template  template to use for the virtual machine
      * @param cluster virtual cluster to create virtual machines for.
-     * @param number  number of requested virtual machines
-     * @return interable instance of future contract for a virtual machine insance.
+     * @return interable instance of future contract for a virtual machine instance.
      * @throws VirtException if the allocation failed.
      */
-    Iterable<Future<VirtualMachine>> allocate(Template template, VirtualCluster cluster, int number) throws VirtException;
+    ListenableFuture<AllocationPhase, VirtualMachine> allocate(TemplateInstance template, VirtualCluster cluster) throws VirtException;
 
     /**
-     * Returns the virtualization technology used by this group master.
+     * Returns the virtualization technology used by this serverPool master.
      * @return the virtualization name
      */
     String getVirtualizationName();

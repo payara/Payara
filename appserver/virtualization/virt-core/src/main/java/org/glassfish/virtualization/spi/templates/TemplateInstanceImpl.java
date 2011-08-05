@@ -38,20 +38,42 @@
  * holder.
  */
 
-package org.glassfish.virtualization.spi;
+package org.glassfish.virtualization.spi.templates;
 
-import org.jvnet.hk2.annotations.Contract;
+import org.glassfish.virtualization.config.Template;
+import org.glassfish.virtualization.config.TemplateIndex;
+import org.glassfish.virtualization.spi.TemplateCondition;
+import org.glassfish.virtualization.spi.TemplateInstance;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
- * Defines APIs to access groups, group members
+ * Implementation of the {@link TemplateInstance} interface
+ * @author Jerome Dochez
  */
-@Contract
-public interface GroupManagement extends Iterable<PhysicalGroup> {
+public class TemplateInstanceImpl implements TemplateInstance {
 
-    /**
-     * Returns the runtime information for the group identified by its name.
-     * @param groupName the group name
-     * @return the group runtime information or null if not found.
-     */
-    Group byName(String groupName);
+    final Template config;
+    final List<TemplateCondition> indexes = new ArrayList<TemplateCondition>();
+
+    public TemplateInstanceImpl(Template config) {
+        this.config = config;
+        for (TemplateIndex indexPersistence : config.getIndexes()) {
+            indexes.add(TemplateCondition.from(indexPersistence));
+        }
+    }
+
+    @Override
+    public Template getConfig() {
+        return config;
+    }
+
+    @Override
+    public boolean satisfies(TemplateCondition condition) {
+        for (TemplateCondition templateIndex : indexes) {
+            if (templateIndex.satisfies(condition)) return true;
+        }
+        return false;
+    }
 }

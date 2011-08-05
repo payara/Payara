@@ -37,57 +37,41 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package org.glassfish.virtualization.commands;
 
-import org.glassfish.api.ActionReport;
-import org.glassfish.api.Param;
-import org.glassfish.api.admin.AdminCommandContext;
-import org.glassfish.virtualization.spi.*;
-import org.glassfish.virtualization.util.RuntimeContext;
-import org.jvnet.hk2.annotations.Inject;
+package org.glassfish.virtualization.util;
 
-import java.util.logging.Logger;
+import org.glassfish.virtualization.config.Template;
+import org.glassfish.virtualization.config.TemplateIndex;
+import org.glassfish.virtualization.spi.TemplateCondition;
+import org.jvnet.hk2.config.ConfigSupport;
+import org.jvnet.hk2.config.SingleConfigCode;
+import org.jvnet.hk2.config.TransactionFailure;
+
+import java.beans.PropertyVetoException;
 
 /**
- * Super class for machine management related commands.
+ * Abstract class for any time of {@link TemplateCondition} subclass that are value based.
  * @author Jerome Dochez
  */
-public abstract class MachineMgt {
+abstract class ValueBasedTemplateIndex extends TemplateCondition<TemplateIndex> {
 
-    @Param(name="serverPool")
-    String groupName;
+    abstract Object getValue();
 
-    @Param(name="machine")
-    String machineName;
-
-    @Inject
-    IAAS gm;
-
-    protected ActionReport report;
-
-    public void execute(AdminCommandContext context) {
-
-        this.report = context.getActionReport();
-
-        ServerPool vmProvider = gm.byName(groupName);
-        if (vmProvider!=null && vmProvider instanceof PhysicalServerPool) {
-            PhysicalServerPool group = (PhysicalServerPool) vmProvider;
-            Machine machine = group.byName(machineName);
-            if (machine==null) {
-                context.getActionReport().failure(Logger.getAnonymousLogger(), "Don't know about machine " + machineName);
-                return;
-            }
-            try {
-                doWork(machine);
-            } catch(VirtException e) {
-                context.getActionReport().failure(Logger.getAnonymousLogger(), e.getMessage(), e);
-            }
-        } else {
-            context.getActionReport().failure(RuntimeContext.logger, "serverPool does not exist or does not contain physical machines");
-        }
-
+    @Override
+    public boolean satisfies(TemplateCondition otherCondition) {
+        return otherCondition instanceof ValueBasedTemplateIndex &&
+                ((ValueBasedTemplateIndex) otherCondition).getValue().equals(getValue());
     }
 
-    abstract void doWork(Machine machine) throws VirtException;
-
+    public TemplateIndex persist(Template parent) throws TransactionFailure {
+        return (TemplateIndex) ConfigSupport.apply(new SingleConfigCode<Template>() {
+            @Override
+            public Object run(Template template) throws PropertyVetoException, TransactionFailure {
+                TemplateIndex persistence = template.createChild(TemplateIndex.class);
+                persistence.setType(getClass().getSimpleName());
+                persistence.setValue(getValue().toString());
+                return persistence;
+            }
+        }, parent);
+    }
 }

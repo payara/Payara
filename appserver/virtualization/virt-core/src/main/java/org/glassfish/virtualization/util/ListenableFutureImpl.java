@@ -37,57 +37,83 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package org.glassfish.virtualization.commands;
 
-import org.glassfish.api.ActionReport;
-import org.glassfish.api.Param;
-import org.glassfish.api.admin.AdminCommandContext;
-import org.glassfish.virtualization.spi.*;
-import org.glassfish.virtualization.util.RuntimeContext;
-import org.jvnet.hk2.annotations.Inject;
+package org.glassfish.virtualization.util;
 
-import java.util.logging.Logger;
+import org.glassfish.virtualization.spi.ListenableFuture;
+import org.glassfish.virtualization.spi.Listener;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.*;
 
 /**
- * Super class for machine management related commands.
- * @author Jerome Dochez
+ * Created by IntelliJ IDEA.
+ * User: dochez
+ * Date: 8/3/11
+ * Time: 1:20 AM
+ * To change this template use File | Settings | File Templates.
  */
-public abstract class MachineMgt {
+public class ListenableFutureImpl<T extends Enum, U> implements ListenableFuture<T, U>, EventSource<T> {
 
-    @Param(name="serverPool")
-    String groupName;
+    final CountDownLatch latch;
+    final EventSource<T> sink;
+    final U guarded;
+    final List<Tuple> listeners = new ArrayList<Tuple>();
 
-    @Param(name="machine")
-    String machineName;
-
-    @Inject
-    IAAS gm;
-
-    protected ActionReport report;
-
-    public void execute(AdminCommandContext context) {
-
-        this.report = context.getActionReport();
-
-        ServerPool vmProvider = gm.byName(groupName);
-        if (vmProvider!=null && vmProvider instanceof PhysicalServerPool) {
-            PhysicalServerPool group = (PhysicalServerPool) vmProvider;
-            Machine machine = group.byName(machineName);
-            if (machine==null) {
-                context.getActionReport().failure(Logger.getAnonymousLogger(), "Don't know about machine " + machineName);
-                return;
-            }
-            try {
-                doWork(machine);
-            } catch(VirtException e) {
-                context.getActionReport().failure(Logger.getAnonymousLogger(), e.getMessage(), e);
-            }
-        } else {
-            context.getActionReport().failure(RuntimeContext.logger, "serverPool does not exist or does not contain physical machines");
-        }
-
+    public ListenableFutureImpl(CountDownLatch latch, U guarded, EventSource<T> sink) {
+        this.latch = latch;
+        this.guarded = guarded;
+        this.sink = sink;
     }
 
-    abstract void doWork(Machine machine) throws VirtException;
+    @Override
+    public void addListener(Listener<T> tListener, ExecutorService executor) {
+        sink.addListener(tListener, executor);
+    }
 
+    public void fireEvent(final T phase) {
+        sink.fireEvent(phase);
+    }
+
+    public CountDownLatch getLatch() {
+        return latch;
+    }
+
+    @Override
+    public boolean cancel(boolean mayInterruptIfRunning) {
+        return false;
+    }
+
+    @Override
+    public boolean isCancelled() {
+        return false;
+    }
+
+    @Override
+    public boolean isDone() {
+        return latch.getCount() != 0;
+    }
+
+    @Override
+    public U get() throws InterruptedException, ExecutionException {
+        latch.await();
+        return guarded;
+    }
+
+    @Override
+    public U get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+        latch.await(timeout, unit);
+        return guarded;
+    }
+
+    private class Tuple {
+        final Listener<T> listener;
+        final ExecutorService executorService;
+
+        private Tuple(Listener<T> listener, ExecutorService executorService) {
+            this.listener = listener;
+            this.executorService = executorService;
+        }
+    }
 }

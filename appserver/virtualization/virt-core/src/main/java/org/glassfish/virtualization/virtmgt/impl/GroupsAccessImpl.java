@@ -40,8 +40,8 @@
 package org.glassfish.virtualization.virtmgt.impl;
 
 import org.glassfish.hk2.inject.Injector;
-import org.glassfish.virtualization.spi.PhysicalGroup;
-import org.glassfish.virtualization.spi.GroupManagement;
+import org.glassfish.virtualization.spi.ServerPool;
+import org.glassfish.virtualization.spi.IAAS;
 import org.glassfish.virtualization.virtmgt.GroupAccess;
 import org.glassfish.virtualization.virtmgt.GroupsAccess;
 import org.jvnet.hk2.annotations.Inject;
@@ -52,7 +52,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Gateway to group access instances.
+ * Gateway to serverPool access instances.
  * @author Jerome Dochez
  */
 @Service
@@ -61,7 +61,7 @@ public class GroupsAccessImpl implements PostConstruct, GroupsAccess {
     final Map<String, GroupAccess> groups = new HashMap<String, GroupAccess>();
 
     @Inject
-    GroupManagement groupMgt;
+    IAAS groupMgt;
 
     @Inject
     Injector injector;
@@ -78,8 +78,8 @@ public class GroupsAccessImpl implements PostConstruct, GroupsAccess {
 
     @Override
     public void postConstruct() {
-        // all configured groups should be accessible as a group access instance.
-        for (PhysicalGroup group : groupMgt) {
+        // all configured groups should be accessible as a serverPool access instance.
+        for (ServerPool group : groupMgt) {
             groups.put(group.getName(), LocalGroupAccess.from(injector, group));
         }
     }

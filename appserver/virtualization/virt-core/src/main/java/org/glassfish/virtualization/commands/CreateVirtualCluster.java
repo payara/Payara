@@ -44,6 +44,8 @@ package org.glassfish.virtualization.commands;
  * Creates a virtual cluster
  */
 
+import com.sun.enterprise.config.serverbeans.Cluster;
+import com.sun.enterprise.config.serverbeans.Domain;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
@@ -53,8 +55,8 @@ import org.glassfish.virtualization.config.Virtualization;
 import org.glassfish.virtualization.config.Virtualizations;
 import org.glassfish.virtualization.runtime.VirtualCluster;
 import org.glassfish.virtualization.runtime.VirtualClusters;
-import org.glassfish.virtualization.spi.VirtException;
-import org.glassfish.virtualization.spi.VirtualMachine;
+import org.glassfish.virtualization.spi.*;
+import org.glassfish.virtualization.spi.templates.TemplateInstanceImpl;
 import org.glassfish.virtualization.util.RuntimeContext;
 import org.glassfish.virtualization.virtmgt.GroupAccess;
 import org.glassfish.virtualization.virtmgt.GroupsAccess;
@@ -97,10 +99,16 @@ public class CreateVirtualCluster implements AdminCommand {
     Virtualizations virts=null;
 
     @Inject
-    VirtualClusters clusters;
+    TemplateRepository templateRepository;
+
+    @Inject
+    Domain domain;
 
     @Inject
     RuntimeContext rtContext;
+
+    @Inject
+    IAAS iaas;
 
     @Override
     public void execute(AdminCommandContext context) {
@@ -146,47 +154,49 @@ public class CreateVirtualCluster implements AdminCommand {
         int minNumber = Integer.parseInt(min);
         sb.append("Successfully created ").append(minNumber).append(" virtual machine(s) : ");
 
-        // so far, we are pretty simple, each group gets to allocate the same number of virtual machines.
-        int numberPerGroup = minNumber / targetGroups.size();
+        rtContext.executeAdminCommand(report, "create-cluster", name);
+        if (report.hasFailures()) {
+            return;
+        }
 
-        for (GroupAccess targetGroup : targetGroups) {
-            Virtualization virt = virts.byName(targetGroup.getVirtualizationName());
-            if (virt==null) {
-                context.getActionReport().failure(RuntimeContext.logger, "Cannot find virtualization configuration " +
-                        targetGroup.getVirtualizationName());
-                return;
-            }
-            Template template_;
-            if (template!=null) {
-                template_ = virt.templateByName(template);
-            } else {
-                template_ = virt.getTemplates().get(0);
-            }
-            rtContext.executeAdminCommand(report, "create-cluster", name);
-            if (report.hasFailures()) {
-                return;
-            }
-            final VirtualCluster vc =  clusters.byName(name);
+        Cluster cluster = domain.getClusterNamed(name);
 
-            try {
-                Iterable<Future<VirtualMachine>> futures = targetGroup.allocate(template_, vc, numberPerGroup);
-                for (Future<VirtualMachine> future : futures) {
-                    VirtualMachine vm;
-                    try {
-                        vm = future.get();
-                    } catch(Exception e) {
-                        context.getActionReport().failure(RuntimeContext.logger, "Failure to allocate virtual machine ", e);
-                        return;
-                    }
-                    sb.append(vm.getName()).append( "(").append(vm.getAddress()).append(") ");
+        TemplateInstance templateInstance=null;
+        if (template!=null) {
+            for (TemplateInstance ti : templateRepository.all()) {
+                if (ti.getConfig().getName().equals(template)) {
+                    templateInstance=ti;
+                    break;
                 }
-            } catch(VirtException e) {
+            }
+        } else {
+            templateInstance = templateRepository.all().iterator().next();
+        }
+        if (templateInstance==null) {
+            context.getActionReport().failure(RuntimeContext.logger, "Cannot find template");
+            return;
+        }
+
+        VirtualCluster vCluster = new VirtualCluster(cluster);
+        for (int i=0;i<minNumber;i++) {
+            try {
+                ListenableFuture<AllocationPhase, VirtualMachine> future =
+                        iaas.allocate(new VMOrder(templateInstance, vCluster), null);
+                VirtualMachine vm;
+                try {
+                    vm = future.get();
+                } catch(Exception e) {
+                    context.getActionReport().failure(RuntimeContext.logger, "Failure to allocate virtual machine ", e);
+                    return;
+                }
+                sb.append(vm.getName()).append( "(").append(vm.getAddress()).append(") ");
+            } catch (VirtException e) {
+                context.getActionReport().failure(RuntimeContext.logger, "Cannot allocate virtual machine", e);
                 rtContext.executeAdminCommand(report, "delete-cluster", name);
-                RuntimeContext.logger.log(Level.SEVERE, e.getMessage(), e);
-                context.getActionReport().failure(RuntimeContext.logger, e.getMessage());
                 return;
             }
         }
+
         report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
         report.setMessage(sb.toString());
     }

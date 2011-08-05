@@ -61,15 +61,16 @@ import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Runtime representation of a group, with its members and such.
+ * Runtime representation of a serverPool, with its members and such.
  */
 @Service(name="libvirt")
 @Scoped(PerLookup.class)
-public class LibVirtGroup implements PhysicalGroup, ConfigListener {
+public class LibVirtGroup implements PhysicalServerPool, ConfigListener {
 
     @Inject
     Injector injector;
@@ -77,10 +78,11 @@ public class LibVirtGroup implements PhysicalGroup, ConfigListener {
     @Inject
     ExecutorService executorService;
 
-    public GroupConfig config;
+    public ServerPoolConfig config;
     final ConcurrentMap<String, Machine> machines = new ConcurrentHashMap<String, Machine>();
+    final AtomicInteger allocationCount = new AtomicInteger();
 
-    public void setConfig(GroupConfig config) {
+    public void setConfig(ServerPoolConfig config) {
         this.config = config;
         // ensure we have libvirt configuration around.
         Habitat habitat = Dom.unwrap(config).getHabitat();
@@ -104,13 +106,22 @@ public class LibVirtGroup implements PhysicalGroup, ConfigListener {
     }
 
     @Override
-    public GroupConfig getConfig() {
+    public ServerPoolConfig getConfig() {
         return config;
     }
 
     @Override
     public String getName() {
         return config.getName();
+    }
+
+    @Override
+    public Collection<VirtualMachine> getVMs() throws VirtException {
+        List<VirtualMachine> vms = new ArrayList<VirtualMachine>();
+        for (Machine machine : machines.values()) {
+            vms.addAll(machine.getVMs());
+        }
+        return vms;
     }
 
     @Override
@@ -191,13 +202,15 @@ public class LibVirtGroup implements PhysicalGroup, ConfigListener {
                 }
             }
             // the cache did not contain an entry for this machine or the cached IP address is not responding, le'ts be safe.
-            String macAddress = machineConfig.getMacAddress();
-            if (macAddress!=null && macToIps==null) {
-                macToIps = macAddressesToIps();
-            }
-            String ipAddress=null;
-            if (macToIps!=null) {
-                ipAddress=macToIps.get(macAddress);
+            String ipAddress=machineConfig.getIpAddress();
+            if (ipAddress==null) {
+                String macAddress = machineConfig.getMacAddress();
+                if (macAddress!=null && macToIps==null) {
+                    macToIps = macAddressesToIps();
+                }
+                if (macToIps!=null) {
+                    ipAddress=macToIps.get(macAddress);
+                }
             }
             addMachine(machineConfig, ipAddress);
             if (ipAddress!=null) {
@@ -212,6 +225,17 @@ public class LibVirtGroup implements PhysicalGroup, ConfigListener {
                 saveCachedValues(cached, cache);
             } catch (IOException e) {
                 RuntimeContext.logger.log(Level.INFO, "Error while writing cache", e);
+            }
+        }
+
+        // count the number of allocation virtual machines in this serverPool.
+        for (Machine machine : machines()) {
+            try {
+                for (VirtualMachine vm : machine.getVMs()) {
+                    allocationCount.incrementAndGet();
+                }
+            } catch(VirtException e) {
+                RuntimeContext.logger.log(Level.SEVERE, "Cannot obtain list of virtual machines", e);
             }
         }
     }
@@ -232,7 +256,7 @@ public class LibVirtGroup implements PhysicalGroup, ConfigListener {
         Writer writer = null;
         try {
             writer = new FileWriter(cache);
-            cached.store(writer, "Cache file for group " + config.getName());
+            cached.store(writer, "Cache file for serverPool " + config.getName());
         } finally {
             if (writer!=null) writer.close();
         }
@@ -289,89 +313,78 @@ public class LibVirtGroup implements PhysicalGroup, ConfigListener {
 
 
     @Override
-    public Iterable<Future<VirtualMachine>> allocate(final Template template, final VirtualCluster cluster, int number) throws VirtException {
+    public ListenableFuture<AllocationPhase, VirtualMachine> allocate(final TemplateInstance template, final VirtualCluster cluster)
+            throws VirtException {
         // for now, could not be simpler, iterate over machines I own and ask for a virtual machine to
         // each of them.
         // Eventually the algorithm below will need to be refined using each machine capabilities as
         // a deciding factor.
         int park = size();
         if (park==0) {
-            throw new VirtException("Cannot allocate virtual machine to a group with no machine");
+            throw new VirtException("Cannot allocate virtual machine to a serverPool with no machine");
         }
 
-        final List<Future<VirtualMachine>> vms = new ArrayList<Future<VirtualMachine>>();
+        final List<ListenableFuture<AllocationPhase, VirtualMachine>> vms =
+                new ArrayList<ListenableFuture<AllocationPhase, VirtualMachine>>();
         Iterator<? extends Machine> machines = machines().iterator();
 
-        final CountDownLatch latch = new CountDownLatch(number);
-        for (int i=0;i<number;i++) {
-            // allocate a virtual machine on i%park machine...
-            Machine machine;
-            int machineTried=0;
-            do {
-                if (!machines.hasNext()) {
-                    machines = machines().iterator();
-                }
-                machine = machines.next();
-                machineTried++;
-
-                if (!machine.isUp()) {
-                    RuntimeContext.logger.info("Waking up machine " + machine.getName());
-                    try {
-                        Habitat habitat = Dom.unwrap(config).getHabitat();
-                        habitat.getComponent(OsInterface.class).resume(machine);
-                    } catch(IOException e) {
-                        RuntimeContext.logger.log(Level.SEVERE, "Error while waking up machine "
-                                + machine.getName(), e);
-                    }
-                    // waiting for machine to wake up for 5 seconds max...
-                    int tries = 0;
-                    do {
-                        try {
-                            Thread.sleep(1000);
-                        } catch(InterruptedException e) {
-                            // ignore
-                        }
-                        tries++;
-                    } while (!machine.isUp() && tries<5);
-                    if (!machine.isUp()) {
-                        RuntimeContext.logger.log(Level.SEVERE, "Cannot wake up machine " + machine.getConfig().getDisksLocation());
-                    }
-                }
-            } while(!machine.isUp() || machineTried>park);
+        // allocate a virtual machine on i%park machine...
+        Machine machine;
+        int machineTried = 0;
+        do {
+            if (!machines.hasNext()) {
+                machines = machines().iterator();
+            }
+            machine = machines.next();
+            machineTried++;
 
             if (!machine.isUp()) {
-                RuntimeContext.logger.log(Level.SEVERE, "All the machines of this group are shutdown and cannot be started");
-                throw new VirtException("Cannot start any of the group's machine");
-            }
-
-            final Machine targetMachine = machine;
-            final String suffix = (number>1?String.valueOf(i+1):"");
-            // so far, if some of the virtual machines allocation failed, we don't handle it.
-            // we could : revert the entire allocation or continue more allocation until the desire number
-            // is achieved and flag the failing machine as invalid.
-            executorService.submit( new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        Future<VirtualMachine> vm = targetMachine.create(template, cluster);
-                        vms.add(vm);
-                    } catch(Exception e) {
-                        RuntimeContext.logger.log(Level.SEVERE, e.getMessage(), e);
-                    }
-                    latch.countDown();
+                RuntimeContext.logger.info("Waking up machine " + machine.getName());
+                try {
+                    Habitat habitat = Dom.unwrap(config).getHabitat();
+                    habitat.getComponent(OsInterface.class).resume(machine);
+                } catch (IOException e) {
+                    RuntimeContext.logger.log(Level.SEVERE, "Error while waking up machine "
+                            + machine.getName(), e);
                 }
-            });
+                // waiting for machine to wake up for 5 seconds max...
+                int tries = 0;
+                do {
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        // ignore
+                    }
+                    tries++;
+                } while (!machine.isUp() && tries < 5);
+                if (!machine.isUp()) {
+                    RuntimeContext.logger.log(Level.SEVERE, "Cannot wake up machine " + machine.getConfig().getDisksLocation());
+                }
+            }
+        } while (!machine.isUp() || machineTried > park);
 
-            RuntimeContext.logger.info("Virtual machine allocated in group " + getName() +
-                    " for cluster "+ cluster.getConfig().getName());
+        if (!machine.isUp()) {
+            RuntimeContext.logger.log(Level.SEVERE, "All the machines of this serverPool are shutdown and cannot be started");
+            throw new VirtException("Cannot start any of the serverPool's machine");
         }
+
+        final Machine targetMachine = machine;
+        allocationCount.incrementAndGet();
+        final String suffix = allocationCount.toString();
+
+        // so far, if some of the virtual machines allocation failed, we don't handle it.
+        // we could : revert the entire allocation or continue more allocation until the desire number
+        // is achieved and flag the failing machine as invalid.
+        ListenableFuture<AllocationPhase, VirtualMachine> vm = null;
         try {
-            latch.await(100, TimeUnit.SECONDS);
-        } catch (InterruptedException e) {
-            RuntimeContext.logger.warning("Timeout while waiting for machine allocation");
+            vm = targetMachine.create(template, cluster);
+        } catch (IOException e) {
+            throw new VirtException(e);
         }
-        RuntimeContext.logger.info(number + " virtual machines allocated");
-        return vms;
+
+        RuntimeContext.logger.info("Virtual machine allocated in serverPool " + getName() +
+                " for cluster " + cluster.getConfig().getName());
+        return vm;
     }
 
     List<VMTemplate> templates = new ArrayList<VMTemplate>();

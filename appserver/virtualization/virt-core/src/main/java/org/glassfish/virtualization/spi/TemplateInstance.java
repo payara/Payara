@@ -40,63 +40,28 @@
 
 package org.glassfish.virtualization.spi;
 
-import org.glassfish.virtualization.config.GroupConfig;
 import org.glassfish.virtualization.config.Template;
-import org.glassfish.virtualization.runtime.VMTemplate;
-import org.glassfish.virtualization.runtime.VirtualCluster;
-
-import java.util.List;
-import java.util.concurrent.Future;
 
 /**
- * Abstract a provider of virtual machines.
+ * Represents a template instance that can be instantiated in a virtual machine
+ *
  * @author Jerome Dochez
  */
-public interface Group {
+public interface TemplateInstance {
 
     /**
-     * Returns the configuration for this group.
+     * Returns the static (persisted) information on the template.
      *
-     * @return  the group's configuration.
+     * @return the template configuration.
      */
-    GroupConfig getConfig();
-    void setConfig(GroupConfig config);
-
+    Template getConfig();
 
     /**
-     * Returns this group's name.
-     * @return  this group's name
+     * Returns true of the template satisfy a condition
+     *
+     * @param condition the index which can be a key value pair like a ServiceType:JavaEE or
+     * any implementation of the {@link TemplateCondition} interface
+     * @return true if the index is satisfied.
      */
-    String getName();
-
-    /**
-     * Returns an allocated virtual machine in this group using its name.
-     * @param name virtual machine name
-     * @return virtual machine instance if found or null otherwise.
-     * @throws VirtException if the vm cannot be obtained
-     */
-    VirtualMachine vmByName(String name) throws VirtException;
-
-    /**
-     * Allocates number of virtual machines on any machine belonging to this group, each virtual machine
-     * should be based on the provided template.
-     * @param template  template for the virtual machines
-     * @param cluster the virtual cluster instance to allocated virtual machines for
-     * @param number  number of virtual machines requested.
-     * @return  VirtualMachines instances
-     * @throws VirtException when the virtual machine creation failed.
-     */
-    Iterable<Future<VirtualMachine>> allocate(Template template, VirtualCluster cluster, int number) throws VirtException;
-
-    /**
-     * Returns the list of templates installed.
-     * @return list of installed templates or empty list if none
-     */
-    List<VMTemplate> getInstalledTemplates();
-
-    /**
-     * Install a template in this group
-     * @param template to install
-     */
-    void install(VMTemplate template);
+    boolean satisfies(TemplateCondition condition);
 }

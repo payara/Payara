@@ -70,7 +70,7 @@ public class SupplementalStopInstance implements AdminCommand {
     private String vmShutdown;
 
     @Inject(optional=true)
-    GroupManagement groups=null;
+    IAAS groups=null;
 
     @Override
     public void execute(AdminCommandContext context) {
@@ -84,7 +84,7 @@ public class SupplementalStopInstance implements AdminCommand {
                 String groupName = instanceName.substring(0, instanceName.indexOf("_"));
                 String vmName = instanceName.substring(instanceName.lastIndexOf("_")+1, instanceName.length()-"Instance".length());
 
-                Group group = groups.byName(groupName);
+                ServerPool group = groups.byName(groupName);
                 try {
                     VirtualMachine vm = group.vmByName(vmName);
                     VirtualMachineInfo vmInfo = vm.getInfo();

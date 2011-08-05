@@ -40,7 +40,6 @@
 
 package org.glassfish.virtualization.config;
 
-import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.config.support.*;
@@ -60,8 +59,8 @@ public interface Virtualization extends ConfigBeanProxy {
 
     /**
      * Virtualization key name, that will be used as reference index by other confguration element like
-     * templates, group definitions etc..
-     * @see GroupConfig#getVirtualization() )
+     * templates, serverPool definitions etc..
+     * @see ServerPoolConfig#getVirtualization() )
      * @return  the virtualization name
      */
     @Attribute(key=true)
@@ -92,37 +91,6 @@ public interface Virtualization extends ConfigBeanProxy {
     @Attribute(reference = true)
     Emulator getDefaultEmulator();
     void setDefaultEmulator(Emulator emulator);
-
-    /**
-     * Returns the list of registered templates for this virtualization infrastructure. Such template
-     * are image files that can be duplicated to create virtual machines.
-     *
-     * @return  list of registered templates
-     */
-    @Element("template")
-    @Create(value="add-template", resolver = VirtResolver.class, decorator = Template.TemplateAddDecorator.class, i18n = @I18n("org.glassfish.virtualization.add-template"))
-    @Listing(value = "list-templates", resolver = VirtResolver.class, i18n = @I18n("org.glassfish.virtualization.list-templates"))
-    @Delete(value="remove-template", resolver = TypeAndNameResolver.class, i18n = @I18n("org.glassfish.virtualization.remove-template"))
-    List<Template> getTemplates();
-
-    /**
-     * Looks up a registered template by the name and returns it.
-     * @param name template name
-     * @return the template if found or null otherwise
-     */
-    @DuckTyped
-    Template templateByName(String name);
-
-    public class Duck {
-        public static Template templateByName(Virtualization self, String name) {
-            for (Template template : self.getTemplates()) {
-                if (template.getName().equals(name)) {
-                    return template;
-                }
-            }
-            return null;
-        }
-    }
 
     @Service
     public class VirtResolver implements CrudResolver {

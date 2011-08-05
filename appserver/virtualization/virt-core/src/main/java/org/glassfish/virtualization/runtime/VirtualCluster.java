@@ -56,7 +56,7 @@ public class VirtualCluster {
     final AtomicInteger token = new AtomicInteger();
     final List<VirtualMachine> vms = new ArrayList<VirtualMachine>();
 
-    VirtualCluster(Cluster config) {
+    public VirtualCluster(Cluster config) {
         this.config = config;
         token.set(config.getServerRef().size());
     }

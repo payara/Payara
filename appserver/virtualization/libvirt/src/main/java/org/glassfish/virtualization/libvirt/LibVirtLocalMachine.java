@@ -43,9 +43,11 @@ import org.glassfish.hk2.inject.Injector;
 import org.glassfish.virtualization.config.*;
 import org.glassfish.virtualization.libvirt.jna.Connect;
 import org.glassfish.virtualization.libvirt.jna.Domain;
-import org.glassfish.virtualization.os.Disk;
 import org.glassfish.virtualization.runtime.*;
 import org.glassfish.virtualization.spi.*;
+import org.glassfish.virtualization.util.EventSource;
+import org.glassfish.virtualization.util.EventSourceImpl;
+import org.glassfish.virtualization.util.ListenableFutureImpl;
 import org.glassfish.virtualization.util.RuntimeContext;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.component.Habitat;
@@ -106,8 +108,8 @@ public class LibVirtLocalMachine extends LocalMachine implements PostConstruct {
         setState(isUp()? LibVirtMachine.State.READY: LibVirtMachine.State.SUSPENDED);
 
         // by default all our templates are local to this machine until the TemplateTask ran
-        Virtualization virt= group.getConfig().getVirtualization();
-        for (Template template : virt.getTemplates() ) {
+        Virtualization virt= serverPool.getConfig().getVirtualization();
+        for (Template template : virtualizations.getTemplates() ) {
             installedTemplates.put(template.getName(),
                     new LocalTemplate(virtualizations.getTemplatesLocation(), template));
         }
@@ -134,7 +136,7 @@ public class LibVirtLocalMachine extends LocalMachine implements PostConstruct {
                        "    <permissions>\n").append(
                        "      <mode>0700</mode>\n").append(
                        "      <owner>").append(getUser().getUserId()).append("</owner>\n").append(
-                       "      <group>").append(getUser().getUserId()).append("</group>\n").append(
+                       "      <serverPool>").append(getUser().getUserId()).append("</serverPool>\n").append(
                        "    </permissions>\n").append(
                        "  </target>\n").append(
                        "</pool>");
@@ -178,7 +180,7 @@ public class LibVirtLocalMachine extends LocalMachine implements PostConstruct {
     }
 
     @Override
-    public Iterable<? extends VirtualMachine> getVMs() throws VirtException {
+    public Collection<? extends VirtualMachine> getVMs() throws VirtException {
         try {
             populate();
         } catch(VirtException e) {
@@ -305,25 +307,30 @@ public class LibVirtLocalMachine extends LocalMachine implements PostConstruct {
         }
     }
 
-    public Future<VirtualMachine> create(final Template template,
+    public ListenableFuture<AllocationPhase, VirtualMachine> create(final TemplateInstance template,
                                         final VirtualCluster cluster)
 
             throws VirtException, IOException {
 
+        EventSource<AllocationPhase> eventSink = new EventSourceImpl<AllocationPhase>();
+
         populate();
+
+        eventSink.fireEvent(AllocationPhase.VM_PREPARE);
 
         final String name = cluster.getConfig().getName() + cluster.allocateToken();
 
         // 2. load the xml dump from the template ?
-        File xml = new File(virtualizations.getTemplatesLocation(), template.getName() + ".xml");
+        File xml = new File(new File(virtualizations.getTemplatesLocation(), template.getConfig().getName()),
+                template.getConfig().getName() + ".xml");
         Element vmConfig = loadConfigFile(xml);
 
-        List<StorageVol> volumes = prepare(template, name, cluster);
+        List<StorageVol> volumes = prepare(template.getConfig(), name, cluster);
 
-        File machineDisks = absolutize(new File(virtualizations.getDisksLocation(), group.getName()));
+        File machineDisks = absolutize(new File(virtualizations.getDisksLocation(), serverPool.getName()));
         machineDisks = new File(machineDisks, getName());
 
-        File custDirectory = prepareCustDirectory(name, cluster, template);
+        File custDirectory = prepareCustDirectory(name, cluster.getConfig(), template.getConfig());
         File custFile = new File(machineDisks, name + "cust.iso");
         prepareCustomization(custDirectory, custFile,  name);
 
@@ -394,40 +401,18 @@ public class LibVirtLocalMachine extends LocalMachine implements PostConstruct {
 
         try {
             Domain domain = connection().domainDefineXML(getConfig(vmConfig));
+            eventSink.fireEvent(AllocationPhase.VM_SPAWN);
             final CountDownLatch latch = new CountDownLatch(1);
             final LibVirtVirtualMachine vm = new LibVirtVirtualMachine(this, domain, latch);
             domains.put(name, vm);
+
+            ListenableFutureImpl<AllocationPhase, VirtualMachine> future =
+                    new ListenableFutureImpl<AllocationPhase, VirtualMachine>(latch, vm, eventSink);
+
+            future.fireEvent(AllocationPhase.VM_START);
             vm.start();
-            return new Future<VirtualMachine>() {
-                @Override
-                public boolean cancel(boolean mayInterruptIfRunning) {
-                    // potentially we could call vm.destroy() but it has threading issues
-                    // I don't want to get into right now.
-                    return false;
-                }
 
-                @Override
-                public boolean isCancelled() {
-                    return false;
-                }
-
-                @Override
-                public boolean isDone() {
-                    return latch.getCount()!=0;
-                }
-
-                @Override
-                public VirtualMachine get() throws InterruptedException, ExecutionException {
-                    latch.await();
-                    return vm;
-                }
-
-                @Override
-                public VirtualMachine get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
-                    latch.await(timeout, unit);
-                    return vm;
-                }
-            };
+            return future;
         } catch(VirtException e) {
             for (StorageVol volume : volumes) {
                 volume.delete();

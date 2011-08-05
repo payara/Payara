@@ -40,7 +40,7 @@
 package org.glassfish.virtualization.spi;
 
 /**
- * Represents a storage pool, a group of volumes.
+ * Represents a storage pool, a serverPool of volumes.
  * @author Jerome Dochez
  */
 public interface StoragePool {

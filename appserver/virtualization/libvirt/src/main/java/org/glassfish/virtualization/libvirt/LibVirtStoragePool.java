@@ -86,7 +86,7 @@ class LibVirtStoragePool implements StoragePool {
                 "</key><source></source><capacity>").append(capacity).append("</capacity><allocation>0</allocation>").append(
                 "<target><path>").append(owner).append("/").append(name).append(".img</path>").append(
                 "<format type='raw'/><permissions><mode>0600</mode><owner>").append(owner.getUser().getUserId()).append(
-                "</owner><group>").append(owner.getUser().getGroupId()).append("</group></permissions></target></volume>");
+                "</owner><serverPool>").append(owner.getUser().getGroupId()).append("</serverPool></permissions></target></volume>");
 
         return new LibVirtStorageVol(this, pool.storageVolCreateXML(sb.toString(), 0));
 

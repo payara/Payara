@@ -40,22 +40,17 @@
 
 package org.glassfish.virtualization.config;
 
-import com.sun.enterprise.util.io.FileUtils;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.config.Named;
 import org.glassfish.config.support.Create;
-import org.glassfish.config.support.CreationDecorator;
 import org.glassfish.config.support.CrudResolver;
-import org.glassfish.virtualization.util.RuntimeContext;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.*;
 
-import java.beans.PropertyVetoException;
-import java.io.File;
-import java.io.IOException;
+import java.util.List;
 
 /**
  * Configuration of a template, for now only its name. Will need to be refined.
@@ -65,10 +60,13 @@ public interface Template extends ConfigBeanProxy, Named {
 
     void setName(String name);
 
+    @Element("*")
+    List<TemplateIndex> getIndexes();
+
     /**
      * Defines the user identify  to be used to run anything on this template.
      * If not defined, the target machine user's name will be used.
-     * @see org.glassfish.virtualization.config.GroupConfig#getUser()
+     * @see ServerPoolConfig#getUser()
      *
      * @return  the template user information
      */
@@ -81,94 +79,16 @@ public interface Template extends ConfigBeanProxy, Named {
     class TemplateResolver implements CrudResolver {
 
         @Param
-        String templateName;
-
-        @Param
-        String virtName;
+        String template;
 
         @Inject
         Virtualizations virts;
 
         @Override
         public <T extends ConfigBeanProxy> T resolve(AdminCommandContext context, Class<T> type) {
-            Virtualization virt = virts.byName(virtName);
-            if (virt==null) {
-                context.getActionReport().failure(RuntimeContext.logger, "Cannot find virtualization config named " + virtName);
-                return null;
-            }
-            Template thisTemplate = virt.templateByName(templateName);
+            Template thisTemplate = virts.templateByName(template);
             return (T) thisTemplate;
 
-        }
-    }
-
-    @Service
-    class TemplateAddDecorator implements CreationDecorator<Template> {
-
-        @Param
-        String location=null;
-
-        @Param
-        String xml=null;
-
-        @Param(primary=true)
-        String name;
-
-        @Inject
-        Virtualizations virt;
-
-        @Override
-        public void decorate(AdminCommandContext context, Template instance) throws TransactionFailure, PropertyVetoException {
-            instance.setName(name);
-            // copy the template inside our templates directory.
-            File templateLocation = new File(virt.getTemplatesLocation());
-            if (!templateLocation.exists()) {
-                assert templateLocation.mkdirs();
-            }
-            if (location!=null) {
-                try {
-                    File source = new File(location);
-                    if (!source.isAbsolute()) {
-                        source = new File(System.getProperty("user.dir"), location);
-                    }
-                    if (!source.exists()) {
-                        context.getActionReport().failure(RuntimeContext.logger, "File not found : " + source.getAbsolutePath());
-                        return;
-                    }
-                    // Preserve filename extension if there is one
-                    String extension = "";
-                    int index = location.lastIndexOf('.');
-                    if (index > 0) {
-                        extension = location.substring(index);
-                    }
-                    FileUtils.copy(source, new File(templateLocation, instance.getName() + extension));
-                } catch(IOException e) {
-                    context.getActionReport().failure(RuntimeContext.logger, "Error copying template " + location, e);
-                }
-            }
-            if (xml!=null) {
-                try {
-                    File source = new File(xml);
-                    if (!source.isAbsolute()) {
-                        source = new File(System.getProperty("user.dir"), xml);
-                    }
-                    if (!source.exists()) {
-                        context.getActionReport().failure(RuntimeContext.logger, "File not found : " + source.getAbsolutePath());
-                        File f = new File(templateLocation, instance.getName() + ".img");
-                        if (!(f.delete())) {
-                            RuntimeContext.logger.warning(f.getAbsolutePath() + " cannot be deleted");
-                        }
-                        throw new TransactionFailure("Cannot find file " + source.getAbsolutePath());
-                    }
-                    FileUtils.copy(source, new File(templateLocation, instance.getName() + ".xml"));
-                } catch(IOException e) {
-                    File f = new File(templateLocation, instance.getName() + ".img");
-                    if (!f.delete()) {
-                        RuntimeContext.logger.warning(f.getAbsolutePath() + " cannot be deleted");
-                    }
-                    context.getActionReport().failure(RuntimeContext.logger, "Error copying xml " + location, e);
-                }
-            }
         }
     }
 }

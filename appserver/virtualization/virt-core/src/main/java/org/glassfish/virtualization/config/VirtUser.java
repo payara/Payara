@@ -46,7 +46,7 @@ import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.Configured;
 
 /**
- * Configuration of a user on the group's physical machine that will be owning the virtual machines.
+ * Configuration of a user on the serverPool's physical machine that will be owning the virtual machines.
  * This information will be used to connect to the virtualization layer in order to install
  * storage volume and virtual machine in target machines.
  *

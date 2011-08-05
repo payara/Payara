@@ -55,7 +55,7 @@ import org.jvnet.hk2.component.PerLookup;
 import java.util.logging.Level;
 
 /**
- * Registers a new virtual machine to this group master.
+ * Registers a new virtual machine to this serverPool master.
  */
 @Service(name="register-virtual-machine")
 @Scoped(PerLookup.class)
@@ -89,7 +89,7 @@ public class RegisterVirtualMachine implements AdminCommand {
     boolean notssh;
 
     @Inject
-    GroupManagement groups;
+    IAAS groups;
 
     @Inject
     RuntimeContext rtContext;
@@ -100,9 +100,9 @@ public class RegisterVirtualMachine implements AdminCommand {
             context.getActionReport().failure(RuntimeContext.logger, "LibVirtGroup name cannot be null");
             return;
         }
-        Group targetGroup = groups.byName(group);
+        ServerPool targetGroup = groups.byName(group);
         if (targetGroup==null) {
-            context.getActionReport().failure(RuntimeContext.logger, "Cannot find group " + group);
+            context.getActionReport().failure(RuntimeContext.logger, "Cannot find serverPool " + group);
             return;
         }
         try {

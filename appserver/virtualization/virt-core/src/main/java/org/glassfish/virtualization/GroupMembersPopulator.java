@@ -41,8 +41,9 @@
 package org.glassfish.virtualization;
 
 import org.glassfish.api.Startup;
+import org.glassfish.virtualization.runtime.DefaultAllocationStrategy;
 import org.glassfish.virtualization.spi.*;
-import org.glassfish.virtualization.config.GroupConfig;
+import org.glassfish.virtualization.config.ServerPoolConfig;
 import org.glassfish.virtualization.config.Virtualizations;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
@@ -53,6 +54,7 @@ import org.jvnet.hk2.config.*;
 import java.beans.PropertyChangeEvent;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -63,7 +65,7 @@ import java.util.logging.Logger;
  *
  */
 @Service
-public class GroupMembersPopulator implements Startup, PostConstruct, GroupManagement, ConfigListener {
+public class GroupMembersPopulator implements Startup, PostConstruct, IAAS, ConfigListener {
 
     @Inject
     ShellExecutor shell;
@@ -77,7 +79,7 @@ public class GroupMembersPopulator implements Startup, PostConstruct, GroupManag
     @Inject
     Habitat habitat;
 
-    private final Map<String, PhysicalGroup> groups = new HashMap<String, PhysicalGroup>();
+    private final Map<String, ServerPool> groups = new HashMap<String, ServerPool>();
 
     @Override
     public Lifecycle getLifecycle() {
@@ -85,12 +87,12 @@ public class GroupMembersPopulator implements Startup, PostConstruct, GroupManag
     }
 
     @Override
-    public Iterator<PhysicalGroup> iterator() {
+    public Iterator<ServerPool> iterator() {
         return groups.values().iterator();
     }
 
     @Override
-    public PhysicalGroup byName(String groupName) {
+    public ServerPool byName(String groupName) {
         return groups.get(groupName);
     }
 
@@ -99,10 +101,10 @@ public class GroupMembersPopulator implements Startup, PostConstruct, GroupManag
         // first executeAndWait the fping command to populate our arp table.
         if (virtualizations==null) return;
 
-        for (GroupConfig groupConfig : virtualizations.getGroupConfigs()) {
+        for (ServerPoolConfig groupConfig : virtualizations.getGroupConfigs()) {
             try {
-                PhysicalGroup group = processGroupConfig(groupConfig);
-                System.out.println("I have a group " + group.getName());
+                PhysicalServerPool group = processGroupConfig(groupConfig);
+                System.out.println("I have a serverPool " + group.getName());
                 for (Machine machine : group.machines()) {
                     System.out.println("LibVirtMachine  " + machine.getName() + " is at " +  machine.getIpAddress() + " state is " + machine.getState());
                     if (machine.getState().equals(Machine.State.READY)) {
@@ -120,9 +122,9 @@ public class GroupMembersPopulator implements Startup, PostConstruct, GroupManag
         }
     }
 
-    private PhysicalGroup processGroupConfig(GroupConfig groupConfig) {
+    private PhysicalServerPool processGroupConfig(ServerPoolConfig groupConfig) {
 
-        PhysicalGroup group = habitat.getComponent(PhysicalGroup.class, groupConfig.getVirtualization().getName());
+        PhysicalServerPool group = habitat.getComponent(PhysicalServerPool.class, groupConfig.getVirtualization().getName());
         group.setConfig(groupConfig);
         synchronized (this) {
             groups.put(groupConfig.getName(), group);
@@ -135,8 +137,8 @@ public class GroupMembersPopulator implements Startup, PostConstruct, GroupManag
         return ConfigSupport.sortAndDispatch(propertyChangeEvents, new Changed() {
             @Override
             public <T extends ConfigBeanProxy> NotProcessed changed(TYPE type, Class<T> tClass, T t) {
-                if (t instanceof GroupConfig) {
-                    GroupConfig groupConfig = GroupConfig.class.cast(t);
+                if (t instanceof ServerPoolConfig) {
+                    ServerPoolConfig groupConfig = ServerPoolConfig.class.cast(t);
                     if (type.equals(TYPE.ADD)) {
                         processGroupConfig(groupConfig);
                     }
@@ -149,5 +151,15 @@ public class GroupMembersPopulator implements Startup, PostConstruct, GroupManag
                 return null;
             }
         }, Logger.getAnonymousLogger());
+    }
+
+    @Override
+    public ListenableFuture<AllocationPhase, VirtualMachine> allocate(VMOrder order, List<Listener<AllocationPhase>> listeners) throws VirtException {
+        return allocate(new DefaultAllocationStrategy(), order, listeners);
+    }
+
+    @Override
+    public ListenableFuture<AllocationPhase, VirtualMachine> allocate(AllocationStrategy strategy, VMOrder order, List<Listener<AllocationPhase>> listeners) throws VirtException {
+        return strategy.allocate(groups.values(), order, listeners);
     }
 }

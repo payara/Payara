@@ -37,57 +37,30 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package org.glassfish.virtualization.commands;
 
-import org.glassfish.api.ActionReport;
-import org.glassfish.api.Param;
-import org.glassfish.api.admin.AdminCommandContext;
-import org.glassfish.virtualization.spi.*;
-import org.glassfish.virtualization.util.RuntimeContext;
-import org.jvnet.hk2.annotations.Inject;
+package org.glassfish.virtualization.util;
 
-import java.util.logging.Logger;
+import org.glassfish.virtualization.config.TemplateIndex;
+import org.jvnet.hk2.annotations.Service;
 
 /**
- * Super class for machine management related commands.
+ * Defines virtualization types for templates.
  * @author Jerome Dochez
  */
-public abstract class MachineMgt {
+@Service(name="VirtualizationType")
+public class VirtualizationType extends ValueBasedTemplateIndex {
 
-    @Param(name="serverPool")
-    String groupName;
+    public enum Type {KVM, OVM, VB, Native, Xen}
 
-    @Param(name="machine")
-    String machineName;
+    Type value;
 
-    @Inject
-    IAAS gm;
-
-    protected ActionReport report;
-
-    public void execute(AdminCommandContext context) {
-
-        this.report = context.getActionReport();
-
-        ServerPool vmProvider = gm.byName(groupName);
-        if (vmProvider!=null && vmProvider instanceof PhysicalServerPool) {
-            PhysicalServerPool group = (PhysicalServerPool) vmProvider;
-            Machine machine = group.byName(machineName);
-            if (machine==null) {
-                context.getActionReport().failure(Logger.getAnonymousLogger(), "Don't know about machine " + machineName);
-                return;
-            }
-            try {
-                doWork(machine);
-            } catch(VirtException e) {
-                context.getActionReport().failure(Logger.getAnonymousLogger(), e.getMessage(), e);
-            }
-        } else {
-            context.getActionReport().failure(RuntimeContext.logger, "serverPool does not exist or does not contain physical machines");
-        }
-
+    @Override
+    public Type getValue() {
+        return value;
     }
 
-    abstract void doWork(Machine machine) throws VirtException;
-
+    @Override
+    public void load(TemplateIndex persistence) {
+        value = Type.valueOf(persistence.getValue());
+    }
 }

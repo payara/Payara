@@ -37,17 +37,34 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package org.glassfish.virtualization.spi;
 
-import java.util.Map;
+package org.glassfish.virtualization.util;
+
+import org.glassfish.virtualization.spi.Listener;
+
+import java.util.concurrent.ExecutorService;
 
 /**
- * Represents a strategy for allocating virtual machines within a group
+ * Definition of events source which supports registration of listeners.
+ *
  * @author Jerome Dochez
+ * @param <T> the enumeration of events types that this event source can send.
  */
-public interface GroupAllocationStrategy {
+public interface EventSource<T extends Enum> {
+    /**
+     * add a listener to this event source.
+     *
+     * @param listener the listener to notify of events
+     * @param executorService the executor service to use for the notification
+     * of the above listener. If null, the notification thread calling the
+     * {@link EventSource#fireEvent(Enum)} will be used.
+     */
+    void addListener(Listener<T> listener, ExecutorService executorService);
 
-    Group group();
-
-    Map<Machine, ListenableFuture<AllocationPhase, VirtualMachine>> allocate(VMOrder order);
+    /**
+     * fires an event to all the registered listeners.
+     *
+     * @param event the event to fire
+     */
+    void fireEvent(T event);
 }

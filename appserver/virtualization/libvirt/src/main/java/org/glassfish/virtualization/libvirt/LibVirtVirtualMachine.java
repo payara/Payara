@@ -61,7 +61,8 @@ public class LibVirtVirtualMachine implements VirtualMachine {
     private String address;
     private CountDownLatch latch;
 
-    protected LibVirtVirtualMachine(Machine owner, Domain domain, CountDownLatch latch) throws VirtException {
+    protected LibVirtVirtualMachine(Machine owner, Domain domain, CountDownLatch latch)
+            throws VirtException {
         this.domain = domain;
         this.owner = owner;
         this.latch = latch;

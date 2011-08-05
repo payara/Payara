@@ -54,12 +54,12 @@ import javax.validation.constraints.NotNull;
 import java.util.List;
 
 /**
- * Provides configuration for a group of machines.
+ * Provides configuration for a serverPool of machines.
  */
 @Configured
-@Create(value = "create-group-manager", resolver = Virtualization.VirtResolver.class, i18n = @I18n("org.glassfish.virtualization.create-group-manager"))
+@Create(value = "create-serverPool-manager", resolver = Virtualization.VirtResolver.class, i18n = @I18n("org.glassfish.virtualization.create-serverPool-manager"))
 @Decorate(targetType = Domain.class, methodName = "getExtensions", with = { Create.class } )
-public interface GroupConfig extends ConfigBeanProxy {
+public interface ServerPoolConfig extends ConfigBeanProxy {
 
     @Attribute(key = true)
     String getName();
@@ -68,14 +68,14 @@ public interface GroupConfig extends ConfigBeanProxy {
     void setName(String name);
 
     /**
-     * Semicolon list of port names used by the group master machine to receive administrative communication on.
+     * Semicolon list of port names used by the serverPool master machine to receive administrative communication on.
      *  possible values are a single port name like br0, eth0, eth1... or multiple ports values like br0, eth0 and so
      * on.
      *
      * When multiple values are provided, the ports will be queried  in the order of their
      * definition until a valid IP address is obtained..
      *
-     * @return list of port name used by this group master to receive admin command.
+     * @return list of port name used by this serverPool master to receive admin command.
      */
     @Attribute
     String getPortName();
@@ -111,7 +111,7 @@ public interface GroupConfig extends ConfigBeanProxy {
     @Element
     @NotNull
     VirtUser getUser();
-    @Create(value="create-group-user", resolver = GroupResolver.class, i18n = @I18n("org.glassfish.virtualization.create-machine"))
+    @Create(value="create-server-pool-user", resolver = GroupResolver.class, i18n = @I18n("org.glassfish.virtualization.create-machine"))
     void setUser(VirtUser user);
 
     @Element
@@ -122,7 +122,7 @@ public interface GroupConfig extends ConfigBeanProxy {
 
     @Service
     public class GroupResolver implements CrudResolver {
-        @Param(name="group")
+        @Param(name="serverPool")
         String group;
 
         @Inject
@@ -130,12 +130,12 @@ public interface GroupConfig extends ConfigBeanProxy {
 
         @Override
         public <T extends ConfigBeanProxy> T resolve(AdminCommandContext context, Class<T> type)  {
-            for (GroupConfig provider : virt.getGroupConfigs()) {
+            for (ServerPoolConfig provider : virt.getGroupConfigs()) {
                 if (provider.getName().equals(group)) {
                     return (T) provider;
                 }
             }
-            context.getActionReport().failure(context.getLogger(), "Cannot find a group by the name of " + group);
+            context.getActionReport().failure(context.getLogger(), "Cannot find a serverPool by the name of " + group);
             return null;
         }
     }
@@ -147,7 +147,7 @@ public interface GroupConfig extends ConfigBeanProxy {
 
         @Override
         public <T extends ConfigBeanProxy> T resolve(AdminCommandContext context, Class<T> type)  {
-            GroupConfig group = (GroupConfig) super.resolve(context,type);
+            ServerPoolConfig group = (ServerPoolConfig) super.resolve(context,type);
             if (group!=null) {
                 for (MachineConfig machineConfig : group.getMachines()) {
                     if (machineConfig.getName().equals(name)) {

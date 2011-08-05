@@ -40,35 +40,54 @@
 
 package org.glassfish.virtualization.spi;
 
+import org.glassfish.virtualization.config.Template;
+import org.glassfish.virtualization.config.TemplateIndex;
 import org.jvnet.hk2.annotations.Contract;
+import org.jvnet.hk2.config.*;
 
 /**
- * Represents a group of machines. How machines are allocated to groups is defined
- * by the user.
+ * Represents a template condition (that can be used in a search criteria for a template).
  *
- * @author  Jerome Dochez
+ * @author Jerome Dochez
  */
 @Contract
-public interface PhysicalGroup extends Group {
+public abstract class TemplateCondition<T extends TemplateIndex> {
 
     /**
-     * Returns the currently attached machines to this group
+     * Returns a template condition from its persisted state.
+     * @param persistence the persisted state
+     * @return template condition
+     */
+    public static TemplateCondition from(TemplateIndex persistence) {
+        TemplateCondition condition = Dom.unwrap(persistence).getHabitat().
+                getComponent(TemplateCondition.class, persistence.getType());
+        if (condition==null) {
+            throw new RuntimeException("Cannot find index type " + persistence.getType());
+        }
+        condition.load(persistence);
+        return condition;
+    }
+
+    /**
+     * loads its state from a persisted state.
      *
-     * @return iterable of machines attached to this group
+     * @param persistence the persisted state.
      */
-    Iterable<? extends Machine> machines();
+    abstract public void load(T persistence);
 
     /**
-     * Returns a @see Machine instance which name is equal to the provided name
-     * @param name  name of the machine looked up
-     * @return  the @see Machine instance if found or null otherwise
+     * Persists its state to a template persistence state.
+     * @param parent the parent template configuration
+     * @return the persisted state to be added to the parent's
+     * {@link org.glassfish.virtualization.config.Template#getIndexes()}
+     * @throws TransactionFailure if the condition cannot be persisted successfully.
      */
-    Machine byName(String name);
+    abstract public T persist(Template parent) throws TransactionFailure;
 
     /**
-     * Returns the size of this group
-     *
-     * @return size of the group.
+     * Returns true if  this condition satisfies another condition
+     * @param otherCondition the other condition to test against.
+     * @return true of this condition satisfies the other condition.
      */
-    int size();
+    abstract public boolean satisfies(TemplateCondition otherCondition);
 }

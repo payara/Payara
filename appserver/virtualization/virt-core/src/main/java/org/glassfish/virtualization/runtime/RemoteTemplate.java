@@ -50,7 +50,7 @@ import java.io.IOException;
  * @author Jerome Dochez
  */
 public class RemoteTemplate extends VMTemplate {
-    private final Machine location;
+    private final Machine machine;
 
     /**
      * Creates a new template instance for a remotely installed template
@@ -60,7 +60,7 @@ public class RemoteTemplate extends VMTemplate {
      */
     public RemoteTemplate(Machine location, String directory, Template config) {
         super(directory, config);
-        this.location = location;
+        this.machine = location;
     }
 
     @Override
@@ -71,12 +71,12 @@ public class RemoteTemplate extends VMTemplate {
     }
 
     private String remotePath() {
-        return getLocation()+"/"+config.getName()+".img";
+        return machine.getConfig().getTemplatesLocation()+"/"+config.getName()+"/" + config.getName() + ".img";
     }
 
     @Override
     public long getSize() throws IOException {
-        return location.getFileOperations().length(remotePath());
+        return machine.getFileOperations().length(remotePath());
     }
 
     @Override

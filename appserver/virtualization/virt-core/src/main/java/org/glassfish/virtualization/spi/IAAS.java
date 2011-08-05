@@ -48,23 +48,23 @@ import java.util.List;
  * @author Jerome Dochez
  */
 @Contract
-public interface IAAS extends Iterable<Group> {
+public interface IAAS extends Iterable<ServerPool> {
 
     /**
-     * Returns the runtime information for the group identified by its name.
-     * @param groupName the group name
-     * @return the group runtime information or null if not found.
+     * Returns the runtime information for the serverPool identified by its name.
+     * @param groupName the serverPool name
+     * @return the serverPool runtime information or null if not found.
      */
-    Group byName(String groupName);
+    ServerPool byName(String groupName);
 
     /**
      * Allocate a virtual machine based on the provided template.
      *
      * @param order the allocation constraints for the virtual machine allocation
-     * @return a {@link ListenableFuture} to get asynchronous phases completion notification and the
-     * {@link VirtualMachine} instance upon allocation completion.
      * @param listeners list of synchronous {@link Listener} to register before starting any allocation
      * work.
+     * @return a {@link ListenableFuture} to get asynchronous phases completion notification and the
+     * {@link VirtualMachine} instance upon allocation completion.
      * @throws VirtException when the virtual machine creation failed.
      */
     ListenableFuture<AllocationPhase, VirtualMachine> allocate(VMOrder order,

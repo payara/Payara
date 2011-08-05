@@ -46,7 +46,7 @@ import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.Configured;
 
 /**
- * a group master identification (URL)
+ * a serverPool master identification (URL)
  */
 @Configured
 public interface GroupManager extends ConfigBeanProxy {

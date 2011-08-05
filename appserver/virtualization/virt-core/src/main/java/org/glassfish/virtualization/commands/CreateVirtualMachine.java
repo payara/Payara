@@ -40,22 +40,19 @@
 
 package org.glassfish.virtualization.commands;
 
-import com.sun.enterprise.config.serverbeans.Cluster;
-import com.sun.enterprise.config.serverbeans.Domain;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.virtualization.config.Template;
-import org.glassfish.virtualization.config.Virtualization;
+import org.glassfish.virtualization.config.Virtualizations;
 import org.glassfish.virtualization.runtime.VirtualClusters;
 import org.glassfish.virtualization.spi.*;
+import org.glassfish.virtualization.spi.templates.TemplateInstanceImpl;
 import org.glassfish.virtualization.util.RuntimeContext;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
-
-import java.util.concurrent.Future;
 
 /**
  * Creates a new virtual machine on a target machine
@@ -68,32 +65,31 @@ public class CreateVirtualMachine implements AdminCommand {
     @Param(name="template")
     String templateName;
 
-    @Param(name="group", optional = true)
+    @Param(name="serverPool", optional = true)
     String groupName=null;
 
     @Param(name="cluster")
     String clusterName;
 
     @Inject
-    GroupManagement groups;
+    IAAS groups;
 
     @Inject
     VirtualClusters clusters;
 
     @Inject
-    Domain domain;
+    Virtualizations virts;
 
     @Override
     public void execute(AdminCommandContext context) {
 
-        Group group;
+        ServerPool group;
         if (groupName==null) {
             group = groups.iterator().next();
         } else {
             group = groups.byName(groupName);
         }
-        Virtualization virt = group.getConfig().getVirtualization();
-        Template template = virt.templateByName(templateName);
+        Template template = virts.templateByName(templateName);
 
         if (template==null) {
             context.getActionReport().failure(RuntimeContext.logger, "Template not registered " + templateName);
@@ -101,14 +97,12 @@ public class CreateVirtualMachine implements AdminCommand {
         }
         try {
             // multi-threading bug possible here, need a better way to allocated tokens.
-            Iterable<Future<VirtualMachine>> vm = group.allocate(template, clusters.byName(clusterName), 1);
-            for (Future<VirtualMachine> future : vm) {
-                try {
-                    future.get();
-                } catch(Exception e) {
-                    throw new VirtException(e);
+            ListenableFuture<AllocationPhase, VirtualMachine> future = group.allocate(new TemplateInstanceImpl(template), clusters.byName(clusterName));
+            try {
+                future.get();
+            } catch(Exception e) {
+                throw new VirtException(e);
 
-                }
             }
         } catch(VirtException e) {
             context.getActionReport().failure(RuntimeContext.logger, e.getMessage(), e);

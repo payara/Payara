@@ -43,7 +43,7 @@ import org.glassfish.cluster.ssh.launcher.SSHLauncher;
 import org.glassfish.cluster.ssh.sftp.SFTPClient;
 import org.glassfish.hk2.inject.Injector;
 import org.glassfish.virtualization.config.*;
-import org.glassfish.virtualization.spi.PhysicalGroup;
+import org.glassfish.virtualization.spi.PhysicalServerPool;
 
 import org.glassfish.virtualization.spi.VirtException;
 import org.glassfish.virtualization.util.RuntimeContext;
@@ -187,8 +187,8 @@ class LibVirtMachine extends LibVirtLocalMachine {
     }
 
     @Override
-    public PhysicalGroup getGroup() {
-        return group;
+    public PhysicalServerPool getServerPool() {
+        return serverPool;
     }
 
     public void ping() throws IOException, InterruptedException  {
@@ -221,7 +221,7 @@ class LibVirtMachine extends LibVirtLocalMachine {
             connection();
         } catch(VirtException e) {
             RuntimeContext.logger.log(Level.SEVERE, "Cannot connect to machine " + config.getName() +
-                " with the user " + group.getConfig().getUser().getName(), e);
+                " with the user " + serverPool.getConfig().getUser().getName(), e);
             return false;
         }
         return true;
@@ -231,7 +231,7 @@ class LibVirtMachine extends LibVirtLocalMachine {
         if (config.getUser()!=null) {
             return config.getUser();
         } else {
-            return group.getConfig().getUser();
+            return serverPool.getConfig().getUser();
         }
     }
 

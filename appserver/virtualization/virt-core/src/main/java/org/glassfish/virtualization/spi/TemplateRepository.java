@@ -37,57 +37,45 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package org.glassfish.virtualization.commands;
 
-import org.glassfish.api.ActionReport;
-import org.glassfish.api.Param;
-import org.glassfish.api.admin.AdminCommandContext;
-import org.glassfish.virtualization.spi.*;
-import org.glassfish.virtualization.util.RuntimeContext;
-import org.jvnet.hk2.annotations.Inject;
+package org.glassfish.virtualization.spi;
 
-import java.util.logging.Logger;
+import org.glassfish.virtualization.config.Template;
+import org.jvnet.hk2.annotations.Contract;
+
+import java.io.File;
+import java.util.Collection;
 
 /**
- * Super class for machine management related commands.
+ * Repository for virtualization templates
+ *
  * @author Jerome Dochez
  */
-public abstract class MachineMgt {
+@Contract
+public interface TemplateRepository {
 
-    @Param(name="serverPool")
-    String groupName;
+    /**
+     * Installs a template in the repository
+     *
+     * @param config the template configuration as obtained from the user.
+     * @return true if installation was successful, false otherwise
+     */
+    boolean installs(Template config, Collection<File> files);
 
-    @Param(name="machine")
-    String machineName;
+    /**
+     * Search the repository for all templates satisfying the passed
+     * {@link SearchCriteria}.
+     *
+     * @param criteria the search criteria for the requested templates
+     * @return list of templates satisfying the search criteria.
+     */
+    Collection<TemplateInstance> get(SearchCriteria criteria);
 
-    @Inject
-    IAAS gm;
-
-    protected ActionReport report;
-
-    public void execute(AdminCommandContext context) {
-
-        this.report = context.getActionReport();
-
-        ServerPool vmProvider = gm.byName(groupName);
-        if (vmProvider!=null && vmProvider instanceof PhysicalServerPool) {
-            PhysicalServerPool group = (PhysicalServerPool) vmProvider;
-            Machine machine = group.byName(machineName);
-            if (machine==null) {
-                context.getActionReport().failure(Logger.getAnonymousLogger(), "Don't know about machine " + machineName);
-                return;
-            }
-            try {
-                doWork(machine);
-            } catch(VirtException e) {
-                context.getActionReport().failure(Logger.getAnonymousLogger(), e.getMessage(), e);
-            }
-        } else {
-            context.getActionReport().failure(RuntimeContext.logger, "serverPool does not exist or does not contain physical machines");
-        }
-
-    }
-
-    abstract void doWork(Machine machine) throws VirtException;
+    /**
+     * Returns all the templates registered in the repository.
+     *
+     * @return the repository content.
+     */
+    Collection<TemplateInstance>  all();
 
 }

@@ -43,10 +43,8 @@ package org.glassfish.virtualization.commands;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
-import org.glassfish.virtualization.spi.PhysicalGroup;
-import org.glassfish.virtualization.spi.GroupManagement;
-import org.glassfish.virtualization.spi.Machine;
-import org.glassfish.virtualization.spi.OsInterface;
+import org.glassfish.virtualization.spi.*;
+import org.glassfish.virtualization.util.RuntimeContext;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
@@ -65,21 +63,39 @@ public class WakeUpMachine implements AdminCommand{
     @Param(primary=true)
     String machineName;
 
+    @Param(optional = true)
+    String groupName;
+
     @Inject
     OsInterface os;
 
     @Inject
-    GroupManagement groups;
+    IAAS groups;
 
     @Override
     public void execute(AdminCommandContext context) {
-        for (PhysicalGroup group : groups) {
-            Machine machine = group.byName(machineName);
+
+        ServerPool group;
+        if (groupName==null) {
+            group = groups.iterator().next();
+        } else {
+            group = groups.byName(groupName);
+        }
+        if (group==null) {
+            if (groupName!=null) {
+                context.getActionReport().failure(RuntimeContext.logger, "Cannot find serverPool named " + groupName);
+            } else {
+                context.getActionReport().failure(RuntimeContext.logger, "No serverPool defined");
+            }
+            return;
+        }
+        if (group instanceof PhysicalServerPool) {
+            Machine machine = ((PhysicalServerPool) group).byName(machineName);
             if (machine!=null) {
                 try {
                     os.resume(machine);
                 } catch (IOException e) {
-                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                    context.getActionReport().failure(RuntimeContext.logger, e.getMessage(), e);
                 }
             }
         }
