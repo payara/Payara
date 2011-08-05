@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,14 +40,13 @@
 
 package org.glassfish.webservices.config;
 
+import com.sun.enterprise.config.serverbeans.ApplicationExtension;
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.Configured;
 import org.jvnet.hk2.config.Element;
-import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.component.Injectable;
 
 import java.beans.PropertyVetoException;
-import java.io.Serializable;
 import java.util.List;
 
 import javax.validation.constraints.Min;
@@ -65,7 +64,7 @@ import javax.validation.constraints.NotNull;
 }) */
 
 @Configured
-public interface WebServiceEndpoint extends ConfigBeanProxy, Injectable  {
+public interface WebServiceEndpoint extends ApplicationExtension, Injectable  {
 
     /**
      * Gets the value of the name property.

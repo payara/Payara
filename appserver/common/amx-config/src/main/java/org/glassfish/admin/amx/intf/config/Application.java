@@ -84,9 +84,6 @@ public interface Application
 
     public Map<String, Engine> getEngine();
 
-    public Map<String, WebServiceEndpoint> getWebServiceEndpoint();
-
-
     public String getLibraries();
 
     public void setLibraries(String param1);

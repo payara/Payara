@@ -222,7 +222,6 @@ public class ListComponentsCommandTest {
         public void setDescription(String value) throws PropertyVetoException{}
         public List<Engine> getEngine(){ return null;}
         public List<Property> getProperty(){ return null;}
-        public List<WebServiceEndpoint> getWebServiceEndpoint() {return null;}
         public <T extends ApplicationConfig> T getApplicationConfig(Class<T> type) {return null;}
         public List<ApplicationConfig> getApplicationConfigs() {return null;}
         public Map<String, Properties> getModulePropertiesMap() {return null;}

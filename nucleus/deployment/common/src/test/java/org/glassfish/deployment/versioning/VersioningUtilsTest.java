@@ -40,9 +40,6 @@
 
 package org.glassfish.deployment.versioning;
 
-import org.glassfish.deployment.versioning.VersioningSyntaxException;
-import org.glassfish.deployment.versioning.VersioningUtils;
-import org.glassfish.deployment.versioning.VersioningException;
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.List;
@@ -690,11 +687,6 @@ public class VersioningUtilsTest {
 
         @Override
         public List<Engine> getEngine() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public List<WebServiceEndpoint> getWebServiceEndpoint() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
