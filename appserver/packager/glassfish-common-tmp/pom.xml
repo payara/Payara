@@ -140,26 +140,6 @@
             <artifactId>monitoring-core</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <dependency>
-            <groupId>org.glassfish.ejb</groupId>
-            <artifactId>ejb-internal-api</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-             <groupId>org.glassfish.orb</groupId>
-             <artifactId>orb-connector</artifactId>
-             <version>${project.version}</version>
-        </dependency> 
-        <dependency>
-            <groupId>org.glassfish.admin</groupId>
-            <artifactId>cli-optional</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.admin</groupId>
-            <artifactId>admin-core</artifactId>
-            <version>${project.version}</version>
-        </dependency>
 
      <!-- moving from glassfish-amx package -->       
         <dependency>
@@ -205,7 +185,7 @@
             <artifactId>security</artifactId>
             <version>${project.version}</version>
         </dependency>
-           <dependency>
+        <dependency>
             <groupId>org.glassfish.external</groupId>
             <artifactId>ant</artifactId>
             <version>${project.version}</version>
