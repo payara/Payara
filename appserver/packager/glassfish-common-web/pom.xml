@@ -110,6 +110,21 @@
             <artifactId>pkg-client</artifactId>
         </dependency>
         <dependency>
+           <groupId>org.glassfish.common</groupId>
+           <artifactId>container-common</artifactId>
+           <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.deployment</groupId>
+            <artifactId>deployment-client</artifactId>
+            <version>${project.version}</version>
+   	 </dependency>
+    	<dependency>
+            <groupId>org.glassfish.deployment</groupId>
+            <artifactId>deployment-javaee-core</artifactId>
+            <version>${project.version}</version>
+    	</dependency>
+        <dependency>
             <groupId>org.glassfish.admin</groupId>
             <artifactId>cli-optional</artifactId>
             <version>${project.version}</version>
@@ -119,7 +134,7 @@
             <artifactId>admin-core</artifactId>
             <version>${project.version}</version>
         </dependency>
-                <dependency>
+        <dependency>
             <groupId>org.glassfish.ejb</groupId>
             <artifactId>ejb-internal-api</artifactId>
             <version>${project.version}</version>
@@ -129,6 +144,11 @@
              <artifactId>orb-connector</artifactId>
              <version>${project.version}</version>
         </dependency>
+        <dependency>
+           <groupId>org.glassfish.ha</groupId>
+           <artifactId>ha-file-store</artifactId>
+           <version>${project.version}</version>
+       </dependency>
         <!-- TODO: move to glassfish-nucleus after nucleus distro build moves
              to its own workspace -->
         <dependency>

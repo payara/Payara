@@ -103,11 +103,6 @@
            <artifactId>annotation-framework</artifactId>
            <version>${project.version}</version>
        </dependency>
-       <dependency>
-           <groupId>org.glassfish.common</groupId>
-           <artifactId>container-common</artifactId>
-           <version>${project.version}</version>
-        </dependency>
         <dependency>
            <groupId>org.glassfish.common</groupId>
            <artifactId>glassfish-naming</artifactId>
@@ -159,16 +154,6 @@
             <artifactId>dol</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <dependency>
-            <groupId>org.glassfish.deployment</groupId>
-            <artifactId>deployment-client</artifactId>
-            <version>${project.version}</version>
-   	 </dependency>
-    	<dependency>
-            <groupId>org.glassfish.deployment</groupId>
-            <artifactId>deployment-javaee-core</artifactId>
-            <version>${project.version}</version>
-    	</dependency>
     	<dependency>
             <groupId>org.glassfish.deployment</groupId>
             <artifactId>deployment-autodeploy</artifactId>
@@ -190,16 +175,11 @@
             <artifactId>ant</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <!-- HA API and file store -->
+        <!-- HA API  -->
        <dependency>
            <groupId>org.glassfish.ha</groupId>
            <artifactId>ha-api</artifactId>
-       </dependency>
-       <dependency>
-           <groupId>org.glassfish.ha</groupId>
-           <artifactId>ha-file-store</artifactId>
-           <version>${project.version}</version>
-       </dependency>
+       </dependency>     
         <!-- gms-bootstrap module -->
        <dependency>
             <groupId>org.glassfish.cluster</groupId>
