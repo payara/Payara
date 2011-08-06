@@ -1515,7 +1515,7 @@ public class Application extends BundleDescriptor
     public void visit(ApplicationVisitor aVisitor) {
         aVisitor.accept(this);
         for (BundleDescriptor ebd : getBundleDescriptorsOfType(XModuleType.EJB)) {
-            ebd.visit(ebd.getBundleVisitor());
+            ebd.visit(aVisitor);
         }
         for (BundleDescriptor wbd : getBundleDescriptorsOfType(XModuleType.WAR)) {
             // This might be null in the case of an appclient 
@@ -1524,7 +1524,7 @@ public class Application extends BundleDescriptor
             // stage but until then adding a non-null check will prevent
             // the validation step from bombing.
             if (wbd != null) {
-                wbd.visit(wbd.getBundleVisitor());
+                wbd.visit(aVisitor);
             }
         }
         for (BundleDescriptor cd :  getBundleDescriptorsOfType(XModuleType.RAR)) {
