@@ -1532,7 +1532,7 @@ public class Application extends BundleDescriptor
         }
 
         for (BundleDescriptor acd : getBundleDescriptorsOfType(XModuleType.CAR)) {
-            acd.visit(acd.getBundleVisitor());
+            acd.visit(aVisitor);
         }
 
         // Visit all injectables first.  In some cases, basic type information

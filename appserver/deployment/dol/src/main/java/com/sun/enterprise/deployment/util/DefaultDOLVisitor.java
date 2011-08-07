@@ -56,7 +56,7 @@ import java.util.Iterator;
  * @version 
  */
 
-public class DefaultDOLVisitor implements ApplicationVisitor, EjbBundleVisitor, EjbVisitor, ManagedBeanVisitor, WebBundleVisitor {
+public class DefaultDOLVisitor implements ApplicationVisitor, EjbBundleVisitor, EjbVisitor, ManagedBeanVisitor, WebBundleVisitor, AppClientVisitor {
    protected BundleDescriptor bundleDescriptor = null;
 
     /** Creates new DefaultDOLVisitor */
@@ -335,5 +335,13 @@ public class DefaultDOLVisitor implements ApplicationVisitor, EjbBundleVisitor, 
      */
     protected BundleDescriptor getBundleDescriptor() {
         return bundleDescriptor;
+    }
+
+    /**
+     * visits a appclient descriptor
+     * @param appclientdescriptor
+     */
+    public void accept(ApplicationClientDescriptor appclientdescriptor) {
+        bundleDescriptor = appclientdescriptor;
     }
 }

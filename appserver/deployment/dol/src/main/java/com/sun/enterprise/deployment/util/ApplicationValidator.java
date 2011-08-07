@@ -241,6 +241,21 @@ public class ApplicationValidator extends EjbBundleValidator
     protected BundleDescriptor getBundleDescriptor() {
         return bundleDescriptor;
     }    
-    
-    
+
+    public void accept(ApplicationClientDescriptor appclientdescriptor) {
+        bundleDescriptor = appclientdescriptor;
+
+        // set the default lifecycle callback class
+        for (LifecycleCallbackDescriptor next :
+            appclientdescriptor.getPreDestroyDescriptors()) {
+            next.setDefaultLifecycleCallbackClass(
+                appclientdescriptor.getMainClassName());
+        }
+
+        for (LifecycleCallbackDescriptor next :
+            appclientdescriptor.getPostConstructDescriptors()) {
+            next.setDefaultLifecycleCallbackClass(
+                appclientdescriptor.getMainClassName());
+        }
+    }
 }
