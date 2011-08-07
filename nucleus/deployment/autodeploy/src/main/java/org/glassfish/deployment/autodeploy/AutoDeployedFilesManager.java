@@ -167,7 +167,7 @@ public class AutoDeployedFilesManager {
          * and all intervening ones again.
          */
         if (autoDeployDir.exists()) {
-            if ( ! statDir.mkdirs()) {
+            if ( ! statDir.exists() && ! statDir.mkdirs()) {
                 sLogger.log(Level.WARNING, "enterprise.deployment.mkdirsFailed", autoDeployDir.getAbsolutePath());
             }
         }
