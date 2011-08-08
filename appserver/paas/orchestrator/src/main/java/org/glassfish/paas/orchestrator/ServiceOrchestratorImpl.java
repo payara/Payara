@@ -71,13 +71,13 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
         return plugins;
     }
 
-    public void deployApplication(ReadableArchive cloudArchive) {
+    public void deployApplication(String appName, ReadableArchive cloudArchive) {
         logger.entering(getClass().getName(), "deployApplication");
         //Get all plugins installed in this runtime
         Set<Plugin> installedPlugins = getPlugins();
 
         //1. Perform service dependency discovery
-        ServiceMetadata appServiceMetadata = serviceDependencyDiscovery(cloudArchive, installedPlugins);
+        ServiceMetadata appServiceMetadata = serviceDependencyDiscovery(appName, cloudArchive, installedPlugins);
 
         //2. Provision dependent services
         Set<ProvisionedService> appProvisionedSvcs = provisionServices(installedPlugins, appServiceMetadata);
@@ -94,7 +94,7 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
                 appProvisionedSvcs, false /*before deployment*/);
     }
 
-    private ServiceMetadata serviceDependencyDiscovery(ReadableArchive cloudArchive, Set<Plugin> installedPlugins) {
+    private ServiceMetadata serviceDependencyDiscovery(String appName, ReadableArchive cloudArchive, Set<Plugin> installedPlugins) {
         logger.entering(getClass().getName(), "serviceDependencyDiscovery");
         //1. SERVICE DISCOVERY
         //parse orchestration.xml to get all declared SRs and SDs
@@ -102,7 +102,7 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
         CloudXMLParser parser = habitat.getAllByContract(CloudXMLParser.class).iterator().next();
 
         //1.1 discover all Service References and Definitions already declared for this application
-        ServiceMetadata appServiceMetadata = parser.discoverDeclaredServiceMetadata(cloudArchive);
+        ServiceMetadata appServiceMetadata = parser.discoverDeclaredServiceMetadata(appName, cloudArchive);
         logger.log(Level.INFO, "Discovered declared service metadata via cloud.xml = " + appServiceMetadata);
 
         //1.2 Get implicit service-definitions (for instance a war is deployed, and it has not

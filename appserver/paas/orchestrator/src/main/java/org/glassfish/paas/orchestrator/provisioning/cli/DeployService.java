@@ -70,8 +70,7 @@ public class DeployService implements AdminCommand {
     @Inject
     ServiceUtil serviceUtil;
 
-    // Inject the glassfishplugin simply for testing purpose.
-    // The orchestrator should do service lookup machanism to lookup the plugins. 
+    // The orchestrator should do service lookup mechanism to lookup the plugins.
     @Inject
     private ServiceOrchestrator orchestrator;
 
@@ -82,7 +81,11 @@ public class DeployService implements AdminCommand {
         final ActionReport report = context.getActionReport();
 
         try {
-            orchestrator.deployApplication(archiveFactory.openArchive(new File(application)));
+            File app = new File(application);
+            //TODO get app-name from deploy command
+            String appName = app.getName().substring(0, app.getName().lastIndexOf("."));
+
+            orchestrator.deployApplication(appName, archiveFactory.openArchive(app));
         } catch (Exception ex) {
             ex.printStackTrace();
             // As long as the command is synchronous we can propagate the failure back to the client,

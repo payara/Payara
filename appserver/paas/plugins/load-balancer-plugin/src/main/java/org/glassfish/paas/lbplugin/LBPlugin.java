@@ -44,7 +44,7 @@ import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.paas.orchestrator.provisioning.CloudRegistryEntry;
 import org.glassfish.paas.orchestrator.provisioning.CloudRegistryService;
 import org.glassfish.paas.orchestrator.provisioning.LBProvisioner;
-import org.glassfish.paas.orchestrator.provisioning.cli.ServiceUtil;
+import org.glassfish.paas.orchestrator.provisioning.cli.ServiceType;
 import org.glassfish.paas.lbplugin.cli.GlassFishLBProvisionedService;
 import org.glassfish.paas.orchestrator.service.HTTPLoadBalancerServiceType;
 import org.glassfish.paas.orchestrator.service.ServiceReference;
@@ -79,12 +79,12 @@ public class LBPlugin implements Plugin<HTTPLoadBalancerServiceType> {
     private CommandRunner commandRunner;
 
     @Inject
-    private ServiceUtil serviceUtil;
+    private LBServiceUtil lbServiceUtil;
 
     private static final String LB = "HTTP_LOAD_BALANCER";
 
     public static final String GLASSFISH_LB = "GLASSFISH_LB";
-    public static final String LB_SERVICE_TYPE = "LB";
+    public static final String LB_ServiceType = "LB";
 
     public HTTPLoadBalancerServiceType getServiceType() {
         return new HTTPLoadBalancerServiceType();
@@ -109,7 +109,7 @@ public class LBPlugin implements Plugin<HTTPLoadBalancerServiceType> {
             LBProvisioner lbProvisioner = registryService.getLBProvisioner(GLASSFISH_LB);
             Properties properties = lbProvisioner.getDefaultConnectionProperties();
             String defaultLBServiceName = lbProvisioner.getDefaultServiceName();
-            return new SimpleServiceDefinition(defaultLBServiceName, LB_SERVICE_TYPE, properties);
+            return new SimpleServiceDefinition(defaultLBServiceName, LB_ServiceType, properties);
         } else {
             return null;
         }
@@ -137,7 +137,7 @@ public class LBPlugin implements Plugin<HTTPLoadBalancerServiceType> {
             }
         }
 
-        CloudRegistryEntry entry = serviceUtil.retrieveCloudEntry(serviceName, ServiceUtil.SERVICE_TYPE.LOAD_BALANCER);
+        CloudRegistryEntry entry = lbServiceUtil.retrieveCloudEntry(serviceName, ServiceType.LOAD_BALANCER);
         if (entry == null) {
             throw new RuntimeException("unable to get LB service : " + serviceName);
         }

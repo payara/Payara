@@ -45,5 +45,5 @@ import org.jvnet.hk2.annotations.Contract;
 
 @Contract
 public interface ServiceOrchestrator {
-    public void deployApplication(ReadableArchive cloudArchive);
+    public void deployApplication(String appName, ReadableArchive cloudArchive);
 }

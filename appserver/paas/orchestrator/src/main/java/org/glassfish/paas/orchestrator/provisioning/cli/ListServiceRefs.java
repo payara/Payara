@@ -38,73 +38,59 @@
  * holder.
  */
 
-package org.glassfish.paas.javadbplugin.cli;
+package org.glassfish.paas.orchestrator.provisioning.cli;
 
-
+import com.sun.enterprise.config.serverbeans.Application;
+import com.sun.enterprise.config.serverbeans.Applications;
+import com.sun.enterprise.config.serverbeans.Domain;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
-import org.glassfish.paas.orchestrator.provisioning.cli.ServiceType;
-import org.glassfish.paas.orchestrator.provisioning.iaas.CloudProvisioner;
-import org.glassfish.paas.orchestrator.provisioning.CloudRegistryEntry;
-import org.glassfish.paas.orchestrator.provisioning.CloudRegistryEntry.State;
-import org.glassfish.paas.orchestrator.provisioning.CloudRegistryService;
+import org.glassfish.api.admin.ExecuteOn;
+import org.glassfish.api.admin.RuntimeType;
+import org.glassfish.config.support.CommandTarget;
+import org.glassfish.config.support.TargetType;
+import org.glassfish.paas.orchestrator.config.ServiceRef;
+import org.glassfish.paas.orchestrator.config.Services;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
 
-import java.util.ArrayList;
-import java.util.Collection;
-
-/**
- * @author Jagadish Ramu
- */
-@Service(name = "stop-database-service")
+@Service(name = "list-service-refs")
 @Scoped(PerLookup.class)
-public class StopDatabaseService implements AdminCommand {
-
-    @Param(name = "servicename", primary = true, optional = false)
-    private String serviceName;
-
-    @Inject
-    private CloudRegistryService cloudRegistryService;
+@ExecuteOn(RuntimeType.DAS)
+@TargetType(value = {CommandTarget.DAS})
+public class ListServiceRefs implements AdminCommand {
+    @Param(name="appname", optional=false, primary=true)
+    private String appName;
 
     @Inject
-    private DatabaseServiceUtil dbServiceUtil;
+    private Domain domain;
 
     public void execute(AdminCommandContext context) {
 
         final ActionReport report = context.getActionReport();
 
-        if (dbServiceUtil.isValidService(serviceName, ServiceType.DATABASE)) {
-            CloudRegistryEntry entry = dbServiceUtil.retrieveCloudEntry(serviceName, ServiceType.DATABASE);
-            String ipAddress = entry.getIpAddress();
-            String status = entry.getState();
-            if (status == null || status.equalsIgnoreCase(State.Stop_in_progress.toString())
-                    || status.equalsIgnoreCase(State.NotRunning.toString())) {
-                report.setMessage("Invalid db-service [" + serviceName + "] state [" + status + "]");
+        Applications applications = domain.getApplications();
+        if (applications != null) {
+            Application app = applications.getApplication(appName);
+            if (app != null) {
+                Services services = app.getExtensionByType(Services.class);
+                for(ServiceRef serviceRef : services.getServiceRefs()){
+                    report.getTopMessagePart().addChild().setMessage(serviceRef.getServiceName());
+                }
+            }else{
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                report.setMessage("No such application [" + appName + "] is deployed in the server");
                 return;
             }
-
-            dbServiceUtil.updateState(serviceName, State.Stop_in_progress.toString(), ServiceType.DATABASE);
-
-            cloudRegistryService.getDatabaseProvisioner().stopDatabase(ipAddress);
-
-            CloudProvisioner cloudProvisioner = cloudRegistryService.getCloudProvisioner();
-            Collection<String> list = new ArrayList<String>();
-            list.add(entry.getIpAddress());
-            cloudProvisioner.stopInstances(list);
-
-            dbServiceUtil.updateState(serviceName, State.NotRunning.toString(), ServiceType.DATABASE);
-            report.setMessage("db-service [" + serviceName + "] stopped");
-            report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
-
-        } else {
-            report.setMessage("Invalid db-service name [" + serviceName + "]");
+        }else{
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            report.setMessage("No such application [" + appName + "] is deployed in the server");
+            return;
         }
+        report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
     }
 }

@@ -67,7 +67,7 @@ import java.util.Set;
 public class CloudXMLParserImpl implements CloudXMLParser {
 
     public ServiceMetadata discoverDeclaredServiceMetadata(
-            ReadableArchive ra) {
+            String appName, ReadableArchive ra) {
 
         Set<ServiceDefinition> serviceDefinitions = new HashSet<ServiceDefinition>();
         Set<ServiceReference> serviceReferences = new HashSet<ServiceReference>();
@@ -107,7 +107,7 @@ public class CloudXMLParserImpl implements CloudXMLParser {
         }
 
         ServiceMetadata serviceMetadata =
-                new ServiceMetadata(serviceDefinitions, serviceReferences);
+                new ServiceMetadata(appName, serviceDefinitions, serviceReferences);
 
         System.out.println("Service Metadata declared in cloud.xml : \n" + serviceMetadata);
 

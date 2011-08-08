@@ -44,14 +44,14 @@ import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
+import org.glassfish.paas.lbplugin.LBServiceUtil;
 import org.glassfish.paas.orchestrator.provisioning.CloudRegistryEntry;
 
 import static org.glassfish.paas.orchestrator.provisioning.CloudRegistryEntry.State.*;
 
 import org.glassfish.paas.orchestrator.provisioning.CloudRegistryService;
-import org.glassfish.paas.orchestrator.provisioning.cli.ServiceUtil;
 
-import static org.glassfish.paas.orchestrator.provisioning.cli.ServiceUtil.SERVICE_TYPE.*;
+import static org.glassfish.paas.orchestrator.provisioning.cli.ServiceType.*;
 
 import org.glassfish.paas.orchestrator.provisioning.iaas.CloudProvisioner;
 import org.jvnet.hk2.annotations.Inject;
@@ -76,14 +76,14 @@ public class StopLBService implements AdminCommand {
     private CloudRegistryService cloudRegistryService;
 
     @Inject
-    private ServiceUtil serviceUtil;
+    private LBServiceUtil lbServiceUtil;
 
     public void execute(AdminCommandContext context) {
 
         final ActionReport report = context.getActionReport();
 
-        if (serviceUtil.isValidService(serviceName, LOAD_BALANCER)) {
-            CloudRegistryEntry entry = serviceUtil.retrieveCloudEntry(serviceName, LOAD_BALANCER);
+        if (lbServiceUtil.isValidService(serviceName, LOAD_BALANCER)) {
+            CloudRegistryEntry entry = lbServiceUtil.retrieveCloudEntry(serviceName, LOAD_BALANCER);
             String ipAddress = entry.getIpAddress();
             String status = entry.getState();
             if (status == null || status.equalsIgnoreCase(Stop_in_progress.toString())
@@ -93,7 +93,7 @@ public class StopLBService implements AdminCommand {
                 return;
             }
 
-            serviceUtil.updateState(serviceName, Stop_in_progress.toString(), LOAD_BALANCER);
+            lbServiceUtil.updateState(serviceName, Stop_in_progress.toString(), LOAD_BALANCER);
 
             cloudRegistryService.getLBProvisioner().stopLB(ipAddress);
 
@@ -102,7 +102,7 @@ public class StopLBService implements AdminCommand {
             list.add(entry.getIpAddress());
             cloudProvisioner.stopInstances(list);
 
-            serviceUtil.updateState(serviceName, NotRunning.toString(), LOAD_BALANCER);
+            lbServiceUtil.updateState(serviceName, NotRunning.toString(), LOAD_BALANCER);
             report.setMessage("lb-service [" + serviceName + "] stopped");
             report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
 

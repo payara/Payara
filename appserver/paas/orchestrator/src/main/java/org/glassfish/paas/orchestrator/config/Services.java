@@ -38,13 +38,26 @@
  * holder.
  */
 
-package org.glassfish.paas.orchestrator;
+package org.glassfish.paas.orchestrator.config;
 
-import org.glassfish.api.deployment.archive.ReadableArchive;
-import org.glassfish.paas.orchestrator.service.ServiceMetadata;
-import org.jvnet.hk2.annotations.Contract;
+import com.sun.enterprise.config.serverbeans.ApplicationExtension;
+import com.sun.enterprise.config.serverbeans.DomainExtension;
+import com.sun.enterprise.config.serverbeans.Resource;
+import org.jvnet.hk2.component.Injectable;
+import org.jvnet.hk2.config.ConfigBeanProxy;
+import org.jvnet.hk2.config.Configured;
+import org.jvnet.hk2.config.Element;
 
-@Contract
-public interface CloudXMLParser {
-    public ServiceMetadata discoverDeclaredServiceMetadata(String appName, ReadableArchive ra);
+import javax.validation.constraints.NotNull;
+import java.util.List;
+
+@Configured
+public interface Services extends ConfigBeanProxy, Injectable, DomainExtension, ApplicationExtension {
+
+    @Element("*")
+    public List<Service> getServices();
+
+    @Element("*")
+    public List<ServiceRef> getServiceRefs();
+
 }

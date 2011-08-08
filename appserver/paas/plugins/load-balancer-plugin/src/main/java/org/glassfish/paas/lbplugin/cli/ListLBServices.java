@@ -45,11 +45,8 @@ import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
+import org.glassfish.paas.lbplugin.LBServiceUtil;
 import org.glassfish.paas.orchestrator.provisioning.CloudRegistryService;
-import org.glassfish.paas.orchestrator.provisioning.cli.ServiceUtil;
-
-import static org.glassfish.paas.orchestrator.provisioning.cli.ServiceUtil.SERVICE_TYPE.*;
-
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
@@ -74,7 +71,7 @@ public class ListLBServices implements AdminCommand {
     private CloudRegistryService registryService;
 
     @Inject
-    private ServiceUtil serviceUtil;
+    private LBServiceUtil lbServiceUtil;
 
     @Param(name = "servicename", defaultValue = "*", optional = true, primary = true)
     private String serviceName;
@@ -88,7 +85,7 @@ public class ListLBServices implements AdminCommand {
             InitialContext ic = new InitialContext();
             DataSource ds = (DataSource) ic.lookup(CloudRegistryService.RESOURCE_NAME);
 
-            String tableName = serviceUtil.getTableName(LOAD_BALANCER);
+            String tableName = CloudRegistryService.CLOUD_LB_TABLE_NAME;
             String query = null;
             if (serviceName.equals("*")) {
                 query = "select * from " + tableName;
@@ -137,7 +134,7 @@ public class ListLBServices implements AdminCommand {
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setFailureCause(e);
         } finally {
-            serviceUtil.closeDBObjects(con, stmt, rs);
+            lbServiceUtil.closeDBObjects(con, stmt, rs);
         }
     }
 }

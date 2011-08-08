@@ -41,10 +41,11 @@ package org.glassfish.paas.javadbplugin;
 
 import org.glassfish.api.deployment.ApplicationContainer;
 import org.glassfish.api.deployment.archive.ReadableArchive;
+import org.glassfish.paas.javadbplugin.cli.DatabaseServiceUtil;
 import org.glassfish.paas.orchestrator.provisioning.CloudRegistryEntry;
 import org.glassfish.paas.orchestrator.provisioning.CloudRegistryService;
 import org.glassfish.paas.orchestrator.provisioning.DatabaseProvisioner;
-import org.glassfish.paas.orchestrator.provisioning.cli.ServiceUtil;
+import org.glassfish.paas.orchestrator.provisioning.cli.ServiceType;
 import org.glassfish.paas.orchestrator.service.RDBMSServiceType;
 import org.glassfish.paas.orchestrator.service.ServiceReference;
 import org.glassfish.paas.orchestrator.service.ServiceStatus;
@@ -78,12 +79,12 @@ public class DerbyPlugin implements Plugin<RDBMSServiceType> {
     private CommandRunner commandRunner;
 
     @Inject
-    private ServiceUtil serviceUtil;
+    private DatabaseServiceUtil dbServiceUtil;
 
     private static final String DATASOURCE = "javax.sql.DataSource";
 
     public static final String GLASSFISH_DERBY = "GLASSFISH_DERBY";
-    public static final String RDBMS_SERVICE_TYPE = "RDBMS";
+    public static final String RDBMS_ServiceType = "RDBMS";
 
     public RDBMSServiceType getServiceType() {
         return new RDBMSServiceType();
@@ -109,7 +110,7 @@ public class DerbyPlugin implements Plugin<RDBMSServiceType> {
             DatabaseProvisioner dbProvisioner = registryService.getDatabaseProvisioner(GLASSFISH_DERBY);
             Properties connectionProperties = dbProvisioner.getDefaultConnectionProperties();
             String defaultDBServiceName = dbProvisioner.getDefaultServiceName();
-            return new SimpleServiceDefinition(defaultDBServiceName, RDBMS_SERVICE_TYPE, connectionProperties);
+            return new SimpleServiceDefinition(defaultDBServiceName, RDBMS_ServiceType, connectionProperties);
         } else {
             return null;
         }
@@ -135,7 +136,7 @@ public class DerbyPlugin implements Plugin<RDBMSServiceType> {
             }
         }
 
-        CloudRegistryEntry entry = serviceUtil.retrieveCloudEntry(serviceName, ServiceUtil.SERVICE_TYPE.DATABASE);
+        CloudRegistryEntry entry = dbServiceUtil.retrieveCloudEntry(serviceName, ServiceType.DATABASE);
         if (entry == null) {
             throw new RuntimeException("unable to get DB service : " + serviceName);
         }
@@ -152,8 +153,8 @@ public class DerbyPlugin implements Plugin<RDBMSServiceType> {
 
 
         Properties connectionProperties = ((SimpleServiceDefinition) svcDefn).getProperties();
-        //TODO HACK as we use serviceUtil to get DB's IP Address.
-        String ipAddress = serviceUtil.getIPAddress(serviceName, ServiceUtil.SERVICE_TYPE.DATABASE);
+        //TODO HACK as we use dbServiceUtil to get DB's IP Address.
+        String ipAddress = dbServiceUtil.getIPAddress(serviceName, ServiceType.DATABASE);
         connectionProperties.put("serverName", ipAddress);
 
         return new DerbyProvisionedService(svcDefn, ServiceStatus.STARTED);

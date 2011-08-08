@@ -45,9 +45,9 @@ import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.paas.orchestrator.provisioning.ApplicationServerProvisioner;
+import org.glassfish.paas.orchestrator.provisioning.cli.ServiceType;
 import org.glassfish.paas.orchestrator.provisioning.iaas.CloudProvisioner;
 import org.glassfish.paas.orchestrator.provisioning.CloudRegistryService;
-import org.glassfish.paas.orchestrator.provisioning.cli.ServiceUtil;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
@@ -70,7 +70,7 @@ public class StopGlassFishService implements AdminCommand {
     private String serviceName;
 
     @Inject
-    private ServiceUtil serviceUtil;
+    private GlassFishServiceUtil gfServiceUtil;
 
     @Param(name = "cascade", optional = true, defaultValue = "false")
     private boolean cascade;
@@ -79,7 +79,7 @@ public class StopGlassFishService implements AdminCommand {
     public void execute(AdminCommandContext context) {
         final ActionReport report = context.getActionReport();
 
-        if (serviceUtil.isValidService(serviceName, ServiceUtil.SERVICE_TYPE.APPLICATION_SERVER)) {
+        if (gfServiceUtil.isValidService(serviceName, ServiceType.APPLICATION_SERVER)) {
             /*
             1) check whether it is domain / cluster / instance.
             2) If its domain, stop the domain
@@ -93,17 +93,17 @@ public class StopGlassFishService implements AdminCommand {
             }
 
 
-            if (!serviceUtil.isDomain(serviceName) && cascade) {
+            if (!gfServiceUtil.isDomain(serviceName) && cascade) {
                 System.out.println("--cascade is not applicable for service-types other than domain");
             }
 
-            if (serviceUtil.isDomain(serviceName)) {
+            if (gfServiceUtil.isDomain(serviceName)) {
                 stopDomain(serviceName, report, serviceState);
-            } else if (serviceUtil.isCluster(serviceName)) {
+            } else if (gfServiceUtil.isCluster(serviceName)) {
                 stopCluster(serviceName, report);
-            } else if (serviceUtil.isClusteredInstance(serviceName)) {
+            } else if (gfServiceUtil.isClusteredInstance(serviceName)) {
                 stopClusteredInstance(serviceName, report);
-            } else if (serviceUtil.isStandaloneInstance(serviceName)) {
+            } else if (gfServiceUtil.isStandaloneInstance(serviceName)) {
                 stopStandaloneInstance(serviceName, report);
             }
         } else {
@@ -128,14 +128,14 @@ public class StopGlassFishService implements AdminCommand {
             // for-each sub-component, check the state.
             // if its RUNNING, stop them.
 
-            Collection<String> subServices = serviceUtil.getAllSubComponents(serviceName);
+            Collection<String> subServices = gfServiceUtil.getAllSubComponents(serviceName);
             for (String subService : subServices) {
                 System.out.println("stopping service : " + subService);
-                if (serviceUtil.isCluster(subService)) {
+                if (gfServiceUtil.isCluster(subService)) {
                     stopCluster(subService, report);
-                } else if (serviceUtil.isClusteredInstance(subService)) {
+                } else if (gfServiceUtil.isClusteredInstance(subService)) {
                     //ignore, as there will be an entry for "cluster" and will be stopped.
-                } else if (serviceUtil.isStandaloneInstance(subService)) {
+                } else if (gfServiceUtil.isStandaloneInstance(subService)) {
                     stopStandaloneInstance(subService, report);
                 }
             }
@@ -152,7 +152,7 @@ public class StopGlassFishService implements AdminCommand {
             return;
         }
 
-        //String instanceName = serviceUtil.getStandaloneInstanceName(serviceName);
+        //String instanceName = gfServiceUtil.getStandaloneInstanceName(serviceName);
         String instanceState = getState(serviceName);
         if (isInvalidServiceState(report, instanceState)) {
             return;
@@ -167,7 +167,7 @@ public class StopGlassFishService implements AdminCommand {
             return;
         }
 
-        //String instanceName = serviceUtil.getClusteredInstanceName(serviceName);
+        //String instanceName = gfServiceUtil.getClusteredInstanceName(serviceName);
         String instanceState = getState(serviceName);
         if (isInvalidServiceState(report, instanceState)) {
             return;
@@ -182,7 +182,7 @@ public class StopGlassFishService implements AdminCommand {
             return;
         }
 
-        //String clusterName = serviceUtil.getClusterName(serviceName);
+        //String clusterName = gfServiceUtil.getClusterName(serviceName);
         String clusterState = getState(serviceName);
 
         if (isInvalidServiceState(report, clusterState)) {
@@ -194,7 +194,7 @@ public class StopGlassFishService implements AdminCommand {
 
     private boolean isDomainRunning(String serviceName, ActionReport report) {
         boolean domainRunning = false;
-        String domainName = serviceUtil.getDomainName(serviceName);
+        String domainName = gfServiceUtil.getDomainName(serviceName);
         if (State.Running.toString().equals(getState(domainName))) {
             domainRunning = true;
         } else {
@@ -231,8 +231,8 @@ public class StopGlassFishService implements AdminCommand {
     }
 
     private void stopDomain(String serviceName) {
-        if (serviceUtil.isDomain(serviceName)) {
-            String domainName = serviceUtil.getDomainName(serviceName);
+        if (gfServiceUtil.isDomain(serviceName)) {
+            String domainName = gfServiceUtil.getDomainName(serviceName);
             String dasIPAddress = getIPAddress(domainName);
 
             ApplicationServerProvisioner appserverProvisioner = registryService.getAppServerProvisioner(dasIPAddress);
@@ -253,11 +253,11 @@ public class StopGlassFishService implements AdminCommand {
     }
 
     private void stopCluster(String serviceName) {
-        String domainName = serviceUtil.getDomainName(serviceName);
-        String clusterName = serviceUtil.getClusterName(serviceName);
+        String domainName = gfServiceUtil.getDomainName(serviceName);
+        String clusterName = gfServiceUtil.getClusterName(serviceName);
         String dasIPAddress = getIPAddress(domainName);
 
-        Collection<String> instanceServices = serviceUtil.getAllSubComponents(serviceName);
+        Collection<String> instanceServices = gfServiceUtil.getAllSubComponents(serviceName);
 
         ApplicationServerProvisioner appserverProvisioner = registryService.getAppServerProvisioner(dasIPAddress);
         updateState(serviceName, State.Stop_in_progress);
@@ -273,7 +273,7 @@ public class StopGlassFishService implements AdminCommand {
             if (State.Running.toString().equals(state)) {
                 //stop only running instances
                 instanceServiceToinstanceIDMap.put(instanceService, instanceID);
-                //serviceUtil.updateState(instanceService, State.Stop_in_progress.toString());
+                //gfServiceUtil.updateState(instanceService, State.Stop_in_progress.toString());
             }
         }
         Collection<String> filteredInstanceServices = instanceServiceToinstanceIDMap.keySet();
@@ -284,19 +284,19 @@ public class StopGlassFishService implements AdminCommand {
     }
 
     private String getIPAddress(String serviceName) {
-        return serviceUtil.getIPAddress(serviceName, ServiceUtil.SERVICE_TYPE.APPLICATION_SERVER);
+        return gfServiceUtil.getIPAddress(serviceName, ServiceType.APPLICATION_SERVER);
     }
 
     private String getState(String instanceService) {
-        return serviceUtil.getServiceState(instanceService, ServiceUtil.SERVICE_TYPE.APPLICATION_SERVER);
+        return gfServiceUtil.getServiceState(instanceService, ServiceType.APPLICATION_SERVER);
     }
 
     private String getInstanceID(String instanceService) {
-        return serviceUtil.getInstanceID(instanceService, ServiceUtil.SERVICE_TYPE.APPLICATION_SERVER);
+        return gfServiceUtil.getInstanceID(instanceService, ServiceType.APPLICATION_SERVER);
     }
 
     private void updateState(String serviceName, State state) {
-        serviceUtil.updateState(serviceName, state.toString(), ServiceUtil.SERVICE_TYPE.APPLICATION_SERVER);
+        gfServiceUtil.updateState(serviceName, state.toString(), ServiceType.APPLICATION_SERVER);
     }
 
     private void stopMachineInstances(Collection<String> instanceServices, Collection<String> instanceIDs) {
@@ -323,11 +323,11 @@ public class StopGlassFishService implements AdminCommand {
 
     private void stopInstance(String serviceName) {
 
-        if (serviceUtil.isInstance(serviceName)) {
-            String instanceName = serviceUtil.getInstanceName(serviceName);
+        if (gfServiceUtil.isInstance(serviceName)) {
+            String instanceName = gfServiceUtil.getInstanceName(serviceName);
             //String instanceIPAddress = getIPAddress(serviceName);
 
-            String domainName = serviceUtil.getDomainName(serviceName);
+            String domainName = gfServiceUtil.getDomainName(serviceName);
             String dasIPAddress = getIPAddress(domainName);
 
             ApplicationServerProvisioner appserverProvisioner = registryService.getAppServerProvisioner(dasIPAddress);

@@ -43,9 +43,11 @@ import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
+import org.glassfish.paas.gfplugin.cli.GlassFishServiceUtil;
+import org.glassfish.paas.lbplugin.LBServiceUtil;
 import org.glassfish.paas.orchestrator.provisioning.CloudRegistryService;
 import org.glassfish.paas.orchestrator.provisioning.ApplicationServerProvisioner;
-import org.glassfish.paas.orchestrator.provisioning.cli.ServiceUtil;
+import org.glassfish.paas.orchestrator.provisioning.cli.ServiceType;
 import org.glassfish.paas.orchestrator.provisioning.LBProvisioner;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
@@ -69,13 +71,16 @@ public class AssociateLBService implements AdminCommand {
     private CloudRegistryService cloudRegistryService;
 
     @Inject
-    private ServiceUtil serviceUtil;
+    private LBServiceUtil lbServiceUtil;
+
+    @Inject
+    private GlassFishServiceUtil gfServiceUtil;
 
     public void execute(AdminCommandContext context) {
 
         final ActionReport report = context.getActionReport();
         // Check if the service is already configured.
-        if (!serviceUtil.isServiceAlreadyConfigured(serviceName, ServiceUtil.SERVICE_TYPE.LOAD_BALANCER)) {
+        if (!lbServiceUtil.isServiceAlreadyConfigured(serviceName, ServiceType.LOAD_BALANCER)) {
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setMessage("Service with name [" + serviceName + "] is not configured.");
             return;
@@ -84,22 +89,22 @@ public class AssociateLBService implements AdminCommand {
         String domainName = null;
         String targetName = null;
 
-        if (!serviceUtil.isValidService(appServerServiceName, ServiceUtil.SERVICE_TYPE.APPLICATION_SERVER)) {
+        if (!lbServiceUtil.isValidService(appServerServiceName, ServiceType.APPLICATION_SERVER)) {
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setMessage("Invalid AppServer Service name [" + appServerServiceName + "].");
             return;
         }
 
-        domainName = serviceUtil.getDomainName(appServerServiceName);
+        domainName = gfServiceUtil.getDomainName(appServerServiceName);
         targetName = null;
 
-        if (serviceUtil.isDomain(appServerServiceName)) {
+        if (gfServiceUtil.isDomain(appServerServiceName)) {
             targetName = appServerServiceName;
-        } else if (serviceUtil.isCluster(appServerServiceName)) {
-            targetName = serviceUtil.getClusterName(appServerServiceName);
-        } else if (serviceUtil.isStandaloneInstance(appServerServiceName)) {
-            targetName = serviceUtil.getStandaloneInstanceName(appServerServiceName);
-        } else if (serviceUtil.isClusteredInstance(appServerServiceName)) {
+        } else if (gfServiceUtil.isCluster(appServerServiceName)) {
+            targetName = gfServiceUtil.getClusterName(appServerServiceName);
+        } else if (gfServiceUtil.isStandaloneInstance(appServerServiceName)) {
+            targetName = gfServiceUtil.getStandaloneInstanceName(appServerServiceName);
+        } else if (gfServiceUtil.isClusteredInstance(appServerServiceName)) {
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setMessage("Invalid AppServer Service name [" + appServerServiceName + "], " +
                     "clustered instance is not supported");
@@ -111,10 +116,10 @@ public class AssociateLBService implements AdminCommand {
             return;
         }
 
-        String dasIPAddress = serviceUtil.getIPAddress(domainName, ServiceUtil.SERVICE_TYPE.APPLICATION_SERVER);
+        String dasIPAddress = lbServiceUtil.getIPAddress(domainName, ServiceType.APPLICATION_SERVER);
 
         LBProvisioner lbProvisioner = cloudRegistryService.getLBProvisioner();
-        String ipAddress = serviceUtil.getIPAddress(serviceName, ServiceUtil.SERVICE_TYPE.LOAD_BALANCER);
+        String ipAddress = lbServiceUtil.getIPAddress(serviceName, ServiceType.LOAD_BALANCER);
         lbProvisioner.associateApplicationServerWithLB(ipAddress, dasIPAddress, domainName);
 
         //restart

@@ -38,13 +38,40 @@
  * holder.
  */
 
-package org.glassfish.paas.orchestrator;
+package org.glassfish.paas.orchestrator.config;
 
-import org.glassfish.api.deployment.archive.ReadableArchive;
-import org.glassfish.paas.orchestrator.service.ServiceMetadata;
-import org.jvnet.hk2.annotations.Contract;
+import org.glassfish.api.Param;
+import org.jvnet.hk2.config.Attribute;
+import org.jvnet.hk2.config.Configured;
 
-@Contract
-public interface CloudXMLParser {
-    public ServiceMetadata discoverDeclaredServiceMetadata(String appName, ReadableArchive ra);
+import java.beans.PropertyVetoException;
+import javax.validation.constraints.NotNull;
+
+@Configured
+public interface SharedService extends Service{
+
+    @Attribute(defaultValue = "false")
+    @Param
+    boolean getDefault();
+
+    void setDefault(boolean defaultValue) throws PropertyVetoException;
+
+    @Attribute(defaultValue = "eager")
+    @Param
+    String getInitMode();
+
+    void setInitMode(String initMode) throws PropertyVetoException;
+
+    @Attribute
+    @Param
+    String getState();
+
+    void setState(String state) throws PropertyVetoException;
+
+    @Attribute
+    @Param
+    String getTemplate();
+
+    void setTemplate(String template) throws PropertyVetoException;
+
 }

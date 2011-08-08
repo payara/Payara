@@ -45,14 +45,16 @@ import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.paas.orchestrator.provisioning.DatabaseProvisioner;
+import org.glassfish.paas.orchestrator.provisioning.cli.ServiceType;
 import org.glassfish.paas.orchestrator.provisioning.iaas.CloudProvisioner;
 import org.glassfish.paas.orchestrator.provisioning.CloudRegistryEntry;
 import org.glassfish.paas.orchestrator.provisioning.CloudRegistryService;
-import org.glassfish.paas.orchestrator.provisioning.cli.ServiceUtil;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
+
+import static org.glassfish.paas.orchestrator.provisioning.CloudRegistryService.CLOUD_DB_TABLE_NAME;
 
 /**
  * @author Jagadish Ramu
@@ -68,13 +70,13 @@ public class CreateDatabaseService implements AdminCommand {
     private CloudRegistryService cloudRegistryService;
 
     @Inject
-    private ServiceUtil serviceUtil;
+    private DatabaseServiceUtil dbServiceUtil;
 
     public void execute(AdminCommandContext context) {
 
         final ActionReport report = context.getActionReport();
         // Check if the service is already configured.
-        if (serviceUtil.isServiceAlreadyConfigured(serviceName, ServiceUtil.SERVICE_TYPE.DATABASE)) {
+        if (dbServiceUtil.isServiceAlreadyConfigured(serviceName, ServiceType.DATABASE)) {
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setMessage("Service with name [" +
                     serviceName + "] is already configured.");
@@ -96,10 +98,11 @@ public class CreateDatabaseService implements AdminCommand {
         entry.setCloudName(serviceName);
         entry.setServerType("database");
 
-        serviceUtil.registerDBInfo(entry);
+        dbServiceUtil.registerDBInfo(entry);
 
         report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
         report.setMessage("Service with name [" +
                 serviceName + "] is configured successfully.");
     }
+
 }

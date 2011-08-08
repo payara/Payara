@@ -45,6 +45,7 @@ import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Resources;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.CommandRunner;
+import org.glassfish.paas.orchestrator.provisioning.cli.ServiceType;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceUtil;
 import org.glassfish.paas.orchestrator.provisioning.iaas.CloudProvisioner;
 import org.glassfish.resources.config.JdbcResource;
@@ -140,9 +141,9 @@ public class CloudRegistryService implements PostConstruct {
 
     private void populateTables() {
         ServiceUtil serviceUtil = habitat.getComponent(ServiceUtil.class);
-        serviceUtil.createTable(ServiceUtil.SERVICE_TYPE.APPLICATION_SERVER);
-        serviceUtil.createTable(ServiceUtil.SERVICE_TYPE.DATABASE);
-        serviceUtil.createTable(ServiceUtil.SERVICE_TYPE.LOAD_BALANCER);
+        serviceUtil.createTable(ServiceType.APPLICATION_SERVER);
+        serviceUtil.createTable(ServiceType.DATABASE);
+        serviceUtil.createTable(ServiceType.LOAD_BALANCER);
     }
 
     private void createJdbcConnectionPool() {

@@ -64,18 +64,14 @@ public class ServiceUtil implements PostConstruct {
 
     private static ExecutorService threadPool = Executors.newFixedThreadPool(1);
 
-    public static final String NODE_PREFIX = "node-";
-    public static final String INSTANCE_PREFIX = "instance-";
 
-    public static enum SERVICE_TYPE {APPLICATION_SERVER, DATABASE, LOAD_BALANCER}
-
-    public final static Map<SERVICE_TYPE, String> serviceTypeTableMapping;
+    public final static Map<ServiceType, String> serviceTypeTableMapping;
 
     static {
-        serviceTypeTableMapping = new HashMap<SERVICE_TYPE, String>();
-        serviceTypeTableMapping.put(SERVICE_TYPE.APPLICATION_SERVER, CLOUD_TABLE_NAME);
-        serviceTypeTableMapping.put(SERVICE_TYPE.DATABASE, CLOUD_DB_TABLE_NAME);
-        serviceTypeTableMapping.put(SERVICE_TYPE.LOAD_BALANCER, CLOUD_LB_TABLE_NAME);
+        serviceTypeTableMapping = new HashMap<ServiceType, String>();
+        serviceTypeTableMapping.put(ServiceType.APPLICATION_SERVER, CLOUD_TABLE_NAME);
+        serviceTypeTableMapping.put(ServiceType.DATABASE, CLOUD_DB_TABLE_NAME);
+        serviceTypeTableMapping.put(ServiceType.LOAD_BALANCER, CLOUD_LB_TABLE_NAME);
     }
 
     @Inject
@@ -85,139 +81,9 @@ public class ServiceUtil implements PostConstruct {
         return threadPool;
     }
 
-    private static final String SEPARATOR = ".";
+
     private DataSource ds = null;
 
-
-    public boolean hasDomainName(String serviceName) {
-        boolean hasDomainName = false;
-        if (serviceName != null && !serviceName.isEmpty()) {
-            hasDomainName = true;
-        }
-        return hasDomainName;
-    }
-
-    public String getDomainName(String serviceName) {
-        if (hasDomainName(serviceName)) {
-            if (!serviceName.contains(SEPARATOR)) {
-                return serviceName;
-            } else {
-                return serviceName.substring(0, serviceName.indexOf(SEPARATOR));
-            }
-        } else {
-            throw new RuntimeException("Invalid service-name  [" + serviceName + "]");
-        }
-    }
-
-    public boolean isDomain(String serviceName) {
-        boolean isDomain = false;
-        if (!serviceName.contains(SEPARATOR)) {
-            isDomain = true;
-        }
-        return isDomain;
-    }
-
-    public boolean isCluster(String serviceName) {
-        boolean isCluster = false;
-        if (serviceName.contains(SEPARATOR) && serviceName.indexOf(SEPARATOR) == serviceName.lastIndexOf(SEPARATOR)) {
-            String serviceType = getServiceType(serviceName, ServiceUtil.SERVICE_TYPE.APPLICATION_SERVER);
-            if (serviceType != null && serviceType.equalsIgnoreCase(Type.Cluster.toString())) {
-                isCluster = true;
-            }
-        }
-        return isCluster;
-    }
-
-    public boolean isStandaloneInstance(String serviceName) {
-        boolean isStandaloneInstance = false;
-        if (serviceName.contains(SEPARATOR) && serviceName.indexOf(SEPARATOR) == serviceName.lastIndexOf(SEPARATOR)) {
-            String serviceType = getServiceType(serviceName, ServiceUtil.SERVICE_TYPE.APPLICATION_SERVER);
-            if (serviceType != null && serviceType.equalsIgnoreCase(Type.StandAloneInstance.toString())) {
-                isStandaloneInstance = true;
-            }
-        }
-        return isStandaloneInstance;
-    }
-
-    public boolean isInstance(String serviceName) {
-        boolean instance = false;
-
-        if (isStandaloneInstance(serviceName) || isClusteredInstance(serviceName)) {
-            instance = true;
-        }
-        return instance;
-    }
-
-    public String getInstanceName(String serviceName) {
-        String instanceName = null;
-        if (isInstance(serviceName)) {
-            if (isStandaloneInstance(serviceName)) {
-                instanceName = getStandaloneInstanceName(serviceName);
-            } else if (isClusteredInstance(serviceName)) {
-                instanceName = getClusteredInstanceName(serviceName);
-            }
-        } else {
-            throw new RuntimeException("not an instance [" + serviceName + "]");
-        }
-        return instanceName;
-    }
-
-    public String getStandaloneInstanceName(String serviceName) {
-        String standaloneInstanceName = null;
-        if (isStandaloneInstance(serviceName)) {
-            standaloneInstanceName = serviceName.substring(serviceName.indexOf(SEPARATOR) + 1);
-        }
-        return standaloneInstanceName;
-    }
-
-    public String getClusterName(String serviceName) {
-        String clusterName = null;
-        if (isCluster(serviceName)) {
-            if (serviceName.contains(SEPARATOR) && serviceName.indexOf(SEPARATOR) == serviceName.lastIndexOf(SEPARATOR)) {
-                clusterName = serviceName.substring(serviceName.indexOf(SEPARATOR) + 1);
-            }
-        } else if (isClusteredInstance(serviceName)) {
-            clusterName = getClusterNameFromInstanceName(serviceName);
-        }
-        return clusterName;
-    }
-
-
-    public String getClusterNameFromInstanceName(String serviceName) {
-        String clusterName = null;
-        if (isClusteredInstance(serviceName)) {
-            int firstIndex = serviceName.indexOf(SEPARATOR) + 1;
-            int lastIndex = serviceName.lastIndexOf(SEPARATOR);
-            clusterName = serviceName.substring(firstIndex, lastIndex);
-        }
-        return clusterName;
-    }
-
-    public String getClusteredInstanceName(String serviceName) {
-        String instanceName = null;
-        if (isClusteredInstance(serviceName)) {
-            int lastIndex = serviceName.lastIndexOf(SEPARATOR);
-            instanceName = serviceName.substring(lastIndex + 1);
-        }
-        return instanceName;
-    }
-
-    public boolean isClusteredInstance(String serviceName) {
-        boolean isInstance = false;
-        if (serviceName.contains(SEPARATOR)) {
-            int count = 0;
-            CharSequence sequence = serviceName.subSequence(0, serviceName.length() - 1);
-            for (int i = 0; i < sequence.length(); i++) {
-                if (sequence.charAt(i) == '.') {
-                    count++;
-                }
-            }
-            if (count == 2) {
-                isInstance = true;
-            }
-        }
-        return isInstance;
-    }
 
     public void postConstruct() {
         InitialContext ic = null;
@@ -229,21 +95,21 @@ public class ServiceUtil implements PostConstruct {
         }
     }
 
-    public boolean isValidService(String serviceName, SERVICE_TYPE type) {
+    public boolean isValidService(String serviceName, ServiceType type) {
         CloudRegistryEntry entry = retrieveCloudEntry(serviceName, type);
         return entry != null;
     }
 
-    public String getTableName(SERVICE_TYPE type) {
+    public String getTableName(ServiceType type) {
         String tableName = serviceTypeTableMapping.get(type);
         if (tableName == null) {
             throw new RuntimeException("Unable to find TABLE_NAME for service type [" + type + "], " +
-                    "service type must be one of [" + Arrays.toString(SERVICE_TYPE.values()) + "]");
+                    "service type must be one of [" + Arrays.toString(ServiceType.values()) + "]");
         }
         return tableName;
     }
 
-    public void updateInstanceID(String serviceName, String instanceID, SERVICE_TYPE type) {
+    public void updateInstanceID(String serviceName, String instanceID, ServiceType type) {
         String tableName = getTableName(type);
         Connection con = null;
         PreparedStatement stmt = null;
@@ -265,7 +131,7 @@ public class ServiceUtil implements PostConstruct {
         }
     }
 
-    public void updateState(String serviceName, String state, SERVICE_TYPE type) {
+    public void updateState(String serviceName, String state, ServiceType type) {
         String tableName = getTableName(type);
         Connection con = null;
         PreparedStatement stmt = null;
@@ -288,7 +154,7 @@ public class ServiceUtil implements PostConstruct {
     }
 
 
-    public void updateIPAddress(String serviceName, String IPAddress, SERVICE_TYPE type) {
+    public void updateIPAddress(String serviceName, String IPAddress, ServiceType type) {
         String tableName = getTableName(type);
         Connection con = null;
         PreparedStatement stmt = null;
@@ -312,30 +178,8 @@ public class ServiceUtil implements PostConstruct {
     }
 
 
-    public Collection<String> getAllSubComponents(String serviceName) {
-        List<String> subComponents = new ArrayList<String>();
-        Connection con = null;
-        PreparedStatement stmt = null;
-        ResultSet rs = null;
-        try {
-            final String query = "select * from " + CloudRegistryService.CLOUD_TABLE_NAME + " where CLOUD_NAME like '" + serviceName + ".%'";
-            con = ds.getConnection();
-            stmt = prepareStatement(con, query);
-            rs = stmt.executeQuery();
-            while (rs.next()) {
-                subComponents.add(rs.getString("CLOUD_NAME"));
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            closeDBObjects(con, stmt, rs);
-        }
-        return subComponents;
-    }
 
-    public String getServiceType(String serviceName, SERVICE_TYPE type) {
+    public String getServiceType(String serviceName, ServiceType type) {
         CloudRegistryEntry entry = retrieveCloudEntry(serviceName, type);
         if (entry != null) {
             return entry.getServerType();
@@ -344,7 +188,7 @@ public class ServiceUtil implements PostConstruct {
         }
     }
 
-    public String getServiceState(String serviceName, SERVICE_TYPE type) {
+    public String getServiceState(String serviceName, ServiceType type) {
         CloudRegistryEntry entry = retrieveCloudEntry(serviceName, type);
         if (entry != null) {
             return entry.getState();
@@ -353,7 +197,7 @@ public class ServiceUtil implements PostConstruct {
         }
     }
 
-    public String getIPAddress(String serviceName, SERVICE_TYPE type) {
+    public String getIPAddress(String serviceName, ServiceType type) {
         CloudRegistryEntry entry = retrieveCloudEntry(serviceName, type);
         if (entry != null) {
             return entry.getIpAddress();
@@ -362,7 +206,7 @@ public class ServiceUtil implements PostConstruct {
         }
     }
 
-    public String getInstanceID(String serviceName, SERVICE_TYPE type) {
+    public String getInstanceID(String serviceName, ServiceType type) {
         CloudRegistryEntry entry = retrieveCloudEntry(serviceName, type);
         if (entry != null) {
             return entry.getInstanceId();
@@ -372,7 +216,7 @@ public class ServiceUtil implements PostConstruct {
     }
 
 
-    public String getServiceName(final String ipAddress, SERVICE_TYPE type) {
+    public String getServiceName(final String ipAddress, ServiceType type) {
         String tableName = getTableName(type);
 
         Connection con = null;
@@ -405,62 +249,7 @@ public class ServiceUtil implements PostConstruct {
         return con.prepareStatement(query);
     }
 
-    public String generateNodeName(String suffix) {
-        return NODE_PREFIX + suffix;
-    }
 
-    public String generateInstanceName(String suffix) {
-        return INSTANCE_PREFIX + suffix;
-    }
-
-
-    public String getNextID(String serviceName) {
-        String domainName = getDomainName(serviceName);
-
-        List<String> instances = new ArrayList<String>();
-        Connection con = null;
-        PreparedStatement stmt = null;
-        ResultSet rs = null;
-        try {
-            StringBuffer query = new StringBuffer();
-            query.append("select * from " + CloudRegistryService.CLOUD_TABLE_NAME + " where CLOUD_NAME like '" + domainName + ".%' and " +
-                    CloudRegistryService.CLOUD_COLUMN_SERVER_TYPE + "='" + Type.StandAloneInstance.toString() + "' " +
-                    "or " + CloudRegistryService.CLOUD_COLUMN_SERVER_TYPE + "='" + Type.ClusterInstance + "'");
-
-            con = ds.getConnection();
-            stmt = prepareStatement(con,query.toString());
-            rs = stmt.executeQuery();
-            while (rs.next()) {
-                System.out.println("CLOUD_NAME-getNextID : " + rs.getString("CLOUD_NAME"));
-                instances.add(rs.getString("CLOUD_NAME"));
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            closeDBObjects(con, stmt, rs);
-        }
-
-        int maxValue = 0;
-        for (String instanceServiceName : instances) {
-            if (instanceServiceName.contains(INSTANCE_PREFIX)) {
-                String instanceName = getInstanceName(instanceServiceName);
-                String suffix = instanceName.substring(INSTANCE_PREFIX.length());
-                if (suffix != null) {
-                    try {
-                        int suffixValue = Integer.parseInt(suffix);
-                        if (suffixValue > maxValue) {
-                            maxValue = suffixValue;
-                        }
-                    } catch (NumberFormatException nfe) {
-                        nfe.printStackTrace();
-                    }
-                }
-            }
-        }
-        return Integer.toString(maxValue + 1);
-    }
 
     public void closeDBObjects(Connection con, Statement stmt, ResultSet rs) {
         if (rs != null) {
@@ -488,7 +277,7 @@ public class ServiceUtil implements PostConstruct {
         }
     }
 
-    public CloudRegistryEntry retrieveCloudEntry(String serviceName, SERVICE_TYPE type) {
+    public CloudRegistryEntry retrieveCloudEntry(String serviceName, ServiceType type) {
         String tableName = getTableName(type);
         DataSource ds = cloudRegistryService.getDataSource();
 
@@ -521,7 +310,7 @@ public class ServiceUtil implements PostConstruct {
     }
 
 
-    private void registerCloudEntry(CloudRegistryEntry entry, String tableName, String type) {
+    public void registerCloudEntry(CloudRegistryEntry entry, String tableName, String type) {
         DataSource ds = cloudRegistryService.getDataSource();
 
         Connection conn = null;
@@ -550,7 +339,7 @@ public class ServiceUtil implements PostConstruct {
     }
 
 
-    public boolean isServiceAlreadyConfigured(String serviceName, SERVICE_TYPE type) {
+    public boolean isServiceAlreadyConfigured(String serviceName, ServiceType type) {
         String tableName = getTableName(type);
         DataSource ds = cloudRegistryService.getDataSource();
 
@@ -576,19 +365,8 @@ public class ServiceUtil implements PostConstruct {
         return false;
     }
 
-    public void registerLBInfo(CloudRegistryEntry entry) {
-        registerCloudEntry(entry, CLOUD_LB_TABLE_NAME, "LOAD_BALANCER");
-    }
 
-    public void registerDBInfo(CloudRegistryEntry entry) {
-        registerCloudEntry(entry, CLOUD_DB_TABLE_NAME, "DATABASE");
-    }
-
-    public void registerASInfo(CloudRegistryEntry entry) {
-        registerCloudEntry(entry, CLOUD_TABLE_NAME, "APPLICATION_SERVER");
-    }
-
-    public void createTable(ServiceUtil.SERVICE_TYPE type) {
+    public void createTable(ServiceType type) {
         String tableName = getTableName(type);
         Connection con = null;
         PreparedStatement stmt = null;

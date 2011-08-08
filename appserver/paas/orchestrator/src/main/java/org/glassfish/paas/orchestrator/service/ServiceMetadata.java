@@ -53,14 +53,20 @@ import org.glassfish.paas.orchestrator.service.spi.ServiceDefinition;
 public class ServiceMetadata {
     private Set<ServiceDefinition> definitions = new HashSet<ServiceDefinition>();
     private Set<ServiceReference> references = new HashSet<ServiceReference>();
+    private String appName;
 
-    public ServiceMetadata(Set<ServiceDefinition> defns, Set<ServiceReference> refs) {
+    public ServiceMetadata(String appName, Set<ServiceDefinition> defns, Set<ServiceReference> refs) {
         definitions.addAll(defns);
         references.addAll(refs);
+        this.appName = appName;
     }
 
     public void addServiceDefinition(ServiceDefinition defn) {
         this.definitions.add(defn);
+    }
+
+    public String getAppName(){
+        return appName;
     }
 
     public void addServiceReference(ServiceReference ref) {

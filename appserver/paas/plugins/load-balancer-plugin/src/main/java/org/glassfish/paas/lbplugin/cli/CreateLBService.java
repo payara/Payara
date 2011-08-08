@@ -43,14 +43,16 @@ import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
+import org.glassfish.paas.gfplugin.cli.GlassFishServiceUtil;
+import org.glassfish.paas.lbplugin.LBServiceUtil;
 import org.glassfish.paas.orchestrator.provisioning.*;
 
 import static org.glassfish.paas.orchestrator.provisioning.CloudRegistryEntry.State.*;
 
 import org.glassfish.paas.orchestrator.provisioning.ApplicationServerProvisioner;
-import org.glassfish.paas.orchestrator.provisioning.cli.ServiceUtil;
 
-import static org.glassfish.paas.orchestrator.provisioning.cli.ServiceUtil.SERVICE_TYPE.*;
+import static org.glassfish.paas.orchestrator.provisioning.CloudRegistryService.CLOUD_LB_TABLE_NAME;
+import static org.glassfish.paas.orchestrator.provisioning.cli.ServiceType.*;
 
 import org.glassfish.paas.orchestrator.provisioning.iaas.CloudProvisioner;
 import org.glassfish.paas.lbplugin.GlassFishLBProvisioner;
@@ -80,13 +82,16 @@ public class CreateLBService implements AdminCommand {
     private CloudRegistryService cloudRegistryService;
 
     @Inject
-    private ServiceUtil serviceUtil;
+    private LBServiceUtil lbServiceUtil;
+
+    @Inject
+    private GlassFishServiceUtil gfServiceUtil;
 
     public void execute(AdminCommandContext context) {
 
         final ActionReport report = context.getActionReport();
         // Check if the service is already configured.
-        if (serviceUtil.isServiceAlreadyConfigured(serviceName, LOAD_BALANCER)) {
+        if (lbServiceUtil.isServiceAlreadyConfigured(serviceName, LOAD_BALANCER)) {
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setMessage("Service with name [" + serviceName + "] is already configured.");
             return;
@@ -96,22 +101,22 @@ public class CreateLBService implements AdminCommand {
         String targetName = null;
 
         if (!_ignoreAppServerAssociation) {
-            if (!serviceUtil.isValidService(appServerServiceName, APPLICATION_SERVER)) {
+            if (!lbServiceUtil.isValidService(appServerServiceName, APPLICATION_SERVER)) {
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                 report.setMessage("Invalid AppServer Service name [" + appServerServiceName + "].");
                 return;
             }
 
-            domainName = serviceUtil.getDomainName(appServerServiceName);
+            domainName = gfServiceUtil.getDomainName(appServerServiceName);
             targetName = null;
 
-            if (serviceUtil.isDomain(appServerServiceName)) {
+            if (gfServiceUtil.isDomain(appServerServiceName)) {
                 targetName = appServerServiceName;
-            } else if (serviceUtil.isCluster(appServerServiceName)) {
-                targetName = serviceUtil.getClusterName(appServerServiceName);
-            } else if (serviceUtil.isStandaloneInstance(appServerServiceName)) {
-                targetName = serviceUtil.getStandaloneInstanceName(appServerServiceName);
-            } else if (serviceUtil.isClusteredInstance(appServerServiceName)) {
+            } else if (gfServiceUtil.isCluster(appServerServiceName)) {
+                targetName = gfServiceUtil.getClusterName(appServerServiceName);
+            } else if (gfServiceUtil.isStandaloneInstance(appServerServiceName)) {
+                targetName = gfServiceUtil.getStandaloneInstanceName(appServerServiceName);
+            } else if (gfServiceUtil.isClusteredInstance(appServerServiceName)) {
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                 report.setMessage("Invalid AppServer Service name [" + appServerServiceName + "], " +
                         "clustered instance is not supported");
@@ -124,7 +129,7 @@ public class CreateLBService implements AdminCommand {
             }
         }
 
-        String dasIPAddress = serviceUtil.getIPAddress(domainName, APPLICATION_SERVER);
+        String dasIPAddress = lbServiceUtil.getIPAddress(domainName, APPLICATION_SERVER);
 
         CloudProvisioner cloudProvisioner = cloudRegistryService.getCloudProvisioner();
         String instanceID = cloudProvisioner.createInstance(
@@ -159,8 +164,9 @@ public class CreateLBService implements AdminCommand {
         entry.setCloudName(serviceName);
         entry.setServerType("load-balancer");
 
-        serviceUtil.registerLBInfo(entry);
+        lbServiceUtil.registerLBInfo(entry);
     }
+
 
     private void createHttpLBConfig(String targetName, String dasIPAddress, String ipAddress, String lbConfigName) {
         ApplicationServerProvisioner asProvisioner = cloudRegistryService.getAppServerProvisioner(dasIPAddress);

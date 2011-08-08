@@ -38,73 +38,77 @@
  * holder.
  */
 
-package org.glassfish.paas.javadbplugin.cli;
+package org.glassfish.paas.orchestrator.provisioning.cli;
 
-
+import com.sun.enterprise.config.serverbeans.Domain;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
-import org.glassfish.paas.orchestrator.provisioning.cli.ServiceType;
-import org.glassfish.paas.orchestrator.provisioning.iaas.CloudProvisioner;
-import org.glassfish.paas.orchestrator.provisioning.CloudRegistryEntry;
-import org.glassfish.paas.orchestrator.provisioning.CloudRegistryEntry.State;
-import org.glassfish.paas.orchestrator.provisioning.CloudRegistryService;
+import org.glassfish.api.admin.ExecuteOn;
+import org.glassfish.api.admin.RuntimeType;
+import org.glassfish.config.support.CommandTarget;
+import org.glassfish.config.support.TargetType;
+import org.glassfish.paas.orchestrator.config.Services;
+import org.glassfish.paas.orchestrator.config.SharedService;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
+import org.jvnet.hk2.config.ConfigSupport;
+import org.jvnet.hk2.config.SingleConfigCode;
+import org.jvnet.hk2.config.TransactionFailure;
 
-import java.util.ArrayList;
-import java.util.Collection;
+import java.beans.PropertyVetoException;
 
-/**
- * @author Jagadish Ramu
- */
-@Service(name = "stop-database-service")
+@Service(name = "delete-shared-service")
 @Scoped(PerLookup.class)
-public class StopDatabaseService implements AdminCommand {
+@ExecuteOn(RuntimeType.DAS)
+@TargetType(value = {CommandTarget.DAS})
+public class DeleteSharedService implements AdminCommand {
 
-    @Param(name = "servicename", primary = true, optional = false)
+    @Param(name = "servicename", primary = true)
     private String serviceName;
 
     @Inject
-    private CloudRegistryService cloudRegistryService;
-
-    @Inject
-    private DatabaseServiceUtil dbServiceUtil;
+    private Domain domain;
 
     public void execute(AdminCommandContext context) {
-
         final ActionReport report = context.getActionReport();
 
-        if (dbServiceUtil.isValidService(serviceName, ServiceType.DATABASE)) {
-            CloudRegistryEntry entry = dbServiceUtil.retrieveCloudEntry(serviceName, ServiceType.DATABASE);
-            String ipAddress = entry.getIpAddress();
-            String status = entry.getState();
-            if (status == null || status.equalsIgnoreCase(State.Stop_in_progress.toString())
-                    || status.equalsIgnoreCase(State.NotRunning.toString())) {
-                report.setMessage("Invalid db-service [" + serviceName + "] state [" + status + "]");
+        Services services = domain.getExtensionByType(Services.class);
+        boolean found = false;
+        if (services != null) {
+            for (final org.glassfish.paas.orchestrator.config.Service service : services.getServices()) {
+                if (service.getServiceName().equals(serviceName)) {
+                    if (service instanceof SharedService) {
+                        found = true;
+                        try {
+                            if (ConfigSupport.apply(new SingleConfigCode<Services>() {
+                                public Object run(Services param) throws PropertyVetoException, TransactionFailure {
+                                    param.getServices().remove(service);
+                                    report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
+                                    return service;
+                                }
+                            }, services) == null) {
+                            }
+                        } catch (TransactionFailure transactionFailure) {
+                            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                            report.setMessage("Deleting shared-service [" + serviceName + "] failed : " + transactionFailure.getMessage());
+                            return;
+                        }
+                    }
+                }
+            }
+            if (!found) {
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                report.setMessage("No shared-service by name [" + serviceName + "] is available");
                 return;
             }
-
-            dbServiceUtil.updateState(serviceName, State.Stop_in_progress.toString(), ServiceType.DATABASE);
-
-            cloudRegistryService.getDatabaseProvisioner().stopDatabase(ipAddress);
-
-            CloudProvisioner cloudProvisioner = cloudRegistryService.getCloudProvisioner();
-            Collection<String> list = new ArrayList<String>();
-            list.add(entry.getIpAddress());
-            cloudProvisioner.stopInstances(list);
-
-            dbServiceUtil.updateState(serviceName, State.NotRunning.toString(), ServiceType.DATABASE);
-            report.setMessage("db-service [" + serviceName + "] stopped");
-            report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
-
         } else {
-            report.setMessage("Invalid db-service name [" + serviceName + "]");
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            report.setMessage("Invalid service name [" + serviceName + "]");
+            return;
         }
     }
 }

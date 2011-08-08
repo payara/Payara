@@ -83,6 +83,12 @@
         </dependency>
         <dependency>
             <groupId>org.glassfish</groupId>
+            <artifactId>paas.gfplugin</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.glassfish</groupId>
             <artifactId>paas.orchestrator</artifactId>
             <version>${project.version}</version>
         </dependency>

@@ -45,11 +45,11 @@ import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
+import org.glassfish.paas.orchestrator.provisioning.cli.ServiceType;
 import org.glassfish.paas.orchestrator.provisioning.iaas.CloudProvisioner;
 import org.glassfish.paas.orchestrator.provisioning.CloudRegistryEntry;
 import org.glassfish.paas.orchestrator.provisioning.CloudRegistryEntry.State;
 import org.glassfish.paas.orchestrator.provisioning.CloudRegistryService;
-import org.glassfish.paas.orchestrator.provisioning.cli.ServiceUtil;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
@@ -72,14 +72,14 @@ public class StartDatabaseService implements AdminCommand {
     private CloudRegistryService cloudRegistryService;
 
     @Inject
-    private ServiceUtil serviceUtil;
+    private DatabaseServiceUtil dbServiceUtil;
 
     public void execute(AdminCommandContext context) {
 
         final ActionReport report = context.getActionReport();
 
-        if (serviceUtil.isValidService(serviceName, ServiceUtil.SERVICE_TYPE.DATABASE)) {
-            CloudRegistryEntry entry = serviceUtil.retrieveCloudEntry(serviceName, ServiceUtil.SERVICE_TYPE.DATABASE);
+        if (dbServiceUtil.isValidService(serviceName, ServiceType.DATABASE)) {
+            CloudRegistryEntry entry = dbServiceUtil.retrieveCloudEntry(serviceName, ServiceType.DATABASE);
             String ipAddress = entry.getIpAddress();
             String status = entry.getState();
             if (status == null || status.equalsIgnoreCase(State.Start_in_progress.toString())
@@ -89,7 +89,7 @@ public class StartDatabaseService implements AdminCommand {
                 return;
             }
 
-            serviceUtil.updateState(serviceName, State.Start_in_progress.toString(), ServiceUtil.SERVICE_TYPE.DATABASE);
+            dbServiceUtil.updateState(serviceName, State.Start_in_progress.toString(), ServiceType.DATABASE);
 
             CloudProvisioner cloudProvisioner = cloudRegistryService.getCloudProvisioner();
             Map<String, String> map = new HashMap<String, String>();
@@ -99,7 +99,7 @@ public class StartDatabaseService implements AdminCommand {
 
             cloudRegistryService.getDatabaseProvisioner().startDatabase(ipAddress);
 
-            serviceUtil.updateState(serviceName, State.Running.toString(), ServiceUtil.SERVICE_TYPE.DATABASE);
+            dbServiceUtil.updateState(serviceName, State.Running.toString(), ServiceType.DATABASE);
             report.setMessage("db-service [" + serviceName + "] started");
             report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
 

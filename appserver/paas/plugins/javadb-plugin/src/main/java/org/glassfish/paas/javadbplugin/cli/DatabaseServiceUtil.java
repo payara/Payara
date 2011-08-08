@@ -38,13 +38,56 @@
  * holder.
  */
 
-package org.glassfish.paas.orchestrator;
 
-import org.glassfish.api.deployment.archive.ReadableArchive;
-import org.glassfish.paas.orchestrator.service.ServiceMetadata;
-import org.jvnet.hk2.annotations.Contract;
+package org.glassfish.paas.javadbplugin.cli;
 
-@Contract
-public interface CloudXMLParser {
-    public ServiceMetadata discoverDeclaredServiceMetadata(String appName, ReadableArchive ra);
+import org.glassfish.hk2.scopes.Singleton;
+import org.glassfish.paas.orchestrator.provisioning.CloudRegistryEntry;
+import org.glassfish.paas.orchestrator.provisioning.cli.ServiceType;
+import org.glassfish.paas.orchestrator.provisioning.cli.ServiceUtil;
+import org.jvnet.hk2.annotations.Inject;
+import org.jvnet.hk2.annotations.Scoped;
+import org.jvnet.hk2.annotations.Service;
+
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.Statement;
+
+import static org.glassfish.paas.orchestrator.provisioning.CloudRegistryService.CLOUD_DB_TABLE_NAME;
+
+@Service
+@Scoped(Singleton.class)
+public class DatabaseServiceUtil {
+
+    @Inject
+    private ServiceUtil serviceUtil;
+
+    public boolean isServiceAlreadyConfigured(String serviceName, ServiceType type) {
+        return serviceUtil.isServiceAlreadyConfigured(serviceName, type);
+    }
+
+    public void registerDBInfo(CloudRegistryEntry entry) {
+        serviceUtil.registerCloudEntry(entry, CLOUD_DB_TABLE_NAME, "DATABASE");
+    }
+
+    public void closeDBObjects(Connection con, Statement stmt, ResultSet rs) {
+        serviceUtil.closeDBObjects(con, stmt, rs);
+    }
+
+    public void updateState(String serviceName, String state, ServiceType type) {
+        serviceUtil.updateState(serviceName, state, type);
+    }
+
+    public boolean isValidService(String serviceName, ServiceType type) {
+        return serviceUtil.isValidService(serviceName, type);
+    }
+
+    public CloudRegistryEntry retrieveCloudEntry(String serviceName, ServiceType type) {
+        return serviceUtil.retrieveCloudEntry(serviceName, type);
+    }
+
+    public String getIPAddress(String serviceName, ServiceType type) {
+        return serviceUtil.getIPAddress(serviceName,  type);
+    }
+
 }

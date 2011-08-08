@@ -38,13 +38,55 @@
  * holder.
  */
 
-package org.glassfish.paas.orchestrator;
+package org.glassfish.paas.lbplugin;
 
-import org.glassfish.api.deployment.archive.ReadableArchive;
-import org.glassfish.paas.orchestrator.service.ServiceMetadata;
-import org.jvnet.hk2.annotations.Contract;
+import org.glassfish.hk2.scopes.Singleton;
+import org.glassfish.paas.orchestrator.provisioning.CloudRegistryEntry;
+import org.glassfish.paas.orchestrator.provisioning.cli.ServiceType;
+import org.glassfish.paas.orchestrator.provisioning.cli.ServiceUtil;
+import org.jvnet.hk2.annotations.Inject;
+import org.jvnet.hk2.annotations.Scoped;
+import org.jvnet.hk2.annotations.Service;
 
-@Contract
-public interface CloudXMLParser {
-    public ServiceMetadata discoverDeclaredServiceMetadata(String appName, ReadableArchive ra);
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.Statement;
+
+import static org.glassfish.paas.orchestrator.provisioning.CloudRegistryService.CLOUD_LB_TABLE_NAME;
+
+@Service
+@Scoped(Singleton.class)
+public class LBServiceUtil {
+
+    @Inject
+    private ServiceUtil serviceUtil;
+
+    public CloudRegistryEntry retrieveCloudEntry(String serviceName, ServiceType type) {
+        return serviceUtil.retrieveCloudEntry(serviceName, type);
+    }
+
+    public boolean isServiceAlreadyConfigured(String serviceName, ServiceType type) {
+        return serviceUtil.isServiceAlreadyConfigured(serviceName, type);
+    }
+
+    public boolean isValidService(String serviceName, ServiceType type) {
+        return serviceUtil.isValidService(serviceName, type);
+    }
+
+    public String getIPAddress(String serviceName, ServiceType type) {
+        return serviceUtil.getIPAddress(serviceName,  type);
+    }
+
+    public void registerLBInfo(CloudRegistryEntry entry) {
+        serviceUtil.registerCloudEntry(entry, CLOUD_LB_TABLE_NAME, "LOAD_BALANCER");
+    }
+
+    public void closeDBObjects(Connection con, Statement stmt, ResultSet rs) {
+        serviceUtil.closeDBObjects(con, stmt, rs);
+    }
+
+    public void updateState(String serviceName, String state, ServiceType type) {
+        serviceUtil.updateState(serviceName, state, type);
+    }
+
 }

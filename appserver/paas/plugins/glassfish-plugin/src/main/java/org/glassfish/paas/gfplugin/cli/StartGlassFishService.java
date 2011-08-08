@@ -45,9 +45,9 @@ import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.paas.orchestrator.provisioning.ApplicationServerProvisioner;
+import org.glassfish.paas.orchestrator.provisioning.cli.ServiceType;
 import org.glassfish.paas.orchestrator.provisioning.iaas.CloudProvisioner;
 import org.glassfish.paas.orchestrator.provisioning.CloudRegistryService;
-import org.glassfish.paas.orchestrator.provisioning.cli.ServiceUtil;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
@@ -71,12 +71,12 @@ public class StartGlassFishService implements AdminCommand {
     private boolean cascade;
 
     @Inject
-    private ServiceUtil serviceUtil;
+    private GlassFishServiceUtil gfServiceUtil;
 
     public void execute(AdminCommandContext context) {
         final ActionReport report = context.getActionReport();
 
-        if (serviceUtil.isValidService(serviceName, ServiceUtil.SERVICE_TYPE.APPLICATION_SERVER)) {
+        if (gfServiceUtil.isValidService(serviceName, ServiceType.APPLICATION_SERVER)) {
             /*
             1) check whether it is domain / cluster / instance.
             2) If its domain, start the domain
@@ -84,22 +84,22 @@ public class StartGlassFishService implements AdminCommand {
             3) If its cluster, start the cluster (and domain)
             4) If its instance (clustered/standalone), start the domain and instance.
             */
-            String serviceState = serviceUtil.getServiceState(serviceName, ServiceUtil.SERVICE_TYPE.APPLICATION_SERVER);
+            String serviceState = gfServiceUtil.getServiceState(serviceName, ServiceType.APPLICATION_SERVER);
             if (isInvalidServiceState(report, serviceState)) {
                 return;
             }
 
-            if (!serviceUtil.isDomain(serviceName) && cascade) {
+            if (!gfServiceUtil.isDomain(serviceName) && cascade) {
                 System.out.println("--cascade is not applicable for service-types other than domain");
             }
 
-            if (serviceUtil.isDomain(serviceName)) {
+            if (gfServiceUtil.isDomain(serviceName)) {
                 startDomain(report, serviceState);
-            } else if (serviceUtil.isCluster(serviceName)) {
+            } else if (gfServiceUtil.isCluster(serviceName)) {
                 startCluster(serviceName, report);
-            } else if (serviceUtil.isClusteredInstance(serviceName)) {
+            } else if (gfServiceUtil.isClusteredInstance(serviceName)) {
                 startClusteredInstance(serviceName, report);
-            } else if (serviceUtil.isStandaloneInstance(serviceName)) {
+            } else if (gfServiceUtil.isStandaloneInstance(serviceName)) {
                 startStandaloneInstance(serviceName, report);
             }
         } else {
@@ -127,13 +127,13 @@ public class StartGlassFishService implements AdminCommand {
             // for-each sub-component, check the state.
             // if its State.Running, start them.
 
-            Collection<String> subServices = serviceUtil.getAllSubComponents(serviceName);
+            Collection<String> subServices = gfServiceUtil.getAllSubComponents(serviceName);
             for (String subService : subServices) {
-                if (serviceUtil.isCluster(subService)) {
+                if (gfServiceUtil.isCluster(subService)) {
                     startCluster(subService, report);
-                } else if (serviceUtil.isClusteredInstance(subService)) {
+                } else if (gfServiceUtil.isClusteredInstance(subService)) {
                     //ignore, as there will be an entry for "cluster" and will be started.
-                } else if (serviceUtil.isStandaloneInstance(subService)) {
+                } else if (gfServiceUtil.isStandaloneInstance(subService)) {
                     startStandaloneInstance(subService, report);
                 }
             }
@@ -141,8 +141,8 @@ public class StartGlassFishService implements AdminCommand {
     }
 
     private void startStandaloneInstance(String serviceName, ActionReport report) {
-        String domainName = serviceUtil.getDomainName(serviceName);
-        String domainState = serviceUtil.getServiceState(domainName, ServiceUtil.SERVICE_TYPE.APPLICATION_SERVER);
+        String domainName = gfServiceUtil.getDomainName(serviceName);
+        String domainState = gfServiceUtil.getServiceState(domainName, ServiceType.APPLICATION_SERVER);
         if (isInvalidServiceState(report, domainState)) {
             return;
         }
@@ -152,8 +152,8 @@ public class StartGlassFishService implements AdminCommand {
             startDomain(domainName);
         }
 
-        //String instanceName = serviceUtil.getStandaloneInstanceName(serviceName);
-        String instanceState = serviceUtil.getServiceState(serviceName, ServiceUtil.SERVICE_TYPE.APPLICATION_SERVER);
+        //String instanceName = gfServiceUtil.getStandaloneInstanceName(serviceName);
+        String instanceState = gfServiceUtil.getServiceState(serviceName, ServiceType.APPLICATION_SERVER);
         if (isInvalidServiceState(report, instanceState)) {
             return;
         } else if (State.NotRunning.toString().equalsIgnoreCase(instanceState)) {
@@ -162,8 +162,8 @@ public class StartGlassFishService implements AdminCommand {
     }
 
     private void startClusteredInstance(String serviceName, ActionReport report) {
-        String domainName = serviceUtil.getDomainName(serviceName);
-        String domainState = serviceUtil.getServiceState(domainName, ServiceUtil.SERVICE_TYPE.APPLICATION_SERVER);
+        String domainName = gfServiceUtil.getDomainName(serviceName);
+        String domainState = gfServiceUtil.getServiceState(domainName, ServiceType.APPLICATION_SERVER);
         if (isInvalidServiceState(report, domainState)) {
             return;
         }
@@ -173,8 +173,8 @@ public class StartGlassFishService implements AdminCommand {
             startDomain(domainName);
         }
 
-        //String instanceName = serviceUtil.getClusteredInstanceName(serviceName);
-        String instanceState = serviceUtil.getServiceState(serviceName, ServiceUtil.SERVICE_TYPE.APPLICATION_SERVER);
+        //String instanceName = gfServiceUtil.getClusteredInstanceName(serviceName);
+        String instanceState = gfServiceUtil.getServiceState(serviceName, ServiceType.APPLICATION_SERVER);
         if (isInvalidServiceState(report, instanceState)) {
             return;
         } else if (State.NotRunning.toString().equalsIgnoreCase(instanceState)) {
@@ -183,8 +183,8 @@ public class StartGlassFishService implements AdminCommand {
     }
 
     private void startCluster(String serviceName, ActionReport report) {
-        String domainName = serviceUtil.getDomainName(serviceName);
-        String domainState = serviceUtil.getServiceState(domainName, ServiceUtil.SERVICE_TYPE.APPLICATION_SERVER);
+        String domainName = gfServiceUtil.getDomainName(serviceName);
+        String domainState = gfServiceUtil.getServiceState(domainName, ServiceType.APPLICATION_SERVER);
         if (isInvalidServiceState(report, domainState)) {
             return;
         } else if (State.Running.toString().equalsIgnoreCase(domainState)) {
@@ -195,8 +195,8 @@ public class StartGlassFishService implements AdminCommand {
             startDomain(domainName);
         }
 
-        //String clusterName = serviceUtil.getClusterName(serviceName);
-        String clusterState = serviceUtil.getServiceState(serviceName, ServiceUtil.SERVICE_TYPE.APPLICATION_SERVER);
+        //String clusterName = gfServiceUtil.getClusterName(serviceName);
+        String clusterState = gfServiceUtil.getServiceState(serviceName, ServiceType.APPLICATION_SERVER);
 
         if (isInvalidServiceState(report, clusterState)) {
             return;
@@ -233,9 +233,9 @@ public class StartGlassFishService implements AdminCommand {
 
     private void startDomain(String serviceName) {
 
-        if (serviceUtil.isDomain(serviceName)) {
-            String domainName = serviceUtil.getDomainName(serviceName);
-            String dasIPAddress = serviceUtil.getIPAddress(domainName, ServiceUtil.SERVICE_TYPE.APPLICATION_SERVER);
+        if (gfServiceUtil.isDomain(serviceName)) {
+            String domainName = gfServiceUtil.getDomainName(serviceName);
+            String dasIPAddress = gfServiceUtil.getIPAddress(domainName, ServiceType.APPLICATION_SERVER);
 
             List<String> instanceServices = new ArrayList<String>();
             instanceServices.add(domainName);
@@ -253,43 +253,43 @@ public class StartGlassFishService implements AdminCommand {
 
         Map<String, String> instanceToIPMap = new LinkedHashMap<String, String>();
         for (String instanceService : instanceServices) {
-            String instanceIP = serviceUtil.getIPAddress(instanceService, ServiceUtil.SERVICE_TYPE.APPLICATION_SERVER);
-            String instanceID = serviceUtil.getInstanceID(instanceService, ServiceUtil.SERVICE_TYPE.APPLICATION_SERVER);
+            String instanceIP = gfServiceUtil.getIPAddress(instanceService, ServiceType.APPLICATION_SERVER);
+            String instanceID = gfServiceUtil.getInstanceID(instanceService, ServiceType.APPLICATION_SERVER);
             instanceToIPMap.put(instanceID, instanceIP);
         }
 
         CloudProvisioner cloudProvisioner = registryService.getCloudProvisioner();
 
         for (String instanceService : instanceServices) {
-            serviceUtil.updateState(instanceService, State.Start_in_progress.toString(), ServiceUtil.SERVICE_TYPE.APPLICATION_SERVER);
+            gfServiceUtil.updateState(instanceService, State.Start_in_progress.toString(), ServiceType.APPLICATION_SERVER);
         }
 
         cloudProvisioner.startInstances(instanceToIPMap);
 
         for (String instanceService : instanceServices) {
-            serviceUtil.updateState(instanceService, State.Running.toString(), ServiceUtil.SERVICE_TYPE.APPLICATION_SERVER);
+            gfServiceUtil.updateState(instanceService, State.Running.toString(), ServiceType.APPLICATION_SERVER);
         }
     }
 
 
     private void startCluster(String serviceName) {
 
-        String domainName = serviceUtil.getDomainName(serviceName);
-        String clusterName = serviceUtil.getClusterName(serviceName);
-        String dasIPAddress = serviceUtil.getIPAddress(domainName, ServiceUtil.SERVICE_TYPE.APPLICATION_SERVER);
+        String domainName = gfServiceUtil.getDomainName(serviceName);
+        String clusterName = gfServiceUtil.getClusterName(serviceName);
+        String dasIPAddress = gfServiceUtil.getIPAddress(domainName, ServiceType.APPLICATION_SERVER);
 
-        Collection<String> instanceServices = serviceUtil.getAllSubComponents(serviceName);
+        Collection<String> instanceServices = gfServiceUtil.getAllSubComponents(serviceName);
 
         ApplicationServerProvisioner appserverProvisioner = registryService.getAppServerProvisioner(dasIPAddress);
-        serviceUtil.updateState(serviceName, State.Start_in_progress.toString(), ServiceUtil.SERVICE_TYPE.APPLICATION_SERVER);
+        gfServiceUtil.updateState(serviceName, State.Start_in_progress.toString(), ServiceType.APPLICATION_SERVER);
 
         //TODO  should we update clustered-instance's state here itself instead of updating while
         //TODO  bringing down machine instances ?
 
         Map<String, String> instanceServiceToinstanceIDMap = new LinkedHashMap<String, String>();
         for (String instanceService : instanceServices) {
-            String instanceID = serviceUtil.getInstanceID(instanceService, ServiceUtil.SERVICE_TYPE.APPLICATION_SERVER);
-            String state = serviceUtil.getServiceState(instanceService, ServiceUtil.SERVICE_TYPE.APPLICATION_SERVER);
+            String instanceID = gfServiceUtil.getInstanceID(instanceService, ServiceType.APPLICATION_SERVER);
+            String state = gfServiceUtil.getServiceState(instanceService, ServiceType.APPLICATION_SERVER);
             if (State.NotRunning.toString().equals(state)) {
                 //start only stopped instances
                 instanceServiceToinstanceIDMap.put(instanceService, instanceID);
@@ -303,17 +303,17 @@ public class StartGlassFishService implements AdminCommand {
         }
 
         appserverProvisioner.startCluster(dasIPAddress, clusterName);
-        serviceUtil.updateState(serviceName, State.Running.toString(), ServiceUtil.SERVICE_TYPE.APPLICATION_SERVER);
+        gfServiceUtil.updateState(serviceName, State.Running.toString(), ServiceType.APPLICATION_SERVER);
     }
 
     private void startInstance(String serviceName) {
 
-        if (serviceUtil.isInstance(serviceName)) {
-            String instanceName = serviceUtil.getInstanceName(serviceName);
-            //String instanceIPAddress = serviceUtil.getIPAddress(serviceName, ServiceUtil.SERVICE_TYPE.APPLICATION_SERVER);
+        if (gfServiceUtil.isInstance(serviceName)) {
+            String instanceName = gfServiceUtil.getInstanceName(serviceName);
+            //String instanceIPAddress = gfServiceUtil.getIPAddress(serviceName, ServiceType.APPLICATION_SERVER);
 
-            String domainName = serviceUtil.getDomainName(serviceName);
-            String dasIPAddress = serviceUtil.getIPAddress(domainName, ServiceUtil.SERVICE_TYPE.APPLICATION_SERVER);
+            String domainName = gfServiceUtil.getDomainName(serviceName);
+            String dasIPAddress = gfServiceUtil.getIPAddress(domainName, ServiceType.APPLICATION_SERVER);
 
             List<String> instanceServices = new ArrayList<String>();
             instanceServices.add(serviceName);

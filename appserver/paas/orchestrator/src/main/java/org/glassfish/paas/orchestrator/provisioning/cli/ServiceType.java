@@ -38,13 +38,8 @@
  * holder.
  */
 
-package org.glassfish.paas.orchestrator;
+package org.glassfish.paas.orchestrator.provisioning.cli;
 
-import org.glassfish.api.deployment.archive.ReadableArchive;
-import org.glassfish.paas.orchestrator.service.ServiceMetadata;
-import org.jvnet.hk2.annotations.Contract;
-
-@Contract
-public interface CloudXMLParser {
-    public ServiceMetadata discoverDeclaredServiceMetadata(String appName, ReadableArchive ra);
+public enum ServiceType {
+    APPLICATION_SERVER, DATABASE, LOAD_BALANCER
 }

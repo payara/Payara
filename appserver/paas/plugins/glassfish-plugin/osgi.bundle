@@ -41,4 +41,5 @@
 #DynamicImport-Package: *; resolution:=optional
 
 -exportcontents: \
-    org.glassfish.paas.gfplugin; version=${project.osgi.version}
+    org.glassfish.paas.gfplugin; \
+    org.glassfish.paas.gfplugin.cli; version=${project.osgi.version}

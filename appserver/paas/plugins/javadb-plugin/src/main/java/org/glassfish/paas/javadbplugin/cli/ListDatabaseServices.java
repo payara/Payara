@@ -47,7 +47,6 @@ import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.paas.orchestrator.provisioning.CloudRegistryService;
-import org.glassfish.paas.orchestrator.provisioning.cli.ServiceUtil;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
@@ -73,7 +72,7 @@ public class ListDatabaseServices implements AdminCommand {
     private CloudRegistryService registryService;
 
     @Inject
-    private ServiceUtil serviceUtil;
+    private DatabaseServiceUtil dbServiceUtil;
 
 
     @Param(name = "servicename", defaultValue = "*", optional = true, primary = true)
@@ -136,7 +135,7 @@ public class ListDatabaseServices implements AdminCommand {
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setFailureCause(e);
         } finally {
-            serviceUtil.closeDBObjects(con, stmt, rs);
+            dbServiceUtil.closeDBObjects(con, stmt, rs);
         }
     }
 }

@@ -38,13 +38,47 @@
  * holder.
  */
 
-package org.glassfish.paas.orchestrator;
+package org.glassfish.paas.orchestrator.config;
 
-import org.glassfish.api.deployment.archive.ReadableArchive;
-import org.glassfish.paas.orchestrator.service.ServiceMetadata;
-import org.jvnet.hk2.annotations.Contract;
+import org.glassfish.api.Param;
+import org.glassfish.api.admin.config.PropertiesDesc;
+import org.glassfish.quality.ToDo;
+import org.jvnet.hk2.component.Injectable;
+import org.jvnet.hk2.config.Attribute;
+import org.jvnet.hk2.config.ConfigBeanProxy;
+import org.jvnet.hk2.config.Configured;
+import org.jvnet.hk2.config.Element;
+import org.jvnet.hk2.config.types.Property;
+import org.jvnet.hk2.config.types.PropertyBag;
 
-@Contract
-public interface CloudXMLParser {
-    public ServiceMetadata discoverDeclaredServiceMetadata(String appName, ReadableArchive ra);
+import java.beans.PropertyVetoException;
+import java.util.List;
+
+import javax.validation.constraints.NotNull;
+
+@Configured
+public interface Service extends ConfigBeanProxy, Injectable, PropertyBag{
+
+    /**
+    	Properties as per {@link PropertyBag}
+     */
+    @ToDo(priority=ToDo.Priority.IMPORTANT, details="Provide PropertyDesc for legal props" )
+    @PropertiesDesc(props={})
+    @Element
+    List<Property> getProperty();
+
+
+    @Attribute
+    @Param
+    @NotNull
+    String getType();
+
+    void setType(String type) throws PropertyVetoException;
+
+    @Param
+    @NotNull
+    @Attribute(key=true)
+    String getServiceName();
+
+    void setServiceName(String name) throws PropertyVetoException;
 }
