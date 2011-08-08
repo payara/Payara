@@ -40,9 +40,6 @@
 
 -exportcontents: \
                         com.sun.enterprise.admin.monitor.jndi; \
-                        com.sun.enterprise.admin.monitor.registry; \
-                        com.sun.enterprise.admin.monitor.stats; \
-                        com.sun.enterprise.admin.monitor.stats.lb; \
                         com.sun.enterprise.admin.monitor.util; \
                         com.sun.enterprise.management.support; \
                         org.glassfish.flashlight; \

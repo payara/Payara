@@ -45,7 +45,7 @@
 
 package org.glassfish.flashlight.statistics;
 
-import org.glassfish.j2ee.statistics.TimeStatistic;
+import org.glassfish.external.statistics.TimeStatistic;
 import org.glassfish.flashlight.datatree.TreeNode;
 import org.jvnet.hk2.annotations.Contract;
 

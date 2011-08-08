@@ -38,4 +38,8 @@
 # holder.
 #
 
--exportcontents: org.glassfish.j2ee.statistics; version=${project.osgi.version}
+-exportcontents: \
+                        com.sun.enterprise.admin.monitor.registry; \
+                        com.sun.enterprise.admin.monitor.stats; \
+                        com.sun.enterprise.admin.monitor.stats.lb; \
+                        org.glassfish.j2ee.statistics; version=${project.osgi.version}
