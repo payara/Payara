@@ -430,7 +430,7 @@ public class ConnectorConnectionPoolAdminServiceImpl extends ConnectorService {
             _logger.log(Level.WARNING, "test.connection.pool.failed", params);
             ResourceException e = new ResourceException("Ping failed Exception - " +
                     re.getMessage() +
-                    " Please check the server.log for more details.");
+                    ". Please check the server.log for more details.");
             e.initCause(re);
             throw e;
         } finally {
