@@ -335,7 +335,7 @@ public final class ApplicationDispatcher
                     request, response, dispatcherType);
                 AccessController.doPrivileged(dp);
                 // START SJSAS 6374990
-                if (isCommit) {
+                if (isCommit && !request.isAsyncStarted()) {
                     ApplicationDispatcherForward.commit(request, response,
                         context, wrapper);
                 }
@@ -349,7 +349,7 @@ public final class ApplicationDispatcher
         } else {
             doDispatch(request, response, dispatcherType);
             // START SJSAS 6374990
-            if (isCommit) {
+            if (isCommit && !request.isAsyncStarted()) {
                 ApplicationDispatcherForward.commit(request, response,
                     context, wrapper);
             }

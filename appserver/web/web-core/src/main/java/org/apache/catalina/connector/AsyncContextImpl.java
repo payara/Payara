@@ -42,6 +42,8 @@ package org.apache.catalina.connector;
 
 import org.apache.catalina.Globals;
 import org.apache.catalina.core.ApplicationDispatcher;
+import org.apache.catalina.core.ApplicationHttpRequest;
+import org.apache.catalina.core.ApplicationHttpResponse;
 import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.util.StringManager;
 
@@ -57,7 +59,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class AsyncContextImpl implements AsyncContext {
+class AsyncContextImpl implements AsyncContext {
 
     /* 
      * Event notification types for async mode
@@ -127,25 +129,16 @@ public class AsyncContextImpl implements AsyncContext {
      * ServletRequest.startAsync
      * @param servletResponse the possibly wrapped response passed to
      * ServletRequest.startAsync
-     * @param isOriginalRequestAndResponse true if the zero-arg version of
+     * @param isStartAsyncWithZeroArg true if the zero-arg version of
      * startAsync was called, false otherwise
      */
-    public AsyncContextImpl(Request origRequest,
+    AsyncContextImpl(Request origRequest,
                             ServletRequest servletRequest,
                             Response origResponse,
                             ServletResponse servletResponse,
-                            boolean isOriginalRequestAndResponse) {
+                            boolean isStartAsyncWithZeroArg) {
         this.origRequest = origRequest;
-        this.servletRequest = servletRequest;
-        this.servletResponse = servletResponse;
-        this.isOriginalRequestAndResponse = isOriginalRequestAndResponse;
-        if (!isOriginalRequestAndResponse &&
-                (servletRequest instanceof HttpServletRequest)) {
-            zeroArgDispatchTarget = getZeroArgDispatchTarget(
-                (HttpServletRequest)servletRequest);
-        } else {
-            zeroArgDispatchTarget = getZeroArgDispatchTarget(origRequest);
-        }
+        init(servletRequest, servletResponse, isStartAsyncWithZeroArg);
     }
 
     @Override
@@ -331,28 +324,18 @@ public class AsyncContextImpl implements AsyncContext {
      * the AsyncContext
      * @param servletResponse the ServletResponse with which to initialize
      * the AsyncContext
-     * @param isOriginalRequestAndResponse true if the zero-arg version of
+     * @param isStartAsyncWithZeroArg true if the zero-arg version of
      * startAsync was called, false otherwise
      */
     void reinitialize(ServletRequest servletRequest,
                       ServletResponse servletResponse,
-                      boolean isOriginalRequestAndResponse) {
-        this.servletRequest = servletRequest;
-        this.servletResponse = servletResponse;
-        this.isOriginalRequestAndResponse = isOriginalRequestAndResponse;
+                      boolean isStartAsyncWithZeroArg) {
+
+        init(servletRequest, servletResponse, isStartAsyncWithZeroArg);
         isDispatchInProgress.set(false);
         setOkToConfigure(true);
         startAsyncCounter.incrementAndGet();
         notifyAsyncListeners(AsyncEventType.START_ASYNC, null);
-        if (isOriginalRequestAndResponse) {
-            zeroArgDispatchTarget = getZeroArgDispatchTarget(origRequest);
-        } else if (servletRequest instanceof HttpServletRequest) {
-            zeroArgDispatchTarget = getZeroArgDispatchTarget(
-                (HttpServletRequest)servletRequest);
-        } else {
-            log.warning("Unable to determine target of " +
-                        "zero-argument dispatch");
-        }
     }
 
     /**
@@ -373,13 +356,46 @@ public class AsyncContextImpl implements AsyncContext {
         isOkToConfigure.set(value);
     }
 
+    private void init(ServletRequest servletRequest,
+            ServletResponse servletResponse, boolean isStartAsyncWithZeroArg) {
+
+        this.servletRequest = servletRequest;
+        this.servletResponse = servletResponse;
+        // If original or container-wrapped request and response,
+        // AsyncContext#hasOriginalRequestAndResponse must return true;
+        // false otherwise (i.e., if application-wrapped)
+        this.isOriginalRequestAndResponse =
+                ((servletRequest instanceof RequestFacade ||
+                servletRequest instanceof ApplicationHttpRequest) &&
+                (servletResponse instanceof ResponseFacade ||
+                servletResponse instanceof ApplicationHttpResponse));
+
+        zeroArgDispatchTarget = getZeroArgDispatchTarget(
+                this.origRequest, servletRequest, isStartAsyncWithZeroArg);
+    }
+
     /**
      * Determines the target of a zero-argument async dispatch for the
      * given request.
      *
      * @return the target of the zero-argument async dispatch
      */
-    private String getZeroArgDispatchTarget(HttpServletRequest req) {
+    private String getZeroArgDispatchTarget(
+            Request origRequest, ServletRequest servletRequest,
+            boolean isStartAsyncWithZeroArg) {
+
+        HttpServletRequest req = null;
+        if (isStartAsyncWithZeroArg) {
+            req = origRequest;
+        } else if (servletRequest instanceof HttpServletRequest) {
+            req = (HttpServletRequest)servletRequest;
+        } else {
+            req = origRequest;
+
+            log.warning("Unable to determine target of " +
+                        "zero-argument dispatch");
+        }
+
         StringBuilder sb = new StringBuilder();
         if (req.getServletPath() != null) {
             sb.append(req.getServletPath());
