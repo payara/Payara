@@ -138,7 +138,7 @@
              can be excluded during staging -->	
         <dependency>        
            <groupId>org.glassfish.packager</groupId>
-           <artifactId>glassfish-common-web</artifactId>
+           <artifactId>glassfish-ha</artifactId>
            <version>${project.version}</version>
            <classifier>artifacts</classifier>
 	   <type>properties</type>

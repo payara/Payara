@@ -105,7 +105,7 @@
         <!-- previous package - required for dependency graph calculation -->
         <dependency>
             <groupId>org.glassfish.packager</groupId>
-	    <artifactId>glassfish-ha</artifactId>
+	    <artifactId>glassfish-cluster</artifactId>
 	    <version>${project.version}</version>
 	    <classifier>artifacts</classifier>
 	   <type>properties</type>
