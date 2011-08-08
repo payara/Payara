@@ -74,7 +74,7 @@ import java.util.logging.Level;
  *
  * @author Shing Wai Chan
  */
-abstract class AbstractCommonAttributeHandler extends AbstractHandler {
+public abstract class AbstractCommonAttributeHandler extends AbstractHandler {
     /**
      * Process Annotation with given EjbContexts.
      * @param ainfo

@@ -65,7 +65,7 @@ public class WebResourceCollectionImpl extends Descriptor
     public WebResourceCollectionImpl() {
     }
 
-    WebResourceCollectionImpl(WebResourceCollectionImpl other) {
+    public WebResourceCollectionImpl(WebResourceCollectionImpl other) {
         if (other.urlPatterns != null) {
             this.urlPatterns = new HashSet<String>(other.urlPatterns);
         }
