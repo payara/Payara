@@ -920,7 +920,7 @@ public class ConnectionPool implements ResourcePool, ConnectionLeakListener,
                     _logger.log(Level.FINE, "Connection creation failed for " + count + " time. It will be retried, "
                         + "if connection creation retrial is enabled.", ex);
                 }
-                if (!connectionCreationRetry_ || count >= connectionCreationRetryAttempts_)
+                if (!connectionCreationRetry_ || count > connectionCreationRetryAttempts_)
                     throw new PoolingException(ex);
                 try {
                     Thread.sleep(conCreationRetryInterval_);
