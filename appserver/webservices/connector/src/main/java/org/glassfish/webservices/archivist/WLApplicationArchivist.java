@@ -38,20 +38,22 @@
  * holder.
  */
 
-package com.sun.enterprise.deployment.archivist;
+package org.glassfish.webservices.archivist;
 
-import com.sun.enterprise.deployment.EjbBundleDescriptor;
+import com.sun.enterprise.deployment.archivist.ExtensionsArchivist;
+import com.sun.enterprise.deployment.archivist.Archivist;
+import com.sun.enterprise.deployment.Application;
 import org.glassfish.deployment.common.RootDeploymentDescriptor;
 import org.glassfish.deployment.common.XModuleType;
 import com.sun.enterprise.deployment.io.DeploymentDescriptorFile;
-import com.sun.enterprise.deployment.io.runtime.EjbRuntimeDDFile;
-import com.sun.enterprise.deployment.io.runtime.GFEjbRuntimeDDFile;
-import com.sun.enterprise.deployment.io.runtime.WLEjbRuntimeDDFile;
-import com.sun.enterprise.deployment.util.DOLUtils;
-import com.sun.enterprise.util.LocalStringManagerImpl;
+import com.sun.enterprise.deployment.io.runtime.WLApplicationRuntimeDDFile;
+import com.sun.enterprise.deployment.io.runtime.GFApplicationRuntimeDDFile;
+import com.sun.enterprise.deployment.io.runtime.ApplicationRuntimeDDFile;
 import org.glassfish.api.deployment.archive.ReadableArchive;
+import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.PerLookup;
 import org.xml.sax.SAXParseException;
 
@@ -59,9 +61,9 @@ import java.io.IOException;
 
 @Service
 @Scoped(PerLookup.class)
-public class WLEjbArchivist extends ExtensionsArchivist {
-    private static final LocalStringManagerImpl localStrings =
-            new LocalStringManagerImpl(WLEjbArchivist.class);
+public class WLApplicationArchivist extends ExtensionsArchivist {
+    @Inject
+    private Habitat habitat;
 
     @Override                                                  
     public DeploymentDescriptorFile getStandardDDFile(RootDeploymentDescriptor descriptor) {
@@ -70,17 +72,17 @@ public class WLEjbArchivist extends ExtensionsArchivist {
 
     @Override
     public DeploymentDescriptorFile getConfigurationDDFile(RootDeploymentDescriptor descriptor) {
-        return new WLEjbRuntimeDDFile();
+        return new WLApplicationRuntimeDDFile();
     }
 
     @Override
     public boolean supportsModuleType(XModuleType moduleType) {
-        return XModuleType.EJB ==moduleType;
+        return XModuleType.EAR ==moduleType;
     }
 
     @Override
     public XModuleType getModuleType() {
-        return XModuleType.EJB;
+        return XModuleType.EAR;
     }
 
     @Override
@@ -88,32 +90,18 @@ public class WLEjbArchivist extends ExtensionsArchivist {
         return descriptor;
     }
 
-    @Override
     public RootDeploymentDescriptor getDefaultDescriptor() {
-        return new EjbBundleDescriptor();
+        return new Application(habitat);
     }
 
     @Override
     public DeploymentDescriptorFile getGFCounterPartConfigurationDDFile(RootDeploymentDescriptor descriptor) {
-        return new GFEjbRuntimeDDFile();
+        return new GFApplicationRuntimeDDFile();
     }
 
     @Override
     public DeploymentDescriptorFile getSunCounterPartConfigurationDDFile(RootDeploymentDescriptor descriptor) {
-        return new EjbRuntimeDDFile();
-    }
-
-    @Override
-    public Object readRuntimeDeploymentDescriptor(Archivist main, ReadableArchive archive, RootDeploymentDescriptor descriptor)
-            throws IOException, SAXParseException {
-        DeploymentDescriptorFile configDD = getConfigurationDDFile(descriptor);
-        String configDDPath = configDD.getDeploymentDescriptorPath();
-        if (archive.exists(configDDPath)) {
-            DOLUtils.getDefaultLogger().warning(
-                    localStrings.getLocalString("enterprise.deployment.archivist.DDNotSupported",
-                    "Ignore {0} as it is not supported in this release.", new Object[]{configDDPath}));
-        }
-        return descriptor;
+        return new ApplicationRuntimeDDFile();
     }
 }
 

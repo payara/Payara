@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,68 +38,59 @@
  * holder.
  */
 
-package com.sun.enterprise.deployment.archivist;
+package org.glassfish.webservices.archivist;
 
-import com.sun.enterprise.deployment.Application;
-import org.glassfish.deployment.common.RootDeploymentDescriptor;
-import org.glassfish.deployment.common.XModuleType;
+import com.sun.enterprise.deployment.archivist.ExtensionsArchivist;
+import com.sun.enterprise.deployment.archivist.Archivist;
 import com.sun.enterprise.deployment.io.DeploymentDescriptorFile;
-import com.sun.enterprise.deployment.io.runtime.WLApplicationRuntimeDDFile;
-import com.sun.enterprise.deployment.io.runtime.GFApplicationRuntimeDDFile;
-import com.sun.enterprise.deployment.io.runtime.ApplicationRuntimeDDFile;
+import com.sun.enterprise.deployment.io.WebServicesDeploymentDescriptorFile;
+import org.glassfish.deployment.common.RootDeploymentDescriptor;
+import com.sun.enterprise.deployment.WebServicesDescriptor;
+import com.sun.enterprise.deployment.BundleDescriptor;
+import org.glassfish.deployment.common.XModuleType;
+import com.sun.enterprise.deployment.io.runtime.WLWebServicesDeploymentDescriptorFile;
 import org.glassfish.api.deployment.archive.ReadableArchive;
-import org.jvnet.hk2.annotations.Inject;
-import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
-import org.jvnet.hk2.component.PerLookup;
-import org.xml.sax.SAXParseException;
 
 import java.io.IOException;
+import org.xml.sax.SAXParseException;
 
+/**
+ * Extension Archivist for webservices.
+ */
 @Service
-@Scoped(PerLookup.class)
-public class WLApplicationArchivist extends ExtensionsArchivist {
-    @Inject
-    private Habitat habitat;
+public class WebServicesArchivist extends ExtensionsArchivist {
 
-    @Override                                                  
     public DeploymentDescriptorFile getStandardDDFile(RootDeploymentDescriptor descriptor) {
-        return null;
+        return new WebServicesDeploymentDescriptorFile(descriptor);
     }
 
-    @Override
     public DeploymentDescriptorFile getConfigurationDDFile(RootDeploymentDescriptor descriptor) {
-        return new WLApplicationRuntimeDDFile();
+        return new WLWebServicesDeploymentDescriptorFile(descriptor); 
     }
 
-    @Override
-    public boolean supportsModuleType(XModuleType moduleType) {
-        return XModuleType.EAR ==moduleType;
-    }
-
-    @Override
     public XModuleType getModuleType() {
-        return XModuleType.EAR;
+        return XModuleType.WebServices;
+    }
+
+    public boolean supportsModuleType(XModuleType moduleType) {
+        return (XModuleType.WAR==moduleType || XModuleType.EJB==moduleType
+                || XModuleType.EjbInWar==moduleType);
     }
 
     @Override
     public Object open(Archivist main, ReadableArchive archive, RootDeploymentDescriptor descriptor) throws IOException, SAXParseException {
-        return descriptor;
+        BundleDescriptor bundleDescriptor =
+            BundleDescriptor.class.cast(super.open(main, archive, descriptor));
+
+        if (bundleDescriptor != null) {
+            return bundleDescriptor.getWebServices();
+        } else {
+            return BundleDescriptor.class.cast(descriptor).getWebServices();
+        }
     }
 
     public RootDeploymentDescriptor getDefaultDescriptor() {
-        return new Application(habitat);
-    }
-
-    @Override
-    public DeploymentDescriptorFile getGFCounterPartConfigurationDDFile(RootDeploymentDescriptor descriptor) {
-        return new GFApplicationRuntimeDDFile();
-    }
-
-    @Override
-    public DeploymentDescriptorFile getSunCounterPartConfigurationDDFile(RootDeploymentDescriptor descriptor) {
-        return new ApplicationRuntimeDDFile();
+        return new WebServicesDescriptor();
     }
 }
-
