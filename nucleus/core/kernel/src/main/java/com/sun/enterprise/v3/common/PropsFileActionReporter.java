@@ -107,7 +107,8 @@ public class PropsFileActionReporter extends ActionReporter {
             for (MessagePart child : part.getChildren()) {
                 // need to URL encode a ';' as %3B because it is used as a 
                 // delimiter
-                String cm = child.getMessage().replaceAll(";", "%3B");
+                String cm = child.getMessage();
+                if (cm != null) cm = cm.replaceAll(";", "%3B");
                 String newPrefix = (prefix == null ? cm : prefix + "." + cm);
                 keys = (keys == null ? newPrefix : keys + ";" + newPrefix);
                 Attributes childAttr = new Attributes();
