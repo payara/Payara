@@ -324,8 +324,6 @@ public class LibVirtGroup implements PhysicalServerPool, ConfigListener {
             throw new VirtException("Cannot allocate virtual machine to a serverPool with no machine");
         }
 
-        final List<ListenableFuture<AllocationPhase, VirtualMachine>> vms =
-                new ArrayList<ListenableFuture<AllocationPhase, VirtualMachine>>();
         Iterator<? extends Machine> machines = machines().iterator();
 
         // allocate a virtual machine on i%park machine...
