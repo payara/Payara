@@ -37,8 +37,6 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
-
 package com.sun.enterprise.admin.cli.cluster;
 
 import org.glassfish.api.Param;
@@ -59,20 +57,15 @@ import java.util.List;
 /**
  * @author Rajiv Mordani
  */
-
-
 @Service(name = "uninstall-node")
 @Scoped(PerLookup.class)
 public class UninstallNodeCommand extends SSHCommandsBase {
-    @Param(name="installdir", optional = true, defaultValue = "${com.sun.aas.productRoot}")
+    @Param(name = "installdir", optional = true, defaultValue = "${com.sun.aas.productRoot}")
     private String installDir;
-
     @Param(optional = true, defaultValue = "false")
     private boolean force;
-    
     @Inject
     private Habitat habitat;
-    
     @Inject
     SSHLauncher sshLauncher;
 
@@ -81,31 +74,33 @@ public class UninstallNodeCommand extends SSHCommandsBase {
         Globals.setDefaultHabitat(habitat);
         installDir = resolver.resolve(installDir);
         if (!force) {
-            for (String host: hosts) {
-                if(checkIfNodeExistsForHost(host, installDir)) {
+            for (String host : hosts) {
+                if (checkIfNodeExistsForHost(host, installDir)) {
                     throw new CommandException(Strings.get("call.delete.node.ssh", host));
                 }
             }
-        }       
+        }
         sshuser = resolver.resolve(sshuser);
         if (sshkeyfile == null) {
             //if user hasn't specified a key file check if key exists in
             //default location
             String existingKey = SSHUtil.getExistingKeyFile();
             if (existingKey == null) {
-                promptPass=true;
-            } else {
+                promptPass = true;
+            }
+            else {
                 sshkeyfile = existingKey;
             }
-        } else {
+        }
+        else {
             validateKey(sshkeyfile);
         }
-        
+
         //we need the key passphrase if key is encrypted
-        if(sshkeyfile != null && isEncryptedKey()){
-            sshkeypassphrase=getSSHPassphrase(true);
+        if (sshkeyfile != null && isEncryptedKey()) {
+            sshkeypassphrase = getSSHPassphrase(true);
         }
-        
+
     }
 
     @Override
@@ -113,9 +108,11 @@ public class UninstallNodeCommand extends SSHCommandsBase {
 
         try {
             deleteFromHosts();
-        } catch (IOException ioe) {
+        }
+        catch (IOException ioe) {
             throw new CommandException(ioe);
-        }  catch (InterruptedException e) {
+        }
+        catch (InterruptedException e) {
             throw new CommandException(e);
         }
 
@@ -125,30 +122,30 @@ public class UninstallNodeCommand extends SSHCommandsBase {
     private void deleteFromHosts() throws CommandException, IOException, InterruptedException {
 
         List<String> files = getListOfInstallFiles(installDir);
-        
-        for (String host: hosts) {
+
+        for (String host : hosts) {
             sshLauncher.init(sshuser, host, sshport, sshpassword, sshkeyfile, sshkeypassphrase, logger);
 
             if (sshkeyfile != null && !sshLauncher.checkConnection()) {
                 //key auth failed, so use password auth
-                promptPass=true;
+                promptPass = true;
             }
-            
-            if (promptPass) {                
-                sshpassword=getSSHPassword(host);
+
+            if (promptPass) {
+                sshpassword = getSSHPassword(host);
                 //re-initialize
                 sshLauncher.init(sshuser, host, sshport, sshpassword, sshkeyfile, sshkeypassphrase, logger);
             }
-            
+
             SFTPClient sftpClient = sshLauncher.getSFTPClient();
 
             if (!sftpClient.exists(installDir)) {
-                throw new IOException (installDir + " Directory does not exist");
+                throw new IOException(installDir + " Directory does not exist");
             }
-            
+
             deleteRemoteFiles(sftpClient, files, installDir, force);
-            
-            if(sftpClient.ls(installDir).isEmpty()) {
+
+            if (sftpClient.ls(installDir).isEmpty()) {
                 sftpClient.rmdir(installDir);
             }
         }

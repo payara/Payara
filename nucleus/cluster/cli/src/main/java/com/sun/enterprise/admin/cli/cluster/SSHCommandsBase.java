@@ -37,7 +37,6 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
 package com.sun.enterprise.admin.cli.cluster;
 
 import com.sun.enterprise.util.io.FileUtils;
@@ -85,30 +84,23 @@ import com.sun.enterprise.security.store.PasswordAdapter;
  *
  */
 public abstract class SSHCommandsBase extends CLICommand {
-
-    @Param(optional = true, defaultValue="${user.name}")
+    @Param(optional = true, defaultValue = "${user.name}")
     protected String sshuser;
-
-    @Param(optional=true, defaultValue="22")
+    @Param(optional = true, defaultValue = "22")
     protected int sshport;
-
     @Param(optional = true)
     protected String sshkeyfile;
-
     @Param(optional = false, primary = true, multiple = true)
     protected String[] hosts;
-
     protected String sshpassword;
-    protected String sshkeypassphrase=null;
-
-    protected boolean promptPass=false;
-
+    protected String sshkeypassphrase = null;
+    protected boolean promptPass = false;
     protected TokenResolver resolver = null;
 
     public SSHCommandsBase() {
         // Create a resolver that can replace system properties in strings
         Map<String, String> systemPropsMap =
-                new HashMap<String, String>((Map)(System.getProperties()));
+                new HashMap<String, String>((Map) (System.getProperties()));
         resolver = new TokenResolver(systemPropsMap);
     }
 
@@ -117,18 +109,19 @@ public abstract class SSHCommandsBase extends CLICommand {
      */
     protected String getSSHPassword(String node) throws CommandException {
         String password = getFromPasswordFile("AS_ADMIN_SSHPASSWORD");
-      
-        if (password !=null ) {
+
+        if (password != null) {
             String alias = RelativePathResolver.getAlias(password);
             if (alias != null)
                 password = expandPasswordAlias(node, alias, true);
         }
-        
+
         //get password from user if not found in password file
         if (password == null) {
             if (programOpts.isInteractive()) {
-                password=readPassword(Strings.get("SSHPasswordPrompt", sshuser, node));
-            } else {
+                password = readPassword(Strings.get("SSHPasswordPrompt", sshuser, node));
+            }
+            else {
                 throw new CommandException(Strings.get("SSHPasswordNotFound"));
             }
         }
@@ -147,14 +140,15 @@ public abstract class SSHCommandsBase extends CLICommand {
             if (alias != null)
                 passphrase = expandPasswordAlias(null, alias, verifyConn);
         }
-        
+
         //get password from user if not found in password file
         if (passphrase == null) {
             if (programOpts.isInteractive()) {
                 //i18n
-                passphrase=readPassword(Strings.get("SSHPassphrasePrompt", sshkeyfile));
-            } else {
-                passphrase=""; //empty passphrase
+                passphrase = readPassword(Strings.get("SSHPassphrasePrompt", sshkeyfile));
+            }
+            else {
+                passphrase = ""; //empty passphrase
             }
         }
         return passphrase;
@@ -170,36 +164,38 @@ public abstract class SSHCommandsBase extends CLICommand {
         if (masterPass == null) {
             if (programOpts.isInteractive()) {
                 //i18n
-                masterPass=readPassword(Strings.get("DomainMasterPasswordPrompt", domain));
-            } else {
-                masterPass="changeit"; //default
+                masterPass = readPassword(Strings.get("DomainMasterPasswordPrompt", domain));
+            }
+            else {
+                masterPass = "changeit"; //default
             }
         }
         return masterPass;
     }
-    
+
     private String getFromPasswordFile(String name) {
         return passwords.get(name);
     }
 
     protected boolean isValidAnswer(String val) {
         return val.equalsIgnoreCase("yes") || val.equalsIgnoreCase("no")
-                || val.equalsIgnoreCase("y") || val.equalsIgnoreCase("n") ;
+                || val.equalsIgnoreCase("y") || val.equalsIgnoreCase("n");
     }
 
     protected boolean isEncryptedKey() throws CommandException {
         boolean res = false;
         try {
             res = SSHUtil.isEncryptedKey(sshkeyfile);
-        } catch (IOException ioe) {
+        }
+        catch (IOException ioe) {
             throw new CommandException(Strings.get("ErrorParsingKey", sshkeyfile, ioe.getMessage()));
         }
         return res;
     }
-    
+
     /**
      * Method to delete files and directories on remote host
-     * 'nodes' directory is not considered for deletion since it would contain 
+     * 'nodes' directory is not considered for deletion since it would contain
      * configuration information.
      * @param sftpClient sftp client instance
      * @param dasFiles file layout on DAS
@@ -209,35 +205,39 @@ public abstract class SSHCommandsBase extends CLICommand {
      * @throws IOException in case of error
      */
     protected void deleteRemoteFiles(SFTPClient sftpClient, List<String> dasFiles, String dir, boolean force)
-    throws IOException {
- 
-        for (SFTPv3DirectoryEntry directoryEntry: (List<SFTPv3DirectoryEntry>)sftpClient.ls(dir)) {
+            throws IOException {
+
+        for (SFTPv3DirectoryEntry directoryEntry : (List<SFTPv3DirectoryEntry>) sftpClient.ls(dir)) {
             if (directoryEntry.filename.equals(".") || directoryEntry.filename.equals("..")
                     || directoryEntry.filename.equals("nodes")) {
                 continue;
-            } else if (directoryEntry.attributes.isDirectory()) {
-                String f1 = dir+"/"+directoryEntry.filename;
+            }
+            else if (directoryEntry.attributes.isDirectory()) {
+                String f1 = dir + "/" + directoryEntry.filename;
                 deleteRemoteFiles(sftpClient, dasFiles, f1, force);
                 //only if file is present in DAS, it is targeted for removal on remote host
                 //using force deletes all files on remote host
-                if(force) {
+                if (force) {
                     logger.fine("Force removing directory " + f1);
                     if (isRemoteDirectoryEmpty(sftpClient, f1)) {
-                        sftpClient.rmdir(f1); 
+                        sftpClient.rmdir(f1);
                     }
-                } else {                    
+                }
+                else {
                     if (dasFiles.contains(f1)) {
                         if (isRemoteDirectoryEmpty(sftpClient, f1)) {
-                            sftpClient.rmdir(f1); 
+                            sftpClient.rmdir(f1);
                         }
                     }
                 }
-            } else {
-                String f2 = dir+"/"+directoryEntry.filename;
-                if(force) {
+            }
+            else {
+                String f2 = dir + "/" + directoryEntry.filename;
+                if (force) {
                     logger.fine("Force removing file " + f2);
-                    sftpClient.rm(f2); 
-                } else {
+                    sftpClient.rm(f2);
+                }
+                else {
                     if (dasFiles.contains(f2))
                         sftpClient.rm(f2);
                 }
@@ -247,20 +247,20 @@ public abstract class SSHCommandsBase extends CLICommand {
 
     /**
      * Method to check if specified remote directory contains files
-     * 
+     *
      * @param sftp SFTP client handle
      * @param file path to remote directory
      * @return true if empty, false otherwise
      * @throws IOException
      */
     private boolean isRemoteDirectoryEmpty(SFTPClient sftp, String file) throws IOException {
-        List<SFTPv3DirectoryEntry> l = (List<SFTPv3DirectoryEntry>)sftp.ls(file);        
+        List<SFTPv3DirectoryEntry> l = (List<SFTPv3DirectoryEntry>) sftp.ls(file);
         if (l.size() > 2)
             return false;
         return true;
     }
-    
-    /** 
+
+    /**
      * Parses static domain.xml of all domains to determine if a node is configured
      * for use.
      * @param host remote host
@@ -270,18 +270,18 @@ public abstract class SSHCommandsBase extends CLICommand {
         boolean result = false;
         try {
             File domainsDirFile = DomainDirs.getDefaultDomainsDir();
-            
+
             File[] files = domainsDirFile.listFiles(new FileFilter() {
-                        public boolean accept(File f) {
-                            return f.isDirectory();
-                        }
-                    });                    
+                public boolean accept(File f) {
+                    return f.isDirectory();
+                }
+            });
 
             //return if no domains exist
             if (files == null || files.length == 0)
                 return false;
-                    
-            for (File file: files) {
+
+            for (File file : files) {
                 DomainDirs dir = new DomainDirs(file);
                 File domainXMLFile = dir.getServerDirs().getDomainXml();
                 logger.finer("Domain XML file = " + domainXMLFile);
@@ -294,34 +294,36 @@ public abstract class SSHCommandsBase extends CLICommand {
                     Domain domain = domDomain.createProxy(Domain.class);
                     Nodes nodes = domain.getNodes();
 
-                    for (Node node: nodes.getNode()) {
+                    for (Node node : nodes.getNode()) {
                         //make it Unix style and remove trailing slash
-                        iDir = removeTrailingSlash(iDir.replaceAll("\\\\","/"));
+                        iDir = removeTrailingSlash(iDir.replaceAll("\\\\", "/"));
                         String d = removeTrailingSlash(node.getInstallDirUnixStyle());
-                      
+
                         //check both hostname and install location
-                        if ((NetUtils.isEqual(node.getNodeHost(), host) || 
-                                NetUtils.isThisHostLocal(host)) && d.equals(iDir)) {
+                        if ((NetUtils.isEqual(node.getNodeHost(), host)
+                                || NetUtils.isThisHostLocal(host)) && d.equals(iDir)) {
                             result = true;
                         }
                     }
-                } catch (Exception e) {
-                    if(logger.isLoggable(Level.FINE)) {
+                }
+                catch (Exception e) {
+                    if (logger.isLoggable(Level.FINE)) {
                         e.printStackTrace();
                     }
                 }
 
             }
 
-           
-        } catch (IOException ioe) {
-            if(logger.isLoggable(Level.FINE)) {
+
+        }
+        catch (IOException ioe) {
+            if (logger.isLoggable(Level.FINE)) {
                 ioe.printStackTrace();
             }
         }
-        return result;        
+        return result;
     }
-    
+
     /**
      * Remove trailing slash from a path string
      * @param s
@@ -333,7 +335,7 @@ public abstract class SSHCommandsBase extends CLICommand {
         }
         return s;
     }
-    
+
     /**
      * Obtains the real password from the domain specific keystore given an alias
      * @param host host that we are connecting to
@@ -343,66 +345,68 @@ public abstract class SSHCommandsBase extends CLICommand {
     protected String expandPasswordAlias(String host, String alias, boolean verifyConn) {
         String expandedPassword = null;
         boolean connStatus = false;
-        
+
         try {
             File domainsDirFile = DomainDirs.getDefaultDomainsDir();
 
             //get the list of domains
             File[] files = domainsDirFile.listFiles(new FileFilter() {
-                        public boolean accept(File f) {
-                            return f.isDirectory();
-                        }
-                    });
+                public boolean accept(File f) {
+                    return f.isDirectory();
+                }
+            });
 
-            for (File f:files) {
+            for (File f : files) {
                 //the following property is required for initializing the password helper
                 System.setProperty(SystemPropertyConstants.INSTANCE_ROOT_PROPERTY, f.getAbsolutePath());
                 try {
-                    final MasterPassword masterPasswordHelper = Globals.getDefaultHabitat()
-                            .getComponent(MasterPassword.class, "Security SSL Password Provider Service");
-                    
+                    final MasterPassword masterPasswordHelper = Globals.getDefaultHabitat().getComponent(MasterPassword.class, "Security SSL Password Provider Service");
+
                     final PasswordAdapter pa = masterPasswordHelper.getMasterPasswordAdapter();
-                    final boolean     exists = pa.aliasExists(alias);
+                    final boolean exists = pa.aliasExists(alias);
                     if (exists) {
                         String mPass = getMasterPassword(f.getName());
                         masterPasswordHelper.setMasterPassword(mPass.toCharArray());
                         expandedPassword = masterPasswordHelper.getMasterPasswordAdapter().getPasswordForAlias(alias);
                     }
-                } catch (Exception e) {
-                    if(logger.isLoggable(Level.FINER)) {
+                }
+                catch (Exception e) {
+                    if (logger.isLoggable(Level.FINER)) {
                         logger.finer(StringUtils.cat(": ", alias, e.getMessage()));
                     }
                     logger.warning(Strings.get("GetPasswordFailure", f.getName()));
                     continue;
                 }
-                
-                if(expandedPassword != null) {                    
+
+                if (expandedPassword != null) {
                     SSHLauncher sshL = new SSHLauncher();
                     if (host != null) {
                         sshpassword = expandedPassword;
-                        sshL.init(sshuser, host,  sshport, sshpassword, null, null, logger);
+                        sshL.init(sshuser, host, sshport, sshpassword, null, null, logger);
                         connStatus = sshL.checkPasswordAuth();
                         if (!connStatus) {
                             logger.warning(Strings.get("PasswordAuthFailure", f.getName()));
                         }
-                    } else {
+                    }
+                    else {
                         sshkeypassphrase = expandedPassword;
                         if (verifyConn) {
-                            sshL.init(sshuser, hosts[0],  sshport, sshpassword, sshkeyfile, sshkeypassphrase, logger);
+                            sshL.init(sshuser, hosts[0], sshport, sshpassword, sshkeyfile, sshkeypassphrase, logger);
                             connStatus = sshL.checkConnection();
                             if (!connStatus) {
                                 logger.warning(Strings.get("PasswordAuthFailure", f.getName()));
                             }
                         }
                     }
-                    
+
                     if (connStatus) {
                         break;
                     }
                 }
             }
-        } catch (IOException ioe) {
-            if(logger.isLoggable(Level.FINER)) {
+        }
+        catch (IOException ioe) {
+            if (logger.isLoggable(Level.FINER)) {
                 logger.finer(ioe.getMessage());
             }
         }
