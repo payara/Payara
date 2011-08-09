@@ -56,7 +56,6 @@
     <modules>
         <module>backup</module>
         <module>cli-optional</module>
-        <module>monitor</module>
         <module>admin-core</module>
         <!-- not needed at the moment -->
         <!-- <module>jmx-remote</module> -->

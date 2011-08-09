@@ -59,6 +59,7 @@
         <module>util</module>    
         <module>cli</module>
         <module>launcher</module>
+        <module>monitor</module>
         <module>rest</module>
     </modules>
 </project>
