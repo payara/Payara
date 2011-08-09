@@ -48,7 +48,6 @@ import org.glassfish.admin.amx.impl.mbean.MBeanImplBase;
 import org.glassfish.admin.amx.impl.util.ImplUtil;
 import org.glassfish.admin.amx.impl.util.ObjectNameBuilder;
 import org.glassfish.admin.amx.impl.util.SingletonEnforcer;
-import org.glassfish.admin.amx.intf.config.ConfigTools;
 import org.glassfish.admin.amx.util.ExceptionUtil;
 import org.glassfish.admin.amx.util.FeatureAvailability;
 import org.glassfish.admin.amx.util.MapUtil;
@@ -363,7 +362,6 @@ public final class AMXConfigLoader extends MBeanImplBase
 
         return (ConfigBean) o;
     }
-    private volatile ObjectName mConfigToolsObjectName = null;
 
     /**
     Enable registration of MBeans, queued until now.
@@ -387,16 +385,6 @@ public final class AMXConfigLoader extends MBeanImplBase
                 throw new RuntimeException(e);
             }
             SingletonEnforcer.register(AMXConfigLoader.class, this);
-
-            // register ConfigTools
-            try {
-                final ObjectName parent = getDomainRootProxy().getExt().objectName();
-                final ConfigToolsImpl tools = new ConfigToolsImpl(parent);
-                final ObjectName configToolsObjectName = ObjectNameBuilder.buildChildObjectName(mServer, parent, ConfigTools.class);
-                mConfigToolsObjectName = mServer.registerMBean(tools, configToolsObjectName).getObjectName();
-            } catch (final JMException e) {
-                mLogger.log(Level.SEVERE, "Can't register ConfigTools ", e);
-            }
 
             // wait until config beans have been loaded as MBeans
             mLoaderThread.waitInitialQueue();

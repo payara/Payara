@@ -100,7 +100,6 @@ class Interfaces {
             Clusters.class,
             Config.class,
             ConfigElement.class,
-            ConfigTools.class,
             Configs.class,
             ConnectorConnectionPool.class,
             ConnectorResource.class,

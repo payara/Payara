@@ -68,14 +68,7 @@ public interface Ext extends AMXProxy, Singleton, Utility
      */
     @ManagedAttribute
     public SystemStatus getSystemStatus();
-
-    /** 
-    Get ConfigTools, defined in the amx-config module.
-    Use proxy.as(ConfigTools.class) to narrow it to the right type.
-     */
-    @ManagedAttribute
-    public AMXProxy getConfigTools();
-
+ 
 }
 
 

@@ -192,52 +192,6 @@ public final class AMXConfigProxyTests extends AMXTestBase
     }
     
     
-    @Test
-    public void testConfigTools()
-    {
-        final ConfigTools ct = getDomainRootProxy().getExt().child(ConfigTools.class);
-        
-        final String[] namedTypes = ct.getConfigNamedTypes();
-        assert namedTypes.length >= 8 :
-            "Expecting at least 8 named types, got " + namedTypes.length + " = " + CollectionUtil.toString(SetUtil.newStringSet(namedTypes), ", ");
-        
-        final String[] resourceTypes = ct.getConfigResourceTypes();
-        assert resourceTypes.length >= 10 :
-            "Expecting at least 10 resource types, got " + resourceTypes.length + " = " + CollectionUtil.toString(SetUtil.newStringSet(resourceTypes), ", ");
-                
-        // create the properties List
-        final List<Map<String,String>> props = new ArrayList<Map<String,String>>();
-        final String NAME_PREFIX = "testConfigTools-";
-        for( int i = 0 ; i < 10; ++i )
-        {
-            final Map<String,String>  m = new HashMap<String,String>();
-            m.put( "Name", NAME_PREFIX + i );
-            m.put( "Value", "value_" + i );
-            m.put( "Description", "blah blah blah " + i );
-            props.add( m );
-        }
-        
-        // create a large number of properties, then remove them
-        final Domain domainConfig = getDomainConfig();
-        
-        // remove first, in case they were left over from a failure.
-        for( final Map<String,String> prop : props )
-        {
-            domainConfig.removeChild( "property", prop.get("Name") );
-            domainConfig.removeChild( "system-property", prop.get("Name") );
-        }
-
-        // create them as properties and system properties
-        ct.setProperties( domainConfig.objectName(), props, false );
-        ct.setSystemProperties( domainConfig.objectName(), props, false );
-        
-        for( final Map<String,String> prop : props )
-        {
-            assert domainConfig.removeChild( "property", prop.get("Name") ) != null;
-            assert domainConfig.removeChild( "system-property", prop.get("Name") ) != null;
-        }
-    }
-    
     private Map<String,Object> newPropertyMap(final String name)
     {
         final Map<String,Object>    m = MapUtil.newMap();
