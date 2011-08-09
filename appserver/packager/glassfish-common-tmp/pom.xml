@@ -135,7 +135,13 @@
             <artifactId>monitoring-core</artifactId>
             <version>${project.version}</version>
         </dependency>
-
+        <!-- hopefully temporary - need transaction-internal-api since
+             connectors-internal-api is getting moved out -->
+        <dependency>
+            <groupId>org.glassfish.transaction</groupId>
+            <artifactId>transaction-internal-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
      <!-- moving from glassfish-amx package -->       
         <dependency>
             <groupId>org.glassfish.common</groupId>
