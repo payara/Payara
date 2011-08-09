@@ -75,7 +75,6 @@ class Interfaces {
             Sample.class,
             Tools.class,
             SystemStatus.class,
-            ConnectorRuntimeAPIProvider.class,
             Logging.class,
             MonitoringRoot.class,
             ServerMon.class,

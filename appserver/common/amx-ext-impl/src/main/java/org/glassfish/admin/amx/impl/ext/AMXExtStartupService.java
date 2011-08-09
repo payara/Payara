@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2006-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -53,7 +53,6 @@ import javax.management.StandardMBean;
 
 import org.glassfish.admin.amx.base.Realms;
 import org.glassfish.admin.amx.base.RuntimeRoot;
-import org.glassfish.admin.amx.base.ConnectorRuntimeAPIProvider;
 import org.glassfish.admin.amx.base.SystemStatus;
 import org.glassfish.admin.amx.logging.Logging;
 import org.glassfish.admin.amx.config.AMXConfigConstants;
@@ -147,10 +146,6 @@ public final class AMXExtStartupService
 
             child = names.buildChildObjectName(Realms.class);
             mbean = new RealmsImpl(ext);
-            registerChild(mbean, child);
-
-            child = names.buildChildObjectName(ConnectorRuntimeAPIProvider.class);
-            mbean = new ConnectorRuntimeAPIProviderImpl(ext, InjectedValues.getInstance().getHabitat());
             registerChild(mbean, child);
 
             //final GmbalMOM mom = new GmbalMOM( s, getDomainRootProxy().objectName() );

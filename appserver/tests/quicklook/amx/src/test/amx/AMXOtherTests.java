@@ -68,7 +68,6 @@ import org.glassfish.admin.amx.util.MapUtil;
 import org.glassfish.admin.amx.logging.Logging;
 import org.glassfish.admin.amx.annotation.*;
 
-import static org.glassfish.admin.amx.base.ConnectorRuntimeAPIProvider.*;
 /** 
  */
 //@Test(groups={"amx"}, description="AMXProxy tests", sequential=false, threadPoolSize=5)
@@ -84,13 +83,6 @@ public final class AMXOtherTests extends AMXTestBase
 {
     public AMXOtherTests()
     {
-    }
-    
-    @Test
-    public void testConnectorRuntimeAPIProvider()
-    {
-        final ConnectorRuntimeAPIProvider api = getDomainRootProxy().getExt().getConnectorRuntimeAPIProvider();
-        assert api != null;
     }
     
     @Test
