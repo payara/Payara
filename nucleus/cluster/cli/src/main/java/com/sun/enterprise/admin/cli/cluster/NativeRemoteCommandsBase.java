@@ -83,7 +83,7 @@ import com.sun.enterprise.security.store.PasswordAdapter;
  *  Base class for SSH provisioning commands.
  *
  */
-public abstract class SSHCommandsBase extends CLICommand {
+public abstract class NativeRemoteCommandsBase extends CLICommand {
     @Param(optional = true, defaultValue = "${user.name}")
     protected String sshuser;
     @Param(optional = true, defaultValue = "22")
@@ -97,7 +97,7 @@ public abstract class SSHCommandsBase extends CLICommand {
     protected boolean promptPass = false;
     protected TokenResolver resolver = null;
 
-    public SSHCommandsBase() {
+    public NativeRemoteCommandsBase() {
         // Create a resolver that can replace system properties in strings
         Map<String, String> systemPropsMap =
                 new HashMap<String, String>((Map) (System.getProperties()));

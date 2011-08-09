@@ -63,7 +63,7 @@ import com.sun.enterprise.util.io.FileUtils;
 @Service(name = "setup-ssh")
 @Scoped(PerLookup.class)
 @ExecuteOn({RuntimeType.DAS})
-public final class SetupSshKey extends SSHCommandsBase {
+public final class SetupSshKey extends NativeRemoteCommandsBase {
     private static final String NL = System.getProperty("line.separator");
     @Param(optional = true)
     private String sshpublickeyfile;

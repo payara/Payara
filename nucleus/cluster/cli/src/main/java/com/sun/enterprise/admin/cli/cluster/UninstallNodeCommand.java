@@ -59,7 +59,7 @@ import java.util.List;
  */
 @Service(name = "uninstall-node")
 @Scoped(PerLookup.class)
-public class UninstallNodeCommand extends SSHCommandsBase {
+public class UninstallNodeCommand extends NativeRemoteCommandsBase {
     @Param(name = "installdir", optional = true, defaultValue = "${com.sun.aas.productRoot}")
     private String installDir;
     @Param(optional = true, defaultValue = "false")

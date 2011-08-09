@@ -70,7 +70,7 @@ import java.util.List;
  */
 @Service(name = "install-node")
 @Scoped(PerLookup.class)
-public class InstallNodeCommand extends SSHCommandsBase {
+public class InstallNodeCommand extends NativeRemoteCommandsBase {
     @Param(name = "archive", optional = true)
     private String archive;
     @Param(name = "installdir", optional = true, defaultValue = "${com.sun.aas.productRoot}")
