@@ -40,7 +40,6 @@
 
 package org.glassfish.deployment.admin;
 
-import com.sun.enterprise.config.serverbeans.Cluster;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.ServerEnvironment;
@@ -57,13 +56,10 @@ import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
 import org.glassfish.api.deployment.UndeployCommandParameters;
-import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.api.admin.ExecuteOn;
 import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.api.admin.ParameterMap;
-import org.glassfish.api.event.EventTypes;
 import org.glassfish.api.event.Events;
-import org.glassfish.api.event.EventListener.Event;
 import org.glassfish.internal.deployment.Deployment;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
 import org.glassfish.internal.data.ApplicationInfo;
@@ -76,22 +72,19 @@ import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.component.PerLookup;
-import org.jvnet.hk2.config.ConfigSupport;
-import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.beans.PropertyVetoException;
-import java.util.Collections;
 import java.util.List;
-import java.util.Properties;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import org.glassfish.api.deployment.DeploymentContext;
+import org.glassfish.deployment.common.DeploymentContextImpl;
 
 import org.glassfish.deployment.versioning.VersioningService;
 import org.glassfish.deployment.versioning.VersioningException;
@@ -148,7 +141,7 @@ public class DisableCommand extends UndeployCommandParameters implements AdminCo
 
         final ActionReport report = context.getActionReport();
         final Logger logger = context.getLogger();
-
+        
         String appName = name();
 
         if (isundeploy) {
@@ -159,6 +152,30 @@ public class DisableCommand extends UndeployCommandParameters implements AdminCo
                 VersioningUtils.isVersionExpressionWithWildCard(appName);
 
         Set<String> enabledVersionsToDisable = Collections.EMPTY_SET;
+        InterceptorNotifier notifier = null;
+        ApplicationInfo appInfo = deployment.get(appName);
+        
+        try {
+            Application app = applications.getApplication(appName);
+            this.name = appName;
+
+            final DeploymentContext basicDC = deployment.disable(this, app, appInfo, report, logger);
+            
+            notifier = new InterceptorNotifier(habitat, basicDC);
+            
+            final DeployCommandSupplementalInfo suppInfo = new DeployCommandSupplementalInfo();
+            suppInfo.setDeploymentContext(notifier.dc());
+            report.setResultType(DeployCommandSupplementalInfo.class, suppInfo);
+
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "Error during disabling: ", e);
+            if (env.isDas() || !isundeploy) {
+                // we should let undeployment go through
+                // on instance side for partial deployment case
+                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                report.setMessage(e.getMessage());
+            }
+        }
 
         if (env.isDas() && DeploymentUtils.isDomainTarget(target)) {
 
@@ -188,6 +205,7 @@ public class DisableCommand extends UndeployCommandParameters implements AdminCo
                     ParameterMapExtractor extractor = new ParameterMapExtractor(this);
                     ParameterMap paramMap = extractor.extract(Collections.EMPTY_LIST);
                     paramMap.set("DEFAULT", appName);
+                    notifier.ensureBeforeReported(ExtendedDeploymentContext.Phase.REPLICATION);
                     ClusterOperationUtil.replicateCommand("disable", FailurePolicy.Error, FailurePolicy.Warn, 
                             FailurePolicy.Ignore, targets, context, paramMap, habitat);
                 } catch (Exception e) {
@@ -252,30 +270,15 @@ public class DisableCommand extends UndeployCommandParameters implements AdminCo
          * If the target is a cluster instance, the DAS will broadcast the command
          * to all instances in the cluster so they can all update their configs.
          */
-        ApplicationInfo appInfo = deployment.get(appName);
         if (env.isDas()) {
             try {
+                notifier.ensureBeforeReported(ExtendedDeploymentContext.Phase.REPLICATION);
                 DeploymentCommandUtils.replicateEnableDisableToContainingCluster(
                         "disable", domain, target, appName, habitat, context, this);
 
             } catch (Exception e) {
                 report.failure(logger, e.getMessage());
                 return;
-            }
-        }
-
-        try {
-            Application app = applications.getApplication(appName);
-            this.name = appName;
-
-            deployment.disable(this, app, appInfo, report, logger);
-        } catch (Exception e) {
-            logger.log(Level.SEVERE, "Error during disabling: ", e);
-            if (env.isDas() || !isundeploy) {
-                // we should let undeployment go through
-                // on instance side for partial deployment case
-                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-                report.setMessage(e.getMessage());
             }
         }
 

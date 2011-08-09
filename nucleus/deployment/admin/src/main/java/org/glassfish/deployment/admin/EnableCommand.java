@@ -40,10 +40,9 @@
 
 package org.glassfish.deployment.admin;
 
-import com.sun.enterprise.config.serverbeans.Application;
+import com.sun.enterprise.deploy.shared.ArchiveFactory;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
-import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.admin.ExecuteOn;
 import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.api.admin.ServerEnvironment;
@@ -55,36 +54,32 @@ import org.glassfish.config.support.CommandTarget;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.admin.util.ClusterOperationUtil;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.net.URI;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.internal.deployment.Deployment;
 import org.glassfish.common.util.admin.ParameterMapExtractor;
+import org.glassfish.internal.deployment.ExtendedDeploymentContext;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.component.PerLookup;
-import org.jvnet.hk2.config.ConfigSupport;
-import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
 
-import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.Map;
 import java.util.List;
 import java.util.Collections;
-import java.io.File;
-import java.io.IOException;
-import java.net.URI;
-import java.beans.PropertyVetoException;
-import java.util.HashMap;
-import java.util.Iterator;
-import org.glassfish.deployment.common.ApplicationConfigInfo;
+import org.glassfish.api.deployment.DeploymentContext;
+import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.deployment.common.DeploymentUtils;
 import org.glassfish.deployment.versioning.VersioningSyntaxException;
 
 import org.glassfish.deployment.versioning.VersioningService;
+import org.glassfish.internal.deployment.ExtendedDeploymentContext.Phase;
 
 /**
  * Enable command
@@ -118,6 +113,9 @@ public class EnableCommand extends StateCommandParameters implements AdminComman
 
     @Inject
     VersioningService versioningService;
+    
+    @Inject
+    ArchiveFactory archiveFactory;
 
     /**
      * Entry point from the framework into the command execution
@@ -148,6 +146,9 @@ public class EnableCommand extends StateCommandParameters implements AdminComman
             return;
         }
 
+        InterceptorNotifier notifier = new InterceptorNotifier(habitat, null);
+        DeployCommandSupplementalInfo suppInfo = new DeployCommandSupplementalInfo();
+        suppInfo.setDeploymentContext(notifier.dc());
         if (env.isDas()) {
             // try to disable the enabled version, if exist
             try {
@@ -164,6 +165,7 @@ public class EnableCommand extends StateCommandParameters implements AdminComman
                     ParameterMap paramMap = extractor.extract(Collections.EMPTY_LIST);
                     paramMap.set("DEFAULT", name());
 
+                    notifier.ensureBeforeReported(Phase.REPLICATION);
                     ClusterOperationUtil.replicateCommand("enable", FailurePolicy.Error, FailurePolicy.Warn, 
                             FailurePolicy.Ignore, targets, context, paramMap, habitat);
                 } catch (Exception e) {
@@ -178,6 +180,7 @@ public class EnableCommand extends StateCommandParameters implements AdminComman
              */
 
             try {
+                notifier.ensureBeforeReported(Phase.REPLICATION);
                 DeploymentCommandUtils.replicateEnableDisableToContainingCluster(
                         "enable", domain, target, name(), habitat, context, this);
             } catch (Exception e) {

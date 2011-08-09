@@ -171,13 +171,13 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
 
     private ExecutorService executorService = null;
 
-    private ApplicationLifecycleInterceptor alcInterceptor = null;
-
+    private Collection<ApplicationLifecycleInterceptor> alcInterceptors = Collections.EMPTY_LIST;
+    
     public void postConstruct() {
         executorService = createExecutorService();
         deploymentLifecycleProbeProvider = 
             new DeploymentLifecycleProbeProvider();
-        alcInterceptor = habitat.getComponent(
+        alcInterceptors = habitat.getAllByContract(
             ApplicationLifecycleInterceptor.class);
     }
 
@@ -310,15 +310,8 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                         // ignore
                     }
                 }
-                if (alcInterceptor != null) {
-                    try {
-                        alcInterceptor.after(
-                            ExtendedDeploymentContext.Phase.REPLICATION, context);
-                    } catch (Exception e) {
-                        // ignore
-                    }
-                }
-
+                notifyLifecycleInterceptorsAfter(ExtendedDeploymentContext.Phase.REPLICATION, context);
+                
                 if (!commandParams.keepfailedstubs) {
                     try {
                         context.clean();
@@ -415,10 +408,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                     tracing.addMark(DeploymentTracing.Mark.CLASS_LOADER_CREATED);
                 }
 
-                if (alcInterceptor != null) {
-                    alcInterceptor.before(
-                        ExtendedDeploymentContext.Phase.PREPARE, context);
-                }
+                notifyLifecycleInterceptorsBefore(ExtendedDeploymentContext.Phase.PREPARE, context);
 
 
                     // this is a first time deployment as opposed as load following an unload event,
@@ -459,10 +449,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                 appInfo.setIsJavaEEApp(sortedEngineInfos);
                 appRegistry.add(appName, appInfo);
 
-                if (alcInterceptor != null) {
-                    alcInterceptor.after(
-                        ExtendedDeploymentContext.Phase.PREPARE, context);
-                }
+                notifyLifecycleInterceptorsAfter(ExtendedDeploymentContext.Phase.PREPARE, context);
 
                 if (tracing!=null) {
                     tracing.addMark(DeploymentTracing.Mark.PREPARED);
@@ -483,24 +470,13 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                 if (loadOnCurrentInstance(context)) {
                     appInfo.setLibraries(commandParams.libraries());
                     try {
-                        if (alcInterceptor != null) {
-                            alcInterceptor.before(
-                                ExtendedDeploymentContext.Phase.LOAD, context);
-                        }
+                        notifyLifecycleInterceptorsBefore(ExtendedDeploymentContext.Phase.LOAD, context);
                         appInfo.load(context, tracker);
-                        if (alcInterceptor != null) {
-                            alcInterceptor.after(
-                                ExtendedDeploymentContext.Phase.LOAD, context);
-                        }
-                        if (alcInterceptor != null) {
-                            alcInterceptor.before(
-                                ExtendedDeploymentContext.Phase.START, context);
-                        }
+                        notifyLifecycleInterceptorsAfter(ExtendedDeploymentContext.Phase.LOAD, context);
+                        
+                        notifyLifecycleInterceptorsBefore(ExtendedDeploymentContext.Phase.START, context);
                         appInfo.start(context, tracker);
-                        if (alcInterceptor != null) {
-                            alcInterceptor.after(
-                                ExtendedDeploymentContext.Phase.START, context);
-                        }
+                        notifyLifecycleInterceptorsAfter(ExtendedDeploymentContext.Phase.START, context);
                     } catch(Throwable loadException) {
                         report.failure(logger, "Exception while loading the app", null);
                         report.setFailureCause(loadException);
@@ -572,6 +548,20 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
         }
     }
 
+    private void notifyLifecycleInterceptorsBefore(final ExtendedDeploymentContext.Phase phase,
+            final ExtendedDeploymentContext dc) {
+        for (ApplicationLifecycleInterceptor i : alcInterceptors) {
+            i.before(phase, dc);
+        }
+    }
+    
+    private void notifyLifecycleInterceptorsAfter(final ExtendedDeploymentContext.Phase phase,
+            final ExtendedDeploymentContext dc) {
+        for (ApplicationLifecycleInterceptor i : alcInterceptors) {
+            i.after(phase, dc);
+        }
+    }
+    
     private List<ReadableArchive> getExternalLibraries(
         DeploymentContext context) throws IOException {
         List<ReadableArchive> externalLibArchives = new ArrayList<ReadableArchive>();
@@ -1037,40 +1027,23 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
             return null;
         }
 
-        if (alcInterceptor != null) {
-            alcInterceptor.before(
-                ExtendedDeploymentContext.Phase.STOP, context);
-        }
+        notifyLifecycleInterceptorsBefore(ExtendedDeploymentContext.Phase.STOP, context);
 
         if (info.isLoaded()) {
             info.stop(context, context.getLogger());
-            if (alcInterceptor != null) {
-                alcInterceptor.after(
-                    ExtendedDeploymentContext.Phase.STOP, context);
-            }
-            if (alcInterceptor != null) {
-                alcInterceptor.before(
-                    ExtendedDeploymentContext.Phase.UNLOAD, context);
-            }
+            notifyLifecycleInterceptorsAfter(ExtendedDeploymentContext.Phase.STOP, context);
+            
+            notifyLifecycleInterceptorsBefore(ExtendedDeploymentContext.Phase.UNLOAD, context);
             info.unload(context);
-            if (alcInterceptor != null) {
-                alcInterceptor.after(
-                    ExtendedDeploymentContext.Phase.UNLOAD, context);
-            }
+            notifyLifecycleInterceptorsAfter(ExtendedDeploymentContext.Phase.UNLOAD, context);
         }
 
         events.send(new Event<ApplicationInfo>(Deployment.APPLICATION_DISABLED, info), false);
 
         try {
-            if (alcInterceptor != null) {
-                alcInterceptor.before(
-                    ExtendedDeploymentContext.Phase.CLEAN, context);
-            }
+            notifyLifecycleInterceptorsBefore(ExtendedDeploymentContext.Phase.CLEAN, context);
             info.clean(context);
-            if (alcInterceptor != null) {
-                alcInterceptor.after(
-                    ExtendedDeploymentContext.Phase.CLEAN, context);
-            }
+            notifyLifecycleInterceptorsAfter(ExtendedDeploymentContext.Phase.CLEAN, context);
         } catch(Exception e) {
             report.failure(context.getLogger(), "Exception while cleaning", e);
             return info;
@@ -2014,18 +1987,18 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
         return false;
     }
 
-    public void disable(UndeployCommandParameters commandParams, 
+    public ExtendedDeploymentContext disable(UndeployCommandParameters commandParams, 
         Application app, ApplicationInfo appInfo, ActionReport report, 
         Logger logger) throws Exception {
         if (appInfo == null) {
             report.failure(logger, "Application not registered", null);
-            return;
+            return null;
         }
 
         // if it's not on DAS and the application is not loaded, do not unload
         // when it's on DAS, there is some necessary clean up we need to do
         if (!env.isDas() && !appInfo.isLoaded()) {
-            return;
+            return null;
         }
 
         final ExtendedDeploymentContext deploymentContext =
@@ -2043,9 +2016,10 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
         }
 
         unload(appInfo, deploymentContext);
+        return deploymentContext;
     }
 
-    public void enable(String target, Application app, ApplicationRef appRef, 
+    public ExtendedDeploymentContext enable(String target, Application app, ApplicationRef appRef, 
         ActionReport report, Logger logger) throws Exception {
         ReadableArchive archive = null; 
         try {
@@ -2053,7 +2027,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
             // if the application is already loaded, do not load again
             ApplicationInfo appInfo = appRegistry.get(commandParams.name);
             if (appInfo != null && appInfo.isLoaded()) {
-                return;
+                return null;
             }
             commandParams.origin = DeployCommandParameters.Origin.load;
             commandParams.target = target;
@@ -2068,7 +2042,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
             File file = new File(uri);
 
             if (!file.exists()) {
-                throw new Exception(localStrings.getLocalString("fnf", "File not found", file.getAbsolutePath()));
+                throw new Exception(localStrings.getLocalString("fnf", "File not found {0}", file.getAbsolutePath()));
             }
 
             archive = archiveFactory.openArchive(file);
@@ -2085,6 +2059,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
             }
 
             deploy(getSniffersFromApp(app), deploymentContext);
+            return deploymentContext;
         } finally {
             try {
                 if (archive != null) {

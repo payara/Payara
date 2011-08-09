@@ -239,11 +239,11 @@ public interface Deployment {
     public ApplicationInfo unload(ApplicationInfo appInfo,
         ExtendedDeploymentContext context);
 
-    public void disable(UndeployCommandParameters commandParams, 
+    public DeploymentContext disable(UndeployCommandParameters commandParams, 
         Application app, ApplicationInfo appInfo, ActionReport report, 
         Logger logger) throws Exception;
 
-    public void enable(String target, Application app, ApplicationRef appRef,
+    public DeploymentContext enable(String target, Application app, ApplicationRef appRef,
         ActionReport report, Logger logger) throws Exception;
 
     /**

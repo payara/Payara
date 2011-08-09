@@ -274,6 +274,11 @@ public class UndeployCommand extends UndeployCommandParameters implements AdminC
                 return;
             }
 
+            final InterceptorNotifier notifier = new InterceptorNotifier(habitat, deploymentContext);
+            final DeployCommandSupplementalInfo suppInfo = new DeployCommandSupplementalInfo();
+            suppInfo.setDeploymentContext(deploymentContext);
+            report.setResultType(DeployCommandSupplementalInfo.class, suppInfo);
+            
             final Properties appProps = deploymentContext.getAppProps();
             appProps.putAll(application.getDeployProperties());
 
@@ -315,6 +320,7 @@ public class UndeployCommand extends UndeployCommandParameters implements AdminC
                         List<String> targets = domain.getAllReferencedTargetsForApplication(appName);
                         // replicate command to all referenced targets
                         parameters.remove("isUndeploy");
+                        notifier.ensureBeforeReported(ExtendedDeploymentContext.Phase.REPLICATION);
                         ClusterOperationUtil.replicateCommand("undeploy", FailurePolicy.Error, FailurePolicy.Warn, 
                                 FailurePolicy.Ignore, targets, context, parameters, habitat);
                     }

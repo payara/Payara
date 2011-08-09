@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright (c) 2010-2011 Oracle and/or its affiliates. All rights reserved.
- *
+ * 
+ * Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
  * and Distribution License("CDDL") (collectively, the "License").  You
@@ -11,20 +11,20 @@
  * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
  * or packager/legal/LICENSE.txt.  See the License for the specific
  * language governing permissions and limitations under the License.
- *
+ * 
  * When distributing the software, include this License Header Notice in each
  * file and include the License file at packager/legal/LICENSE.txt.
- *
+ * 
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
  * exception as provided by Oracle in the GPL Version 2 section of the License
  * file that accompanied this code.
- *
+ * 
  * Modifications:
  * If applicable, add the following below the License Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyright [year] [name of copyright owner]"
- *
+ * 
  * Contributor(s):
  * If you wish your version of this file to be governed by only the CDDL or
  * only the GPL Version 2, indicate your decision by adding "[Contributor]
@@ -37,88 +37,55 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
 package org.glassfish.deployment.admin;
 
-import com.sun.enterprise.admin.util.ClusterOperationUtil;
+import java.util.Collection;
+import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.List;
-import java.util.ArrayList;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
-import org.glassfish.api.admin.ExecuteOn;
-import org.glassfish.api.admin.ParameterMap;
-import org.glassfish.api.admin.RuntimeType;
-import org.glassfish.api.admin.Supplemental;
-import org.glassfish.api.admin.FailurePolicy;
 import org.glassfish.api.deployment.DeployCommandParameters;
-import org.glassfish.api.deployment.DeploymentContext;
-import org.glassfish.deployment.common.DeploymentUtils;
-import org.glassfish.internal.deployment.Deployment;
-import org.glassfish.internal.deployment.ExtendedDeploymentContext.Phase;
+import org.glassfish.hk2.scopes.PerLookup;
+import org.glassfish.internal.deployment.ApplicationLifecycleInterceptor;
+import org.glassfish.internal.deployment.ExtendedDeploymentContext;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
-import org.jvnet.hk2.component.PerLookup;
 
 /**
- * Causes InstanceDeployCommand executions on the correct remote instances.
  *
- * @author tjquinn
+ * @author Tim Quinn
  */
-@Service(name="_postdeploy")
-@Supplemental(value="deploy", ifFailure=FailurePolicy.Warn)
+@Service
 @Scoped(PerLookup.class)
-@ExecuteOn(value={RuntimeType.DAS})
-
-public class PostDeployCommand extends DeployCommandParameters implements AdminCommand {
-
+public class PostStateCommand implements AdminCommand {
+    
     @Inject
-    private Habitat habitat;
-
-    @Inject
-    private Deployment deployment;
+    protected Habitat habitat;
 
     @Override
     public void execute(AdminCommandContext context) {
         ActionReport report = context.getActionReport();
         final Logger logger = context.getLogger();
-
+      try {
+        logger.log(Level.INFO, "PostState starting: " + this.getClass().getName());
         final DeployCommandSupplementalInfo suppInfo =
                 context.getActionReport().getResultType(DeployCommandSupplementalInfo.class);
-        final DeploymentContext dc = suppInfo.deploymentContext();
+        final ExtendedDeploymentContext dc = suppInfo.deploymentContext();
         final DeployCommandParameters params = dc.getCommandParameters(DeployCommandParameters.class);
         final InterceptorNotifier notifier = new InterceptorNotifier(habitat, dc);
-        
-
-        // if the target is DAS, we do not need to do anything more
-        if (DeploymentUtils.isDASTarget(params.target)) {
-            return;
-        }
 
         try {
-            final ParameterMap paramMap = deployment.prepareInstanceDeployParamMap(dc);
-
-            List<String> targets = new ArrayList<String>();
-            if (!DeploymentUtils.isDomainTarget(params.target)) {
-                targets.add(params.target);
-            } else {
-                targets = suppInfo.previousTargets();
-            }
-            ClusterOperationUtil.replicateCommand(
-                "_deploy",
-                FailurePolicy.Warn,
-                FailurePolicy.Warn,
-                FailurePolicy.Ignore,
-                targets,
-                context,
-                paramMap,
-                habitat);
-            notifier.ensureAfterReported(Phase.REPLICATION);
+            notifier.ensureAfterReported(ExtendedDeploymentContext.Phase.REPLICATION);
+            logger.log(Level.INFO, "PostStateCommand: " + this.getClass().getName() + " finished successfully");
         } catch (Exception e) {
             report.failure(logger, e.getMessage());
+            logger.log(Level.SEVERE, "Error during inner PostState: " + this.getClass().getName(), e);
         }
+      } catch (Exception e) {
+          logger.log(Level.SEVERE, "Error duirng outer PostState: " + this.getClass().getName(), e);
+      }
     }
 }
