@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2008-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -69,6 +69,7 @@ public class PropsFileActionReporter extends ActionReporter {
         super.setMessage(message);
     }
 
+    @Override
     public void writeReport(OutputStream os) throws IOException {
 
         Manifest out = new Manifest();
@@ -104,7 +105,10 @@ public class PropsFileActionReporter extends ActionReporter {
             attr.putValue("children-type", part.getChildrenType());
             String keys = null;
             for (MessagePart child : part.getChildren()) {
-                String newPrefix = (prefix == null ? child.getMessage() : prefix + "." + child.getMessage());
+                // need to URL encode a ';' as %3B because it is used as a 
+                // delimiter
+                String cm = child.getMessage().replaceAll(";", "%3B");
+                String newPrefix = (prefix == null ? cm : prefix + "." + cm);
                 keys = (keys == null ? newPrefix : keys + ";" + newPrefix);
                 Attributes childAttr = new Attributes();
                 m.getEntries().put(newPrefix, childAttr);
