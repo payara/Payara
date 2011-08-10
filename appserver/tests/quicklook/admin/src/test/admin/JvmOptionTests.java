@@ -40,6 +40,8 @@
 
 package test.admin;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.util.Collections;
 import java.util.Map;
 import java.util.jar.Manifest;
@@ -72,10 +74,14 @@ public class JvmOptionTests extends BaseAsadminTest {
         Manifest man = runListJoesCommand();
         GeneralUtils.handleManifestFailure(man);
         // we are past failure, now test the contents
-        String children = GeneralUtils.getValueForTypeFromManifest(man, GeneralUtils.AsadminManifestKeyType.CHILDREN);
-        if (!children.contains(TEST_JOE)) {
-            throw new RuntimeException("deleted http listener: " + TEST_JOE + " exists in the list: " + children);
-        }        
+        try {
+            String children = URLDecoder.decode(GeneralUtils.getValueForTypeFromManifest(man, GeneralUtils.AsadminManifestKeyType.CHILDREN), "UTF-8");
+            if (!children.contains(TEST_JOE)) {
+                throw new RuntimeException("added JVM option: " + TEST_JOE + " does not exist in the list: " + children);
+            }   
+        } catch (UnsupportedEncodingException ex) {
+            throw new RuntimeException(ex);
+        }
     }
     
     @Test(groups={"pulse"}, dependsOnMethods={"ensureCreatedJoeExists"})
@@ -93,10 +99,15 @@ public class JvmOptionTests extends BaseAsadminTest {
         Manifest man = runListJoesCommand();
         GeneralUtils.handleManifestFailure(man);
         // we are past failure, now test the contents
-        String children = GeneralUtils.getValueForTypeFromManifest(man, GeneralUtils.AsadminManifestKeyType.CHILDREN);
-        if (children.contains(TEST_JOE)) {
-            throw new RuntimeException("deleted http listener: " + TEST_JOE + " exists in the list: " + children);
-        }         
+        try {
+            String children = URLDecoder.decode(GeneralUtils.getValueForTypeFromManifest(man, GeneralUtils.AsadminManifestKeyType.CHILDREN), "UTF-8");
+            if (children.contains(TEST_JOE)) {
+                throw new RuntimeException("deleted JVM option: " + TEST_JOE + " exists in the list: " + children);
+            } 
+        } catch (UnsupportedEncodingException ex) {
+            throw new RuntimeException(ex);
+        }
+            
     }
 
     private Manifest runListJoesCommand() {

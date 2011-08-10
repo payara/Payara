@@ -37,10 +37,10 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
 package com.sun.enterprise.v3.common;
 
 import com.sun.enterprise.util.StringUtils;
+import java.io.UnsupportedEncodingException;
 import java.util.*;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
@@ -48,6 +48,7 @@ import org.jvnet.hk2.component.PerLookup;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.URLEncoder;
 import java.util.jar.Manifest;
 import java.util.jar.Attributes;
 import java.util.Map;
@@ -78,8 +79,9 @@ public class PropsFileActionReporter extends ActionReporter {
         mainAttr.putValue("exit-code", exitCode.toString());
         mainAttr.putValue("use-main-children-attribute", Boolean.toString(useMainChildrenAttr));
 
-        if (exitCode == ExitCode.FAILURE)
+        if (exitCode == ExitCode.FAILURE) {
             writeCause(mainAttr);
+        }
 
         writeReport(null, topMessage, out, mainAttr);
         out.write(os);
@@ -103,12 +105,19 @@ public class PropsFileActionReporter extends ActionReporter {
         }
         if (part.getChildren().size() > 0) {
             attr.putValue("children-type", part.getChildrenType());
+            attr.putValue("use-main-children-attribute", "true");
             String keys = null;
             for (MessagePart child : part.getChildren()) {
                 // need to URL encode a ';' as %3B because it is used as a 
                 // delimiter
                 String cm = child.getMessage();
-                if (cm != null) cm = cm.replaceAll(";", "%3B");
+                if (cm != null) {
+                    try {
+                        cm = URLEncoder.encode(cm, "UTF-8");
+                    } catch (UnsupportedEncodingException ex) {
+                        // ignore - leave cm as it is
+                    }
+                }
                 String newPrefix = (prefix == null ? cm : prefix + "." + cm);
                 keys = (keys == null ? newPrefix : keys + ";" + newPrefix);
                 Attributes childAttr = new Attributes();
@@ -122,8 +131,9 @@ public class PropsFileActionReporter extends ActionReporter {
     private void writeCause(Attributes mainAttr) {
         Throwable t = getFailureCause();
 
-        if (t == null)
+        if (t == null) {
             return;
+        }
 
         String causeMessage = t.toString();
         mainAttr.putValue("cause", causeMessage);
@@ -145,9 +155,9 @@ public class PropsFileActionReporter extends ActionReporter {
         // We also replace "bad" characters with "_".  Note that asadmin will
         // display the correct real name.
 
-        if (!StringUtils.ok(key))
+        if (!StringUtils.ok(key)) {
             return key; // GIGO!
-
+        }
         StringBuilder sb = new StringBuilder();
         boolean wasChanged = false;
         int len = key.length();
@@ -163,18 +173,20 @@ public class PropsFileActionReporter extends ActionReporter {
             if (!isValid(c)) {
                 wasChanged = true;
                 sb.append('_');
-            }
-            else
+            } else {
                 sb.append(c);
+            }
         }
 
-        if (!wasChanged)
+        if (!wasChanged) {
             return key;
+        }
 
         String fixedName = sb.toString();
 
-        if (fixedNames.add(fixedName))
+        if (fixedNames.add(fixedName)) {
             return fixedName;
+        }
 
         // perhaps they are using huge long names that differ just at the end?
         return doubleFixName(fixedName);
@@ -184,15 +196,17 @@ public class PropsFileActionReporter extends ActionReporter {
         // Yes, this is a nightmare!
         int len = s.length();
 
-        if (len > LONGEST - 5)
+        if (len > LONGEST - 5) {
             s = s.substring(0, LONGEST - 5);
+        }
 
         for (int i = 0; i < 10000; i++) {
             String num = String.format("%05d", i);
             String ret = s + num;
 
-            if (fixedNames.add(ret))
+            if (fixedNames.add(ret)) {
                 return ret;
+            }
         }
         // Wow!!!
         throw new IllegalArgumentException("Could not come up with a unique name after 10000 attempts!!");
@@ -209,7 +223,6 @@ public class PropsFileActionReporter extends ActionReporter {
     private static boolean isDigit(char c) {
         return c >= '0' && c <= '9';
     }
-
     private boolean useMainChildrenAttr = false;
     private Set<String> fixedNames = new TreeSet<String>();
     private static final int LONGEST = 62;
