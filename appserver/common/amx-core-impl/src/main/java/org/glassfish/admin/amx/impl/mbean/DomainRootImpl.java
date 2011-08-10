@@ -102,10 +102,6 @@ public class DomainRootImpl extends AMXImplBase // implements DomainRoot
         return child(Pathnames.class);
     }
 
-    public ObjectName getSystemStatus() {
-        return child(SystemStatus.class);
-    }
-
     public ObjectName getBulkAccess() {
         return child(BulkAccess.class);
     }
