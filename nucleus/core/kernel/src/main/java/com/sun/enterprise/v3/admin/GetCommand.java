@@ -39,6 +39,7 @@
  */
 package com.sun.enterprise.v3.admin;
 
+import java.util.*;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.v3.common.PropsFileActionReporter;
@@ -54,10 +55,6 @@ import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.PerLookup;
 import org.jvnet.hk2.config.Dom;
 import org.jvnet.hk2.config.types.Property;
-
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.util.*;
 
 
 /**
@@ -173,7 +170,7 @@ public class GetCommand extends V2DottedNameSupport implements AdminCommand {
                 if (matches(node.getValue(), pattern)) {
                     ActionReport.MessagePart part = report.getTopMessagePart().addChild();
                     part.setChildrenType("DottedName");
-                    part.setMessage(prefix + node.getValue() + "=" + encode(node.getKey().attribute("value")));
+                    part.setMessage(prefix + node.getValue() + "=" + node.getKey().attribute("value"));
                     foundMatch = true;
                 }
             }
@@ -196,15 +193,6 @@ public class GetCommand extends V2DottedNameSupport implements AdminCommand {
             //report.setMessage("No object found matching " + pattern);
             report.setMessage(localStrings.getLocalString("admin.get.path.notfound", "Dotted name path {0} not found.", prefix + pattern));
 
-        }
-    }
-
-    private String encode(String value) {
-        try {
-            return URLEncoder.encode(value, "UTF-8");
-        }
-        catch (UnsupportedEncodingException e) {
-            return value;
         }
     }
 
