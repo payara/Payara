@@ -53,7 +53,6 @@ import javax.management.StandardMBean;
 
 import org.glassfish.admin.amx.base.Realms;
 import org.glassfish.admin.amx.base.RuntimeRoot;
-import org.glassfish.admin.amx.base.SystemStatus;
 import org.glassfish.admin.amx.logging.Logging;
 import org.glassfish.admin.amx.config.AMXConfigConstants;
 import org.glassfish.admin.amx.impl.config.AMXExtStartupServiceMBean;
@@ -140,10 +139,6 @@ public final class AMXExtStartupService
             final ObjectName ext = getDomainRootProxy().getExt().objectName();
             final ObjectNameBuilder names = new ObjectNameBuilder(s, ext);
             
-            child = names.buildChildObjectName(SystemStatus.class);
-            mbean = new SystemStatusImpl(ext);
-            registerChild(mbean, child);
-
             child = names.buildChildObjectName(Realms.class);
             mbean = new RealmsImpl(ext);
             registerChild(mbean, child);
