@@ -173,7 +173,7 @@ public class CreateMessageSecurityProvider implements AdminCommand {
     @Inject
     Configs configs;
 
-    @Inject(name="MessageSecurityConfigListener")
+    @Inject(name="MessageSecurityConfigListener", optional=true)
     private ConfigListener msgSecurityConfigListener;
 
     
