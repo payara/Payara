@@ -47,6 +47,7 @@ import com.sun.enterprise.module.common_impl.AbstractFactory;
 import org.glassfish.embeddable.BootstrapProperties;
 import org.glassfish.embeddable.GlassFishException;
 import org.glassfish.embeddable.GlassFishRuntime;
+import org.glassfish.embeddable.spi.RuntimeBuilder;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -58,7 +59,6 @@ import java.util.List;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.glassfish.embeddable.spi.RuntimeBuilder;
 
 /**
  * @author bhavanishankar@dev.java.net
@@ -72,7 +72,7 @@ public class StaticGlassFishRuntimeBuilder implements RuntimeBuilder {
 
     public GlassFishRuntime build(BootstrapProperties bsProps) throws GlassFishException {
         /* Step 1. Build the classloader. */
-        // The classloades should contain installRoot/modules/**/*.jar files.
+        // The classloader should contain installRoot/modules/**/*.jar files.
         String installRoot = getInstallRoot(bsProps);
         if (installRoot != null) {
             System.setProperty("org.glassfish.embeddable.installRoot", installRoot);

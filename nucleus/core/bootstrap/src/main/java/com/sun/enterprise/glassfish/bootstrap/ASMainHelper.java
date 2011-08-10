@@ -57,6 +57,8 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static com.sun.enterprise.module.bootstrap.ArgumentManager.argsToMap;
+
 /**
  * Utility class used by bootstrap module.
  * Most of the code is moved from {@link ASMain} or {@link GlassFishMain}to this class to keep them
@@ -392,6 +394,28 @@ public class ASMainHelper {
         addRawStartupInfo(args, ctx);
 
         mergePlatformConfiguration(ctx);
+        return ctx;
+    }
+
+    public static Properties buildStaticStartupContext(long timeZero, String... args) {
+        checkJdkVersion();
+        Properties ctx = argsToMap(args);
+        ctx.setProperty(Constants.PLATFORM_PROPERTY_KEY, "Static");
+        buildStartupContext(ctx);
+        addRawStartupInfo(args, ctx);
+
+        // Reset time zero with the real value. We can't do this before buildStartupContext()
+        // because it has an optimization that is triggered by this key.
+        ctx.setProperty(StartupContext.TIME_ZERO_NAME, Long.toString(timeZero));
+
+        // Config variable substitution (and maybe other downstream code) relies on
+        // some values in System properties, so copy them in.
+        for (String key : new String[]{Constants.INSTALL_ROOT_PROP_NAME,
+                                       Constants.INSTANCE_ROOT_URI_PROP_NAME,
+                                       Constants.INSTALL_ROOT_PROP_NAME,
+                                       Constants.INSTALL_ROOT_URI_PROP_NAME}) {
+            System.setProperty(key, ctx.getProperty(key));
+        }
         return ctx;
     }
 

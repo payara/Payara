@@ -238,7 +238,9 @@ public class APIClassLoaderServiceImpl implements PostConstruct {
             enumerators.add(findResources(name));
             // Either requested resource belongs to java/ namespace or
             // it was not found in any of the bundles, so delegate to parent.
-            enumerators.add(getParent().getResources(name));
+            if (getParent() != null) {
+                enumerators.add(getParent().getResources(name));
+            }
             return new CompositeEnumeration(enumerators);
         }
 
