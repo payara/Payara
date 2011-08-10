@@ -57,17 +57,6 @@ public interface Ext extends AMXProxy, Singleton, Utility
 {
     @ManagedAttribute
     public Realms getRealms();
-
-    /**
-    Contacts Update Center Server and get the updates status.
-     */
-    //@ManagedAttribute
-    //public UpdateStatus  getUpdateStatus();
-    /**
-    @return the singleton SystemInfo
-     */
-    @ManagedAttribute
-    public SystemStatus getSystemStatus();
  
 }
 
