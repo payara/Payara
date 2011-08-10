@@ -45,6 +45,15 @@
     <import file="../distributions.xml"/>
     <property name="source.distribution.name" value="GlassFish Open Source Edition 3.2 Web Profile"/>
 
+    <target name="init">
+        <condition property="windows">
+            <os family="windows" />
+        </condition>
+        <condition property="unix">
+            <os family="unix" />
+        </condition>
+    </target>
+
     <target name="create.distribution">
         <echo message="Creating distribution: web"/>
         <!-- making sure that nucleus distro is staged first and web content
@@ -84,6 +93,16 @@
 	<replace file="target/stage/${install.dir.name}/glassfish/lib/registration/servicetag-registry.xml" 
 		token="%%%SOURCE%%%" value="${source.distribution.name}"/>
 
+        <!-- blow away default domain inherited from nucleus and recreate it
+             in order to pick up updated template files 
+             This should be removed once nucleus distro assembly moves to 
+             nucleus workspace -->
+
+        <delete dir="target/stage/${install.dir.name}/glassfish/domains/domain1"/>
+                
+        <!-- create domain -->
+        <antcall target="create-domain"/>
+
         <!-- stage appropriate legal content for this distribution -
           it is OK to inherit nucleus content at this point     -->
 
@@ -107,5 +126,21 @@
         </zip> 
         <!-- deploy distribution artifact to maven repository" -->
         <attachArtifact file="target/web.zip"/>
+   </target>
+
+      <target name="create-domain" depends="create-domain-on-windows, create-domain-on-unix"/>
+
+   <target name="create-domain-on-windows" depends="init" if="windows">
+       <ant antfile="../distributions.xml" target="create-domain">
+           <property name="exec.dir" value="${basedir}/target/stage/${install.dir.name}/glassfish/bin"/>
+           <property name="exec.executable" value="${basedir}/target/stage/${install.dir.name}/glassfish/bin/asadmin.bat"/>
+       </ant>
+   </target>
+
+   <target name="create-domain-on-unix" depends="init" if="unix">
+       <ant antfile="../distributions.xml" target="create-domain">
+           <property name="exec.dir" value="${basedir}/target/stage/${install.dir.name}/glassfish/bin"/>
+           <property name="exec.executable" value="${basedir}/target/stage/${install.dir.name}/glassfish/bin/asadmin"/>
+       </ant>
    </target>
 </project>
