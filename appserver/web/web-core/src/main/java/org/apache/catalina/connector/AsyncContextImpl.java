@@ -44,6 +44,7 @@ import org.apache.catalina.Globals;
 import org.apache.catalina.core.ApplicationDispatcher;
 import org.apache.catalina.core.ApplicationHttpRequest;
 import org.apache.catalina.core.ApplicationHttpResponse;
+import org.apache.catalina.core.DispatchTargetsInfo;
 import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.util.StringManager;
 
@@ -90,8 +91,7 @@ class AsyncContextImpl implements AsyncContext {
 
     private boolean isOriginalRequestAndResponse = false;
 
-    // The target of zero-argument async dispatches
-    private String zeroArgDispatchTarget = null;
+    private boolean isStartAsyncWithZeroArg = false;
 
     // defaults to false
     private AtomicBoolean isDispatchInProgress = new AtomicBoolean(); 
@@ -162,12 +162,10 @@ class AsyncContextImpl implements AsyncContext {
 
     @Override
     public void dispatch() {
-        if (zeroArgDispatchTarget == null) {
-            log.severe("Unable to determine target of zero-arg dispatch");
-            return;
-        }
-        ApplicationDispatcher dispatcher = (ApplicationDispatcher)
-            servletRequest.getRequestDispatcher(zeroArgDispatchTarget);
+        ApplicationDispatcher dispatcher = 
+            (ApplicationDispatcher)getZeroArgDispatcher(
+                origRequest, servletRequest, isStartAsyncWithZeroArg);
+
         isDispatchInScope.set(true);
         if (dispatcher != null) {
             if (isDispatchInProgress.compareAndSet(false, true)) {
@@ -179,8 +177,7 @@ class AsyncContextImpl implements AsyncContext {
         } else {
             // Should never happen, because any unmapped paths will be 
             // mapped to the DefaultServlet
-            log.warning("Unable to acquire RequestDispatcher for " +
-                        zeroArgDispatchTarget);
+            log.warning("Unable to determine target of zero-arg dispatcher");
         }
     } 
 
@@ -370,40 +367,58 @@ class AsyncContextImpl implements AsyncContext {
                 (servletResponse instanceof ResponseFacade ||
                 servletResponse instanceof ApplicationHttpResponse));
 
-        zeroArgDispatchTarget = getZeroArgDispatchTarget(
-                this.origRequest, servletRequest, isStartAsyncWithZeroArg);
+        this.isStartAsyncWithZeroArg = isStartAsyncWithZeroArg;
     }
 
     /**
-     * Determines the target of a zero-argument async dispatch for the
+     * Determines the dispatcher of a zero-argument async dispatch for the
      * given request.
      *
-     * @return the target of the zero-argument async dispatch
+     * @return the dispatcher of the zero-argument async dispatch
      */
-    private String getZeroArgDispatchTarget(
+    private RequestDispatcher getZeroArgDispatcher(
             Request origRequest, ServletRequest servletRequest,
             boolean isStartAsyncWithZeroArg) {
 
-        HttpServletRequest req = null;
-        if (isStartAsyncWithZeroArg) {
-            req = origRequest;
-        } else if (servletRequest instanceof HttpServletRequest) {
-            req = (HttpServletRequest)servletRequest;
+        String dispatchTarget = null;
+        boolean isNamed = false;
+        if ((!isStartAsyncWithZeroArg) &&
+                servletRequest instanceof HttpServletRequest) {
+
+            HttpServletRequest req = (HttpServletRequest)servletRequest;
+            dispatchTarget = getCombinedPath(req);
         } else {
-            req = origRequest;
-
-            log.warning("Unable to determine target of " +
-                        "zero-argument dispatch");
+            DispatchTargetsInfo dtInfo = (DispatchTargetsInfo)origRequest.getAttribute(
+                    ApplicationDispatcher.LAST_DISPATCH_REQUEST_PATH_ATTR);
+            if (dtInfo != null) {
+                dispatchTarget = dtInfo.getLastDispatchTarget();
+                isNamed = dtInfo.isLastNamedDispatchTarget();
+            }
+            if (dispatchTarget == null) {
+                dispatchTarget = getCombinedPath(origRequest);
+            }
         }
 
-        StringBuilder sb = new StringBuilder();
-        if (req.getServletPath() != null) {
-            sb.append(req.getServletPath());
+        RequestDispatcher dispatcher = null;
+        if (dispatchTarget != null) {
+            dispatcher = ((isNamed) ?
+                    servletRequest.getServletContext().getNamedDispatcher(dispatchTarget) :
+                    servletRequest.getRequestDispatcher(dispatchTarget));
         }
-        if (req.getPathInfo() != null) {
-            sb.append(req.getPathInfo());
+
+        return dispatcher;
+    }
+
+    private String getCombinedPath(HttpServletRequest req) {
+        String servletPath = req.getServletPath();
+        if (servletPath == null) {
+            return null;
         }
-        return sb.toString();
+        String pathInfo = req.getPathInfo();
+        if (pathInfo == null) {
+            return servletPath;
+        }
+        return servletPath + pathInfo;
     }
 
     static class Handler implements Runnable {

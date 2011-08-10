@@ -95,6 +95,11 @@ import static org.apache.catalina.InstanceEvent.EventType.AFTER_DISPATCH_EVENT;
 public final class ApplicationDispatcher
     implements RequestDispatcher {
 
+    // This attribute corresponds to a String[] which acts like a stack
+    // containing the last two pushed elements
+    public static final String LAST_DISPATCH_REQUEST_PATH_ATTR =
+        "org.apache.catalina.core.ApplicationDispatcher.lastDispatchRequestPathAttr";
+
     protected class PrivilegedDispatch implements PrivilegedExceptionAction<Void> {
 
         private ServletRequest request;
@@ -320,14 +325,14 @@ public final class ApplicationDispatcher
                   DispatcherType dispatcherType)
             throws ServletException, IOException {
 
-        if (!DispatcherType.FORWARD.equals(dispatcherType) &&
-                !DispatcherType.ERROR.equals(dispatcherType) &&
-                !DispatcherType.ASYNC.equals(dispatcherType)) {
+        if (DispatcherType.FORWARD != dispatcherType &&
+                DispatcherType.ERROR != dispatcherType &&
+                DispatcherType.ASYNC != dispatcherType) {
             throw new IllegalArgumentException("Illegal dispatcher type");
         }
 
-        boolean isCommit = (DispatcherType.FORWARD.equals(dispatcherType) ||
-            DispatcherType.ERROR.equals(dispatcherType));
+        boolean isCommit = (DispatcherType.FORWARD == dispatcherType ||
+            DispatcherType.ERROR == dispatcherType);
 
         if (Globals.IS_SECURITY_ENABLED) {
             try {
@@ -361,7 +366,7 @@ public final class ApplicationDispatcher
                             DispatcherType dispatcherType)
         throws ServletException, IOException {
 
-        if (!DispatcherType.ASYNC.equals(dispatcherType)) {
+        if (DispatcherType.ASYNC != dispatcherType) {
             // Reset any output that has been buffered, but keep
             // headers/cookies
             if (response.isCommitted()) {
@@ -377,6 +382,23 @@ public final class ApplicationDispatcher
                 if (log.isLoggable(Level.FINE))
                     log.fine("  Forward resetBuffer() returned ISE: " + e);
                 throw e;
+            }
+        }
+
+        if (DispatcherType.INCLUDE != dispatcherType) {
+            DispatchTargetsInfo dtInfo =
+                    (DispatchTargetsInfo)request.getAttribute(
+                    LAST_DISPATCH_REQUEST_PATH_ATTR);
+            if (dtInfo == null) {
+                dtInfo = new DispatchTargetsInfo();
+                request.setAttribute(LAST_DISPATCH_REQUEST_PATH_ATTR, dtInfo);
+            }
+
+            if (servletPath == null && pathInfo == null) {
+                // Handle an HTTP named dispatcher forward
+                dtInfo.addDispatchTarget(wrapper.getServletName(), true);
+            } else {
+                dtInfo.addDispatchTarget(getCombinedPath(), false);
             }
         }
 
@@ -420,10 +442,10 @@ public final class ApplicationDispatcher
             // If the request is being FORWARD- or ASYNC-dispatched for 
             // the first time, initialize it with the required request
             // attributes
-            if ((DispatcherType.FORWARD.equals(dispatcherType) &&
+            if ((DispatcherType.FORWARD == dispatcherType &&
                     hrequest.getAttribute(
                         RequestDispatcher.FORWARD_REQUEST_URI) == null) ||
-                    (DispatcherType.ASYNC.equals(dispatcherType) &&
+                    (DispatcherType.ASYNC == dispatcherType &&
                         hrequest.getAttribute(
                             AsyncContext.ASYNC_REQUEST_URI) == null)) { 
                 wrequest.initSpecialAttributes(hrequest.getRequestURI(),
@@ -1062,10 +1084,10 @@ public final class ApplicationDispatcher
             (current instanceof HttpServletResponse))
             wrapper =
                 new ApplicationHttpResponse((HttpServletResponse) current,
-                    DispatcherType.INCLUDE.equals(state.dispatcherType));
+                    DispatcherType.INCLUDE == state.dispatcherType);
         else
             wrapper = new ApplicationResponse(current,
-                DispatcherType.INCLUDE.equals(state.dispatcherType));
+                DispatcherType.INCLUDE == state.dispatcherType);
         if (previous == null)
             state.outerResponse = wrapper;
         else
