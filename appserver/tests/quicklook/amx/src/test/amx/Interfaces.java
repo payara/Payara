@@ -74,7 +74,6 @@ class Interfaces {
             SystemInfo.class,
             Sample.class,
             Tools.class,
-            SystemStatus.class,
             Logging.class,
             MonitoringRoot.class,
             ServerMon.class,

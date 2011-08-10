@@ -379,57 +379,6 @@ public final class AMXProxyTests extends AMXTestBase
     }
     
 
-    @Test
-    public void testSystemStatus()
-    {
-        final SystemStatus ss = getDomainRootProxy().getExt().getSystemStatus();
-
-        final List<UnprocessedConfigChange> changes = SystemStatus.Helper.toUnprocessedConfigChange( ss.getRestartRequiredChanges() );
-
-        final Set<AMXProxy> pools = getQueryMgr().queryType( Util.deduceType(JdbcConnectionPool.class) );
-
-        for (final AMXProxy pool : pools)
-        {
-            final Map<String, Object> result = ss.pingJdbcConnectionPool(pool.getName());
-            assert result != null;
-        }
-    }
-    
-    @Test
-    public void testAutoConvert()
-    {
-        // make sure there is a required change so the change list will be non-empty
-        final JavaConfig jc = getDomainConfig().getConfigs().getConfig().get("server-config").getJavaConfig();
-        final String[] jvmOptions = jc.getJvmOptions();
-        assert jvmOptions != null;
-        for( int i = 0; i < jvmOptions.length; ++i )
-        {
-            final String option = jvmOptions[i];
-            if ( option.startsWith( "-Xmx" ) )
-            {
-                //System.out.println( "CHANGING OPTION " + option );
-                jvmOptions[i] = "-Xmx999m";
-                jc.setJvmOptions( jvmOptions );
-                
-                jvmOptions[i] = option;
-                jc.setJvmOptions( jvmOptions ); // set back to old value
-                // we should now have two changes in the list
-                break;
-            }
-        }
-        
-        final SystemStatus systemStatus = getDomainRootProxy().getExt().getSystemStatus();
-        
-        final List<UnprocessedConfigChange>  changes = SystemStatus.Helper.toUnprocessedConfigChange( systemStatus.getRestartRequiredChanges() );
-        assert changes != null && changes.size() >= 2;
-        System.out.println( "CHANGE COUNT: " + changes.size() );
-        for( final UnprocessedConfigChange change : changes )
-        {
-            change.toString();  // force it to exist and function properly
-           // System.out.println( "" + change );
-        }
-    }
-    
     
     /** test all MBeans generically */
     @Test
