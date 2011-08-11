@@ -43,49 +43,13 @@
 <domain log-root="${com.sun.aas.instanceRoot}/logs" application-root="${com.sun.aas.instanceRoot}/applications">
   <applications>
   </applications>
-  <resources>
-    <jdbc-resource pool-name="__TimerPool" jndi-name="jdbc/__TimerPool" object-type="system-admin"></jdbc-resource>
-    <jdbc-resource pool-name="__CallFlowPool" jndi-name="jdbc/__CallFlowPool" object-type="system-all"></jdbc-resource>
-    <jdbc-resource pool-name="DerbyPool" jndi-name="jdbc/__default"></jdbc-resource>
-    <jdbc-connection-pool datasource-classname="org.apache.derby.jdbc.EmbeddedXADataSource" res-type="javax.sql.XADataSource" name="__CallFlowPool">
-      <property name="databaseName" value="${com.sun.aas.instanceRoot}/lib/databases/sun-callflow"></property>
-      <property name="connectionAttributes" value=";create=true"></property>
-    </jdbc-connection-pool>
-    <jdbc-connection-pool datasource-classname="org.apache.derby.jdbc.EmbeddedXADataSource" res-type="javax.sql.XADataSource" name="__TimerPool">
-      <property name="databaseName" value="${com.sun.aas.instanceRoot}/lib/databases/ejbtimer"></property>
-    </jdbc-connection-pool>
-    <jdbc-connection-pool datasource-classname="org.apache.derby.jdbc.ClientDataSource" is-isolation-level-guaranteed="false" res-type="javax.sql.DataSource" name="DerbyPool">
-      <property name="PortNumber" value="1527"></property>
-      <property name="Password" value="APP"></property>
-      <property name="User" value="APP"></property>
-      <property name="serverName" value="localhost"></property>
-      <property name="DatabaseName" value="sun-appserv-samples"></property>
-      <property name="connectionAttributes" value=";create=true"></property>
-    </jdbc-connection-pool>
-  </resources>
+  <resources/>
   <configs>
     <config name="server-config">
-      <iiop-service>
-        <orb use-thread-pool-ids="thread-pool-1"></orb>
-        <iiop-listener port="3700" id="orb-listener-1" address="0.0.0.0"></iiop-listener>
-        <iiop-listener port="3820" id="SSL" address="0.0.0.0" security-enabled="true">
-          <ssl cert-nickname="s1as"></ssl>
-        </iiop-listener>
-        <iiop-listener port="3920" id="SSL_MUTUALAUTH" address="0.0.0.0" security-enabled="true">
-          <ssl cert-nickname="s1as" client-auth-enabled="true"></ssl>
-        </iiop-listener>
-      </iiop-service>
       <admin-service system-jmx-connector-name="system" type="das-and-server">
         <jmx-connector port="8686" address="0.0.0.0" security-enabled="false" name="system" auth-realm-name="admin-realm"></jmx-connector>
         <das-config dynamic-reload-enabled="true" deploy-xml-validation="full" autodeploy-dir="${com.sun.aas.instanceRoot}/autodeploy" autodeploy-enabled="true"></das-config>
       </admin-service>
-      <ejb-container max-pool-size="32" pool-resize-quantity="8" steady-pool-size="0" session-store="${com.sun.aas.instanceRoot}/session-store">
-        <ejb-timer-service></ejb-timer-service>
-      </ejb-container>
-      <mdb-container max-pool-size="32" pool-resize-quantity="8" steady-pool-size="0"></mdb-container>
-      <jms-service default-jms-host="default_JMS_host" type="EMBEDDED">
-        <jms-host host="laturbie.sfbay.sun.com" name="default_JMS_host"></jms-host>
-      </jms-service>
       <log-service log-rotation-limit-in-bytes="2000000" file="${com.sun.aas.instanceRoot}/logs/server.log">
         <module-log-levels></module-log-levels>
       </log-service>

@@ -43,22 +43,7 @@
 <domain log-root="${com.sun.aas.instanceRoot}/logs" application-root="${com.sun.aas.instanceRoot}/applications" version="10.0">
   <system-applications />
   <applications />
-  <resources>
-    <jdbc-resource pool-name="__TimerPool" jndi-name="jdbc/__TimerPool" object-type="system-admin" />
-    <jdbc-resource pool-name="DerbyPool" jndi-name="jdbc/__default" />
-    <jdbc-connection-pool datasource-classname="org.apache.derby.jdbc.EmbeddedXADataSource" res-type="javax.sql.XADataSource" name="__TimerPool">
-      <property name="databaseName" value="${com.sun.aas.instanceRoot}/lib/databases/ejbtimer" />
-      <property name="connectionAttributes" value=";create=true" />
-    </jdbc-connection-pool>
-    <jdbc-connection-pool datasource-classname="org.apache.derby.jdbc.ClientDataSource" is-isolation-level-guaranteed="false" res-type="javax.sql.DataSource" name="DerbyPool">
-      <property name="PortNumber" value="1527" />
-      <property name="Password" value="APP" />
-      <property name="User" value="APP" />
-      <property name="serverName" value="localhost" />
-      <property name="DatabaseName" value="sun-appserv-samples" />
-      <property name="connectionAttributes" value=";create=true" />
-    </jdbc-connection-pool>
-  </resources>
+  <resources/>
   <servers>
     <server name="server" config-ref="server-config">
       <resource-ref ref="jdbc/__TimerPool" />
@@ -97,22 +82,6 @@
         <property name="adminConsoleDownloadLocation" value="glassfish/lib/install/applications/admingui.war" />
         <property name="ipsRoot" value="${com.sun.aas.installRoot}/.." />
       </admin-service>
-      <web-container>
-        <session-config>
-          <session-manager>
-            <manager-properties />
-            <store-properties />
-          </session-manager>
-          <session-properties />
-        </session-config>
-      </web-container>
-      <ejb-container pool-resize-quantity="8" max-pool-size="32" steady-pool-size="0" session-store="${com.sun.aas.instanceRoot}/session-store">
-        <ejb-timer-service />
-      </ejb-container>
-      <mdb-container pool-resize-quantity="8" max-pool-size="32" steady-pool-size="0" />
-      <jms-service default-jms-host="default_JMS_host" type="EMBEDDED">
-        <jms-host host="laturbie.sfbay.sun.com" name="default_JMS_host" />
-      </jms-service>
       <log-service log-rotation-limit-in-bytes="2000000" file="${com.sun.aas.instanceRoot}/logs/server.log">
         <module-log-levels />
       </log-service>
@@ -168,7 +137,6 @@
           </provider-config>
         </message-security-config>
       </security-service>
-      <transaction-service tx-log-dir="${com.sun.aas.instanceRoot}/logs" />
       <monitoring-service>
         <module-monitoring-levels />
       </monitoring-service>
