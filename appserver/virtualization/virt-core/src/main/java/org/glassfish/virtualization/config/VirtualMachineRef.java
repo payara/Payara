@@ -40,7 +40,6 @@
 
 package org.glassfish.virtualization.config;
 
-import com.sun.jdi.VirtualMachine;
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.Configured;
