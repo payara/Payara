@@ -43,11 +43,13 @@ package org.glassfish.virtualization.commands;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
+import org.glassfish.hk2.Services;
 import org.glassfish.virtualization.config.Template;
 import org.glassfish.virtualization.config.Virtualizations;
 import org.glassfish.virtualization.runtime.VirtualClusters;
 import org.glassfish.virtualization.spi.*;
 import org.glassfish.virtualization.spi.templates.TemplateInstanceImpl;
+import org.glassfish.virtualization.util.EventSourceImpl;
 import org.glassfish.virtualization.util.RuntimeContext;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
@@ -80,6 +82,9 @@ public class CreateVirtualMachine implements AdminCommand {
     @Inject
     Virtualizations virts;
 
+    @Inject
+    Services services;
+
     @Override
     public void execute(AdminCommandContext context) {
 
@@ -97,7 +102,9 @@ public class CreateVirtualMachine implements AdminCommand {
         }
         try {
             // multi-threading bug possible here, need a better way to allocated tokens.
-            ListenableFuture<AllocationPhase, VirtualMachine> future = group.allocate(new TemplateInstanceImpl(template), clusters.byName(clusterName));
+            ListenableFuture<AllocationPhase, VirtualMachine> future = group.allocate(
+                    new TemplateInstanceImpl(services, template), clusters.byName(clusterName),
+                    new EventSourceImpl<AllocationPhase>());
             try {
                 future.get();
             } catch(Exception e) {

@@ -45,6 +45,10 @@ import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
+import org.glassfish.virtualization.config.Template;
+import org.glassfish.virtualization.config.VirtualMachineConfig;
+import org.glassfish.virtualization.runtime.VirtualCluster;
+import org.glassfish.virtualization.runtime.VirtualClusters;
 import org.glassfish.virtualization.spi.*;
 import org.glassfish.virtualization.util.RuntimeContext;
 import org.jvnet.hk2.annotations.Inject;
@@ -54,6 +58,7 @@ import org.jvnet.hk2.component.PerLookup;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -81,35 +86,63 @@ public class DeleteVirtualCluster implements AdminCommand {
     @Inject
     ExecutorService executorService;
 
+    @Inject
+    IAAS iaas;
+
+    @Inject
+    VirtualClusters virtualClusters;
+
+    @Inject
+    TemplateRepository templateRepository;
+
     @Override
 
     public void execute(final AdminCommandContext context) {
 
-        // I don't like this much we should delegate this work to sub objects
         Cluster cluster = domain.getClusterNamed(name);
         if (cluster==null) {
-            context.getActionReport().failure(RuntimeContext.logger, "Cannot find cluster named " + name);
+            context.getActionReport().failure(RuntimeContext.logger, "No cluster named " + name);
             return;
         }
-
-        // multi-thread the remote virtual machines deletion
-        List<Future<?>> deletions = new ArrayList<Future<?>>();
-        for (final ServerRef serverRef : cluster.getServerRef()) {
-            deletions.add(executorService.submit(new Runnable() {
-                @Override
-                public void run() {
-                    vmDeleter.deleteServerRef(context, serverRef);
-                }
-            }));
-        }
-
-        // wait for deletions to be done.
-        for (Future<?> future : deletions) {
-            try {
-                future.get(100, TimeUnit.SECONDS);
-            } catch (Exception e) {
-                RuntimeContext.logger.log(Level.WARNING, "Cannot delete remote virtual machine...", e);
+        List<Future> deletions = new ArrayList<Future>();
+        try {
+            VirtualCluster virtualCluster = virtualClusters.byName(name);
+            if (virtualCluster==null) {
+                context.getActionReport().failure(RuntimeContext.logger, "Cannot find cluster named " + name);
+                return;
             }
+            for (VirtualMachineConfig vmConfig : cluster.getExtensionsByType(VirtualMachineConfig.class)) {
+                final Template template = vmConfig.getTemplate();
+                final TemplateInstance templateInstance = templateRepository.byName(template.getName());
+
+                // todo : logic below needs to be improved.
+
+                    for (final VirtualMachine vm : virtualCluster.getVms()) {
+                        if (vm.getName().equals(vmConfig.getName())) {
+                            deletions.add(executorService.submit(new Callable<Void>() {
+                                @Override
+                                public Void call() throws Exception {
+                                    templateInstance.getCustomizer().clean(vm);
+                                    vm.delete();
+                                    return null;
+                                }
+                            }));
+                        }
+                    }
+            }
+
+            // wait for deletions to be done.
+            for (Future<?> future : deletions) {
+                try {
+                    future.get(100, TimeUnit.SECONDS);
+                } catch (Exception e) {
+                    RuntimeContext.logger.log(Level.WARNING, "Cannot delete remote virtual machine...", e);
+                }
+            }
+            virtualClusters.remove(virtualCluster);
+
+        } catch (VirtException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
 
         // finally delete the cluster.

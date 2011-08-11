@@ -344,6 +344,9 @@ public interface Cluster extends ConfigBeanProxy, Injectable, PropertyBag, Named
     @Override
     List<Property> getProperty();
 
+    @Element("*")
+    List<ClusterExtension> getExtensions();
+
     /**
      * Returns the cluster configuration reference
      * @return the config-ref attribute
@@ -390,6 +393,8 @@ public interface Cluster extends ConfigBeanProxy, Injectable, PropertyBag, Named
     @DuckTyped
     void deleteResourceRef(String refName) throws TransactionFailure;
 
+    @DuckTyped
+    <T> List<T> getExtensionsByType(Class<T> type);
 
     class Duck {
         public static boolean isCluster(Cluster me) { return true; }
@@ -477,6 +482,19 @@ public interface Cluster extends ConfigBeanProxy, Injectable, PropertyBag, Named
                     return newResourceRef;
                 }
             }, cluster);
+        }
+
+        public static <T extends ClusterExtension> List<T> getExtensionsByType(Cluster cluster, Class<T> type) {
+            List<T> extensions = new ArrayList<T>();
+            for (ClusterExtension ce : cluster.getExtensions()) {
+                try {
+                    type.cast(ce);
+                    extensions.add((T) ce);
+                } catch (ClassCastException e) {
+                    // ignore, not the right type
+                }
+            }
+            return extensions;
         }
 
     }

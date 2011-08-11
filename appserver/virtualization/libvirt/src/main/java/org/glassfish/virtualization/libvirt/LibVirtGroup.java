@@ -39,11 +39,17 @@
  */
 package org.glassfish.virtualization.libvirt;
 
+import com.sun.enterprise.config.serverbeans.Node;
+import com.sun.enterprise.config.serverbeans.Server;
+import org.glassfish.api.ActionReport;
+import org.glassfish.hk2.Services;
 import org.glassfish.hk2.inject.Injector;
 import org.glassfish.virtualization.config.*;
+import org.glassfish.virtualization.libvirt.jna.Domain;
 import org.glassfish.virtualization.runtime.VMTemplate;
 import org.glassfish.virtualization.runtime.VirtualCluster;
 import org.glassfish.virtualization.spi.*;
+import org.glassfish.virtualization.util.EventSource;
 import org.glassfish.virtualization.util.RuntimeContext;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
@@ -77,6 +83,15 @@ public class LibVirtGroup implements PhysicalServerPool, ConfigListener {
 
     @Inject
     ExecutorService executorService;
+
+    @Inject
+    RuntimeContext rtContext;
+
+    @Inject
+    com.sun.enterprise.config.serverbeans.Domain domain;
+
+    @Inject
+    Services services;
 
     public ServerPoolConfig config;
     final ConcurrentMap<String, Machine> machines = new ConcurrentHashMap<String, Machine>();
@@ -313,7 +328,8 @@ public class LibVirtGroup implements PhysicalServerPool, ConfigListener {
 
 
     @Override
-    public ListenableFuture<AllocationPhase, VirtualMachine> allocate(final TemplateInstance template, final VirtualCluster cluster)
+    public ListenableFuture<AllocationPhase, VirtualMachine> allocate(
+            final TemplateInstance template, final VirtualCluster cluster, final EventSource<AllocationPhase> source)
             throws VirtException {
         // for now, could not be simpler, iterate over machines I own and ask for a virtual machine to
         // each of them.
@@ -375,7 +391,7 @@ public class LibVirtGroup implements PhysicalServerPool, ConfigListener {
         // is achieved and flag the failing machine as invalid.
         ListenableFuture<AllocationPhase, VirtualMachine> vm = null;
         try {
-            vm = targetMachine.create(template, cluster);
+            vm = targetMachine.create(template, cluster, source);
         } catch (IOException e) {
             throw new VirtException(e);
         }
@@ -385,23 +401,19 @@ public class LibVirtGroup implements PhysicalServerPool, ConfigListener {
         return vm;
     }
 
-    List<VMTemplate> templates = new ArrayList<VMTemplate>();
-
     @Override
-    public List<VMTemplate> getInstalledTemplates() {
-        return new ArrayList<VMTemplate>(templates);
-    }
+    public void delete(Server server) throws VirtException {
+        String instanceName = server.getName();
+        String vmName = instanceName.substring(instanceName.lastIndexOf("_")+1, instanceName.length()-"Instance".length());
+        vmByName(vmName).delete();
 
-    @Override
-    public void install(VMTemplate template) {
-        synchronized (this) {
-            templates.add(template);
-        }
-        for (Machine machine : machines()) {
-            try {
-                template.copyTo(machine, machine.getConfig().getTemplatesLocation());
-            } catch (IOException e) {
-                RuntimeContext.logger.log(Level.SEVERE, "Error while copying template to remote machine ", e);
+        String nodeName = server.getNodeRef();
+
+        Node node = domain.getNodeNamed(nodeName);
+        if (node!=null) {
+            if (node.getType().equals("SSH")) {
+                ActionReport report = services.forContract(ActionReport.class).get();
+                rtContext.executeAdminCommand(report, "delete-node-ssh", nodeName);
             }
         }
     }

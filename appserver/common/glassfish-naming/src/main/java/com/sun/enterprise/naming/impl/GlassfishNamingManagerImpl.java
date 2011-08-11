@@ -44,8 +44,6 @@ import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Inject;
 
-import org.jvnet.hk2.component.*;
-
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.api.invocation.ComponentInvocation;
 
@@ -55,6 +53,8 @@ import org.glassfish.api.naming.NamingObjectProxy;
 
 import com.sun.enterprise.naming.util.LogFacade;
 
+import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.Singleton;
 import org.omg.CORBA.ORB;
 import java.rmi.RemoteException;
 import java.rmi.Remote;

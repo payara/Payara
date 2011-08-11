@@ -98,32 +98,16 @@ public class DeleteVirtualMachine implements AdminCommand {
         String instanceName = serverRef.getRef();
         Server instance = domain.getServerNamed(instanceName);
         if (instance!=null) {
-            String nodeName = instance.getNodeRef();
+            String serverPoolName = instance.getProperty("ServerPool").getValue();
             rtContext.executeAdminCommand(context.getActionReport(), "stop-instance", instanceName, "_vmShutdown", "false");
             rtContext.executeAdminCommand(context.getActionReport(), "delete-instance", instanceName);
 
             // stop and delete the virtual machine.
-            // searching the target vm needs to be improved
-            String vmName = instanceName.substring(instanceName.lastIndexOf("_")+1, instanceName.length()-"Instance".length());
-            if (groups!=null) {
-                for (ServerPool group : groups) {
-                    try {
-                        VirtualMachine vm = group.vmByName(vmName);
-                        if (vm != null) {
-                            vm.delete();
-                        }
-                    } catch (VirtException e) {
-                        RuntimeContext.logger.log(Level.WARNING,
-                                "Exception while deleting virtual machine " + vmName, e);
-                    }
-                }
-            }
-            Node node = domain.getNodeNamed(nodeName);
-            if (node!=null) {
-                // best example why this should not be here, we should not assume it's a ssh node.
-                if (node.getType().equals("SSH")) {
-                    rtContext.executeAdminCommand(context.getActionReport(), "delete-node-ssh", nodeName);
-                }
+            try {
+                groups.byName(serverPoolName).delete(instance);
+            } catch (VirtException e) {
+                RuntimeContext.logger.log(Level.WARNING,
+                        "Exception while deleting virtual machine " + instanceName, e);
             }
         }
     }

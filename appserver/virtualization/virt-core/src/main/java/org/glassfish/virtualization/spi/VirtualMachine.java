@@ -106,5 +106,19 @@ public interface VirtualMachine {
      */
     VirtualMachineInfo getInfo();
 
+    /**
+     * Returns the server pool this virtual machine was allocated on
+     * @return the server pool
+     */
+    ServerPool getServerPool();
+
+    /**
+     * Returns the machine (if exists) on which this virtual machine
+     * was allocated on or null if there is no notion of Machines on
+     * the server pool used.
+     * @return the machine
+     */
+    Machine getMachine();
+
 
 }

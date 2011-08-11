@@ -38,53 +38,15 @@
  * holder.
  */
 
-package org.glassfish.virtualization.spi;
+package com.sun.enterprise.config.serverbeans;
 
-import org.glassfish.virtualization.config.MachineConfig;
-import org.glassfish.virtualization.config.VirtUser;
-import org.glassfish.virtualization.os.FileOperations;
-import org.glassfish.virtualization.runtime.VirtualCluster;
-import org.glassfish.virtualization.util.EventSource;
-
-import java.io.IOException;
-import java.util.Collection;
-import java.util.Map;
+import org.jvnet.hk2.config.ConfigBeanProxy;
+import org.jvnet.hk2.config.Configured;
 
 /**
- * Represents a machine
+ * Super interface for any extension element to the {@link Cluster} configuration
  * @author Jerome Dochez
  */
-public interface Machine {
-
-    public enum State { SUSPENDING, SUSPENDED, RESUMING, READY}
-
-    MachineConfig getConfig();
-
-    String getName();
-
-    String getIpAddress();
-
-    PhysicalServerPool getServerPool();
-
-    State getState();
-
-    VirtUser getUser();
-
-    FileOperations getFileOperations();
-
-    boolean isUp();
-
-    void sleep() throws IOException, InterruptedException;
-
-    Collection<? extends VirtualMachine> getVMs() throws VirtException;
-
-    StoragePool addStoragePool(String name, long capacity) throws VirtException;
-
-    Map<String, ? extends StoragePool> getStoragePools() throws VirtException;
-
-    VirtualMachine byName(String name) throws VirtException;
-
-    ListenableFuture<AllocationPhase, VirtualMachine> create(
-            TemplateInstance template, VirtualCluster cluster, EventSource<AllocationPhase> source)
-            throws VirtException, IOException;
+@Configured
+public interface ClusterExtension extends ConfigBeanProxy {
 }

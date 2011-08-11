@@ -39,6 +39,7 @@
  */
 package org.glassfish.virtualization.spi;
 
+import org.glassfish.virtualization.runtime.VirtualCluster;
 import org.jvnet.hk2.annotations.Contract;
 
 import java.util.List;

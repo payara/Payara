@@ -81,8 +81,8 @@ public class AddVirtualizationCapabilities implements AdminCommand {
     @Param
     String type;
 
-    @Param
-    String emulator;
+    @Param(optional = true)
+    String emulator=null;
 
     @Inject
     ServerEnvironment env;
@@ -98,10 +98,26 @@ public class AddVirtualizationCapabilities implements AdminCommand {
     @Override
     public void execute(AdminCommandContext context) {
 
-        final Virtualizations virtualizations = domain.getExtensionByType(Virtualizations.class);
+        Virtualizations v = domain.getExtensionByType(Virtualizations.class);
+        if (v==null) {
+            try {
+                v = (Virtualizations) ConfigSupport.apply(new SingleConfigCode<Domain>() {
+                    @Override
+                    public Object run(Domain wDomain) throws PropertyVetoException, TransactionFailure {
+                        Virtualizations v = wDomain.createChild(Virtualizations.class);
+                        wDomain.getExtensions().add(v);
+                        return v;
+                    }
+                }, domain);
+            } catch (TransactionFailure t) {
+                throw new RuntimeException(t);
+            }
+        }
+        final Virtualizations virtualizations = v;
+
         if (virtualizations!=null) {
-            for (Virtualization v : virtualizations.getVirtualizations()) {
-                if (v.getName().equals(type)) {
+            for (Virtualization virtualization : virtualizations.getVirtualizations()) {
+                if (virtualization.getName().equals(type)) {
                     // already added, nothing to do anymore.
                     context.getActionReport().setActionExitCode(ActionReport.ExitCode.WARNING);
                     context.getActionReport().setActionDescription("Configuration already present in the domain.xml");

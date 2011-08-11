@@ -64,4 +64,12 @@ public interface TemplateInstance {
      * @return true if the index is satisfied.
      */
     boolean satisfies(TemplateCondition condition);
+
+    /**
+     * Returns the customizer for this template instance.
+     * The customizer is often looked up in the services registry using the
+     * {@link ServiceType} index value.
+     * @return the customizer instance.
+     */
+    TemplateCustomizer getCustomizer();
 }

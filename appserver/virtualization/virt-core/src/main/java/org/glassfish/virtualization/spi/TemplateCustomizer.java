@@ -40,51 +40,35 @@
 
 package org.glassfish.virtualization.spi;
 
-import org.glassfish.virtualization.config.MachineConfig;
-import org.glassfish.virtualization.config.VirtUser;
-import org.glassfish.virtualization.os.FileOperations;
+import org.glassfish.virtualization.config.Template;
 import org.glassfish.virtualization.runtime.VirtualCluster;
-import org.glassfish.virtualization.util.EventSource;
-
-import java.io.IOException;
-import java.util.Collection;
-import java.util.Map;
+import org.glassfish.virtualization.util.VirtualizationType;
+import org.jvnet.hk2.annotations.Contract;
 
 /**
- * Represents a machine
- * @author Jerome Dochez
+ * A template customizer is responsible for customizing a virtual
+ * machine for a particular template service type.
  */
-public interface Machine {
+@Contract
+    public interface TemplateCustomizer {
 
-    public enum State { SUSPENDING, SUSPENDED, RESUMING, READY}
+    /**
+     * Customize the template instance running within the passed
+     * {@link VirtualMachine} instance for a particular use (like a
+     * GlassFish instance, or a database).
+     *
+     * @param cluster the virtual cluster runtime information
+     * @param virtualMachine the instantiated template's virtual machine
+     * @throws VirtException if the customization cannot be achieved
+     */
+    void customize(VirtualCluster cluster, VirtualMachine virtualMachine) throws VirtException;
 
-    MachineConfig getConfig();
-
-    String getName();
-
-    String getIpAddress();
-
-    PhysicalServerPool getServerPool();
-
-    State getState();
-
-    VirtUser getUser();
-
-    FileOperations getFileOperations();
-
-    boolean isUp();
-
-    void sleep() throws IOException, InterruptedException;
-
-    Collection<? extends VirtualMachine> getVMs() throws VirtException;
-
-    StoragePool addStoragePool(String name, long capacity) throws VirtException;
-
-    Map<String, ? extends StoragePool> getStoragePools() throws VirtException;
-
-    VirtualMachine byName(String name) throws VirtException;
-
-    ListenableFuture<AllocationPhase, VirtualMachine> create(
-            TemplateInstance template, VirtualCluster cluster, EventSource<AllocationPhase> source)
-            throws VirtException, IOException;
+    /**
+     * Clean the current virtual machine information from this process's
+     * configuration.
+     *
+     * @param virtualMachine the virtual machine instance to remove from our
+     * configuration.
+     */
+    void clean(VirtualMachine virtualMachine);
 }

@@ -39,6 +39,7 @@
  */
 package org.glassfish.virtualization.spi;
 
+import com.sun.enterprise.config.serverbeans.Cluster;
 import org.glassfish.virtualization.runtime.VirtualCluster;
 
 import java.util.*;

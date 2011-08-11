@@ -110,6 +110,9 @@ public class CreateVirtualCluster implements AdminCommand {
     @Inject
     IAAS iaas;
 
+    @Inject
+    VirtualClusters virtualClusters;
+
     @Override
     public void execute(AdminCommandContext context) {
 
@@ -177,9 +180,9 @@ public class CreateVirtualCluster implements AdminCommand {
             return;
         }
 
-        VirtualCluster vCluster = new VirtualCluster(cluster);
-        for (int i=0;i<minNumber;i++) {
-            try {
+        try {
+            VirtualCluster vCluster = virtualClusters.byName(name);
+            for (int i=0;i<minNumber;i++) {
                 ListenableFuture<AllocationPhase, VirtualMachine> future =
                         iaas.allocate(new VMOrder(templateInstance, vCluster), null);
                 VirtualMachine vm;
@@ -190,11 +193,11 @@ public class CreateVirtualCluster implements AdminCommand {
                     return;
                 }
                 sb.append(vm.getName()).append( "(").append(vm.getAddress()).append(") ");
-            } catch (VirtException e) {
+            }
+        } catch (VirtException e) {
                 context.getActionReport().failure(RuntimeContext.logger, "Cannot allocate virtual machine", e);
                 rtContext.executeAdminCommand(report, "delete-cluster", name);
                 return;
-            }
         }
 
         report.setActionExitCode(ActionReport.ExitCode.SUCCESS);

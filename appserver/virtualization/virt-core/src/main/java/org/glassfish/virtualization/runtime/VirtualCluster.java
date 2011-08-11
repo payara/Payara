@@ -41,14 +41,22 @@
 package org.glassfish.virtualization.runtime;
 
 import com.sun.enterprise.config.serverbeans.Cluster;
-import org.glassfish.virtualization.spi.VirtualMachine;
+import org.glassfish.virtualization.config.ServerPoolConfig;
+import org.glassfish.virtualization.config.VirtualMachineConfig;
+import org.glassfish.virtualization.config.VirtualMachineRef;
+import org.glassfish.virtualization.spi.*;
+import org.glassfish.virtualization.util.RuntimeContext;
+import org.jvnet.hk2.config.*;
 
+import java.beans.PropertyVetoException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Level;
 
 /**
- * Runtime representation of a virtual cluster.
+ * Internal runtime representation of a cluster implemented with virtual machines.
  */
 public class VirtualCluster {
 
@@ -56,9 +64,15 @@ public class VirtualCluster {
     final AtomicInteger token = new AtomicInteger();
     final List<VirtualMachine> vms = new ArrayList<VirtualMachine>();
 
-    public VirtualCluster(Cluster config) {
+    public VirtualCluster(IAAS iaas, Cluster config) throws VirtException {
         this.config = config;
         token.set(config.getServerRef().size());
+        for (VirtualMachineConfig vm :
+                config.getExtensionsByType(VirtualMachineConfig.class)) {
+            ServerPoolConfig serverPoolConfig = vm.getServerPool();
+            ServerPool serverPool = iaas.byName(serverPoolConfig.getName());
+            vms.add(serverPool.vmByName(vm.getName()));
+        }
     }
 
     public Cluster getConfig() {
@@ -69,13 +83,73 @@ public class VirtualCluster {
         return token.addAndGet(1);
     }
 
-    public synchronized void add(VirtualMachine vm) {
+    public synchronized void add(final TemplateInstance template, final VirtualMachine vm) {
+        try {
+            ConfigSupport.apply(new ConfigCode(){
+                @Override
+                public Object run(ConfigBeanProxy... params) throws PropertyVetoException, TransactionFailure {
+
+                    Cluster wCluster = (Cluster) params[0];
+                    ServerPoolConfig wServerPoolConfig = (ServerPoolConfig) params[1];
+                    VirtualMachineConfig vmConfig =
+                            wCluster.createChild(VirtualMachineConfig.class);
+                    vmConfig.setName(vm.getName());
+                    vmConfig.setTemplate(template.getConfig());
+                    vmConfig.setServerPool(vm.getServerPool().getConfig());
+                    wCluster.getExtensions().add(vmConfig);
+                    VirtualMachineRef vmRef = wServerPoolConfig.createChild(VirtualMachineRef.class);
+                    vmRef.setRef(vmConfig.getName());
+                    wServerPoolConfig.getVirtualMachineRefs().add(vmRef);
+                    return vmConfig;
+                }
+            }, config, vm.getServerPool().getConfig());
+        } catch (TransactionFailure transactionFailure) {
+            throw new RuntimeException(transactionFailure);
+        }
         vms.add(vm);
     }
 
-    public synchronized void remove(VirtualMachine vm) {
+    public synchronized void remove(final VirtualMachine vm) {
+        try {
+            ConfigSupport.apply(new ConfigCode(){
+                @Override
+                public Object run(ConfigBeanProxy... params) throws PropertyVetoException, TransactionFailure {
+                    Cluster wCluster = (Cluster) params[0];
+                    ServerPoolConfig wServerPoolConfig = (ServerPoolConfig) params[1];
+                    for (VirtualMachineConfig vmConfig :
+                            config.getExtensionsByType(VirtualMachineConfig.class)) {
+                        if (vmConfig.getName().equals(vm.getName())) {
+                            wCluster.getExtensions().remove(vmConfig);
+                            for (VirtualMachineRef ref : wServerPoolConfig.getVirtualMachineRefs()) {
+                                if (ref.getRef().equals(vm.getName())) {
+                                    wServerPoolConfig.getVirtualMachineRefs().remove(ref);
+                                    break;
+                                }
+                            }
+                            return null;
+                        }
+
+                    }
+                    RuntimeContext.logger.log(Level.WARNING, "Cannot find virtual machine configuration under cluster");
+                    return null;
+                }
+            }, config, vm.getServerPool().getConfig());
+        } catch (TransactionFailure transactionFailure) {
+            throw new RuntimeException(transactionFailure);
+        }
         vms.remove(vm);
     }
 
+    public void delete() {
+        List<VirtualMachine> copy = new ArrayList<VirtualMachine>();
+        copy.addAll(vms);
+        for (VirtualMachine vm : copy) {
+            remove(vm);
+        }
+    }
+
+    public synchronized List<VirtualMachine> getVms() {
+        return Collections.unmodifiableList(vms);
+    }
 
 }

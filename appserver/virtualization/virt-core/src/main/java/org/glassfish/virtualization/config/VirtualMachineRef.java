@@ -38,53 +38,33 @@
  * holder.
  */
 
-package org.glassfish.virtualization.spi;
+package org.glassfish.virtualization.config;
 
-import org.glassfish.virtualization.config.MachineConfig;
-import org.glassfish.virtualization.config.VirtUser;
-import org.glassfish.virtualization.os.FileOperations;
-import org.glassfish.virtualization.runtime.VirtualCluster;
-import org.glassfish.virtualization.util.EventSource;
-
-import java.io.IOException;
-import java.util.Collection;
-import java.util.Map;
+import com.sun.jdi.VirtualMachine;
+import org.jvnet.hk2.config.Attribute;
+import org.jvnet.hk2.config.ConfigBeanProxy;
+import org.jvnet.hk2.config.Configured;
 
 /**
- * Represents a machine
+ * Represents a reference to a virtual machine configuration
+ * {@link VirtualMachineConfig}
+ *
  * @author Jerome Dochez
  */
-public interface Machine {
+@Configured
+public interface VirtualMachineRef extends ConfigBeanProxy {
 
-    public enum State { SUSPENDING, SUSPENDED, RESUMING, READY}
+    /**
+     * Return the referenced virtual machine name.
+     * @return an existing virtual machine name
+     */
+    @Attribute
+    String getRef();
 
-    MachineConfig getConfig();
+    /**
+     * Sets the referenced virtual machine name
+     * @param ref the referenced virtual machine name
+     */
+    void setRef(String ref);
 
-    String getName();
-
-    String getIpAddress();
-
-    PhysicalServerPool getServerPool();
-
-    State getState();
-
-    VirtUser getUser();
-
-    FileOperations getFileOperations();
-
-    boolean isUp();
-
-    void sleep() throws IOException, InterruptedException;
-
-    Collection<? extends VirtualMachine> getVMs() throws VirtException;
-
-    StoragePool addStoragePool(String name, long capacity) throws VirtException;
-
-    Map<String, ? extends StoragePool> getStoragePools() throws VirtException;
-
-    VirtualMachine byName(String name) throws VirtException;
-
-    ListenableFuture<AllocationPhase, VirtualMachine> create(
-            TemplateInstance template, VirtualCluster cluster, EventSource<AllocationPhase> source)
-            throws VirtException, IOException;
 }

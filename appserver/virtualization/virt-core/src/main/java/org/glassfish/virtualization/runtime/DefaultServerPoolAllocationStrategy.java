@@ -41,6 +41,7 @@
 package org.glassfish.virtualization.runtime;
 
 import org.glassfish.virtualization.spi.*;
+import org.glassfish.virtualization.util.EventSource;
 import org.glassfish.virtualization.util.RuntimeContext;
 
 import java.io.IOException;
@@ -69,8 +70,9 @@ class DefaultServerPoolAllocationStrategy implements ServerPoolAllocationStrateg
     }
 
     @Override
-    public ListenableFuture<AllocationPhase, VirtualMachine> allocate(VMOrder order)
-        throws VirtException {
+    public ListenableFuture<AllocationPhase, VirtualMachine> allocate(
+            VMOrder order, EventSource<AllocationPhase> source)
+            throws VirtException {
 
         List<Machine> potentialMachines = new ArrayList<Machine>();
         for (Machine machine : targetPool.machines()) {
@@ -102,7 +104,7 @@ class DefaultServerPoolAllocationStrategy implements ServerPoolAllocationStrateg
             }
             assert(targetMachine!=null);
             try {
-                return targetMachine.create(order.getTemplate(), order.getTargetCluster());
+                return targetMachine.create(order.getTemplate(), order.getTargetCluster(), source);
             } catch(IOException e) {
                 RuntimeContext.logger.log(Level.SEVERE, "Cannot allocate virtual machine on " + targetMachine);
                 potentialMachines.remove(targetMachine); // let's try on the remaining machines...

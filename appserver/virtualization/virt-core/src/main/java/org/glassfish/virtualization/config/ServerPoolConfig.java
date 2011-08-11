@@ -120,6 +120,10 @@ public interface ServerPoolConfig extends ConfigBeanProxy {
     @Delete(value="delete-machine", resolver= WithinGroupResolver.class, i18n = @I18n("org.glassfish.virtualization.delete-machine"))
     List<MachineConfig> getMachines();
 
+
+    @Element
+    List<VirtualMachineRef> getVirtualMachineRefs();
+
     @Service
     public class GroupResolver implements CrudResolver {
         @Param(name="serverPool")

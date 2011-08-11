@@ -77,8 +77,8 @@ public class CreateTemplate implements AdminCommand {
     @Param(primary = true)
     String name;
 
-    @Param
-    String files;
+    @Param(optional=true)
+    String files=null;
 
     @Param
     String indexes;
@@ -96,20 +96,22 @@ public class CreateTemplate implements AdminCommand {
     public void execute(AdminCommandContext context) {
 
         // install the files.
-        StringTokenizer st = new StringTokenizer(files, ",");
-        List<File> files = new ArrayList<File>();
-        while (st.hasMoreTokens()) {
-            String file = st.nextToken();
-            File source = new File(file);
+        List<File> templateFiles = new ArrayList<File>();
+        if (files!=null) {
+            StringTokenizer st = new StringTokenizer(files, ",");
+            while (st.hasMoreTokens()) {
+                String file = st.nextToken();
+                File source = new File(file);
 
-            if (!source.isAbsolute()) {
-                source = new File(System.getProperty("user.dir"), file);
+                if (!source.isAbsolute()) {
+                    source = new File(System.getProperty("user.dir"), file);
+                }
+                if (!source.exists()) {
+                    context.getActionReport().failure(RuntimeContext.logger, "File not found : " + source.getAbsolutePath());
+                    return;
+                }
+                templateFiles.add(source);
             }
-            if (!source.exists()) {
-                context.getActionReport().failure(RuntimeContext.logger, "File not found : " + source.getAbsolutePath());
-                return;
-            }
-            files.add(source);
         }
 
         Template template;
@@ -145,7 +147,7 @@ public class CreateTemplate implements AdminCommand {
             return;
         }
 
-        repository.installs(template, files);
+        repository.installs(template, templateFiles);
     }
 
     private void revert(final Template template)  {

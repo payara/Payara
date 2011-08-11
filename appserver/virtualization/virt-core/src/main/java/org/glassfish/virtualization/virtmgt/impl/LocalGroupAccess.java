@@ -43,6 +43,7 @@ package org.glassfish.virtualization.virtmgt.impl;
 import org.glassfish.hk2.inject.Injector;
 import org.glassfish.virtualization.runtime.VirtualCluster;
 import org.glassfish.virtualization.spi.*;
+import org.glassfish.virtualization.util.EventSource;
 import org.glassfish.virtualization.virtmgt.GroupAccess;
 
 /**
@@ -65,8 +66,10 @@ public class LocalGroupAccess implements GroupAccess {
     }
 
     @Override
-    public ListenableFuture<AllocationPhase, VirtualMachine> allocate(TemplateInstance template, VirtualCluster cluster) throws VirtException {
-        return group.allocate(template, cluster);
+    public ListenableFuture<AllocationPhase, VirtualMachine> allocate(
+            TemplateInstance template, VirtualCluster cluster,
+            EventSource<AllocationPhase> source) throws VirtException {
+        return group.allocate(template, cluster, source);
     }
 
     @Override

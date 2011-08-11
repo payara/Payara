@@ -45,6 +45,7 @@ import org.glassfish.virtualization.libvirt.jna.Connect;
 import org.glassfish.virtualization.libvirt.jna.Domain;
 import org.glassfish.virtualization.runtime.*;
 import org.glassfish.virtualization.spi.*;
+import org.glassfish.virtualization.spi.VirtualMachine;
 import org.glassfish.virtualization.util.EventSource;
 import org.glassfish.virtualization.util.EventSourceImpl;
 import org.glassfish.virtualization.util.ListenableFutureImpl;
@@ -302,21 +303,21 @@ public class LibVirtLocalMachine extends LocalMachine implements PostConstruct {
     private void addDomain(Domain domain) throws VirtException {
         String domainName = domain.getName();
         if (!domains.containsKey(domainName)) {
-            LibVirtVirtualMachine gfVM = new LibVirtVirtualMachine(this, domain, null);
+            LibVirtVirtualMachine gfVM = new LibVirtVirtualMachine(serverPool, this, domain, null);
             domains.put(domainName, gfVM );
         }
     }
 
-    public ListenableFuture<AllocationPhase, VirtualMachine> create(final TemplateInstance template,
-                                        final VirtualCluster cluster)
+    public ListenableFuture<AllocationPhase, VirtualMachine> create(
+                final TemplateInstance template,
+                final VirtualCluster cluster,
+                final EventSource<AllocationPhase> source)
 
             throws VirtException, IOException {
 
-        EventSource<AllocationPhase> eventSink = new EventSourceImpl<AllocationPhase>();
-
         populate();
 
-        eventSink.fireEvent(AllocationPhase.VM_PREPARE);
+        source.fireEvent(AllocationPhase.VM_PREPARE);
 
         final String name = cluster.getConfig().getName() + cluster.allocateToken();
 
@@ -401,13 +402,13 @@ public class LibVirtLocalMachine extends LocalMachine implements PostConstruct {
 
         try {
             Domain domain = connection().domainDefineXML(getConfig(vmConfig));
-            eventSink.fireEvent(AllocationPhase.VM_SPAWN);
+            source.fireEvent(AllocationPhase.VM_SPAWN);
             final CountDownLatch latch = new CountDownLatch(1);
-            final LibVirtVirtualMachine vm = new LibVirtVirtualMachine(this, domain, latch);
+            final LibVirtVirtualMachine vm = new LibVirtVirtualMachine(serverPool, this, domain, latch);
             domains.put(name, vm);
 
             ListenableFutureImpl<AllocationPhase, VirtualMachine> future =
-                    new ListenableFutureImpl<AllocationPhase, VirtualMachine>(latch, vm, eventSink);
+                    new ListenableFutureImpl<AllocationPhase, VirtualMachine>(latch, vm, source);
 
             future.fireEvent(AllocationPhase.VM_START);
             vm.start();

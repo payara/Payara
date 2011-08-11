@@ -41,7 +41,10 @@
 package org.glassfish.virtualization.runtime;
 
 import org.glassfish.virtualization.spi.*;
+import org.glassfish.virtualization.util.EventSource;
+import org.glassfish.virtualization.util.EventSourceImpl;
 import org.glassfish.virtualization.util.RuntimeContext;
+import org.jvnet.tiger_types.Lister;
 
 import java.util.*;
 import java.util.logging.Level;
@@ -59,6 +62,12 @@ public class DefaultAllocationStrategy implements AllocationStrategy {
                 allocate(Collection<ServerPool> serverPools, VMOrder order, List<Listener<AllocationPhase>> listeners)
         throws VirtException {
 
+        EventSource<AllocationPhase> source = new EventSourceImpl<AllocationPhase>();
+        if (listeners!=null) {
+            for (Listener<AllocationPhase> listener : listeners) {
+                source.addListener(listener, null);
+            }
+        }
         // populate the allocation map if necessary.
         for (ServerPool serverPool : serverPools) {
             if (!allocationMap.containsKey(serverPool)) {
@@ -88,9 +97,9 @@ public class DefaultAllocationStrategy implements AllocationStrategy {
                     if (serverPoolStrategy==null) {
                         serverPoolStrategy = new DefaultServerPoolAllocationStrategy((PhysicalServerPool) serverPool);
                     }
-                    vm = serverPoolStrategy.allocate(order);
+                    vm = serverPoolStrategy.allocate(order, source);
                 } else {
-                    vm = serverPool.allocate(order.getTemplate(), order.getTargetCluster());
+                    vm = serverPool.allocate(order.getTemplate(), order.getTargetCluster(), source);
                 }
                 // record the allocation
                 if (vm!=null) {

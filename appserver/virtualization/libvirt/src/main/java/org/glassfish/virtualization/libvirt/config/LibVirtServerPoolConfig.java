@@ -38,53 +38,24 @@
  * holder.
  */
 
-package org.glassfish.virtualization.spi;
+package org.glassfish.virtualization.libvirt.config;
 
-import org.glassfish.virtualization.config.MachineConfig;
-import org.glassfish.virtualization.config.VirtUser;
-import org.glassfish.virtualization.os.FileOperations;
-import org.glassfish.virtualization.runtime.VirtualCluster;
-import org.glassfish.virtualization.util.EventSource;
-
-import java.io.IOException;
-import java.util.Collection;
-import java.util.Map;
+import com.sun.enterprise.config.serverbeans.Domain;
+import org.glassfish.api.I18n;
+import org.glassfish.config.support.Create;
+import org.glassfish.virtualization.config.ServerPoolConfig;
+import org.glassfish.virtualization.config.Virtualization;
+import org.glassfish.virtualization.config.Virtualizations;
+import org.jvnet.hk2.annotations.Decorate;
+import org.jvnet.hk2.config.Configured;
 
 /**
- * Represents a machine
+ * Placeholder to store libvirt specific server pool information.
+ *
  * @author Jerome Dochez
  */
-public interface Machine {
-
-    public enum State { SUSPENDING, SUSPENDED, RESUMING, READY}
-
-    MachineConfig getConfig();
-
-    String getName();
-
-    String getIpAddress();
-
-    PhysicalServerPool getServerPool();
-
-    State getState();
-
-    VirtUser getUser();
-
-    FileOperations getFileOperations();
-
-    boolean isUp();
-
-    void sleep() throws IOException, InterruptedException;
-
-    Collection<? extends VirtualMachine> getVMs() throws VirtException;
-
-    StoragePool addStoragePool(String name, long capacity) throws VirtException;
-
-    Map<String, ? extends StoragePool> getStoragePools() throws VirtException;
-
-    VirtualMachine byName(String name) throws VirtException;
-
-    ListenableFuture<AllocationPhase, VirtualMachine> create(
-            TemplateInstance template, VirtualCluster cluster, EventSource<AllocationPhase> source)
-            throws VirtException, IOException;
+@Configured
+@Create(value = "create-local-serverPool", resolver = Virtualization.VirtResolver.class, i18n = @I18n("org.glassfish.virtualization.create-local-serverPool"))
+@Decorate(targetType = Virtualizations.class, methodName = "getGroupConfigs", with = { Create.class } )
+public interface LibVirtServerPoolConfig extends ServerPoolConfig {
 }

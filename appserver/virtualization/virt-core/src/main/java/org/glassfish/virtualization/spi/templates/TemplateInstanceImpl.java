@@ -40,10 +40,14 @@
 
 package org.glassfish.virtualization.spi.templates;
 
+import org.glassfish.hk2.Services;
+import org.glassfish.hk2.inject.Injector;
 import org.glassfish.virtualization.config.Template;
 import org.glassfish.virtualization.config.TemplateIndex;
 import org.glassfish.virtualization.spi.TemplateCondition;
+import org.glassfish.virtualization.spi.TemplateCustomizer;
 import org.glassfish.virtualization.spi.TemplateInstance;
+import org.jvnet.hk2.annotations.Inject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -56,12 +60,22 @@ public class TemplateInstanceImpl implements TemplateInstance {
 
     final Template config;
     final List<TemplateCondition> indexes = new ArrayList<TemplateCondition>();
+    final TemplateCustomizer customizer;
 
-    public TemplateInstanceImpl(Template config) {
+    public TemplateInstanceImpl(Services services, Template config) {
         this.config = config;
+        TemplateCustomizer tmpCustomizer = null;
         for (TemplateIndex indexPersistence : config.getIndexes()) {
             indexes.add(TemplateCondition.from(indexPersistence));
+            // todo : need to do better
+            // so far, it's ugly, customizers must use the (templateName-ServiceType) name.
+            if (indexPersistence.getType().equals("ServiceType")) {
+                tmpCustomizer = services.forContract(TemplateCustomizer.class).named(
+                        config.getName()+ "-"+indexPersistence.getValue()).get();
+                break;
+            }
         }
+        this.customizer = tmpCustomizer;
     }
 
     @Override
@@ -75,5 +89,10 @@ public class TemplateInstanceImpl implements TemplateInstance {
             if (templateIndex.satisfies(condition)) return true;
         }
         return false;
+    }
+
+    @Override
+    public TemplateCustomizer getCustomizer() {
+        return customizer;
     }
 }

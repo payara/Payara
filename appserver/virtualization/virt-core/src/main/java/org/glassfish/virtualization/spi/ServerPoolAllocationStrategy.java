@@ -39,6 +39,8 @@
  */
 package org.glassfish.virtualization.spi;
 
+import org.glassfish.virtualization.util.EventSource;
+
 /**
  * Represents a strategy for allocating virtual machines within a pool of servers.
  * @author Jerome Dochez
@@ -54,9 +56,10 @@ public interface ServerPoolAllocationStrategy {
     /**
      * Allocates a virtual machine using the passed allocation characteristics
      * @param order the requested virtual machine allocation characteristics
+     * @param source a facility to register events listeners for allocation phases.
      * @return the {@link ListenableFuture} instance giving access to the {@link VirtualMachine}
      * @throws VirtException if the allocation is not successful.
      */
-    ListenableFuture<AllocationPhase, VirtualMachine> allocate(VMOrder order)
+    ListenableFuture<AllocationPhase, VirtualMachine> allocate(VMOrder order, EventSource<AllocationPhase> source)
             throws VirtException;
 }

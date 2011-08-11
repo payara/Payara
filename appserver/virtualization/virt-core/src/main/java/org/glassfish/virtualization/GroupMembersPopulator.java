@@ -40,11 +40,17 @@
 
 package org.glassfish.virtualization;
 
+import com.sun.enterprise.config.serverbeans.Cluster;
+import com.sun.enterprise.config.serverbeans.Domain;
+import org.glassfish.api.ActionReport;
 import org.glassfish.api.Startup;
+import org.glassfish.virtualization.config.Action;
 import org.glassfish.virtualization.runtime.DefaultAllocationStrategy;
+import org.glassfish.virtualization.runtime.VirtualCluster;
 import org.glassfish.virtualization.spi.*;
 import org.glassfish.virtualization.config.ServerPoolConfig;
 import org.glassfish.virtualization.config.Virtualizations;
+import org.glassfish.virtualization.util.RuntimeContext;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
@@ -67,19 +73,20 @@ import java.util.logging.Logger;
 @Service
 public class GroupMembersPopulator implements Startup, PostConstruct, IAAS, ConfigListener {
 
-    @Inject
-    ShellExecutor shell;
-
     @Inject(optional=true)
     Virtualizations virtualizations = null;
 
     @Inject
-    OsInterface os;
-
-    @Inject
     Habitat habitat;
 
+    @Inject
+    RuntimeContext rtContext;
+
+    @Inject
+    Domain domain;
+
     private final Map<String, ServerPool> groups = new HashMap<String, ServerPool>();
+    private final Map<String, VirtualCluster> virtualClusterMap = new HashMap<String, VirtualCluster>();
 
     @Override
     public Lifecycle getLifecycle() {
@@ -103,15 +110,17 @@ public class GroupMembersPopulator implements Startup, PostConstruct, IAAS, Conf
 
         for (ServerPoolConfig groupConfig : virtualizations.getGroupConfigs()) {
             try {
-                PhysicalServerPool group = processGroupConfig(groupConfig);
+                ServerPool group = processGroupConfig(groupConfig);
                 System.out.println("I have a serverPool " + group.getName());
-                for (Machine machine : group.machines()) {
-                    System.out.println("LibVirtMachine  " + machine.getName() + " is at " +  machine.getIpAddress() + " state is " + machine.getState());
-                    if (machine.getState().equals(Machine.State.READY)) {
-                        try {
-                            System.out.println(machine.toString());
-                        } catch (Exception e) {
-                            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                if (group instanceof PhysicalServerPool) {
+                    for (Machine machine : ((PhysicalServerPool) group).machines()) {
+                        System.out.println("LibVirtMachine  " + machine.getName() + " is at " +  machine.getIpAddress() + " state is " + machine.getState());
+                        if (machine.getState().equals(Machine.State.READY)) {
+                            try {
+                                System.out.println(machine.toString());
+                            } catch (Exception e) {
+                                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                            }
                         }
                     }
                 }
@@ -122,9 +131,9 @@ public class GroupMembersPopulator implements Startup, PostConstruct, IAAS, Conf
         }
     }
 
-    private PhysicalServerPool processGroupConfig(ServerPoolConfig groupConfig) {
+    private ServerPool processGroupConfig(ServerPoolConfig groupConfig) {
 
-        PhysicalServerPool group = habitat.getComponent(PhysicalServerPool.class, groupConfig.getVirtualization().getName());
+        ServerPool group = habitat.getComponent(ServerPool.class, groupConfig.getVirtualization().getName());
         group.setConfig(groupConfig);
         synchronized (this) {
             groups.put(groupConfig.getName(), group);

@@ -39,6 +39,7 @@
  */
 package org.glassfish.virtualization.util;
 
+import com.sun.enterprise.config.serverbeans.Cluster;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.CommandRunner;
 import org.glassfish.api.admin.ParameterMap;

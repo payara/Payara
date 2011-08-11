@@ -42,6 +42,8 @@ package org.glassfish.virtualization.runtime;
 
 import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.config.serverbeans.Domain;
+import org.glassfish.virtualization.spi.IAAS;
+import org.glassfish.virtualization.spi.VirtException;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
 
@@ -56,9 +58,11 @@ import java.util.Map;
 public class VirtualClusters {
 
     final Domain domain;
+    final IAAS iaas;
     final Map<String, VirtualCluster> clusterMap = new HashMap<String, VirtualCluster>();
 
-    public VirtualClusters(@Inject Domain domain) {
+    public VirtualClusters(@Inject IAAS iaas, @Inject Domain domain) {
+        this.iaas = iaas;
         this.domain = domain;
     }
 
@@ -67,10 +71,11 @@ public class VirtualClusters {
     }
 
     public void remove(VirtualCluster vc) {
+        vc.delete();
         clusterMap.remove(vc.getConfig().getName());
     }
 
-    public VirtualCluster byName(String clusterName) {
+    public VirtualCluster byName(String clusterName) throws VirtException {
         if (!clusterMap.containsKey(clusterName)) {
             Cluster cluster = domain.getClusterNamed(clusterName);
             if (cluster==null) {
@@ -78,7 +83,7 @@ public class VirtualClusters {
             }
             synchronized (this) {
                 if (!clusterMap.containsKey(clusterName)) {
-                    clusterMap.put(clusterName, new VirtualCluster(cluster));
+                    clusterMap.put(clusterName, new VirtualCluster(iaas, cluster));
                 }
             }
         }

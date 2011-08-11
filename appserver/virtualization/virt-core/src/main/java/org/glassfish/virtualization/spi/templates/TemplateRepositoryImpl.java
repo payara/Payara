@@ -42,6 +42,7 @@ package org.glassfish.virtualization.spi.templates;
 
 import com.sun.enterprise.util.io.FileUtils;
 import com.sun.logging.LogDomains;
+import org.glassfish.hk2.Services;
 import org.glassfish.virtualization.config.Template;
 import org.glassfish.virtualization.config.Virtualizations;
 import org.glassfish.virtualization.spi.SearchCriteria;
@@ -67,11 +68,13 @@ public class TemplateRepositoryImpl implements TemplateRepository {
     final File location;
     final Logger logger = LogDomains.getLogger(TemplateRepositoryImpl.class, LogDomains.VIRTUALIZATION_LOGGER);
     final List<TemplateInstance> templates = new ArrayList<TemplateInstance>();
+    final Services services;
 
-    public TemplateRepositoryImpl(@Inject Virtualizations virts) {
+    public TemplateRepositoryImpl(@Inject Services services, @Inject Virtualizations virts) {
         location = new File(virts.getTemplatesLocation());
+        this.services = services;
         for (Template template : virts.getTemplates()) {
-            templates.add(new TemplateInstanceImpl(template));
+            templates.add(new TemplateInstanceImpl(services, template));
         }
     }
 
@@ -99,7 +102,7 @@ public class TemplateRepositoryImpl implements TemplateRepository {
                 return false;
             }
         }
-        TemplateInstance templateInstance = new TemplateInstanceImpl(config);
+        TemplateInstance templateInstance = new TemplateInstanceImpl(services, config);
         templates.add(templateInstance);
         return true;
     }
@@ -133,5 +136,15 @@ public class TemplateRepositoryImpl implements TemplateRepository {
     @Override
     public Collection<TemplateInstance> all() {
         return Collections.unmodifiableCollection(templates);
+    }
+
+    @Override
+    public TemplateInstance byName(String name) {
+        for (TemplateInstance ti :templates) {
+            if (ti.getConfig().getName().equals(name)) {
+                return ti;
+            }
+        }
+        return null;
     }
 }

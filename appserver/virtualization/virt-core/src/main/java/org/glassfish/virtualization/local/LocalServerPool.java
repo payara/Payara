@@ -38,72 +38,81 @@
  * holder.
  */
 
-package org.glassfish.virtualization.spi;
+package org.glassfish.virtualization.local;
 
 import com.sun.enterprise.config.serverbeans.Server;
 import org.glassfish.virtualization.config.ServerPoolConfig;
-import org.glassfish.virtualization.runtime.VMTemplate;
+import org.glassfish.virtualization.config.VirtualMachineRef;
 import org.glassfish.virtualization.runtime.VirtualCluster;
+import org.glassfish.virtualization.spi.*;
 import org.glassfish.virtualization.util.EventSource;
-import org.jvnet.hk2.annotations.Contract;
+import org.glassfish.virtualization.util.ListenableFutureImpl;
+import org.jvnet.hk2.annotations.Service;
 
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
+import java.util.concurrent.CountDownLatch;
 
 /**
- * Abstract a set of servers than can be used to provide {@link VirtualMachine}
+ * Server Pool based on non virtualized environments like the local machine
+ * on which this process is running.
  *
  * @author Jerome Dochez
  */
-@Contract
-public interface ServerPool {
+@Service(name="Native")
+public class LocalServerPool implements ServerPool {
 
-    /**
-     * Returns the configuration for this server pool.
-     *
-     * @return  the server pool's configuration.
-     */
-    ServerPoolConfig getConfig();
-    void setConfig(ServerPoolConfig config);
+    final Map<String, VirtualMachine> vms = new HashMap<String, VirtualMachine>();
+    ServerPoolConfig config;
 
+    @Override
+    public ServerPoolConfig getConfig() {
+        return config;
+    }
 
-    /**
-     * Returns this pool's name.
-     * @return  this pool's name
-     */
-    String getName();
+    @Override
+    public void setConfig(ServerPoolConfig config) {
+        this.config = config;
+        for (VirtualMachineRef ref : config.getVirtualMachineRefs()) {
+            vms.put(ref.getRef(), new LocalVirtualMachine(this, null, ref.getRef()));
+        }
+    }
 
-    /**
-     * Returns all allocated virtual machine in this server pool
-     * @return the list of allocated virtual machines
-     */
-    Collection<VirtualMachine> getVMs() throws VirtException;
+    @Override
+    public String getName() {
+        return getConfig().getName();
+    }
 
-    /**
-     * Returns an allocated virtual machine in this server pool using its name.
-     * @param name virtual machine name
-     * @return virtual machine instance if found or null otherwise.
-     * @throws VirtException if the vm cannot be obtained
-     */
-    VirtualMachine vmByName(String name) throws VirtException;
+    @Override
+    public Collection<VirtualMachine> getVMs() throws VirtException {
+        return vms.values();
+    }
 
-    /**
-     * Allocates number of virtual machines on any machine belonging to this server pool, each virtual machine
-     * should be based on the provided template.
-     * @param template  template for the virtual machines
-     * @param cluster the virtual cluster instance to allocated virtual machines for
-     * @return Listenable future for the VirtualMachine instance
-     * @throws VirtException when the virtual machine creation failed.
-     */
-    ListenableFuture<AllocationPhase, VirtualMachine> allocate(
+    @Override
+    public VirtualMachine vmByName(String name) throws VirtException {
+        return vms.get(name);
+    }
+
+    @Override
+    public ListenableFuture<AllocationPhase, VirtualMachine> allocate(
             TemplateInstance template, VirtualCluster cluster, EventSource<AllocationPhase> source)
-            throws VirtException;
+            throws VirtException {
 
-    /**
-     * Deletes a previously allocated virtual machine instance.
-     *
-     * @param server the machine to delete.
-     */
-    void delete(Server server) throws VirtException;
+        String vmName = getName() + "-" + (vms.size()+1);
+        LocalVirtualMachine vm = new LocalVirtualMachine(this, null, vmName);
+        cluster.add(template, vm);
+        vms.put(vmName, vm);
+        CountDownLatch latch = new CountDownLatch(1);
 
+        ListenableFuture<AllocationPhase, VirtualMachine> future =
+                new ListenableFutureImpl<AllocationPhase, VirtualMachine>(latch, vm, source);
+        template.getCustomizer().customize(cluster, vm);
+        latch.countDown();
+        return future;
+    }
+
+    @Override
+    public void delete(Server server) throws VirtException {
+        VirtualMachine vm = vmByName(server.getName());
+        vm.delete();
+    }
 }

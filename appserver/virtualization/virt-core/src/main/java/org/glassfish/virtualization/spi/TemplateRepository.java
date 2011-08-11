@@ -78,4 +78,12 @@ public interface TemplateRepository {
      */
     Collection<TemplateInstance>  all();
 
+    /**
+     * Lookup a template instance by its name
+     *
+     * @param name the template name
+     * @return the {@link TemplateInstance} if found otherwise null
+     */
+    TemplateInstance byName(String name);
+
 }
