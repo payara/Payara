@@ -42,8 +42,10 @@ package org.glassfish.virtualization;
 
 import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.tools.javac.comp.Env;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Startup;
+import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.virtualization.config.Action;
 import org.glassfish.virtualization.runtime.DefaultAllocationStrategy;
 import org.glassfish.virtualization.runtime.VirtualCluster;
@@ -80,10 +82,7 @@ public class GroupMembersPopulator implements Startup, PostConstruct, IAAS, Conf
     Habitat habitat;
 
     @Inject
-    RuntimeContext rtContext;
-
-    @Inject
-    Domain domain;
+    ServerEnvironment env;
 
     private final Map<String, ServerPool> groups = new HashMap<String, ServerPool>();
     private final Map<String, VirtualCluster> virtualClusterMap = new HashMap<String, VirtualCluster>();
@@ -106,7 +105,7 @@ public class GroupMembersPopulator implements Startup, PostConstruct, IAAS, Conf
     @Override
     public void postConstruct() {
         // first executeAndWait the fping command to populate our arp table.
-        if (virtualizations==null) return;
+        if (virtualizations==null || env.isInstance() ) return;
 
         for (ServerPoolConfig groupConfig : virtualizations.getGroupConfigs()) {
             try {
