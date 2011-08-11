@@ -368,13 +368,12 @@ public final class CreateLocalInstanceCommand extends CreateLocalInstanceFilesys
         RemoteCommand rc = null;
         try {
             rc = new RemoteCommand("get", this.programOpts, this.env);
-            Map<String, String> map = rc.executeAndReturnAttributes("get", RENDEZVOUS_DOTTED_NAME);
-            String output = map.get("children");
-            String val = output.substring(output.indexOf("=") + 1);
+            String s = rc.executeAndReturnOutput("get", RENDEZVOUS_DOTTED_NAME);
+            String val = s.substring(s.indexOf("=") + 1);
             rendezvousOccurred = Boolean.parseBoolean(val);
-            logger.finer("rendezvousOccurred = " + val + " for instance " + instanceName);
+            logger.log(Level.FINER, "rendezvousOccurred = {0} for instance {1}", new Object[]{val, instanceName});
         } catch (CommandException ce) {
-            logger.finer(RENDEZVOUS_PROPERTY_NAME+" property may not be set yet on " + instanceName);
+            logger.log(Level.FINER,RENDEZVOUS_PROPERTY_NAME + " property may not be set yet on {0}", instanceName);
         }
         return rendezvousOccurred;
     }
