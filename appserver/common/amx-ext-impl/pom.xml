@@ -99,17 +99,17 @@
         </dependency>
         
         <dependency>
-            <groupId>org.glassfish.connectors</groupId>
-            <artifactId>connectors-internal-api</artifactId>
-            <version>${project.version}</version>
-            <scope>provided</scope>
-        </dependency>
-        
-        <dependency>
             <groupId>org.glassfish.gmbal</groupId>
             <artifactId>gmbal</artifactId>
             <scope>provided</scope>
         </dependency>
+
+	<dependency>
+            <groupId>org.glassfish.deployment</groupId>
+            <artifactId>dol</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+
         
     </dependencies>
 </project>
