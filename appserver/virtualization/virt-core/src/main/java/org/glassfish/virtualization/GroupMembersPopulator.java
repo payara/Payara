@@ -40,19 +40,14 @@
 
 package org.glassfish.virtualization;
 
-import com.sun.enterprise.config.serverbeans.Cluster;
-import com.sun.enterprise.config.serverbeans.Domain;
-import com.sun.tools.javac.comp.Env;
-import org.glassfish.api.ActionReport;
+
 import org.glassfish.api.Startup;
 import org.glassfish.api.admin.ServerEnvironment;
-import org.glassfish.virtualization.config.Action;
 import org.glassfish.virtualization.runtime.DefaultAllocationStrategy;
 import org.glassfish.virtualization.runtime.VirtualCluster;
 import org.glassfish.virtualization.spi.*;
 import org.glassfish.virtualization.config.ServerPoolConfig;
 import org.glassfish.virtualization.config.Virtualizations;
-import org.glassfish.virtualization.util.RuntimeContext;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
