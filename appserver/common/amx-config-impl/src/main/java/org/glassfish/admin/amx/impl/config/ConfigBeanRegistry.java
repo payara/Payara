@@ -51,6 +51,8 @@ import javax.management.ObjectName;
 import org.glassfish.external.arc.Stability;
 import org.glassfish.external.arc.Taxonomy;
 import org.jvnet.hk2.config.ConfigBean;
+import org.jvnet.hk2.config.ConfigBeanProxy;
+import org.jvnet.hk2.config.Dom;
 
 /**
  * Registry mapping ConfigBean to ObjectName and vice-versa.
@@ -138,6 +140,21 @@ public final class ConfigBeanRegistry {
         final MBeanInstance mb = getMBeanInstance(cb);
         return cb == null ? null: mb.mImpl;
     }
+
+    public ObjectName getObjectNameForProxy(final ConfigBeanProxy cbp)
+    {
+        final Dom dom = Dom.unwrap(cbp);
+        
+        if ( dom instanceof ConfigBean )
+        {
+            return getObjectName( (ConfigBean)dom );
+        }
+        
+        // not a config bean so return null
+        return null;
+    }
+    
+
 }
 
 

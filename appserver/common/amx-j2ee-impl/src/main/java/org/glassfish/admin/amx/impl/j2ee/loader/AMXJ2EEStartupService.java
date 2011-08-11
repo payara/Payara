@@ -40,6 +40,7 @@
 
 package org.glassfish.admin.amx.impl.j2ee.loader;
 
+import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.config.serverbeans.Servers;
 import com.sun.logging.LogDomains;
@@ -47,6 +48,7 @@ import org.glassfish.admin.amx.base.DomainRoot;
 import org.glassfish.admin.amx.config.AMXConfigConstants;
 import org.glassfish.admin.amx.core.Util;
 import org.glassfish.admin.amx.core.proxy.ProxyFactory;
+import org.glassfish.admin.amx.impl.config.ConfigBeanRegistry;
 import org.glassfish.admin.amx.impl.j2ee.DASJ2EEServerImpl;
 import org.glassfish.admin.amx.impl.j2ee.J2EEDomainImpl;
 import org.glassfish.admin.amx.impl.j2ee.Metadata;
@@ -54,7 +56,6 @@ import org.glassfish.admin.amx.impl.j2ee.MetadataImpl;
 import org.glassfish.admin.amx.impl.util.ImplUtil;
 import org.glassfish.admin.amx.impl.util.InjectedValues;
 import org.glassfish.admin.amx.impl.util.ObjectNameBuilder;
-import org.glassfish.admin.amx.intf.config.Domain;
 import org.glassfish.admin.amx.j2ee.J2EEDomain;
 import org.glassfish.admin.amx.j2ee.J2EETypes;
 import org.glassfish.admin.amx.util.FeatureAvailability;
@@ -95,7 +96,7 @@ public final class AMXJ2EEStartupService
     InjectedValues mCore;
 
     @Inject
-    private com.sun.enterprise.config.serverbeans.Domain domain;
+    private Domain domain;
 
     private static final Logger logger =
             LogDomains.getLogger(AMXJ2EEStartupService.class, LogDomains.AMX_LOGGER);
@@ -167,10 +168,8 @@ public final class AMXJ2EEStartupService
                         Server server = (Server) changedInstance;
                         String serverName = server.getName();
 
-                        DomainRoot domainRootProxy = ProxyFactory.getInstance(mMBeanServer).getDomainRootProxy(false);
-
                         MetadataImpl meta = new MetadataImpl();
-                        meta.setCorrespondingConfig(domainRootProxy.getDomain().as(Domain.class).getServers().getServer().get(serverName).objectName());
+                        meta.setCorrespondingConfig(ConfigBeanRegistry.getInstance().getObjectNameForProxy(server));
                         final DASJ2EEServerImpl impl = new DASJ2EEServerImpl(getJ2EEDomain(), meta);
                         ObjectName serverObjectName = new ObjectNameBuilder(mMBeanServer, getJ2EEDomain()).buildChildObjectName(J2EETypes.J2EE_SERVER, serverName);
                         try {
@@ -240,7 +239,7 @@ public final class AMXJ2EEStartupService
         final String domainName = Util.getNameProp(domainRoot);
 
         final Metadata metadata = new MetadataImpl();
-        metadata.add(Metadata.CORRESPONDING_CONFIG, domainRootProxy.child(Domain.class).objectName());
+        metadata.add(Metadata.CORRESPONDING_CONFIG, ConfigBeanRegistry.getInstance().getObjectNameForProxy(domain));
 
         String serverName = mHabitat.getComponent(Server.class).getName();
 

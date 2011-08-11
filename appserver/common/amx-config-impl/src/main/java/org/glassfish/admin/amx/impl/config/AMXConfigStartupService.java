@@ -39,7 +39,10 @@
  */
 package org.glassfish.admin.amx.impl.config;
 
+import com.sun.enterprise.config.serverbeans.Domain;
+
 import org.glassfish.admin.amx.base.DomainRoot;
+import org.glassfish.admin.amx.core.AMXProxy;
 import org.glassfish.admin.amx.core.proxy.ProxyFactory;
 import org.glassfish.admin.amx.util.TimingDelta;
 import org.jvnet.hk2.annotations.Inject;
@@ -58,7 +61,6 @@ import org.glassfish.admin.amx.impl.config.AMXConfigLoader;
 import org.glassfish.admin.amx.impl.util.ImplUtil;
 import org.glassfish.admin.amx.impl.util.InjectedValues;
 
-import org.glassfish.admin.amx.intf.config.Domain;
 import org.glassfish.admin.amx.util.FeatureAvailability;
 import org.glassfish.admin.mbeanserver.PendingConfigBeans;
 import org.jvnet.hk2.config.Transactions;
@@ -123,13 +125,17 @@ public final class AMXConfigStartupService
     }
 
     public ObjectName getDomainConfig() {
-        return getDomainRoot().child(Domain.class).extra().objectName();
+    	return ConfigBeanRegistry.getInstance().getObjectNameForProxy(getDomain());
     }
 
-    public Domain getDomainConfigProxy() {
-        return ProxyFactory.getInstance(mMBeanServer).getProxy(getDomainConfig(), Domain.class);
+    public Domain getDomain() {
+    	return InjectedValues.getInstance().getHabitat().getComponent(Domain.class);
     }
 
+    public AMXProxy getDomainConfigProxy() {
+        return ProxyFactory.getInstance(mMBeanServer).getProxy(getDomainConfig(), AMXProxy.class);
+    }
+    
     public synchronized ObjectName loadAMXMBeans() {
         if (mLoader == null) {
             //getDomainRootProxy().waitAMXReady();
@@ -144,9 +150,9 @@ public final class AMXConfigStartupService
     }
 
     public synchronized void unloadAMXMBeans() {
-        final Domain domainConfig = getDomainConfigProxy();
-        if (domainConfig != null) {
-            ImplUtil.unregisterAMXMBeans(domainConfig);
+        final AMXProxy domainConfigProxy = getDomainConfigProxy();
+        if (domainConfigProxy != null) {
+        	ImplUtil.unregisterAMXMBeans(domainConfigProxy);
         }
         mLoader.stop();
         mLoader = null;

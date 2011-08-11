@@ -44,6 +44,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.ArrayList;
 import java.util.Properties;
 import java.util.logging.Level;
@@ -56,21 +57,22 @@ import org.glassfish.admin.amx.base.DomainRoot;
 
 import org.glassfish.admin.amx.impl.util.ImplUtil;
 
-import org.glassfish.admin.amx.intf.config.AuthRealm;
-import org.glassfish.admin.amx.intf.config.SecurityService;
-import org.glassfish.admin.amx.intf.config.Config;
-import org.glassfish.admin.amx.intf.config.Property;
+import com.sun.enterprise.config.serverbeans.AuthRealm;
+import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.config.serverbeans.SecurityService;
+import com.sun.enterprise.config.serverbeans.Config;
+import com.sun.enterprise.config.serverbeans.Configs;
+import org.jvnet.hk2.config.types.Property;
 
 import org.glassfish.internal.api.Globals;
 import com.sun.enterprise.security.auth.realm.RealmsManager;
 import com.sun.enterprise.security.auth.realm.Realm;
 import com.sun.enterprise.security.auth.realm.User;
-import org.glassfish.admin.amx.intf.config.Configs;
-import org.glassfish.admin.amx.intf.config.Domain;
 import org.glassfish.admin.amx.base.Realms;
 import org.glassfish.admin.amx.impl.mbean.AMXImplBase;
 import org.glassfish.admin.amx.util.CollectionUtil;
 import org.glassfish.admin.amx.impl.util.InjectedValues;
+import org.glassfish.api.admin.ServerEnvironment;
 
 import com.sun.enterprise.security.auth.login.LoginContextDriver;
 
@@ -99,14 +101,10 @@ public final class RealmsImpl extends AMXImplBase
     
     private SecurityService getSecurityService()
     {   
-        // this is ugly, the underlying API doesn't understand that there is more than one <security-service>,
-        // each with one or more <auth-realm>.  So we'll just take the first config
-        final Domain domainConfig = getDomainRootProxy().child(Domain.class);
-        final Config config = domainConfig.getConfigs().getConfig().values().iterator().next();
-        
-        return config.getSecurityService();
+    	return InjectedValues.getInstance().getHabitat().getComponent(SecurityService.class, ServerEnvironment.DEFAULT_INSTANCE_NAME);
     }
-    private Map<String,AuthRealm>  getAuthRealms()
+
+    private List<AuthRealm>  getAuthRealms()
     {
         return getSecurityService().getAuthRealm();
     }
@@ -114,7 +112,12 @@ public final class RealmsImpl extends AMXImplBase
     /** realm names as found in configuration; some might be defective and unable to be loaded */
     private Set<String> getConfiguredRealmNames()
     {
-        return getAuthRealms().keySet();
+    	Set<String> names = new HashSet<String>();
+    	List<AuthRealm> realms = getAuthRealms();
+    	for (AuthRealm realm : realms) {
+    		names.add(realm.getName());
+    	}
+    	return names;
     }
     
         private synchronized void 
@@ -139,17 +142,16 @@ public final class RealmsImpl extends AMXImplBase
     {
         if ( realmsLoaded ) throw new IllegalStateException();
 
-        final Map<String,AuthRealm> authRealmConfigs = getAuthRealms();
+        final List<AuthRealm> authRealms = getAuthRealms();
         
         final List<String> goodRealms = new ArrayList<String>();
-        for( final AuthRealm authRealm : authRealmConfigs.values() )
+        for( final AuthRealm authRealm : authRealms )
         {
-            final Map<String,Property> propConfigs = authRealm.childrenMap(Property.class);
+            final List<Property> propList = authRealm.getProperty();
             final Properties props = new Properties();
-            for (final Property p : propConfigs.values() )
+            for (final Property p : propList )
             {
-                final String value = p.resolveAttribute( "Value" );
-                props.setProperty( p.getName(), value );
+                props.setProperty( p.getName(), p.getValue() );
             }
             try
             {
@@ -374,17 +376,16 @@ public final class RealmsImpl extends AMXImplBase
             
 
      public String getAnonymousUser() {
-        final DomainRoot domainRoot = getDomainRootProxy();
-        final Domain domainConfig = domainRoot.child(Domain.class);
-        final Map<String,Config> configs = domainConfig.getConfigs().childrenMap(Config.class);
-
+        final Domain domain = InjectedValues.getInstance().getHabitat().getComponent(Domain.class);
+        final List<Config> configs = domain.getConfigs().getConfig();
+        
         // find the ADMIN_REALM
         AuthRealm adminFileAuthRealm = null;
-        for( final Config config : configs.values() )
+        for( final Config config : configs )
         {
             if ( config.getSecurityService() == null ) continue;
             
-            for( final AuthRealm auth : config.getSecurityService().childrenMap(AuthRealm.class).values() )
+            for( final AuthRealm auth : config.getSecurityService().getAuthRealm() )
             {
                 if ( auth.getName().equals(ADMIN_REALM) )
                 {
@@ -407,14 +408,11 @@ public final class RealmsImpl extends AMXImplBase
             return null;
         }
 
-        final Map<String,Property>  props = adminFileAuthRealm.childrenMap(Property.class);
-        final Property keyfileProp = props.get("file");
+        Property keyfileProp = adminFileAuthRealm.getProperty("file");
         if ( keyfileProp == null ) {
             throw new IllegalStateException( "Cannot find property 'file'" );
         }
-        //System.out.println( "############### keyFileProp: " + keyfileProp.getName() + " = " + keyfileProp.getValue() );
-        final String keyFile = keyfileProp.resolveAttribute( "Value" );
-        //System.out.println( "############### keyFile: " + keyfileProp.getValue() + " ===> " + keyFile);
+        final String keyFile = keyfileProp.getValue();
         if (keyFile == null) {
             throw new IllegalStateException( "Cannot find key file" );
         }

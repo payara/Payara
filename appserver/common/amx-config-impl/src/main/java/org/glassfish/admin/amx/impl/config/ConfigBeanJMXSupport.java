@@ -75,6 +75,7 @@ import javax.management.openmbean.OpenType;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
+import com.sun.enterprise.config.serverbeans.Domain;
 import org.glassfish.external.arc.Stability;
 import org.glassfish.external.arc.Taxonomy;
 import static org.glassfish.external.amx.AMX.*;
@@ -689,9 +690,6 @@ class ConfigBeanJMXSupport
         return d;
     }
 
-    /** kludge to provide interface name */
-    private static final Map<String, String> INTERFACE_MAPPINGS = MapUtil.newMap(
-            com.sun.enterprise.config.serverbeans.Domain.class.getPackage().getName(), org.glassfish.admin.amx.intf.config.Domain.class.getPackage().getName());
 
     private DescriptorSupport descriptor()
     {
@@ -700,9 +698,9 @@ class ConfigBeanJMXSupport
         String amxInterfaceName = AMXConfigProxy.class.getName(); // generic default
 
         final String intfPackage = mIntf.getPackage().getName();
-        if (INTERFACE_MAPPINGS.get(intfPackage) != null)
+        if (Domain.class.getPackage().getName().equals(intfPackage))
         {
-            amxInterfaceName = INTERFACE_MAPPINGS.get(intfPackage) + "." + mIntf.getName();
+            amxInterfaceName = mIntf.getName();
         }
 
         d.setField(DESC_STD_INTERFACE_NAME, amxInterfaceName);

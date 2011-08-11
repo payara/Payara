@@ -40,16 +40,20 @@
 
 package org.glassfish.admin.amx.impl.j2ee;
 
+import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.config.serverbeans.Server;
+
 import org.glassfish.admin.amx.core.Util;
 import org.glassfish.admin.amx.impl.util.Issues;
 import org.glassfish.admin.amx.impl.util.ObjectNameBuilder;
+import org.glassfish.admin.amx.impl.config.ConfigBeanRegistry;
 import org.glassfish.admin.amx.j2ee.J2EEDomain;
 import org.glassfish.admin.amx.j2ee.J2EEManagedObject;
 import org.glassfish.admin.amx.j2ee.J2EETypes;
 
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
-import java.util.Map;
+import java.util.List;
 
 /**
  * Base implementation for the J2EEDomain for DAS and non-DAS server instances.
@@ -72,8 +76,6 @@ public class J2EEDomainImpl extends J2EEManagedObjectImplBase {
      */
     public String[] getservers() {
 
-        //Map serverMap = getDomainConfig().getServers().getServer();
-        //return (String[]) serverMap.keySet().toArray(new String[serverMap.size()]);
         return getChildrenAsStrings(J2EETypes.J2EE_SERVER);
     }
 
@@ -95,12 +97,12 @@ public class J2EEDomainImpl extends J2EEManagedObjectImplBase {
         final ObjectNameBuilder builder = getObjectNames();
 
         final MetadataImpl meta = defaultChildMetadata();
-        Map serverMap = getDomainConfig().getServers().getServer();
-        for (Object serverKey : serverMap.keySet()) {
+        List<Server> servers = getDomain().getServers().getServer();
+        for (Server server : servers) {
 
-            meta.setCorrespondingConfig(getDomainConfig().getServers().getServer().get(serverKey).objectName());
+            meta.setCorrespondingConfig(ConfigBeanRegistry.getInstance().getObjectNameForProxy(server));
             final DASJ2EEServerImpl impl = new DASJ2EEServerImpl(getObjectName(), meta);
-            ObjectName serverObjectName = getObjectNames().buildChildObjectName(J2EETypes.J2EE_SERVER, serverKey.toString());
+            ObjectName serverObjectName = getObjectNames().buildChildObjectName(J2EETypes.J2EE_SERVER, server.getName());
             registerChild(impl, serverObjectName);
         }
         //ImplUtil.getLogger().info( "Registered J2EEDomain as " + getObjectName() + " with J2EEServer of " + serverObjectName);

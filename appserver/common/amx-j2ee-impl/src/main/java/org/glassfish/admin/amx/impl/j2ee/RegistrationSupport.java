@@ -40,6 +40,13 @@
 
 package org.glassfish.admin.amx.impl.j2ee;
 
+import com.sun.enterprise.config.serverbeans.ApplicationRef;
+import com.sun.enterprise.config.serverbeans.BindableResource;
+import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.config.serverbeans.Resource;
+import com.sun.enterprise.config.serverbeans.ResourcePool;
+import com.sun.enterprise.config.serverbeans.ResourceRef;
+import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.*;
 import com.sun.enterprise.deployment.archivist.Archivist;
@@ -49,23 +56,27 @@ import com.sun.logging.LogDomains;
 import org.glassfish.admin.amx.config.AMXConfigProxy;
 import org.glassfish.admin.amx.core.Util;
 import org.glassfish.admin.amx.core.proxy.ProxyFactory;
+import org.glassfish.admin.amx.impl.config.ConfigBeanRegistry;
 import org.glassfish.admin.amx.impl.j2ee.loader.J2EEInjectedValues;
+import org.glassfish.admin.amx.impl.util.InjectedValues;
 import org.glassfish.admin.amx.impl.util.ObjectNameBuilder;
-import org.glassfish.admin.amx.intf.config.*;
 import org.glassfish.admin.amx.j2ee.*;
 import org.glassfish.admin.amx.j2ee.ResourceAdapter;
 import org.glassfish.admin.amx.j2ee.WebModule;
 import org.glassfish.admin.amx.util.ClassUtil;
 import org.glassfish.admin.amx.util.MapUtil;
 import org.glassfish.admin.amx.util.jmx.JMXUtil;
+import org.glassfish.api.admin.config.Named;
 import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.data.ApplicationRegistry;
+import org.jvnet.hk2.config.ConfigBeanProxy;
 
 import javax.management.*;
 import java.io.ByteArrayOutputStream;
 import java.lang.reflect.Constructor;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -95,7 +106,7 @@ final class RegistrationSupport
     private final RefListener mResourceRefListener;
 
     /** The Server config for this J2EEServer */
-    private final Server mServerConfig;
+    private final Server mServer;
     
     /** type of any resource ref */
     private final String mResourceRefType;
@@ -113,7 +124,7 @@ final class RegistrationSupport
 
         mResourceRefType    = Util.deduceType(ResourceRef.class);
         mApplicationRefType = Util.deduceType(ApplicationRef.class);
-        mServerConfig = getDomainConfig().getServers().getServer().get( mJ2EEServer.getName() );
+        mServer = getDomain().getServers().getServer( mJ2EEServer.getName() );
 
         final ObjectName test = mJ2EEServer.objectName();
 
@@ -147,12 +158,15 @@ final class RegistrationSupport
             },
             String.class, Class.class);
 
-    private Domain getDomainConfig()
+    private Domain getDomain()
     {
-        return new AMXConfigGetters(mJ2EEServer).domainConfig();
+    	return InjectedValues.getInstance().getHabitat().getComponent(Domain.class);
     }
     
-    
+    private ObjectName getObjectName(ConfigBeanProxy cbp)
+    {
+    	return ConfigBeanRegistry.getInstance().getObjectNameForProxy(cbp);
+    }
 
     private String getDeploymentDescriptor(
         final BundleDescriptor bundleDesc )
@@ -187,7 +201,7 @@ final class RegistrationSupport
     }
   
     private ObjectName createAppMBeans(
-        org.glassfish.admin.amx.intf.config.Application appConfig,
+    	com.sun.enterprise.config.serverbeans.Application appConfig,
         final Application application,
         final MetadataImpl meta)
     {
@@ -247,25 +261,22 @@ final class RegistrationSupport
         return top;
     }
     
-        private org.glassfish.admin.amx.intf.config.Module
-    getModuleConfig( final org.glassfish.admin.amx.intf.config.Application appConfig, final String name)
+        private com.sun.enterprise.config.serverbeans.Module
+    getModuleConfig( final com.sun.enterprise.config.serverbeans.Application appConfig, final String name)
     {
-        final Map<String, org.glassfish.admin.amx.intf.config.Module> modules =
-            appConfig.childrenMap(org.glassfish.admin.amx.intf.config.Module.class);
-        
-        if ( modules.get(name) == null )
+        if ( appConfig.getModule(name) == null )
         {
             throw new IllegalArgumentException( "Can't find module named " + name + " in " + appConfig );
         }
         
-        return modules.get(name);
+        return appConfig.getModule(name);
     }
 
     /* Register ejb module and its' children ejbs which is part of an application */
     private ObjectName registerEjbModuleAndItsComponents(
             final ObjectName parentMBean,
             final MetadataImpl meta,
-            final org.glassfish.admin.amx.intf.config.Application appConfig,
+            final com.sun.enterprise.config.serverbeans.Application appConfig,
             final EjbBundleDescriptor ejbBundleDescriptor )
     {
         final String xmlDesc = getDeploymentDescriptor(ejbBundleDescriptor);
@@ -276,8 +287,8 @@ final class RegistrationSupport
         final String moduleName = ejbBundleDescriptor.getModuleName();
         final String appLocation = appConfig.getLocation();
         
-        final AMXConfigProxy moduleConfig = getModuleConfig(appConfig, moduleName );
-        meta.setCorrespondingConfig(moduleConfig.objectName());
+        final com.sun.enterprise.config.serverbeans.Module moduleConfig = getModuleConfig(appConfig, moduleName );
+        meta.setCorrespondingConfig(getObjectName(moduleConfig));
         
         final ObjectName ejbModuleObjectName = registerJ2EEChild(parentMBean, meta, EJBModule.class, EJBModuleImpl.class, moduleName);
         
@@ -341,7 +352,7 @@ final class RegistrationSupport
     private ObjectName registerWebModuleAndItsComponents(
             final ObjectName parentMBean,
             final MetadataImpl meta,
-            final org.glassfish.admin.amx.intf.config.Application appConfig,
+            final com.sun.enterprise.config.serverbeans.Application appConfig,
             final WebBundleDescriptor webBundleDescriptor )
     {
         final String xmlDesc = getDeploymentDescriptor(webBundleDescriptor);
@@ -353,8 +364,8 @@ final class RegistrationSupport
         final String moduleName = webBundleDescriptor.getModuleName();
         final String appLocation = appConfig.getLocation();
         
-        final AMXConfigProxy moduleConfig = getModuleConfig(appConfig, moduleName );
-        meta.setCorrespondingConfig(moduleConfig.objectName());
+        final com.sun.enterprise.config.serverbeans.Module moduleConfig = getModuleConfig(appConfig, moduleName );
+        meta.setCorrespondingConfig(getObjectName(moduleConfig));
 
         final ObjectName webModuleObjectName = registerJ2EEChild(parentMBean, meta, WebModule.class, WebModuleImpl.class, moduleName);
 
@@ -373,15 +384,15 @@ final class RegistrationSupport
     public ObjectName registerResourceAdapterModuleAndItsComponents(
             final ObjectName parentMBean,
             final MetadataImpl meta,
-            final org.glassfish.admin.amx.intf.config.Application appConfig,
+            final com.sun.enterprise.config.serverbeans.Application appConfig,
             final ConnectorDescriptor bundleDesc,
             final String appLocation)
     {
-        meta.setCorrespondingConfig(appConfig.objectName());
+        meta.setCorrespondingConfig(getObjectName(appConfig));
         final ObjectName objectName = createRARModuleMBean(parentMBean, meta, appConfig, bundleDesc);
         
-        final AMXConfigProxy moduleConfig = getModuleConfig(appConfig, bundleDesc.getModuleName() );
-        meta.setCorrespondingConfig(moduleConfig.objectName());
+        final com.sun.enterprise.config.serverbeans.Module moduleConfig = getModuleConfig(appConfig, bundleDesc.getModuleName() );
+        meta.setCorrespondingConfig(getObjectName(moduleConfig));
         
         final ObjectName rarObjectName = registerJ2EEChild(objectName, meta, ResourceAdapter.class, ResourceAdapterImpl.class, bundleDesc.getName());
 
@@ -391,7 +402,7 @@ final class RegistrationSupport
     private ObjectName createRARModuleMBean(
             final ObjectName parentMBean,
             final MetadataImpl meta,
-            final org.glassfish.admin.amx.intf.config.Application appConfig,
+            final com.sun.enterprise.config.serverbeans.Application appConfig,
             final ConnectorDescriptor bundleDesc )
     {
         final String appLocation = appConfig.getLocation();
@@ -412,7 +423,7 @@ final class RegistrationSupport
     public ObjectName registerAppClient(
             final ObjectName parentMBean,
             final MetadataImpl meta,
-            final org.glassfish.admin.amx.intf.config.Application appConfig,
+            final com.sun.enterprise.config.serverbeans.Application appConfig,
             final ApplicationClientDescriptor bundleDesc)
     {
         final String appLocation = appConfig.getLocation();
@@ -430,8 +441,8 @@ final class RegistrationSupport
   
     protected void registerApplications()
     {
-        final Map<String, ApplicationRef> appRefConfigs = mServerConfig.getApplicationRef();
-        for (final ApplicationRef ref : appRefConfigs.values())
+        final List<ApplicationRef> appRefs = mServer.getApplicationRef();
+        for (final ApplicationRef ref : appRefs)
         {
             try
             {
@@ -440,7 +451,7 @@ final class RegistrationSupport
             catch( final Exception e )
             {
                 // log it: we want to continue with other apps, even if this one had a problem
-                mLogger.log( Level.INFO, "amx.exception.app.register", new Object[] { ref.getName(), e});
+                mLogger.log( Level.INFO, "amx.exception.app.register", new Object[] { ref.getRef(), e});
             }
         }
     }
@@ -455,9 +466,9 @@ final class RegistrationSupport
         final ApplicationRegistry appRegistry = J2EEInjectedValues.getInstance().getApplicationRegistry();
 
         final MetadataImpl meta = new MetadataImpl();
-        meta.setCorrespondingRef(ref.objectName());
+        meta.setCorrespondingRef(getObjectName(ref));
         
-        final String appName = ref.getName();
+        final String appName = ref.getRef();
         
         final ApplicationInfo appInfo = appRegistry.get(appName);
         if (appInfo == null)
@@ -475,18 +486,18 @@ final class RegistrationSupport
             return null;
         }
         
-        final org.glassfish.admin.amx.intf.config.Application appConfig = new AMXConfigGetters(ref).getApplication(appName);
+        final com.sun.enterprise.config.serverbeans.Application appConfig = getDomain().getApplications().getApplication(appName);
         if ( appConfig == null )
         {
             mLogger.log(Level.WARNING,"amx.error.getappconfig",appName);
             return null;
         }
         
-        meta.setCorrespondingConfig( appConfig.objectName() );
+        meta.setCorrespondingConfig( getObjectName(appConfig) );
         final ObjectName mbean77 = createAppMBeans(appConfig, app, meta);
         synchronized (mConfigRefTo77)
         {
-            mConfigRefTo77.put(ref.objectName(), mbean77);
+            mConfigRefTo77.put(getObjectName(ref), mbean77);
         }
 
         return mbean77;
@@ -528,29 +539,45 @@ final class RegistrationSupport
      */
     public ObjectName processResourceRef(final ResourceRef ref)
     {
-        if (!mResourceRefType.equals(ref.type()))
+        if (ref == null)
         {
-            throw new IllegalArgumentException("Not a resource-ref: " + ref.objectName());
+            throw new IllegalArgumentException("resource-ref is null");
         }
 
-        if ( ! mServerConfig.objectName().equals(ref.parent().objectName()))
+        if ( ! mServer.getName().equals(ref.getParent(Server.class).getName()))
         {
-            cdebug("ResourceRef is not a child of server " + mServerConfig.objectName());
+            cdebug("ResourceRef is not a child of server " + getObjectName(mServer));
             return null;
         }
 
         // find the referenced resource
-        final AMXConfigProxy amxConfig = new AMXConfigGetters(ref).getResource(ref.getName());
-        if (amxConfig == null)
+        Resource res = null;
+        List<Resource> resources = getDomain().getResources().getResources();
+        for (Resource resource : resources)
+        {
+            String name = null;
+            if (resource instanceof BindableResource) {
+                name = ((BindableResource) resource).getJndiName();
+            }
+            if (resource instanceof Named) {
+                name = ((Named) resource).getName();
+            }
+            if (resource instanceof ResourcePool) {
+                name = ((ResourcePool) resource).getName();
+            }
+        	if (name != null && name.equals(ref.getRef()))
+        		res = resource;
+        }
+        if (res == null)
         {
             throw new IllegalArgumentException("ResourceRef refers to non-existent resource: " + ref);
         }
 
-        final String configType = amxConfig.type();
+        final String configType = Util.getTypeProp(getObjectName(res));
         final Class<J2EEManagedObjectImplBase> implClass = CONFIG_RESOURCE_TYPES.get(configType);
         if (implClass == null)
         {
-            mLogger.fine("Unrecognized resource type for JSR 77 purposes: " + amxConfig.objectName());
+            mLogger.fine("Unrecognized resource type for JSR 77 purposes: " + getObjectName(res));
             return null;
         }
         final Class<J2EEManagedObject> intf = (Class) ClassUtil.getFieldValue(implClass, "INTF");
@@ -560,18 +587,18 @@ final class RegistrationSupport
         try
         {
             final MetadataImpl meta = new MetadataImpl();
-            meta.setCorrespondingRef(ref.objectName());
-            meta.setCorrespondingConfig(amxConfig.objectName());
+            meta.setCorrespondingRef(getObjectName(ref));
+            meta.setCorrespondingConfig(getObjectName(res));
             
-            mbean77 = registerJ2EEChild(mJ2EEServer.objectName(), meta, intf, implClass, amxConfig.getName());
+            mbean77 = registerJ2EEChild(mJ2EEServer.objectName(), meta, intf, implClass, Util.getNameProp(getObjectName(res)));
             synchronized (mConfigRefTo77)
             {
-                mConfigRefTo77.put(ref.objectName(), mbean77);
+                mConfigRefTo77.put(getObjectName(ref), mbean77);
             }
         }
         catch (final Exception e)
         {
-            mLogger.log( Level.INFO, "amx.exception.jsr77app.register", new Object[] { ref.objectName(), e });
+            mLogger.log( Level.INFO, "amx.exception.jsr77app.register", new Object[] { getObjectName(ref), e });
         }
     //cdebug( "Registered " + child + " for  config resource " + amx.objectName() );
         return mbean77;
@@ -612,13 +639,13 @@ final class RegistrationSupport
                 if ( type.equals( mResourceRefType ) )
                 {
                     mLogger.fine("New ResourceRef MBEAN registered: " + objectName);
-                    final ResourceRef ref = mProxyFactory.getProxy(objectName, ResourceRef.class);
+                    final ResourceRef ref = (ResourceRef) ConfigBeanRegistry.getInstance().getConfigBean(objectName);
                     processResourceRef(ref);
                 }
                 else if ( type.equals( mApplicationRefType ) )
                 {
                     mLogger.fine( "NEW ApplicationRef MBEAN registered: " + objectName);
-                    final ApplicationRef ref = mProxyFactory.getProxy(objectName, ApplicationRef.class);
+                    final ApplicationRef ref = (ApplicationRef) ConfigBeanRegistry.getInstance().getConfigBean(objectName);
                     processApplicationRef(ref);
                 }
             }
@@ -658,8 +685,8 @@ final class RegistrationSupport
             }
 
             // register all existing 
-            final Map<String, ResourceRef> resourceRefs = mServerConfig.getResourceRef();
-            for (final ResourceRef ref : resourceRefs.values())
+            final List<ResourceRef> resourceRefs = mServer.getResourceRef();
+            for (final ResourceRef ref : resourceRefs)
             {
                 processResourceRef(ref);
             }

@@ -42,8 +42,6 @@ package org.glassfish.admin.amx.impl.config;
 
 import org.glassfish.admin.amx.core.AMXProxy;
 import org.glassfish.admin.amx.config.AMXConfigProxy;
-import org.glassfish.admin.amx.intf.config.SystemProperty;
-import org.glassfish.admin.amx.intf.config.SystemPropertiesAccess;
 
 import org.jvnet.hk2.config.TranslationException;
 import org.jvnet.hk2.config.VariableResolver;
@@ -98,32 +96,7 @@ public class AttributeResolverHelper extends VariableResolver
         {
             result = "" + value;
         }
-        else
-        {
-            // Look successively at Containers for SystemProperties
-            AMXProxy amx = mTarget;
-            while ( amx != null && (amx instanceof AMXConfigProxy) && result == null )
-            {
-                if ( amx instanceof SystemPropertiesAccess )
-                {
-                    final Map<String,SystemProperty> props = ((SystemPropertiesAccess)amx).getSystemProperty();
-                    
-                    // look by calling getName().  We can't just look in the map, because the ObjectName
-                    // might not allow some characters that might be allowed in the name field
-                    for( final SystemProperty prop : props.values() )
-                    {
-                        if ( prop.getName().equals( varName ) )
-                        {
-                            result = prop.getValue();
-                            break;
-                        }
-                    }
-                }
-                // continue up the containment hierarchy until we run out of config objects
-                amx = amx.parent();
-            }
-        }
-        
+        // Removed code that walked hierarchy since this is not called.
         return result;
     }
     

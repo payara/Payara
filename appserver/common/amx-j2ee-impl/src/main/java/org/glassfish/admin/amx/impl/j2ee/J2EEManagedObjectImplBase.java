@@ -52,10 +52,11 @@ import javax.management.j2ee.ManagementHome;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.rmi.PortableRemoteObject;
+import com.sun.enterprise.config.serverbeans.Domain;
 import org.glassfish.admin.amx.core.Util;
 import org.glassfish.admin.amx.impl.mbean.AMXImplBase;
+import org.glassfish.admin.amx.impl.util.InjectedValues;
 import org.glassfish.admin.amx.impl.util.ObjectNameBuilder;
-import org.glassfish.admin.amx.intf.config.Domain;
 import org.glassfish.admin.amx.j2ee.J2EEManagedObject;
 import org.glassfish.admin.amx.j2ee.J2EEServer;
 import org.glassfish.admin.amx.j2ee.StateManageable;
@@ -125,9 +126,10 @@ public abstract class J2EEManagedObjectImplBase extends AMXImplBase {
     }
 
     protected Domain
-    getDomainConfig()
+    getDomain()
     {
-        return getDomainRootProxy().getDomain().as(Domain.class);
+        final Domain domain = InjectedValues.getInstance().getHabitat().getComponent(Domain.class);
+        return domain;
     }
     
     /**

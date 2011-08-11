@@ -68,7 +68,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static org.glassfish.admin.amx.config.AMXConfigConstants.*;
-import static org.glassfish.admin.amx.intf.config.AnonymousElementList.*;
 import static org.glassfish.external.amx.AMX.*;
 
 /**
@@ -1288,7 +1287,6 @@ public class AMXConfigImpl extends AMXImplBase
     private List<String> handleCollection(
             final WriteableView writeable,
             final ConfigModel.Property prop,
-            final String cmd,
             final List<String> argValues)
     {
         final Object o = writeable.getter(prop, getCollectionGenericType());
@@ -1297,35 +1295,13 @@ public class AMXConfigImpl extends AMXImplBase
         //cdebug( "Existing values: {" + CollectionUtil.toString( masterList ) + "}");
         //cdebug( "Arg values: {" + CollectionUtil.toString( argValues ) + "}");
 
-        if (cmd.equals(OP_REPLACE))
+        masterList.retainAll(argValues);
+        for (final String s : argValues)
         {
-            masterList.retainAll(argValues);
-            for (final String s : argValues)
+            if (!masterList.contains(s))
             {
-                if (!masterList.contains(s))
-                {
-                    masterList.add(s);
-                }
+                masterList.add(s);
             }
-        //cdebug( "Master list after OP_REMOVE: {" + CollectionUtil.toString( masterList ) + "}");
-        }
-        else if (cmd.equals(OP_REMOVE))
-        {
-            masterList.removeAll(argValues);
-        //cdebug( "Master list after OP_REMOVE: {" + CollectionUtil.toString( masterList ) + "}");
-        }
-        else if (cmd.equals(OP_ADD))
-        {
-            // eliminate duplicates for now unless there is a good reason to allow them
-            final List<String> temp = new ArrayList<String>(argValues);
-            temp.removeAll(masterList);
-
-            masterList.addAll(temp);
-        //cdebug( "Master list after OP_ADD: {" + CollectionUtil.toString( masterList ) + "}");
-        }
-        else
-        {
-            throw new IllegalArgumentException(cmd);
         }
 
         //cdebug( "Existing values list before commit: {" + CollectionUtil.toString( masterList ) + "}");
@@ -1389,39 +1365,6 @@ public class AMXConfigImpl extends AMXImplBase
         return cmp;
     }
 
-    private final class ModifyCollectionApplyer extends Applyer
-    {
-        private volatile List<String> mResult;
-
-        private final String mElementName;
-
-        private final String mCmd;
-
-        private final String[] mValues;
-
-        public ModifyCollectionApplyer(
-                final ConfigBean cb,
-                final String elementName,
-                final String cmd,
-                final String[] values)
-                throws TransactionFailure
-        {
-            super(cb);
-            mElementName = elementName;
-            mCmd = cmd;
-            mValues = values;
-            mResult = null;
-        }
-
-        protected void makeChanges()
-                throws TransactionFailure
-        {
-            final ConfigModel.Property prop = getConfigModel_Property(mElementName);
-            mResult = handleCollection(mWriteable, prop, mCmd, ListUtil.asStringList(mValues));
-        }
-
-    }
-
     private final class MakeChangesApplyer extends Applyer
     {
         private final Map<String, Object> mChanges;
@@ -1445,7 +1388,7 @@ public class AMXConfigImpl extends AMXImplBase
 
                 if (prop.isCollection())
                 {
-                    final List<String> results = handleCollection(mWriteable, prop, OP_REPLACE, ListUtil.asStringList(value));
+                    final List<String> results = handleCollection(mWriteable, prop, ListUtil.asStringList(value));
                 }
                 else if (value == null || (value instanceof String))
                 {

@@ -46,6 +46,7 @@ import javax.management.ObjectName;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Map;
 import java.util.HashMap;
@@ -64,11 +65,14 @@ import org.glassfish.admin.amx.base.RuntimeRoot;
 import org.glassfish.admin.amx.base.ServerRuntime;
 import org.glassfish.admin.amx.impl.mbean.AMXImplBase;
 import org.glassfish.admin.amx.impl.util.ImplUtil;
-import org.glassfish.admin.amx.intf.config.Domain;
-import org.glassfish.admin.amx.intf.config.grizzly.NetworkConfig;
-import org.glassfish.admin.amx.intf.config.grizzly.NetworkListener;
-import org.glassfish.admin.amx.intf.config.grizzly.NetworkListeners;
-import org.glassfish.admin.amx.intf.config.grizzly.Protocol;
+import org.glassfish.api.admin.ServerEnvironment;
+import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.config.serverbeans.Config;
+import com.sun.enterprise.config.serverbeans.Configs;
+import org.glassfish.grizzly.config.dom.NetworkConfig;
+import org.glassfish.grizzly.config.dom.NetworkListener;
+import org.glassfish.grizzly.config.dom.NetworkListeners;
+import org.glassfish.grizzly.config.dom.Protocol;
 import org.glassfish.admin.amx.util.ExceptionUtil;
 import org.glassfish.api.container.Sniffer;
 import org.glassfish.internal.data.ApplicationInfo;
@@ -100,6 +104,7 @@ import com.sun.enterprise.deployment.WebComponentDescriptor;
 import javax.management.MBeanServer;
 import org.glassfish.admin.amx.impl.util.ObjectNameBuilder;
 import org.glassfish.admin.amx.util.StringUtil;
+
 
 /**
 AMX RealmsMgr implementation.
@@ -250,7 +255,9 @@ public final class RuntimeRootImpl extends AMXImplBase
 
     private NetworkConfig networkConfig()
     {
-        return getDomainRootProxy().child(Domain.class).getConfigs().getConfig().get("server-config").getNetworkConfig().as(NetworkConfig.class);
+        final NetworkConfig config = InjectedValues.getInstance().getHabitat().getComponent(
+        		NetworkConfig.class, ServerEnvironment.DEFAULT_INSTANCE_NAME);
+        return config;
     }
 
     private static final String ADMIN_LISTENER_NAME = "admin-listener";
@@ -259,33 +266,28 @@ public final class RuntimeRootImpl extends AMXImplBase
     {
         final NetworkConfig network = networkConfig();
 
-        final NetworkListeners listeners = network.getNetworkListeners();
-
-        final Map<String, NetworkListener> listenersMap = listeners.getNetworkListener();
-
-        final NetworkListener listener = listenersMap.get(ADMIN_LISTENER_NAME);
-
+        final NetworkListener listener = network.getNetworkListener(ADMIN_LISTENER_NAME);
         return listener;
     }
 
     private int getRESTPort()
     {
-        return (int) (long) getAdminListener().resolveLong("Port");
+        return (int) Long.parseLong(getAdminListener().getPort());
     }
 
     private String get_asadmin()
     {
-        final Protocol protocol = networkConfig().getProtocols().getProtocol().get(ADMIN_LISTENER_NAME);
-        return protocol.getHttp().resolveAttribute("DefaultVirtualServer");
+        final Protocol protocol = networkConfig().getProtocols().findProtocol(ADMIN_LISTENER_NAME);
+        return protocol.getHttp().getDefaultVirtualServer();
     }
 
-    public String getRESTBaseURL()
+    public String getRESTBaseURL() throws MalformedURLException
     {
-        final Protocol protocol = networkConfig().getProtocols().getProtocol().get(ADMIN_LISTENER_NAME);
-        final String scheme = protocol.resolveBoolean("SecurityEnabled") ? "https" : "http";
+        final Protocol protocol = networkConfig().getProtocols().findProtocol(ADMIN_LISTENER_NAME);
+        final String scheme = Boolean.parseBoolean(protocol.getSecurityEnabled()) ? "https" : "http";
         final String host = "localhost";
-
-        return scheme + "://" + host + ":" + getRESTPort() + "/" + get_asadmin() + "/";
+        URL url = new URL(scheme, host, getRESTPort(), "/" + get_asadmin());
+        return url.toString() + "/";
     }
 
 
