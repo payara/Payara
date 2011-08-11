@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -43,6 +43,7 @@ package com.sun.enterprise.deployment.node.web;
 import com.sun.enterprise.deployment.*;
 import com.sun.enterprise.deployment.node.*;
 import com.sun.enterprise.deployment.xml.WebTagNames;
+import org.jvnet.hk2.annotations.Service;
 import org.w3c.dom.Node;
 
 import java.util.*;
@@ -53,6 +54,7 @@ import java.util.*;
  * @author  Shing Wai Chan
  * @version 
  */
+@Service
 public class WebFragmentNode extends WebCommonNode<WebFragmentDescriptor> {
 
    public final static XMLElement tag = new XMLElement(WebTagNames.WEB_FRAGMENT);
@@ -75,11 +77,16 @@ public class WebFragmentNode extends WebCommonNode<WebFragmentDescriptor> {
     * @param publicIDToDTD is a mapping between xml Public-ID to DTD 
     * @return the doctype tag name
     */    
-    public static String registerBundle(Map publicIDToDTD) {
+    public String registerBundle(Map publicIDToDTD) {
         return tag.getQName();
     }
 
 
+    @Override
+    public Map<String,Class> registerRuntimeBundle(final Map<String,String> publicIDToDTD) {
+        return Collections.EMPTY_MAP;
+    }
+    
     /** Creates new WebBundleNode */
     public WebFragmentNode()  {
         super();

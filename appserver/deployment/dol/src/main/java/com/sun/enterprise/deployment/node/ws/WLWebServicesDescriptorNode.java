@@ -44,7 +44,9 @@ import com.sun.enterprise.deployment.*;
 import com.sun.enterprise.deployment.node.*;
 import com.sun.enterprise.deployment.xml.TagNames;
 import com.sun.enterprise.deployment.xml.WebServicesTagNames;
+import java.util.Map;
 import org.glassfish.deployment.common.RootDeploymentDescriptor;
+import org.jvnet.hk2.annotations.Service;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
@@ -57,16 +59,20 @@ import java.util.List;
  *
  * @author Rama Pulavarthi
  */
-public class WLWebServicesDescriptorNode extends BundleNode
+@Service
+public class WLWebServicesDescriptorNode extends AbstractBundleNode
         implements RootXMLNode {
 
     public WLWebServicesDescriptorNode(WebServicesDescriptor descriptor) {
+        this();
         parentDescriptor = descriptor;
+    }
+    
+    public WLWebServicesDescriptorNode() {
         registerElementHandler(new XMLElement(WLWebServicesTagNames.WEB_SERVICE),
                 WLWebServiceNode.class);
         registerElementHandler(new XMLElement(WLWebServicesTagNames.WEBSERVICE_SECURITY),
                 WLUnSupportedNode.class);
-
     }
 
     private final static XMLElement ROOT_ELEMENT = new XMLElement(WLWebServicesTagNames.WEB_SERVICES);
@@ -105,6 +111,17 @@ public class WLWebServicesDescriptorNode extends BundleNode
         return systemIDs;
     }
 
+    @Override
+    public String registerBundle(Map<String, String> publicIDToSystemIDMapping) {
+        return ROOT_ELEMENT.getQName();
+    }
+
+    @Override
+    public Map<String, Class> registerRuntimeBundle(Map<String, String> publicIDToSystemIDMapping) {
+        return Collections.EMPTY_MAP;
+    }
+
+    
     /**
      * @return the complete URL for J2EE schemas
      */

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -42,12 +42,15 @@ package com.sun.enterprise.deployment.node.appclient;
 
 import com.sun.enterprise.deployment.ApplicationClientDescriptor;
 import com.sun.enterprise.deployment.node.*;
+import com.sun.enterprise.deployment.node.runtime.AppClientRuntimeNode;
+import com.sun.enterprise.deployment.node.runtime.GFAppClientRuntimeNode;
 import com.sun.enterprise.deployment.types.EjbReference;
 import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.deployment.xml.ApplicationClientTagNames;
 import com.sun.enterprise.deployment.xml.EjbTagNames;
 import com.sun.enterprise.deployment.xml.TagNames;
 import com.sun.enterprise.deployment.xml.WebServicesTagNames;
+import org.jvnet.hk2.annotations.Service;
 import org.w3c.dom.Node;
 
 import java.util.*;
@@ -58,7 +61,9 @@ import java.util.*;
  * @author  Sheetal Vartak
  * @version 
  */
-public class AppClientNode extends BundleNode<ApplicationClientDescriptor> {
+
+@Service
+public class AppClientNode extends AbstractBundleNode<ApplicationClientDescriptor> {
 
      // Descriptor class we are using   
     private ApplicationClientDescriptor descriptor; 
@@ -115,12 +120,20 @@ public class AppClientNode extends BundleNode<ApplicationClientDescriptor> {
      * @param publicIDToDTD is a mapping between xml Public-ID to DTD 
      * @return the doctype tag name
      */
-    public static String registerBundle(Map publicIDToDTD) {
+    public String registerBundle(Map publicIDToDTD) {
         publicIDToDTD.put(PUBLIC_DTD_ID, SYSTEM_ID);
         publicIDToDTD.put(PUBLIC_DTD_ID_12, SYSTEM_ID_12);
         return tag.getQName();
-   }
-
+    }
+    
+    @Override
+    public Map<String,Class> registerRuntimeBundle(final Map<String,String> publicIDToDTD) {
+        final Map<String,Class> result = new HashMap<String,Class>();
+        result.put(AppClientRuntimeNode.registerBundle(publicIDToDTD), AppClientRuntimeNode.class);
+        result.put(GFAppClientRuntimeNode.registerBundle(publicIDToDTD), GFAppClientRuntimeNode.class);
+        return result;
+    }
+    
     /**
      * Adds  a new DOL descriptor instance to the descriptor instance associated with 
      * this XMLNode

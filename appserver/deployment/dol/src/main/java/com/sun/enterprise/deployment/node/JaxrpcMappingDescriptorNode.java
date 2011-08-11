@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -42,6 +42,7 @@ package com.sun.enterprise.deployment.node;
 
 import com.sun.enterprise.deployment.JaxrpcMappingDescriptor;
 import com.sun.enterprise.deployment.xml.WebServicesTagNames;
+import org.jvnet.hk2.annotations.Service;
 import org.xml.sax.Attributes;
 
 import java.util.*;
@@ -52,7 +53,8 @@ import java.util.*;
  * @author  Kenneth Saks
  * @version 
  */
-public class JaxrpcMappingDescriptorNode extends BundleNode 
+@Service
+public class JaxrpcMappingDescriptorNode extends AbstractBundleNode 
     implements RootXMLNode
                                     
 {    
@@ -88,8 +90,18 @@ public class JaxrpcMappingDescriptorNode extends BundleNode
 
     public JaxrpcMappingDescriptorNode() {
         descriptor = new JaxrpcMappingDescriptor();
-    }   
+    }
 
+    @Override
+    public String registerBundle(Map<String, String> publicIDToSystemIDMapping) {
+        return ROOT_ELEMENT.getQName();
+    }
+
+    @Override
+    public Map<String, Class> registerRuntimeBundle(Map<String, String> publicIDToSystemIDMapping) {
+        return Collections.EMPTY_MAP;
+    }
+    
     /**
      * @return the XML tag associated with this XMLNode
      */

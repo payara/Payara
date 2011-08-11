@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -42,12 +42,12 @@ package com.sun.enterprise.deployment.node.web;
 
 import com.sun.enterprise.deployment.*;
 import com.sun.enterprise.deployment.node.*;
-import com.sun.enterprise.deployment.types.EjbReference;
-import com.sun.enterprise.deployment.util.DOLUtils;
-import com.sun.enterprise.deployment.web.LoginConfiguration;
+import com.sun.enterprise.deployment.node.runtime.web.GFWebBundleRuntimeNode;
+import com.sun.enterprise.deployment.node.runtime.web.WLWebBundleRuntimeNode;
+import com.sun.enterprise.deployment.node.runtime.web.WebBundleRuntimeNode;
 import com.sun.enterprise.deployment.xml.TagNames;
-import com.sun.enterprise.deployment.xml.WebServicesTagNames;
 import com.sun.enterprise.deployment.xml.WebTagNames;
+import org.jvnet.hk2.annotations.Service;
 import org.w3c.dom.Node;
 
 import java.util.*;
@@ -58,6 +58,7 @@ import java.util.*;
  * @author  Jerome Dochez
  * @version 
  */
+@Service
 public class WebBundleNode extends WebCommonNode<WebBundleDescriptor> {
 
     public final static XMLElement tag = new XMLElement(WebTagNames.WEB_BUNDLE);
@@ -92,11 +93,42 @@ public class WebBundleNode extends WebCommonNode<WebBundleDescriptor> {
     * @param publicIDToDTD is a mapping between xml Public-ID to DTD 
     * @return the doctype tag name
     */    
-    public static String registerBundle(Map publicIDToDTD) {
+    public String registerBundle(Map publicIDToDTD) {
         publicIDToDTD.put(PUBLIC_DTD_ID, SYSTEM_ID);
         publicIDToDTD.put(PUBLIC_DTD_ID_12, SYSTEM_ID_12);
         return tag.getQName();
     }
+    
+    @Override
+    public Map<String,Class> registerRuntimeBundle(final Map<String,String> publicIDToDTD) {
+        final Map<String,Class> result = new HashMap<String,Class>();
+        result.put(WebBundleRuntimeNode.registerBundle(publicIDToDTD), WebBundleRuntimeNode.class);
+        result.put(GFWebBundleRuntimeNode.registerBundle(publicIDToDTD), GFWebBundleRuntimeNode.class);
+        
+        /*
+         * The WL descriptors use schemas, not DTDs, so 
+         * we don't need to add them to the DTD mapping.
+         */
+        result.put(com.sun.enterprise.deployment.xml.RuntimeTagNames.WL_WEB_RUNTIME_TAG, WLWebBundleRuntimeNode.class);
+        
+        return result;
+    }
+
+    @Override
+    public Collection<String> elementsAllowingEmptyValue() {
+        final Set<String> result = new HashSet<String>();
+        result.add(WebTagNames.LOAD_ON_STARTUP);
+        return result;
+    }
+
+    @Override
+    public Collection<String> elementsPreservingWhiteSpace() {
+        final Set<String> result = new HashSet<String>();
+        result.add(WebTagNames.URL_PATTERN);
+        return result;
+    }
+    
+    
     
     /** Creates new WebBundleNode */
     public WebBundleNode()  {

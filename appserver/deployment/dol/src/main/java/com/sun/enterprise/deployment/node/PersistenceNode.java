@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -47,16 +47,19 @@ import com.sun.enterprise.deployment.xml.PersistenceTagNames;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import org.jvnet.hk2.annotations.Service;
 
 /**
  * Represents the top level node, i.e. persistence node in persistence.xsd.
- * Since this is a top level node, it extends {@link BundleNode}. This class
+ * Since this is a top level node, it extends {@link AbstractBundleNode}. This class
  * registers a handler {@link PersistenceNode} which is responsible for reading
  * the persistence-unit elements.
  *
  * @author Sanjeeb.Sahoo@Sun.COM
  */
-public class PersistenceNode extends BundleNode {
+@Service
+public class PersistenceNode extends AbstractBundleNode {
 
     public final static String SCHEMA_NS =
             "http://java.sun.com/xml/ns/persistence"; // NOI18N
@@ -115,6 +118,16 @@ public class PersistenceNode extends BundleNode {
         getDescriptor().addPersistenceUnitDescriptor(pud);
     }
 
+    @Override
+    public String registerBundle(Map<String, String> publicIDToSystemIDMapping) {
+        return ROOT_ELEMENT.getQName();
+    }
+
+    @Override
+    public Map<String, Class> registerRuntimeBundle(Map<String, String> publicIDToSystemIDMapping) {
+        return Collections.EMPTY_MAP;
+    }
+    
     public String getDocType() {
         return null;
     }

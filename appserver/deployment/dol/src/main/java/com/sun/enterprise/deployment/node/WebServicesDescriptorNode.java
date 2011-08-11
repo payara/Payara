@@ -44,7 +44,9 @@ import com.sun.enterprise.deployment.*;
 import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.deployment.xml.TagNames;
 import com.sun.enterprise.deployment.xml.WebServicesTagNames;
+import java.util.Map;
 import org.glassfish.deployment.common.Descriptor;
+import org.jvnet.hk2.annotations.Service;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
@@ -59,7 +61,8 @@ import java.util.List;
  * @author  Kenneth Saks
  * @version 
  */
-public class WebServicesDescriptorNode extends BundleNode {    
+@Service
+public class WebServicesDescriptorNode extends AbstractBundleNode {    
     public final static XMLElement ROOT_ELEMENT = 
         new XMLElement(WebServicesTagNames.WEB_SERVICES);
     public final static String SCHEMA_ID = "javaee_web_services_1_3.xsd";
@@ -85,9 +88,21 @@ public class WebServicesDescriptorNode extends BundleNode {
 
     public WebServicesDescriptorNode() {
         this(null);
-    }   
+    }
+
+    @Override
+    public String registerBundle(Map<String, String> publicIDToSystemIDMapping) {
+        return ROOT_ELEMENT.getQName();
+    }
     
-    /**
+    @Override
+    public Map<String, Class> registerRuntimeBundle(Map<String, String> publicIDToSystemIDMapping) {
+        return Collections.EMPTY_MAP;
+    }
+
+    
+    
+            /**
      * @return the DOCTYPE of the XML file
      */
     public String getDocType() {

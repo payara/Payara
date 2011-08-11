@@ -59,7 +59,7 @@ import java.util.*;
  * @author  Shing Wai Chan
  * @version 
  */
-public abstract class WebCommonNode<T extends WebBundleDescriptor> extends BundleNode<T> {
+public abstract class WebCommonNode<T extends WebBundleDescriptor> extends AbstractBundleNode<T> {
     public final static String SPEC_VERSION = "3.0";
 
     protected T descriptor;

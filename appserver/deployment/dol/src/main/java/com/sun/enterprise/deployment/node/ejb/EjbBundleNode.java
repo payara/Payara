@@ -42,10 +42,13 @@ package com.sun.enterprise.deployment.node.ejb;
 
 import com.sun.enterprise.deployment.*;
 import com.sun.enterprise.deployment.node.*;
+import com.sun.enterprise.deployment.node.runtime.EjbBundleRuntimeNode;
+import com.sun.enterprise.deployment.node.runtime.GFEjbBundleRuntimeNode;
 import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.deployment.xml.EjbTagNames;
 import com.sun.enterprise.deployment.xml.TagNames;
 import org.glassfish.security.common.Role;
+import org.jvnet.hk2.annotations.Service;
 import org.w3c.dom.Node;
 
 import java.util.*;
@@ -56,7 +59,8 @@ import java.util.*;
  * @author  Jerome Dochez
  * @version 
  */
-public class EjbBundleNode extends BundleNode<EjbBundleDescriptor> {
+@Service
+public class EjbBundleNode extends AbstractBundleNode<EjbBundleDescriptor> {
 
     public final static XMLElement tag = new XMLElement(EjbTagNames.EJB_BUNDLE_TAG);
     public final static String PUBLIC_DTD_ID = "-//Sun Microsystems, Inc.//DTD Enterprise JavaBeans 2.0//EN";
@@ -77,13 +81,21 @@ public class EjbBundleNode extends BundleNode<EjbBundleDescriptor> {
     * @param publicIDToDTD is a mapping between xml Public-ID to DTD 
     * @return the doctype tag name
     */
-   public static String registerBundle(Map publicIDToDTD) {
+   public String registerBundle(Map publicIDToDTD) {
         publicIDToDTD.put(PUBLIC_DTD_ID, SYSTEM_ID);
         publicIDToDTD.put(PUBLIC_DTD_ID_12, SYSTEM_ID_12);
         return tag.getQName();
    }    
     
-   private static List<String> initSystemIDs() {
+    @Override
+    public Map<String,Class> registerRuntimeBundle(final Map<String,String> publicIDToDTD) {
+        final Map<String,Class> result = new HashMap<String,Class>();
+        result.put(EjbBundleRuntimeNode.registerBundle(publicIDToDTD), EjbBundleRuntimeNode.class);
+        result.put(GFEjbBundleRuntimeNode.registerBundle(publicIDToDTD), GFEjbBundleRuntimeNode.class);
+        return result;
+    }
+    
+    private static List<String> initSystemIDs() {
         ArrayList<String> systemIDs = new ArrayList<String>();
         systemIDs.add(SCHEMA_ID);
         systemIDs.add(SCHEMA_ID_30);

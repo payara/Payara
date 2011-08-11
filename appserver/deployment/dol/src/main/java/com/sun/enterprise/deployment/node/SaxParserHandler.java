@@ -41,28 +41,14 @@
 package com.sun.enterprise.deployment.node;
 
 import com.sun.enterprise.deployment.EnvironmentProperty;
-import com.sun.enterprise.deployment.node.appclient.AppClientNode;
-import com.sun.enterprise.deployment.node.connector.ConnectorNode;
-import com.sun.enterprise.deployment.node.ejb.EjbBundleNode;
-import com.sun.enterprise.deployment.node.runtime.AppClientRuntimeNode;
-import com.sun.enterprise.deployment.node.runtime.EjbBundleRuntimeNode;
-import com.sun.enterprise.deployment.node.runtime.GFAppClientRuntimeNode;
-import com.sun.enterprise.deployment.node.runtime.GFEjbBundleRuntimeNode;
-import com.sun.enterprise.deployment.node.runtime.application.ApplicationRuntimeNode;
-import com.sun.enterprise.deployment.node.runtime.application.GFApplicationRuntimeNode;
-import com.sun.enterprise.deployment.node.runtime.web.GFWebBundleRuntimeNode;
-import com.sun.enterprise.deployment.node.runtime.web.WebBundleRuntimeNode;
-import com.sun.enterprise.deployment.node.runtime.web.WLWebBundleRuntimeNode;
-import com.sun.enterprise.deployment.node.web.WebBundleNode;
-import com.sun.enterprise.deployment.node.web.WebFragmentNode;
 import com.sun.enterprise.deployment.util.DOLUtils;
-import com.sun.enterprise.deployment.xml.ApplicationTagNames;
 import com.sun.enterprise.deployment.xml.DTDRegistry;
 import com.sun.enterprise.deployment.xml.TagNames;
-import com.sun.enterprise.deployment.xml.WebTagNames;
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import org.glassfish.deployment.common.Descriptor;
-import org.glassfish.deployment.common.RootDeploymentDescriptor;
+import org.jvnet.hk2.annotations.Inject;
+import org.jvnet.hk2.annotations.Scoped;
+import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.component.PerLookup;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -73,6 +59,7 @@ import org.xml.sax.helpers.NamespaceSupport;
 import java.io.*;
 import java.util.*;
 import java.util.logging.Level;
+import org.jvnet.hk2.component.PostConstruct;
 
 
 /**
@@ -81,7 +68,13 @@ import java.util.logging.Level;
  * @author  Jerome Dochez
  * @version 
  */
-public class SaxParserHandler extends DefaultHandler {
+@Service
+@Scoped(PerLookup.class)
+public class SaxParserHandler extends DefaultHandler implements PostConstruct {
+    
+    @Inject
+    private static BundleNode[] bundleNodes;
+    
     public static final String JAXP_SCHEMA_LANGUAGE =
         "http://java.sun.com/xml/jaxp/properties/schemaLanguage";
     public static final String JAXP_SCHEMA_SOURCE = 
@@ -92,14 +85,22 @@ public class SaxParserHandler extends DefaultHandler {
     // allows use of 'final' in static initializer for _mappingStuff
     // @Immutable
     private static final class MappingStuff {
-        public final Hashtable<String,String> mMapping;
+        public final Map<String,String> mMapping;
         private final Map<String,Class> mRootNodesMutable; // use only when initializing
         public final Map<String,Class> mRootNodes;
+        private final Set<String> mElementsAllowingEmptyValuesMutable;
+        public final Collection<String> mElementsAllowingEmptyValues;
+        private final Set<String> mElementsPreservingWhiteSpaceMutable;
+        public final Collection<String> mElementsPreservingWhiteSpace;
         
         MappingStuff() {
-            mMapping    = new Hashtable<String,String>();
+            mMapping    = new HashMap<String,String>();
             mRootNodesMutable  = new HashMap<String,Class>();
             mRootNodes         = Collections.unmodifiableMap( mRootNodesMutable );
+            mElementsAllowingEmptyValuesMutable = new HashSet<String>();
+            mElementsAllowingEmptyValues = Collections.unmodifiableSet(mElementsAllowingEmptyValuesMutable);
+            mElementsPreservingWhiteSpaceMutable = new HashSet<String>();
+            mElementsPreservingWhiteSpace = Collections.unmodifiableSet(mElementsPreservingWhiteSpaceMutable);
         }
     };
     
@@ -115,17 +116,26 @@ public class SaxParserHandler extends DefaultHandler {
     private boolean stopOnXMLErrors = false;
 
     private boolean pushedNamespaceContext=false;
-    private final NamespaceSupport namespaces;
+    private NamespaceSupport namespaces;
 
     // for i18N
     private static final LocalStringManagerImpl localStrings=
 	    new LocalStringManagerImpl(SaxParserHandler.class);    
     
-    protected static Hashtable<String,String> getMapping() {
+    protected static Map<String,String> getMapping() {
         return _mappingStuff.mMapping;
     }
     
-    public SaxParserHandler() {
+    protected static Collection<String> getElementsAllowingEmptyValues() {
+        return _mappingStuff.mElementsAllowingEmptyValues;
+    }
+    
+    protected static Collection<String> getElementsPreservingWhiteSpace() {
+        return _mappingStuff.mElementsPreservingWhiteSpace;
+    }
+
+    @Override
+    public void postConstruct() {
         init();
 
         // Create helper class to manage namespace contexts.
@@ -142,72 +152,40 @@ public class SaxParserHandler extends DefaultHandler {
         
         synchronized( SaxParserHandler.class ) {
             final Map<String,Class> rootNodes= _mappingStuff.mRootNodesMutable;
-            final Hashtable<String,String> mapping = _mappingStuff.mMapping;
+            final Map<String,String> mapping = _mappingStuff.mMapping;
+            final Collection<String> elementsAllowingEmptyValues = _mappingStuff.mElementsAllowingEmptyValuesMutable;
+            final Collection<String> elementsPreservingWhiteSpace = _mappingStuff.mElementsPreservingWhiteSpaceMutable;
             
-            String rootNode  = ApplicationNode.registerBundle(mapping);
-            rootNodes.put(rootNode, ApplicationNode.class);
+            for (BundleNode bn : bundleNodes) {
+                /*
+                 * There is exactly one standard node object for each descriptor type.
+                 * The node's registerBundle method itself adds the publicID-to-DTD
+                 * entry to the mapping.  This method needs to add the tag-to-node class
+                 * entry to the rootNodes map.
+                 */
+                String rootNodeKey = bn.registerBundle(mapping);
+                rootNodes.put(rootNodeKey, bn.getClass());
+                
+                /*
+                 * There can be multiple runtime nodes (for example, sun-xxx and
+                 * glassfish-xxx).  So the BundleNode's registerRuntimeBundle 
+                 * updates the publicID-to-DTD map and returns a map of tags to
+                 * runtime node classes.  
+                 */
+                rootNodes.putAll(bn.registerRuntimeBundle(mapping));
+                
+                /*
+                 * This node might know of elements which should permit empty values,
+                 * or elements for which we should preserve white space.  Track them.
+                 */
+                elementsAllowingEmptyValues.addAll(bn.elementsAllowingEmptyValue());
+                elementsPreservingWhiteSpace.addAll(bn.elementsPreservingWhiteSpace());
+            }
             
-            rootNode  = EjbBundleNode.registerBundle(mapping);
-            rootNodes.put(rootNode, EjbBundleNode.class);
-
-            rootNode = ConnectorNode.registerBundle(mapping);
-            rootNodes.put(rootNode, ConnectorNode.class);
-            
-            rootNode = WebBundleNode.registerBundle(mapping);
-            rootNodes.put(rootNode, WebBundleNode.class);
-
-            rootNode = WebFragmentNode.registerBundle(mapping);
-            rootNodes.put(rootNode, WebFragmentNode.class);
-
-            rootNode = AppClientNode.registerBundle(mapping);
-            rootNodes.put(rootNode, AppClientNode.class);
-            
-            rootNode = WebServicesDescriptorNode.ROOT_ELEMENT.getQName();
-            rootNodes.put(rootNode, WebServicesDescriptorNode.class);
-
-            rootNode = JaxrpcMappingDescriptorNode.ROOT_ELEMENT.getQName();
-            rootNodes.put(rootNode, JaxrpcMappingDescriptorNode.class);
-            
-            rootNode = PersistenceNode.ROOT_ELEMENT.getQName();
-            rootNodes.put(rootNode, PersistenceNode.class);
-
-            rootNodes.put(com.sun.enterprise.deployment.xml.RuntimeTagNames.S1AS_APPLICATION_RUNTIME_TAG, ApplicationRuntimeNode.class);
-                ApplicationRuntimeNode.registerBundle(mapping);
-            rootNodes.put(com.sun.enterprise.deployment.xml.RuntimeTagNames.S1AS_WEB_RUNTIME_TAG, WebBundleRuntimeNode.class);
-                WebBundleRuntimeNode.registerBundle(mapping);
-            rootNodes.put(com.sun.enterprise.deployment.xml.RuntimeTagNames.S1AS_EJB_RUNTIME_TAG, EjbBundleRuntimeNode.class);
-                EjbBundleRuntimeNode.registerBundle(mapping);              
-            rootNodes.put(com.sun.enterprise.deployment.xml.RuntimeTagNames.S1AS_APPCLIENT_RUNTIME_TAG, AppClientRuntimeNode.class);
-                AppClientRuntimeNode.registerBundle(mapping);     
-            rootNodes.put(com.sun.enterprise.deployment.xml.RuntimeTagNames.S1AS_CONNECTOR_RUNTIME_TAG, com.sun.enterprise.deployment.node.runtime.connector.ConnectorNode.class);
-                com.sun.enterprise.deployment.node.runtime.connector.ConnectorNode.registerBundle(mapping);              
-
-            rootNodes.put(com.sun.enterprise.deployment.xml.RuntimeTagNames.GF_APPCLIENT_RUNTIME_TAG,
-                    GFAppClientRuntimeNode.class);
-                GFAppClientRuntimeNode.registerBundle(mapping);
-
-            rootNodes.put(com.sun.enterprise.deployment.xml.RuntimeTagNames.GF_APPLICATION_RUNTIME_TAG,
-                    GFApplicationRuntimeNode.class);
-                GFApplicationRuntimeNode.registerBundle(mapping);
-
-            rootNodes.put(com.sun.enterprise.deployment.xml.RuntimeTagNames.GF_EJB_RUNTIME_TAG,
-                    GFEjbBundleRuntimeNode.class);
-                GFEjbBundleRuntimeNode.registerBundle(mapping);
-
-            rootNodes.put(com.sun.enterprise.deployment.xml.RuntimeTagNames.GF_WEB_RUNTIME_TAG,
-                    GFWebBundleRuntimeNode.class);
-                GFWebBundleRuntimeNode.registerBundle(mapping);
-
-            /*
-             * The WL descriptors use schemas, not DTDs, so 
-             * we don't need to add them to the DTD mapping.
-             */
-            rootNodes.put(com.sun.enterprise.deployment.xml.RuntimeTagNames.WL_WEB_RUNTIME_TAG, WLWebBundleRuntimeNode.class);
-
             // post treatment, let's remove the URL from the DTD so we use local copies...
-            for (java.util.Enumeration publicIDs=mapping.keys();publicIDs.hasMoreElements();) {
-                final String publicID = (String) publicIDs.nextElement();
-                final String dtd = (String) mapping.get(publicID);
+            for (Map.Entry<String,String> entry : mapping.entrySet()) {
+                final String publicID = entry.getKey();
+                final String dtd = entry.getValue();
                 mapping.put(publicID, dtd.substring(dtd.lastIndexOf('/')+1));
             }
 
@@ -448,8 +426,7 @@ public class SaxParserHandler extends DefaultHandler {
             if (DOLUtils.getDefaultLogger().isLoggable(Level.FINER)) {
                 DOLUtils.getDefaultLogger().finer("For element " + element.getQName() + " And value " + elementData);
             }
-            if (element.getQName().equals(WebTagNames.URL_PATTERN)) {
-                // we need to preserve white space for url-pattern
+            if (getElementsPreservingWhiteSpace().contains(element.getQName())) {
                 topNode.setElementValue(element, elementData.toString());
             } else if (element.getQName().equals(
                 TagNames.ENVIRONMENT_PROPERTY_VALUE)) {
@@ -516,52 +493,6 @@ public class SaxParserHandler extends DefaultHandler {
         }
     }
 
-    
-    // for test purposes
-    public static void main(String args[]) {
-        
-        if (args.length==0) {
-            return;
-        } else {
-            String fileName = args[0];
-            File inFile = new File(fileName);
-            if (!inFile.exists()) {
-                return;
-            }
-            try {
-                com.sun.enterprise.deployment.io.DeploymentDescriptorFile ddFile = 
-                    com.sun.enterprise.deployment.io.DeploymentDescriptorFileFactory.getDDFileFor(inFile);
-
-                long timeStart = System.currentTimeMillis();
-                InputStream is;
-                RootDeploymentDescriptor desc=null;
-                ddFile.setXMLValidation(true);
-                for (int i=0;i<10;i++) {
-                    is = new BufferedInputStream(new FileInputStream(inFile));                
-                    desc = (RootDeploymentDescriptor) ddFile.read(is);
-                    is.close();
-                } 
-		if (desc!=null && args.length>1) {
-		    if (args[1]!="-o") { 
-			is = new BufferedInputStream(new FileInputStream(new File(args[1])));
-			ddFile = com.sun.enterprise.deployment.io.runtime.RuntimeDDFileFactory.getDDFileFor(desc);
-			ddFile.read(desc, is);
-		    }
-		}	
-		
-                long timeEnd = System.currentTimeMillis();
-		
-		if (args.length>2)
-                if (args[2].equals("-o")) {
-                    ddFile.write((Descriptor) desc, new File(args[3]));
-                }
-                
-            } catch (Throwable t) {
-                DOLUtils.getDefaultLogger().log(Level.WARNING, "Error occurred", t);
-            }
-        }
-    }
-    
     private String errorReportingString="";
     /**
      * Sets the error reporting context string
@@ -593,7 +524,6 @@ public class SaxParserHandler extends DefaultHandler {
      * @return boolean indicating whether empty values should be recorded for this element
      */
     private boolean allowsEmptyValue(String elementName) {
-        return (elementName.equals(ApplicationTagNames.LIBRARY_DIRECTORY) || 
-            elementName.equals(WebTagNames.LOAD_ON_STARTUP));
+        return getElementsAllowingEmptyValues().contains(elementName);
     }
 }

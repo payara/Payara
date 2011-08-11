@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -47,12 +47,14 @@
 package com.sun.enterprise.deployment.node.connector;
 
 import com.sun.enterprise.deployment.ConnectorDescriptor;
+import com.sun.enterprise.deployment.node.AbstractBundleNode;
 import com.sun.enterprise.deployment.node.BundleNode;
 import com.sun.enterprise.deployment.node.DescriptorFactory;
 import com.sun.enterprise.deployment.node.XMLElement;
 import com.sun.enterprise.deployment.node.XMLNode;
 import com.sun.enterprise.deployment.xml.ConnectorTagNames;
 import com.sun.enterprise.deployment.xml.TagNames;
+import org.jvnet.hk2.annotations.Service;
 import org.w3c.dom.Node;
 
 import java.util.*;
@@ -63,7 +65,8 @@ import java.util.*;
  * @author Sheetal Vartak
  * @version 
  */
-public class ConnectorNode extends BundleNode<ConnectorDescriptor> {
+@Service
+public class ConnectorNode extends AbstractBundleNode<ConnectorDescriptor> {
 
     // Descriptor class we are using   
     private ConnectorDescriptor descriptor; 
@@ -108,12 +111,20 @@ public class ConnectorNode extends BundleNode<ConnectorDescriptor> {
      * @param publicIDToDTD is a mapping between xml Public-ID to DTD 
      * @return the doctype tag name
      */
-    public static String registerBundle(Map publicIDToDTD) {
+    public String registerBundle(Map<String,String> publicIDToDTD) {
         publicIDToDTD.put(PUBLIC_DTD_ID, SYSTEM_ID);
         publicIDToDTD.put(PUBLIC_DTD_ID_10, SYSTEM_ID_10);
         return tag.getQName();
    }
-
+    
+    @Override
+    public Map<String,Class> registerRuntimeBundle(final Map<String,String> publicIDToDTD) {
+        final Map<String,Class> result = new HashMap<String,Class>();
+        result.put(com.sun.enterprise.deployment.node.runtime.connector.ConnectorNode.registerBundle(publicIDToDTD),
+                com.sun.enterprise.deployment.node.runtime.connector.ConnectorNode.class);
+        return result;
+    }
+    
     public ConnectorNode()  {
         super();
         registerElementHandler(new XMLElement(ConnectorTagNames.LICENSE), 

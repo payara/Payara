@@ -42,20 +42,27 @@ package com.sun.enterprise.deployment.node;
 
 import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.BundleDescriptor;
+import com.sun.enterprise.deployment.node.runtime.application.ApplicationRuntimeNode;
+import com.sun.enterprise.deployment.node.runtime.application.GFApplicationRuntimeNode;
 import com.sun.enterprise.deployment.types.EjbReference;
 import com.sun.enterprise.deployment.util.DOLUtils;
+import java.util.Collection;
 import org.glassfish.deployment.common.ModuleDescriptor;
 import com.sun.enterprise.deployment.xml.ApplicationTagNames;
 import com.sun.enterprise.deployment.xml.TagNames;
 import com.sun.enterprise.deployment.xml.WebServicesTagNames;
 import com.sun.enterprise.deployment.xml.EjbTagNames;
+import org.jvnet.hk2.annotations.Service;
 import org.w3c.dom.Node;
 import org.glassfish.internal.api.Globals;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 
 /**
@@ -64,7 +71,8 @@ import java.util.logging.Level;
  * @author  Jerome Dochez
  * @version 
  */
-public class ApplicationNode extends BundleNode<Application> {
+@Service
+public class ApplicationNode extends AbstractBundleNode<Application> {
 
    /** 
     * The public ID.
@@ -104,12 +112,37 @@ public class ApplicationNode extends BundleNode<Application> {
      * @param publicIDToDTD is a mapping between xml Public-ID to DTD 
      * @return the doctype tag name
      */
-    public static String registerBundle(Map publicIDToDTD) {
+    public String registerBundle(Map publicIDToDTD) {
         publicIDToDTD.put(PUBLIC_DTD_ID, SYSTEM_ID);
         publicIDToDTD.put(PUBLIC_DTD_ID_12, SYSTEM_ID_12);
         return tag.getQName();
-    }  
-   
+    }
+
+    @Override
+    public Map<String,Class> registerRuntimeBundle(final Map<String,String> publicIDToDTD) {
+        final Map<String,Class> result = new HashMap<String,Class>();
+        result.put(ApplicationRuntimeNode.registerBundle(publicIDToDTD), ApplicationRuntimeNode.class);
+        result.put(GFApplicationRuntimeNode.registerBundle(publicIDToDTD), GFApplicationRuntimeNode.class);
+        return result;
+    }
+
+    @Override
+    public Collection<String> elementsAllowingEmptyValue() {
+        final Set<String> result = new HashSet<String>();
+        result.add(ApplicationTagNames.LIBRARY_DIRECTORY);
+        return result;
+    }
+
+    @Override
+    protected String topLevelTagName() {
+        return ApplicationTagNames.APPLICATION_NAME;
+    }
+
+    @Override
+    protected String topLevelTagValue(Application descriptor) {
+        return descriptor.getAppName();
+    }
+    
     /** Creates new ApplicationNode */
     public ApplicationNode() {     
         super();	

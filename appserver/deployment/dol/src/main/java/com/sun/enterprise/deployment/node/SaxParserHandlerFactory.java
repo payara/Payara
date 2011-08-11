@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,9 +40,11 @@
 
 package com.sun.enterprise.deployment.node;
 
+import org.jvnet.hk2.component.Habitat;
 import static com.sun.enterprise.util.SystemPropertyConstants.INSTALL_ROOT_PROPERTY;
 
 import java.io.File;
+import org.glassfish.internal.api.Globals;
 
 /**
  *Provides the appropriate implementation depending on the current
@@ -51,6 +53,8 @@ import java.io.File;
  * @author tjquinn
  */
 public class SaxParserHandlerFactory {
+    
+    private final static Habitat habitat = Globals.getDefaultHabitat();
     
     /** Creates a new instance of SaxParserHandlerFactory */
     public SaxParserHandlerFactory() {
@@ -76,9 +80,9 @@ public class SaxParserHandlerFactory {
           */ 
         
         if(installRootIsValid()) 
-            result = new SaxParserHandler();
+            result = habitat.getComponent(SaxParserHandler.class);
         else
-            result = new SaxParserHandlerBundled();
+            result = habitat.getComponent(SaxParserHandlerBundled.class);
 
         return result;
     }
