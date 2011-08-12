@@ -187,7 +187,13 @@
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>
-      <dependency>
+        <dependency>
+            <groupId>org.glassfish.packager</groupId>
+            <artifactId>glassfish-jta</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+        </dependency>      
+       <dependency>
             <groupId>org.glassfish.packager</groupId>
             <artifactId>glassfish-jts</artifactId>
             <version>${project.version}</version>
