@@ -78,7 +78,6 @@ import org.glassfish.admin.amx.base.*;
 import org.glassfish.admin.amx.core.*;
 import org.glassfish.admin.amx.core.proxy.ProxyFactory;
 import org.glassfish.admin.amx.config.AMXConfigProxy;
-import org.glassfish.admin.amx.intf.config.*;
 import org.glassfish.admin.amx.util.TimingDelta;
 import org.glassfish.admin.amx.util.ListUtil;
 import org.glassfish.admin.amx.util.ExceptionUtil;
@@ -105,7 +104,6 @@ public class AMXTestBase
 
     private volatile ProxyFactory mProxyFactory;
     private volatile DomainRoot   mDomainRoot;
-    private volatile Domain       mDomainConfig;
 
     private volatile Query mQueryMgr;
 
@@ -222,30 +220,6 @@ public class AMXTestBase
     
     private static boolean sEnabledMonitoring = false;
     
-    /** enable monitoring to HIGH for all available systems so that MBeans in those systems get tested */
-    protected synchronized void enableMonitoring() throws Exception
-    {
-        if ( ! sEnabledMonitoring )
-        {
-            sEnabledMonitoring = true;
-            
-            for( final Config config : mDomainConfig.getConfigs().getConfig().values() )
-            {
-                final MonitoringService mon = config.getMonitoringService();
-                if ( mon == null )
-                {
-                    // this can happen for temporary configs
-                    assert ! config.getName().equals("server-config");
-                    debug( "No MonitoringService in Config: " + config.objectName() );
-                    continue;
-                }
-                
-                final AttributeList  prevLevels =
-                    ModuleMonitoringLevels.Helper.setAllMonitoringLevel( mon.getModuleMonitoringLevels(), ModuleMonitoringLevels.HIGH );
-            }
-        }
-    }
-    
     /**
     Subclasses may override if desired.  AMX will have been started
     and initialized already.
@@ -268,10 +242,7 @@ public class AMXTestBase
             mQueryMgr = getDomainRootProxy().getQueryMgr();
             //debug( "AMXTestBase.setup(): millis to get QueryMgr: " + timing.elapsedMillis() );
             
-            mDomainConfig = mDomainRoot.child(Domain.class);
-            
             getMBeansListener();
-            enableMonitoring();
         }
         catch (Exception e)
         {
@@ -317,7 +288,6 @@ public class AMXTestBase
     {
         return mDomainRoot;
     }
-    protected final Domain getDomainConfig() { return mDomainConfig; } 
     protected final Ext getExt()             { return getDomainRootProxy().getExt(); }
 
 
@@ -434,11 +404,6 @@ public class AMXTestBase
         final List<AMXProxy>  list = ListUtil.newListFromArray(a);
         
         return Util.asProxyList( list, clazz );
-    }
-    
-    List<AMXConfigProxy> getAllConfig()
-    {
-        return getAllDescendents( getDomainConfig(), AMXConfigProxy.class);
     }
     
     List<AMXProxy> getAllMonitoring()

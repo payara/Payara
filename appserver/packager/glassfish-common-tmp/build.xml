@@ -62,8 +62,6 @@
 		
 		<delete file="target/stage/${install.dir.name}/glassfish/modules/amx-core-impl.jar" failonerror="false" />
 
-		<delete file="target/stage/${install.dir.name}/glassfish/modules/amx-config.jar" failonerror="false" />
-
 		<delete file="target/stage/${install.dir.name}/glassfish/modules/amx-config-impl.jar" failonerror="false" />
 
 		<delete file="target/stage/${install.dir.name}/glassfish/modules/amx-j2ee.jar" failonerror="false" />

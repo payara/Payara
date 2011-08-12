@@ -58,7 +58,6 @@
     	<module>stats77</module>
     	<module>amx-core</module>
     	<module>amx-core-impl</module>
-    	<module>amx-config</module>
     	<module>amx-config-impl</module>
     	<module>amx-j2ee</module>
     	<module>amx-j2ee-impl</module>

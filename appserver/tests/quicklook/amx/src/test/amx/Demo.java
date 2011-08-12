@@ -68,7 +68,6 @@ import org.glassfish.admin.amx.base.*;
 import org.glassfish.admin.amx.core.*;
 import org.glassfish.admin.amx.core.proxy.ProxyFactory;
 import org.glassfish.admin.amx.config.AMXConfigProxy;
-import org.glassfish.admin.amx.intf.config.*;
 import org.glassfish.admin.amx.util.TimingDelta;
 import org.glassfish.admin.amx.util.ListUtil;
 import org.glassfish.admin.amx.util.ExceptionUtil;
@@ -88,7 +87,6 @@ public final class Demo {
 
     private final ProxyFactory mProxyFactory;
     private final DomainRoot   mDomainRoot;
-    private final Domain       mDomainConfig;
     
     private final MBeansListener  mListener;
     
@@ -119,10 +117,7 @@ public final class Demo {
         mProxyFactory = ProxyFactory.getInstance(mMBeanServerConnection);
         mDomainRoot   = mProxyFactory.getDomainRootProxy();
         mQueryMgr     = mDomainRoot.getQueryMgr();
-        mDomainConfig = mDomainRoot.child(Domain.class);
             
-        enableMonitoring();
-        
         mListener = new MBeansListener(mMBeanServerConnection, mDomainRoot.objectName().getDomain());
         mListener.startListening();
         
@@ -179,45 +174,8 @@ public final class Demo {
         println( "AMX MBeans: " + amxMBeans.size() );
         println( "AMX config MBeans: " + getAllConfig().size() );
         
-        // set an Attribute via getter/setter
-        String locale = mDomainConfig.getLocale();
-        mDomainConfig.setLocale("GreekSpeak");
-        println( "Changed locale from " + locale + " to " + mDomainConfig.getLocale() + ", then back.");
-        mDomainConfig.setLocale(locale);
-        
-        // this is how to do the same attribute generically
-        try
-        {
-        locale = (String)mDomainConfig.extra().getAttribute("Locale");
-        mDomainConfig.extra().setAttribute( new Attribute("Locale", "GreekSpeak"));
-        mDomainConfig.extra().setAttribute( new Attribute("Locale", locale)); // restore it
-        }
-        catch( Exception e )
-        {
-            e.printStackTrace();
-        }
-        
     }    
             
-    /** enable monitoring to HIGH for all available systems so that MBeans in those systems get tested */
-    protected synchronized void enableMonitoring() throws Exception
-    {
-        for( final Config config : mDomainConfig.getConfigs().getConfig().values() )
-        {
-            final MonitoringService mon = config.getMonitoringService();
-            if ( mon == null )
-            {
-                // this can happen for temporary configs
-                assert ! config.getName().equals("server-config");
-                //debug( "No MonitoringService in Config: " + config.objectName() );
-                continue;
-            }
-            
-            final AttributeList  prevLevels =
-                ModuleMonitoringLevels.Helper.setAllMonitoringLevel( mon.getModuleMonitoringLevels(), ModuleMonitoringLevels.HIGH );
-        }
-    }
-    
     /** get all AMX MBeans that were found when the test started
     Caller should use the QueryMgr if a fresh set is needed */
     protected Set<AMXProxy> getAllAMX()
@@ -299,7 +257,7 @@ public final class Demo {
     /** Get all config MBeans */
     List<AMXConfigProxy> getAllConfig()
     {
-        return getAllDescendents( mDomainConfig, AMXConfigProxy.class);
+        return getAllDescendents( mDomainRoot, AMXConfigProxy.class);
     }
     
     /** Get all monitoring MBeans */

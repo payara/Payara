@@ -69,9 +69,6 @@ import org.glassfish.external.arc.Taxonomy;
     HTTPListenerConfig l = ...; // or any AMXConfigProxy sub-interface
     int port = AttributeResolverHelper.resolveInt( l, value );
     </pre>
-    The value can also be pre-resolved by calling
-    {@link org.glassfish.admin.amx.intf.config.AttributeResolver#resolveAttribute}
-    @see org.glassfish.admin.amx.intf.config.AttributeResolver
  */
 @Taxonomy( stability=Stability.UNCOMMITTED )
 public class AttributeResolverHelper extends VariableResolver

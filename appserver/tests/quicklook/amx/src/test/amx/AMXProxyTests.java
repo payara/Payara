@@ -54,7 +54,6 @@ import java.util.HashMap;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import org.glassfish.admin.amx.intf.config.*;
 import org.glassfish.admin.amx.core.*;
 import org.glassfish.admin.amx.base.*;
 import org.glassfish.admin.amx.config.*;
@@ -266,76 +265,6 @@ public final class AMXProxyTests extends AMXTestBase
         testProxyInterface( getDomainRootProxy().getPathnames(), Pathnames.class );
     }
 
-    @Test
-    public void testDomainConfig()
-    {
-        final Domain dc = getDomainConfig();
-        testProxyInterface( dc, Domain.class );
-        
-        assert dc.getApplicationRoot() != null;
-        dc.getLocale(); // can be null
-        assert dc.getLogRoot() != null;
-    }
-
-    @Test
-    public void testApplications()
-    {
-        testProxyInterface( getDomainConfig().getApplications(), Applications.class );
-    }
-
-    @Test
-    public void testResources()
-    {
-        final Resources resources = getDomainConfig().getResources();
-        testProxyInterface( resources, Resources.class );
-    }
-
-    @Test
-    public void testConfigs()
-    {
-        testProxyInterface( getDomainConfig().getConfigs(), Configs.class );
-    }
-
-    @Test
-    public void testSystemApplications()
-    {
-        testProxyInterface( getDomainConfig().getSystemApplications(), SystemApplications.class );
-    }
-
-    @Test
-    public void testServers()
-    {
-        testProxyInterface( getDomainConfig().getServers(), Servers.class );
-    }
-        
-    /** test all MBeans that contain Property */
-    @Test
-    public void testPropertyParent()
-    {
-        final Set<AMXProxy> parentsWithProperty = findAllContainingType( Util.deduceType(Property.class) );
-        
-        for( final AMXProxy amx : parentsWithProperty )
-        {
-            final PropertiesAccess pa = amx.as(PropertiesAccess.class);
-            final Map<String, Property> children = pa.getProperty();
-            for( final Property prop : children.values() ) { prop.getValue(); }
-        }
-    }
-    
-    /** test all MBeans that contain SystemProperty */
-    @Test
-    public void testSystemPropertyParent()
-    {
-        final Set<AMXProxy> parentsWithProperty = findAllContainingType( Util.deduceType(SystemProperty.class) );
-        
-        for( final AMXProxy amx : parentsWithProperty )
-        {
-            final SystemPropertiesAccess pa = amx.as(SystemPropertiesAccess.class);
-            final Map<String, SystemProperty> children = pa.getSystemProperty();
-            for( final SystemProperty prop : children.values() ) { prop.getValue(); }
-        }
-    }
-    
     /** test all MBeans generically */
     @Test
     public void testForBogusAnnotations()
@@ -406,104 +335,6 @@ public final class AMXProxyTests extends AMXTestBase
         {
             System.out.println( "\nPROBLEMS:\n" + CollectionUtil.toString(problems, "\n\n") );
             assert false : "" + problems;
-        }
-    }
-    
-    
-    @Test
-    public void testSingletonOrNot()
-    {
-        final Domain domain = getDomainConfig();
-        final Configs configs = getDomainConfig().getConfigs();
-        
-        try
-        {
-            domain.child(Configs.class);
-        }
-        catch( final Exception e )
-        {
-            assert false : e;
-        }
-        
-        try
-        {
-            configs.child(Config.class);
-            assert false : "expecting failure";
-        }
-        catch( final Exception e )
-        {
-            // good
-        }
-    }
-    
-    
-
-    /**
-      Used to test the AMXProxyHandler processing of Set/List/Map/[] on any AMX MBean that
-      has children of type Property ("property").
-      */
-    interface ChildGetterProxy extends AMXProxy
-    {
-        @ChildGetter    // type should be derived from method name
-        Map<String, Property> getProperty();
-        
-        @ChildGetter(type="property")
-        ObjectName[]  propertiesAsObjectNames();
-        
-        @ChildGetter(type="property")
-        Property[]  propertiesAsArray();
-        
-        @ChildGetter(type="property")
-        Set<Property>  propertiesAsSet();
-        
-        @ChildGetter(type="property")
-        List<Property> propertiesAsList();
-        
-        @ChildGetter(type="property")
-        Map<String,Property>  propertiesAsMap();
-    }
-    
-    
-    void _testChildGetter( final AMXProxy amx)
-    {
-        // we assume there are always properties on Domain
-        ChildGetterProxy getter = amx.as(ChildGetterProxy.class);
-        
-        final Map<String,Property>  property = getter.getProperty();
-        assert property.keySet().size() != 0 : " no properties found for " + amx.objectName();
-        for( final Property prop : property.values() ) { prop.getValue(); }
-        final int numProps = property.keySet().size();
-        
-        //System.out.println( "Testing properties on: " + amx.objectName() + " = " + numProps);
-            
-        final Set<Property>   asSet = getter.propertiesAsSet();
-        assert asSet.size() == numProps : " no properties found for " + amx.objectName();
-        for( final Property prop : asSet ) { prop.getValue(); }
-        
-        final List<Property>  asList = getter.propertiesAsList();
-        assert asList.size() == numProps : " no properties found for " + amx.objectName();
-        for( final Property prop : asList ) { prop.getValue(); }
-        
-        final Map<String,Property>  asMap = getter.propertiesAsMap();
-        assert asMap.keySet().size() == numProps : " no properties found for " + amx.objectName();
-        for( final Property prop : asMap.values() ) { prop.getValue(); }
-        
-        final ObjectName[]    asObjectNameArray = getter.propertiesAsObjectNames();
-        assert asObjectNameArray.length == numProps : " no properties found for " + amx.objectName();
-        
-        final Property[]      asArray = getter.propertiesAsArray();
-        assert asArray.length == numProps : " no properties found for " + amx.objectName();
-        for( final Property prop : asList ) { prop.getValue(); }
-    }
-        
-    @Test
-    public void testChildGetterVariants()
-    {
-        final Set<AMXProxy> parentsWithProperty = findAllContainingType( Util.deduceType(Property.class) );
-        
-        for( final AMXProxy amx : parentsWithProperty )
-        {
-            _testChildGetter( amx );
         }
     }
     

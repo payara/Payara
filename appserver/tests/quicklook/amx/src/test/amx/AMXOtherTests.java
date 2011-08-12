@@ -54,13 +54,9 @@ import java.util.List;
 import java.util.HashMap;
 import java.util.ArrayList;
 
-import org.glassfish.admin.amx.intf.config.*;
 import org.glassfish.admin.amx.core.*;
 import org.glassfish.admin.amx.base.*;
 import org.glassfish.admin.amx.config.*;
-import org.glassfish.admin.amx.intf.config.grizzly.Protocols;
-import org.glassfish.admin.amx.intf.config.grizzly.Protocol;
-import org.glassfish.admin.amx.intf.config.grizzly.NetworkListener;
 import org.glassfish.admin.amx.monitoring.*;
 import org.glassfish.admin.amx.util.CollectionUtil;
 import org.glassfish.admin.amx.util.ExceptionUtil;
@@ -90,15 +86,6 @@ public final class AMXOtherTests extends AMXTestBase
     {
         final RuntimeRoot runtimeRoot = getDomainRootProxy().getRuntime();
         final Map<String,ServerRuntime>  serverRuntimes = runtimeRoot.getServerRuntime();
-        
-        final Protocols protocols = getDomainConfig().getConfigs().getConfig().get("server-config").getNetworkConfig().getProtocols();
-        final Protocol protocol = protocols.getProtocol().values().iterator().next();
-        final List<NetworkListener>   listeners = protocol.findNetworkListeners();
-        assert listeners.size() != 0;
-        for( final NetworkListener listener : listeners )
-        {
-            // the loop causes a ClassCastException if something is wrong
-        }
     }
     
 }
