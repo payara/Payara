@@ -42,19 +42,25 @@ package org.glassfish.paas.javadbplugin;
 import org.glassfish.paas.orchestrator.service.RDBMSServiceType;
 import org.glassfish.paas.orchestrator.service.ServiceStatus;
 import org.glassfish.paas.orchestrator.service.ServiceType;
+import org.glassfish.paas.orchestrator.service.metadata.ServiceDescription;
 import org.glassfish.paas.orchestrator.service.spi.ProvisionedService;
-import org.glassfish.paas.orchestrator.service.spi.ServiceDefinition;
+
+import java.util.Properties;
 
 /**
  * @author Jagadish Ramu
  */
 public class DerbyProvisionedService implements ProvisionedService {
 
-    private ServiceDefinition serviceDefinition;
+    private ServiceDescription serviceDescription;
     private ServiceStatus status;
+    private Properties serviceProperties; // contains host, port properties.
 
-    public DerbyProvisionedService(ServiceDefinition def, ServiceStatus status) {
-        this.serviceDefinition = def;
+    public DerbyProvisionedService(ServiceDescription serviceDescription,
+                                   Properties serviceProperties,
+                                   ServiceStatus status) {
+        this.serviceDescription = serviceDescription;
+        this.serviceProperties = serviceProperties;
         this.status = status;
     }
 
@@ -62,8 +68,12 @@ public class DerbyProvisionedService implements ProvisionedService {
         return new RDBMSServiceType();
     }
 
-    public ServiceDefinition getServiceDefinition() {
-        return serviceDefinition;
+    public ServiceDescription getServiceDescription() {
+        return serviceDescription;
+    }
+
+    public Properties getServiceProperties() {
+        return serviceProperties;
     }
 
     public ServiceStatus getStatus() {

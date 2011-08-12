@@ -43,8 +43,10 @@ package org.glassfish.paas.lbplugin.cli;
 import org.glassfish.paas.orchestrator.service.HTTPLoadBalancerServiceType;
 import org.glassfish.paas.orchestrator.service.ServiceStatus;
 import org.glassfish.paas.orchestrator.service.ServiceType;
+import org.glassfish.paas.orchestrator.service.metadata.ServiceDescription;
 import org.glassfish.paas.orchestrator.service.spi.ProvisionedService;
-import org.glassfish.paas.orchestrator.service.spi.ServiceDefinition;
+
+import java.util.Properties;
 
 
 /**
@@ -52,11 +54,15 @@ import org.glassfish.paas.orchestrator.service.spi.ServiceDefinition;
  */
 public class GlassFishLBProvisionedService implements ProvisionedService {
 
-    private ServiceDefinition serviceDefinition;
+    private ServiceDescription serviceDescription;
+    private Properties serviceProperties;
     private ServiceStatus status;
 
-    public GlassFishLBProvisionedService(ServiceDefinition def, ServiceStatus status) {
-        this.serviceDefinition = def;
+    public GlassFishLBProvisionedService(ServiceDescription serviceDescription,
+                                         Properties serviceProperties,
+                                         ServiceStatus status) {
+        this.serviceDescription = serviceDescription;
+        this.serviceProperties = serviceProperties;
         this.status = status;
     }
 
@@ -64,8 +70,12 @@ public class GlassFishLBProvisionedService implements ProvisionedService {
         return new HTTPLoadBalancerServiceType();
     }
 
-    public ServiceDefinition getServiceDefinition() {
-        return serviceDefinition;
+    public ServiceDescription getServiceDescription() {
+        return serviceDescription;
+    }
+
+    public Properties getServiceProperties() {
+        return serviceProperties;
     }
 
     public ServiceStatus getStatus() {

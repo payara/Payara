@@ -38,55 +38,17 @@
  * holder.
  */
 
-package org.glassfish.paas.orchestrator.schema;
+package org.glassfish.paas.orchestrator;
 
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlElement;
-import java.util.List;
+import org.glassfish.api.deployment.archive.ReadableArchive;
+import org.glassfish.paas.orchestrator.service.metadata.ServiceMetadata;
+import org.jvnet.hk2.annotations.Contract;
 
 /**
  * @author bhavanishankar@java.net
  */
+@Contract
+public interface ServicesXMLParser {
 
-public class ServiceDefinition {
-
-    private String id;
-    private String type;
-    private List<Property> properties;
-
-    @XmlAttribute(name = "id")
-    public String getId() {
-        return id;
-    }
-
-    // eg.., javaee, rdbms, etc..the plugins will understand this type.
-    @XmlAttribute(name = "type")
-    public String getType() {
-        return type;
-    }
-
-    @XmlElement(name = "property")
-    public List<Property> getProperties() {
-        return properties;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public void setType(String type) {
-        this.type = type;
-    }
-
-    public void setProperties(List<Property> properties) {
-        this.properties = properties;
-    }
-
-    @Override
-    public String toString() {
-        return "ServiceDefinition [id = " + getId() + ", type = " +
-                getType() + ", properties = [" + getProperties() + "]";
-    }
-
-
+    public ServiceMetadata discoverDeclaredServices(ReadableArchive ra);
 }

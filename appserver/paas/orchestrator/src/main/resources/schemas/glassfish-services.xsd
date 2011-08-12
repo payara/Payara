@@ -41,34 +41,66 @@
 
 <xs:schema version="1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema">
 
-    <xs:element name="cloud-application" type="cloudApplication"/>
+  <xs:element name="services" type="serviceMetadata"/>
 
-    <xs:complexType name="cloudApplication">
-        <xs:sequence>
-            <xs:element name="service-reference" type="serviceReference" minOccurs="0" maxOccurs="unbounded"/>
-            <xs:element name="service-definition" type="serviceDefinition" minOccurs="0" maxOccurs="unbounded"/>
-        </xs:sequence>
-    </xs:complexType>
+  <xs:complexType name="property">
+    <xs:sequence/>
+    <xs:attribute name="name" type="xs:string"/>
+    <xs:attribute name="value" type="xs:string"/>
+  </xs:complexType>
 
-    <xs:complexType name="serviceReference">
-        <xs:sequence/>
-        <xs:attribute name="ref-id" type="xs:string"/>
-        <xs:attribute name="target" type="xs:string"/>
-        <xs:attribute name="ref-type" type="xs:string"/>
-    </xs:complexType>
+  <xs:complexType name="serviceCharacteristics">
+    <xs:sequence>
+      <xs:element name="characteristic" type="property" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
 
-    <xs:complexType name="serviceDefinition">
-        <xs:sequence>
-            <xs:element name="property" type="property" minOccurs="0" maxOccurs="unbounded"/>
-        </xs:sequence>
-        <xs:attribute name="id" type="xs:string"/>
-        <xs:attribute name="type" type="xs:string"/>
-    </xs:complexType>
+  <xs:complexType name="serviceDescription">
+    <xs:sequence>
+      <xs:choice minOccurs="0">
+        <xs:element name="template" type="serviceTemplate"/>
+        <xs:element name="characteristics" type="serviceCharacteristics"/>
+      </xs:choice>
+      <xs:element name="configurations" minOccurs="0">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="configuration" type="property" minOccurs="0" maxOccurs="unbounded"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+    </xs:sequence>
+    <xs:attribute name="init-type" type="xs:string"/>
+    <xs:attribute name="name" type="xs:string" use="required"/>
+  </xs:complexType>
 
-    <xs:complexType name="property">
-        <xs:sequence/>
-        <xs:attribute name="name" type="xs:string"/>
-        <xs:attribute name="value" type="xs:string"/>
-    </xs:complexType>
+  <xs:complexType name="serviceTemplate">
+    <xs:sequence/>
+    <xs:attribute name="id" type="xs:string" use="required"/>
+  </xs:complexType>
+
+  <xs:complexType name="serviceMetadata">
+    <xs:sequence>
+      <xs:element name="service-description" type="serviceDescription" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="serviceReference">
+    <xs:sequence>
+      <xs:element name="properties">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="entry" minOccurs="0" maxOccurs="unbounded">
+              <xs:complexType>
+                <xs:sequence>
+                  <xs:element name="key" minOccurs="0" type="xs:anyType"/>
+                  <xs:element name="value" minOccurs="0" type="xs:anyType"/>
+                </xs:sequence>
+              </xs:complexType>
+            </xs:element>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
 </xs:schema>
 

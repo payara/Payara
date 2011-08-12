@@ -41,20 +41,21 @@ package org.glassfish.paas.javadbplugin;
 
 import org.glassfish.api.deployment.ApplicationContainer;
 import org.glassfish.api.deployment.archive.ReadableArchive;
+import org.glassfish.embeddable.CommandResult;
+import org.glassfish.embeddable.CommandRunner;
 import org.glassfish.paas.javadbplugin.cli.DatabaseServiceUtil;
 import org.glassfish.paas.orchestrator.provisioning.CloudRegistryEntry;
 import org.glassfish.paas.orchestrator.provisioning.CloudRegistryService;
 import org.glassfish.paas.orchestrator.provisioning.DatabaseProvisioner;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceType;
 import org.glassfish.paas.orchestrator.service.RDBMSServiceType;
-import org.glassfish.paas.orchestrator.service.ServiceReference;
 import org.glassfish.paas.orchestrator.service.ServiceStatus;
-import org.glassfish.paas.orchestrator.service.SimpleServiceDefinition;
+import org.glassfish.paas.orchestrator.service.metadata.Property;
+import org.glassfish.paas.orchestrator.service.metadata.ServiceCharacteristics;
+import org.glassfish.paas.orchestrator.service.metadata.ServiceDescription;
+import org.glassfish.paas.orchestrator.service.metadata.ServiceReference;
 import org.glassfish.paas.orchestrator.service.spi.Plugin;
 import org.glassfish.paas.orchestrator.service.spi.ProvisionedService;
-import org.glassfish.paas.orchestrator.service.spi.ServiceDefinition;
-import org.glassfish.embeddable.CommandResult;
-import org.glassfish.embeddable.CommandRunner;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
@@ -62,6 +63,7 @@ import org.jvnet.hk2.component.PerLookup;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
@@ -104,20 +106,33 @@ public class DerbyPlugin implements Plugin<RDBMSServiceType> {
         return new HashSet<ServiceReference>();
     }
 
-    public ServiceDefinition getDefaultServiceDefinition(ServiceReference svcRef) {
+    public ServiceDescription getDefaultServiceDescription(ServiceReference svcRef) {
 
         if (DATASOURCE.equals(svcRef.getServiceRefType())) {
+
             DatabaseProvisioner dbProvisioner = registryService.getDatabaseProvisioner(GLASSFISH_DERBY);
-            Properties connectionProperties = dbProvisioner.getDefaultConnectionProperties();
-            String defaultDBServiceName = dbProvisioner.getDefaultServiceName();
-            return new SimpleServiceDefinition(defaultDBServiceName, RDBMS_ServiceType, connectionProperties);
+
+            // create default service description.
+            String defaultServiceName = dbProvisioner.getDefaultServiceName();
+            List<Property> properties = new ArrayList<Property>();
+            properties.add(new Property("service-type", RDBMS_ServiceType));
+            properties.add(new Property("os-name", System.getProperty("os.name"))); // default OS will be same as that of what Orchestrator is running on.
+            ServiceDescription sd = new ServiceDescription(defaultServiceName,
+                    "lazy", new ServiceCharacteristics(properties), null);
+
+            // Fill the required details in service reference.
+            Properties defaultConnPoolProperties = dbProvisioner.getDefaultConnectionProperties();
+            defaultConnPoolProperties.setProperty("serviceName", defaultServiceName);
+            svcRef.setProperties(defaultConnPoolProperties);
+            
+            return sd;
         } else {
             return null;
         }
     }
 
-    public ProvisionedService provisionService(ServiceDefinition svcDefn) {
-        String serviceName = svcDefn.getName();
+    public ProvisionedService provisionService(ServiceDescription serviceDescription) {
+        String serviceName = serviceDescription.getName();
 
         ArrayList<String> params;
         String[] parameters;
@@ -152,12 +167,13 @@ public class DerbyPlugin implements Plugin<RDBMSServiceType> {
         }
 
 
-        Properties connectionProperties = ((SimpleServiceDefinition) svcDefn).getProperties();
+        Properties serviceProperties = new Properties();
         //TODO HACK as we use dbServiceUtil to get DB's IP Address.
         String ipAddress = dbServiceUtil.getIPAddress(serviceName, ServiceType.DATABASE);
-        connectionProperties.put("serverName", ipAddress);
+        serviceProperties.put("host", ipAddress);
+        serviceProperties.put("port", "1527"); // TODO :: grab the actual port.
 
-        return new DerbyProvisionedService(svcDefn, ServiceStatus.STARTED);
+        return new DerbyProvisionedService(serviceDescription, serviceProperties, ServiceStatus.STARTED);
     }
 
     public void associateServices(ProvisionedService provisionedSvc, ServiceReference svcRef, boolean beforeDeployment) {
@@ -180,10 +196,10 @@ public class DerbyPlugin implements Plugin<RDBMSServiceType> {
         throw new UnsupportedOperationException("Not implemented yet");
     }
 
-    public Set<ServiceDefinition> getImplicitServiceDefinitions(
+    public Set<ServiceDescription> getImplicitServiceDescriptions(
             ReadableArchive cloudArchive) {
         //no-op. Just by looking at a orchestration archive
         //the db plugin cannot say that a DB needs to be provisioned. 
-        return new HashSet<ServiceDefinition>();
+        return new HashSet<ServiceDescription>();
     }
 }

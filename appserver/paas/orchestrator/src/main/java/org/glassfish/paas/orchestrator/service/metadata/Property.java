@@ -38,7 +38,7 @@
  * holder.
  */
 
-package org.glassfish.paas.orchestrator.schema;
+package org.glassfish.paas.orchestrator.service.metadata;
 
 import javax.xml.bind.annotation.XmlAttribute;
 
@@ -51,6 +51,15 @@ public class Property {
     private String name;
     private String value;
 
+    public Property() {
+
+    }
+
+    public Property(String name, String value) {
+        setName(name);
+        setValue(value);
+    }
+    
     @XmlAttribute(name = "name")
     public String getName() {
         return name;
@@ -71,7 +80,7 @@ public class Property {
 
     @Override
     public String toString() {
-        return "Property [name = " + getName() + ", value = " + getValue() + "]";
+        return "\n[name = " + getName() + ", value = " + getValue() + "]";
     }
 
 }

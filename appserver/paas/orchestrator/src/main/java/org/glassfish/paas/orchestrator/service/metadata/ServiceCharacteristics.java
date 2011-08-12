@@ -38,13 +38,38 @@
  * holder.
  */
 
-package org.glassfish.paas.orchestrator;
+package org.glassfish.paas.orchestrator.service.metadata;
 
-import org.glassfish.api.deployment.archive.ReadableArchive;
-import org.glassfish.paas.orchestrator.service.ServiceMetadata;
-import org.jvnet.hk2.annotations.Contract;
+import javax.xml.bind.annotation.XmlElement;
+import java.util.List;
 
-@Contract
-public interface CloudXMLParser {
-    public ServiceMetadata discoverDeclaredServiceMetadata(String appName, ReadableArchive ra);
+/**
+ * @author bhavanishankar@java.net
+ */
+
+public class ServiceCharacteristics {
+
+    private List<Property> serviceCharacteristics;
+
+    public ServiceCharacteristics() {
+        // default constructor required for JAXB
+    }
+
+    public ServiceCharacteristics(List<Property> characteristics) {
+        setServiceCharacteristics(characteristics);
+    }
+    
+    @XmlElement(name="characteristic")
+    public List<Property> getServiceCharacteristics() {
+        return serviceCharacteristics;
+    }
+
+    public void setServiceCharacteristics(List<Property> serviceCharacteristics) {
+        this.serviceCharacteristics = serviceCharacteristics;
+    }
+
+    @Override
+    public String toString() {
+        return "[characteristics = \n" + serviceCharacteristics + "]";
+    }
 }

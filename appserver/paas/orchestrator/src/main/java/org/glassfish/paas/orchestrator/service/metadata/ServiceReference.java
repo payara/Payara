@@ -37,7 +37,9 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package org.glassfish.paas.orchestrator.service;
+package org.glassfish.paas.orchestrator.service.metadata;
+
+import java.util.Properties;
 
 /**
  * Indicates the binding between a service reference in an application component
@@ -65,11 +67,30 @@ public class ServiceReference {
     //Example: "javax.sql.DataSource"
     private String refType;
 
+    // Since the service can be referenced by a resource, we need to hold the resource properties.
+    // Eg., If service is referenced from jdbc-connection-pool, this will hold all the pool properties.
+    // TODO :: instead of storing resource properties, we can directly have a reference to the resource itself.
+    private Properties properties;
+
+    public ServiceReference() {}
+    
     public ServiceReference(String refId, String refType, String targetServiceDefinitionName) {
         this.refId = refId;
         this.target = targetServiceDefinitionName;
         this.refType = refType;
     }
+
+    public ServiceReference(String refId, String refType,
+                            String targetServiceDefinitionName, Properties properties) {
+        this.refId = refId;
+        this.target = targetServiceDefinitionName;
+        this.refType = refType;
+        this.setProperties(properties);
+        if(properties != null && properties.getProperty("serviceName") != null) {
+            this.target = properties.getProperty("serviceName");
+        }
+    }
+
 
     public String getServiceRefName() {
         return refId;
@@ -90,4 +111,12 @@ public class ServiceReference {
                 ", target = " + target + "]";
     }
 
+    public Properties getProperties() {
+        return properties;
+    }
+
+
+    public void setProperties(Properties properties) {
+        this.properties = properties;
+    }
 }

@@ -38,51 +38,69 @@
  * holder.
  */
 
-package org.glassfish.paas.orchestrator.schema;
+package org.glassfish.paas.orchestrator.service.metadata;
 
-import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
+ *
+ * Holds both service description and service references.
+ *
+ * During deployment this object is initially used to read service descriptions
+ * specified in the descriptor file. Later the implicitly discovered
+ * service descriptions and references are added to this. At the end of scanning
+ * of the archive, this object will hold ALL the required service description and
+ * references.
+ *
+ * Currently the initial service descriptions are read from META-INF/services.xml.
+ * But this is a generic holder object that can hold service descriptions and references
+ * from different descriptor file(s).
+ *
  * @author bhavanishankar@java.net
  */
+@XmlRootElement(name = "services")
+public class ServiceMetadata {
 
-public class ServiceReference {
-
-    private String id;
-    private String target;
-    private String refType;
-
-    @XmlAttribute(name = "ref-id")
-    public String getId() {
-        return id;
+    private Set<ServiceDescription> serviceDescriptions;
+    private Set<ServiceReference> serviceReferences = new HashSet<ServiceReference>();
+    
+    @XmlElement(name = "service-description")
+    public Set<ServiceDescription> getServiceDescriptions() {
+        return serviceDescriptions == null ? new HashSet<ServiceDescription>() : serviceDescriptions;
     }
 
-    @XmlAttribute(name = "target")
-    public String getTarget() {
-        return target;
+    public void setServiceDescriptions(Set<ServiceDescription> serviceDescriptions) {
+        this.serviceDescriptions = serviceDescriptions;
     }
 
-    @XmlAttribute(name = "ref-type")
-    public String getRefType() {
-        return refType;
+    public void addServiceDescription(ServiceDescription sd) {
+        getServiceDescriptions().add(sd);
     }
 
-    public void setId(String id) {
-        this.id = id;
+    @XmlTransient
+    public Set<ServiceReference> getServiceReferences() {
+        return serviceReferences;
     }
 
-    public void setTarget(String target) {
-        this.target = target;
+    public void setServiceReferences(Set<ServiceReference> serviceReferences) {
+        this.serviceReferences = serviceReferences;
     }
 
-    public void setRefType(String refType) {
-        this.refType = refType;
+    public void addServiceReference(ServiceReference sr) {
+        getServiceReferences().add(sr);
     }
-
+    
     @Override
     public String toString() {
-        return "ServiceReference [id = " + getId() + ", refType = " +
-                getRefType() + ", target = [" + getTarget() + "]";
+        return super.toString()  + "\n [ServiceDescriptions = \n"
+                + serviceDescriptions + " ]" + ". ServiceReferences = ["
+                + serviceReferences + "]";
     }
 
 }

@@ -42,10 +42,11 @@ package org.glassfish.paas.orchestrator.service.spi;
 
 import java.util.Set;
 
+import org.glassfish.paas.orchestrator.service.metadata.ServiceDescription;
+import org.glassfish.paas.orchestrator.service.metadata.ServiceReference;
 import org.jvnet.hk2.annotations.Contract;
 
 import org.glassfish.api.deployment.archive.ReadableArchive;
-import org.glassfish.paas.orchestrator.service.ServiceReference;
 import org.glassfish.paas.orchestrator.service.ServiceType;
 import org.glassfish.api.deployment.ApplicationContainer;
 
@@ -120,9 +121,12 @@ public interface Plugin<T extends ServiceType> {
      * method to obtain a ServiceDefinition, defaulted to known values, for a
      * ServiceRefence.
      *
+     * ServiceReference can also be modified to fill in additional details.
+     * For eg., default jdbc-connection-pool properties.
+     *
      * @return A valid ServiceDefinition with defaults filled in.
      */
-    public ServiceDefinition getDefaultServiceDefinition(
+    public ServiceDescription getDefaultServiceDescription(
             ServiceReference svcRef);
 
     /**
@@ -132,7 +136,7 @@ public interface Plugin<T extends ServiceType> {
      *
      * @return a Set of <code>ProvisionedService</code>s
      */
-    public ProvisionedService provisionService(ServiceDefinition svcDefn);
+    public ProvisionedService provisionService(ServiceDescription serviceDescription);
 
     /**
      * A <code>ProvisionedService</code> for a <code>ServiceReference</code> is
@@ -175,7 +179,7 @@ public interface Plugin<T extends ServiceType> {
     public boolean reconfigureServices(ProvisionedService oldPS,
                                        ProvisionedService newPS);
 
-    public Set<ServiceDefinition> getImplicitServiceDefinitions(
+    public Set<ServiceDescription> getImplicitServiceDescriptions(
             ReadableArchive cloudArchive);
 
 }

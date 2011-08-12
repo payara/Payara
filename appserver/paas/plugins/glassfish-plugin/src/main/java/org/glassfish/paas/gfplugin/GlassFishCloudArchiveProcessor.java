@@ -47,7 +47,7 @@ import com.sun.enterprise.deployment.ResourceReferenceDescriptor;
 import com.sun.enterprise.deployment.WebBundleDescriptor;
 import com.sun.enterprise.deployment.archivist.ApplicationFactory;
 import org.glassfish.api.deployment.archive.ReadableArchive;
-import org.glassfish.paas.orchestrator.service.ServiceReference;
+import org.glassfish.paas.orchestrator.service.metadata.ServiceReference;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
 
@@ -73,16 +73,16 @@ public class GlassFishCloudArchiveProcessor {
         try {
             Application application = applicationFactory.openArchive(cloudArchive.getURI());
 
-            boolean isDistributable = false;
+//            boolean isDistributable = false;
             for (WebBundleDescriptor descriptor : application.getBundleDescriptors(WebBundleDescriptor.class)) {
-                if (descriptor.isDistributable()) {
-                    isDistributable = true;
-                }
+//                if (descriptor.isDistributable()) {
+//                    isDistributable = true;
+//                }
                 resRefs.addAll(descriptor.getResourceReferenceDescriptors());
             }
-            if (isDistributable) {
-                serviceReferences.add(new ServiceReference(application.getName() + "-lbs", "HTTP_LOAD_BALANCER", null));
-            }
+//            if (isDistributable) {
+//                serviceReferences.add(new ServiceReference(application.getName() + "-lbs", "HTTP_LOAD_BALANCER", null));
+//            }
             for (EjbBundleDescriptor descriptor : application.getBundleDescriptors(EjbBundleDescriptor.class)) {
                 resRefs.addAll(descriptor.getResourceReferenceDescriptors());
             }
@@ -90,8 +90,10 @@ public class GlassFishCloudArchiveProcessor {
                 resRefs.addAll(descriptor.getResourceReferenceDescriptors());
             }
 
+            // TODO :: Get the explicit service references from META-INF/glassfish-resources.xml
             for (ResourceReferenceDescriptor resRef : resRefs) {
-                serviceReferences.add(new ServiceReference(resRef.getName(), resRef.getType(), null));
+                serviceReferences.add(new ServiceReference(resRef.getName(),
+                        resRef.getType(), null, resRef.getSchemaGeneratorProperties()));
             }
         } catch (Exception e) {
             e.printStackTrace();

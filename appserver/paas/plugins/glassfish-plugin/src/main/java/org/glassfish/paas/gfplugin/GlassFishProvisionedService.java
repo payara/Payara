@@ -43,6 +43,7 @@ package org.glassfish.paas.gfplugin;
 import org.glassfish.paas.orchestrator.service.JavaEEServiceType;
 import org.glassfish.paas.orchestrator.service.ServiceStatus;
 import org.glassfish.paas.orchestrator.service.ServiceType;
+import org.glassfish.paas.orchestrator.service.metadata.ServiceDescription;
 import org.glassfish.paas.orchestrator.service.spi.ProvisionedService;
 import org.glassfish.paas.orchestrator.service.spi.ServiceDefinition;
 import org.glassfish.embeddable.GlassFish;
@@ -50,6 +51,7 @@ import org.glassfish.embeddable.GlassFishException;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 
 /**
  * @author bhavanishankar@java.net
@@ -57,9 +59,15 @@ import java.util.Map;
 
 public class GlassFishProvisionedService implements ProvisionedService {
 
-    public GlassFishProvisionedService(ServiceDefinition serviceDefinition,
+    private ServiceDescription serviceDesription; // serviceDescription.getName() is like domain.cluster
+    private Properties serviceProperties; // contains host, port, domainName.
+    private GlassFish provisionedGlassFish;
+
+    public GlassFishProvisionedService(ServiceDescription serviceDesription,
+                                       Properties serviceProperties,
                                        GlassFish provisionedGlassFish) {
-        this.serviceDefinition = serviceDefinition;
+        this.serviceDesription = serviceDesription;
+        this.serviceProperties = serviceProperties;
         this.provisionedGlassFish = provisionedGlassFish;
     }
 
@@ -67,8 +75,8 @@ public class GlassFishProvisionedService implements ProvisionedService {
         return new JavaEEServiceType();
     }
 
-    public ServiceDefinition getServiceDefinition() {
-        return serviceDefinition;
+    public ServiceDescription getServiceDescription() {
+        return serviceDesription;
     }
 
     public ServiceStatus getStatus() {
@@ -82,11 +90,12 @@ public class GlassFishProvisionedService implements ProvisionedService {
         return status;
     }
 
-    private ServiceDefinition serviceDefinition;
-    private GlassFish provisionedGlassFish;
+    public Properties getServiceProperties() {
+        return serviceProperties;
+    }
 
-    public void setServiceDefinition(ServiceDefinition definition) {
-        this.serviceDefinition = definition;
+    public void setServiceDesription(ServiceDescription definition) {
+        this.serviceDesription = definition;
     }
 
     public GlassFish getProvisionedGlassFish() {

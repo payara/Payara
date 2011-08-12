@@ -42,4 +42,8 @@ package org.glassfish.paas.orchestrator.service;
 
 public class HTTPLoadBalancerServiceType extends ServiceType {
 
+    @Override
+    public String toString() {
+        return "LB";
+    }
 }

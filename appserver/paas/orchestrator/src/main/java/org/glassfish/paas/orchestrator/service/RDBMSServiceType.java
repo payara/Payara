@@ -41,4 +41,8 @@ package org.glassfish.paas.orchestrator.service;
 
 public class RDBMSServiceType extends ServiceType {
 
+    @Override
+    public String toString() {
+        return "RDBMS";
+    }
 }

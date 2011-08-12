@@ -39,22 +39,26 @@
  */
 package org.glassfish.paas.lbplugin;
 
+import com.sun.enterprise.deployment.Application;
+import com.sun.enterprise.deployment.WebBundleDescriptor;
+import com.sun.enterprise.deployment.archivist.ApplicationFactory;
 import org.glassfish.api.deployment.ApplicationContainer;
 import org.glassfish.api.deployment.archive.ReadableArchive;
+import org.glassfish.embeddable.CommandResult;
+import org.glassfish.embeddable.CommandRunner;
+import org.glassfish.paas.lbplugin.cli.GlassFishLBProvisionedService;
 import org.glassfish.paas.orchestrator.provisioning.CloudRegistryEntry;
 import org.glassfish.paas.orchestrator.provisioning.CloudRegistryService;
 import org.glassfish.paas.orchestrator.provisioning.LBProvisioner;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceType;
-import org.glassfish.paas.lbplugin.cli.GlassFishLBProvisionedService;
 import org.glassfish.paas.orchestrator.service.HTTPLoadBalancerServiceType;
-import org.glassfish.paas.orchestrator.service.ServiceReference;
 import org.glassfish.paas.orchestrator.service.ServiceStatus;
-import org.glassfish.paas.orchestrator.service.SimpleServiceDefinition;
+import org.glassfish.paas.orchestrator.service.metadata.Property;
+import org.glassfish.paas.orchestrator.service.metadata.ServiceCharacteristics;
+import org.glassfish.paas.orchestrator.service.metadata.ServiceDescription;
+import org.glassfish.paas.orchestrator.service.metadata.ServiceReference;
 import org.glassfish.paas.orchestrator.service.spi.Plugin;
 import org.glassfish.paas.orchestrator.service.spi.ProvisionedService;
-import org.glassfish.paas.orchestrator.service.spi.ServiceDefinition;
-import org.glassfish.embeddable.CommandResult;
-import org.glassfish.embeddable.CommandRunner;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
@@ -62,6 +66,7 @@ import org.jvnet.hk2.component.PerLookup;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
@@ -80,6 +85,9 @@ public class LBPlugin implements Plugin<HTTPLoadBalancerServiceType> {
 
     @Inject
     private LBServiceUtil lbServiceUtil;
+
+    @Inject
+    private ApplicationFactory applicationFactory;
 
     private static final String LB = "HTTP_LOAD_BALANCER";
 
@@ -104,19 +112,31 @@ public class LBPlugin implements Plugin<HTTPLoadBalancerServiceType> {
         return new HashSet<ServiceReference>();
     }
 
-    public ServiceDefinition getDefaultServiceDefinition(ServiceReference svcRef) {
+    public ServiceDescription getDefaultServiceDescription(ServiceReference svcRef) {
         if (LB.equals(svcRef.getServiceRefType())) {
             LBProvisioner lbProvisioner = registryService.getLBProvisioner(GLASSFISH_LB);
-            Properties properties = lbProvisioner.getDefaultConnectionProperties();
-            String defaultLBServiceName = lbProvisioner.getDefaultServiceName();
-            return new SimpleServiceDefinition(defaultLBServiceName, LB_ServiceType, properties);
+
+            // create default service description.
+            String defaultServiceName = lbProvisioner.getDefaultServiceName();
+            List<Property> properties = new ArrayList<Property>();
+            properties.add(new Property("service-type", LB_ServiceType));
+            properties.add(new Property("os-name", System.getProperty("os.name"))); // default OS will be same as that of what Orchestrator is running on.
+            ServiceDescription sd = new ServiceDescription(defaultServiceName,
+                    "lazy", new ServiceCharacteristics(properties), null);
+
+            // Fill the required details in service reference.
+            Properties svcRefProps = lbProvisioner.getDefaultConnectionProperties();
+            svcRefProps.setProperty("serviceName", defaultServiceName);
+            svcRef.setProperties(svcRefProps);
+
+            return sd;
         } else {
             return null;
         }
     }
 
-    public ProvisionedService provisionService(ServiceDefinition serviceDefinition) {
-        String serviceName = serviceDefinition.getName();
+    public ProvisionedService provisionService(ServiceDescription serviceDescription) {
+        String serviceName = serviceDescription.getName();
 
         ArrayList<String> params;
         String[] parameters;
@@ -152,7 +172,7 @@ public class LBPlugin implements Plugin<HTTPLoadBalancerServiceType> {
             System.out.println("start-lb-service [" + serviceName + "] failed");
         }
 
-        return new GlassFishLBProvisionedService(serviceDefinition, ServiceStatus.STARTED);
+        return new GlassFishLBProvisionedService(serviceDescription, new Properties(), ServiceStatus.STARTED);
     }
 
     public void associateServices(ProvisionedService provisionedSvc, ServiceReference svcRef, boolean beforeDeployment) {
@@ -175,9 +195,37 @@ public class LBPlugin implements Plugin<HTTPLoadBalancerServiceType> {
         throw new UnsupportedOperationException("Not implemented yet");
     }
 
-    public Set<ServiceDefinition> getImplicitServiceDefinitions(ReadableArchive cloudArchive) {
+    public Set<ServiceDescription> getImplicitServiceDescriptions(ReadableArchive cloudArchive) {
         //no-op. Just by looking at a orchestration archive
         //the LB plugin cannot say that an LB needs to be provisioned.
-        return new HashSet<ServiceDefinition>();
+        HashSet<ServiceDescription> defs = new HashSet<ServiceDescription>();
+
+        Application application = null;
+        try {
+            application = applicationFactory.openArchive(cloudArchive.getURI());
+        } catch(Exception ex) {
+            ex.printStackTrace();
+        }
+
+        if(application != null ) {
+            boolean isDistributable = false;
+            for (WebBundleDescriptor descriptor : application.getBundleDescriptors(
+                    WebBundleDescriptor.class)) {
+                if (descriptor.isDistributable()) {
+                    isDistributable = true;
+                    break;
+                }
+            }
+            if(isDistributable) {
+                List<Property> properties = new ArrayList<Property>();
+                properties.add(new Property("service-type", LB_ServiceType));
+                // TODO :: check if the cloudArchive.getName() is okay.
+                ServiceDescription sd = new ServiceDescription(
+                        cloudArchive.getName(), "lazy",
+                        new ServiceCharacteristics(properties), null);
+                defs.add(sd);
+            }
+        }
+        return defs;
     }
 }

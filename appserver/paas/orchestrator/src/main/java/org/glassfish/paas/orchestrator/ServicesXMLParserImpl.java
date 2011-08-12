@@ -38,46 +38,39 @@
  * holder.
  */
 
-package org.glassfish.paas.orchestrator.schema;
+package org.glassfish.paas.orchestrator;
 
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
-import java.util.ArrayList;
-import java.util.List;
+import org.glassfish.api.deployment.archive.ReadableArchive;
+import org.glassfish.paas.orchestrator.service.metadata.ServiceMetadata;
+import org.jvnet.hk2.annotations.Scoped;
+import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.component.PerLookup;
+
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.Unmarshaller;
+import java.io.InputStream;
 
 /**
  * @author bhavanishankar@java.net
  */
-@XmlRootElement(name = "cloud-application")
-public class CloudApplication {
+@Service
+@Scoped(PerLookup.class)
+public class ServicesXMLParserImpl implements ServicesXMLParser {
 
-    private List<ServiceReference> serviceReferences;
-
-    private List<ServiceDefinition> serviceDefinitions;
-
-    @XmlElement(name = "service-reference")
-    public List<ServiceReference> getServiceReferences() {
-        return serviceReferences == null ? new ArrayList<ServiceReference>() : serviceReferences;
-    }
-
-    @XmlElement(name = "service-definition")
-    public List<ServiceDefinition> getServiceDefinitions() {
-        return serviceDefinitions == null ? new ArrayList<ServiceDefinition>() : serviceDefinitions;
-    }
-
-    public void setServiceReferences(List<ServiceReference> serviceReferences) {
-        this.serviceReferences = serviceReferences;
-    }
-
-    public void setServiceDefinitions(List<ServiceDefinition> serviceDefinitions) {
-        this.serviceDefinitions = serviceDefinitions;
-    }
-
-    @Override
-    public String toString() {
-        return "CloudApplication \nServiceReferences = " + getServiceReferences() +
-                "]\nServiceDefinitions = " +
-                getServiceDefinitions() + "\n";
+    public ServiceMetadata discoverDeclaredServices(ReadableArchive ra) {
+        ServiceMetadata serviceMetadata = null;
+        try {
+            InputStream inputStream = ra.getEntry("META-INF/services.xml");
+            if (inputStream != null) {
+                JAXBContext jaxbContext = JAXBContext.newInstance(
+                        ServiceMetadata.class);
+                Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
+                serviceMetadata = (ServiceMetadata) unmarshaller.unmarshal(inputStream);
+            }
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
+        return serviceMetadata;
     }
 
 }

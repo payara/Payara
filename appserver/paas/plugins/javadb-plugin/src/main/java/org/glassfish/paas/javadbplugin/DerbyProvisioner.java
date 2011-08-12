@@ -113,7 +113,7 @@ public class DerbyProvisioner implements DatabaseProvisioner {
         properties.put(DatabaseProvisioner.PASSWORD, "APP");
         properties.put(DatabaseProvisioner.DATABASENAME, "sample-db");
         properties.put("CONNECTIONATTRIBUTES", ";create\\=true");
-        properties.put(DatabaseProvisioner.PORTNUMBER, "1527");
+//        properties.put(DatabaseProvisioner.PORTNUMBER, "1527");
         properties.put(DatabaseProvisioner.RESOURCE_TYPE, "javax.sql.XADataSource");
         properties.put(DatabaseProvisioner.CLASSNAME, "org.apache.derby.jdbc.ClientXADataSource");
         return properties;

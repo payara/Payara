@@ -42,4 +42,8 @@ package org.glassfish.paas.orchestrator.service;
 
 public class JavaEEServiceType extends ServiceType {
 
+    @Override
+    public String toString() {
+        return "JavaEE";
+    }
 }

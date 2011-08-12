@@ -37,54 +37,30 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package org.glassfish.paas.orchestrator.service;
 
-import java.util.HashSet;
-import java.util.Set;
+package org.glassfish.paas.orchestrator.service.metadata;
 
-import org.glassfish.paas.orchestrator.service.spi.ServiceDefinition;
+import javax.xml.bind.annotation.XmlAttribute;
 
 /**
- * Houses a collection of Service-Definitions and Service References
- * for the application.
- *
- * @author Sivakumar Thyagarajan
+ * @author bhavanishankar@java.net
  */
-public class ServiceMetadata {
-    private Set<ServiceDefinition> definitions = new HashSet<ServiceDefinition>();
-    private Set<ServiceReference> references = new HashSet<ServiceReference>();
-    private String appName;
 
-    public ServiceMetadata(String appName, Set<ServiceDefinition> defns, Set<ServiceReference> refs) {
-        definitions.addAll(defns);
-        references.addAll(refs);
-        this.appName = appName;
+public class TemplateIdentifier {
+
+    private String id;
+
+    @XmlAttribute(name="id", required = true)
+    public String getId() {
+        return id;
     }
 
-    public void addServiceDefinition(ServiceDefinition defn) {
-        this.definitions.add(defn);
-    }
-
-    public String getAppName(){
-        return appName;
-    }
-
-    public void addServiceReference(ServiceReference ref) {
-        this.references.add(ref);
-    }
-
-    public Set<ServiceDefinition> getServiceDefinitions() {
-        return this.definitions;
-    }
-
-    public Set<ServiceReference> getServiceReferences() {
-        return this.references;
+    public void setId(String id) {
+        this.id = id;
     }
 
     @Override
     public String toString() {
-        return "ServiceMetadata :: {\n" +
-                "ServiceDefinitions = [" + definitions + "]\n" +
-                "ServiceReferences = [" + references + "]\n}\n";
+        return "[id = " + id + "]";
     }
 }

@@ -46,9 +46,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.glassfish.api.deployment.archive.ReadableArchive;
-import org.glassfish.paas.orchestrator.service.ServiceMetadata;
-import org.glassfish.paas.orchestrator.service.ServiceReference;
+import org.glassfish.paas.orchestrator.service.metadata.ServiceReference;
 import org.glassfish.paas.orchestrator.service.ServiceType;
+import org.glassfish.paas.orchestrator.service.metadata.ServiceMetadata;
+import org.glassfish.paas.orchestrator.service.metadata.ServiceDescription;
 import org.glassfish.paas.orchestrator.service.spi.Plugin;
 import org.glassfish.paas.orchestrator.service.spi.ProvisionedService;
 import org.glassfish.paas.orchestrator.service.spi.ServiceDefinition;
@@ -97,13 +98,16 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
     private ServiceMetadata serviceDependencyDiscovery(String appName, ReadableArchive cloudArchive, Set<Plugin> installedPlugins) {
         logger.entering(getClass().getName(), "serviceDependencyDiscovery");
         //1. SERVICE DISCOVERY
-        //parse orchestration.xml to get all declared SRs and SDs
-        //Get the first CloudXMLParser implementation
-        CloudXMLParser parser = habitat.getAllByContract(CloudXMLParser.class).iterator().next();
+        //parse services.xml to get all declared SRs and SDs
+        //Get the first ServicesXMLParser implementation
+
+        ServicesXMLParser parser = habitat.getAllByContract(
+                ServicesXMLParser.class).iterator().next();
 
         //1.1 discover all Service References and Definitions already declared for this application
-        ServiceMetadata appServiceMetadata = parser.discoverDeclaredServiceMetadata(appName, cloudArchive);
-        logger.log(Level.INFO, "Discovered declared service metadata via cloud.xml = " + appServiceMetadata);
+        ServiceMetadata appServiceMetadata = parser.discoverDeclaredServices(cloudArchive);
+
+        logger.log(Level.INFO, "Discovered declared service metadata via glassfish-services.xml = " + appServiceMetadata);
 
         //1.2 Get implicit service-definitions (for instance a war is deployed, and it has not
         //specified a javaee service-definition in its orchestration.xml, the PaaS runtime
@@ -116,15 +120,15 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
                 //if it has any implicit service-definition for this
                 //application
                 if (!serviceDefinitionExistsForType(appServiceMetadata, svcPlugin.getServiceType())) {
-                    Set<ServiceDefinition> implicitServiceDefs = svcPlugin.getImplicitServiceDefinitions(cloudArchive);
-                    for (ServiceDefinition sd : implicitServiceDefs) {
-                        System.out.println("Implicit ServiceDefinition:" + sd);
-                        appServiceMetadata.addServiceDefinition(sd);
+                    Set<ServiceDescription> implicitServiceDescs = svcPlugin.getImplicitServiceDescriptions(cloudArchive);
+                    for (ServiceDescription sd : implicitServiceDescs) {
+                        System.out.println("Implicit ServiceDescription:" + sd);
+                        appServiceMetadata.addServiceDescription(sd);
                     }
                 }
             }
         }
-        logger.log(Level.INFO, "After adding implicit ServiceDefinitions = " + appServiceMetadata);
+        logger.log(Level.INFO, "After adding implicit ServiceDescriptions = " + appServiceMetadata);
 
 
         //1.2 Get implicit ServiceReferences
@@ -132,21 +136,21 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
             if (svcPlugin.handles(cloudArchive)) {
                 Set<ServiceReference> implicitServiceRefs = svcPlugin.getServiceReferences(cloudArchive);
                 for (ServiceReference sr : implicitServiceRefs) {
-                    System.out.println("Implicit ServiceReference:" + sr);
+                    System.out.println("ServiceReference:" + sr);
                     appServiceMetadata.addServiceReference(sr);
                 }
             }
         }
-        logger.log(Level.INFO, "After adding implicit ServiceReferences = " + appServiceMetadata);
+        logger.log(Level.INFO, "After adding ServiceReferences = " + appServiceMetadata);
 
         //1.3 Ensure all service references have a related service definition
-        Set<ServiceDefinition> appSDs = appServiceMetadata.getServiceDefinitions();
+        Set<ServiceDescription> appSDs = appServiceMetadata.getServiceDescriptions();
         Set<ServiceReference> appSRs = appServiceMetadata.getServiceReferences();
         for (ServiceReference sr : appSRs) {
             String targetSD = sr.getTarget();
             String svcRefType = sr.getServiceRefType();
             boolean serviceDefinitionExists = false;
-            for (ServiceDefinition sd : appSDs) {
+            for (ServiceDescription sd : appSDs) {
                 //XXX: For now we assume all SRs are satisfied by app-scoped SDs
                 //In the future this has to be modified to search in global SDs
                 //as well
@@ -159,8 +163,8 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
                 //service metadata
                 for (Plugin svcPlugin : installedPlugins) {
                     if (svcPlugin.isReferenceTypeSupported(svcRefType)) {
-                        ServiceDefinition defSD = svcPlugin.getDefaultServiceDefinition(sr);
-                        appServiceMetadata.addServiceDefinition(defSD);
+                        ServiceDescription defSD = svcPlugin.getDefaultServiceDescription(sr);
+                        appServiceMetadata.addServiceDescription(defSD);
                         continue; //ignore the rest of the plugins
                     }
                 }
@@ -203,8 +207,8 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
         logger.entering(getClass().getName(), "provisionServices");
         Set<ProvisionedService> appPSs = new HashSet<ProvisionedService>();
 
-        Set<ServiceDefinition> appSDs = appServiceMetadata.getServiceDefinitions();
-        for (ServiceDefinition sd : appSDs) {
+        Set<ServiceDescription> appSDs = appServiceMetadata.getServiceDescriptions();
+        for (ServiceDescription sd : appSDs) {
             Plugin<?> chosenPlugin = getPluginForServiceType(installedPlugins, sd.getServiceType());
             logger.log(Level.INFO, "Provisioning Service for " + sd + " through " + chosenPlugin);
             ProvisionedService ps = chosenPlugin.provisionService(sd);
@@ -214,31 +218,31 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
         return appPSs;
     }
 
-    private Plugin getPluginForServiceType(Set<Plugin> installedPlugins, ServiceType serviceType) {
+    private Plugin getPluginForServiceType(Set<Plugin> installedPlugins, String serviceType) {
         //XXX: for now assume that there is one plugin per servicetype
         //and choose the first plugin that handles this service type.
         //in the future, need to handle conflicts
         for (Plugin svcPlugin : installedPlugins) {
-            if (svcPlugin.getServiceType().equals(serviceType)) return svcPlugin;
+            if (svcPlugin.getServiceType().toString().equalsIgnoreCase(serviceType)) return svcPlugin;
         }
         return null;
     }
 
     private boolean serviceDefinitionExistsForType(
             ServiceMetadata appServiceMetadata, ServiceType svcType) {
-        for (ServiceDefinition sd : appServiceMetadata.getServiceDefinitions()) {
-            if (sd.getServiceType().equals(svcType)) return true;
+        for (ServiceDescription sd : appServiceMetadata.getServiceDescriptions()) {
+            if (sd.getServiceType().equalsIgnoreCase(svcType.toString())) return true;
         }
         return false;
     }
 
-    private void assertMetadataComplete(Set<ServiceDefinition> appSDs,
+    private void assertMetadataComplete(Set<ServiceDescription> appSDs,
                                         Set<ServiceReference> appSRs) {
         //Assert that all SRs have their corresponding SDs
         for (ServiceReference sr : appSRs) {
             String targetSD = sr.getTarget();
             boolean serviceDefinitionExists = false;
-            for (ServiceDefinition sd : appSDs) {
+            for (ServiceDescription sd : appSDs) {
                 if (sd.getName().equals(targetSD)) {
                     serviceDefinitionExists = true;
                 }

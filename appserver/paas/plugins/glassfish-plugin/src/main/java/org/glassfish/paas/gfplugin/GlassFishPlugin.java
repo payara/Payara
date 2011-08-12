@@ -43,24 +43,23 @@ package org.glassfish.paas.gfplugin;
 import com.sun.enterprise.deploy.shared.ArchiveFactory;
 import org.glassfish.api.deployment.ApplicationContainer;
 import org.glassfish.api.deployment.archive.ReadableArchive;
-import org.glassfish.paas.gfplugin.cli.GlassFishServiceUtil;
-import org.glassfish.paas.orchestrator.provisioning.ApplicationServerProvisioner;
-import org.glassfish.paas.orchestrator.provisioning.CloudRegistryService;
-import org.glassfish.paas.orchestrator.provisioning.LBProvisioner;
-import org.glassfish.paas.orchestrator.provisioning.cli.ServiceType;
-import org.glassfish.paas.javadbplugin.DerbyProvisionedService;
-import org.glassfish.paas.orchestrator.service.HTTPLoadBalancerServiceType;
-import org.glassfish.paas.orchestrator.service.JavaEEServiceType;
-import org.glassfish.paas.orchestrator.service.ServiceReference;
-import org.glassfish.paas.orchestrator.service.SimpleServiceDefinition;
-import org.glassfish.paas.orchestrator.service.spi.Plugin;
-import org.glassfish.paas.orchestrator.service.spi.ProvisionedService;
-import org.glassfish.paas.orchestrator.service.spi.ServiceDefinition;
 import org.glassfish.embeddable.CommandResult;
 import org.glassfish.embeddable.CommandRunner;
 import org.glassfish.embeddable.Deployer;
 import org.glassfish.embeddable.GlassFish;
 import org.glassfish.embeddable.GlassFishException;
+import org.glassfish.paas.gfplugin.cli.GlassFishServiceUtil;
+import org.glassfish.paas.orchestrator.provisioning.ApplicationServerProvisioner;
+import org.glassfish.paas.orchestrator.provisioning.CloudRegistryService;
+import org.glassfish.paas.orchestrator.provisioning.LBProvisioner;
+import org.glassfish.paas.orchestrator.provisioning.cli.ServiceType;
+import org.glassfish.paas.orchestrator.service.JavaEEServiceType;
+import org.glassfish.paas.orchestrator.service.metadata.Property;
+import org.glassfish.paas.orchestrator.service.metadata.ServiceCharacteristics;
+import org.glassfish.paas.orchestrator.service.metadata.ServiceDescription;
+import org.glassfish.paas.orchestrator.service.metadata.ServiceReference;
+import org.glassfish.paas.orchestrator.service.spi.Plugin;
+import org.glassfish.paas.orchestrator.service.spi.ProvisionedService;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
@@ -69,8 +68,10 @@ import org.jvnet.hk2.component.PerLookup;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
-import java.util.Properties;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Properties;
 import java.util.Set;
 
 /**
@@ -95,8 +96,10 @@ public class GlassFishPlugin implements Plugin<JavaEEServiceType> {
     @Inject
     private CloudRegistryService cloudRegistryService;
 
-    public static final String JAVAEE_ServiceType = "JAVAEE";
+    public static final String JAVAEE_SERVICE_TYPE = "JavaEE";
 
+    // TODO :: how can plugin hold the reference to the glassfish prosioned service?
+    // TODO :: Plugin should be stateless, and its job is just to configure the service(s)
     private GlassFishProvisionedService glassfishProvisionedService;
 
     public JavaEEServiceType getServiceType() {
@@ -127,66 +130,82 @@ public class GlassFishPlugin implements Plugin<JavaEEServiceType> {
         return archiveProcessor.getServiceReferences(cloudArchive);
     }
 
-    public ServiceDefinition getDefaultServiceDefinition(ServiceReference svcRef) {
+    public ServiceDescription getDefaultServiceDescription(ServiceReference svcRef) {
         return null;
     }
 
-    public ProvisionedService provisionService(ServiceDefinition svcDefn) {
-        if (svcDefn instanceof SimpleServiceDefinition) {
+    public ProvisionedService provisionService(ServiceDescription serviceDescription) {
+//        if (serviceDescription instanceof SimpleServiceDefinition) {
             // TODO :: Figure out that it is for GlassFish.
-            SimpleServiceDefinition serviceDefinition = (SimpleServiceDefinition) svcDefn;
+//            ServiceDescription serviceDefinition = (SimpleServiceDefinition) serviceDescription;
             CommandResult result = commandRunner.run("create-glassfish-service",
-                    "--instancecount=" + serviceDefinition.getProperties().getProperty("min-cluster-size"),
+                    "--instancecount=" + serviceDescription.getConfiguration("min.clustersize"),
                     "--waitforcompletion=true",
-                    serviceDefinition.getProperties().getProperty("servicename"));
+                    serviceDescription.getName());
             System.out.println("create-glassfish-service command output [" + result.getOutput() + "]");
             if (result.getExitStatus() == CommandResult.ExitStatus.SUCCESS) {
-                String domainName = gfServiceUtil.getDomainName(
-                        serviceDefinition.getProperties().getProperty("servicename"));
+                String domainName = gfServiceUtil.getDomainName(serviceDescription.getName());
                 String dasIPAddress = gfServiceUtil.getIPAddress(domainName, ServiceType.APPLICATION_SERVER);
+
+                Properties serviceProperties = new Properties();
+                serviceProperties.setProperty("host", dasIPAddress);
+                serviceProperties.setProperty("domainName", domainName);
+                
                 GlassFishProvisioner gfProvisioner = (GlassFishProvisioner)
                         cloudRegistryService.getAppServerProvisioner(dasIPAddress);
 
                 GlassFish provisionedGlassFish = gfProvisioner.getGlassFish();
 
                 glassfishProvisionedService =
-                        new GlassFishProvisionedService(serviceDefinition, provisionedGlassFish);
+                        new GlassFishProvisionedService(serviceDescription, serviceProperties, provisionedGlassFish);
 
                 return glassfishProvisionedService;
             } else {
                 result.getFailureCause().printStackTrace();
+                return null;
             }
-        }
-        return null;
+//        }
+
     }
 
+    /**
+     * @param provisionedSvc Provisioned service like DB service or JMS service.
+     * @param svcRef Service Reference from GlassFish to that service.
+     * @param beforeDeployment indicates if this association is happening before the
+     */
     public void associateServices(ProvisionedService provisionedSvc,
                                   ServiceReference svcRef, boolean beforeDeployment) {
-        if (provisionedSvc instanceof DerbyProvisionedService) {
+//        if (provisionedSvc instanceof DerbyProvisionedService) {
             if (svcRef.getServiceRefType().equals("javax.sql.DataSource")) {
 
                 if (!beforeDeployment) return;
 
-                DerbyProvisionedService derbyProvisionedService =
-                        (DerbyProvisionedService) provisionedSvc;
+//                DerbyProvisionedService derbyProvisionedService =
+//                        (DerbyProvisionedService) provisionedSvc;
 
                 // JDBC connection properties
-                SimpleServiceDefinition derbyServiceDefinition =
-                        (SimpleServiceDefinition) derbyProvisionedService.getServiceDefinition();
-                Properties derbyProperties = derbyServiceDefinition.getProperties();
+                ServiceDescription serviceDescription = provisionedSvc.getServiceDescription();
+//                        (SimpleServiceDefinition) derbyProvisionedService.getServiceDefinition();
+                Properties derbyProperties = new Properties();
+                derbyProperties.putAll(svcRef.getProperties());
+                derbyProperties.setProperty("serverName",
+                        provisionedSvc.getServiceProperties().getProperty("host"));
+//                serviceDescription.getProperties();
 
                 // Get the domain and cluster names.
-                SimpleServiceDefinition serviceDefinition =
-                        (SimpleServiceDefinition) glassfishProvisionedService.getServiceDefinition();
-                String serviceName = serviceDefinition.getProperties().getProperty("servicename");
-                String domainName = gfServiceUtil.getDomainName(serviceName);
+//                SimpleServiceDefinition serviceDefinition =
+//                        (SimpleServiceDefinition) glassfishProvisionedService.getServiceDesription();
+                String serviceName = glassfishProvisionedService.getServiceDescription().getName();
+//                String domainName = glassfishProvisionedService.getServiceProperties().getProperty("domainName"); // serviceUtil.getDomainName(serviceName);
                 String clusterName = gfServiceUtil.getClusterName(serviceName);
-                String dasIPAddress = gfServiceUtil.getIPAddress(domainName, ServiceType.APPLICATION_SERVER);
+                String dasIPAddress = glassfishProvisionedService.getServiceProperties().getProperty("host"); // serviceUtil.getIPAddress(domainName, ServiceUtil.SERVICE_TYPE.APPLICATION_SERVER);
 
                 String poolName = serviceName + ".pool";
                 String resourceName = svcRef.getServiceRefName();
 
                 // Create JDBC resource and pool.
+                // TODO :: delegate the pool creation to deployment backend.
+                // TODO :: Decorate the archive with modified/newly_created META-INF/glassfish-resources.xml
                 GlassFishProvisioner glassFishProvisioner = (GlassFishProvisioner)
                         cloudRegistryService.getAppServerProvisioner(dasIPAddress);
                 glassFishProvisioner.createJdbcConnectionPool(dasIPAddress, clusterName,
@@ -194,29 +213,25 @@ public class GlassFishPlugin implements Plugin<JavaEEServiceType> {
                 glassFishProvisioner.createJdbcResource(dasIPAddress, clusterName,
                         poolName, resourceName);
             }
-        }
+//        }
 
-        //if (provisionedSvc instanceof GlassFishLBProvisionedService) {
-        if (provisionedSvc.getServiceType() instanceof HTTPLoadBalancerServiceType) {
+//        if (provisionedSvc instanceof GlassFishLBProvisionedService) {
             if (svcRef.getServiceRefType().equals("HTTP_LOAD_BALANCER")) {
 
-                SimpleServiceDefinition gfServiceDefinition =
-                        (SimpleServiceDefinition) glassfishProvisionedService.getServiceDefinition();
-                String appServerServiceName = gfServiceDefinition.getProperties().getProperty("servicename");
-                String domainName = gfServiceUtil.getDomainName(appServerServiceName);
+//                SimpleServiceDefinition gfServiceDefinition =
+//                        (SimpleServiceDefinition) glassfishProvisionedService.getServiceDesription();
+                String appServerServiceName = glassfishProvisionedService.getServiceDescription().getName();//gfServiceDefinition.getProperties().getProperty("servicename");
+                String domainName = glassfishProvisionedService.getServiceProperties().getProperty("domainName");//serviceUtil.getDomainName(appServerServiceName);
                 String clusterName = gfServiceUtil.getClusterName(appServerServiceName);
-                String dasIPAddress = gfServiceUtil.getIPAddress(domainName, ServiceType.APPLICATION_SERVER);
+                String dasIPAddress = glassfishProvisionedService.getServiceProperties().getProperty("host"); //serviceUtil.getIPAddress(domainName, ServiceUtil.SERVICE_TYPE.APPLICATION_SERVER);
 
                 ApplicationServerProvisioner appServerProvisioner = cloudRegistryService.getAppServerProvisioner(dasIPAddress);
 
-/*
-                GlassFishLBProvisionedService gfLBProvisionedService =
-                        (GlassFishLBProvisionedService) provisionedSvc;
-*/
-                SimpleServiceDefinition lbServiceDefinition = (SimpleServiceDefinition)
-                        //gfLBProvisionedService.getServiceDefinition();
-                        provisionedSvc.getServiceDefinition();
-                String lbServiceName = lbServiceDefinition.getName();
+//                GlassFishLBProvisionedService gfLBProvisionedService =
+//                        (GlassFishLBProvisionedService) provisionedSvc;
+//                SimpleServiceDefinition lbServiceDefinition = (SimpleServiceDefinition)
+//                        gfLBProvisionedService.getServiceDescription();
+                String lbServiceName = provisionedSvc.getServiceDescription().getName();
 
                 if (beforeDeployment) {
                     LBProvisioner lbProvisioner = cloudRegistryService.getLBProvisioner();
@@ -231,16 +246,16 @@ public class GlassFishPlugin implements Plugin<JavaEEServiceType> {
                 } else {
                     appServerProvisioner.refreshLBConfiguration(dasIPAddress, lbServiceName);
                 }
-            }
+//            }
         }
     }
 
     public ApplicationContainer deploy(ReadableArchive cloudArchive) {
         GlassFish provisionedGlassFish =
                 glassfishProvisionedService.getProvisionedGlassFish();
-        SimpleServiceDefinition serviceDefinition =
-                (SimpleServiceDefinition) glassfishProvisionedService.getServiceDefinition();
-        String serviceName = serviceDefinition.getProperties().getProperty("servicename");
+//        SimpleServiceDefinition serviceDefinition =
+//                (SimpleServiceDefinition) glassfishProvisionedService.getServiceDesription();
+        String serviceName = glassfishProvisionedService.getServiceDescription().getName();
         String clusterName = gfServiceUtil.getClusterName(serviceName);
 
         URI archive = cloudArchive.getURI();
@@ -272,19 +287,25 @@ public class GlassFishPlugin implements Plugin<JavaEEServiceType> {
         return false;
     }
 
-    public Set<ServiceDefinition> getImplicitServiceDefinitions(
+    public Set<ServiceDescription> getImplicitServiceDescriptions(
             ReadableArchive cloudArchive) {
-        HashSet<ServiceDefinition> defs = new HashSet<ServiceDefinition>();
+        HashSet<ServiceDescription> defs = new HashSet<ServiceDescription>();
 
         //check if the cloudArchive is a Java EE archive.
         //XXX: For now, only check for the name war. Later detect 
         if (cloudArchive.getURI().toString().indexOf(".war") != -1) {
-            String appName = cloudArchive.getName();
-            Properties p = new Properties();
-            p.put("min-cluster-size", "2");
-            p.put("max-cluster-size", "4");
-            p.put("servicename", "mydomain." + appName);
-            ServiceDefinition sd = new SimpleServiceDefinition("default-glassfish", JAVAEE_ServiceType, p);
+            List<Property> characteristics = new ArrayList<Property>();
+            characteristics.add(new Property("service-type", JAVAEE_SERVICE_TYPE));
+//            characteristics.add(new Property("service-vendor", "GlassFish"));
+//            characteristics.add(new Property("service-product-name", "GlassFish"));
+
+            List<Property> configurations = new ArrayList<Property>();
+            configurations.add(new Property("min.clustersize", "2"));
+            configurations.add(new Property("max.clustersize", "4"));
+            
+            ServiceDescription sd = new ServiceDescription(
+                    "mydomain." + cloudArchive.getName(), "lazy",
+                    new ServiceCharacteristics(characteristics), configurations);
             defs.add(sd);
         }
         return defs;
