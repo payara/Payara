@@ -248,22 +248,13 @@ public class CLIUtil {
         /*
          * The output of the remote list-commands command is a bunch of
          * lines of the form:
-         * Command : cmd-name
-         * We extract the command name from each such line.
-         * XXX - depending on this output format is gross;
-         * should be able to send --terse to remote command
-         * to cause it to produce exactly the output we want.
+         * cmd-name
          */
         try {
             while ((line = r.readLine()) != null) {
-                if (line.startsWith("Command")) {
-                    int i = line.indexOf(':');
-                    if (i < 0)
-                        continue;
-                    String s = line.substring(i + 1).trim();
-                    // add it if it's not a local command
-                    if (!localnames.contains(s))
-                        rcmds.add(s);
+                // add it if it's not a local command
+                if (!localnames.contains(line)) {
+                    rcmds.add(line);
                 }
             }
         } catch (IOException ioex) {

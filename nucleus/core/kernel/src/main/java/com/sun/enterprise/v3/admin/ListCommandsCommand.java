@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2006-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -84,7 +84,6 @@ public class ListCommandsCommand implements AdminCommand {
 
         context.getActionReport().setActionExitCode(ActionReport.ExitCode.SUCCESS);
         ActionReport report = context.getActionReport();
-        report.setMessage("List of Commands");
         report.getTopMessagePart().setChildrenType("Command");
         for (String name : sortedAdminCommands()) {
             ActionReport.MessagePart part = report.getTopMessagePart().addChild();
