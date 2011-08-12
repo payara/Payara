@@ -1184,8 +1184,15 @@ public class Application extends BundleDescriptor
     public Set<BundleDescriptor> getBundleDescriptors() {
         Set<BundleDescriptor> bundleSet = new OrderedSet<BundleDescriptor>();
         for (ModuleDescriptor<BundleDescriptor> aModule :  getModules()) {
-            if (aModule.getDescriptor() != null) {
-                bundleSet.add(aModule.getDescriptor());
+            BundleDescriptor bundleDesc = aModule.getDescriptor();
+            if (bundleDesc != null) {
+                bundleSet.add(bundleDesc);
+                for (RootDeploymentDescriptor rd : 
+                    bundleDesc.getExtensionsDescriptors()) {
+                    if (rd instanceof BundleDescriptor) {
+                        bundleSet.add((BundleDescriptor)rd);
+                    }
+                }
             } else {
                 DOLUtils.getDefaultLogger().fine("Null descriptor for module " + aModule.getArchiveUri());
             }
