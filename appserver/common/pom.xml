@@ -68,6 +68,5 @@
         <module>glassfish-ee-api</module>
         <module>annotation-framework</module>
         <module>container-common</module>
-        <module>glassfish-naming</module>        
     </modules>
 </project>

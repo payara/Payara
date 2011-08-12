@@ -46,7 +46,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <parent>
         <groupId>org.glassfish.common</groupId>
-        <artifactId>common</artifactId>
+        <artifactId>nucleus-common</artifactId>
         <version>3.2-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
@@ -88,16 +88,7 @@
     <dependencies>
         <dependency>
             <groupId>com.sun.corba</groupId>
-            <artifactId>glassfish-corba-omgapi</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.sun.corba</groupId>
             <artifactId>glassfish-corba-internal-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.orb</groupId>
-            <artifactId>orb-connector</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish.hk2</groupId>
