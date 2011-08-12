@@ -84,6 +84,17 @@ public interface Machine {
 
     VirtualMachine byName(String name) throws VirtException;
 
+    /**
+     * Allocate a new Virtual Machine on this machine.
+     *
+     * @param template the template to use for the virtual machine
+     * @param cluster the virtual cluster in which  the virtual machine must be added
+     * using the {@link VirtualCluster#add(TemplateInstance, VirtualMachine)}  method
+     * @param source the event notification mechanism
+     * @return a {@link ListenableFuture} to obtain events and the virtual machine once ready
+     * @throws VirtException if the virtualization layer cannot spawn the virtual machine
+     * @throws IOException with any file handling.
+     */
     ListenableFuture<AllocationPhase, VirtualMachine> create(
             TemplateInstance template, VirtualCluster cluster, EventSource<AllocationPhase> source)
             throws VirtException, IOException;

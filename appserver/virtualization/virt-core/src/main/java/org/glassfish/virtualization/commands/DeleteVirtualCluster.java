@@ -122,7 +122,9 @@ public class DeleteVirtualCluster implements AdminCommand {
                             deletions.add(executorService.submit(new Callable<Void>() {
                                 @Override
                                 public Void call() throws Exception {
-                                    templateInstance.getCustomizer().clean(vm);
+                                    if (templateInstance.getCustomizer()!=null) {
+                                        templateInstance.getCustomizer().clean(vm);
+                                    }
                                     vm.delete();
                                     return null;
                                 }

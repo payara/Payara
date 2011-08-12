@@ -67,15 +67,13 @@ public class TemplateInstanceImpl implements TemplateInstance {
         TemplateCustomizer tmpCustomizer = null;
         for (TemplateIndex indexPersistence : config.getIndexes()) {
             indexes.add(TemplateCondition.from(indexPersistence));
-            // todo : need to do better
-            // so far, it's ugly, customizers must use the (templateName-ServiceType) name.
-            if (indexPersistence.getType().equals("ServiceType")) {
-                tmpCustomizer = services.forContract(TemplateCustomizer.class).named(
-                        config.getName()+ "-"+indexPersistence.getValue()).get();
-                break;
-            }
         }
-        this.customizer = tmpCustomizer;
+        // todo : need to do better
+        // so far, it's ugly, customizers must use the (VirtualizationType-ServiceType) name.
+        TemplateIndex serviceType  = config.byName("ServiceType");
+        TemplateIndex virtType = config.byName("VirtualizationType");
+        customizer = services.forContract(TemplateCustomizer.class).named(
+                        virtType.getValue()+ "-"+serviceType.getValue()).get();
     }
 
     @Override

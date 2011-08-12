@@ -210,11 +210,11 @@ public class LibVirtVirtualMachine implements VirtualMachine {
 
     @Override
     public ServerPool getServerPool() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return pool;
     }
 
     @Override
     public Machine getMachine() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return owner;
     }
 }

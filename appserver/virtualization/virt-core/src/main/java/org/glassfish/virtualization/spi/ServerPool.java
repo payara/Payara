@@ -91,7 +91,8 @@ public interface ServerPool {
      * Allocates number of virtual machines on any machine belonging to this server pool, each virtual machine
      * should be based on the provided template.
      * @param template  template for the virtual machines
-     * @param cluster the virtual cluster instance to allocated virtual machines for
+     * @param cluster the virtual cluster in which  the virtual machine must be added
+     * using the {@link VirtualCluster#add(TemplateInstance, VirtualMachine)}  method
      * @return Listenable future for the VirtualMachine instance
      * @throws VirtException when the virtual machine creation failed.
      */

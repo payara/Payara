@@ -38,71 +38,60 @@
  * holder.
  */
 
-package org.glassfish.virtualization.config;
+package org.glassfish.virtualization.libvirt;
 
-import org.glassfish.api.I18n;
-import org.glassfish.api.Param;
-import org.glassfish.api.admin.AdminCommandContext;
-import org.glassfish.api.admin.config.Named;
-import org.glassfish.config.support.Create;
-import org.glassfish.config.support.CrudResolver;
+import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.config.serverbeans.Node;
+import com.sun.enterprise.config.serverbeans.Server;
+import org.glassfish.api.ActionReport;
+import org.glassfish.hk2.Services;
+import org.glassfish.virtualization.runtime.VirtualCluster;
+import org.glassfish.virtualization.spi.TemplateCustomizer;
+import org.glassfish.virtualization.spi.VirtException;
+import org.glassfish.virtualization.spi.VirtualMachine;
+import org.glassfish.virtualization.util.RuntimeContext;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.config.*;
-
-import java.util.List;
 
 /**
- * Configuration of a template, for now only its name. Will need to be refined.
+ * Customization of the KVM GlassFish template
+ * @author Jerome Dochez
  */
-@Configured
-public interface Template extends ConfigBeanProxy, Named {
+@Service(name="KVM-JavaEE")
+public class GlassFishTemplateCustomizer implements TemplateCustomizer {
 
-    void setName(String name);
+    @Inject
+    Domain domain;
 
-    @Element("*")
-    List<TemplateIndex> getIndexes();
+    @Inject
+    Services services;
 
-    /**
-     * Defines the user identify  to be used to run anything on this template.
-     * If not defined, the target machine user's name will be used.
-     * @see ServerPoolConfig#getUser()
-     *
-     * @return  the template user information
-     */
-    @Element
-    VirtUser getUser();
-    @Create(value="create-template-user", resolver = TemplateResolver.class, i18n = @I18n("org.glassfish.virtualization.create-machine"))
-    void setUser(VirtUser user);
+    @Inject
+    RuntimeContext rtContext;
 
-    @DuckTyped
-    TemplateIndex byName(String name);
+    @Override
+    public void customize(VirtualCluster cluster, VirtualMachine virtualMachine) throws VirtException {
 
-    public class Duck {
-        public static TemplateIndex byName(Template self, String name) {
-            for (TemplateIndex ti : self.getIndexes()) {
-                if (ti.getType().equals(name)) {
-                    return ti;
-                }
-            }
-            return null;
-        }
     }
 
-    @Service
-    class TemplateResolver implements CrudResolver {
+    @Override
+    public void clean(VirtualMachine virtualMachine) {
 
-        @Param
-        String template;
+        // let's find our instance name.
+        String vmName = virtualMachine.getName();
+        String instanceName = virtualMachine.getServerPool().getName()+"_"+virtualMachine.getMachine().getName()+"_"+vmName+"Instance";
+        Server server = domain.getServerNamed(instanceName);
 
-        @Inject
-        Virtualizations virts;
+        String nodeName = server.getNodeRef();
+        ActionReport report = services.forContract(ActionReport.class).named("plain").get();
+        rtContext.executeAdminCommand(report, "stop-instance", instanceName, "_vmShutdown", "false");
+        rtContext.executeAdminCommand(report, "delete-instance", instanceName);
 
-        @Override
-        public <T extends ConfigBeanProxy> T resolve(AdminCommandContext context, Class<T> type) {
-            Template thisTemplate = virts.templateByName(template);
-            return (T) thisTemplate;
-
+        Node node = domain.getNodeNamed(nodeName);
+        if (node!=null) {
+            if (node.getType().equals("SSH")) {
+                rtContext.executeAdminCommand(report, "delete-node-ssh", nodeName);
+            }
         }
     }
 }

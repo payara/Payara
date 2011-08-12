@@ -79,6 +79,9 @@ public class GroupMembersPopulator implements Startup, PostConstruct, IAAS, Conf
     @Inject
     ServerEnvironment env;
 
+    @Inject
+    Transactions transactions;
+
     private final Map<String, ServerPool> groups = new HashMap<String, ServerPool>();
     private final Map<String, VirtualCluster> virtualClusterMap = new HashMap<String, VirtualCluster>();
 
@@ -100,6 +103,7 @@ public class GroupMembersPopulator implements Startup, PostConstruct, IAAS, Conf
     @Override
     public void postConstruct() {
         // first executeAndWait the fping command to populate our arp table.
+        transactions.addListenerForType(ServerPoolConfig.class, this);
         if (virtualizations==null || env.isInstance() ) return;
 
         for (ServerPoolConfig groupConfig : virtualizations.getGroupConfigs()) {

@@ -406,6 +406,7 @@ public class LibVirtLocalMachine extends LocalMachine implements PostConstruct {
             final CountDownLatch latch = new CountDownLatch(1);
             final LibVirtVirtualMachine vm = new LibVirtVirtualMachine(serverPool, this, domain, latch);
             domains.put(name, vm);
+            cluster.add(template, vm);
 
             ListenableFutureImpl<AllocationPhase, VirtualMachine> future =
                     new ListenableFutureImpl<AllocationPhase, VirtualMachine>(latch, vm, source);
