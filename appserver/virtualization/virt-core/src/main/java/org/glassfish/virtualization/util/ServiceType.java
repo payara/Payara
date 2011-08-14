@@ -54,6 +54,13 @@ public class ServiceType extends ValueBasedTemplateIndex {
 
     private Type value;
 
+    public ServiceType() {
+    }
+
+    public ServiceType(String typeValue) {
+        this.value = Type.valueOf(typeValue);
+    }
+
     protected Type getValue() {
         return value;
     }

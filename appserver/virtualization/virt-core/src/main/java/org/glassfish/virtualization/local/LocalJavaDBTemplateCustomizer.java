@@ -38,37 +38,52 @@
  * holder.
  */
 
-package org.glassfish.virtualization.spi;
+package org.glassfish.virtualization.local;
 
+import com.sun.enterprise.util.ExecException;
+import com.sun.enterprise.util.ProcessExecutor;
+import org.glassfish.api.ActionReport;
+import org.glassfish.hk2.Services;
 import org.glassfish.virtualization.config.Template;
 import org.glassfish.virtualization.runtime.VirtualCluster;
-import org.glassfish.virtualization.util.VirtualizationType;
-import org.jvnet.hk2.annotations.Contract;
+import org.glassfish.virtualization.spi.TemplateCustomizer;
+import org.glassfish.virtualization.spi.VirtException;
+import org.glassfish.virtualization.spi.VirtualMachine;
+import org.glassfish.virtualization.util.RuntimeContext;
+import org.jvnet.hk2.annotations.Inject;
+import org.jvnet.hk2.annotations.Service;
 
 /**
- * A template customizer is responsible for customizing a virtual
- * machine for a particular template service type.
+ * Very simplistic database customizer that does not handle port, etc...
  */
-@Contract
-public interface TemplateCustomizer {
+@Service(name="Native-Database")
+public class LocalJavaDBTemplateCustomizer implements TemplateCustomizer {
 
-    /**
-     * Customize the template instance running within the passed
-     * {@link VirtualMachine} instance for a particular use (like a
-     * GlassFish instance, or a database).
-     *
-     * @param cluster the virtual cluster runtime information
-     * @param virtualMachine the instantiated template's virtual machine
-     * @throws VirtException if the customization cannot be achieved
-     */
-    void customize(VirtualCluster cluster, VirtualMachine virtualMachine) throws VirtException;
+    @Inject
+    Services services;
 
-    /**
-     * Clean the current virtual machine information from this process's
-     * configuration.
-     *
-     * @param virtualMachine the virtual machine instance to remove from our
-     * configuration.
-     */
-    void clean(VirtualMachine virtualMachine);
+    @Override
+    public void customize(VirtualCluster cluster, VirtualMachine virtualMachine) throws VirtException {
+        ActionReport report = services.forContract(ActionReport.class).named("plain").get();
+       // this line below needs to come from the template...
+        String[] args = {"asadmin" , "start-database"};
+        ProcessExecutor processExecutor = new ProcessExecutor(args);
+        try {
+            processExecutor.execute();
+        } catch (ExecException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
+    }
+
+    @Override
+    public void clean(VirtualMachine virtualMachine) {
+        ActionReport report = services.forContract(ActionReport.class).named("plain").get();
+        String[] args = {"asadmin" , "stop-database"};
+        ProcessExecutor processExecutor = new ProcessExecutor(args);
+        try {
+            processExecutor.execute();
+        } catch (ExecException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
+    }
 }

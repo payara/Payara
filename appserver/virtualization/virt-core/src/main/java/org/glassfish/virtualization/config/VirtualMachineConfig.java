@@ -46,6 +46,8 @@ import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.Configured;
 
+import javax.validation.constraints.NotNull;
+
 /**
  * Persisted information about created virtual machine
  * @author Jerome Dochez
@@ -53,7 +55,8 @@ import org.jvnet.hk2.config.Configured;
 @Configured
 public interface VirtualMachineConfig extends ConfigBeanProxy, ClusterExtension {
 
-    @Attribute
+    @Attribute(required = true)
+    @NotNull
     String getName();
     void setName(String name);
 

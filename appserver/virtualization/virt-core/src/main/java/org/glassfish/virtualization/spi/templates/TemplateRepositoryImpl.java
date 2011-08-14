@@ -73,8 +73,10 @@ public class TemplateRepositoryImpl implements TemplateRepository {
     public TemplateRepositoryImpl(@Inject Services services, @Inject Virtualizations virts) {
         location = new File(virts.getTemplatesLocation());
         this.services = services;
-        for (Template template : virts.getTemplates()) {
-            templates.add(new TemplateInstanceImpl(services, template));
+        if (virts !=null) {
+            for (Template template : virts.getTemplates()) {
+                templates.add(new TemplateInstanceImpl(services, template));
+            }
         }
     }
 

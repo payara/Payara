@@ -394,7 +394,10 @@ public interface Cluster extends ConfigBeanProxy, Injectable, PropertyBag, Named
     void deleteResourceRef(String refName) throws TransactionFailure;
 
     @DuckTyped
-    <T> List<T> getExtensionsByType(Class<T> type);
+    <T extends ClusterExtension> List<T> getExtensionsByType(Class<T> type);
+
+    @DuckTyped
+    <T extends ClusterExtension> T getExtensionsByTypeAndName(Class<T> type, String name);
 
     class Duck {
         public static boolean isCluster(Cluster me) { return true; }
@@ -497,6 +500,19 @@ public interface Cluster extends ConfigBeanProxy, Injectable, PropertyBag, Named
             return extensions;
         }
 
+        public static <T extends ClusterExtension> T getExtensionsByTypeAndName(Cluster cluster, Class<T> type, String name) {
+            for (ClusterExtension ce : cluster.getExtensions()) {
+                try {
+                    type.cast(ce);
+                    if (ce.getName().equals(name)) {
+                        return type.cast(ce);
+                    }
+                } catch (ClassCastException e) {
+                    // ignore, not the right type
+                }
+            }
+            return null;
+        }
     }
 
     @Service

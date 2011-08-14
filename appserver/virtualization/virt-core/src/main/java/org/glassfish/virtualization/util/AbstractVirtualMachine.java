@@ -38,37 +38,39 @@
  * holder.
  */
 
-package org.glassfish.virtualization.spi;
+package org.glassfish.virtualization.util;
 
-import org.glassfish.virtualization.config.Template;
-import org.glassfish.virtualization.runtime.VirtualCluster;
-import org.glassfish.virtualization.util.VirtualizationType;
-import org.jvnet.hk2.annotations.Contract;
+import org.glassfish.virtualization.spi.VMUser;
+import org.glassfish.virtualization.spi.VirtualMachine;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
- * A template customizer is responsible for customizing a virtual
- * machine for a particular template service type.
+ * Common behaviors of a {@link VirtualMachine} implementation
+ * @author Jerome Dochez
  */
-@Contract
-public interface TemplateCustomizer {
+public abstract class AbstractVirtualMachine implements VirtualMachine {
 
-    /**
-     * Customize the template instance running within the passed
-     * {@link VirtualMachine} instance for a particular use (like a
-     * GlassFish instance, or a database).
-     *
-     * @param cluster the virtual cluster runtime information
-     * @param virtualMachine the instantiated template's virtual machine
-     * @throws VirtException if the customization cannot be achieved
-     */
-    void customize(VirtualCluster cluster, VirtualMachine virtualMachine) throws VirtException;
+    VMUser user;
+    Map<PropertyName, String> properties = new HashMap<PropertyName, String>();
 
-    /**
-     * Clean the current virtual machine information from this process's
-     * configuration.
-     *
-     * @param virtualMachine the virtual machine instance to remove from our
-     * configuration.
-     */
-    void clean(VirtualMachine virtualMachine);
+    public void setUser(VMUser user) {
+        this.user = user;
+    }
+
+    @Override
+    public VMUser getUser() {
+        return user;
+    }
+
+    @Override
+    public void setProperty(PropertyName name, String value) {
+        properties.put(name, value);
+    }
+
+    @Override
+    public String getProperty(PropertyName name) {
+        return properties.get(name);
+    }
 }

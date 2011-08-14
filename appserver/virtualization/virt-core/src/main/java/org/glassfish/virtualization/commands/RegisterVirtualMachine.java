@@ -40,12 +40,18 @@
  */
 package org.glassfish.virtualization.commands;
 
-import org.glassfish.api.ActionReport;
+import com.sun.enterprise.config.serverbeans.Cluster;
+import com.sun.enterprise.config.serverbeans.Domain;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.CommandLock;
+import org.glassfish.virtualization.config.Template;
+import org.glassfish.virtualization.config.VirtualMachineConfig;
+import org.glassfish.virtualization.runtime.VirtualCluster;
+import org.glassfish.virtualization.runtime.VirtualClusters;
 import org.glassfish.virtualization.spi.*;
+import org.glassfish.virtualization.spi.VMUser;
 import org.glassfish.virtualization.util.RuntimeContext;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
@@ -92,7 +98,16 @@ public class RegisterVirtualMachine implements AdminCommand {
     IAAS groups;
 
     @Inject
+    Domain domain;
+
+    @Inject
     RuntimeContext rtContext;
+
+    @Inject
+    TemplateRepository templateRepository;
+
+    @Inject
+    VirtualClusters virtualClusters;
 
     @Override
     public void execute(AdminCommandContext context) {
@@ -109,23 +124,13 @@ public class RegisterVirtualMachine implements AdminCommand {
             VirtualMachine vm = targetGroup.vmByName(virtualMachine);
             if (vm!=null) {
                 vm.setAddress(address);
-                ActionReport report = context.getActionReport();
-                // Node name is group_machine_virtualMachine;
-                final String vmName = group + "_" + machine + "_" + virtualMachine;
-                if (!notssh) { //default, i.e ssh = true
-                    // create-node-ssh --nodehost $ip_address --installdir $GLASSFISH_HOME $node_name
-                    rtContext.executeAdminCommand(report, "create-node-ssh", vmName, "nodehost", address,
-                            "sshUser", sshUser, "installdir", installDir);
-
-                    if (report.hasFailures()) {
-                        return;
-                    }
-                    rtContext.executeAdminCommand(report, "create-instance", vmName + "Instance", "node", vmName,
-                            "cluster", cluster);
-                } else { //JRVE case, we jsut need a call to _create-node-implicit
-                    rtContext.executeAdminCommand(report, "_create-node-implicit", address, "name", vmName,
-                            "installdir", installDir);
-                }
+                vm.setUser(new VMUser(sshUser, VMUser.ConnectionType.SSH));
+                vm.setProperty(VirtualMachine.PropertyName.INSTALL_DIR, installDir);
+                Cluster clusterConfig = domain.getClusterNamed(cluster);
+                VirtualMachineConfig vmConfig = clusterConfig.getExtensionsByTypeAndName(VirtualMachineConfig.class, vm.getName());
+                Template template = vmConfig.getTemplate();
+                VirtualCluster virtualCluster = virtualClusters.byName(cluster);
+                templateRepository.byName(template.getName()).getCustomizer().customize(virtualCluster, vm);
             }
         } catch(VirtException e) {
             RuntimeContext.logger.log(Level.SEVERE, e.getMessage(),e);

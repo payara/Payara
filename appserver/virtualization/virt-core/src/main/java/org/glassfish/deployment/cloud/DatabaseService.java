@@ -38,17 +38,15 @@
  * holder.
  */
 
-package org.glassfish.virtualization.spi;
+package org.glassfish.deployment.cloud;
 
-import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.config.Configured;
 
 /**
- * Created by IntelliJ IDEA.
- * User: dochez
- * Date: 4/19/11
- * Time: 3:32 PM
- * To change this template use File | Settings | File Templates.
+ * database service configuration
+ * @author Jerome Dochez
  */
-@Service
-public interface ServiceType {
+@Configured(name="database-service")
+public interface DatabaseService extends CloudService {
+    // no config so far :P
 }

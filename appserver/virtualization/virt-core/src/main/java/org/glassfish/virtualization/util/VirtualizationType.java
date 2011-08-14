@@ -50,9 +50,16 @@ import org.jvnet.hk2.annotations.Service;
 @Service(name="VirtualizationType")
 public class VirtualizationType extends ValueBasedTemplateIndex {
 
-    public enum Type {KVM, OVM, VB, Native, Xen}
+    public enum Type {libvirt, OVM, VB, Native}
 
     Type value;
+
+    public VirtualizationType() {
+    }
+
+    public VirtualizationType(String typeValue) {
+        value = Type.valueOf(typeValue);
+    }
 
     @Override
     public Type getValue() {

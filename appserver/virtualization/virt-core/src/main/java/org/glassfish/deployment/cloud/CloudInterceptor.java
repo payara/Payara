@@ -44,7 +44,13 @@ import org.glassfish.api.ActionReport;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.deployment.admin.DeployCommand;
+import org.glassfish.hk2.Services;
+import org.glassfish.virtualization.runtime.VirtualCluster;
+import org.glassfish.virtualization.runtime.VirtualClusters;
+import org.glassfish.virtualization.spi.*;
 import org.glassfish.virtualization.util.RuntimeContext;
+import org.glassfish.virtualization.util.ServiceType;
+import org.glassfish.virtualization.util.VirtualizationType;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
@@ -78,6 +84,14 @@ public class CloudInterceptor implements DeployCommand.Interceptor {
     @Inject(name="plain")
     ActionReport actionReport;
 
+    @Inject
+    Services services;
+
+    @Inject
+    IAAS iaas;
+
+    @Inject
+    VirtualClusters virtualClusters;
 
     @Override
     public void intercept(DeployCommand command, DeploymentContext context) {
@@ -94,7 +108,27 @@ public class CloudInterceptor implements DeployCommand.Interceptor {
                         rtContext.executeAdminCommand(actionReport, "create-virtual-cluster", command.name(), "min", javaEE.getMinInstances());
                         clusterCreated = !actionReport.hasFailures();
                         command.target = command.name();
+                    } else if (cloudService instanceof DatabaseService) {
+                        try {
+                            VirtualCluster virtualCluster = virtualClusters.byName(command.name());
+                            for (ServerPool serverPool : iaas) {
+                                String virtTypeName = serverPool.getConfig().getVirtualization().getName();
+                                VirtualizationType virtType = new VirtualizationType(virtTypeName);
+                                ServiceType serviceType = new ServiceType("Database");
+                                TemplateRepository templateRepository = services.forContract(TemplateRepository.class).get();
+                                for (TemplateInstance ti : templateRepository.all()) {
+                                    if (ti.satisfies(virtType) && (ti.satisfies(serviceType))) {
+                                        VMOrder vmOrder = new VMOrder(ti, virtualCluster );
+                                        iaas.allocate(vmOrder, null);
+                                    }
+                                }
+
+                            }
+                        } catch (VirtException e) {
+                            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                        }
                     }
+
                 }
             }
         } catch(IOException e) {

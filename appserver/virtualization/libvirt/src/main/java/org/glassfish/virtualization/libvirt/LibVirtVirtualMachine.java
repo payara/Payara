@@ -39,21 +39,27 @@
  */
 package org.glassfish.virtualization.libvirt;
 
+import org.glassfish.cluster.ssh.launcher.SSHLauncher;
 import org.glassfish.virtualization.libvirt.jna.Domain;
 import org.glassfish.virtualization.libvirt.jna.DomainInfo;
 import org.glassfish.virtualization.spi.*;
+import org.glassfish.virtualization.util.AbstractVirtualMachine;
 import org.glassfish.virtualization.util.RuntimeContext;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Representation of a virtual machine in the libvirt world.
  *
  * @author Jerome Dochez
  */
-public class LibVirtVirtualMachine implements VirtualMachine {
+public class LibVirtVirtualMachine extends AbstractVirtualMachine {
 
     final private Machine owner;
     final Domain domain;
@@ -216,5 +222,22 @@ public class LibVirtVirtualMachine implements VirtualMachine {
     @Override
     public Machine getMachine() {
         return owner;
+    }
+
+    @Override
+    public String executeOn(String[] args) throws IOException, InterruptedException {
+        SSHLauncher sshLauncher = new SSHLauncher();
+        File home = new File(System.getProperty("user.home"));
+        String keyFile = new File(home,".ssh/id_dsa").getAbsolutePath();
+        sshLauncher.init(getUser().getUserId(), address, 22, null, keyFile, null, Logger.getAnonymousLogger());
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        StringBuilder stringBuilder = new StringBuilder();
+        for (String arg : args) {
+            stringBuilder.append(arg);
+            stringBuilder.append(" ");
+        }
+        sshLauncher.runCommand(stringBuilder.toString().trim(), baos);
+        return baos.toString();
+
     }
 }

@@ -40,11 +40,15 @@
 
 package org.glassfish.virtualization.spi;
 
+import java.io.IOException;
+
 /**
  * Defines a Virtual machine
  * @author Jerome Dochez
  */
 public interface VirtualMachine {
+
+    public enum PropertyName { INSTALL_DIR };
 
     /**
      * Returns the machine's name
@@ -120,5 +124,34 @@ public interface VirtualMachine {
      */
     Machine getMachine();
 
+    /**
+     * Returns the user used to run software in this virtual machine
+     * @return the virtual machine user
+     */
+    VMUser getUser();
 
+    /**
+     * Sets the user running sofware on this virtual machine instance
+     *
+     * @param user the vm user.
+     */
+    void setUser(VMUser user);
+
+    /**
+     * Sets a {@link PropertyName} property on this virtual machine instance.
+     *
+     * @param name the property name
+     * @param value the property value
+     */
+    void setProperty(PropertyName name, String value);
+
+    /**
+     * Gets a property value by its name as defined in {@link PropertyName}
+     * @param name the requested property name.
+     * @return the property value if found, or null if not found.
+     */
+    String getProperty(PropertyName name);
+
+
+    String executeOn(String[] args) throws IOException, InterruptedException;
 }

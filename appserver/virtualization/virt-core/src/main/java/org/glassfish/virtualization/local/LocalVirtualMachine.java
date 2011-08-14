@@ -43,8 +43,10 @@ package org.glassfish.virtualization.local;
 import com.sun.enterprise.util.ExecException;
 import com.sun.enterprise.util.ProcessExecutor;
 import org.glassfish.virtualization.spi.*;
+import org.glassfish.virtualization.util.AbstractVirtualMachine;
 import org.glassfish.virtualization.util.RuntimeContext;
 
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
@@ -56,7 +58,7 @@ import java.util.logging.Level;
  *
  * @author Jerome Dochez
  */
-class LocalVirtualMachine implements VirtualMachine {
+class LocalVirtualMachine extends AbstractVirtualMachine {
 
     final String vmName;
     final Machine machine;
@@ -142,5 +144,20 @@ class LocalVirtualMachine implements VirtualMachine {
     @Override
     public Machine getMachine() {
         return machine;
+    }
+
+    @Override
+    public String executeOn(String[] args) throws IOException, InterruptedException {
+        ProcessExecutor processExecutor = new ProcessExecutor(args);
+        try {
+            String[] returnLines = processExecutor.execute(true);
+            StringBuffer stringBuffer = new StringBuffer();
+            for (String returnLine : returnLines) {
+                stringBuffer.append(returnLine);
+            }
+            return stringBuffer.toString();
+        } catch (ExecException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

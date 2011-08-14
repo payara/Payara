@@ -57,7 +57,7 @@ import org.jvnet.hk2.annotations.Service;
  * Customization of the KVM GlassFish template
  * @author Jerome Dochez
  */
-@Service(name="KVM-JavaEE")
+@Service(name="libvirt-JavaEE")
 public class GlassFishTemplateCustomizer implements TemplateCustomizer {
 
     @Inject
@@ -71,6 +71,19 @@ public class GlassFishTemplateCustomizer implements TemplateCustomizer {
 
     @Override
     public void customize(VirtualCluster cluster, VirtualMachine virtualMachine) throws VirtException {
+        ActionReport report = services.forContract(ActionReport.class).named("plain").get();
+        final String nodeName = virtualMachine.getServerPool().getName() + "_" +
+                virtualMachine.getMachine().getName() + "_" + virtualMachine.getName();
+        // create-node-ssh --nodehost $ip_address --installdir $GLASSFISH_HOME $node_name
+        String installDir = virtualMachine.getProperty(VirtualMachine.PropertyName.INSTALL_DIR);
+        rtContext.executeAdminCommand(report, "create-node-ssh", nodeName, "nodehost", virtualMachine.getAddress(),
+                "sshUser", virtualMachine.getUser().getUserId(), "installdir", installDir);
+
+        if (report.hasFailures()) {
+            return;
+        }
+        rtContext.executeAdminCommand(report, "create-instance", nodeName + "Instance", "node", nodeName,
+                "cluster", cluster.getConfig().getName());
 
     }
 

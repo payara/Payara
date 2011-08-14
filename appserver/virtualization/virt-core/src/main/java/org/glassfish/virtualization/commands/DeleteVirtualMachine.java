@@ -93,7 +93,7 @@ public class DeleteVirtualMachine implements AdminCommand {
 
     }
 
-    public void deleteServerRef(AdminCommandContext context, ServerRef serverRef) {
+    private void deleteServerRef(AdminCommandContext context, ServerRef serverRef) {
 
         String instanceName = serverRef.getRef();
         Server instance = domain.getServerNamed(instanceName);
