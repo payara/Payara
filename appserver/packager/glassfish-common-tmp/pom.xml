@@ -120,26 +120,9 @@
            <version>${project.version}</version>
            <type>distribution-fragment</type>
        </dependency>
-       <dependency>
-            <groupId>org.glassfish.extras</groupId>
-            <artifactId>osgi-container</artifactId>
-            <version>${project.version}</version>
-        </dependency>	
-        <dependency>
-    	    <groupId>org.glassfish.grizzly</groupId>
-            <artifactId>glassfish-grizzly-container</artifactId>
-            <version>${project.version}</version>
-        </dependency>
         <dependency>
     	    <groupId>org.glassfish.admin</groupId>
             <artifactId>monitoring-core</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <!-- hopefully temporary - need transaction-internal-api since
-             connectors-internal-api is getting moved out -->
-        <dependency>
-            <groupId>org.glassfish.transaction</groupId>
-            <artifactId>transaction-internal-api</artifactId>
             <version>${project.version}</version>
         </dependency>
      <!-- moving from glassfish-amx package -->       
@@ -148,28 +131,7 @@
             <artifactId>amx-all</artifactId>
             <version>${project.version}</version>
         </dependency>
-
-   <!--  moving stuff from killed glassfish-deployment package -->
-        <dependency>
-            <groupId>org.glassfish.deployment</groupId>
-            <artifactId>deployment-common</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.deployment</groupId>
-            <artifactId>dol</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-    	<dependency>
-            <groupId>org.glassfish.deployment</groupId>
-            <artifactId>deployment-autodeploy</artifactId>
-            <version>${project.version}</version>
-      	</dependency>
-    	<dependency>
-            <groupId>org.glassfish.deployment</groupId>
-            <artifactId>deployment-admin</artifactId>
-            <version>${project.version}</version>
-        </dependency>
+ 
         <!-- moving stuff from killed glassfish-security package -->
         <dependency>
             <groupId>org.glassfish.security</groupId>
@@ -181,27 +143,14 @@
             <artifactId>ant</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <!-- HA API  -->
-       <dependency>
-           <groupId>org.glassfish.ha</groupId>
-           <artifactId>ha-api</artifactId>
-       </dependency>     
+ 
         <!-- gms-bootstrap module -->
        <dependency>
             <groupId>org.glassfish.cluster</groupId>
             <artifactId>gms-bootstrap</artifactId>
             <version>${project.version}</version>
        </dependency>
-        <!-- Shared OSGi support for Java EE -->
-       <dependency>
-            <groupId>org.glassfish.fighterfish</groupId>
-            <artifactId>osgi-javaee-base</artifactId>
-        </dependency>
-<!-- disabling due to config bean changes for jdbc and connector resources -->
-<!--       <dependency>
-            <groupId>org.glassfish.fighterfish</groupId>
-            <artifactId>osgi-ee-resources</artifactId>
-        </dependency>-->
+ 
         <!-- schema2beans - both CMP and LB admin now depend on it -->
         <dependency>
             <groupId>org.glassfish.external</groupId>

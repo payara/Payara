@@ -60,6 +60,11 @@
               dest="target/stage/${install.dir.name}/glassfish"
               overwrite="true"/>          
 
+       <mkdir dir="target/stage/${install.dir.name}/glassfish/modules/autostart"/>
+
+       <move file="target/stage/${install.dir.name}/glassfish/modules/osgi-javaee-base.jar" todir="target/stage/${install.dir.name}/glassfish/modules/autostart" failonerror="false"/>
+<!-- disabling due to config bean changes of jdbc and connector resources -->
+<!--      <move file="target/stage/${install.dir.name}/glassfish/modules/osgi-ee-resources.jar" todir="target/stage/${install.dir.name}/glassfish/modules/autostart" failonerror="false"/>-->
   
        <if test="${compression}">
 	       <antcall target="pack.compression" />

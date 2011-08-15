@@ -125,6 +125,11 @@
             <version>${project.version}</version>
     	</dependency>
         <dependency>
+            <groupId>org.glassfish.deployment</groupId>
+            <artifactId>dol</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.glassfish.admin</groupId>
             <artifactId>cli-optional</artifactId>
             <version>${project.version}</version>
@@ -149,6 +154,31 @@
              <artifactId>orb-connector</artifactId>
              <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.glassfish.extras</groupId>
+            <artifactId>osgi-container</artifactId>
+            <version>${project.version}</version>
+        </dependency>	
+        <dependency>
+    	    <groupId>org.glassfish.grizzly</groupId>
+            <artifactId>glassfish-grizzly-container</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <!-- Shared OSGi support for Java EE -->
+       <dependency>
+            <groupId>org.glassfish.fighterfish</groupId>
+            <artifactId>osgi-javaee-base</artifactId>
+        </dependency>
+<!-- disabling due to config bean changes for jdbc and connector resources -->
+<!--       <dependency>
+            <groupId>org.glassfish.fighterfish</groupId>
+            <artifactId>osgi-ee-resources</artifactId>
+        </dependency>-->
+        <!-- HA API  -->
+        <dependency>
+            <groupId>org.glassfish.ha</groupId>
+            <artifactId>ha-api</artifactId>
+        </dependency>    
         <dependency>
            <groupId>org.glassfish.ha</groupId>
            <artifactId>ha-file-store</artifactId>
