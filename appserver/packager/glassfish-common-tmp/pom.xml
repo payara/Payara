@@ -98,11 +98,7 @@
         <!--
           modules to be included in this bundle
         -->       
-      <dependency>
-           <groupId>org.glassfish.common</groupId>
-           <artifactId>annotation-framework</artifactId>
-           <version>${project.version}</version>
-       </dependency>
+
         <dependency>
            <groupId>org.glassfish.common</groupId>
            <artifactId>glassfish-naming</artifactId>

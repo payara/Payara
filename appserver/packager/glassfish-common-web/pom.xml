@@ -111,6 +111,11 @@
         </dependency>
         <dependency>
            <groupId>org.glassfish.common</groupId>
+           <artifactId>annotation-framework</artifactId>
+           <version>${project.version}</version>
+       </dependency>
+        <dependency>
+           <groupId>org.glassfish.common</groupId>
            <artifactId>container-common</artifactId>
            <version>${project.version}</version>
         </dependency>

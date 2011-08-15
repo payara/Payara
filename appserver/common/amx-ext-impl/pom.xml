@@ -102,6 +102,7 @@
             <groupId>org.glassfish.deployment</groupId>
             <artifactId>dol</artifactId>
             <version>${project.parent.version}</version>
+            <scope>provided</scope>
         </dependency>
 
         
