@@ -173,14 +173,6 @@ public class AMXConfigImpl extends AMXImplBase
             final ObjectName parentObjectName,
             final ConfigBean configBean)
     {
-        this(parentObjectName, AMXConfigProxy.class, configBean);
-    }
-
-    public AMXConfigImpl(
-            final ObjectName parentObjectName,
-            final Class<? extends AMXProxy> theInterface,
-            final ConfigBean configBean)
-    {
         super(parentObjectName, createMBeanInfo(configBean));
 
         mConfigBean = configBean;

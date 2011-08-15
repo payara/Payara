@@ -59,6 +59,7 @@ import org.glassfish.admin.amx.impl.util.ObjectNameBuilder;
 import org.glassfish.admin.amx.j2ee.J2EEDomain;
 import org.glassfish.admin.amx.j2ee.J2EETypes;
 import org.glassfish.admin.amx.util.FeatureAvailability;
+import org.glassfish.api.amx.AMXLoader;
 import org.glassfish.internal.data.ApplicationRegistry;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
@@ -83,7 +84,7 @@ import java.util.logging.Logger;
 public final class AMXJ2EEStartupService
         implements org.jvnet.hk2.component.PostConstruct,
         org.jvnet.hk2.component.PreDestroy,
-        AMXJ2EEStartupServiceMBean, ConfigListener {
+        AMXLoader, ConfigListener {
 
     private static void debug(final String s) {
         System.out.println(s);
@@ -121,19 +122,7 @@ public final class AMXJ2EEStartupService
     }
 
     public void postConstruct() {
-        try {
-            /*
-                    final StandardMBean mbean = new StandardMBean(this, AMXJ2EEStartupServiceMBean.class);
-                    mMBeanServer.registerMBean( mbean, OBJECT_NAME );
-                    */
-            mMBeanServer.registerMBean(this, OBJECT_NAME);
-
-            addListenerToServer();
-        }
-        catch (JMException e) {
-            throw new Error(e);
-        }
-        //debug( "AMXJ2EEStartupService.postConstruct(): registered: " + OBJECT_NAME);
+        addListenerToServer();
     }
 
     private void addListenerToServer() {

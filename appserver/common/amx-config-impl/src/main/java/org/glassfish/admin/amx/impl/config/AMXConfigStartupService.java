@@ -63,6 +63,7 @@ import org.glassfish.admin.amx.impl.util.InjectedValues;
 
 import org.glassfish.admin.amx.util.FeatureAvailability;
 import org.glassfish.admin.mbeanserver.PendingConfigBeans;
+import org.glassfish.api.amx.AMXLoader;
 import org.jvnet.hk2.config.Transactions;
 
 /**
@@ -74,7 +75,7 @@ triggered is not yet clear.
 public final class AMXConfigStartupService
         implements org.jvnet.hk2.component.PostConstruct,
         org.jvnet.hk2.component.PreDestroy,
-        AMXConfigStartupServiceMBean {
+        AMXLoader {
 
     private static void debug(final String s) {
         System.out.println(s);
@@ -105,14 +106,7 @@ public final class AMXConfigStartupService
         }
 
         mPendingConfigBeansBackup = mPendingConfigBeans;
-        try {
-            final StandardMBean mbean = new StandardMBean(this, AMXConfigStartupServiceMBean.class);
-            mMBeanServer.registerMBean(mbean, OBJECT_NAME);
-        } catch (JMException e) {
-            throw new Error(e);
-        }
-        //debug( "AMXStartupService.postConstruct(): registered: " + OBJECT_NAME);
-        ImplUtil.getLogger().fine("Initialized AMXConfig Startup service in " + delta.elapsedMillis() + " ms, registered as " + OBJECT_NAME);
+        ImplUtil.getLogger().fine("Initialized AMXConfig Startup service in " + delta.elapsedMillis() + " ms");
     }
 
     public void preDestroy() {

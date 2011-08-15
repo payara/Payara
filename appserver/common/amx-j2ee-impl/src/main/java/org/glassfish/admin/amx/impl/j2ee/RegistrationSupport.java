@@ -55,7 +55,6 @@ import com.sun.enterprise.deployment.io.DeploymentDescriptorFile;
 import com.sun.logging.LogDomains;
 import org.glassfish.admin.amx.config.AMXConfigProxy;
 import org.glassfish.admin.amx.core.Util;
-import org.glassfish.admin.amx.core.proxy.ProxyFactory;
 import org.glassfish.admin.amx.impl.config.ConfigBeanRegistry;
 import org.glassfish.admin.amx.impl.j2ee.loader.J2EEInjectedValues;
 import org.glassfish.admin.amx.impl.util.InjectedValues;
@@ -101,8 +100,6 @@ final class RegistrationSupport
 
     private final MBeanServer mMBeanServer;
 
-    private final ProxyFactory mProxyFactory;
-
     private final RefListener mResourceRefListener;
 
     /** The Server config for this J2EEServer */
@@ -120,7 +117,6 @@ final class RegistrationSupport
     {
         mJ2EEServer = server;
         mMBeanServer = (MBeanServer) server.extra().mbeanServerConnection();
-        mProxyFactory = server.extra().proxyFactory();
 
         mResourceRefType    = Util.deduceType(ResourceRef.class);
         mApplicationRefType = Util.deduceType(ApplicationRef.class);

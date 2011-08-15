@@ -55,11 +55,11 @@ import org.glassfish.admin.amx.base.Realms;
 import org.glassfish.admin.amx.base.RuntimeRoot;
 import org.glassfish.admin.amx.logging.Logging;
 import org.glassfish.admin.amx.config.AMXConfigConstants;
-import org.glassfish.admin.amx.impl.config.AMXExtStartupServiceMBean;
 import org.glassfish.admin.amx.impl.mbean.AMXImplBase;
 import org.glassfish.admin.amx.impl.util.InjectedValues;
 import org.glassfish.admin.amx.impl.util.ObjectNameBuilder;
 import org.glassfish.admin.amx.util.FeatureAvailability;
+import org.glassfish.api.amx.AMXLoader;
 
 /**
 Startup service that loads support for AMX config MBeans.  How this is to be
@@ -69,7 +69,7 @@ triggered is not yet clear.
 public final class AMXExtStartupService
         implements org.jvnet.hk2.component.PostConstruct,
         org.jvnet.hk2.component.PreDestroy,
-        AMXExtStartupServiceMBean
+        AMXLoader
 {
     private static void debug(final String s)
     {
@@ -90,15 +90,6 @@ public final class AMXExtStartupService
 
     public void postConstruct()
     {
-        try
-        {
-            final StandardMBean mbean = new StandardMBean(this, AMXExtStartupServiceMBean.class);
-            mMBeanServer.registerMBean(mbean, OBJECT_NAME);
-        }
-        catch (JMException e)
-        {
-            throw new Error(e);
-        }
     }
 
     public void preDestroy()

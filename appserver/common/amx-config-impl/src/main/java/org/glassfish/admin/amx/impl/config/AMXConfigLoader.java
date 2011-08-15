@@ -39,13 +39,14 @@
  */
 package org.glassfish.admin.amx.impl.config;
 
+import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.logging.LogDomains;
 import org.glassfish.admin.amx.base.DomainRoot;
 import org.glassfish.admin.amx.config.AMXConfigConstants;
 import org.glassfish.admin.amx.core.Util;
-import org.glassfish.admin.amx.core.proxy.ProxyFactory;
 import org.glassfish.admin.amx.impl.mbean.MBeanImplBase;
 import org.glassfish.admin.amx.impl.util.ImplUtil;
+import org.glassfish.admin.amx.impl.util.InjectedValues;
 import org.glassfish.admin.amx.impl.util.ObjectNameBuilder;
 import org.glassfish.admin.amx.impl.util.SingletonEnforcer;
 import org.glassfish.admin.amx.util.ExceptionUtil;
@@ -72,12 +73,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
-Responsible for loading AMXConfigProxy MBeans
+Responsible for loading ConfigBeanProxy MBeans (com.sun.enterprise.config.serverbeans.*)
  * @author llc
  */
 @Taxonomy(stability = Stability.NOT_AN_INTERFACE)
-public final class AMXConfigLoader extends MBeanImplBase
-        implements AMXConfigLoaderMBean, TransactionListener {
+public final class AMXConfigLoader 
+        implements TransactionListener {
 
     private static void debug(final String s) {
         System.out.println(s);
@@ -87,16 +88,17 @@ public final class AMXConfigLoader extends MBeanImplBase
     private final Logger mLogger = LogDomains.getLogger(AMXConfigLoader.class, LogDomains.AMX_LOGGER);
     private final PendingConfigBeans mPendingConfigBeans;
     private final ConfigBeanRegistry mRegistry = ConfigBeanRegistry.getInstance();
-
+    private final MBeanServer mServer;
+    
     public AMXConfigLoader(
             final MBeanServer mbeanServer,
             final PendingConfigBeans pending,
             final Transactions transactions) {
-        super(mbeanServer);
         if (transactions == null) {
             throw new IllegalStateException("AMXConfigLoader.AMXConfigLoader: null Transactions");
         }
 
+        mServer = mbeanServer;
         mTransactions = transactions;
         mPendingConfigBeans = pending;
     }
@@ -247,33 +249,11 @@ public final class AMXConfigLoader extends MBeanImplBase
         // not interested...
     }
 
-    @Override
-    protected void postRegisterHook(Boolean registrationDone) {
-        super.postRegisterHook(registrationDone);
-
-        if (registrationDone.booleanValue()) {
-            mPendingConfigBeans.swapTransactionListener(this);
-        }
-    }
-
     public void handleNotification(final Notification notif, final Object handback) {
     }
 
-    @Override
-    protected void postDeregisterHook() {
-        super.postDeregisterHook();
-        mTransactions.removeTransactionsListener(this);
-    }
-
     public void stop() {
-        final ObjectName objectName = JMXUtil.newObjectName(AMXGlassfish.DEFAULT.amxSupportDomain(), "type=AMXConfigLoader");
-        try {
-            mServer.unregisterMBean(objectName);
-            //debug( "AMXConfigLoader.start(): registered self as " + objectName );
-        } catch (final Exception e) {
-            mLogger.log(Level.SEVERE, "Can't register AMXConfigLoader ", e);
-            throw new RuntimeException(e);
-        }
+        mTransactions.removeTransactionsListener(this);
         SingletonEnforcer.deregister(AMXConfigLoader.class, this);
     }
 
@@ -375,15 +355,7 @@ public final class AMXConfigLoader extends MBeanImplBase
             mLoaderThread.setDaemon(true);
             mLoaderThread.start();
 
-            // Make the listener start listening
-            final ObjectName objectName = JMXUtil.newObjectName(AMXGlassfish.DEFAULT.amxSupportDomain(), "type=AMXConfigLoader");
-            try {
-                mServer.registerMBean(this, objectName);
-                //debug( "AMXConfigLoader.start(): registered self as " + objectName );
-            } catch (final Exception e) {
-                mLogger.log(Level.SEVERE, "Can't register AMXConfigLoader ", e);
-                throw new RuntimeException(e);
-            }
+            mPendingConfigBeans.swapTransactionListener(this);
             SingletonEnforcer.register(AMXConfigLoader.class, this);
 
             // wait until config beans have been loaded as MBeans
@@ -391,9 +363,9 @@ public final class AMXConfigLoader extends MBeanImplBase
 
             // Now the Config subsystem is ready: after the first queue of ConfigBeans are registered as MBeans
             // and after the above MBeans are registered.
-            final ObjectName domainConfig = getDomainRootProxy().getDomain().objectName();
-            mLogger.log(Level.INFO,"amx.domain.config.registered",domainConfig);
-            FeatureAvailability.getInstance().registerFeature(AMXConfigConstants.AMX_CONFIG_READY_FEATURE, domainConfig);
+            final ObjectName domainObjectName = ConfigBeanRegistry.getInstance().getObjectNameForProxy(getDomain());
+            mLogger.log(Level.INFO,"amx.domain.config.registered", domainObjectName);
+            FeatureAvailability.getInstance().registerFeature(AMXConfigConstants.AMX_CONFIG_READY_FEATURE, domainObjectName);
         }
         return null;
     }
@@ -600,9 +572,10 @@ public final class AMXConfigLoader extends MBeanImplBase
         return name;
     }
 
-    private DomainRoot getDomainRootProxy() {
-        return ProxyFactory.getInstance(mServer).getDomainRootProxy(false);
+    public Domain getDomain() {
+    	return InjectedValues.getInstance().getHabitat().getComponent(Domain.class);
     }
+
     private static final AtomicLong sCounter = new AtomicLong(1);
 
     private ObjectName buildObjectName(final ConfigBean cb) {
