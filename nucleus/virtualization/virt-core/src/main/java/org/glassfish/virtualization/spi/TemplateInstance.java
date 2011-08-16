@@ -42,6 +42,8 @@ package org.glassfish.virtualization.spi;
 
 import org.glassfish.virtualization.config.Template;
 
+import java.io.File;
+
 /**
  * Represents a template instance that can be instantiated in a virtual machine
  *
@@ -72,4 +74,11 @@ public interface TemplateInstance {
      * @return the customizer instance.
      */
     TemplateCustomizer getCustomizer();
+
+    /**
+     * Returns the template location where template files were stored.
+     *
+     * @return a local disk location
+     */
+    File getLocation();
 }

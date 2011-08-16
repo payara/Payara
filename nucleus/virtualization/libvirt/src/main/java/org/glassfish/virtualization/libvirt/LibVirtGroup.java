@@ -253,6 +253,30 @@ public class LibVirtGroup implements PhysicalServerPool, ConfigListener {
                 RuntimeContext.logger.log(Level.SEVERE, "Cannot obtain list of virtual machines", e);
             }
         }
+
+        // finally register a listener.
+        Dom.unwrap(config).addListener(new ConfigListener() {
+            @Override
+            public UnprocessedChangeEvents changed(PropertyChangeEvent[] propertyChangeEvents) {
+                return ConfigSupport.sortAndDispatch(propertyChangeEvents, new Changed() {
+                    @Override
+                    public <T extends ConfigBeanProxy> NotProcessed changed(TYPE type, Class<T> tClass, T t) {
+                        if (t instanceof MachineConfig) {
+                            MachineConfig machineConfig = MachineConfig.class.cast(t);
+                            if (type.equals(TYPE.ADD)) {
+                                addMachine(machineConfig, machineConfig.getIpAddress());
+                            }
+                            if (type.equals(TYPE.REMOVE)) {
+                                synchronized (this) {
+                                    machines.remove(machineConfig.getName());
+                                }
+                            }
+                        }
+                        return null;
+                    }
+                }, RuntimeContext.logger);
+            }
+        });
     }
 
 

@@ -168,33 +168,21 @@ public class AddVirtualizationCapabilities implements AdminCommand {
                                 }
                             }, Dom.unwrap(domain));
                             final Virtualizations defaultConfig = document.getRoot().createProxy(Virtualizations.class);
-                            if (virtualizations==null) {
-                                // needs to be changed to join the transaction of instance
-                                ConfigSupport.apply(new SingleConfigCode<Domain>() {
-                                    @Override
-                                    public Object run(Domain wConfig ) throws PropertyVetoException, TransactionFailure {
-                                        wConfig.getExtensions().add(defaultConfig);
-
-                                        return null;
+                            ConfigSupport.apply(new SingleConfigCode<Virtualizations>() {
+                                @Override
+                                public Object run(Virtualizations wVirtualizations) throws PropertyVetoException, TransactionFailure {
+                                    for (Virtualization v : defaultConfig.getVirtualizations()) {
+                                        wVirtualizations.getVirtualizations().add(v);
                                     }
-                                }, domain);
-                            } else {
-                                ConfigSupport.apply(new SingleConfigCode<Virtualizations>() {
-                                    @Override
-                                    public Object run(Virtualizations wVirtualizations) throws PropertyVetoException, TransactionFailure {
-                                        for (Virtualization v : defaultConfig.getVirtualizations()) {
-                                            wVirtualizations.getVirtualizations().add(v);
-                                        }
-                                        for (Template template : defaultConfig.getTemplates()) {
-                                            wVirtualizations.getTemplates().add(template);
-                                        }
-                                        for (ServerPoolConfig serverPoolConfig : defaultConfig.getGroupConfigs()) {
-                                            wVirtualizations.getGroupConfigs().add(serverPoolConfig);
-                                        }
-                                        return null;
+                                    for (Template template : defaultConfig.getTemplates()) {
+                                        wVirtualizations.getTemplates().add(template);
                                     }
-                                }, virtualizations);
-                            }
+                                    for (ServerPoolConfig serverPoolConfig : defaultConfig.getGroupConfigs()) {
+                                        wVirtualizations.getGroupConfigs().add(serverPoolConfig);
+                                    }
+                                    return null;
+                                }
+                            }, virtualizations);
 
                         } catch(Exception e) {
                             logger.log(Level.SEVERE, "Exception while parsing virtualizations.xml", e);

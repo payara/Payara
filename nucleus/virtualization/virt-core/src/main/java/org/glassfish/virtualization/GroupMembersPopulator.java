@@ -43,6 +43,7 @@ package org.glassfish.virtualization;
 
 import org.glassfish.api.Startup;
 import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.hk2.Services;
 import org.glassfish.virtualization.runtime.DefaultAllocationStrategy;
 import org.glassfish.virtualization.runtime.VirtualCluster;
 import org.glassfish.virtualization.spi.*;
@@ -68,20 +69,9 @@ import java.util.logging.Logger;
  *
  */
 @Service
-public class GroupMembersPopulator implements Startup, PostConstruct, IAAS, ConfigListener {
+public class GroupMembersPopulator implements Startup, IAAS, ConfigListener {
 
-    @Inject(optional=true)
-    Virtualizations virtualizations = null;
-
-    @Inject
-    Habitat habitat;
-
-    @Inject
-    ServerEnvironment env;
-
-    @Inject
-    Transactions transactions;
-
+    private final Services services;
     private final Map<String, ServerPool> groups = new HashMap<String, ServerPool>();
     private final Map<String, VirtualCluster> virtualClusterMap = new HashMap<String, VirtualCluster>();
 
@@ -100,10 +90,14 @@ public class GroupMembersPopulator implements Startup, PostConstruct, IAAS, Conf
         return groups.get(groupName);
     }
 
-    @Override
-    public void postConstruct() {
+    public GroupMembersPopulator(@Inject(optional=true) Virtualizations virtualizations,
+                                 @Inject Transactions transactions,
+                                 @Inject ServerEnvironment env,
+                                 @Inject Services services) {
+
+        this.services = services;
         // first executeAndWait the fping command to populate our arp table.
-        transactions.addListenerForType(ServerPoolConfig.class, this);
+        transactions.addListenerForType(Virtualizations.class, this);
         if (virtualizations==null || env.isInstance() ) return;
 
         for (ServerPoolConfig groupConfig : virtualizations.getGroupConfigs()) {
@@ -131,7 +125,7 @@ public class GroupMembersPopulator implements Startup, PostConstruct, IAAS, Conf
 
     private ServerPool processGroupConfig(ServerPoolConfig groupConfig) {
 
-        ServerPool group = habitat.getComponent(ServerPool.class, groupConfig.getVirtualization().getName());
+        ServerPool group = services.forContract(ServerPool.class).named(groupConfig.getVirtualization().getName()).get();
         group.setConfig(groupConfig);
         synchronized (this) {
             groups.put(groupConfig.getName(), group);
@@ -141,23 +135,13 @@ public class GroupMembersPopulator implements Startup, PostConstruct, IAAS, Conf
 
     @Override
     public UnprocessedChangeEvents changed(PropertyChangeEvent[] propertyChangeEvents) {
-        return ConfigSupport.sortAndDispatch(propertyChangeEvents, new Changed() {
-            @Override
-            public <T extends ConfigBeanProxy> NotProcessed changed(TYPE type, Class<T> tClass, T t) {
-                if (t instanceof ServerPoolConfig) {
-                    ServerPoolConfig groupConfig = ServerPoolConfig.class.cast(t);
-                    if (type.equals(TYPE.ADD)) {
-                        processGroupConfig(groupConfig);
-                    }
-                    if (type.equals(TYPE.REMOVE)) {
-                        synchronized (this) {
-                            groups.remove(groupConfig.getName());
-                        }
-                    }
-                }
-                return null;
+        Virtualizations virtualizations = services.forContract(Virtualizations.class).get();
+        for (ServerPoolConfig config : virtualizations.getGroupConfigs()) {
+            if (!groups.containsKey(config.getName())) {
+                processGroupConfig(config);
             }
-        }, Logger.getAnonymousLogger());
+        }
+        return null;
     }
 
     @Override

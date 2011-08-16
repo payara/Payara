@@ -44,11 +44,14 @@ import org.glassfish.hk2.Services;
 import org.glassfish.hk2.inject.Injector;
 import org.glassfish.virtualization.config.Template;
 import org.glassfish.virtualization.config.TemplateIndex;
+import org.glassfish.virtualization.config.Virtualization;
+import org.glassfish.virtualization.config.Virtualizations;
 import org.glassfish.virtualization.spi.TemplateCondition;
 import org.glassfish.virtualization.spi.TemplateCustomizer;
 import org.glassfish.virtualization.spi.TemplateInstance;
 import org.jvnet.hk2.annotations.Inject;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -61,6 +64,7 @@ public class TemplateInstanceImpl implements TemplateInstance {
     final Template config;
     final List<TemplateCondition> indexes = new ArrayList<TemplateCondition>();
     final TemplateCustomizer customizer;
+    final Virtualizations virtualizations;
 
     public TemplateInstanceImpl(Services services, Template config) {
         this.config = config;
@@ -74,6 +78,7 @@ public class TemplateInstanceImpl implements TemplateInstance {
         TemplateIndex virtType = config.byName("VirtualizationType");
         customizer = services.forContract(TemplateCustomizer.class).named(
                         virtType.getValue()+ "-"+serviceType.getValue()).get();
+        virtualizations = services.forContract(Virtualizations.class).get();
     }
 
     @Override
@@ -92,5 +97,10 @@ public class TemplateInstanceImpl implements TemplateInstance {
     @Override
     public TemplateCustomizer getCustomizer() {
         return customizer;
+    }
+
+    @Override
+    public File getLocation() {
+        return new File(virtualizations.getTemplatesLocation(), getConfig().getName());
     }
 }

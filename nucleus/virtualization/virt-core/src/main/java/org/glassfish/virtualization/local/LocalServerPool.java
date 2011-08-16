@@ -41,6 +41,7 @@
 package org.glassfish.virtualization.local;
 
 import com.sun.enterprise.config.serverbeans.Server;
+import org.glassfish.virtualization.config.MachineConfig;
 import org.glassfish.virtualization.config.ServerPoolConfig;
 import org.glassfish.virtualization.config.VirtualMachineRef;
 import org.glassfish.virtualization.runtime.VirtualCluster;
@@ -48,7 +49,9 @@ import org.glassfish.virtualization.spi.*;
 import org.glassfish.virtualization.util.EventSource;
 import org.glassfish.virtualization.util.ListenableFutureImpl;
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.config.*;
 
+import java.beans.PropertyChangeEvent;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
 
