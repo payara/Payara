@@ -358,18 +358,37 @@ public class LruSessionCache
         
         return null;
     }
+    
+    /**
+     * Called by StatefulSessionContainer before passivation to determine whether
+     * or not removal-timeout has elapsed for a cache item.  If so, it will be
+     * directly removed instead of passivated.  See issue 16188.
+     */
+    public boolean eligibleForRemovalFromCache(StatefulEJBContext ctx, Serializable sessionKey) {
+        if (removeIfIdle) {
+            long idleThreshold = System.currentTimeMillis()
+                    - removalTimeoutInSeconds * 1000L;
+            if (ctx.getLastAccessTime() <= idleThreshold) {
+                if (_logger.isLoggable(Level.FINE)) {
+                    _logger.log(Level.FINE, cacheName
+                            + ": Removing session "
+                            + " instead of passivating for key: " + sessionKey);
+                }
+                return true;
+            }
+        }
+        return false;
+    }
 
     // Called by Cache implementation thru container, on Recycler's thread
     // The container has already acquired the lock on the StatefulEJBContext
     public boolean passivateEJB(StatefulEJBContext ctx, Serializable sessionKey)
 	throws java.io.NotSerializableException
     {
-
         try {
             int hashCode = hash(sessionKey);
             int index = getIndex(hashCode);
             
-            boolean itemRemoved = false;
             CacheItem prev = null, item = null;
             synchronized (bucketLocks[index]) {
                 for (item = buckets[index]; item != null; item = item.next) {
@@ -391,35 +410,6 @@ public class LruSessionCache
                     //Could have been removed
                     return true; //???????
                 }
-
-                if (removeIfIdle) {
-                    long idleThreshold = System.currentTimeMillis() - 
-                        removalTimeoutInSeconds*1000L;
-                    //XXX: Avoid currentTimeMillis
-                    if (ctx.getLastAccessTime() <= idleThreshold) {
-                        if(_logger.isLoggable(Level.FINE)) {
-                            _logger.log(Level.FINE, cacheName + 
-                                ": Removing session "
-                                + " instead of passivating for key: " + sessionKey);
-                        }
-
-                    	if (prev == null) {
-                            buckets[index] = item.next;
-                    	} else {
-                            prev.next = item.next;
-                    	}
-                    	item.next = null;
-                        itemRemoved = true;
-                        //TODO::store.incrementExpiredSessionsRemoved();
-                    }
-                }
-
-            }
-
-            if (itemRemoved) {
-                decrementEntryCount();
-                incrementRemovalCount();
-                return true;
             }
 
             if (saveStateToStore(sessionKey, ctx) == false) {

@@ -2079,29 +2079,38 @@ public final class StatefulSessionContainer
                     if (!sc.canBePassivated()) {
                         return false;
                     }
-
-                    // passivate the EJB
-                    sc.setState(BeanState.PASSIVATED);
-                    decrementMethodReadyStat();
-                    interceptorManager.intercept(
-                            CallbackType.PRE_PASSIVATE, sc);
-                    sc.setLastPersistedAt(System.currentTimeMillis());
-                    boolean saved = false;
-                    try {
-                        saved = sessionBeanCache.passivateEJB(sc, (Serializable) sc.getInstanceKey());
-                    } catch (EMNotSerializableException emNotSerEx) {
-                        _logger.log(Level.WARNING, "Extended EM not serializable. "
-                                + "Exception: " + emNotSerEx);
-                        _logger.log(Level.FINE, "Extended EM not serializable", emNotSerEx);
-                        saved = false;
-                    }
-                    if (!saved) {
+                    
+                    Serializable instanceKey = (Serializable) sc.getInstanceKey();
+                    if (sessionBeanCache.eligibleForRemovalFromCache(sc, instanceKey)) {
+                        // remove the EJB since removal-timeout has elapsed
+                        sc.setState(BeanState.DESTROYED);
+                        interceptorManager.intercept(CallbackType.PRE_DESTROY, sc);
+                        sessionBeanCache.remove(instanceKey, sc.existsInStore());
+                    } else {
+                        // passivate the EJB
+                        sc.setState(BeanState.PASSIVATED);
+                        decrementMethodReadyStat();
                         interceptorManager.intercept(
-                                CallbackType.POST_ACTIVATE, sc);
-                        sc.setState(BeanState.READY);
-                        incrementMethodReadyStat();
-                        return false;
+                                CallbackType.PRE_PASSIVATE, sc);
+                        sc.setLastPersistedAt(System.currentTimeMillis());
+                        boolean saved = false;
+                        try {
+                            saved = sessionBeanCache.passivateEJB(sc, instanceKey);
+                        } catch (EMNotSerializableException emNotSerEx) {
+                            _logger.log(Level.WARNING, "Extended EM not serializable. "
+                                    + "Exception: " + emNotSerEx);
+                            _logger.log(Level.FINE, "Extended EM not serializable", emNotSerEx);
+                            saved = false;
+                        }
+                        if (!saved) {
+                            interceptorManager.intercept(
+                                    CallbackType.POST_ACTIVATE, sc);
+                            sc.setState(BeanState.READY);
+                            incrementMethodReadyStat();
+                            return false;
+                        }
                     }
+                    
                     // V2: sfsbStoreMonitor.incrementPassivationCount(true);
                     cacheProbeNotifier.ejbBeanPassivatedEvent(getContainerId(),
                             containerInfo.appName, containerInfo.modName,
