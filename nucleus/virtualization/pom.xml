@@ -46,9 +46,9 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.glassfish</groupId>
-        <artifactId>glassfish-parent</artifactId>
+        <artifactId>glassfish-nucleus-parent</artifactId>
         <version>3.2-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>        
+        <relativePath>../pom.xml</relativePath>
     </parent>
     <groupId>org.glassfish.virtualization</groupId>
     <artifactId>virtualization</artifactId>
