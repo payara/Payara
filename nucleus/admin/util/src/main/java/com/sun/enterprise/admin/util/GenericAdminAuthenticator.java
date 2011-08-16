@@ -38,7 +38,7 @@
  * holder.
  */
 
-package com.sun.enterprise.container.common;
+package com.sun.enterprise.admin.util;
 
 import com.sun.enterprise.config.serverbeans.SecureAdmin;
 import com.sun.enterprise.config.serverbeans.SecureAdminInternalUser;
