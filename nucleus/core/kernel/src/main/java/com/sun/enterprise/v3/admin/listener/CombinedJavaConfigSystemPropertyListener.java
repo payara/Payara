@@ -208,7 +208,7 @@ public final class CombinedJavaConfigSystemPropertyListener implements PostConst
                 else if (tc == Property.class && t.getParent().getClass() == JavaConfig.class) {
                     result = new NotProcessed("Addition of properties to JavaConfig requires restart");
                 }
-                else if (tc == JavaConfig.class ) {
+                else if (tc == JavaConfig.class && t instanceof JavaConfig) {
                     final JavaConfig njc = (JavaConfig) t; 
                     logFine(type, njc);
                     
@@ -228,7 +228,7 @@ public final class CombinedJavaConfigSystemPropertyListener implements PostConst
                     
                     result = reasons.isEmpty() ? null : new NotProcessed( CombinedJavaConfigSystemPropertyListener.toString(reasons) );
                 }
-                else if (tc == SystemProperty.class) {
+                else if (tc == SystemProperty.class && t instanceof SystemProperty) {
                     final SystemProperty sp = (SystemProperty) t;
                     // check to see if this system property is for this instance
                     ConfigBeanProxy proxy = sp.getParent();
@@ -313,15 +313,16 @@ public final class CombinedJavaConfigSystemPropertyListener implements PostConst
         
         // find all the differences and generate helpful messages
         final List<String> reasons = new ArrayList<String>();
-        for( final String key : old.keySet() ) {
-            final String oldValue = old.get(key);
+        for(final Map.Entry<String,String> olde : old.entrySet() ) {
+            final String key = olde.getKey();
+            final String oldValue = olde.getValue();
             final String curValue = cur.get(key);
             
             final boolean changed = (oldValue == null && curValue != null) ||
                                     (oldValue != null && curValue == null) ||
                                     (oldValue != null && ! oldValue.equals(curValue));
             if ( changed ) {
-                reasons.add( "JavaConfig attribute '" + key + "' was changed from '" + oldValue + "' to '" + curValue + "'");
+                reasons.add("JavaConfig attribute '" + key + "' was changed from '" + oldValue + "' to '" + curValue + "'");
             }
         }
         return reasons;

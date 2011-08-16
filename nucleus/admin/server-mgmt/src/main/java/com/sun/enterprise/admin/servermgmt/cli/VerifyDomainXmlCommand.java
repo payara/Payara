@@ -50,6 +50,8 @@ import com.sun.enterprise.module.single.StaticModulesRegistry;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import java.net.URLClassLoader;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.logging.Level;
 
@@ -106,8 +108,16 @@ public final class VerifyDomainXmlCommand extends LocalDomainCommand {
                 }
             }
                        
-            URL[] urlsA = urls.toArray(new URL[0]);          
-            ClassLoader cl = new URLClassLoader(urlsA, Globals.class.getClassLoader());
+            final URL[] urlsA = urls.toArray(new URL[urls.size()]);   
+            
+            ClassLoader cl = (ClassLoader)AccessController.doPrivileged(
+                    new PrivilegedAction() {
+                        @Override
+                        public Object run() {
+                            return new URLClassLoader(urlsA, Globals.class.getClassLoader());
+                        }
+                    }
+                );
             ModulesRegistry registry = new StaticModulesRegistry(cl);
             Habitat habitat = registry.createHabitat("default");
             ConfigParser parser = new ConfigParser(habitat);
