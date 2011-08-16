@@ -237,36 +237,39 @@ public class FlashlightProbeProviderFactory
 
         List<Method> methods = FlashlightUtils.getProbeMethods(providerClazz);
         
+        // If none of the method are annotated with @Probe, then register all
+        // public methods as probe providers
+        boolean isProbeAnnotationPresent = false;
+        
         for (Method m : methods) {
-            int sz = m.getParameterTypes().length;
             Probe pnameAnn = m.getAnnotation(Probe.class);
-            //todo throw a fatal error - quit struggling on!!!!
-            String probeName = (pnameAnn != null)
-                    ? pnameAnn.name() : m.getName();
-            boolean self = (pnameAnn != null) ? pnameAnn.self() : false;
-            boolean hidden = (pnameAnn != null) ? pnameAnn.hidden() : false;
-            String[] probeParamNames = FlashlightUtils.getParamNames(m);
-            FlashlightProbe probe = ProbeFactory.createProbe(
-                    providerClazz, moduleProviderName, moduleName, probeProviderName, probeName,
-                    probeParamNames, m.getParameterTypes(), self, hidden);
-            probe.setProviderJavaMethodName(m.getName());
-            probe.setProbeMethod(m);
-            provider.addProbe(probe);
-
-            if (invokerId != null) {
-                if (genericProvider != null) {
-                    String probeDescriptor = FlashlightProbe.getProbeDesc(moduleProviderName, moduleName, origProbeProviderName, probeName);
-                    if (probeDescriptor != null) {
-                        FlashlightProbe fp = genericProvider.getProbe(probeDescriptor);
-                        if (fp != null) {
-                             probe.setParent(fp);
-                        }
-                    }
-
+            boolean self = false;
+            boolean hidden = false;
+            String probeName = m.getName();
+            if (pnameAnn != null) {
+                isProbeAnnotationPresent = true;
+                self = pnameAnn.self();
+                hidden = pnameAnn.hidden();
+                if (pnameAnn.name() != null && !pnameAnn.name().isEmpty()) {
+                    probeName = pnameAnn.name();
                 }
+                
+                createProbe(origProbeProviderName, genericProvider, provider, 
+                        probeName, self, hidden, m, moduleProviderName, moduleName, probeProviderName, 
+                        invokerId, providerClazz);
             }
         }
+        
+        if (!isProbeAnnotationPresent) {  //Let's do all public methods
+            for (Method m : providerClazz.getDeclaredMethods()) {
+                String methodName = m.getName();
 
+                createProbe(origProbeProviderName, genericProvider, provider,
+                        methodName, false, false, m, moduleProviderName, moduleName, probeProviderName,
+                        invokerId, providerClazz);
+            }
+        }
+        
         handleDTrace(provider);
 
         Class<T> tClazz = providerClazz;
@@ -309,7 +312,36 @@ public class FlashlightProbeProviderFactory
         return inst;
     }
 
+    private void createProbe(String origProbeProviderName, FlashlightProbeProvider genericProvider, 
+            FlashlightProbeProvider provider, String probeName, boolean self, boolean hidden,
+            Method m, String moduleProviderName, String moduleName,
+    		String probeProviderName, String invokerId,
+    		Class providerClazz) {
+        
+            String[] probeParamNames = FlashlightUtils.getParamNames(m);
+            FlashlightProbe probe = ProbeFactory.createProbe(
+                    providerClazz, moduleProviderName, moduleName, probeProviderName, probeName,
+                    probeParamNames, m.getParameterTypes(), self, hidden);
+            probe.setProviderJavaMethodName(m.getName());
+            probe.setProbeMethod(m);
+            provider.addProbe(probe);
 
+            if (invokerId != null) {
+                if (genericProvider != null) {
+                    String probeDescriptor = FlashlightProbe.getProbeDesc(moduleProviderName, moduleName, origProbeProviderName, probeName);
+                    if (probeDescriptor != null) {
+                        FlashlightProbe fp = genericProvider.getProbe(probeDescriptor);
+                        if (fp != null) {
+                             probe.setParent(fp);
+                        }
+                    }
+
+                }
+            }
+        
+
+        
+    }
 
     public void unregisterProbeProvider(Object probeProvider) {
         try {
