@@ -51,6 +51,8 @@ import java.util.ArrayList;
 import java.util.Set;
 
 import org.glassfish.deployment.common.ModuleDescriptor;
+import org.glassfish.deployment.common.Descriptor;
+import org.glassfish.deployment.common.DescriptorVisitor;
 import org.jvnet.hk2.annotations.Service;
 
 /**
@@ -242,20 +244,14 @@ public class ApplicationValidator extends EjbBundleValidator
         return bundleDescriptor;
     }    
 
-    public void accept(ApplicationClientDescriptor appclientdescriptor) {
-        bundleDescriptor = appclientdescriptor;
-
-        // set the default lifecycle callback class
-        for (LifecycleCallbackDescriptor next :
-            appclientdescriptor.getPreDestroyDescriptors()) {
-            next.setDefaultLifecycleCallbackClass(
-                appclientdescriptor.getMainClassName());
+    /**
+     * get the visitor for its sub descriptor
+     * @param sub descriptor to return visitor for
+     */
+    public DescriptorVisitor getSubDescriptorVisitor(Descriptor subDescriptor) {
+        if (subDescriptor instanceof BundleDescriptor) {
+            return ((BundleDescriptor)subDescriptor).getBundleVisitor();
         }
-
-        for (LifecycleCallbackDescriptor next :
-            appclientdescriptor.getPostConstructDescriptors()) {
-            next.setDefaultLifecycleCallbackClass(
-                appclientdescriptor.getMainClassName());
-        }
+        return super.getSubDescriptorVisitor(subDescriptor);
     }
 }

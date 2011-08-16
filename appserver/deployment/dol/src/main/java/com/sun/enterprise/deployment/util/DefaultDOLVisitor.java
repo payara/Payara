@@ -44,6 +44,7 @@ import com.sun.enterprise.deployment.*;
 import com.sun.enterprise.deployment.types.EjbReference;
 import com.sun.enterprise.deployment.types.MessageDestinationReferencer;
 import org.glassfish.deployment.common.Descriptor;
+import org.glassfish.deployment.common.DescriptorVisitor;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -56,7 +57,7 @@ import java.util.Iterator;
  * @version 
  */
 
-public class DefaultDOLVisitor implements ApplicationVisitor, EjbBundleVisitor, EjbVisitor, ManagedBeanVisitor, WebBundleVisitor, AppClientVisitor {
+public class DefaultDOLVisitor implements ApplicationVisitor, EjbBundleVisitor, EjbVisitor, ManagedBeanVisitor, WebBundleVisitor {
    protected BundleDescriptor bundleDescriptor = null;
 
     /** Creates new DefaultDOLVisitor */
@@ -338,10 +339,10 @@ public class DefaultDOLVisitor implements ApplicationVisitor, EjbBundleVisitor, 
     }
 
     /**
-     * visits a appclient descriptor
-     * @param appclientdescriptor
+     * get the visitor for its sub descriptor
+     * @param sub descriptor to return visitor for
      */
-    public void accept(ApplicationClientDescriptor appclientdescriptor) {
-        bundleDescriptor = appclientdescriptor;
+    public DescriptorVisitor getSubDescriptorVisitor(Descriptor subDescriptor) {
+        return this;
     }
 }

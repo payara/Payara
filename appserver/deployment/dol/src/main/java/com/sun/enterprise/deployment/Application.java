@@ -1522,7 +1522,7 @@ public class Application extends BundleDescriptor
     public void visit(ApplicationVisitor aVisitor) {
         aVisitor.accept(this);
         for (BundleDescriptor ebd : getBundleDescriptorsOfType(XModuleType.EJB)) {
-            ebd.visit(aVisitor);
+            ebd.visit(aVisitor.getSubDescriptorVisitor(ebd));
         }
         for (BundleDescriptor wbd : getBundleDescriptorsOfType(XModuleType.WAR)) {
             // This might be null in the case of an appclient 
@@ -1531,15 +1531,15 @@ public class Application extends BundleDescriptor
             // stage but until then adding a non-null check will prevent
             // the validation step from bombing.
             if (wbd != null) {
-                wbd.visit(aVisitor);
+                wbd.visit(aVisitor.getSubDescriptorVisitor(wbd));
             }
         }
         for (BundleDescriptor cd :  getBundleDescriptorsOfType(XModuleType.RAR)) {
-            cd.visit(cd.getBundleVisitor());
+            cd.visit(aVisitor.getSubDescriptorVisitor(cd));
         }
 
         for (BundleDescriptor acd : getBundleDescriptorsOfType(XModuleType.CAR)) {
-            acd.visit(aVisitor);
+            acd.visit(aVisitor.getSubDescriptorVisitor(acd));
         }
 
         // Visit all injectables first.  In some cases, basic type information
