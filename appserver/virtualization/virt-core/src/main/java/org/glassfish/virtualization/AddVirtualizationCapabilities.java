@@ -50,9 +50,8 @@ import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.admin.Supplemental;
 import org.glassfish.config.support.GlassFishConfigBean;
-import org.glassfish.virtualization.config.Emulator;
-import org.glassfish.virtualization.config.Virtualization;
-import org.glassfish.virtualization.config.Virtualizations;
+import org.glassfish.internal.api.ServerContext;
+import org.glassfish.virtualization.config.*;
 import org.glassfish.virtualization.util.RuntimeContext;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
@@ -83,6 +82,9 @@ public class AddVirtualizationCapabilities implements AdminCommand {
 
     @Param(optional = true)
     String emulator=null;
+
+    @Inject
+    ServerContext serverContext;
 
     @Inject
     ServerEnvironment env;
@@ -130,12 +132,13 @@ public class AddVirtualizationCapabilities implements AdminCommand {
         // add initial domain.xml configuration.
 
         final long now = System.currentTimeMillis();
-        File f = new File(env.getConfigDirPath(), virtType);
-        f = new File(f, "virtualizations.xml");
+        File f = new File(serverContext.getInstallRoot(), "config");
+        String defaultConfigFileName = type + ".xml";
+        f = new File(f, defaultConfigFileName);
         URL temp;
         if (!f.exists()) {
-            logger.info("Cannot find virtualizations.xml at " + f.getAbsolutePath());
-            temp = getClass().getClassLoader().getResource(virtType + "/virtualizations.xml");
+            logger.info("Cannot find default virtualization at " + f.getAbsolutePath());
+            temp = getClass().getClassLoader().getResource(virtType + "/ " + defaultConfigFileName);
         } else {
             try {
                 temp = f.toURI().toURL();
@@ -182,6 +185,12 @@ public class AddVirtualizationCapabilities implements AdminCommand {
                                         for (Virtualization v : defaultConfig.getVirtualizations()) {
                                             wVirtualizations.getVirtualizations().add(v);
                                         }
+                                        for (Template template : defaultConfig.getTemplates()) {
+                                            wVirtualizations.getTemplates().add(template);
+                                        }
+                                        for (ServerPoolConfig serverPoolConfig : defaultConfig.getGroupConfigs()) {
+                                            wVirtualizations.getGroupConfigs().add(serverPoolConfig);
+                                        }
                                         return null;
                                     }
                                 }, virtualizations);
@@ -218,7 +227,7 @@ public class AddVirtualizationCapabilities implements AdminCommand {
         }
 
 
-        // make roon for scripts to the script location.
+        // make room for scripts to the script location.
         File destDir = new File(env.getConfigDirPath(), virtType);
         if (!destDir.exists()) {
             if (!destDir.mkdirs()) {

@@ -114,6 +114,12 @@
 	    <version>${project.version}</version>
 	    <type>distribution-fragment</type>
         </dependency>
+        <dependency>
+            <groupId>org.glassfish.virtualization</groupId>
+            <artifactId>native-files</artifactId>
+	    <version>${project.version}</version>
+	    <type>distribution-fragment</type>
+        </dependency>        
     </dependencies>
 
     <profiles>

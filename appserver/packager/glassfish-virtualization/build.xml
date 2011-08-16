@@ -54,6 +54,10 @@
 	<unzip src="${libvirt-files.zip}" dest="target/stage/${install.dir.name}">
 	</unzip>
 
+	<resolveArtifact artifactId="native-files" property="native-files.zip"/>
+       
+	<unzip src="${native-files.zip}" dest="target/stage/${install.dir.name}">
+	</unzip>
 
 	<delete dir="target/stage/${install.dir.name}/glassfish/modules" includes="*.zip" />   
 	<delete dir="target/stage/${install.dir.name}/glassfish/modules" includes="*.pom" />  
