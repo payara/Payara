@@ -131,7 +131,9 @@ public final class MessageBeanContainer extends BaseContainer implements
 	private static final int DEFAULT_STEADY_SIZE = 0;
 	private static final int DEFAULT_MAX_POOL_SIZE = 32;
 	private static final int DEFAULT_IDLE_TIMEOUT = 600;
-	private static final int MIN_IDLE_TIMEOUT = 1;
+        
+        //issue 4629. 0 means a bean can remain idle indefinitely. 
+	private static final int MIN_IDLE_TIMEOUT = 0;
 
         // TODO : remove
 	private int statMessageCount = 0;
@@ -283,8 +285,10 @@ public final class MessageBeanContainer extends BaseContainer implements
 				"pool-resize-quantity", appEJBName_, _logger);
 		beanPoolDesc_.setPoolResizeQuantity(value);
 
+                //if ejb pool idle-timeout-in-seconds is not explicitly set in
+                //glassfish-ejb-jar.xml, returned value is -1
 		value = beanPoolDesc_.getPoolIdleTimeoutInSeconds();
-		if (value <= 0) {
+		if (value < MIN_IDLE_TIMEOUT) {
 			value = stringToInt(mdbc.getIdleTimeoutInSeconds(), appEJBName_,
 					_logger);
 		}
