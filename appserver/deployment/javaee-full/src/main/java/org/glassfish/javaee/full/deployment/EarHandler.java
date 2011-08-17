@@ -156,17 +156,7 @@ public class EarHandler extends AbstractArchiveHandler implements CompositeHandl
                 WritableArchive subTarget = null;
                 ReadableArchive subArchiveToExpand = null;
                 try {
-                    /*
-                     * Use source and not source2 to get the subarchive.
-                     * Although source2 (which is essentially another view of
-                     * the target) is partially built it is not completely
-                     * built. If there are leftover files from an earlier
-                     * deployment that also exist in the new archive being
-                     * deployed then they will be hidden until the target is
-                     * completely populated and we realize that those files
-                     * are no longer stale.
-                     */
-                    subArchive = source.getSubArchive(moduleUri);
+                    subArchive = source2.getSubArchive(moduleUri);
                     if (subArchive == null) {
                         _logger.log(Level.WARNING, 
                             "Exception while locating sub archive: " + 
