@@ -440,7 +440,8 @@
             <fileset dir="${glassfish.home}/modules">
                <include name="**/hk2*.jar"/>
                <include name="**/glassfish-api.jar"/>
-               <include name="**/amx-all.jar"/>
+               <include name="**/amx-core.jar"/>
+               <include name="**/amx-javaee.jar"/>
                <include name="**/management-api.jar"/>
             </fileset>
             <fileset dir="${glassfish.home}/lib">

@@ -103,7 +103,7 @@
       <include name="external/org.osgi.core/**"/>
       <include name="common/glassfish-api/src/main/java/**"/>
       <include name="common/amx-core/src/main/java/**"/>
-      <include name="common/amx-j2ee/src/main/java/**"/>
+      <include name="common/amx-javaee/src/main/java/**"/>
       <include name="web/web-embed/api/src/main/java/**"/>
       <include name="flashlight/framework/src/main/java/**"/>
       <include name="external/management-api-sources/**"/>

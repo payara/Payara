@@ -58,19 +58,6 @@
            
        <delete file="target/stage/${install.dir.name}/glassfish/modules/activation.jar" failonerror="false" />
 
-		<delete file="target/stage/${install.dir.name}/glassfish/modules/amx-core.jar" failonerror="false" />
-		
-		<delete file="target/stage/${install.dir.name}/glassfish/modules/amx-core-impl.jar" failonerror="false" />
-
-		<delete file="target/stage/${install.dir.name}/glassfish/modules/amx-config-impl.jar" failonerror="false" />
-
-		<delete file="target/stage/${install.dir.name}/glassfish/modules/amx-j2ee.jar" failonerror="false" />
-
-		<delete file="target/stage/${install.dir.name}/glassfish/modules/amx-j2ee-impl.jar" failonerror="false" />
-
-		<delete file="target/stage/${install.dir.name}/glassfish/modules/amx-ext-impl.jar" failonerror="false" />
-
-       
        <mkdir dir="target/stage/${install.dir.name}/glassfish/modules/endorsed"/>
 
       <move file="target/stage/${install.dir.name}/glassfish/modules/javax.annotation.jar" todir="target/stage/${install.dir.name}/glassfish/modules/endorsed" failonerror="false"/>

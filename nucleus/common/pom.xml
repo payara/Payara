@@ -61,6 +61,7 @@
     	<module>glassfish-api</module>
         <module>glassfish-naming</module>        
         <module>mbeanserver</module>
-    	<module>scattered-archive-api</module>       
+    	<module>scattered-archive-api</module>
+    	<module>amx-core</module>
     </modules>
 </project>

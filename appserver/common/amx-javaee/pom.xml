@@ -42,25 +42,49 @@
 -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-    <modelVersion>4.0.0</modelVersion>
+		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <parent>
-        <groupId>org.glassfish</groupId>
-        <artifactId>glassfish-parent</artifactId>
+        <groupId>org.glassfish.common</groupId>
+        <artifactId>common</artifactId>
         <version>3.2-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
-    <groupId>org.glassfish.common</groupId>
-    <artifactId>common</artifactId>
-    <packaging>pom</packaging>
-    <name>GlassFish Common modules</name>  
-    <modules>
-    	<module>stats77</module>
-    	<module>amx-javaee</module>
-	<module>mejb</module>
-	<module>mejb-frag</module>    	
-        <module>glassfish-ee-api</module>
-        <module>annotation-framework</module>
-        <module>container-common</module>
-    </modules>
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>amx-javaee</artifactId>
+    <packaging>hk2-jar</packaging>
+    <name>AMX V3 Java EE Management (JSR 77) API and Implementation</name>
+	
+    <developers>
+        <developer>
+            <id>naman_mehta</id>
+            <name>Naman Mehta</name>
+            <organization>Oracle, Inc.</organization>
+            <roles>
+                <role>lead</role>
+                <role>developer</role>
+            </roles>
+        </developer>
+    </developers>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.glassfish</groupId>
+            <artifactId>javax.management.j2ee</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.glassfish.common</groupId>
+            <artifactId>amx-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.glassfish.deployment</groupId>
+            <artifactId>dol</artifactId>
+            <version>${project.version}</version>
+            <scope>provided</scope>
+        </dependency>
+
+    </dependencies>
 </project>

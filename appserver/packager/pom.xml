@@ -75,7 +75,7 @@
     <properties>
         <install.dir.name>glassfish3</install.dir.name>
         <findbugs.skip>true</findbugs.skip>
-        <packager.artifact.excludes>stax-api,stax,junit,jtype,tiger-types,servlet-api,jstl-api,el-api,jsp-api,org.osgi.core,org.osgi.compendium,concurrent,amx-core,amx-core-impl,amx-config-impl,amx-j2ee,amx-j2ee-impl,amx-ext-impl,grizzly-utils,grizzly-lzma,gmbal-api-only,javax.servlet</packager.artifact.excludes>
+        <packager.artifact.excludes>stax-api,stax,junit,jtype,tiger-types,servlet-api,jstl-api,el-api,jsp-api,org.osgi.core,org.osgi.compendium,concurrent,grizzly-utils,grizzly-lzma,gmbal-api-only,javax.servlet</packager.artifact.excludes>
     </properties>
 
     <modules>
