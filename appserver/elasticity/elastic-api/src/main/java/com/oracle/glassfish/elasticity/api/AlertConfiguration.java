@@ -43,9 +43,9 @@ import java.io.Serializable;
 import java.util.concurrent.TimeUnit;
 
 /**
- * A rule can be configured by a RuleConfiguration object. The rule configuration
- * typically specifies the thresholds that can be used by the rule, besides
- * specifying the rate at which the rule should execute.
+ * An alert can be configured by an AlertConfiguration object. An AlertConfiguration
+ * typically specifies the thresholds that can be used by a rule, besides
+ * specifying the rate at which the Alert should execute.
  * 
  * @author Mahesh.Kannan@Oracle.Com
  *

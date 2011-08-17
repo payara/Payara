@@ -41,6 +41,14 @@ package com.oracle.glassfish.elasticity.api;
 
 import org.jvnet.hk2.annotations.Contract;
 
+/**
+ * An Alert typically uses some metrics and determines if the Alert's state.
+ * The ElasticityEngine will then use this Alert's state to execute a set
+ * of Actions.
+ * 
+ * @author Mahesh.Kannan@Oracle.Com
+ *
+ */
 @Contract
 public interface Alert<C extends AlertConfiguration> {
 	
