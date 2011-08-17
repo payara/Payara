@@ -43,6 +43,7 @@ package org.glassfish.webservices;
 import com.sun.enterprise.v3.admin.AdminAdapter;
 import com.sun.enterprise.v3.admin.adapter.AdminConsoleAdapter;
 import org.glassfish.deployment.common.ModuleDescriptor;
+import org.glassfish.deployment.common.XModuleType;
 import org.glassfish.grizzly.config.dom.NetworkListener;
 import com.sun.xml.ws.api.server.SDDocumentSource;
 import com.sun.xml.ws.api.WSBinding;
@@ -342,7 +343,7 @@ public class WsUtil {
      * @return module-specific dedicated wsdl directory 
      */
     public String getWsdlDir(BundleDescriptor bundle) {
-        boolean isWar = (bundle instanceof WebBundleDescriptor);
+        boolean isWar = bundle.getModuleType().equals(XModuleType.WAR);
         return isWar ? "WEB-INF/wsdl" : "META-INF/wsdl";
     }
 
@@ -1646,7 +1647,7 @@ public class WsUtil {
 
     public void validateEjbEndpoint(WebServiceEndpoint ejbEndpoint) {
         EjbDescriptor ejbDescriptor = ejbEndpoint.getEjbComponentImpl();
-        EjbBundleDescriptor bundle = ejbDescriptor.getEjbBundleDescriptor();
+        BundleDescriptor bundle = ejbDescriptor.getEjbBundleDescriptor();
         WebServicesDescriptor webServices = bundle.getWebServices();
         Collection endpoints = 
             webServices.getEndpointsImplementedBy(ejbDescriptor);

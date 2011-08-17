@@ -71,6 +71,8 @@ import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.glassfish.deployment.common.XModuleType;
+
 /**
  * This class serves for initialization of JAX-WS WSEndpoints when the context is initialized on deployment.
  * 
@@ -87,7 +89,8 @@ public class WSServletContextListener implements ServletContextListener {
         ComponentEnvManager compEnvManager = wscImpl.getComponentEnvManager();
         JndiNameEnvironment jndiNameEnv = compEnvManager.getCurrentJndiNameEnvironment();
         WebBundleDescriptor webBundle = null;
-        if (jndiNameEnv != null && jndiNameEnv instanceof WebBundleDescriptor) {
+        if (jndiNameEnv != null && jndiNameEnv instanceof BundleDescriptor &&
+                ((BundleDescriptor)jndiNameEnv).getModuleType().equals(XModuleType.WAR)) {
             webBundle = ((WebBundleDescriptor) jndiNameEnv);
         } else {
             throw new WebServiceException("Cannot intialize the JAXWSServlet for " + jndiNameEnv);
