@@ -42,7 +42,9 @@ package com.oracle.glassfish.elasticity.api;
 import org.jvnet.hk2.annotations.Contract;
 
 @Contract
-public interface Rule<C extends RuleConfiguration> {
+public interface Alert<C extends AlertConfiguration> {
+	
+	public enum AlertState {OK, ALARM, NO_DATA};
 	
 	/**
 	 * Called by the framework when the rule is instantiated.
@@ -56,6 +58,6 @@ public interface Rule<C extends RuleConfiguration> {
 	 * 
 	 * @return the rule's state
 	 */
-	public String execute();
+	public AlertState execute();
 	
 }

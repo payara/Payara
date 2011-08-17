@@ -50,7 +50,7 @@ import java.util.concurrent.TimeUnit;
  * @author Mahesh.Kannan@Oracle.Com
  *
  */
-public interface RuleConfiguration
+public interface AlertConfiguration
 	extends Serializable {
 	
 	/**
@@ -58,7 +58,7 @@ public interface RuleConfiguration
 	 * 
 	 * @return the rule name
 	 */
-	public String getRuleName();
+	public String getAlertName();
 	
 	/**
 	 * Return the rate at which the rule (that is configured by this object)
