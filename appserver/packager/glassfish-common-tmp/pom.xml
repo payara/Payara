@@ -121,13 +121,7 @@
             <artifactId>monitoring-core</artifactId>
             <version>${project.version}</version>
         </dependency>
-     <!-- moving from glassfish-amx package -->  
-        <dependency>
-            <groupId>org.glassfish.common</groupId>
-            <artifactId>amx-javaee</artifactId>
-            <version>${project.version}</version>
-        </dependency>
- 
+
         <!-- moving stuff from killed glassfish-security package -->
         <dependency>
             <groupId>org.glassfish.security</groupId>
@@ -147,12 +141,6 @@
             <version>${project.version}</version>
        </dependency>
  
-        <!-- schema2beans - both CMP and LB admin now depend on it -->
-        <dependency>
-            <groupId>org.glassfish.external</groupId>
-            <artifactId>schema2beans-repackaged</artifactId>
-            <version>${project.version}</version>
-        </dependency>
         <!-- mimepull - shared dependency of metro and jersey -->
         <dependency>
             <groupId>org.jvnet</groupId>
