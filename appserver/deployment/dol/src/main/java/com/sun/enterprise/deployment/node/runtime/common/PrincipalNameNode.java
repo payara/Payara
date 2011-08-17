@@ -55,6 +55,12 @@ import org.w3c.dom.Node;
  */
 public class PrincipalNameNode  extends RuntimeDescriptorNode {
 
+    @Override
+    protected PrincipalNameDescriptor createDescriptor() {
+        return new PrincipalNameDescriptor();
+    }
+
+    
     /**
      * receives notiification of the value for a particular tag
      *                                               

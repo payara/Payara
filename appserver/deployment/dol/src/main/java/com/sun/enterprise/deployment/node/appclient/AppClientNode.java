@@ -65,9 +65,6 @@ import java.util.*;
 @Service
 public class AppClientNode extends AbstractBundleNode<ApplicationClientDescriptor> {
 
-     // Descriptor class we are using   
-    private ApplicationClientDescriptor descriptor; 
-
     //app client 1.2
     public final static String PUBLIC_DTD_ID_12 = "-//Sun Microsystems, Inc.//DTD J2EE Application Client 1.2//EN";
     public final static String SYSTEM_ID_12 = "http://java.sun.com/dtd/application-client_1_2.dtd";
@@ -150,11 +147,9 @@ public class AppClientNode extends AbstractBundleNode<ApplicationClientDescripto
         }
     }      
     
-    public ApplicationClientDescriptor getDescriptor() {
-        if (descriptor == null) {
-            descriptor = (ApplicationClientDescriptor) DescriptorFactory.getDescriptor(getXMLPath());
-        } 
-        return descriptor;
+    @Override
+    protected ApplicationClientDescriptor createDescriptor() {
+        return new ApplicationClientDescriptor();
     }
     
     /**

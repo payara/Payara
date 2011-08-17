@@ -57,6 +57,12 @@ public class ValveNode extends WebRuntimeNode {
     }
 
     @Override
+    protected Object createDescriptor() {
+        return new Valve();
+    }
+
+    
+    @Override
     protected boolean setAttributeValue(XMLElement elementName,
                                         XMLElement attributeName,
                                         String value) {

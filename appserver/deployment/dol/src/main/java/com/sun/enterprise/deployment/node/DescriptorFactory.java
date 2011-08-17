@@ -66,13 +66,7 @@ public class DescriptorFactory {
     private static void initMapping() {
         descriptorClasses = new HashMap();
 	
-        // common
-        register(new XMLElement(TagNames.MESSAGE_DESTINATION), MessageDestinationDescriptor.class);
-        register(new XMLElement(TagNames.INJECTION_TARGET), InjectionTarget.class);
-        
         // Application
-        register(new XMLElement(ApplicationTagNames.APPLICATION), Application.class);
-        register(new XMLElement(ApplicationTagNames.MODULE), ModuleDescriptor.class);
         register(new XMLElement(RuntimeTagNames.APPLICATION_PARAM), EnvironmentProperty.class);        
         
 	//EJB
@@ -141,9 +135,6 @@ public class DescriptorFactory {
 	register(new XMLElement(ConnectorTagNames.ACTIVATION_SPEC),MessageListener.class);
 	register(new XMLElement(ConnectorTagNames.ADMIN_OBJECT), AdminObject.class);
 	register(new XMLElement(ConnectorTagNames.CONNECTION_DEFINITION), ConnectionDefDescriptor.class);
-
-	//appclient
-	register(new XMLElement(ApplicationClientTagNames.APPLICATION_CLIENT_TAG), ApplicationClientDescriptor.class);
 
 	//web stuff
         register(new XMLElement(WebTagNames.WEB_BUNDLE), WebBundleDescriptor.class);

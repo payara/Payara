@@ -41,13 +41,8 @@
 package com.sun.enterprise.deployment.node.runtime.application;
 
 import com.sun.enterprise.deployment.runtime.WLModuleDescriptor;
-import com.sun.enterprise.deployment.node.XMLElement;
 import com.sun.enterprise.deployment.node.DeploymentDescriptorNode;
-import com.sun.enterprise.deployment.node.runtime.RuntimeDescriptorFactory;
-import com.sun.enterprise.deployment.xml.DTDRegistry;
-import com.sun.enterprise.deployment.xml.TagNames;
 import com.sun.enterprise.deployment.xml.RuntimeTagNames;
-import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 import java.util.Map;
@@ -56,15 +51,11 @@ import java.util.Map;
 /**
  * This node is responsible for handling module node in WL application xml.
  */
-public class WLModuleNode extends DeploymentDescriptorNode {
-    private WLModuleDescriptor descriptor;
+public class WLModuleNode extends DeploymentDescriptorNode<WLModuleDescriptor> {
 
-    public WLModuleDescriptor getDescriptor() {
-        if (descriptor==null) {
-            descriptor = (WLModuleDescriptor) RuntimeDescriptorFactory.getDescriptor(getXMLPath());
-        }
-        return descriptor;
-
+    @Override
+    protected WLModuleDescriptor createDescriptor() {
+            return new WLModuleDescriptor();
     }
 
     /**

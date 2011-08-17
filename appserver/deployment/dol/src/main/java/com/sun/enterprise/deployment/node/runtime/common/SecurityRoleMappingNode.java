@@ -57,6 +57,12 @@ import java.util.List;
  */
 public class SecurityRoleMappingNode extends RuntimeDescriptorNode {
 
+    @Override
+    protected SecurityRoleMapping createDescriptor() {
+        return new SecurityRoleMapping();
+    }
+
+    
     public SecurityRoleMappingNode() {
         registerElementHandler(
             new XMLElement(RuntimeTagNames.PRINCIPAL_NAME),

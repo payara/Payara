@@ -54,7 +54,13 @@ import java.util.Map;
  * @author  Jerome Dochez
  * @version 
  */
-public class ModuleNode extends DeploymentDescriptorNode {    
+public class ModuleNode extends DeploymentDescriptorNode {
+
+    @Override
+    protected Object createDescriptor() {
+        return new ModuleDescriptor();
+    }
+    
     
    /**
      * all sub-implementation of this class can use a dispatch table to map xml element to

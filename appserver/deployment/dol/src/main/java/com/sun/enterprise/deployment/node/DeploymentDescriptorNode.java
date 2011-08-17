@@ -125,10 +125,14 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T>  {
     public T getDescriptor() {
         
         if (abstractDescriptor==null) {
-	    abstractDescriptor = DescriptorFactory.getDescriptor(getXMLPath());
+	    abstractDescriptor = createDescriptor();
         }
         return (T) abstractDescriptor;
-    }    
+    }
+   
+   protected Object createDescriptor() {
+       return DescriptorFactory.getDescriptor(getXMLPath());
+   }
     
     /**
      * Adds  a new DOL descriptor instance to the descriptor instance associated with 

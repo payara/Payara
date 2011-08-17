@@ -59,6 +59,12 @@ public class WLSecurityRoleAssignmentNode extends RuntimeDescriptorNode {
     public WLSecurityRoleAssignmentNode() {
     }
 
+    @Override
+    protected WLSecurityRoleAssignment createDescriptor() {
+        return new WLSecurityRoleAssignment();
+    }
+
+    
     /**
      * receives notification of the value for a particular tag
      *                                               

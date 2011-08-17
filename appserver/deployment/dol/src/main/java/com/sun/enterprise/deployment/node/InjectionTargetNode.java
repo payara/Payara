@@ -62,6 +62,12 @@ import java.util.Map;
  * @author Jerome Dochez
  */
 public class InjectionTargetNode extends DeploymentDescriptorNode {
+
+    @Override
+    protected InjectionTarget createDescriptor() {
+        return new InjectionTarget();
+    }
+    
     
     /**
      * all sub-implementation of this class can use a dispatch table to map xml element to

@@ -76,8 +76,6 @@ public class RuntimeDescriptorFactory {
 
     private static void initMapping() {
         descriptorClasses = new HashMap();    
-	// Application
-        register(new XMLElement(RuntimeTagNames.MODULE), WLModuleDescriptor.class);
 	// WEB
         register(new XMLElement(RuntimeTagNames.PROPERTY), WebProperty.class);
 	register(new XMLElement(RuntimeTagNames.COOKIE_PROPERTIES), CookieProperties.class);
@@ -116,12 +114,6 @@ public class RuntimeDescriptorFactory {
 	register(new XMLElement(RuntimeTagNames.MAP_ELEMENT), MapElement.class);
 	register(new XMLElement(RuntimeTagNames.ROLE_MAP), RoleMap.class);
 	register(new XMLElement(RuntimeTagNames.RESOURCE_ADAPTER), ResourceAdapter.class);	
-
-        //common
-        register(new XMLElement(RuntimeTagNames.PRINCIPAL_NAME), PrincipalNameDescriptor.class);
-        register(new XMLElement(RuntimeTagNames.SECURITY_ROLE_MAPPING), SecurityRoleMapping.class);
-        register(new XMLElement(RuntimeTagNames.WL_SECURITY_ROLE_ASSIGNMENT), WLSecurityRoleAssignment.class);
-        register(new XMLElement(RuntimeTagNames.VALVE), Valve.class);
 
     }
 

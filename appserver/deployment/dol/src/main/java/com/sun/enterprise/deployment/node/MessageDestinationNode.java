@@ -54,6 +54,11 @@ import java.util.Map;
  * @version 
  */
 public class MessageDestinationNode extends DisplayableComponentNode  {
+
+    @Override
+    protected Object createDescriptor() {
+        return new MessageDestinationDescriptor();
+    }
     
     /**
      * all sub-implementation of this class can use a dispatch table to 

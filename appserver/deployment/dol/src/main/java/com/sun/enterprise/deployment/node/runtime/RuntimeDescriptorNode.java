@@ -68,17 +68,22 @@ public class RuntimeDescriptorNode extends DeploymentDescriptorNode
 {
    /**
     * @return the descriptor instance to associate with this XMLNode
-    */    
+    */ 
     public Object getDescriptor() {
         
         if (abstractDescriptor==null) {
-	    abstractDescriptor = RuntimeDescriptorFactory.getDescriptor(getXMLPath());
+	    abstractDescriptor = createDescriptor();
             if (abstractDescriptor ==null) {
                 return getParentNode().getDescriptor();
             }
         }
         return abstractDescriptor;
     }     
+    
+    @SuppressWarnings("unchecked")
+    protected Object createDescriptor() {
+        return RuntimeDescriptorFactory.getDescriptor(getXMLPath());
+    }
     
     /**
      * receives notification of the value for a particular tag
