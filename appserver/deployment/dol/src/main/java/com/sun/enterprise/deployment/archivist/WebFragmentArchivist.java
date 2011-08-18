@@ -144,24 +144,6 @@ class WebFragmentArchivist extends Archivist<WebFragmentDescriptor> {
     }
 
     /**
-     * validates the DOL Objects associated with this archivist, usually
-     * it requires that a class loader being set on this archivist or passed
-     * as a parameter
-     */
-    @Override
-    public void validate(ClassLoader aClassLoader) {
-        ClassLoader cl = aClassLoader;
-        if (cl==null) {
-            cl = classLoader;
-        }
-        if (cl==null) {
-            return;
-        }
-        descriptor.setClassLoader(cl);
-        descriptor.visit((WebBundleVisitor) new ApplicationValidator());        
-    }            
-
-    /**
      * In the case of web archive, the super handles() method should be able 
      * to make a unique identification.  If not, then the archive is definitely 
      * not a war.
@@ -180,6 +162,7 @@ class WebFragmentArchivist extends Archivist<WebFragmentDescriptor> {
     /**
      * @return a list of libraries included in the archivist
      */
+    @Override
     public Vector getLibraries(Archive archive) {
         return null;
     }
