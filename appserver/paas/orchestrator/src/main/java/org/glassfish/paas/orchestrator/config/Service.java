@@ -75,9 +75,10 @@ public interface Service extends ConfigBeanProxy, Injectable, PropertyBag{
 
     void setType(String type) throws PropertyVetoException;
 
+    //TODO later (when app-scoped-service and service-ref are stored within <application>) this attribute should be key
     @Param
     @NotNull
-    @Attribute(key=true)
+    @Attribute()
     String getServiceName();
 
     void setServiceName(String name) throws PropertyVetoException;

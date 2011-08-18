@@ -45,4 +45,9 @@ public class RDBMSServiceType extends ServiceType {
     public String toString() {
         return "RDBMS";
     }
+
+    @Override
+    public String getName() {
+        return "RDBMS";
+    }
 }

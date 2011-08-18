@@ -67,4 +67,8 @@ public interface ProvisionedService {
     public Properties getServiceProperties();
     
     public ServiceStatus getStatus();
+
+    public String getName();
+
+    public Properties getProperties();
 }

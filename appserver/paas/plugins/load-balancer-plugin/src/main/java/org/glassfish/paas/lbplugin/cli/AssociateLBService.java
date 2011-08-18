@@ -70,6 +70,9 @@ public class AssociateLBService implements AdminCommand {
     @Inject
     private CloudRegistryService cloudRegistryService;
 
+    @Param(name="appname", optional = true)
+    private String appName;
+
     @Inject
     private LBServiceUtil lbServiceUtil;
 
@@ -80,7 +83,7 @@ public class AssociateLBService implements AdminCommand {
 
         final ActionReport report = context.getActionReport();
         // Check if the service is already configured.
-        if (!lbServiceUtil.isServiceAlreadyConfigured(serviceName, ServiceType.LOAD_BALANCER)) {
+        if (!lbServiceUtil.isServiceAlreadyConfigured(serviceName, appName, ServiceType.LOAD_BALANCER)) {
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setMessage("Service with name [" + serviceName + "] is not configured.");
             return;
@@ -89,22 +92,25 @@ public class AssociateLBService implements AdminCommand {
         String domainName = null;
         String targetName = null;
 
-        if (!lbServiceUtil.isValidService(appServerServiceName, ServiceType.APPLICATION_SERVER)) {
+        if (!lbServiceUtil.isValidService(appServerServiceName, appName, ServiceType.APPLICATION_SERVER)) {
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setMessage("Invalid AppServer Service name [" + appServerServiceName + "].");
             return;
         }
 
+/*
         domainName = gfServiceUtil.getDomainName(appServerServiceName);
         targetName = null;
+*/
+        targetName = appServerServiceName;
 
-        if (gfServiceUtil.isDomain(appServerServiceName)) {
+        /*if (gfServiceUtil.isDomain(appServerServiceName)) {
             targetName = appServerServiceName;
-        } else if (gfServiceUtil.isCluster(appServerServiceName)) {
-            targetName = gfServiceUtil.getClusterName(appServerServiceName);
-        } else if (gfServiceUtil.isStandaloneInstance(appServerServiceName)) {
+        } else */if (gfServiceUtil.isCluster(appServerServiceName, appName)) {
+            targetName = gfServiceUtil.getClusterName(appServerServiceName, appName);
+        }/* else if (gfServiceUtil.isStandaloneInstance(appServerServiceName)) {
             targetName = gfServiceUtil.getStandaloneInstanceName(appServerServiceName);
-        } else if (gfServiceUtil.isClusteredInstance(appServerServiceName)) {
+        } */else if (gfServiceUtil.isClusteredInstance(appServerServiceName)) {
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setMessage("Invalid AppServer Service name [" + appServerServiceName + "], " +
                     "clustered instance is not supported");
@@ -116,10 +122,10 @@ public class AssociateLBService implements AdminCommand {
             return;
         }
 
-        String dasIPAddress = lbServiceUtil.getIPAddress(domainName, ServiceType.APPLICATION_SERVER);
+        String dasIPAddress = lbServiceUtil.getIPAddress(domainName, appName, ServiceType.APPLICATION_SERVER);
 
         LBProvisioner lbProvisioner = cloudRegistryService.getLBProvisioner();
-        String ipAddress = lbServiceUtil.getIPAddress(serviceName, ServiceType.LOAD_BALANCER);
+        String ipAddress = lbServiceUtil.getIPAddress(serviceName, appName, ServiceType.LOAD_BALANCER);
         lbProvisioner.associateApplicationServerWithLB(ipAddress, dasIPAddress, domainName);
 
         //restart

@@ -85,4 +85,14 @@ public class GlassFishLBProvisionedService implements ProvisionedService {
     public void setStatus(ServiceStatus status) {
         this.status = status;
     }
+
+    public String getName(){
+        return serviceDescription.getName();
+    }
+
+    public Properties getProperties() {
+        //TODO return the co-ordinates (eg: hostname, port, etc.,)
+        return new Properties();
+    }
+
 }

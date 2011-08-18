@@ -46,4 +46,7 @@ public interface ServiceDefinition {
     public ServiceType getServiceType();
 
     public String getName(); //Unique identifier for the ServiceDefinition
+
+    //application name is not null when the definition is in services.xml
+    public String getAppName();
 }

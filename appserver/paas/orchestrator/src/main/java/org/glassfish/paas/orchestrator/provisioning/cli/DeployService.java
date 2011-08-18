@@ -45,6 +45,7 @@ import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
+import org.glassfish.api.admin.CommandLock;
 import org.glassfish.paas.orchestrator.ServiceOrchestrator;
 import org.glassfish.paas.orchestrator.provisioning.CloudRegistryService;
 import org.jvnet.hk2.annotations.Inject;
@@ -56,6 +57,7 @@ import java.io.File;
 
 @Service(name = "cloud-deploy")
 @Scoped(PerLookup.class)
+@CommandLock(CommandLock.LockType.NONE)
 public class DeployService implements AdminCommand {
 
     @Param(name = "servicename", optional = true)

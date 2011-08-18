@@ -54,4 +54,12 @@ public interface ApplicationScopedService extends Service{
     String getState();
 
     void setState(String state) throws PropertyVetoException;
+
+    /*TODO for now application-scoped-service is also stored in domain.xml
+           as part of global <services> section */
+    @Attribute
+    @Param
+    String getApplicationName();
+
+    void setApplicationName(String applicationName) throws PropertyVetoException;
 }

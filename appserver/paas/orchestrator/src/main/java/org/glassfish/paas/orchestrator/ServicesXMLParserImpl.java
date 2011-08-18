@@ -41,6 +41,7 @@
 package org.glassfish.paas.orchestrator;
 
 import org.glassfish.api.deployment.archive.ReadableArchive;
+import org.glassfish.paas.orchestrator.service.metadata.ServiceDescription;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceMetadata;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
@@ -57,7 +58,7 @@ import java.io.InputStream;
 @Scoped(PerLookup.class)
 public class ServicesXMLParserImpl implements ServicesXMLParser {
 
-    public ServiceMetadata discoverDeclaredServices(ReadableArchive ra) {
+    public ServiceMetadata discoverDeclaredServices(String appName, ReadableArchive ra) {
         ServiceMetadata serviceMetadata = null;
         try {
             InputStream inputStream = ra.getEntry("META-INF/services.xml");
@@ -66,9 +67,16 @@ public class ServicesXMLParserImpl implements ServicesXMLParser {
                         ServiceMetadata.class);
                 Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
                 serviceMetadata = (ServiceMetadata) unmarshaller.unmarshal(inputStream);
+                if(appName != null){
+                    serviceMetadata.setAppName(appName);
+                }
             }
         } catch (Exception ex) {
             throw new RuntimeException(ex);
+        }
+        //TODO hack ?
+        for(ServiceDescription serviceDescription : serviceMetadata.getServiceDescriptions()){
+            serviceDescription.setAppName(appName);
         }
         return serviceMetadata;
     }

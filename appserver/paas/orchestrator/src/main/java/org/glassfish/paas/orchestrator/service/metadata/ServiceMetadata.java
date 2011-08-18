@@ -69,6 +69,8 @@ public class ServiceMetadata {
 
     private Set<ServiceDescription> serviceDescriptions;
     private Set<ServiceReference> serviceReferences = new HashSet<ServiceReference>();
+    private String appName;
+
     
     @XmlElement(name = "service-description")
     public Set<ServiceDescription> getServiceDescriptions() {
@@ -95,7 +97,15 @@ public class ServiceMetadata {
     public void addServiceReference(ServiceReference sr) {
         getServiceReferences().add(sr);
     }
-    
+
+    public String getAppName(){
+        return appName;
+    }
+
+    public void setAppName(String appName){
+        this.appName = appName;
+    }
+
     @Override
     public String toString() {
         return super.toString()  + "\n [ServiceDescriptions = \n"

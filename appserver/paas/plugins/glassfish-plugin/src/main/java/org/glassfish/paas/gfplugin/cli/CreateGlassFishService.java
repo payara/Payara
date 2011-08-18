@@ -40,9 +40,11 @@
 
 package org.glassfish.paas.gfplugin.cli;
 
+import com.sun.enterprise.config.serverbeans.Domain;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
+import org.glassfish.api.admin.CommandLock;
 import org.glassfish.paas.orchestrator.provisioning.CloudRegistryEntry;
 import org.glassfish.paas.orchestrator.provisioning.CloudRegistryService;
 import org.glassfish.paas.orchestrator.provisioning.ApplicationServerProvisioner;
@@ -54,15 +56,14 @@ import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
 
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author bhavanishankar@java.net
  */
 @Service(name = "create-glassfish-service")
 @Scoped(PerLookup.class)
+@CommandLock(CommandLock.LockType.NONE)
 public class CreateGlassFishService implements AdminCommand, Runnable {
 
     @Param(name = "instancecount", optional = true, defaultValue = "-1")
@@ -77,7 +78,13 @@ public class CreateGlassFishService implements AdminCommand, Runnable {
     @Param(name = "servicename", primary = true)
     private String serviceName;
 
-    private String domainName;
+    @Param(name="appname", optional=true)
+    private String appName;
+
+    @Inject
+    private Domain domain;
+
+    //private String domainName;
     private String clusterName;
     private String instanceName;
 
@@ -85,7 +92,7 @@ public class CreateGlassFishService implements AdminCommand, Runnable {
     private CloudRegistryService cloudRegistryService;
 
     @Inject
-    private GlassFishServiceUtil glassFishServiceUtil;
+    private GlassFishServiceUtil gfServiceUtil;
 
 
     public void execute(AdminCommandContext adminCommandContext) {
@@ -97,16 +104,18 @@ public class CreateGlassFishService implements AdminCommand, Runnable {
         }
 
         // Check if the service is already configured.
-        if (glassFishServiceUtil.isServiceAlreadyConfigured(serviceName, ServiceType.APPLICATION_SERVER)) {
+        if (gfServiceUtil.isServiceAlreadyConfigured(serviceName, appName, ServiceType.APPLICATION_SERVER)) {
             throw new RuntimeException("Service with name [" +
                     serviceName + "] is already configured.");
         }
 
+/*
         domainName = serviceName.indexOf(".") > -1 ?
                 serviceName.substring(0, serviceName.indexOf(".")) : serviceName;
+*/
         if (instanceCount >= 0) {
             clusterName = serviceName.indexOf(".") > -1 ?
-                    serviceName.substring(serviceName.indexOf('.') + 1) : null;
+                serviceName.substring(0, serviceName.indexOf(".")) : serviceName;
         } else {
             instanceName = serviceName.indexOf(".") > -1 ?
                     serviceName.substring(serviceName.indexOf('.') + 1) : null;
@@ -117,14 +126,19 @@ public class CreateGlassFishService implements AdminCommand, Runnable {
         // Save domain's CloudRegistryEntry in the DB
         CloudRegistryEntry entry = new CloudRegistryEntry();
 
-        if (!glassFishServiceUtil.isServiceAlreadyConfigured(domainName, ServiceType.APPLICATION_SERVER)) { // domain might exist already.
+/*
+        String domainName = domain.getProperty(Domain.DOMAIN_NAME_PROPERTY).getValue();
+        if (!gfServiceUtil.isServiceAlreadyConfigured(domainName, appName, ServiceType.APPLICATION_SERVER)) { // domain might exist already.
             entry.setCloudName(domainName);
             entry.setIpAddress(dasIPAddress);
             entry.setServerType(CloudRegistryEntry.Type.Domain.toString());
             entry.setInstanceId("Obtaining");
             entry.setState(CloudRegistryEntry.State.Initializing.toString());
-            glassFishServiceUtil.registerASInfo(entry);
+            entry.setAppName(appName);
+            gfServiceUtil.registerASInfo(entry);
         }
+*/
+
 
         if (clusterName != null) {
             // Save cluster's CloudRegistryEntry in the DB
@@ -133,7 +147,8 @@ public class CreateGlassFishService implements AdminCommand, Runnable {
             entry.setIpAddress("NA");
             entry.setState(CloudRegistryEntry.State.Initializing.toString());
             entry.setServerType(CloudRegistryEntry.Type.Cluster.toString());
-            glassFishServiceUtil.registerASInfo(entry);
+            entry.setAppName(appName);
+            gfServiceUtil.registerASInfo(entry);
         }
 
 /*
@@ -155,24 +170,27 @@ public class CreateGlassFishService implements AdminCommand, Runnable {
 
     // Register the setup in database.
     private void update(CloudRegistryEntry entry) {
-        glassFishServiceUtil.updateIPAddress(entry.getCloudName(), entry.getIpAddress(), ServiceType.APPLICATION_SERVER);
-        glassFishServiceUtil.updateState(entry.getCloudName(), entry.getState(), ServiceType.APPLICATION_SERVER);
+        gfServiceUtil.updateIPAddress(entry.getCloudName(), entry.getAppName(), entry.getIpAddress(), ServiceType.APPLICATION_SERVER);
+        gfServiceUtil.updateState(entry.getCloudName(), entry.getAppName(), entry.getState(), ServiceType.APPLICATION_SERVER);
     }
 
 
 
     public void run() {
 
-        String domainState = glassFishServiceUtil.getServiceState(domainName, ServiceType.APPLICATION_SERVER);
+/*
+        String domainState = gfServiceUtil.getServiceState(domainName, ServiceType.APPLICATION_SERVER);
         String dasIPAddress;
+*/
         CloudProvisioner cloudProvisioner = cloudRegistryService.getCloudProvisioner();
         ApplicationServerProvisioner provisioner;
 
+/*
         if (CloudRegistryEntry.State.Initializing.toString().equals(domainState)) {
 
             // Invoke CloudProvisioner to install DAS image on an VM
             String instanceID = cloudProvisioner.createMasterInstance();
-            glassFishServiceUtil.updateInstanceID(domainName, instanceID, ServiceType.APPLICATION_SERVER);
+            gfServiceUtil.updateInstanceID(domainName, instanceID, ServiceType.APPLICATION_SERVER);
             String ipAddress = cloudProvisioner.getIPAddress(instanceID);
 
             cloudProvisioner.uploadCredentials(ipAddress);
@@ -188,8 +206,8 @@ public class CreateGlassFishService implements AdminCommand, Runnable {
             provisioner.startDomain(dasIPAddress, domainName);
             updateIPAndState(dasIPAddress, CloudRegistryEntry.State.Running.toString());
         } else if (CloudRegistryEntry.State.NotRunning.toString().equals(domainState)) {
-            dasIPAddress = glassFishServiceUtil.getIPAddress(domainName, ServiceType.APPLICATION_SERVER);
-            String instanceID = glassFishServiceUtil.getInstanceID(serviceName, ServiceType.APPLICATION_SERVER);
+            dasIPAddress = gfServiceUtil.getIPAddress(domainName, ServiceType.APPLICATION_SERVER);
+            String instanceID = gfServiceUtil.getInstanceID(serviceName, ServiceType.APPLICATION_SERVER);
 
             Map<String, String> instances = new LinkedHashMap<String, String>();
             instances.put(instanceID, dasIPAddress);
@@ -200,9 +218,11 @@ public class CreateGlassFishService implements AdminCommand, Runnable {
             updateIPAndState(dasIPAddress, CloudRegistryEntry.State.Running.toString());
         } else {
             //if the DAS is already running and someone is trying to create a cluster/instance.
-            dasIPAddress = glassFishServiceUtil.getIPAddress(domainName, ServiceType.APPLICATION_SERVER);
+            dasIPAddress = gfServiceUtil.getIPAddress(domainName, ServiceType.APPLICATION_SERVER);
         }
+*/
 
+        String dasIPAddress = gfServiceUtil.getDASIPAddress(serviceName);
         provisioner = cloudRegistryService.getAppServerProvisioner(dasIPAddress);
         if (instanceCount >= 1) {
             //TODO run this parallely ?
@@ -214,7 +234,8 @@ public class CreateGlassFishService implements AdminCommand, Runnable {
                 // update DB :: update cluster state.
                 CloudRegistryEntry entry = new CloudRegistryEntry();
                 entry.setIpAddress("NA");
-                entry.setCloudName(serviceName);
+                entry.setCloudName(clusterName);
+                entry.setAppName(appName);
                 entry.setState(CloudRegistryEntry.State.Running.toString());
                 update(entry);
             }
@@ -235,18 +256,19 @@ public class CreateGlassFishService implements AdminCommand, Runnable {
         String instanceId = instanceIds.get(0); //there will be only one.
 
         String instanceIP = cloudProvisioner.getIPAddress(instanceId);
-        String domainName = glassFishServiceUtil.getServiceName(dasIPAddress, ServiceType.APPLICATION_SERVER);
+        //String domainName = gfServiceUtil.getServiceName(dasIPAddress, ServiceType.APPLICATION_SERVER);
 
         String insName;
         String nodeName;
         if (providedInstanceName == null) {
-            String ID = glassFishServiceUtil.getNextID(domainName);
-            insName = glassFishServiceUtil.generateInstanceName(ID);
-            nodeName = glassFishServiceUtil.generateNodeName(ID);
+            //String ID = gfServiceUtil.getNextID(domainName);
+            String ID = gfServiceUtil.getNextID(clusterName, appName);
+            insName = gfServiceUtil.generateInstanceName(ID);
+            nodeName = gfServiceUtil.generateNodeName(ID);
         } else {
             insName = providedInstanceName;
             //TODO while deleting the node, we need to generate the name again ?
-            nodeName = glassFishServiceUtil.generateNodeName(providedInstanceName);
+            nodeName = gfServiceUtil.generateNodeName(providedInstanceName);
         }
         String instanceName = provisioner.provisionNode(dasIPAddress, instanceIP, clusterName, nodeName, insName);
         provisioner.startInstance(dasIPAddress, instanceName);
@@ -264,9 +286,11 @@ public class CreateGlassFishService implements AdminCommand, Runnable {
         entry.setIpAddress(instanceIP);
         entry.setInstanceId(instanceId);
         entry.setState(CloudRegistryEntry.State.Running.toString());
-        glassFishServiceUtil.registerASInfo(entry);
+        entry.setAppName(appName);
+        gfServiceUtil.registerASInfo(entry);
     }
 
+/*
     private void updateIPAndState(String dasIPAddress, String state) {
         // update DB.
         CloudRegistryEntry entry = new CloudRegistryEntry();
@@ -276,4 +300,5 @@ public class CreateGlassFishService implements AdminCommand, Runnable {
         update(entry);
         //return entry;
     }
+*/
 }

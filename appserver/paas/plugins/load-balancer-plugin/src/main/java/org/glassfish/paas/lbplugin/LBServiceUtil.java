@@ -41,18 +41,13 @@
 package org.glassfish.paas.lbplugin;
 
 import org.glassfish.hk2.scopes.Singleton;
+import org.glassfish.paas.orchestrator.config.Services;
 import org.glassfish.paas.orchestrator.provisioning.CloudRegistryEntry;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceType;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceUtil;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.Statement;
-
-import static org.glassfish.paas.orchestrator.provisioning.CloudRegistryService.CLOUD_LB_TABLE_NAME;
 
 @Service
 @Scoped(Singleton.class)
@@ -61,32 +56,37 @@ public class LBServiceUtil {
     @Inject
     private ServiceUtil serviceUtil;
 
-    public CloudRegistryEntry retrieveCloudEntry(String serviceName, ServiceType type) {
-        return serviceUtil.retrieveCloudEntry(serviceName, type);
+    public CloudRegistryEntry retrieveCloudEntry(String serviceName, String appName, ServiceType type) {
+        return serviceUtil.retrieveCloudEntry(serviceName, appName, type);
     }
 
-    public boolean isServiceAlreadyConfigured(String serviceName, ServiceType type) {
-        return serviceUtil.isServiceAlreadyConfigured(serviceName, type);
+    public boolean isServiceAlreadyConfigured(String serviceName, String appName, ServiceType type) {
+        return serviceUtil.isServiceAlreadyConfigured(serviceName, appName, type);
     }
 
-    public boolean isValidService(String serviceName, ServiceType type) {
-        return serviceUtil.isValidService(serviceName, type);
+    public boolean isValidService(String serviceName, String appName, ServiceType type) {
+        return serviceUtil.isValidService(serviceName, appName, type);
     }
 
-    public String getIPAddress(String serviceName, ServiceType type) {
-        return serviceUtil.getIPAddress(serviceName,  type);
+    public String getIPAddress(String serviceName, String appName, ServiceType type) {
+        return serviceUtil.getIPAddress(serviceName, appName, type);
     }
 
     public void registerLBInfo(CloudRegistryEntry entry) {
-        serviceUtil.registerCloudEntry(entry, CLOUD_LB_TABLE_NAME, "LOAD_BALANCER");
+        serviceUtil.registerCloudEntry(entry, null, "LOAD_BALANCER");
     }
 
+/*
     public void closeDBObjects(Connection con, Statement stmt, ResultSet rs) {
         serviceUtil.closeDBObjects(con, stmt, rs);
     }
+*/
 
-    public void updateState(String serviceName, String state, ServiceType type) {
-        serviceUtil.updateState(serviceName, state, type);
+    public void updateState(String serviceName, String appName, String state, ServiceType type) {
+        serviceUtil.updateState(serviceName, appName, state, type);
     }
 
+    public Services getServices(){
+        return serviceUtil.getServices();
+    }
 }

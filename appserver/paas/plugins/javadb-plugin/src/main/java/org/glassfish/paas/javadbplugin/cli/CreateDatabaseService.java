@@ -54,8 +54,6 @@ import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
 
-import static org.glassfish.paas.orchestrator.provisioning.CloudRegistryService.CLOUD_DB_TABLE_NAME;
-
 /**
  * @author Jagadish Ramu
  */
@@ -72,11 +70,14 @@ public class CreateDatabaseService implements AdminCommand {
     @Inject
     private DatabaseServiceUtil dbServiceUtil;
 
+    @Param(name="appname", optional=true)
+    private String appName;
+
     public void execute(AdminCommandContext context) {
 
         final ActionReport report = context.getActionReport();
         // Check if the service is already configured.
-        if (dbServiceUtil.isServiceAlreadyConfigured(serviceName, ServiceType.DATABASE)) {
+        if (dbServiceUtil.isServiceAlreadyConfigured(serviceName, appName, ServiceType.DATABASE)) {
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setMessage("Service with name [" +
                     serviceName + "] is already configured.");
@@ -96,6 +97,7 @@ public class CreateDatabaseService implements AdminCommand {
         entry.setIpAddress(ipAddress);
         entry.setState(CloudRegistryEntry.State.Running.toString());
         entry.setCloudName(serviceName);
+        entry.setAppName(appName);
         entry.setServerType("database");
 
         dbServiceUtil.registerDBInfo(entry);

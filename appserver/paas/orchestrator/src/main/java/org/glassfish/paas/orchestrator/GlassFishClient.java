@@ -74,7 +74,7 @@ public class GlassFishClient implements GlassFish {
         try {
             ParameterMap parameterMap = new ParameterMap();
             parameterMap.add("host", glassfishProperties.getProperty("host"));
-            parameterMap.add("secure", "true"); // TODO :: secure=true might wait for console input to accept certificate if System.console() != null
+            parameterMap.add("secure", "false"); // TODO :: secure=true might wait for console input to accept certificate if System.console() != null
 
             // add the inhabitants required by CLICommand.
             Environment env = new Environment();

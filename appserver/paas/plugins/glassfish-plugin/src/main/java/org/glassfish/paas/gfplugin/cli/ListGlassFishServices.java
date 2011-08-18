@@ -46,22 +46,23 @@ import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
+import org.glassfish.paas.orchestrator.config.ApplicationScopedService;
+import org.glassfish.paas.orchestrator.config.Service;
+import org.glassfish.paas.orchestrator.config.Services;
+import org.glassfish.paas.orchestrator.config.SharedService;
 import org.glassfish.paas.orchestrator.provisioning.CloudRegistryService;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
 
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-import javax.sql.DataSource;
-import java.sql.*;
+import java.util.ArrayList;
+import java.util.Collection;
 
 
 /**
  * @author Jagadish Ramu
  */
-@Service(name = "list-glassfish-services")
+@org.jvnet.hk2.annotations.Service(name = "list-glassfish-services")
 @Scoped(PerLookup.class)
 public class ListGlassFishServices implements AdminCommand {
 
@@ -74,41 +75,92 @@ public class ListGlassFishServices implements AdminCommand {
     @Param(name = "servicename", defaultValue = "*", optional = true, primary = true)
     private String serviceName;
 
+    @Param(name="appname", optional=true)
+    private String appName;
+
     public void execute(AdminCommandContext context) {
         final ActionReport report = context.getActionReport();
-        Connection con = null;
-        PreparedStatement stmt = null;
-        ResultSet rs = null;
+        Collection<Service> glassFishServices = new ArrayList<Service>();
         try {
-            InitialContext ic = new InitialContext();
-            DataSource ds = (DataSource) ic.lookup(CloudRegistryService.RESOURCE_NAME);
-
-            String query = null;
             if (serviceName.equals("*")) {
-                query = "select * from " + CloudRegistryService.CLOUD_TABLE_NAME;
+                Services services = serviceUtil.getServices();
+                for(Service service : services.getServices()){
+                    if(service.getType().equals("ClusterInstance") || service.getType().equals("StandaloneInstance") || service.getType().equals("Cluster")){
+                        if(appName != null){
+                            if(service instanceof ApplicationScopedService){
+                                if(appName.equals(((ApplicationScopedService)service).getApplicationName())){
+                                    glassFishServices.add(service);
+                                }
+                            }
+                        }else{
+                            glassFishServices.add(service);
+                        }
+                    }
+                }
             } else if (serviceName.endsWith("*")) {
                 String wildCardString = serviceName.substring(0, serviceName.lastIndexOf("*"));
-                query = "select * from " + CloudRegistryService.CLOUD_TABLE_NAME + " where CLOUD_NAME like '" + wildCardString + "%'";
+                Services services = serviceUtil.getServices();
+                for(Service service : services.getServices()){
+                    if(serviceName.startsWith(wildCardString)){
+                        if(service.getType().equals("ClusterInstance") || service.getType().equals("StandaloneInstance") || service.getType().equals("Cluster")){
+                            if(appName != null){
+                                if(service instanceof ApplicationScopedService){
+                                    if(appName.equals(((ApplicationScopedService)service).getApplicationName())){
+                                        glassFishServices.add(service);
+                                    }
+                                }
+                            }else{
+                                glassFishServices.add(service);
+                            }
+                        }
+                    }
+                }
             } else if (serviceName != null) {
-                query = "select * from " + CloudRegistryService.CLOUD_TABLE_NAME + " where CLOUD_NAME = '" + serviceName + "' or CLOUD_NAME like '" + serviceName + ".%'";
+                String wildCardString = serviceName;
+                Services services = serviceUtil.getServices();
+                for(Service service : services.getServices()){
+                    if(serviceName.startsWith(wildCardString)){
+                        if(service.getType().equals("ClusterInstance") || service.getType().equals("StandaloneInstance") || service.getType().equals("Cluster")){
+                            if(appName != null){
+                                if(service instanceof ApplicationScopedService){
+                                    if(appName.equals(((ApplicationScopedService)service).getApplicationName())){
+                                        glassFishServices.add(service);
+                                    }
+                                }
+                            }else{
+                                glassFishServices.add(service);
+                            }
+                        }
+                    }
+                }
+
             }
 
-            if (query != null) {
-                con = ds.getConnection();
-                stmt = prepareStatement(con, query);
-                rs = stmt.executeQuery();
+            if (glassFishServices.size() > 0) {
 
                 String headings[] = {"CLOUD_NAME", "IP_ADDRESS", "INSTANCE_ID", "SERVER_TYPE", "STATE"};
                 ColumnFormatter cf = new ColumnFormatter(headings);
 
                 boolean foundRows = false;
-                while (rs.next()) {
+                for(Service service : glassFishServices) {
                     foundRows = true;
-                    String cloudName = rs.getString("CLOUD_NAME");
-                    String ipAddress = rs.getString("IP_ADDRESS");
-                    String instanceID = rs.getString("INSTANCE_ID");
-                    String serverType = rs.getString("SERVER_TYPE");
-                    String state = rs.getString("STATE");
+                    String cloudName = service.getServiceName();
+                    String ipAddress = service.getPropertyValue("ip-address");
+                    if(ipAddress == null){
+                        ipAddress = "-";
+                    }
+                    String instanceID = service.getPropertyValue("instance-id");
+                    if(instanceID == null){
+                        instanceID = "-";
+                    }
+                    String serverType = service.getType();
+
+                    String state = "-";
+                    if(service instanceof ApplicationScopedService){
+                        state = ((ApplicationScopedService)service).getState();
+                    }else if(service instanceof SharedService){
+                        state = ((SharedService)service).getState();
+                    }
 
                     cf.addRow(new Object[]{cloudName, ipAddress, instanceID, serverType, state});
                 }
@@ -121,28 +173,13 @@ public class ListGlassFishServices implements AdminCommand {
                 report.setMessage("Nothing to list.");
             }
 
+
             ActionReport.ExitCode ec = ActionReport.ExitCode.SUCCESS;
             report.setActionExitCode(ec);
-        } catch (NamingException e) {
-            report.setMessage("Failed to list GlassFish services");
-            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            report.setFailureCause(e);
-        } catch (SQLException e) {
-            report.setMessage("Failed to list GlassFish services");
-            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            report.setFailureCause(e);
         } catch (Exception e) {
             report.setMessage("Failed to list GlassFish services");
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setFailureCause(e);
-        } finally {
-            serviceUtil.closeDBObjects(con, stmt, rs);
         }
     }
-
-    private PreparedStatement prepareStatement(Connection con, final String query)
-            throws SQLException {
-        return con.prepareStatement(query);
-    }
-
 }

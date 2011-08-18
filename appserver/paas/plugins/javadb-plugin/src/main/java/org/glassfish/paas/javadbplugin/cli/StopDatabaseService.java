@@ -68,6 +68,9 @@ public class StopDatabaseService implements AdminCommand {
     @Param(name = "servicename", primary = true, optional = false)
     private String serviceName;
 
+    @Param(name="appname", optional=true)
+    private String appName;
+
     @Inject
     private CloudRegistryService cloudRegistryService;
 
@@ -78,8 +81,8 @@ public class StopDatabaseService implements AdminCommand {
 
         final ActionReport report = context.getActionReport();
 
-        if (dbServiceUtil.isValidService(serviceName, ServiceType.DATABASE)) {
-            CloudRegistryEntry entry = dbServiceUtil.retrieveCloudEntry(serviceName, ServiceType.DATABASE);
+        if (dbServiceUtil.isValidService(serviceName, appName, ServiceType.DATABASE)) {
+            CloudRegistryEntry entry = dbServiceUtil.retrieveCloudEntry(serviceName, appName, ServiceType.DATABASE);
             String ipAddress = entry.getIpAddress();
             String status = entry.getState();
             if (status == null || status.equalsIgnoreCase(State.Stop_in_progress.toString())
@@ -89,7 +92,7 @@ public class StopDatabaseService implements AdminCommand {
                 return;
             }
 
-            dbServiceUtil.updateState(serviceName, State.Stop_in_progress.toString(), ServiceType.DATABASE);
+            dbServiceUtil.updateState(serviceName, appName, State.Stop_in_progress.toString(), ServiceType.DATABASE);
 
             cloudRegistryService.getDatabaseProvisioner().stopDatabase(ipAddress);
 
@@ -98,7 +101,7 @@ public class StopDatabaseService implements AdminCommand {
             list.add(entry.getIpAddress());
             cloudProvisioner.stopInstances(list);
 
-            dbServiceUtil.updateState(serviceName, State.NotRunning.toString(), ServiceType.DATABASE);
+            dbServiceUtil.updateState(serviceName, appName, State.NotRunning.toString(), ServiceType.DATABASE);
             report.setMessage("db-service [" + serviceName + "] stopped");
             report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
 

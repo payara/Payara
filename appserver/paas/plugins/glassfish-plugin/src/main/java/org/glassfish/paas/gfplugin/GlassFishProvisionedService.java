@@ -79,6 +79,15 @@ public class GlassFishProvisionedService implements ProvisionedService {
         return serviceDesription;
     }
 
+    public String getName(){
+        return serviceDesription.getName();
+    }
+
+    public Properties getProperties() {
+        //TODO return the co-ordinates (eg: hostname, port, etc.,)
+        return new Properties();
+    }
+
     public ServiceStatus getStatus() {
         ServiceStatus status = ServiceStatus.UNKNOWN;
         try {

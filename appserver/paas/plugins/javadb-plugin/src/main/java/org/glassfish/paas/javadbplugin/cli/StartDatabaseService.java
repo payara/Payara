@@ -71,6 +71,9 @@ public class StartDatabaseService implements AdminCommand {
     @Inject
     private CloudRegistryService cloudRegistryService;
 
+    @Param(name="appname", optional=true)
+    private String appName;
+
     @Inject
     private DatabaseServiceUtil dbServiceUtil;
 
@@ -78,8 +81,8 @@ public class StartDatabaseService implements AdminCommand {
 
         final ActionReport report = context.getActionReport();
 
-        if (dbServiceUtil.isValidService(serviceName, ServiceType.DATABASE)) {
-            CloudRegistryEntry entry = dbServiceUtil.retrieveCloudEntry(serviceName, ServiceType.DATABASE);
+        if (dbServiceUtil.isValidService(serviceName, appName, ServiceType.DATABASE)) {
+            CloudRegistryEntry entry = dbServiceUtil.retrieveCloudEntry(serviceName, appName, ServiceType.DATABASE);
             String ipAddress = entry.getIpAddress();
             String status = entry.getState();
             if (status == null || status.equalsIgnoreCase(State.Start_in_progress.toString())
@@ -89,7 +92,7 @@ public class StartDatabaseService implements AdminCommand {
                 return;
             }
 
-            dbServiceUtil.updateState(serviceName, State.Start_in_progress.toString(), ServiceType.DATABASE);
+            dbServiceUtil.updateState(serviceName, appName, State.Start_in_progress.toString(), ServiceType.DATABASE);
 
             CloudProvisioner cloudProvisioner = cloudRegistryService.getCloudProvisioner();
             Map<String, String> map = new HashMap<String, String>();
@@ -99,7 +102,7 @@ public class StartDatabaseService implements AdminCommand {
 
             cloudRegistryService.getDatabaseProvisioner().startDatabase(ipAddress);
 
-            dbServiceUtil.updateState(serviceName, State.Running.toString(), ServiceType.DATABASE);
+            dbServiceUtil.updateState(serviceName, appName, State.Running.toString(), ServiceType.DATABASE);
             report.setMessage("db-service [" + serviceName + "] started");
             report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
 

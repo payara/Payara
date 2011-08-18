@@ -46,4 +46,10 @@ public class JavaEEServiceType extends ServiceType {
     public String toString() {
         return "JavaEE";
     }
+
+    @Override
+    public String getName() {
+        return "JavaEE";
+    }
+
 }

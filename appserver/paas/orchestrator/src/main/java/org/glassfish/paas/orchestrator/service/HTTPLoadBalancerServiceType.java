@@ -46,4 +46,9 @@ public class HTTPLoadBalancerServiceType extends ServiceType {
     public String toString() {
         return "LB";
     }
+
+    @Override
+    public String getName() {
+        return "LB";
+    }
 }

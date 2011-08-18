@@ -51,10 +51,19 @@ import javax.validation.constraints.NotNull;
 
 @Configured
 public interface ServiceRef extends ConfigBeanProxy, Injectable{
+    //TODO later (when app-scoped-service and service-ref are stored within <application>) this attribute should be key
     @Param
     @NotNull
-    @Attribute(key=true)
+    @Attribute
     String getServiceName();
 
     void setServiceName(String name) throws PropertyVetoException;
+
+    /*TODO for now service-ref of an application is also stored in domain.xml
+           as part of global <services> section */
+    @Attribute
+    @Param
+    String getApplicationName();
+
+    void setApplicationName(String applicationName) throws PropertyVetoException;
 }

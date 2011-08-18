@@ -106,7 +106,7 @@ public class DerbyPlugin implements Plugin<RDBMSServiceType> {
         return new HashSet<ServiceReference>();
     }
 
-    public ServiceDescription getDefaultServiceDescription(ServiceReference svcRef) {
+    public ServiceDescription getDefaultServiceDescription(String appName, ServiceReference svcRef) {
 
         if (DATASOURCE.equals(svcRef.getServiceRefType())) {
 
@@ -117,7 +117,7 @@ public class DerbyPlugin implements Plugin<RDBMSServiceType> {
             List<Property> properties = new ArrayList<Property>();
             properties.add(new Property("service-type", RDBMS_ServiceType));
             properties.add(new Property("os-name", System.getProperty("os.name"))); // default OS will be same as that of what Orchestrator is running on.
-            ServiceDescription sd = new ServiceDescription(defaultServiceName,
+            ServiceDescription sd = new ServiceDescription(defaultServiceName, appName,
                     "lazy", new ServiceCharacteristics(properties), null);
 
             // Fill the required details in service reference.
@@ -141,6 +141,9 @@ public class DerbyPlugin implements Plugin<RDBMSServiceType> {
         if (!result.getOutput().contains(serviceName)) {
             //create-database-service
             params = new ArrayList<String>();
+            if(serviceDescription.getAppName() != null){
+                params.add("--appname="+serviceDescription.getAppName());
+            }
             params.add(serviceName);
             parameters = new String[params.size()];
             parameters = params.toArray(parameters);
@@ -151,13 +154,16 @@ public class DerbyPlugin implements Plugin<RDBMSServiceType> {
             }
         }
 
-        CloudRegistryEntry entry = dbServiceUtil.retrieveCloudEntry(serviceName, ServiceType.DATABASE);
+        CloudRegistryEntry entry = dbServiceUtil.retrieveCloudEntry(serviceName, serviceDescription.getAppName(), ServiceType.DATABASE);
         if (entry == null) {
             throw new RuntimeException("unable to get DB service : " + serviceName);
         }
 
         params = new ArrayList<String>();
-        params.add(serviceName);
+        if(serviceDescription.getAppName() != null){
+            params.add("--appname="+serviceDescription.getAppName());
+        }
+        params.add("servicename="+serviceName);
         parameters = new String[params.size()];
         parameters = params.toArray(parameters);
 
@@ -169,7 +175,7 @@ public class DerbyPlugin implements Plugin<RDBMSServiceType> {
 
         Properties serviceProperties = new Properties();
         //TODO HACK as we use dbServiceUtil to get DB's IP Address.
-        String ipAddress = dbServiceUtil.getIPAddress(serviceName, ServiceType.DATABASE);
+        String ipAddress = dbServiceUtil.getIPAddress(serviceName, serviceDescription.getAppName(), ServiceType.DATABASE);
         serviceProperties.put("host", ipAddress);
         serviceProperties.put("port", "1527"); // TODO :: grab the actual port.
 
@@ -197,7 +203,7 @@ public class DerbyPlugin implements Plugin<RDBMSServiceType> {
     }
 
     public Set<ServiceDescription> getImplicitServiceDescriptions(
-            ReadableArchive cloudArchive) {
+            ReadableArchive cloudArchive, String appName) {
         //no-op. Just by looking at a orchestration archive
         //the db plugin cannot say that a DB needs to be provisioned. 
         return new HashSet<ServiceDescription>();

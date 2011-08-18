@@ -112,7 +112,7 @@ public class LBPlugin implements Plugin<HTTPLoadBalancerServiceType> {
         return new HashSet<ServiceReference>();
     }
 
-    public ServiceDescription getDefaultServiceDescription(ServiceReference svcRef) {
+    public ServiceDescription getDefaultServiceDescription(String appName, ServiceReference svcRef) {
         if (LB.equals(svcRef.getServiceRefType())) {
             LBProvisioner lbProvisioner = registryService.getLBProvisioner(GLASSFISH_LB);
 
@@ -121,7 +121,7 @@ public class LBPlugin implements Plugin<HTTPLoadBalancerServiceType> {
             List<Property> properties = new ArrayList<Property>();
             properties.add(new Property("service-type", LB_ServiceType));
             properties.add(new Property("os-name", System.getProperty("os.name"))); // default OS will be same as that of what Orchestrator is running on.
-            ServiceDescription sd = new ServiceDescription(defaultServiceName,
+            ServiceDescription sd = new ServiceDescription(defaultServiceName, appName,
                     "lazy", new ServiceCharacteristics(properties), null);
 
             // Fill the required details in service reference.
@@ -147,8 +147,11 @@ public class LBPlugin implements Plugin<HTTPLoadBalancerServiceType> {
             params = new ArrayList<String>();
             params.add("--_ignore_appserver_association");
             params.add("true");
-            parameters = new String[params.size()];
+            if(serviceDescription.getAppName() != null){
+                params.add("appname="+serviceDescription.getAppName());
+            }
             params.add(serviceName);
+            parameters = new String[params.size()];
             parameters = params.toArray(parameters);
 
             result = commandRunner.run("create-lb-service", parameters);
@@ -157,7 +160,7 @@ public class LBPlugin implements Plugin<HTTPLoadBalancerServiceType> {
             }
         }
 
-        CloudRegistryEntry entry = lbServiceUtil.retrieveCloudEntry(serviceName, ServiceType.LOAD_BALANCER);
+        CloudRegistryEntry entry = lbServiceUtil.retrieveCloudEntry(serviceName, serviceDescription.getAppName(), ServiceType.LOAD_BALANCER);
         if (entry == null) {
             throw new RuntimeException("unable to get LB service : " + serviceName);
         }
@@ -195,7 +198,7 @@ public class LBPlugin implements Plugin<HTTPLoadBalancerServiceType> {
         throw new UnsupportedOperationException("Not implemented yet");
     }
 
-    public Set<ServiceDescription> getImplicitServiceDescriptions(ReadableArchive cloudArchive) {
+    public Set<ServiceDescription> getImplicitServiceDescriptions(ReadableArchive cloudArchive, String appName) {
         //no-op. Just by looking at a orchestration archive
         //the LB plugin cannot say that an LB needs to be provisioned.
         HashSet<ServiceDescription> defs = new HashSet<ServiceDescription>();
@@ -221,7 +224,7 @@ public class LBPlugin implements Plugin<HTTPLoadBalancerServiceType> {
                 properties.add(new Property("service-type", LB_ServiceType));
                 // TODO :: check if the cloudArchive.getName() is okay.
                 ServiceDescription sd = new ServiceDescription(
-                        cloudArchive.getName(), "lazy",
+                        cloudArchive.getName(), appName, "lazy",
                         new ServiceCharacteristics(properties), null);
                 defs.add(sd);
             }

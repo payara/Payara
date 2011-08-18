@@ -105,7 +105,7 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
                 ServicesXMLParser.class).iterator().next();
 
         //1.1 discover all Service References and Definitions already declared for this application
-        ServiceMetadata appServiceMetadata = parser.discoverDeclaredServices(cloudArchive);
+        ServiceMetadata appServiceMetadata = parser.discoverDeclaredServices(appName, cloudArchive);
 
         logger.log(Level.INFO, "Discovered declared service metadata via glassfish-services.xml = " + appServiceMetadata);
 
@@ -120,7 +120,7 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
                 //if it has any implicit service-definition for this
                 //application
                 if (!serviceDefinitionExistsForType(appServiceMetadata, svcPlugin.getServiceType())) {
-                    Set<ServiceDescription> implicitServiceDescs = svcPlugin.getImplicitServiceDescriptions(cloudArchive);
+                    Set<ServiceDescription> implicitServiceDescs = svcPlugin.getImplicitServiceDescriptions(cloudArchive, appName);
                     for (ServiceDescription sd : implicitServiceDescs) {
                         System.out.println("Implicit ServiceDescription:" + sd);
                         appServiceMetadata.addServiceDescription(sd);
@@ -163,7 +163,7 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
                 //service metadata
                 for (Plugin svcPlugin : installedPlugins) {
                     if (svcPlugin.isReferenceTypeSupported(svcRefType)) {
-                        ServiceDescription defSD = svcPlugin.getDefaultServiceDescription(sr);
+                        ServiceDescription defSD = svcPlugin.getDefaultServiceDescription(appName, sr);
                         appServiceMetadata.addServiceDescription(defSD);
                         continue; //ignore the rest of the plugins
                     }

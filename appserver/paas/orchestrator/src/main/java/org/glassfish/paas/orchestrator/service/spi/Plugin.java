@@ -42,6 +42,7 @@ package org.glassfish.paas.orchestrator.service.spi;
 
 import java.util.Set;
 
+import org.glassfish.paas.orchestrator.config.Service;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceDescription;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceReference;
 import org.jvnet.hk2.annotations.Contract;
@@ -127,7 +128,7 @@ public interface Plugin<T extends ServiceType> {
      * @return A valid ServiceDefinition with defaults filled in.
      */
     public ServiceDescription getDefaultServiceDescription(
-            ServiceReference svcRef);
+            String appName, ServiceReference svcRef);
 
     /**
      * Once the CAS merges all discovered and explicit
@@ -180,6 +181,6 @@ public interface Plugin<T extends ServiceType> {
                                        ProvisionedService newPS);
 
     public Set<ServiceDescription> getImplicitServiceDescriptions(
-            ReadableArchive cloudArchive);
+            ReadableArchive cloudArchive, String appName);
 
 }

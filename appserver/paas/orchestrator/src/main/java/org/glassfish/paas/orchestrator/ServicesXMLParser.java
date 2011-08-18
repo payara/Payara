@@ -50,5 +50,5 @@ import org.jvnet.hk2.annotations.Contract;
 @Contract
 public interface ServicesXMLParser {
 
-    public ServiceMetadata discoverDeclaredServices(ReadableArchive ra);
+    public ServiceMetadata discoverDeclaredServices(String appName, ReadableArchive ra);
 }

@@ -40,24 +40,13 @@
 
 package org.glassfish.paas.orchestrator.provisioning;
 
-import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
-import com.sun.enterprise.config.serverbeans.Domain;
-import com.sun.enterprise.config.serverbeans.Resources;
-import org.glassfish.api.ActionReport;
-import org.glassfish.api.admin.CommandRunner;
-import org.glassfish.paas.orchestrator.provisioning.cli.ServiceType;
-import org.glassfish.paas.orchestrator.provisioning.cli.ServiceUtil;
 import org.glassfish.paas.orchestrator.provisioning.iaas.CloudProvisioner;
-import org.glassfish.resources.config.JdbcResource;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.PostConstruct;
 import org.jvnet.hk2.component.Singleton;
 
-import javax.naming.InitialContext;
-import javax.sql.DataSource;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -73,31 +62,8 @@ import java.util.Properties;
 public class CloudRegistryService implements PostConstruct {
 
     @Inject
-    private Domain domain;
-
-    @Inject
-    private CommandRunner commandRunner;
-
-    @Inject
-    private Habitat habitat;
-
-    @Inject
     private ProvisionerFactory provisionerFactory;
 
-    public static final String CONNECTION_POOL_NAME = "cloud-registry-pool";
-    public static final String RESOURCE_NAME = "jdbc/cloud-registry-resource";
-
-    public static final String CLOUD_TABLE_NAME = "GF_CLOUD_INFO";
-    public static final String CLOUD_DB_TABLE_NAME = "DB_CLOUD_INFO";
-    public static final String CLOUD_LB_TABLE_NAME = "LB_CLOUD_INFO";
-
-    public static final String CLOUD_COLUMN_CLOUD_NAME = "CLOUD_NAME";
-    public static final String CLOUD_COLUMN_IP_ADDRESS = "IP_ADDRESS";
-    public static final String CLOUD_COLUMN_INSTANCE_ID = "INSTANCE_ID";
-    public static final String CLOUD_COLUMN_SERVER_TYPE = "SERVER_TYPE";
-    public static final String CLOUD_COLUMN_STATE = "STATE";
-
-    private DataSource ds;
     private Properties cloudConfig = null;
 
     private CloudProvisioner cloudProvisioner;
@@ -106,74 +72,7 @@ public class CloudRegistryService implements PostConstruct {
     private DatabaseProvisioner databaseProvisioner = null;
     private LBProvisioner lbProvisioner = null;
 
-    public DataSource getDataSource() {
-        return ds;
-    }
-
     public void postConstruct() {
-
-        Resources resources = domain.getResources();
-        if (ConnectorsUtil.getResourceByName(resources, JdbcResource.class, RESOURCE_NAME) == null) {
-            debug("initializing resources");
-            initializeRegistry();
-        }
-        try {
-            InitialContext ic = new InitialContext();
-            ds = (DataSource) ic.lookup(RESOURCE_NAME);
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new RuntimeException(e);
-        }
-    }
-
-
-    private void initializeRegistry() {
-        createJdbcConnectionPool();
-        createJdbcResource();
-        Resources resources = domain.getResources();
-        if (ConnectorsUtil.getResourceByName(resources, JdbcResource.class, RESOURCE_NAME) == null) {
-            throw new RuntimeException("Unable to find resource by name : " + RESOURCE_NAME);
-        } else {
-            debug("resource " + RESOURCE_NAME + " found");
-        }
-        populateTables();
-    }
-
-    private void populateTables() {
-        ServiceUtil serviceUtil = habitat.getComponent(ServiceUtil.class);
-        serviceUtil.createTable(ServiceType.APPLICATION_SERVER);
-        serviceUtil.createTable(ServiceType.DATABASE);
-        serviceUtil.createTable(ServiceType.LOAD_BALANCER);
-    }
-
-    private void createJdbcConnectionPool() {
-        org.glassfish.api.admin.ParameterMap params = new org.glassfish.api.admin.ParameterMap();
-        params.add("DEFAULT", CONNECTION_POOL_NAME);
-        params.add("datasourceClassname", "org.apache.derby.jdbc.EmbeddedConnectionPoolDataSource");
-        params.add("resType", "javax.sql.ConnectionPoolDataSource");
-        params.add("property",
-                "user=APP:password=APP:databaseName=${com.sun.aas.installRoot}/databases/cloud-registry-db:" +
-                        "connectionAttributes=;create\\=true");
-
-        ActionReport actionReport = habitat.getComponent(ActionReport.class);
-        executeCommand("create-jdbc-connection-pool", params, actionReport);
-    }
-
-    private void createJdbcResource() {
-        org.glassfish.api.admin.ParameterMap params = new org.glassfish.api.admin.ParameterMap();
-        params.add("DEFAULT", RESOURCE_NAME);
-        params.add("poolName", CONNECTION_POOL_NAME);
-
-        ActionReport actionReport = habitat.getComponent(ActionReport.class);
-        executeCommand("create-jdbc-resource", params, actionReport);
-    }
-
-    private void executeCommand(String commandName, org.glassfish.api.admin.ParameterMap params, ActionReport actionReport) {
-        commandRunner.getCommandInvocation(commandName, actionReport).parameters(params).execute();
-    }
-
-    private void debug(String message) {
-        System.out.println("[CloudRegistryService] " + message);
     }
 
     public Properties getProperties() {

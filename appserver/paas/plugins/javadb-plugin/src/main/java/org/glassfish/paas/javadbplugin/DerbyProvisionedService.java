@@ -76,6 +76,15 @@ public class DerbyProvisionedService implements ProvisionedService {
         return serviceProperties;
     }
 
+    public String getName(){
+        return serviceDescription.getName();
+    }
+
+    public Properties getProperties() {
+        //TODO return the co-ordinates (eg: hostname, port, etc.,)
+        return new Properties();
+    }
+
     public ServiceStatus getStatus() {
         return status;
     }

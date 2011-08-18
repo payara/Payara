@@ -40,147 +40,198 @@
 package org.glassfish.paas.orchestrator.provisioning.cli;
 
 
+import com.sun.enterprise.config.serverbeans.Domain;
+import org.glassfish.paas.orchestrator.config.ApplicationScopedService;
+import org.glassfish.paas.orchestrator.config.Service;
+import org.glassfish.paas.orchestrator.config.Services;
+import org.glassfish.paas.orchestrator.config.SharedService;
 import org.glassfish.paas.orchestrator.provisioning.CloudRegistryEntry;
 import org.glassfish.paas.orchestrator.provisioning.CloudRegistryService;
-import org.glassfish.paas.orchestrator.provisioning.CloudRegistryEntry.Type;
 
 import static org.glassfish.paas.orchestrator.provisioning.CloudRegistryService.*;
 
 
 import org.jvnet.hk2.annotations.Inject;
-import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PostConstruct;
+import org.jvnet.hk2.config.ConfigSupport;
+import org.jvnet.hk2.config.SingleConfigCode;
+import org.jvnet.hk2.config.Transaction;
+import org.jvnet.hk2.config.TransactionFailure;
+import org.jvnet.hk2.config.types.Property;
 
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
+import java.beans.PropertyVetoException;
 import java.sql.*;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-@Service
+@org.jvnet.hk2.annotations.Service
 public class ServiceUtil implements PostConstruct {
 
     private static ExecutorService threadPool = Executors.newFixedThreadPool(1);
 
-
-    public final static Map<ServiceType, String> serviceTypeTableMapping;
-
-    static {
-        serviceTypeTableMapping = new HashMap<ServiceType, String>();
-        serviceTypeTableMapping.put(ServiceType.APPLICATION_SERVER, CLOUD_TABLE_NAME);
-        serviceTypeTableMapping.put(ServiceType.DATABASE, CLOUD_DB_TABLE_NAME);
-        serviceTypeTableMapping.put(ServiceType.LOAD_BALANCER, CLOUD_LB_TABLE_NAME);
-    }
-
     @Inject
-    private CloudRegistryService cloudRegistryService;
+    private Domain domain;
 
     public static ExecutorService getThreadPool() {
         return threadPool;
     }
 
-
-    private DataSource ds = null;
-
-
     public void postConstruct() {
-        InitialContext ic = null;
-        try {
-            ic = new InitialContext();
-            ds = (DataSource) ic.lookup(CloudRegistryService.RESOURCE_NAME);
-        } catch (NamingException e) {
-            throw new RuntimeException("Unable to get datasource : " + CloudRegistryService.RESOURCE_NAME);
-        }
     }
 
-    public boolean isValidService(String serviceName, ServiceType type) {
-        CloudRegistryEntry entry = retrieveCloudEntry(serviceName, type);
+    public boolean isValidService(String serviceName, String appName, ServiceType type) {
+        CloudRegistryEntry entry = retrieveCloudEntry(serviceName, appName, type);
         return entry != null;
     }
 
-    public String getTableName(ServiceType type) {
-        String tableName = serviceTypeTableMapping.get(type);
-        if (tableName == null) {
-            throw new RuntimeException("Unable to find TABLE_NAME for service type [" + type + "], " +
-                    "service type must be one of [" + Arrays.toString(ServiceType.values()) + "]");
-        }
-        return tableName;
+    public void updateInstanceID(String serviceName, String appName, final String instanceID, ServiceType type) {
+        updateInstanceIDThroughConfig(serviceName, appName, instanceID);
     }
 
-    public void updateInstanceID(String serviceName, String instanceID, ServiceType type) {
-        String tableName = getTableName(type);
-        Connection con = null;
-        PreparedStatement stmt = null;
-        try {
-            //check whether the serviceName exists
-            final String query = "update " + tableName +
-                    " set " + CloudRegistryService.CLOUD_COLUMN_INSTANCE_ID + "='" + instanceID + "'  " +
-                    "where " + CLOUD_COLUMN_CLOUD_NAME + " = '" + serviceName + "'";
-            System.out.println("Executing query : " + query);
-            con = ds.getConnection();
-            stmt = prepareStatement(con, query);
-            stmt.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            closeDBObjects(con, stmt, null);
-        }
-    }
+    private void updateInstanceIDThroughConfig(String serviceName, String appName, final String instanceID) {
+        Service matchingService = getService(serviceName, appName);
+        if(matchingService != null){
+            try {
+                if (ConfigSupport.apply(new SingleConfigCode<Service>() {
+                    public Object run(Service serviceConfig) throws PropertyVetoException, TransactionFailure {
+                        Property property = serviceConfig.getProperty("instance-id");
+                        if (property != null) {
+                            Transaction t = Transaction.getTransaction(serviceConfig);
+                            Property p_w = t.enroll(property);
+                            p_w.setValue(instanceID);
 
-    public void updateState(String serviceName, String state, ServiceType type) {
-        String tableName = getTableName(type);
-        Connection con = null;
-        PreparedStatement stmt = null;
-        try {
-            //check whether the serviceName exists
-            final String query = "update " + tableName +
-                    " set " + CloudRegistryService.CLOUD_COLUMN_STATE + "='" + state + "'  " +
-                    "where " + CLOUD_COLUMN_CLOUD_NAME + " = '" + serviceName + "'";
-            System.out.println("Executing query : " + query);
-            con = ds.getConnection();
-            stmt = prepareStatement(con, query);
-            stmt.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            closeDBObjects(con, stmt, null);
+                        } else {
+                            Property prop = serviceConfig.createChild(Property.class);
+                            //TODO should this be changed to vm-id
+                            prop.setName("instance-id");
+                            prop.setValue(instanceID);
+                            serviceConfig.getProperty().add(prop);
+                        }
+                        return serviceConfig;
+                    }
+                }, matchingService) == null) {
+                    String msg = "Unable to update instance-id ["+instanceID+"] of service ["+serviceName+"]";
+                    System.out.println(msg);
+                    throw new RuntimeException(msg);
+                }
+            } catch (TransactionFailure transactionFailure) {
+                transactionFailure.printStackTrace();
+                throw new RuntimeException(transactionFailure.getMessage(), transactionFailure);
+            }
+        }else{
+            throw new RuntimeException("Invalid service, no such service ["+serviceName+"] found");
         }
     }
 
+    public void updateState(String serviceName, String appName, final String state, ServiceType type) {
+        updateStateThroughConfig(serviceName, appName, state);
+    }
 
-    public void updateIPAddress(String serviceName, String IPAddress, ServiceType type) {
-        String tableName = getTableName(type);
-        Connection con = null;
-        PreparedStatement stmt = null;
-        boolean valid = false;
-        try {
-            //check whether the serviceName exists
-            final String query = "update " + tableName +
-                    " set " + CloudRegistryService.CLOUD_COLUMN_IP_ADDRESS + "='" + IPAddress + "'  " +
-                    "where " + CLOUD_COLUMN_CLOUD_NAME + " = '" + serviceName + "'";
-            System.out.println("Executing query : " + query);
-            con = ds.getConnection();
-            stmt = prepareStatement(con, query);
-            stmt.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            closeDBObjects(con, stmt, null);
+    private void updateStateThroughConfig(String serviceName, String appName, final String state) {
+        Service matchingService = getService(serviceName, appName);
+        if (matchingService != null) {
+            if (matchingService instanceof ApplicationScopedService) {
+                ApplicationScopedService appScopedService = (ApplicationScopedService) matchingService;
+                try {
+                    if (ConfigSupport.apply(new SingleConfigCode<ApplicationScopedService>() {
+                        public Object run(ApplicationScopedService serviceConfig) throws PropertyVetoException, TransactionFailure {
+                            serviceConfig.setState(state);
+                            return serviceConfig;
+                        }
+                    }, appScopedService) == null) {
+                        String msg = "Unable to update state [" + state + "] of service [" + serviceName + "]";
+                        System.out.println(msg);
+                        throw new RuntimeException(msg);
+                    }
+                } catch (TransactionFailure transactionFailure) {
+                    transactionFailure.printStackTrace();
+                    throw new RuntimeException(transactionFailure.getMessage(), transactionFailure);
+                }
+            }
+
+            if (matchingService instanceof SharedService) {
+                SharedService sharedService = (SharedService) matchingService;
+                try {
+                    if (ConfigSupport.apply(new SingleConfigCode<SharedService>() {
+                        public Object run(SharedService serviceConfig) throws PropertyVetoException, TransactionFailure {
+                            serviceConfig.setState(state);
+                            return serviceConfig;
+                        }
+                    }, sharedService) == null) {
+                        String msg = "Unable to update state [" + state + "] of service [" + serviceName + "]";
+                        System.out.println(msg);
+                        throw new RuntimeException(msg);
+                    }
+                } catch (TransactionFailure transactionFailure) {
+                    transactionFailure.printStackTrace();
+                    throw new RuntimeException(transactionFailure.getMessage(), transactionFailure);
+                }
+            }
+
+        } else {
+            throw new RuntimeException("Invalid service, no such service [" + serviceName + "] found");
         }
     }
 
+    public void updateIPAddress(String serviceName, String appName, final String IPAddress, ServiceType type) {
+        updateIPAddressThroughConfig(serviceName, appName, IPAddress);
+    }
 
+    private void updateIPAddressThroughConfig(String serviceName, String appName, final String IPAddress) {
+        Service matchingService = getService(serviceName, appName);
+        if(matchingService != null){
+            try {
 
-    public String getServiceType(String serviceName, ServiceType type) {
-        CloudRegistryEntry entry = retrieveCloudEntry(serviceName, type);
+                if (ConfigSupport.apply(new SingleConfigCode<Service>() {
+                    public Object run(Service serviceConfig) throws PropertyVetoException, TransactionFailure {
+                        Property property = serviceConfig.getProperty("ip-address");
+                        if (property != null) {
+                            Transaction t = Transaction.getTransaction(serviceConfig);
+                            Property p_w = t.enroll(property);
+                            p_w.setValue(IPAddress);
+                        } else {
+                            Property prop = serviceConfig.createChild(Property.class);
+                            //TODO should this be changed to vm-id
+                            prop.setName("ip-address");
+                            prop.setValue(IPAddress);
+                            serviceConfig.getProperty().add(prop);
+                        }
+                        return serviceConfig;
+                    }
+                }, matchingService) == null) {
+                    String msg = "Unable to update ip-address ["+IPAddress+"] of service ["+serviceName+"]";
+                    System.out.println(msg);
+                    throw new RuntimeException(msg);
+                }
+            } catch (TransactionFailure transactionFailure) {
+                transactionFailure.printStackTrace();
+                throw new RuntimeException(transactionFailure.getMessage(), transactionFailure);
+            }
+        }else{
+            throw new RuntimeException("Invalid service, no such service ["+serviceName+"] found");
+        }
+    }
+
+    private PreparedStatement prepareStatement(Connection con, final String query)
+            throws SQLException {
+        return con.prepareStatement(query);
+    }
+
+    public boolean isServiceAlreadyConfigured(String serviceName, String appName, ServiceType type) {
+        return isServiceAlreadyConfiguredThroughConfig(serviceName, appName);
+    }
+
+    private boolean isServiceAlreadyConfiguredThroughConfig(String serviceName, String appName) {
+        Service matchingService = getService(serviceName, appName);
+        return matchingService != null;
+    }
+
+    public String getServiceType(String serviceName, String appName, ServiceType type) {
+        CloudRegistryEntry entry = retrieveCloudEntry(serviceName, appName, type);
         if (entry != null) {
             return entry.getServerType();
         } else {
@@ -188,8 +239,8 @@ public class ServiceUtil implements PostConstruct {
         }
     }
 
-    public String getServiceState(String serviceName, ServiceType type) {
-        CloudRegistryEntry entry = retrieveCloudEntry(serviceName, type);
+    public String getServiceState(String serviceName, String appName, ServiceType type) {
+        CloudRegistryEntry entry = retrieveCloudEntry(serviceName, appName, type);
         if (entry != null) {
             return entry.getState();
         } else {
@@ -197,8 +248,8 @@ public class ServiceUtil implements PostConstruct {
         }
     }
 
-    public String getIPAddress(String serviceName, ServiceType type) {
-        CloudRegistryEntry entry = retrieveCloudEntry(serviceName, type);
+    public String getIPAddress(String serviceName, String appName, ServiceType type) {
+        CloudRegistryEntry entry = retrieveCloudEntry(serviceName, appName, type);
         if (entry != null) {
             return entry.getIpAddress();
         } else {
@@ -206,8 +257,8 @@ public class ServiceUtil implements PostConstruct {
         }
     }
 
-    public String getInstanceID(String serviceName, ServiceType type) {
-        CloudRegistryEntry entry = retrieveCloudEntry(serviceName, type);
+    public String getInstanceID(String serviceName, String appName, ServiceType type) {
+        CloudRegistryEntry entry = retrieveCloudEntry(serviceName, appName, type);
         if (entry != null) {
             return entry.getInstanceId();
         } else {
@@ -216,179 +267,134 @@ public class ServiceUtil implements PostConstruct {
     }
 
 
-    public String getServiceName(final String ipAddress, ServiceType type) {
-        String tableName = getTableName(type);
-
-        Connection con = null;
-        PreparedStatement stmt = null;
-        ResultSet rs = null;
-        String serviceName = null;
-        try {
-            StringBuffer stringBuffer = new StringBuffer();
-            stringBuffer.append("select ").append(CLOUD_COLUMN_CLOUD_NAME).append(" from ").append(tableName).append(" where IP_ADDRESS = ?");
-            con = ds.getConnection();
-            final String query = stringBuffer.toString();
-            stmt = prepareStatement(con, query);
-            stmt.setString(1, ipAddress);
-            rs = stmt.executeQuery();
-            if (rs.next()) {
-                serviceName = rs.getString("CLOUD_NAME");
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            closeDBObjects(con, stmt, rs);
-        }
-        return serviceName;
+    public CloudRegistryEntry retrieveCloudEntry(String serviceName, String appName, ServiceType type) {
+        return retrieveCloudEntryThroughConfig(serviceName, appName);
     }
 
-    private PreparedStatement prepareStatement(Connection con, final String query)
-            throws SQLException {
-        return con.prepareStatement(query);
-    }
+    private CloudRegistryEntry retrieveCloudEntryThroughConfig(String serviceName, String appName) {
+        Service matchingService = null;
+        CloudRegistryEntry cre = null;
+        matchingService = getService(serviceName, appName);
 
+        if(matchingService != null){
+            cre = new CloudRegistryEntry();
+            cre.setCloudName(matchingService.getServiceName());
+            if(matchingService.getProperty() != null){
+                if(matchingService.getProperty("ip-address") != null){
+                    cre.setIpAddress(matchingService.getProperty("ip-address").getValue());
+                }
 
-
-    public void closeDBObjects(Connection con, Statement stmt, ResultSet rs) {
-        if (rs != null) {
-            try {
-                rs.close();
-            } catch (SQLException e) {
-                //ignore
-            }
-        }
-
-        if (stmt != null) {
-            try {
-                stmt.close();
-            } catch (SQLException e) {
-                //ignore
-            }
-        }
-
-        if (con != null) {
-            try {
-                con.close();
-            } catch (SQLException e) {
-                //ignore
-            }
-        }
-    }
-
-    public CloudRegistryEntry retrieveCloudEntry(String serviceName, ServiceType type) {
-        String tableName = getTableName(type);
-        DataSource ds = cloudRegistryService.getDataSource();
-
-        Connection conn = null;
-        PreparedStatement stmt = null;
-        ResultSet rs = null;
-        CloudRegistryEntry entry = null;
-        try {
-            conn = ds.getConnection();
-            final String sql = "select * from " + tableName + " where " +
-                    CLOUD_COLUMN_CLOUD_NAME + "='" + serviceName + "'";
-
-            stmt = prepareStatement(conn, sql);
-            rs = stmt.executeQuery();
-            if (rs.next()) {
-                entry = new CloudRegistryEntry();
-                entry.setCloudName(rs.getString(CLOUD_COLUMN_CLOUD_NAME));
-                entry.setIpAddress(rs.getString(CLOUD_COLUMN_IP_ADDRESS));
-                entry.setInstanceId(rs.getString(CLOUD_COLUMN_INSTANCE_ID));
-                entry.setState(rs.getString(CLOUD_COLUMN_STATE));
-                entry.setServerType(rs.getString(CLOUD_COLUMN_SERVER_TYPE));
-            }
-            System.out.println("retrieved cloud entry [ " + entry + "] of type [" + type + "]");
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        } finally {
-            closeDBObjects(conn, stmt, rs);
-        }
-        return entry;
-    }
-
-
-    public void registerCloudEntry(CloudRegistryEntry entry, String tableName, String type) {
-        DataSource ds = cloudRegistryService.getDataSource();
-
-        Connection conn = null;
-        PreparedStatement stmt = null;
-
-        try {
-            conn = ds.getConnection();
-            String sql = "INSERT into " + tableName + " values(?,?,?,?,?)";
-
-            stmt = prepareStatement(conn, sql);
-            stmt.setString(1, entry.getCloudName());
-            stmt.setString(2, entry.getIpAddress());
-            stmt.setString(3, entry.getInstanceId());
-            stmt.setString(4, entry.getServerType());
-            stmt.setString(5, entry.getState());
-
-            int retVal = stmt.executeUpdate();
-            System.out.println("Executed [ " + stmt + " ], retVal = [" + retVal + "]");
-
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        } finally {
-            closeDBObjects(conn, stmt, null);
-        }
-        System.out.println("Registered cloud entry [ " + entry + "] for type [" + type + "]");
-    }
-
-
-    public boolean isServiceAlreadyConfigured(String serviceName, ServiceType type) {
-        String tableName = getTableName(type);
-        DataSource ds = cloudRegistryService.getDataSource();
-
-        Connection conn = null;
-        PreparedStatement stmt = null;
-        ResultSet resultSet = null;
-
-        try {
-            conn = ds.getConnection();
-            final String sql = "SELECT " + CLOUD_COLUMN_CLOUD_NAME + " from " + tableName;
-            stmt = prepareStatement(conn, sql);
-            resultSet = stmt.executeQuery();
-            while (resultSet.next()) {
-                if (serviceName.equals(resultSet.getString(CLOUD_COLUMN_CLOUD_NAME).trim())) {
-                    return true;
+                if(matchingService.getProperty("instance-id") != null){
+                    cre.setInstanceId(matchingService.getProperty("instance-id").getValue());
                 }
             }
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        } finally {
-            closeDBObjects(conn, stmt, resultSet);
+
+            //TODO need a "Stateful" service type ?
+            if(matchingService instanceof ApplicationScopedService){
+                cre.setState(((ApplicationScopedService)matchingService).getState());
+            }else if(matchingService instanceof SharedService){
+                cre.setState(((SharedService)matchingService).getState());
+            }
+            cre.setServerType(matchingService.getType());
         }
-        return false;
+        return cre;
+    }
+
+    private Service getService(String serviceName, String appName) {
+        Service matchingService = null;
+        Services services = getServices();
+        for(Service service : services.getServices()){
+            if(service.getServiceName().equals(serviceName)){
+                if(appName != null){
+                    if(service instanceof ApplicationScopedService){
+                        String applicationName = ((ApplicationScopedService)service).getApplicationName();
+                        if(appName.equals(applicationName)){
+                            matchingService = service;
+                            break;
+                        }
+                    }
+                }else{
+                    matchingService = service;
+                    break;
+                }
+            }
+        }
+        return matchingService;
+    }
+
+    public Services getServices(){
+        Services services = domain.getExtensionByType(Services.class);
+        if(services == null){
+            try {
+                if (ConfigSupport.apply(new SingleConfigCode<Domain>() {
+                    public Object run(Domain param) throws PropertyVetoException, TransactionFailure {
+                        Services services = param.createChild(Services.class);
+                        param.getExtensions().add(services);
+                        return services;
+                    }
+                }, domain) == null) {
+                    System.out.println("Unable to create 'services' config");
+                }
+            } catch (TransactionFailure transactionFailure) {
+                System.out.println("Unable to create 'services' config due to : " + transactionFailure.getMessage());
+                throw new RuntimeException(transactionFailure.getMessage(), transactionFailure);
+            }
+        }
+
+        services = domain.getExtensionByType(Services.class);
+        return services;
     }
 
 
-    public void createTable(ServiceType type) {
-        String tableName = getTableName(type);
-        Connection con = null;
-        PreparedStatement stmt = null;
+    public void registerCloudEntry(final CloudRegistryEntry entry, String tableName, String type) {
+        registerCloudEntryThroughConfig(entry);
+    }
+
+    private void registerCloudEntryThroughConfig(final CloudRegistryEntry entry) {
+        Services services = getServices();
         try {
-            InitialContext ic = new InitialContext();
-            ds = (DataSource) ic.lookup(RESOURCE_NAME);
-            con = ds.getConnection();
-            final String query = "create table " + tableName + " (" + CLOUD_COLUMN_CLOUD_NAME + " varchar(50), " + CLOUD_COLUMN_IP_ADDRESS + " varchar(100), " +
-                    "" + CLOUD_COLUMN_INSTANCE_ID + " varchar(15), " + CLOUD_COLUMN_SERVER_TYPE + " varchar(20), " + CLOUD_COLUMN_STATE + " varchar(20))";
-            stmt = prepareStatement(con, query);
-            stmt.executeUpdate();
-            debug("create table " + tableName);
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new RuntimeException(e);
-        } finally {
-            closeDBObjects(con, stmt, null);
+            if (ConfigSupport.apply(new SingleConfigCode<Services>() {
+                public Object run(Services servicesConfig) throws PropertyVetoException, TransactionFailure {
+                    ApplicationScopedService service = servicesConfig.createChild(ApplicationScopedService.class);
+
+                    service.setServiceName(entry.getCloudName());
+                    service.setType(entry.getServerType());
+
+                    if (entry.getAppName() != null) {
+                        service.setApplicationName(entry.getAppName());
+                    }
+                    service.setState(entry.getState());
+
+                    {
+                        Property prop = service.createChild(Property.class);
+                        //TODO should this be changed to vm-id
+                        prop.setName("instance-id");
+                        prop.setValue(entry.getInstanceId());
+                        service.getProperty().add(prop);
+                    }
+
+                    {
+                        //TODO remove ip-address once vm-id is sufficient
+                        Property prop = service.createChild(Property.class);
+                        prop.setName("ip-address");
+                        prop.setValue(entry.getIpAddress());
+                        service.getProperty().add(prop);
+                    }
+                    servicesConfig.getServices().add(service);
+                    return service;
+                }
+            }, services) == null) {
+                String msg = "Unable to service ["+entry.getCloudName()+"]";
+                System.out.println(msg);
+                throw new RuntimeException(msg);
+            }
+        } catch (TransactionFailure transactionFailure) {
+            transactionFailure.printStackTrace();
+            throw new RuntimeException(transactionFailure.getMessage(), transactionFailure);
         }
     }
 
     private void debug(String message) {
         System.out.println("[ServiceUtil] " + message);
     }
-
 }

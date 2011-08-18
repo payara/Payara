@@ -42,6 +42,8 @@
 
 -exportcontents: \
     org.glassfish.paas.orchestrator; \
+    org.glassfish.paas.orchestrator.config; \
+    org.glassfish.paas.orchestrator.schema; \
     org.glassfish.paas.orchestrator.service; \
     org.glassfish.paas.orchestrator.service.metadata; \
     org.glassfish.paas.orchestrator.service.spi; \

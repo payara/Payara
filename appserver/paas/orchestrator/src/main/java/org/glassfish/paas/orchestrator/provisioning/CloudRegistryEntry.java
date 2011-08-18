@@ -55,6 +55,9 @@ public class CloudRegistryEntry {
 
     private String state;
 
+    //not-null when its application scoped service.
+    private String appName;
+
     public static enum State {
         Initializing, NotRunning, Running, Stop_in_progress, Start_in_progress, Delete_in_progress
     }
@@ -69,6 +72,14 @@ public class CloudRegistryEntry {
 
     public void setCloudName(String cloudName) {
         this.cloudName = cloudName;
+    }
+
+    public String getAppName() {
+        return appName;
+    }
+
+    public void setAppName(String appName) {
+        this.appName = appName;
     }
 
     public String getIpAddress() {

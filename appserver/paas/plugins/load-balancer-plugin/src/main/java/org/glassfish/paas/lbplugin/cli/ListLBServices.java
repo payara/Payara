@@ -46,24 +46,22 @@ import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.paas.lbplugin.LBServiceUtil;
+import org.glassfish.paas.orchestrator.config.ApplicationScopedService;
+import org.glassfish.paas.orchestrator.config.Service;
+import org.glassfish.paas.orchestrator.config.Services;
+import org.glassfish.paas.orchestrator.config.SharedService;
 import org.glassfish.paas.orchestrator.provisioning.CloudRegistryService;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
 
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-import javax.sql.DataSource;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.Collection;
 
 /**
  * @author Jagadish Ramu
  */
-@Service(name = "list-lb-services")
+@org.jvnet.hk2.annotations.Service(name = "list-lb-services")
 @Scoped(PerLookup.class)
 public class ListLBServices implements AdminCommand {
 
@@ -76,37 +74,57 @@ public class ListLBServices implements AdminCommand {
     @Param(name = "servicename", defaultValue = "*", optional = true, primary = true)
     private String serviceName;
 
+    @Param(optional = true, name = "appname")
+    private String appName;
+
     public void execute(AdminCommandContext context) {
         final ActionReport report = context.getActionReport();
-        Connection con = null;
-        Statement stmt = null;
-        ResultSet rs = null;
+        Collection<Service> lbServices = new ArrayList<Service>();
         try {
-            InitialContext ic = new InitialContext();
-            DataSource ds = (DataSource) ic.lookup(CloudRegistryService.RESOURCE_NAME);
-
-            String tableName = CloudRegistryService.CLOUD_LB_TABLE_NAME;
-            String query = null;
             if (serviceName.equals("*")) {
-                query = "select * from " + tableName;
+                Services services = lbServiceUtil.getServices();
+                for (Service service : services.getServices()) {
+                    if (service.getType().equals("load-balancer")) {
+                        if (appName != null) {
+                            if (service instanceof ApplicationScopedService) {
+                                if (appName.equals(((ApplicationScopedService) service).getApplicationName())) {
+                                    lbServices.add(service);
+                                }
+                            }
+                        } else {
+                            lbServices.add(service);
+                        }
+                    }
+                }
             }
-
-            if (query != null) {
-                con = ds.getConnection();
-                stmt = con.createStatement();
-                rs = stmt.executeQuery(query);
+            if (lbServices.size() > 0) {
 
                 String headings[] = {"LB_SERVICE_NAME", "IP_ADDRESS", "INSTANCE_ID", "SERVER_TYPE", "STATE"};
                 ColumnFormatter cf = new ColumnFormatter(headings);
 
                 boolean foundRows = false;
-                while (rs.next()) {
+                for (Service service : lbServices) {
                     foundRows = true;
-                    String cloudName = rs.getString("CLOUD_NAME");
-                    String ipAddress = rs.getString("IP_ADDRESS");
-                    String instanceID = rs.getString("INSTANCE_ID");
-                    String serverType = rs.getString("SERVER_TYPE");
-                    String state = rs.getString("STATE");
+
+                    String cloudName = service.getServiceName();
+
+                    String ipAddress = service.getPropertyValue("ip-address");
+                    if (ipAddress == null) {
+                        ipAddress = "-";
+                    }
+                    String instanceID = service.getPropertyValue("instance-id");
+                    if (instanceID == null) {
+                        instanceID = "-";
+                    }
+
+                    String serverType = service.getType();
+
+                    String state = "-";
+                    if (service instanceof ApplicationScopedService) {
+                        state = ((ApplicationScopedService) service).getState();
+                    } else if (service instanceof SharedService) {
+                        state = ((SharedService) service).getState();
+                    }
 
                     cf.addRow(new Object[]{cloudName, ipAddress, instanceID, serverType, state});
                 }
@@ -121,20 +139,10 @@ public class ListLBServices implements AdminCommand {
 
             ActionReport.ExitCode ec = ActionReport.ExitCode.SUCCESS;
             report.setActionExitCode(ec);
-        } catch (NamingException e) {
-            report.setMessage("Failed to list LB services");
-            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            report.setFailureCause(e);
-        } catch (SQLException e) {
-            report.setMessage("Failed to list LB services");
-            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            report.setFailureCause(e);
         } catch (Exception e) {
             report.setMessage("Failed to list LB services");
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setFailureCause(e);
-        } finally {
-            lbServiceUtil.closeDBObjects(con, stmt, rs);
         }
     }
 }

@@ -55,6 +55,7 @@ public class ServiceDescription {
 
     private String name;
     private String initType;
+    private String appName;
 
     // User can either specify which template to use or the characterstics of the template.
     private Object templateOrCharacteristics;
@@ -65,9 +66,10 @@ public class ServiceDescription {
         // default constructor required for JAXB.
     }
 
-    public ServiceDescription(String name, String initType,
+    public ServiceDescription(String name, String appName, String initType,
                               Object templateOrCharacteristics, List<Property> configurations) {
         setName(name);
+        setAppName(appName);
         setInitType(initType);
         setTemplateOrCharacteristics(templateOrCharacteristics);
         setConfigurations(configurations);
@@ -85,6 +87,16 @@ public class ServiceDescription {
     @XmlAttribute(name = "init-type")
     public String getInitType() {
         return initType;
+    }
+
+    //TODO  hack ?
+    @XmlAttribute(name = "app-name", required=false)
+    public String getAppName() {
+        return appName;
+    }
+
+    public void setAppName(String appName){
+        this.appName = appName;
     }
 
     public void setInitType(String initType) {

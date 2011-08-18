@@ -75,6 +75,9 @@ public class StartLBService implements AdminCommand {
     @Inject
     private CloudRegistryService cloudRegistryService;
 
+    @Param(name="appname", optional = true)
+    private String appName;
+
     @Inject
     private LBServiceUtil lbServiceUtil;
 
@@ -82,8 +85,8 @@ public class StartLBService implements AdminCommand {
 
         final ActionReport report = context.getActionReport();
 
-        if (lbServiceUtil.isValidService(serviceName, LOAD_BALANCER)) {
-            CloudRegistryEntry entry = lbServiceUtil.retrieveCloudEntry(serviceName, LOAD_BALANCER);
+        if (lbServiceUtil.isValidService(serviceName, appName, LOAD_BALANCER)) {
+            CloudRegistryEntry entry = lbServiceUtil.retrieveCloudEntry(serviceName, appName, LOAD_BALANCER);
             String ipAddress = entry.getIpAddress();
             String status = entry.getState();
             if (status == null || status.equalsIgnoreCase(CloudRegistryEntry.State.Start_in_progress.toString())
@@ -93,7 +96,7 @@ public class StartLBService implements AdminCommand {
                 return;
             }
 
-            lbServiceUtil.updateState(serviceName, Start_in_progress.toString(), LOAD_BALANCER);
+            lbServiceUtil.updateState(serviceName, appName, Start_in_progress.toString(), LOAD_BALANCER);
 
             CloudProvisioner cloudProvisioner = cloudRegistryService.getCloudProvisioner();
             Map<String, String> map = new HashMap<String, String>();
@@ -103,7 +106,7 @@ public class StartLBService implements AdminCommand {
 
             cloudRegistryService.getLBProvisioner().startLB(ipAddress);
 
-            lbServiceUtil.updateState(serviceName, Running.toString(), LOAD_BALANCER);
+            lbServiceUtil.updateState(serviceName, appName, Running.toString(), LOAD_BALANCER);
             report.setMessage("lb-service [" + serviceName + "] started");
             report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
 

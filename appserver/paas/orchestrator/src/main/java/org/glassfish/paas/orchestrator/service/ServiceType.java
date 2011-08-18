@@ -46,6 +46,9 @@ package org.glassfish.paas.orchestrator.service;
  */
 public abstract class ServiceType {
 
+
+    public abstract String getName();
+
     // TODO :: Siva should review/fix this.
     @Override
     public boolean equals(Object other) {
