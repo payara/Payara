@@ -199,12 +199,18 @@
            <type>zip</type>
         </dependency>
         <!-- TODO: move to glassfish-cluster after nucleus distro build moves
-             to its own workspace -->
+             to its own workspace or create dedicated cluster package-->
         <dependency>
               <groupId>org.glassfish.loadbalancer</groupId>
               <artifactId>load-balancer-admin</artifactId>
               <version>${project.version}</version>
         </dependency>
+        <!-- TODO: move back to shoal package after nucleus distro build moves
+             to its own workspace -->
+        <dependency>
+              <groupId>org.shoal</groupId>
+              <artifactId>shoal-cache</artifactId>
+          </dependency>
         <!-- schema2beans - both CMP and LB admin now depend on it -->
         <dependency>
             <groupId>org.glassfish.external</groupId>
