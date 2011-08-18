@@ -191,7 +191,7 @@ public class WebArchivist extends Archivist<WebBundleDescriptor> {
     public synchronized WebBundleDescriptor getDefaultWebXmlBundleDescriptor() {
         if (defaultWebXmlBundleDescriptor == null) {
             defaultWebXmlBundleDescriptor = getPlainDefaultWebXmlBundleDescriptor();
-            ApplicationValidator validator = new ApplicationValidator();
+            WebBundleValidator validator = new WebBundleValidator();
             validator.accept(defaultWebXmlBundleDescriptor );
         }
         return defaultWebXmlBundleDescriptor ;
@@ -300,7 +300,7 @@ public class WebArchivist extends Archivist<WebBundleDescriptor> {
             return;
         }
         descriptor.setClassLoader(cl);
-        descriptor.visit((WebBundleVisitor) new ApplicationValidator());
+        descriptor.visit(new WebBundleValidator());
     }
 
     /**

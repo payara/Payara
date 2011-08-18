@@ -104,8 +104,8 @@ public class DescriptorArchivist {
                         }
                     } else {
                         if (aModule.getModuleType().equals(XModuleType.WAR)) {
-                            WebBundleDescriptor webBundle = 
-                                (WebBundleDescriptor) aModule.getDescriptor();
+                            BundleDescriptor webBundle = 
+                                (BundleDescriptor)aModule.getDescriptor();
                             if (webBundle.hasWebServices()) {
                                 if (ddFile != null) {
                                     OutputStream os = out.putNextEntry(ddPath);

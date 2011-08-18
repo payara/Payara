@@ -46,8 +46,6 @@ import com.sun.enterprise.deployment.types.MessageDestinationReferencer;
 import org.glassfish.deployment.common.Descriptor;
 import org.glassfish.deployment.common.DescriptorVisitor;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.Iterator;
 
 /**
@@ -57,7 +55,7 @@ import java.util.Iterator;
  * @version 
  */
 
-public class DefaultDOLVisitor implements ApplicationVisitor, EjbBundleVisitor, EjbVisitor, ManagedBeanVisitor, WebBundleVisitor {
+public class DefaultDOLVisitor implements ApplicationVisitor, EjbBundleVisitor, EjbVisitor, ManagedBeanVisitor {
    protected BundleDescriptor bundleDescriptor = null;
 
     /** Creates new DefaultDOLVisitor */
@@ -207,130 +205,10 @@ public class DefaultDOLVisitor implements ApplicationVisitor, EjbBundleVisitor, 
     public void accept(Descriptor descriptor) {
     }
     
-    /**
-     * visit a web bundle descriptor
-     *
-     * @param the web bundle descriptor
-     */
-    public void accept(WebBundleDescriptor descriptor) {
-        this.bundleDescriptor = descriptor;
-    }
-
     public void accept(ManagedBeanDescriptor descriptor) {
         this.bundleDescriptor = descriptor.getBundle();
     }
     
-    /**
-     * visit a web component descriptor
-     *
-     * @param the web component
-     */
-    public void accept(WebComponentDescriptor descriptor) {
-    }
-
-    /**
-     * visit a servlet filter descriptor
-     *
-     * @param the servlet filter
-     */
-    public void accept(ServletFilterDescriptor descriptor) {
-    }
-
-    // we need to split the accept(InjectionCapable) into two parts:
-    // one needs classloader and one doesn't. This is needed because 
-    // in the standalone war case, the classloader is not created
-    // untill the web module is being started.
-
-    protected void acceptWithCL(InjectionCapable injectable) {
-        // If parsed from deployment descriptor, we need to determine whether
-        // the inject target name refers to an injection field or an
-        // injection method for each injection target
-        for (InjectionTarget target : injectable.getInjectionTargets()) {
-            if( (target.getFieldName() == null) &&
-                    (target.getMethodName() == null) ) {
-
-                String injectTargetName = target.getTargetName();
-                String targetClassName  = target.getClassName();
-                ClassLoader classLoader = getBundleDescriptor().getClassLoader();
-
-                Class targetClazz = null;
-
-                try {
-
-                    targetClazz = classLoader.loadClass(targetClassName);
-
-                } catch(ClassNotFoundException cnfe) {
-                    // @@@
-                    // Don't treat this as a fatal error for now.  One known issue
-                    // is that all .xml, even web.xml, is processed within the
-                    // appclient container during startup.  In that case, there
-                    // are issues with finding .classes in .wars due to the
-                    // structure of the returned client .jar and the way the
-                    // classloader is formed.
-                    DOLUtils.getDefaultLogger().fine
-                            ("Injection class " + targetClassName + " not found for " +
-                            injectable);
-                    return;
-                }
-
-                // Spec requires that we attempt to match on method before field.
-                boolean matched = false;
-
-                // The only information we have is method name, so iterate
-                // through the methods find a match.  There is no overloading
-                // allowed for injection methods, so any match is considered
-                // the only possible match.
-
-                String setterMethodName = TypeUtil.
-                        propertyNameToSetterMethod(injectTargetName);
-
-                // method can have any access type so use getDeclaredMethods()
-                for(Method next : targetClazz.getDeclaredMethods()) {
-                    // only when the method name matches and the method
-                    // has exactly one parameter, we find a match
-                    if( next.getName().equals(setterMethodName) && 
-                        next.getParameterTypes().length == 1) {
-                        target.setMethodName(next.getName());
-                        if( injectable.getInjectResourceType() == null ) {
-                            Class[] paramTypes = next.getParameterTypes();
-                            if (paramTypes.length == 1) {
-                                String resourceType = paramTypes[0].getName();
-                                injectable.setInjectResourceType(resourceType);
-                            }
-                        }
-                        matched = true;
-                        break;
-                    }
-                }
-
-               if( !matched ) {
-
-                    // In the case of injection fields, inject target name ==
-                    // field name.  Field can have any access type.
-                    try {
-                        Field f = targetClazz.getDeclaredField(injectTargetName);
-                        target.setFieldName(injectTargetName);
-                        if( injectable.getInjectResourceType() == null ) {
-                            String resourceType = f.getType().getName();
-                            injectable.setInjectResourceType(resourceType);
-                        }
-                        matched = true;
-                    } catch(NoSuchFieldException nsfe) {
-                        String msg = "No matching injection setter method or " +
-                                "injection field found for injection property " +
-                                injectTargetName + " on class " + targetClassName +
-                                " for component dependency " + injectable;
-
-                        throw new RuntimeException(msg, nsfe);
-                    }
-                }
-            }
-        }
-    }
-
-    protected void acceptWithoutCL(InjectionCapable injectable) {
-    }
-
     /**
      * @return the bundleDescriptor we are visiting
      */

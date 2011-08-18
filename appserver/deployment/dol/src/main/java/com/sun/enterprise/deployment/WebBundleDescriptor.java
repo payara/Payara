@@ -47,6 +47,8 @@ import com.sun.enterprise.deployment.types.EjbReference;
 import com.sun.enterprise.deployment.types.*;
 import com.sun.enterprise.deployment.util.WebBundleVisitor;
 import com.sun.enterprise.deployment.util.WebBundleTracerVisitor;
+import com.sun.enterprise.deployment.util.WebBundleValidator;
+import com.sun.enterprise.deployment.util.ComponentVisitor;
 import org.glassfish.deployment.common.DescriptorVisitor;
 import org.glassfish.deployment.common.RootDeploymentDescriptor;
 import org.glassfish.deployment.common.XModuleType;
@@ -2184,6 +2186,13 @@ public class WebBundleDescriptor extends BundleDescriptor
      */
     public XModuleType getModuleType() {
         return XModuleType.WAR;
+    }
+
+    /**
+     * @return the visitor for this bundle descriptor
+     */
+    public ComponentVisitor getBundleVisitor() {
+        return new WebBundleValidator();
     }
 
     /**

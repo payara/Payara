@@ -45,12 +45,9 @@ import com.sun.enterprise.deployment.types.EjbReference;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.logging.LogDomains;
 import org.glassfish.internal.api.Globals;
+import org.glassfish.deployment.common.XModuleType;
 
-import javax.security.auth.Subject;
 import java.lang.reflect.Method;
-import java.security.AccessController;
-import java.security.Principal;
-import java.security.PrivilegedAction;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -193,16 +190,6 @@ public class EjbBundleValidator  extends ComponentValidator implements EjbBundle
         }
 
         bundleDesc.setInterceptorBindings(newBindings);
-    }
-
-    /**
-     * visits all entries within the component environment for which
-     * isInjectable() == true.
-     * @param injectable InjectionCapable environment dependency
-     */
-    public void accept(InjectionCapable injectable) {
-        acceptWithCL(injectable);
-        acceptWithoutCL(injectable);
     }
 
     /**
@@ -416,8 +403,8 @@ public class EjbBundleValidator  extends ComponentValidator implements EjbBundle
                                     " for Singleton " + sessionDesc.getName());
                         }
 
-                        EjbBundleDescriptor ejbBundle = (bundle instanceof WebBundleDescriptor) ?
-                                ((WebBundleDescriptor) bundle).getExtensionsDescriptors(EjbBundleDescriptor.class).iterator().next()
+                        EjbBundleDescriptor ejbBundle = (bundle.getModuleType() == XModuleType.WAR) ?
+                                bundle.getExtensionsDescriptors(EjbBundleDescriptor.class).iterator().next()
                                 :  (EjbBundleDescriptor) bundle;
 
                         if( !ejbBundle.hasEjbByName(ejbName) ) {
@@ -723,7 +710,7 @@ public class EjbBundleValidator  extends ComponentValidator implements EjbBundle
                 DOLUtils.getDefaultLogger().severe("Unresolved <ejb-link>: "+linkName);
                 throw new RuntimeException("Error: Unresolved <ejb-link>: "+linkName);
             } else {
-                if( ejbRef.getReferringBundleDescriptor() instanceof ApplicationClientDescriptor ) {
+                if( ejbRef.getReferringBundleDescriptor().getModuleType() == XModuleType.CAR ) {
                     // Because no annotation processing is done within ACC runtime, this case typically
                     // arises for remote @EJB annotations, so don't log it as warning.
                     DOLUtils.getDefaultLogger().fine("Unresolved <ejb-link>: "+linkName);
@@ -744,10 +731,10 @@ public class EjbBundleValidator  extends ComponentValidator implements EjbBundle
                 // it must be remote business.
                 if( ( (referringBundle == null) && (ejbBundleDescriptor == null) )
                     ||
-                    (referringBundle instanceof ApplicationClientDescriptor) 
+                    (referringBundle.getModuleType() == XModuleType.CAR) 
                     ||
                     ( (getApplication() == null) &&
-                      (referringBundle instanceof WebBundleDescriptor) ) ) {
+                      (referringBundle.getModuleType() == XModuleType.WAR) ) ) {
 
                     ejbRef.setLocal(false);
 
@@ -979,58 +966,6 @@ public class EjbBundleValidator  extends ComponentValidator implements EjbBundle
      */
     protected BundleDescriptor getBundleDescriptor() {
         return ejbBundleDescriptor;
-    }
-
-    /**
-     * Set a default RunAs principal to given RunAsIdentityDescriptor
-     * if necessary.
-     * @param runAs
-     * @param application
-     * @exception RuntimeException
-     */
-    protected void computeRunAsPrincipalDefault(RunAsIdentityDescriptor runAs,
-            Application application) {
-
-        // for backward compatibile
-        if (runAs != null &&
-                (runAs.getRoleName() == null ||
-                    runAs.getRoleName().length() == 0)) {
-            DOLUtils.getDefaultLogger().log(Level.WARNING,
-            "enterprise.deployment.backend.emptyRoleName");
-            return;
-        }
-        
-        if (runAs != null &&
-                (runAs.getPrincipal() == null ||
-                    runAs.getPrincipal().length() == 0) &&
-                application != null && application.getRoleMapper() != null) {
-
-            String principalName = null;
-            String roleName = runAs.getRoleName();
-
-            final Subject fs = (Subject)application.getRoleMapper().getRoleToSubjectMapping().get(roleName);
-            if (fs != null) {
-                principalName = (String)AccessController.doPrivileged(new PrivilegedAction() {
-                    public Object run() {
-                        Set<Principal> pset = fs.getPrincipals();
-                        Principal prin = null;
-                        if (pset.size() > 0) {
-                            prin = (Principal)pset.iterator().next();
-                            DOLUtils.getDefaultLogger().log(Level.WARNING, 
-                            "enterprise.deployment.backend.computeRunAsPrincipal",
-                            new Object[] { prin.getName() });
-                        }
-                        return (prin != null) ? prin.getName() : null;
-                    }
-                });
-            }
-
-            if (principalName == null || principalName.length() == 0) {
-                throw new RuntimeException("The RunAs role " + "\"" + roleName + "\"" +
-                    " is not mapped to a principal.");
-            }
-            runAs.setPrincipal(principalName);
-        }
     }
 
     /**

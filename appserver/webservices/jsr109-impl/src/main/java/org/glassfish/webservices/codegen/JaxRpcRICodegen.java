@@ -67,6 +67,7 @@ import com.sun.enterprise.deployment.io.JaxrpcMappingDeploymentDescriptorFile;
 import com.sun.enterprise.deployment.JaxrpcMappingDescriptor.Mapping;
 import com.sun.enterprise.deployment.util.ApplicationVisitor;
 import com.sun.enterprise.deployment.util.AppClientVisitor;
+import com.sun.enterprise.deployment.util.WebBundleVisitor;
 import com.sun.enterprise.deployment.util.ModuleContentLinker;
 import com.sun.enterprise.deployment.util.WebServerInfo;
 import com.sun.enterprise.deployment.*;
@@ -103,7 +104,7 @@ import com.sun.xml.rpc.spi.tools.NoMetadataModelInfo;
  * @author  Jerome Dochez
  */
 public class JaxRpcRICodegen extends ModuleContentLinker
-        implements JaxRpcCodegenAdapter, AppClientVisitor  
+        implements JaxRpcCodegenAdapter, WebBundleVisitor, AppClientVisitor  
 {
     protected DeploymentContext context = null;
     protected Habitat habitat = null;
@@ -829,5 +830,29 @@ public class JaxRpcRICodegen extends ModuleContentLinker
      * @param sub descriptor to return visitor for
      */
     public void accept(ApplicationClientDescriptor appclientdescriptor) {
+    }
+
+    /**
+     * visit a web component descriptor
+     *
+     * @param the web component
+     */
+    public void accept(WebComponentDescriptor descriptor) {
+    }
+
+    /**
+     * visit a servlet filter descriptor
+     *
+     * @param the servlet filter
+     */
+    public void accept(ServletFilterDescriptor descriptor) {
+    }
+
+    /**
+     * visit a web bundle descriptor
+     *
+     * @param the web bundle descriptor
+     */
+    public void accept(WebBundleDescriptor descriptor) {
     }
 }

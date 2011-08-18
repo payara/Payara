@@ -41,7 +41,6 @@
 package com.sun.enterprise.deployment.util;
 
 import com.sun.enterprise.deployment.*;
-import com.sun.enterprise.deployment.web.MultipartConfig;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -65,9 +64,6 @@ import org.jvnet.hk2.annotations.Service;
 @Service(name="application_deploy")
 public class ApplicationValidator extends EjbBundleValidator 
     implements ApplicationVisitor, EjbBundleVisitor, EjbVisitor, ManagedBeanVisitor {
-    
-
-    protected Application application;
     
     /**
      * visit an application object
@@ -158,68 +154,6 @@ public class ApplicationValidator extends EjbBundleValidator
         this.application = bundleDescriptor.getApplication(); 
      }
     
-    
-    /**
-     * visit a web bundle descriptor
-     *
-     * @param descriptor the web bundle descriptor
-     */
-    public void accept(WebBundleDescriptor descriptor) {
-        bundleDescriptor = descriptor;
-        application = descriptor.getApplication();
-        
-        if (descriptor.getSessionConfig() == null) {
-            descriptor.setSessionConfig(new SessionConfigDescriptor());
-        }
-        if (descriptor.isDistributable() == null) {
-            descriptor.setDistributable(Boolean.FALSE);
-        }
-    }   
-    
-    /**
-     * visit a web component descriptor
-     *
-     * @param descriptor the web component
-     */
-    public void accept(WebComponentDescriptor descriptor) {
-
-        //set default value
-        if (descriptor.getLoadOnStartUp() == null) {
-            descriptor.setLoadOnStartUp(-1);
-        }
-        if (descriptor.isAsyncSupported() == null) {
-            descriptor.setAsyncSupported(false);
-        }
-
-        MultipartConfig multipartConfig = descriptor.getMultipartConfig();
-        if (multipartConfig != null) {
-            if (multipartConfig.getMaxFileSize() == null) {
-                multipartConfig.setMaxFileSize(Long.valueOf(-1));
-            }
-            if (multipartConfig.getMaxRequestSize() == null) {
-                multipartConfig.setMaxRequestSize(Long.valueOf(-1));
-            }
-            if (multipartConfig.getFileSizeThreshold() == null) {
-                multipartConfig.setFileSizeThreshold(Integer.valueOf(0));
-            }
-        }
-
-        computeRuntimeDefault(descriptor);
-    }
-       
-    private void computeRuntimeDefault(WebComponentDescriptor webComp) {
-        if (!webComp.getUsesCallerIdentity()) {
-            computeRunAsPrincipalDefault(
-                webComp.getRunAsIdentity(), webComp.getApplication());
-        }
-    }
-
-    public void accept(ServletFilterDescriptor descriptor) {
-        // set default value
-        if (descriptor.isAsyncSupported() == null) {
-            descriptor.setAsyncSupported(false);
-        }
-    }
     
     /**
      * @return a vector of EjbDescriptor for this bundle
