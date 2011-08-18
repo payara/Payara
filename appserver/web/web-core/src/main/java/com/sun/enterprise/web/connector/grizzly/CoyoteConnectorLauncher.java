@@ -69,7 +69,6 @@ import javax.management.ObjectName;
 import org.apache.catalina.connector.ProtocolHandler;
 import org.glassfish.grizzly.config.ssl.SSLImplementation;
 import org.glassfish.grizzly.config.ssl.ServerSocketFactory;
-import org.glassfish.grizzly.http.server.Constants;
 import org.glassfish.grizzly.http.server.HttpHandler;
 import org.glassfish.grizzly.http.util.StringManager;
 
