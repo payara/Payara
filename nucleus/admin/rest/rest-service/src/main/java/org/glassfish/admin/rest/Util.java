@@ -285,7 +285,7 @@ public class Util {
      * @param data The set of changes to be applied
      * @return ActionReporter containing result of "set" execution
      */
-    public static ActionReporter applyChanges(Map<String, String> data, UriInfo uriInfo, Habitat habitat) {
+    public static RestActionReporter applyChanges(Map<String, String> data, UriInfo uriInfo, Habitat habitat) {
         List<PathSegment> pathSegments = uriInfo.getPathSegments();
 
         // Discard the last segment if it is empty. This happens if some one accesses the resource

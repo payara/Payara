@@ -319,7 +319,7 @@ public abstract class TemplateListOfResource {
 
             if (null != commandName) {
                 String typeOfResult = ResourceUtil.getResultType(requestHeaders);
-                ActionReport actionReport = ResourceUtil.runCommand(commandName, data, habitat, typeOfResult);
+                RestActionReporter actionReport = ResourceUtil.runCommand(commandName, data, habitat, typeOfResult);
 
                 ActionReport.ExitCode exitCode = actionReport.getActionExitCode();
                 if (exitCode != ActionReport.ExitCode.FAILURE) {

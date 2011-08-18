@@ -41,7 +41,6 @@ package org.glassfish.admin.rest.resources;
 
 import java.lang.reflect.Method;
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.enterprise.v3.common.ActionReporter;
 import com.sun.jersey.api.core.ResourceContext;
 import com.sun.jersey.multipart.FormDataBodyPart;
 import com.sun.jersey.multipart.FormDataMultiPart;
@@ -140,7 +139,7 @@ public class TemplateRestResource {
             }
             //just update it.
             data = ResourceUtil.translateCamelCasedNamesToXMLNames(data);
-            ActionReporter ar = Util.applyChanges(data, uriInfo, habitat);
+            RestActionReporter ar = Util.applyChanges(data, uriInfo, habitat);
             if(ar.getActionExitCode() != ActionReport.ExitCode.SUCCESS) {
                 //TODO better error handling.
                 return Response.status(400).entity(ResourceUtil.getActionReportResult(ar, "Could not apply changes" + ar.getMessage(), requestHeaders, uriInfo)).build();
@@ -210,7 +209,7 @@ public class TemplateRestResource {
                 }
             }
 
-            ActionReport actionReport = runCommand(getDeleteCommand(), data);
+            RestActionReporter actionReport = runCommand(getDeleteCommand(), data);
 
             if (actionReport != null) {
                 ActionReport.ExitCode exitCode = actionReport.getActionExitCode();
@@ -487,7 +486,7 @@ public class TemplateRestResource {
      *
      * @return
      */
-    private ActionReport runCommand(String commandName, HashMap<String, String> data) {
+    private RestActionReporter runCommand(String commandName, HashMap<String, String> data) {
 
         if (commandName != null) {
             String typeOfResult = ResourceUtil.getResultType(requestHeaders);

@@ -285,7 +285,7 @@ public abstract class CollectionLeafResource {
 
             if (null != commandName) {
                 String typeOfResult = ResourceUtil.getResultType(requestHeaders);
-                ActionReport actionReport = ResourceUtil.runCommand(commandName,
+                RestActionReporter actionReport = ResourceUtil.runCommand(commandName,
                     data, habitat,typeOfResult);
 
                 ActionReport.ExitCode exitCode = actionReport.getActionExitCode();
@@ -293,11 +293,11 @@ public abstract class CollectionLeafResource {
                     String successMessage =
                         localStrings.getLocalString(successMsgKey,
                             successMsg, new Object[] {attributeName});
-                    return Response.ok(ResourceUtil.getActionReportResult(ActionReport.ExitCode.SUCCESS, successMessage, requestHeaders, uriInfo)).build();
+                    return Response.ok(ResourceUtil.getActionReportResult(actionReport, successMessage, requestHeaders, uriInfo)).build();
                 }
 
                 String errorMessage = getErrorMessage(data, actionReport);
-                return Response.status(400).entity(ResourceUtil.getActionReportResult(ActionReport.ExitCode.FAILURE, errorMessage, requestHeaders, uriInfo)).build();
+                return Response.status(400).entity(ResourceUtil.getActionReportResult(actionReport, errorMessage, requestHeaders, uriInfo)).build();
             }
             String message =
                 localStrings.getLocalString(operationForbiddenMsgKey, 

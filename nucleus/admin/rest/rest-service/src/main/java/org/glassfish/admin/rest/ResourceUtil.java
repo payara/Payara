@@ -41,6 +41,7 @@
 package org.glassfish.admin.rest;
 
 
+import java.util.Map.Entry;
 import com.sun.enterprise.v3.common.ActionReporter;
 import java.util.Locale;
 import org.glassfish.admin.rest.generator.CommandResourceMetaData;
@@ -201,9 +202,36 @@ public class ResourceUtil {
         RestActionReporter ar = new RestActionReporter();
 
         cr.getCommandInvocation(commandName, ar).parameters(parameters).execute();
+        addCommandLog(ar, commandName, parameters);
         return ar;
     }
+    
+    public static void addCommandLog(RestActionReporter ar, String commandName, ParameterMap parameters) {
+        List<String> logs = (List<String>)ar.getExtraProperties().get("commandLog");
+        if (logs == null) {
+            logs = new ArrayList<String>();
+            ar.getExtraProperties().put("commandLog", logs);
+        }
+        
+        logs.add(commandName + getParameterList(parameters));
+    }
 
+    public static String getParameterList(ParameterMap parameters) {
+        StringBuilder sb = new StringBuilder();
+        
+        for (Entry<String, List<String>> entry : parameters.entrySet()) {
+            String paramName = entry.getKey();
+            for (String param : entry.getValue()) {
+                sb.append(" --")
+                        .append(paramName)
+                        .append(" ")
+                        .append(param);
+            }
+        }
+        
+        return sb.toString();
+    }
+    
     /**
      * Executes the specified __asadmin command.
      *
@@ -550,17 +578,17 @@ public class ResourceUtil {
         return Response.status(status).entity(message).build();
     }
 
-    public static ActionReportResult getActionReportResult(ActionReport parentActionReport, String message, HttpHeaders requestHeaders, UriInfo uriInfo) {
-        ActionReportResult result = getActionReportResult(parentActionReport.getActionExitCode(), message, requestHeaders, uriInfo);
-        result.getActionReport().getSubActionsReport().addAll(((ActionReporter)parentActionReport).getSubActionsReport());
-        return result;
+    public static ActionReportResult getActionReportResult(ActionReport.ExitCode status, String message, HttpHeaders requestHeaders, UriInfo uriInfo) {
+        RestActionReporter ar = new RestActionReporter();
+        ar.setActionExitCode(status);
+        return getActionReportResult(ar, message, requestHeaders, uriInfo);
     }
 
-    public static ActionReportResult getActionReportResult(ActionReport.ExitCode status, String message, HttpHeaders requestHeaders, UriInfo uriInfo) {
+    public static ActionReportResult getActionReportResult(RestActionReporter ar, String message, HttpHeaders requestHeaders, UriInfo uriInfo) {
         if (isBrowser(requestHeaders)) {
             message = getHtml(message, uriInfo, false);
         }
-        RestActionReporter ar = new RestActionReporter();
+        ActionReport.ExitCode status = ar.getActionExitCode();
         ActionReportResult result = new ActionReportResult(ar);
 
         if (status != ActionReport.ExitCode.SUCCESS && status != ActionReport.ExitCode.WARNING) {
