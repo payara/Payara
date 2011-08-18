@@ -40,8 +40,10 @@
 package org.glassfish.virtualization.commands;
 
 import org.glassfish.api.admin.AdminCommand;
+import org.glassfish.virtualization.runtime.VirtualMachineLifecycle;
 import org.glassfish.virtualization.spi.VirtException;
 import org.glassfish.virtualization.spi.VirtualMachine;
+import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
@@ -53,8 +55,11 @@ import org.jvnet.hk2.component.PerLookup;
 @Service(name="start-vm")
 @Scoped(PerLookup.class)
 public class StartVirtualMachine extends VirtualMachineMgt implements AdminCommand {
+    @Inject
+    VirtualMachineLifecycle vmLifecycle;
+
     @Override
     void doWork(VirtualMachine vm) throws VirtException {
-        vm.start();
+        vmLifecycle.start(vm);
     }
 }

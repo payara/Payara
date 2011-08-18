@@ -88,6 +88,16 @@ public class GlassFishTemplateCustomizer implements TemplateCustomizer {
     }
 
     @Override
+    public void start(VirtualMachine virtualMachine) {
+        // done by the clustering infrastructure
+    }
+
+    @Override
+    public void stop(VirtualMachine virtualMachine) {
+        // done by the clustering infrastructure
+    }
+
+    @Override
     public void clean(VirtualMachine virtualMachine) {
 
         // let's find our instance name.

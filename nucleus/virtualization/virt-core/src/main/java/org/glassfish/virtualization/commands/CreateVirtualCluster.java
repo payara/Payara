@@ -98,7 +98,7 @@ public class CreateVirtualCluster implements AdminCommand {
     @Inject(optional=true)
     Virtualizations virts=null;
 
-    @Inject
+    @Inject(optional=true)
     TemplateRepository templateRepository;
 
     @Inject
@@ -161,8 +161,6 @@ public class CreateVirtualCluster implements AdminCommand {
         if (report.hasFailures()) {
             return;
         }
-
-        Cluster cluster = domain.getClusterNamed(name);
 
         TemplateInstance templateInstance=null;
         if (template!=null) {

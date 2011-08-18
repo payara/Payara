@@ -50,6 +50,7 @@ import org.glassfish.virtualization.config.Template;
 import org.glassfish.virtualization.config.VirtualMachineConfig;
 import org.glassfish.virtualization.runtime.VirtualCluster;
 import org.glassfish.virtualization.runtime.VirtualClusters;
+import org.glassfish.virtualization.runtime.VirtualMachineLifecycle;
 import org.glassfish.virtualization.spi.*;
 import org.glassfish.virtualization.spi.VMUser;
 import org.glassfish.virtualization.util.RuntimeContext;
@@ -58,6 +59,7 @@ import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
 
+import java.util.concurrent.CountDownLatch;
 import java.util.logging.Level;
 
 /**
@@ -109,6 +111,9 @@ public class RegisterVirtualMachine implements AdminCommand {
     @Inject
     VirtualClusters virtualClusters;
 
+    @Inject
+    VirtualMachineLifecycle vmLifecycle;
+
     @Override
     public void execute(AdminCommandContext context) {
         if (group==null) {
@@ -123,6 +128,10 @@ public class RegisterVirtualMachine implements AdminCommand {
         try {
             VirtualMachine vm = targetGroup.vmByName(virtualMachine);
             if (vm!=null) {
+                CountDownLatch latch = vmLifecycle.getStartupLatch(vm.getName());
+                if (latch!=null) {
+                    latch.countDown();
+                }
                 vm.setAddress(address);
                 vm.setUser(new VMUser(sshUser, VMUser.ConnectionType.SSH));
                 vm.setProperty(VirtualMachine.PropertyName.INSTALL_DIR, installDir);

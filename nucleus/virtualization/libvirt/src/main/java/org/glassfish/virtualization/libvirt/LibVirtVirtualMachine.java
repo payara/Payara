@@ -62,26 +62,18 @@ import java.util.logging.Logger;
 public class LibVirtVirtualMachine extends AbstractVirtualMachine {
 
     final private Machine owner;
-    final Domain domain;
-    final String name;
-    final ServerPool pool;
+    final private Domain domain;
+    final private String name;
     private String address;
-    private CountDownLatch latch;
 
-    protected LibVirtVirtualMachine(ServerPool pool, Machine owner, Domain domain, CountDownLatch latch)
+    protected LibVirtVirtualMachine(Machine owner, Domain domain)
             throws VirtException {
         this.domain = domain;
         this.owner = owner;
-        this.latch = latch;
         this.name = domain.getName();
-        this.pool = pool;
     }
 
     public void setAddress(String address) {
-        if (latch!=null) {
-            latch.countDown();
-            latch=null;
-        }
         this.address = address;
     }
 
@@ -97,7 +89,6 @@ public class LibVirtVirtualMachine extends AbstractVirtualMachine {
 
         if (DomainInfo.DomainState.VIR_DOMAIN_RUNNING.equals(domain.getInfo().getState()))
             domain.destroy();
-
     }
 
     public void resume() throws VirtException {
@@ -216,7 +207,7 @@ public class LibVirtVirtualMachine extends AbstractVirtualMachine {
 
     @Override
     public ServerPool getServerPool() {
-        return pool;
+        return owner.getServerPool();
     }
 
     @Override

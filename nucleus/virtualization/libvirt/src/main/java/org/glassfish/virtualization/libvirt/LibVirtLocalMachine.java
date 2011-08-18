@@ -39,6 +39,7 @@
  */
 package org.glassfish.virtualization.libvirt;
 
+import org.glassfish.hk2.Services;
 import org.glassfish.hk2.inject.Injector;
 import org.glassfish.virtualization.config.*;
 import org.glassfish.virtualization.libvirt.jna.Connect;
@@ -94,7 +95,10 @@ public class LibVirtLocalMachine extends LocalMachine implements PostConstruct {
     Virtualizations virtualizations;
 
     @Inject
-    Habitat habitat;
+    Services services;
+
+    @Inject
+    VirtualMachineLifecycle vmLifecycle;
 
     public static LibVirtLocalMachine from(Injector injector, LibVirtGroup group, MachineConfig config) {
         return injector.inject(new LibVirtLocalMachine(injector, group, config));
@@ -303,8 +307,14 @@ public class LibVirtLocalMachine extends LocalMachine implements PostConstruct {
     private void addDomain(Domain domain) throws VirtException {
         String domainName = domain.getName();
         if (!domains.containsKey(domainName)) {
-            LibVirtVirtualMachine gfVM = new LibVirtVirtualMachine(serverPool, this, domain, null);
-            domains.put(domainName, gfVM );
+            VirtualMachineConfig vmc = serverPool.getConfig().virtualMachineRefByName(domainName);
+            // if config is null, that means this VM is not one of ours.
+            if (vmc!=null) {
+                TemplateRepository templateRepository = services.forContract(TemplateRepository.class).get();
+                TemplateInstance templateInstance = templateRepository.byName(vmc.getTemplate().getName());
+                LibVirtVirtualMachine gfVM = new LibVirtVirtualMachine(this, domain);
+                domains.put(domainName, gfVM );
+            }
         }
     }
 
@@ -340,7 +350,7 @@ public class LibVirtLocalMachine extends LocalMachine implements PostConstruct {
         delete(diskLocation + "/" + custFile.getName());
         copy(custFile, new File(diskLocation));
 
-        OsInterface os = habitat.getComponent(OsInterface.class);
+        OsInterface os = services.forContract(OsInterface.class).get();
 
         // 3. get the uuid for the new machine ?
         String uuid = UUID.randomUUID().toString();
@@ -403,8 +413,8 @@ public class LibVirtLocalMachine extends LocalMachine implements PostConstruct {
         try {
             Domain domain = connection().domainDefineXML(getConfig(vmConfig));
             source.fireEvent(AllocationPhase.VM_SPAWN);
-            final CountDownLatch latch = new CountDownLatch(1);
-            final LibVirtVirtualMachine vm = new LibVirtVirtualMachine(serverPool, this, domain, latch);
+            final CountDownLatch latch = vmLifecycle.inStartup(name);
+            final LibVirtVirtualMachine vm = new LibVirtVirtualMachine(this, domain);
             domains.put(name, vm);
             cluster.add(template, vm);
 
@@ -412,7 +422,7 @@ public class LibVirtLocalMachine extends LocalMachine implements PostConstruct {
                     new ListenableFutureImpl<AllocationPhase, VirtualMachine>(latch, vm, source);
 
             future.fireEvent(AllocationPhase.VM_START);
-            vm.start();
+            vmLifecycle.start(vm);
 
             return future;
         } catch(VirtException e) {

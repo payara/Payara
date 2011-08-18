@@ -121,8 +121,23 @@ public interface ServerPoolConfig extends ConfigBeanProxy {
     List<MachineConfig> getMachines();
 
 
-    @Element
-    List<VirtualMachineRef> getVirtualMachineRefs();
+    @Element(reference = true)
+    List<VirtualMachineConfig> getVirtualMachineRefs();
+
+    @DuckTyped
+    VirtualMachineConfig virtualMachineRefByName(String name);
+
+    public static class Duck {
+
+        public static VirtualMachineConfig virtualMachineRefByName(ServerPoolConfig self, String name) {
+            for (VirtualMachineConfig vmc : self.getVirtualMachineRefs()) {
+                if (vmc.getName().equals(name)) {
+                    return vmc;
+                }
+            }
+            return null;
+        }
+    }
 
     @Service
     public class GroupResolver implements CrudResolver {

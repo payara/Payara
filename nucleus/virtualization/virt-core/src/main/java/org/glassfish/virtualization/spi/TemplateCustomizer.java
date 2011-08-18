@@ -55,7 +55,8 @@ public interface TemplateCustomizer {
     /**
      * Customize the template instance running within the passed
      * {@link VirtualMachine} instance for a particular use (like a
-     * GlassFish instance, or a database).
+     * GlassFish instance, or a database). This step will be performed
+     * once when the virtual machine is allocated.
      *
      * @param cluster the virtual cluster runtime information
      * @param virtualMachine the instantiated template's virtual machine
@@ -64,8 +65,23 @@ public interface TemplateCustomizer {
     void customize(VirtualCluster cluster, VirtualMachine virtualMachine) throws VirtException;
 
     /**
+     * Starts the template instance services.
+     * @param virtualMachine the virtual machine containing the instantiated
+     * template.
+     */
+    void start(VirtualMachine virtualMachine);
+
+    /**
+     * Stop the template instance services
+     *
+     * @param virtualMachine the virtual machine containing the running services
+     */
+    void stop(VirtualMachine virtualMachine);
+
+    /**
      * Clean the current virtual machine information from this process's
-     * configuration.
+     * configuration, this step will be called once before the virtual machine
+     * is undefined.
      *
      * @param virtualMachine the virtual machine instance to remove from our
      * configuration.

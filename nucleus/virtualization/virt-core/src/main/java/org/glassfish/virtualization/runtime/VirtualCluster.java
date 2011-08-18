@@ -43,7 +43,6 @@ package org.glassfish.virtualization.runtime;
 import com.sun.enterprise.config.serverbeans.Cluster;
 import org.glassfish.virtualization.config.ServerPoolConfig;
 import org.glassfish.virtualization.config.VirtualMachineConfig;
-import org.glassfish.virtualization.config.VirtualMachineRef;
 import org.glassfish.virtualization.spi.*;
 import org.glassfish.virtualization.util.RuntimeContext;
 import org.jvnet.hk2.config.*;
@@ -97,9 +96,7 @@ public class VirtualCluster {
                     vmConfig.setTemplate(template.getConfig());
                     vmConfig.setServerPool(vm.getServerPool().getConfig());
                     wCluster.getExtensions().add(vmConfig);
-                    VirtualMachineRef vmRef = wServerPoolConfig.createChild(VirtualMachineRef.class);
-                    vmRef.setRef(vmConfig.getName());
-                    wServerPoolConfig.getVirtualMachineRefs().add(vmRef);
+                    wServerPoolConfig.getVirtualMachineRefs().add(vmConfig);
                     return vmConfig;
                 }
             }, config, vm.getServerPool().getConfig());
@@ -116,21 +113,16 @@ public class VirtualCluster {
                 public Object run(ConfigBeanProxy... params) throws PropertyVetoException, TransactionFailure {
                     Cluster wCluster = (Cluster) params[0];
                     ServerPoolConfig wServerPoolConfig = (ServerPoolConfig) params[1];
-                    for (VirtualMachineConfig vmConfig :
-                            config.getExtensionsByType(VirtualMachineConfig.class)) {
-                        if (vmConfig.getName().equals(vm.getName())) {
-                            wCluster.getExtensions().remove(vmConfig);
-                            for (VirtualMachineRef ref : wServerPoolConfig.getVirtualMachineRefs()) {
-                                if (ref.getRef().equals(vm.getName())) {
-                                    wServerPoolConfig.getVirtualMachineRefs().remove(ref);
-                                    break;
-                                }
-                            }
-                            return null;
+                    VirtualMachineConfig vmConfig = config.getExtensionsByTypeAndName(VirtualMachineConfig.class, vm.getName());
+                    if (vmConfig!=null) {
+                        wCluster.getExtensions().remove(vmConfig);
+                        VirtualMachineConfig vmc = wServerPoolConfig.virtualMachineRefByName(vm.getName());
+                        if (vmc!=null) {
+                            wServerPoolConfig.getVirtualMachineRefs().remove(vmc);
                         }
-
+                    } else {
+                        RuntimeContext.logger.log(Level.WARNING, "Cannot find virtual machine configuration under cluster");
                     }
-                    RuntimeContext.logger.log(Level.WARNING, "Cannot find virtual machine configuration under cluster");
                     return null;
                 }
             }, config, vm.getServerPool().getConfig());
@@ -146,6 +138,13 @@ public class VirtualCluster {
         for (VirtualMachine vm : copy) {
             remove(vm);
         }
+    }
+
+    public VirtualMachine vmByName(String name) {
+        for (VirtualMachine vm : vms) {
+            if (vm.getName().equals(name)) return vm;
+        }
+        return null;
     }
 
     public synchronized List<VirtualMachine> getVms() {

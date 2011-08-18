@@ -53,10 +53,12 @@ import org.glassfish.virtualization.util.RuntimeContext;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
 
+import java.io.IOException;
+
 /**
  * Very simplistic database customizer that does not handle port, etc...
  */
-@Service(name="Native-Database")
+@Service(name="Database")
 public class LocalJavaDBTemplateCustomizer implements TemplateCustomizer {
 
     @Inject
@@ -64,26 +66,35 @@ public class LocalJavaDBTemplateCustomizer implements TemplateCustomizer {
 
     @Override
     public void customize(VirtualCluster cluster, VirtualMachine virtualMachine) throws VirtException {
+    }
+
+    @Override
+    public void start(VirtualMachine virtualMachine) {
         ActionReport report = services.forContract(ActionReport.class).named("plain").get();
        // this line below needs to come from the template...
         String[] args = {"asadmin" , "start-database"};
-        ProcessExecutor processExecutor = new ProcessExecutor(args);
         try {
-            processExecutor.execute();
-        } catch (ExecException e) {
+            virtualMachine.executeOn(args);
+        } catch (IOException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        } catch (InterruptedException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
+    }
+
+    @Override
+    public void stop(VirtualMachine virtualMachine) {
+        String[] args = {"asadmin" , "stop-database"};
+        try {
+            virtualMachine.executeOn(args);
+        } catch (IOException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        } catch (InterruptedException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
     }
 
     @Override
     public void clean(VirtualMachine virtualMachine) {
-        ActionReport report = services.forContract(ActionReport.class).named("plain").get();
-        String[] args = {"asadmin" , "stop-database"};
-        ProcessExecutor processExecutor = new ProcessExecutor(args);
-        try {
-            processExecutor.execute();
-        } catch (ExecException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-        }
     }
 }

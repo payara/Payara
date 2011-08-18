@@ -49,6 +49,7 @@ import org.glassfish.virtualization.config.Template;
 import org.glassfish.virtualization.config.VirtualMachineConfig;
 import org.glassfish.virtualization.runtime.VirtualCluster;
 import org.glassfish.virtualization.runtime.VirtualClusters;
+import org.glassfish.virtualization.runtime.VirtualMachineLifecycle;
 import org.glassfish.virtualization.spi.*;
 import org.glassfish.virtualization.util.RuntimeContext;
 import org.jvnet.hk2.annotations.Inject;
@@ -95,6 +96,9 @@ public class DeleteVirtualCluster implements AdminCommand {
     @Inject
     TemplateRepository templateRepository;
 
+    @Inject
+    VirtualMachineLifecycle vmLifecycle;
+
     @Override
 
     public void execute(final AdminCommandContext context) {
@@ -122,10 +126,7 @@ public class DeleteVirtualCluster implements AdminCommand {
                             deletions.add(executorService.submit(new Callable<Void>() {
                                 @Override
                                 public Void call() throws Exception {
-                                    if (templateInstance.getCustomizer()!=null) {
-                                        templateInstance.getCustomizer().clean(vm);
-                                    }
-                                    vm.delete();
+                                    vmLifecycle.delete(vm);
                                     return null;
                                 }
                             }));

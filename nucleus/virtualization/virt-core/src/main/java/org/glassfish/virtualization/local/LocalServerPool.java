@@ -41,17 +41,14 @@
 package org.glassfish.virtualization.local;
 
 import com.sun.enterprise.config.serverbeans.Server;
-import org.glassfish.virtualization.config.MachineConfig;
 import org.glassfish.virtualization.config.ServerPoolConfig;
-import org.glassfish.virtualization.config.VirtualMachineRef;
+import org.glassfish.virtualization.config.VirtualMachineConfig;
 import org.glassfish.virtualization.runtime.VirtualCluster;
 import org.glassfish.virtualization.spi.*;
 import org.glassfish.virtualization.util.EventSource;
 import org.glassfish.virtualization.util.ListenableFutureImpl;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.config.*;
 
-import java.beans.PropertyChangeEvent;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
 
@@ -75,8 +72,8 @@ public class LocalServerPool implements ServerPool {
     @Override
     public void setConfig(ServerPoolConfig config) {
         this.config = config;
-        for (VirtualMachineRef ref : config.getVirtualMachineRefs()) {
-            vms.put(ref.getRef(), new LocalVirtualMachine(this, null, ref.getRef()));
+        for (VirtualMachineConfig ref : config.getVirtualMachineRefs()) {
+            vms.put(ref.getName(), new LocalVirtualMachine(this, null, ref.getName()));
         }
     }
 

@@ -51,6 +51,7 @@ import org.glassfish.virtualization.spi.TemplateCustomizer;
 import org.glassfish.virtualization.spi.TemplateInstance;
 import org.jvnet.hk2.annotations.Inject;
 
+import java.beans.Customizer;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -76,8 +77,9 @@ public class TemplateInstanceImpl implements TemplateInstance {
         // so far, it's ugly, customizers must use the (VirtualizationType-ServiceType) name.
         TemplateIndex serviceType  = config.byName("ServiceType");
         TemplateIndex virtType = config.byName("VirtualizationType");
-        customizer = services.forContract(TemplateCustomizer.class).named(
+        TemplateCustomizer cust = services.forContract(TemplateCustomizer.class).named(
                         virtType.getValue()+ "-"+serviceType.getValue()).get();
+        customizer = cust==null?services.forContract(TemplateCustomizer.class).named(serviceType.getValue()).get():cust;
         virtualizations = services.forContract(Virtualizations.class).get();
     }
 

@@ -41,6 +41,7 @@
 package org.glassfish.virtualization.config;
 
 import com.sun.enterprise.config.serverbeans.ClusterExtension;
+import org.glassfish.api.admin.config.Named;
 import org.glassfish.virtualization.spi.ServerPool;
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.ConfigBeanProxy;
@@ -53,12 +54,7 @@ import javax.validation.constraints.NotNull;
  * @author Jerome Dochez
  */
 @Configured
-public interface VirtualMachineConfig extends ConfigBeanProxy, ClusterExtension {
-
-    @Attribute(required = true)
-    @NotNull
-    String getName();
-    void setName(String name);
+public interface VirtualMachineConfig extends Named, ConfigBeanProxy, ClusterExtension {
 
     @Attribute(reference = true)
     Template getTemplate();

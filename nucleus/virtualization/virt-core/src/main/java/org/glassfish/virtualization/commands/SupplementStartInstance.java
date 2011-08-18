@@ -164,10 +164,10 @@ public class SupplementStartInstance implements AdminCommand {
 
             VirtualMachine vm = group.vmByName(vmName);
 
-            vm.start();
-
-            CountDownLatch latch = vmLifecycle.inStartup(vm);
+            CountDownLatch latch = vmLifecycle.inStartup(vm.getName());
+            vmLifecycle.start(vm);
             latch.await(30, TimeUnit.SECONDS);
+
         } catch(Exception e) {
             e.printStackTrace();
             context.getActionReport().failure(RuntimeContext.logger, e.getMessage(), e);

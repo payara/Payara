@@ -40,7 +40,12 @@
 
 package org.glassfish.virtualization.runtime;
 
+import org.glassfish.virtualization.config.VirtualMachineConfig;
+import org.glassfish.virtualization.spi.TemplateInstance;
+import org.glassfish.virtualization.spi.TemplateRepository;
+import org.glassfish.virtualization.spi.VirtException;
 import org.glassfish.virtualization.spi.VirtualMachine;
+import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
 
 import java.util.HashMap;
@@ -54,15 +59,47 @@ import java.util.concurrent.CountDownLatch;
 @Service
 public class VirtualMachineLifecycle {
 
-    Map<String, CountDownLatch> inStartup = new HashMap<String, CountDownLatch>();
+    final TemplateRepository templateRepository;
+    final Map<String, CountDownLatch> inStartup = new HashMap<String, CountDownLatch>();
 
-    public synchronized CountDownLatch inStartup(VirtualMachine vm) {
+    public VirtualMachineLifecycle(@Inject TemplateRepository templateRepository) {
+        this.templateRepository = templateRepository;
+    }
+
+    public synchronized CountDownLatch inStartup(String name) {
         CountDownLatch latch = new CountDownLatch(1);
-        inStartup.put(vm.getName(), latch);
+        inStartup.put(name, latch);
         return latch;
     }
 
     public synchronized CountDownLatch getStartupLatch(String name) {
         return inStartup.remove(name);
+    }
+
+    public void start(VirtualMachine vm) throws VirtException {
+        vm.start();
+        TemplateInstance ti = getTemplateInstance(vm);
+        if (ti.getCustomizer()!=null)
+            ti.getCustomizer().start(vm);
+    }
+
+    public void stop(VirtualMachine vm) throws VirtException {
+        TemplateInstance ti = getTemplateInstance(vm);
+        if (ti.getCustomizer()!=null)
+            ti.getCustomizer().stop(vm);
+        vm.stop();
+    }
+
+    public void delete(VirtualMachine vm) throws VirtException {
+        stop(vm);
+        TemplateInstance ti = getTemplateInstance(vm);
+        if (ti.getCustomizer()!=null)
+            ti.getCustomizer().clean(vm);
+        vm.delete();
+    }
+
+    private TemplateInstance getTemplateInstance(VirtualMachine vm) {
+        VirtualMachineConfig vmc = vm.getServerPool().getConfig().virtualMachineRefByName(vm.getName());
+        return templateRepository.byName(vmc.getTemplate().getName());
     }
 }

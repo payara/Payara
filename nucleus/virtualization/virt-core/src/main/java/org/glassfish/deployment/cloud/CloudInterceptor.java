@@ -44,6 +44,7 @@ import org.glassfish.api.ActionReport;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.deployment.admin.DeployCommand;
+import org.glassfish.deployment.common.DeploymentException;
 import org.glassfish.hk2.Services;
 import org.glassfish.virtualization.runtime.VirtualCluster;
 import org.glassfish.virtualization.runtime.VirtualClusters;
@@ -106,7 +107,10 @@ public class CloudInterceptor implements DeployCommand.Interceptor {
                         JavaEEService javaEE = (JavaEEService) cloudService;
                         System.out.println("Applications wants " + javaEE.getMinInstances() + " Java EE instances");
                         rtContext.executeAdminCommand(actionReport, "create-virtual-cluster", command.name(), "min", javaEE.getMinInstances());
-                        clusterCreated = !actionReport.hasFailures();
+                        if (actionReport.hasFailures()) {
+                            throw new DeploymentException(actionReport.getMessage());
+                        }
+                        clusterCreated = true;
                         command.target = command.name();
                     } else if (cloudService instanceof DatabaseService) {
                         try {
