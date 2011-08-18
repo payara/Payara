@@ -61,7 +61,7 @@ import java.util.List;
 /**
  * @author bhavanishankar@java.net
  */
-@Service(name = "create-glassfish-service")
+@Service(name = "_create-glassfish-service")
 @Scoped(PerLookup.class)
 @CommandLock(CommandLock.LockType.NONE)
 public class CreateGlassFishService implements AdminCommand, Runnable {
@@ -96,7 +96,7 @@ public class CreateGlassFishService implements AdminCommand, Runnable {
 
 
     public void execute(AdminCommandContext adminCommandContext) {
-        System.out.println("create-glassfish-service called.");
+        System.out.println("_create-glassfish-service called.");
 
         // Parse domainName
         if (serviceName.indexOf('.') != serviceName.lastIndexOf('.')) {

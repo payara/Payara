@@ -61,7 +61,7 @@ import java.util.Collection;
 /**
  * @author Jagadish Ramu
  */
-@org.jvnet.hk2.annotations.Service(name = "list-database-services")
+@org.jvnet.hk2.annotations.Service(name = "_list-database-services")
 @Scoped(PerLookup.class)
 public class ListDatabaseServices implements AdminCommand {
 

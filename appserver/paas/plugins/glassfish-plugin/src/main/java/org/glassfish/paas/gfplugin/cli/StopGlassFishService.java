@@ -59,7 +59,7 @@ import java.util.*;
 /**
  * @author Jagadish Ramu
  */
-@Service(name = "stop-glassfish-service")
+@Service(name = "_stop-glassfish-service")
 @Scoped(PerLookup.class)
 public class StopGlassFishService implements AdminCommand {
 

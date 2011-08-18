@@ -65,7 +65,7 @@ import java.util.Collection;
 /**
  * @author Jagadish Ramu
  */
-@Service(name = "stop-lb-service")
+@Service(name = "_stop-lb-service")
 @Scoped(PerLookup.class)
 public class StopLBService implements AdminCommand {
 

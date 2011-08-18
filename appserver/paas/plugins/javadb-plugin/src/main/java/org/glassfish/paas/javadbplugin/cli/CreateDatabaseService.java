@@ -57,7 +57,7 @@ import org.jvnet.hk2.component.PerLookup;
 /**
  * @author Jagadish Ramu
  */
-@Service(name = "create-database-service")
+@Service(name = "_create-database-service")
 @Scoped(PerLookup.class)
 public class CreateDatabaseService implements AdminCommand {
 

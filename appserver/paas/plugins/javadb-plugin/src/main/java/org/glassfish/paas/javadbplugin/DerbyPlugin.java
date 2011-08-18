@@ -137,7 +137,7 @@ public class DerbyPlugin implements Plugin<RDBMSServiceType> {
         ArrayList<String> params;
         String[] parameters;
 
-        CommandResult result = commandRunner.run("list-database-services");
+        CommandResult result = commandRunner.run("_list-database-services");
         if (!result.getOutput().contains(serviceName)) {
             //create-database-service
             params = new ArrayList<String>();
@@ -148,9 +148,9 @@ public class DerbyPlugin implements Plugin<RDBMSServiceType> {
             parameters = new String[params.size()];
             parameters = params.toArray(parameters);
 
-            result = commandRunner.run("create-database-service", parameters);
+            result = commandRunner.run("_create-database-service", parameters);
             if (result.getExitStatus().equals(CommandResult.ExitStatus.FAILURE)) {
-                System.out.println("create-database-service [" + serviceName + "] failed");
+                System.out.println("_create-database-service [" + serviceName + "] failed");
             }
         }
 
@@ -167,9 +167,9 @@ public class DerbyPlugin implements Plugin<RDBMSServiceType> {
         parameters = new String[params.size()];
         parameters = params.toArray(parameters);
 
-        result = commandRunner.run("start-database-service", parameters);
+        result = commandRunner.run("_start-database-service", parameters);
         if (result.getExitStatus().equals(CommandResult.ExitStatus.FAILURE)) {
-            System.out.println("start-database-service [" + serviceName + "] failed");
+            System.out.println("_start-database-service [" + serviceName + "] failed");
         }
 
 

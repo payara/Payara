@@ -65,7 +65,7 @@ import java.util.Map;
 /**
  * @author Jagadish Ramu
  */
-@Service(name = "start-lb-service")
+@Service(name = "_start-lb-service")
 @Scoped(PerLookup.class)
 public class StartLBService implements AdminCommand {
 

@@ -57,7 +57,7 @@ import org.glassfish.paas.orchestrator.provisioning.CloudRegistryEntry.State;
 
 import java.util.*;
 
-@Service(name = "start-glassfish-service")
+@Service(name = "_start-glassfish-service")
 @Scoped(PerLookup.class)
 public class StartGlassFishService implements AdminCommand {
 

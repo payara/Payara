@@ -61,7 +61,7 @@ import java.util.Collection;
 /**
  * @author Jagadish Ramu
  */
-@org.jvnet.hk2.annotations.Service(name = "list-lb-services")
+@org.jvnet.hk2.annotations.Service(name = "_list-lb-services")
 @Scoped(PerLookup.class)
 public class ListLBServices implements AdminCommand {
 

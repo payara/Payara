@@ -61,7 +61,7 @@ import java.util.Map;
 /**
  * @author Jagadish Ramu
  */
-@Service(name = "start-database-service")
+@Service(name = "_start-database-service")
 @Scoped(PerLookup.class)
 public class StartDatabaseService implements AdminCommand {
 

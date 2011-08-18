@@ -64,7 +64,7 @@ import org.jvnet.hk2.component.PerLookup;
 /**
  * @author Jagadish Ramu
  */
-@Service(name = "create-lb-service")
+@Service(name = "_create-lb-service")
 @Scoped(PerLookup.class)
 public class CreateLBService implements AdminCommand {
 

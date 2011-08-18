@@ -147,11 +147,11 @@ public class GlassFishPlugin implements Plugin<JavaEEServiceType> {
                 appNameParam="--appname="+serviceDescription.getAppName();
             }
 
-            CommandResult result = commandRunner.run("create-glassfish-service",
+            CommandResult result = commandRunner.run("_create-glassfish-service",
                     "--instancecount=" + serviceDescription.getConfiguration("min.clustersize"),
                     "--waitforcompletion=true",appNameParam,
                     serviceDescription.getName());
-            System.out.println("create-glassfish-service command output [" + result.getOutput() + "]");
+            System.out.println("_create-glassfish-service command output [" + result.getOutput() + "]");
             if (result.getExitStatus() == CommandResult.ExitStatus.SUCCESS) {
 
                 String dasIPAddress = gfServiceUtil.getDASIPAddress(serviceDescription.getName());

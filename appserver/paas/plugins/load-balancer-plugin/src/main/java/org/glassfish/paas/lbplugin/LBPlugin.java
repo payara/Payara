@@ -141,9 +141,9 @@ public class LBPlugin implements Plugin<HTTPLoadBalancerServiceType> {
         ArrayList<String> params;
         String[] parameters;
 
-        CommandResult result = commandRunner.run("list-lb-services");
+        CommandResult result = commandRunner.run("_list-lb-services");
         if (!result.getOutput().contains(serviceName)) {
-            //create-lb-service
+            //_create-lb-service
             params = new ArrayList<String>();
             params.add("--_ignore_appserver_association");
             params.add("true");
@@ -154,9 +154,9 @@ public class LBPlugin implements Plugin<HTTPLoadBalancerServiceType> {
             parameters = new String[params.size()];
             parameters = params.toArray(parameters);
 
-            result = commandRunner.run("create-lb-service", parameters);
+            result = commandRunner.run("_create-lb-service", parameters);
             if (result.getExitStatus().equals(CommandResult.ExitStatus.FAILURE)) {
-                System.out.println("create-lb-service [" + serviceName + "] failed");
+                System.out.println("_create-lb-service [" + serviceName + "] failed");
             }
         }
 
@@ -170,9 +170,9 @@ public class LBPlugin implements Plugin<HTTPLoadBalancerServiceType> {
         parameters = new String[params.size()];
         parameters = params.toArray(parameters);
 
-        result = commandRunner.run("start-lb-service", parameters);
+        result = commandRunner.run("_start-lb-service", parameters);
         if (result.getExitStatus().equals(CommandResult.ExitStatus.FAILURE)) {
-            System.out.println("start-lb-service [" + serviceName + "] failed");
+            System.out.println("_start-lb-service [" + serviceName + "] failed");
         }
 
         return new GlassFishLBProvisionedService(serviceDescription, new Properties(), ServiceStatus.STARTED);
