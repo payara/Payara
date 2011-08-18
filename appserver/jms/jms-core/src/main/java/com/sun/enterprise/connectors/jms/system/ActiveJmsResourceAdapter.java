@@ -40,6 +40,9 @@
 
 package com.sun.enterprise.connectors.jms.system;
 
+import com.sun.enterprise.connectors.jms.config.JmsAvailability;
+import com.sun.enterprise.connectors.jms.config.JmsService;
+import com.sun.enterprise.connectors.jms.config.JmsHost;
 import com.sun.enterprise.connectors.util.ResourcesUtil;
 import com.sun.enterprise.deployment.ConnectorDescriptor;
 import com.sun.enterprise.deployment.EjbMessageBeanDescriptor;
@@ -426,10 +429,10 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
             ServerContext serverContext = Globals.get(ServerContext.class);
             Server server = domain.getServerNamed(serverContext.getInstanceName());
 
-            JmsService jmsService = server.getConfig().getJmsService();
+            JmsService jmsService = server.getConfig().getExtensionByType(JmsService.class);
             AvailabilityService as = server.getConfig().getAvailabilityService();
             boolean useMasterBroker = true;
-            if(as != null && as.getJmsAvailability() != null && ! MASTERBROKER.equalsIgnoreCase(as.getJmsAvailability().getConfigStoreType()))
+            if(as != null && as.getExtensionByType(JmsAvailability.class) != null && ! MASTERBROKER.equalsIgnoreCase(as.getExtensionByType(JmsAvailability.class).getConfigStoreType()))
                 useMasterBroker = false;
 
             //jmsService.getUseMasterBroker() != null ? Boolean.valueOf(jmsService.getUseMasterBroker()) :true;
@@ -496,10 +499,10 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
                                 setProperty(cd, envProp5);
                         }
 
-                            loadDBProperties(ENHANCED_CLUSTER_DB_PREFIX, as.getJmsAvailability());
+                            loadDBProperties(ENHANCED_CLUSTER_DB_PREFIX, as.getExtensionByType(JmsAvailability.class));
                     }
                     else
-                        loadDBProperties(CONVENTIONAL_CLUSTER_DB_PREFIX, as.getJmsAvailability());
+                        loadDBProperties(CONVENTIONAL_CLUSTER_DB_PREFIX, as.getExtensionByType(JmsAvailability.class));
 
 
 
@@ -733,7 +736,7 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
         if (as == null) {
             return false;
       }
-      JmsAvailability ja = as.getJmsAvailability();
+      JmsAvailability ja = as.getExtensionByType(JmsAvailability.class);
       boolean jmsAvailability = false;
      /* JMS Availability  should be false if its not present in
         * domain.xml,
@@ -1168,13 +1171,13 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
 
         AvailabilityService as = server.getConfig().getAvailabilityService();
 
-        JmsService jmsService = server.getConfig().getJmsService();
+        JmsService jmsService = server.getConfig().getExtensionByType(JmsService.class);
 
 
         //if (jmsService.getUseMasterBroker() != null && ! Boolean.parseBoolean(jmsService.getUseMasterBroker()))
           //  return true;
 	if (as != null){
-		JmsAvailability jmsAvailability = as.getJmsAvailability();
+		JmsAvailability jmsAvailability = as.getExtensionByType(JmsAvailability.class);
         	if (jmsAvailability.getAvailabilityEnabled() != null && Boolean.parseBoolean(jmsAvailability.getAvailabilityEnabled())){
             		return true;
 		} else

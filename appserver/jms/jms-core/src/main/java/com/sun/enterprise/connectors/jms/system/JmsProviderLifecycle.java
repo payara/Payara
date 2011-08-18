@@ -42,6 +42,8 @@ package com.sun.enterprise.connectors.jms.system;
 
 //import org.glassfish.api.monitoring.MonitoringItem;
 //import org.glassfish.jms.admin.monitor.config.JmsServiceMI;
+import com.sun.enterprise.connectors.jms.config.JmsService;
+import com.sun.enterprise.connectors.jms.config.JmsHost;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.component.PostConstruct;
@@ -57,8 +59,6 @@ import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
 import org.glassfish.internal.api.PostStartup;
 
 import com.sun.enterprise.config.serverbeans.Config;
-import com.sun.enterprise.config.serverbeans.JmsHost;
-import com.sun.enterprise.config.serverbeans.JmsService;
 import com.sun.enterprise.v3.services.impl.DummyNetworkListener;
 import com.sun.enterprise.v3.services.impl.GrizzlyService;
 import org.glassfish.grizzly.config.dom.NetworkListener;
@@ -174,7 +174,7 @@ public class JmsProviderLifecycle implements  PostStartup, PostConstruct{
         /*
          * Do the same as above for JMS listeners also but only for MQ's EMBEDDED MODE
          */
-        final JmsService jmsService = config.getJmsService();
+        final JmsService jmsService = config.getExtensionByType(JmsService.class);
         if (jmsService != null) {
             if ("EMBEDDED".equalsIgnoreCase(jmsService.getType())) {
                 List<JmsHost> jmsHosts = jmsService.getJmsHost();

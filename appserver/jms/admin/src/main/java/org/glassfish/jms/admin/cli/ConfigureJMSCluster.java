@@ -40,6 +40,8 @@
 
 package org.glassfish.jms.admin.cli;
 
+import com.sun.enterprise.connectors.jms.config.JmsAvailability;
+import com.sun.enterprise.connectors.jms.config.JmsService;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
 import org.glassfish.api.ActionReport;
@@ -163,7 +165,7 @@ public class ConfigureJMSCluster implements AdminCommand {
         } */
 
         Config config = domain.getConfigNamed(cluster.getConfigRef());
-        JmsService jmsService = config.getJmsService();
+        JmsService jmsService = config.getExtensionByType(JmsService.class);
 
         if(jmsService == null) {
             report.setMessage(localStrings.getLocalString("configure.jms.cluster.nojmsservice",
@@ -260,8 +262,8 @@ public class ConfigureJMSCluster implements AdminCommand {
 
         config = domain.getConfigNamed(cluster.getConfigRef());
 
-        JmsAvailability jmsAvailability = config.getAvailabilityService().getJmsAvailability();
-        JmsService jmsservice = config.getJmsService();
+        JmsAvailability jmsAvailability = config.getAvailabilityService().getExtensionByType(JmsAvailability.class);
+        JmsService jmsservice = config.getExtensionByType(JmsService.class);
         final Boolean availabilityEnabled = Boolean.valueOf(ENHANCED.equalsIgnoreCase(clusterType));
 
         try {

@@ -40,6 +40,8 @@
 
 package org.glassfish.jms.admin.cli;
 
+import com.sun.enterprise.connectors.jms.config.JmsHost;
+import com.sun.enterprise.connectors.jms.config.JmsService;
 import com.sun.enterprise.connectors.jms.util.JmsRaUtil;
 import org.glassfish.resource.common.PoolInfo;
 import org.glassfish.api.Param;
@@ -111,7 +113,7 @@ public class JMSPing implements AdminCommand {
             config = domain.getConfigNamed(cluster.getConfigRef());
         }
 
-         JmsService jmsservice =  config.getJmsService();
+         JmsService jmsservice =  config.getExtensionByType(JmsService.class);
               /* for (Config c : configs.getConfig()) {
 
                       if(configRef.equals(c.getName()))

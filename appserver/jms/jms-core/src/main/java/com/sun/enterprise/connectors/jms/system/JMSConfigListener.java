@@ -44,6 +44,8 @@ import java.util.*;
 import java.util.logging.*;
 import java.beans.PropertyChangeEvent;
 
+import com.sun.enterprise.connectors.jms.config.JmsHost;
+import com.sun.enterprise.connectors.jms.config.JmsService;
 import com.sun.logging.LogDomains;
 import com.sun.enterprise.util.i18n.StringManager;
 import com.sun.enterprise.util.SystemPropertyConstants;

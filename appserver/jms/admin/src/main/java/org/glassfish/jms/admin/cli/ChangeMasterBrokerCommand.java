@@ -40,6 +40,8 @@
 
 package org.glassfish.jms.admin.cli;
 
+import com.sun.enterprise.connectors.jms.config.JmsHost;
+import com.sun.enterprise.connectors.jms.config.JmsService;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
 import org.glassfish.api.ActionReport;
@@ -142,7 +144,7 @@ public class ChangeMasterBrokerCommand extends JMSDestination implements AdminCo
 
        Nodes nodes = domain.getNodes();
        config = domain.getConfigNamed(cluster.getConfigRef());
-       JmsService jmsservice = config.getJmsService();
+       JmsService jmsservice = config.getExtensionByType(JmsService.class);
        Server oldMBServer = null;
        //If Master broker has been set previously using this command, use that master broker as the old MB instance
        //Else use the first configured instance in the cluster list

@@ -40,6 +40,8 @@
 
 package org.glassfish.jms.admin.cli;
 
+import com.sun.enterprise.connectors.jms.config.JmsHost;
+import com.sun.enterprise.connectors.jms.config.JmsService;
 import org.glassfish.api.I18n;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
@@ -119,7 +121,7 @@ public class DeleteJMSHost implements AdminCommand {
             return;
         }
 
-            JmsService jmsService = config.getJmsService();
+            JmsService jmsService = config.getExtensionByType(JmsService.class);
            /* for (Config c : configs.getConfig()) {
 
                if(configRef.equals(c.getName()))

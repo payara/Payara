@@ -40,6 +40,8 @@
 
 package org.glassfish.jms.admin.cli;
 
+import com.sun.enterprise.connectors.jms.config.JmsHost;
+import com.sun.enterprise.connectors.jms.config.JmsService;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
 import org.glassfish.api.ActionReport;
@@ -137,7 +139,7 @@ public class CreateJMSHost implements AdminCommand {
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             return;
         }
-        JmsService jmsservice = config.getJmsService();
+        JmsService jmsservice = config.getExtensionByType(JmsService.class);
         /*for (Config c : configs.getConfig()) {
 
                if(configRef.equals(c.getName()))

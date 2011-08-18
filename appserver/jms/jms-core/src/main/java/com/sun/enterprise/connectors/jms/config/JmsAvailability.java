@@ -38,8 +38,10 @@
  * holder.
  */
 
-package com.sun.enterprise.config.serverbeans;
+package com.sun.enterprise.connectors.jms.config;
 
+import com.sun.enterprise.config.serverbeans.AvailabilityServiceExtension;
+import org.glassfish.api.admin.config.ConfigExtension;
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.Element;
 import org.jvnet.hk2.config.Configured;
@@ -65,7 +67,7 @@ import org.glassfish.quality.ToDo;
 }) */
 
 @Configured
-public interface JmsAvailability extends ConfigBeanProxy, Injectable, PropertyBag {
+public interface JmsAvailability extends ConfigExtension, Injectable, PropertyBag, AvailabilityServiceExtension {
 
     /**
      * Gets the value of the availabilityEnabled property.

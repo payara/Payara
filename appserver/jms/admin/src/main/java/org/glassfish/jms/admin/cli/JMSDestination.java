@@ -40,6 +40,8 @@
 
 package org.glassfish.jms.admin.cli;
 
+import com.sun.enterprise.connectors.jms.config.JmsHost;
+import com.sun.enterprise.connectors.jms.config.JmsService;
 import com.sun.logging.LogDomains;
 import com.sun.enterprise.connectors.jms.system.ActiveJmsResourceAdapter;
 import com.sun.enterprise.connectors.jms.system.MQAddressList;
@@ -140,7 +142,7 @@ public abstract class JMSDestination {
         protected MQJMXConnectorInfo[] getMQJMXConnectorInfos(final String target, final Config config, final ServerContext serverContext, final Domain domain, ConnectorRuntime connectorRuntime)
                                        throws ConnectorRuntimeException {
                try {
-                   final JmsService jmsService = config.getJmsService();
+                   final JmsService jmsService = config.getExtensionByType(JmsService.class);
 
                    ActiveJmsResourceAdapter air = getMQAdapter(connectorRuntime);
                    final Class mqRAClassName = air.getResourceAdapter().getClass();
@@ -418,7 +420,7 @@ public abstract class JMSDestination {
                 logger.log(Level.FINE, "getJMSServiceOfSI LL " + target);
                 //ConfigContext con = com.sun.enterprise.admin.server.core.AdminService.getAdminService().getAdminContext().getAdminConfigContext();
                 logger.log(Level.FINE, "cfg " + cfg);
-                JmsService jmsService     = cfg.getJmsService();
+                JmsService jmsService     = cfg.getExtensionByType(JmsService.class);
                 logger.log(Level.FINE, "jmsservice " + jmsService);
                 return jmsService;
             }

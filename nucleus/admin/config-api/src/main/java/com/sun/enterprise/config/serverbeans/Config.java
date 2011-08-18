@@ -215,24 +215,6 @@ public interface Config extends ConfigBeanProxy, Injectable, Named, PropertyBag,
     void setAdminService(AdminService value) throws PropertyVetoException;
 
     /**
-     * Gets the value of the jmsService property.
-     *
-     * @return possible object is
-     *         {@link JmsService }
-     */
-    @Element
-    @NotNull
-    JmsService getJmsService();
-
-    /**
-     * Sets the value of the jmsService property.
-     *
-     * @param value allowed object is
-     *              {@link JmsService }
-     */
-    void setJmsService(JmsService value) throws PropertyVetoException;
-
-    /**
      * Gets the value of the logService property.
      *
      * @return possible object is
@@ -553,7 +535,6 @@ public interface Config extends ConfigBeanProxy, Injectable, Named, PropertyBag,
                 c.getHttpService(),
                 c.getIiopService(),
                 c.getJavaConfig(),
-                c.getJmsService(),
                 c.getLogService(),
                 c.getManagementRules(),
                 c.getMonitoringService(),

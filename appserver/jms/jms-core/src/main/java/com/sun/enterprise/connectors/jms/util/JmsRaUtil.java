@@ -51,6 +51,7 @@ import java.util.logging.Logger;
 import com.sun.appserv.connectors.internal.api.ConnectorConstants;
 import com.sun.appserv.connectors.internal.api.ConnectorRuntimeException;
 import com.sun.enterprise.config.serverbeans.*;
+import com.sun.enterprise.connectors.jms.config.JmsService;
 import com.sun.enterprise.connectors.jms.inflow.MdbContainerProps;
 import com.sun.enterprise.connectors.jms.system.MQAddressList;
 import com.sun.enterprise.deployment.ConnectorDescriptor;

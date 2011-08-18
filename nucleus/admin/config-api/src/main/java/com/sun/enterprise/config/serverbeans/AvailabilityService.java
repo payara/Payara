@@ -281,23 +281,6 @@ public interface AvailabilityService extends ConfigBeanProxy, Injectable, Proper
      */
     void setHaStoreHealthcheckIntervalInSeconds(String value) throws PropertyVetoException;
 
-    /**
-     * Gets the value of the jmsAvailability property.
-     *
-     * @return possible object is
-     *         {@link JmsAvailability }
-     */
-    @Element
-    JmsAvailability getJmsAvailability();
-
-    /**
-     * Sets the value of the jmsAvailability property.
-     *
-     * @param value allowed object is
-     *              {@link JmsAvailability }
-     */
-    void setJmsAvailability(JmsAvailability value) throws PropertyVetoException;
-    
     @Element("*")
     List<AvailabilityServiceExtension> getExtensions();
 

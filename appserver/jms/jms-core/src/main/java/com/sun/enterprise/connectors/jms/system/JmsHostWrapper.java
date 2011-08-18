@@ -40,8 +40,9 @@
 
 package com.sun.enterprise.connectors.jms.system;
 
-import com.sun.enterprise.config.serverbeans.JmsHost;
 import java.beans.PropertyVetoException;
+
+import com.sun.enterprise.connectors.jms.config.JmsHost;
 import org.jvnet.hk2.config.types.Property;
 import java.util.List;
 import org.jvnet.hk2.config.ConfigBeanProxy;
@@ -52,7 +53,7 @@ import org.jvnet.hk2.config.TransactionFailure;
  * during auto-clustering
 */
 
-public class JmsHostWrapper implements JmsHost{
+public class JmsHostWrapper implements JmsHost {
     private String name;
     public String getName(){
         return name;

@@ -38,8 +38,9 @@
  * holder.
  */
 
-package com.sun.enterprise.config.serverbeans;
+package com.sun.enterprise.connectors.jms.config;
 
+import org.glassfish.api.admin.config.ConfigExtension;
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.Configured;
 import org.jvnet.hk2.config.Element;
@@ -69,7 +70,7 @@ import javax.validation.constraints.Pattern;
 }) */
 
 @Configured
-public interface JmsService extends ConfigBeanProxy, Injectable, PropertyBag {
+public interface JmsService extends ConfigExtension, Injectable, PropertyBag {
 
     /**
      * Gets the value of the initTimeoutInSeconds property.

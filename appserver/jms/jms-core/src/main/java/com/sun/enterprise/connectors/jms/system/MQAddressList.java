@@ -48,6 +48,8 @@ import java.io.IOException;
 import java.io.FileInputStream;
 import java.beans.PropertyVetoException;
 
+import com.sun.enterprise.connectors.jms.config.JmsHost;
+import com.sun.enterprise.connectors.jms.config.JmsService;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.logging.LogDomains;
 import com.sun.enterprise.config.serverbeans.*;
@@ -277,7 +279,7 @@ public class MQAddressList {
 	    final Server[] buddies      = this.getServersInCluster(cluster);//ServerHelper.getServersInCluster(domainCC, myCluster);
         final Config cfg =  getConfigForServer(buddies[0]);
         //final Config cfg             =  ServerHelper.getConfigForServer(domainCC, buddies[0].getName());
-        return cfg.getJmsService();
+        return cfg.getExtensionByType(JmsService.class);
 	}
 
     private Config getConfigForServer(Server server){
@@ -307,7 +309,7 @@ public class MQAddressList {
            If not, use the first configured server in the cluster list as the master broker
          */
          Config config = domain.getConfigNamed(cluster.getConfigRef());
-         JmsService jmsService = config.getJmsService();
+         JmsService jmsService = config.getExtensionByType(JmsService.class);
          Server masterBrokerInstance = null;
 
          String masterBrokerInstanceName = jmsService.getMasterBroker();
@@ -690,7 +692,7 @@ public class MQAddressList {
         Config config = getConfigForServer(server);
         if (config != null)
         {
-            JmsService jmsService = config.getJmsService();
+            JmsService jmsService = config.getExtensionByType(JmsService.class);
             JmsHost jmsHost = null;
              if (JMSServiceType.LOCAL.toString().equals(jmsService.getType())	|| JMSServiceType.EMBEDDED.toString().equals(jmsService.getType())) {
             jmsHost = getDefaultJmsHost(jmsService);
