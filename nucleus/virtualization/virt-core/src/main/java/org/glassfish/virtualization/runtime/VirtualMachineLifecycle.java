@@ -91,7 +91,6 @@ public class VirtualMachineLifecycle {
     }
 
     public void delete(VirtualMachine vm) throws VirtException {
-        stop(vm);
         TemplateInstance ti = getTemplateInstance(vm);
         if (ti.getCustomizer()!=null)
             ti.getCustomizer().clean(vm);
