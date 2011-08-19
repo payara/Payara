@@ -46,6 +46,7 @@ import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.CommandLock;
 import org.glassfish.api.admin.Supplemental;
+import org.glassfish.hk2.Factory;
 import org.glassfish.virtualization.runtime.VirtualMachineLifecycle;
 import org.glassfish.virtualization.spi.*;
 import org.glassfish.virtualization.util.RuntimeContext;
@@ -74,7 +75,7 @@ public class SupplementalStopInstance implements AdminCommand {
     IAAS groups=null;
 
     @Inject
-    VirtualMachineLifecycle vmLifecycle;
+    Factory<VirtualMachineLifecycle> vmLifecycle;
 
     @Override
     public void execute(AdminCommandContext context) {
@@ -96,7 +97,7 @@ public class SupplementalStopInstance implements AdminCommand {
                         context.getActionReport().setActionExitCode(ActionReport.ExitCode.SUCCESS);
                         return;
                     }
-                    vmLifecycle.stop(vm);
+                    vmLifecycle.get().stop(vm);
                 } catch (VirtException e) {
                     RuntimeContext.logger.warning(e.getMessage());
                 }

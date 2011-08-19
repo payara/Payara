@@ -11,6 +11,7 @@ import org.glassfish.api.admin.Supplemental;
 import org.glassfish.hk2.Services;
 import org.glassfish.virtualization.config.TemplateIndex;
 import org.glassfish.virtualization.config.VirtualMachineConfig;
+import org.glassfish.virtualization.config.Virtualizations;
 import org.glassfish.virtualization.runtime.VirtualCluster;
 import org.glassfish.virtualization.runtime.VirtualClusters;
 import org.glassfish.virtualization.runtime.VirtualMachineLifecycle;
@@ -46,6 +47,11 @@ public class SupplementalStartClusterCommand implements AdminCommand {
     @Override
     public void execute(AdminCommandContext context) {
         try {
+            Virtualizations virtualizations = services.forContract(Virtualizations.class).get();
+            if (virtualizations==null) {
+                context.getActionReport().setActionExitCode(ActionReport.ExitCode.SUCCESS);
+                return;
+            }
             VirtualCluster virtualCluster = virtualClusters.byName(clusterName);
             if (virtualCluster==null) {
                 context.getActionReport().setActionExitCode(ActionReport.ExitCode.SUCCESS);

@@ -46,6 +46,7 @@ import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.CommandLock;
 import org.glassfish.api.admin.Supplemental;
 import org.glassfish.common.util.admin.AuthTokenManager;
+import org.glassfish.hk2.Factory;
 import org.glassfish.virtualization.config.Virtualizations;
 import org.glassfish.virtualization.os.Disk;
 import org.glassfish.virtualization.runtime.VirtualMachineLifecycle;
@@ -82,7 +83,7 @@ public class SupplementStartInstance implements AdminCommand {
     IAAS groups;
 
     @Inject
-    VirtualMachineLifecycle vmLifecycle;
+    Factory<VirtualMachineLifecycle> vmLifecycle;
 
     @Inject(optional = true)
     Virtualizations virtualizations;
@@ -164,8 +165,8 @@ public class SupplementStartInstance implements AdminCommand {
 
             VirtualMachine vm = group.vmByName(vmName);
 
-            CountDownLatch latch = vmLifecycle.inStartup(vm.getName());
-            vmLifecycle.start(vm);
+            CountDownLatch latch = vmLifecycle.get().inStartup(vm.getName());
+            vmLifecycle.get().start(vm);
             latch.await(30, TimeUnit.SECONDS);
 
         } catch(Exception e) {
