@@ -44,5 +44,9 @@
 	org.glassfish.admin.amx.impl.j2ee.loader; \
 	version=${project.osgi.version}
 		
+Import-Package: \
+    com.sun.logging.enterprise.system.amx, \
+    *
+		
 		
 

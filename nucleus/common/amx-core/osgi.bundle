@@ -56,6 +56,7 @@
 		org.glassfish.admin.amx.impl.util; \
 		org.glassfish.admin.amx.impl.cmd; \
 		org.glassfish.admin.amx.impl.config.*; \
+		com.sun.logging.enterprise.system.amx; \
 		version=${project.osgi.version}
 		
 
