@@ -58,11 +58,7 @@ import org.glassfish.security.common.Group;
 import com.sun.enterprise.security.auth.login.LoginCallbackHandler;
 import com.sun.enterprise.security.auth.realm.Realm;
 import com.sun.enterprise.security.auth.login.common.PasswordCredential;
-import com.sun.enterprise.security.common.AppservPasswordLoginModuleInterface;
 import java.security.Principal;
-import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
 
 /**
  * Abstract base class for password-based login modules.
@@ -76,9 +72,8 @@ import org.jvnet.hk2.component.PerLookup;
  * call commitUserAuthentication().
  *
  */
-@Service
-@Scoped(PerLookup.class)
-public  class AppservPasswordLoginModule implements AppservPasswordLoginModuleInterface
+
+public abstract class AppservPasswordLoginModule
 {
     // The _subject, _sharedState and _options satisfy LoginModule and are
     // shared across sub-classes
@@ -369,10 +364,7 @@ public  class AppservPasswordLoginModule implements AppservPasswordLoginModuleIn
      * @throws LoginException on authentication failure.
      *
      */
-    protected void authenticateUser() throws LoginException {
-
-        throw new UnsupportedOperationException("Internal Error: Should not come here");
-    }
+    protected abstract void authenticateUser() throws LoginException;
     
     public void setLoginModuleForAuthentication(LoginModule userDefinedLoginModule) {
         this.userDefinedLoginModule = userDefinedLoginModule;
