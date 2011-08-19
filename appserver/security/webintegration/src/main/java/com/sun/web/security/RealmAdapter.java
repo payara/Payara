@@ -600,8 +600,10 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
         } catch (Exception le) {
             success = false;
             if (_logger.isLoggable(Level.WARNING)) {
-                _logger.log(Level.WARNING,"web.login.failed", le.toString());
-                _logger.log(Level.WARNING,"Exception", le);
+                _logger.log(Level.WARNING, "web.login.failed", le.toString());
+                if (_logger.isLoggable(Level.FINE)) {
+                    _logger.log(Level.FINE, "Exception", le);
+                }
             }
         }
         if (success) {
