@@ -40,8 +40,6 @@
 
 package org.glassfish.paas.orchestrator.provisioning.cli;
 
-import com.sun.enterprise.config.serverbeans.Application;
-import com.sun.enterprise.config.serverbeans.Applications;
 import com.sun.enterprise.config.serverbeans.Domain;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
@@ -58,7 +56,7 @@ import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
 
-@Service(name = "list-service-refs")
+@Service(name = "_list-service-refs")
 @Scoped(PerLookup.class)
 @ExecuteOn(RuntimeType.DAS)
 @TargetType(value = {CommandTarget.DAS})
@@ -73,6 +71,8 @@ public class ListServiceRefs implements AdminCommand {
 
         final ActionReport report = context.getActionReport();
 
+/*
+        //old code that assumes that <service-ref> is within <application>
         Applications applications = domain.getApplications();
         if (applications != null) {
             Application app = applications.getApplication(appName);
@@ -91,6 +91,23 @@ public class ListServiceRefs implements AdminCommand {
             report.setMessage("No such application [" + appName + "] is deployed in the server");
             return;
         }
+*/
+
+        Services services = domain.getExtensionByType(Services.class);
+        if (services != null) {
+            for(org.glassfish.paas.orchestrator.config.Service service : services.getServices()){
+                if(service instanceof ServiceRef){
+                    if(((ServiceRef)service).getApplicationName().equals(appName)){
+                        report.getTopMessagePart().addChild().setMessage(service.getServiceName());
+                    }
+                }
+            }
+        }else{
+            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            report.setMessage("No such application [" + appName + "] is deployed in the server");
+            return;
+        }
+
         report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
     }
 }

@@ -47,7 +47,7 @@ import org.glassfish.paas.gfplugin.cli.GlassFishServiceUtil;
 import org.glassfish.paas.lbplugin.LBServiceUtil;
 import org.glassfish.paas.orchestrator.provisioning.*;
 
-import static org.glassfish.paas.orchestrator.provisioning.CloudRegistryEntry.State.*;
+import static org.glassfish.paas.orchestrator.provisioning.ServiceInfo.State.*;
 
 import org.glassfish.paas.orchestrator.provisioning.ApplicationServerProvisioner;
 
@@ -81,7 +81,7 @@ public class CreateLBService implements AdminCommand {
     private String appName;
 
     @Inject
-    private CloudRegistryService cloudRegistryService;
+    private ProvisionerUtil provisionerUtil;
 
     @Inject
     private LBServiceUtil lbServiceUtil;
@@ -134,12 +134,12 @@ public class CreateLBService implements AdminCommand {
 
         String dasIPAddress = lbServiceUtil.getIPAddress(domainName, appName, APPLICATION_SERVER);
 
-        CloudProvisioner cloudProvisioner = cloudRegistryService.getCloudProvisioner();
+        CloudProvisioner cloudProvisioner = provisionerUtil.getCloudProvisioner();
         String instanceID = cloudProvisioner.createInstance(
-                cloudRegistryService.getProperties().getProperty(GlassFishLBProvisioner.LB_IMAGE_ID));
+                provisionerUtil.getProperties().getProperty(GlassFishLBProvisioner.LB_IMAGE_ID));
         String ipAddress = cloudProvisioner.getIPAddress(instanceID);
 
-        LBProvisioner lbProvisioner = cloudRegistryService.getLBProvisioner();
+        LBProvisioner lbProvisioner = provisionerUtil.getLBProvisioner();
 
         lbProvisioner.configureLB(ipAddress);
 
@@ -160,11 +160,11 @@ public class CreateLBService implements AdminCommand {
     }
 
     private void registerLBInfo(String instanceID, String ipAddress) {
-        CloudRegistryEntry entry = new CloudRegistryEntry();
+        ServiceInfo entry = new ServiceInfo();
         entry.setInstanceId(instanceID);
         entry.setIpAddress(ipAddress);
         entry.setState(Running.toString());
-        entry.setCloudName(serviceName);
+        entry.setServiceName(serviceName);
         entry.setAppName(appName);
         entry.setServerType("load-balancer");
 
@@ -173,7 +173,7 @@ public class CreateLBService implements AdminCommand {
 
 
     private void createHttpLBConfig(String targetName, String dasIPAddress, String ipAddress, String lbConfigName) {
-        ApplicationServerProvisioner asProvisioner = cloudRegistryService.getAppServerProvisioner(dasIPAddress);
+        ApplicationServerProvisioner asProvisioner = provisionerUtil.getAppServerProvisioner(dasIPAddress);
         String deviceHost = ipAddress;
         String command = "create-http-lb";
         String[] options = new String[]{

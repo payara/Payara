@@ -45,11 +45,11 @@ import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.paas.lbplugin.LBServiceUtil;
-import org.glassfish.paas.orchestrator.provisioning.CloudRegistryEntry;
+import org.glassfish.paas.orchestrator.provisioning.ServiceInfo;
 
-import static org.glassfish.paas.orchestrator.provisioning.CloudRegistryEntry.State.*;
+import static org.glassfish.paas.orchestrator.provisioning.ServiceInfo.State.*;
 
-import org.glassfish.paas.orchestrator.provisioning.CloudRegistryService;
+import org.glassfish.paas.orchestrator.provisioning.ProvisionerUtil;
 
 import static org.glassfish.paas.orchestrator.provisioning.cli.ServiceType.*;
 
@@ -73,7 +73,7 @@ public class StartLBService implements AdminCommand {
     private String serviceName;
 
     @Inject
-    private CloudRegistryService cloudRegistryService;
+    private ProvisionerUtil provisionerUtil;
 
     @Param(name="appname", optional = true)
     private String appName;
@@ -86,10 +86,10 @@ public class StartLBService implements AdminCommand {
         final ActionReport report = context.getActionReport();
 
         if (lbServiceUtil.isValidService(serviceName, appName, LOAD_BALANCER)) {
-            CloudRegistryEntry entry = lbServiceUtil.retrieveCloudEntry(serviceName, appName, LOAD_BALANCER);
+            ServiceInfo entry = lbServiceUtil.retrieveCloudEntry(serviceName, appName, LOAD_BALANCER);
             String ipAddress = entry.getIpAddress();
             String status = entry.getState();
-            if (status == null || status.equalsIgnoreCase(CloudRegistryEntry.State.Start_in_progress.toString())
+            if (status == null || status.equalsIgnoreCase(ServiceInfo.State.Start_in_progress.toString())
                     || status.equalsIgnoreCase(Running.toString())) {
                 report.setMessage("Invalid lb-service [" + serviceName + "] state [" + status + "]");
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
@@ -98,13 +98,13 @@ public class StartLBService implements AdminCommand {
 
             lbServiceUtil.updateState(serviceName, appName, Start_in_progress.toString(), LOAD_BALANCER);
 
-            CloudProvisioner cloudProvisioner = cloudRegistryService.getCloudProvisioner();
+            CloudProvisioner cloudProvisioner = provisionerUtil.getCloudProvisioner();
             Map<String, String> map = new HashMap<String, String>();
             map.put(entry.getInstanceId(), entry.getIpAddress());
             cloudProvisioner.startInstances(map);
 
 
-            cloudRegistryService.getLBProvisioner().startLB(ipAddress);
+            provisionerUtil.getLBProvisioner().startLB(ipAddress);
 
             lbServiceUtil.updateState(serviceName, appName, Running.toString(), LOAD_BALANCER);
             report.setMessage("lb-service [" + serviceName + "] started");

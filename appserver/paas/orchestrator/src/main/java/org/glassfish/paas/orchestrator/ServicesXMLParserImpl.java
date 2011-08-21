@@ -75,10 +75,11 @@ public class ServicesXMLParserImpl implements ServicesXMLParser {
             throw new RuntimeException(ex);
         }
         //TODO hack ?
-        for(ServiceDescription serviceDescription : serviceMetadata.getServiceDescriptions()){
-            serviceDescription.setAppName(appName);
+        if(serviceMetadata != null){
+            for(ServiceDescription serviceDescription : serviceMetadata.getServiceDescriptions()){
+                serviceDescription.setAppName(appName);
+            }
         }
         return serviceMetadata;
     }
-
 }

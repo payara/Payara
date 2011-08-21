@@ -44,13 +44,12 @@ import org.glassfish.hk2.scopes.Singleton;
 import org.glassfish.paas.orchestrator.config.ApplicationScopedService;
 import org.glassfish.paas.orchestrator.config.Service;
 import org.glassfish.paas.orchestrator.config.Services;
-import org.glassfish.paas.orchestrator.provisioning.CloudRegistryEntry;
+import org.glassfish.paas.orchestrator.provisioning.ServiceInfo;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceType;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceUtil;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 
-import java.sql.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -72,9 +71,9 @@ public class GlassFishServiceUtil implements PostConstruct {
         /*InitialContext ic = null;
         try {
             ic = new InitialContext();
-            ds = (DataSource) ic.lookup(CloudRegistryService.RESOURCE_NAME);
+            ds = (DataSource) ic.lookup(ProvisionerUtil.RESOURCE_NAME);
         } catch (NamingException e) {
-            throw new RuntimeException("Unable to get datasource : " + CloudRegistryService.RESOURCE_NAME);
+            throw new RuntimeException("Unable to get datasource : " + ProvisionerUtil.RESOURCE_NAME);
         }*/
     }
 
@@ -108,10 +107,13 @@ public class GlassFishServiceUtil implements PostConstruct {
     }
 */
 
-    public void registerASInfo(CloudRegistryEntry entry) {
-        serviceUtil.registerCloudEntry(entry, null, "APPLICATION_SERVER");
+    public void registerASInfo(ServiceInfo entry) {
+        serviceUtil.registerCloudEntry(entry);
     }
 
+    public void unregisterASInfo(String serviceName, String appName) {
+        serviceUtil.unregisterCloudEntry(serviceName, appName);
+    }
 /*
     public void closeDBObjects(Connection con, Statement stmt, ResultSet rs) {
         serviceUtil.closeDBObjects(con, stmt, rs);
@@ -202,7 +204,7 @@ public class GlassFishServiceUtil implements PostConstruct {
         boolean isCluster = false;
         if(!serviceName.contains(SEPARATOR)){
             String serviceType = serviceUtil.getServiceType(serviceName, appName, ServiceType.APPLICATION_SERVER);
-            if (serviceType != null && serviceType.equalsIgnoreCase(CloudRegistryEntry.Type.Cluster.toString())) {
+            if (serviceType != null && serviceType.equalsIgnoreCase(ServiceInfo.Type.Cluster.toString())) {
                 isCluster = true;
             }
 
@@ -216,7 +218,7 @@ public class GlassFishServiceUtil implements PostConstruct {
         boolean isStandaloneInstance = false;
         if (serviceName.contains(SEPARATOR) && serviceName.indexOf(SEPARATOR) == serviceName.lastIndexOf(SEPARATOR)) {
             String serviceType = serviceUtil.getServiceType(serviceName, ServiceType.APPLICATION_SERVER);
-            if (serviceType != null && serviceType.equalsIgnoreCase(CloudRegistryEntry.Type.StandAloneInstance.toString())) {
+            if (serviceType != null && serviceType.equalsIgnoreCase(ServiceInfo.Type.StandAloneInstance.toString())) {
                 isStandaloneInstance = true;
             }
         }
@@ -291,7 +293,7 @@ public class GlassFishServiceUtil implements PostConstruct {
         PreparedStatement stmt = null;
         ResultSet rs = null;
         try {
-            final String query = "select * from " + CloudRegistryService.CLOUD_TABLE_NAME + " where CLOUD_NAME like '" + serviceName + ".%'";
+            final String query = "select * from " + ProvisionerUtil.CLOUD_TABLE_NAME + " where CLOUD_NAME like '" + serviceName + ".%'";
             con = ds.getConnection();
             stmt = prepareStatement(con, query);
             rs = stmt.executeQuery();
@@ -345,9 +347,9 @@ public class GlassFishServiceUtil implements PostConstruct {
         ResultSet rs = null;
         try {
             StringBuffer query = new StringBuffer();
-            query.append("select * from " + CloudRegistryService.CLOUD_TABLE_NAME + " where CLOUD_NAME like '" + clusterName + ".%' and " +
-                    CloudRegistryService.CLOUD_COLUMN_SERVER_TYPE + "='" + CloudRegistryEntry.Type.StandAloneInstance.toString() + "' " +
-                    "or " + CloudRegistryService.CLOUD_COLUMN_SERVER_TYPE + "='" + CloudRegistryEntry.Type.ClusterInstance + "'");
+            query.append("select * from " + ProvisionerUtil.CLOUD_TABLE_NAME + " where CLOUD_NAME like '" + clusterName + ".%' and " +
+                    ProvisionerUtil.CLOUD_COLUMN_SERVER_TYPE + "='" + ServiceInfo.Type.StandAloneInstance.toString() + "' " +
+                    "or " + ProvisionerUtil.CLOUD_COLUMN_SERVER_TYPE + "='" + ServiceInfo.Type.ClusterInstance + "'");
 
             con = ds.getConnection();
             stmt = prepareStatement(con,query.toString());

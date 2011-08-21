@@ -47,7 +47,6 @@ import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.CommandLock;
 import org.glassfish.paas.orchestrator.ServiceOrchestrator;
-import org.glassfish.paas.orchestrator.provisioning.CloudRegistryService;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
@@ -66,12 +65,6 @@ public class DeployService implements AdminCommand {
     @Param(name = "application", optional = false, primary = true)
     private String application;
 
-    @Inject
-    CloudRegistryService service;
-
-    @Inject
-    ServiceUtil serviceUtil;
-
     // The orchestrator should do service lookup mechanism to lookup the plugins.
     @Inject
     private ServiceOrchestrator orchestrator;
@@ -83,6 +76,7 @@ public class DeployService implements AdminCommand {
         final ActionReport report = context.getActionReport();
 
         try {
+            orchestrator.setUsingDeployService(true);
             File app = new File(application);
             //TODO get app-name from deploy command
             String appName = app.getName().substring(0, app.getName().lastIndexOf("."));
@@ -94,6 +88,8 @@ public class DeployService implements AdminCommand {
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setMessage(ex.toString());
             report.setFailureCause(ex);
+        }finally{
+            orchestrator.setUsingDeployService(false);
         }
 
 /*
@@ -123,4 +119,5 @@ public class DeployService implements AdminCommand {
         }
 */
     }
+
 }

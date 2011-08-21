@@ -45,11 +45,11 @@ import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
+import org.glassfish.paas.orchestrator.provisioning.ProvisionerUtil;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceType;
 import org.glassfish.paas.orchestrator.provisioning.iaas.CloudProvisioner;
-import org.glassfish.paas.orchestrator.provisioning.CloudRegistryEntry;
-import org.glassfish.paas.orchestrator.provisioning.CloudRegistryEntry.State;
-import org.glassfish.paas.orchestrator.provisioning.CloudRegistryService;
+import org.glassfish.paas.orchestrator.provisioning.ServiceInfo;
+import org.glassfish.paas.orchestrator.provisioning.ServiceInfo.State;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
@@ -72,7 +72,7 @@ public class StopDatabaseService implements AdminCommand {
     private String appName;
 
     @Inject
-    private CloudRegistryService cloudRegistryService;
+    private ProvisionerUtil provisionerUtil;
 
     @Inject
     private DatabaseServiceUtil dbServiceUtil;
@@ -82,7 +82,7 @@ public class StopDatabaseService implements AdminCommand {
         final ActionReport report = context.getActionReport();
 
         if (dbServiceUtil.isValidService(serviceName, appName, ServiceType.DATABASE)) {
-            CloudRegistryEntry entry = dbServiceUtil.retrieveCloudEntry(serviceName, appName, ServiceType.DATABASE);
+            ServiceInfo entry = dbServiceUtil.retrieveCloudEntry(serviceName, appName, ServiceType.DATABASE);
             String ipAddress = entry.getIpAddress();
             String status = entry.getState();
             if (status == null || status.equalsIgnoreCase(State.Stop_in_progress.toString())
@@ -94,9 +94,9 @@ public class StopDatabaseService implements AdminCommand {
 
             dbServiceUtil.updateState(serviceName, appName, State.Stop_in_progress.toString(), ServiceType.DATABASE);
 
-            cloudRegistryService.getDatabaseProvisioner().stopDatabase(ipAddress);
+            provisionerUtil.getDatabaseProvisioner().stopDatabase(ipAddress);
 
-            CloudProvisioner cloudProvisioner = cloudRegistryService.getCloudProvisioner();
+            CloudProvisioner cloudProvisioner = provisionerUtil.getCloudProvisioner();
             Collection<String> list = new ArrayList<String>();
             list.add(entry.getIpAddress());
             cloudProvisioner.stopInstances(list);

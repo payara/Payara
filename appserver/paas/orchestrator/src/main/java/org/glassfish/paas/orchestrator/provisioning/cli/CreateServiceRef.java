@@ -65,7 +65,7 @@ import org.jvnet.hk2.config.types.Property;
 import java.beans.PropertyVetoException;
 import java.util.Map;
 
-@Service(name = "create-service-ref")
+@Service(name = "_create-service-ref")
 @Scoped(PerLookup.class)
 @ExecuteOn(RuntimeType.DAS)
 @TargetType(value = {CommandTarget.DAS})

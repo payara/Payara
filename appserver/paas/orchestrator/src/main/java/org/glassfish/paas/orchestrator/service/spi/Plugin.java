@@ -42,6 +42,7 @@ package org.glassfish.paas.orchestrator.service.spi;
 
 import java.util.Set;
 
+import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.paas.orchestrator.config.Service;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceDescription;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceReference;
@@ -137,7 +138,12 @@ public interface Plugin<T extends ServiceType> {
      *
      * @return a Set of <code>ProvisionedService</code>s
      */
-    public ProvisionedService provisionService(ServiceDescription serviceDescription);
+    public ProvisionedService provisionService(ServiceDescription serviceDescription, DeploymentContext dc);
+
+    public boolean unprovisionService(ServiceDescription serviceDescription, DeploymentContext dc);
+
+    public void dissociateServices(ProvisionedService provisionedSvc,
+                                  ServiceReference svcRef, boolean beforeUndeploy, DeploymentContext dc);
 
     /**
      * A <code>ProvisionedService</code> for a <code>ServiceReference</code> is

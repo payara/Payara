@@ -66,7 +66,7 @@ import java.beans.PropertyVetoException;
 import java.util.Map;
 import java.util.Properties;
 
-@Service(name = "create-application-scoped-service")
+@Service(name = "_create-application-scoped-service")
 @Scoped(PerLookup.class)
 @ExecuteOn(RuntimeType.DAS)
 @TargetType(value = {CommandTarget.DAS})

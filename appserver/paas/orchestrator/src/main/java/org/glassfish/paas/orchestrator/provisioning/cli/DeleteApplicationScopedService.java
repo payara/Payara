@@ -62,7 +62,7 @@ import org.jvnet.hk2.config.TransactionFailure;
 
 import java.beans.PropertyVetoException;
 
-@Service(name = "delete-application-scoped-service")
+@Service(name = "_delete-application-scoped-service")
 @Scoped(PerLookup.class)
 @ExecuteOn(RuntimeType.DAS)
 @TargetType(value = {CommandTarget.DAS})

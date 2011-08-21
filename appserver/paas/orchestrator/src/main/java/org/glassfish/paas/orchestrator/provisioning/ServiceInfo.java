@@ -43,9 +43,9 @@ package org.glassfish.paas.orchestrator.provisioning;
 /**
  * @author bhavanishankar@java.net
  */
-public class CloudRegistryEntry {
+public class ServiceInfo {
 
-    private String cloudName;
+    private String serviceName;
 
     private String ipAddress;
 
@@ -62,16 +62,17 @@ public class CloudRegistryEntry {
         Initializing, NotRunning, Running, Stop_in_progress, Start_in_progress, Delete_in_progress
     }
 
+    //TODO should not be in Orchestrator ?
     public static enum Type {
         Domain, Cluster, StandAloneInstance, ClusterInstance
     }
 
-    public String getCloudName() {
-        return cloudName;
+    public String getServiceName() {
+        return serviceName;
     }
 
-    public void setCloudName(String cloudName) {
-        this.cloudName = cloudName;
+    public void setServiceName(String cloudName) {
+        this.serviceName = cloudName;
     }
 
     public String getAppName() {
@@ -116,8 +117,8 @@ public class CloudRegistryEntry {
 
     @Override
     public String toString() {
-        return "CloudRegistryEntry :: \n" +
-                "cloudName [ " + cloudName + "] \n" +
+        return "ServiceInfo :: \n" +
+                "serviceName [ " + serviceName + "] \n" +
                 "ipAddress [ " + ipAddress + "] \n" +
                 "instanceId [ " + instanceId + "] \n" +
                 "serverType [ " + serverType + "] \n" +

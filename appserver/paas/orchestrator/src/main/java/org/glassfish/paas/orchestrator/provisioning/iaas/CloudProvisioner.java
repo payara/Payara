@@ -60,6 +60,7 @@ public interface CloudProvisioner extends Provisioner {
 
     List<String> createSlaveInstances(int count);
 
+    //TODO delete /start/stop/create should return a FUTURE type ?
     void deleteInstances(List<String> instanceIDs);
 
     void startInstances(Map<String, String> instances);

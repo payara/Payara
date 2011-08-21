@@ -43,12 +43,13 @@ import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.WebBundleDescriptor;
 import com.sun.enterprise.deployment.archivist.ApplicationFactory;
 import org.glassfish.api.deployment.ApplicationContainer;
+import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.embeddable.CommandResult;
 import org.glassfish.embeddable.CommandRunner;
 import org.glassfish.paas.lbplugin.cli.GlassFishLBProvisionedService;
-import org.glassfish.paas.orchestrator.provisioning.CloudRegistryEntry;
-import org.glassfish.paas.orchestrator.provisioning.CloudRegistryService;
+import org.glassfish.paas.orchestrator.provisioning.ServiceInfo;
+import org.glassfish.paas.orchestrator.provisioning.ProvisionerUtil;
 import org.glassfish.paas.orchestrator.provisioning.LBProvisioner;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceType;
 import org.glassfish.paas.orchestrator.service.HTTPLoadBalancerServiceType;
@@ -78,7 +79,7 @@ import java.util.Set;
 public class LBPlugin implements Plugin<HTTPLoadBalancerServiceType> {
 
     @Inject
-    private CloudRegistryService registryService;
+    private ProvisionerUtil registryService;
 
     @Inject
     private CommandRunner commandRunner;
@@ -135,7 +136,7 @@ public class LBPlugin implements Plugin<HTTPLoadBalancerServiceType> {
         }
     }
 
-    public ProvisionedService provisionService(ServiceDescription serviceDescription) {
+    public ProvisionedService provisionService(ServiceDescription serviceDescription, DeploymentContext dc) {
         String serviceName = serviceDescription.getName();
 
         ArrayList<String> params;
@@ -160,7 +161,7 @@ public class LBPlugin implements Plugin<HTTPLoadBalancerServiceType> {
             }
         }
 
-        CloudRegistryEntry entry = lbServiceUtil.retrieveCloudEntry(serviceName, serviceDescription.getAppName(), ServiceType.LOAD_BALANCER);
+        ServiceInfo entry = lbServiceUtil.retrieveCloudEntry(serviceName, serviceDescription.getAppName(), ServiceType.LOAD_BALANCER);
         if (entry == null) {
             throw new RuntimeException("unable to get LB service : " + serviceName);
         }
@@ -230,5 +231,15 @@ public class LBPlugin implements Plugin<HTTPLoadBalancerServiceType> {
             }
         }
         return defs;
+    }
+
+    public boolean unprovisionService(ServiceDescription serviceDescription, DeploymentContext dc){
+        //TODO impl.
+        return true;
+    }
+
+    public void dissociateServices(ProvisionedService provisionedSvc,
+                                  ServiceReference svcRef, boolean beforeUndeploy, DeploymentContext dc){
+        //no-op
     }
 }

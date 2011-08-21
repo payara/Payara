@@ -47,12 +47,12 @@ import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.paas.orchestrator.provisioning.ApplicationServerProvisioner;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceType;
 import org.glassfish.paas.orchestrator.provisioning.iaas.CloudProvisioner;
-import org.glassfish.paas.orchestrator.provisioning.CloudRegistryService;
+import org.glassfish.paas.orchestrator.provisioning.ProvisionerUtil;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
-import org.glassfish.paas.orchestrator.provisioning.CloudRegistryEntry.State;
+import org.glassfish.paas.orchestrator.provisioning.ServiceInfo.State;
 
 import java.util.*;
 
@@ -64,7 +64,7 @@ import java.util.*;
 public class StopGlassFishService implements AdminCommand {
 
     @Inject
-    private CloudRegistryService registryService;
+    private ProvisionerUtil registryService;
 
     @Param(name = "servicename", primary = true, optional = false)
     private String serviceName;

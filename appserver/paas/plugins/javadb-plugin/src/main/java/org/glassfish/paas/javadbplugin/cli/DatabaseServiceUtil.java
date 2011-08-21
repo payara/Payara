@@ -43,7 +43,7 @@ package org.glassfish.paas.javadbplugin.cli;
 
 import org.glassfish.hk2.scopes.Singleton;
 import org.glassfish.paas.orchestrator.config.Services;
-import org.glassfish.paas.orchestrator.provisioning.CloudRegistryEntry;
+import org.glassfish.paas.orchestrator.provisioning.ServiceInfo;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceType;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceUtil;
 import org.jvnet.hk2.annotations.Inject;
@@ -61,15 +61,9 @@ public class DatabaseServiceUtil {
         return serviceUtil.isServiceAlreadyConfigured(serviceName, appName, type);
     }
 
-    public void registerDBInfo(CloudRegistryEntry entry) {
-        serviceUtil.registerCloudEntry(entry, null, "DATABASE");
+    public void registerDBInfo(ServiceInfo entry) {
+        serviceUtil.registerCloudEntry(entry);
     }
-
-/*
-    public void closeDBObjects(Connection con, Statement stmt, ResultSet rs) {
-        serviceUtil.closeDBObjects(con, stmt, rs);
-    }
-*/
 
     public void updateState(String serviceName, String appName, String state, ServiceType type) {
         serviceUtil.updateState(serviceName, appName, state, type);
@@ -79,7 +73,7 @@ public class DatabaseServiceUtil {
         return serviceUtil.isValidService(serviceName, appName, type);
     }
 
-    public CloudRegistryEntry retrieveCloudEntry(String serviceName, String appName, ServiceType type) {
+    public ServiceInfo retrieveCloudEntry(String serviceName, String appName, ServiceType type) {
         return serviceUtil.retrieveCloudEntry(serviceName, appName, type);
     }
 
@@ -89,5 +83,13 @@ public class DatabaseServiceUtil {
 
     public Services getServices(){
         return serviceUtil.getServices();
+    }
+
+    public String getInstanceID(String serviceName, String appName, ServiceType type) {
+        return serviceUtil.getInstanceID(serviceName, appName, type);
+    }
+
+    public void unregisterCloudEntry(String serviceName, String appName) {
+        serviceUtil.unregisterCloudEntry(serviceName, appName);
     }
 }

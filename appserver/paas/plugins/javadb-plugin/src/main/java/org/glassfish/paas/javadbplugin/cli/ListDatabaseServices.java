@@ -50,7 +50,7 @@ import org.glassfish.paas.orchestrator.config.ApplicationScopedService;
 import org.glassfish.paas.orchestrator.config.Service;
 import org.glassfish.paas.orchestrator.config.Services;
 import org.glassfish.paas.orchestrator.config.SharedService;
-import org.glassfish.paas.orchestrator.provisioning.CloudRegistryService;
+import org.glassfish.paas.orchestrator.provisioning.ProvisionerUtil;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.component.PerLookup;
@@ -66,7 +66,7 @@ import java.util.Collection;
 public class ListDatabaseServices implements AdminCommand {
 
     @Inject
-    private CloudRegistryService registryService;
+    private ProvisionerUtil registryService;
 
     @Inject
     private DatabaseServiceUtil dbServiceUtil;

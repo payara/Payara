@@ -42,7 +42,7 @@ package org.glassfish.paas.lbplugin;
 
 import org.glassfish.hk2.scopes.Singleton;
 import org.glassfish.paas.orchestrator.config.Services;
-import org.glassfish.paas.orchestrator.provisioning.CloudRegistryEntry;
+import org.glassfish.paas.orchestrator.provisioning.ServiceInfo;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceType;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceUtil;
 import org.jvnet.hk2.annotations.Inject;
@@ -56,7 +56,7 @@ public class LBServiceUtil {
     @Inject
     private ServiceUtil serviceUtil;
 
-    public CloudRegistryEntry retrieveCloudEntry(String serviceName, String appName, ServiceType type) {
+    public ServiceInfo retrieveCloudEntry(String serviceName, String appName, ServiceType type) {
         return serviceUtil.retrieveCloudEntry(serviceName, appName, type);
     }
 
@@ -72,15 +72,9 @@ public class LBServiceUtil {
         return serviceUtil.getIPAddress(serviceName, appName, type);
     }
 
-    public void registerLBInfo(CloudRegistryEntry entry) {
-        serviceUtil.registerCloudEntry(entry, null, "LOAD_BALANCER");
+    public void registerLBInfo(ServiceInfo entry) {
+        serviceUtil.registerCloudEntry(entry);
     }
-
-/*
-    public void closeDBObjects(Connection con, Statement stmt, ResultSet rs) {
-        serviceUtil.closeDBObjects(con, stmt, rs);
-    }
-*/
 
     public void updateState(String serviceName, String appName, String state, ServiceType type) {
         serviceUtil.updateState(serviceName, appName, state, type);

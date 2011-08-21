@@ -59,7 +59,7 @@ import java.util.Properties;
  */
 @Scoped(Singleton.class)
 @Service
-public class CloudRegistryService implements PostConstruct {
+public class ProvisionerUtil implements PostConstruct {
 
     @Inject
     private ProvisionerFactory provisionerFactory;

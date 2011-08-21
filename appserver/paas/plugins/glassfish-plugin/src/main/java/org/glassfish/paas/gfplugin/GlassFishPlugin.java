@@ -43,6 +43,9 @@ package org.glassfish.paas.gfplugin;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.deploy.shared.ArchiveFactory;
 import org.glassfish.api.deployment.ApplicationContainer;
+import org.glassfish.api.deployment.DeployCommandParameters;
+import org.glassfish.api.deployment.DeploymentContext;
+import org.glassfish.api.deployment.UndeployCommandParameters;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.embeddable.CommandResult;
 import org.glassfish.embeddable.CommandRunner;
@@ -51,7 +54,7 @@ import org.glassfish.embeddable.GlassFish;
 import org.glassfish.embeddable.GlassFishException;
 import org.glassfish.paas.gfplugin.cli.GlassFishServiceUtil;
 import org.glassfish.paas.orchestrator.provisioning.ApplicationServerProvisioner;
-import org.glassfish.paas.orchestrator.provisioning.CloudRegistryService;
+import org.glassfish.paas.orchestrator.provisioning.ProvisionerUtil;
 import org.glassfish.paas.orchestrator.provisioning.LBProvisioner;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceType;
 import org.glassfish.paas.orchestrator.service.JavaEEServiceType;
@@ -95,7 +98,7 @@ public class GlassFishPlugin implements Plugin<JavaEEServiceType> {
     private GlassFishServiceUtil gfServiceUtil;
 
     @Inject
-    private CloudRegistryService cloudRegistryService;
+    private ProvisionerUtil provisionerUtil;
 
     @Inject
     private Domain domain;
@@ -138,7 +141,27 @@ public class GlassFishPlugin implements Plugin<JavaEEServiceType> {
         return null;
     }
 
-    public ProvisionedService provisionService(ServiceDescription serviceDescription) {
+    public boolean unprovisionService(ServiceDescription serviceDescription, DeploymentContext dc){
+        String appNameParam="";
+        if(serviceDescription.getAppName() != null){
+            appNameParam="--appname="+serviceDescription.getAppName();
+        }
+        CommandResult result = commandRunner.run("_delete-glassfish-service",
+                "--waitforcompletion=true",appNameParam,
+                serviceDescription.getName());
+        String clusterName = gfServiceUtil.getClusterName(serviceDescription.getName(), serviceDescription.getAppName());
+        System.out.println("_delete-glassfish-service command output [" + result.getOutput() + "]");
+        if (result.getExitStatus() == CommandResult.ExitStatus.SUCCESS) {
+            return true;
+        } else {
+            //TODO throw exception ?
+            result.getFailureCause().printStackTrace();
+            return false;
+        }
+    }
+
+
+    public ProvisionedService provisionService(ServiceDescription serviceDescription, DeploymentContext dc) {
 //        if (serviceDescription instanceof SimpleServiceDefinition) {
             // TODO :: Figure out that it is for GlassFish.
 //            ServiceDescription serviceDefinition = (SimpleServiceDefinition) serviceDescription;
@@ -151,6 +174,7 @@ public class GlassFishPlugin implements Plugin<JavaEEServiceType> {
                     "--instancecount=" + serviceDescription.getConfiguration("min.clustersize"),
                     "--waitforcompletion=true",appNameParam,
                     serviceDescription.getName());
+            String clusterName = gfServiceUtil.getClusterName(serviceDescription.getName(), serviceDescription.getAppName());
             System.out.println("_create-glassfish-service command output [" + result.getOutput() + "]");
             if (result.getExitStatus() == CommandResult.ExitStatus.SUCCESS) {
 
@@ -160,15 +184,24 @@ public class GlassFishPlugin implements Plugin<JavaEEServiceType> {
 //                serviceProperties.setProperty("domainName", domainName);
                 
                 GlassFishProvisioner gfProvisioner = (GlassFishProvisioner)
-                        cloudRegistryService.getAppServerProvisioner(dasIPAddress);
+                        provisionerUtil.getAppServerProvisioner(dasIPAddress);
 
                 GlassFish provisionedGlassFish = gfProvisioner.getGlassFish();
 
                 glassfishProvisionedService =
                         new GlassFishProvisionedService(serviceDescription, serviceProperties, provisionedGlassFish);
+                //set the target to the newly created cluster.
+                //TODO what if someone requests for multiple GlassFish services ?
+                //TODO As of now, the last one is considered as deployment target.
+                if(dc != null){ //TODO remove once "deploy-service" is made obselete
+                    DeployCommandParameters  dcp = dc.getCommandParameters(DeployCommandParameters.class);
+                    dcp.target = clusterName;
+                }
 
                 return glassfishProvisionedService;
+
             } else {
+                //TODO throw exception ?
                 result.getFailureCause().printStackTrace();
                 return null;
             }
@@ -217,7 +250,7 @@ public class GlassFishPlugin implements Plugin<JavaEEServiceType> {
                 // TODO :: delegate the pool creation to deployment backend.
                 // TODO :: Decorate the archive with modified/newly_created META-INF/glassfish-resources.xml
                 GlassFishProvisioner glassFishProvisioner = (GlassFishProvisioner)
-                        cloudRegistryService.getAppServerProvisioner(dasIPAddress);
+                        provisionerUtil.getAppServerProvisioner(dasIPAddress);
                 glassFishProvisioner.createJdbcConnectionPool(dasIPAddress, clusterName,
                         derbyProperties, poolName);
                 glassFishProvisioner.createJdbcResource(dasIPAddress, clusterName,
@@ -237,7 +270,7 @@ public class GlassFishPlugin implements Plugin<JavaEEServiceType> {
                 String clusterName = gfServiceUtil.getClusterName(appServerServiceName, glassfishProvisionedService.getServiceDescription().getAppName());
                 String dasIPAddress = gfServiceUtil.getDASIPAddress(glassfishProvisionedService.getServiceDescription().getName());
 
-                ApplicationServerProvisioner appServerProvisioner = cloudRegistryService.getAppServerProvisioner(dasIPAddress);
+                ApplicationServerProvisioner appServerProvisioner = provisionerUtil.getAppServerProvisioner(dasIPAddress);
 
 //                GlassFishLBProvisionedService gfLBProvisionedService =
 //                        (GlassFishLBProvisionedService) provisionedSvc;
@@ -247,7 +280,7 @@ public class GlassFishPlugin implements Plugin<JavaEEServiceType> {
 
                 String domainName = domain.getProperty(Domain.DOMAIN_NAME_PROPERTY).getValue();
                 if (beforeDeployment) {
-                    LBProvisioner lbProvisioner = cloudRegistryService.getLBProvisioner();
+                    LBProvisioner lbProvisioner = provisionerUtil.getLBProvisioner();
                     String lbIPAddress = gfServiceUtil.getIPAddress(lbServiceName, glassfishProvisionedService.getServiceDescription().getAppName(), ServiceType.LOAD_BALANCER);
                     lbProvisioner.associateApplicationServerWithLB(lbIPAddress, dasIPAddress, domainName);
 
@@ -262,6 +295,27 @@ public class GlassFishPlugin implements Plugin<JavaEEServiceType> {
 //            }
         }
     }
+
+    public void dissociateServices(ProvisionedService provisionedSvc,
+                                  ServiceReference svcRef, boolean beforeUndeploy, DeploymentContext dc){
+        //TODO incorrect logic where we are setting the target in dissociateServices. Need a separate phase ?
+        if(beforeUndeploy){
+            if(provisionedSvc instanceof GlassFishProvisionedService){
+                GlassFishProvisionedService gfps = (GlassFishProvisionedService) provisionedSvc;
+                String serviceName = gfps.getServiceDescription().getName();
+                String clusterName = gfServiceUtil.getClusterName(serviceName, gfps.getServiceDescription().getAppName());
+
+                if(dc != null){ //TODO remove once "deploy-service" is made obselete
+                    UndeployCommandParameters ucp = dc.getCommandParameters(UndeployCommandParameters.class);
+                    ucp.target = clusterName;
+                }
+            }
+        }
+
+        //TODO Delete the jdbc resource & pool
+    }
+
+
 
     public ApplicationContainer deploy(ReadableArchive cloudArchive) {
         GlassFish provisionedGlassFish =
@@ -324,4 +378,5 @@ public class GlassFishPlugin implements Plugin<JavaEEServiceType> {
         }
         return defs;
     }
+
 }

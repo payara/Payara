@@ -44,25 +44,27 @@ import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
+import org.glassfish.api.admin.CommandLock;
 import org.glassfish.paas.orchestrator.provisioning.ApplicationServerProvisioner;
+import org.glassfish.paas.orchestrator.provisioning.ProvisionerUtil;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceType;
 import org.glassfish.paas.orchestrator.provisioning.iaas.CloudProvisioner;
-import org.glassfish.paas.orchestrator.provisioning.CloudRegistryService;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
 
-import org.glassfish.paas.orchestrator.provisioning.CloudRegistryEntry.State;
+import org.glassfish.paas.orchestrator.provisioning.ServiceInfo.State;
 
 import java.util.*;
 
 @Service(name = "_start-glassfish-service")
 @Scoped(PerLookup.class)
+@CommandLock(CommandLock.LockType.NONE)
 public class StartGlassFishService implements AdminCommand {
 
     @Inject
-    private CloudRegistryService registryService;
+    private ProvisionerUtil registryService;
 
     @Param(name = "servicename", primary = true, optional = false)
     private String serviceName;

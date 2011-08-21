@@ -45,11 +45,11 @@ import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.paas.lbplugin.LBServiceUtil;
-import org.glassfish.paas.orchestrator.provisioning.CloudRegistryEntry;
+import org.glassfish.paas.orchestrator.provisioning.ServiceInfo;
 
-import static org.glassfish.paas.orchestrator.provisioning.CloudRegistryEntry.State.*;
+import static org.glassfish.paas.orchestrator.provisioning.ServiceInfo.State.*;
 
-import org.glassfish.paas.orchestrator.provisioning.CloudRegistryService;
+import org.glassfish.paas.orchestrator.provisioning.ProvisionerUtil;
 
 import static org.glassfish.paas.orchestrator.provisioning.cli.ServiceType.*;
 
@@ -76,7 +76,7 @@ public class StopLBService implements AdminCommand {
     private String appName;
 
     @Inject
-    private CloudRegistryService cloudRegistryService;
+    private ProvisionerUtil provisionerUtil;
 
     @Inject
     private LBServiceUtil lbServiceUtil;
@@ -86,7 +86,7 @@ public class StopLBService implements AdminCommand {
         final ActionReport report = context.getActionReport();
 
         if (lbServiceUtil.isValidService(serviceName, appName, LOAD_BALANCER)) {
-            CloudRegistryEntry entry = lbServiceUtil.retrieveCloudEntry(serviceName, appName, LOAD_BALANCER);
+            ServiceInfo entry = lbServiceUtil.retrieveCloudEntry(serviceName, appName, LOAD_BALANCER);
             String ipAddress = entry.getIpAddress();
             String status = entry.getState();
             if (status == null || status.equalsIgnoreCase(Stop_in_progress.toString())
@@ -98,9 +98,9 @@ public class StopLBService implements AdminCommand {
 
             lbServiceUtil.updateState(serviceName, appName, Stop_in_progress.toString(), LOAD_BALANCER);
 
-            cloudRegistryService.getLBProvisioner().stopLB(ipAddress);
+            provisionerUtil.getLBProvisioner().stopLB(ipAddress);
 
-            CloudProvisioner cloudProvisioner = cloudRegistryService.getCloudProvisioner();
+            CloudProvisioner cloudProvisioner = provisionerUtil.getCloudProvisioner();
             Collection<String> list = new ArrayList<String>();
             list.add(entry.getIpAddress());
             cloudProvisioner.stopInstances(list);

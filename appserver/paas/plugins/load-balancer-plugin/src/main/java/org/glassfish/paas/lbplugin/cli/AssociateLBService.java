@@ -45,7 +45,7 @@ import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.paas.gfplugin.cli.GlassFishServiceUtil;
 import org.glassfish.paas.lbplugin.LBServiceUtil;
-import org.glassfish.paas.orchestrator.provisioning.CloudRegistryService;
+import org.glassfish.paas.orchestrator.provisioning.ProvisionerUtil;
 import org.glassfish.paas.orchestrator.provisioning.ApplicationServerProvisioner;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceType;
 import org.glassfish.paas.orchestrator.provisioning.LBProvisioner;
@@ -68,7 +68,7 @@ public class AssociateLBService implements AdminCommand {
     private String appServerServiceName;
 
     @Inject
-    private CloudRegistryService cloudRegistryService;
+    private ProvisionerUtil provisionerUtil;
 
     @Param(name="appname", optional = true)
     private String appName;
@@ -124,7 +124,7 @@ public class AssociateLBService implements AdminCommand {
 
         String dasIPAddress = lbServiceUtil.getIPAddress(domainName, appName, ServiceType.APPLICATION_SERVER);
 
-        LBProvisioner lbProvisioner = cloudRegistryService.getLBProvisioner();
+        LBProvisioner lbProvisioner = provisionerUtil.getLBProvisioner();
         String ipAddress = lbServiceUtil.getIPAddress(serviceName, appName, ServiceType.LOAD_BALANCER);
         lbProvisioner.associateApplicationServerWithLB(ipAddress, dasIPAddress, domainName);
 
@@ -132,7 +132,7 @@ public class AssociateLBService implements AdminCommand {
         lbProvisioner.stopLB(ipAddress);
         lbProvisioner.startLB(ipAddress);
 
-        ApplicationServerProvisioner appServerProvisioner = cloudRegistryService.getAppServerProvisioner(dasIPAddress);
+        ApplicationServerProvisioner appServerProvisioner = provisionerUtil.getAppServerProvisioner(dasIPAddress);
         appServerProvisioner.associateLBWithApplicationServer(dasIPAddress, targetName, ipAddress, serviceName);
 
         report.setActionExitCode(ActionReport.ExitCode.SUCCESS);

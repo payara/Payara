@@ -45,10 +45,10 @@ import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.paas.orchestrator.provisioning.DatabaseProvisioner;
+import org.glassfish.paas.orchestrator.provisioning.ServiceInfo;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceType;
 import org.glassfish.paas.orchestrator.provisioning.iaas.CloudProvisioner;
-import org.glassfish.paas.orchestrator.provisioning.CloudRegistryEntry;
-import org.glassfish.paas.orchestrator.provisioning.CloudRegistryService;
+import org.glassfish.paas.orchestrator.provisioning.ProvisionerUtil;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
@@ -65,7 +65,7 @@ public class CreateDatabaseService implements AdminCommand {
     private String serviceName;
 
     @Inject
-    private CloudRegistryService cloudRegistryService;
+    private ProvisionerUtil provisionerUtil;
 
     @Inject
     private DatabaseServiceUtil dbServiceUtil;
@@ -85,18 +85,18 @@ public class CreateDatabaseService implements AdminCommand {
         }
 
         //hack : We are using the default AMI which will work fine, but not for other DBs.
-        CloudProvisioner cloudProvisioner = cloudRegistryService.getCloudProvisioner();
+        CloudProvisioner cloudProvisioner = provisionerUtil.getCloudProvisioner();
         String instanceID = cloudProvisioner.createMasterInstance();
         String ipAddress = cloudProvisioner.getIPAddress(instanceID);
 
-        DatabaseProvisioner dbProvisioner = cloudRegistryService.getDatabaseProvisioner();
+        DatabaseProvisioner dbProvisioner = provisionerUtil.getDatabaseProvisioner();
         dbProvisioner.startDatabase(ipAddress);
 
-        CloudRegistryEntry entry = new CloudRegistryEntry();
+        ServiceInfo entry = new ServiceInfo();
         entry.setInstanceId(instanceID);
         entry.setIpAddress(ipAddress);
-        entry.setState(CloudRegistryEntry.State.Running.toString());
-        entry.setCloudName(serviceName);
+        entry.setState(ServiceInfo.State.Running.toString());
+        entry.setServiceName(serviceName);
         entry.setAppName(appName);
         entry.setServerType("database");
 

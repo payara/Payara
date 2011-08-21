@@ -40,30 +40,49 @@
 
 package org.glassfish.paas.orchestrator;
 
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.sun.enterprise.deploy.shared.ArchiveFactory;
+import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.api.deployment.DeployCommandParameters;
+import org.glassfish.api.deployment.DeploymentContext;
+import org.glassfish.api.deployment.OpsParams;
+import org.glassfish.api.deployment.UndeployCommandParameters;
 import org.glassfish.api.deployment.archive.ReadableArchive;
+import org.glassfish.internal.deployment.ApplicationLifecycleInterceptor;
+import org.glassfish.internal.deployment.ExtendedDeploymentContext;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceReference;
 import org.glassfish.paas.orchestrator.service.ServiceType;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceMetadata;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceDescription;
 import org.glassfish.paas.orchestrator.service.spi.Plugin;
 import org.glassfish.paas.orchestrator.service.spi.ProvisionedService;
-import org.glassfish.paas.orchestrator.service.spi.ServiceDefinition;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
 
 @Service
-public class ServiceOrchestratorImpl implements ServiceOrchestrator {
+public class ServiceOrchestratorImpl implements ServiceOrchestrator, ApplicationLifecycleInterceptor {
 
     @Inject
     protected Habitat habitat;
 
+    @Inject
+    private ArchiveFactory archiveFactory;
+
+    @Inject
+    private ServerEnvironment serverEnvironment;
+
+    private Map<String, ServiceMetadata> serviceMetadata = new HashMap<String, ServiceMetadata>();
+    private Map<String, Set<ProvisionedService>> provisionedServices = new HashMap<String, Set<ProvisionedService>>();
+
     private static Logger logger = Logger.getLogger(ServiceOrchestratorImpl.class.getName());
+    private boolean usingDeployService = false;
 
     public Set<Plugin> getPlugins() {
         Set<Plugin> plugins = new HashSet<Plugin>();
@@ -71,6 +90,43 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
         logger.log(Level.INFO, "Discovered plugins:" + plugins);
         return plugins;
     }
+
+
+    public void provisionServicesForApplication(String appName, ReadableArchive archive, DeploymentContext dc) {
+        logger.entering(getClass().getName(), "provisionServicesForApplication");
+        //Get all plugins installed in this runtime
+        Set<Plugin> installedPlugins = getPlugins();
+
+        //1. Perform service dependency discovery
+        ServiceMetadata appServiceMetadata = serviceDependencyDiscovery(appName, archive, installedPlugins);
+
+        //2. Provision dependent services
+        Set<ProvisionedService> appProvisionedSvcs = provisionServices(installedPlugins, appServiceMetadata, dc);
+
+        //3. Associate provisioned services with each other
+        associateProvisionedServices(installedPlugins, appServiceMetadata,
+                appProvisionedSvcs, true /*before deployment*/);
+        serviceMetadata.put(appName, appServiceMetadata);
+        provisionedServices.put(appName, appProvisionedSvcs);
+        logger.exiting(getClass().getName(), "provisionServicesForApplication");
+    }
+
+    public void postDeploy(String appName, ReadableArchive cloudArchive) {
+        logger.entering(getClass().getName(), "postDeploy");
+        //4b. post-deployment association
+
+        Set<Plugin> installedPlugins = getPlugins();
+        ServiceMetadata appServiceMetadata = serviceMetadata.get(appName);
+        Set<ProvisionedService> appProvisionedSvcs = provisionedServices.get(appName);
+        associateProvisionedServices(installedPlugins, appServiceMetadata,
+                appProvisionedSvcs, false /*after deployment*/);
+
+        //TODO should we remove them, or book keep it till its stopped/undeployed ?
+        //serviceMetadata.remove(appName);
+        //provisionedServices.remove(appName);
+        logger.exiting(getClass().getName(), "postDeploy");
+    }
+
 
     public void deployApplication(String appName, ReadableArchive cloudArchive) {
         logger.entering(getClass().getName(), "deployApplication");
@@ -81,7 +137,8 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
         ServiceMetadata appServiceMetadata = serviceDependencyDiscovery(appName, cloudArchive, installedPlugins);
 
         //2. Provision dependent services
-        Set<ProvisionedService> appProvisionedSvcs = provisionServices(installedPlugins, appServiceMetadata);
+        //TODO passing null for deploymentContext which will break "cloud-deploy" command. FIX IT
+        Set<ProvisionedService> appProvisionedSvcs = provisionServices(installedPlugins, appServiceMetadata, null);
 
         //3. Associate provisioned services with each other
         associateProvisionedServices(installedPlugins, appServiceMetadata,
@@ -92,8 +149,35 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
 
         //4b. post-deployment association
         associateProvisionedServices(installedPlugins, appServiceMetadata,
-                appProvisionedSvcs, false /*before deployment*/);
+                appProvisionedSvcs, false /*after deployment*/);
     }
+
+    public void prepareForUndeploy(String appName, ReadableArchive cloudArchive, DeploymentContext dc) {
+        logger.entering(getClass().getName(), "prepareForUndeploy");
+        //Get all plugins installed in this runtime
+        Set<Plugin> installedPlugins = getPlugins();
+
+        ServiceMetadata appServiceMetadata = serviceMetadata.get(appName);
+        Set<ProvisionedService> appProvisionedServices = provisionedServices.get(appName);
+
+        dissociateProvisionedServices(installedPlugins, appServiceMetadata, appProvisionedServices, true, dc);
+    }
+
+    public void postUndeploy(String appName, ReadableArchive cloudArchive, DeploymentContext dc) {
+        logger.entering(getClass().getName(), "postUndeploy");
+        //4b. post-undeploy disassociation
+
+        Set<Plugin> installedPlugins = getPlugins();
+        ServiceMetadata appServiceMetadata = serviceMetadata.get(appName);
+        Set<ProvisionedService> appProvisionedSvcs = provisionedServices.get(appName);
+        dissociateProvisionedServices(installedPlugins, appServiceMetadata,
+                appProvisionedSvcs, false /*after undeployment*/, dc);
+
+        unprovisionServices(installedPlugins, appServiceMetadata, dc);
+
+        logger.exiting(getClass().getName(), "postUndeploy");
+    }
+
 
     private ServiceMetadata serviceDependencyDiscovery(String appName, ReadableArchive cloudArchive, Set<Plugin> installedPlugins) {
         logger.entering(getClass().getName(), "serviceDependencyDiscovery");
@@ -106,6 +190,12 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
 
         //1.1 discover all Service References and Definitions already declared for this application
         ServiceMetadata appServiceMetadata = parser.discoverDeclaredServices(appName, cloudArchive);
+
+        //if no meta-data is found, create empty ServiceMetadata
+        if (appServiceMetadata == null) {
+            appServiceMetadata = new ServiceMetadata();
+            appServiceMetadata.setAppName(appName);
+        }
 
         logger.log(Level.INFO, "Discovered declared service metadata via glassfish-services.xml = " + appServiceMetadata);
 
@@ -184,6 +274,26 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
         }
     }
 
+    private void dissociateProvisionedServices(Set<Plugin> installedPlugins,
+                                               ServiceMetadata appServiceMetadata,
+                                               Set<ProvisionedService> appProvisionedSvcs, boolean beforeUndeploy,
+                                               DeploymentContext dc) {
+        logger.entering(getClass().getName(), "dissociateProvisionedServices=" + beforeUndeploy);
+        for (ProvisionedService ps : appProvisionedSvcs) {
+            for (Plugin<?> svcPlugin : installedPlugins) {
+                //Dissociate the provisioned service only with plugins that handle other service types.
+                //TODO why is this check done ?
+                //if (!ps.getServiceType().equals(svcPlugin.getServiceType())) {
+                Set<ServiceReference> appSRs = appServiceMetadata.getServiceReferences();
+                for (ServiceReference sr : appSRs) {
+                    logger.log(Level.INFO, "Dissociating ProvisionedService " + ps + " for ServiceReference " + sr + " through " + svcPlugin);
+                    svcPlugin.dissociateServices(ps, sr, beforeUndeploy, dc);
+                }
+                //}
+            }
+        }
+    }
+
     private void associateProvisionedServices(Set<Plugin> installedPlugins,
                                               ServiceMetadata appServiceMetadata,
                                               Set<ProvisionedService> appProvisionedSvcs, boolean preDeployment) {
@@ -202,8 +312,17 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
         }
     }
 
+    private void unprovisionServices(Set<Plugin> installedPlugins, ServiceMetadata appServiceMetadata, DeploymentContext dc) {
+        Set<ServiceDescription> appSDs = appServiceMetadata.getServiceDescriptions();
+        for (ServiceDescription sd : appSDs) {
+            Plugin<?> chosenPlugin = getPluginForServiceType(installedPlugins, sd.getServiceType());
+            logger.log(Level.INFO, "Unprovisioning Service for " + sd + " through " + chosenPlugin);
+            chosenPlugin.unprovisionService(sd, dc);
+        }
+    }
+
     private Set<ProvisionedService> provisionServices(Set<Plugin> installedPlugins,
-                                                      ServiceMetadata appServiceMetadata) {
+                                                      ServiceMetadata appServiceMetadata, DeploymentContext dc) {
         logger.entering(getClass().getName(), "provisionServices");
         Set<ProvisionedService> appPSs = new HashSet<ProvisionedService>();
 
@@ -211,7 +330,7 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
         for (ServiceDescription sd : appSDs) {
             Plugin<?> chosenPlugin = getPluginForServiceType(installedPlugins, sd.getServiceType());
             logger.log(Level.INFO, "Provisioning Service for " + sd + " through " + chosenPlugin);
-            ProvisionedService ps = chosenPlugin.provisionService(sd);
+            ProvisionedService ps = chosenPlugin.provisionService(sd, dc);
             appPSs.add(ps);
         }
 
@@ -251,4 +370,67 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
         }
     }
 
+    public void before(ExtendedDeploymentContext.Phase phase, ExtendedDeploymentContext context) {
+        if (!usingDeployService) {
+            System.out.println("ApplicationLifecycleListener before : " + phase);
+            if (phase.equals(ExtendedDeploymentContext.Phase.PREPARE)) {
+                if (serverEnvironment.isDas()) {
+                    ReadableArchive archive = context.getSource();
+                    DeployCommandParameters params = context.getCommandParameters(DeployCommandParameters.class);
+                    if (params != null) {
+                        if (params.origin == OpsParams.Origin.deploy) {
+                            String appName = params.name();
+                            provisionServicesForApplication(appName, archive, context);
+                        }
+                    }
+                }
+            } else if (phase.equals(ExtendedDeploymentContext.Phase.STOP)) {
+                if (serverEnvironment.isDas()) {
+                    ReadableArchive archive = context.getSource();
+                    UndeployCommandParameters params = context.getCommandParameters(UndeployCommandParameters.class);
+                    if (params != null) {
+                        if (params.origin == OpsParams.Origin.undeploy) {
+                            String appName = params.name();
+                            prepareForUndeploy(appName, archive, context);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    public void after(ExtendedDeploymentContext.Phase phase, ExtendedDeploymentContext context) {
+        if (!usingDeployService) {
+            System.out.println("ApplicationLifecycleListener after : " + phase);
+            if (phase.equals(ExtendedDeploymentContext.Phase.REPLICATION)) {
+                if (serverEnvironment.isDas()) {
+                    ReadableArchive archive = context.getSource();
+                    DeployCommandParameters deployParams = context.getCommandParameters(DeployCommandParameters.class);
+                    if (deployParams != null) {//TODO is this the only way to determine whether its really deployment ?
+                        if (deployParams.origin == OpsParams.Origin.deploy) {
+                            String appName = deployParams.name();
+                            postDeploy(appName, archive);
+                        }
+                    }
+                    UndeployCommandParameters undeployParams = context.getCommandParameters(UndeployCommandParameters.class);
+                    if (undeployParams != null) {
+                        if (undeployParams.origin == OpsParams.Origin.undeploy) {
+                            String appName = undeployParams.name();
+                            //TODO workaround as REPLICATION event during "undeploy" is called during "post-disable"
+                            //and "post-undeploy".
+                            if (serviceMetadata.containsKey(appName) && provisionedServices.containsKey(appName)) {
+                                postUndeploy(appName, context.getSource(), context);
+                                serviceMetadata.remove(appName);
+                                provisionedServices.remove(appName);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    public void setUsingDeployService(boolean usingDeployService) {
+        this.usingDeployService = usingDeployService;
+    }
 }

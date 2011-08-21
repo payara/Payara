@@ -40,12 +40,13 @@
 package org.glassfish.paas.javadbplugin;
 
 import org.glassfish.api.deployment.ApplicationContainer;
+import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.embeddable.CommandResult;
 import org.glassfish.embeddable.CommandRunner;
 import org.glassfish.paas.javadbplugin.cli.DatabaseServiceUtil;
-import org.glassfish.paas.orchestrator.provisioning.CloudRegistryEntry;
-import org.glassfish.paas.orchestrator.provisioning.CloudRegistryService;
+import org.glassfish.paas.orchestrator.provisioning.ServiceInfo;
+import org.glassfish.paas.orchestrator.provisioning.ProvisionerUtil;
 import org.glassfish.paas.orchestrator.provisioning.DatabaseProvisioner;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceType;
 import org.glassfish.paas.orchestrator.service.RDBMSServiceType;
@@ -75,7 +76,7 @@ import java.util.Set;
 public class DerbyPlugin implements Plugin<RDBMSServiceType> {
 
     @Inject
-    private CloudRegistryService registryService;
+    private ProvisionerUtil registryService;
 
     @Inject
     private CommandRunner commandRunner;
@@ -131,7 +132,7 @@ public class DerbyPlugin implements Plugin<RDBMSServiceType> {
         }
     }
 
-    public ProvisionedService provisionService(ServiceDescription serviceDescription) {
+    public ProvisionedService provisionService(ServiceDescription serviceDescription, DeploymentContext dc) {
         String serviceName = serviceDescription.getName();
 
         ArrayList<String> params;
@@ -154,7 +155,7 @@ public class DerbyPlugin implements Plugin<RDBMSServiceType> {
             }
         }
 
-        CloudRegistryEntry entry = dbServiceUtil.retrieveCloudEntry(serviceName, serviceDescription.getAppName(), ServiceType.DATABASE);
+        ServiceInfo entry = dbServiceUtil.retrieveCloudEntry(serviceName, serviceDescription.getAppName(), ServiceType.DATABASE);
         if (entry == null) {
             throw new RuntimeException("unable to get DB service : " + serviceName);
         }
@@ -208,4 +209,27 @@ public class DerbyPlugin implements Plugin<RDBMSServiceType> {
         //the db plugin cannot say that a DB needs to be provisioned. 
         return new HashSet<ServiceDescription>();
     }
+
+    public boolean unprovisionService(ServiceDescription serviceDescription, DeploymentContext dc){
+        String appNameParam="";
+        if(serviceDescription.getAppName() != null){
+            appNameParam="--appname="+serviceDescription.getAppName();
+        }
+        CommandResult result = commandRunner.run("_delete-database-service",
+                appNameParam, serviceDescription.getName());
+        System.out.println("_delete-database-service command output [" + result.getOutput() + "]");
+        if (result.getExitStatus() == CommandResult.ExitStatus.SUCCESS) {
+            return true;
+        } else {
+            //TODO throw exception ?
+            result.getFailureCause().printStackTrace();
+            return false;
+        }
+    }
+
+    public void dissociateServices(ProvisionedService provisionedSvc,
+                                  ServiceReference svcRef, boolean beforeUndeploy, DeploymentContext dc){
+        //no-op
+    }
+
 }

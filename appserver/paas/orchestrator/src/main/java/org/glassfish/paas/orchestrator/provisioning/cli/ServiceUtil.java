@@ -45,10 +45,7 @@ import org.glassfish.paas.orchestrator.config.ApplicationScopedService;
 import org.glassfish.paas.orchestrator.config.Service;
 import org.glassfish.paas.orchestrator.config.Services;
 import org.glassfish.paas.orchestrator.config.SharedService;
-import org.glassfish.paas.orchestrator.provisioning.CloudRegistryEntry;
-import org.glassfish.paas.orchestrator.provisioning.CloudRegistryService;
-
-import static org.glassfish.paas.orchestrator.provisioning.CloudRegistryService.*;
+import org.glassfish.paas.orchestrator.provisioning.ServiceInfo;
 
 
 import org.jvnet.hk2.annotations.Inject;
@@ -59,12 +56,7 @@ import org.jvnet.hk2.config.Transaction;
 import org.jvnet.hk2.config.TransactionFailure;
 import org.jvnet.hk2.config.types.Property;
 
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-import javax.sql.DataSource;
 import java.beans.PropertyVetoException;
-import java.sql.*;
-import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -84,7 +76,7 @@ public class ServiceUtil implements PostConstruct {
     }
 
     public boolean isValidService(String serviceName, String appName, ServiceType type) {
-        CloudRegistryEntry entry = retrieveCloudEntry(serviceName, appName, type);
+        ServiceInfo entry = retrieveCloudEntry(serviceName, appName, type);
         return entry != null;
     }
 
@@ -216,11 +208,6 @@ public class ServiceUtil implements PostConstruct {
         }
     }
 
-    private PreparedStatement prepareStatement(Connection con, final String query)
-            throws SQLException {
-        return con.prepareStatement(query);
-    }
-
     public boolean isServiceAlreadyConfigured(String serviceName, String appName, ServiceType type) {
         return isServiceAlreadyConfiguredThroughConfig(serviceName, appName);
     }
@@ -231,7 +218,7 @@ public class ServiceUtil implements PostConstruct {
     }
 
     public String getServiceType(String serviceName, String appName, ServiceType type) {
-        CloudRegistryEntry entry = retrieveCloudEntry(serviceName, appName, type);
+        ServiceInfo entry = retrieveCloudEntry(serviceName, appName, type);
         if (entry != null) {
             return entry.getServerType();
         } else {
@@ -240,7 +227,7 @@ public class ServiceUtil implements PostConstruct {
     }
 
     public String getServiceState(String serviceName, String appName, ServiceType type) {
-        CloudRegistryEntry entry = retrieveCloudEntry(serviceName, appName, type);
+        ServiceInfo entry = retrieveCloudEntry(serviceName, appName, type);
         if (entry != null) {
             return entry.getState();
         } else {
@@ -249,7 +236,7 @@ public class ServiceUtil implements PostConstruct {
     }
 
     public String getIPAddress(String serviceName, String appName, ServiceType type) {
-        CloudRegistryEntry entry = retrieveCloudEntry(serviceName, appName, type);
+        ServiceInfo entry = retrieveCloudEntry(serviceName, appName, type);
         if (entry != null) {
             return entry.getIpAddress();
         } else {
@@ -258,7 +245,7 @@ public class ServiceUtil implements PostConstruct {
     }
 
     public String getInstanceID(String serviceName, String appName, ServiceType type) {
-        CloudRegistryEntry entry = retrieveCloudEntry(serviceName, appName, type);
+        ServiceInfo entry = retrieveCloudEntry(serviceName, appName, type);
         if (entry != null) {
             return entry.getInstanceId();
         } else {
@@ -267,18 +254,18 @@ public class ServiceUtil implements PostConstruct {
     }
 
 
-    public CloudRegistryEntry retrieveCloudEntry(String serviceName, String appName, ServiceType type) {
+    public ServiceInfo retrieveCloudEntry(String serviceName, String appName, ServiceType type) {
         return retrieveCloudEntryThroughConfig(serviceName, appName);
     }
 
-    private CloudRegistryEntry retrieveCloudEntryThroughConfig(String serviceName, String appName) {
+    private ServiceInfo retrieveCloudEntryThroughConfig(String serviceName, String appName) {
         Service matchingService = null;
-        CloudRegistryEntry cre = null;
+        ServiceInfo cre = null;
         matchingService = getService(serviceName, appName);
 
         if(matchingService != null){
-            cre = new CloudRegistryEntry();
-            cre.setCloudName(matchingService.getServiceName());
+            cre = new ServiceInfo();
+            cre.setServiceName(matchingService.getServiceName());
             if(matchingService.getProperty() != null){
                 if(matchingService.getProperty("ip-address") != null){
                     cre.setIpAddress(matchingService.getProperty("ip-address").getValue());
@@ -346,18 +333,54 @@ public class ServiceUtil implements PostConstruct {
     }
 
 
-    public void registerCloudEntry(final CloudRegistryEntry entry, String tableName, String type) {
+    public void registerCloudEntry(final ServiceInfo entry) {
         registerCloudEntryThroughConfig(entry);
     }
 
-    private void registerCloudEntryThroughConfig(final CloudRegistryEntry entry) {
+    public void unregisterCloudEntry(String serviceName, String appName) {
+        unregisterCloudEntryThroughConfig(serviceName, appName);
+    }
+
+    private void unregisterCloudEntryThroughConfig(final String serviceName,final String appName) {
+        Services services = getServices();
+        try {
+            if (ConfigSupport.apply(new SingleConfigCode<Services>() {
+                public Object run(Services servicesConfig) throws PropertyVetoException, TransactionFailure {
+                    Service deletedService = null;
+                    for(Service service: servicesConfig.getServices()){
+                        if(serviceName.equals(service.getServiceName())){
+                        if(service instanceof ApplicationScopedService){
+                            ApplicationScopedService appScopedService = (ApplicationScopedService)service;
+                               if(appScopedService.getApplicationName().equals(appName)){
+                                   servicesConfig.getServices().remove(appScopedService);
+                                   deletedService = appScopedService;
+                                   break;
+                                }
+                            }
+                        }
+                    }
+                    return deletedService;
+                }
+            }, services) == null) {
+                String msg = "Unable to remove service ["+serviceName+"]";
+                System.out.println(msg);
+                throw new RuntimeException(msg);
+            }
+        } catch (TransactionFailure transactionFailure) {
+            transactionFailure.printStackTrace();
+            throw new RuntimeException(transactionFailure.getMessage(), transactionFailure);
+        }
+    }
+
+
+    private void registerCloudEntryThroughConfig(final ServiceInfo entry) {
         Services services = getServices();
         try {
             if (ConfigSupport.apply(new SingleConfigCode<Services>() {
                 public Object run(Services servicesConfig) throws PropertyVetoException, TransactionFailure {
                     ApplicationScopedService service = servicesConfig.createChild(ApplicationScopedService.class);
 
-                    service.setServiceName(entry.getCloudName());
+                    service.setServiceName(entry.getServiceName());
                     service.setType(entry.getServerType());
 
                     if (entry.getAppName() != null) {
@@ -384,7 +407,7 @@ public class ServiceUtil implements PostConstruct {
                     return service;
                 }
             }, services) == null) {
-                String msg = "Unable to service ["+entry.getCloudName()+"]";
+                String msg = "Unable to service ["+entry.getServiceName()+"]";
                 System.out.println(msg);
                 throw new RuntimeException(msg);
             }
