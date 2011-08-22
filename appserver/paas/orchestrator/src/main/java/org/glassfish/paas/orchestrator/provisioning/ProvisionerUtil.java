@@ -102,7 +102,9 @@ public class ProvisionerUtil implements PostConstruct {
         if(cloudConfig != null){
             return (Properties) cloudConfig.clone();
         }else{
-            throw new RuntimeException("Unable to find cloud-config.properties file in 'config' directory");
+            System.err.println("Unable to find cloud-config.properties file in 'config' directory. " +
+                    "Returning EMPTY properties.");
+            return new Properties(); // obviate the need for a cloud-config.properties file.
         }
     }
 
@@ -120,6 +122,10 @@ public class ProvisionerUtil implements PostConstruct {
         } else {
             Properties properties = getProperties();
             properties.put("GF_HOST", host);
+            if(!properties.containsKey("APPLICATION_SERVER_PROVIDER")) { // in the absense of cloud-config.properties insert default values.
+                properties.put("APPLICATION_SERVER_PROVIDER", "GLASSFISH");
+                properties.put("GF_PORT", "4848");
+            }
             ApplicationServerProvisioner provisioner = (ApplicationServerProvisioner)
                     provisionerFactory.getProvisioner(properties, ApplicationServerProvisioner.class);
             provisioner.initialize(properties);

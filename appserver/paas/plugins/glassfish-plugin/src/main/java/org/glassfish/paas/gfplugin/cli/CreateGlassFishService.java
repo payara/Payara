@@ -52,12 +52,26 @@ import org.glassfish.paas.orchestrator.provisioning.ApplicationServerProvisioner
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceType;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceUtil;
 import org.glassfish.paas.orchestrator.provisioning.iaas.CloudProvisioner;
+import org.glassfish.virtualization.runtime.VirtualCluster;
+import org.glassfish.virtualization.runtime.VirtualClusters;
+import org.glassfish.virtualization.spi.AllocationPhase;
+import org.glassfish.virtualization.spi.IAAS;
+import org.glassfish.virtualization.spi.ListenableFuture;
+import org.glassfish.virtualization.spi.TemplateCondition;
+import org.glassfish.virtualization.spi.TemplateInstance;
+import org.glassfish.virtualization.spi.TemplateRepository;
+import org.glassfish.virtualization.spi.VMOrder;
+import org.glassfish.virtualization.spi.VirtualMachine;
+import org.glassfish.virtualization.util.VirtualizationType;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Properties;
+import java.util.Set;
 
 /**
  * @author bhavanishankar@java.net
@@ -82,6 +96,15 @@ public class CreateGlassFishService implements AdminCommand, Runnable {
     @Param(name="appname", optional=true)
     private String appName;
 
+    @Param(name="templateid", optional=true)
+    private String templateId;
+
+    @Param(name="servicecharacteristics", optional=true, separator=':')
+    public Properties serviceCharacteristics;
+
+    @Param(name="serviceconfigurations", optional=true, separator=':')
+    public Properties serviceConfigurations;
+
     @Inject
     private Domain domain;
 
@@ -95,6 +118,15 @@ public class CreateGlassFishService implements AdminCommand, Runnable {
     @Inject
     private GlassFishServiceUtil gfServiceUtil;
 
+    @Inject
+    private TemplateRepository templateRepository;
+
+    @Inject
+    IAAS iaas;
+
+    // TODO :: remove dependency on VirtualCluster(s).
+    @Inject
+    VirtualClusters virtualClusters;
 
     public void execute(AdminCommandContext context) {
         final ActionReport report = context.getActionReport();
@@ -181,6 +213,74 @@ public class CreateGlassFishService implements AdminCommand, Runnable {
 
 
     public void run() {
+        TemplateInstance matchingTemplate = null;
+        if (templateId == null) {
+            // search for matching template based on service characteristics
+            if (serviceCharacteristics != null) {
+                /**
+                 * TODO :: use templateRepository.get(ServiceCriteria) when
+                 * an implementation of ServiceCriteria becomes available.
+                 * for now, iterate over all template instances and find the right one.
+                 */
+                Set<TemplateCondition> andConditions = new HashSet<TemplateCondition>();
+                andConditions.add(new org.glassfish.virtualization.util.ServiceType(
+                        serviceCharacteristics.getProperty("service-type")));
+                andConditions.add(new VirtualizationType(
+                        serviceCharacteristics.getProperty("virtualization-type")));
+                for (TemplateInstance ti : templateRepository.all()) {
+                    boolean allConditionsSatisfied = true;
+                    for (TemplateCondition condition : andConditions) {
+                        if (!ti.satisfies(condition)) {
+                            allConditionsSatisfied = false;
+                            break;
+                        }
+                    }
+                    if (allConditionsSatisfied) {
+                        matchingTemplate = ti;
+                        break;
+                    }
+                }
+                if (matchingTemplate != null) {
+                    templateId = matchingTemplate.getConfig().getName();
+                }
+            }
+        } else {
+            for (TemplateInstance ti : templateRepository.all()) {
+                if (ti.getConfig().getName().equals(templateId)) {
+                    matchingTemplate = ti;
+                    break;
+                }
+            }
+        }
+
+        if (matchingTemplate != null) {
+            try {
+                // Create the cluster.
+                // TODO :: we may need to create cluster in remote DAS.
+                // TODO :: So, first we may first need to provision the remote DAS
+                // TODO :: for now, everything is managed by the local DAS.
+                String dasIPAddress = gfServiceUtil.getDASIPAddress(serviceName);
+                ApplicationServerProvisioner provisioner =
+                        provisionerUtil.getAppServerProvisioner(dasIPAddress);
+                provisioner.createCluster(dasIPAddress, serviceName);
+
+                // provision VMs.
+                VirtualCluster vCluster = virtualClusters.byName(serviceName);
+                String maxClusterSize = serviceConfigurations.getProperty("max.clustersize");
+                int max = maxClusterSize != null ? Integer.parseInt(maxClusterSize) : 0;
+                for (int i = 0; i < max; i++) {
+                    ListenableFuture<AllocationPhase, VirtualMachine> future =
+                            iaas.allocate(new VMOrder(matchingTemplate, vCluster), null);
+                    VirtualMachine vm = future.get();
+                }
+
+                // start the cluster.
+                provisioner.startCluster(dasIPAddress, serviceName);
+            } catch (Throwable ex) {
+                throw new RuntimeException(ex);
+            }
+            return; // we are done provisioning, thanks. Bye...
+        }
 
 /*
         String domainState = gfServiceUtil.getServiceState(domainName, ServiceType.APPLICATION_SERVER);

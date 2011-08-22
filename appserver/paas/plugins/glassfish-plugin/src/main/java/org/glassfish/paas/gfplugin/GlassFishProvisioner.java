@@ -123,6 +123,7 @@ public class GlassFishProvisioner implements ApplicationServerProvisioner {
 
     public GlassFish getGlassFish() {
         if (glassFish == null) {
+            // TODO :: If it is local DAS, get it from Habitat. Don't bootstrap a GlassFish Client.
             BootstrapProperties bootstrapProperties = new BootstrapProperties();
             bootstrapProperties.setProperty("GlassFish_Platform", "GlassFishClient");
 

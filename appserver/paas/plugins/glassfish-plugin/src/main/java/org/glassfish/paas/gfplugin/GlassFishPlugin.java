@@ -62,6 +62,7 @@ import org.glassfish.paas.orchestrator.service.metadata.Property;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceCharacteristics;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceDescription;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceReference;
+import org.glassfish.paas.orchestrator.service.metadata.TemplateIdentifier;
 import org.glassfish.paas.orchestrator.service.spi.Plugin;
 import org.glassfish.paas.orchestrator.service.spi.ProvisionedService;
 import org.jvnet.hk2.annotations.Inject;
@@ -161,6 +162,21 @@ public class GlassFishPlugin implements Plugin<JavaEEServiceType> {
     }
 
 
+    // TODO :: move this utility method to plugin-common module.
+    private String formatArgument(List<Property> properties) {
+        StringBuilder sb = new StringBuilder();
+        if(properties != null) {
+            for(Property p : properties) {
+                sb.append(p.getName() + "=" + p.getValue() + ":");
+            }
+        }
+        // remove the last ':'
+        if(sb.length() > 0) {
+            sb.deleteCharAt(sb.length()-1);
+        }
+        return sb.toString();
+    }
+
     public ProvisionedService provisionService(ServiceDescription serviceDescription, DeploymentContext dc) {
 //        if (serviceDescription instanceof SimpleServiceDefinition) {
             // TODO :: Figure out that it is for GlassFish.
@@ -170,11 +186,32 @@ public class GlassFishPlugin implements Plugin<JavaEEServiceType> {
                 appNameParam="--appname="+serviceDescription.getAppName();
             }
 
-            CommandResult result = commandRunner.run("_create-glassfish-service",
-                    "--instancecount=" + serviceDescription.getConfiguration("min.clustersize"),
-                    "--waitforcompletion=true",appNameParam,
-                    serviceDescription.getName());
-            String clusterName = gfServiceUtil.getClusterName(serviceDescription.getName(), serviceDescription.getAppName());
+        String serviceName = serviceDescription.getName();
+        String serviceConfigurations = formatArgument(serviceDescription.getConfigurations());
+
+        CommandResult result = null;
+        // either template identifier or service characteristics are specified, not both.
+        if (serviceDescription.getTemplateIdentifier() != null) {
+            String templateId = serviceDescription.getTemplateIdentifier().getId();
+            result = commandRunner.run("_create-glassfish-service",
+                    "--templateid=" + templateId,
+                    "--serviceconfigurations", serviceConfigurations,
+                    "--waitforcompletion=true", appNameParam, serviceName);
+        } else if (serviceDescription.getServiceCharacteristics() != null) {
+            String serviceCharacteristics = formatArgument(serviceDescription.
+                    getServiceCharacteristics().getServiceCharacteristics());
+            result = commandRunner.run("_create-glassfish-service",
+                    "--servicecharacteristics=" + serviceCharacteristics,
+                    "--serviceconfigurations", serviceConfigurations,
+                    "--waitforcompletion=true", appNameParam, serviceName);
+        } else {
+            // TODO :: remove this else block...in an ideal world we should not land up here....
+            result = commandRunner.run("_create-glassfish-service",
+                    "--instancecount=" + serviceDescription.getConfiguration("max.clustersize"),
+                    "--waitforcompletion=true", appNameParam, serviceName);
+        }
+        
+        String clusterName = gfServiceUtil.getClusterName(serviceDescription.getName(), serviceDescription.getAppName());
             System.out.println("_create-glassfish-service command output [" + result.getOutput() + "]");
             if (result.getExitStatus() == CommandResult.ExitStatus.SUCCESS) {
 

@@ -50,7 +50,7 @@ import java.util.List;
 /**
  * @author bhavanishankar@java.net
  */
-@XmlType(propOrder={"templateOrCharacteristics", "configurations"})
+@XmlType(propOrder = {"templateOrCharacteristics", "configurations"})
 public class ServiceDescription {
 
     private String name;
@@ -74,7 +74,7 @@ public class ServiceDescription {
         setTemplateOrCharacteristics(templateOrCharacteristics);
         setConfigurations(configurations);
     }
-    
+
     @XmlAttribute(name = "name", required = true)
     public String getName() {
         return name;
@@ -90,12 +90,12 @@ public class ServiceDescription {
     }
 
     //TODO  hack ?
-    @XmlAttribute(name = "app-name", required=false)
+    @XmlAttribute(name = "app-name", required = false)
     public String getAppName() {
         return appName;
     }
 
-    public void setAppName(String appName){
+    public void setAppName(String appName) {
         this.appName = appName;
     }
 
@@ -125,6 +125,20 @@ public class ServiceDescription {
         this.templateOrCharacteristics = templateOrCharacteristics;
     }
 
+    public TemplateIdentifier getTemplateIdentifier() {
+        if (getTemplateOrCharacteristics() instanceof TemplateIdentifier) {
+            return (TemplateIdentifier) getTemplateOrCharacteristics();
+        }
+        return null;
+    }
+
+    public ServiceCharacteristics getServiceCharacteristics() {
+        if (getTemplateOrCharacteristics() instanceof ServiceCharacteristics) {
+            return (ServiceCharacteristics) getTemplateOrCharacteristics();
+        }
+        return null;
+    }
+
     /**
      * The service type is either a property in <characteristics> or
      * should be figured out from the service template.
@@ -132,11 +146,11 @@ public class ServiceDescription {
      * @return Type of the service. Eg., JavaEE, RDBMS, JMS, etc.
      */
     public String getServiceType() {
-        if(templateOrCharacteristics instanceof ServiceCharacteristics) {
+        if (templateOrCharacteristics instanceof ServiceCharacteristics) {
             List<Property> characteristics =
-                    ((ServiceCharacteristics)templateOrCharacteristics).getServiceCharacteristics();
-            for(Property characteristic : characteristics) {
-                if(characteristic.getName().equals("service-type")) {
+                    ((ServiceCharacteristics) templateOrCharacteristics).getServiceCharacteristics();
+            for (Property characteristic : characteristics) {
+                if (characteristic.getName().equals("service-type")) {
                     return characteristic.getValue();
                 }
             }
@@ -147,14 +161,14 @@ public class ServiceDescription {
 
 
     public String getConfiguration(String configKey) {
-        for(Property p : getConfigurations()) {
-            if(p.getName().equals(configKey)) {
+        for (Property p : getConfigurations()) {
+            if (p.getName().equals(configKey)) {
                 return p.getValue();
             }
         }
         return null;
     }
-    
+
     @Override
     public String toString() {
         return " \n[name=" + getName() + ", initType=" + getInitType()
