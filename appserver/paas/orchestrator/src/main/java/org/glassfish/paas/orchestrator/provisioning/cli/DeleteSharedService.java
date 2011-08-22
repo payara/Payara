@@ -76,6 +76,7 @@ public class DeleteSharedService implements AdminCommand {
     public void execute(AdminCommandContext context) {
         final ActionReport report = context.getActionReport();
 
+        //TODO make sure that no service-ref is present for this service
         Services services = domain.getExtensionByType(Services.class);
         boolean found = false;
         if (services != null) {

@@ -94,6 +94,9 @@ public class CreateSharedService implements AdminCommand{
     @Inject
     private Domain domain;
 
+    @Inject
+    private ServiceUtil serviceUtil;
+
     //TODO logging
     //TODO java-doc
     public void execute(AdminCommandContext context) {
@@ -120,29 +123,7 @@ public class CreateSharedService implements AdminCommand{
             }
         }
 
-        Services services = domain.getExtensionByType(Services.class);
-        if(services ==null){
-            try {
-                if (ConfigSupport.apply(new SingleConfigCode<Domain>() {
-                    public Object run(Domain param) throws PropertyVetoException, TransactionFailure {
-                        Services services = param.createChild(Services.class);
-                        param.getExtensions().add(services);
-                        return services;
-                    }
-                }, domain) == null) {
-                    report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-                    report.setMessage("Unable to create external service");
-                    return;
-                }
-            } catch (TransactionFailure transactionFailure) {
-                //TODO log
-                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-                report.setMessage("Unable to create external service due to : " + transactionFailure.getMessage());
-                return;
-            }
-        }
-
-        services = domain.getExtensionByType(Services.class);
+        Services services = serviceUtil.getServices();
         try {
             if (ConfigSupport.apply(new SingleConfigCode<Services>() {
                 public Object run(Services param) throws PropertyVetoException, TransactionFailure {
@@ -165,7 +146,7 @@ public class CreateSharedService implements AdminCommand{
                 }
             }, services) == null) {
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-                report.setMessage("Unable to create external service");
+                report.setMessage("Unable to create shared service");
                 return;
             }else{
                 report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
@@ -173,7 +154,7 @@ public class CreateSharedService implements AdminCommand{
             }
         } catch (TransactionFailure transactionFailure) {
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            report.setMessage("Unable to create external service due to : " + transactionFailure.getMessage());
+            report.setMessage("Unable to create shared service due to : " + transactionFailure.getMessage());
             return;
         }
     }

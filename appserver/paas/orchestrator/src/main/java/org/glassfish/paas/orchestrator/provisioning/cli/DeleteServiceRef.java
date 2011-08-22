@@ -40,8 +40,6 @@
 
 package org.glassfish.paas.orchestrator.provisioning.cli;
 
-import com.sun.enterprise.config.serverbeans.Application;
-import com.sun.enterprise.config.serverbeans.Applications;
 import com.sun.enterprise.config.serverbeans.Domain;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
@@ -55,7 +53,6 @@ import org.glassfish.paas.orchestrator.config.ServiceRef;
 import org.glassfish.paas.orchestrator.config.Services;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
@@ -63,11 +60,12 @@ import org.jvnet.hk2.config.TransactionFailure;
 
 import java.beans.PropertyVetoException;
 
-@Service(name = "_delete-service-ref")
+@org.jvnet.hk2.annotations.Service(name = "_delete-service-ref")
 @Scoped(PerLookup.class)
 @ExecuteOn(RuntimeType.DAS)
 @TargetType(value = {CommandTarget.DAS})
 public class DeleteServiceRef implements AdminCommand {
+
     @Param(name = "servicename", primary = true)
     private String serviceName;
 
@@ -77,8 +75,14 @@ public class DeleteServiceRef implements AdminCommand {
     @Param(optional = false)
     private String appName;
 
+    @Inject
+    private ServiceUtil serviceUtil;
+
     public void execute(AdminCommandContext context) {
         final ActionReport report = context.getActionReport();
+
+/*
+        //old code that assumes that <service-ref> is within <application>
 
         Applications applications = domain.getApplications();
         if (applications != null) {
@@ -132,5 +136,45 @@ public class DeleteServiceRef implements AdminCommand {
             return;
         }
         report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
+    }*/
+
+        Services services = serviceUtil.getServices();
+        if (services != null) {
+            boolean foundServiceRef = false;
+            for (final ServiceRef serviceRef : services.getServiceRefs()) {
+                if (serviceRef.getServiceName().equals(serviceName)) {
+                    if (appName.equals(serviceRef.getApplicationName())) {
+                        foundServiceRef = true;
+                        try {
+                            if (ConfigSupport.apply(new SingleConfigCode<Services>() {
+                                public Object run(Services param) throws PropertyVetoException, TransactionFailure {
+                                    param.getServiceRefs().remove(serviceRef);
+                                    report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
+                                    return serviceRef;
+                                }
+                            }, services) == null) {
+                                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                                report.setMessage("Deleting serviceRef [" + serviceName + "] failed ");
+                                return;
+                            }
+                        } catch (TransactionFailure transactionFailure) {
+                            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                            report.setMessage("Deleting serviceRef [" + serviceName + "] failed : " + transactionFailure.getMessage());
+                        }
+                        break;
+                    }
+                }
+            }
+            if (!foundServiceRef) {
+                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                report.setMessage("No such service-ref [" + serviceName + "] is part of the application [" + appName + "]");
+                return;
+            }
+
+        } else {
+            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            report.setMessage("No such service-ref [" + serviceName + "] is part of the application [" + appName + "]");
+            return;
+        }
     }
 }

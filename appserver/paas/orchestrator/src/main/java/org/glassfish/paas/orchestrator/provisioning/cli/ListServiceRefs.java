@@ -56,7 +56,7 @@ import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
 
-@Service(name = "_list-service-refs")
+@Service(name = "list-service-refs")
 @Scoped(PerLookup.class)
 @ExecuteOn(RuntimeType.DAS)
 @TargetType(value = {CommandTarget.DAS})
@@ -95,11 +95,9 @@ public class ListServiceRefs implements AdminCommand {
 
         Services services = domain.getExtensionByType(Services.class);
         if (services != null) {
-            for(org.glassfish.paas.orchestrator.config.Service service : services.getServices()){
-                if(service instanceof ServiceRef){
-                    if(((ServiceRef)service).getApplicationName().equals(appName)){
-                        report.getTopMessagePart().addChild().setMessage(service.getServiceName());
-                    }
+            for(ServiceRef serviceRef : services.getServiceRefs()){
+                if(serviceRef.getApplicationName().equals(appName)){
+                    report.getTopMessagePart().addChild().setMessage(serviceRef.getServiceName());
                 }
             }
         }else{

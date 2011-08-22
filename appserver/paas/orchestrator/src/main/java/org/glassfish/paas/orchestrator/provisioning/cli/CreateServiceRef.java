@@ -40,8 +40,6 @@
 
 package org.glassfish.paas.orchestrator.provisioning.cli;
 
-import com.sun.enterprise.config.serverbeans.Application;
-import com.sun.enterprise.config.serverbeans.Applications;
 import com.sun.enterprise.config.serverbeans.Domain;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
@@ -51,31 +49,30 @@ import org.glassfish.api.admin.ExecuteOn;
 import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
-import org.glassfish.paas.orchestrator.config.ServiceRef;
-import org.glassfish.paas.orchestrator.config.Services;
+import org.glassfish.paas.orchestrator.config.*;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
-import org.jvnet.hk2.config.types.Property;
 
 import java.beans.PropertyVetoException;
-import java.util.Map;
 
-@Service(name = "_create-service-ref")
+@org.jvnet.hk2.annotations.Service(name = "_create-service-ref")
 @Scoped(PerLookup.class)
 @ExecuteOn(RuntimeType.DAS)
 @TargetType(value = {CommandTarget.DAS})
 public class CreateServiceRef implements AdminCommand {
 
-    @Param(name="appname", optional=false)
+    @Param(name = "appname", optional = false)
     private String appName;
 
-    @Param(name="servicename", optional=false)
+    @Param(name = "servicename", optional = false)
     private String serviceName;
+
+    @Inject
+    private ServiceUtil serviceUtil;
 
     @Inject
     private Domain domain;
@@ -83,6 +80,8 @@ public class CreateServiceRef implements AdminCommand {
     public void execute(AdminCommandContext context) {
         final ActionReport report = context.getActionReport();
 
+/*
+        //old code that assumes that <service-ref> is within <application>
         Applications applications = domain.getApplications();
         if (applications != null) {
             Application app = applications.getApplication(appName);
@@ -171,6 +170,61 @@ public class CreateServiceRef implements AdminCommand {
         } else {
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setMessage("No such application [" + appName + "] is deployed in the server");
+            return;
+        }
+*/
+
+        Services services = serviceUtil.getServices();
+
+        boolean serviceFound = false;
+        for(Service service : services.getServices()){
+            if(service instanceof ExternalService || service instanceof SharedService){
+                if(service.getServiceName().equals(serviceName)){
+                    serviceFound = true;
+                    break;
+                }
+            }
+        }
+
+        if(!serviceFound){
+            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            report.setMessage("No external-service or shared-service by name [" + serviceName + "] " +
+                    "is present");
+            return;
+        }
+
+        for (ServiceRef serviceRef : services.getServiceRefs()) {
+            if (serviceRef.getServiceName().equals(serviceName)) {
+                if (appName.equals(serviceRef.getApplicationName())) {
+                    //TODO log
+                    report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                    report.setMessage("service-ref by name [" + serviceName + "] " +
+                            "already exists for application [" + appName + "]");
+                    return;
+                }
+            }
+        }
+
+        try {
+            if (ConfigSupport.apply(new SingleConfigCode<Services>() {
+                public Object run(Services param) throws PropertyVetoException, TransactionFailure {
+                    ServiceRef serviceRef = param.createChild(ServiceRef.class);
+                    serviceRef.setServiceName(serviceName);
+                    serviceRef.setApplicationName(appName);
+                    param.getServiceRefs().add(serviceRef);
+                    return serviceRef;
+                }
+            }, services) == null) {
+                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                report.setMessage("Unable to create service-ref");
+                return;
+            } else {
+                report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
+                return;
+            }
+        } catch (TransactionFailure transactionFailure) {
+            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            report.setMessage("Unable to create service-ref due to : " + transactionFailure.getMessage());
             return;
         }
     }

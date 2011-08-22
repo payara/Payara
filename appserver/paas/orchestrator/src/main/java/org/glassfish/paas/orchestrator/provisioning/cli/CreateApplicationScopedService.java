@@ -40,8 +40,6 @@
 
 package org.glassfish.paas.orchestrator.provisioning.cli;
 
-import com.sun.enterprise.config.serverbeans.Application;
-import com.sun.enterprise.config.serverbeans.Applications;
 import com.sun.enterprise.config.serverbeans.Domain;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
@@ -51,11 +49,11 @@ import org.glassfish.api.admin.ExecuteOn;
 import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
-import org.glassfish.paas.orchestrator.config.ExternalService;
+import org.glassfish.paas.orchestrator.config.ApplicationScopedService;
+import org.glassfish.paas.orchestrator.config.Service;
 import org.glassfish.paas.orchestrator.config.Services;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
@@ -66,7 +64,7 @@ import java.beans.PropertyVetoException;
 import java.util.Map;
 import java.util.Properties;
 
-@Service(name = "_create-application-scoped-service")
+@org.jvnet.hk2.annotations.Service(name = "_create-application-scoped-service")
 @Scoped(PerLookup.class)
 @ExecuteOn(RuntimeType.DAS)
 @TargetType(value = {CommandTarget.DAS})
@@ -90,9 +88,13 @@ public class CreateApplicationScopedService implements AdminCommand {
     @Inject
     private Domain domain;
 
+    @Inject
+    private ServiceUtil serviceUtil;
+
     public void execute(AdminCommandContext context) {
         final ActionReport report = context.getActionReport();
 
+/*
         Applications applications = domain.getApplications();
         if (applications != null) {
             Application app = applications.getApplication(appName);
@@ -169,6 +171,56 @@ public class CreateApplicationScopedService implements AdminCommand {
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setMessage("No such application [" + appName + "] is deployed in the server");
             return;
+        }*/
+
+        Services services = serviceUtil.getServices();
+
+        for (Service service : services.getServices()) {
+            if (service.getServiceName().equals(serviceName)) {
+                if (service instanceof ApplicationScopedService) {
+                    ApplicationScopedService appScopedService = (ApplicationScopedService) service;
+                    if (appName.equals(appScopedService.getApplicationName())) {
+                        //TODO log
+                        report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                        report.setMessage("Application scoped service by name [" + serviceName + "] " +
+                                "already exists for application ["+appName+"]");
+                        return;
+                    }
+                }
+            }
+        }
+
+            try {
+                if (ConfigSupport.apply(new SingleConfigCode<Services>() {
+                    public Object run(Services param) throws PropertyVetoException, TransactionFailure {
+                        ApplicationScopedService appScopedService = param.createChild(ApplicationScopedService.class);
+                        appScopedService.setType(serviceType);
+                        appScopedService.setServiceName(serviceName);
+                        appScopedService.setApplicationName(appName);
+                        appScopedService.setTemplate(template);
+                        if (properties != null) {
+                            for (Map.Entry e : properties.entrySet()) {
+                                Property prop = appScopedService.createChild(Property.class);
+                                prop.setName((String) e.getKey());
+                                prop.setValue((String) e.getValue());
+                                appScopedService.getProperty().add(prop);
+                            }
+                        }
+                        param.getServices().add(appScopedService);
+                        return appScopedService;
+                    }
+                }, services) == null) {
+                    report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                    report.setMessage("Unable to create application scoped service");
+                    return;
+                } else {
+                    report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
+                    return;
+                }
+            } catch (TransactionFailure transactionFailure) {
+                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                report.setMessage("Unable to create application scoped service due to : " + transactionFailure.getMessage());
+                return;
+            }
         }
     }
-}

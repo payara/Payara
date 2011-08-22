@@ -62,4 +62,11 @@ public interface ApplicationScopedService extends Service{
     String getApplicationName();
 
     void setApplicationName(String applicationName) throws PropertyVetoException;
+
+    @Attribute
+    @Param
+    String getTemplate();
+
+    void setTemplate(String template) throws PropertyVetoException;
+
 }

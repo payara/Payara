@@ -40,8 +40,6 @@
 
 package org.glassfish.paas.orchestrator.provisioning.cli;
 
-import com.sun.enterprise.config.serverbeans.Application;
-import com.sun.enterprise.config.serverbeans.Applications;
 import com.sun.enterprise.config.serverbeans.Domain;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
@@ -51,10 +49,11 @@ import org.glassfish.api.admin.ExecuteOn;
 import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
+import org.glassfish.paas.orchestrator.config.ApplicationScopedService;
+import org.glassfish.paas.orchestrator.config.Service;
 import org.glassfish.paas.orchestrator.config.Services;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
@@ -62,7 +61,7 @@ import org.jvnet.hk2.config.TransactionFailure;
 
 import java.beans.PropertyVetoException;
 
-@Service(name = "_delete-application-scoped-service")
+@org.jvnet.hk2.annotations.Service(name = "_delete-application-scoped-service")
 @Scoped(PerLookup.class)
 @ExecuteOn(RuntimeType.DAS)
 @TargetType(value = {CommandTarget.DAS})
@@ -77,10 +76,15 @@ public class DeleteApplicationScopedService implements AdminCommand {
     @Param(optional = false)
     private String appName;
 
+    @Inject
+    private ServiceUtil serviceUtil;
+
     public void execute(AdminCommandContext context) {
         final ActionReport report = context.getActionReport();
 
-        //Services services = domain.getExtensionByType(Services.class);
+/*
+        //old code that assumes that <application-scoped-service> is within <application>
+
         Applications applications = domain.getApplications();
         if (applications != null) {
             Application app = applications.getApplication(appName);
@@ -133,5 +137,49 @@ public class DeleteApplicationScopedService implements AdminCommand {
             return;
         }
         report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
+*/
+
+        Services services = serviceUtil.getServices();
+        if (services != null) {
+            boolean foundService = false;
+            for (final Service service : services.getServices()) {
+                if (service.getServiceName().equals(serviceName)) {
+                    if (service instanceof ApplicationScopedService) {
+                        ApplicationScopedService appScopedService = (ApplicationScopedService) service;
+                        if (appName.equals(appScopedService.getApplicationName())) {
+                            foundService = true;
+                            try {
+                                if (ConfigSupport.apply(new SingleConfigCode<Services>() {
+                                    public Object run(Services param) throws PropertyVetoException, TransactionFailure {
+                                        param.getServices().remove(service);
+                                        report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
+                                        return service;
+                                    }
+                                }, services) == null) {
+                                    report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                                    report.setMessage("Deleting service [" + serviceName + "] failed ");
+                                    return;
+                                }
+                            } catch (TransactionFailure transactionFailure) {
+                                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                                report.setMessage("Deleting service [" + serviceName + "] failed : " + transactionFailure.getMessage());
+                            }
+                            break;
+                        }
+                    }
+                }
+            }
+            if (!foundService) {
+                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                report.setMessage("No such service [" + serviceName + "] is part of the application [" + appName + "]");
+                return;
+            }
+
+        } else {
+            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            report.setMessage("No such service [" + serviceName + "] is part of the application [" + appName + "]");
+            return;
+        }
     }
 }
+
