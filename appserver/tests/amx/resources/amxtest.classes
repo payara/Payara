@@ -120,14 +120,12 @@ org.glassfish.admin.amxtest.config.PersistenceManagerFactoryResourceConfigTest
 org.glassfish.admin.amxtest.config.JNDIResourceConfigTest
 org.glassfish.admin.amxtest.config.ThreadPoolConfigTest
 org.glassfish.admin.amxtest.config.AvailabilityServiceConfigTest
-org.glassfish.admin.amxtest.config.ManagementRulesConfigTest
 org.glassfish.admin.amxtest.config.LBTest
 org.glassfish.admin.amxtest.config.ResourceAdapterConfigTest
 org.glassfish.admin.amxtest.config.ConnectorConnectionPoolConfigTest
 org.glassfish.admin.amxtest.config.SecurityMapConfigTest
 org.glassfish.admin.amxtest.config.CustomResourceConfigTest
 org.glassfish.admin.amxtest.config.ConnectorServiceConfigTest
-org.glassfish.admin.amxtest.config.ManagementRulesConfigTest
 org.glassfish.admin.amxtest.config.DiagnosticServiceConfigTest
 org.glassfish.admin.amxtest.config.NodeAgentConfigTest
 

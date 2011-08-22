@@ -151,13 +151,11 @@ public class Tests {
                 JNDIResourceConfigTest.class,
                 ThreadPoolConfigTest.class,
                 LBTest.class,
-                ManagementRulesConfigTest.class,
                 SecurityMapConfigTest.class,
                 ConnectorConnectionPoolConfigTest.class,
                 ResourceAdapterConfigTest.class,
                 CustomResourceConfigTest.class,
                 ConnectorServiceConfigTest.class,
-                ManagementRulesConfigTest.class,
                 DiagnosticServiceConfigTest.class,
 
                 PerformanceTest.class,

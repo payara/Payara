@@ -99,9 +99,7 @@ import org.jvnet.hk2.config.ConfigSupport;
     "javaConfig",
     "availabilityService",
     "threadPools",
-    "alertService",
     "groupManagementService",
-    "managementRules",
     "systemProperty",
     "property"
 }) */
@@ -336,23 +334,6 @@ public interface Config extends ConfigBeanProxy, Injectable, Named, PropertyBag,
     void setThreadPools(ThreadPools value) throws PropertyVetoException;
 
     /**
-     * Gets the value of the alertService property.
-     *
-     * @return possible object is
-     *         {@link AlertService }
-     */
-    @Element
-    AlertService getAlertService();
-
-    /**
-     * Sets the value of the alertService property.
-     *
-     * @param value allowed object is
-     *              {@link AlertService }
-     */
-    void setAlertService(AlertService value) throws PropertyVetoException;
-
-    /**
      * Gets the value of the groupManagementService property.
      *
      * @return possible object is
@@ -369,23 +350,6 @@ public interface Config extends ConfigBeanProxy, Injectable, Named, PropertyBag,
      *              {@link GroupManagementService }
      */
     void setGroupManagementService(GroupManagementService value) throws PropertyVetoException;
-
-    /**
-     * Gets the value of the managementRules property.
-     *
-     * @return possible object is
-     *         {@link ManagementRules }
-     */
-    @Element
-    ManagementRules getManagementRules();
-
-    /**
-     * Sets the value of the managementRules property.
-     *
-     * @param value allowed object is
-     *              {@link ManagementRules }
-     */
-    void setManagementRules(ManagementRules value) throws PropertyVetoException;
 
     /**
      * Gets the value of the systemProperty property.
@@ -527,7 +491,6 @@ public interface Config extends ConfigBeanProxy, Injectable, Named, PropertyBag,
             // directly referenced objects
             ConfigBeanProxy dirref[] = {
                 c.getAdminService(),
-                c.getAlertService(),
                 c.getAvailabilityService(),
                 //c.getConnectorService(),
                 c.getDiagnosticService(),
@@ -536,7 +499,6 @@ public interface Config extends ConfigBeanProxy, Injectable, Named, PropertyBag,
                 c.getIiopService(),
                 c.getJavaConfig(),
                 c.getLogService(),
-                c.getManagementRules(),
                 c.getMonitoringService(),
                 c.getNetworkConfig(),
                 c.getSecurityService(),

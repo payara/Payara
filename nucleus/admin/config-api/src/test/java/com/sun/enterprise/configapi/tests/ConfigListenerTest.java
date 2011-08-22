@@ -40,7 +40,6 @@
 
 package com.sun.enterprise.configapi.tests;
 
-import com.sun.enterprise.config.serverbeans.AlertService;
 import com.sun.enterprise.config.serverbeans.Config;
 import java.beans.PropertyVetoException;
 import java.util.logging.Level;
@@ -150,51 +149,5 @@ public class ConfigListenerTest extends ConfigApiTest {
                 return null;
             }
         }, container.httpListener);
-    }
-    
-    @Test
-    public void addDeleteConfigElementTest() throws TransactionFailure {
-        Transactions transactions = getHabitat().getComponent(Transactions.class);
-        Config config = habitat.getComponent(Config.class, ServerEnvironment.DEFAULT_INSTANCE_NAME);
-        assertTrue(config != null);
-        
-        ConfigSupport.apply(new SingleConfigCode<Config>() {
-            @Override
-            public Object run(Config c) throws TransactionFailure {
-                try {
-                    AlertService as = c.createChild(AlertService.class);
-                    c.setAlertService(as);
-                } catch (PropertyVetoException ex) {
-                    Logger.getLogger(ConfigListenerTest.class.getName()).log(Level.SEVERE, null, ex);
-                }
-                return null;
-            }
-        }, config);
-        transactions.waitForDrain();
-        
-        // At this point, the AlertService should be available with the 
-        // ServerEnvironment.DEFAULT_INSTANCE_NAME because of the ConfigConfigListener
-        AlertService as1 = habitat.getComponent(AlertService.class, ServerEnvironment.DEFAULT_INSTANCE_NAME);
-        assertTrue(as1 != null);
-        assertTrue(ConfigSupport.getImpl(as1).getMasterView() == 
-                ConfigSupport.getImpl(config.getAlertService()).getMasterView());
-                
-        // Now remove the alert-service
-        ConfigSupport.apply(new SingleConfigCode<Config>() {
-            @Override
-            public Object run(Config c) {
-                try {
-                    c.setAlertService(null);
-                } catch (PropertyVetoException ex) {
-                    Logger.getLogger(ConfigListenerTest.class.getName()).log(Level.SEVERE, null, ex);
-                }
-                return null;
-            }
-        }, config);
-        transactions.waitForDrain();
-
-        as1 = habitat.getComponent(AlertService.class, ServerEnvironment.DEFAULT_INSTANCE_NAME);
-        assertTrue(as1 == null);
-        assertTrue(config.getAlertService() == null);
     }
 }
