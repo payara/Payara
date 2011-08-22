@@ -524,11 +524,11 @@ public class Request
     /**
      * Set the Coyote request.
      * 
-     * @param coyoteRequest The Coyote request
+     * @param grizzlyRequest The Coyote request
      */
-    public void setCoyoteRequest(org.glassfish.grizzly.http.server.Request coyoteRequest) {
-        this.coyoteRequest = coyoteRequest;
-        inputBuffer.setRequest(coyoteRequest);
+    public void setCoyoteRequest(org.glassfish.grizzly.http.server.Request grizzlyRequest) {
+        this.coyoteRequest = grizzlyRequest;
+        inputBuffer.setRequest(grizzlyRequest);
     }
 
     /**

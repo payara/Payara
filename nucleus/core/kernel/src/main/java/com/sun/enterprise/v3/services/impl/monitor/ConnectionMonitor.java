@@ -61,15 +61,13 @@ public class ConnectionMonitor implements ConnectionProbe {
     }
     
     @Override
-    public void onAcceptEvent(final Connection connection) {
-        final Object peerAddress = connection.getPeerAddress();
+    public void onAcceptEvent(final Connection serverConnection,
+            final Connection clientConnection) {
+        final Object peerAddress = clientConnection.getPeerAddress();
 
-        if (peerAddress != null) { // if peerAddress is null - it's a server connection. we should skip.
-            grizzlyMonitoring.getConnectionQueueProbeProvider().connectionAcceptedEvent(
-                    monitoringId, connection.hashCode(),
-                    peerAddress.toString());
-
-        }
+        grizzlyMonitoring.getConnectionQueueProbeProvider().connectionAcceptedEvent(
+                monitoringId, clientConnection.hashCode(),
+                peerAddress.toString());
     }
 
     @Override

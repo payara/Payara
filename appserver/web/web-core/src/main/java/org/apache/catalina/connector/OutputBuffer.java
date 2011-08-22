@@ -62,10 +62,6 @@ import org.apache.catalina.core.StandardHost;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.io.Writer;
-import java.security.AccessController;
-import java.security.PrivilegedActionException;
-import java.security.PrivilegedExceptionAction;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -75,8 +71,8 @@ import org.apache.catalina.Globals;
 import org.apache.catalina.Session;
 import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.util.RequestUtil;
+import org.glassfish.grizzly.http.server.io.OutputBuffer.LifeCycleListener;
 import org.glassfish.grizzly.http.util.ByteChunk;
-import org.glassfish.grizzly.http.util.C2BConverter;
 
 /**
  * The buffer used by Tomcat response. This is a derivative of the Tomcat 3.3
@@ -99,21 +95,7 @@ public class OutputBuffer extends Writer
     public static final int DEFAULT_BUFFER_SIZE = 8*1024;
     static final int debug = 0;
 
-
     // ----------------------------------------------------- Instance Variables
-
-
-    /**
-     * The byte buffer.
-     */
-    private ByteChunk bb;
-
-
-    /**
-     * State of the output buffer.
-     */
-    private int state = 0;
-    private boolean initial = true;
 
 
     /**
@@ -129,60 +111,23 @@ public class OutputBuffer extends Writer
 
 
     /**
-     * Flag which indicates if the output buffer is closed.
-     */
-    private boolean closed = false;
-
-
-    /**
-     * Do a flush on the next operation.
-     */
-    private boolean doFlush = false;
-
-
-    /**
-     * Byte chunk used to output bytes.
-     */
-    private ByteChunk outputChunk = new ByteChunk();
-
-
-    /**
-     * Encoding to use.
-     */
-    private String enc;
-
-
-    /**
-     * Encoder is set.
-     */
-    private boolean gotEnc = false;
-
-
-    /**
-     * List of encoders.
-     */
-    protected HashMap<String, C2BConverter> encoders =
-        new HashMap<String, C2BConverter>();
-
-
-    /**
-     * Current char to byte converter.
-     */
-    protected C2BConverter conv;
-
-
-    /**
      * Associated Coyote response.
      */
-    private org.glassfish.grizzly.http.server.Response response;
-    private Response coyoteResponse;
+    private Response response;
+    
+    private org.glassfish.grizzly.http.server.Response grizzlyResponse;
+    private org.glassfish.grizzly.http.server.io.OutputBuffer grizzlyOutputBuffer;
 
     /**
      * Suspended flag. All output bytes will be swallowed if this is true.
      */
     private boolean suspended = false;
 
-
+    private int size;
+    private boolean isChunkingDisabled;
+    
+    private org.glassfish.grizzly.http.server.io.OutputBuffer.LifeCycleListener sessionCookieChecker =
+            new SessionCookieChecker();
     // ----------------------------------------------------------- Constructors
 
 
@@ -225,11 +170,8 @@ public class OutputBuffer extends Writer
 
     // START S1AS8 4861933
     public OutputBuffer(int size, boolean chunkingDisabled) {
-        bb = new ByteChunk(size);
-        if (!chunkingDisabled) {
-            bb.setLimit(size);
-        }
-        bb.setByteOutputChannel(this);
+        this.size = size;
+        this.isChunkingDisabled = chunkingDisabled;
     }
     // END S1AS8 4861933
 
@@ -237,31 +179,14 @@ public class OutputBuffer extends Writer
     // ------------------------------------------------------------- Properties
 
 
-    /**
-     * Associated Coyote response.
-     * 
-     * @param response Associated Coyote response
-     */
-    public void setResponse(org.glassfish.grizzly.http.server.Response response) {
-	this.response = response;
-    }
-
-
     public void setCoyoteResponse(Response coyoteResponse) {
-        this.coyoteResponse = coyoteResponse;
-        setResponse((org.glassfish.grizzly.http.server.Response) coyoteResponse.getCoyoteResponse());
+        this.response = coyoteResponse;
+        this.grizzlyResponse = coyoteResponse.getCoyoteResponse();
+        this.grizzlyOutputBuffer = grizzlyResponse.getOutputBuffer();
+        grizzlyOutputBuffer.setBufferSize(size);
+        grizzlyOutputBuffer.registerLifeCycleListener(sessionCookieChecker);
+        // @TODO set chunkingDisabled
     }
-
-
-    /**
-     * Get associated Coyote response.
-     * 
-     * @return the associated Coyote response
-     */
-    public org.glassfish.grizzly.http.server.Response getResponse() {
-        return this.response;
-    }
-
 
     /**
      * Is the response output suspended ?
@@ -294,20 +219,14 @@ public class OutputBuffer extends Writer
 	if (log.isLoggable(Level.FINE))
             log.fine("recycle()");
 
-        initial = true;
         bytesWritten = 0;
         charsWritten = 0;
 
-        bb.recycle(); 
-        closed = false;
         suspended = false;
+        grizzlyResponse = null;
+        grizzlyOutputBuffer = null;
+        response = null;
 
-        if (conv!= null) {
-            conv.recycle();
-        }
-
-        gotEnc = false;
-        enc = null;
     }
 
 
@@ -320,24 +239,10 @@ public class OutputBuffer extends Writer
     public void close()
         throws IOException {
 
-        if (closed)
-            return;
         if (suspended)
             return;
 
-        if ((!response.isCommitted()) 
-            && (response.getContentLength() == -1)) {
-            // If this didn't cause a commit of the response, the final content
-            // length can be calculated
-            if (!response.isCommitted()) {
-                response.setContentLength(bb.getLength());
-            }
-        }
-
-        doFlush(false);
-        closed = true;
-
-        response.finish();
+        grizzlyOutputBuffer.close();
 
     }
 
@@ -364,27 +269,8 @@ public class OutputBuffer extends Writer
         if (suspended)
             return;
 
-        doFlush = true;
-        if (initial){
-            addSessionCookies();
-//            response.flush();
-//            initial = false;
-        }
-        if (bb.getLength() > 0) {
-            bb.flushBuffer();
-        }
-        doFlush = false;
-
-        if (realFlush || initial) {
-            response.flush();
-
-            initial = false;
-//            response.action(ActionCode.ACTION_CLIENT_FLUSH, response);
-            // If some exception occurred earlier, or if some IOE occurred
-            // here, notify the servlet with an IOE
-//            if (response.isExceptionPresent()) {
-//                throw new ClientAbortException(response.getErrorException());
-//            }
+        if (realFlush || !grizzlyResponse.isCommitted()) {
+            grizzlyOutputBuffer.flush();
         }
 
     }
@@ -407,21 +293,18 @@ public class OutputBuffer extends Writer
 	throws IOException {
 
         if (log.isLoggable(Level.FINE))
-            log.fine("realWrite(b, " + off + ", " + cnt + ") " + response);
+            log.fine("realWrite(b, " + off + ", " + cnt + ") " + grizzlyResponse);
 
-        if (closed)
+        if (grizzlyResponse == null)
             return;
-        if (response == null)
+        
+        if (grizzlyOutputBuffer.isClosed())
             return;
 
         // If we really have something to write
         if (cnt > 0) {
-            addSessionCookies();
-            // real write to the adapter
-            outputChunk.setBytes(buf, off, cnt);
             try {
-                response.getOutputStream().write(buf, off, cnt);
-//                response.doWrite(outputChunk);
+                grizzlyOutputBuffer.write(buf, off, cnt);
             } catch (IOException e) {
                 // An IOException on a write is almost always due to
                 // the remote client aborting the request.  Wrap this
@@ -446,19 +329,13 @@ public class OutputBuffer extends Writer
     private void writeBytes(byte b[], int off, int len) 
         throws IOException {
 
-        if (closed)
+        if (grizzlyOutputBuffer.isClosed())
             return;
         if (log.isLoggable(Level.FINE))
             log.fine("write(b,off,len)");
 
-        bb.append(b, off, len);
+        grizzlyOutputBuffer.write(b, off, len);
         bytesWritten += len;
-
-        // if called from within flush(), then immediately flush
-        // remaining bytes
-        if (doFlush) {
-            bb.flushBuffer();
-        }
 
     }
 
@@ -470,9 +347,8 @@ public class OutputBuffer extends Writer
         if (suspended)
             return;
 
-        bb.append( (byte)b );
+        grizzlyOutputBuffer.writeByte(b);
         bytesWritten++;
-
     }
 
 
@@ -485,9 +361,9 @@ public class OutputBuffer extends Writer
         if (suspended)
             return;
 
-        checkConverter();
-        conv.convert((char) c);
+        grizzlyOutputBuffer.writeChar(c);
         charsWritten++;
+        
     }
 
 
@@ -508,8 +384,7 @@ public class OutputBuffer extends Writer
         if (suspended)
             return;
 
-        checkConverter();
-        conv.convert(c, off, len);
+        grizzlyOutputBuffer.write(c, off, len);
         charsWritten += len;
     }
 
@@ -526,8 +401,7 @@ public class OutputBuffer extends Writer
         charsWritten += len;
         if (s==null)
             s="null";
-        checkConverter();
-        conv.convert(s, off, len);
+        grizzlyOutputBuffer.write(s, off, len);
     }
 
 
@@ -539,63 +413,15 @@ public class OutputBuffer extends Writer
 
         if (s == null)
             s = "null";
-        checkConverter();
-        conv.convert(s);
+        grizzlyOutputBuffer.write(s);
     } 
 
 
-    public void setEncoding(String s) {
-        enc = s;
-    }
-
-    public void checkConverter() 
+    public void checkConverter()
         throws IOException {
+        
+        grizzlyOutputBuffer.prepareCharacterEncoder();
 
-        if (!gotEnc)
-            setConverter();
-
-    }
-
-
-    protected void setConverter() 
-        throws IOException {
-
-        if (response != null)
-            enc = response.getCharacterEncoding();
-
-        if (log.isLoggable(Level.FINE))
-            log.fine("Got encoding: " + enc);
-
-        gotEnc = true;
-        if (enc == null)
-            enc = DEFAULT_ENCODING;
-        conv = encoders.get(enc);
-        if (conv == null) {
-            if (Globals.IS_SECURITY_ENABLED){
-                try{
-                    conv = AccessController.doPrivileged(
-                            new PrivilegedExceptionAction<C2BConverter>(){
-
-                                public C2BConverter run() throws IOException{
-                                    return C2BConverter.getInstance(bb, enc);
-                                }
-
-                            }
-                    );              
-                }catch(PrivilegedActionException ex){
-                    Exception e = ex.getException();
-                    if (e instanceof IOException)
-                        throw (IOException)e; 
-                    
-                    if (log.isLoggable(Level.FINE))
-                        log.fine("setConverter: " + ex.getMessage());
-                }
-            } else {
-                conv = C2BConverter.getInstance(bb, enc);
-            }
-            encoders.put(enc, conv);
-
-        }
     }
 
     
@@ -608,9 +434,7 @@ public class OutputBuffer extends Writer
     public void flushBytes()
         throws IOException {
 
-        if (log.isLoggable(Level.FINE))
-            log.fine("flushBytes() " + bb.getLength());
-        bb.flushBuffer();
+        grizzlyOutputBuffer.flush();
 
     }
 
@@ -640,36 +464,33 @@ public class OutputBuffer extends Writer
 
 
     public void setBufferSize(int size) {
-        if (size > bb.getLimit()) {
-            bb.setLimit(size);
+        if (size > grizzlyOutputBuffer.getBufferSize()) {
+            grizzlyOutputBuffer.setBufferSize(size);
         }
     }
 
 
     public void reset() {
 
-        bb.recycle();
+        grizzlyOutputBuffer.reset();
         bytesWritten = 0;
         charsWritten = 0;
-        gotEnc = false;
-        enc = null;
-        initial = true;
 
     }
 
 
     public int getBufferSize() {
-        return bb.getLimit();
+        return grizzlyOutputBuffer.getBufferSize();
     }
 
 
     private void addSessionCookies() throws IOException {
-        Request req = (Request) coyoteResponse.getRequest();
+        Request req = (Request) response.getRequest();
         if (req.isRequestedSessionIdFromURL()) {
             return;
         }
 
-        StandardContext ctx = (StandardContext) coyoteResponse.getContext();
+        StandardContext ctx = (StandardContext) response.getContext();
         if (ctx == null || !ctx.getCookies()) {
             // cookies disabled
             return;
@@ -708,8 +529,8 @@ public class OutputBuffer extends Writer
                 cookie.setSecure(
                     request.isRequestedSessionIdFromSecureCookie());
             }
-            response.addHeader(SET_COOKIE_HEADER,
-                               coyoteResponse.getCookieString(cookie));
+            grizzlyResponse.addHeader(SET_COOKIE_HEADER,
+                               response.getCookieString(cookie));
         }
     }
 
@@ -727,8 +548,8 @@ public class OutputBuffer extends Writer
         Cookie cookie = new Cookie(ctx.getSessionCookieName(),
                 sess.getIdInternal() + "." + ctx.getJvmRoute());
         request.configureSessionCookie(cookie);
-        response.addHeader(SET_COOKIE_HEADER,
-                coyoteResponse.getCookieString(cookie));
+        grizzlyResponse.addHeader(SET_COOKIE_HEADER,
+                response.getCookieString(cookie));
     }
 
     /**
@@ -752,8 +573,8 @@ public class OutputBuffer extends Writer
                 cookie.setSecure(
                     request.isRequestedSessionIdFromSecureCookie());
             }
-            response.addHeader(SET_COOKIE_HEADER,
-                               coyoteResponse.getCookieString(cookie));
+            grizzlyResponse.addHeader(SET_COOKIE_HEADER,
+                               response.getCookieString(cookie));
         }
 
     }
@@ -781,8 +602,8 @@ public class OutputBuffer extends Writer
                 cookie.setSecure(hreq.isSecure());
             }
 
-            response.addHeader(SET_COOKIE_HEADER,
-                    coyoteResponse.getCookieString(cookie));
+            grizzlyResponse.addHeader(SET_COOKIE_HEADER,
+                    response.getCookieString(cookie));
         }
     }
 
@@ -795,8 +616,8 @@ public class OutputBuffer extends Writer
         Cookie cookie = ctx.getManager().toCookie(sess);
         if (cookie != null) {
             request.configureSessionCookie(cookie);
-            response.addHeader(SET_COOKIE_HEADER,
-                    coyoteResponse.getCookieString(cookie));
+            grizzlyResponse.addHeader(SET_COOKIE_HEADER,
+                    response.getCookieString(cookie));
         }
     }
 
@@ -830,8 +651,8 @@ public class OutputBuffer extends Writer
                 cookie.setSecure(
                         request.isRequestedSessionIdFromSecureCookie());
             }
-            response.addHeader(SET_COOKIE_HEADER,
-                    coyoteResponse.getCookieString(cookie));
+            grizzlyResponse.addHeader(SET_COOKIE_HEADER,
+                    response.getCookieString(cookie));
         }
 
     }
@@ -841,11 +662,19 @@ public class OutputBuffer extends Writer
      * Are there any pending writes waiting to be flushed?
      */
     public boolean hasData() {
-        if (!suspended && (initial || (bb.getLength() > 0))) {
-            return true;
-        }
-
-        return false;
+        
+        return !suspended && (!grizzlyResponse.isCommitted() ||
+                grizzlyOutputBuffer.getBufferedDataSize() > 0);
     }
     // END PWC 6512276
+    
+    private class SessionCookieChecker implements LifeCycleListener {
+
+        @Override
+        public void onCommit() throws IOException {
+            grizzlyOutputBuffer.removeLifeCycleListener(this);
+            addSessionCookies();
+        }
+    }
+    
 }

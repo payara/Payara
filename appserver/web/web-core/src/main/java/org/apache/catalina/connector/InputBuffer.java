@@ -60,18 +60,11 @@ package org.apache.catalina.connector;
 
 import java.io.IOException;
 import java.io.Reader;
-import java.security.AccessController;
-import java.security.PrivilegedActionException;
-import java.security.PrivilegedExceptionAction;
-import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.apache.catalina.security.SecurityUtil;
 import org.apache.catalina.util.StringManager;
 import org.glassfish.grizzly.http.server.Request;
-import org.glassfish.grizzly.http.util.B2CConverter;
-import org.glassfish.grizzly.http.util.ByteChunk;
 import org.glassfish.grizzly.http.util.ByteChunk.ByteInputChannel;
 import org.glassfish.grizzly.http.util.CharChunk;
 
@@ -99,88 +92,20 @@ public class InputBuffer extends Reader
     // -------------------------------------------------------------- Constants
 
 
-    public static final String DEFAULT_ENCODING = 
-        org.glassfish.grizzly.http.server.Constants.DEFAULT_CHARACTER_ENCODING;
     public static final int DEFAULT_BUFFER_SIZE = 8*1024;
     static final int debug = 0;
-
-
-    // The buffer can be used for byte[] and char[] reading
-    // ( this is needed to support ServletInputStream and BufferedReader )
-    public final int INITIAL_STATE = 0;
-    public final int CHAR_STATE = 1;
-    public final int BYTE_STATE = 2;
 
 
     // ----------------------------------------------------- Instance Variables
 
 
     /**
-     * The byte buffer.
+     * Associated Grizzly request.
      */
-    private ByteChunk bb;
+    private Request grizzlyRequest;
 
-
-    /**
-     * The chunk buffer.
-     */
-    private CharChunk cb;
-
-
-    /**
-     * State of the output buffer.
-     */
-    private int state = 0;
-
-
-    /**
-     * Flag which indicates if the input buffer is closed.
-     */
-    private boolean closed = false;
-
-
-    /**
-     * Encoding to use.
-     */
-    private String enc;
-
-
-    /**
-     * Encoder is set.
-     */
-    private boolean gotEnc = false;
-
-
-    /**
-     * List of encoders.
-     */
-    protected HashMap<String, B2CConverter> encoders =
-        new HashMap<String, B2CConverter>();
-
-
-    /**
-     * Current byte to char converter.
-     */
-    protected B2CConverter conv;
-
-
-    /**
-     * Associated Coyote request.
-     */
-    private Request coyoteRequest;
-
-
-    /**
-     * Buffer position.
-     */
-    private int markPos = -1;
-
-
-    /**
-     * Buffer size.
-     */
-    private int size = -1;
-
+    private org.glassfish.grizzly.http.server.io.InputBuffer grizzlyInputBuffer;
+    
 
     // ----------------------------------------------------------- Constructors
 
@@ -197,49 +122,38 @@ public class InputBuffer extends Reader
 
     /**
      * Alternate constructor which allows specifying the initial buffer size.
-     * 
+     *
      * @param size Buffer size to use
-     */   
+     */
     public InputBuffer(int size) {
-        
-        this.size = size;
-        bb = new ByteChunk(size);
-        bb.setLimit(size);
-        bb.setByteInputChannel(this);
+
+//        this.size = size;
+//        bb = new ByteChunk(size);
+//        bb.setLimit(size);
+//        bb.setByteInputChannel(this);
     }
-    
-    
-    // START OF SJSAS 6231069
-    private void initChar() {
-        if (cb != null)
-            return;
-        cb = new CharChunk(size);
-        cb.setLimit(size);
-        cb.setOptimizedWrite(false);
-        cb.setCharInputChannel(this);
-        cb.setCharOutputChannel(this);
-    }
-    // END OF SJSAS 6231069
+
     // ------------------------------------------------------------- Properties
 
 
     /**
-     * Associated Coyote request.
+     * Associated Grizzly request.
      * 
-     * @param coyoteRequest Associated Coyote request
+     * @param grizzlyRequest Associated Grizzly request
      */
-    public void setRequest(Request coyoteRequest) {
-	this.coyoteRequest = coyoteRequest;
+    public void setRequest(Request grizzlyRequest) {
+	this.grizzlyRequest = grizzlyRequest;
+        this.grizzlyInputBuffer = grizzlyRequest.getInputBuffer();
     }
 
 
     /**
-     * Get associated Coyote request.
+     * Get associated Grizzly request.
      * 
-     * @return the associated Coyote request
+     * @return the associated Grizzly request
      */
     public Request getRequest() {
-        return this.coyoteRequest;
+        return this.grizzlyRequest;
     }
 
 
@@ -254,33 +168,8 @@ public class InputBuffer extends Reader
         if (log.isLoggable(Level.FINEST))
             log.finest("recycle()");
 
-        state = INITIAL_STATE;
-
-        // START OF SJSAS 6231069
-        /*
-        // If usage of mark made the buffer too big, reallocate it
-        if (cb.getChars().length > size) {
-            cb = new CharChunk(size);
-            cb.setLimit(size);
-            cb.setCharInputChannel(this);
-            cb.setCharOutputChannel(this);
-        } else {
-            cb.recycle();
-        }
-        */
-        cb = null;
-        // END OF SJSAS 6231069
-
-        bb.recycle(); 
-        markPos = -1;
-        closed = false;
-
-        if (conv != null) {
-            conv.recycle();
-        }
-
-        gotEnc = false;
-        enc = null;
+        grizzlyInputBuffer = null;
+        grizzlyRequest = null;
 
     }
 
@@ -292,19 +181,13 @@ public class InputBuffer extends Reader
      */
     public void close()
         throws IOException {
-        closed = true;
+        grizzlyInputBuffer.close();
     }
 
 
     public int available()
         throws IOException {
-        if (state == BYTE_STATE) {
-            return bb.getLength();
-        } else if (state == CHAR_STATE) {
-            return cb.getLength();
-        } else {
-            return 0;
-        }
+        return grizzlyInputBuffer.readyData();
     }
 
 
@@ -322,43 +205,25 @@ public class InputBuffer extends Reader
      */
     public int realReadBytes(byte cbuf[], int off, int len)
 	throws IOException {
-
-        if (log.isLoggable(Level.FINE))
-            log.fine("realRead() " + coyoteRequest);
-
-        if (closed)
-            return -1;
-        if (coyoteRequest == null)
-            return -1;
-
-        state = BYTE_STATE;
-//        bb.setBytes(cbuf, off, len);
-
-        final int readBytes = coyoteRequest.getInputStream(true).read(cbuf, off, len);
-
-        if (readBytes >= 0) {
-            bb.setBytes(cbuf, off, readBytes);
-        }
-
-        return readBytes;
+        return grizzlyInputBuffer.read(cbuf, off, len);
     }
 
 
     public int readByte()
         throws IOException {
-        if (closed)
+        if (grizzlyInputBuffer.isClosed())
             throw new IOException(sm.getString("inputBuffer.streamClosed"));
 
-        return bb.substract();
+        return grizzlyInputBuffer.readByte();
     }
 
 
-    public int read(byte[] b, int off, int len)
+    public int read(final byte[] b, final int off, final int len)
         throws IOException {
-        if (closed)
+        if (grizzlyInputBuffer.isClosed())
             throw new IOException(sm.getString("inputBuffer.streamClosed"));
 
-        return bb.substract(b, off, len);
+        return grizzlyInputBuffer.read(b, off, len);
     }
 
 
@@ -374,51 +239,21 @@ public class InputBuffer extends Reader
     public void realWriteChars(char c[], int off, int len) 
         throws IOException {
         // START OF SJSAS 6231069
-        initChar();
+//        initChar();
         // END OF SJSAS 6231069
-        markPos = -1;
+//        markPos = -1;
     }
 
 
-    public void setEncoding(String s) {
-        enc = s;
+    public void setEncoding(final String encoding) {
+        grizzlyInputBuffer.setDefaultEncoding(encoding);
     }
 
 
-    public int realReadChars(char cbuf[], int off, int len)
+    public int realReadChars(final char cbuf[], final int off, final int len)
         throws IOException {
 
-        // START OF SJSAS 6231069
-        initChar();
-        // END OF SJSAS 6231069
-        if (log.isLoggable(Level.FINE))
-            log.fine("realRead() " + cb.getStart() + " " + len);
-
-        if (!gotEnc)
-            setConverter();
-
-        if (log.isLoggable(Level.FINE))
-            log.fine("encoder:  " + conv + " " + gotEnc);
-
-        if (bb.getLength() <= 0) {
-            int nRead = realReadBytes(bb.getBytes(), 0, bb.getBytes().length);
-            if (nRead < 0) {
-                return -1;
-            }
-        }
-
-        if (markPos == -1) {
-            cb.setStart(0);
-            cb.setEnd(0);
-        }
-        int limit = bb.getLength()+cb.getStart();
-        if ( cb.getLimit() < limit )
-            cb.setLimit(limit);
-        state = CHAR_STATE;
-        conv.convert(bb, cb, bb.getLength());
-        bb.setOffset(bb.getEnd());
-
-        return cb.getLength();
+        return grizzlyInputBuffer.read(cbuf, off, len);
 
     }
 
@@ -426,25 +261,16 @@ public class InputBuffer extends Reader
     public int read()
         throws IOException {
 
-        if (closed)
+        if (grizzlyInputBuffer.isClosed())
             throw new IOException(sm.getString("inputBuffer.streamClosed"));
 
-        // START OF SJSAS 6231069
-        initChar();
-        // END OF SJSAS 6231069
-        return cb.substract();
+        return grizzlyInputBuffer.readChar();
     }
 
 
     public int read(char[] cbuf)
         throws IOException {
 
-        if (closed)
-            throw new IOException(sm.getString("inputBuffer.streamClosed"));
-
-        // START OF SJSAS 6231069
-        initChar();
-        // END OF SJSAS 6231069
         return read(cbuf, 0, cbuf.length);
     }
 
@@ -452,50 +278,23 @@ public class InputBuffer extends Reader
     public int read(char[] cbuf, int off, int len)
         throws IOException {
 
-        if (closed)
+        if (grizzlyInputBuffer.isClosed())
             throw new IOException(sm.getString("inputBuffer.streamClosed"));
 
-        // START OF SJSAS 6231069
-	initChar();
-        // END OF SJSAS 6231069
-        return cb.substract(cbuf, off, len);
+        return grizzlyInputBuffer.read(cbuf, off, len);
     }
 
 
     public long skip(long n)
         throws IOException {
 
-        if (closed)
+        if (grizzlyInputBuffer.isClosed())
             throw new IOException(sm.getString("inputBuffer.streamClosed"));
 
         if (n < 0) {
             throw new IllegalArgumentException();
         }
-
-        // START OF SJSAS 6231069
-        initChar();
-        // END OF SJSAS 6231069
-        long nRead = 0;
-        while (nRead < n) {
-            if (cb.getLength() >= n) {
-                cb.setStart(cb.getStart() + (int) n);
-                nRead = n;
-            } else {
-                nRead += cb.getLength();
-                cb.setStart(cb.getEnd());
-                int toRead = 0;
-                if (cb.getChars().length < n - nRead) {
-                    toRead = cb.getChars().length;
-                } else {
-                    toRead = (int) (n - nRead);
-                }
-                int nb = realReadChars(cb.getChars(), 0, toRead);
-                if (nb < 0)
-                    break;
-            }
-        }
-
-        return nRead;
+        return grizzlyInputBuffer.skip(n, true);
 
     }
 
@@ -503,13 +302,10 @@ public class InputBuffer extends Reader
     public boolean ready()
         throws IOException {
 
-        if (closed)
+        if (grizzlyInputBuffer.isClosed())
             throw new IOException(sm.getString("inputBuffer.streamClosed"));
 
-        // START OF SJSAS 6231069
-        initChar();
-        // END OF SJSAS 6231069
-        return cb.getLength() > 0;
+        return grizzlyInputBuffer.ready();
     }
 
 
@@ -520,93 +316,23 @@ public class InputBuffer extends Reader
 
     public void mark(int readAheadLimit)
         throws IOException {
-        // START OF SJSAS 6231069
-        initChar();
-        // END OF SJSAS 6231069
-        if (cb.getLength() <= 0) {
-            cb.setStart(0);
-            cb.setEnd(0);
-        } else {
-            if (cb.getBuffer().length > 2 * size
-                && cb.getLength() < cb.getStart()) {
-                System.arraycopy(cb.getBuffer(), cb.getStart(),
-                                 cb.getBuffer(), 0, cb.getLength());
-                cb.setEnd(cb.getLength());
-                cb.setStart(0);
-            }
-        }
-        cb.setLimit(cb.getStart() + readAheadLimit + size);
-        markPos = cb.getStart();
+        grizzlyInputBuffer.mark(readAheadLimit);
     }
 
 
     public void reset()
         throws IOException {
 
-        if (closed)
+        if (grizzlyInputBuffer.isClosed())
             throw new IOException(sm.getString("inputBuffer.streamClosed"));
-
-        if (state == CHAR_STATE) {
-            if (markPos < 0) {
-                cb.recycle();
-                markPos = -1;
-                throw new IOException();
-            } else {
-                cb.setStart(markPos);
-            }
-        } else {
-            bb.recycle();
-        }
+        grizzlyInputBuffer.reset();
     }
 
 
     public void checkConverter() 
         throws IOException {
 
-        if (!gotEnc)
-            setConverter();
-
-    }
-
-
-    protected void setConverter()
-        throws IOException {
-
-        if (coyoteRequest != null)
-            enc = coyoteRequest.getCharacterEncoding();
-
-        if (log.isLoggable(Level.FINE))
-            log.fine("Got encoding: " + enc);
-
-        gotEnc = true;
-        if (enc == null)
-            enc = DEFAULT_ENCODING;
-        conv = encoders.get(enc);
-        if (conv == null) {
-            if (SecurityUtil.isPackageProtectionEnabled()){
-                try{
-                    conv = AccessController.doPrivileged(
-                            new PrivilegedExceptionAction<B2CConverter>(){
-
-                                public B2CConverter run() throws IOException{
-                                    return new B2CConverter(enc);
-                                }
-
-                            }
-                    );              
-                }catch(PrivilegedActionException ex){
-                    Exception e = ex.getException();
-                    if (e instanceof IOException)
-                        throw (IOException)e; 
-                    
-                    if (log.isLoggable(Level.FINE))
-                        log.fine("setConverter: " + ex.getMessage());
-                }
-            } else {
-                conv = new B2CConverter(enc);
-            }               
-            encoders.put(enc, conv);
-        }
+        grizzlyInputBuffer.processingChars();
 
     }
 }

@@ -60,7 +60,6 @@ package com.sun.enterprise.web.connector.grizzly;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.management.MBeanRegistration;
 import javax.management.MBeanServer;
@@ -70,7 +69,6 @@ import org.apache.catalina.connector.ProtocolHandler;
 import org.glassfish.grizzly.config.ssl.SSLImplementation;
 import org.glassfish.grizzly.config.ssl.ServerSocketFactory;
 import org.glassfish.grizzly.http.server.HttpHandler;
-import org.glassfish.grizzly.http.util.StringManager;
 
 /**
  * Abstract the protocol implementation, including threading, etc.
@@ -118,21 +116,11 @@ public class CoyoteConnectorLauncher implements ProtocolHandler, MBeanRegistrati
     }
     
 
-    /**
-     * The string manager for this package.
-     */
-    protected static final StringManager sm =
-        StringManager.getManager(Constants.Package,
-                                 Constants.class.getClassLoader());
-
     /** Pass config info
      */
     @Override
     public void setAttribute( String name, Object value ) {
-        if (log.isLoggable(Level.FINEST)) {
-            log.finest(sm.getString("http11protocol.setattribute", name,
-                value));
-        }
+
         attributes.put(name, value);
 /*
         if ("maxKeepAliveRequests".equals(name)) {
