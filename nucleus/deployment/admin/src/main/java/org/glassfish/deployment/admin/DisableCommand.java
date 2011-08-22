@@ -131,6 +131,7 @@ public class DisableCommand extends UndeployCommandParameters implements AdminCo
 
     public DisableCommand() {
         origin = Origin.unload;
+        command = Command.disable;
     }
 
     /**

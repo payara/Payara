@@ -355,6 +355,7 @@ public class ApplicationLoaderService implements Startup, PreDestroy, PostConstr
                         app.getDeployParameters(appRef);
                     deploymentParams.target = server.getName();
                     deploymentParams.origin = DeployCommandParameters.Origin.load;
+                    deploymentParams.command = DeployCommandParameters.Command.startup_server;
                     if (app.containsSnifferType(Application.OSGI_SNIFFER_TYPE)) {
                         deploymentParams.type = DeploymentProperties.OSGI;
                     }
@@ -442,6 +443,7 @@ public class ApplicationLoaderService implements Startup, PreDestroy, PostConstr
         if (appInfo!=null) {
             UndeployCommandParameters parameters = new UndeployCommandParameters(appInfo.getName());
             parameters.origin = UndeployCommandParameters.Origin.unload;
+            parameters.command = UndeployCommandParameters.Command.shutdown_server;
 
             try {
                 deployment.disable(parameters, app, appInfo, dummy, logger);

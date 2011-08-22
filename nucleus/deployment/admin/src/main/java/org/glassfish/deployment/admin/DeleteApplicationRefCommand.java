@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -49,6 +49,7 @@ import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.deployment.UndeployCommandParameters;
 import org.glassfish.api.deployment.OpsParams.Origin;
+import org.glassfish.api.deployment.OpsParams.Command;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.config.support.CommandTarget;
@@ -164,6 +165,7 @@ public class DeleteApplicationRefCommand implements AdminCommand {
             // is essentially an undeploy
             commandParams.origin = Origin.undeploy;
         }
+        commandParams.command = Command.delete_application_ref;
 
         // for each matched version
         Iterator it = matchedVersions.iterator();

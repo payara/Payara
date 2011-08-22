@@ -2030,6 +2030,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                 return null;
             }
             commandParams.origin = DeployCommandParameters.Origin.load;
+            commandParams.command = DeployCommandParameters.Command.enable;
             commandParams.target = target;
             commandParams.enabled = Boolean.TRUE;
             if (app.containsSnifferType(Application.OSGI_SNIFFER_TYPE)) {

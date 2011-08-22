@@ -54,6 +54,7 @@ import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.api.deployment.DeployCommandParameters;
 import org.glassfish.api.deployment.OpsParams.Origin;
+import org.glassfish.api.deployment.OpsParams.Command;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.deployment.common.DeploymentUtils;
@@ -245,6 +246,7 @@ public class CreateApplicationRefCommand implements AdminCommand {
                 try {
                     commandParams = app.getDeployParameters(null);
                     commandParams.origin = Origin.create_application_ref;
+                    commandParams.command = Command.create_application_ref;
                     commandParams.target = target;
                     commandParams.virtualservers = virtualservers;
                     commandParams.enabled = enabled;

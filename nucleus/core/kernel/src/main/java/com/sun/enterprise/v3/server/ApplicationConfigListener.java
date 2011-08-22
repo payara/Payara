@@ -283,6 +283,7 @@ public class ApplicationConfigListener implements TransactionListener,
             commandParams.name = appName;
             commandParams.target = server.getName();
             commandParams.origin = UndeployCommandParameters.Origin.unload;
+            commandParams.command = UndeployCommandParameters.Command.disable;
             deployment.disable(commandParams, app, appInfo, report, logger);
 
             if (report.getActionExitCode().equals(ActionReport.ExitCode.FAILURE)) {

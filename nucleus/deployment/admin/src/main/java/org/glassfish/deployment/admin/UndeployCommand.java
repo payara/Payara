@@ -132,6 +132,7 @@ public class UndeployCommand extends UndeployCommandParameters implements AdminC
 
     public UndeployCommand() {
         origin = Origin.undeploy;
+        command = Command.undeploy;
     }
 
     public void execute(AdminCommandContext context) {

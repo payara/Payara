@@ -139,9 +139,24 @@ public abstract class OpsParams implements CommandParameters {
     }
 
     /**
+     * There can be cases where the container code wants to find out  
+     * the command associated with the operation when the Origin information
+     * is not sufficient
+     * 
+     */
+    public enum Command { 
+        deploy, undeploy, enable, disable, _deploy, create_application_ref, delete_application_ref, startup_server, shutdown_server 
+    }
+
+    /**
      * Type of deployment operation, by default it's deployment
      */
     public Origin origin = Origin.deploy; 
+
+    /**
+     * The command associated with this operation, by default it's deploy
+     */
+    public Command command = Command.deploy;
 
     public abstract String name();
 
