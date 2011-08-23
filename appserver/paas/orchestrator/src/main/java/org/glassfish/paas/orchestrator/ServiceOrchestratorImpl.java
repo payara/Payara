@@ -373,26 +373,21 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator, Application
     public void before(ExtendedDeploymentContext.Phase phase, ExtendedDeploymentContext context) {
         if (!usingDeployService) {
             System.out.println("ApplicationLifecycleListener before : " + phase);
+            OpsParams params = context.getCommandParameters(OpsParams.class);
             if (phase.equals(ExtendedDeploymentContext.Phase.PREPARE)) {
                 if (serverEnvironment.isDas()) {
                     ReadableArchive archive = context.getSource();
-                    DeployCommandParameters params = context.getCommandParameters(DeployCommandParameters.class);
-                    if (params != null) {
-                        if (params.origin == OpsParams.Origin.deploy) {
-                            String appName = params.name();
-                            provisionServicesForApplication(appName, archive, context);
-                        }
+                    if (params.origin == OpsParams.Origin.deploy) {
+                        String appName = params.name();
+                        provisionServicesForApplication(appName, archive, context);
                     }
                 }
             } else if (phase.equals(ExtendedDeploymentContext.Phase.STOP)) {
                 if (serverEnvironment.isDas()) {
                     ReadableArchive archive = context.getSource();
-                    UndeployCommandParameters params = context.getCommandParameters(UndeployCommandParameters.class);
-                    if (params != null) {
-                        if (params.origin == OpsParams.Origin.undeploy) {
+                    if(params.origin == OpsParams.Origin.undeploy){
                             String appName = params.name();
                             prepareForUndeploy(appName, archive, context);
-                        }
                     }
                 }
             }
@@ -404,26 +399,25 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator, Application
             System.out.println("ApplicationLifecycleListener after : " + phase);
             if (phase.equals(ExtendedDeploymentContext.Phase.REPLICATION)) {
                 if (serverEnvironment.isDas()) {
+                    OpsParams params = context.getCommandParameters(OpsParams.class);
                     ReadableArchive archive = context.getSource();
-                    DeployCommandParameters deployParams = context.getCommandParameters(DeployCommandParameters.class);
-                    if (deployParams != null) {//TODO is this the only way to determine whether its really deployment ?
-                        if (deployParams.origin == OpsParams.Origin.deploy) {
-                            String appName = deployParams.name();
-                            postDeploy(appName, archive);
-                        }
+                    if (params.origin == OpsParams.Origin.deploy) {
+                        String appName = params.name();
+                        postDeploy(appName, archive);
+
                     }
-                    UndeployCommandParameters undeployParams = context.getCommandParameters(UndeployCommandParameters.class);
-                    if (undeployParams != null) {
-                        if (undeployParams.origin == OpsParams.Origin.undeploy) {
-                            String appName = undeployParams.name();
+                    //make sure that it is indeed undeploy and not disable.
+                    //params.origin is "undeploy" for both "undeploy" as well "disable" phase
+                    //hence using the actual command being used.
+                    if(params.origin == OpsParams.Origin.undeploy){
                             //TODO workaround as REPLICATION event during "undeploy" is called during "post-disable"
                             //and "post-undeploy".
+                            String appName = params.name();
                             if (serviceMetadata.containsKey(appName) && provisionedServices.containsKey(appName)) {
                                 postUndeploy(appName, context.getSource(), context);
                                 serviceMetadata.remove(appName);
                                 provisionedServices.remove(appName);
                             }
-                        }
                     }
                 }
             }

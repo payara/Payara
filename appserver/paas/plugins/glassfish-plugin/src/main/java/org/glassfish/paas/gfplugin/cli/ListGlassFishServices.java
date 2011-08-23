@@ -138,7 +138,7 @@ public class ListGlassFishServices implements AdminCommand {
 
             if (glassFishServices.size() > 0) {
 
-                String headings[] = {"CLOUD_NAME", "IP_ADDRESS", "INSTANCE_ID", "SERVER_TYPE", "STATE"};
+                String headings[] = {"SERVICE_NAME", "IP_ADDRESS", "INSTANCE_ID", "SERVER_TYPE", "STATE"};
                 ColumnFormatter cf = new ColumnFormatter(headings);
 
                 boolean foundRows = false;
