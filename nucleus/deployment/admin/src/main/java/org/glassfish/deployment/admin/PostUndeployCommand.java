@@ -53,7 +53,6 @@ import org.glassfish.api.admin.FailurePolicy;
 import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.api.admin.Supplemental;
-import org.glassfish.api.deployment.DeployCommandParameters;
 import org.glassfish.api.deployment.UndeployCommandParameters;
 import org.glassfish.common.util.admin.ParameterMapExtractor;
 import org.glassfish.deployment.common.DeploymentUtils;
@@ -102,7 +101,6 @@ public class PostUndeployCommand extends UndeployCommandParameters implements Ad
             return;
         }
         final ExtendedDeploymentContext dc = suppInfo.deploymentContext();
-        final DeployCommandParameters params = dc.getCommandParameters(DeployCommandParameters.class);
         
         final InterceptorNotifier notifier = new InterceptorNotifier(habitat, dc);
 

@@ -300,7 +300,8 @@ public class UndeployCommand extends UndeployCommandParameters implements AdminC
 
             // disable the application first for non-DAS target
             if (env.isDas() && !DeploymentUtils.isDASTarget(target)) {
-                CommandRunner.CommandInvocation inv = commandRunner.getCommandInvocation("disable", report);
+                ActionReport subReport = report.addSubActionsReport();
+                CommandRunner.CommandInvocation inv = commandRunner.getCommandInvocation("disable", subReport);
 
                 try {
                     final ParameterMapExtractor extractor = new ParameterMapExtractor(this);
@@ -309,7 +310,7 @@ public class UndeployCommand extends UndeployCommandParameters implements AdminC
                     parameters.add(DeploymentProperties.IS_UNDEPLOY, Boolean.TRUE.toString());
                     inv.parameters(parameters).execute();
 
-                    if (report.getActionExitCode().equals(
+                    if (subReport.getActionExitCode().equals(
                     ActionReport.ExitCode.FAILURE)) {
                     // if disable application failed
                     // we should just return

@@ -45,7 +45,6 @@ import java.util.logging.Logger;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
-import org.glassfish.api.deployment.DeployCommandParameters;
 import org.glassfish.hk2.scopes.PerLookup;
 import org.glassfish.internal.deployment.ApplicationLifecycleInterceptor;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
@@ -74,7 +73,6 @@ public class PostStateCommand implements AdminCommand {
         final DeployCommandSupplementalInfo suppInfo =
                 context.getActionReport().getResultType(DeployCommandSupplementalInfo.class);
         final ExtendedDeploymentContext dc = suppInfo.deploymentContext();
-        final DeployCommandParameters params = dc.getCommandParameters(DeployCommandParameters.class);
         final InterceptorNotifier notifier = new InterceptorNotifier(habitat, dc);
 
         try {

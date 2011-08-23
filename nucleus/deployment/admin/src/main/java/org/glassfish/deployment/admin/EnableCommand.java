@@ -149,6 +149,7 @@ public class EnableCommand extends StateCommandParameters implements AdminComman
         InterceptorNotifier notifier = new InterceptorNotifier(habitat, null);
         DeployCommandSupplementalInfo suppInfo = new DeployCommandSupplementalInfo();
         suppInfo.setDeploymentContext(notifier.dc());
+        report.setResultType(DeployCommandSupplementalInfo.class, suppInfo);
         if (env.isDas()) {
             // try to disable the enabled version, if exist
             try {
@@ -193,7 +194,8 @@ public class EnableCommand extends StateCommandParameters implements AdminComman
             Application app = applications.getApplication(name()); 
             ApplicationRef appRef = domain.getApplicationRefInServer(server.getName(), name());
 
-            deployment.enable(target, app, appRef, report, logger);
+            DeploymentContext dc = deployment.enable(target, app, appRef, report, logger);
+            suppInfo.setDeploymentContext((ExtendedDeploymentContext)dc);
 
             if (!report.getActionExitCode().equals(ActionReport.ExitCode.FAILURE)) {
                 // update the domain.xml
