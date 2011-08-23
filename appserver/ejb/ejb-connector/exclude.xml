@@ -41,25 +41,17 @@
 -->
 
 <FindBugsFilter>
-    <!--
-         Request: Mahesh
-         Approval: Bill
-     -->
-    <Match>
-        <Class name="com.sun.ejb.containers.CMCSingletonContainer"/>
-        <Bug pattern="UL_UNRELEASED_LOCK"/>
-        <Priority value="1"/>
-    </Match>
 
     <!-- lower priority bugs below here -->
 
     <!--
-        Tasks wait for only one condition, and any task that's woken up can
-        handle the condition, so notifyAll is unnecessary.
+        The two branches of the "if" are the same, but one contains
+        a comment explaining why it's currently handled the same as
+        the other case.
     -->
     <Match>
-        <Class name="com.sun.ejb.containers.MessageBeanContainer$ASyncClientShutdownTask"/>
-        <Method name="run"/>
-        <Bug pattern="NO_NOTIFY_NOT_NOTIFYALL"/>
+        <Class name="org.glassfish.ejb.deployment.annotation.handlers.EJBHandler"/>
+        <Method name="setEjbIntfType"/>
+        <Bug pattern="DB_DUPLICATE_BRANCHES"/>
     </Match>
 </FindBugsFilter>
