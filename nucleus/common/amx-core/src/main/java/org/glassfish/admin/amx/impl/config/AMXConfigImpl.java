@@ -1380,7 +1380,7 @@ public class AMXConfigImpl extends AMXImplBase
 
                 if (prop.isCollection())
                 {
-                    final List<String> results = handleCollection(mWriteable, prop, ListUtil.asStringList(value));
+                    handleCollection(mWriteable, prop, ListUtil.asStringList(value));
                 }
                 else if (value == null || (value instanceof String))
                 {
