@@ -37,17 +37,33 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package com.oracle.glassfish.elasticity.api;
+package com.oracle.glassfish.elasticity.util;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import com.oracle.glassfish.elasticity.api.MetricFunction;
 
-@Target(ElementType.TYPE)
-@Retention(RetentionPolicy.RUNTIME)
-public @interface ExecuteAt {
-	public enum Location {ServiceMaster, ServiceInstance};
-	
-	public Location[] value();
+/**
+ * @author Mahesh.Kannan@Oracle.Com
+ */
+public class CountFalse
+	implements MetricFunction<Boolean, Integer>{
+
+    private int count;
+
+	public void visit(Boolean value) {
+		if (value.booleanValue() == false) {
+			count++;
+		}
+    }
+    
+    public int getCount() {
+        return count;
+    }
+
+    public Integer computeResult() {
+        return count;
+    }
+
+    public void reset() {
+        count = 0;
+    }
 }

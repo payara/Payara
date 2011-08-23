@@ -37,17 +37,35 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package com.oracle.glassfish.elasticity.api;
+package com.oracle.glassfish.elasticity.util;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import com.oracle.glassfish.elasticity.api.MetricFunction;
 
-@Target(ElementType.TYPE)
-@Retention(RetentionPolicy.RUNTIME)
-public @interface ExecuteAt {
-	public enum Location {ServiceMaster, ServiceInstance};
-	
-	public Location[] value();
+/**
+ * @author Mahesh.Kannan@Oracle.Com
+ */
+public class Sum<T extends Number>
+	implements MetricFunction<T, Double>{
+
+    private double sum;
+
+    private int count;
+
+	public void visit(Number value) {
+		sum += value.doubleValue();
+        count++;
+    }
+    
+    public int getCount() {
+        return count;
+    }
+
+    public Double computeResult() {
+        return sum;
+    }
+
+    public void reset() {
+        count = 0;
+        sum = 0;
+    }
 }

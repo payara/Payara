@@ -39,15 +39,13 @@
  */
 package com.oracle.glassfish.elasticity.api;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import org.jvnet.hk2.annotations.Contract;
 
-@Target(ElementType.TYPE)
-@Retention(RetentionPolicy.RUNTIME)
-public @interface ExecuteAt {
-	public enum Location {ServiceMaster, ServiceInstance};
+@Contract
+public interface MetricFunction<V, T> {
+
+	public void visit(V value);
 	
-	public Location[] value();
+	public T computeResult();
+	
 }

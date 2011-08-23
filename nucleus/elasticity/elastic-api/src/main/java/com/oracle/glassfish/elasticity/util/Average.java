@@ -39,16 +39,19 @@
  */
 package com.oracle.glassfish.elasticity.util;
 
+import com.oracle.glassfish.elasticity.api.MetricFunction;
+
 /**
  * @author Mahesh.Kannan@Oracle.Com
  */
-public class Average<T extends Number> {
+public class Average<T extends Number>
+	implements MetricFunction<T, Double>{
 
     private double sum;
 
     private int count;
 
-	public void add(Number value) {
+	public void visit(Number value) {
 		sum += value.doubleValue();
         count++;
     }
@@ -61,7 +64,7 @@ public class Average<T extends Number> {
     	return sum;
     }
 
-    public double average() {
+    public Double computeResult() {
         return count > 0 ? sum / count : 0;
     }
 

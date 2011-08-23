@@ -66,6 +66,6 @@ public interface AlertConfiguration
 	 *  
 	 * @return the ScheduledTimerDescriptor
 	 */
-	public long getExecutionPeriodInMillis();
+	public String getSchedule();
 
 }

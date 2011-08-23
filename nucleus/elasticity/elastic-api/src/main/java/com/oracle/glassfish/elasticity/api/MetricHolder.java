@@ -39,15 +39,33 @@
  */
 package com.oracle.glassfish.elasticity.api;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.util.Iterator;
+import java.util.concurrent.TimeUnit;
 
-@Target(ElementType.TYPE)
-@Retention(RetentionPolicy.RUNTIME)
-public @interface ExecuteAt {
-	public enum Location {ServiceMaster, ServiceInstance};
+import org.jvnet.hk2.annotations.Contract;
+
+/**
+ *
+ * @param <V> The type of Metric this class will hold
+ * 
+ * @author Mahesh.Kannan@Oracle.Com
+ * 
+ */
+@Contract
+public interface MetricHolder<V extends MetricEntry> {
 	
-	public Location[] value();
+	public boolean isEmpty();
+	
+	public MetricAttributeInfo[] getMetricAttributeInfos();
+
+	public Iterable<V> values(long duration, TimeUnit unit);
+	
+	public interface MetricAttributeInfo {
+		
+		public String getAttributeName();
+		
+		public Class<?> getAttributeType();
+		
+	}
+	
 }
