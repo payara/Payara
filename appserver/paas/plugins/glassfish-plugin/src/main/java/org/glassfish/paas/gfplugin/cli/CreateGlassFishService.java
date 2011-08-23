@@ -118,14 +118,14 @@ public class CreateGlassFishService implements AdminCommand, Runnable {
     @Inject
     private GlassFishServiceUtil gfServiceUtil;
 
-    @Inject
+    @Inject(optional = true) // made it optional for non-virtual scenario to work
     private TemplateRepository templateRepository;
 
-    @Inject
+    @Inject(optional = true) // made it optional for non-virtual scenario to work
     IAAS iaas;
 
     // TODO :: remove dependency on VirtualCluster(s).
-    @Inject
+    @Inject(optional = true) // // made it optional for non-virtual scenario to work
     VirtualClusters virtualClusters;
 
     public void execute(AdminCommandContext context) {
@@ -149,6 +149,9 @@ public class CreateGlassFishService implements AdminCommand, Runnable {
         domainName = serviceName.indexOf(".") > -1 ?
                 serviceName.substring(0, serviceName.indexOf(".")) : serviceName;
 */
+        instanceCount = instanceCount <= 0 ? Integer.parseInt(
+                serviceConfigurations.getProperty("max.clustersize")) : instanceCount;
+        
         if (instanceCount >= 0) {
             clusterName = serviceName.indexOf(".") > -1 ?
                 serviceName.substring(0, serviceName.indexOf(".")) : serviceName;
@@ -214,41 +217,43 @@ public class CreateGlassFishService implements AdminCommand, Runnable {
 
     public void run() {
         TemplateInstance matchingTemplate = null;
-        if (templateId == null) {
-            // search for matching template based on service characteristics
-            if (serviceCharacteristics != null) {
-                /**
-                 * TODO :: use templateRepository.get(ServiceCriteria) when
-                 * an implementation of ServiceCriteria becomes available.
-                 * for now, iterate over all template instances and find the right one.
-                 */
-                Set<TemplateCondition> andConditions = new HashSet<TemplateCondition>();
-                andConditions.add(new org.glassfish.virtualization.util.ServiceType(
-                        serviceCharacteristics.getProperty("service-type")));
-                andConditions.add(new VirtualizationType(
-                        serviceCharacteristics.getProperty("virtualization-type")));
-                for (TemplateInstance ti : templateRepository.all()) {
-                    boolean allConditionsSatisfied = true;
-                    for (TemplateCondition condition : andConditions) {
-                        if (!ti.satisfies(condition)) {
-                            allConditionsSatisfied = false;
+        if (templateRepository != null) {
+            if (templateId == null) {
+                // search for matching template based on service characteristics
+                if (serviceCharacteristics != null) {
+                    /**
+                     * TODO :: use templateRepository.get(ServiceCriteria) when
+                     * an implementation of ServiceCriteria becomes available.
+                     * for now, iterate over all template instances and find the right one.
+                     */
+                    Set<TemplateCondition> andConditions = new HashSet<TemplateCondition>();
+                    andConditions.add(new org.glassfish.virtualization.util.ServiceType(
+                            serviceCharacteristics.getProperty("service-type")));
+                    andConditions.add(new VirtualizationType(
+                            serviceCharacteristics.getProperty("virtualization-type")));
+                    for (TemplateInstance ti : templateRepository.all()) {
+                        boolean allConditionsSatisfied = true;
+                        for (TemplateCondition condition : andConditions) {
+                            if (!ti.satisfies(condition)) {
+                                allConditionsSatisfied = false;
+                                break;
+                            }
+                        }
+                        if (allConditionsSatisfied) {
+                            matchingTemplate = ti;
                             break;
                         }
                     }
-                    if (allConditionsSatisfied) {
+                    if (matchingTemplate != null) {
+                        templateId = matchingTemplate.getConfig().getName();
+                    }
+                }
+            } else {
+                for (TemplateInstance ti : templateRepository.all()) {
+                    if (ti.getConfig().getName().equals(templateId)) {
                         matchingTemplate = ti;
                         break;
                     }
-                }
-                if (matchingTemplate != null) {
-                    templateId = matchingTemplate.getConfig().getName();
-                }
-            }
-        } else {
-            for (TemplateInstance ti : templateRepository.all()) {
-                if (ti.getConfig().getName().equals(templateId)) {
-                    matchingTemplate = ti;
-                    break;
                 }
             }
         }
