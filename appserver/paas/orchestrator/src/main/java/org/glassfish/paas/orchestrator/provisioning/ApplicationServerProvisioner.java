@@ -107,4 +107,8 @@ public interface ApplicationServerProvisioner extends Provisioner {
                                           String lbServiceName);
 
     void refreshLBConfiguration(String masterInstanceIP, String lbServiceName);
+
+    void deleteJdbcResource(String masterInstanceIP, String target, String resourceName);
+
+    void deleteJdbcConnectionPool(String masterInstanceIP, String poolName);
 }

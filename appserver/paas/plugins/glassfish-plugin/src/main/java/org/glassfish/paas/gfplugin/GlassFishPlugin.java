@@ -347,6 +347,23 @@ public class GlassFishPlugin implements Plugin<JavaEEServiceType> {
                     ucp.target = clusterName;
                 }
             }
+        }else{
+            //TODO temporary workaround. What if multiple resource-refs are present ?
+            if (svcRef.getServiceRefType().equals("javax.sql.DataSource")) {
+                String serviceName = glassfishProvisionedService.getServiceDescription().getName();
+                String clusterName = gfServiceUtil.getClusterName(serviceName, glassfishProvisionedService.getServiceDescription().getAppName());
+                String poolName = serviceName + ".pool";
+                String resourceName = svcRef.getServiceRefName();
+
+                //TODO once glassfish-resources.xml is used, deleting resources and pools explicitly is not required.
+                String dasIPAddress = gfServiceUtil.getDASIPAddress(glassfishProvisionedService.getServiceDescription().getName());
+                GlassFishProvisioner glassFishProvisioner = (GlassFishProvisioner)
+                        provisionerUtil.getAppServerProvisioner(dasIPAddress);
+                glassFishProvisioner.deleteJdbcResource(dasIPAddress, clusterName, resourceName);
+                glassFishProvisioner.deleteJdbcConnectionPool(dasIPAddress, poolName);
+            }
+
+
         }
 
         //TODO Delete the jdbc resource & pool

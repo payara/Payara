@@ -222,6 +222,28 @@ public class GlassFishProvisioner implements ApplicationServerProvisioner {
         logCommandResult(commandResult);
     }
 
+    public void deleteJdbcConnectionPool(String masterInstanceIP, String poolName) {
+        ArrayList<String> params = new ArrayList<String>();
+        params.add(poolName);
+
+        String[] parameters = new String[params.size()];
+        parameters = params.toArray(parameters);
+
+        CommandResult commandResult = getCommandRunner().run("delete-jdbc-connection-pool", parameters);
+        logCommandResult(commandResult);
+    }
+
+    public void deleteJdbcResource(String masterInstanceIP, String target, String resourceName) {
+        ArrayList<String> params = new ArrayList<String>();
+        params.add("--target="+target);
+        params.add(resourceName);
+
+        String[] parameters = new String[params.size()];
+        parameters = params.toArray(parameters);
+
+        CommandResult commandResult = getCommandRunner().run("delete-jdbc-resource", parameters);
+        logCommandResult(commandResult);
+    }
     public void createJdbcConnectionPool(String masterInstanceIP, String target, Properties props, String poolName) {
 
         ArrayList<String> params = new ArrayList<String>();
