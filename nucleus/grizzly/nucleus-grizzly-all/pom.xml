@@ -67,6 +67,11 @@
         </developer>
     </developers>
 
+    <properties>
+        <gmbal.grizzly.version>3.0.0-b023</gmbal.grizzly.version>
+        <findbugs.skip>true</findbugs.skip>
+    </properties>    
+
     <build>       
         <plugins>
             <plugin>
@@ -148,7 +153,4 @@
             <scope>provided</scope>
         </dependency>        
     </dependencies>
-    <properties>
-        <gmbal.grizzly.version>3.0.0-b023</gmbal.grizzly.version>
-    </properties>    
 </project>
