@@ -47,8 +47,8 @@ import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Inject;
 
 import com.sun.enterprise.config.serverbeans.Config;
-import com.sun.enterprise.config.serverbeans.IiopListener;
-import com.sun.enterprise.config.serverbeans.IiopService;
+import org.glassfish.orb.admin.config.IiopListener;
+import org.glassfish.orb.admin.config.IiopService;
 import com.sun.enterprise.v3.services.impl.DummyNetworkListener;
 import com.sun.enterprise.v3.services.impl.GrizzlyService;
 import java.util.List;
@@ -164,7 +164,7 @@ public class ORBConnectorStartup implements Startup, PostConstruct {
      * ORB container on first request.
      */
     private void initializeLazyListener() {
-        final IiopService iiopService = config.getIiopService();
+        final IiopService iiopService = config.getExtensionByType(IiopService.class);
         if (iiopService != null) {
             List<IiopListener> iiopListenerList = iiopService.getIiopListener();
             for (IiopListener oneListener : iiopListenerList) {

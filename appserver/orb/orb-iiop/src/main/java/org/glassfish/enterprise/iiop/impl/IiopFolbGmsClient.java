@@ -65,8 +65,8 @@ import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Configs;
 import com.sun.enterprise.config.serverbeans.Domain;
-import com.sun.enterprise.config.serverbeans.IiopListener;
-import com.sun.enterprise.config.serverbeans.IiopService;
+import org.glassfish.orb.admin.config.IiopListener;
+import org.glassfish.orb.admin.config.IiopService;
 import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.config.serverbeans.Servers;
 import com.sun.enterprise.config.serverbeans.Nodes;
@@ -372,7 +372,7 @@ public class IiopFolbGmsClient implements CallBack {
 
         fineLog( "getClusterInstanceInfo: host {0}", hostName ) ;
 
-        final IiopService iservice = config.getIiopService() ;
+        final IiopService iservice = config.getExtensionByType(IiopService.class) ;
         fineLog( "getClusterInstanceInfo: iservice {0}", iservice ) ;
 
         final List<IiopListener> listeners = iservice.getIiopListener() ;

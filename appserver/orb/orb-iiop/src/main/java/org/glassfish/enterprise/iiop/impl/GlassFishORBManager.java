@@ -53,9 +53,9 @@ import com.sun.corba.ee.impl.folb.InitialGroupInfoService ;
 
 import com.sun.logging.LogDomains;
 
-import com.sun.enterprise.config.serverbeans.IiopListener;
-import com.sun.enterprise.config.serverbeans.Orb;
-import com.sun.enterprise.config.serverbeans.IiopService;
+import org.glassfish.orb.admin.config.IiopListener;
+import org.glassfish.orb.admin.config.Orb;
+import org.glassfish.orb.admin.config.IiopService;
 import com.sun.enterprise.config.serverbeans.SslClientConfig;
 
 import org.glassfish.grizzly.config.dom.Ssl;

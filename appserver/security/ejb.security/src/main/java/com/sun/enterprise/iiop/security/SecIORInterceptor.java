@@ -40,7 +40,7 @@
 
 package com.sun.enterprise.iiop.security;
 
-import com.sun.enterprise.config.serverbeans.IiopListener;
+import org.glassfish.orb.admin.config.IiopListener;
 import java.util.logging.*;
 
 import org.omg.IOP.Codec;

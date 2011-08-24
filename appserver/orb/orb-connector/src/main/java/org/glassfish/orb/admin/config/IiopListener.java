@@ -38,7 +38,7 @@
  * holder.
  */
 
-package com.sun.enterprise.config.serverbeans;
+package org.glassfish.orb.admin.config;
 
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.Element;

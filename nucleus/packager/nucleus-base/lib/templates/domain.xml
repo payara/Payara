@@ -41,8 +41,8 @@
 -->
 
 <domain log-root="${com.sun.aas.instanceRoot}/logs" application-root="${com.sun.aas.instanceRoot}/applications" version="10.0">
-  <system-applications />
-  <applications />
+  <system-applications/>
+  <applications/>
   <resources/>
   <servers>
     <server name="%%%SERVER_ID%%%" config-ref="%%%CONFIG_MODEL_NAME%%%"> 
@@ -60,25 +60,12 @@
         <virtual-server id="server" network-listeners="http-listener-1,http-listener-2"/>
         <virtual-server id="__asadmin" network-listeners="admin-listener"/>
       </http-service>
-      <iiop-service>
-        <orb use-thread-pool-ids="thread-pool-1" />
-        <iiop-listener address="0.0.0.0" port="%%%ORB_LISTENER_PORT%%%" id="orb-listener-1" lazy-init="true"/>
-        <iiop-listener security-enabled="true" address="0.0.0.0" port="%%%ORB_SSL_PORT%%%" id="SSL">
-          <ssl classname="com.sun.enterprise.security.ssl.GlassfishSSLImpl" cert-nickname="s1as" />
-        </iiop-listener>
-        <iiop-listener security-enabled="true" address="0.0.0.0" port="%%%ORB_MUTUALAUTH_PORT%%%" id="SSL_MUTUALAUTH">
-          <ssl classname="com.sun.enterprise.security.ssl.GlassfishSSLImpl" cert-nickname="s1as" client-auth-enabled="true" />
-        </iiop-listener>
-      </iiop-service>
       <admin-service auth-realm-name="admin-realm" type="das-and-server" system-jmx-connector-name="system">
         <jmx-connector auth-realm-name="admin-realm" security-enabled="false" address="0.0.0.0" port="%%%JMX_SYSTEM_CONNECTOR_PORT%%%" name="system" />
         <property value="/admin" name="adminConsoleContextRoot" />
         <property value="${com.sun.aas.installRoot}/lib/install/applications/admingui.war" name="adminConsoleDownloadLocation" />
         <property value="${com.sun.aas.installRoot}/.." name="ipsRoot" />
       </admin-service>
-      <jms-service type="EMBEDDED" default-jms-host="default_JMS_host">
-        <jms-host name="default_JMS_host" host="localhost" port="%%%JMS_PROVIDER_PORT%%%" admin-user-name="admin" admin-password="admin" lazy-init="true"/>
-      </jms-service>
       <security-service>
         <auth-realm classname="com.sun.enterprise.security.auth.realm.file.FileRealm" name="admin-realm">
           <property value="${com.sun.aas.instanceRoot}/config/admin-keyfile" name="file" />
@@ -156,7 +143,6 @@
 		<jvm-options>-DANTLR_USE_DIRECT_CLASS_LOADING=true</jvm-options>
         <jvm-options>-Dcom.sun.enterprise.config.config_environment_factory_class=com.sun.enterprise.config.serverbeans.AppserverConfigEnvironmentFactory</jvm-options>
         <!-- Configure post startup bundle list here. This is a comma separated list of bundle sybolic names. -->
-        <jvm-options>-Dorg.glassfish.additionalOSGiBundlesToStart=org.apache.felix.shell,org.apache.felix.gogo.runtime,org.apache.felix.gogo.shell,org.apache.felix.gogo.command,org.apache.felix.shell.remote,org.apache.felix.fileinstall</jvm-options>
         <!-- Configuration of various third-party OSGi bundles like
              Felix Remote Shell, FileInstall, etc. -->
         <!-- Port on which remote shell listens for connections.-->
@@ -228,25 +214,12 @@
              </virtual-server>
              <virtual-server id="__asadmin" network-listeners="admin-listener" />
          </http-service>
-         <iiop-service>
-             <orb use-thread-pool-ids="thread-pool-1" />
-             <iiop-listener port="${IIOP_LISTENER_PORT}" id="orb-listener-1" address="0.0.0.0" />
-             <iiop-listener port="${IIOP_SSL_LISTENER_PORT}" id="SSL" address="0.0.0.0" security-enabled="true">
-                 <ssl classname="com.sun.enterprise.security.ssl.GlassfishSSLImpl" cert-nickname="s1as" />
-             </iiop-listener>
-             <iiop-listener port="${IIOP_SSL_MUTUALAUTH_PORT}" id="SSL_MUTUALAUTH" address="0.0.0.0" security-enabled="true">
-                 <ssl classname="com.sun.enterprise.security.ssl.GlassfishSSLImpl" cert-nickname="s1as" client-auth-enabled="true" />
-             </iiop-listener>
-         </iiop-service>
          <admin-service system-jmx-connector-name="system" type="server">
              <!-- JSR 160  "system-jmx-connector" -->
              <jmx-connector address="0.0.0.0" auth-realm-name="admin-realm" name="system" port="${JMX_SYSTEM_CONNECTOR_PORT}" protocol="rmi_jrmp" security-enabled="false"/>
              <!-- JSR 160  "system-jmx-connector" -->
              <property value="${com.sun.aas.installRoot}/lib/install/applications/admingui.war" name="adminConsoleDownloadLocation" />
          </admin-service>
-         <jms-service type="EMBEDDED" default-jms-host="default_JMS_host" addresslist-behavior="priority">
-             <jms-host name="default_JMS_host" host="localhost" port="${JMS_PROVIDER_PORT}" admin-user-name="admin" admin-password="admin" lazy-init="true"/>
-         </jms-service>
          <log-service log-rotation-limit-in-bytes="2000000" file="${com.sun.aas.instanceRoot}/logs/server.log">
              <module-log-levels />
          </log-service>
@@ -299,7 +272,7 @@
                  </provider-config>
              </message-security-config>
          </security-service>
-         <diagnostic-service />
+         <diagnostic-service/>
          <java-config debug-options="-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=${JAVA_DEBUGGER_PORT}" system-classpath="" classpath-suffix="">
              <jvm-options>-XX:MaxPermSize=192m</jvm-options>
              <jvm-options>-server</jvm-options>
@@ -319,7 +292,6 @@
              <jvm-options>-Xmx512m</jvm-options>
              <!-- Configure post startup bundle list here. This is a comma separated list of bundle sybolic names.
                   The remote shell bundle has been disabled for cluster and remote instances. -->
-             <jvm-options>-Dorg.glassfish.additionalOSGiBundlesToStart=org.apache.felix.shell,org.apache.felix.gogo.runtime,org.apache.felix.gogo.shell,org.apache.felix.gogo.command,org.apache.felix.fileinstall</jvm-options>
              <!-- Port on which remote shell listens for connections.-->
              <jvm-options>-Dosgi.shell.telnet.port=${OSGI_SHELL_TELNET_PORT}</jvm-options>
              <!-- How many concurrent users can connect to this remote shell -->
@@ -345,10 +317,8 @@
              -->
              <jvm-options>-Dfelix.fileinstall.disableConfigSave=false</jvm-options>
              <!-- End of OSGi bundle configurations -->
-        </java-config>
-         <availability-service>
-             <jms-availability/>
-         </availability-service>
+         </java-config>
+         <availability-service/>
          <network-config>
              <protocols>
                  <protocol name="http-listener-1">
@@ -382,14 +352,9 @@
              <thread-pool max-thread-pool-size="200" idle-thread-timeout-in-seconds="120" name="thread-pool-1" />
          </thread-pools>
          <group-management-service/>
-         <management-rules />
          <system-property name="ASADMIN_LISTENER_PORT" value="24848"/>
          <system-property name="HTTP_LISTENER_PORT" value="28080"/>
          <system-property name="HTTP_SSL_LISTENER_PORT" value="28181"/>
-         <system-property name="JMS_PROVIDER_PORT" value="27676"/>
-         <system-property name="IIOP_LISTENER_PORT" value="23700"/>
-         <system-property name="IIOP_SSL_LISTENER_PORT" value="23820"/>
-         <system-property name="IIOP_SSL_MUTUALAUTH_PORT" value="23920"/>
          <system-property name="JMX_SYSTEM_CONNECTOR_PORT" value="28686"/>
          <system-property name="OSGI_SHELL_TELNET_PORT" value="26666"/>
          <system-property name="JAVA_DEBUGGER_PORT" value="29009"/>

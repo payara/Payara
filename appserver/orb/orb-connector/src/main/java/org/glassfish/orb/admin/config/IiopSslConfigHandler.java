@@ -41,8 +41,8 @@ package org.glassfish.orb.admin.config;
 
 import com.sun.enterprise.admin.commands.CreateSsl;
 import com.sun.enterprise.admin.commands.DeleteSsl;
-import com.sun.enterprise.config.serverbeans.IiopListener;
-import com.sun.enterprise.config.serverbeans.IiopService;
+import org.glassfish.orb.admin.config.IiopListener;
+import org.glassfish.orb.admin.config.IiopService;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.api.ActionReport;
 import org.glassfish.grizzly.config.dom.Ssl;
@@ -68,7 +68,7 @@ public class IiopSslConfigHandler implements SslConfigHandler {
 
     @Override
     public void create(final CreateSsl command, ActionReport report) {
-       IiopService iiopService = command.config.getIiopService();
+       IiopService iiopService = command.config.getExtensionByType(IiopService.class);
         // ensure we have the specified listener
         IiopListener iiopListener = null;
         for (IiopListener listener : iiopService.getIiopListener()) {
@@ -112,7 +112,7 @@ public class IiopSslConfigHandler implements SslConfigHandler {
     @Override
     public void delete(DeleteSsl command, ActionReport report) {
 
-        IiopService iiopService = command.config.getIiopService();
+        IiopService iiopService = command.config.getExtensionByType(IiopService.class);
         IiopListener iiopListener = null;
         for (IiopListener listener : iiopService.getIiopListener()) {
             if (listener.getId().equals(command.listenerId)) {

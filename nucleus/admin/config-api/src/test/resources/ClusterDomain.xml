@@ -57,16 +57,6 @@
         <virtual-server id="server" network-listeners="http-listener-1,http-listener-2" />
         <virtual-server id="__asadmin" network-listeners="admin-listener" />
       </http-service>
-      <iiop-service>
-        <orb use-thread-pool-ids="thread-pool-1" />
-        <iiop-listener id="orb-listener-1" port="3700" address="0.0.0.0" lazy-init="true" />
-        <iiop-listener id="SSL" port="3820" address="0.0.0.0" security-enabled="true">
-          <ssl cert-nickname="s1as" />
-        </iiop-listener>
-        <iiop-listener id="SSL_MUTUALAUTH" port="3920" address="0.0.0.0" security-enabled="true">
-          <ssl cert-nickname="s1as" client-auth-enabled="true" />
-        </iiop-listener>
-      </iiop-service>
       <admin-service system-jmx-connector-name="system" type="das-and-server">
         <jmx-connector port="8686" address="0.0.0.0" security-enabled="false" name="system" auth-realm-name="admin-realm" />
         <das-config dynamic-reload-enabled="true" autodeploy-dir="${com.sun.aas.instanceRoot}/autodeploy" autodeploy-enabled="true" />
@@ -74,9 +64,6 @@
         <property name="adminConsoleDownloadLocation" value="${com.sun.aas.installRoot}/lib/install/applications/admingui.war" />
         <property name="ipsRoot" value="${com.sun.aas.installRoot}/.." />
       </admin-service>
-      <jms-service default-jms-host="default_JMS_host" type="EMBEDDED">
-        <jms-host host="localhost" name="default_JMS_host" lazy-init="true" />
-      </jms-service>
       <security-service>
         <auth-realm name="admin-realm" classname="com.sun.enterprise.security.auth.realm.file.FileRealm">
           <property name="file" value="${com.sun.aas.instanceRoot}/config/admin-keyfile" />
@@ -198,16 +185,6 @@
         <virtual-server id="server" network-listeners="http-listener-1,http-listener-2" />
         <virtual-server id="__asadmin" network-listeners="admin-listener" />
       </http-service>
-      <iiop-service>
-        <orb use-thread-pool-ids="thread-pool-1" />
-        <iiop-listener port="3700" id="orb-listener-1" address="0.0.0.0" lazy-init="true" />
-        <iiop-listener port="3820" id="SSL" address="0.0.0.0" security-enabled="true">
-          <ssl cert-nickname="s1as" />
-        </iiop-listener>
-        <iiop-listener port="3920" id="SSL_MUTUALAUTH" address="0.0.0.0" security-enabled="true">
-          <ssl cert-nickname="s1as" client-auth-enabled="true" />
-        </iiop-listener>
-      </iiop-service>
       <admin-service system-jmx-connector-name="system" type="das-and-server">
         <jmx-connector port="8686" address="0.0.0.0" security-enabled="false" auth-realm-name="admin-realm" name="system" />
         <das-config dynamic-reload-enabled="true" autodeploy-dir="${com.sun.aas.instanceRoot}/autodeploy" autodeploy-enabled="true" />
@@ -215,9 +192,6 @@
         <property name="adminConsoleDownloadLocation" value="${com.sun.aas.installRoot}/lib/install/applications/admingui.war" />
         <property name="ipsRoot" value="${com.sun.aas.installRoot}/.." />
       </admin-service>
-      <jms-service default-jms-host="default_JMS_host" type="EMBEDDED">
-        <jms-host host="localhost" name="default_JMS_host" lazy-init="true" />
-      </jms-service>
       <security-service>
         <auth-realm classname="com.sun.enterprise.security.auth.realm.file.FileRealm" name="admin-realm">
           <property name="file" value="${com.sun.aas.instanceRoot}/config/admin-keyfile" />
@@ -339,16 +313,6 @@
         <virtual-server id="server" network-listeners="http-listener-1,http-listener-2" />
         <virtual-server id="__asadmin" network-listeners="admin-listener" />
       </http-service>
-      <iiop-service>
-        <orb use-thread-pool-ids="thread-pool-1" />
-        <iiop-listener port="3700" id="orb-listener-1" address="0.0.0.0" lazy-init="true" />
-        <iiop-listener port="3820" id="SSL" address="0.0.0.0" security-enabled="true">
-          <ssl cert-nickname="s1as" />
-        </iiop-listener>
-        <iiop-listener port="3920" id="SSL_MUTUALAUTH" address="0.0.0.0" security-enabled="true">
-          <ssl cert-nickname="s1as" client-auth-enabled="true" />
-        </iiop-listener>
-      </iiop-service>
       <admin-service system-jmx-connector-name="system" type="das-and-server">
         <jmx-connector port="8686" address="0.0.0.0" security-enabled="false" auth-realm-name="admin-realm" name="system" />
         <das-config dynamic-reload-enabled="true" autodeploy-dir="${com.sun.aas.instanceRoot}/autodeploy" autodeploy-enabled="true" />
@@ -356,9 +320,6 @@
         <property name="adminConsoleDownloadLocation" value="${com.sun.aas.installRoot}/lib/install/applications/admingui.war" />
         <property name="ipsRoot" value="${com.sun.aas.installRoot}/.." />
       </admin-service>
-      <jms-service default-jms-host="default_JMS_host" type="EMBEDDED">
-        <jms-host host="localhost" name="default_JMS_host" lazy-init="true" />
-      </jms-service>
       <security-service>
         <auth-realm classname="com.sun.enterprise.security.auth.realm.file.FileRealm" name="admin-realm">
           <property name="file" value="${com.sun.aas.instanceRoot}/config/admin-keyfile" />

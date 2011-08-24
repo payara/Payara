@@ -54,7 +54,6 @@ import com.sun.enterprise.config.serverbeans.customvalidators.NotDuplicateTarget
 import com.sun.enterprise.config.serverbeans.customvalidators.NotTargetKeyword;
 import com.sun.enterprise.config.util.ServerHelper;
 import com.sun.hk2.component.ExistingSingletonInhabitant;
-import org.glassfish.api.admin.config.*;
 import static org.glassfish.config.support.Constants.NAME_SERVER_REGEX;
 
 import org.jvnet.hk2.config.types.Property;
@@ -64,6 +63,7 @@ import org.glassfish.grizzly.config.dom.NetworkConfig;
 import org.glassfish.grizzly.config.dom.NetworkListener;
 import org.glassfish.quality.ToDo;
 import org.glassfish.server.ServerEnvironmentImpl;
+import org.glassfish.api.admin.config.*;
 import org.jvnet.hk2.component.Injectable;
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.ConfigBean;
@@ -84,16 +84,9 @@ import org.jvnet.hk2.config.ConfigSupport;
 
 /* @XmlType(name = "", propOrder = {
     "httpService",
-    "iiopService",
     "adminService",
-    "connectorService",
-    "webContainer",
-    "ejbContainer",
-    "mdbContainer",
-    "jmsService",
     "logService",
     "securityService",
-    "transactionService",
     "monitoringService",
     "diagnosticService",
     "javaConfig",
@@ -177,23 +170,6 @@ public interface Config extends ConfigBeanProxy, Injectable, Named, PropertyBag,
      *              {@link HttpService }
      */
     void setHttpService(HttpService value) throws PropertyVetoException;
-
-    /**
-     * Gets the value of the iiopService property.
-     *
-     * @return possible object is
-     *         {@link IiopService }
-     */
-    @Element(required=true)
-    IiopService getIiopService();
-
-    /**
-     * Sets the value of the iiopService property.
-     *
-     * @param value allowed object is
-     *              {@link IiopService }
-     */
-    void setIiopService(IiopService value) throws PropertyVetoException;
 
     /**
      * Gets the value of the adminService property.
@@ -492,11 +468,9 @@ public interface Config extends ConfigBeanProxy, Injectable, Named, PropertyBag,
             ConfigBeanProxy dirref[] = {
                 c.getAdminService(),
                 c.getAvailabilityService(),
-                //c.getConnectorService(),
                 c.getDiagnosticService(),
                 c.getGroupManagementService(),
                 c.getHttpService(),
-                c.getIiopService(),
                 c.getJavaConfig(),
                 c.getLogService(),
                 c.getMonitoringService(),

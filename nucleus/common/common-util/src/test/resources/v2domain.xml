@@ -141,9 +141,6 @@
         <ejb-timer-service max-redeliveries="1" minimum-delivery-interval-in-millis="7000" redelivery-interval-internal-in-millis="5000"/>
       </ejb-container>
       <mdb-container idle-timeout-in-seconds="600" max-pool-size="32" pool-resize-quantity="8" steady-pool-size="0"/>
-      <jms-service addresslist-behavior="random" addresslist-iterations="3" default-jms-host="default_JMS_host" init-timeout-in-seconds="60" reconnect-attempts="3" reconnect-enabled="true" reconnect-interval-in-seconds="5" type="EMBEDDED">
-        <jms-host admin-password="admin" admin-user-name="admin" host="mandarb.local" name="default_JMS_host" port="7676"/>
-      </jms-service>
       <log-service alarms="false" file="${com.sun.aas.instanceRoot}/logs/server.log" log-rotation-limit-in-bytes="2000000" log-rotation-timelimit-in-minutes="0" log-to-console="false" retain-error-statistics-for-hours="5" use-system-logging="false">
         <module-log-levels admin="INFO" classloader="INFO" cmp="INFO" cmp-container="INFO" configuration="INFO" connector="INFO" corba="INFO" deployment="INFO" ejb-container="INFO" group-management-service="INFO" javamail="INFO" jaxr="INFO" jaxrpc="INFO" jdo="INFO" jms="INFO" jta="INFO" jts="INFO" management-event="INFO" mdb-container="INFO" naming="INFO" node-agent="INFO" resource-adapter="INFO" root="INFO" saaj="INFO" security="INFO" self-management="INFO" server="INFO" synchronization="INFO" util="INFO" verifier="INFO" web-container="INFO"/>
       </log-service>
@@ -202,7 +199,6 @@
           </provider-config>
         </message-security-config>
       </security-service>
-      <transaction-service automatic-recovery="false" heuristic-decision="rollback" keypoint-interval="65536" retry-timeout-in-seconds="600" timeout-in-seconds="0" tx-log-dir="${com.sun.aas.instanceRoot}/logs"/>
       <monitoring-service>
         <module-monitoring-levels connector-connection-pool="OFF" connector-service="OFF" ejb-container="OFF" http-service="OFF" jdbc-connection-pool="OFF" jms-service="OFF" jvm="OFF" orb="OFF" thread-pool="OFF" transaction-service="OFF" web-container="OFF"/>
       </monitoring-service>
@@ -234,7 +230,6 @@
       <thread-pools>
         <thread-pool idle-thread-timeout-in-seconds="120" max-thread-pool-size="200" min-thread-pool-size="0" num-work-queues="1" thread-pool-id="thread-pool-1"/>
       </thread-pools>
-      <management-rules enabled="true">
   </management-rules>
     </config>
     <!-- config model with name "server-config" ends -->

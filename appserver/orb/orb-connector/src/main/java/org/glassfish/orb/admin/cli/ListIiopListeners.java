@@ -54,8 +54,8 @@ import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.component.PerLookup;
 
-import com.sun.enterprise.config.serverbeans.IiopListener;
-import com.sun.enterprise.config.serverbeans.IiopService;
+import org.glassfish.orb.admin.config.IiopListener;
+import org.glassfish.orb.admin.config.IiopService;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
 
@@ -106,7 +106,7 @@ public class ListIiopListeners implements AdminCommand {
         final ActionReport report = context.getActionReport();
         final Target targetUtil = habitat.getComponent(Target.class ) ;
         final Config config = targetUtil.getConfig(target) ;
-        final IiopService iiopService = config.getIiopService();
+        final IiopService iiopService = config.getExtensionByType(IiopService.class);
 
         try {
             List<IiopListener> listenerList = iiopService.getIiopListener();

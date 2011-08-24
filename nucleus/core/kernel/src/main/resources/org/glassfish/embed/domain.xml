@@ -67,16 +67,6 @@
         <access-log rotation-interval-in-minutes="15" rotation-suffix="yyyy-MM-dd" />
 	<virtual-server id="server" network-listeners="http-listener, https-listener" />
       </http-service>
-      <iiop-service>
-        <orb use-thread-pool-ids="thread-pool-1" />
-        <iiop-listener address="0.0.0.0" port="3700" id="orb-listener-1" />
-        <iiop-listener security-enabled="true" address="0.0.0.0" port="3820" id="SSL">
-          <ssl classname="com.sun.enterprise.security.ssl.GlassfishSSLImpl" cert-nickname="s1as" />
-        </iiop-listener>
-        <iiop-listener security-enabled="true" address="0.0.0.0" port="3920" id="SSL_MUTUALAUTH">
-          <ssl classname="com.sun.enterprise.security.ssl.GlassfishSSLImpl" cert-nickname="s1as" client-auth-enabled="true" />
-        </iiop-listener>
-      </iiop-service>
       <admin-service type="das-and-server" system-jmx-connector-name="system">
         <jmx-connector enabled="false" auth-realm-name="admin-realm" security-enabled="false" address="0.0.0.0" port="8686" name="system" />
         <das-config autodeploy-enabled="false" dynamic-reload-enabled="true" deploy-xml-validation="full" autodeploy-dir="${com.sun.aas.instanceRoot}/autodeploy" />
@@ -91,9 +81,6 @@
       </ejb-container>
       <mdb-container steady-pool-size="0" max-pool-size="32" pool-resize-quantity="8" >
       </mdb-container>
-      <jms-service type="EMBEDDED" default-jms-host="default_JMS_host">
-        <jms-host name="default_JMS_host" host="localhost" port="7676" admin-user-name="admin" admin-password="admin" lazy-init="false"/>
-      </jms-service>
       <log-service file="${com.sun.aas.instanceRoot}/logs/server.log" log-rotation-limit-in-bytes="2000000">
         <module-log-levels />
       </log-service>
@@ -153,8 +140,6 @@
       <monitoring-service>
         <module-monitoring-levels />
       </monitoring-service>      
-      <transaction-service tx-log-dir="${com.sun.aas.instanceRoot}/logs" >
-      </transaction-service>
       <java-config>
 	<jvm-options>-Djavax.net.ssl.keyStore=${com.sun.aas.instanceRoot}/config/keystore.jks</jvm-options>
         <jvm-options>-Djavax.net.ssl.trustStore=${com.sun.aas.instanceRoot}/config/cacerts.jks</jvm-options>

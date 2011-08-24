@@ -41,29 +41,11 @@
 -->
 
 <domain log-root="${com.sun.aas.instanceRoot}/logs" application-root="${com.sun.aas.instanceRoot}/applications" version="10.0">
-  <system-applications />
-  <applications />
-  <resources>
-    <jdbc-resource pool-name="__TimerPool" jndi-name="jdbc/__TimerPool" object-type="system-admin" />
-    <jdbc-resource pool-name="DerbyPool" jndi-name="jdbc/__default" />
-    <jdbc-connection-pool name="__TimerPool" datasource-classname="org.apache.derby.jdbc.EmbeddedXADataSource" res-type="javax.sql.XADataSource">
-      <property value="${com.sun.aas.instanceRoot}/lib/databases/ejbtimer" name="databaseName" />
-      <property value=";create=true" name="connectionAttributes" />
-    </jdbc-connection-pool>
-    <jdbc-connection-pool is-isolation-level-guaranteed="false" name="DerbyPool" datasource-classname="org.apache.derby.jdbc.ClientDataSource" res-type="javax.sql.DataSource">
-      <property value="1527" name="PortNumber" />
-      <property value="APP" name="Password" />
-      <property value="APP" name="User" />
-      <property value="localhost" name="serverName" />
-      <property value="sun-appserv-samples" name="DatabaseName" />
-      <property value=";create=true" name="connectionAttributes" />
-    </jdbc-connection-pool>
-  </resources>
+  <system-applications/>
+  <applications/>
+  <resources/>
   <servers>
-    <server config-ref="server-config" name="server">
-      <resource-ref ref="jdbc/__TimerPool" />
-      <resource-ref ref="jdbc/__default" />
-    </server>
+    <server config-ref="server-config" name="server"/>
   </servers>
   <configs>
     <config name="server-config">
@@ -93,16 +75,6 @@
         <http-file-cache file-caching-enabled="false" globally-enabled="false" />
         <property value="false" name="accessLoggingEnabled" />
       </http-service>
-      <iiop-service>
-        <orb use-thread-pool-ids="thread-pool-1" />
-        <iiop-listener address="0.0.0.0" port="3700" id="orb-listener-1" />
-        <iiop-listener security-enabled="true" address="0.0.0.0" port="3820" id="SSL">
-          <ssl cert-nickname="s1as" />
-        </iiop-listener>
-        <iiop-listener security-enabled="true" address="0.0.0.0" port="3920" id="SSL_MUTUALAUTH">
-          <ssl cert-nickname="s1as" client-auth-enabled="true" />
-        </iiop-listener>
-      </iiop-service>
       <admin-service type="das-and-server" system-jmx-connector-name="system">
         <jmx-connector auth-realm-name="admin-realm" security-enabled="false" address="0.0.0.0" port="8686" name="system" />
         <das-config autodeploy-enabled="true" dynamic-reload-enabled="true" deploy-xml-validation="full" autodeploy-dir="${com.sun.aas.instanceRoot}/autodeploy" />
@@ -110,23 +82,6 @@
         <property value="${com.sun.aas.installRoot}/lib/install/applications/admingui.war" name="adminConsoleDownloadLocation" />
         <property value="${com.sun.aas.installRoot}/.." name="ipsRoot" />
       </admin-service>
-      <web-container>
-        <session-config>
-          <session-manager>
-            <manager-properties />
-            <store-properties />
-          </session-manager>
-          <session-properties />
-        </session-config>
-      </web-container>
-      <ejb-container steady-pool-size="0" max-pool-size="32" session-store="${com.sun.aas.instanceRoot}/session-store" pool-resize-quantity="8">
-        <ejb-timer-service />
-      </ejb-container>
-      <mdb-container steady-pool-size="0" max-pool-size="32" pool-resize-quantity="8" >
-      </mdb-container>
-      <jms-service type="EMBEDDED" default-jms-host="default_JMS_host">
-        <jms-host name="default_JMS_host" host="localhost" port="7676" />
-      </jms-service>
       <log-service file="${com.sun.aas.instanceRoot}/logs/server.log" log-rotation-limit-in-bytes="2000000">
         <module-log-levels />
       </log-service>
@@ -182,8 +137,6 @@
           </provider-config>
         </message-security-config>
       </security-service>
-      <transaction-service tx-log-dir="${com.sun.aas.instanceRoot}/logs" >
-      </transaction-service>
       <monitoring-service>
         <module-monitoring-levels />
       </monitoring-service>

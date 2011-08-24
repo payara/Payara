@@ -88,7 +88,6 @@ public class SecurityUpgradeService implements ConfigurationUpgrade, PostConstru
 
     private static final String JDBC_REALM_CLASSNAME = "com.sun.enterprise.security.ee.auth.realm.jdbc.JDBCRealm";
     public static final String PARAM_DIGEST_ALGORITHM = "digest-algorithm";
-    private static final String GF_SSL_IMPL_NAME = "com.sun.enterprise.security.ssl.GlassfishSSLImpl";
     private static final Logger _logger = LogDomains.getLogger(SecurityUpgradeService.class, LogDomains.SECURITY_LOGGER);
 
     private static final LocalStringManagerImpl localStrings =
@@ -101,7 +100,6 @@ public class SecurityUpgradeService implements ConfigurationUpgrade, PostConstru
             if (service != null) {
                 upgradeJACCProvider(service);
             }
-            populateSSLElement(config);
         }
 
         //Clear up the old policy files for applications
@@ -163,32 +161,6 @@ public class SecurityUpgradeService implements ConfigurationUpgrade, PostConstru
                     + "Please refer to the v3.1 Upgrade Guide for details."));
         }
 
-        //Fix for issue 14950 the classname attribute
-        //should be added to jmx-connector elements
-        // of the admin-service in the v3 instance during an
-        // upgrade from v2, if the v2 instance had the ssl
-        // sub-elements to the jmx-connector elements (in the admin-service )
-        for (Config config : configs.getConfig()) {
-            AdminService service = config.getAdminService();
-            for( JmxConnector jmxConnector : service.getJmxConnector()){
-                Ssl sslElement = jmxConnector.getSsl();
-                if(sslElement != null) {
-                    try {
-                        ConfigSupport.apply(new SingleConfigCode<Ssl>() {
-                            public Object run(Ssl ssl) throws PropertyVetoException,
-                                    TransactionFailure {
-                                ssl.setClassname(GF_SSL_IMPL_NAME);
-                                return null;
-                            }
-                        }, sslElement);
-                    } catch (TransactionFailure tf) {
-                        _logger.log(Level.SEVERE, "security_upgrade_service_exception", tf);
-                        throw new RuntimeException(tf);
-                    }
-                }
-            }
-        }
-
     }
 
 
@@ -212,28 +184,6 @@ public class SecurityUpgradeService implements ConfigurationUpgrade, PostConstru
         }
 
         return false;
-    }
-
-    private void populateSSLElement(Config config) {
-        IiopService iiopService = config.getIiopService();
-        for (IiopListener listener : iiopService.getIiopListener()) {
-            Ssl sslElement = listener.getSsl();
-            if (sslElement != null) {
-                try {
-                    ConfigSupport.apply(new SingleConfigCode<Ssl>() {
-                        public Object run(Ssl ssl) throws PropertyVetoException,
-                                TransactionFailure {
-                            ssl.setClassname(GF_SSL_IMPL_NAME);
-                            return null;
-                        }
-                    }, sslElement);
-                } catch (TransactionFailure tf) {
-                    _logger.log(Level.SEVERE, "security_upgrade_service_exception", tf);
-                    throw new RuntimeException(tf);
-                }
-            }
-        }
-        
     }
 
     private void upgradeJACCProvider(SecurityService securityService) {

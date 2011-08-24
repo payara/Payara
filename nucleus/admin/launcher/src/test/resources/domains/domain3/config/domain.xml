@@ -91,16 +91,6 @@
         <virtual-server id="server" network-listeners="http-listener-1,http-listener-2"></virtual-server>
         <virtual-server id="__asadmin" network-listeners="admin-listener"></virtual-server>
       </http-service>
-      <iiop-service>
-        <orb use-thread-pool-ids="thread-pool-1"></orb>
-        <iiop-listener port="3700" id="orb-listener-1" address="0.0.0.0"></iiop-listener>
-        <iiop-listener port="3820" id="SSL" address="0.0.0.0" security-enabled="true">
-          <ssl cert-nickname="s1as"></ssl>
-        </iiop-listener>
-        <iiop-listener port="3920" id="SSL_MUTUALAUTH" address="0.0.0.0" security-enabled="true">
-          <ssl cert-nickname="s1as" client-auth-enabled="true"></ssl>
-        </iiop-listener>
-      </iiop-service>
       <admin-service system-jmx-connector-name="system" type="das-and-server">
         <jmx-connector port="8686" address="0.0.0.0" security-enabled="false" name="system" auth-realm-name="admin-realm"></jmx-connector>
         <das-config dynamic-reload-enabled="true" deploy-xml-validation="full" autodeploy-dir="${com.sun.aas.instanceRoot}/autodeploy" autodeploy-enabled="true"></das-config>
@@ -118,9 +108,6 @@
         <ejb-timer-service></ejb-timer-service>
       </ejb-container>
       <mdb-container max-pool-size="32" pool-resize-quantity="8" steady-pool-size="0"></mdb-container>
-      <jms-service default-jms-host="default_JMS_host" type="EMBEDDED">
-        <jms-host host="laturbie.sfbay.sun.com" name="default_JMS_host"></jms-host>
-      </jms-service>
       <log-service log-rotation-limit-in-bytes="2000000" file="${com.sun.aas.instanceRoot}/logs/server.log">
         <module-log-levels></module-log-levels>
       </log-service>
@@ -175,7 +162,6 @@
           </provider-config>
         </message-security-config>
       </security-service>
-      <transaction-service tx-log-dir="${com.sun.aas.instanceRoot}/logs"></transaction-service>
       <monitoring-service>
         <module-monitoring-levels></module-monitoring-levels>
       </monitoring-service>
@@ -198,7 +184,6 @@
       <thread-pools>
         <thread-pool thread-pool-id="thread-pool-1"></thread-pool>
       </thread-pools>
-      <management-rules enabled="true"></management-rules>
       <network-config>
         <protocols>
           <protocol name="http-listener-1">

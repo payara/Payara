@@ -151,9 +151,6 @@
      <ejb-timer-service minimum-delivery-interval-in-millis="7000" max-redeliveries="1" redelivery-interval-internal-in-millis="5000"/>
    </ejb-container>
    <mdb-container steady-pool-size="0" pool-resize-quantity="8" max-pool-size="32" idle-timeout-in-seconds="600"/>
-   <jms-service init-timeout-in-seconds="60" type="EMBEDDED" default-jms-host="default_JMS_host" reconnect-interval-in-seconds="5" reconnect-attempts="3" reconnect-enabled="true" addresslist-behavior="random" addresslist-iterations="3">
-    <jms-host name="default_JMS_host" host="laturbie.sfbay.sun.com" port="7676" admin-user-name="admin" admin-password="admin"/>
-   </jms-service>
    <log-service file="${com.sun.aas.instanceRoot}/logs/server.log" use-system-logging="false" log-to-console="false" alarms="false" log-rotation-limit-in-bytes="2000000" log-rotation-timelimit-in-minutes="0" retain-error-statistics-for-hours="5">
     <module-log-levels root="INFO" server="INFO" ejb-container="INFO" cmp-container="INFO" mdb-container="INFO" web-container="INFO" classloader="INFO" configuration="INFO" naming="INFO" security="INFO" admin="INFO" jts="INFO" jta="INFO" deployment="INFO" verifier="INFO" jaxr="INFO" jaxrpc="INFO" saaj="INFO" corba="INFO" javamail="INFO" jms="INFO" connector="INFO" jdo="INFO" cmp="INFO" util="INFO" resource-adapter="INFO" synchronization="INFO" node-agent="INFO" self-management="INFO" group-management-service="INFO" management-event="INFO"/>
    </log-service>
@@ -212,7 +209,6 @@
          </provider-config>
        </message-security-config> 
    </security-service>
-   <transaction-service automatic-recovery="false" timeout-in-seconds="0" tx-log-dir="${com.sun.aas.instanceRoot}/logs" heuristic-decision="rollback" keypoint-interval="2048" retry-timeout-in-seconds="600"/>
     <monitoring-service>
 	<module-monitoring-levels thread-pool="OFF" orb="OFF" ejb-container="OFF" web-container="OFF" transaction-service="OFF" http-service="OFF" jdbc-connection-pool="OFF" connector-connection-pool="OFF" connector-service="OFF" jms-service="OFF" jvm="OFF"/>
     </monitoring-service>
@@ -229,7 +225,6 @@
         <thread-pool thread-pool-id="thread-pool-1" min-thread-pool-size="0" max-thread-pool-size="200" idle-thread-timeout-in-seconds="120" num-work-queues="1"/>
 
     </thread-pools>
-  <management-rules enabled="true">
   </management-rules>
   </config> <!-- config model with name "server-config" ends -->
  </configs>

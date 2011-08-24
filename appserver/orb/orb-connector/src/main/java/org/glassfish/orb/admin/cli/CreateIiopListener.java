@@ -60,8 +60,8 @@ import org.jvnet.hk2.config.types.Property;
 
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Configs;
-import com.sun.enterprise.config.serverbeans.IiopListener;
-import com.sun.enterprise.config.serverbeans.IiopService;
+import org.glassfish.orb.admin.config.IiopListener;
+import org.glassfish.orb.admin.config.IiopService;
 
 import com.sun.enterprise.config.serverbeans.Servers;
 import com.sun.enterprise.util.LocalStringManagerImpl;
@@ -133,7 +133,7 @@ public class CreateIiopListener implements AdminCommand {
         final Config config = targetUtil.getConfig(target ) ;
         final ActionReport report = context.getActionReport();
 
-        IiopService iiopService = config.getIiopService();
+        IiopService iiopService = config.getExtensionByType(IiopService.class);
 
         // ensure we don't already have one of this name
         // check port uniqueness, only for same address

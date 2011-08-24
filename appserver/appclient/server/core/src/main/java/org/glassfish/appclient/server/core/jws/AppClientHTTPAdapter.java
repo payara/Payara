@@ -40,8 +40,8 @@
 
 package org.glassfish.appclient.server.core.jws;
 
-import com.sun.enterprise.config.serverbeans.IiopListener;
-import com.sun.enterprise.config.serverbeans.IiopService;
+import org.glassfish.orb.admin.config.IiopListener;
+import org.glassfish.orb.admin.config.IiopService;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;

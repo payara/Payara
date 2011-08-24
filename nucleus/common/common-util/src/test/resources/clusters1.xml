@@ -110,16 +110,6 @@
         <virtual-server id="server" network-listeners="http-listener-1,http-listener-2"></virtual-server>
         <virtual-server id="__asadmin" network-listeners="admin-listener"></virtual-server>
       </http-service>
-      <iiop-service>
-        <orb use-thread-pool-ids="thread-pool-1"></orb>
-        <iiop-listener port="3700" id="orb-listener-1" address="0.0.0.0" lazy-init="true"></iiop-listener>
-        <iiop-listener port="3820" id="SSL" address="0.0.0.0" security-enabled="true">
-          <ssl classname="com.sun.enterprise.security.ssl.GlassfishSSLImpl" cert-nickname="s1as"></ssl>
-        </iiop-listener>
-        <iiop-listener port="3920" id="SSL_MUTUALAUTH" address="0.0.0.0" security-enabled="true">
-          <ssl classname="com.sun.enterprise.security.ssl.GlassfishSSLImpl" cert-nickname="s1as" client-auth-enabled="true"></ssl>
-        </iiop-listener>
-      </iiop-service>
       <admin-service system-jmx-connector-name="system" type="das-and-server">
         <jmx-connector port="8686" address="0.0.0.0" security-enabled="false" auth-realm-name="admin-realm" name="system"></jmx-connector>
         <property name="adminConsoleContextRoot" value="/admin"></property>
@@ -141,9 +131,6 @@
         <ejb-timer-service></ejb-timer-service>
       </ejb-container>
       <mdb-container></mdb-container>
-      <jms-service default-jms-host="default_JMS_host" type="EMBEDDED">
-        <jms-host host="localhost" name="default_JMS_host"></jms-host>
-      </jms-service>
       <security-service>
         <auth-realm classname="com.sun.enterprise.security.auth.realm.file.FileRealm" name="admin-realm">
           <property name="file" value="${com.sun.aas.instanceRoot}/config/admin-keyfile"></property>
@@ -206,7 +193,6 @@
         </message-security-config>
         <property name="default-digest-algorithm" value="SHA-256"></property>
       </security-service>
-      <transaction-service tx-log-dir="${com.sun.aas.instanceRoot}/logs"></transaction-service>
       <java-config debug-options="-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=9009" system-classpath="" classpath-suffix="">
         <jvm-options>-XX:MaxPermSize=192m</jvm-options>
         <jvm-options>-client</jvm-options>
@@ -285,16 +271,6 @@
         </virtual-server>
         <virtual-server id="__asadmin" network-listeners="admin-listener"></virtual-server>
       </http-service>
-      <iiop-service>
-        <orb use-thread-pool-ids="thread-pool-1"></orb>
-        <iiop-listener port="${IIOP_LISTENER_PORT}" id="orb-listener-1" address="0.0.0.0"></iiop-listener>
-        <iiop-listener port="${IIOP_SSL_LISTENER_PORT}" id="SSL" address="0.0.0.0" security-enabled="true">
-          <ssl classname="com.sun.enterprise.security.ssl.GlassfishSSLImpl" cert-nickname="s1as"></ssl>
-        </iiop-listener>
-        <iiop-listener port="${IIOP_SSL_MUTUALAUTH_PORT}" id="SSL_MUTUALAUTH" address="0.0.0.0" security-enabled="true">
-          <ssl classname="com.sun.enterprise.security.ssl.GlassfishSSLImpl" cert-nickname="s1as" client-auth-enabled="true"></ssl>
-        </iiop-listener>
-      </iiop-service>
       <admin-service system-jmx-connector-name="system">
         <jmx-connector port="${JMX_SYSTEM_CONNECTOR_PORT}" address="0.0.0.0" security-enabled="false" auth-realm-name="admin-realm" name="system"></jmx-connector>
         <property name="adminConsoleDownloadLocation" value="${com.sun.aas.installRoot}/lib/install/applications/admingui.war"></property>
@@ -313,9 +289,6 @@
         <ejb-timer-service></ejb-timer-service>
       </ejb-container>
       <mdb-container></mdb-container>
-      <jms-service addresslist-behavior="priority" default-jms-host="default_JMS_host" type="EMBEDDED">
-        <jms-host port="${JMS_PROVIDER_PORT}" host="localhost" name="default_JMS_host"></jms-host>
-      </jms-service>
       <log-service log-rotation-limit-in-bytes="2000000" file="${com.sun.aas.instanceRoot}/logs/server.log">
         <module-log-levels></module-log-levels>
       </log-service>
@@ -371,7 +344,6 @@
           </provider-config>
         </message-security-config>
       </security-service>
-      <transaction-service tx-log-dir="${com.sun.aas.instanceRoot}/logs" automatic-recovery="true"></transaction-service>
       <diagnostic-service></diagnostic-service>
       <java-config debug-options="-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=${JAVA_DEBUGGER_PORT}" system-classpath="" classpath-suffix="">
         <jvm-options>-XX:MaxPermSize=192m</jvm-options>
@@ -443,7 +415,6 @@
       <group-management-service>
         <failure-detection></failure-detection>
       </group-management-service>
-      <management-rules></management-rules>
       <system-property name="ASADMIN_LISTENER_PORT" value="24848"></system-property>
       <system-property name="HTTP_LISTENER_PORT" value="28080"></system-property>
       <system-property name="HTTP_SSL_LISTENER_PORT" value="28181"></system-property>
@@ -467,16 +438,6 @@
         </virtual-server>
         <virtual-server id="__asadmin" network-listeners="admin-listener"></virtual-server>
       </http-service>
-      <iiop-service>
-        <orb use-thread-pool-ids="thread-pool-1"></orb>
-        <iiop-listener id="orb-listener-1" port="${IIOP_LISTENER_PORT}" address="0.0.0.0"></iiop-listener>
-        <iiop-listener id="SSL" port="${IIOP_SSL_LISTENER_PORT}" address="0.0.0.0" security-enabled="true">
-          <ssl classname="com.sun.enterprise.security.ssl.GlassfishSSLImpl" cert-nickname="s1as"></ssl>
-        </iiop-listener>
-        <iiop-listener id="SSL_MUTUALAUTH" port="${IIOP_SSL_MUTUALAUTH_PORT}" address="0.0.0.0" security-enabled="true">
-          <ssl classname="com.sun.enterprise.security.ssl.GlassfishSSLImpl" cert-nickname="s1as" client-auth-enabled="true"></ssl>
-        </iiop-listener>
-      </iiop-service>
       <admin-service system-jmx-connector-name="system">
         <jmx-connector port="${JMX_SYSTEM_CONNECTOR_PORT}" address="0.0.0.0" security-enabled="false" name="system" auth-realm-name="admin-realm"></jmx-connector>
         <property name="adminConsoleDownloadLocation" value="${com.sun.aas.installRoot}/lib/install/applications/admingui.war"></property>
@@ -495,9 +456,6 @@
         <ejb-timer-service></ejb-timer-service>
       </ejb-container>
       <mdb-container></mdb-container>
-      <jms-service addresslist-behavior="priority" default-jms-host="default_JMS_host" type="EMBEDDED">
-        <jms-host port="${JMS_PROVIDER_PORT}" host="localhost" name="default_JMS_host"></jms-host>
-      </jms-service>
       <log-service log-rotation-limit-in-bytes="2000000" file="${com.sun.aas.instanceRoot}/logs/server.log">
         <module-log-levels></module-log-levels>
       </log-service>
@@ -553,7 +511,6 @@
           </provider-config>
         </message-security-config>
       </security-service>
-      <transaction-service tx-log-dir="${com.sun.aas.instanceRoot}/logs" automatic-recovery="true"></transaction-service>
       <diagnostic-service></diagnostic-service>
       <java-config debug-options="-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=${JAVA_DEBUGGER_PORT}" system-classpath="" classpath-suffix="">
         <jvm-options>-XX:MaxPermSize=192m</jvm-options>
@@ -625,7 +582,6 @@
       <group-management-service>
         <failure-detection></failure-detection>
       </group-management-service>
-      <management-rules></management-rules>
       <system-property name="ASADMIN_LISTENER_PORT" value="24848"></system-property>
       <system-property name="HTTP_LISTENER_PORT" value="28080"></system-property>
       <system-property name="HTTP_SSL_LISTENER_PORT" value="28181"></system-property>
@@ -649,16 +605,6 @@
         </virtual-server>
         <virtual-server id="__asadmin" network-listeners="admin-listener"></virtual-server>
       </http-service>
-      <iiop-service>
-        <orb use-thread-pool-ids="thread-pool-1"></orb>
-        <iiop-listener id="orb-listener-1" port="${IIOP_LISTENER_PORT}" address="0.0.0.0"></iiop-listener>
-        <iiop-listener id="SSL" port="${IIOP_SSL_LISTENER_PORT}" address="0.0.0.0" security-enabled="true">
-          <ssl classname="com.sun.enterprise.security.ssl.GlassfishSSLImpl" cert-nickname="s1as"></ssl>
-        </iiop-listener>
-        <iiop-listener id="SSL_MUTUALAUTH" port="${IIOP_SSL_MUTUALAUTH_PORT}" address="0.0.0.0" security-enabled="true">
-          <ssl classname="com.sun.enterprise.security.ssl.GlassfishSSLImpl" cert-nickname="s1as" client-auth-enabled="true"></ssl>
-        </iiop-listener>
-      </iiop-service>
       <admin-service system-jmx-connector-name="system">
         <jmx-connector port="${JMX_SYSTEM_CONNECTOR_PORT}" address="0.0.0.0" security-enabled="false" name="system" auth-realm-name="admin-realm"></jmx-connector>
         <property name="adminConsoleDownloadLocation" value="${com.sun.aas.installRoot}/lib/install/applications/admingui.war"></property>
@@ -677,9 +623,6 @@
         <ejb-timer-service></ejb-timer-service>
       </ejb-container>
       <mdb-container></mdb-container>
-      <jms-service addresslist-behavior="priority" default-jms-host="default_JMS_host" type="EMBEDDED">
-        <jms-host port="${JMS_PROVIDER_PORT}" host="localhost" name="default_JMS_host"></jms-host>
-      </jms-service>
       <log-service log-rotation-limit-in-bytes="2000000" file="${com.sun.aas.instanceRoot}/logs/server.log">
         <module-log-levels></module-log-levels>
       </log-service>
@@ -735,7 +678,6 @@
           </provider-config>
         </message-security-config>
       </security-service>
-      <transaction-service tx-log-dir="${com.sun.aas.instanceRoot}/logs" automatic-recovery="true"></transaction-service>
       <diagnostic-service></diagnostic-service>
       <java-config debug-options="-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=${JAVA_DEBUGGER_PORT}" system-classpath="" classpath-suffix="">
         <jvm-options>-XX:MaxPermSize=192m</jvm-options>
@@ -807,7 +749,6 @@
       <group-management-service>
         <failure-detection></failure-detection>
       </group-management-service>
-      <management-rules></management-rules>
       <system-property name="ASADMIN_LISTENER_PORT" value="24848"></system-property>
       <system-property name="HTTP_LISTENER_PORT" value="28080"></system-property>
       <system-property name="HTTP_SSL_LISTENER_PORT" value="28181"></system-property>
@@ -831,16 +772,6 @@
         </virtual-server>
         <virtual-server id="__asadmin" network-listeners="admin-listener"></virtual-server>
       </http-service>
-      <iiop-service>
-        <orb use-thread-pool-ids="thread-pool-1"></orb>
-        <iiop-listener id="orb-listener-1" port="${IIOP_LISTENER_PORT}" address="0.0.0.0"></iiop-listener>
-        <iiop-listener id="SSL" port="${IIOP_SSL_LISTENER_PORT}" address="0.0.0.0" security-enabled="true">
-          <ssl classname="com.sun.enterprise.security.ssl.GlassfishSSLImpl" cert-nickname="s1as"></ssl>
-        </iiop-listener>
-        <iiop-listener id="SSL_MUTUALAUTH" port="${IIOP_SSL_MUTUALAUTH_PORT}" address="0.0.0.0" security-enabled="true">
-          <ssl classname="com.sun.enterprise.security.ssl.GlassfishSSLImpl" cert-nickname="s1as" client-auth-enabled="true"></ssl>
-        </iiop-listener>
-      </iiop-service>
       <admin-service system-jmx-connector-name="system">
         <jmx-connector port="${JMX_SYSTEM_CONNECTOR_PORT}" address="0.0.0.0" security-enabled="false" name="system" auth-realm-name="admin-realm"></jmx-connector>
         <property name="adminConsoleDownloadLocation" value="${com.sun.aas.installRoot}/lib/install/applications/admingui.war"></property>
@@ -859,9 +790,6 @@
         <ejb-timer-service></ejb-timer-service>
       </ejb-container>
       <mdb-container></mdb-container>
-      <jms-service addresslist-behavior="priority" default-jms-host="default_JMS_host" type="EMBEDDED">
-        <jms-host port="${JMS_PROVIDER_PORT}" host="localhost" name="default_JMS_host"></jms-host>
-      </jms-service>
       <log-service log-rotation-limit-in-bytes="2000000" file="${com.sun.aas.instanceRoot}/logs/server.log">
         <module-log-levels></module-log-levels>
       </log-service>
@@ -917,7 +845,6 @@
           </provider-config>
         </message-security-config>
       </security-service>
-      <transaction-service tx-log-dir="${com.sun.aas.instanceRoot}/logs" automatic-recovery="true"></transaction-service>
       <diagnostic-service></diagnostic-service>
       <java-config debug-options="-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=${JAVA_DEBUGGER_PORT}" system-classpath="" classpath-suffix="">
         <jvm-options>-XX:MaxPermSize=192m</jvm-options>
@@ -989,7 +916,6 @@
       <group-management-service>
         <failure-detection></failure-detection>
       </group-management-service>
-      <management-rules></management-rules>
       <system-property name="ASADMIN_LISTENER_PORT" value="24848"></system-property>
       <system-property name="HTTP_LISTENER_PORT" value="28080"></system-property>
       <system-property name="HTTP_SSL_LISTENER_PORT" value="28181"></system-property>
@@ -1013,16 +939,6 @@
         </virtual-server>
         <virtual-server id="__asadmin" network-listeners="admin-listener"></virtual-server>
       </http-service>
-      <iiop-service>
-        <orb use-thread-pool-ids="thread-pool-1"></orb>
-        <iiop-listener id="orb-listener-1" port="${IIOP_LISTENER_PORT}" address="0.0.0.0"></iiop-listener>
-        <iiop-listener id="SSL" port="${IIOP_SSL_LISTENER_PORT}" address="0.0.0.0" security-enabled="true">
-          <ssl classname="com.sun.enterprise.security.ssl.GlassfishSSLImpl" cert-nickname="s1as"></ssl>
-        </iiop-listener>
-        <iiop-listener id="SSL_MUTUALAUTH" port="${IIOP_SSL_MUTUALAUTH_PORT}" address="0.0.0.0" security-enabled="true">
-          <ssl classname="com.sun.enterprise.security.ssl.GlassfishSSLImpl" cert-nickname="s1as" client-auth-enabled="true"></ssl>
-        </iiop-listener>
-      </iiop-service>
       <admin-service system-jmx-connector-name="system">
         <jmx-connector port="${JMX_SYSTEM_CONNECTOR_PORT}" address="0.0.0.0" security-enabled="false" name="system" auth-realm-name="admin-realm"></jmx-connector>
         <property name="adminConsoleDownloadLocation" value="${com.sun.aas.installRoot}/lib/install/applications/admingui.war"></property>
@@ -1041,9 +957,6 @@
         <ejb-timer-service></ejb-timer-service>
       </ejb-container>
       <mdb-container></mdb-container>
-      <jms-service addresslist-behavior="priority" default-jms-host="default_JMS_host" type="EMBEDDED">
-        <jms-host port="${JMS_PROVIDER_PORT}" host="localhost" name="default_JMS_host"></jms-host>
-      </jms-service>
       <log-service log-rotation-limit-in-bytes="2000000" file="${com.sun.aas.instanceRoot}/logs/server.log">
         <module-log-levels></module-log-levels>
       </log-service>
@@ -1099,7 +1012,6 @@
           </provider-config>
         </message-security-config>
       </security-service>
-      <transaction-service tx-log-dir="${com.sun.aas.instanceRoot}/logs" automatic-recovery="true"></transaction-service>
       <diagnostic-service></diagnostic-service>
       <java-config debug-options="-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=${JAVA_DEBUGGER_PORT}" system-classpath="" classpath-suffix="">
         <jvm-options>-XX:MaxPermSize=192m</jvm-options>
@@ -1171,7 +1083,6 @@
       <group-management-service>
         <failure-detection></failure-detection>
       </group-management-service>
-      <management-rules></management-rules>
       <system-property name="ASADMIN_LISTENER_PORT" value="24848"></system-property>
       <system-property name="HTTP_LISTENER_PORT" value="28080"></system-property>
       <system-property name="HTTP_SSL_LISTENER_PORT" value="28181"></system-property>

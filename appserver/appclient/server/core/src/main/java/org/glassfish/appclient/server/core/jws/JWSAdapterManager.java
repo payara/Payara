@@ -41,7 +41,7 @@
 package org.glassfish.appclient.server.core.jws;
 
 import com.sun.enterprise.config.serverbeans.Config;
-import com.sun.enterprise.config.serverbeans.IiopService;
+import org.glassfish.orb.admin.config.IiopService;
 import com.sun.enterprise.deployment.ApplicationClientDescriptor;
 import com.sun.logging.LogDomains;
 import java.io.File;
@@ -156,7 +156,7 @@ public class JWSAdapterManager implements PostConstruct {
     public synchronized void postConstruct() {
         installRootURI = serverContext.getInstallRoot().toURI();
         logger = LogDomains.getLogger(AppClientDeployer.class, LogDomains.ACC_LOGGER);
-        iiopService = config.getIiopService();
+        iiopService = config.getExtensionByType(IiopService.class);
         umbrellaRoot = new File(installRootURI).getParentFile();
         umbrellaRootURI = umbrellaRoot.toURI();
         systemLevelSignedJARsRoot = new File(serverEnv.getDomainRoot(), JWS_SIGNED_SYSTEM_JARS_ROOT);

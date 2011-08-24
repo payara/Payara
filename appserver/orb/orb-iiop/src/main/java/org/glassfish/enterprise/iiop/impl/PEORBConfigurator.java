@@ -54,7 +54,7 @@ import com.sun.corba.ee.spi.transport.TransportManager;
 import com.sun.corba.ee.spi.transport.Acceptor;
 import com.sun.corba.ee.spi.transport.TransportDefault;
 import com.sun.logging.LogDomains;
-import com.sun.enterprise.config.serverbeans.IiopListener;
+import org.glassfish.orb.admin.config.IiopListener;
 import org.glassfish.grizzly.config.dom.Ssl;
 import java.util.logging.Logger;
 import org.glassfish.enterprise.iiop.api.IIOPConstants;

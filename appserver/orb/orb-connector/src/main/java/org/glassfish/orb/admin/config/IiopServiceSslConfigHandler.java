@@ -3,7 +3,7 @@ package org.glassfish.orb.admin.config;
 import com.sun.enterprise.admin.commands.CreateSsl;
 import com.sun.enterprise.admin.commands.DeleteSsl;
 import com.sun.enterprise.admin.commands.SslConfigHandler;
-import com.sun.enterprise.config.serverbeans.IiopService;
+import org.glassfish.orb.admin.config.IiopService;
 import com.sun.enterprise.config.serverbeans.SslClientConfig;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.api.ActionReport;
@@ -27,7 +27,7 @@ public class IiopServiceSslConfigHandler implements SslConfigHandler {
 
     @Override
     public void create(final CreateSsl command, ActionReport report) {
-        IiopService iiopSvc = command.config.getIiopService();
+        IiopService iiopSvc = command.config.getExtensionByType(IiopService.class);
         if (iiopSvc.getSslClientConfig() != null) {
             report.setMessage(
                 localStrings.getLocalString(
@@ -58,7 +58,7 @@ public class IiopServiceSslConfigHandler implements SslConfigHandler {
 
     @Override
     public void delete(DeleteSsl command, ActionReport report) {
-        if (command.config.getIiopService().getSslClientConfig() == null) {
+        if (command.config.getExtensionByType(IiopService.class).getSslClientConfig() == null) {
             report.setMessage(localStrings.getLocalString(
                     "delete.ssl.element.doesnotexistforiiop",
                     "Ssl element does not exist for IIOP service"));
@@ -73,7 +73,7 @@ public class IiopServiceSslConfigHandler implements SslConfigHandler {
                         param.setSslClientConfig(null);
                         return null;
                     }
-                }, command.config.getIiopService());
+                }, command.config.getExtensionByType(IiopService.class));
         } catch (TransactionFailure e) {
             command.reportError(report, e);
         }

@@ -104,7 +104,6 @@
           </provider-config>
         </message-security-config>
       </security-service>
-      <transaction-service tx-log-dir="${com.sun.aas.instanceRoot}/logs"></transaction-service>
       <monitoring-service>
         <module-monitoring-levels></module-monitoring-levels>
       </monitoring-service>
@@ -129,7 +128,6 @@
       <thread-pools>
         <thread-pool thread-pool-id="thread-pool-1"></thread-pool>
       </thread-pools>
-      <management-rules enabled="true"></management-rules>
       <network-config>
         <protocols>
           <protocol name="http-listener-1">
