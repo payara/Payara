@@ -299,6 +299,13 @@
             <version>${project.version}</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.glassfish.webservices</groupId>
+            <artifactId>webservices-connector</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+
         <!--
             Ken C. reports that eight ORB-related modules are needed, but
             the one "orb" module directly or indirectly depends on the others

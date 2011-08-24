@@ -38,7 +38,7 @@
  * holder.
  */
 
-package org.glassfish.webservices.annotation.handlers;
+package org.glassfish.webservices.connector.annotation.handlers;
 
 import java.util.StringTokenizer;
 import java.util.ResourceBundle;

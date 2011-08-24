@@ -180,7 +180,7 @@ public class ModuleContentValidator extends DefaultDOLVisitor
                 }
             } else {
                 // let's look in the wsdl directory
-                String fullFileUri = webService.getBundleDescriptor().getWsdlDir() + "/" + wsdlFileUri;
+                String fullFileUri = webService.getBundleDescriptor().getWsdlDir() + File.separator + wsdlFileUri;
                 wsdlFileInputStream = archive_.getEntry(fullFileUri);
 
                 if( wsdlFileInputStream != null ) {        

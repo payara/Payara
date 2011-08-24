@@ -53,10 +53,56 @@
     <artifactId>webservices-connector</artifactId>
     <packaging>hk2-jar</packaging>
     <name>Connector for GlassFish Web Services Container</name>
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>copy</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>org.glassfish.metro</groupId>
+                                    <artifactId>webservices-api-osgi</artifactId>
+                                    <outputDirectory>${project.build.directory}/endorsed</outputDirectory>
+                                    <version>${webservices.version}</version>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
 
+<plugin>
+                <groupId>org.glassfish.hk2</groupId>
+                <artifactId>hk2-maven-plugin</artifactId>
+                <configuration>
+                    <compilerArguments>
+                        <!-- also adding the classes.jar in the bootclasspath as rt.jar is not available on Mac -->
+                        <bootclasspath>${project.build.directory}/endorsed/webservices-api-osgi-${webservices.version}.jar${path.separator}${java.home}/../Classes/classes.jar${path.separator}${java.home}/lib/rt.jar</bootclasspath>
+                    </compilerArguments>
+                    <fork>true</fork>
+                </configuration>
+            </plugin>
+
+        </plugins>
+    </build> 
 
     <dependencies>
         <dependency>
+            <groupId>org.glassfish.deployment</groupId>
+            <artifactId>dol</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.metro</groupId>
+            <artifactId>webservices-api-osgi</artifactId>
+        </dependency>
+        <dependency> 
             <groupId>org.glassfish.hk2</groupId>
             <artifactId>hk2</artifactId>
         </dependency>
@@ -68,11 +114,6 @@
         <dependency>
             <groupId>org.glassfish.common</groupId>
             <artifactId>internal-api</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.deployment</groupId>
-            <artifactId>dol</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>
