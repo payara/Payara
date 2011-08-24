@@ -105,15 +105,17 @@ public class GlassFishTemplateCustomizer implements TemplateCustomizer {
         String instanceName = virtualMachine.getServerPool().getName()+"_"+virtualMachine.getMachine().getName()+"_"+vmName+"Instance";
         Server server = domain.getServerNamed(instanceName);
 
-        String nodeName = server.getNodeRef();
-        ActionReport report = services.forContract(ActionReport.class).named("plain").get();
-        rtContext.executeAdminCommand(report, "stop-instance", instanceName, "_vmShutdown", "false");
-        rtContext.executeAdminCommand(report, "delete-instance", instanceName);
+        if (server!=null) {
+            String nodeName = server.getNodeRef();
+            ActionReport report = services.forContract(ActionReport.class).named("plain").get();
+            rtContext.executeAdminCommand(report, "stop-instance", instanceName, "_vmShutdown", "false");
+            rtContext.executeAdminCommand(report, "delete-instance", instanceName);
 
-        Node node = domain.getNodeNamed(nodeName);
-        if (node!=null) {
-            if (node.getType().equals("SSH")) {
-                rtContext.executeAdminCommand(report, "delete-node-ssh", nodeName);
+            Node node = domain.getNodeNamed(nodeName);
+            if (node!=null) {
+                if (node.getType().equals("SSH")) {
+                    rtContext.executeAdminCommand(report, "delete-node-ssh", nodeName);
+                }
             }
         }
     }

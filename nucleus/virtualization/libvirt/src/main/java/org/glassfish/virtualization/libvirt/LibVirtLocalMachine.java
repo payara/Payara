@@ -48,11 +48,9 @@ import org.glassfish.virtualization.runtime.*;
 import org.glassfish.virtualization.spi.*;
 import org.glassfish.virtualization.spi.VirtualMachine;
 import org.glassfish.virtualization.util.EventSource;
-import org.glassfish.virtualization.util.EventSourceImpl;
 import org.glassfish.virtualization.util.ListenableFutureImpl;
 import org.glassfish.virtualization.util.RuntimeContext;
 import org.jvnet.hk2.annotations.Inject;
-import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.PostConstruct;
 
 import org.w3c.dom.Document;
@@ -83,7 +81,7 @@ import java.util.logging.Level;
  *
  * @author  Jerome Dochez
  */
-public class LibVirtLocalMachine extends LocalMachine implements PostConstruct {
+public class LibVirtLocalMachine extends AbstractMachine implements PostConstruct {
 
 
     final Map<String, LibVirtVirtualMachine> domains = new HashMap<String, LibVirtVirtualMachine>();
@@ -100,27 +98,18 @@ public class LibVirtLocalMachine extends LocalMachine implements PostConstruct {
     @Inject
     VirtualMachineLifecycle vmLifecycle;
 
-    public static LibVirtLocalMachine from(Injector injector, LibVirtGroup group, MachineConfig config) {
-        return injector.inject(new LibVirtLocalMachine(injector, group, config));
+    public static LibVirtLocalMachine from(Injector injector,  LibVirtGroup group, MachineConfig config) {
+        return injector.inject(new LibVirtLocalMachine(group, config));
     }
 
-    protected  LibVirtLocalMachine(Injector injector, LibVirtGroup group, MachineConfig config) {
-        super(injector, group, config);
+    protected  LibVirtLocalMachine(LibVirtGroup group, MachineConfig config) {
+        super(group, config);
     }
 
     @Override
     public void postConstruct() {
         setState(isUp()? LibVirtMachine.State.READY: LibVirtMachine.State.SUSPENDED);
-
-        // by default all our templates are local to this machine until the TemplateTask ran
-        Virtualization virt= serverPool.getConfig().getVirtualization();
-        for (Template template : virtualizations.getTemplates() ) {
-            installedTemplates.put(template.getName(),
-                    new LocalTemplate(virtualizations.getTemplatesLocation(), template));
-        }
-        if (getState().equals(LibVirtMachine.State.READY)) {
-            RuntimeContext.es.submit(new TemplateTask());
-        }
+        super.postConstruct();
     }
 
     @Override
@@ -223,7 +212,7 @@ public class LibVirtLocalMachine extends LocalMachine implements PostConstruct {
     }
 
     protected Connect connection() throws VirtException {
-        if (connect==null) {
+        if (connect==null && getUser()!=null && getUser().getName()!=null) {
             try{
                 String connectionString = getEmulator().getConnectionString();
                 if (getUser().getAuthMethod().length()>0) {
@@ -247,32 +236,18 @@ public class LibVirtLocalMachine extends LocalMachine implements PostConstruct {
         return connect;
     }
 
-    private final class TemplateTask implements Callable<Void> {
-        @Override
-        public Void call() throws Exception {
-            for (VMTemplate template : LibVirtLocalMachine.this.installedTemplates.values()) {
-                try {
-                    if (template.isLocal())  {
-                        template.copyTo(LibVirtLocalMachine.this, LibVirtLocalMachine.this.config.getTemplatesLocation());
-                        LibVirtLocalMachine.this.installedTemplates.put(template.getDefinition().getName(),
-                            new RemoteTemplate(LibVirtLocalMachine.this,
-                                    LibVirtLocalMachine.this.config.getTemplatesLocation(),
-                                    template.getDefinition()));
-                    }
-                } catch (IOException e) {
-                    // ignore, logging should have already been provided.
-                }
-
-            }
-            return null;
-        }
-    }
-
     private void populate() throws VirtException {
+        if (getIpAddress()==null) {
+            RuntimeContext.logger.log(Level.INFO, "Cannot find IP address for " + getName());
+            return;
+        }
         try {
-            populateStoragePools(connection().listStoragePools());
-            populateDomain(connection().listDomains());
-            populateDomain(connection().listDefinedDomains());
+            Connect connection = connection();
+            if (connection!=null) {
+                populateStoragePools(connection().listStoragePools());
+                populateDomain(connection().listDomains());
+                populateDomain(connection().listDefinedDomains());
+            }
 
         } catch(VirtException e) {
             RuntimeContext.logger.log(Level.SEVERE, "Exception while populating list of domains ", e);

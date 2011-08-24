@@ -303,7 +303,7 @@ public class LibVirtGroup implements PhysicalServerPool, ConfigListener {
 
     private void addMachine(MachineConfig machineConfig, String ipAddress) {
         Machine machine = (machineConfig.getNetworkName()!=null && machineConfig.getNetworkName().equals("localhost")?
-                LibVirtLocalMachine.from(injector, this, machineConfig):
+                LibVirtLocalMachine.from(injector,  this, machineConfig):
                 LibVirtMachine.from(injector, this, machineConfig, ipAddress));
         addMachine(machine);
     }
@@ -426,19 +426,17 @@ public class LibVirtGroup implements PhysicalServerPool, ConfigListener {
     }
 
     @Override
-    public void delete(Server server) throws VirtException {
-        String instanceName = server.getName();
-        String vmName = instanceName.substring(instanceName.lastIndexOf("_")+1, instanceName.length()-"Instance".length());
-        vmByName(vmName).delete();
-
-        String nodeName = server.getNodeRef();
-
-        Node node = domain.getNodeNamed(nodeName);
-        if (node!=null) {
-            if (node.getType().equals("SSH")) {
-                ActionReport report = services.forContract(ActionReport.class).get();
-                rtContext.executeAdminCommand(report, "delete-node-ssh", nodeName);
+    public void install(Template template) throws IOException {
+        IOException lastException = null;
+        for (Machine machine : machines.values()) {
+            try {
+                machine.install(template);
+            } catch (IOException e) {
+                lastException = e;
+                RuntimeContext.logger.log(Level.SEVERE, "Error while installing template " + template.getName() +
+                    " on " + machine.getName(), e);
             }
         }
+        if (lastException!=null) throw lastException;
     }
 }

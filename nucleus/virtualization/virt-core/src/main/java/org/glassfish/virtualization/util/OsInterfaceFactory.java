@@ -46,6 +46,9 @@ import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.ComponentException;
 import org.jvnet.hk2.component.Factory;
 import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.Inhabitant;
+
+import java.util.logging.Level;
 
 /**
  * HK2 should do this for me.
@@ -59,10 +62,21 @@ public class OsInterfaceFactory implements Factory {
 
     @Override
     public Object get() throws ComponentException {
-        OsInterface os = habitat.getComponent(OsInterface.class, System.getProperty("os.name").replaceAll(" ", "_"));
-        if (os==null) {
-            os = habitat.getComponent(OsInterface.class, "ubuntu");
+        Inhabitant<OsInterface> inh = habitat.getInhabitant(OsInterface.class, System.getProperty("os.name").replaceAll(" ", "_"));
+        if (inh==null) {
+            inh = habitat.getInhabitant(OsInterface.class, "ubuntu");
         }
-        return os;
+        if (inh!=null) {
+            OsInterface os = null;
+            try {
+                os = inh.type().newInstance();
+                return habitat.inject(os);
+            } catch (InstantiationException e) {
+                RuntimeContext.logger.log(Level.SEVERE, "Cannot instantiate OsInterface implementation", e);
+            } catch (IllegalAccessException e) {
+                RuntimeContext.logger.log(Level.SEVERE, "Cannot instantiate OsInterface implementation", e);
+            }
+        }
+        return null;
     }
 }

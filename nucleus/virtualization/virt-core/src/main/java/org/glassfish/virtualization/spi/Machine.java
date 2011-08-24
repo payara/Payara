@@ -41,6 +41,7 @@
 package org.glassfish.virtualization.spi;
 
 import org.glassfish.virtualization.config.MachineConfig;
+import org.glassfish.virtualization.config.Template;
 import org.glassfish.virtualization.config.VirtUser;
 import org.glassfish.virtualization.os.FileOperations;
 import org.glassfish.virtualization.runtime.VirtualCluster;
@@ -98,4 +99,6 @@ public interface Machine {
     ListenableFuture<AllocationPhase, VirtualMachine> create(
             TemplateInstance template, VirtualCluster cluster, EventSource<AllocationPhase> source)
             throws VirtException, IOException;
+
+    void install(Template template) throws IOException;
 }

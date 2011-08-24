@@ -43,12 +43,14 @@ package org.glassfish.virtualization.spi.templates;
 import com.sun.enterprise.util.io.FileUtils;
 import com.sun.logging.LogDomains;
 import org.glassfish.hk2.Services;
+import org.glassfish.virtualization.config.ServerPoolConfig;
 import org.glassfish.virtualization.config.Template;
 import org.glassfish.virtualization.config.Virtualizations;
-import org.glassfish.virtualization.spi.SearchCriteria;
-import org.glassfish.virtualization.spi.TemplateCondition;
-import org.glassfish.virtualization.spi.TemplateInstance;
-import org.glassfish.virtualization.spi.TemplateRepository;
+import org.glassfish.virtualization.runtime.LocalTemplate;
+import org.glassfish.virtualization.runtime.RemoteTemplate;
+import org.glassfish.virtualization.runtime.VMTemplate;
+import org.glassfish.virtualization.spi.*;
+import org.glassfish.virtualization.util.RuntimeContext;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
 
@@ -104,6 +106,18 @@ public class TemplateRepositoryImpl implements TemplateRepository {
         }
         TemplateInstance templateInstance = new TemplateInstanceImpl(services, config);
         templates.add(templateInstance);
+
+        // now we should copy this template to all available server pools.
+        for (ServerPoolConfig pool : services.forContract(Virtualizations.class).get().getGroupConfigs()) {
+            ServerPool serverPool = services.forContract(IAAS.class).get().byName(pool.getName());
+            try {
+                serverPool.install(config);
+            } catch (IOException e) {
+                RuntimeContext.logger.log(Level.SEVERE, "Cannot copy template " + config.getName()
+                        + " on server pool  " + config.getName(), e);
+            }
+        }
+
         return true;
     }
 

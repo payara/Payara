@@ -40,6 +40,8 @@
 
 package org.glassfish.virtualization.spi;
 
+import java.util.concurrent.Future;
+
 /**
  * Definition of a listener of a task completion.
  *

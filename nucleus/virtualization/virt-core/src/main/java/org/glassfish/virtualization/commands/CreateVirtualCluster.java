@@ -180,9 +180,14 @@ public class CreateVirtualCluster implements AdminCommand {
 
         try {
             VirtualCluster vCluster = virtualClusters.byName(name);
+            List<ListenableFuture<AllocationPhase, VirtualMachine>> futures =
+                    new ArrayList<ListenableFuture<AllocationPhase, VirtualMachine>>();
+
             for (int i=0;i<minNumber;i++) {
-                ListenableFuture<AllocationPhase, VirtualMachine> future =
-                        iaas.allocate(new VMOrder(templateInstance, vCluster), null);
+                futures.add(iaas.allocate(new VMOrder(templateInstance, vCluster), null));
+            }
+
+            for (ListenableFuture<AllocationPhase, VirtualMachine> future : futures) {
                 VirtualMachine vm;
                 try {
                     vm = future.get();

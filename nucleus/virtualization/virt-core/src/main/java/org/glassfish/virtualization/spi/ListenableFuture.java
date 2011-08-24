@@ -54,6 +54,9 @@ import java.util.concurrent.Future;
  */
 public interface ListenableFuture<T extends Enum, U> extends Future<U> {
 
+    T getCurrentPhase();
+
+
     /**
      * Registration of a task phase completion listener. Each phase completion
      * will trigger a {@link Listener#notify(Enum)} call using the

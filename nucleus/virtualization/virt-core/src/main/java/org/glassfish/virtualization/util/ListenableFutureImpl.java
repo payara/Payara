@@ -72,6 +72,11 @@ public class ListenableFutureImpl<T extends Enum, U> implements ListenableFuture
         sink.addListener(tListener, executor);
     }
 
+    @Override
+    public T getCurrentPhase() {
+        return null;
+    }
+
     public void fireEvent(final T phase) {
         sink.fireEvent(phase);
     }

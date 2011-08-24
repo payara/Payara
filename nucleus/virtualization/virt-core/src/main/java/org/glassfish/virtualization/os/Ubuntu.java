@@ -45,7 +45,9 @@ import org.glassfish.virtualization.spi.PhysicalServerPool;
 import org.glassfish.virtualization.spi.Machine;
 import org.glassfish.virtualization.spi.OsInterface;
 import org.glassfish.virtualization.config.ServerPoolConfig;
+import org.glassfish.virtualization.util.OsInterfaceFactory;
 import org.glassfish.virtualization.util.RuntimeContext;
+import org.jvnet.hk2.annotations.Factory;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
 
@@ -60,6 +62,7 @@ import java.util.Scanner;
  * @author Jerome Dochez
  */
 @Service(name="ubuntu")
+@Factory(OsInterfaceFactory.class)
 public class Ubuntu implements OsInterface {
 
     @Inject
@@ -101,7 +104,7 @@ public class Ubuntu implements OsInterface {
                 // now executeAndWait the arp command to get the list of mac address for each IP
                 result = shell.execute(new File(arpPath()), getArpCommand());
                 // I have to do this because the command does not always exit and return.
-                Thread.sleep(100);
+                Thread.sleep(1000);
                 LineNumberReader lnReader = null;
                 try {
                     lnReader = new LineNumberReader(new InputStreamReader(result.getInputStream()));

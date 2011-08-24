@@ -69,11 +69,11 @@ class LibVirtMachine extends LibVirtLocalMachine {
     SSHLauncher sshLauncher;
 
     public static LibVirtMachine from(Injector injector, LibVirtGroup group, MachineConfig config, String ipAddress) {
-        return injector.inject(new LibVirtMachine(injector, group, config, ipAddress));
+        return injector.inject(new LibVirtMachine(group, config, ipAddress));
     }
 
-    protected  LibVirtMachine(Injector injector, LibVirtGroup group, MachineConfig config, String ipAddress) {
-        super(injector, group, config);
+    protected  LibVirtMachine(LibVirtGroup group, MachineConfig config, String ipAddress) {
+        super(group, config);
         this.ipAddress = ipAddress;
     }
 
@@ -94,6 +94,8 @@ class LibVirtMachine extends LibVirtLocalMachine {
     }
 
     public boolean delete(String path) throws IOException {
+        getSSH();
+
         final SFTPClient sftpClient = sshLauncher.getSFTPClient();
 
         if (sftpClient.exists(path)) {
@@ -105,6 +107,8 @@ class LibVirtMachine extends LibVirtLocalMachine {
 
     @Override
     public boolean mv(String source, String dest) throws IOException {
+        getSSH();
+
         final SFTPClient sftpClient = sshLauncher.getSFTPClient();
         if (exists(dest)) {
             delete(dest);
@@ -114,6 +118,8 @@ class LibVirtMachine extends LibVirtLocalMachine {
     }
 
     public long length(String path) throws IOException {
+        getSSH();
+
         final SFTPClient sftpClient = sshLauncher.getSFTPClient();
         try {
             return sftpClient.lstat(path).size;
@@ -124,6 +130,8 @@ class LibVirtMachine extends LibVirtLocalMachine {
 
     @Override
     public boolean exists(String path) throws IOException {
+        getSSH();
+
         final SFTPClient sftpClient = sshLauncher.getSFTPClient();
         try {
             return sftpClient.exists(path);

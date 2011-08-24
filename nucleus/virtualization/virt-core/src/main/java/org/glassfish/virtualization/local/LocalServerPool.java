@@ -42,6 +42,7 @@ package org.glassfish.virtualization.local;
 
 import com.sun.enterprise.config.serverbeans.Server;
 import org.glassfish.virtualization.config.ServerPoolConfig;
+import org.glassfish.virtualization.config.Template;
 import org.glassfish.virtualization.config.VirtualMachineConfig;
 import org.glassfish.virtualization.runtime.VirtualCluster;
 import org.glassfish.virtualization.spi.*;
@@ -49,6 +50,7 @@ import org.glassfish.virtualization.util.EventSource;
 import org.glassfish.virtualization.util.ListenableFutureImpl;
 import org.jvnet.hk2.annotations.Service;
 
+import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
 
@@ -111,8 +113,7 @@ public class LocalServerPool implements ServerPool {
     }
 
     @Override
-    public void delete(Server server) throws VirtException {
-        VirtualMachine vm = vmByName(server.getName());
-        vm.delete();
+    public void install(Template template) throws IOException {
+        // templates are already locally installed...
     }
 }

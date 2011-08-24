@@ -44,11 +44,13 @@ package org.glassfish.virtualization;
 import org.glassfish.api.Startup;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.hk2.Services;
+import org.glassfish.virtualization.config.Template;
 import org.glassfish.virtualization.runtime.DefaultAllocationStrategy;
 import org.glassfish.virtualization.runtime.VirtualCluster;
 import org.glassfish.virtualization.spi.*;
 import org.glassfish.virtualization.config.ServerPoolConfig;
 import org.glassfish.virtualization.config.Virtualizations;
+import org.glassfish.virtualization.util.RuntimeContext;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
@@ -56,10 +58,12 @@ import org.jvnet.hk2.component.PostConstruct;
 import org.jvnet.hk2.config.*;
 
 import java.beans.PropertyChangeEvent;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 
@@ -102,7 +106,7 @@ public class GroupMembersPopulator implements Startup, IAAS, ConfigListener {
 
         for (ServerPoolConfig groupConfig : virtualizations.getGroupConfigs()) {
             try {
-                ServerPool group = processGroupConfig(groupConfig);
+                ServerPool group = processGroupConfig(virtualizations, groupConfig);
                 System.out.println("I have a serverPool " + group.getName());
                 if (group instanceof PhysicalServerPool) {
                     for (Machine machine : ((PhysicalServerPool) group).machines()) {
@@ -123,12 +127,21 @@ public class GroupMembersPopulator implements Startup, IAAS, ConfigListener {
         }
     }
 
-    private ServerPool processGroupConfig(ServerPoolConfig groupConfig) {
+    private ServerPool processGroupConfig(Virtualizations virtualizations, ServerPoolConfig groupConfig) {
 
         ServerPool group = services.forContract(ServerPool.class).named(groupConfig.getVirtualization().getName()).get();
         group.setConfig(groupConfig);
         synchronized (this) {
             groups.put(groupConfig.getName(), group);
+        }
+        // installs templates in this group
+        for (Template template : virtualizations.getTemplates()) {
+            try {
+                group.install(template);
+            } catch (IOException e) {
+                RuntimeContext.logger.log(Level.SEVERE, "Error copying template" + template.getName()
+                        + " on " + group.getName());
+            }
         }
         return group;
     }
@@ -138,7 +151,7 @@ public class GroupMembersPopulator implements Startup, IAAS, ConfigListener {
         Virtualizations virtualizations = services.forContract(Virtualizations.class).get();
         for (ServerPoolConfig config : virtualizations.getGroupConfigs()) {
             if (!groups.containsKey(config.getName())) {
-                processGroupConfig(config);
+                processGroupConfig(virtualizations, config);
             }
         }
         return null;

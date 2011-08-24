@@ -43,6 +43,8 @@ import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.util.io.FileUtils;
 import org.glassfish.grizzly.config.dom.NetworkListener;
+
+import java.beans.PropertyChangeEvent;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
@@ -55,9 +57,11 @@ import java.util.Properties;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
+import java.util.logging.Level;
+
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.common.util.admin.AuthTokenManager;
-import org.glassfish.hk2.inject.Injector;
+import org.glassfish.hk2.PostConstruct;
 import org.glassfish.virtualization.config.Emulator;
 import org.glassfish.virtualization.config.MachineConfig;
 import org.glassfish.virtualization.config.Template;
@@ -74,20 +78,20 @@ import org.glassfish.virtualization.util.Host;
 import org.glassfish.virtualization.util.RuntimeContext;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.config.*;
 
 
 /**
- * Local machine capabilities include creating a virtual machine
+ * Local or Remoate Machine capabilities include creating a virtual machine
  *
  * @author Jerome Dochez
  */
 
 
-public abstract class LocalMachine implements Machine, FileOperations {
+public abstract class AbstractMachine implements PostConstruct, Machine, FileOperations {
 
     final protected MachineConfig config;
     final protected PhysicalServerPool serverPool;
-
     final protected Map<String, VMTemplate> installedTemplates = new HashMap<String, VMTemplate>();
 
     // Sa far, IP addresses are static within a single run. we could support changing the IP address eventually.
@@ -103,12 +107,44 @@ public abstract class LocalMachine implements Machine, FileOperations {
     @Inject
     Host host;
 
-    final Injector injector;
-
-    protected  LocalMachine(Injector injector, PhysicalServerPool serverPool, MachineConfig config) {
+    protected AbstractMachine(PhysicalServerPool serverPool, MachineConfig config) {
         this.serverPool = serverPool;
         this.config = config;
-        this.injector = injector;
+    }
+
+    public void postConstruct() {
+
+        // by default all our templates are local to this machine until the Template installation task ran
+        for (Template template : virtualizations.getTemplates() ) {
+            try {
+                install(template);
+            } catch (IOException e) {
+                RuntimeContext.logger.log(Level.SEVERE, "Cannot install template on machine " + getName(),e);
+            }
+        }
+    }
+
+
+    @Override
+    public void install(final Template template) throws IOException {
+        final LocalTemplate localTemplate = new LocalTemplate(virtualizations.getTemplatesLocation(), template);
+        // we install it first as a local template
+        installedTemplates.put(template.getName(),localTemplate);
+        // now we copy the template on the remote machine
+        if (getState().equals(Machine.State.READY)) {
+            RuntimeContext.es.submit(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        localTemplate.copyTo(AbstractMachine.this, getConfig().getTemplatesLocation());
+                    } catch (IOException e) {
+                        RuntimeContext.logger.log(Level.SEVERE, e.getMessage(), e);
+                    }
+                    installedTemplates.put(template.getName(),
+                        new RemoteTemplate(AbstractMachine.this, config.getTemplatesLocation(), template));
+                }
+            });
+        }
     }
 
     @Override

@@ -70,7 +70,9 @@ public class VirtualCluster {
                 config.getExtensionsByType(VirtualMachineConfig.class)) {
             ServerPoolConfig serverPoolConfig = vm.getServerPool();
             ServerPool serverPool = iaas.byName(serverPoolConfig.getName());
-            vms.add(serverPool.vmByName(vm.getName()));
+            VirtualMachine virtualMachine = serverPool.vmByName(vm.getName());
+            if (virtualMachine!=null)
+                vms.add(virtualMachine);
         }
     }
 

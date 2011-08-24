@@ -82,9 +82,6 @@ public class DeleteVirtualCluster implements AdminCommand {
     RuntimeContext rtContext;
 
     @Inject
-    DeleteVirtualMachine vmDeleter;
-
-    @Inject
     ExecutorService executorService;
 
     @Inject
@@ -119,19 +116,17 @@ public class DeleteVirtualCluster implements AdminCommand {
                 final Template template = vmConfig.getTemplate();
                 final TemplateInstance templateInstance = templateRepository.byName(template.getName());
 
-                // todo : logic below needs to be improved.
-
-                    for (final VirtualMachine vm : virtualCluster.getVms()) {
-                        if (vm.getName().equals(vmConfig.getName())) {
-                            deletions.add(executorService.submit(new Callable<Void>() {
-                                @Override
-                                public Void call() throws Exception {
-                                    vmLifecycle.delete(vm);
-                                    return null;
-                                }
-                            }));
-                        }
+                for (final VirtualMachine vm : virtualCluster.getVms()) {
+                    if (vm.getName().equals(vmConfig.getName())) {
+                        deletions.add(executorService.submit(new Callable<Void>() {
+                            @Override
+                            public Void call() throws Exception {
+                                vmLifecycle.delete(vm);
+                                return null;
+                            }
+                        }));
                     }
+                }
             }
 
             // wait for deletions to be done.

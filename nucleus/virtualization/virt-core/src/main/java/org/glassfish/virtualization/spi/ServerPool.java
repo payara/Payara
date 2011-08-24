@@ -42,11 +42,13 @@ package org.glassfish.virtualization.spi;
 
 import com.sun.enterprise.config.serverbeans.Server;
 import org.glassfish.virtualization.config.ServerPoolConfig;
+import org.glassfish.virtualization.config.Template;
 import org.glassfish.virtualization.runtime.VMTemplate;
 import org.glassfish.virtualization.runtime.VirtualCluster;
 import org.glassfish.virtualization.util.EventSource;
 import org.jvnet.hk2.annotations.Contract;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 
@@ -100,11 +102,5 @@ public interface ServerPool {
             TemplateInstance template, VirtualCluster cluster, EventSource<AllocationPhase> source)
             throws VirtException;
 
-    /**
-     * Deletes a previously allocated virtual machine instance.
-     *
-     * @param server the machine to delete.
-     */
-    void delete(Server server) throws VirtException;
-
+    void install(Template template) throws IOException;
 }
