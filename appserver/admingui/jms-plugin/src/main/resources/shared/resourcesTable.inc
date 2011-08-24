@@ -55,7 +55,8 @@
     <sun:tableRowGroup id="rowGroup1" selected="#{td.value.selected}" data={"$pageSession{listOfRows}"} sourceVar="td">
         <!beforeCreate
             if (#{pageSession.isConnPage}) {
-                gf.getChildList(parentEndpoint="#{pageSession.parentUrl}", childType="#{pageSession.childType}", result="#{pageSession.tmpRows}");
+                gf.getChildrenNamesList(endpoint="#{pageSession.parentUrl}/#{pageSession.childType2}" result=>$attribute{connectorResList});
+                gf.getChildList(parentEndpoint="#{pageSession.parentUrl}", childType="#{pageSession.childType}", includeList="#{connectorResList}", result="#{pageSession.tmpRows}");
                 gf.filterTable(table="#{pageSession.tmpRows}", key="resourceAdapterName", value="jmsra")
                 gfr.getResourcesTableData();
             }

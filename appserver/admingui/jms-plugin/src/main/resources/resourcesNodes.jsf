@@ -54,8 +54,8 @@
 	    url="#{request.contextPath}/jms/jmsConnections.jsf">
 	<ui:event type="beforeCreate">
             setSessionAttribute(key="_jms_exist" value="true");
-	    gf.restRequest(endpoint="#{sessionScope.REST_URL}/resources/connector-connection-pool.json" method="get" result="#{requestScope.resp}");
-	    setAttribute(key="children" value="#{requestScope.resp.data.extraProperties.childResources}");
+	    gf.restRequest(endpoint="#{sessionScope.REST_URL}/resources/list-jms-resources.json" method="get" result="#{requestScope.resp}");
+	    setAttribute(key="children" value="#{requestScope.resp.data.extraProperties.jmsResources}");
 	</ui:event>
         <!facet image>
             <sun:iconHyperlink id="treeIcon" icon="TREE_FOLDER" url="/jms/jmsConnections.jsf"  border="0" immediate="true" alt="$resource{i18n.tree.connectionFactories}" />
