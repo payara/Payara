@@ -97,7 +97,7 @@ public class CreateAlertCommand implements AdminCommand {
         ActionReport report = context.getActionReport();
         Logger logger= context.logger;
 
-        ElasticService elasticService= elasticServices.getService(servicename);
+        ElasticService elasticService= elasticServices.getElasticService(servicename);
         if (elasticService == null) {
             //node doesn't exist
             String msg = Strings.get("noSuchService", name);
@@ -124,7 +124,7 @@ public class CreateAlertCommand implements AdminCommand {
                 Transaction t = Transaction.getTransaction(param);
                 if (t!=null) {
                     ElasticServices elasticServices = ((Domain)param).getElasticServices();
-                    ElasticService elasticService = elasticServices.getService(servicename);
+                    ElasticService elasticService = elasticServices.getElasticService(servicename);
                     ElasticService writeableService = t.enroll(elasticService);
                     Alerts writeableAlerts = elasticService.getAlerts();
                     if (writeableAlerts == null)
@@ -143,7 +143,7 @@ public class CreateAlertCommand implements AdminCommand {
                         writeableAlert.setSampleInterval(sampleInterval);
                     if (!enabled)
                         writeableAlert.setEnabled(enabled);
-                    writeableAlerts.getAlerts().add(writeableAlert);
+                    writeableAlerts.getAlert().add(writeableAlert);
                     writeableService.setAlerts(writeableAlerts);
 /*                    try {
                         t.commit();

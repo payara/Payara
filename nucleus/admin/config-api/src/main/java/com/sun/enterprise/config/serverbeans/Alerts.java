@@ -67,10 +67,9 @@ public interface Alerts  extends ConfigBeanProxy, Injectable {
    *
    * @return the list of configured {@link Alerts}
    */
-  @Create(value="_create-alert", resolver= TypeResolver.class,   i18n=@I18n("_register.alert.command"))
-  @Delete(value="_delete-alert", resolver= TypeAndNameResolver.class,  i18n=@I18n("_unregister.alert.command"))
+
   @Element
-   public List<Alert> getAlerts();
+   public List<Alert> getAlert();
 
   /**
    * Return the alert with the given name, or null if no such alert exists.
@@ -83,7 +82,7 @@ public interface Alerts  extends ConfigBeanProxy, Injectable {
 
   class Duck {
       public static Alert getAlert(Alerts instance, String name) {
-          for (Alert alert : instance.getAlerts()) {
+          for (Alert alert : instance.getAlert()) {
               if (alert.getName().equals(name)) {
                   return alert;
               }

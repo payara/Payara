@@ -71,7 +71,7 @@ public interface ElasticServices extends ConfigBeanProxy, Injectable {
 //    @Create(value="_create-elastic-service",  decorator=ElasticService.Decorator.class,  i18n=@I18n("create-elastic.service.command"))
     @Create(value="_create-elastic-service",  i18n=@I18n("create-elastic.service.command"))
     @Delete(value="_delete-elastic-service",   i18n=@I18n("delete-elastic.service.command"))
-    public List<ElasticService> getServices();
+    public List<ElasticService> getElasticService();
 
     /**
      * Return the elastic service with the given name, or null if no such elastic service exists.
@@ -80,11 +80,11 @@ public interface ElasticServices extends ConfigBeanProxy, Injectable {
      * @return          the Elastic Service object, or null if no such elastic service
      */
     @DuckTyped
-    public ElasticService getService(String name);
+    public ElasticService getElasticService(String name);
 
     class Duck {
-        public static ElasticService getService(ElasticServices instance, String name) {
-            for (ElasticService service : instance.getServices()) {
+        public static ElasticService getElasticService(ElasticServices instance, String name) {
+            for (ElasticService service : instance.getElasticService()) {
                 if (service.getName().equals(name)) {
                     return service;
                 }

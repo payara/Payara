@@ -65,17 +65,35 @@ import static org.glassfish.config.support.Constants.NAME_SERVER_REGEX;
 public interface MetricGatherer extends Injectable, ConfigBeanProxy, Named, ReferenceContainer, RefContainer, Payload {
 
     /**
-     * Sets the metric name
-     * @param value node name
+     * Sets the metric type
+     * @param value type
      * @throws PropertyVetoException if a listener vetoes the change
      */
-    @Param(name="name", primary = true)
-    @Override
-    public void setName(String value) throws PropertyVetoException;
+    @Param(name="type", primary = true)
+    public void setType(String value) throws PropertyVetoException;
 
-    @NotTargetKeyword(message="{metric.reserved.name}", payload=MetricGatherer.class)
-    @Pattern(regexp=NAME_SERVER_REGEX, message="{metric.invalid.name}", payload=MetricGatherer.class)
-    @Override
-    public String getName();
+    public String getType();
+
+    /*
+     *  sets the collection rate for data collection  in milliseconds
+     * @param value collection rate
+     * @throws PropertyVetoException if a listener vetoes the change
+     */
+    @Param(name="collection-rate",defaultValue = "15")
+    public void setCollectionRate(int value) throws PropertyVetoException;
+
+    public int getCollectionRate();
+
+    /*
+     *  sets how long the data will be retain in the system. in hours
+     * @param value retain data
+     * @throws PropertyVetoException if a listener vetoes the change
+     */
+    @Param(name="retain-data", defaultValue = "2")
+    public void setRetainData(int value) throws PropertyVetoException;
+
+    public int getRetainData();
+
+
 
 }
