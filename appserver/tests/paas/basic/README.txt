@@ -14,7 +14,11 @@ Steps to run this test:
   cd $WS_HOME/main/appserver/paas
   cp `find . -type f -name "*.jar" | grep -v sources` $S1AS_HOME/modules/
 
-3. [Optional] Setup virtualization enviroment for your GlassFish installation. This step is optional, in which case the service(s) required for this PaaS app will be provisioned in non-virtualized environment.
+3. [Optional] Setup virtualization enviroment for your GlassFish installation. 
+
+   For example, modify kvm_setup.sh to suite your system details and run it.
+
+This step is optional in which case the service(s) required for this PaaS app will be provisioned in non-virtualized environment.
  
 4. GF_EMBEDDED_ENABLE_CLI=true mvn clean verify
 

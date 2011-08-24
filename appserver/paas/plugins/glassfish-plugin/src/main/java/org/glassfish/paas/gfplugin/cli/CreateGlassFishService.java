@@ -229,8 +229,8 @@ public class CreateGlassFishService implements AdminCommand, Runnable {
                     Set<TemplateCondition> andConditions = new HashSet<TemplateCondition>();
                     andConditions.add(new org.glassfish.virtualization.util.ServiceType(
                             serviceCharacteristics.getProperty("service-type")));
-                    andConditions.add(new VirtualizationType(
-                            serviceCharacteristics.getProperty("virtualization-type")));
+//                    andConditions.add(new VirtualizationType(
+//                            serviceCharacteristics.getProperty("virtualization-type")));
                     for (TemplateInstance ti : templateRepository.all()) {
                         boolean allConditionsSatisfied = true;
                         for (TemplateCondition condition : andConditions) {
