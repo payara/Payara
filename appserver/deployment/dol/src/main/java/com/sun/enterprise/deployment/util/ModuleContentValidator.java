@@ -64,7 +64,8 @@ import java.util.Vector;
  *
  * @author Kenneth Saks
  */
-public class ModuleContentValidator extends DefaultDOLVisitor {
+public class ModuleContentValidator extends DefaultDOLVisitor 
+    implements WebBundleVisitor, AppClientVisitor {
 
     private ReadableArchive archive_;
     
@@ -241,4 +242,38 @@ public class ModuleContentValidator extends DefaultDOLVisitor {
         String wsdlDir = bundle.getWsdlDir();
         return (uri != null) && uri.startsWith(wsdlDir);
     }
+
+    /**
+     * visits a appclient descriptor
+     * @param appclientdescriptor
+     * get the visitor for its sub descriptor
+     * @param sub descriptor to return visitor for
+     */
+    public void accept(ApplicationClientDescriptor appclientdescriptor) {
+    }
+
+    /**
+     * visit a web component descriptor
+     *
+     * @param the web component
+     */
+    public void accept(WebComponentDescriptor descriptor) {
+    }
+
+    /**
+     * visit a servlet filter descriptor
+     *
+     * @param the servlet filter
+     */
+    public void accept(ServletFilterDescriptor descriptor) {
+    }
+
+    /**
+     * visit a web bundle descriptor
+     *
+     * @param the web bundle descriptor
+     */
+    public void accept(WebBundleDescriptor descriptor) {
+    }
+
 }
