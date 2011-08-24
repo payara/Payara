@@ -103,7 +103,7 @@
         onClick="if ( getConfirm(this,'$resource{i18ncs.msg.JS.confirmStartClusters}') )
                 { return submitAndDisable(this, '$resource{i18n.button.Processing}');}  else {return false;} " >
         <!command
-            println("Starting Clustser...");
+            println("Starting Cluster...");
             println("#{sessionScope.REST_URL}/clusters/cluster/#{pageSession.encodedClusterName}/start-cluster");
             gf.restRequest(endpoint="#{sessionScope.REST_URL}/clusters/cluster/#{pageSession.encodedClusterName}/start-cluster" method="POST");
             gf.redirect(page="#{pageSession.selfPage}&alertType=${alertType}&alertSummary=${alertSummary}&alertDetail=${alertDetail}");
