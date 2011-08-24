@@ -93,7 +93,16 @@
 
     <sun:property id="p3"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18njdbc.jdbcPool.connectionLeakReclaim}" helpText="$resource{i18njdbc.jdbcPool.connectionLeakReclaimHelp}">
         <sun:checkbox  selected="#{pageSession.valueMap['connectionLeakReclaim']}" label=" " selectedValue="true" />
-    </sun:property> 
+    </sun:property>
+
+    <sun:property id="statementLeakTimeoutInSeconds"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18njdbc.jdbcPool.statementLeakTimeoutInSeconds}" helpText="$resource{i18njdbc.jdbcPool.statementLeakTimeoutInSecondsHelp}">
+        <sun:textField id="statementLeakTimeoutInSeconds" styleClass="integer" columns="$int{30}" maxLength="#{sessionScope.fieldLengths['maxLength.jdbcPool.statementTimeoutInSeconds']}" text="#{pageSession.valueMap['statementLeakTimeoutInSeconds']}"/>
+        <sun:staticText id="vasec" text="$resource{i18n.common.Seconds}"/>
+   </sun:property>
+
+    <sun:property id="statementLeakReclaim"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18njdbc.jdbcPool.statementLeakReclaim}" helpText="$resource{i18njdbc.jdbcPool.statementLeakReclaimHelp}">
+        <sun:checkbox  selected="#{pageSession.valueMap['statementLeakReclaim']}" label=" " selectedValue="true" />
+    </sun:property>
 
     <sun:property id="p4"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18njdbc.jdbcPool.connectionCreationRetryAttempts}" helpText="$resource{i18njdbc.jdbcPool.connectionCreationRetryAttemptsHelp}">
         <sun:textField id="p4" styleClass="integer" columns="$int{30}" maxLength="#{sessionScope.fieldLengths['maxLength.jdbcPool.connectionCreationRetryAttempts']}" text="#{pageSession.valueMap['connectionCreationRetryAttempts']}"/> 
