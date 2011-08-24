@@ -127,6 +127,13 @@
             <version>${project.version}</version>
         </dependency>
 
+        <!-- required by grizzly/jersey -->
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
+            <version>${servlet-api.version}</version>
+        </dependency>
+
         <!-- moving stuff from killed glassfish-security package -->
         <dependency>
             <groupId>org.glassfish.security</groupId>
