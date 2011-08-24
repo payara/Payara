@@ -44,10 +44,18 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ * Specifies where an Elasticity Metric Gatherer is run
+ *  
+ * @author Mahesh Kannan
+ *
+ */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ExecuteAt {
+
 	public enum Location {ServiceMaster, ServiceInstance};
 	
-	public Location[] value();
+	
+	public Location value() default Location.ServiceInstance;
 }

@@ -41,6 +41,6 @@ package com.oracle.glassfish.elasticity.api;
 
 public interface MetricEntry {
 	
-	public <T> T getAttribute(String attributeName, Class<T> type);
+	public Object getAttribute(String attributeName);
 
 }
