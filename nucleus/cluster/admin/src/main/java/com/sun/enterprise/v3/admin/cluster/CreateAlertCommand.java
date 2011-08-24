@@ -143,7 +143,7 @@ public class CreateAlertCommand implements AdminCommand {
                         writeableAlert.setSampleInterval(sampleInterval);
                     if (!enabled)
                         writeableAlert.setEnabled(enabled);
-                    writeableAlerts.setAlert(writeableAlert);
+                    writeableAlerts.getAlerts().add(writeableAlert);
                     writeableService.setAlerts(writeableAlerts);
 /*                    try {
                         t.commit();

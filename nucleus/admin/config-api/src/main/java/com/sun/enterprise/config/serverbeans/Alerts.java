@@ -72,9 +72,6 @@ public interface Alerts  extends ConfigBeanProxy, Injectable {
   @Element
    public List<Alert> getAlerts();
 
-    @Element
-   public void setAlert(Alert alert);
-
   /**
    * Return the alert with the given name, or null if no such alert exists.
    *
