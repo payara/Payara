@@ -82,6 +82,7 @@ public class PwcCoyoteRequest extends Request {
     private int formDataLen = 0;
     // END SJSAS 6346738
 
+    @Override
     public void setContext(Context ctx) {
         if (ctx == null) {
             // Invalid request. Response will be handled by
@@ -102,6 +103,7 @@ public class PwcCoyoteRequest extends Request {
         sunWebXmlChecked = false;
     }
 
+    @Override
     public BufferedReader getReader() throws IOException {
         if (super.getCharacterEncoding() == null) {
             setRequestEncodingFromSunWebXml();
@@ -118,6 +120,7 @@ public class PwcCoyoteRequest extends Request {
      * locale-charset-map, and parameter-encoding elements provided in the
      * sun-web.xml.
      */
+    @Override
     public String getCharacterEncoding() {
         String enc = super.getCharacterEncoding();
         if (enc != null) {
@@ -139,6 +142,7 @@ public class PwcCoyoteRequest extends Request {
      *
      * @param cookie The JSESSIONID cookie to be configured
      */
+    @Override
     public void configureSessionCookie(Cookie cookie) {
 
         super.configureSessionCookie(cookie);
@@ -157,6 +161,7 @@ public class PwcCoyoteRequest extends Request {
     
 
     // START SJSAS 6346738
+    @Override
     public void recycle() {
         super.recycle();
         formDataLen = 0;
@@ -332,6 +337,7 @@ public class PwcCoyoteRequest extends Request {
      *
      * @return The POST body of this request
      */
+    @Override
     protected byte[] getPostBody() throws IOException {
 
         if (formDataLen > 0) {
