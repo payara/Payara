@@ -247,7 +247,7 @@ public class LazyJerseyInit implements LazyJerseyInterface {
         final Set<Class<?>> r = new HashSet<Class<?>>();
 
         // uncomment if you need to run the generator:
-        //r.add(GeneratorResource.class);
+        r.add(GeneratorResource.class);
         r.add(StatusGenerator.class);
         r.add(ClientGeneratorBaseResource.class);
         //r.add(ActionReportResource.class);
