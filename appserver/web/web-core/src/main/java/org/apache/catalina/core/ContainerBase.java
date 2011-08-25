@@ -1680,16 +1680,18 @@ public abstract class ContainerBase
     }
 
     public ObjectName[] getChildren() {
-        ObjectName result[]=new ObjectName[children.size()];
-        Iterator<Container> it=children.values().iterator();
-        int i=0;
-        while( it.hasNext() ) {
-            Object next=it.next();
-            if( next instanceof ContainerBase ) {
-                result[i++]=((ContainerBase)next).getJmxName();
+        synchronized(children) {
+            ObjectName result[]=new ObjectName[children.size()];
+            Iterator<Container> it=children.values().iterator();
+            int i=0;
+            while( it.hasNext() ) {
+                Object next=it.next();
+                if( next instanceof ContainerBase ) {
+                    result[i++]=((ContainerBase)next).getJmxName();
+                }
             }
+            return result;
         }
-        return result;
     }
 
     public ObjectName createObjectName(String domain, ObjectName parent)

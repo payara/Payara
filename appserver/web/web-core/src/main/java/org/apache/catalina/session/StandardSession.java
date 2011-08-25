@@ -2216,7 +2216,12 @@ public class StandardSession
      */
     protected String[] keys() {
         if (attributes.size() > 0) {
-            return attributes.keySet().toArray(EMPTY_ARRAY);
+            // take a snapshot of attributes.keySet()
+            List<String> list = new ArrayList<String>();
+            for (String key : attributes.keySet()) {
+                list.add(key);
+            }
+            return list.toArray(new String[list.size()]);
         } else {
             return EMPTY_ARRAY;
         }

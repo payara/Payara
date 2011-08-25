@@ -69,8 +69,8 @@ import java.io.IOException;
 import java.security.AccessController;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
-import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -645,10 +645,9 @@ public abstract class PersistentManagerBase
         }
 
         long timeNow = System.currentTimeMillis();
-        Iterator<String> iter = invalidatedSessions.keySet().iterator();
-        while (iter.hasNext()) {
-            String id = iter.next();
-            Long timeAdded = invalidatedSessions.get(id);
+        for (Map.Entry<String, Long> e : invalidatedSessions.entrySet()) {
+            String id = e.getKey();
+            Long timeAdded = e.getValue();
             if ((timeAdded == null)
                     || (timeNow - timeAdded.longValue() >
                                     rememberInvalidatedSessionIdMilliSecs)) {

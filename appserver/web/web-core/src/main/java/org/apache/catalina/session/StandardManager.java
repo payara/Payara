@@ -71,6 +71,7 @@ import java.security.AccessController;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
@@ -672,25 +673,25 @@ public class StandardManager
         }
 
         // Write the number of active sessions, followed by the details
-        ArrayList<StandardSession> list = new ArrayList<StandardSession>();
+        StandardSession[] currentStandardSessions = null;
         synchronized (sessions) {
             if (log.isLoggable(Level.FINE))
                 log.fine("Unloading " + sessions.size() + " sessions");
             try {
                 // START SJSAS 6375689
-                Session actSessions[] = findSessions();
-                if (actSessions != null) {
-                    for (Session actSession : actSessions) {
-                        StandardSession session = (StandardSession) actSession;
-                        session.passivate();
-                    }
+                for (Session actSession : findSessions()) {
+                    StandardSession session = (StandardSession) actSession;
+                    session.passivate();
                 }
                 // END SJSAS 6375689
-                oos.writeObject(Integer.valueOf(sessions.size()));
-                for (Session o : sessions.values()) {
+                Session[] currentSessions = findSessions();
+                int size = currentSessions.length;
+                currentStandardSessions = new StandardSession[size];
+                oos.writeObject(Integer.valueOf(size));
+                for (int i = 0; i < size; i++) {
                     StandardSession session =
-                        (StandardSession) o;
-                    list.add(session);
+                        (StandardSession) currentSessions[i];
+                    currentStandardSessions[i] = session;
                     /* SJSAS 6375689
                     session.passivate();
                     */
@@ -738,10 +739,8 @@ public class StandardManager
         if (doExpire) {
             // Expire all the sessions we just wrote
             if (log.isLoggable(Level.FINE))
-                log.fine("Expiring " + list.size() + " persisted sessions");
-            Iterator<StandardSession> expires = list.iterator();
-            while (expires.hasNext()) {
-                StandardSession session = (StandardSession) expires.next();
+                log.fine("Expiring " + currentStandardSessions.length + " persisted sessions");
+            for (StandardSession session : currentStandardSessions) {
                 try {
                     session.expire(false);
                 } catch (Throwable t) {

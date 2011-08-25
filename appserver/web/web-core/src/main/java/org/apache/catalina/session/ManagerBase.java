@@ -81,8 +81,11 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
@@ -907,7 +910,13 @@ public abstract class ManagerBase implements Manager, MBeanRegistration {
      * If this Manager has no active Sessions, a zero-length array is returned.
      */
     public Session[] findSessions() {
-        return sessions.values().toArray(new Session[sessions.size()]);
+        // take a snapshot
+        Collection<Session> sessionsValues = sessions.values();
+        List<Session> list = new ArrayList<Session>(sessionsValues.size());
+        for (Session session : sessionsValues) {
+            list.add(session);
+        }
+        return list.toArray(new Session[list.size()]);
     }
 
 
