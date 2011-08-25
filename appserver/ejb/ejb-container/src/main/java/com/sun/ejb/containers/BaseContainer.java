@@ -680,8 +680,6 @@ public abstract class BaseContainer
 
                         assertFullProfile("is a Web Service Endpoint");
 
-                        WebServiceEndpoint endpoint = (WebServiceEndpoint)
-                            endpoints.iterator().next();
                         webServiceEndpointIntf = loader.loadClass
                            (ejbDescriptor.getWebServiceEndpointInterfaceName());
                         isWebServiceEndpoint = true;

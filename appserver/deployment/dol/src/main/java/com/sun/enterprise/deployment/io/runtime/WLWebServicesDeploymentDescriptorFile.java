@@ -47,6 +47,7 @@ import com.sun.enterprise.deployment.node.ws.WLDescriptorConstants;
 import com.sun.enterprise.deployment.node.ws.WLWebServicesDescriptorNode;
 import org.glassfish.deployment.common.Descriptor;
 import org.glassfish.deployment.common.RootDeploymentDescriptor;
+import org.glassfish.deployment.common.XModuleType;
 
 import java.util.Vector;
 
@@ -61,7 +62,7 @@ public class WLWebServicesDeploymentDescriptorFile extends DeploymentDescriptorF
     private String descriptorPath;
 
     public WLWebServicesDeploymentDescriptorFile(RootDeploymentDescriptor desc) {
-        descriptorPath = (((WebServicesDescriptor)desc).getBundleDescriptor() instanceof WebBundleDescriptor) ?
+        descriptorPath = (((WebServicesDescriptor)desc).getBundleDescriptor().getModuleType().equals(XModuleType.WAR)) ?
                 WLDescriptorConstants.WL_WEB_WEBSERVICES_JAR_ENTRY : WLDescriptorConstants.WL_EJB_WEBSERVICES_JAR_ENTRY;
     }
 
