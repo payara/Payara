@@ -94,9 +94,6 @@ public class SecurityLifecycle implements  PostConstruct, PreDestroy {
     @Inject
     private SecurityConfigListener configListener;
     
-    @Inject(name="MessageSecurityConfigListener", optional=true)
-    private ConfigListener msgSecurityConfigListener;
-
     @Inject
     private Habitat habitat;
 

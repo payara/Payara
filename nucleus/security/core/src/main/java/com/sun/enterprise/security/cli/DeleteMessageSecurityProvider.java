@@ -113,9 +113,6 @@ public class DeleteMessageSecurityProvider implements AdminCommand {
 
     ProviderConfig thePC = null;
 
-    @Inject(name="MessageSecurityConfigListener", optional=true)
-    private ConfigListener msgSecurityConfigListener;
-
     MessageSecurityConfig msgSecCfg = null;
     
     /**

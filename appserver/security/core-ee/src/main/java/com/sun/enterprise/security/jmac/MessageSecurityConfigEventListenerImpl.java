@@ -48,11 +48,11 @@ import java.beans.PropertyChangeEvent;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.glassfish.api.admin.ServerEnvironment;
-import org.jvnet.hk2.annotations.ContractProvided;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Singleton;
+import org.glassfish.api.Startup;
 import org.jvnet.hk2.config.Changed;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.ConfigListener;
@@ -65,16 +65,20 @@ import org.jvnet.hk2.config.UnprocessedChangeEvents;
 * @author Nithya Subramanian
 */
 
-@Service(name = "MessageSecurityConfigListener")
-@ContractProvided(ConfigListener.class)
+@Service
 @Scoped(Singleton.class)
-public class MessageSecurityConfigEventListenerImpl implements ConfigListener {
+public class MessageSecurityConfigEventListenerImpl implements ConfigListener, Startup {
 
     private static Logger logger = LogDomains.getLogger(MessageSecurityConfigEventListenerImpl.class,LogDomains.SECURITY_LOGGER);
     
     @Inject(name=ServerEnvironment.DEFAULT_INSTANCE_NAME)
     private SecurityService service;
     
+    @Override
+    public Lifecycle getLifecycle() {
+        return Startup.Lifecycle.SERVER;
+    }
+        
     /**
     * @param event - Event to be processed.
     * @throws AdminEventListenerException when the listener is unable to
