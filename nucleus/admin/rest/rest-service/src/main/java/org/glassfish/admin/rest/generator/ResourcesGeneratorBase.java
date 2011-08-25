@@ -109,7 +109,7 @@ public abstract class ResourcesGeneratorBase implements ResourcesGenerator {
                 ConfigModel childModel = node.getModel();
                 List<ConfigModel> subChildConfigModels = ResourceUtil.getRealChildConfigModels(childModel, domDocument);
                 for (ConfigModel subChildConfigModel : subChildConfigModels) {
-                    if (ResourceUtil.isOnlyATag(subChildConfigModel) || subChildConfigModel.getAttributeNames().isEmpty()) {
+                    if (ResourceUtil.isOnlyATag(subChildConfigModel) || subChildConfigModel.getAttributeNames().isEmpty() || hasSingletonAnnotation(subChildConfigModel)) {
                         String childResourceClassName = getClassName(ResourceUtil.getUnqualifiedTypeName(subChildConfigModel.targetTypeName));
                         String childPath = subChildConfigModel.getTagName();
                         classWriter.createGetChildResource(childPath, childResourceClassName);
@@ -434,6 +434,20 @@ public abstract class ResourcesGeneratorBase implements ResourcesGenerator {
         return keyAttributeName;
     }
 
+    private boolean hasSingletonAnnotation(ConfigModel model) {
+        
+         Class<? extends ConfigBeanProxy> cbp = null;
+        try {
+            cbp = (Class<? extends ConfigBeanProxy>) model.classLoaderHolder.get().loadClass(model.targetTypeName);
+            // cbp = (Class<? extends ConfigBeanProxy>)this.getClass().getClassLoader().loadClass(model.targetTypeName) ;
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+        org.glassfish.config.support.Singleton sing = cbp.getAnnotation(org.glassfish.config.support.Singleton.class);
+        return (sing!=null);       
+    }
+    
+    
     private void processRedirectsAnnotation(ConfigModel model) {
         Class<? extends ConfigBeanProxy> cbp = null;
         try {
