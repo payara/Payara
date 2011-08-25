@@ -60,6 +60,7 @@ import java.util.List;
  * @author Jerome Dochez
  */
 @Configured
+@Singleton
 public interface Virtualizations extends DomainExtension {
 
     @Element("virtualization")
