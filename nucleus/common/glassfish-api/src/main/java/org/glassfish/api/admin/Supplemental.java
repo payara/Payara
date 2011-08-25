@@ -135,7 +135,7 @@ public @interface Supplemental {
      * enumeration of when a supplemental command can be invoked with regards to the supplemented
      * command execution.
      */
-    public enum Timing {Before, After}
+    public enum Timing {Before, After, AfterReplication}
 
     /**
      * Name of the supplemented command as it can be looked up in the habitat.     *

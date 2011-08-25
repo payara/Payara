@@ -825,6 +825,7 @@ public class CommandRunnerImpl implements CommandRunner {
         Set<CommandTarget> targetTypesAllowed = new HashSet<CommandTarget>();
         ActionReport.ExitCode preSupplementalReturn = ActionReport.ExitCode.SUCCESS;
         ActionReport.ExitCode postSupplementalReturn = ActionReport.ExitCode.SUCCESS;
+        ActionReport.ExitCode afterReplicationSupplementalReturn = ActionReport.ExitCode.SUCCESS;
 
         // If this glassfish installation does not have stand alone instances / clusters at all, then
         // lets not even look Supplemental command and such. A small optimization
@@ -1189,6 +1190,20 @@ public class CommandRunnerImpl implements CommandRunner {
                 if (report.getActionExitCode().equals(ActionReport.ExitCode.FAILURE)) {
                     report.setMessage(adminStrings.getLocalString("commandrunner.executor.errorwhilereplication",
                             "An error occurred during replication"));
+                } else {
+                    if (!FailurePolicy.applyFailurePolicy(fp,
+                        report.getActionExitCode()).equals(ActionReport.ExitCode.FAILURE)) {
+                        logger.fine(adminStrings.getLocalString("dynamicreconfiguration.diagnostics.afterreplsupplemental",
+                                "Command execution stage 5 : Call post-replication supplemental commands for {0}" + inv.name()));
+                        afterReplicationSupplementalReturn = supplementalExecutor.execute(model.getCommandName(),
+                                Supplemental.Timing.AfterReplication, context, parameters, ufm.optionNameToFileMap());
+                        if (afterReplicationSupplementalReturn.equals(ActionReport.ExitCode.FAILURE)) {
+                            report.setActionExitCode(afterReplicationSupplementalReturn);
+                            report.setMessage(adminStrings.getLocalString("commandrunner.executor.supplementalcmdfailed",
+                                    "A supplemental command failed; cannot proceed further"));
+                            return;
+                        }
+                    }
                 }
             }
         }

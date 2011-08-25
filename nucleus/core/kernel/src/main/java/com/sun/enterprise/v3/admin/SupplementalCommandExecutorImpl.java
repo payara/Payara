@@ -100,7 +100,8 @@ public class SupplementalCommandExecutorImpl implements SupplementalCommandExecu
                 if( (serverEnv.isDas() && aCmd.whereToRun().contains(RuntimeType.DAS)) ||
                     (serverEnv.isInstance() && aCmd.whereToRun().contains(RuntimeType.INSTANCE)) ) {
                     if( (time.equals(Supplemental.Timing.Before) && aCmd.toBeExecutedBefore()) ||
-                        (time.equals(Supplemental.Timing.After) && aCmd.toBeExecutedAfter()) ) {
+                        (time.equals(Supplemental.Timing.After) && aCmd.toBeExecutedAfter())   ||
+                        (time.equals(Supplemental.Timing.AfterReplication) && aCmd.toBeExecutedAfterReplication())) {
                         ActionReport.ExitCode result = FailurePolicy.applyFailurePolicy(aCmd.onFailure(),
                                 inject(aCmd, getInjector(aCmd.command, parameters, optionFileMap),
                                         context.getActionReport()));
@@ -222,6 +223,10 @@ public class SupplementalCommandExecutorImpl implements SupplementalCommandExecu
             return timing.equals(Supplemental.Timing.After);
         }
 
+        public boolean toBeExecutedAfterReplication() {
+            return timing.equals(Supplemental.Timing.AfterReplication);
+        }
+        
         public FailurePolicy onFailure() {
             return failurePolicy;
         }
