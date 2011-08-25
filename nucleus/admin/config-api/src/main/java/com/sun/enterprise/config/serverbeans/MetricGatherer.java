@@ -45,6 +45,7 @@ import org.glassfish.api.Param;
 import org.glassfish.api.admin.config.Named;
 import org.glassfish.api.admin.config.ReferenceContainer;
 import org.jvnet.hk2.component.Injectable;
+import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.Configured;
 import java.beans.PropertyVetoException;
@@ -69,10 +70,12 @@ public interface MetricGatherer extends Injectable, ConfigBeanProxy, Named, Refe
      * @param value type
      * @throws PropertyVetoException if a listener vetoes the change
      */
-    @Param(name="type", primary = true)
-    public void setType(String value) throws PropertyVetoException;
+    @Param(name="name", primary = true)
+    @Override
+    public void setName(String value) throws PropertyVetoException;
 
-    public String getType();
+    @Override
+    public String getName();
 
     /*
      *  sets the collection rate for data collection  in milliseconds
@@ -82,6 +85,7 @@ public interface MetricGatherer extends Injectable, ConfigBeanProxy, Named, Refe
     @Param(name="collection-rate",defaultValue = "15")
     public void setCollectionRate(int value) throws PropertyVetoException;
 
+    @Attribute(defaultValue = "15")
     public int getCollectionRate();
 
     /*
@@ -92,6 +96,7 @@ public interface MetricGatherer extends Injectable, ConfigBeanProxy, Named, Refe
     @Param(name="retain-data", defaultValue = "2")
     public void setRetainData(int value) throws PropertyVetoException;
 
+    @Attribute(defaultValue = "2")
     public int getRetainData();
 
 

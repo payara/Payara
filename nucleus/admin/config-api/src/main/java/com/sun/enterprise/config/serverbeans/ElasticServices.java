@@ -68,8 +68,8 @@ public interface ElasticServices extends ConfigBeanProxy, Injectable {
      * @return the list of configured {@link ElasticService}
      */
     @Element
-//    @Create(value="_create-elastic-service",  decorator=ElasticService.Decorator.class,  i18n=@I18n("create-elastic.service.command"))
-    @Create(value="_create-elastic-service",  i18n=@I18n("create-elastic.service.command"))
+    @Create(value="_create-elastic-service",  decorator=ElasticService.Decorator.class,  i18n=@I18n("create-elastic.service.command"))
+//    @Create(value="_create-elastic-service",  i18n=@I18n("create-elastic.service.command"))
     @Delete(value="_delete-elastic-service",   i18n=@I18n("delete-elastic.service.command"))
     public List<ElasticService> getElasticService();
 

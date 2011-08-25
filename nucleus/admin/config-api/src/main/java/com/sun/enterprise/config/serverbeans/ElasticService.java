@@ -99,8 +99,10 @@ public interface ElasticService extends ConfigBeanProxy, Injectable, Named, Refe
          * @return possible object is
          *         {@link MetricGatherers }
          */
-//    @Element
-//    MetricGatherers getMetricGatherers();
+    @Element
+    MetricGatherers getMetricGatherers();
+
+    void setMetricGatherers(MetricGatherers metricGatherers);
 
      /**
      * Gets the value of the alerts property.
@@ -142,10 +144,15 @@ public interface ElasticService extends ConfigBeanProxy, Injectable, Named, Refe
           */
          @Override
          public void decorate(AdminCommandContext context, final ElasticService instance) throws TransactionFailure, PropertyVetoException {
-            Alerts writeableAlerts = instance.createChild(Alerts.class);
-             instance.setAlerts(writeableAlerts);
 
              //create the metric gatherers for CPU and URL.  Need a command to update the URL gatherer
+
+             MetricGatherers mgs = instance.createChild(MetricGatherers.class);
+             MetricGatherer mg  =  mgs.createChild(MetricGatherer.class);
+             //create memory gatherer and take defaults
+             mg.setName( "memory");
+             mgs.getMetricGatherer().add(mg);
+             instance.setMetricGatherers(mgs);
 
          }
     }

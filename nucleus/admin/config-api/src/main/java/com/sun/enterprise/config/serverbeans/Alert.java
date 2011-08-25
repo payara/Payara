@@ -100,7 +100,7 @@ public interface Alert extends ConfigBeanProxy, Injectable, Named, ReferenceCont
     @Param(name="schedule", optional=true, defaultValue="10m")
     public void setSchedule(String value) throws PropertyVetoException;
 
-    @Attribute
+    @Attribute (defaultValue = "10m")
     public String getSchedule();
 
     /**
@@ -111,7 +111,7 @@ public interface Alert extends ConfigBeanProxy, Injectable, Named, ReferenceCont
     @Param(name="sample-interval", optional=true, defaultValue="5")
     public void setSampleInterval(int value) throws PropertyVetoException;
 
-    @Attribute
+    @Attribute (defaultValue = "5")
     public int getSampleInterval();
 
     /**
@@ -122,7 +122,7 @@ public interface Alert extends ConfigBeanProxy, Injectable, Named, ReferenceCont
     @Param(name="enabled", optional=true, defaultValue="true")
     public void setEnabled(boolean value) throws PropertyVetoException;
 
-    @Attribute
+    @Attribute  (defaultValue = "true")
     public int getEnabled();
 
     /**
