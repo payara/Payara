@@ -41,22 +41,44 @@
 
 -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.glassfish</groupId>
-        <artifactId>glassfish-nucleus-parent</artifactId>
+        <groupId>org.glassfish.elasticity</groupId>
+        <artifactId>elasticity</artifactId>
         <version>3.2-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
-    <groupId>org.glassfish.elasticity</groupId>
-    <artifactId>elasticity</artifactId>
-    <packaging>pom</packaging>
-    <name>GlassFish Elasticity Engine related modules</name>  
 
-    <modules>
-	<module>elastic-api</module>
-	<module>elastic-engine</module>
-    </modules>
+    <artifactId>elastic-engine</artifactId>
+    <packaging>hk2-jar</packaging>
+    <name>GlassFish Elasticity Engine</name>
+    
+    <developers>
+        <developer>
+            <id>mk111283</id>
+            <name>Mahesh Kannan</name>
+            <organization>Oracle, Inc.</organization>
+            <roles>
+                <role>developer</role>
+                <role>lead</role>
+            </roles>
+        </developer>
+    </developers> 
+    <dependencies>
+        <dependency>
+            <groupId>org.glassfish.hk2</groupId>
+            <artifactId>hk2</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.admin</groupId>
+            <artifactId>config-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.elasticity</groupId>
+            <artifactId>elastic-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+    </dependencies>
 </project>
