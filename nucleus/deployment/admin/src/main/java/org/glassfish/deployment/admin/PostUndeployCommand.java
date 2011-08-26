@@ -39,10 +39,6 @@
  */
 package org.glassfish.deployment.admin;
 
-import com.sun.enterprise.admin.util.ClusterOperationUtil;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.glassfish.api.ActionReport;
@@ -50,15 +46,10 @@ import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.ExecuteOn;
 import org.glassfish.api.admin.FailurePolicy;
-import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.api.admin.Supplemental;
 import org.glassfish.api.deployment.UndeployCommandParameters;
-import org.glassfish.common.util.admin.ParameterMapExtractor;
-import org.glassfish.deployment.common.DeploymentUtils;
 import org.glassfish.hk2.scopes.PerLookup;
-import org.glassfish.internal.deployment.ApplicationLifecycleInterceptor;
-import org.glassfish.internal.deployment.Deployment;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
@@ -72,7 +63,7 @@ import org.jvnet.hk2.component.Habitat;
  * @author Tim Quinn
  */
 @Service(name="_postundeploy")
-@Supplemental(value="undeploy", ifFailure=FailurePolicy.Warn)
+@Supplemental(value="undeploy", ifFailure=FailurePolicy.Warn, on= Supplemental.Timing.AfterReplication)
 @Scoped(PerLookup.class)
 @ExecuteOn(value={RuntimeType.DAS})
 

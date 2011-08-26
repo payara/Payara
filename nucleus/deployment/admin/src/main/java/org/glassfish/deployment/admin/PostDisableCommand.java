@@ -52,7 +52,7 @@ import org.jvnet.hk2.annotations.Service;
  * @author Tim Quinn
  */
 @Service(name="_postdisable")
-@Supplemental(value="disable", ifFailure=FailurePolicy.Warn)
+@Supplemental(value="disable", ifFailure=FailurePolicy.Warn, on= Supplemental.Timing.AfterReplication)
 @Scoped(PerLookup.class)
 @ExecuteOn(value={RuntimeType.DAS})
 
