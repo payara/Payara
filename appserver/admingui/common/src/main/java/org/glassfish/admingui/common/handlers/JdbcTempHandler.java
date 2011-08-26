@@ -114,21 +114,26 @@ public class JdbcTempHandler {
         String resType = (String) extra.get("resType");
         String dbVendorBox = (String) extra.get("DBVendorBox");
         String dbVendorField = (String) extra.get("DBVendorField");
+        String introspect = (String) extra.get("introspect");
+        if (introspect == null || introspect.isEmpty()) {
+            introspect = Boolean.toString(false);
+        }
 
         String dbVendor = (GuiUtil.isEmpty(dbVendorField)) ? dbVendorBox : dbVendorField;
 
         extra.put("DBVendor", dbVendor);
         String previousResType = (String) extra.get("PreviousResType");
         String previousDB = (String) extra.get("PreviousDB");
+        String previousInstrospect = (String) extra.get("PreviousIntrospect");
 
-        if (resType.equals(previousResType) && dbVendor.equals(previousDB)) {
+        if (resType.equals(previousResType) && dbVendor.equals(previousDB) && introspect.equals(previousInstrospect)) {
             //&& !GuiUtil.isEmpty((String) extra.get("DatasourceClassname"))) {
             //User didn't change type and DB, keep the datasource classname as the same.
         } else {
 
             if (!GuiUtil.isEmpty(resType) && !GuiUtil.isEmpty(dbVendor)) {
                 try {
-                    List dsl = getJdbcDriverClassNames(dbVendor, resType, false);
+                    List dsl = getJdbcDriverClassNames(dbVendor, resType, Boolean.valueOf(introspect));
                     if (guiLogger.isLoggable(Level.FINE)) {
                         guiLogger.fine("======= getJdbcDriverClassNames(" + dbVendor + ", " + resType + ")");
                         guiLogger.fine("=======  # of items for JDBC_DRIVER_CLASS_NAMES_KEY  " + dsl.size());
@@ -187,6 +192,7 @@ public class JdbcTempHandler {
 
             extra.put("PreviousResType", resType);
             extra.put("PreviousDB", dbVendor);
+            extra.put("PreviousIntrospect", introspect);
 
         }
     }

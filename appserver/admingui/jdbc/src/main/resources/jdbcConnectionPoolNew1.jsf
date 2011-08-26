@@ -115,6 +115,9 @@
                                     />
                                 </sun:textField>
                             </sun:property>
+                            <sun:property id="introspect"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18njdbc.jdbcPool.introspect}" helpText="$resource{i18njdbc.jdbcPool.introspectHelp}">
+                                <sun:checkbox  selected="#{wizardPoolExtra.introspect}" label="$resource{i18n.common.Enabled}" selectedValue="true" />
+                            </sun:property>
                             
                             "<br /><br />
                         </sun:propertySheetSection>
