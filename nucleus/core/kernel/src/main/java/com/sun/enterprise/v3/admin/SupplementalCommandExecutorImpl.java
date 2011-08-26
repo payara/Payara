@@ -58,6 +58,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.logging.Logger;
+import org.glassfish.internal.api.ServerContext;
 
 /**
  * An executor that executes Supplemental commands means for current command
@@ -78,6 +79,9 @@ public class SupplementalCommandExecutorImpl implements SupplementalCommandExecu
 
     @Inject
     private ServerEnvironment serverEnv;
+
+    @Inject
+    private ServerContext sc;
 
     private final Logger logger = LogDomains.getLogger(SupplementalCommandExecutorImpl.class,
                                         LogDomains.ADMIN_LOGGER);
@@ -212,7 +216,19 @@ public class SupplementalCommandExecutorImpl implements SupplementalCommandExecu
         }
 
         public void execute(AdminCommandContext ctxt) {
-            command.execute(ctxt);
+                Thread thread = Thread.currentThread();
+                ClassLoader origCL = thread.getContextClassLoader();
+                ClassLoader ccl = sc.getCommonClassLoader();
+                if (origCL != ccl) {
+                    try {
+                        thread.setContextClassLoader(ccl);
+                        command.execute(ctxt);
+                    } finally {
+                        thread.setContextClassLoader(origCL);
+                    }
+                } else {
+                    command.execute(ctxt);
+                }
         }
 
         public boolean toBeExecutedBefore() {
