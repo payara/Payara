@@ -238,9 +238,15 @@
                 <!--
                     The resource provided by the findbugs module is needed
                     before running "mvn findbugs:findbugs".  To ensure that,
-                    we build it in in this separate phase.
+                    we build it in this separate phase.
                 -->
                 <module>findbugs</module>
+                <!--
+                    The resource provided by the copyright module is needed
+                    before running "mvn glassfish-copyright:copyright".
+                    To ensure that, we build it in this separate phase.
+                -->
+                <module>copyright</module>
             </modules>
         </profile>
 
@@ -285,6 +291,7 @@
                 <module>nucleus</module>
                 <module>appserver</module>
                 <module>findbugs</module>
+                <module>copyright</module>
             </modules>
         </profile>
     </profiles>
@@ -587,6 +594,23 @@
                     <dependency>
                         <groupId>org.glassfish</groupId>
                         <artifactId>findbugs</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
+            <plugin>
+                <groupId>org.glassfish.copyright</groupId>
+                <artifactId>glassfish-copyright-maven-plugin</artifactId>
+                <version>1.28</version>
+                <configuration>
+                    <excludeFile>
+                        copyright-exclude
+                    </excludeFile>
+                </configuration>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.glassfish</groupId>
+                        <artifactId>copyright</artifactId>
                         <version>${project.version}</version>
                     </dependency>
                 </dependencies>
