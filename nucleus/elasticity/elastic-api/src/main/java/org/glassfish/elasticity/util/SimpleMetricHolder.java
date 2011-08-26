@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package com.oracle.glassfish.elasticity.util;
+package org.glassfish.elasticity.util;
 
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentNavigableMap;
@@ -46,8 +46,8 @@ import java.util.concurrent.TimeUnit;
 
 import org.jvnet.hk2.annotations.Service;
 
-import com.oracle.glassfish.elasticity.api.MetricEntry;
-import com.oracle.glassfish.elasticity.api.MetricHolder;
+import org.glassfish.elasticity.api.MetricEntry;
+import org.glassfish.elasticity.api.MetricHolder;
 
 
 /**

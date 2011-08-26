@@ -37,13 +37,35 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package com.oracle.glassfish.elasticity.api;
+package org.glassfish.elasticity.util;
 
-import org.jvnet.hk2.annotations.Contract;
+import org.glassfish.elasticity.api.MetricFunction;
 
-@Contract
-public interface Action {
+/**
+ * @author Mahesh.Kannan@Oracle.Com
+ */
+public class Sum<T extends Number>
+	implements MetricFunction<T, Double>{
 
-	public void execute();
-	
+    private double sum;
+
+    private int count;
+
+	public void visit(Number value) {
+		sum += value.doubleValue();
+        count++;
+    }
+    
+    public int getCount() {
+        return count;
+    }
+
+    public Double computeResult() {
+        return sum;
+    }
+
+    public void reset() {
+        count = 0;
+        sum = 0;
+    }
 }

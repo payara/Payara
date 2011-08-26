@@ -37,25 +37,13 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package com.oracle.glassfish.elasticity.api;
+package org.glassfish.elasticity.api;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import org.jvnet.hk2.annotations.Contract;
 
-/**
- * Specifies where an Elasticity Metric Gatherer is run
- *  
- * @author Mahesh Kannan
- *
- */
-@Target(ElementType.TYPE)
-@Retention(RetentionPolicy.RUNTIME)
-public @interface ExecuteAt {
+@Contract
+public interface Action {
 
-	public enum Location {ServiceMaster, ServiceInstance};
+	public void execute();
 	
-	
-	public Location value() default Location.ServiceInstance;
 }

@@ -37,39 +37,24 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package com.oracle.glassfish.elasticity.util;
+package org.glassfish.elasticity.engine.util;
 
-import com.oracle.glassfish.elasticity.api.MetricFunction;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 
-/**
- * @author Mahesh.Kannan@Oracle.Com
- */
-public class Average<T extends Number>
-	implements MetricFunction<T, Double>{
+import org.jvnet.hk2.annotations.Service;
 
-    private double sum;
+@Service
+public class ElasticEngineThreadPool
+	extends ScheduledThreadPoolExecutor {
 
-    private int count;
+	private static final int CORE_POOL_SIZE = 8;
+	
+	public ElasticEngineThreadPool() {
+		this(CORE_POOL_SIZE);
+	}	
+	
+	public ElasticEngineThreadPool(int corePoolSize) {
+		super(corePoolSize);
+	}
 
-	public void visit(Number value) {
-		sum += value.doubleValue();
-        count++;
-    }
-    
-    public int getCount() {
-        return count;
-    }
-    
-    public double getSum() {
-    	return sum;
-    }
-
-    public Double computeResult() {
-        return count > 0 ? sum / count : 0;
-    }
-
-    public void reset() {
-        count = 0;
-        sum = 0;
-    }
 }

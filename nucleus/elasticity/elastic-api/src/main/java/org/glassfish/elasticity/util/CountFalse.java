@@ -37,35 +37,33 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package com.oracle.glassfish.elasticity.api;
+package org.glassfish.elasticity.util;
 
-import java.util.Iterator;
-import java.util.concurrent.TimeUnit;
-
-import org.jvnet.hk2.annotations.Contract;
+import org.glassfish.elasticity.api.MetricFunction;
 
 /**
- *
- * @param <V> The type of Metric this class will hold
- * 
  * @author Mahesh.Kannan@Oracle.Com
- * 
  */
-@Contract
-public interface MetricHolder<V extends MetricEntry> {
-	
-	public boolean isEmpty();
-	
-	public MetricAttributeInfo[] getMetricAttributeInfos();
+public class CountFalse
+	implements MetricFunction<Boolean, Integer>{
 
-	public Iterable<V> values(long duration, TimeUnit unit);
-	
-	public interface MetricAttributeInfo {
-		
-		public String getAttributeName();
-		
-		public Class<?> getAttributeType();
-		
-	}
-	
+    private int count;
+
+	public void visit(Boolean value) {
+		if (value.booleanValue() == false) {
+			count++;
+		}
+    }
+    
+    public int getCount() {
+        return count;
+    }
+
+    public Integer computeResult() {
+        return count;
+    }
+
+    public void reset() {
+        count = 0;
+    }
 }

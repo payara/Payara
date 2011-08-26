@@ -37,35 +37,15 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package com.oracle.glassfish.elasticity.engine.util;
+package org.glassfish.elasticity.api;
 
-import java.lang.management.ManagementFactory;
-import java.lang.management.MemoryMXBean;
+import org.jvnet.hk2.annotations.Contract;
 
-import com.oracle.glassfish.elasticity.api.Alert;
-import com.oracle.glassfish.elasticity.api.AlertConfiguration;
-import com.oracle.glassfish.elasticity.api.ExecuteAt;
-import com.oracle.glassfish.elasticity.api.ExecuteAt.Location;
+@Contract
+public interface MetricFunction<V, T> {
 
-/**
- * A simple Alert that uses an expression
- * @author Mahesh Kannan
- *
- * @param <C>
- */
-public class ExpressionBasedAlert<C extends AlertConfiguration>
-	implements Alert<C> {
-
-	private AlertConfiguration config;
+	public void visit(V value);
 	
-	public void initialize(C config) {
-		this.config = config;
-	}
-
-	public AlertState execute() {
-//		MemoryMXBean memBean = ManagementFactory.getMemoryMXBean();
-//		System.out.println("*** Executed ExpressionBasedAlert.execute(): " + memBean.getHeapMemoryUsage());
-		return AlertState.ALARM;
-	}
-
+	public T computeResult();
+	
 }

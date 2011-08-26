@@ -37,24 +37,10 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package com.oracle.glassfish.elasticity.engine.util;
+package org.glassfish.elasticity.api;
 
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-
-import org.jvnet.hk2.annotations.Service;
-
-@Service
-public class ElasticEngineThreadPool
-	extends ScheduledThreadPoolExecutor {
-
-	private static final int CORE_POOL_SIZE = 8;
+public interface MetricEntry {
 	
-	public ElasticEngineThreadPool() {
-		this(CORE_POOL_SIZE);
-	}	
-	
-	public ElasticEngineThreadPool(int corePoolSize) {
-		super(corePoolSize);
-	}
+	public Object getAttribute(String attributeName);
 
 }

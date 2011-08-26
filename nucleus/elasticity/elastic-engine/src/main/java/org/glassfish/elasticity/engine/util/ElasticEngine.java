@@ -37,18 +37,18 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package com.oracle.glassfish.elasticity.engine.util;
+package org.glassfish.elasticity.engine.util;
 
 import java.util.concurrent.TimeUnit;
 
 import org.glassfish.api.Startup;
+import org.glassfish.elasticity.api.AlertConfiguration;
+import org.glassfish.elasticity.api.MetricEntry;
+import org.glassfish.elasticity.api.MetricHolder;
 import org.glassfish.hk2.PostConstruct;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
 
-import com.oracle.glassfish.elasticity.api.AlertConfiguration;
-import com.oracle.glassfish.elasticity.api.MetricEntry;
-import com.oracle.glassfish.elasticity.api.MetricHolder;
 import com.sun.enterprise.config.serverbeans.Alert;
 import com.sun.enterprise.config.serverbeans.Alerts;
 import com.sun.enterprise.config.serverbeans.ElasticService;
@@ -94,13 +94,13 @@ public class ElasticEngine
 			
 		
 		System.out.println("Elastic Services: " + elasticServices);
-		for (ElasticService service : elasticServices.getServices()) {
+		for (ElasticService service : elasticServices.getElasticService()) {
 			System.out.println("Got ElasticService: " + service.getName());
 			System.out.println("Got Alerts: " + service.getAlerts());
-			System.out.println("Got getAlerts: " + service.getAlerts().getAlerts());
+			System.out.println("Got getAlerts: " + service.getAlerts().getAlert());
 			System.out.println("Got getAlert a1: " + service.getAlerts().getAlert("a1"));
 			System.out.println("Got getAlert a1: " + a1.getName());
-			for (Alert alert : service.getAlerts().getAlerts()) {
+			for (Alert alert : service.getAlerts().getAlert()) {
 				System.out.println("Got Altert[" + service.getName() + "]: " + alert.getName());
 			}
 		}

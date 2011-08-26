@@ -37,20 +37,19 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package com.oracle.glassfish.elasticity.engine.util;
+package org.glassfish.elasticity.engine.util;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
 import java.lang.management.MemoryUsage;
 import java.util.concurrent.TimeUnit;
 
+import org.glassfish.elasticity.api.MetricEntry;
+import org.glassfish.elasticity.util.Average;
+import org.glassfish.elasticity.util.SimpleMetricHolder;
 import org.glassfish.hk2.PostConstruct;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
-
-import com.oracle.glassfish.elasticity.api.MetricEntry;
-import com.oracle.glassfish.elasticity.util.Average;
-import com.oracle.glassfish.elasticity.util.SimpleMetricHolder;
 
 @Service(name = "jvm_memory")
 public class JVMMemoryMetricGatherer extends SimpleMetricHolder<MetricEntry>

@@ -37,35 +37,35 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package com.oracle.glassfish.elasticity.util;
+package org.glassfish.elasticity.engine.util;
 
-import com.oracle.glassfish.elasticity.api.MetricFunction;
+import java.lang.management.ManagementFactory;
+import java.lang.management.MemoryMXBean;
+
+import org.glassfish.elasticity.api.Alert;
+import org.glassfish.elasticity.api.AlertConfiguration;
+import org.glassfish.elasticity.api.ExecuteAt;
+import org.glassfish.elasticity.api.ExecuteAt.Location;
 
 /**
- * @author Mahesh.Kannan@Oracle.Com
+ * A simple Alert that uses an expression
+ * @author Mahesh Kannan
+ *
+ * @param <C>
  */
-public class Sum<T extends Number>
-	implements MetricFunction<T, Double>{
+public class ExpressionBasedAlert<C extends AlertConfiguration>
+	implements org.glassfish.elasticity.api.Alert<C> {
 
-    private double sum;
+	private AlertConfiguration config;
+	
+	public void initialize(C config) {
+		this.config = config;
+	}
 
-    private int count;
+	public AlertState execute() {
+//		MemoryMXBean memBean = ManagementFactory.getMemoryMXBean();
+//		System.out.println("*** Executed ExpressionBasedAlert.execute(): " + memBean.getHeapMemoryUsage());
+		return AlertState.ALARM;
+	}
 
-	public void visit(Number value) {
-		sum += value.doubleValue();
-        count++;
-    }
-    
-    public int getCount() {
-        return count;
-    }
-
-    public Double computeResult() {
-        return sum;
-    }
-
-    public void reset() {
-        count = 0;
-        sum = 0;
-    }
 }

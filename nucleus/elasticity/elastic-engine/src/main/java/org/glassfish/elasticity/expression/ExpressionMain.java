@@ -37,33 +37,17 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package com.oracle.glassfish.elasticity.util;
+package org.glassfish.elasticity.expression;
 
-import com.oracle.glassfish.elasticity.api.MetricFunction;
 
-/**
- * @author Mahesh.Kannan@Oracle.Com
- */
-public class CountFalse
-	implements MetricFunction<Boolean, Integer>{
+public class ExpressionMain {
 
-    private int count;
-
-	public void visit(Boolean value) {
-		if (value.booleanValue() == false) {
-			count++;
+	public static void main(String[] args) {
+		ExpressionLexer lexer = new ExpressionLexer("countTrue(avg(cpu.load) > 0.60) / MAX_INSTANCE > 0.60 &&"
+				+ "countTrue(avg(mem.used / mem.max) > 0.60) > 0.70) "
+				+ "||countTrue(avg(mem.used / mem.max) > 0.60) > 0.70");
+		for (Token tok = lexer.next(); tok != lexer.EOSTREAM; tok = lexer.next()) {
+			System.out.println("Token ==> " + tok);
 		}
-    }
-    
-    public int getCount() {
-        return count;
-    }
-
-    public Integer computeResult() {
-        return count;
-    }
-
-    public void reset() {
-        count = 0;
-    }
+	}
 }

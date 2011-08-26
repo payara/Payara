@@ -37,15 +37,39 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package com.oracle.glassfish.elasticity.api;
+package org.glassfish.elasticity.util;
 
-import org.jvnet.hk2.annotations.Contract;
+import org.glassfish.elasticity.api.MetricFunction;
 
-@Contract
-public interface MetricFunction<V, T> {
+/**
+ * @author Mahesh.Kannan@Oracle.Com
+ */
+public class Average<T extends Number>
+	implements MetricFunction<T, Double>{
 
-	public void visit(V value);
-	
-	public T computeResult();
-	
+    private double sum;
+
+    private int count;
+
+	public void visit(Number value) {
+		sum += value.doubleValue();
+        count++;
+    }
+    
+    public int getCount() {
+        return count;
+    }
+    
+    public double getSum() {
+    	return sum;
+    }
+
+    public Double computeResult() {
+        return count > 0 ? sum / count : 0;
+    }
+
+    public void reset() {
+        count = 0;
+        sum = 0;
+    }
 }

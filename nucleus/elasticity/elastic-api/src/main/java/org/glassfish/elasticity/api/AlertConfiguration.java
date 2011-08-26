@@ -37,16 +37,35 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package com.oracle.glassfish.elasticity.expression;
+package org.glassfish.elasticity.api;
 
-public class ExpressionMain {
+import java.io.Serializable;
+import java.util.concurrent.TimeUnit;
 
-	public static void main(String[] args) {
-		ExpressionLexer lexer = new ExpressionLexer("countTrue(avg(cpu.load) > 0.60) / MAX_INSTANCE > 0.60 &&"
-				+ "countTrue(avg(mem.used / mem.max) > 0.60) > 0.70) "
-				+ "||countTrue(avg(mem.used / mem.max) > 0.60) > 0.70");
-		for (Token tok = lexer.next(); tok != lexer.EOSTREAM; tok = lexer.next()) {
-			System.out.println("Token ==> " + tok);
-		}
-	}
+/**
+ * An alert can be configured by an AlertConfiguration object. An AlertConfiguration
+ * typically specifies the thresholds that can be used by a rule, besides
+ * specifying the rate at which the Alert should execute.
+ * 
+ * @author Mahesh.Kannan@Oracle.Com
+ *
+ */
+public interface AlertConfiguration
+	extends Serializable {
+	
+	/**
+	 * The rule name
+	 * 
+	 * @return the rule name
+	 */
+	public String getAlertName();
+	
+	/**
+	 * Return the rate at which the rule (that is configured by this object)
+	 * must run.
+	 *  
+	 * @return the ScheduledTimerDescriptor
+	 */
+	public String getSchedule();
+
 }

@@ -37,21 +37,33 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package com.oracle.glassfish.elasticity.expression;
+package org.glassfish.elasticity.util;
 
-public interface Token {
+import org.glassfish.elasticity.api.MetricFunction;
 
-	public enum TokenId {
-		MULT, DIV, PLUS, MINUS, OPAR, CPAR, OBRACE, CBRACE, 
-		LOGICAL_AND, LOGICAL_OR, LOGICAL_NOT, BIT_AND, BIT_OR,
-		DOUBLE, INTEGER, TRUE, FALSE, STRING, IDENTIFIER, 
-		AT, HASH, PERCENT, CARET, DOT,
-		LT, GT, LTE, GTE, EQ, EQEQ,
-		WHITESPACE,
-		UNKNOWN, EOSTREAM
-	};
+/**
+ * @author Mahesh.Kannan@Oracle.Com
+ */
+public class CountTrue
+	implements MetricFunction<Boolean, Integer>{
 
-	public TokenId getTokenId();
+    private int count;
 
-	public String value();
+	public void visit(Boolean value) {
+		if (value.booleanValue() == true) {
+			count++;
+		}
+    }
+    
+    public int getCount() {
+        return count;
+    }
+
+    public Integer computeResult() {
+        return count;
+    }
+
+    public void reset() {
+        count = 0;
+    }
 }

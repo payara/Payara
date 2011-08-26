@@ -37,11 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package com.oracle.glassfish.elasticity.expression;
+package org.glassfish.elasticity.expression;
 
-import org.omg.CORBA.IdentifierHelper;
-
-import com.oracle.glassfish.elasticity.expression.Token.TokenId;
 
 /**
  * Lexer
@@ -57,31 +54,31 @@ public class ExpressionLexer {
 	
 	private int size;
 
-	public static final Token EOSTREAM = new TokenImpl(TokenId.EOSTREAM, "");
-	public static final Token MULT = new TokenImpl(TokenId.MULT, "*");
-	public static final Token DIV = new TokenImpl(TokenId.DIV, "/");
-	public static final Token PLUS = new TokenImpl(TokenId.PLUS, "+");
-	public static final Token MINUS = new TokenImpl(TokenId.MINUS, "-");
-	public static final Token OPAR = new TokenImpl(TokenId.OPAR, "(");
-	public static final Token CPAR = new TokenImpl(TokenId.CPAR, ")");
-	public static final Token OBRACE = new TokenImpl(TokenId.OBRACE, "{");
-	public static final Token CBRACE = new TokenImpl(TokenId.CBRACE, "}");
-	public static final Token DOT = new TokenImpl(TokenId.DOT, ".");
+	public static final Token EOSTREAM = new TokenImpl(TokenType.EOSTREAM, "");
+	public static final Token MULT = new TokenImpl(TokenType.MULT, "*");
+	public static final Token DIV = new TokenImpl(TokenType.DIV, "/");
+	public static final Token PLUS = new TokenImpl(TokenType.PLUS, "+");
+	public static final Token MINUS = new TokenImpl(TokenType.MINUS, "-");
+	public static final Token OPAR = new TokenImpl(TokenType.OPAR, "(");
+	public static final Token CPAR = new TokenImpl(TokenType.CPAR, ")");
+	public static final Token OBRACE = new TokenImpl(TokenType.OBRACE, "{");
+	public static final Token CBRACE = new TokenImpl(TokenType.CBRACE, "}");
+	public static final Token DOT = new TokenImpl(TokenType.DOT, ".");
 
-	public static final Token LAND = new TokenImpl(TokenId.LOGICAL_AND, "&&");
-	public static final Token LOR = new TokenImpl(TokenId.LOGICAL_OR, "||");
-	public static final Token AND = new TokenImpl(TokenId.BIT_AND, "&");
-	public static final Token OR = new TokenImpl(TokenId.BIT_OR, "|");
+	public static final Token LAND = new TokenImpl(TokenType.LOGICAL_AND, "&&");
+	public static final Token LOR = new TokenImpl(TokenType.LOGICAL_OR, "||");
+	public static final Token AND = new TokenImpl(TokenType.BIT_AND, "&");
+	public static final Token OR = new TokenImpl(TokenType.BIT_OR, "|");
 
-	public static final Token TRUE = new TokenImpl(TokenId.TRUE, "true");
-	public static final Token FALSE = new TokenImpl(TokenId.FALSE, "false");
+	public static final Token TRUE = new TokenImpl(TokenType.TRUE, "true");
+	public static final Token FALSE = new TokenImpl(TokenType.FALSE, "false");
 	
-	public static final Token LT = new TokenImpl(TokenId.LT, "<");
-	public static final Token LTE = new TokenImpl(TokenId.LTE, "<=");
-	public static final Token GT = new TokenImpl(TokenId.LT, ">");
-	public static final Token GTE = new TokenImpl(TokenId.LTE, ">=");
-	public static final Token EQ = new TokenImpl(TokenId.EQ, "=");
-	public static final Token EQEQ = new TokenImpl(TokenId.EQEQ, "==");
+	public static final Token LT = new TokenImpl(TokenType.LT, "<");
+	public static final Token LTE = new TokenImpl(TokenType.LTE, "<=");
+	public static final Token GT = new TokenImpl(TokenType.LT, ">");
+	public static final Token GTE = new TokenImpl(TokenType.LTE, ">=");
+	public static final Token EQ = new TokenImpl(TokenType.EQ, "=");
+	public static final Token EQEQ = new TokenImpl(TokenType.EQEQ, "==");
 	
 	public ExpressionLexer(CharSequence stream) {
 		this.stream = stream;
@@ -97,9 +94,9 @@ public class ExpressionLexer {
 			for (int p = index; index < size; index++) {
 				if (! Character.isJavaIdentifierPart(stream.charAt(index))) {
 					String value = stream.subSequence(p,  index).toString();
-					TokenId tokId = "true".equals(value) 
-							? TokenId.TRUE
-							: ("false".equals(value) ? TokenId.FALSE : TokenId.IDENTIFIER);
+					TokenType tokId = "true".equals(value) 
+							? TokenType.TRUE
+							: ("false".equals(value) ? TokenType.FALSE : TokenType.IDENTIFIER);
 					tok = new TokenImpl(tokId, value);
 					break;
 				}
@@ -123,12 +120,12 @@ public class ExpressionLexer {
 			}
 			
 			tok = new TokenImpl(
-					isDouble ? TokenId.DOUBLE : TokenId.INTEGER,
+					isDouble ? TokenType.DOUBLE : TokenType.INTEGER,
 							stream.subSequence(startIndex,  index).toString());
 		} else if (Character.isWhitespace(stream.charAt(index))) {
 			for (int p = index; index < size; index++) {
 				if (! Character.isWhitespace(stream.charAt(index))) {
-					tok = new TokenImpl(TokenId.WHITESPACE, stream.subSequence(p,  index).toString());
+					tok = new TokenImpl(TokenType.WHITESPACE, stream.subSequence(p,  index).toString());
 					break;
 				}
 			}
@@ -213,7 +210,7 @@ public class ExpressionLexer {
 					tok = LOR;
 				}
 				break;
-			default: tok = new TokenImpl(TokenId.UNKNOWN, "" + stream.charAt(index++));
+			default: tok = new TokenImpl(TokenType.UNKNOWN, "" + stream.charAt(index++));
 			}
 		}
 		
@@ -223,18 +220,18 @@ public class ExpressionLexer {
 	private static final class TokenImpl
 		implements Token {
 		
-		private TokenId id;
+		private TokenType id;
 		private String value;
 		
 		
-		public TokenImpl(TokenId id, String value) {
+		public TokenImpl(TokenType id, String value) {
 			super();
 			this.id = id;
 			this.value = value;
 		}
 		
-		public TokenId getTokenId() {
-			return Token.TokenId.IDENTIFIER; 
+		public TokenType getTokenType() {
+			return TokenType.IDENTIFIER; 
 		}
 		public String value() {
 			return value;
