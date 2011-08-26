@@ -49,10 +49,8 @@ import java.util.logging.Logger;
 
 import com.sun.enterprise.deploy.shared.ArchiveFactory;
 import org.glassfish.api.admin.ServerEnvironment;
-import org.glassfish.api.deployment.DeployCommandParameters;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.OpsParams;
-import org.glassfish.api.deployment.UndeployCommandParameters;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.internal.deployment.ApplicationLifecycleInterceptor;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
@@ -372,6 +370,9 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator, Application
 
     public void before(ExtendedDeploymentContext.Phase phase, ExtendedDeploymentContext context) {
         if (!usingDeployService) {
+            //OpsParams tmp = context.getCommandParameters(OpsParams.class);
+            //System.out.println("before" + phase + " " + tmp.command);
+
             System.out.println("ApplicationLifecycleListener before : " + phase);
             OpsParams params = context.getCommandParameters(OpsParams.class);
             if (phase.equals(ExtendedDeploymentContext.Phase.PREPARE)) {
@@ -386,8 +387,10 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator, Application
                 if (serverEnvironment.isDas()) {
                     ReadableArchive archive = context.getSource();
                     if(params.origin == OpsParams.Origin.undeploy){
+                        if(params.command == OpsParams.Command.disable){
                             String appName = params.name();
                             prepareForUndeploy(appName, archive, context);
+                        }
                     }
                 }
             }
@@ -396,6 +399,8 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator, Application
 
     public void after(ExtendedDeploymentContext.Phase phase, ExtendedDeploymentContext context) {
         if (!usingDeployService) {
+            //OpsParams tmp = context.getCommandParameters(OpsParams.class);
+            //System.out.println("after" + phase + " " + tmp.command);
             System.out.println("ApplicationLifecycleListener after : " + phase);
             if (phase.equals(ExtendedDeploymentContext.Phase.REPLICATION)) {
                 if (serverEnvironment.isDas()) {
@@ -412,12 +417,12 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator, Application
                     if(params.origin == OpsParams.Origin.undeploy){
                             //TODO workaround as REPLICATION event during "undeploy" is called during "post-disable"
                             //and "post-undeploy".
+                        if(params.command == OpsParams.Command.undeploy){
                             String appName = params.name();
-                            if (serviceMetadata.containsKey(appName) && provisionedServices.containsKey(appName)) {
                                 postUndeploy(appName, context.getSource(), context);
                                 serviceMetadata.remove(appName);
                                 provisionedServices.remove(appName);
-                            }
+                        }
                     }
                 }
             }
