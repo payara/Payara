@@ -134,7 +134,7 @@ public interface Alert extends ConfigBeanProxy, Injectable, Named, ReferenceCont
     public void setExpression(String value) throws PropertyVetoException;
 
     @Attribute
-    public int getExpression();
+    public String getExpression();
 
    /**
      * Sets the alert service
