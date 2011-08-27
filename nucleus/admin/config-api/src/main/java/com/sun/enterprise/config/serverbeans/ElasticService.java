@@ -125,8 +125,15 @@ public interface ElasticService extends ConfigBeanProxy, Injectable, Named, Refe
          * @return possible object is
          *         {@link Actions }
          */
-//    @Element
-//    Actions getActions();
+    @Element
+    Actions getActions();
+
+     /**
+     * Sets the Actions element
+     * @param actions
+     */
+
+    void setActions(Actions actions);
 
 
     @Service
@@ -144,15 +151,22 @@ public interface ElasticService extends ConfigBeanProxy, Injectable, Named, Refe
           */
          @Override
          public void decorate(AdminCommandContext context, final ElasticService instance) throws TransactionFailure, PropertyVetoException {
-
-             //create the metric gatherers for CPU and URL.  Need a command to update the URL gatherer
+             //for now, create memory gatherer and take defaults
 
              MetricGatherers mgs = instance.createChild(MetricGatherers.class);
              MetricGatherer mg  =  mgs.createChild(MetricGatherer.class);
-             //create memory gatherer and take defaults
              mg.setName( "memory");
              mgs.getMetricGatherer().add(mg);
              instance.setMetricGatherers(mgs);
+
+             // create the scale up action element
+             Actions actionsS = instance.createChild(Actions.class);
+             ScaleUpAction scaleUpAction = actionsS.createChild(ScaleUpAction.class);
+             scaleUpAction.setName("scale-up-action");
+             actionsS.setScaleUpAction(scaleUpAction);
+             instance.setActions(actionsS);
+
+
 
          }
     }

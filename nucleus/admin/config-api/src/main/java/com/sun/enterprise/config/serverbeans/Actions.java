@@ -39,6 +39,7 @@
  */
 package com.sun.enterprise.config.serverbeans;
 import org.glassfish.api.I18n;
+import org.glassfish.api.Param;
 import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.config.support.Create;
 import org.glassfish.config.support.Delete;
@@ -49,6 +50,8 @@ import org.jvnet.hk2.component.Injectable;
 import org.jvnet.hk2.config.Configured;
 import org.jvnet.hk2.config.Element;
 import org.jvnet.hk2.config.DuckTyped;
+
+import javax.validation.OverridesAttribute;
 import java.util.List;
 
 /**
@@ -70,7 +73,15 @@ public interface Actions  extends ConfigBeanProxy, Injectable {
   @Element
   @Create(value="create-action", resolver= TypeResolver.class,   i18n=@I18n("_create.action.command"))
   @Delete(value="delete-action", resolver= TypeAndNameResolver.class,  i18n=@I18n("_delete.action.command"))
-  public List<ElasticAction> getActions();
+  public List<ElasticAction> getElasticAction();
+
+  @Element
+  public List<LogAction> getLogAction();
+
+  void setScaleUpAction(ScaleUpAction scAction);
+
+  @Element
+   ScaleUpAction getScaleUpAction();
 
   /**
    * Return the action with the given name, or null if no such action exists.
@@ -79,17 +90,27 @@ public interface Actions  extends ConfigBeanProxy, Injectable {
    * @return          the Action object, or null if no such action
    */
   @DuckTyped
-  public ElasticAction  getAction(String name);
+  public ElasticAction  getElasticAction(String name);
+
+    @DuckTyped
+    public LogAction getLogAction(String name);
 
   class Duck {
-      public static ElasticAction getAction(Actions instance, String name) {
-          for (ElasticAction action : instance.getActions()) {
+      public static ElasticAction getElasticAction(Actions instance, String name) {
+          for (ElasticAction action : instance.getElasticAction()) {
               if (action.getName().equals(name)) {
                   return action;
               }
           }
           return null;
       }
-
+      public static LogAction getLogAction(Actions instance, String name) {
+          for (LogAction action : instance.getLogAction()) {
+              if (action.getName().equals(name)) {
+                  return action;
+              }
+          }
+          return null;
+      }
   }
 }

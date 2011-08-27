@@ -145,9 +145,6 @@ public class CreateAlertCommand implements AdminCommand {
                         writeableAlert.setEnabled(enabled);
                     writeableAlerts.getAlert().add(writeableAlert);
                     writeableService.setAlerts(writeableAlerts);
-/*                    try {
-                        t.commit();
-                    } catch (RetryableException ex){}     */
                 }
                 return Boolean.TRUE;
             }
