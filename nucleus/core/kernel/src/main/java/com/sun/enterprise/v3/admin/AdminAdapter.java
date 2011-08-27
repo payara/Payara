@@ -119,8 +119,6 @@ public abstract class AdminAdapter extends StaticHttpHandler implements Adapter,
         SecureAdmin.Util.ADMIN_INDICATOR_HEADER_NAME,
         SecureAdmin.Util.ADMIN_ONE_TIME_AUTH_TOKEN_HEADER_NAME};
 
-    private static final String DAS_LOOK_FOR_CERT_PROPERTY_NAME = "org.glassfish.admin.DASCheckAdminCert";
-
     @Inject
     ModulesRegistry modulesRegistry;
 
@@ -266,14 +264,17 @@ public abstract class AdminAdapter extends StaticHttpHandler implements Adapter,
             /*
              * If an admin request includes a large payload and secure admin is
              * enabled and the request does NOT include a client cert, then
-             * the getUsePrincipal invocation can cause problems.  So normally
-             * the DAS will not look for a client cert. To override this, the user can
-             * set org.glassfish.admin.DASCheckAdminCert=true but s/he should realize
-             * that this can cause problems with large uploads if secure admin
-             * is enabled and no client cert is present.
+             * the getUsePrincipal invocation can cause problems.  When secure
+             * admin is enabled, we set the admin listener configuration on the DAS
+             * to suppress renegotiation for the cert if the client provided none.  The
+             * GlassFish processes, when secure admin is enabled, will provide
+             * their client certs to each other to start with, so no renegotiation
+             * would be needed because the client cert will be available 
+             * immediately to the server.  By suppressing renegotiation this 
+             * way we prevent the problem in which renegotiation interrupts
+             * a large payload.
              */
-            final Principal sslPrincipal = ! env.isDas() ||
-                    Boolean.getBoolean(DAS_LOOK_FOR_CERT_PROPERTY_NAME) ? req.getUserPrincipal() : null;
+            final Principal sslPrincipal = req.getUserPrincipal();
             return authenticator.loginAsAdmin(user, password, as.getAuthRealmName(),
                     req.getRemoteHost(), authRelatedHeaders(req), sslPrincipal);
         }
@@ -325,10 +326,10 @@ public abstract class AdminAdapter extends StaticHttpHandler implements Adapter,
             case FULL:
                 return true;
 
-            case MONITORING:
+            case FORBIDDEN:
                 /*
                  * The request authenticated OK but it is remote and this is the DAS;
-                 * that's why MONITORING rather than FULL came back.
+                 * that's why FORBIDDEN rather than FULL came back.
                  * 
                  * For user-friendliness respond with Forbidden.
                  */

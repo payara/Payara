@@ -72,6 +72,13 @@ public final class PEDomainXmlTokens
     public static final String OSGI_SHELL_TELNET_PORT_TOKEN_NAME = "OSGI_SHELL_TELNET_PORT";
 
     public static final String JAVA_DEBUGGER_PORT_TOKEN_NAME = "JAVA_DEBUGGER_PORT";
+    
+    public static final String ADMIN_CERT_DN_TOKEN_NAME = "ADMIN_CERT_DN";
+    
+    public static final String INSTANCE_CERT_DN_TOKEN_NAME = "INSTANCE_CERT_DN";
+    
+    public static final String SECURE_ADMIN_IDENTIFIER_TOKEN_NAME = "SECURE_ADMIN_IDENTIFIER";
+    
 
     //This token is used for SE/EE only now, but it is likely that we will want to expose it
     //in PE (i.e. to access the exposed Mbeans). Remember that the http jmx port (used by
@@ -156,6 +163,15 @@ public final class PEDomainXmlTokens
         tv = new TokenValue(JAVA_DEBUGGER_PORT_TOKEN_NAME, javaDebuggerPort.toString());
         tokens.add(tv);
 
+        tv = new TokenValue(ADMIN_CERT_DN_TOKEN_NAME, (String) domainConfig.get(DomainConfig.K_ADMIN_CERT_DN));
+        tokens.add(tv);
+        
+        tv = new TokenValue(INSTANCE_CERT_DN_TOKEN_NAME, (String) domainConfig.get(DomainConfig.K_INSTANCE_CERT_DN));
+        tokens.add(tv);
+        
+        tv = new TokenValue(SECURE_ADMIN_IDENTIFIER_TOKEN_NAME, (String) domainConfig.get(DomainConfig.K_SECURE_ADMIN_IDENTIFIER));
+        tokens.add(tv);
+        
         return ( tokens );
     }
 }

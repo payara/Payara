@@ -101,7 +101,8 @@ public abstract class SecureAdminCommand implements AdminCommand {
     private final static String SEC_ADMIN_LISTENER_PROTOCOL_NAME = "sec-admin-listener";
     private final static String REDIRECT_PROTOCOL_NAME = "admin-http-redirect";
     public final static String ADMIN_LISTENER_NAME = "admin-listener";
-
+    private static final String DAS_CONFIG_NAME = "server-config";
+    
     static final Logger logger = LogDomains.getLogger(SecureAdminCommand.class,
                                         LogDomains.ADMIN_LOGGER);
 
@@ -374,7 +375,6 @@ public abstract class SecureAdminCommand implements AdminCommand {
         private static final String CLIENT_AUTH_VALUE = "want";
         private static final String SSL3_ENABLED_VALUE = "false";
         private static final String CLASSNAME_VALUE = "com.sun.enterprise.security.ssl.GlassfishSSLImpl";
-        private static final String DAS_CONFIG_NAME = "server-config";
         private static final String AUTH_LAYER_NAME = "HttpServlet";
         private static final String PROVIDER_ID_VALUE = "GFConsoleAuthModule";
         private static final String REST_AUTH_URL_PROPERTY_NAME = "restAuthURL";
@@ -419,6 +419,7 @@ public abstract class SecureAdminCommand implements AdminCommand {
             ssl_w.setSsl3Enabled(SSL3_ENABLED_VALUE);
             ssl_w.setClassname(CLASSNAME_VALUE);
             ssl_w.setCertNickname(certNickname);
+            ssl_w.setRenegotiateOnClientAuthWant(false);
             return ssl_w;
         }
         
@@ -844,19 +845,18 @@ public abstract class SecureAdminCommand implements AdminCommand {
 
                     /*
                      * Now apply the required changes to the admin listener
-                     * to all configurations in the domain.
+                     * in the DAS configuration.
                      */
                     final Configs configs = domain_w.getConfigs();
-                    for (Config c : configs.getConfig()) {
-                        final Config c_w = t.enroll(c);
-                        ConfigLevelContext configLevelContext = 
-                                new ConfigLevelContext(topLevelContext, c_w);
-                        for (Iterator<Work<ConfigLevelContext>> it = perConfigSteps(); it.hasNext();) {
-                            final Work<ConfigLevelContext> step = it.next();
-                            if ( ! step.run(configLevelContext)) {
-                                t.rollback();
-                                return Boolean.FALSE;
-                            }
+                    final Config c = configs.getConfigByName(DAS_CONFIG_NAME);
+                    final Config c_w = t.enroll(c);
+                    ConfigLevelContext configLevelContext = 
+                            new ConfigLevelContext(topLevelContext, c_w);
+                    for (Iterator<Work<ConfigLevelContext>> it = perConfigSteps(); it.hasNext();) {
+                        final Work<ConfigLevelContext> step = it.next();
+                        if ( ! step.run(configLevelContext)) {
+                            t.rollback();
+                            return Boolean.FALSE;
                         }
                     }
                 }

@@ -59,8 +59,8 @@ public interface AdminAccessController {
      * <ul>
      * <li>FULL - the connection should be permitted full admin access, including
      * the ability to change the configuration
-     * <li>MONITORING - the connection should be permitted to monitor the
-     * server but not to change any configuration
+     * <li>FORBIDDEN - the connection is rejected because it is remote, secure admin
+     * is not enabled, and the connection is not from the DAS to an instance
      * <li>NONE - no access permitted
      * </ul>
      * The calling logic is responsible for enforcing any restrictions as to
@@ -72,7 +72,7 @@ public interface AdminAccessController {
      */
     public static enum Access {
         FULL,
-        MONITORING,
+        FORBIDDEN,
         NONE
     }
 

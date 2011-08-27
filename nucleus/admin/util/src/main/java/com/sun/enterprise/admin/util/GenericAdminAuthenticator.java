@@ -196,16 +196,6 @@ public class GenericAdminAuthenticator implements AdminAccessController, JMXAuth
             return AdminAccessController.Access.NONE;
         }
         
-        /*
-         * If secure admin is not enabled and the special admin indicator is
-         * present, then we assume the request came from another GlassFish
-         * process in the domain and we grant it access.
-         */
-        if ( (adminIndicatorChecker.result() == SpecialAdminIndicatorChecker.Result.MATCHED)
-             && ! SecureAdmin.Util.isEnabled(secureAdmin)) {
-            return AdminAccessController.Access.FULL;
-        }
-        
         final boolean isLocal = isLocalPassword(user, password); //local password gets preference
         if (isLocal) {
             logger.fine("Accepted locally-provisioned password authentication");
@@ -232,17 +222,36 @@ public class GenericAdminAuthenticator implements AdminAccessController, JMXAuth
         }
         
         /*
-         * Last, see if the request has username/password credentials.
+         * If the request is remote make sure we are OK with that, then 
+         * see if the request has username/password credentials.
          */
+        Access access = checkRemoteAccess(originHost, 
+                adminIndicatorChecker.result() == SpecialAdminIndicatorChecker.Result.MATCHED);
+        if (access != Access.FULL) {
+            logger.log(Level.FINE, "Rejected remote access attempt, returning {0}", access.name());
+            return access;
+        }
         if (as.usesFileRealm()) {
             final boolean isUsernamePasswordAuth  = handleFileRealm(user, password);
-            logger.log(Level.FINE, "Not a \"trusted sender\"; file realm user authentication {1} for admin user {0}",
+            logger.log(Level.FINE, "Not an otherwise \"trusted sender\"; file realm user authentication {1} for admin user {0}",
                     new Object[] {user, isUsernamePasswordAuth ? "passed" : "failed"});
-            final Access access;
             if (isUsernamePasswordAuth) {
-                access = chooseAccess(originHost, user);
+                if (serverEnv.isInstance()) {
+                    if (isAuthorizedInternalUser(user)) {
+                        access = Access.FULL;
+                        logger.log(Level.FINE, "Granting access to this instance; user is set up as an internal admin user");
+                    } else {
+                        /*
+                         * Reject normal admin user/password log-in to an instance.
+                         */
+                        access = Access.NONE;
+                        logger.log(Level.FINE, "Rejecting the admin request to this instance; using user/password admin auth but the user is not set up as an internal admin user");
+                    }
+                } else {
+                    logger.log(Level.FINE, "Granting admin access for this request to the DAS; user/password authenticated as a valid admin account");
+                }
                 logger.log(Level.FINE, "Authorized {0} access for user {1}",
-                        new Object[] {access, user});
+                    new Object[] {access, user});
 
             } else {
                 /*
@@ -286,8 +295,8 @@ public class GenericAdminAuthenticator implements AdminAccessController, JMXAuth
                         (as.getAssociatedAuthRealm().getGroupMapping() == null)
                         || ensureGroupMembership(user, realm));
                 return isConsideredInAdminGroup
-                    ?  chooseAccess(originHost, user)
-                    : AdminAccessController.Access.NONE;
+                    ? Access.FULL 
+                    : Access.NONE;
            } catch(Exception e) {
 //              LoginException le = new LoginException("login failed!");
 //              le.initCause(e);
@@ -301,29 +310,42 @@ public class GenericAdminAuthenticator implements AdminAccessController, JMXAuth
     }
 
     /**
-     * Chooses what level of admin access to grant an authenticated user.
+     * Return the access to be granted, if the user turns out to be a valid
+     * admin user, based on whether the request is local or remote and whether
+     * this is the DAS or an instance.
      * <p>
-     * If the current node is not the DAS, then we grant only monitoring access
-     * unless the message was authenticated using an internal admin 
-     * username and password, in which case we grant full access. 
-     * (We do not permit full admin access to instances from end-user clients.)
-     *
-     * If the current node is the DAS, then we grant full admin access only
-     * if the request came from the same host or if secure admin is enabled.
+     * If this is the DAS, then secure admin must be on to accept remote requests
+     * from users.  If this an instance, then it's possible that the DAS is
+     * using username/password authentication in its admin messages to the 
+     * instances.  In that case, we make sure that the admin indicator header
+     * was sent with the request and that its value matches the value in this
+     * server's config.
      * 
-     * @return the access to be granted to the authenticated user
+     * @return the access to be granted to the user if subsequently authorized
      */
-    private Access chooseAccess(final String originHost, final String username) {
-        Access grantedAccess = Access.MONITORING;
-        if (isAuthorizedInternalUser(username)) {
-            grantedAccess = Access.FULL;
+    private Access checkRemoteAccess(final String originHost,
+            final boolean adminIndicatorCheckerMatched) {
+        Access grantedAccess;
+        if (serverEnv.isDas()) {
+            if ( NetUtils.isThisHostLocal(originHost) 
+                 ||
+                 SecureAdmin.Util.isEnabled(secureAdmin) ) {
+                grantedAccess = Access.FULL;
+            } else {
+                logger.log(Level.FINE, "Forbidding the admin request to the DAS; the request is remote and secure admin is not enabled");
+                grantedAccess = Access.FORBIDDEN;
+            }
         } else {
-            if (serverEnv.isDas()) {
-                if ( NetUtils.isThisHostLocal(originHost) 
-                     ||
-                     SecureAdmin.Util.isEnabled(secureAdmin) ) {
-                    grantedAccess = Access.FULL;
-                }
+            /*
+             * This is an instance.  Insist that the admin identifier was
+             * present in the request and matched ours.
+             */
+            if (adminIndicatorCheckerMatched) {
+                grantedAccess = Access.FULL;
+                logger.log(Level.FINE, "Granting access for the admin request to this instance; the request contained the correct unique ID");
+            } else {
+                grantedAccess = Access.NONE;
+                logger.log(Level.FINE, "Rejecting access for the admin request to this instance; the request lacked the unique ID or contained an incorrect one");
             }
         }
         return grantedAccess;

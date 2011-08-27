@@ -49,7 +49,7 @@ import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
 
 /**
- * Adjusts each configuration in the domain to turn off secure admin, as if by
+ * Adjusts the DAS configuration to turn off secure admin, as if by
  * executing these commands:
  * <pre>
  * {@code
@@ -68,7 +68,7 @@ asadmin -s delete-protocol pu-protocol
 @Service(name = "disable-secure-admin")
 @Scoped(PerLookup.class)
 @I18n("disable.secure.admin.command")
-@ExecuteOn(RuntimeType.DAS)
+@ExecuteOn({RuntimeType.DAS,RuntimeType.INSTANCE})
 public class DisableSecureAdminCommand extends SecureAdminCommand {
 
     @Override

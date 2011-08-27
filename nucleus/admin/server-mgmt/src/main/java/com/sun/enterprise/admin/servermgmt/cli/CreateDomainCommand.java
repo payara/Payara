@@ -40,6 +40,7 @@
 
 package com.sun.enterprise.admin.servermgmt.cli;
 
+import com.sun.enterprise.admin.servermgmt.KeystoreManager;
 import java.io.File;
 import java.io.Console;
 import java.util.*;
@@ -552,6 +553,11 @@ public final class CreateDomainCommand extends CLICommand {
                 Boolean.valueOf(checkPorts));
 
         domainConfig.put(DomainConfig.KEYTOOLOPTIONS, keytoolOptions);
+        /*
+         * We must init the secure admin settings after the key tool options
+         * have been set, in case those options override the default CN.
+         */
+        initSecureAdminSettings(domainConfig);
         DomainsManager manager = new PEDomainsManager();
 
         manager.createDomain(domainConfig);
@@ -809,5 +815,16 @@ public final class CreateDomainCommand extends CLICommand {
             config.getContainers().add(newContainerConfig);
         }
         server.stop();
+    }
+    
+    private void initSecureAdminSettings(final DomainConfig config) {
+        config.put(DomainConfig.K_ADMIN_CERT_DN, KeystoreManager.getDASCertDN(config));
+        config.put(DomainConfig.K_INSTANCE_CERT_DN, KeystoreManager.getInstanceCertDN(config));
+        config.put(DomainConfig.K_SECURE_ADMIN_IDENTIFIER, secureAdminIdentifier());
+    }
+    
+    private String secureAdminIdentifier() {
+        final UUID uuid = UUID.randomUUID();
+        return uuid.toString();
     }
 }

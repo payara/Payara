@@ -91,12 +91,11 @@ public class ServerRemoteAdminCommand extends RemoteAdminCommand {
     protected synchronized HttpConnectorAddress getHttpConnectorAddress(String host, int port, boolean shouldUseSecure) {
         /*
          * Return a connector address that uses a cert to authenticate this
-         * process as a client only if secure admin is enabled and if a cert,
-         * rather than an admin username and password, are used for process-to-
+         * process as a client only if a cert,
+         * rather than an admin username and password, is used for process-to-
          * process authentication.
          */
-        if (SecureAdmin.Util.isEnabled(secureAdmin)
-                && ! SecureAdmin.Util.isUsingUsernamePasswordAuth(secureAdmin)) {
+        if (! SecureAdmin.Util.isUsingUsernamePasswordAuth(secureAdmin)) {
             return new HttpConnectorAddress(host, port,
                 sslUtils().getAdminSocketFactory(getCertAlias(), SSL_SOCKET_PROTOCOL));
         } else {
@@ -107,8 +106,7 @@ public class ServerRemoteAdminCommand extends RemoteAdminCommand {
     @Override
     protected AuthenticationInfo authenticationInfo() {
         AuthenticationInfo result = null;
-        if (SecureAdmin.Util.isEnabled(secureAdmin)
-                && SecureAdmin.Util.isUsingUsernamePasswordAuth(secureAdmin)) {
+        if (SecureAdmin.Util.isUsingUsernamePasswordAuth(secureAdmin)) {
             final SecureAdminInternalUser secureAdminInternalUser = SecureAdmin.Util.secureAdminInternalUser(secureAdmin);
             if (secureAdminInternalUser != null) {
                 try {

@@ -65,11 +65,6 @@ import org.jvnet.hk2.component.PerLookup;
  * Records that secure admin is to be used and adjusts each admin listener
  * configuration in the domain to use secure admin.
  *
- * Note that this command is executed only on the DAS.  We rely on
- * synchronization to get this information to the instances.  This is
- * primarily because, currently, the changes to the Grizzly configuration
- * require that all affected servers be restarted to become effective.  
- *
  * The command changes the admin-listener set-up within each separate
  * configuration as if by running
  * these commands:
@@ -109,7 +104,7 @@ import org.jvnet.hk2.component.PerLookup;
 @Service(name = "enable-secure-admin")
 @Scoped(PerLookup.class)
 @I18n("enable.secure.admin.command")
-@ExecuteOn(RuntimeType.DAS)
+@ExecuteOn({RuntimeType.DAS,RuntimeType.INSTANCE})
 public class EnableSecureAdminCommand extends SecureAdminCommand {
 
     @Param(optional = true)

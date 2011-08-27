@@ -176,7 +176,7 @@ public class KeystoreManager {
     public KeystoreManager() {
     }
 
-    protected String getCertificateDN(RepositoryConfig cfg, final String CNSuffix)
+    protected static String getCertificateDN(RepositoryConfig cfg, final String CNSuffix)
     {
         String cn = getCNFromCfg(cfg);
         if (cn == null) {
@@ -192,7 +192,6 @@ public class KeystoreManager {
          */
         String x509DistinguishedName = CERTIFICATE_DN_PREFIX + cn +
                 (CNSuffix != null ? CNSuffix : "") + CERTIFICATE_DN_SUFFIX;
-        System.out.println(_strMgr.getString("CertificateDN", x509DistinguishedName));
         return x509DistinguishedName;  //must be of form "CN=..., OU=..."
     }
 
@@ -249,23 +248,26 @@ public class KeystoreManager {
         final PEFileLayout layout = getFileLayout(config);
         final File keystore = layout.getKeyStore();
         //Create the default self signed cert
-        addSelfSignedCertToKeyStore(keystore, CERTIFICATE_ALIAS, config, masterPassword, null);
+        final String dasCertDN = getDASCertDN(config);
+        System.out.println(_strMgr.getString("CertificateDN", dasCertDN));
+        addSelfSignedCertToKeyStore(keystore, CERTIFICATE_ALIAS, masterPassword, dasCertDN);
 
         // Create the default self-signed cert for instances to use for SSL auth.
-        addSelfSignedCertToKeyStore(keystore, INSTANCE_SECURE_ADMIN_ALIAS, config, masterPassword, INSTANCE_CN_SUFFIX);
+        final String instanceCertDN = getInstanceCertDN(config);
+        System.out.println(_strMgr.getString("CertificateDN", instanceCertDN));
+        addSelfSignedCertToKeyStore(keystore, INSTANCE_SECURE_ADMIN_ALIAS, masterPassword, instanceCertDN);
     }
 
     private void addSelfSignedCertToKeyStore(final File keystore,
             final String alias,
-            final RepositoryConfig config,
             final String masterPassword,
-            final String CNSuffix) throws RepositoryException {
+            final String dn) throws RepositoryException {
         final String[] keytoolCmd = {
             "-genkey",
             "-keyalg", "RSA",
             "-keystore", keystore.getAbsolutePath(),
             "-alias", alias,
-            "-dname", getCertificateDN(config, CNSuffix),
+            "-dname", dn,
             "-validity", "3650",
             "-keypass", masterPassword,
             "-storepass", masterPassword,
@@ -570,7 +572,15 @@ public class KeystoreManager {
         }
     }
 
-    private String getCNFromCfg(RepositoryConfig cfg) {
+    public static String getDASCertDN(final RepositoryConfig cfg) {
+        return getCertificateDN(cfg, null);
+    }
+    
+    public static String getInstanceCertDN(final RepositoryConfig cfg) {
+        return getCertificateDN(cfg, INSTANCE_CN_SUFFIX);
+    }
+    
+    private static String getCNFromCfg(RepositoryConfig cfg) {
         String option = (String)cfg.get(DomainConfig.KEYTOOLOPTIONS);
         if (option == null || option.length() == 0)
             return null;
@@ -589,7 +599,7 @@ public class KeystoreManager {
      * @param ignoreNameCase flag indicating if the comparison should be case insensitive
      * @return
      */
-    private String getValueFromOptionForName(String option, String name, boolean ignoreNameCase) {
+    private static String getValueFromOptionForName(String option, String name, boolean ignoreNameCase) {
         //option is not null at this point
         Pattern p = Pattern.compile(":");
         String[] pairs = p.split(option);
@@ -605,7 +615,7 @@ public class KeystoreManager {
         return null;
     }
 
-    private String getCNFromOption(String option) {
+    private static String getCNFromOption(String option) {
         return getValueFromOptionForName(option, "CN", true);
     }
 }

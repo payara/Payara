@@ -416,11 +416,27 @@
                          <file-cache enabled="false" />
                      </http>
                  </protocol>
+                 <protocol security-enabled="true" name="sec-admin-listener">
+                   <http default-virtual-server="__asadmin" encoded-slash-enabled="true">
+                     <file-cache></file-cache>
+                   </http>
+                   <ssl client-auth="want" ssl3-enabled="false" classname="com.sun.enterprise.security.ssl.GlassfishSSLImpl" cert-nickname="glassfish-instance" renegotiate-on-client-auth-want="false"></ssl>
+                 </protocol>
+                 <protocol name="admin-http-redirect">
+                   <http-redirect secure="true"></http-redirect>
+                 </protocol>
+                 <protocol name="pu-protocol">
+                   <port-unification>
+                     <protocol-finder protocol="sec-admin-listener" name="http-finder" classname="org.glassfish.grizzly.config.portunif.HttpProtocolFinder"></protocol-finder>
+                     <protocol-finder protocol="admin-http-redirect" name="admin-http-redirect" classname="org.glassfish.grizzly.config.portunif.HttpProtocolFinder"></protocol-finder>
+                   </port-unification>
+                 </protocol>
+
              </protocols>
              <network-listeners>
                  <network-listener address="0.0.0.0" port="${HTTP_LISTENER_PORT}" protocol="http-listener-1" transport="tcp" name="http-listener-1" thread-pool="http-thread-pool" />
                  <network-listener address="0.0.0.0" port="${HTTP_SSL_LISTENER_PORT}" protocol="http-listener-2" transport="tcp" name="http-listener-2" thread-pool="http-thread-pool" />
-                 <network-listener port="${ASADMIN_LISTENER_PORT}" protocol="admin-listener" transport="tcp" name="admin-listener" thread-pool="http-thread-pool" />
+                 <network-listener port="${ASADMIN_LISTENER_PORT}" protocol="pu-protocol" transport="tcp" name="admin-listener" thread-pool="http-thread-pool" />
              </network-listeners>
              <transports>
                  <transport name="tcp" />
@@ -444,4 +460,8 @@
      </config>
   </configs>
   <property name="administrative.domain.name" value="%%%DOMAIN_NAME%%%"/>
+  <secure-admin special-admin-indicator="%%%SECURE_ADMIN_IDENTIFIER%%%">
+      <secure-admin-principal dn="%%%ADMIN_CERT_DN%%%"></secure-admin-principal>
+      <secure-admin-principal dn="%%%INSTANCE_CERT_DN%%%"></secure-admin-principal>
+  </secure-admin>
 </domain>

@@ -43,6 +43,7 @@ package com.sun.enterprise.config.serverbeans;
 import java.util.Collections;
 import java.util.List;
 import org.glassfish.api.I18n;
+import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.config.support.Create;
 import org.glassfish.config.support.Delete;
 import org.glassfish.config.support.Listing;
@@ -66,14 +67,30 @@ import org.jvnet.hk2.config.Transaction;
 public interface SecureAdmin extends ConfigBeanProxy, Injectable {
 
     @Element
-    @Create(value="enable-secure-admin-principal", decorator=SecureAdminPrincipal.CrDecorator.class, i18n=@I18n("enable.secure.admin.principal.command"))
-    @Delete(value="disable-secure-admin-principal", resolver=SecureAdminPrincipal.Resolver.class, i18n=@I18n("disable.secure.admin.principal.command"))
+    @Create(value="enable-secure-admin-principal", 
+            decorator=SecureAdminPrincipal.CrDecorator.class, 
+            i18n=@I18n("enable.secure.admin.principal.command"),
+            cluster=@org.glassfish.api.admin.ExecuteOn(
+                value = {RuntimeType.DAS,RuntimeType.INSTANCE}))
+    @Delete(value="disable-secure-admin-principal", 
+            resolver=SecureAdminPrincipal.Resolver.class, 
+            i18n=@I18n("disable.secure.admin.principal.command"),
+            cluster=@org.glassfish.api.admin.ExecuteOn(
+                value = {RuntimeType.DAS,RuntimeType.INSTANCE}))
     @Listing(value="list-secure-admin-principals", i18n=@I18n("list.secure.admin.principals.command"))
     public List<SecureAdminPrincipal> getSecureAdminPrincipal();
     
     @Element
-    @Create(value="enable-secure-admin-internal-user", decorator=SecureAdminInternalUser.CrDecorator.class, i18n=@I18n("enable.secure.admin.internal.user.command"))
-    @Delete(value="disable-secure-admin-internal-user", resolver=TypeAndNameResolver.class, i18n=@I18n("disable.secure.admin.internal.user.command"))
+    @Create(value="enable-secure-admin-internal-user", 
+            decorator=SecureAdminInternalUser.CrDecorator.class, 
+            i18n=@I18n("enable.secure.admin.internal.user.command"),
+            cluster=@org.glassfish.api.admin.ExecuteOn(
+                value = {RuntimeType.DAS,RuntimeType.INSTANCE}))
+    @Delete(value="disable-secure-admin-internal-user", 
+            resolver=TypeAndNameResolver.class, 
+            i18n=@I18n("disable.secure.admin.internal.user.command"),
+            cluster=@org.glassfish.api.admin.ExecuteOn(
+                value = {RuntimeType.DAS,RuntimeType.INSTANCE}))
     @Listing(value="list-secure-admin-internal-users", i18n=@I18n("list.secure.admin.internal.user.command"))
     public List<SecureAdminInternalUser> getSecureAdminInternalUser();
 

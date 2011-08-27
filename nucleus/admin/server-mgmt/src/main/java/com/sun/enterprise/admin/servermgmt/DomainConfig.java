@@ -93,6 +93,11 @@ public class DomainConfig extends RepositoryConfig
     
     public static final int K_FLAG_START_DOMAIN_NEEDS_ADMIN_USER = 0x1;    
     public static final String KEYTOOLOPTIONS = "keytooloptions";
+    
+    public static final String K_ADMIN_CERT_DN = "domain.admin.cert.dn";
+    public static final String K_INSTANCE_CERT_DN = "domain.instance.cert.dn";
+    public static final String K_SECURE_ADMIN_IDENTIFIER = "domain.indicator";
+    
     /**
      * The DomainConfig always contains the K_DOMAINS_ROOT and K_HOST_NAME
      * attributes.
@@ -140,7 +145,7 @@ public class DomainConfig extends RepositoryConfig
             put(K_JMX_PORT, jmxAdminPort);
             put(K_OSGI_SHELL_TELNET_PORT, osgiShellTelnetPort);
             put(K_JAVA_DEBUGGER_PORT, javaDebuggerPort);
-
+            
             if (domainProperties != null) {
                 for (String pname : domainProperties.stringPropertyNames()) {
                     put(pname, domainProperties.getProperty(pname));
