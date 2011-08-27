@@ -80,6 +80,42 @@ public class ServiceUtil implements PostConstruct {
         return entry != null;
     }
 
+    // set a general property for application-scoped-service config element.
+    public void setProperty(String serviceName, String appName,
+                            final String propName, final String propValue) {
+        Service matchingService = getService(serviceName, appName);
+        if(matchingService != null){
+            try {
+                if (ConfigSupport.apply(new SingleConfigCode<Service>() {
+                    public Object run(Service serviceConfig) throws PropertyVetoException, TransactionFailure {
+                        Property property = serviceConfig.getProperty(propName);
+                        if (property != null) {
+                            Transaction t = Transaction.getTransaction(serviceConfig);
+                            Property p_w = t.enroll(property);
+                            p_w.setValue(propValue);
+
+                        } else {
+                            Property prop = serviceConfig.createChild(Property.class);
+                            prop.setName(propName);
+                            prop.setValue(propValue);
+                            serviceConfig.getProperty().add(prop);
+                        }
+                        return serviceConfig;
+                    }
+                }, matchingService) == null) {
+                    String msg = "Unable to update property ["+propName+"] of service ["+serviceName+"]";
+                    System.out.println(msg);
+                    throw new RuntimeException(msg);
+                }
+            } catch (TransactionFailure transactionFailure) {
+                transactionFailure.printStackTrace();
+                throw new RuntimeException(transactionFailure.getMessage(), transactionFailure);
+            }
+        }else{
+            throw new RuntimeException("Invalid service, no such service ["+serviceName+"] found");
+        }
+    }
+
     public void updateInstanceID(String serviceName, String appName, final String instanceID, ServiceType type) {
         updateInstanceIDThroughConfig(serviceName, appName, instanceID);
     }

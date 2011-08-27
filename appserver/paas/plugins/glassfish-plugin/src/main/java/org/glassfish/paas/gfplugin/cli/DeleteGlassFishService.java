@@ -51,6 +51,10 @@ import org.glassfish.paas.orchestrator.provisioning.ServiceInfo;
 import org.glassfish.paas.orchestrator.provisioning.ProvisionerUtil;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceType;
 import org.glassfish.paas.orchestrator.provisioning.iaas.CloudProvisioner;
+import org.glassfish.virtualization.runtime.VirtualCluster;
+import org.glassfish.virtualization.runtime.VirtualClusters;
+import org.glassfish.virtualization.spi.TemplateRepository;
+import org.glassfish.virtualization.spi.VirtualMachine;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
@@ -59,6 +63,7 @@ import org.jvnet.hk2.component.PerLookup;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.Future;
 
 /**
  * @author Jagadish Ramu
@@ -83,6 +88,13 @@ public class DeleteGlassFishService implements AdminCommand {
     @Inject
     private GlassFishServiceUtil gfServiceUtil;
 
+    @Inject(optional = true) // made it optional for non-virtual scenario to work
+    private TemplateRepository templateRepository;
+
+    // TODO :: remove dependency on VirtualCluster(s).
+    @Inject(optional = true) // made it optional for non-virtual scenario to work
+    VirtualClusters virtualClusters;
+
     public void execute(AdminCommandContext context) {
         final ActionReport report = context.getActionReport();
 
@@ -98,6 +110,36 @@ public class DeleteGlassFishService implements AdminCommand {
         if (!gfServiceUtil.isServiceAlreadyConfigured(serviceName, appName, ServiceType.APPLICATION_SERVER)) {
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setMessage("Service with name ["+serviceName+"] not found");
+        }
+
+        if (templateRepository != null && virtualClusters != null) { // we are in virtualized environment.
+            String dasIPAddress = gfServiceUtil.getDASIPAddress(serviceName);
+            ApplicationServerProvisioner provisioner =
+                    provisionerUtil.getAppServerProvisioner(dasIPAddress);
+            provisioner.stopCluster(dasIPAddress, serviceName); // this stops all the VMs also.
+            if (virtualClusters != null && serviceName != null) {
+                try {
+                    VirtualCluster virtualCluster = virtualClusters.byName(serviceName);
+                    Collection<String> instances =
+                            gfServiceUtil.getAllSubComponents(serviceName, appName);
+                    for(String instance : instances){
+                        String vmId = gfServiceUtil.getInstanceID(
+                                instance, appName, ServiceType.APPLICATION_SERVER);
+                        VirtualMachine vm = virtualCluster.vmByName(vmId); // TODO :: IMS should give differnt way to get hold of VM using the vmId
+                        vm.delete(); // TODO :: use executor service.
+                        gfServiceUtil.unregisterASInfo(instance, appName);
+                    }
+                    if (virtualCluster != null) {
+                        virtualClusters.remove(virtualCluster);  // removes config.
+                    }
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+            }
+            // TODO :: delete instances manually before deleting the cluster.
+            provisioner.deleteCluster(dasIPAddress, serviceName, false);
+            gfServiceUtil.unregisterASInfo(serviceName, appName);
+            return; //we are done unprovisioning...
         }
 
         String clusterName = gfServiceUtil.getClusterName(serviceName, appName);

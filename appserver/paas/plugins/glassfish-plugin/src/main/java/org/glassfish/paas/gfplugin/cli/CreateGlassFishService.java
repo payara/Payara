@@ -68,6 +68,7 @@ import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
@@ -211,6 +212,10 @@ public class CreateGlassFishService implements AdminCommand, Runnable {
     private void update(ServiceInfo entry) {
         gfServiceUtil.updateIPAddress(entry.getServiceName(), entry.getAppName(), entry.getIpAddress(), ServiceType.APPLICATION_SERVER);
         gfServiceUtil.updateState(entry.getServiceName(), entry.getAppName(), entry.getState(), ServiceType.APPLICATION_SERVER);
+        for(String property : entry.getProperties().keySet()) {
+            gfServiceUtil.setProperty(entry.getServiceName(), entry.getAppName(),
+                    property, entry.getProperties().get(property));
+        }
     }
 
 
@@ -222,8 +227,8 @@ public class CreateGlassFishService implements AdminCommand, Runnable {
                 // search for matching template based on service characteristics
                 if (serviceCharacteristics != null) {
                     /**
-                     * TODO :: use templateRepository.get(ServiceCriteria) when
-                     * an implementation of ServiceCriteria becomes available.
+                     * TODO :: use templateRepository.get(SearchCriteria) when
+                     * an implementation of SearchCriteria becomes available.
                      * for now, iterate over all template instances and find the right one.
                      */
                     Set<TemplateCondition> andConditions = new HashSet<TemplateCondition>();
@@ -269,18 +274,44 @@ public class CreateGlassFishService implements AdminCommand, Runnable {
                         provisionerUtil.getAppServerProvisioner(dasIPAddress);
                 provisioner.createCluster(dasIPAddress, serviceName);
 
+                // start the cluster.
+                // TODO :: uncomment startCluster once the _synchronize_files issue is fixed.
+                // provisioner.startCluster(dasIPAddress, serviceName);
+
+                // add app-scoped-service config for orchestrator to keep track of services.
+                ServiceInfo entry = new ServiceInfo();
+                entry.setServerType(ServiceInfo.Type.Cluster.toString());
+                entry.setIpAddress("NA");
+                entry.setServiceName(serviceName);
+                entry.setAppName(appName);
+                entry.setState(ServiceInfo.State.Running.toString());
+                update(entry);
+
                 // provision VMs.
                 VirtualCluster vCluster = virtualClusters.byName(serviceName);
                 String maxClusterSize = serviceConfigurations.getProperty("max.clustersize");
                 int max = maxClusterSize != null ? Integer.parseInt(maxClusterSize) : 0;
+                List<ListenableFuture<AllocationPhase, VirtualMachine>> futures =
+                        new ArrayList<ListenableFuture<AllocationPhase, VirtualMachine>>();
+
                 for (int i = 0; i < max; i++) {
                     ListenableFuture<AllocationPhase, VirtualMachine> future =
                             iaas.allocate(new VMOrder(matchingTemplate, vCluster), null);
-                    VirtualMachine vm = future.get();
+                    futures.add(future);
                 }
 
-                // start the cluster.
-                provisioner.startCluster(dasIPAddress, serviceName);
+                for (ListenableFuture<AllocationPhase, VirtualMachine> future : futures) {
+                    VirtualMachine vm = future.get();
+                    // add app-scoped-service config for each vm instance as well.
+                    entry = new ServiceInfo();
+                    entry.setServiceName(serviceName + "." + vm.getName());
+                    entry.setServerType(ServiceInfo.Type.ClusterInstance.toString());
+                    entry.setIpAddress(vm.getAddress());
+                    entry.setInstanceId(vm.getName());
+                    entry.setState(ServiceInfo.State.Running.toString());
+                    entry.setAppName(appName);
+                    gfServiceUtil.registerASInfo(entry);
+                }
             } catch (Throwable ex) {
                 throw new RuntimeException(ex);
             }

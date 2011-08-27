@@ -40,6 +40,10 @@
 
 package org.glassfish.paas.orchestrator.provisioning;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
+
 /**
  * @author bhavanishankar@java.net
  */
@@ -57,6 +61,9 @@ public class ServiceInfo {
 
     //not-null when its application scoped service.
     private String appName;
+
+    // general name-values.
+    Map<String,String> properties = new HashMap();
 
     public static enum State {
         Initializing, NotRunning, Running, Stop_in_progress, Start_in_progress, Delete_in_progress
@@ -115,6 +122,14 @@ public class ServiceInfo {
         this.state = state;
     }
 
+    public void setProperty(String name, String value) {
+        properties.put(name, value);
+    }
+
+    public Map<String,String> getProperties() {
+        return properties;
+    }
+    
     @Override
     public String toString() {
         return "ServiceInfo :: \n" +

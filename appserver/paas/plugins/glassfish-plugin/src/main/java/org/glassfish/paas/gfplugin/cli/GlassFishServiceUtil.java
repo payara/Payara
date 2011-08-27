@@ -89,6 +89,20 @@ public class GlassFishServiceUtil implements PostConstruct {
         serviceUtil.updateInstanceID(serviceName, appName, instanceID, type);
     }
 
+    // Set the value of a property in application-scoped-service config element for given service name.
+    public void setProperty(String serviceName, String appName, String propName, String propValue) {
+        serviceUtil.setProperty(serviceName, appName, propName, propValue);
+    }
+
+    // Get the value of a property in application-scoped-service config element for given service name.
+    public String getProperty(String serviceName, String property) {
+        for(Service service : serviceUtil.getServices().getServices()) {
+            return service.getServiceName().equals(serviceName) ?
+                    service.getProperty(property).getValue() : null;
+        }
+        return null;
+    }
+    
     public void updateIPAddress(String serviceName, String appName, String IPAddress, ServiceType type) {
         serviceUtil.updateIPAddress(serviceName, appName, IPAddress, type);
     }
