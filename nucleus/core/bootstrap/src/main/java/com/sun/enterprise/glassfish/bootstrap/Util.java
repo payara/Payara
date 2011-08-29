@@ -48,10 +48,7 @@ import java.net.URLConnection;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 import java.util.logging.Logger;
 
 /**
@@ -311,6 +308,26 @@ public class Util {
             String name = (String) e.nextElement();
             props.setProperty(name,
                     substVars(props.getProperty(name), name, null, props));
+        }
+    }
+
+    /**
+     * Override property values in the given properties object by values set in corresponding property names in
+     * System properties object.
+     *
+     * @param platformConf which will be updated by corresponding values in System properties.
+     * @param excluding property names that should not be overridden
+     */
+    public static void overrideBySystemProps(Properties platformConf, Collection<String> excluding) {
+        Properties sysProps = System.getProperties();
+        for (Map.Entry<Object, Object> entry: platformConf.entrySet()) {
+            if (excluding.contains(entry.getKey())) {
+                continue;
+            }
+            Object systemPropValue = sysProps.get(entry.getKey());
+            if (systemPropValue != null && !systemPropValue.equals(entry.getValue())) {
+                platformConf.put(entry.getKey(), systemPropValue);
+            }
         }
     }
 }
