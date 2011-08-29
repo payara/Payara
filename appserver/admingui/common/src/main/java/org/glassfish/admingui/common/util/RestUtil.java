@@ -189,6 +189,8 @@ public class RestUtil {
             restResponse = get(endpoint, attrs);
         } else if ("delete".equals(method)) {
             restResponse = delete(endpoint, attrs);
+        } else {
+            throw new RuntimeException(GuiUtil.getCommonMessage("rest.invalid_method", new Object[]{method}));
         }
 
         // If the REST request returns a 401 (authz required), the REST "session"
@@ -377,7 +379,7 @@ public class RestUtil {
                     //If this is called from the jsf as handler, we want to stop processing and show error
                     //instead of dumping the exception on screen.
                     if (throwException) {
-                        if (message == null) {
+                        if ("".equals(message)) {
                             GuiUtil.handleException(handlerCtx, ex);
                         } else {
                             GuiUtil.handleError(handlerCtx, message);
@@ -385,7 +387,7 @@ public class RestUtil {
                     }
                 } else {
                     //if this is called by other java handler, we tell the called handle the exception.
-                    if (message == null){
+                    if ("".equals(message)) {
                         throw new RuntimeException(ex);
                     }else{
                         throw new RuntimeException(message, ex);
