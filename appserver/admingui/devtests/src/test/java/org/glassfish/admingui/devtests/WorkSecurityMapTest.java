@@ -49,7 +49,7 @@ public class WorkSecurityMapTest extends BaseSeleniumTestClass {
 
     private static final String TRIGGER_WORK_SECURITY_MAPS = "i18njca.workSecurityMaps.pageTitleHelp";
     private static final String TRIGGER_NEW_WORK_SECURITY_MAP = "i18njca.workSecurityMap.newPageTitleHelp";
-    private static final String TRIGGER_EDIT_WORK_SECURITY_MAP = "i18njca.workSecurityMap.editPageTitleHelp";
+    public static final String TRIGGER_EDIT_WORK_SECURITY_MAP = "i18njca.workSecurityMap.editPageTitleHelp";
 
     @Test
     public void testWorkSecurityMaps() throws Exception {

@@ -49,7 +49,7 @@ public class AdminObjectTest extends BaseSeleniumTestClass {
 
     private static final String TRIGGER_NEW_ADMIN_OBJECT_RESOURCE = "i18njca.adminObject.NewPageTitleHelp";
 
-    private static final String TRIGGER_EDIT_ADMIN_OBJECT_RESOURCE = "i18njca.adminObjectResource.editPageHelp";
+    public static final String TRIGGER_EDIT_ADMIN_OBJECT_RESOURCE = "i18njca.adminObjectResource.editPageHelp";
 
     @Test
     public void testAdminObjectResources() throws Exception {

@@ -48,8 +48,8 @@ import static org.junit.Assert.assertTrue;
 public class JndiTest extends BaseSeleniumTestClass {
     private static final String TRIGGER_CUSTOM_RESOURCES = "i18njmail.customResources.pageTitleHelp";
     private static final String TRIGGER_NEW_CUSTOM_RESOURCE = "i18njmail.customResource.newPageTitleHelp";
-    private static final String TRIGGER_EDIT_CUSTOM_RESOURCE = "i18njmail.customResource.editPageTitleHelp";
-    private static final String TRIGGER_EDIT_EXTERNAL_RESOURCE = "i18njmail.jndiResource.editPageTitleHelp";
+    public static final String TRIGGER_EDIT_CUSTOM_RESOURCE = "i18njmail.customResource.editPageTitleHelp";
+    public static final String TRIGGER_EDIT_EXTERNAL_RESOURCE = "i18njmail.jndiResource.editPageTitleHelp";
     private static final String TRIGGER_EXTERNAL_RESOURCES = "i18njmail.externalResources.pageTitleHelp";
     private static final String TRIGGER_NEW_EXTERNAL_RESOURCE = "i18njmail.jndiResource.newPageTitleHelp";
 

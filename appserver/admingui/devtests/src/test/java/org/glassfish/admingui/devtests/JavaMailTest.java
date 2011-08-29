@@ -49,7 +49,7 @@ import static org.junit.Assert.assertTrue;
 public class JavaMailTest extends BaseSeleniumTestClass {
     private static final String TRIGGER_JAVA_MAIL = "i18njmail.javaMailSessions.pageTitleHelp";
     private static final String TRIGGER_NEW_JAVAMAIL_SESSION = "i18njmail.javaMail.newPageTitleHelp";
-    private static final String TRIGGER_EDIT_JAVAMAIL_SESSION = "i18njmail.javaMail.editPageTitleHelp";
+    public static final String TRIGGER_EDIT_JAVAMAIL_SESSION = "i18njmail.javaMail.editPageTitleHelp";
 
     @Test
     public void createMailResource() {

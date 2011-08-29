@@ -70,6 +70,7 @@ public class MonitoringTest extends BaseSeleniumTestClass {
     private static final String TRIGGER_MONITORING_SERVER = "Server Monitoring";
     private static final String TRIGGER_MONITORING_RESOURCES = "Resources Monitoring";
     private static final String MONITORING_APPLICATIONS_COMPONENT_DROPDOWN_ID = "propertyForm:propertyContentPage:propertySheet:viewPropertySection:ApplicationProp:ComponentView_list";
+    private static final String MONITORING_APPLICATIONS_APPLICATION_DROPDOWN_ID = "propertyForm:propertyContentPage:propertySheet:viewPropertySection:ApplicationProp:View_list";
 
     @Test
     public void dummy() {
@@ -306,6 +307,22 @@ public class MonitoringTest extends BaseSeleniumTestClass {
         setMonitorLevel("Web Container", MONITOR_LEVEL_OFF, false, target, targetType);
         setMonitorLevel("EJB Container", MONITOR_LEVEL_OFF, false, target, targetType);
         undeployApp(appName, targetType);
+    }
+
+    public void appScopedResourcesMonitoring(String target, String targetType, String resName) {
+        final String statsHeader = "Application Scoped Resource Statistics : JavaEEApp-war.war/resources/"+resName;
+        final String statDescription = "Number of potential connection leaks";
+
+        setMonitorLevel(null, MONITOR_LEVEL_HIGH, true, target, targetType);
+        goToMonitoringApplicationsPage(target, targetType);
+
+        selectDropdownOption(MONITORING_APPLICATIONS_APPLICATION_DROPDOWN_ID, "JavaEEApp-war.war");        
+        selectDropdownOption(MONITORING_APPLICATIONS_COMPONENT_DROPDOWN_ID, resName);
+        waitForPageLoad(statsHeader, 10000);
+        assertTrue(isTextPresent(statsHeader));
+        assertTrue(isTextPresent(statDescription));
+
+        setMonitorLevel(null, MONITOR_LEVEL_OFF, true, target, targetType);
     }
 
     private void statefulAndStatelessBeanMonitoring(String target, String targetType) {

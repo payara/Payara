@@ -47,6 +47,9 @@ import static org.junit.Assert.assertTrue;
 
 public class JdbcTest extends BaseSeleniumTestClass {
     public static final String TRIGGER_JDBC_CONNECTION_POOLS = "i18njdbc.jdbcConnectionPools.pageTitleHelp";
+    public static final String TRIGGER_EDIT_JDBC_CONNECTION_POOL = "i18njdbc.jdbcConnection.editPageHelp";
+    public static final String TRIGGER_ADVANCE_JDBC_CONNECTION_POOL = "i18njdbc.jdbcConnectionPool.advancePageTitleHelp";
+    public static final String TRIGGER_PROPS_JDBC_CONNECTION_POOL = "i18njdbc.jdbcConnectionPool.propertyPageTitleHelp";
     public static final String TRIGGER_JDBC_RESOURCES = "i18njdbc.jdbcResources.pageTitleHelp";
     public static final String TRIGGER_EDIT_JDBC_RESOURCE = "i18njdbc.jdbcResource.editPageTitleHelp";
     public static final String TRIGGER_NEW_JDBC_CONNECTION_POOL_STEP_1 = "i18njdbc.jdbcConnection.step1PageHelp";

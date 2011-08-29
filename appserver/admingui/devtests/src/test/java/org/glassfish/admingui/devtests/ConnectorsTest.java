@@ -49,12 +49,14 @@ public class ConnectorsTest extends BaseSeleniumTestClass {
     private static final String TRIGGER_CONNECTOR_CONNECTION_POOLS = "i18njca.connectorConnectionPools.pageTitleHelp";
     private static final String TRIGGER_NEW_CONNECTOR_CONNECTION_POOL_STEP_1 = "i18njca.connectorConnectionPool.step1PageTitle";
     private static final String TRIGGER_NEW_CONNECTOR_CONNECTION_POOL_STEP_2 = "i18njca.connectorConnectionPool.step2PageTitle";
-    private static final String TRIGGER_EDIT_CONNECTOR_CONNECTION_POOL = "i18njca.connectorConnectionPool.editPageTitle";
+    public static final String TRIGGER_EDIT_CONNECTOR_CONNECTION_POOL = "i18njca.connectorConnectionPool.editPageTitleHelp";
+    public static final String TRIGGER_ADVANCE_CONNECTOR_CONNECTION_POOL = "i18njca.connectorConnectionPool.advancePageTitleHelp";
+    public static final String TRIGGER_PROPS_CONNECTOR_CONNECTION_POOL = "i18njca.connectorConnectionPool.propertyPageTitleHelp";
     private static final String TRIGGER_CONNECTOR_RESOURCE = "i18njca.connectorResources.pageTitleHelp";
     private static final String TRIGGER_NEW_CONNECTOR_RESOURCE = "i18njca.connectorResource.newPageTitle";
-    private static final String TRIGGER_EDIT_CONNECTOR_RESOURCE = "i18njca.connectorResource.editPageTitle";
+    public static final String TRIGGER_EDIT_CONNECTOR_RESOURCE = "i18njca.connectorResource.editPageTitle";
 
-    private static final String TRIGGER_CONNECTOR_SECURITY_MAPS = "i18njca.connectorSecurityMaps.pageTitle";
+    public static final String TRIGGER_CONNECTOR_SECURITY_MAPS = "i18njca.connectorSecurityMaps.pageTitle";
     private static final String TRIGGER_NEW_CONNECTOR_SECURITY_MAP = "i18njca.connectorSecurityMap.newPageTitle";
     private static final String TRIGGER_EDIT_CONNECTOR_SECURITY_MAP = "i18njca.connectorSecurityMap.editPageTitle";
 

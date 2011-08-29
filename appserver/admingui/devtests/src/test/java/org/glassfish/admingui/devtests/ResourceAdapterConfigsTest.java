@@ -48,7 +48,7 @@ import static org.junit.Assert.*;
 public class ResourceAdapterConfigsTest extends BaseSeleniumTestClass {
     private static final String TRIGGER_RESOURCE_ADAPTER_CONFIGS = "i18njca.resourceAdapterConfig.pageTitleHelp";
     private static final String TRIGGER_NEW_RESOURCE_ADAPTER = "i18njca.resourceAdapterConfig.newPageTitleHelp";
-    private static final String TRIGGER_EDIT_RESOURCE_ADAPTER_CONFIG = "i18njca.resourceAdapterConfig.editPageTitleHelp";
+    public static final String TRIGGER_EDIT_RESOURCE_ADAPTER_CONFIG = "i18njca.resourceAdapterConfig.editPageTitleHelp";
 
     @Test
     public void testResourceAdapterConfigs() throws Exception {
