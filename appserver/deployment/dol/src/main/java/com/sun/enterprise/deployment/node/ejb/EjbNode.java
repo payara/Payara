@@ -148,10 +148,9 @@ public abstract class EjbNode extends DisplayableComponentNode {
      * @param parent node for the DOM tree
      * @param the descriptor to write
      */    
-    protected void writeCommonHeaderEjbDescriptor(Node ejbNode, Descriptor descriptor) {
-        EjbDescriptor ejbDescriptor = (EjbDescriptor)descriptor;
+    protected void writeCommonHeaderEjbDescriptor(Node ejbNode, EjbDescriptor descriptor) {
         appendTextChild(ejbNode, EjbTagNames.EJB_NAME, descriptor.getName());                       
-        appendTextChild(ejbNode, TagNames.MAPPED_NAME, ejbDescriptor.getMappedName());                       
+        appendTextChild(ejbNode, TagNames.MAPPED_NAME, descriptor.getMappedName());                       
     }    
     
     /**
@@ -161,7 +160,6 @@ public abstract class EjbNode extends DisplayableComponentNode {
      * @param the EJB descriptor the security information to be retrieved
      */        
     protected void writeSecurityIdentityDescriptor(Node parent,  EjbDescriptor descriptor) {
-        
         if (!descriptor.getUsesCallerIdentity() && descriptor.getRunAsIdentity()==null) 
             return;
         
