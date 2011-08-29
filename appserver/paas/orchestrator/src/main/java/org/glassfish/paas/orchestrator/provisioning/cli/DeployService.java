@@ -40,6 +40,7 @@
 
 package org.glassfish.paas.orchestrator.provisioning.cli;
 
+import com.sun.enterprise.config.serverbeans.Applications;
 import com.sun.enterprise.deploy.shared.ArchiveFactory;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
@@ -51,12 +52,17 @@ import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
-
+import org.glassfish.api.admin.RestAttachment;
+import org.glassfish.api.admin.RestAttachment.OpType;
+import org.glassfish.api.admin.RestAttachments;
 import java.io.File;
 
 @Service(name = "cloud-deploy")
 @Scoped(PerLookup.class)
 @CommandLock(CommandLock.LockType.NONE)
+@RestAttachments({
+    @RestAttachment(configBean=Applications.class, opType=OpType.POST, path="cloud-deploy", description="Deploy Cloud Application")
+})
 public class DeployService implements AdminCommand {
 
     @Param(name = "servicename", optional = true)
