@@ -69,6 +69,7 @@ pkg = {
 			"pkg:/glassfish-registration" : {"type" : "require" },
 			"pkg:/jersey@1.8" : {"type" : "require" },
 			"pkg:/glassfish-management" : {"type" : "require" },
+                        "pkg:/glassfish-common-web" : {"type" : "require" },
 			"pkg:/glassfish-jca" : {"type" : "require" },
 			"pkg:/glassfish-jpa" : {"type" : "require" },
 			"pkg:/glassfish-jta" : {"type" : "require" },
