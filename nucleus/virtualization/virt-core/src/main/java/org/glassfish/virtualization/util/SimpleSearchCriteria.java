@@ -8,7 +8,7 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+ * https://glassfish.dev.java.net/public/CDDLGPL_1_1.html
  * or packager/legal/LICENSE.txt.  See the License for the specific
  * language governing permissions and limitations under the License.
  *
@@ -38,58 +38,56 @@
  * holder.
  */
 
-package org.glassfish.virtualization.spi;
+package org.glassfish.virtualization.util;
+
+import org.glassfish.virtualization.spi.SearchCriteria;
+import org.glassfish.virtualization.spi.TemplateCondition;
 
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
- * Created by IntelliJ IDEA.
- * User: dochez
- * Date: 8/2/11
- * Time: 10:34 PM
- * To change this template use File | Settings | File Templates.
+ * Simple implementation of SearchCriteria.
+ *
+ * @author bhavanishankar@java.net
  */
-public interface SearchCriteria {
+public class SimpleSearchCriteria implements SearchCriteria {
 
-    /**
-     * Add AND conditions to this search criteria.
-     *
-     * @param indexes The AND conditions
-     * @return the Same object with new AND conditions added to it.
-     */
-    SearchCriteria and(TemplateCondition... indexes);
+    Set<TemplateCondition> andConditions = new HashSet<TemplateCondition>();
+    Set<TemplateCondition> orConditions = new HashSet<TemplateCondition>();
+    Set<TemplateCondition> optionallyConditions = new HashSet<TemplateCondition>();
 
-    /**
-     * Get all the AND conditions of this search criteria
-     * @return All the AND conditions in this search criteria.
-     */
-    Collection<TemplateCondition> and();
+    public SearchCriteria and(TemplateCondition... indexes) {
+        return add(andConditions, indexes);
+    }
 
-    /**
-     * Add OR conditions to this search criteria.
-     *
-     * @param indexes The OR conditions
-     * @return the Same object with new OR conditions added to it.
-     */
-    SearchCriteria or(TemplateCondition... indexes);
+    public Collection<TemplateCondition> and() {
+        return andConditions;
+    }
 
-    /**
-     * Get all the OR conditions of this search criteria
-     * @return All the OR conditions in this search criteria.
-     */
-    Collection<TemplateCondition> or();
+    public SearchCriteria or(TemplateCondition... indexes) {
+        return add(orConditions, indexes);
+    }
 
-    /**
-     * Add OPTIONALLY conditions to this search criteria.
-     *
-     * @param indexes The OPTIONALLY conditions
-     * @return the Same object with new OPTIONALLY conditions added to it.
-     */
-    SearchCriteria optionally(TemplateCondition... indexes);
+    public Collection<TemplateCondition> or() {
+        return orConditions;
+    }
 
-    /**
-     * Get all the OPTIONALLY conditions of this search criteria
-     * @return All the OPTIONALLY conditions in this search criteria.
-     */
-    Collection<TemplateCondition> optionally();
+    public SearchCriteria optionally(TemplateCondition... indexes) {
+        return add(optionallyConditions, indexes);
+    }
+
+    public Collection<TemplateCondition> optionally() {
+        return optionallyConditions;
+    }
+
+    private SearchCriteria add(Set<TemplateCondition> conditionSet,
+                               TemplateCondition... indexes) {
+        for (TemplateCondition templateCondition : indexes) {
+            conditionSet.add(templateCondition);
+        }
+        return this;
+    }
+
 }
