@@ -76,8 +76,8 @@ import javax.validation.constraints.Pattern;
 
 @Configured
 @SuppressWarnings("unused")
-@NotDuplicateTargetName(message="{alert.duplicate.name}", payload=Alert.class)
-public interface Alert extends ConfigBeanProxy, Injectable, Named, ReferenceContainer, RefContainer, Payload {
+@NotDuplicateTargetName(message="{alert.duplicate.name}", payload=AlertConfig.class)
+public interface AlertConfig extends ConfigBeanProxy, Injectable, Named, ReferenceContainer, RefContainer, Payload {
 
     /**
      * Sets the alert name
@@ -88,8 +88,8 @@ public interface Alert extends ConfigBeanProxy, Injectable, Named, ReferenceCont
     @Override
     public void setName(String value) throws PropertyVetoException;
 
-    @NotTargetKeyword(message="{alert.reserved.name}", payload=Alert.class)
-    @Pattern(regexp=NAME_SERVER_REGEX, message="{alert.invalid.name}", payload=Alert.class)
+    @NotTargetKeyword(message="{alert.reserved.name}", payload=AlertConfig.class)
+    @Pattern(regexp=NAME_SERVER_REGEX, message="{alert.invalid.name}", payload=AlertConfig.class)
     @Override
     public String getName();
     /**

@@ -132,7 +132,7 @@ public class CreateAlertCommand implements AdminCommand {
                     else
                          writeableAlerts = t.enroll(writeableAlerts);
 
-                    Alert writeableAlert = writeableAlerts.createChild(Alert.class);
+                    AlertConfig writeableAlert = writeableAlerts.createChild(AlertConfig.class);
                     if (name != null)
                         writeableAlert.setName(name);
                     if (schedule != null)

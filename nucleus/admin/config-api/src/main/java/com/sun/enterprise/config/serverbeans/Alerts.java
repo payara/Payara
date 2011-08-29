@@ -69,7 +69,7 @@ public interface Alerts  extends ConfigBeanProxy, Injectable {
    */
 
   @Element
-   public List<Alert> getAlert();
+   public List<AlertConfig> getAlert();
 
   /**
    * Return the alert with the given name, or null if no such alert exists.
@@ -81,8 +81,8 @@ public interface Alerts  extends ConfigBeanProxy, Injectable {
   public Alerts  getAlert(String name);
 
   class Duck {
-      public static Alert getAlert(Alerts instance, String name) {
-          for (Alert alert : instance.getAlert()) {
+      public static AlertConfig getAlert(Alerts instance, String name) {
+          for (AlertConfig alert : instance.getAlert()) {
               if (alert.getName().equals(name)) {
                   return alert;
               }
