@@ -82,8 +82,8 @@ public class JmsProviderLifecycle implements  PostStartup, PostConstruct{
     public static final String JMS_SERVICE = "jms-service";
     //static Logger _logger = LogDomains.getLogger(JmsProviderLifecycle.class, LogDomains.RSR_LOGGER);
 
-    private final String JMS_DEFAULT_LISTENER_IP="0.0.0.0";
-    private final String JMS_DEFAULT_HOST="localhost";
+    private final static String JMS_DEFAULT_LISTENER_IP="0.0.0.0";
+    private final static String JMS_DEFAULT_HOST="localhost";
 
     @Inject(name = ServerEnvironment.DEFAULT_INSTANCE_NAME)
     Config config;
