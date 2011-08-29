@@ -44,6 +44,7 @@ import java.lang.management.MemoryMXBean;
 import java.lang.management.MemoryUsage;
 import java.util.concurrent.TimeUnit;
 
+import org.glassfish.elasticity.api.MetricAttributeRetriever;
 import org.glassfish.elasticity.api.MetricEntry;
 import org.glassfish.elasticity.util.Average;
 import org.glassfish.elasticity.util.SimpleMetricHolder;
@@ -52,100 +53,94 @@ import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
 
 @Service(name = "jvm_memory")
-public class JVMMemoryMetricGatherer extends SimpleMetricHolder<MetricEntry>
+public class JVMMemoryMetricGatherer
+	extends SimpleMetricHolder<JVMMemoryMetricEntry>
 		implements PostConstruct, Runnable {
 
 	@Inject
 	ElasticEngineThreadPool tpool;
 
-	static MetricAttributeInfo[] attrInfos;
-
-	static {
-		attrInfos = new MetricAttributeInfo[3];
-		attrInfos[0] = new MemAttributeInfo("used", Long.class);
-		attrInfos[1] = new MemAttributeInfo("committed", Long.class);
-		attrInfos[2] = new MemAttributeInfo("max", Long.class);
-	}
-
 	public JVMMemoryMetricGatherer() {
-		super("jvm_memory", attrInfos);
+		super("jvm_memory", JVMMemoryMetricEntry.class);
 	}
 
 	public void postConstruct() {
-		tpool.scheduleAtFixedRate(this, 5, 5, TimeUnit.SECONDS);
+		tpool.scheduleAtFixedRate(this, 15, 15, TimeUnit.SECONDS);
 	}
 
 	public void run() {
 		MemoryMXBean memBean = ManagementFactory.getMemoryMXBean();
 		MemoryUsage memUsage = memBean.getHeapMemoryUsage();
+		try {
 		super.add(
 				System.currentTimeMillis(),
 				new JVMMemoryMetricEntry(memUsage.getUsed(), memUsage
 						.getCommitted(), memUsage.getMax()));
-		
+
 		Average<Number> avg = new Average<Number>();
-		for (MetricEntry e : super.values(1, TimeUnit.MINUTES)) {
-			avg.visit((Long) e.getAttribute("used"));
+		for (MetricEntry<JVMMemoryMetricEntry> e : super.values(1, TimeUnit.MINUTES)) {
+			avg.visit((Long) e.geAttribute("used", Long.class));
 		}
-		
-		System.out.println("Avg mem for the last one minute: " + avg.computeResult());
+
+//		System.out.println("Avg mem for the last one minute: "
+//				+ avg.value());
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
 	}
 
 	public String toString() {
 		return "JVMMemoryMetricGatherer";
 	}
 
-	private static class MemAttributeInfo implements MetricAttributeInfo {
+//
+//	private class JVMMetricAttributeRetriever implements
+//			MetricAttributeRetriever<JVMMemoryMetricEntry> {
+//
+//		public Long getAttribute(String name, JVMMemoryMetricEntry value,
+//				Class<Long> type) {
+//			switch (name.charAt(0)) {
+//			case 'u':
+//				System.out.println("Mem.used: " + value.used);
+//				return value.used;
+//			case 'c':
+//				return value.committed;
+//			default:
+//				return value.max;
+//			}
+//
+//		}
+//
+//	}
 
-		private String attrName;
+	
 
-		private Class<?> type;
+}
 
-		public MemAttributeInfo(String attrName, Class<?> type) {
-			super();
-			this.attrName = attrName;
-			this.type = type;
-		}
+class JVMMemoryMetricEntry {
 
-		public String getAttributeName() {
-			// TODO Auto-generated method stub
-			return null;
-		}
+	long used;
 
-		public Class<?> getAttributeType() {
-			// TODO Auto-generated method stub
-			return null;
-		}
+	long committed;
 
+	long max;
+
+	JVMMemoryMetricEntry(long used, long committed, long max) {
+		this.used = used;
+		this.committed = committed;
+		this.max = max;
 	}
 
-	private static class JVMMemoryMetricEntry implements MetricEntry {
-
-		long used;
-
-		long committed;
-
-		long max;
-
-		JVMMemoryMetricEntry(long used, long committed, long max) {
-			super();
-			this.used = used;
-			this.committed = committed;
-			this.max = max;
-		}
-
-		public Long getAttribute(String attributeName) {
-			switch (attributeName.charAt(0)) {
-			case 'u':
-				System.out.println("Mem.used: " + used);
-				return used;
-			case 'c':
-				return committed;
-			default:
-				return max;
-			}
-		}
-
+	public long getUsed() {
+		return used;
 	}
 
+	public long getCommitted() {
+		return committed;
+	}
+
+	public long getMax() {
+		return max;
+	}
+	
 }

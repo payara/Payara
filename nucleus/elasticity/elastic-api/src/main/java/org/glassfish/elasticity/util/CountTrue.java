@@ -59,7 +59,7 @@ public class CountTrue
         return count;
     }
 
-    public Integer computeResult() {
+    public Integer value() {
         return count;
     }
 

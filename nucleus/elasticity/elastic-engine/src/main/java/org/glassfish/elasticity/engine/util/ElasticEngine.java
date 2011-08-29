@@ -88,34 +88,21 @@ public class ElasticEngine
 			//throw new IllegalStateException("ElasticEngine not initialized with a service name");
 		}
 		
-		AlertConfiguration[] configs = new AlertConfiguration[1]; //TODO Get it from domain.xml
-		
-		configs[0] = new DummyAlertConfiguration();
-			
-		
 		System.out.println("Elastic Services: " + elasticServices);
 		for (ElasticService service : elasticServices.getElasticService()) {
 			System.out.println("Got ElasticService: " + service.getName());
 			System.out.println("Got Alerts: " + service.getAlerts());
 			System.out.println("Got getAlerts: " + service.getAlerts().getAlert());
-			System.out.println("Got getAlert a1: " + service.getAlerts().getAlert("a1"));
-			System.out.println("Got getAlert a1: " + a1.getName());
 			for (Alert alert : service.getAlerts().getAlert()) {
 				System.out.println("Got Altert[" + service.getName() + "]: " + alert.getName());
+			
+				String sch = alert.getSchedule();
+				long frequencyInMills = 10;
+			
+				String alertName = alert.getName();
+System.out.println("Alert[name=" + alertName + "; schedule=" + sch + "; expression=" + alert.getExpression());
+			//threadPool.scheduleAtFixedRate(wrapper, frequencyInMills, frequencyInMills, TimeUnit.SECONDS);
 			}
-		}
-		
-		for (AlertConfiguration config : configs) {
-			System.out.println("Elastic Engine starting Alert... " + config);
-			ExpressionBasedAlert<AlertConfiguration> alert = new ExpressionBasedAlert<AlertConfiguration>();
-			alert.initialize(config);
-			
-			String sch = config.getSchedule();
-			long frequencyInMills = 10;
-			
-			String alertName = config.getAlertName();
-			AlertWrapper wrapper = new AlertWrapper(alert);
-			threadPool.scheduleAtFixedRate(wrapper, frequencyInMills, frequencyInMills, TimeUnit.SECONDS);
 		}
 		
 		for (MetricHolder<? extends MetricEntry> m : metricHolders) {
@@ -141,10 +128,10 @@ public class ElasticEngine
 		implements Runnable {
 		
 		private ExpressionBasedAlert<AlertConfiguration> alert;
-		
-		AlertWrapper(ExpressionBasedAlert<AlertConfiguration> alert) {
-			this.alert = alert;
-		}
+//		
+//		AlertWrapper(ExpressionBasedAlert<Alert> alert) {
+//			this.alert = alert;
+//		}
 		
 		public void run() {
 			alert.execute();

@@ -60,7 +60,7 @@ public class Sum<T extends Number>
         return count;
     }
 
-    public Double computeResult() {
+    public Double value() {
         return sum;
     }
 

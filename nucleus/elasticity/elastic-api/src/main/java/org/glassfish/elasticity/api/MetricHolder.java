@@ -39,7 +39,6 @@
  */
 package org.glassfish.elasticity.api;
 
-import java.util.Iterator;
 import java.util.concurrent.TimeUnit;
 
 import org.jvnet.hk2.annotations.Contract;
@@ -52,20 +51,12 @@ import org.jvnet.hk2.annotations.Contract;
  * 
  */
 @Contract
-public interface MetricHolder<V extends MetricEntry> {
+public interface MetricHolder<V> {
+	
+	public Class<V> getValueClass();
 	
 	public boolean isEmpty();
-	
-	public MetricAttributeInfo[] getMetricAttributeInfos();
 
-	public Iterable<V> values(long duration, TimeUnit unit);
-	
-	public interface MetricAttributeInfo {
-		
-		public String getAttributeName();
-		
-		public Class<?> getAttributeType();
-		
-	}
+	public Iterable<MetricEntry<V>> values(long duration, TimeUnit unit);
 	
 }

@@ -39,8 +39,14 @@
  */
 package org.glassfish.elasticity.api;
 
-public interface MetricEntry {
+import java.util.concurrent.TimeUnit;
+
+public interface MetricEntry<V> {
 	
-	public Object getAttribute(String attributeName);
+	public long getTimestamp(TimeUnit sourceUnit);
+	
+	public V getValue();
+	
+	public <T> T geAttribute(String name, Class<T> type);
 
 }

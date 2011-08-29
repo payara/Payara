@@ -64,7 +64,7 @@ public class Average<T extends Number>
     	return sum;
     }
 
-    public Double computeResult() {
+    public Double value() {
         return count > 0 ? sum / count : 0;
     }
 

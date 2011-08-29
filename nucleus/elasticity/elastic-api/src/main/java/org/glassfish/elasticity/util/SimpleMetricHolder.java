@@ -39,13 +39,13 @@
  */
 package org.glassfish.elasticity.util;
 
+import java.lang.reflect.Method;
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentNavigableMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.TimeUnit;
 
-import org.jvnet.hk2.annotations.Service;
-
+import org.glassfish.elasticity.api.MetricAttributeRetriever;
 import org.glassfish.elasticity.api.MetricEntry;
 import org.glassfish.elasticity.api.MetricHolder;
 
@@ -55,22 +55,25 @@ import org.glassfish.elasticity.api.MetricHolder;
  * 
  * @author Mahesh.Kannan@Oracle.Com
  */
-public class SimpleMetricHolder<V extends MetricEntry>
+public class SimpleMetricHolder<V>
 	implements MetricHolder<V> {
 
-	private final ConcurrentSkipListMap<Long, MetricEntryHolder<V>> _emptyMap =
-			new ConcurrentSkipListMap<Long, MetricEntryHolder<V>>();
+	private final ConcurrentSkipListMap<Long, MetricEntryHolder> _emptyMap =
+			new ConcurrentSkipListMap<Long, MetricEntryHolder>();
 	
-    private ConcurrentSkipListMap<Long, MetricEntryHolder<V>> map = new ConcurrentSkipListMap<Long, MetricEntryHolder<V>>();
+    private ConcurrentSkipListMap<Long, MetricEntryHolder> map =
+    		new ConcurrentSkipListMap<Long, MetricEntryHolder>();
 
-    private String metricType;
+    private String metricName;
     
-    private MetricHolder.MetricAttributeInfo[] infos;
-    
+    private Class<V> valueClass;
 
-	public SimpleMetricHolder(String metricType, MetricHolder.MetricAttributeInfo[] infos) {
-		this.metricType = metricType;
-		this.infos = infos;
+    private MetricAttributeRetriever<V> metricAttributeRetriever;
+    
+	public SimpleMetricHolder(String metricName, Class<V> valueClass) {
+		this.metricName = metricName;
+		this.valueClass = valueClass;
+		this.metricAttributeRetriever = createMetricAttributeRetriever();
 	}
 	
     public void add(long timeStamp, V v) {
@@ -79,32 +82,40 @@ public class SimpleMetricHolder<V extends MetricEntry>
     
     public void add(long timeStamp, TimeUnit unit, V v) {
     	long ts = TimeUnit.MILLISECONDS.convert(timeStamp, unit);
-        map.put(ts, new MetricEntryHolder<V>(ts, v));
+        map.put(ts, createMetricEntryHolder(ts, v));
     }
 
+	public Class<V> getValueClass() {
+		return valueClass;
+	}
+	
     public String getMetricType() {
-    	return metricType;
+    	return metricName;
     }
     
     public boolean isEmpty() {
         return map.isEmpty();
     }
 	
-    public MetricHolder.MetricAttributeInfo[] getMetricAttributeInfos() {
-		return infos;
-	}
-	
-	public Iterable<V> values(long duration, TimeUnit unit) {
-		return new SubMapValueIterator<V>(getView(duration, unit));
+	public Iterable<MetricEntry<V>> values(long duration, TimeUnit unit) {
+		return new SubMapValueIterator(getView(duration, unit));
 	}
 	
     public void purgeEntriesOlderThan(long duration, TimeUnit unit)
     	throws UnsupportedOperationException {
         getOldestView(duration, unit).clear();
     }
+    
+    protected MetricEntryHolder createMetricEntryHolder(long ts, V v) {
+    	return new MetricEntryHolder(ts, v);
+    }
 
-    private ConcurrentNavigableMap<Long, MetricEntryHolder<V>> getView(long duration, TimeUnit unit) {
-    	ConcurrentNavigableMap<Long, MetricEntryHolder<V>> result = _emptyMap;
+    protected MetricAttributeRetriever<V> createMetricAttributeRetriever() {
+		return new ReflectiveAttributeRetriever(valueClass);
+    }
+    
+    private ConcurrentNavigableMap<Long, MetricEntryHolder> getView(long duration, TimeUnit unit) {
+    	ConcurrentNavigableMap<Long, MetricEntryHolder> result = _emptyMap;
     	if (! map.isEmpty()) {
 	        Long maxKey = map.lastKey();
 	        if (maxKey != null) {
@@ -117,8 +128,9 @@ public class SimpleMetricHolder<V extends MetricEntry>
     	
     	return result;
     }
-    private ConcurrentNavigableMap<Long, MetricEntryHolder<V>> getOldestView(long duration, TimeUnit unit) {
-    	ConcurrentNavigableMap<Long, MetricEntryHolder<V>> result = _emptyMap;
+    
+    private ConcurrentNavigableMap<Long, MetricEntryHolder> getOldestView(long duration, TimeUnit unit) {
+    	ConcurrentNavigableMap<Long, MetricEntryHolder> result = _emptyMap;
     	if (! map.isEmpty()) {
 	        Long maxKey = map.lastKey();
 	        if (maxKey != null) {
@@ -132,10 +144,11 @@ public class SimpleMetricHolder<V extends MetricEntry>
     	return result;
     }
 	
-	protected static class MetricEntryHolder<V extends MetricEntry> {
+	protected class MetricEntryHolder
+		implements MetricEntry<V> {
 
-		long ts;
-		V v;
+		private long ts;
+		private V v;
 		
 		public MetricEntryHolder(long ts, V v) {
 			this.ts = ts;
@@ -149,22 +162,23 @@ public class SimpleMetricHolder<V extends MetricEntry>
 		public V getValue() {
 			return v;
 		}
+
+		public <T> T geAttribute(String name, Class<T> type) {
+			return metricAttributeRetriever.getAttribute(name, v, type);
+		}
 		
 	}
 
-	private static class SubMapValueIterator<V extends MetricEntry>
-		implements Iterable<V>, Iterator<V> {
-
-		ConcurrentNavigableMap<Long, MetricEntryHolder<V>> subMap;
+	protected class SubMapValueIterator
+		implements Iterable<MetricEntry<V>>, Iterator<MetricEntry<V>> {
 		
-		Iterator<MetricEntryHolder<V>> iter;
+		Iterator<MetricEntryHolder> iter;
 		
-		SubMapValueIterator(ConcurrentNavigableMap<Long, MetricEntryHolder<V>> subMap) {
-			this.subMap = subMap;
+		SubMapValueIterator(ConcurrentNavigableMap<Long, MetricEntryHolder> subMap) {
 			iter = subMap.values().iterator();
 		}
 		
-		public Iterator<V> iterator() {
+		public Iterator<MetricEntry<V>> iterator() {
 			return this;
 		}
 		
@@ -172,8 +186,8 @@ public class SimpleMetricHolder<V extends MetricEntry>
 			return iter.hasNext();
 		}
 
-		public V next() {
-			return iter.next().getValue();
+		public MetricEntry<V> next() {
+			return iter.next();
 		}
 
 		public void remove() {
@@ -181,5 +195,29 @@ public class SimpleMetricHolder<V extends MetricEntry>
 		}
 	}
 
+	private class ReflectiveAttributeRetriever
+		implements MetricAttributeRetriever<V> {
+
+		private Class<V> vClazz;
+		
+		ReflectiveAttributeRetriever(Class<V> vClazz) {
+			this.vClazz = vClazz;
+		}
+		
+		@SuppressWarnings("unchecked")
+		public <T> T getAttribute(String attributeName, V value, Class<T> type) {
+			try {
+				String getterName = "get" + Character.toTitleCase(attributeName.charAt(0)) + attributeName.substring(1);
+				Method getter = vClazz.getMethod(getterName , (Class<?>[]) null);
+				
+				//TODO: Enclose this with doPrivleged
+				getter.setAccessible(true);
+				return (T) getter.invoke(value, (Object[]) null);
+			} catch (Exception ex) {
+				throw new IllegalArgumentException("Exception while retrieving attribute: " + attributeName, ex);
+			}
+		}
+		
+	}
 
 }

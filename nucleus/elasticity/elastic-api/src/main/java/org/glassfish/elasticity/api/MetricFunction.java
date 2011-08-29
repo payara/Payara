@@ -46,6 +46,6 @@ public interface MetricFunction<V, T> {
 
 	public void visit(V value);
 	
-	public T computeResult();
+	public T value();
 	
 }
