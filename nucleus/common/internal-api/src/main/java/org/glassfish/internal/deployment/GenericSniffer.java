@@ -308,12 +308,10 @@ public abstract class GenericSniffer implements Sniffer {
         while (( bytesRead = is.read(buffer)) != -1 ) {
             baos.write(buffer, 0, bytesRead);
         }
-        if (rdr != null) {
-            try {
-                rdr.close();
-            } catch (XMLStreamException ex) {
-                throw new IOException(ex);
-            }
+        try {
+            rdr.close();
+        } catch (XMLStreamException ex) {
+            throw new IOException(ex);
         }
         is.close();
         return new String(baos.toByteArray(), encoding);
