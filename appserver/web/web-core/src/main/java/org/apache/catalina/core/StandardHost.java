@@ -597,17 +597,17 @@ public class StandardHost
     // END S1AS 5000999
 
 
-     public String getNetworkListeners() {
-         List<String> list = Arrays.asList(networkListenerNames);
-         String listeners = null;
-         if (list.size() > 0) {
-             listeners = list.get(0);
-             for (int i = 1; i < list.size(); i++) {
-                 listeners = list.get(i) + "," + listeners ;
-             }
-         }
-         return listeners;
-     }
+    public String getNetworkListeners() {
+        List<String> list = Arrays.asList(networkListenerNames);
+        String listeners = null;
+        if (list.size() > 0) {
+            listeners = list.get(0);
+            for (int i = 1; i < list.size(); i++) {
+                listeners = list.get(i) + "," + listeners ;
+            }
+        }
+        return listeners;
+    }
 
      /**
      * Gets the default-context.xml location of web modules deployed on this
