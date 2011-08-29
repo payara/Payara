@@ -249,10 +249,6 @@ public class SaxParserHandler extends DefaultHandler implements PostConstruct {
 	 }
     } 
     
-    public void warning(SAXParseException spe) throws SAXParseException {
-        String x = spe.getMessage();
-    }
-    
     public void fatalError(SAXParseException spe) throws SAXParseException {
         DOLUtils.getDefaultLogger().log(Level.SEVERE, "enterprise.deployment.backend.invalidDescriptorFailure",
             new Object[] {errorReportingString , String.valueOf(spe.getLineNumber()), 
