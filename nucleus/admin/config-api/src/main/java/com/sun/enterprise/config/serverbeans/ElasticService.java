@@ -93,6 +93,79 @@ public interface ElasticService extends ConfigBeanProxy, Injectable, Named, Refe
     @Override
     public String getName();
 
+    /*
+     * Sets the service elastic enabled value
+     * @param value service elastic enabled
+     * @throws PropertyVetoException if a listener vetoes the change
+     */
+
+    @Param (name="enabled", optional=true, defaultValue = "true")
+    public void setEnabled(boolean value) throws PropertyVetoException;
+    /*
+     * Get the service elastic enabled value
+     * @return  service elastic enabled  value
+     */
+    @Attribute(defaultValue = "true")
+    public boolean getEnabled();
+
+    /*
+     * Sets the service elastic min value
+     * @param value service elastic min
+     * @throws PropertyVetoException if a listener vetoes the change
+     */
+    @Param (name="min", optional=true, defaultValue = "1")
+    public void setMin(int value) throws PropertyVetoException;
+    /*
+     * Get the service elastic min value
+     * @return  service elastic min  value
+     */
+
+    @Attribute(defaultValue = "1")
+    public int getMin();
+
+    /*
+     * Sets the service elastic max value
+     * @param value service elastic max
+     * @throws PropertyVetoException if a listener vetoes the change
+     */
+    @Param (name="max", optional=true, defaultValue = "2")
+    public void setMax(int value) throws PropertyVetoException;
+    /*
+     * Get the service elastic max value
+     * @return  service elastic max  value
+     */
+
+    @Attribute(defaultValue = "2")
+    public int getMax();
+
+    /**
+     * Sets the reconfig scale-up wait period in seconds
+     * @param value reconfig scale-up
+     * @throws PropertyVetoException if a listener vetoes the change
+     */
+    @Param(name="reconfig-scale-up", optional=true,  defaultValue="300")
+    public void setReconfigScaleUp(int value) throws PropertyVetoException;
+    /*
+     * Get the reconfig scale up value
+     * @return  reconfig scale up value
+     */
+    @Attribute (defaultValue = "300")
+    public int getReconfigScaleUp();
+
+    /**
+     * Sets the reconfig scale-dowm wait period in seconds
+     * @param value reconfig scale-down
+     * @throws PropertyVetoException if a listener vetoes the change
+     */
+    @Param(name="reconfig-scale-down", optional=true, defaultValue="300")
+    public void setReconfigScaleDown(int value) throws PropertyVetoException;
+    /*
+     * Get the reconfig scale down value
+     * @return  reconfig scale down value
+     */
+    @Attribute (defaultValue = "300")
+    public int getReconfigScaleDown();
+
     /**
          * Gets the value of the metric-gatherer property.
          *
