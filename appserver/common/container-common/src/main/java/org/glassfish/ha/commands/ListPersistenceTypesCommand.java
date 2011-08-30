@@ -69,7 +69,7 @@ public class ListPersistenceTypesCommand implements AdminCommand {
     @Param(name="type", optional=false, primary=false)
     @I18n("list.persistence.types.container")
     @Pattern(regexp = "(ejb|web)")
-    private String containerType;
+    private String containerType = "";
 
     private ActionReport report;
     private Logger logger;
