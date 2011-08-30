@@ -41,8 +41,11 @@
 package org.glassfish.admin.rest;
 
 
-import java.util.Map.Entry;
-import com.sun.enterprise.v3.common.ActionReporter;
+import com.sun.enterprise.config.serverbeans.AdminService;
+import com.sun.enterprise.config.serverbeans.SecureAdmin;
+import com.sun.enterprise.v3.admin.AdminAdapter;
+import java.io.IOException;
+import java.security.Principal;
 import java.util.Locale;
 import org.glassfish.admin.rest.generator.CommandResourceMetaData;
 import java.lang.reflect.Method;
@@ -51,6 +54,9 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
+import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.grizzly.http.server.Request;
+import org.glassfish.internal.api.AdminAccessController;
 import org.jvnet.hk2.component.Habitat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -62,6 +68,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeMap;
+import javax.security.auth.login.LoginException;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
@@ -219,7 +226,7 @@ public class ResourceUtil {
     public static String getParameterList(ParameterMap parameters) {
         StringBuilder sb = new StringBuilder();
         
-        for (Entry<String, List<String>> entry : parameters.entrySet()) {
+        for (Map.Entry<String, List<String>> entry : parameters.entrySet()) {
             String paramName = entry.getKey();
             for (String param : entry.getValue()) {
                 sb.append(" --")
@@ -1071,4 +1078,55 @@ public class ResourceUtil {
         }
         return false;
     }
+
+    /**
+     * Authenticate the given req against admin realm.
+     * @return Access as granted by authenticator
+     */
+    public static  AdminAccessController.Access authenticateViaAdminRealm(Habitat habitat, Request req) throws LoginException, IOException {
+        return authenticateViaAdminRealm(habitat, req, req.getRemoteHost());
+    }
+
+    private static final String DAS_LOOK_FOR_CERT_PROPERTY_NAME = "org.glassfish.admin.DASCheckAdminCert";
+    /**
+     * Authenticate the given req as originated from given remoteHost against admin realm.
+     * @return Access as granted by authenticator
+     */
+    public static  AdminAccessController.Access authenticateViaAdminRealm(Habitat habitat, Request req, String remoteHost) throws LoginException, IOException {
+        String[] up = AdminAdapter.getUserPassword(req);
+        String user = up[0];
+        String password = up.length > 1 ? up[1] : "";
+        AdminAccessController authenticator = habitat.getByContract(AdminAccessController.class);
+        AdminAccessController.Access access = AdminAccessController.Access.FULL; //if the authenticator is not available, allow all access - per Jerome
+        if (authenticator != null) {
+            // This is temporary workaround for a Grizzly issue that prohibits uploading (deploy)  files larger than 2MB when secure admin is enabled.
+            // The workaround will not be required in trunk when the corresponding Grizzly issue is fixed.
+            // Please see http://java.net/jira/browse/GLASSFISH-16665 for details
+            // The workaround duplicates code from AdminAdapter.
+            ServerEnvironment serverEnvironment = habitat.getByContract(ServerEnvironment.class);
+            final Principal sslPrincipal = !serverEnvironment.isDas() || Boolean.getBoolean(DAS_LOOK_FOR_CERT_PROPERTY_NAME) ? req.getUserPrincipal() : null;
+
+            AdminService as = habitat.getByType(AdminService.class);
+            access =  authenticator.loginAsAdmin(user, password, as.getAuthRealmName(), remoteHost, getAuthRelatedHeaders(req), sslPrincipal);
+        }
+        return access;
+    }
+
+    /**
+     * Extract authentication related headers from Grizzly request.
+     * This headers enables us to authenticate a request coming from DAS without a password.
+     * The headers will be present if secured admin is not turned on and a request is sent from DAS to an instance.
+     * @param req
+     * @return Authentication related headers
+     */
+    private static Map<String, String> getAuthRelatedHeaders(Request req) {
+        Map<String, String> authRelatedHeaders = Collections.EMPTY_MAP;
+        String adminIndicatorHeader = req.getHeader(SecureAdmin.Util.ADMIN_INDICATOR_HEADER_NAME);
+        if(adminIndicatorHeader != null) {
+            authRelatedHeaders = new HashMap<String, String>(1);
+            authRelatedHeaders.put(SecureAdmin.Util.ADMIN_INDICATOR_HEADER_NAME, adminIndicatorHeader);
+        }
+        return authRelatedHeaders;
+    }
+
 }

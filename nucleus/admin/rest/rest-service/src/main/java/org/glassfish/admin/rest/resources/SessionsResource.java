@@ -42,19 +42,32 @@ package org.glassfish.admin.rest.resources;
 
 
 
+import org.glassfish.admin.rest.ResourceUtil;
 import org.glassfish.admin.rest.SessionManager;
 import org.glassfish.admin.rest.results.ActionReportResult;
 import org.glassfish.admin.rest.utils.xml.RestActionReporter;
 
+import javax.security.auth.login.LoginException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import org.glassfish.grizzly.http.server.Request;
+import org.glassfish.internal.api.AdminAccessController;
+import org.jvnet.hk2.component.Habitat;
+
+import java.io.IOException;
+import java.util.HashMap;
+
+import static javax.ws.rs.core.Response.Status.OK;
+import static javax.ws.rs.core.Response.Status.FORBIDDEN;
+import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
 
 /**
  * Represents sessions with GlassFish Rest service
@@ -74,26 +87,49 @@ public class SessionsResource {
     @Context
     private ThreadLocal<Request> request;
 
+    @Context
+    protected Habitat habitat;
 
     /**
      * Get a new session with GlassFish Rest service
-     * If a request lands here when authentication has been turned on => it has been authenticated. It is safe to grant
-     * a session token
+     * If a request lands here when authentication has been turned on => it has been authenticated.
      * @return a new session with GlassFish Rest service
      */
     @POST
     @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, MediaType.APPLICATION_FORM_URLENCODED})
-    public ActionReportResult create() {
+    @Produces({MediaType.APPLICATION_JSON,MediaType.APPLICATION_XML,"text/html;qs=2"})
+    public Response create(HashMap<String, String> data) {
+        Response.ResponseBuilder responseBuilder = Response.status(UNAUTHORIZED);
         RestActionReporter ar = new RestActionReporter();
         Request grizzlyRequest = request.get();
 
-	// Check to see if the username has been set (anonymous user case)
-	String username = (String) grizzlyRequest.getAttribute("restUser");
-	if (username != null) {
-	    ar.getExtraProperties().put("username", username);
-	}
-        ar.getExtraProperties().put("token", sessionManager.createSession(grizzlyRequest));
-        return new ActionReportResult(ar);
+        // If the call flow reached here, the request has been authenticated by logic in RestAdapater.
+        // We authenticate here once again with supplied remoteHostName to see if the authentication needs to happen
+        // as coming from it. This is to support admin gui to authenticate as if coming from remoteHostName that
+        // original request to it originated from.
+        String hostName = data.get("remoteHostName");
+        AdminAccessController.Access access = AdminAccessController.Access.NONE;
+        try {
+            access = (hostName == null ? AdminAccessController.Access.FULL : ResourceUtil.authenticateViaAdminRealm(habitat, grizzlyRequest, hostName) ) ;
+        } catch (Exception e) {
+            ar.setMessage("Error while authenticating " + e);
+        }
+
+        if (access == AdminAccessController.Access.FULL) {
+            responseBuilder.status(OK);
+
+            // Check to see if the username has been set (anonymous user case)
+            String username = (String) grizzlyRequest.getAttribute("restUser");
+            if (username != null) {
+                ar.getExtraProperties().put("username", username);
+            }
+            ar.getExtraProperties().put("token", sessionManager.createSession(grizzlyRequest));
+
+        } else if (access == AdminAccessController.Access.FORBIDDEN) {
+            responseBuilder.status(FORBIDDEN);
+        }
+
+        return responseBuilder.entity(new ActionReportResult(ar)).build();
     }
 
     @Path("{sessionId}/")
