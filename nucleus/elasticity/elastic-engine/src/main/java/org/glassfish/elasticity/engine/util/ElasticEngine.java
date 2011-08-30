@@ -92,7 +92,7 @@ public class ElasticEngine
 				System.out.println("Got Altert[" + service.getName() + "]: " + alertConfig.getName());
 			
 				String sch = alertConfig.getSchedule().trim();
-				long frequencyInMills = getFrequencyOfAlertExecutionInMillis(sch);
+				long frequencyInMills = getFrequencyOfAlertExecutionInSeconds(sch);
 				String alertName = alertConfig.getName();
 				System.out.println("Alert[name=" + alertName + "; schedule=" + sch
 						+ "; expression=" + alertConfig.getExpression() + "; will be executed every= " + frequencyInMills);
@@ -111,26 +111,32 @@ public class ElasticEngine
 		
 	}
 	
-	private long getFrequencyOfAlertExecutionInMillis(String sch) {
-		int index = sch.length() - 1;
-		String freqStr = sch.substring(0, index);
-		long frequencyInMills = 10;
+	private int getFrequencyOfAlertExecutionInSeconds(String sch) {
+		String schStr = sch.trim();
+		int index = 0;
+		for (; index < schStr.length(); index++) {
+			if (Character.isDigit(schStr.charAt(index))) {
+				break;
+			}
+		}
+		
+		int frequencyInSeconds = 30;
 		try {
-			frequencyInMills = Long.parseLong(freqStr);
+			frequencyInSeconds = Integer.parseInt(schStr.substring(0, index));
 		} catch (NumberFormatException nfEx) {
 			//TODO
 		}
-		char unitStr = sch.charAt(sch.length() - 1);
-		switch (unitStr) {
-		case 's': 
-			frequencyInMills = frequencyInMills * 1000;
-			break;
-		case 'm':
-			frequencyInMills = frequencyInMills * 1000 * 60;
-			break;
+		if (index < schStr.length()) {
+			switch (schStr.charAt(index)) {
+			case 's':
+				break;
+			case 'm':
+				frequencyInSeconds *= 60;
+				break;
+			}	
 		}
 		
-		return frequencyInMills;
+		return frequencyInSeconds;
 	}
 	
 	private static class AlertWrapper
