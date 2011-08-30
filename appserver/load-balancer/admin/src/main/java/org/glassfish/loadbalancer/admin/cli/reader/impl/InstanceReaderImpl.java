@@ -51,6 +51,7 @@ import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Node;
+import com.sun.enterprise.config.serverbeans.ServerTags;
 
 import org.glassfish.grizzly.config.dom.NetworkConfig;
 import org.glassfish.grizzly.config.dom.NetworkListener;
@@ -156,7 +157,7 @@ public class InstanceReaderImpl implements InstanceReader {
             String prot = rawListener.getProtocol();
             Protocol protocol = protocols.findProtocol(prot);
 
-            if (protocol.getName().equals(ADMIN_LISTENER)) {
+            if (rawListener.getName().equals(ADMIN_LISTENER)) {
                 continue;
             }
             if (i > 0) {
@@ -227,7 +228,7 @@ public class InstanceReaderImpl implements InstanceReader {
     private Server _server = null;
     private static final String HTTP_PROTO = "http://";
     private static final String HTTPS_PROTO = "https://";
-    private static final String ADMIN_LISTENER = "admin-listener";
+    private static final String ADMIN_LISTENER = ServerTags.ADMIN_LISTENER_ID;
     private static final String BIND_TO_ANY = "0.0.0.0";
     private static final String LOCALHOST = "localhost";
 }
