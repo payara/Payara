@@ -179,7 +179,8 @@ public class LBPlugin implements Plugin<HTTPLoadBalancerServiceType> {
         return new GlassFishLBProvisionedService(serviceDescription, new Properties(), ServiceStatus.STARTED);
     }
 
-    public void associateServices(ProvisionedService provisionedSvc, ServiceReference svcRef, boolean beforeDeployment) {
+    public void associateServices(ProvisionedService provisionedSvc, ServiceReference svcRef, boolean beforeDeployment,
+                                  DeploymentContext dc) {
         //no-op
     }
 

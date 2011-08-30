@@ -41,6 +41,7 @@
 package org.glassfish.paas.orchestrator;
 
 import org.glassfish.api.deployment.archive.ReadableArchive;
+import org.glassfish.deployment.common.DeploymentUtils;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceDescription;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceMetadata;
 import org.jvnet.hk2.annotations.Scoped;
@@ -61,7 +62,13 @@ public class ServicesXMLParserImpl implements ServicesXMLParser {
     public ServiceMetadata discoverDeclaredServices(String appName, ReadableArchive ra) {
         ServiceMetadata serviceMetadata = null;
         try {
-            InputStream inputStream = ra.getEntry("META-INF/services.xml");
+            InputStream inputStream = null;
+            if(DeploymentUtils.isWebArchive(ra)){
+                inputStream = ra.getEntry("WEB-INF/services.xml");
+            }else{
+                inputStream = ra.getEntry("META-INF/services.xml");
+            }
+
             if (inputStream != null) {
                 JAXBContext jaxbContext = JAXBContext.newInstance(
                         ServiceMetadata.class);

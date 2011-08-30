@@ -60,9 +60,9 @@ import java.util.List;
 /**
  * @author Jagadish Ramu
  */
-@Service(name = "_delete-database-service")
+@Service(name = "_delete-derby-service")
 @Scoped(PerLookup.class)
-public class DeleteDatabaseService implements AdminCommand {
+public class DeleteDerbyService implements AdminCommand {
 
     @Param(name = "servicename", primary = true, optional = false)
     private String serviceName;

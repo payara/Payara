@@ -153,7 +153,7 @@ public interface Plugin<T extends ServiceType> {
      *                         deployment of the application.
      */
     public void associateServices(ProvisionedService provisionedSvc,
-                                  ServiceReference svcRef, boolean beforeDeployment);
+                                  ServiceReference svcRef, boolean beforeDeployment, DeploymentContext dc);
 
     /**
      * Deploy the orchestration-enabled archive

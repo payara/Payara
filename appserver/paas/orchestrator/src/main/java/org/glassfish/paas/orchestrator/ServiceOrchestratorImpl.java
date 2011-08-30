@@ -103,13 +103,13 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator, Application
 
         //3. Associate provisioned services with each other
         associateProvisionedServices(installedPlugins, appServiceMetadata,
-                appProvisionedSvcs, true /*before deployment*/);
+                appProvisionedSvcs, true /*before deployment*/, dc);
         serviceMetadata.put(appName, appServiceMetadata);
         provisionedServices.put(appName, appProvisionedSvcs);
         logger.exiting(getClass().getName(), "provisionServicesForApplication");
     }
 
-    public void postDeploy(String appName, ReadableArchive cloudArchive) {
+    public void postDeploy(String appName, ReadableArchive archive, DeploymentContext dc) {
         logger.entering(getClass().getName(), "postDeploy");
         //4b. post-deployment association
 
@@ -117,7 +117,7 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator, Application
         ServiceMetadata appServiceMetadata = serviceMetadata.get(appName);
         Set<ProvisionedService> appProvisionedSvcs = provisionedServices.get(appName);
         associateProvisionedServices(installedPlugins, appServiceMetadata,
-                appProvisionedSvcs, false /*after deployment*/);
+                appProvisionedSvcs, false /*after deployment*/, dc);
 
         //TODO should we remove them, or book keep it till its stopped/undeployed ?
         //serviceMetadata.remove(appName);
@@ -140,14 +140,14 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator, Application
 
         //3. Associate provisioned services with each other
         associateProvisionedServices(installedPlugins, appServiceMetadata,
-                appProvisionedSvcs, true /*before deployment*/);
+                appProvisionedSvcs, true /*before deployment*/, null);
 
         //4a. Application Deployment
         deployArchive(cloudArchive, installedPlugins);
 
         //4b. post-deployment association
         associateProvisionedServices(installedPlugins, appServiceMetadata,
-                appProvisionedSvcs, false /*after deployment*/);
+                appProvisionedSvcs, false /*after deployment*/, null);
     }
 
     public void prepareForUndeploy(String appName, ReadableArchive cloudArchive, DeploymentContext dc) {
@@ -294,7 +294,8 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator, Application
 
     private void associateProvisionedServices(Set<Plugin> installedPlugins,
                                               ServiceMetadata appServiceMetadata,
-                                              Set<ProvisionedService> appProvisionedSvcs, boolean preDeployment) {
+                                              Set<ProvisionedService> appProvisionedSvcs,
+                                              boolean preDeployment, DeploymentContext dc) {
         logger.entering(getClass().getName(), "associateProvisionedServices-beforeDeployment=" + preDeployment);
         for (ProvisionedService ps : appProvisionedSvcs) {
             for (Plugin<?> svcPlugin : installedPlugins) {
@@ -303,14 +304,15 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator, Application
                     Set<ServiceReference> appSRs = appServiceMetadata.getServiceReferences();
                     for (ServiceReference sr : appSRs) {
                         logger.log(Level.INFO, "Associating ProvisionedService " + ps + " for ServiceReference " + sr + " through " + svcPlugin);
-                        svcPlugin.associateServices(ps, sr, preDeployment);
+                        svcPlugin.associateServices(ps, sr, preDeployment, dc);
                     }
                 }
             }
         }
     }
 
-    private void unprovisionServices(Set<Plugin> installedPlugins, ServiceMetadata appServiceMetadata, DeploymentContext dc) {
+    private void unprovisionServices(Set<Plugin> installedPlugins, ServiceMetadata appServiceMetadata,
+                                     DeploymentContext dc) {
         Set<ServiceDescription> appSDs = appServiceMetadata.getServiceDescriptions();
         for (ServiceDescription sd : appSDs) {
             Plugin<?> chosenPlugin = getPluginForServiceType(installedPlugins, sd.getServiceType());
@@ -407,7 +409,7 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator, Application
                     ReadableArchive archive = context.getSource();
                     if (params.origin == OpsParams.Origin.deploy) {
                         String appName = params.name();
-                        postDeploy(appName, archive);
+                        postDeploy(appName, archive, context);
 
                     }
                     //make sure that it is indeed undeploy and not disable.

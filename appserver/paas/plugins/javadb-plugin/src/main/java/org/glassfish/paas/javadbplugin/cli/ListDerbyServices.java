@@ -61,9 +61,9 @@ import java.util.Collection;
 /**
  * @author Jagadish Ramu
  */
-@org.jvnet.hk2.annotations.Service(name = "_list-database-services")
+@org.jvnet.hk2.annotations.Service(name = "_list-derby-services")
 @Scoped(PerLookup.class)
-public class ListDatabaseServices implements AdminCommand {
+public class ListDerbyServices implements AdminCommand {
 
     @Inject
     private ProvisionerUtil registryService;

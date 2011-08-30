@@ -57,9 +57,9 @@ import org.jvnet.hk2.component.PerLookup;
 /**
  * @author Jagadish Ramu
  */
-@Service(name = "_create-database-service")
+@Service(name = "_create-derby-service")
 @Scoped(PerLookup.class)
-public class CreateDatabaseService implements AdminCommand {
+public class CreateDerbyService implements AdminCommand {
 
     @Param(name = "servicename", primary = true, optional = false)
     private String serviceName;

@@ -95,6 +95,12 @@ public class GlassFishCloudArchiveProcessor {
                 serviceReferences.add(new ServiceReference(resRef.getName(),
                         resRef.getType(), null, resRef.getSchemaGeneratorProperties()));
             }
+
+/*            //add an implicit service-reference of type "glassfish"/"javaee" so that
+            //glassfish plugin will always get called during association/dissociation phase
+            //This will be used to set "target" during "deploy" and "undeploy"
+            serviceReferences.add(new ServiceReference(cloudArchive.getName(),
+                    ServiceType.APPLICATION_SERVER.toString(), null, null));*/
         } catch (Exception e) {
             e.printStackTrace();
         }

@@ -55,24 +55,24 @@ import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.Collection;
 
 /**
  * @author Jagadish Ramu
  */
-@Service(name = "_start-database-service")
+@Service(name = "_stop-derby-service")
 @Scoped(PerLookup.class)
-public class StartDatabaseService implements AdminCommand {
+public class StopDerbyService implements AdminCommand {
 
     @Param(name = "servicename", primary = true, optional = false)
     private String serviceName;
 
-    @Inject
-    private ProvisionerUtil provisionerUtil;
-
     @Param(name="appname", optional=true)
     private String appName;
+
+    @Inject
+    private ProvisionerUtil provisionerUtil;
 
     @Inject
     private DatabaseServiceUtil dbServiceUtil;
@@ -85,25 +85,24 @@ public class StartDatabaseService implements AdminCommand {
             ServiceInfo entry = dbServiceUtil.retrieveCloudEntry(serviceName, appName, ServiceType.DATABASE);
             String ipAddress = entry.getIpAddress();
             String status = entry.getState();
-            if (status == null || status.equalsIgnoreCase(State.Start_in_progress.toString())
-                    || status.equalsIgnoreCase(State.Running.toString())) {
+            if (status == null || status.equalsIgnoreCase(State.Stop_in_progress.toString())
+                    || status.equalsIgnoreCase(State.NotRunning.toString())) {
                 report.setMessage("Invalid db-service [" + serviceName + "] state [" + status + "]");
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                 return;
             }
 
-            dbServiceUtil.updateState(serviceName, appName, State.Start_in_progress.toString(), ServiceType.DATABASE);
+            dbServiceUtil.updateState(serviceName, appName, State.Stop_in_progress.toString(), ServiceType.DATABASE);
+
+            provisionerUtil.getDatabaseProvisioner().stopDatabase(ipAddress);
 
             CloudProvisioner cloudProvisioner = provisionerUtil.getCloudProvisioner();
-            Map<String, String> map = new HashMap<String, String>();
-            map.put(entry.getInstanceId(), entry.getIpAddress());
-            cloudProvisioner.startInstances(map);
+            Collection<String> list = new ArrayList<String>();
+            list.add(entry.getIpAddress());
+            cloudProvisioner.stopInstances(list);
 
-
-            provisionerUtil.getDatabaseProvisioner().startDatabase(ipAddress);
-
-            dbServiceUtil.updateState(serviceName, appName, State.Running.toString(), ServiceType.DATABASE);
-            report.setMessage("db-service [" + serviceName + "] started");
+            dbServiceUtil.updateState(serviceName, appName, State.NotRunning.toString(), ServiceType.DATABASE);
+            report.setMessage("db-service [" + serviceName + "] stopped");
             report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
 
         } else {

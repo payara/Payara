@@ -74,7 +74,10 @@ public class ServiceMetadata {
     
     @XmlElement(name = "service-description")
     public Set<ServiceDescription> getServiceDescriptions() {
-        return serviceDescriptions == null ? new HashSet<ServiceDescription>() : serviceDescriptions;
+        if(serviceDescriptions == null ){
+            serviceDescriptions = new HashSet<ServiceDescription>();
+        }
+        return serviceDescriptions;
     }
 
     public void setServiceDescriptions(Set<ServiceDescription> serviceDescriptions) {

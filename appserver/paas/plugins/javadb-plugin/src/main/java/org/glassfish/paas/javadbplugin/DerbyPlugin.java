@@ -138,9 +138,9 @@ public class DerbyPlugin implements Plugin<RDBMSServiceType> {
         ArrayList<String> params;
         String[] parameters;
 
-        CommandResult result = commandRunner.run("_list-database-services");
+        CommandResult result = commandRunner.run("_list-derby-services");
         if (!result.getOutput().contains(serviceName)) {
-            //create-database-service
+            //create-derby-service
             params = new ArrayList<String>();
             if(serviceDescription.getAppName() != null){
                 params.add("--appname="+serviceDescription.getAppName());
@@ -149,9 +149,9 @@ public class DerbyPlugin implements Plugin<RDBMSServiceType> {
             parameters = new String[params.size()];
             parameters = params.toArray(parameters);
 
-            result = commandRunner.run("_create-database-service", parameters);
+            result = commandRunner.run("_create-derby-service", parameters);
             if (result.getExitStatus().equals(CommandResult.ExitStatus.FAILURE)) {
-                System.out.println("_create-database-service [" + serviceName + "] failed");
+                System.out.println("_create-derby-service [" + serviceName + "] failed");
             }
         }
 
@@ -168,9 +168,9 @@ public class DerbyPlugin implements Plugin<RDBMSServiceType> {
         parameters = new String[params.size()];
         parameters = params.toArray(parameters);
 
-        result = commandRunner.run("_start-database-service", parameters);
+        result = commandRunner.run("_start-derby-service", parameters);
         if (result.getExitStatus().equals(CommandResult.ExitStatus.FAILURE)) {
-            System.out.println("_start-database-service [" + serviceName + "] failed");
+            System.out.println("_start-derby-service [" + serviceName + "] failed");
         }
 
 
@@ -183,7 +183,8 @@ public class DerbyPlugin implements Plugin<RDBMSServiceType> {
         return new DerbyProvisionedService(serviceDescription, serviceProperties, ServiceStatus.STARTED);
     }
 
-    public void associateServices(ProvisionedService provisionedSvc, ServiceReference svcRef, boolean beforeDeployment) {
+    public void associateServices(ProvisionedService provisionedSvc, ServiceReference svcRef, boolean beforeDeployment,
+                                  DeploymentContext dc) {
         //no-op
     }
 
@@ -215,9 +216,9 @@ public class DerbyPlugin implements Plugin<RDBMSServiceType> {
         if(serviceDescription.getAppName() != null){
             appNameParam="--appname="+serviceDescription.getAppName();
         }
-        CommandResult result = commandRunner.run("_delete-database-service",
+        CommandResult result = commandRunner.run("_delete-derby-service",
                 appNameParam, serviceDescription.getName());
-        System.out.println("_delete-database-service command output [" + result.getOutput() + "]");
+        System.out.println("_delete-derby-service command output [" + result.getOutput() + "]");
         if (result.getExitStatus() == CommandResult.ExitStatus.SUCCESS) {
             return true;
         } else {
