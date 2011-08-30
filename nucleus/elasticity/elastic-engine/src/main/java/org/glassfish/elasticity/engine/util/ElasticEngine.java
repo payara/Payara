@@ -42,15 +42,13 @@ package org.glassfish.elasticity.engine.util;
 import java.util.concurrent.TimeUnit;
 
 import org.glassfish.api.Startup;
-import org.glassfish.elasticity.api.AlertConfiguration;
 import org.glassfish.elasticity.api.MetricEntry;
 import org.glassfish.elasticity.api.MetricHolder;
 import org.glassfish.hk2.PostConstruct;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
 
-import com.sun.enterprise.config.serverbeans.Alert;
-import com.sun.enterprise.config.serverbeans.Alerts;
+import com.sun.enterprise.config.serverbeans.AlertConfig;
 import com.sun.enterprise.config.serverbeans.ElasticService;
 import com.sun.enterprise.config.serverbeans.ElasticServices;
 
@@ -74,9 +72,6 @@ public class ElasticEngine
 	@Inject
 	MetricHolder<? extends MetricEntry>[] metricHolders;
 	
-	@Inject(name="a1")
-	Alert a1;
-	
 	private String serviceName;
 
 	public void initialize(String serviceName) {
@@ -93,15 +88,17 @@ public class ElasticEngine
 			System.out.println("Got ElasticService: " + service.getName());
 			System.out.println("Got Alerts: " + service.getAlerts());
 			System.out.println("Got getAlerts: " + service.getAlerts().getAlert());
-			for (Alert alert : service.getAlerts().getAlert()) {
-				System.out.println("Got Altert[" + service.getName() + "]: " + alert.getName());
+			for (AlertConfig alertConfig : service.getAlerts().getAlert()) {
+				System.out.println("Got Altert[" + service.getName() + "]: " + alertConfig.getName());
 			
-				String sch = alert.getSchedule();
-				long frequencyInMills = 10;
-			
-				String alertName = alert.getName();
-System.out.println("Alert[name=" + alertName + "; schedule=" + sch + "; expression=" + alert.getExpression());
-			//threadPool.scheduleAtFixedRate(wrapper, frequencyInMills, frequencyInMills, TimeUnit.SECONDS);
+				String sch = alertConfig.getSchedule().trim();
+				long frequencyInMills = getFrequencyOfAlertExecutionInMillis(sch);
+				String alertName = alertConfig.getName();
+				System.out.println("Alert[name=" + alertName + "; schedule=" + sch
+						+ "; expression=" + alertConfig.getExpression() + "; will be executed every= " + frequencyInMills);
+				ExpressionBasedAlert<AlertConfig> wrapper = new ExpressionBasedAlert<AlertConfig>();
+				wrapper.initialize(alertConfig);
+				threadPool.scheduleAtFixedRate(wrapper, frequencyInMills, frequencyInMills, TimeUnit.SECONDS);
 			}
 		}
 		
@@ -114,20 +111,32 @@ System.out.println("Alert[name=" + alertName + "; schedule=" + sch + "; expressi
 		
 	}
 	
-	private static class DummyAlertConfiguration implements AlertConfiguration {
-		public String getAlertName() {
-			return "Alert: " + System.currentTimeMillis();
+	private long getFrequencyOfAlertExecutionInMillis(String sch) {
+		int index = sch.length() - 1;
+		String freqStr = sch.substring(0, index);
+		long frequencyInMills = 10;
+		try {
+			frequencyInMills = Long.parseLong(freqStr);
+		} catch (NumberFormatException nfEx) {
+			//TODO
+		}
+		char unitStr = sch.charAt(sch.length() - 1);
+		switch (unitStr) {
+		case 's': 
+			frequencyInMills = frequencyInMills * 1000;
+			break;
+		case 'm':
+			frequencyInMills = frequencyInMills * 1000 * 60;
+			break;
 		}
 		
-		public String getSchedule() {
-			return "10";
-		}
+		return frequencyInMills;
 	}
 	
 	private static class AlertWrapper
 		implements Runnable {
 		
-		private ExpressionBasedAlert<AlertConfiguration> alert;
+		private ExpressionBasedAlert<AlertConfig> alert;
 //		
 //		AlertWrapper(ExpressionBasedAlert<Alert> alert) {
 //			this.alert = alert;

@@ -39,13 +39,8 @@
  */
 package org.glassfish.elasticity.engine.util;
 
-import java.lang.management.ManagementFactory;
-import java.lang.management.MemoryMXBean;
-
 import org.glassfish.elasticity.api.Alert;
-import org.glassfish.elasticity.api.AlertConfiguration;
-import org.glassfish.elasticity.api.ExecuteAt;
-import org.glassfish.elasticity.api.ExecuteAt.Location;
+import com.sun.enterprise.config.serverbeans.AlertConfig;
 
 /**
  * A simple Alert that uses an expression
@@ -53,19 +48,22 @@ import org.glassfish.elasticity.api.ExecuteAt.Location;
  *
  * @param <C>
  */
-public class ExpressionBasedAlert<C extends AlertConfiguration>
-	implements org.glassfish.elasticity.api.Alert<C> {
+public class ExpressionBasedAlert<C extends AlertConfig>
+	implements Alert<C>, Runnable {
 
-	private AlertConfiguration config;
+	private C config;
 	
 	public void initialize(C config) {
 		this.config = config;
 	}
 
 	public AlertState execute() {
-//		MemoryMXBean memBean = ManagementFactory.getMemoryMXBean();
-//		System.out.println("*** Executed ExpressionBasedAlert.execute(): " + memBean.getHeapMemoryUsage());
+		System.out.println("*** Executed ExpressionBasedAlert.execute(): ");
 		return AlertState.ALARM;
+	}
+	
+	public void run() {
+		execute();
 	}
 
 }

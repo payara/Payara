@@ -41,6 +41,8 @@ package org.glassfish.elasticity.api;
 
 import org.jvnet.hk2.annotations.Contract;
 
+import com.sun.enterprise.config.serverbeans.AlertConfig;
+
 /**
  * An Alert typically uses some metrics and determines if the Alert's state.
  * The ElasticityEngine will then use this Alert's state to execute a set
@@ -50,7 +52,7 @@ import org.jvnet.hk2.annotations.Contract;
  *
  */
 @Contract
-public interface Alert<C extends AlertConfiguration> {
+public interface Alert<C extends AlertConfig> {
 	
 	public enum AlertState {OK, ALARM, NO_DATA};
 	
