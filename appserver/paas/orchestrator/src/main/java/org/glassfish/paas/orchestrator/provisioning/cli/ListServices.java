@@ -78,6 +78,14 @@ public class ListServices implements AdminCommand {
 
         Services services = serviceUtil.getServices();
 
+        if(appName != null){ //no need of null check, but when appname operand becomes an optional parameter later, this is required.
+            if(domain.getApplications().getApplication(appName) == null){
+                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                report.setMessage("No such application ["+appName+"] is deployed");
+                return;
+            }
+        }
+
         List<Service> matchedServices = new ArrayList<Service>();
         for(Service service : services.getServices()){
             if(service instanceof ApplicationScopedService){
@@ -100,7 +108,7 @@ public class ListServices implements AdminCommand {
 
         if (matchedServices.size() > 0) {
 
-            String headings[] = {"SERVICE_NAME", "IP_ADDRESS", "INSTANCE_ID", "SERVER_TYPE", "STATE", "SERVICE_TYPE"};
+            String headings[] = {"SERVICE_NAME", "IP_ADDRESS", "VM_ID", "SERVER_TYPE", "STATE", "SCOPE"};
             ColumnFormatter cf = new ColumnFormatter(headings);
 
             boolean foundRows = false;
@@ -121,7 +129,7 @@ public class ListServices implements AdminCommand {
                 String state = "-";
                 if(service instanceof ApplicationScopedService){
                     state = ((ApplicationScopedService)service).getState();
-                    serviceType = "Application-Scoped";
+                    serviceType = "Application";
                 }else if(service instanceof SharedService){
                     state = ((SharedService)service).getState();
                     serviceType = "Shared";
