@@ -352,13 +352,15 @@ public class LogDomains {
             //first time through for this logger.  create it and find the resource bundle
             cLogger = new Logger(loggerName, null) {
 
+                // cache it to avoid having to use the class loader later. see GLASSFISH-17256
+                final ResourceBundle rb = initResourceBundle();
+
                 /* override this method to set the the thread id so all handlers get the same info*/
                 private final int offValue = Level.OFF.intValue();
 
                 public void log(LogRecord record) {
                     record.getSourceMethodName();
                     if(record.getResourceBundle()==null) {
-                        ResourceBundle rb = getResourceBundle();
                         if(rb!=null) {
                             record.setResourceBundle(rb);
                         }
@@ -381,7 +383,10 @@ public class LogDomains {
                  *
                  */
                 public ResourceBundle getResourceBundle() {
+                    return rb;
+                }
 
+                private ResourceBundle initResourceBundle() {
                     //call routine to add resource bundle if not already added
                     // the return needs to go through all known resource bundles
                     try {
