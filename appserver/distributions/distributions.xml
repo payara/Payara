@@ -75,6 +75,8 @@
 
 <target name="create-nucleus-distributions"> 
     <ant antfile="../nucleus/nucleus-distributions.xml"/>
+    <mkdir dir="${image.root}"/>
+    <mkdir dir="${installer.image.dir}"/>
     <antcall target="create-distributions"> 
          <param name="image.name" value="nucleus"/>
     </antcall>

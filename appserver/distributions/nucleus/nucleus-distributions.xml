@@ -43,10 +43,15 @@
 
 <project name="Nucleus Distribution (ips) Creation" default="create-image" basedir=".">
 <property name="source.distribution.name" value="GlassFish Open Source Edition 3.2 Nucleus"/>
-<target name="create-image" depends="create-installer-image, create-glassfish-image">
+
+<target name="create-image-dir">
     <mkdir dir="${installer.image.dir}"/>
     <mkdir dir="${installer.image.dir}/${install.dir.name}"/>
     <mkdir dir="${glassfish.image.dir}"/>
+</target>
+
+<target name="create-image" depends="create-image-dir, create-installer-image, create-glassfish-image">
+    
 </target>
 
 <target name="create-installer-image" description="Creating IPS Image without Domains for Installer">
@@ -74,6 +79,25 @@
 </target>
 
 <target name="create-common-image" description="Creating IPS Image">
+   <ant antfile="../distributions.xml" target="create-local-image">
+        <property name="image.dir" value="${image.dir}"/>
+   </ant>
+   <ant antfile="../distributions.xml" target="install-package">
+        <property name="package.name" value="felix"/>
+        <property name="image.dir" value="${image.dir}"/>
+   </ant>
+   <ant antfile="../distributions.xml" target="install-package">
+        <property name="package.name" value="glassfish-hk2"/>
+        <property name="image.dir" value="${image.dir}"/>
+   </ant>
+   <ant antfile="../distributions.xml" target="install-package">
+        <property name="package.name" value="glassfish-grizzly"/>
+        <property name="image.dir" value="${image.dir}"/>
+   </ant>
+   <ant antfile="../distributions.xml" target="install-package">
+        <property name="package.name" value="glassfish-nucleus"/>
+        <property name="image.dir" value="${image.dir}"/>
+   </ant>
    <ant antfile="../distributions.xml" target="install-package">
         <property name="package.name" value="glassfish-grizzly-full"/>
         <property name="image.dir" value="${image.dir}"/>
@@ -96,10 +120,6 @@
     </ant>
     <ant antfile="../distributions.xml" target="install-package">
         <property name="package.name" value="glassfish-management"/>
-        <property name="image.dir" value="${image.dir}"/>
-    </ant>
-    <ant antfile="../distributions.xml" target="install-package">
-        <property name="package.name" value="glassfish-jta"/>
         <property name="image.dir" value="${image.dir}"/>
     </ant>
     <ant antfile="../distributions.xml" target="install-package">

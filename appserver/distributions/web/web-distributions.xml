@@ -43,6 +43,16 @@
 
 <project name="Web Distribution (ips) Creation" default="create-image" basedir=".">
 <property name="source.distribution.name" value="GlassFish Open Source Edition 3.2 Web Profile"/>
+<import file="../distributions.xml"/>
+<target name="init">
+        <condition property="windows">
+            <os family="windows" />
+        </condition>
+        <condition property="unix">
+            <os family="unix" />
+        </condition>
+    </target>
+
 <target name="create-image" depends="create-installer-image, create-glassfish-image">
     <mkdir dir="${installer.image.dir}"/>
     <mkdir dir="${installer.image.dir}/${install.dir.name}"/>
@@ -71,6 +81,11 @@
     <antcall target="install-l10n-packages">
         <param name="image.dir" value="${glassfish.image.dir.l10n}/${install.dir.name}"/>
     </antcall>
+
+    <!-- create domains -->
+    <antcall target="create-domain"/>
+    <antcall target="create-domain-ml"/>
+
 </target>
 
 <target name="create-common-image" description="Creating IPS Image">
@@ -198,4 +213,37 @@
     </ant>
      
 </target>
+
+<target name="create-domain" depends="create-domain-on-windows, create-domain-on-unix"/>
+
+<target name="create-domain-ml" depends="create-domain-on-windows-ml, create-domain-on-unix-ml"/>
+
+<target name="create-domain-on-windows" depends="init" if="windows">
+    <ant antfile="../distributions.xml" target="create-domain">
+        <property name="exec.dir" value="${basedir}/target/local_image/glassfish/${install.dir.name}/glassfish/bin"/>
+        <property name="exec.executable" value="${basedir}/target/local_image/glassfish/${install.dir.name}/glassfish/bin/asadmin.bat"/>
+    </ant>
+</target>
+
+<target name="create-domain-on-windows-ml" depends="init" if="windows">
+    <ant antfile="../distributions.xml" target="create-domain">
+        <property name="exec.dir" value="${basedir}/target/local_image/glassfish-l10n/${install.dir.name}/glassfish/bin"/>
+        <property name="exec.executable" value="${basedir}/target/local_image/glassfish-l10n/${install.dir.name}/glassfish/bin/asadmin.bat"/>
+    </ant>
+</target>
+
+<target name="create-domain-on-unix" depends="init" if="unix">
+    <ant antfile="../distributions.xml" target="create-domain">
+        <property name="exec.dir" value="${basedir}/target/local_image/glassfish/${install.dir.name}/glassfish/bin"/>
+        <property name="exec.executable" value="${basedir}/target/local_image/glassfish/${install.dir.name}/glassfish/bin/asadmin"/>
+    </ant>
+</target>
+
+<target name="create-domain-on-unix-ml" depends="init" if="unix">
+    <ant antfile="../distributions.xml" target="create-domain">
+        <property name="exec.dir" value="${basedir}/target/local_image/glassfish-l10n/${install.dir.name}/glassfish/bin"/>
+        <property name="exec.executable" value="${basedir}/target/local_image/glassfish-l10n/${install.dir.name}/glassfish/bin/asadmin"/>
+    </ant>
+</target>
+    
 </project>
