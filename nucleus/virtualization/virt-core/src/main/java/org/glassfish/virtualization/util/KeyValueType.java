@@ -37,7 +37,6 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
 package org.glassfish.virtualization.util;
 
 import org.glassfish.virtualization.config.Template;
@@ -50,28 +49,36 @@ import org.jvnet.hk2.config.TransactionFailure;
 import java.beans.PropertyVetoException;
 
 /**
- * Abstract class for any time of {@link TemplateCondition} subclass that are value based.
+ * Simple key-value template condition
  * @author Jerome Dochez
  */
-abstract class ValueBasedTemplateIndex extends TemplateCondition {
+public class KeyValueType extends TemplateCondition {
 
-    abstract Object getValue();
+    String key;
+    String value;
 
     @Override
-    public boolean satisfies(TemplateCondition otherCondition) {
-        return otherCondition instanceof ValueBasedTemplateIndex &&
-                ((ValueBasedTemplateIndex) otherCondition).getValue().equals(getValue());
+    public void load(TemplateIndex persistence) {
+        key = persistence.getType();
+        value = persistence.getValue();
     }
 
+    @Override
     public TemplateIndex persist(Template parent) throws TransactionFailure {
         return (TemplateIndex) ConfigSupport.apply(new SingleConfigCode<Template>() {
             @Override
             public Object run(Template template) throws PropertyVetoException, TransactionFailure {
                 TemplateIndex persistence = template.createChild(TemplateIndex.class);
-                persistence.setType(getClass().getSimpleName());
-                persistence.setValue(getValue().toString());
+                persistence.setType(key);
+                persistence.setValue(value);
                 return persistence;
             }
-        }, parent);
+        }, parent);    }
+
+    @Override
+    public boolean satisfies(TemplateCondition otherCondition) {
+        return (otherCondition instanceof KeyValueType) &&
+            (key.equals(((KeyValueType) otherCondition).key) &&
+                (value.equals(((KeyValueType) otherCondition).value)));
     }
 }

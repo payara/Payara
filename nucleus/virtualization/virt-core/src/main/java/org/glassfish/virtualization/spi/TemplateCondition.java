@@ -42,6 +42,7 @@ package org.glassfish.virtualization.spi;
 
 import org.glassfish.virtualization.config.Template;
 import org.glassfish.virtualization.config.TemplateIndex;
+import org.glassfish.virtualization.util.KeyValueType;
 import org.jvnet.hk2.annotations.Contract;
 import org.jvnet.hk2.config.*;
 
@@ -51,7 +52,7 @@ import org.jvnet.hk2.config.*;
  * @author Jerome Dochez
  */
 @Contract
-public abstract class TemplateCondition<T extends TemplateIndex> {
+public abstract class TemplateCondition {
 
     /**
      * Returns a template condition from its persisted state.
@@ -62,7 +63,7 @@ public abstract class TemplateCondition<T extends TemplateIndex> {
         TemplateCondition condition = Dom.unwrap(persistence).getHabitat().
                 getComponent(TemplateCondition.class, persistence.getType());
         if (condition==null) {
-            throw new RuntimeException("Cannot find index type " + persistence.getType());
+            condition = new KeyValueType();
         }
         condition.load(persistence);
         return condition;
@@ -73,7 +74,7 @@ public abstract class TemplateCondition<T extends TemplateIndex> {
      *
      * @param persistence the persisted state.
      */
-    abstract public void load(T persistence);
+    abstract public void load(TemplateIndex persistence);
 
     /**
      * Persists its state to a template persistence state.
@@ -82,7 +83,7 @@ public abstract class TemplateCondition<T extends TemplateIndex> {
      * {@link org.glassfish.virtualization.config.Template#getIndexes()}
      * @throws TransactionFailure if the condition cannot be persisted successfully.
      */
-    abstract public T persist(Template parent) throws TransactionFailure;
+    abstract public TemplateIndex persist(Template parent) throws TransactionFailure;
 
     /**
      * Returns true if  this condition satisfies another condition
