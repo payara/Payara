@@ -372,8 +372,7 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator, Application
         if (!usingDeployService) {
             //OpsParams tmp = context.getCommandParameters(OpsParams.class);
             //System.out.println("before" + phase + " " + tmp.command);
-
-            System.out.println("ApplicationLifecycleListener before : " + phase);
+            //System.out.println("ApplicationLifecycleListener before : " + phase);
             OpsParams params = context.getCommandParameters(OpsParams.class);
             if (phase.equals(ExtendedDeploymentContext.Phase.PREPARE)) {
                 if (serverEnvironment.isDas()) {
@@ -401,7 +400,7 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator, Application
         if (!usingDeployService) {
             //OpsParams tmp = context.getCommandParameters(OpsParams.class);
             //System.out.println("after" + phase + " " + tmp.command);
-            System.out.println("ApplicationLifecycleListener after : " + phase);
+            //System.out.println("ApplicationLifecycleListener after : " + phase);
             if (phase.equals(ExtendedDeploymentContext.Phase.REPLICATION)) {
                 if (serverEnvironment.isDas()) {
                     OpsParams params = context.getCommandParameters(OpsParams.class);
@@ -415,8 +414,6 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator, Application
                     //params.origin is "undeploy" for both "undeploy" as well "disable" phase
                     //hence using the actual command being used.
                     if(params.origin == OpsParams.Origin.undeploy){
-                            //TODO workaround as REPLICATION event during "undeploy" is called during "post-disable"
-                            //and "post-undeploy".
                         if(params.command == OpsParams.Command.undeploy){
                             String appName = params.name();
                                 postUndeploy(appName, context.getSource(), context);
