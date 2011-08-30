@@ -62,8 +62,6 @@ import org.glassfish.api.admin.ParameterMap;
 import org.jvnet.hk2.annotations.*;
 import org.jvnet.hk2.component.*;
 
-import com.sun.enterprise.admin.util.RemoteInstanceCommandHelper;
-
 import com.sun.enterprise.universal.process.ProcessManager;
 import com.sun.enterprise.universal.process.ProcessManagerException;
 
@@ -77,7 +75,7 @@ import com.sun.enterprise.universal.process.ProcessManagerException;
 @I18n("delete.node.ssh")
 @Scoped(PerLookup.class)
 @ExecuteOn({RuntimeType.DAS})
-public class DeleteNodeSshCommand implements AdminCommand, PostConstruct {
+public class DeleteNodeSshCommand implements AdminCommand {
     private static final int DEFAULT_TIMEOUT_MSEC = 300000; // 5 minutes
     
     @Inject
@@ -101,17 +99,11 @@ public class DeleteNodeSshCommand implements AdminCommand, PostConstruct {
     @Param(optional = true, defaultValue = "false")
     boolean force;
     
-    private RemoteInstanceCommandHelper helper;
     private String sshpassword = null;
     private String sshkeypassphrase = null;
     
     private static final String NL = System.getProperty("line.separator");    
     private Logger logger = null;
-
-    @Override
-    public void postConstruct() {
-        helper = new RemoteInstanceCommandHelper(habitat);
-    }        
 
     @Override
     public void execute(AdminCommandContext context) {

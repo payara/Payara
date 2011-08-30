@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -128,7 +128,7 @@ public class PingNodeSshCommand implements AdminCommand  {
             if (StringUtils.ok(version)) {
                 m1 = m1 + NL + version;
             }
-            report.setMessage(m1.toString());
+            report.setMessage(m1);
             report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
         } catch (CommandValidationException e) {
             String m1 = Strings.get("ping.node.failure", name,

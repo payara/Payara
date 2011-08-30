@@ -87,7 +87,7 @@ public class CreateNodeImplicitCommand implements AdminCommand {
         ActionReport report = context.getActionReport();
 
         if (name == null)
-            name = nodehost.toString();
+            name = nodehost;
 
         if (nodes.getNode(name) != null) {
             //already created nothing to do here

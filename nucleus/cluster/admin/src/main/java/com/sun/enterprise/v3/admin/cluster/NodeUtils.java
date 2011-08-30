@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -220,7 +220,7 @@ public class NodeUtils {
         }
         try {
             // Check if hostName is valid by looking up it's address
-            InetAddress addr = InetAddress.getByName(hostName);
+            InetAddress.getByName(hostName);
         } catch (UnknownHostException e) {
             throw new CommandValidationException(
                     Strings.get("unknown.host", hostName),
@@ -287,7 +287,6 @@ public class NodeUtils {
 
         String nodehost = map.getOne(PARAM_NODEHOST);
         String installdir = map.getOne(PARAM_INSTALLDIR);
-        String nodedir = map.getOne(PARAM_NODEDIR);
         String sshport = map.getOne(PARAM_SSHPORT);
         String sshuser = map.getOne(PARAM_SSHUSER);
         String sshkeyfile = map.getOne(PARAM_SSHKEYFILE);

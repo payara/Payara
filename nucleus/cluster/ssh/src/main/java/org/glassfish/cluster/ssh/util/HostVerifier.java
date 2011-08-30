@@ -68,9 +68,7 @@ public class HostVerifier implements ServerHostKeyVerifier {
                 return true;
 
             case KnownHosts.HOSTKEY_IS_NEW:
-                knownHosts.addHostkey(new String[] {hostName}, serverHostKeyAlgorithm, serverHostKey);
-                return true;
-
+                // Accept new keys
             case KnownHosts.HOSTKEY_HAS_CHANGED:
                 // In a virtualized environment we may have VMs that are frequently
                 // (re)created causing host keys to change. Allow that.

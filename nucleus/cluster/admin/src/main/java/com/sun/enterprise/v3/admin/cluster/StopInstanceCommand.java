@@ -65,7 +65,6 @@ import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.internal.api.ServerContext;
-import org.glassfish.cluster.ssh.connect.RemoteConnectHelper;
 import com.sun.enterprise.util.SystemPropertyConstants;
 
 import org.jvnet.hk2.annotations.Inject;
@@ -129,7 +128,6 @@ public class StopInstanceCommand extends StopServer implements AdminCommand, Pos
         report = context.getActionReport();
         logger = context.getLogger();
         SSHLauncher launcher;
-        RemoteConnectHelper rch;
         int dasPort;
         String dasHost;
 
@@ -181,9 +179,7 @@ public class StopInstanceCommand extends StopServer implements AdminCommand, Pos
         // this should be replaced with method from Node config bean.  
         dasPort = helper.getAdminPort(SystemPropertyConstants.DAS_SERVER_NAME);
         dasHost = System.getProperty(SystemPropertyConstants.HOST_NAME_PROPERTY);
-        rch = new RemoteConnectHelper(habitat, node, logger, dasHost, dasPort);
-
-        if (rch.isLocalhost()){
+        if (node.isLocal()){
             if (pidFile.exists()){
                     //server still not down completely, do we poll?
                 errorMessage = pollForRealDeath("local");

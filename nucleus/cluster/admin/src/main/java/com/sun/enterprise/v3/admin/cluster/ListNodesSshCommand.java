@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -77,7 +77,7 @@ public class ListNodesSshCommand implements AdminCommand{
 
         report = context.getActionReport();
 
-        Logger logger = context.getLogger();
+        logger = context.getLogger();
 
         ListNodesHelper lnh = new ListNodesHelper(logger, servers, nodes, "SSH", long_opt, terse);
 

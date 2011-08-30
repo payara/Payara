@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -52,7 +52,6 @@ import org.glassfish.api.admin.CommandRunner.CommandInvocation;
 import org.jvnet.hk2.annotations.*;
 import org.jvnet.hk2.component.*;
 import java.util.logging.Logger;
-import com.sun.enterprise.admin.util.RemoteInstanceCommandHelper;
 
 
 /**
@@ -65,7 +64,7 @@ import com.sun.enterprise.admin.util.RemoteInstanceCommandHelper;
 @I18n("delete.node.config")
 @Scoped(PerLookup.class)
 @ExecuteOn({RuntimeType.DAS})
-public class DeleteNodeConfigCommand implements AdminCommand, PostConstruct {
+public class DeleteNodeConfigCommand implements AdminCommand {
     @Inject
     Habitat habitat;
 
@@ -80,12 +79,6 @@ public class DeleteNodeConfigCommand implements AdminCommand, PostConstruct {
 
     @Param(name="name", primary = true)
     String name;
-    private RemoteInstanceCommandHelper helper;
-
-    @Override
-    public void postConstruct() {
-        helper = new RemoteInstanceCommandHelper(habitat);
-    }        
 
     @Override
     public void execute(AdminCommandContext context) {
