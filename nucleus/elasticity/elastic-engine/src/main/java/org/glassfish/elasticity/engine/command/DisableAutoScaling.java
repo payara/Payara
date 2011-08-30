@@ -37,39 +37,46 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package org.glassfish.elasticity.util;
+package org.glassfish.elasticity.engine.command;
 
-import org.glassfish.elasticity.api.MetricFunction;
+import java.util.logging.Level;
+
+import org.glassfish.api.Param;
+import org.glassfish.api.admin.AdminCommand;
+import org.glassfish.api.admin.AdminCommandContext;
+import org.glassfish.elasticity.engine.common.ElasticServiceImpl;
+import org.glassfish.elasticity.engine.common.ElasticServiceManager;
+import org.glassfish.elasticity.engine.util.EngineUtil;
+import org.glassfish.hk2.scopes.PerLookup;
+import org.jvnet.hk2.annotations.Inject;
+import org.jvnet.hk2.annotations.Scoped;
+import org.jvnet.hk2.annotations.Service;
 
 /**
- * @author Mahesh.Kannan@Oracle.Com
+ * Disable auto-scaling
+ * 
+ * @author Mahesh Kannan
+ *
  */
-public class Average<T extends Number>
-	implements MetricFunction<T, Double>{
+@Service(name="disable-auto-scaling")
+@Scoped(PerLookup.class)
+public class DisableAutoScaling
+	implements AdminCommand {
 
-    private double sum;
-
-    private int count;
-
-	public void visit(Number value) {
-		sum += value.doubleValue();
-        count++;
-    }
-    
-    public int getCount() {
-        return count;
-    }
-    
-    public double getSum() {
-    	return sum;
-    }
-
-    public Double value() {
-        return count > 0 ? sum / count : 0;
+	@Param(name="name", optional=false)
+	private String name;
+	
+	@Inject
+	EngineUtil util;
+	
+    public void execute(AdminCommandContext context) {
+    	ElasticServiceImpl service = (ElasticServiceImpl) ElasticServiceManager.getElasticService(name);
+    	if (service != null) {
+	    	service.setEnabled(false);
+	    	util.getLogger().log(Level.INFO, "disabled elastic-service: " + name);
+    	} else {
+	    	util.getLogger().log(Level.WARNING, "No such elastic-service named: " + name);
+    	}	
     }
 
-    public void reset() {
-        count = 0;
-        sum = 0;
-    }
 }

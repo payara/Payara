@@ -37,39 +37,29 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package org.glassfish.elasticity.util;
+package org.glassfish.elasticity.engine.common;
 
-import org.glassfish.elasticity.api.MetricFunction;
+import java.util.concurrent.ConcurrentHashMap;
 
-/**
- * @author Mahesh.Kannan@Oracle.Com
- */
-public class Average<T extends Number>
-	implements MetricFunction<T, Double>{
+import org.glassfish.elasticity.api.ElasticService;
+import org.jvnet.hk2.annotations.Service;
 
-    private double sum;
+@Service
+public class ElasticServiceManager {
 
-    private int count;
+	private static ConcurrentHashMap<String, ElasticService> _services
+		= new ConcurrentHashMap<String, ElasticService>();
 
-	public void visit(Number value) {
-		sum += value.doubleValue();
-        count++;
-    }
-    
-    public int getCount() {
-        return count;
-    }
-    
-    public double getSum() {
-    	return sum;
-    }
+	public static ElasticService getElasticService(String name) {
+		return _services.get(name);
+	}
 
-    public Double value() {
-        return count > 0 ? sum / count : 0;
-    }
-
-    public void reset() {
-        count = 0;
-        sum = 0;
-    }
+	public static void setElasticService(String name, ElasticService service) {
+		_services.put(name, service);
+	}
+	
+	public static void removeElasticService(String name) {
+		_services.remove(name);
+	}
+	
 }

@@ -37,39 +37,57 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package org.glassfish.elasticity.util;
+package org.glassfish.elasticity.engine.common;
 
-import org.glassfish.elasticity.api.MetricFunction;
+import org.glassfish.elasticity.api.ElasticService;
+import org.jvnet.hk2.annotations.Service;
 
-/**
- * @author Mahesh.Kannan@Oracle.Com
- */
-public class Average<T extends Number>
-	implements MetricFunction<T, Double>{
+@Service
+public class ElasticServiceImpl
+	implements ElasticService {
 
-    private double sum;
+	private String name;
+	
+	private boolean enabled;
+	
+	private int minSize;
+	
+	private int maxSize;
+	
+	private int reconfigurationPeriodInSeconds;
+	
+	private boolean reconfiguring;
+	
+	public ElasticServiceImpl(String name) {
+		this.name = name;
+	}
+	
+	public String getName() {
+		return this.name;
+	}
 
-    private int count;
+	public boolean isEnabled() {
+		return true;
+	}
+	
+	public void setEnabled(boolean value) {
+		this.enabled = value;
+	}
 
-	public void visit(Number value) {
-		sum += value.doubleValue();
-        count++;
-    }
-    
-    public int getCount() {
-        return count;
-    }
-    
-    public double getSum() {
-    	return sum;
-    }
+	public int getMinimumSize() {
+		return minSize;
+	}
 
-    public Double value() {
-        return count > 0 ? sum / count : 0;
-    }
+	public int getMaximumSize() {
+		return maxSize;
+	}
 
-    public void reset() {
-        count = 0;
-        sum = 0;
-    }
+	public void setMinimumSize(int minSize) {
+		this.minSize = minSize;
+	}
+
+	public void setMaximumSize(int maxSize) {
+		this.maxSize = maxSize;
+	}
+
 }

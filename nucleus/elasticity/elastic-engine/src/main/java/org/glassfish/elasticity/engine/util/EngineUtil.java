@@ -37,39 +37,19 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package org.glassfish.elasticity.util;
+package org.glassfish.elasticity.engine.util;
 
-import org.glassfish.elasticity.api.MetricFunction;
+import java.util.logging.Logger;
 
-/**
- * @author Mahesh.Kannan@Oracle.Com
- */
-public class Average<T extends Number>
-	implements MetricFunction<T, Double>{
+import org.jvnet.hk2.annotations.Service;
 
-    private double sum;
+@Service
+public class EngineUtil {
 
-    private int count;
-
-	public void visit(Number value) {
-		sum += value.doubleValue();
-        count++;
-    }
-    
-    public int getCount() {
-        return count;
-    }
-    
-    public double getSum() {
-    	return sum;
-    }
-
-    public Double value() {
-        return count > 0 ? sum / count : 0;
-    }
-
-    public void reset() {
-        count = 0;
-        sum = 0;
-    }
+	public static final Logger _logger = Logger.getLogger("elasticity-logger");
+	
+	public Logger getLogger() {
+		return _logger;
+	}
+	
 }
