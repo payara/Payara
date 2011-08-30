@@ -50,8 +50,7 @@ import com.sun.enterprise.security.CNonceCacheFactory;
 import org.glassfish.security.common.CNonceCache;
 import com.sun.enterprise.security.auth.digest.impl.HttpAlgorithmParameterImpl;
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
+import java.net.*;
 import java.security.Principal;
 import java.security.cert.X509Certificate;
 import java.util.*;
@@ -125,8 +124,7 @@ import com.sun.enterprise.security.auth.digest.impl.NestedDigestAlgoParamImpl;
 import com.sun.enterprise.security.auth.login.DigestCredentials;
 import com.sun.enterprise.security.authorize.PolicyContextHandlerImpl;
 import com.sun.enterprise.util.net.NetUtils;
-import java.net.InetAddress;
-import java.net.URLEncoder;
+
 import javax.security.jacc.PolicyContext;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.grizzly.config.dom.NetworkConfig;
@@ -1041,21 +1039,24 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
         boolean isWebServerRequest = false;
         Enumeration headerNames = ((HttpServletRequest) request.getRequest()).getHeaderNames();
 
-        String[] hostPort = new String[2];
+       String[] hostPort = null;
         boolean isHeaderPresent = false;
         while (headerNames.hasMoreElements()) {
             String headerName = (String) headerNames.nextElement();
-            String hostVal = "";
+            String hostVal;
             if (headerName.equalsIgnoreCase("Host")) {
                 hostVal = ((HttpServletRequest) request.getRequest()).getHeader(headerName);
                 isHeaderPresent = true;
                 hostPort = hostVal.split(":");
             }
         }
+        if(hostPort == null) {
+            throw new ProtocolException(rb.getString("missing_http_header.host"));
+        }
 
         //If the port in the Header is empty (it refers to the default port), which is
         //not one of the GlassFish listener ports -> GF is front-ended by a proxy (LB plugin)
-        boolean isHostPortNullOrEmpty = (hostPort[1] == null || hostPort[1].trim().isEmpty());
+        boolean isHostPortNullOrEmpty = ( (hostPort.length <= 1) || (hostPort[1] == null || hostPort[1].trim().isEmpty()));
         if (!isHeaderPresent) {
             isWebServerRequest = false;
         } else if (isHostPortNullOrEmpty) {
