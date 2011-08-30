@@ -41,6 +41,7 @@
 package com.sun.enterprise.deployment.util;
 
 import com.sun.enterprise.deployment.ConnectorDescriptor;
+import com.sun.enterprise.deployment.BundleDescriptor;
 
 /**
  * This class validates a connector descriptor
@@ -50,9 +51,16 @@ public class ConnectorValidator extends ComponentValidator implements ConnectorV
     public ConnectorValidator() {
     }
 
+    public void accept (BundleDescriptor descriptor) {
+        if (descriptor instanceof ConnectorDescriptor) {
+            ConnectorDescriptor connectorDesc = (ConnectorDescriptor)descriptor;
+            accept(connectorDesc);
+        }
+    }
+
     /**
      * visits a connector descriptor
-     * @param connectordescriptor
+     * @param connDesc connector descriptor
      */
     public void accept(ConnectorDescriptor connDesc) {
     }

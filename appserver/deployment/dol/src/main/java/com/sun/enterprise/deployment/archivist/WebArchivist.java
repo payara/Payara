@@ -280,9 +280,7 @@ public class WebArchivist extends Archivist<WebBundleDescriptor> {
         throws IOException
     {
         super.postOpen(descriptor, archive);
-        WebBundleDescriptor webBundle = (WebBundleDescriptor) descriptor;
-        ModuleContentValidator mdv = new ModuleContentValidator(archive);
-        webBundle.visit(mdv);
+        postValidate(descriptor, archive);
     }
 
     /**

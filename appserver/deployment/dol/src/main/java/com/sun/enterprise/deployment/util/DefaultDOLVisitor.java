@@ -40,180 +40,27 @@
 
 package com.sun.enterprise.deployment.util;
 
-import com.sun.enterprise.deployment.*;
-import com.sun.enterprise.deployment.types.EjbReference;
-import com.sun.enterprise.deployment.types.MessageDestinationReferencer;
 import org.glassfish.deployment.common.Descriptor;
 import org.glassfish.deployment.common.DescriptorVisitor;
+import com.sun.enterprise.deployment.*;
+import com.sun.enterprise.deployment.types.*;
 
 import java.util.Iterator;
 
 /**
- * Default implementation of all the DOL visitor interface for convenience
+ * Default implementation of DescriptorVisitor interface for convenience
  *
  * @author  Jerome Dochez
  * @version 
  */
 
-public class DefaultDOLVisitor implements ApplicationVisitor, EjbBundleVisitor, EjbVisitor, ManagedBeanVisitor {
-   protected BundleDescriptor bundleDescriptor = null;
+public class DefaultDOLVisitor implements DescriptorVisitor {
 
-    /** Creates new DefaultDOLVisitor */
-    public DefaultDOLVisitor() {
-    }
-    
-    /**
-     * visit an application object
-     * @param the application descriptor
-     */
-    public void accept(Application application) {
-    }
-    
-    /**
-     * visits an ejb bundle descriptor
-     * @param an ejb bundle descriptor
-     */
-    public void accept(EjbBundleDescriptor bundleDescriptor) {
-        this.bundleDescriptor = bundleDescriptor;
-    }
-
-    /**
-     * visits an ejb descriptor
-     * @param ejb descriptor
-     */
-    public void accept(EjbDescriptor ejb) {
-    }
-
-    public void accept(InjectionCapable injectable) {
-    }
-    
-    /**
-     * visits an ejb reference for the last J2EE component visited
-     * @param the ejb reference
-     */
-    public void accept(EjbReference ejbRef) {
-    }
-
-    public void accept(MessageDestinationReferencer msgDestReferencer) {
-    }
-
-    /**
-     * visits a web service reference descriptor
-     * @param serviceRef 
-     */
-    public void accept(ServiceReferenceDescriptor serviceRef) {
-    }
-
-    /**
-     * visits a web service definition
-     * @param web service
-     */
-    public void accept(WebService webService) {
-    }
-
-    /**
-     * visits a method permission and permitted methods  for the last J2EE component visited
-     * @param method permission 
-     * @param the methods associated with the above permission
-     */
-    public void accept(MethodPermission pm, Iterator methods) {
-    }
-    
-    /**
-     * visits a role reference  for the last J2EE component visited
-     * @param role reference
-     */
-    public void accept(RoleReference roleRef) {
-    }
-    
-    /**
-     * visists a method transaction  for the last J2EE component visited
-     * @param method descriptor the method
-     * @param container transaction
-     */
-    public void accept(MethodDescriptor method, ContainerTransaction ct) {
-    }
-    
-    /**
-     * visits an environment property  for the last J2EE component visited
-     * @param the environment property
-     */
-    public void accept(EnvironmentProperty envEntry) {
-    }
-
-    /**
-     * visits an resource reference for the last J2EE component visited
-     * @param the resource reference
-     */
-    public void accept(ResourceReferenceDescriptor resRef) {
-    }
-
-    /**
-     * visits an jms destination reference for the last J2EE component visited
-     * @param the jms destination reference
-     */
-    public void accept(JmsDestinationReferenceDescriptor jmsDestRef) {
-    }
-
-    /**
-     * visits an message destination reference for the last J2EE component visited
-     * @param the message destination reference
-     */
-    public void accept(MessageDestinationReferenceDescriptor msgDestRef) {
-    }
-
-    /**
-     * @return a EjbVisitor (if ejbs should be visited)
-     */
-    public EjbVisitor getEjbVisitor() {
-        return this;
-    }
-
-    /**
-     * visits an message destination for the last J2EE component visited
-     * @param the message destination
-     */
-    public void accept(MessageDestinationDescriptor msgDest) {
-    }
-
-    /**
-     * visits a CMP field definition (for CMP entity beans)
-     * @param field descriptor for the CMP field
-     */
-    public void accept(FieldDescriptor fd) {
-    }
-    
-    /**
-     * visits a query method
-     * @param method descriptor for the method
-     * @param query descriptor
-     */
-    public void accept(MethodDescriptor method, QueryDescriptor qd) {
-    }
-    
-    /**
-     * visits an ejb relationship descriptor
-     * @param the relationship descriptor
-     */
-    public void accept(RelationshipDescriptor descriptor) {
-    }
-    
     /**
      * visits a J2EE descriptor
      * @param the descriptor
      */
     public void accept(Descriptor descriptor) {
-    }
-    
-    public void accept(ManagedBeanDescriptor descriptor) {
-        this.bundleDescriptor = descriptor.getBundle();
-    }
-    
-    /**
-     * @return the bundleDescriptor we are visiting
-     */
-    protected BundleDescriptor getBundleDescriptor() {
-        return bundleDescriptor;
     }
 
     /**
@@ -222,5 +69,73 @@ public class DefaultDOLVisitor implements ApplicationVisitor, EjbBundleVisitor, 
      */
     public DescriptorVisitor getSubDescriptorVisitor(Descriptor subDescriptor) {
         return this;
+    }
+
+    protected void accept(BundleDescriptor bundleDescriptor) {
+        if (bundleDescriptor instanceof JndiNameEnvironment) {
+            JndiNameEnvironment nameEnvironment = (JndiNameEnvironment)bundleDescriptor;
+            for (Iterator<EjbReference> itr = nameEnvironment.getEjbReferenceDescriptors().iterator();itr.hasNext();) {
+                accept(itr.next());
+            }
+
+            for (Iterator<ResourceReferenceDescriptor> itr = nameEnvironment.getResourceReferenceDescriptors().iterator(); itr.hasNext();) {
+                accept(itr.next());
+            }
+
+            for (Iterator<JmsDestinationReferenceDescriptor> itr= nameEnvironment.getJmsDestinationReferenceDescriptors().iterator(); itr.hasNext();) {
+                accept(itr.next());
+            }
+
+            for (Iterator<MessageDestinationReferencer> itr = nameEnvironment.getMessageDestinationReferenceDescriptors().iterator();itr.hasNext();) {
+                accept(itr.next());
+            }
+
+            for (Iterator<MessageDestinationDescriptor> itr = bundleDescriptor.getMessageDestinations().iterator(); itr.hasNext();) {
+                accept(itr.next());
+            }
+
+            for (Iterator<ServiceReferenceDescriptor> itr = nameEnvironment.getServiceReferenceDescriptors().iterator();itr.hasNext();) {
+                accept(itr.next());
+            }
+        }
+    }
+
+    /**
+     * visits an ejb reference for the last J2EE component visited
+     * @param the ejb reference
+     */
+    protected void accept(EjbReference ejbRef) {
+    }
+
+    /**
+     * visits a web service reference descriptor
+     * @param serviceRef
+     */
+    protected void accept(ServiceReferenceDescriptor serviceRef) {
+    }
+
+
+    /**
+     * visits an resource reference for the last J2EE component visited
+     * @param the resource reference
+     */
+    protected void accept(ResourceReferenceDescriptor resRef) {
+    }
+
+    /**
+     * visits an jms destination reference for the last J2EE component visited
+     * @param the jms destination reference
+     */
+    protected void accept(JmsDestinationReferenceDescriptor jmsDestRef) {
+    }
+
+    protected void accept(MessageDestinationReferencer msgDestReferencer) {
+    }
+
+    /**
+     * visits an message destination for the last J2EE component visited
+     * @param the message destination
+     */
+    protected void accept(MessageDestinationDescriptor msgDest) {
     }
 }

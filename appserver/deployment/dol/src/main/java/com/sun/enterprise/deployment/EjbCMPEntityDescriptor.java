@@ -323,26 +323,4 @@ public class EjbCMPEntityDescriptor extends EjbEntityDescriptor {
         if(pers != null)
             ((Descriptor)pers).print(toStringBuffer);
     }        
-    
-    /** 
-     * visit the descriptor and all sub descriptors with a DOL visitor implementation
-     * 
-     * @param a visitor to traverse the descriptors
-     */
-    public void visit(EjbVisitor aVisitor) {
-        super.visit(aVisitor);     
-        PersistenceDescriptor persistenceDesc = getPersistenceDescriptor();
-        for (Iterator e=persistenceDesc.getCMPFields().iterator();e.hasNext();) {
-            FieldDescriptor fd = (FieldDescriptor) e.next();
-            aVisitor.accept(fd);
-        }
-        for (Iterator e=persistenceDesc.getQueriedMethods().iterator();e.hasNext();) {
-            Object method = e.next();
-            if (method instanceof MethodDescriptor) {
-                QueryDescriptor qd = persistenceDesc.getQueryFor((MethodDescriptor) method);
-                aVisitor.accept((MethodDescriptor) method, qd);
-            }
-        }
-    }    
-    
 }

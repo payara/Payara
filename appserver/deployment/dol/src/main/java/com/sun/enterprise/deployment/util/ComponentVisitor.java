@@ -60,65 +60,9 @@ import org.glassfish.deployment.common.DescriptorVisitor;
  */
 public interface ComponentVisitor extends DescriptorVisitor {
 
-   /**
-     * visits all entries within the component environment for which
-     * isInjectable() == true
-     * @param the InjectionCapable environment dependency
-     */
-    public void accept(InjectionCapable injectable);
-    
-
-   /**
-     * visits an ejb reference for the last J2EE component visited
-     * @param the ejb reference
-     */
-    public void accept(EjbReference ejbRef);
-    
     /**
-     * visits a role reference from the last  J2EE component visited
-     * @param role reference
+     * visits a J2EE component bundle descriptor.
      */
-    public void accept(RoleReference roleRef);
-    
-    /**
-     * visits an environment property  for the last J2EE component visited
-     * @param the environment property
-     */
-    public void accept(EnvironmentProperty envEntry);    
-
-    /**
-     * visits an resource reference for the last J2EE component visited
-     * @param the resource reference
-     */
-    public void accept(ResourceReferenceDescriptor resRef);
-
-    /**
-     * visits an jms destination reference for the last J2EE component visited
-     * @param the jms destination reference
-     */
-    public void accept(JmsDestinationReferenceDescriptor jmsDestRef);
-
-    /**
-     * visits an message destination reference for the last J2EE component visited
-     * @param the message destination reference
-     */
-    public void accept(MessageDestinationReferenceDescriptor msgDestRef);
-
-    /**
-     * visits an message destination for the last J2EE component visited
-     * @param the message destination
-     */
-    public void accept(MessageDestinationDescriptor msgDest);
-
-    /**
-     * visits a message destination referencer for the last J2EE component
-     * visited.
-     */
-    public void accept(MessageDestinationReferencer msgDestReferencer);
-
-    /**
-     * visits a service reference for the last J2EE component visited.
-     */
-    public void accept(ServiceReferenceDescriptor serviceRef);
+    public void accept(BundleDescriptor bundleDesc);
 }
 

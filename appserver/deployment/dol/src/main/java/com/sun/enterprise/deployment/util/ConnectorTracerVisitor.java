@@ -41,10 +41,18 @@
 package com.sun.enterprise.deployment.util;
 
 import com.sun.enterprise.deployment.ConnectorDescriptor;
+import com.sun.enterprise.deployment.BundleDescriptor;
 
-public class ConnectorTracerVisitor extends DefaultDOLVisitor {
+public class ConnectorTracerVisitor extends DefaultDOLVisitor implements ConnectorVisitor {
 
     public ConnectorTracerVisitor() {
+    }
+
+    public void accept(BundleDescriptor descriptor) {
+        if (descriptor instanceof ConnectorDescriptor) {
+            ConnectorDescriptor connectorDesc = (ConnectorDescriptor)descriptor;
+            accept(connectorDesc);
+        }
     }
 
     /**

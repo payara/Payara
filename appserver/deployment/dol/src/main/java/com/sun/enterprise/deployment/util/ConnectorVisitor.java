@@ -55,7 +55,7 @@ import org.jvnet.hk2.annotations.Contract;
  * @version 
  */
 @Contract
-public interface ConnectorVisitor {
+public interface ConnectorVisitor extends ComponentVisitor {
 
     /**
      * visits an connector descriptor

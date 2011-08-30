@@ -47,6 +47,7 @@ import com.sun.enterprise.deployment.util.AppClientVisitor;
 import com.sun.enterprise.deployment.util.AppClientTracerVisitor;
 import com.sun.enterprise.deployment.util.AppClientValidator;
 import com.sun.enterprise.deployment.util.ComponentVisitor;
+import com.sun.enterprise.deployment.util.ComponentPostVisitor;
 import org.glassfish.deployment.common.DescriptorVisitor;
 import org.glassfish.deployment.common.XModuleType;
 import com.sun.enterprise.util.LocalStringManagerImpl;
@@ -644,63 +645,13 @@ public class ApplicationClientDescriptor extends BundleDescriptor
      * @param aVisitor a visitor to traverse the descriptors
      */    
     public void visit(DescriptorVisitor aVisitor) {
-        if (aVisitor instanceof AppClientVisitor) {
-            visit((AppClientVisitor) aVisitor);
+        if (aVisitor instanceof AppClientVisitor ||
+            aVisitor instanceof ComponentPostVisitor) {
+            visit((ComponentVisitor) aVisitor);
         } else {
             super.visit(aVisitor);
         }
     }    
-    
-     /** 
-     * visit the descriptor and all sub descriptors with a DOL visitor implementation
-     * 
-     * @param aVisitor a visitor to traverse the descriptors
-     */
-    public void visit(AppClientVisitor aVisitor) {
-        aVisitor.accept(this);
-
-        // Visit all injectables first.  In some cases, basic type information
-        // has to be derived from target inject method or inject field.
-        for(InjectionCapable injectable : getInjectableResources(this)) {
-            aVisitor.accept(injectable);
-        }
-
-        Set ejbRefs = getEjbReferenceDescriptors();
-        for (Iterator itr = ejbRefs.iterator();itr.hasNext();) {
-            aVisitor.accept((EjbReference) itr.next());
-        }
-
-        for (Iterator itr=getResourceReferenceDescriptors().iterator();
-             itr.hasNext();) {
-            ResourceReferenceDescriptor next = 
-                (ResourceReferenceDescriptor) itr.next();
-            aVisitor.accept(next);
-        }
-
-        for (Iterator itr=getJmsDestinationReferenceDescriptors().iterator();
-             itr.hasNext();) {
-            JmsDestinationReferenceDescriptor next = 
-                (JmsDestinationReferenceDescriptor) itr.next();
-            aVisitor.accept(next);
-        }
-
-        Set msgDestRefs = getMessageDestinationReferenceDescriptors(); 
-        for (Iterator itr = msgDestRefs.iterator();itr.hasNext();) {
-            aVisitor.accept((MessageDestinationReferencer) itr.next());
-        }
-
-        for (Iterator itr = getMessageDestinations().iterator();
-                itr.hasNext();) {
-            MessageDestinationDescriptor msgDestDescriptor =
-                (MessageDestinationDescriptor)itr.next();
-            aVisitor.accept(msgDestDescriptor);
-        }
-
-        Set serviceRefs = getServiceReferenceDescriptors();
-        for (Iterator itr = serviceRefs.iterator();itr.hasNext();) {
-            aVisitor.accept((ServiceReferenceDescriptor) itr.next());
-        }
-    }
     
     /**
      * @return the module type for this bundle descriptor

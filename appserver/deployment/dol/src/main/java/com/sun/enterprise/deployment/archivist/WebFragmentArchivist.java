@@ -45,7 +45,7 @@ import com.sun.enterprise.deployment.WebFragmentDescriptor;
 import com.sun.enterprise.deployment.io.DeploymentDescriptorFile;
 import com.sun.enterprise.deployment.io.WebFragmentDeploymentDescriptorFile;
 import com.sun.enterprise.deployment.util.ApplicationValidator;
-import com.sun.enterprise.deployment.util.ModuleContentValidator;
+import com.sun.enterprise.deployment.util.ComponentPostVisitor;
 import com.sun.enterprise.deployment.util.WebBundleVisitor;
 import org.glassfish.deployment.common.XModuleType;
 import org.glassfish.api.deployment.archive.Archive;
@@ -138,9 +138,7 @@ class WebFragmentArchivist extends Archivist<WebFragmentDescriptor> {
         throws IOException
     {
         super.postOpen(descriptor, archive);
-        WebFragmentDescriptor webFragment = (WebFragmentDescriptor) descriptor;
-        ModuleContentValidator mdv = new ModuleContentValidator(archive);
-        webFragment.visit(mdv);
+        postValidate(descriptor, archive);
     }
 
     /**

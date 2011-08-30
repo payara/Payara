@@ -376,49 +376,12 @@ public class ManagedBeanDescriptor extends JndiEnvironmentRefsGroupDescriptor {
 
     public void validate() {
 
-        visit(new ApplicationValidator());
+        visit((ManagedBeanVisitor)new ApplicationValidator());
            
     }
 
     public void visit(ManagedBeanVisitor aVisitor) {
-
         aVisitor.accept(this);
-
-        for (Iterator itr = getEjbReferenceDescriptors().iterator(); itr.hasNext();) {
-            EjbReference aRef = (EjbReference) itr.next();
-            aVisitor.accept(aRef);
-        }
-
-        for (Iterator e = getEnvironmentProperties().iterator(); e.hasNext();) {
-            EnvironmentProperty envProp = (EnvironmentProperty) e.next();
-            aVisitor.accept(envProp);
-        }
-
-        for (Iterator it = getResourceReferenceDescriptors().iterator();
-             it.hasNext();) {
-            ResourceReferenceDescriptor next =
-                    (ResourceReferenceDescriptor) it.next();
-            aVisitor.accept(next);
-        }
-
-        for (Iterator it = getJmsDestinationReferenceDescriptors().iterator();
-             it.hasNext();) {
-            JmsDestinationReferenceDescriptor next =
-                    (JmsDestinationReferenceDescriptor) it.next();
-            aVisitor.accept(next);
-        }
-
-        for (Iterator it = getMessageDestinationReferenceDescriptors().iterator();
-             it.hasNext();) {
-            MessageDestinationReferencer next =
-                    (MessageDestinationReferencer) it.next();
-            aVisitor.accept(next);
-        }
-
-        Set serviceRefs = getServiceReferenceDescriptors();
-        for (Iterator itr = serviceRefs.iterator(); itr.hasNext();) {
-            aVisitor.accept((ServiceReferenceDescriptor) itr.next());
-        }
     }
 
     @Override

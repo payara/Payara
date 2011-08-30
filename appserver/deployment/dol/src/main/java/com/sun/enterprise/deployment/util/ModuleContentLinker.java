@@ -43,6 +43,9 @@ package com.sun.enterprise.deployment.util;
 import com.sun.enterprise.deployment.ServiceReferenceDescriptor;
 import com.sun.enterprise.deployment.WSDolSupport;
 import com.sun.enterprise.deployment.WebService;
+import com.sun.enterprise.deployment.BundleDescriptor;
+import com.sun.enterprise.deployment.EjbBundleDescriptor;
+import com.sun.enterprise.deployment.EjbDescriptor;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.deployment.common.ModuleDescriptor;
 import org.glassfish.internal.api.Globals;
@@ -51,13 +54,15 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.net.MalformedURLException;
+import java.util.Iterator;
+import java.util.Set;
 import java.util.logging.Level;
 
 /**
  *
  * @author Kenneth Saks
  */
-public class ModuleContentLinker extends DefaultDOLVisitor {
+public class ModuleContentLinker extends DefaultDOLVisitor implements ComponentVisitor {
 
     // For standalone modules, this is either a directory or a jar file.
     // For .ears, this is the directory used by the j2ee classloader.
@@ -77,6 +82,26 @@ public class ModuleContentLinker extends DefaultDOLVisitor {
     }
     
     protected ModuleContentLinker() {
+    }
+
+    public void accept (BundleDescriptor bundle) {
+        for (Iterator<WebService> itr = bundle.getWebServices().getWebServices().iterator(); itr.hasNext();) {
+            WebService aWebService = itr.next();
+            accept(aWebService);
+        }
+
+        for (Iterator<ServiceReferenceDescriptor> itr = bundle.getServiceReferenceDescriptors().iterator(); itr.hasNext();) {
+            accept(itr.next());
+        }
+
+        if (bundle instanceof EjbBundleDescriptor) {
+            EjbBundleDescriptor ejbBundle = (EjbBundleDescriptor)bundle;
+            for (EjbDescriptor anEjb : ejbBundle.getEjbs()) {
+                for (Iterator<ServiceReferenceDescriptor> itr = anEjb.getServiceReferenceDescriptors().iterator(); itr.hasNext();) {
+                    accept(itr.next());
+                }
+            }
+        }
     }
 
     private String getModuleLocation(ModuleDescriptor module) throws IOException {
@@ -210,5 +235,4 @@ public class ModuleContentLinker extends DefaultDOLVisitor {
                 new Object[] {webService.getName() , rootLocation_});
         } 
     }
-
 }

@@ -40,12 +40,12 @@
 
 package com.sun.enterprise.deployment.util;
 
-import com.sun.enterprise.deployment.InjectionCapable;
+import com.sun.enterprise.deployment.*;
+import com.sun.enterprise.deployment.types.*;
 import com.sun.enterprise.deployment.web.MultipartConfig;
-import com.sun.enterprise.deployment.WebBundleDescriptor;
-import com.sun.enterprise.deployment.WebComponentDescriptor;
-import com.sun.enterprise.deployment.ServletFilterDescriptor;
-import com.sun.enterprise.deployment.SessionConfigDescriptor;
+
+import java.util.Iterator;
+import java.util.Set;
 
 /**
  * This class validates the part of the web bundle descriptor 
@@ -53,6 +53,38 @@ import com.sun.enterprise.deployment.SessionConfigDescriptor;
  */
 public class WebBundleValidator extends ApplicationValidator implements WebBundleVisitor {
     
+    public void accept (BundleDescriptor descriptor) {
+        if (descriptor instanceof WebBundleDescriptor) {
+            WebBundleDescriptor webBundle = (WebBundleDescriptor)descriptor;
+            accept(webBundle);
+
+            // Visit all injectables first.  In some cases, basic type
+            // information has to be derived from target inject method or 
+            // inject field.
+            for (InjectionCapable injectable : webBundle.getInjectableResources(webBundle)) {
+                accept(injectable);
+            }
+
+            for (Iterator<WebComponentDescriptor> i = webBundle.getWebComponentDescriptors().iterator(); i.hasNext();) {
+                WebComponentDescriptor aWebComp = i.next();
+                accept(aWebComp);
+            }
+
+            for (Iterator<WebService> itr = webBundle.getWebServices().getWebServices().iterator(); itr.hasNext();) {
+                WebService aWebService = itr.next();
+                accept(aWebService);
+            }
+
+            super.accept(descriptor); 
+
+            for (Iterator<ServletFilterDescriptor> itr = webBundle.getServletFilterDescriptors().iterator(); itr.hasNext();) {
+                ServletFilterDescriptor servletFilterDescriptor =
+                    itr.next();
+                accept(servletFilterDescriptor);
+            }
+        }
+    }
+
     /**
      * visit a web bundle descriptor
      *
@@ -75,7 +107,7 @@ public class WebBundleValidator extends ApplicationValidator implements WebBundl
      *
      * @param descriptor the web component
      */
-    public void accept(WebComponentDescriptor descriptor) {
+    protected void accept(WebComponentDescriptor descriptor) {
 
         //set default value
         if (descriptor.getLoadOnStartUp() == null) {
@@ -107,7 +139,7 @@ public class WebBundleValidator extends ApplicationValidator implements WebBundl
         }
     }
 
-    public void accept(ServletFilterDescriptor descriptor) {
+    protected void accept(ServletFilterDescriptor descriptor) {
         // set default value
         if (descriptor.isAsyncSupported() == null) {
             descriptor.setAsyncSupported(false);

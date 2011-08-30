@@ -41,7 +41,7 @@
 package com.sun.enterprise.deployment.util;
 
 import com.sun.enterprise.deployment.*;
-import com.sun.enterprise.deployment.types.EjbReference;
+import com.sun.enterprise.deployment.types.*;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.logging.LogDomains;
 import org.glassfish.internal.api.Globals;
@@ -57,14 +57,47 @@ import java.util.logging.Logger;
  *
  * @author Jerome Dochez
  */
-public class EjbBundleValidator  extends ComponentValidator implements EjbBundleVisitor {
+public class EjbBundleValidator extends ComponentValidator implements EjbBundleVisitor, EjbVisitor {
     
     protected EjbBundleDescriptor ejbBundleDescriptor=null;
     protected EjbDescriptor ejb = null;
     private static LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(EjbBundleValidator.class);
     private static final Logger _logger = LogDomains.getLogger(DOLUtils.class, LogDomains.DPL_LOGGER);
-            
+
+    public void accept (BundleDescriptor descriptor) {
+        if (descriptor instanceof EjbBundleDescriptor) {
+            EjbBundleDescriptor ejbBundle = (EjbBundleDescriptor)descriptor;
+            accept(ejbBundle);
+
+            for (EjbDescriptor anEjb : ejbBundle.getEjbs()) {
+                anEjb.visit(getSubDescriptorVisitor(anEjb));
+            }
+            if (ejbBundle.hasRelationships()) {
+                for (Iterator itr = ejbBundle.getRelationships().iterator();itr.hasNext();) {
+                    RelationshipDescriptor rd = (RelationshipDescriptor) itr.next();
+                    accept(rd);
+                }
+            }
+            for (WebService aWebService : ejbBundle.getWebServices().getWebServices()) {
+                accept(aWebService);
+            }
+
+            // Ejb-jar level dependencies
+
+            // Visit all injectables first.  In some cases, basic type
+            // information has to be derived from target inject method or 
+            // inject field.
+            for(InjectionCapable injectable : ejbBundle.getInjectableResources(ejbBundle)) {
+                accept(injectable);
+            }
+
+            super.accept(descriptor);
+        } else {
+            super.accept(descriptor);
+        }
+    }
+
     /** visits an ejb bundle descriptor
      * @param bundleDescriptor ejb bundle descriptor
      */
@@ -313,6 +346,61 @@ public class EjbBundleValidator  extends ComponentValidator implements EjbBundle
                 throw new RuntimeException(msg);
             }
         }*/
+
+        // Visit all injectables first.  In some cases, basic type information
+        // has to be derived from target inject method or inject field.
+        for (InjectionCapable injectable :
+                ejb.getEjbBundleDescriptor().getInjectableResources(ejb)) {
+            accept(injectable);
+        }
+
+        for (Iterator itr = ejb.getEjbReferenceDescriptors().iterator(); itr.hasNext();) {
+            EjbReference aRef = (EjbReference) itr.next();
+            accept(aRef);
+        }
+
+        for (Iterator it = ejb.getResourceReferenceDescriptors().iterator();
+             it.hasNext();) {
+            ResourceReferenceDescriptor next =
+                    (ResourceReferenceDescriptor) it.next();
+            accept(next);
+        }
+
+        for (Iterator it = ejb.getJmsDestinationReferenceDescriptors().iterator(); it.hasNext();) {
+            JmsDestinationReferenceDescriptor next =
+                    (JmsDestinationReferenceDescriptor) it.next();
+            accept(next);
+        }
+
+        for (Iterator it = ejb.getMessageDestinationReferenceDescriptors().iterator(); it.hasNext();) {
+            MessageDestinationReferencer next =
+                    (MessageDestinationReferencer) it.next();
+            accept(next);
+        }
+
+        // If this is a message bean, it can be a message destination
+        // referencer as well.
+        if (ejb.getType().equals(EjbMessageBeanDescriptor.TYPE)) {
+            MessageDestinationReferencer msgDestReferencer =
+                    (MessageDestinationReferencer) ejb;
+            if (msgDestReferencer.getMessageDestinationLinkName() != null) {
+                accept(msgDestReferencer);
+            }
+        }
+
+        Set serviceRefs = ejb.getServiceReferenceDescriptors();
+        for (Iterator itr = serviceRefs.iterator(); itr.hasNext();) {
+            accept((ServiceReferenceDescriptor) itr.next());
+        }
+
+        if (ejb instanceof EjbCMPEntityDescriptor) {
+            EjbCMPEntityDescriptor cmp = (EjbCMPEntityDescriptor)ejb;
+            PersistenceDescriptor persistenceDesc = cmp.getPersistenceDescriptor();
+            for (Iterator e=persistenceDesc.getCMPFields().iterator();e.hasNext();) {
+                FieldDescriptor fd = (FieldDescriptor) e.next();
+                accept(fd);
+            }
+        }
     }    
         
     public void accept(WebService webService) {

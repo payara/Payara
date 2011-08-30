@@ -40,13 +40,40 @@
 
 package com.sun.enterprise.deployment.util;
 
-import com.sun.enterprise.deployment.WebBundleDescriptor;
-import com.sun.enterprise.deployment.WebComponentDescriptor;
-import com.sun.enterprise.deployment.ServletFilterDescriptor;
+import com.sun.enterprise.deployment.*;
+import com.sun.enterprise.deployment.types.*;
 
-public class WebBundleTracerVisitor extends DefaultDOLVisitor {
+import java.util.Iterator;
+import java.util.Set;
+
+public class WebBundleTracerVisitor extends TracerVisitor implements WebBundleVisitor {
 
     public WebBundleTracerVisitor() {
+    }
+
+    public void accept (BundleDescriptor descriptor) {
+        if (descriptor instanceof WebBundleDescriptor) {
+            WebBundleDescriptor webBundle = (WebBundleDescriptor)descriptor;
+            accept(webBundle);
+
+            for (Iterator<WebComponentDescriptor> i = webBundle.getWebComponentDescriptors().iterator(); i.hasNext();) {
+                WebComponentDescriptor aWebComp = i.next();
+                accept(aWebComp);
+            }
+
+            for (Iterator<WebService> itr = webBundle.getWebServices().getWebServices().iterator(); itr.hasNext();) {
+                WebService aWebService = itr.next();
+                accept(aWebService);
+            }
+
+            super.accept(descriptor);
+
+            for (Iterator<ServletFilterDescriptor> itr = webBundle.getServletFilterDescriptors().iterator(); itr.hasNext();) {
+                ServletFilterDescriptor servletFilterDescriptor =
+                    itr.next();
+                accept(servletFilterDescriptor);
+            }
+        }
     }
 
    /**
@@ -63,7 +90,7 @@ public class WebBundleTracerVisitor extends DefaultDOLVisitor {
      *
      * @param the web component
      */
-    public void accept(WebComponentDescriptor descriptor) {
+    protected void accept(WebComponentDescriptor descriptor) {
         DOLUtils.getDefaultLogger().info("==================");
         DOLUtils.getDefaultLogger().info(descriptor.toString());
     }
@@ -73,7 +100,7 @@ public class WebBundleTracerVisitor extends DefaultDOLVisitor {
      *
      * @param the servlet filter
      */
-    public void accept(ServletFilterDescriptor descriptor) {
+    protected void accept(ServletFilterDescriptor descriptor) {
         DOLUtils.getDefaultLogger().info("==================");
         DOLUtils.getDefaultLogger().info(descriptor.toString());
     }

@@ -53,7 +53,7 @@ public class WebValidatorWithCL extends WebBundleValidator {
      * isInjectable() == true.
      * @param the InjectionCapable environment dependency
      */
-    public void accept(InjectionCapable injectable) {
+    protected void accept(InjectionCapable injectable) {
         acceptWithCL(injectable);
     }
 }

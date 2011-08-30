@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -53,30 +53,10 @@ import com.sun.enterprise.deployment.WebService;
  */
 public interface WebBundleVisitor extends ComponentVisitor {
 
-
     /**
      * visit a web bundle descriptor
      *
      * @param the web bundle descriptor
      */
     public void accept(WebBundleDescriptor descriptor);
-
-    /**
-     * visits each web service declared within an ejb-jar.
-     */
-    public void accept(WebService webService);
-    
-    /**
-     * visit a web component descriptor
-     *
-     * @param the web component
-     */
-    public void accept(WebComponentDescriptor descriptor);
-
-    /**
-     * visit a servlet filter descriptor
-     *
-     * @param the servlet filter
-     */
-    public void accept(ServletFilterDescriptor descriptor);
 }

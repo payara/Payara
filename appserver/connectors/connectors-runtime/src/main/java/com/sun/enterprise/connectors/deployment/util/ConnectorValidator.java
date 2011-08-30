@@ -44,6 +44,7 @@ import com.sun.enterprise.deployment.*;
 import com.sun.enterprise.connectors.deployment.annotation.handlers.ConnectorAnnotationHandler;
 import com.sun.enterprise.connectors.deployment.annotation.handlers.ConfigPropertyHandler;
 import com.sun.enterprise.deployment.util.ConnectorVisitor;
+import com.sun.enterprise.deployment.util.DefaultDOLVisitor;
 import com.sun.logging.LogDomains;
 import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.apf.AnnotationProcessorException;
@@ -60,9 +61,16 @@ import java.util.logging.Logger;
 
 @Service
 @Scoped(PerLookup.class)
-public class ConnectorValidator implements ConnectorVisitor {
+public class ConnectorValidator extends DefaultDOLVisitor implements ConnectorVisitor {
 
     private Logger _logger = LogDomains.getLogger(ConnectorValidator.class, LogDomains.RSR_LOGGER);
+
+    public void accept (BundleDescriptor descriptor) {
+        if (descriptor instanceof ConnectorDescriptor) {
+            ConnectorDescriptor connectorDesc = (ConnectorDescriptor)descriptor;
+            accept(connectorDesc);
+        }
+    }
 
     public void accept(ConnectorDescriptor descriptor) {
         //validate & process annotations if a valid connector annotation is not already processed

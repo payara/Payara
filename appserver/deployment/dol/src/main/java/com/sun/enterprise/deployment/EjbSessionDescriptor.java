@@ -41,7 +41,6 @@
 package com.sun.enterprise.deployment;
 
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.enterprise.deployment.util.EjbVisitor;
 import org.glassfish.internal.api.Globals;
 
 import java.util.*;

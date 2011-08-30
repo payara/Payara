@@ -40,11 +40,24 @@
 
 package com.sun.enterprise.deployment.util;
 
-import com.sun.enterprise.deployment.ApplicationClientDescriptor;
+import com.sun.enterprise.deployment.*;
+import com.sun.enterprise.deployment.types.*;
 
-public class AppClientTracerVisitor extends DefaultDOLVisitor {
+import java.util.Iterator;
+import java.util.Set;
+
+public class AppClientTracerVisitor extends TracerVisitor implements AppClientVisitor {
 
     public AppClientTracerVisitor() {
+    }
+
+    public void accept (BundleDescriptor descriptor) {
+        if (descriptor instanceof ApplicationClientDescriptor) {
+            ApplicationClientDescriptor appClientDesc = (ApplicationClientDescriptor)descriptor;
+            accept(appClientDesc);
+
+            super.accept(descriptor);
+        }
     }
 
      /**

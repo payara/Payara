@@ -162,9 +162,7 @@ public class EjbArchivist extends Archivist<EjbBundleDescriptor> {
         throws IOException
     {
         super.postOpen(descriptor, archive);
-        EjbBundleDescriptor ejbBundle = (EjbBundleDescriptor) descriptor;
-        ModuleContentValidator mdv = new ModuleContentValidator(archive);
-        ejbBundle.visit((EjbBundleVisitor)mdv);
+        postValidate(descriptor, archive);
     }
 
     /**

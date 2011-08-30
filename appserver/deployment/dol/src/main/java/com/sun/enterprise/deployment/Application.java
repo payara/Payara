@@ -1156,7 +1156,7 @@ public class Application extends BundleDescriptor
      * @param bundleType the bundle descriptor type requested
      * @return the set of bundle descriptors
      */
-    private Set<BundleDescriptor> getBundleDescriptorsOfType(XModuleType bundleType) {
+    public Set<BundleDescriptor> getBundleDescriptorsOfType(XModuleType bundleType) {
         if (bundleType == null) {
             return null;
         }
@@ -1508,83 +1508,11 @@ public class Application extends BundleDescriptor
      */
     public void visit(DescriptorVisitor aVisitor) {
         if (aVisitor instanceof ApplicationVisitor) {
-            visit((ApplicationVisitor) aVisitor);
+            visit((ComponentVisitor) aVisitor);
         } else {
             super.visit(aVisitor);
         }
     }
-
-    /**
-     * visit the descriptor and all sub descriptors with a DOL visitor implementation
-     *
-     * @param aVisitor visitor to traverse the descriptors
-     */
-    public void visit(ApplicationVisitor aVisitor) {
-        aVisitor.accept(this);
-        for (BundleDescriptor ebd : getBundleDescriptorsOfType(XModuleType.EJB)) {
-            ebd.visit(aVisitor.getSubDescriptorVisitor(ebd));
-        }
-        for (BundleDescriptor wbd : getBundleDescriptorsOfType(XModuleType.WAR)) {
-            // This might be null in the case of an appclient 
-            // processing a client stubs .jar whose original .ear contained
-            // a .war.  This will be fixed correctly in the deployment
-            // stage but until then adding a non-null check will prevent
-            // the validation step from bombing.
-            if (wbd != null) {
-                wbd.visit(aVisitor.getSubDescriptorVisitor(wbd));
-            }
-        }
-        for (BundleDescriptor cd :  getBundleDescriptorsOfType(XModuleType.RAR)) {
-            cd.visit(aVisitor.getSubDescriptorVisitor(cd));
-        }
-
-        for (BundleDescriptor acd : getBundleDescriptorsOfType(XModuleType.CAR)) {
-            acd.visit(aVisitor.getSubDescriptorVisitor(acd));
-        }
-
-        // Visit all injectables first.  In some cases, basic type information
-        // has to be derived from target inject method or inject field.
-        for(InjectionCapable injectable : getInjectableResources(this)) {
-            aVisitor.accept(injectable);
-        }
-
-        Set ejbRefs = getEjbReferenceDescriptors();
-        for (Iterator itr = ejbRefs.iterator();itr.hasNext();) {
-            aVisitor.accept((EjbReference) itr.next());
-        }
-
-        for (Iterator itr=getResourceReferenceDescriptors().iterator();
-             itr.hasNext();) {
-            ResourceReferenceDescriptor next =
-                (ResourceReferenceDescriptor) itr.next();
-            aVisitor.accept(next);
-        }
-
-        for (Iterator itr=getJmsDestinationReferenceDescriptors().iterator();
-             itr.hasNext();) {
-            JmsDestinationReferenceDescriptor next =
-                (JmsDestinationReferenceDescriptor) itr.next();
-            aVisitor.accept(next);
-        }
-
-        Set msgDestRefs = getMessageDestinationReferenceDescriptors();
-        for (Iterator itr = msgDestRefs.iterator();itr.hasNext();) {
-            aVisitor.accept((MessageDestinationReferencer) itr.next());
-        }
-
-        for (Iterator itr = getMessageDestinations().iterator();
-                itr.hasNext();) {
-            MessageDestinationDescriptor msgDestDescriptor =
-                (MessageDestinationDescriptor)itr.next();
-            aVisitor.accept(msgDestDescriptor);
-        }
-
-        Set serviceRefs = getServiceReferenceDescriptors();
-        for (Iterator itr = serviceRefs.iterator();itr.hasNext();) {
-            aVisitor.accept((ServiceReferenceDescriptor) itr.next());
-        }
-    }
-
 
     /**
      * @return the module ID for this module descriptor

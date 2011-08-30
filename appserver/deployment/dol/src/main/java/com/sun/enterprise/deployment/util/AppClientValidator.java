@@ -40,8 +40,11 @@
 
 package com.sun.enterprise.deployment.util;
 
-import com.sun.enterprise.deployment.ApplicationClientDescriptor;
-import com.sun.enterprise.deployment.LifecycleCallbackDescriptor;
+import com.sun.enterprise.deployment.*;
+import com.sun.enterprise.deployment.types.*;
+
+import java.util.Iterator;
+import java.util.Set;
 
 /**
  * This class validates an application client descriptor
@@ -50,6 +53,23 @@ import com.sun.enterprise.deployment.LifecycleCallbackDescriptor;
 public class AppClientValidator extends ApplicationValidator implements AppClientVisitor {
     public AppClientValidator() {
     }
+
+    public void accept (BundleDescriptor descriptor) {
+        if (descriptor instanceof ApplicationClientDescriptor) {
+            ApplicationClientDescriptor appClientDesc = (ApplicationClientDescriptor)descriptor;
+            accept(appClientDesc);
+
+            // Visit all injectables first.  In some cases, basic type
+            // information has to be derived from target inject method or 
+            // inject field.
+            for(InjectionCapable injectable : appClientDesc.getInjectableResources(appClientDesc)) {
+                accept(injectable);
+            }
+
+            super.accept(descriptor);
+        }
+    }
+
 
     /**
      * visits a appclient descriptor

@@ -41,6 +41,7 @@
 package com.sun.enterprise.deployment.util;
 
 import com.sun.enterprise.deployment.*;
+import com.sun.enterprise.deployment.types.*;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -52,6 +53,7 @@ import java.util.Set;
 import org.glassfish.deployment.common.ModuleDescriptor;
 import org.glassfish.deployment.common.Descriptor;
 import org.glassfish.deployment.common.DescriptorVisitor;
+import org.glassfish.deployment.common.XModuleType;
 import org.jvnet.hk2.annotations.Service;
 
 /**
@@ -63,8 +65,49 @@ import org.jvnet.hk2.annotations.Service;
  */
 @Service(name="application_deploy")
 public class ApplicationValidator extends EjbBundleValidator 
-    implements ApplicationVisitor, EjbBundleVisitor, EjbVisitor, ManagedBeanVisitor {
+    implements ApplicationVisitor, ManagedBeanVisitor {
     
+    public void accept (BundleDescriptor descriptor) {
+        if (descriptor instanceof Application) {
+            Application application = (Application)descriptor;
+            accept(application);
+
+            for (BundleDescriptor ebd : application.getBundleDescriptorsOfType(XModuleType.EJB)) {
+                ebd.visit(getSubDescriptorVisitor(ebd));
+            }
+
+            for (BundleDescriptor wbd : application.getBundleDescriptorsOfType(XModuleType.WAR)) {
+                // This might be null in the case of an appclient
+                // processing a client stubs .jar whose original .ear contained
+                // a .war.  This will be fixed correctly in the deployment
+                // stage but until then adding a non-null check will prevent
+                // the validation step from bombing.
+                if (wbd != null) {
+                    wbd.visit(getSubDescriptorVisitor(wbd));
+                }
+            }
+
+            for (BundleDescriptor cd :  application.getBundleDescriptorsOfType(XModuleType.RAR)) {
+                cd.visit(getSubDescriptorVisitor(cd));
+            }
+
+            for (BundleDescriptor acd : application.getBundleDescriptorsOfType(XModuleType.CAR)) {
+                acd.visit(getSubDescriptorVisitor(acd));
+            }
+
+            // Visit all injectables first.  In some cases, basic type
+            // information has to be derived from target inject method or 
+            // inject field.
+            for(InjectionCapable injectable : application.getInjectableResources(application)) {
+                accept(injectable);
+            }
+
+            super.accept(descriptor);
+        } else {
+            super.accept(descriptor);
+        }
+    }
+
     /**
      * visit an application object
      * @param application the application descriptor
@@ -115,7 +158,7 @@ public class ApplicationValidator extends EjbBundleValidator
                 cModule.getModuleType().toString());
         }
     }
-            
+
     /**
      * visits an ejb bundle descriptor
      * @param bundleDescriptor an ejb bundle descriptor
@@ -152,8 +195,36 @@ public class ApplicationValidator extends EjbBundleValidator
      public void accept(ManagedBeanDescriptor managedBean) {
         this.bundleDescriptor = managedBean.getBundle();
         this.application = bundleDescriptor.getApplication(); 
-     }
-    
+
+        for (Iterator itr = managedBean.getEjbReferenceDescriptors().iterator(); itr.hasNext();) {
+            EjbReference aRef = (EjbReference) itr.next();
+            accept(aRef);
+        }
+
+        for (Iterator it = managedBean.getResourceReferenceDescriptors().iterator(); it.hasNext();) {
+            ResourceReferenceDescriptor next =
+                    (ResourceReferenceDescriptor) it.next();
+            accept(next);
+        }
+
+        for (Iterator it = managedBean.getJmsDestinationReferenceDescriptors().iterator(); it.hasNext();) {
+            JmsDestinationReferenceDescriptor next =
+                    (JmsDestinationReferenceDescriptor) it.next();
+            accept(next);
+        }
+
+        for (Iterator it = managedBean.getMessageDestinationReferenceDescriptors().iterator(); it.hasNext();) {
+            MessageDestinationReferencer next =
+                    (MessageDestinationReferencer) it.next();
+            accept(next);
+        }
+
+        Set serviceRefs = managedBean.getServiceReferenceDescriptors();
+        for (Iterator itr = serviceRefs.iterator(); itr.hasNext();) {
+            accept((ServiceReferenceDescriptor) itr.next());
+        }
+    }
+
     
     /**
      * @return a vector of EjbDescriptor for this bundle

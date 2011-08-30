@@ -606,20 +606,11 @@ public class ConnectorDescriptor extends BundleDescriptor {
      */    
     public void visit(DescriptorVisitor aVisitor) {
         if (aVisitor instanceof ConnectorVisitor) {
-            visit((ConnectorVisitor) aVisitor);
+            visit((ComponentVisitor) aVisitor);
         } else {
             super.visit(aVisitor);
         }
     }    
-
-    /** 
-     * visit the descriptor and all sub descriptors with a 
-     * DOL visitor implementation
-     * @param aVisitor visitor to traverse the descriptors
-     */
-    public void visit(ConnectorVisitor aVisitor) {
-        aVisitor.accept(this);
-    }   
 
     /*
      * Prints entry information.

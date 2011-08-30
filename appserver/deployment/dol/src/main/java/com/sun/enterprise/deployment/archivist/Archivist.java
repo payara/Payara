@@ -1774,6 +1774,13 @@ public abstract class Archivist<T extends RootDeploymentDescriptor> {
     public void validate(ClassLoader aClassLoader) {
     }
 
+    protected void postValidate(BundleDescriptor bundleDesc, ReadableArchive archive) {
+        ComponentPostVisitor postVisitor = habitat.getComponent(ComponentPostVisitor.class);
+        postVisitor.setArchive(archive);
+        bundleDesc.visit(postVisitor);
+    }
+
+
     /**
      * Copy this archivist to a new abstract archive
      *

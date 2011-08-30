@@ -493,7 +493,7 @@ public abstract class BundleDescriptor extends RootDeploymentDescriptor implemen
         return null;
     }
 
-    protected List<InjectionCapable> getInjectableResources
+    public List<InjectionCapable> getInjectableResources
             (JndiNameEnvironment jndiNameEnv) {
 
         List<InjectionCapable> injectables =
@@ -598,6 +598,13 @@ public abstract class BundleDescriptor extends RootDeploymentDescriptor implemen
      */
     public ComponentVisitor getBundleVisitor() {
         return new ApplicationValidator();
+    }
+
+    /**
+     * visitor API implementation
+     */
+    public void visit(ComponentVisitor aVisitor) {
+        aVisitor.accept(this);
     }
 
     /**

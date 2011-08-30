@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,36 +40,15 @@
 
 package com.sun.enterprise.deployment.util;
 
-import com.sun.enterprise.deployment.ServiceReferenceDescriptor;
-import com.sun.enterprise.deployment.WebService;
-
-import java.util.HashSet;
-import java.util.Set;
+import org.jvnet.hk2.annotations.Contract;
+import org.glassfish.api.deployment.archive.ReadableArchive;
 
 /**
+ * This class does the necessary post processing for J2EE Component DOL  
+ * related classes 
  *
- * @author Kenneth Saks
  */
-public class WsdlFileVisitor extends DefaultDOLVisitor {
-
-    private Set wsdlFileUris_;
-
-    public WsdlFileVisitor() {
-        wsdlFileUris_ = new HashSet();
-    }
-
-    public Set getWsdlFileUris() {
-        return wsdlFileUris_;
-    }
-
-    public void accept(ServiceReferenceDescriptor serviceRef) {
-        if( serviceRef.hasWsdlFile() ) {
-            wsdlFileUris_.add(serviceRef.getWsdlFileUri());
-        }
-    }
-
-    public void accept(WebService webService) {
-        wsdlFileUris_.add(webService.getWsdlFileUri());
-    }
-
+@Contract
+public interface ComponentPostVisitor extends ComponentVisitor {
+    public void setArchive(ReadableArchive archive);
 }

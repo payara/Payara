@@ -718,84 +718,14 @@ public class EjbBundleDescriptor extends BundleDescriptor implements WritableJnd
      * @param aVisitor a visitor to traverse the descriptors
      */
     public void visit(DescriptorVisitor aVisitor) {
-        if (aVisitor instanceof EjbBundleVisitor) {
-            visit((EjbBundleVisitor) aVisitor);
+        if (aVisitor instanceof EjbBundleVisitor || 
+            aVisitor instanceof ComponentPostVisitor) {
+            visit((ComponentVisitor) aVisitor);
         } else {
             super.visit(aVisitor);
         }
     }    
 
-    /** 
-     * visit the descriptor and all sub descriptors with a DOL visitor implementation
-     * 
-     * @param aVisitor a visitor to traverse the descriptors
-     */
-    public void visit(EjbBundleVisitor aVisitor) {
-        aVisitor.accept(this);
-        EjbVisitor ejbVisitor = aVisitor.getEjbVisitor();
-        if (ejbVisitor != null) {
-            for (EjbDescriptor anEjb : this.getEjbs()) {
-                anEjb.visit(ejbVisitor);
-            }
-        }
-        if (hasRelationships()) {
-            for (Iterator itr = getRelationships().iterator();itr.hasNext();) {
-                RelationshipDescriptor rd = (RelationshipDescriptor) itr.next();
-                aVisitor.accept(rd);
-            }
-        }
-        for (WebService aWebService : getWebServices().getWebServices()) {
-            aVisitor.accept(aWebService);
-        }
-        for (MessageDestinationDescriptor msgDestDescriptor : getMessageDestinations()) {
-            aVisitor.accept(msgDestDescriptor);
-        }
-
-        // Ejb-jar level dependencies
-
-        // Visit all injectables first.  In some cases, basic type information
-        // has to be derived from target inject method or inject field.
-        for(InjectionCapable injectable : getInjectableResources(this)) {
-            aVisitor.accept(injectable);
-        }
-
-        Set ejbRefs = getEjbReferenceDescriptors();
-        for (Iterator itr = ejbRefs.iterator();itr.hasNext();) {
-            aVisitor.accept((EjbReference) itr.next());
-        }
-
-        for (Iterator itr=getResourceReferenceDescriptors().iterator();
-             itr.hasNext();) {
-            ResourceReferenceDescriptor next =
-                (ResourceReferenceDescriptor) itr.next();
-            aVisitor.accept(next);
-        }
-
-        for (Iterator itr=getJmsDestinationReferenceDescriptors().iterator();
-             itr.hasNext();) {
-            JmsDestinationReferenceDescriptor next =
-                (JmsDestinationReferenceDescriptor) itr.next();
-            aVisitor.accept(next);
-        }
-
-        Set msgDestRefs = getMessageDestinationReferenceDescriptors();
-        for (Iterator itr = msgDestRefs.iterator();itr.hasNext();) {
-            aVisitor.accept((MessageDestinationReferencer) itr.next());
-        }
-
-        for (Iterator itr = getMessageDestinations().iterator();
-                itr.hasNext();) {
-            MessageDestinationDescriptor msgDestDescriptor =
-                (MessageDestinationDescriptor)itr.next();
-            aVisitor.accept(msgDestDescriptor);
-        }
-
-        Set serviceRefs = getServiceReferenceDescriptors();
-        for (Iterator itr = serviceRefs.iterator();itr.hasNext();) {
-            aVisitor.accept((ServiceReferenceDescriptor) itr.next());
-        }
-    }
- 
     /**
      * @return the module type for this bundle descriptor
      */

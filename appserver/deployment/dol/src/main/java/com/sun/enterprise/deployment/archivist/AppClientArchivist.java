@@ -49,7 +49,7 @@ import com.sun.enterprise.deployment.io.runtime.AppClientRuntimeDDFile;
 import com.sun.enterprise.deployment.io.runtime.GFAppClientRuntimeDDFile;
 import com.sun.enterprise.deployment.util.AppClientValidator;
 import com.sun.enterprise.deployment.util.DOLUtils;
-import com.sun.enterprise.deployment.util.ModuleContentValidator;
+import com.sun.enterprise.deployment.util.ComponentPostVisitor;
 import org.glassfish.deployment.common.XModuleType;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.api.deployment.archive.WritableArchive;
@@ -214,13 +214,7 @@ public class AppClientArchivist extends Archivist<ApplicationClientDescriptor> {
 
         super.postOpen(descriptor, archive);
 
-        runValidations(descriptor, archive);
-    }
-
-    protected void runValidations(final ApplicationClientDescriptor acDesc,
-            final ReadableArchive archive) {
-        ModuleContentValidator mdv = new ModuleContentValidator(archive);
-        acDesc.visit(mdv);
+        postValidate(descriptor, archive);
     }
 
     /**

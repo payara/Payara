@@ -68,6 +68,7 @@ import com.sun.enterprise.deployment.JaxrpcMappingDescriptor.Mapping;
 import com.sun.enterprise.deployment.util.ApplicationVisitor;
 import com.sun.enterprise.deployment.util.AppClientVisitor;
 import com.sun.enterprise.deployment.util.WebBundleVisitor;
+import com.sun.enterprise.deployment.util.EjbBundleVisitor;
 import com.sun.enterprise.deployment.util.ModuleContentLinker;
 import com.sun.enterprise.deployment.util.WebServerInfo;
 import com.sun.enterprise.deployment.*;
@@ -104,7 +105,7 @@ import com.sun.xml.rpc.spi.tools.NoMetadataModelInfo;
  * @author  Jerome Dochez
  */
 public class JaxRpcRICodegen extends ModuleContentLinker
-        implements JaxRpcCodegenAdapter, WebBundleVisitor, AppClientVisitor  
+        implements JaxRpcCodegenAdapter, ApplicationVisitor, EjbBundleVisitor, WebBundleVisitor, AppClientVisitor  
 {
     protected DeploymentContext context = null;
     protected Habitat habitat = null;
@@ -823,6 +824,43 @@ public class JaxRpcRICodegen extends ModuleContentLinker
         return moduleId.equals(webService.getBundleDescriptor().getModuleID());
     }
 
+    public void accept (BundleDescriptor descriptor) {
+        if (descriptor instanceof Application) {
+            Application application = (Application)descriptor;
+            for (BundleDescriptor ebd : application.getBundleDescriptorsOfType(XModuleType.EJB)) {
+                ebd.visit(getSubDescriptorVisitor(ebd));
+            }
+
+            for (BundleDescriptor wbd : application.getBundleDescriptorsOfType(XModuleType.WAR)) {
+                if (wbd != null) {
+                    wbd.visit(getSubDescriptorVisitor(wbd));
+                }
+            }
+
+            for (BundleDescriptor acd : application.getBundleDescriptorsOfType(XModuleType.CAR)) {
+                acd.visit(getSubDescriptorVisitor(acd));
+            }
+        } else {
+            super.accept(descriptor);
+        }
+    }
+
+
+    /**
+     * visit an application object
+     * @param the application descriptor
+     */
+    public void accept(Application application) {
+    }
+
+    /**
+     * visits an ejb bundle descriptor
+     * @param an ejb bundle descriptor
+     */
+    public void accept(EjbBundleDescriptor bundleDescriptor) {
+    }
+
+
     /**
      * visits a appclient descriptor
      * @param appclientdescriptor
@@ -830,22 +868,6 @@ public class JaxRpcRICodegen extends ModuleContentLinker
      * @param sub descriptor to return visitor for
      */
     public void accept(ApplicationClientDescriptor appclientdescriptor) {
-    }
-
-    /**
-     * visit a web component descriptor
-     *
-     * @param the web component
-     */
-    public void accept(WebComponentDescriptor descriptor) {
-    }
-
-    /**
-     * visit a servlet filter descriptor
-     *
-     * @param the servlet filter
-     */
-    public void accept(ServletFilterDescriptor descriptor) {
     }
 
     /**

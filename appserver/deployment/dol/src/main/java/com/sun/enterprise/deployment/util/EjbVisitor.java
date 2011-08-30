@@ -48,7 +48,6 @@ package com.sun.enterprise.deployment.util;
 
 import com.sun.enterprise.deployment.*;
 
-import java.util.Iterator;
 
 /**
  * This class is responsible for visiting DOL ejb related  descritpors
@@ -64,34 +63,5 @@ public interface EjbVisitor extends ComponentVisitor {
      */
     public void accept(EjbDescriptor ejb);
     
-    /**
-     * visits a method permission and permitted methods for the 
-     * last J2ee component visited
-     * @param method permission 
-     * @param the methods associated with the above permission
-     */
-    public void accept(MethodPermission pm, Iterator methods);
-
-    /**
-     * visits a method transaction 
-     * @param ejb descritptor this method applies to
-     * @param method descriptor the method
-     * @param container transaction
-     */
-    public void accept(MethodDescriptor method, ContainerTransaction ct);
-    
-    /**
-     * visits a CMP field definition (for CMP entity beans)
-     * @param field descriptor for the CMP field
-     */
-    public void accept(FieldDescriptor fd);
-    
-    /**
-     * visits a query method 
-     * @param method descriptor for the method
-     * @param query descriptor 
-     */
-    public void accept(MethodDescriptor method, QueryDescriptor qd);    
-
 }
 

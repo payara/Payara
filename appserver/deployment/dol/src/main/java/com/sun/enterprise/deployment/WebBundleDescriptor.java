@@ -49,6 +49,7 @@ import com.sun.enterprise.deployment.util.WebBundleVisitor;
 import com.sun.enterprise.deployment.util.WebBundleTracerVisitor;
 import com.sun.enterprise.deployment.util.WebBundleValidator;
 import com.sun.enterprise.deployment.util.ComponentVisitor;
+import com.sun.enterprise.deployment.util.ComponentPostVisitor;
 import org.glassfish.deployment.common.DescriptorVisitor;
 import org.glassfish.deployment.common.RootDeploymentDescriptor;
 import org.glassfish.deployment.common.XModuleType;
@@ -1974,8 +1975,9 @@ public class WebBundleDescriptor extends BundleDescriptor
      * visitor API implementation
      */
     public void visit(DescriptorVisitor aVisitor) {
-        if (aVisitor instanceof WebBundleVisitor) {
-            visit((WebBundleVisitor) aVisitor);
+        if (aVisitor instanceof WebBundleVisitor || 
+            aVisitor instanceof ComponentPostVisitor) {
+            visit((ComponentVisitor) aVisitor);
         } else {
             super.visit(aVisitor);
         }
@@ -1984,65 +1986,11 @@ public class WebBundleDescriptor extends BundleDescriptor
     /**
      * visitor API implementation
      */
-    public void visit(WebBundleVisitor aVisitor) {
+    public void visit(ComponentVisitor aVisitor) {
         super.visit(aVisitor);
         aVisitor.accept(this);
-
-        // Visit all injectables first.  In some cases, basic type information
-        // has to be derived from target inject method or inject field.
-        for (InjectionCapable injectable : getInjectableResources(this)) {
-            aVisitor.accept(injectable);
-        }
-
-        for (Iterator<WebComponentDescriptor> i = getWebComponentDescriptors().iterator(); i.hasNext();) {
-            WebComponentDescriptor aWebComp = i.next();
-            aVisitor.accept(aWebComp);
-        }
-        for (Iterator<WebService> itr = getWebServices().getWebServices().iterator();
-             itr.hasNext();) {
-            WebService aWebService = itr.next();
-            aVisitor.accept(aWebService);
-        }
-
-        for (Iterator<EjbReference> itr = getEjbReferenceDescriptors().iterator(); itr.hasNext();) {
-            EjbReference aRef = itr.next();
-            aVisitor.accept(aRef);
-        }
-        for (Iterator<ResourceReferenceDescriptor> itr = getResourceReferenceDescriptors().iterator();
-             itr.hasNext();) {
-            ResourceReferenceDescriptor next =
-                    itr.next();
-            aVisitor.accept(next);
-        }
-        for (Iterator<JmsDestinationReferenceDescriptor> itr = getJmsDestinationReferenceDescriptors().iterator();
-             itr.hasNext();) {
-            JmsDestinationReferenceDescriptor next =
-                    itr.next();
-            aVisitor.accept(next);
-        }
-        for (Iterator<MessageDestinationReferenceDescriptor> itr = getMessageDestinationReferenceDescriptors().iterator();
-             itr.hasNext();) {
-            MessageDestinationReferencer next =
-                    itr.next();
-            aVisitor.accept(next);
-        }
-        for (Iterator itr = getMessageDestinations().iterator();
-             itr.hasNext();) {
-            MessageDestinationDescriptor msgDestDescriptor =
-                    (MessageDestinationDescriptor) itr.next();
-            aVisitor.accept(msgDestDescriptor);
-        }
-        for (Iterator<ServiceReferenceDescriptor> itr = getServiceReferenceDescriptors().iterator();
-             itr.hasNext();) {
-            aVisitor.accept(itr.next());
-        }
-        for (Iterator itr = getServletFilterDescriptors().iterator();
-             itr.hasNext();) {
-            ServletFilterDescriptor servletFilterDescriptor =
-                    (ServletFilterDescriptor) itr.next();
-            aVisitor.accept(servletFilterDescriptor);
-        }
     }
+
 
     public void putJarNameWebFragmentNamePair(String jarName, String webFragName) {
         if (jarName2WebFragNameMap == null) {

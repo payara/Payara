@@ -47,6 +47,10 @@ import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.deployment.common.DeploymentException;
 
+import org.jvnet.hk2.annotations.Scoped;
+import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.component.PerLookup;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -64,8 +68,9 @@ import java.util.Vector;
  *
  * @author Kenneth Saks
  */
-public class ModuleContentValidator extends DefaultDOLVisitor 
-    implements WebBundleVisitor, AppClientVisitor {
+@Service
+@Scoped(PerLookup.class)
+public class ModuleContentValidator extends ModuleContentLinker implements ComponentPostVisitor {
 
     private ReadableArchive archive_;
     
@@ -73,7 +78,10 @@ public class ModuleContentValidator extends DefaultDOLVisitor
     private static LocalStringManagerImpl localStrings =
 	    new LocalStringManagerImpl(ModuleContentValidator.class);      
 
-    public ModuleContentValidator(ReadableArchive archive) {
+    public ModuleContentValidator() {
+    }
+ 
+    public void setArchive(ReadableArchive archive) {
         archive_ = archive;
     }
 
@@ -242,38 +250,4 @@ public class ModuleContentValidator extends DefaultDOLVisitor
         String wsdlDir = bundle.getWsdlDir();
         return (uri != null) && uri.startsWith(wsdlDir);
     }
-
-    /**
-     * visits a appclient descriptor
-     * @param appclientdescriptor
-     * get the visitor for its sub descriptor
-     * @param sub descriptor to return visitor for
-     */
-    public void accept(ApplicationClientDescriptor appclientdescriptor) {
-    }
-
-    /**
-     * visit a web component descriptor
-     *
-     * @param the web component
-     */
-    public void accept(WebComponentDescriptor descriptor) {
-    }
-
-    /**
-     * visit a servlet filter descriptor
-     *
-     * @param the servlet filter
-     */
-    public void accept(ServletFilterDescriptor descriptor) {
-    }
-
-    /**
-     * visit a web bundle descriptor
-     *
-     * @param the web bundle descriptor
-     */
-    public void accept(WebBundleDescriptor descriptor) {
-    }
-
 }

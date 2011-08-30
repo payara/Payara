@@ -47,8 +47,10 @@
 package com.sun.enterprise.deployment.util;
 
 import com.sun.enterprise.deployment.*;
-import com.sun.enterprise.deployment.types.MessageDestinationReferencer;
+import com.sun.enterprise.deployment.types.*;
 import org.glassfish.deployment.common.XModuleType;
+import org.glassfish.deployment.common.Descriptor;
+import org.glassfish.deployment.common.DescriptorVisitor;
 
 import java.util.Iterator;
 import java.util.Set;
@@ -70,6 +72,8 @@ import java.security.PrivilegedAction;
  */
 public class ComponentValidator extends DefaultDOLVisitor implements ComponentVisitor {
     
+    protected BundleDescriptor bundleDescriptor = null;
+
     protected Application application;
 
     /**
@@ -80,11 +84,24 @@ public class ComponentValidator extends DefaultDOLVisitor implements ComponentVi
     }
 
     /**
+     * @return the bundleDescriptor we are visiting
+     */
+    protected BundleDescriptor getBundleDescriptor() {
+        return bundleDescriptor;
+    }
+
+    public void accept(BundleDescriptor bundleDescriptor) {
+        this.bundleDescriptor = bundleDescriptor;
+
+        super.accept(bundleDescriptor);
+    }
+
+    /**
      * Visits a message destination referencer for the last J2EE 
      * component visited
      * @param the message destination referencer
      */
-    public void accept(MessageDestinationReferencer msgDestReferencer) {
+    protected void accept(MessageDestinationReferencer msgDestReferencer) {
 
         // if it is linked to a logical destination
         if( msgDestReferencer.isLinkedToMessageDestination() ) {
@@ -115,7 +132,7 @@ public class ComponentValidator extends DefaultDOLVisitor implements ComponentVi
      * 
      * @param the service reference
      */
-    public void accept(ServiceReferenceDescriptor serviceRef) {
+    protected void accept(ServiceReferenceDescriptor serviceRef) {
 
         Set portsInfo = serviceRef.getPortsInfo();
 
@@ -135,11 +152,11 @@ public class ComponentValidator extends DefaultDOLVisitor implements ComponentVi
         }
     }    
 
-    public void accept(ResourceReferenceDescriptor resRef) {
+    protected void accept(ResourceReferenceDescriptor resRef) {
         computeRuntimeDefault(resRef);
     }
 
-    public void accept(JmsDestinationReferenceDescriptor jmsDestRef) {
+    protected void accept(JmsDestinationReferenceDescriptor jmsDestRef) {
 
         if (jmsDestRef.getJndiName() == null ||
                 jmsDestRef.getJndiName().length() == 0) {
@@ -162,11 +179,11 @@ public class ComponentValidator extends DefaultDOLVisitor implements ComponentVi
         computeRuntimeDefault(jmsDestRef);
     }
 
-    public void accept(MessageDestinationReferenceDescriptor msgDestRef) {
+    protected void accept(MessageDestinationReferenceDescriptor msgDestRef) {
         computeRuntimeDefault(msgDestRef);
     }
 
-    public void accept(MessageDestinationDescriptor msgDest) {
+    protected void accept(MessageDestinationDescriptor msgDest) {
         computeRuntimeDefault(msgDest);
     }
 
@@ -175,7 +192,7 @@ public class ComponentValidator extends DefaultDOLVisitor implements ComponentVi
      * isInjectable() == true.
      * @param injectable InjectionCapable environment dependency
      */
-    public void accept(InjectionCapable injectable) {
+    protected void accept(InjectionCapable injectable) {
         acceptWithCL(injectable);
         acceptWithoutCL(injectable);
     }
@@ -418,4 +435,5 @@ public class ComponentValidator extends DefaultDOLVisitor implements ComponentVi
     private String getDefaultResourceJndiName(String resName) {
         return resName;
     }
+
 }

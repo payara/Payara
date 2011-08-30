@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -58,22 +58,6 @@ public interface EjbBundleVisitor extends ComponentVisitor {
      * @param an ejb bundle descriptor
      */
     public void accept(EjbBundleDescriptor bundleDescriptor);    
-
-    /**
-     * visits each web service declared within an ejb-jar.
-     */
-    public void accept(WebService webService);
-
-    /**
-     * visits an ejb relationship descriptor
-     * @param the relationship descriptor
-     */
-    public void accept(RelationshipDescriptor descriptor);
-    
-    /**
-     * @return a EjbVisitor (if ejbs should be visited) 
-     */ 
-    public EjbVisitor getEjbVisitor();
 
 }
 
