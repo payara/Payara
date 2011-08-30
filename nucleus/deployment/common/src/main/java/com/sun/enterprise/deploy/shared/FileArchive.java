@@ -1048,8 +1048,16 @@ public class FileArchive extends AbstractReadableArchive implements WritableArch
         public void flush() {
             if (staleEntryNames.isEmpty()) {
                 logger.log(DEBUG_LEVEL, "FileArchive.StaleFileManager.flush deleting marker file; no more stale entries");
-                Util.markerFile(archiveFile).delete();
-                return;
+                final File marker = Util.markerFile(archiveFile);
+                if ( ! marker.exists() || marker.delete()) {
+                    return;
+                }
+                /*
+                 * Couldn't delete the marker file, so try to write out an empty one
+                 * so its old contents will not confuse the stale file manager.
+                 */
+                logger.log(Level.FINE, "FileArchive.StatleFileManager.flush could not delete marker file {0}; continuing by writing out an empty marker file", 
+                        marker.getAbsolutePath());
             }
             PrintStream ps = null;
             try {
