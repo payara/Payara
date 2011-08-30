@@ -77,6 +77,7 @@ public class AppScopedResourcesTest extends BaseSeleniumTestClass {
     @Test
     public void testJdbcAppScopedresources() {
         final String applicationName = generateRandomString();
+        try {
         deployApp(applicationName);
 
         testJDBCPool(applicationName, "jdbcPool", "app");
@@ -86,11 +87,15 @@ public class AppScopedResourcesTest extends BaseSeleniumTestClass {
         testJDBCResource(applicationName, "jdbcRes", "module");
         
         undeployApp(applicationName);
+        }catch(Exception e) {
+            undeployApp(applicationName);
+        }
     }
 
     @Test
     public void testConnectorAppScopedresources() {
         final String applicationName = generateRandomString();
+        try{
         deployApp(applicationName);
         goToApplicationResourcesTab(applicationName);
 
@@ -107,11 +112,15 @@ public class AppScopedResourcesTest extends BaseSeleniumTestClass {
         testWorkSecurityMap(applicationName, "workSecurityMap", "module");
 
         undeployApp(applicationName);
+        }catch(Exception e) {
+            undeployApp(applicationName);
+        }
     }
 
     @Test
     public void testJndiAppScopedresources() {
         final String applicationName = generateRandomString();
+        try{
         deployApp(applicationName);       
 
         testCustomResource(applicationName, "customRes", "app");
@@ -121,38 +130,53 @@ public class AppScopedResourcesTest extends BaseSeleniumTestClass {
         testExternalResource(applicationName, "externalRes", "module");
 
         undeployApp(applicationName);
+        }catch(Exception e) {
+            undeployApp(applicationName);
+        }
     }
 
     @Test
     public void testJavaMailAppScopedresources() {
         final String applicationName = generateRandomString();
+        try{
         deployApp(applicationName);
 
         testMailResource(applicationName, "mailRes", "app");
         testMailResource(applicationName, "mailRes", "module");
 
         undeployApp(applicationName);
+        }catch(Exception e) {
+            undeployApp(applicationName);
+        }
     }
 
     @Test
     public void testResourceAdapterConfigAppScopedresources() {
         final String applicationName = generateRandomString();
+        try{
         deployApp(applicationName);
 
         testResourceAdapterConfig(applicationName, "jmsra");
 
         undeployApp(applicationName);
+        }catch(Exception e) {
+            undeployApp(applicationName);
+        }
     }
 
     @Test
     public void testMonitoringAppScopedresources() {
         final String applicationName = generateRandomString();
+        try{
         deployApp(applicationName);
 
         monitoringAppScopedResource("connectorPool", "module");
         monitoringAppScopedResource("jdbcPool", "module");
 
         undeployApp(applicationName);
+        }catch(Exception e) {
+            undeployApp(applicationName);
+        }
     }
     
     public void deployApp(String applicationName) {
@@ -191,6 +215,10 @@ public class AppScopedResourcesTest extends BaseSeleniumTestClass {
         // Undeploy application
         clickAndWait("treeForm:tree:applications:applications_link", TRIGGER_APPLICATIONS);
         int preCount = this.getTableRowCount(ELEMENT_DEPLOY_TABLE);
+        int appCount = this.getTableRowCountByValue(ELEMENT_DEPLOY_TABLE, applicationName, "col1");
+        if (appCount == 0) {
+            return;
+        }
         chooseOkOnNextConfirmation();
         selectTableRowByValue(ELEMENT_DEPLOY_TABLE, applicationName);
         pressButton(ELEMENT_UNDEPLOY_BUTTON);
@@ -202,6 +230,7 @@ public class AppScopedResourcesTest extends BaseSeleniumTestClass {
 
     private void goToApplicationResourcesTab(String appName) {
         clickAndWait(ELEMENT_APPLICATIONS, TRIGGER_APPLICATIONS);
+        waitForPageLoad(appName, 60000);
         clickAndWait(getLinkIdByLinkText(ELEMENT_DEPLOY_TABLE, appName), TRIGGER_EDIT_APPLICATION);
         clickAndWait(ELEMENT_APPLICATION_RESOURCES_TAB, TRIGGER_RESOURCES_APPLICATION);
     }
