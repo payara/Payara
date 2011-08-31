@@ -42,6 +42,8 @@ package org.glassfish.config.support;
 import java.beans.PropertyVetoException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.List;
+import java.util.ArrayList;
 
 import javax.xml.stream.XMLInputFactory;
 import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
@@ -1136,6 +1138,8 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
                         }
                         createHttp(p);
                         createSsl(p);
+                        createHttpRedirect(p);
+                        createPortUnification(p);
                     }
                 }
             } catch (TransactionFailure ex) {
@@ -1238,6 +1242,95 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
             } catch (XMLStreamException ex) {
                 Logger.getLogger(DefaultConfigUpgrade.class.getName()).log(
                         Level.SEVERE, "Problem parsing ssl element in domain.xml template", ex);
+            }
+        }
+    }
+    
+    /* <http-redirect secure="true"></http-redirect> */
+    private void createHttpRedirect(Protocol p) throws PropertyVetoException {
+        while (!(parser.getEventType() == END_ELEMENT && parser.getLocalName().equals("protocol"))) {
+            try {
+                if (parser.next() == START_ELEMENT) {
+                    if (parser.getLocalName().equals("http-direct") && p != null) {
+                        HttpRedirect hr = p.createChild(HttpRedirect.class);
+                        p.setHttpRedirect(hr);
+                        for (int i = 0; i < parser.getAttributeCount(); i++) {
+                            String attr = parser.getAttributeLocalName(i);
+                            String val = parser.getAttributeValue(i);
+                            if (attr.equals("secure")) {
+                                hr.setSecure(val);
+                            }
+                        }
+                        break;
+                    }
+                }
+            } catch (TransactionFailure ex) {
+                Logger.getLogger(DefaultConfigUpgrade.class.getName()).log(
+                        Level.SEVERE, "Failure creating HttpRedirect config object", ex);
+            } catch (XMLStreamException ex) {
+                Logger.getLogger(DefaultConfigUpgrade.class.getName()).log(
+                        Level.SEVERE, "Problem parsing http-redirect element in domain.xml template", ex);
+            }
+        }
+    }
+    
+    /* <port-unification>
+     *       <protocol-finder protocol="sec-admin-listener" name="http-finder" classname="org.glassfish.grizzly.config.portunif.HttpProtocolFinder"></protocol-finder>
+     *       <protocol-finder protocol="admin-http-redirect" name="admin-http-redirect" classname="org.glassfish.grizzly.config.portunif.HttpProtocolFinder"></protocol-finder>
+     * </port-unification> */
+    private void createPortUnification(Protocol p) throws PropertyVetoException {
+        while (true) {
+            try {
+                if (parser.next() == START_ELEMENT) {
+                    if (parser.getLocalName().equals("port-unification") && p != null) {
+                        PortUnification pu = p.createChild(PortUnification.class);
+                        p.setPortUnification(pu);
+                        
+                        createProtocolFinder(pu);
+                        break;
+                    }
+                }
+            } catch (TransactionFailure ex) {
+                Logger.getLogger(DefaultConfigUpgrade.class.getName()).log(
+                        Level.SEVERE, "Failure creating PortUnification config object", ex);
+            } catch (XMLStreamException ex) {
+                Logger.getLogger(DefaultConfigUpgrade.class.getName()).log(
+                        Level.SEVERE, "Problem parsing port-unification element in domain.xml template", ex);
+            }
+        }
+    }
+    
+    private void createProtocolFinder(PortUnification pu) throws PropertyVetoException {
+        while (true) {
+            try {
+                if (parser.next() == START_ELEMENT) {
+                    if (parser.getLocalName().equals("protocol-finder") && pu != null) {
+                        ProtocolFinder pf = pu.createChild(ProtocolFinder.class);
+                        List<ProtocolFinder> pfList = new ArrayList();
+                        pfList.add(pf);
+                        pu.setProtocolFinder(pfList);
+                        for (int i = 0; i < parser.getAttributeCount(); i++) {
+                            String attr = parser.getAttributeLocalName(i);
+                            String val = parser.getAttributeValue(i);
+                            if (attr.equals("protocol")) {
+                                pf.setProtocol(val);
+                            }
+                            if (attr.equals("name")) {
+                                pf.setName(val);
+                            }
+                            if (attr.equals("classname")) {
+                                pf.setClassname(val);
+                            }
+                        }
+                        break;
+                    }
+                }
+            } catch (TransactionFailure ex) {
+                Logger.getLogger(DefaultConfigUpgrade.class.getName()).log(
+                        Level.SEVERE, "Failure creating ProtocolFinder config object", ex);
+            } catch (XMLStreamException ex) {
+                Logger.getLogger(DefaultConfigUpgrade.class.getName()).log(
+                        Level.SEVERE, "Problem parsing protocol-finder element in domain.xml template", ex);
             }
         }
     }
