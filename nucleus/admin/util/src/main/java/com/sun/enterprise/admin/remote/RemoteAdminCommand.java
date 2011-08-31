@@ -142,6 +142,7 @@ public class RemoteAdminCommand {
     private StringBuilder       metadataErrors; // XXX
     private int                 readTimeout = defaultReadTimeout;
     private int                 connectTimeout = -1;
+    private boolean             interactive = true;
 
     private List<Header>        requestHeaders = new ArrayList<Header>();
 
@@ -306,6 +307,14 @@ public class RemoteAdminCommand {
      */
     public void setConnectTimeout(int connectTimeout) {
         this.connectTimeout = connectTimeout;
+    }
+    
+    /**
+     * Set the interactive mode for the command.  By default, the command is
+     * interactive.
+     */
+    public void setInteractive(boolean state) {
+        this.interactive = state;
     }
 
     /**
@@ -606,7 +615,7 @@ public class RemoteAdminCommand {
          */
         HttpConnectorAddress url = getHttpConnectorAddress(
                                 host, port, shouldUseSecure);
-        
+        url.setInteractive(interactive);
         do {
             /*
              * Any code that wants to trigger a retry will say so explicitly.
@@ -833,12 +842,14 @@ public class RemoteAdminCommand {
             final String redirection) throws MalformedURLException {
         final URL url = new URL(redirection);
         final boolean useSecure = (url.getProtocol().equalsIgnoreCase("https"));
-        return new HttpConnectorAddress(
+        HttpConnectorAddress hca = new HttpConnectorAddress(
                 url.getHost(),
                 url.getPort(),
                 useSecure,
                 originalAddr.getPath(),
                 originalAddr.getSSLSocketFactory());
+        hca.setInteractive(interactive);
+        return hca;
     }
 
     /**
@@ -861,8 +872,10 @@ public class RemoteAdminCommand {
      */
     protected HttpConnectorAddress getHttpConnectorAddress(
             final String host, final int port, final boolean shouldUseSecure) {
-        return new HttpConnectorAddress(
+        HttpConnectorAddress hca = new HttpConnectorAddress(
                                 host, port, shouldUseSecure);
+        hca.setInteractive(interactive);
+        return hca;
     }
 
     /**

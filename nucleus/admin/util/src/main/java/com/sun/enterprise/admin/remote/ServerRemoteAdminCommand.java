@@ -85,6 +85,7 @@ public class ServerRemoteAdminCommand extends RemoteAdminCommand {
         this.habitat = habitat;
         secureAdmin = habitat.getComponent(SecureAdmin.class);
         serverEnv = habitat.getComponent(ServerEnvironment.class);
+        setInteractive(false);
     }
 
     @Override

@@ -64,6 +64,7 @@ class AsadminTrustManager implements X509TrustManager {
         
     private final Object _alias;    
     private boolean _alreadyInvoked;
+    private boolean interactive = true;
     private CertificateException _lastCertException;
     private RuntimeException _lastRuntimeException;
     
@@ -91,6 +92,15 @@ class AsadminTrustManager implements X509TrustManager {
      */
     public AsadminTrustManager() {
         this (null, null);
+    }
+    
+    /**
+     * Set the interactive mode for the trust manager.  If false, it will
+     * not prompt for any confirmations and will just trust certificates.
+     * By default it is true.
+     */
+    public void setInteractive(boolean mode) {
+        interactive = mode;
     }
 
     /**
@@ -153,14 +163,14 @@ class AsadminTrustManager implements X509TrustManager {
     private boolean isItOKToAddCertToTrustStore(X509Certificate c)
                                 throws IOException {                     
         Console cons = System.console();
-        if (cons != null) {
-            cons.printf("%s%n", c.toString());
-            String result =
-                cons.readLine("%s", strmgr.get("certificateTrustPrompt"));
-            return result != null && result.equalsIgnoreCase("y");
-        } else {
+        if (!interactive || cons == null) {
             return true;
-        }        
+        }
+        
+        cons.printf("%s%n", c.toString());
+        String result =
+            cons.readLine("%s", strmgr.get("certificateTrustPrompt"));
+        return result != null && result.equalsIgnoreCase("y");
     }
  
     private String getAliasName() {

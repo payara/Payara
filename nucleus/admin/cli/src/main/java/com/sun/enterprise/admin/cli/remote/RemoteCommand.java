@@ -494,6 +494,7 @@ public class RemoteCommand extends CLICommand {
                 programOpts.isSecure(), programOpts.getUser(),
                 programOpts.getPassword(), logger, programOpts.getAuthToken());
             rac.setFileOutputDirectory(outputDir);
+            rac.setInteractive(programOpts.isInteractive());;
         }
     }
 

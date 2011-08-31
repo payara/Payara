@@ -64,6 +64,7 @@ public final class HttpConnectorAddress {
     private String path;
     private boolean secure;
     private AuthenticationInfo  authInfo;
+    private boolean interactive = true;
 
     private SSLSocketFactory sslSocketFactory;
 
@@ -169,7 +170,9 @@ public final class HttpConnectorAddress {
              * ones, so if the user has loaded client keys into the standard
              * Java SE keystore they will be found.
              */
-            cntxt.init(null, new TrustManager[] {new AsadminTrustManager()}, null);
+            AsadminTrustManager atm = new AsadminTrustManager();
+            atm.setInteractive(interactive);
+            cntxt.init(null, new TrustManager[] {atm}, null);
 
             return cntxt.getSocketFactory();
         } catch (Exception e) {
@@ -232,6 +235,13 @@ public final class HttpConnectorAddress {
      */
     public boolean isSecure() {
         return secure;
+    }
+    
+    /**
+     * Set the interactive mode for the connection.
+     */
+    public void setInteractive(boolean mode) {
+        interactive = mode;
     }
 
     public URL toURL(String path) throws MalformedURLException{
