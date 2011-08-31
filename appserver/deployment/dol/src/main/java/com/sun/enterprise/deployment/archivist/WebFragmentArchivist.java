@@ -50,6 +50,7 @@ import com.sun.enterprise.deployment.util.WebBundleVisitor;
 import org.glassfish.deployment.common.XModuleType;
 import org.glassfish.api.deployment.archive.Archive;
 import org.glassfish.api.deployment.archive.ReadableArchive;
+import org.jvnet.hk2.component.Habitat;
 
 import java.io.IOException;
 import java.util.Vector;
@@ -71,6 +72,10 @@ class WebFragmentArchivist extends Archivist<WebFragmentDescriptor> {
      * The DeploymentDescriptorFile handlers we are delegating for XML i/o
      */
     DeploymentDescriptorFile standardDD = new WebFragmentDeploymentDescriptorFile();
+
+    WebFragmentArchivist (Habitat habitat) {
+        this.habitat = habitat;
+    }
 
     /**
      * @return the  module type handled by this archivist

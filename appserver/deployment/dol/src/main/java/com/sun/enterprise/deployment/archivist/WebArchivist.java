@@ -397,7 +397,7 @@ public class WebArchivist extends Archivist<WebBundleDescriptor> {
 
             for (int i = 0; i < libs.size(); i++) {
                 String lib = (String)libs.get(i);
-                Archivist wfArchivist = new WebFragmentArchivist();
+                Archivist wfArchivist = new WebFragmentArchivist(habitat);
                 wfArchivist.initializeContext(this);
                 wfArchivist.setRuntimeXMLValidation(this.getRuntimeXMLValidation());
                 wfArchivist.setRuntimeXMLValidationLevel(
