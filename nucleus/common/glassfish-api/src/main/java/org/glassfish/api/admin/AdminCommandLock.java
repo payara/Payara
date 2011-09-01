@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -74,7 +74,7 @@ public class AdminCommandLock {
      * and thus there being exactly one such lock object, shared by all
      * users of this class.
      */
-    private ReentrantReadWriteLock rwlock = new ReentrantReadWriteLock();
+    private static ReentrantReadWriteLock rwlock = new ReentrantReadWriteLock();
 
     /**
      * A thread which can hold a Read/Write lock across command invocations.
@@ -573,4 +573,36 @@ public class AdminCommandLock {
             } 
         }
     }
+
+        /**
+         * Use this method to temporarily suspend the command lock during
+         * which other operations may be performed.  When the method returns
+         * the lock will be reestablished.
+         * This method must be invoked from the same thread which acquired 
+         * the original lock.
+         * 
+         * @param r A Runnable which will be invoked by the method after the lock is suspended
+         */
+        public static void runWithSuspendedLock(Runnable r) {
+           
+            Lock lock = null;
+
+            // We need to determine the type of lock this thread holds.
+            if (rwlock.isWriteLockedByCurrentThread()) {
+                lock = rwlock.writeLock();
+            } else if (rwlock.getReadHoldCount() > 0) {
+                lock = rwlock.readLock();
+            }
+
+            if (lock != null)
+                lock.unlock();
+            
+            // Run the caller's commands without a lock in place.
+            r.run();
+
+            // Relock before returning.  This may block if someone else
+            // already grabbed the lock.
+            if (lock != null)
+                lock.lock();
+        }
 }
