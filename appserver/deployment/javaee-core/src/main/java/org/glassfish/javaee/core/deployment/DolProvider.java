@@ -278,6 +278,7 @@ public class DolProvider implements ApplicationMetaDataProvider<Application>,
         //file does not overwrite the one in the original archive
         if (deploymentPlan != null) {
             DeploymentPlanArchive dpa = new DeploymentPlanArchive();
+            dpa.setParentArchive(sourceArchive);
             dpa.open(deploymentPlan.toURI());
             // need to revisit for ear case
             WritableArchive targetArchive = archiveFactory.createArchive(

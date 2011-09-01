@@ -43,6 +43,7 @@ package com.sun.enterprise.deployment.deploy.shared;
 import com.sun.enterprise.util.io.FileUtils;
 
 import org.glassfish.api.deployment.archive.ReadableArchive;
+import org.glassfish.deployment.common.DeploymentUtils;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -178,7 +179,10 @@ public class DeploymentPlanArchive extends JarArchive implements ReadableArchive
             if (entryName.indexOf("sun-web.xml")!=-1 || 
                 entryName.indexOf("glassfish-web.xml")!=-1) {
                 prefix = "WEB-INF/";
-            }  
+            } else if (entryName.indexOf("glassfish-services.xml")!=-1 &&
+                DeploymentUtils.isWebArchive(getParentArchive())) {
+                prefix = "WEB-INF/";
+            }
             if (subArchiveUri != null && entryName.startsWith(subArchiveUri)) {
                 mangledName = mangledName.substring(subArchiveUri.length()+1);
             }

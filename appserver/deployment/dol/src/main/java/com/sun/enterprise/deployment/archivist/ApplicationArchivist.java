@@ -918,6 +918,8 @@ public class ApplicationArchivist extends Archivist<Application>
             ReadableArchive subSource = source.getSubArchive(aModule.getArchiveUri());
             WritableArchive subTarget = target.createSubArchive(aModule.getArchiveUri());
             Archivist newArchivist = archivistFactory.get().getPrivateArchivistFor(aModule.getModuleType());
+            ReadableArchive subArchive = archiveFactory.openArchive(subTarget.getURI());
+            subSource.setParentArchive(subArchive);
             newArchivist.copyInto(subSource, subTarget, overwriteManifest);
             target.closeEntry(subTarget);
             String subModulePath = subSource.getURI().getSchemeSpecificPart();
@@ -930,6 +932,7 @@ public class ApplicationArchivist extends Archivist<Application>
                 }
             }
             subSource.close();
+            subArchive.close();
         }
         super.copyInto(source, target, entriesAdded, overwriteManifest);
     }
