@@ -57,6 +57,8 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import javax.xml.soap.SOAPException;
+import javax.xml.soap.SOAPMessage;
 import javax.xml.ws.handler.MessageContext;
 
 /**
@@ -81,13 +83,13 @@ public final class ServletFakeArtifactSet extends DistributedPropertySet {
         request = createRequest(requestURL, servletPath);
         response = createResponse();
     }
-
-    @Property(MessageContext.SERVLET_RESPONSE)
+    
+    @com.sun.xml.ws.api.PropertySet.Property(MessageContext.SERVLET_RESPONSE)
     public HttpServletResponse getResponse() {
         return response;
     }
 
-    @Property(MessageContext.SERVLET_REQUEST)
+    @com.sun.xml.ws.api.PropertySet.Property(MessageContext.SERVLET_REQUEST)
     public HttpServletRequest getRequest() {
         return request;
     }
@@ -509,4 +511,14 @@ public final class ServletFakeArtifactSet extends DistributedPropertySet {
             return 200;
         }
     }
+
+    // TODO - remove when these are added to DistributedPropertySet
+    public SOAPMessage getSOAPMessage() throws SOAPException {
+       throw new UnsupportedOperationException();
+    }
+
+    public void setSOAPMessage(SOAPMessage soap) {
+       throw new UnsupportedOperationException();
+    }
+
 }
