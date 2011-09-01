@@ -64,8 +64,14 @@ import java.util.List;
 @TargetType(value = {CommandTarget.DAS})
 public class ListServices implements AdminCommand {
 
-    @Param(name = "appname", primary = true)
+    @Param(name = "appname", optional = true)
     private String appName;
+
+    @Param(name="type", optional=true)
+    private String type;
+
+    @Param(name="scope", optional=true, acceptableValues = SCOPE_EXTERNAL+","+SCOPE_SHARED+","+SCOPE_APPLICATION)
+    private String scope;
 
     @Inject
     private Domain domain;
@@ -73,72 +79,169 @@ public class ListServices implements AdminCommand {
     @Inject
     private ServiceUtil serviceUtil;
 
+    public static final String SCOPE_EXTERNAL = "external";
+    public static final String SCOPE_SHARED = "shared";
+    public static final String SCOPE_APPLICATION = "application";
+
     public void execute(AdminCommandContext context) {
         final ActionReport report = context.getActionReport();
 
         Services services = serviceUtil.getServices();
+        List<Service> matchedServices = new ArrayList<Service>();
 
-        if(appName != null){ //no need of null check, but when appname operand becomes an optional parameter later, this is required.
-            if(domain.getApplications().getApplication(appName) == null){
+        if (appName != null) {
+            //TODO will "target" of application play a role here ? AFAIK, no.
+            if (domain.getApplications().getApplication(appName) == null) {
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-                report.setMessage("No such application ["+appName+"] is deployed");
+                report.setMessage("No such application [" + appName + "] is deployed");
                 return;
             }
-        }
 
-        List<Service> matchedServices = new ArrayList<Service>();
-        for(Service service : services.getServices()){
-            if(service instanceof ApplicationScopedService){
-                if(appName.equals(((ApplicationScopedService)service).getApplicationName())){
-                    matchedServices.add(service);
+            for (Service service : services.getServices()) {
+                if (service instanceof ApplicationScopedService) {
+                    if (appName.equals(((ApplicationScopedService) service).getApplicationName())) {
+                        if (type != null) {
+                            if (service.getType().equals(type)) {
+                                if(scope != null){
+                                    if(scope.equals(getServiceScope(service))){
+                                        matchedServices.add(service);
+                                    }
+                                }else{
+                                    matchedServices.add(service);
+                                }
+                            }
+                        } else {
+                            if(scope != null){
+                                if(scope.equals(getServiceScope(service))){
+                                    matchedServices.add(service);
+                                }
+                            }else{
+                                matchedServices.add(service);
+                            }
+                        }
+                    }
                 }
             }
-        }
 
-        for(ServiceRef serviceRef : services.getServiceRefs()){
-            if(appName.equals(serviceRef.getApplicationName())){
-                for(Service service : services.getServices()){
-                    if(service.getServiceName().equals(serviceRef.getServiceName())){
+            for (ServiceRef serviceRef : services.getServiceRefs()) {
+                if (appName.equals(serviceRef.getApplicationName())) {
+                    for (Service service : services.getServices()) {
+                        if (service.getServiceName().equals(serviceRef.getServiceName())) {
+                            if(type != null){
+                                if(service.getType().equals(type)){
+                                    if(scope != null){
+                                        if(scope.equals(getServiceScope(service))){
+                                            matchedServices.add(service);
+                                        }
+                                    }else{
+                                        matchedServices.add(service);
+                                        break;
+                                    }
+                                }
+                            }else{
+                                if(scope != null){
+                                    if(scope.equals(getServiceScope(service))){
+                                        matchedServices.add(service);
+                                        break;
+                                    }else{
+                                        matchedServices.add(service);
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }else{
+            if (scope != null && scope.equals(SCOPE_APPLICATION)) {
+                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                report.setMessage("Need application name in order to list application-scoped services");
+                return;
+            }
+
+            for (Service service : services.getServices()) {
+                if(type != null){
+                    if(service.getType().equals(type)){
+                        if(scope != null){
+                            if(scope.equals(getServiceScope(service))){
+                                matchedServices.add(service);
+                            }
+                        }else{
+                            matchedServices.add(service);
+                        }
+                    }
+                }else{
+                    if(scope != null){
+                        if(scope.equals(getServiceScope(service))){
+                            matchedServices.add(service);
+                        }
+                    }else{
                         matchedServices.add(service);
-                        break;
                     }
                 }
             }
         }
-
         if (matchedServices.size() > 0) {
 
-            String headings[] = {"SERVICE_NAME", "IP_ADDRESS", "VM_ID", "SERVER_TYPE", "STATE", "SCOPE"};
+            String headings[] = new String[]{"SERVICE_NAME", "IP_ADDRESS", "VM_ID", "SERVER_TYPE", "STATE", "SCOPE"};
+            if(type != null){
+                if(scope != null){
+                    headings = new String[]{"SERVICE_NAME", "IP_ADDRESS", "VM_ID", "STATE"};
+                }else{
+                    headings = new String[]{"SERVICE_NAME", "IP_ADDRESS", "VM_ID", "STATE", "SCOPE"};
+                }
+            }else{
+                if(scope != null){
+                    headings = new String[]{"SERVICE_NAME", "IP_ADDRESS", "VM_ID", "SERVER_TYPE", "STATE"};
+                }
+            }
             ColumnFormatter cf = new ColumnFormatter(headings);
 
             boolean foundRows = false;
-            for(Service service : matchedServices) {
+            for (Service service : matchedServices) {
                 foundRows = true;
                 String cloudName = service.getServiceName();
                 String ipAddress = service.getPropertyValue("ip-address");
-                if(ipAddress == null){
+                if (ipAddress == null) {
                     ipAddress = "-";
                 }
                 String instanceID = service.getPropertyValue("instance-id");
-                if(instanceID == null){
+                if (instanceID == null) {
                     instanceID = "-";
                 }
                 String serverType = service.getType();
 
                 String serviceType = null;
                 String state = "-";
-                if(service instanceof ApplicationScopedService){
-                    state = ((ApplicationScopedService)service).getState();
-                    serviceType = "Application";
-                }else if(service instanceof SharedService){
-                    state = ((SharedService)service).getState();
-                    serviceType = "Shared";
-                }else if(service instanceof ExternalService){
+                if (service instanceof ApplicationScopedService) {
+                    state = ((ApplicationScopedService) service).getState();
+                    serviceType = SCOPE_APPLICATION;
+                } else if (service instanceof SharedService) {
+                    state = ((SharedService) service).getState();
+                    serviceType = SCOPE_SHARED;
+                } else if (service instanceof ExternalService) {
                     state = "-";
-                    serviceType = "External";
+                    serviceType = SCOPE_EXTERNAL;
                 }
 
-                cf.addRow(new Object[]{cloudName, ipAddress, instanceID, serverType, state, serviceType});
+                if(type == null){
+                    if(scope == null){
+                        cf.addRow(new Object[]{cloudName, ipAddress, instanceID, serverType, state, serviceType});
+                    }else{
+                        if(serviceType.equals(scope)){
+                            cf.addRow(new Object[]{cloudName, ipAddress, instanceID, serverType, state});
+                        }
+                    }
+                }else{
+                    if(scope == null){
+                        cf.addRow(new Object[]{cloudName, ipAddress, instanceID, state, serviceType});
+                    }else{
+                        if(serviceType.equals(scope)){
+                            cf.addRow(new Object[]{cloudName, ipAddress, instanceID, state});
+                        }
+                    }
+                }
             }
             if (foundRows) {
                 report.setMessage(cf.toString());
@@ -150,5 +253,17 @@ public class ListServices implements AdminCommand {
         }
         ActionReport.ExitCode ec = ActionReport.ExitCode.SUCCESS;
         report.setActionExitCode(ec);
+    }
+
+    private String getServiceScope(Service service){
+        String scope = null;
+        if(service instanceof ApplicationScopedService){
+            scope = SCOPE_APPLICATION;
+        }else if(service instanceof SharedService){
+            scope = SCOPE_SHARED;
+        }else if(service instanceof ExternalService){
+            scope = SCOPE_EXTERNAL;
+        }
+        return scope;
     }
 }
