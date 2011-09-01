@@ -287,6 +287,7 @@ public class CommandResourceMetaData {
         {"Domain", "list-system-properties", "GET", "list-system-properties", "list-system-properties"},
         {"Domain", "list-timers", "GET", "list-timers", "list-timers"},
         {"Domain", "list-transports", "GET", "list-transports", "list-transports"},
+        {"Domain", "list-services", "GET", "list-services", "list-services"},
         {"Domain", "restart-domain", "POST", "restart", "Restart"},
         {"Domain", "rotate-log", "POST", "rotate-log", "RotateLog"},
         {"Domain", "set-log-attributes", "POST", "set-log-attributes", "set-log-attributes"},
