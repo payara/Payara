@@ -54,6 +54,9 @@ import org.glassfish.paas.orchestrator.config.*;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.api.admin.RestAttachment;
+import org.glassfish.api.admin.RestAttachment.OpType;
+import org.glassfish.api.admin.RestAttachments;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -62,6 +65,9 @@ import java.util.List;
 @Scoped(PerLookup.class)
 @ExecuteOn(RuntimeType.DAS)
 @TargetType(value = {CommandTarget.DAS})
+@RestAttachments({
+    @RestAttachment(configBean=Domain.class, opType=OpType.GET, path="list-services", description="List Services")
+})
 public class ListServices implements AdminCommand {
 
     @Param(name = "appname", optional = true)
