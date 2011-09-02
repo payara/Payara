@@ -43,6 +43,7 @@ package org.glassfish.virtualization.spi;
 import org.glassfish.virtualization.config.Template;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 
 /**
  * Represents a template instance that can be instantiated in a virtual machine
@@ -81,4 +82,14 @@ public interface TemplateInstance {
      * @return a local disk location
      */
     File getLocation();
+
+    /**
+     * Returns the first file in this template location that has this extension.
+     *
+     * @param extension the requested file extension
+     * @return the file if found a matching one.
+     * @throws java.io.FileNotFoundException when no file with that extension is
+     * present in this template definition
+     */
+    File getFileByExtension(String extension) throws FileNotFoundException;
 }

@@ -41,6 +41,7 @@
 package org.glassfish.virtualization.libvirt.config;
 
 import org.glassfish.virtualization.config.Virtualization;
+import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.Configured;
 
 /**
@@ -48,4 +49,12 @@ import org.jvnet.hk2.config.Configured;
  */
 @Configured
 public interface LibvirtVirtualization extends Virtualization {
+
+    @Attribute(defaultValue = "/usr/bin/kvm")
+    String getEmulatorPath();
+    void setEmulatorPath(String emulatorPath);
+
+    @Attribute(defaultValue= "qemu#{auth.sep}#{auth.method}://#{user.name}@#{target.host}/system")
+    String getConnectionString();
+    void setConnectionString(String connectionString);
 }

@@ -42,12 +42,13 @@ package org.glassfish.virtualization.config;
 
 import com.sun.enterprise.config.serverbeans.ClusterExtension;
 import org.glassfish.api.admin.config.Named;
-import org.glassfish.virtualization.spi.ServerPool;
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.Configured;
+import org.jvnet.hk2.config.Element;
+import org.jvnet.hk2.config.types.Property;
 
-import javax.validation.constraints.NotNull;
+import java.util.List;
 
 /**
  * Persisted information about created virtual machine
@@ -63,4 +64,7 @@ public interface VirtualMachineConfig extends Named, ConfigBeanProxy, ClusterExt
     @Attribute(reference = true)
     ServerPoolConfig getServerPool();
     void setServerPool(ServerPoolConfig serverPool);
+
+    @Element
+    List<Property> getProperty();
 }

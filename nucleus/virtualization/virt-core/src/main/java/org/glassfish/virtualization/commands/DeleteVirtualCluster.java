@@ -58,11 +58,10 @@ import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
+import java.util.Map;
+import java.util.concurrent.*;
 import java.util.logging.Level;
 
 /**
@@ -80,9 +79,6 @@ public class DeleteVirtualCluster implements AdminCommand {
 
     @Inject
     RuntimeContext rtContext;
-
-    @Inject
-    ExecutorService executorService;
 
     @Inject
     IAAS iaas;
@@ -112,30 +108,41 @@ public class DeleteVirtualCluster implements AdminCommand {
                 context.getActionReport().failure(RuntimeContext.logger, "Cannot find cluster named " + name);
                 return;
             }
-            for (VirtualMachineConfig vmConfig : cluster.getExtensionsByType(VirtualMachineConfig.class)) {
-                final Template template = vmConfig.getTemplate();
-                final TemplateInstance templateInstance = templateRepository.byName(template.getName());
+            List<VirtualMachineConfig> vmConfigs = new ArrayList<VirtualMachineConfig>(
+                    cluster.getExtensionsByType(VirtualMachineConfig.class));
 
-                for (final VirtualMachine vm : virtualCluster.getVms()) {
-                    if (vm.getName().equals(vmConfig.getName())) {
-                        deletions.add(executorService.submit(new Callable<Void>() {
-                            @Override
-                            public Void call() throws Exception {
-                                vmLifecycle.delete(vm);
-                                return null;
-                            }
-                        }));
-                    }
-                }
+
+            Map<String, VirtualMachine> vms = new HashMap<String, VirtualMachine>();
+            for (VirtualMachine vm : virtualCluster.getVms()) {
+                vms.put(vm.getName(), vm);
             }
 
-            // wait for deletions to be done.
-            for (Future<?> future : deletions) {
-                try {
-                    future.get(100, TimeUnit.SECONDS);
-                } catch (Exception e) {
-                    RuntimeContext.logger.log(Level.WARNING, "Cannot delete remote virtual machine...", e);
+            if (vms.size()>0) {
+                ExecutorService executorService = Executors.newFixedThreadPool(vms.size());
+                for (VirtualMachineConfig vmConfig : vmConfigs) {
+                    final VirtualMachine vm = vms.get(vmConfig.getName());
+                    deletions.add(executorService.submit(new Callable<Void>() {
+                        @Override
+                        public Void call() throws Exception {
+                            try {
+                                vmLifecycle.delete(vm);
+                            } catch (Exception e) {
+                                RuntimeContext.logger.log(Level.SEVERE, "Exception while shutting down virtual machine "
+                                        + vm.getName(), e);
+                            }
+                            return null;
+                        }
+                    }));
                 }
+                // wait for deletions to be done.
+                for (Future<?> future : deletions) {
+                    try {
+                        future.get(100, TimeUnit.SECONDS);
+                    } catch (Exception e) {
+                        RuntimeContext.logger.log(Level.WARNING, "Cannot delete remote virtual machine...", e);
+                    }
+                }
+                executorService.shutdown();
             }
             virtualClusters.remove(virtualCluster);
 

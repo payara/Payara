@@ -46,11 +46,13 @@ import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.config.Named;
 import org.glassfish.config.support.Create;
 import org.glassfish.config.support.CrudResolver;
+import org.glassfish.virtualization.util.RuntimeContext;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.*;
 
 import java.util.List;
+import java.util.logging.Level;
 
 /**
  * Configuration of a template, for now only its name. Will need to be refined.
@@ -95,12 +97,20 @@ public interface Template extends ConfigBeanProxy, Named {
         @Param
         String template;
 
+        @Param
+        String virtualization;
+
         @Inject
         Virtualizations virts;
 
         @Override
         public <T extends ConfigBeanProxy> T resolve(AdminCommandContext context, Class<T> type) {
-            Template thisTemplate = virts.templateByName(template);
+            Virtualization virt = virts.byName(virtualization);
+            if (virt==null) {
+                RuntimeContext.logger.log(Level.SEVERE, "Cannot find a virtualization setting named " + virtualization);
+                return null;
+            }
+            Template thisTemplate = virt.templateByName(template);
             return (T) thisTemplate;
 
         }

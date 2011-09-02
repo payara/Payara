@@ -42,6 +42,7 @@ package org.glassfish.virtualization.runtime;
 import org.glassfish.virtualization.config.Template;
 import org.glassfish.virtualization.os.FileOperations;
 import org.glassfish.virtualization.spi.Machine;
+import org.glassfish.virtualization.spi.TemplateInstance;
 import org.glassfish.virtualization.util.RuntimeContext;
 
 import java.io.File;
@@ -56,16 +57,16 @@ import java.util.logging.Logger;
  */
 public class LocalTemplate extends VMTemplate {
 
-    public LocalTemplate(String location, Template config) {
-        super(location, config);
+    public LocalTemplate(TemplateInstance config) {
+        super(config);
     }
 
     @Override
     public synchronized void copyTo(Machine destination, String destDir) throws IOException {
 
 
-        String destinationDirectory = destination.getConfig().getTemplatesLocation() + "/" + config.getName();
-        File sourceDirectory = new File(getLocation(), config.getName());
+        String destinationDirectory = destination.getConfig().getTemplatesLocation() + "/" + getDefinition().getName();
+        File sourceDirectory = templateInstance.getLocation();
         FileOperations files = destination.getFileOperations();
         if (!sourceDirectory.exists()) {
             RuntimeContext.logger.severe("Cannot find template directory " + sourceDirectory.getAbsolutePath());
@@ -84,7 +85,7 @@ public class LocalTemplate extends VMTemplate {
                         + destination.getName());
                 }
             } catch (IOException e) {
-                RuntimeContext.logger.log(Level.SEVERE, "Cannot copy template on " + config.getName(),e);
+                RuntimeContext.logger.log(Level.SEVERE, "Cannot copy template on " + getDefinition().getName(),e);
                 throw e;
             }
         }
@@ -92,12 +93,7 @@ public class LocalTemplate extends VMTemplate {
 
     @Override
     public long getSize() throws IOException {
-        File source = new File(getLocation() + "/" + config.getName() + ".img");
-        return source.length();
+        return templateInstance.getFileByExtension(".img").length();
     }
 
-    @Override
-    public boolean isLocal() {
-        return true;
-    }
 }

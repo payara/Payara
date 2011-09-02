@@ -39,9 +39,11 @@
  */
 package org.glassfish.virtualization.libvirt;
 
+import com.sun.enterprise.config.serverbeans.Cluster;
 import org.glassfish.hk2.Services;
 import org.glassfish.hk2.inject.Injector;
 import org.glassfish.virtualization.config.*;
+import org.glassfish.virtualization.libvirt.config.LibvirtVirtualization;
 import org.glassfish.virtualization.libvirt.jna.Connect;
 import org.glassfish.virtualization.libvirt.jna.Domain;
 import org.glassfish.virtualization.runtime.*;
@@ -97,6 +99,9 @@ public class LibVirtLocalMachine extends AbstractMachine implements PostConstruc
 
     @Inject
     VirtualMachineLifecycle vmLifecycle;
+
+    @Inject
+    com.sun.enterprise.config.serverbeans.Domain domainConfig;
 
     public static LibVirtLocalMachine from(Injector injector,  LibVirtGroup group, MachineConfig config) {
         return injector.inject(new LibVirtLocalMachine(group, config));
@@ -211,10 +216,14 @@ public class LibVirtLocalMachine extends AbstractMachine implements PostConstruc
         throw new IOException("Impossible to put myself to sleep");
     }
 
+    private LibvirtVirtualization getVirtualizationConfig() {
+        return (LibvirtVirtualization) getServerPool().getConfig().getVirtualization();
+    }
+
     protected Connect connection() throws VirtException {
         if (connect==null && getUser()!=null && getUser().getName()!=null) {
             try{
-                String connectionString = getEmulator().getConnectionString();
+                String connectionString = getVirtualizationConfig().getConnectionString();
                 if (getUser().getAuthMethod().length()>0) {
                     connectionString = connectionString.replace("#{auth.sep}", "+");
                     connectionString = connectionString.replace("#{auth.method}", getUser().getAuthMethod());
@@ -282,14 +291,16 @@ public class LibVirtLocalMachine extends AbstractMachine implements PostConstruc
     private void addDomain(Domain domain) throws VirtException {
         String domainName = domain.getName();
         if (!domains.containsKey(domainName)) {
-            VirtualMachineConfig vmc = serverPool.getConfig().virtualMachineRefByName(domainName);
-            // if config is null, that means this VM is not one of ours.
-            if (vmc!=null) {
-                TemplateRepository templateRepository = services.forContract(TemplateRepository.class).get();
-                TemplateInstance templateInstance = templateRepository.byName(vmc.getTemplate().getName());
-                LibVirtVirtualMachine gfVM = new LibVirtVirtualMachine(this, domain);
-                domains.put(domainName, gfVM );
+            for (Cluster cluster : domainConfig.getClusters().getCluster()) {
+                for (VirtualMachineConfig vmc : cluster.getExtensionsByType(VirtualMachineConfig.class)) {
+                    if (vmc.getName().equals(domainName)) {
+                        LibVirtVirtualMachine gfVM = new LibVirtVirtualMachine(this, domain);
+                        domains.put(domainName, gfVM );
+                        return;
+                    }
+                }
             }
+            // if we end up, that means this virtual machine is not one managed by this group master
         }
     }
 
@@ -307,11 +318,10 @@ public class LibVirtLocalMachine extends AbstractMachine implements PostConstruc
         final String name = cluster.getConfig().getName() + cluster.allocateToken();
 
         // 2. load the xml dump from the template ?
-        File xml = new File(new File(virtualizations.getTemplatesLocation(), template.getConfig().getName()),
-                template.getConfig().getName() + ".xml");
+        File xml = template.getFileByExtension("xml");
         Element vmConfig = loadConfigFile(xml);
 
-        List<StorageVol> volumes = prepare(template.getConfig(), name, cluster);
+        List<StorageVol> volumes = prepare(template, name, cluster);
 
         File machineDisks = absolutize(new File(virtualizations.getDisksLocation(), serverPool.getName()));
         machineDisks = new File(machineDisks, getName());
@@ -332,7 +342,7 @@ public class LibVirtLocalMachine extends AbstractMachine implements PostConstruc
         // 3. generate mac address
         String macAddress = os.macAddressGen();
 
-        vmConfig.setAttribute("type", getEmulator().getVirtType());
+        vmConfig.setAttribute("type", getVirtualizationConfig().getName());
         NodeList children = vmConfig.getChildNodes();
         for (int k=0;k<children.getLength();k++) {
 
@@ -360,7 +370,7 @@ public class LibVirtLocalMachine extends AbstractMachine implements PostConstruc
                         }
                     }
                     if (device.getNodeName().equals("emulator")) {
-                        device.getChildNodes().item(0).setNodeValue(getEmulator().getEmulatorPath());
+                        device.getChildNodes().item(0).setNodeValue(getVirtualizationConfig().getEmulatorPath());
                     }
                 }
                 // add our volumes

@@ -39,16 +39,17 @@
   -->
 
   <virtualizations>
-    <template name="Native">
-      <template-index value="JavaEE" type="ServiceType"></template-index>
-      <template-index value="Native" type="VirtualizationType"></template-index>
-    </template>
-    <template name="DBNative">
-      <template-index value="Database" type="ServiceType"></template-index>
-      <template-index value="Native" type="VirtualizationType"></template-index>
-    </template>
-    <serverPool-providers port-name="en0" name="cloud" virtualization="Native" sub-net="10.132.181.0/24">
-      <user></user>
-    </serverPool-providers>
-    <virtualization name="Native"></virtualization>
+      <virtualization name="Native" type="Native">
+        <template name="Native">
+          <template-index value="JavaEE" type="ServiceType"></template-index>
+          <template-index value="Native" type="VirtualizationType"></template-index>
+        </template>
+        <template name="DBNative">
+          <template-index value="Database" type="ServiceType"></template-index>
+          <template-index value="Native" type="VirtualizationType"></template-index>
+        </template>
+        <server-pool port-name="en0" name="cloud" sub-net="10.132.181.0/24">
+          <user></user>
+        </server-pool>
+      </virtualization>
   </virtualizations>

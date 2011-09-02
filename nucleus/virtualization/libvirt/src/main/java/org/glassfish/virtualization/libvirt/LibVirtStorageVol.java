@@ -39,6 +39,7 @@
  */
 package org.glassfish.virtualization.libvirt;
 
+import org.glassfish.virtualization.config.Virtualization;
 import org.glassfish.virtualization.spi.StorageVol;
 import org.glassfish.virtualization.spi.VirtException;
 import org.jvnet.hk2.component.Habitat;
@@ -75,13 +76,8 @@ class LibVirtStorageVol implements StorageVol {
     public DiskReference getDiskReference() {
         // todo : this need to be improved.
         Habitat habitat = Dom.unwrap(owner.getMachine().getConfig()).getHabitat();
-        DiskReference ref;
-        if (owner.getMachine().getConfig().getEmulator()!=null) {
-            ref = habitat.getComponent(DiskReference.class, owner.getMachine().getConfig().getEmulator().getVirtType());
-        } else {
-            ref = habitat.getComponent(DiskReference.class, "kvm");
-        }
-        return ref;
+        Virtualization virtualization = owner.getMachine().getServerPool().getConfig().getVirtualization();
+        return habitat.getComponent(DiskReference.class, virtualization.getName());
     }
 
     public Node getXML(Node parent, int position) throws VirtException {

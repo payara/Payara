@@ -99,23 +99,6 @@ public class LibVirtGroup implements PhysicalServerPool, ConfigListener {
 
     public void setConfig(ServerPoolConfig config) {
         this.config = config;
-        // ensure we have libvirt configuration around.
-        Habitat habitat = Dom.unwrap(config).getHabitat();
-        if (habitat.getComponent(Virtualizations.class).byName("libvirt")==null) {
-            try {
-            ConfigSupport.apply(new SingleConfigCode<Virtualizations>() {
-                @Override
-                public Object run(Virtualizations wVirts) throws PropertyVetoException, TransactionFailure {
-                    Virtualization libVirtConfig = wVirts.createChild(Virtualization.class);
-                    libVirtConfig.setName("libvirt");
-                    wVirts.getVirtualizations().add(libVirtConfig);
-                    return libVirtConfig;
-                }
-            }, habitat.getComponent(Virtualizations.class));
-            } catch(TransactionFailure e) {
-                RuntimeContext.logger.log(Level.SEVERE, "LibVirt configuration cannot be added to domain", e);
-            }
-        }
         Dom.unwrap(config).addListener(this);
         populateGroup();
     }
@@ -316,41 +299,6 @@ public class LibVirtGroup implements PhysicalServerPool, ConfigListener {
         return Dom.unwrap(config).getHabitat();
     }
 
-    public String getHostAddress() {
-        InetAddress addr;
-        try {
-            try {
-                StringTokenizer portNames = new StringTokenizer(config.getPortName(), ";");
-                while (portNames.hasMoreTokens()) {
-                    String portName = portNames.nextToken();
-                    Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
-                    while (interfaces.hasMoreElements()) {
-                        NetworkInterface networkInterface = interfaces.nextElement();
-                        // we need a way to customize this through configuration
-                        if (networkInterface.getName().equals(portName)) {
-                            Enumeration<InetAddress> addresses = networkInterface.getInetAddresses();
-                            while (addresses.hasMoreElements()) {
-                                String address = addresses.nextElement().getHostAddress();
-                                if (address.contains(".")) {
-                                    return address;
-                                }
-                            }
-                        }
-                    }
-                }
-            } catch (SocketException e) {
-                RuntimeContext.logger.log(Level.INFO, e.getMessage(), e);
-            }
-            // if we are here we are desperate...
-            addr = InetAddress.getLocalHost();
-        } catch (UnknownHostException e) {
-            RuntimeContext.logger.log(Level.INFO, e.getMessage(), e);
-            return null;
-        }
-        return addr.getHostAddress();
-    }
-
-
     @Override
     public ListenableFuture<AllocationPhase, VirtualMachine> allocate(
             final TemplateInstance template, final VirtualCluster cluster, final EventSource<AllocationPhase> source)
@@ -426,14 +374,15 @@ public class LibVirtGroup implements PhysicalServerPool, ConfigListener {
     }
 
     @Override
-    public void install(Template template) throws IOException {
+    public void install(TemplateInstance template) throws IOException {
         IOException lastException = null;
         for (Machine machine : machines.values()) {
             try {
                 machine.install(template);
             } catch (IOException e) {
                 lastException = e;
-                RuntimeContext.logger.log(Level.SEVERE, "Error while installing template " + template.getName() +
+                RuntimeContext.logger.log(Level.SEVERE, "Error while installing template " +
+                        template.getConfig().getName() +
                     " on " + machine.getName(), e);
             }
         }

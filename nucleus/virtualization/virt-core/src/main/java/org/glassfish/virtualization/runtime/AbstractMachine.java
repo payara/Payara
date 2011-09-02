@@ -44,7 +44,6 @@ import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.util.io.FileUtils;
 import org.glassfish.grizzly.config.dom.NetworkListener;
 
-import java.beans.PropertyChangeEvent;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
@@ -55,6 +54,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
@@ -62,23 +62,18 @@ import java.util.logging.Level;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.common.util.admin.AuthTokenManager;
 import org.glassfish.hk2.PostConstruct;
-import org.glassfish.virtualization.config.Emulator;
 import org.glassfish.virtualization.config.MachineConfig;
 import org.glassfish.virtualization.config.Template;
 import org.glassfish.virtualization.config.VirtUser;
 import org.glassfish.virtualization.config.Virtualizations;
 import org.glassfish.virtualization.os.Disk;
 import org.glassfish.virtualization.os.FileOperations;
-import org.glassfish.virtualization.spi.Machine;
-import org.glassfish.virtualization.spi.PhysicalServerPool;
-import org.glassfish.virtualization.spi.StoragePool;
-import org.glassfish.virtualization.spi.StorageVol;
-import org.glassfish.virtualization.spi.VirtException;
+import org.glassfish.virtualization.spi.*;
+import org.glassfish.virtualization.spi.templates.TemplateRepositoryImpl;
 import org.glassfish.virtualization.util.Host;
 import org.glassfish.virtualization.util.RuntimeContext;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.component.Habitat;
-import org.jvnet.hk2.config.*;
 
 
 /**
@@ -92,7 +87,7 @@ public abstract class AbstractMachine implements PostConstruct, Machine, FileOpe
 
     final protected MachineConfig config;
     final protected PhysicalServerPool serverPool;
-    final protected Map<String, VMTemplate> installedTemplates = new HashMap<String, VMTemplate>();
+    final protected Map<String, VMTemplate> installedTemplates = new ConcurrentHashMap<String, VMTemplate>();
 
     // Sa far, IP addresses are static within a single run. we could support changing the IP address eventually.
     volatile Machine.State state;
@@ -100,6 +95,9 @@ public abstract class AbstractMachine implements PostConstruct, Machine, FileOpe
 
     @Inject
     Virtualizations virtualizations;
+
+    @Inject
+    TemplateRepository templateRepository;
 
     @Inject
     Habitat habitat;
@@ -115,9 +113,10 @@ public abstract class AbstractMachine implements PostConstruct, Machine, FileOpe
     public void postConstruct() {
 
         // by default all our templates are local to this machine until the Template installation task ran
-        for (Template template : virtualizations.getTemplates() ) {
+        for (Template template : serverPool.getConfig().getVirtualization().getTemplates() ) {
             try {
-                install(template);
+                TemplateInstance ti = templateRepository.byName(template.getName());
+                install(ti);
             } catch (IOException e) {
                 RuntimeContext.logger.log(Level.SEVERE, "Cannot install template on machine " + getName(),e);
             }
@@ -126,10 +125,10 @@ public abstract class AbstractMachine implements PostConstruct, Machine, FileOpe
 
 
     @Override
-    public void install(final Template template) throws IOException {
-        final LocalTemplate localTemplate = new LocalTemplate(virtualizations.getTemplatesLocation(), template);
+    public void install(final TemplateInstance template) throws IOException {
+        final LocalTemplate localTemplate = new LocalTemplate(template);
         // we install it first as a local template
-        installedTemplates.put(template.getName(),localTemplate);
+        installedTemplates.put(template.getConfig().getName(),localTemplate);
         // now we copy the template on the remote machine
         if (getState().equals(Machine.State.READY)) {
             RuntimeContext.es.submit(new Runnable() {
@@ -137,11 +136,11 @@ public abstract class AbstractMachine implements PostConstruct, Machine, FileOpe
                 public void run() {
                     try {
                         localTemplate.copyTo(AbstractMachine.this, getConfig().getTemplatesLocation());
-                    } catch (IOException e) {
+                    } catch (Exception e) {
                         RuntimeContext.logger.log(Level.SEVERE, e.getMessage(), e);
                     }
-                    installedTemplates.put(template.getName(),
-                        new RemoteTemplate(AbstractMachine.this, config.getTemplatesLocation(), template));
+                    installedTemplates.put(template.getConfig().getName(),
+                        new RemoteTemplate(AbstractMachine.this, template));
                 }
             });
         }
@@ -219,13 +218,6 @@ public abstract class AbstractMachine implements PostConstruct, Machine, FileOpe
         return System.getProperty("user.home");
     }
 
-    protected Emulator getEmulator() {
-        if (config.getEmulator()==null) {
-            return serverPool.getConfig().getVirtualization().getDefaultEmulator();
-        }
-        return config.getEmulator();
-    }
-
     protected File absolutize(File source) {
         return RuntimeContext.absolutize(source);
     }
@@ -274,15 +266,16 @@ public abstract class AbstractMachine implements PostConstruct, Machine, FileOpe
         return (absolutize(new File(path))).exists();
     }
 
-    protected List<StorageVol> prepare(final Template template, final String name, final VirtualCluster cluster)
+    protected List<StorageVol> prepare(final TemplateInstance templateInstance, final String name, final VirtualCluster cluster)
 
             throws VirtException, IOException {
+
+        final Template template = templateInstance.getConfig();
 
         // 1. copy the template to the destination machine.
         mkdir(config.getDisksLocation());
 
-        final File sourceFile = new File(new File(virtualizations.getTemplatesLocation(), template.getName())
-                , template.getName() + ".img");
+        final File sourceFile = templateInstance.getFileByExtension(".img");
 
         delete(config.getDisksLocation() + "/" + name + "-cust.img");
         delete(config.getDisksLocation() + "/" + name + ".img");

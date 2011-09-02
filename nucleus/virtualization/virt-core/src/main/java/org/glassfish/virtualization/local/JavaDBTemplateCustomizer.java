@@ -54,12 +54,14 @@ import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
 
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Very simplistic database customizer that does not handle port, etc...
  */
 @Service(name="Database")
-public class LocalJavaDBTemplateCustomizer implements TemplateCustomizer {
+public class JavaDBTemplateCustomizer implements TemplateCustomizer {
 
     @Inject
     Services services;
@@ -72,9 +74,11 @@ public class LocalJavaDBTemplateCustomizer implements TemplateCustomizer {
     public void start(VirtualMachine virtualMachine) {
         ActionReport report = services.forContract(ActionReport.class).named("plain").get();
        // this line below needs to come from the template...
-        String[] args = {"asadmin" , "start-database"};
+        String installDir = virtualMachine.getProperty(VirtualMachine.PropertyName.INSTALL_DIR);
+        String[] args = {installDir + "/glassfish/bin/asadmin" , "start-database"};
         try {
-            virtualMachine.executeOn(args);
+            RuntimeContext.logger.info("Virtual Machine " + virtualMachine.getName() + " output : " +
+                    virtualMachine.executeOn(args));
         } catch (IOException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         } catch (InterruptedException e) {
@@ -84,9 +88,11 @@ public class LocalJavaDBTemplateCustomizer implements TemplateCustomizer {
 
     @Override
     public void stop(VirtualMachine virtualMachine) {
-        String[] args = {"asadmin" , "stop-database"};
+        String installDir = virtualMachine.getProperty(VirtualMachine.PropertyName.INSTALL_DIR);
+        String[] args = {installDir  + "/glassfish/bin/asadmin" , "stop-database"};
         try {
-            virtualMachine.executeOn(args);
+            RuntimeContext.logger.info("Virtual Machine " + virtualMachine.getName() + " output : " +
+                    virtualMachine.executeOn(args));
         } catch (IOException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         } catch (InterruptedException e) {

@@ -47,6 +47,7 @@ import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.hk2.scopes.PerLookup;
 import org.glassfish.virtualization.config.Template;
 import org.glassfish.virtualization.config.TemplateIndex;
+import org.glassfish.virtualization.config.Virtualization;
 import org.glassfish.virtualization.config.Virtualizations;
 import org.glassfish.virtualization.spi.TemplateRepository;
 import org.glassfish.virtualization.util.RuntimeContext;
@@ -63,6 +64,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -82,6 +84,9 @@ public class CreateTemplate implements AdminCommand {
 
     @Param
     String indexes;
+
+    @Param(optional = true)
+    String virtualization=null;
 
     @Inject
     ServerEnvironment env;
@@ -113,13 +118,20 @@ public class CreateTemplate implements AdminCommand {
                 templateFiles.add(source);
             }
         }
+        if (virtualizations.getVirtualizations().size()==0) {
+            context.getActionReport().failure(RuntimeContext.logger, "No virtualization settings in the configuration");
+            return;
+        }
+        Virtualization virt = virtualization==null?
+                virtualizations.getVirtualizations().get(0):virtualizations.byName(virtualization);
+
 
         Template template;
         try {
-            template =  (Template) ConfigSupport.apply(new SingleConfigCode<Virtualizations>() {
+            template =  (Template) ConfigSupport.apply(new SingleConfigCode<Virtualization>() {
                 @Override
-                public Object run(Virtualizations wVirtualizations) throws PropertyVetoException, TransactionFailure {
-                    Template template = wVirtualizations.createChild(Template.class);
+                public Object run(Virtualization wVirtualization) throws PropertyVetoException, TransactionFailure {
+                    Template template = wVirtualization.createChild(Template.class);
                     template.setName(name);
 
                     final StringTokenizer st = new StringTokenizer(indexes, ",");
@@ -137,10 +149,10 @@ public class CreateTemplate implements AdminCommand {
 
                         }
                     }
-                    wVirtualizations.getTemplates().add(template);
+                    wVirtualization.getTemplates().add(template);
                     return template;
                 }
-            }, virtualizations);
+            }, virt);
         } catch (TransactionFailure e) {
             e.printStackTrace();
             context.getActionReport().failure(RuntimeContext.logger, "Failed to add the template configuration", e);
@@ -148,19 +160,5 @@ public class CreateTemplate implements AdminCommand {
         }
 
         repository.installs(template, templateFiles);
-    }
-
-    private void revert(final Template template)  {
-        try {
-            ConfigSupport.apply(new SingleConfigCode<Virtualizations>() {
-                @Override
-                public Object run(Virtualizations wVirtualizations) throws PropertyVetoException, TransactionFailure {
-                    wVirtualizations.getTemplates().remove(template);
-                    return null;
-                }
-            }, virtualizations);
-        } catch (TransactionFailure transactionFailure) {
-            RuntimeContext.logger.log(Level.SEVERE, "Exception while cleaning up", transactionFailure);
-        }
     }
 }

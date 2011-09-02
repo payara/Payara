@@ -45,6 +45,7 @@ import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.config.support.*;
+import org.glassfish.virtualization.spi.Machine;
 import org.jvnet.hk2.annotations.Decorate;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
@@ -82,6 +83,26 @@ public interface ServerPoolConfig extends ConfigBeanProxy {
     @Param(name="portName")
     void setPortName(String portName);
 
+    @Attribute
+    String getSubNet();
+
+    @Param(name="subNet")
+    void setSubNet(String subNet);
+
+    @Element
+    @NotNull
+    VirtUser getUser();
+    @Create(value="create-server-pool-user", resolver = ServerPoolResolver.class, i18n = @I18n("org.glassfish.virtualization.create-machine"))
+    void setUser(VirtUser user);
+
+    @Element
+    @Create(value = "create-machine", resolver = ServerPoolResolver.class, i18n = @I18n("org.glassfish.virtualization.create-machine"))
+    @Listing(value = "list-machines", resolver = ServerPoolResolver.class, i18n = @I18n("org.glassfish.virtualization.list-machines"))
+    @Delete(value="delete-machine", resolver= WithinGroupResolver.class, i18n = @I18n("org.glassfish.virtualization.delete-machine"))
+    List<MachineConfig> getMachines();
+
+    @DuckTyped
+    MachineConfig machineByName(String name);
 
     /**
      * Returns the virtualization technology used to interface with low-level machine creation/deletion/etc...
@@ -92,67 +113,42 @@ public interface ServerPoolConfig extends ConfigBeanProxy {
      *
      * @return  the virtualization solution.
      */
-    @Attribute(reference = true)
-    Virtualization getVirtualization();
-
-    /**
-     * Sets the virtualization technology used to interface the low-level virtual machine creation.
-     *
-     * @param virt  the virtualization interface
-     */
-    void setVirtualization(Virtualization virt);
-
-    @Attribute
-    String getSubNet();
-
-    @Param(name="subNet")
-    void setSubNet(String subNet);
-
-    @Element
-    @NotNull
-    VirtUser getUser();
-    @Create(value="create-server-pool-user", resolver = GroupResolver.class, i18n = @I18n("org.glassfish.virtualization.create-machine"))
-    void setUser(VirtUser user);
-
-    @Element
-    @Create(value = "create-machine", resolver = GroupResolver.class, decorator = MachineConfig.Decorator.class, i18n = @I18n("org.glassfish.virtualization.create-machine"))
-    @Listing(value = "list-machines", resolver = GroupResolver.class, i18n = @I18n("org.glassfish.virtualization.list-machines"))
-    @Delete(value="delete-machine", resolver= WithinGroupResolver.class, i18n = @I18n("org.glassfish.virtualization.delete-machine"))
-    List<MachineConfig> getMachines();
-
-
-    @Element(reference = true)
-    List<VirtualMachineConfig> getVirtualMachineRefs();
-
     @DuckTyped
-    VirtualMachineConfig virtualMachineRefByName(String name);
+    Virtualization getVirtualization();
 
     public static class Duck {
 
-        public static VirtualMachineConfig virtualMachineRefByName(ServerPoolConfig self, String name) {
-            for (VirtualMachineConfig vmc : self.getVirtualMachineRefs()) {
-                if (vmc.getName().equals(name)) {
-                    return vmc;
+        public static MachineConfig machineByName(ServerPoolConfig self, String name) {
+            for (MachineConfig mc : self.getMachines()) {
+                if (mc.getName().equals(name)) {
+                    return mc;
                 }
             }
             return null;
         }
+
+        public static Virtualization getVirtualization(ServerPoolConfig self) {
+            return (Virtualization) self.getParent();
+        }
     }
 
     @Service
-    public class GroupResolver implements CrudResolver {
+    public class ServerPoolResolver implements CrudResolver {
         @Param(name="serverPool")
         String group;
 
+        @Param(optional = true)
+        String virtualization;
+
         @Inject
-        Virtualizations virt;
+        Virtualizations virts;
 
         @Override
         public <T extends ConfigBeanProxy> T resolve(AdminCommandContext context, Class<T> type)  {
-            for (ServerPoolConfig provider : virt.getGroupConfigs()) {
-                if (provider.getName().equals(group)) {
-                    return (T) provider;
-                }
+            Virtualization virt = virtualization==null?virts.getVirtualizations().get(0):virts.byName(virtualization);
+            ServerPoolConfig config = virt.serverPoolByName(group);
+            if (config!=null) {
+                return (T) config;
             }
             context.getActionReport().failure(context.getLogger(), "Cannot find a serverPool by the name of " + group);
             return null;
@@ -160,20 +156,17 @@ public interface ServerPoolConfig extends ConfigBeanProxy {
     }
 
     @Service
-    public class WithinGroupResolver extends GroupResolver {
+    public class WithinGroupResolver extends ServerPoolResolver {
         @Param(primary=true)
         String name;
 
         @Override
         public <T extends ConfigBeanProxy> T resolve(AdminCommandContext context, Class<T> type)  {
-            ServerPoolConfig group = (ServerPoolConfig) super.resolve(context,type);
-            if (group!=null) {
-                for (MachineConfig machineConfig : group.getMachines()) {
-                    if (machineConfig.getName().equals(name)) {
-                        return (T) machineConfig;
-                    }
-                }
-                context.getActionReport().failure(context.getLogger(), "Cannot find a machine by the name of " + group);
+            ServerPoolConfig serverPool = (ServerPoolConfig) super.resolve(context,type);
+            if (serverPool!=null) {
+                MachineConfig mc = serverPool.machineByName(name);
+                if (mc!=null) return (T) mc;
+                context.getActionReport().failure(context.getLogger(), "Cannot find a machine by the name of " + serverPool);
             }
             return null;
         }

@@ -174,12 +174,6 @@ public class AddVirtualizationCapabilities implements AdminCommand {
                                     for (Virtualization v : defaultConfig.getVirtualizations()) {
                                         wVirtualizations.getVirtualizations().add(v);
                                     }
-                                    for (Template template : defaultConfig.getTemplates()) {
-                                        wVirtualizations.getTemplates().add(template);
-                                    }
-                                    for (ServerPoolConfig serverPoolConfig : defaultConfig.getGroupConfigs()) {
-                                        wVirtualizations.getGroupConfigs().add(serverPoolConfig);
-                                    }
                                     return null;
                                 }
                             }, virtualizations);
@@ -191,29 +185,7 @@ public class AddVirtualizationCapabilities implements AdminCommand {
                     }
                 }
             }).run(configParser);
-        } else {
-            try {
-                ConfigSupport.apply(new SingleConfigCode<Virtualizations>() {
-                    @Override
-                    public Object run(Virtualizations param) throws PropertyVetoException, TransactionFailure {
-                        Virtualization virt = param.createChild(Virtualization.class);
-                        virt.setName(type);
-                        if (emulator!=null) {
-                            Emulator emulatorConfig = param.emulatorByName(emulator);
-                            if (emulatorConfig==null) {
-                                throw new TransactionFailure("Cannot find emulator " + emulator);
-                            }
-                            virt.setDefaultEmulator(emulatorConfig);
-                        }
-                        param.getVirtualizations().add(virt);
-                        return virt;
-                    }
-                }, virtualizations);
-            } catch(TransactionFailure e) {
-                context.getActionReport().failure(RuntimeContext.logger, e.getMessage(), e);
-            }
         }
-
 
         // make room for scripts to the script location.
         File destDir = new File(env.getConfigDirPath(), virtType);

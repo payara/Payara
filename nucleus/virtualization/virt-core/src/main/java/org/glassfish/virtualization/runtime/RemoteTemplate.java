@@ -42,7 +42,9 @@ package org.glassfish.virtualization.runtime;
 
 import org.glassfish.virtualization.config.Template;
 import org.glassfish.virtualization.spi.Machine;
+import org.glassfish.virtualization.spi.TemplateInstance;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 
 /**
@@ -55,11 +57,10 @@ public class RemoteTemplate extends VMTemplate {
     /**
      * Creates a new template instance for a remotely installed template
      * @param location the machine where the template is installed.
-     * @param directory  where the template is installed on the remote machine
      * @param config  the template characteristics
      */
-    public RemoteTemplate(Machine location, String directory, Template config) {
-        super(directory, config);
+    public RemoteTemplate(Machine location, TemplateInstance config) {
+        super(config);
         this.machine = location;
     }
 
@@ -71,16 +72,16 @@ public class RemoteTemplate extends VMTemplate {
     }
 
     private String remotePath() {
-        return machine.getConfig().getTemplatesLocation()+"/"+config.getName()+"/" + config.getName() + ".img";
+        try {
+            String fileName = templateInstance.getFileByExtension(".img").getName();
+            return machine.getConfig().getTemplatesLocation()+"/"+getDefinition().getName()+"/" + fileName;
+        } catch (FileNotFoundException e) {
+            return null;
+        }
     }
 
     @Override
     public long getSize() throws IOException {
         return machine.getFileOperations().length(remotePath());
-    }
-
-    @Override
-    public boolean isLocal() {
-        return false;
     }
 }

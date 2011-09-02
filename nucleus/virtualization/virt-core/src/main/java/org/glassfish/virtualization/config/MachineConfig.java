@@ -46,6 +46,8 @@ import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.config.support.Create;
 import org.glassfish.config.support.CreationDecorator;
 import org.glassfish.config.support.CrudResolver;
+import org.glassfish.virtualization.spi.Machine;
+import org.glassfish.virtualization.spi.ServerPool;
 import org.glassfish.virtualization.util.RuntimeContext;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
@@ -83,15 +85,6 @@ public interface MachineConfig extends ConfigBeanProxy {
     @Attribute
     String getOsName();
     void setOsName(String osName);
-
-    /**
-     *  Get the machine emulator used. if null, the virtualization default emulator will be used
-     * @see org.glassfish.virtualization.config.Virtualization#getDefaultEmulator()
-     * @return the machine's emulator configuration
-     */
-    @Attribute(reference = true)
-    Emulator getEmulator();
-    void setEmulator(Emulator emulator);
 
     /**
      * Relative path location on the target machine where the virtual machines volumes will be stored.
@@ -134,48 +127,27 @@ public interface MachineConfig extends ConfigBeanProxy {
     @Service
     public class MachineResolver implements CrudResolver {
         @Param(name="serverPool")
-        String group;
+        String serverPool;
 
         @Param(name="machine")
         String machine;
 
+        @Param(optional = true)
+        String virtualization=null;
+
         @Inject
-        Virtualizations virt;
+        Virtualizations virts;
 
         @Override
         public <T extends ConfigBeanProxy> T resolve(AdminCommandContext context, Class<T> type)  {
-            for (ServerPoolConfig provider : virt.getGroupConfigs()) {
-                if (provider.getName().equals(group)) {
-                    for (MachineConfig mc : provider.getMachines()) {
-                        if (mc.getName().equals(machine)) {
-                            return (T) mc;
-                        }
-                    }
-                }
+            Virtualization virt = virtualization==null?virts.getVirtualizations().get(0):virts.byName(virtualization);
+            ServerPoolConfig config = virt.serverPoolByName(serverPool);
+            if (config!=null) {
+                return (T) config.machineByName(machine);
             }
             context.getActionReport().failure(context.getLogger(), "Cannot find a machine by the name of " + machine);
             return null;
         }
     }
 
-    @Service
-    public class Decorator implements CreationDecorator<MachineConfig> {
-
-        @Param(name="emulator", optional = true)
-        String emulatorName;
-
-        @Inject
-        Habitat habitat;
-
-        @Override
-        public void decorate(AdminCommandContext context, MachineConfig instance) throws TransactionFailure, PropertyVetoException {
-            if (emulatorName==null) return;
-            Emulator emulator = habitat.getComponent(Emulator.class, emulatorName);
-            if (emulator==null) {
-                context.getActionReport().failure(RuntimeContext.logger, "Cannot find emulator definition named " + emulatorName);
-                throw new TransactionFailure("Cannot find emulator definition named " + emulatorName);
-            }
-            instance.setEmulator(emulator);
-        }
-    }
 }

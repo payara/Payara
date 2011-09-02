@@ -58,6 +58,7 @@ import org.glassfish.virtualization.runtime.VirtualClusters;
 import org.glassfish.virtualization.spi.*;
 import org.glassfish.virtualization.spi.templates.TemplateInstanceImpl;
 import org.glassfish.virtualization.util.RuntimeContext;
+import org.glassfish.virtualization.util.ServiceType;
 import org.glassfish.virtualization.virtmgt.GroupAccess;
 import org.glassfish.virtualization.virtmgt.GroupsAccess;
 import org.jvnet.hk2.annotations.Inject;
@@ -157,11 +158,6 @@ public class CreateVirtualCluster implements AdminCommand {
         int minNumber = Integer.parseInt(min);
         sb.append("Successfully created ").append(minNumber).append(" virtual machine(s) : ");
 
-        rtContext.executeAdminCommand(report, "create-cluster", name);
-        if (report.hasFailures()) {
-            return;
-        }
-
         TemplateInstance templateInstance=null;
         if (template!=null) {
             for (TemplateInstance ti : templateRepository.all()) {
@@ -171,10 +167,24 @@ public class CreateVirtualCluster implements AdminCommand {
                 }
             }
         } else {
-            templateInstance = templateRepository.all().iterator().next();
+            ServiceType serviceType = new ServiceType("JavaEE");
+
+            // we need to reconcile with the virtualization technology
+            for (TemplateInstance ti : templateRepository.all()) {
+                if (ti.satisfies(serviceType)) {
+                    templateInstance = ti;
+                    break;
+                }
+            }
         }
+
         if (templateInstance==null) {
-            context.getActionReport().failure(RuntimeContext.logger, "Cannot find template");
+            context.getActionReport().failure(RuntimeContext.logger, "Cannot find template appropriate template");
+            return;
+        }
+
+        rtContext.executeAdminCommand(report, "create-cluster", name);
+        if (report.hasFailures()) {
             return;
         }
 

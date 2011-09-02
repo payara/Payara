@@ -40,8 +40,10 @@
 
 package org.glassfish.virtualization.local;
 
+import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.util.ExecException;
 import com.sun.enterprise.util.ProcessExecutor;
+import org.glassfish.virtualization.config.VirtualMachineConfig;
 import org.glassfish.virtualization.spi.*;
 import org.glassfish.virtualization.util.AbstractVirtualMachine;
 import org.glassfish.virtualization.util.RuntimeContext;
@@ -62,9 +64,9 @@ class LocalVirtualMachine extends AbstractVirtualMachine {
 
     final String vmName;
     final Machine machine;
-    final ServerPool pool;
+    final LocalServerPool pool;
 
-    LocalVirtualMachine(ServerPool pool, Machine machine, String vmName) {
+    LocalVirtualMachine(LocalServerPool pool, Machine machine, String vmName) {
         this.vmName = vmName;
         this.pool = pool;
         this.machine = machine;
@@ -108,7 +110,18 @@ class LocalVirtualMachine extends AbstractVirtualMachine {
 
     @Override
     public void start() throws VirtException {
-        // nothing to do ?
+        for (Cluster cluster : pool.domain.getClusters().getCluster()) {
+            for (VirtualMachineConfig vmc : cluster.getExtensionsByType(VirtualMachineConfig.class)) {
+                if (vmc.getName().equals(getName())) {
+                    TemplateInstance ti = pool.templateRepository .byName(vmc.getTemplate().getName());
+                    if (ti!=null) {
+                        ti.getCustomizer().start(this);
+                    }
+                    return;
+                }
+            }
+        }
+        throw new RuntimeException("Cannot find registered virtual machine " + getName());
     }
 
     @Override

@@ -42,6 +42,7 @@ package org.glassfish.virtualization.runtime;
 
 import org.glassfish.virtualization.config.Template;
 import org.glassfish.virtualization.spi.Machine;
+import org.glassfish.virtualization.spi.TemplateInstance;
 
 import java.io.IOException;
 
@@ -51,25 +52,17 @@ import java.io.IOException;
  */
 public abstract class VMTemplate {
 
-    protected final Template config;
-    private final String location;
+    protected final TemplateInstance templateInstance;
 
-    public VMTemplate(String location, Template config) {
-        this.location = location;
-        this.config = config;
+    public VMTemplate(TemplateInstance templateInstance) {
+        this.templateInstance = templateInstance;
     }
 
     public Template getDefinition() {
-        return config;
-    }
-
-    public String getLocation() {
-        return location;
-
+        return templateInstance.getConfig();
     }
 
     public abstract void copyTo(Machine destination, String destPath) throws IOException;
     public abstract long getSize() throws IOException;
-    public abstract boolean isLocal(); // dochez, why this ?
 
 }

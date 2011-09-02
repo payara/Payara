@@ -94,7 +94,7 @@ public class CreateVirtualMachine implements AdminCommand {
         } else {
             group = groups.byName(groupName);
         }
-        Template template = virts.templateByName(templateName);
+        Template template = group.getConfig().getVirtualization().templateByName(templateName);
 
         if (template==null) {
             context.getActionReport().failure(RuntimeContext.logger, "Template not registered " + templateName);

@@ -40,18 +40,28 @@
 
 package org.glassfish.virtualization.commands;
 
+import com.sun.enterprise.config.serverbeans.Cluster;
+import com.sun.enterprise.config.serverbeans.Domain;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.CommandLock;
+import org.glassfish.virtualization.config.Template;
+import org.glassfish.virtualization.config.VirtualMachineConfig;
+import org.glassfish.virtualization.runtime.VirtualCluster;
+import org.glassfish.virtualization.runtime.VirtualClusters;
 import org.glassfish.virtualization.runtime.VirtualMachineLifecycle;
+import org.glassfish.virtualization.spi.*;
+import org.glassfish.virtualization.util.RuntimeContext;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
+import org.jvnet.hk2.config.types.Property;
 
 import java.util.concurrent.CountDownLatch;
+import java.util.logging.Level;
 
 /**
  * Administrative command to register a virtual machine is started and can be interfaced.
@@ -62,20 +72,65 @@ import java.util.concurrent.CountDownLatch;
 @CommandLock(CommandLock.LockType.NONE)
 public class RegisterStartup implements AdminCommand {
 
+    @Param
+    String group;
+
+    @Param
+    String machine;
+
+    @Param
+    String address;
+
+    @Param
+    String cluster;
+
     @Param(primary = true)
-    String instanceName;
+    String virtualMachine;
 
     @Inject
     VirtualMachineLifecycle vmLifecycle;
 
+    @Inject
+    IAAS iaas;
+
+    @Inject
+    Domain domain;
+
+    @Inject
+    VirtualClusters virtualClusters;
+
+    @Inject
+    TemplateRepository templateRepository;
+
     @Override
     public void execute(AdminCommandContext context) {
-        String vmName = instanceName.substring(instanceName.lastIndexOf("_")+1);
-
-        CountDownLatch latch = vmLifecycle.getStartupLatch(vmName);
-        if (latch!=null) {
-            latch.countDown();
+        ServerPool targetGroup = iaas.byName(group);
+        if (targetGroup==null) {
+            context.getActionReport().failure(RuntimeContext.logger, "Cannot find serverPool " + group);
+            return;
         }
+        try {
+            VirtualMachine vm = targetGroup.vmByName(virtualMachine);
+            if (vm!=null) {
+                CountDownLatch latch = vmLifecycle.getStartupLatch(vm.getName());
+                if (latch!=null) {
+                    latch.countDown();
+                }
+                vm.setAddress(address);
+                Cluster clusterConfig = domain.getClusterNamed(cluster);
+                VirtualMachineConfig vmConfig = clusterConfig.getExtensionsByTypeAndName(VirtualMachineConfig.class, vm.getName());
+                for (Property property : vmConfig.getProperty()) {
+                    vm.setProperty(VirtualMachine.PropertyName.valueOf(property.getName()), property.getValue());
+                }
+                Template template = vmConfig.getTemplate();
+                templateRepository.byName(template.getName()).getCustomizer().start(vm);
+            }
+        } catch(VirtException e) {
+            RuntimeContext.logger.log(Level.SEVERE, e.getMessage(),e);
+            context.getActionReport().failure(RuntimeContext.logger, e.getMessage());
+            return;
+        }
+
         context.getActionReport().setActionExitCode(ActionReport.ExitCode.SUCCESS);
     }
 }

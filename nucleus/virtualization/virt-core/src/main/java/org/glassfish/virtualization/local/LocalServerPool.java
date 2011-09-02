@@ -40,14 +40,19 @@
 
 package org.glassfish.virtualization.local;
 
-import com.sun.enterprise.config.serverbeans.Server;
+import com.sun.enterprise.config.serverbeans.Cluster;
+import com.sun.enterprise.config.serverbeans.Domain;
+import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.hk2.scopes.PerLookup;
+import org.glassfish.internal.api.ServerContext;
 import org.glassfish.virtualization.config.ServerPoolConfig;
-import org.glassfish.virtualization.config.Template;
 import org.glassfish.virtualization.config.VirtualMachineConfig;
 import org.glassfish.virtualization.runtime.VirtualCluster;
 import org.glassfish.virtualization.spi.*;
 import org.glassfish.virtualization.util.EventSource;
 import org.glassfish.virtualization.util.ListenableFutureImpl;
+import org.jvnet.hk2.annotations.Inject;
+import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 
 import java.io.IOException;
@@ -61,10 +66,20 @@ import java.util.concurrent.CountDownLatch;
  * @author Jerome Dochez
  */
 @Service(name="Native")
+@Scoped(PerLookup.class)
 public class LocalServerPool implements ServerPool {
 
     final Map<String, VirtualMachine> vms = new HashMap<String, VirtualMachine>();
     ServerPoolConfig config;
+
+    @Inject
+    Domain domain;
+
+    @Inject
+    ServerContext env;
+
+    @Inject
+    TemplateRepository templateRepository;
 
     @Override
     public ServerPoolConfig getConfig() {
@@ -74,8 +89,14 @@ public class LocalServerPool implements ServerPool {
     @Override
     public void setConfig(ServerPoolConfig config) {
         this.config = config;
-        for (VirtualMachineConfig ref : config.getVirtualMachineRefs()) {
-            vms.put(ref.getName(), new LocalVirtualMachine(this, null, ref.getName()));
+        if (domain.getClusters()!=null) {
+            for (Cluster cluster : domain.getClusters().getCluster()) {
+                for (VirtualMachineConfig vmc : cluster.getExtensionsByType(VirtualMachineConfig.class)) {
+                    if (vmc.getServerPool().equals(config)) {
+                        vms.put(vmc.getName(), new LocalVirtualMachine(this, null, vmc.getName()));
+                    }
+                }
+            }
         }
     }
 
@@ -101,6 +122,9 @@ public class LocalServerPool implements ServerPool {
 
         String vmName = getName() + "-" + (vms.size()+1);
         LocalVirtualMachine vm = new LocalVirtualMachine(this, null, vmName);
+        // this needs to be improved.
+        vm.setProperty(VirtualMachine.PropertyName.INSTALL_DIR,
+                env.getInstallRoot().getParentFile().getAbsolutePath());
         cluster.add(template, vm);
         vms.put(vmName, vm);
         CountDownLatch latch = new CountDownLatch(1);
@@ -113,7 +137,7 @@ public class LocalServerPool implements ServerPool {
     }
 
     @Override
-    public void install(Template template) throws IOException {
+    public void install(TemplateInstance template) throws IOException {
         // templates are already locally installed...
     }
 }

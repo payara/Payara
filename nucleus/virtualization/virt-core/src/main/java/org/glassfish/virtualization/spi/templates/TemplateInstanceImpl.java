@@ -53,6 +53,8 @@ import org.jvnet.hk2.annotations.Inject;
 
 import java.beans.Customizer;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FilenameFilter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -104,5 +106,18 @@ public class TemplateInstanceImpl implements TemplateInstance {
     @Override
     public File getLocation() {
         return new File(virtualizations.getTemplatesLocation(), getConfig().getName());
+    }
+
+    public File getFileByExtension(final String extension) throws FileNotFoundException {
+        String[] fileNames = getLocation().list(new FilenameFilter() {
+            @Override
+            public boolean accept(File dir, String name) {
+                return name.endsWith(extension);
+            }
+        });
+        if (fileNames.length==0) {
+            throw new FileNotFoundException("Cannot find any file with " + extension + " extension");
+        }
+        return new File(getLocation(), fileNames[0]);
     }
 }

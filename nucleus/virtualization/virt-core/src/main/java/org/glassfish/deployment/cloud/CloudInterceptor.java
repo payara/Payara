@@ -64,6 +64,8 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 /**
  * Created by IntelliJ IDEA.
@@ -116,14 +118,21 @@ public class CloudInterceptor implements DeployCommand.Interceptor {
                         try {
                             VirtualCluster virtualCluster = virtualClusters.byName(command.name());
                             for (ServerPool serverPool : iaas) {
-                                String virtTypeName = serverPool.getConfig().getVirtualization().getName();
+                                String virtTypeName = serverPool.getConfig().getVirtualization().getType();
                                 VirtualizationType virtType = new VirtualizationType(virtTypeName);
                                 ServiceType serviceType = new ServiceType("Database");
                                 TemplateRepository templateRepository = services.forContract(TemplateRepository.class).get();
                                 for (TemplateInstance ti : templateRepository.all()) {
                                     if (ti.satisfies(virtType) && (ti.satisfies(serviceType))) {
                                         VMOrder vmOrder = new VMOrder(ti, virtualCluster );
-                                        iaas.allocate(vmOrder, null);
+                                        Future<?> future = iaas.allocate(vmOrder, null);
+                                        try {
+                                            future.get();
+                                        } catch (InterruptedException e) {
+                                            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                                        } catch (ExecutionException e) {
+                                            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                                        }
                                     }
                                 }
 

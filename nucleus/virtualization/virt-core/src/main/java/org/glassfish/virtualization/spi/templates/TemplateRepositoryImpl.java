@@ -45,6 +45,7 @@ import com.sun.logging.LogDomains;
 import org.glassfish.hk2.Services;
 import org.glassfish.virtualization.config.ServerPoolConfig;
 import org.glassfish.virtualization.config.Template;
+import org.glassfish.virtualization.config.Virtualization;
 import org.glassfish.virtualization.config.Virtualizations;
 import org.glassfish.virtualization.runtime.LocalTemplate;
 import org.glassfish.virtualization.runtime.RemoteTemplate;
@@ -75,8 +76,10 @@ public class TemplateRepositoryImpl implements TemplateRepository {
     public TemplateRepositoryImpl(@Inject Services services, @Inject Virtualizations virts) {
         location = new File(virts.getTemplatesLocation());
         this.services = services;
-        for (Template template : virts.getTemplates()) {
-            templates.add(new TemplateInstanceImpl(services, template));
+        for (Virtualization virt : virts.getVirtualizations()) {
+            for (Template template : virt.getTemplates()) {
+                templates.add(new TemplateInstanceImpl(services, template));
+            }
         }
     }
 
@@ -108,10 +111,11 @@ public class TemplateRepositoryImpl implements TemplateRepository {
         templates.add(templateInstance);
 
         // now we should copy this template to all available server pools.
-        for (ServerPoolConfig pool : services.forContract(Virtualizations.class).get().getGroupConfigs()) {
+        Virtualization virt = (Virtualization) config.getParent();
+        for (ServerPoolConfig pool : virt.getServerPools()) {
             ServerPool serverPool = services.forContract(IAAS.class).get().byName(pool.getName());
             try {
-                serverPool.install(config);
+                serverPool.install(templateInstance);
             } catch (IOException e) {
                 RuntimeContext.logger.log(Level.SEVERE, "Cannot copy template " + config.getName()
                         + " on server pool  " + config.getName(), e);

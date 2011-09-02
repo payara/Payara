@@ -58,7 +58,13 @@ import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
+import org.jvnet.hk2.config.ConfigBeanProxy;
+import org.jvnet.hk2.config.ConfigSupport;
+import org.jvnet.hk2.config.SingleConfigCode;
+import org.jvnet.hk2.config.TransactionFailure;
+import org.jvnet.hk2.config.types.Property;
 
+import java.beans.PropertyVetoException;
 import java.util.concurrent.CountDownLatch;
 import java.util.logging.Level;
 
@@ -103,9 +109,6 @@ public class RegisterVirtualMachine implements AdminCommand {
     Domain domain;
 
     @Inject
-    RuntimeContext rtContext;
-
-    @Inject
     TemplateRepository templateRepository;
 
     @Inject
@@ -137,9 +140,25 @@ public class RegisterVirtualMachine implements AdminCommand {
                 vm.setProperty(VirtualMachine.PropertyName.INSTALL_DIR, installDir);
                 Cluster clusterConfig = domain.getClusterNamed(cluster);
                 VirtualMachineConfig vmConfig = clusterConfig.getExtensionsByTypeAndName(VirtualMachineConfig.class, vm.getName());
+                // this will eventually go away once we have glassfish installed as part of the template customization
+                try {
+                    ConfigSupport.apply(new SingleConfigCode<VirtualMachineConfig>() {
+                        @Override
+                        public Object run(VirtualMachineConfig wConfig) throws PropertyVetoException, TransactionFailure {
+                            Property wProperty = wConfig.createChild(Property.class);
+                            wProperty.setName(VirtualMachine.PropertyName.INSTALL_DIR.toString());
+                            wProperty.setValue(installDir);
+                            wConfig.getProperty().add(wProperty);
+                            return wProperty;
+                        }
+                    }, vmConfig);
+                } catch (TransactionFailure transactionFailure) {
+                    RuntimeContext.logger.log(Level.SEVERE, "Cannot save virtual machine properties", transactionFailure);
+                }
                 Template template = vmConfig.getTemplate();
                 VirtualCluster virtualCluster = virtualClusters.byName(cluster);
                 templateRepository.byName(template.getName()).getCustomizer().customize(virtualCluster, vm);
+                templateRepository.byName(template.getName()).getCustomizer().start(vm);
             }
         } catch(VirtException e) {
             RuntimeContext.logger.log(Level.SEVERE, e.getMessage(),e);

@@ -45,6 +45,7 @@ import org.glassfish.api.Startup;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.hk2.Services;
 import org.glassfish.virtualization.config.Template;
+import org.glassfish.virtualization.config.Virtualization;
 import org.glassfish.virtualization.runtime.DefaultAllocationStrategy;
 import org.glassfish.virtualization.runtime.VirtualCluster;
 import org.glassfish.virtualization.spi.*;
@@ -101,47 +102,40 @@ public class GroupMembersPopulator implements Startup, IAAS, ConfigListener {
 
         this.services = services;
         // first executeAndWait the fping command to populate our arp table.
-        transactions.addListenerForType(Virtualizations.class, this);
+        transactions.addListenerForType(ServerPoolConfig.class, this);
         if (virtualizations==null || env.isInstance() ) return;
 
-        for (ServerPoolConfig groupConfig : virtualizations.getGroupConfigs()) {
-            try {
-                ServerPool group = processGroupConfig(virtualizations, groupConfig);
-                System.out.println("I have a serverPool " + group.getName());
-                if (group instanceof PhysicalServerPool) {
-                    for (Machine machine : ((PhysicalServerPool) group).machines()) {
-                        System.out.println("LibVirtMachine  " + machine.getName() + " is at " +  machine.getIpAddress() + " state is " + machine.getState());
-                        if (machine.getState().equals(Machine.State.READY)) {
-                            try {
-                                System.out.println(machine.toString());
-                            } catch (Exception e) {
-                                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        for (Virtualization virt : virtualizations.getVirtualizations()) {
+            for (ServerPoolConfig groupConfig : virt.getServerPools()) {
+                try {
+                    ServerPool group = addServerPool(groupConfig);
+                    System.out.println("I have a serverPool " + group.getName());
+                    if (group instanceof PhysicalServerPool) {
+                        for (Machine machine : ((PhysicalServerPool) group).machines()) {
+                            System.out.println("LibVirtMachine  " + machine.getName() + " is at " +  machine.getIpAddress() + " state is " + machine.getState());
+                            if (machine.getState().equals(Machine.State.READY)) {
+                                try {
+                                    System.out.println(machine.toString());
+                                } catch (Exception e) {
+                                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                                }
                             }
                         }
                     }
+                } catch(Exception e) {
+                    e.printStackTrace();
                 }
-            } catch(Exception e) {
-                e.printStackTrace();
-            }
 
+            }
         }
     }
 
-    private ServerPool processGroupConfig(Virtualizations virtualizations, ServerPoolConfig groupConfig) {
-
-        ServerPool group = services.forContract(ServerPool.class).named(groupConfig.getVirtualization().getName()).get();
-        group.setConfig(groupConfig);
+    private ServerPool addServerPool(ServerPoolConfig serverPoolConfig) {
+        ServerPool group = services.forContract(ServerPool.class).named(
+                serverPoolConfig.getVirtualization().getType()).get();
+        group.setConfig(serverPoolConfig);
         synchronized (this) {
-            groups.put(groupConfig.getName(), group);
-        }
-        // installs templates in this group
-        for (Template template : virtualizations.getTemplates()) {
-            try {
-                group.install(template);
-            } catch (IOException e) {
-                RuntimeContext.logger.log(Level.SEVERE, "Error copying template" + template.getName()
-                        + " on " + group.getName());
-            }
+            groups.put(serverPoolConfig.getName(), group);
         }
         return group;
     }
@@ -149,9 +143,11 @@ public class GroupMembersPopulator implements Startup, IAAS, ConfigListener {
     @Override
     public UnprocessedChangeEvents changed(PropertyChangeEvent[] propertyChangeEvents) {
         Virtualizations virtualizations = services.forContract(Virtualizations.class).get();
-        for (ServerPoolConfig config : virtualizations.getGroupConfigs()) {
-            if (!groups.containsKey(config.getName())) {
-                processGroupConfig(virtualizations, config);
+        for (Virtualization virt : virtualizations.getVirtualizations()) {
+            for (ServerPoolConfig config : virt.getServerPools()) {
+                if (!groups.containsKey(config.getName())) {
+                    addServerPool(config);
+                }
             }
         }
         return null;

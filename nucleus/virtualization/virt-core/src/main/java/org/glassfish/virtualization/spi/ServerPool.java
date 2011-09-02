@@ -102,5 +102,5 @@ public interface ServerPool {
             TemplateInstance template, VirtualCluster cluster, EventSource<AllocationPhase> source)
             throws VirtException;
 
-    void install(Template template) throws IOException;
+    void install(TemplateInstance template) throws IOException;
 }

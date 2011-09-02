@@ -56,6 +56,6 @@ import org.jvnet.hk2.config.Configured;
  */
 @Configured
 @Create(value = "create-local-serverPool", resolver = Virtualization.VirtResolver.class, i18n = @I18n("org.glassfish.virtualization.create-local-serverPool"))
-@Decorate(targetType = Virtualizations.class, methodName = "getGroupConfigs", with = { Create.class } )
+@Decorate(targetType = Virtualization.class, methodName = "getServerPools", with = { Create.class } )
 public interface LibVirtServerPoolConfig extends ServerPoolConfig {
 }

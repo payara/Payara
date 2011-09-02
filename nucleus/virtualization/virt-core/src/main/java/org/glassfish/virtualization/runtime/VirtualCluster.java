@@ -86,22 +86,18 @@ public class VirtualCluster {
 
     public synchronized void add(final TemplateInstance template, final VirtualMachine vm) {
         try {
-            ConfigSupport.apply(new ConfigCode(){
+            ConfigSupport.apply(new SingleConfigCode<Cluster>(){
                 @Override
-                public Object run(ConfigBeanProxy... params) throws PropertyVetoException, TransactionFailure {
-
-                    Cluster wCluster = (Cluster) params[0];
-                    ServerPoolConfig wServerPoolConfig = (ServerPoolConfig) params[1];
+                public Object run(Cluster wCluster) throws PropertyVetoException, TransactionFailure {
                     VirtualMachineConfig vmConfig =
                             wCluster.createChild(VirtualMachineConfig.class);
                     vmConfig.setName(vm.getName());
                     vmConfig.setTemplate(template.getConfig());
                     vmConfig.setServerPool(vm.getServerPool().getConfig());
                     wCluster.getExtensions().add(vmConfig);
-                    wServerPoolConfig.getVirtualMachineRefs().add(vmConfig);
                     return vmConfig;
                 }
-            }, config, vm.getServerPool().getConfig());
+            }, config);
         } catch (TransactionFailure transactionFailure) {
             throw new RuntimeException(transactionFailure);
         }
@@ -118,10 +114,6 @@ public class VirtualCluster {
                     VirtualMachineConfig vmConfig = config.getExtensionsByTypeAndName(VirtualMachineConfig.class, vm.getName());
                     if (vmConfig!=null) {
                         wCluster.getExtensions().remove(vmConfig);
-                        VirtualMachineConfig vmc = wServerPoolConfig.virtualMachineRefByName(vm.getName());
-                        if (vmc!=null) {
-                            wServerPoolConfig.getVirtualMachineRefs().remove(vmc);
-                        }
                     } else {
                         RuntimeContext.logger.log(Level.WARNING, "Cannot find virtual machine configuration under cluster");
                     }

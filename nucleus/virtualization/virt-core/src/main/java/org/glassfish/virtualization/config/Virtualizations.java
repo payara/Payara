@@ -63,42 +63,8 @@ import java.util.List;
 @Singleton
 public interface Virtualizations extends DomainExtension {
 
-    @Element("virtualization")
+    @Element("*")
     List<Virtualization> getVirtualizations();
-
-    /**
-     * Returns the list of registered templates for this virtualization infrastructure. Such template
-     * are image files that can be duplicated to create virtual machines.
-     *
-     * @return  list of registered templates
-     */
-    @Element("template")
-    @Listing(value = "list-templates", resolver = VirtResolver.class, i18n = @I18n("org.glassfish.virtualization.list-templates"))
-    @Delete(value="remove-template", resolver = TypeAndNameResolver.class, i18n = @I18n("org.glassfish.virtualization.remove-template"))
-    List<Template> getTemplates();
-
-    @Element("emulator")
-    @Create(value = "create-emulator", resolver = VirtResolver.class, i18n = @I18n("org.glassfish.virtualization.create-emulator"))
-    @Listing(value = "list-emulators", resolver = VirtResolver.class, i18n = @I18n("org.glassfish.virtualization.list-emulators"))
-    @Delete(value="delete-emulator", resolver= TypeAndNameResolver.class, i18n = @I18n("org.glassfish.virtualization.delete-emulator"))
-    List<Emulator> getEmulators();
-
-
-    @Element("serverPool-managers")
-//    @Create(value = "create-serverPool-manager", resolver = VirtResolver.class, i18n = @I18n("org.glassfish.virtualization.create-serverPool-manager"))
-    @Listing(value = "list-group-managers", resolver = VirtResolver.class, i18n = @I18n("org.glassfish.virtualization.list-serverPool-managers"))
-    @Delete(value="delete-group-manager", resolver= TypeAndNameResolver.class, i18n = @I18n("org.glassfish.virtualization.delete-serverPool-manager"))
-    List<GroupManager> getGroupManagers();
-
-    /**
-     * This really should not be here mixing clients and providers information , but for prototyping
-     * it's fine.
-     */
-    @Element("serverPool-providers")
-    @Create(value = "create-server-pool", resolver = VirtResolver.class, decorator = GroupDecorator.class, i18n = @I18n("org.glassfish.virtualization.create-virt-serverPool"))
-    @Listing(value = "list-server-pools", resolver = VirtResolver.class, i18n = @I18n("org.glassfish.virtualization.list-virt-groups"))
-    @Delete(value="delete-server-pool", resolver= TypeAndNameResolver.class, i18n = @I18n("org.glassfish.virtualization.list-virt-serverPool"))
-    List<ServerPoolConfig> getGroupConfigs();
 
     @Attribute(defaultValue = "${com.sun.aas.instanceRoot}/virt/disks")
     String getDisksLocation();
@@ -116,65 +82,12 @@ public interface Virtualizations extends DomainExtension {
     @DuckTyped
     Virtualization byName(String name);
 
-    /**
-     * Returns a serverPool configuration using a serverPool name
-     * @param name the serverPool name
-     * @return group configuration or null if not found
-     */
-    @DuckTyped
-    ServerPoolConfig groupConfigByName(String name);
-
-    /**
-     * Returns the emulator configuration using an emulator name
-     *
-     * @param name  the emulator name
-     * @return  the emulator configuration or null if not found
-     */
-    @DuckTyped
-    Emulator emulatorByName(String name);
-
-    /**
-     * Looks up a registered template by the name and returns it.
-     * @param name template name
-     * @return the template if found or null otherwise
-     */
-    @DuckTyped
-    Template templateByName(String name);
-
-
     public class Duck {
-
-        public static Template templateByName(Virtualizations self, String name) {
-            for (Template template : self.getTemplates()) {
-                if (template.getName().equals(name)) {
-                    return template;
-                }
-            }
-            return null;
-        }
 
         public static Virtualization byName(Virtualizations self, String name) {
             for (Virtualization v : self.getVirtualizations()) {
                 if (v.getName().equals(name)) {
                     return v;
-                }
-            }
-            return null;
-        }
-
-        public static ServerPoolConfig groupConfigByName(Virtualizations self, String name) {
-            for (ServerPoolConfig groupConfig : self.getGroupConfigs()) {
-                if (groupConfig.getName().equals(name)) {
-                    return groupConfig;
-                }
-            }
-            return null;
-        }
-
-        public static Emulator emulatorByName(Virtualizations self, String name) {
-            for (Emulator emulator : self.getEmulators()) {
-                if (emulator.getName().equals(name)) {
-                    return emulator;
                 }
             }
             return null;
@@ -205,28 +118,6 @@ public interface Virtualizations extends DomainExtension {
                 throw new RuntimeException(t);
             }
             return (T) virt;
-        }
-    }
-
-    // ToDo : I should not have to do this, the CRUD framework should do it for me since VirtUser is annotated with @NotNull
-    @Service
-    public class GroupDecorator implements CreationDecorator<ServerPoolConfig> {
-
-        @Param(name="virtName")
-        String virtName;
-
-        @Inject
-        Virtualizations virts;
-
-        @Override
-        public void decorate(AdminCommandContext context, ServerPoolConfig instance) throws TransactionFailure, PropertyVetoException {
-            VirtUser user = instance.createChild(VirtUser.class);
-            instance.setUser(user);
-            Virtualization virt = virts.byName(virtName);
-            if (virt==null) {
-                throw new TransactionFailure("Cannot find virtualization configuration for " + virtName);
-            }
-            instance.setVirtualization(virt);
         }
     }
 }

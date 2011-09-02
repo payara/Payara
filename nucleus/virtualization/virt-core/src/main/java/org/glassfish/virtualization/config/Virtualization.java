@@ -40,6 +40,7 @@
 
 package org.glassfish.virtualization.config;
 
+import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.config.support.*;
@@ -47,6 +48,8 @@ import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.*;
 
+import javax.validation.constraints.NotNull;
+import java.beans.PropertyVetoException;
 import java.util.List;
 
 /**
@@ -67,6 +70,38 @@ public interface Virtualization extends ConfigBeanProxy {
     String getName();
     void setName(String solution);
 
+    @Attribute
+    @NotNull
+    String getType();
+    void setType(String virtType);
+
+    /**
+     * Returns the list of registered templates for this virtualization infrastructure. Such template
+     * are image files that can be duplicated to create virtual machines.
+     *
+     * @return  list of registered templates
+     */
+    @Element("template")
+    @Listing(value = "list-templates", resolver = VirtResolver.class, i18n = @I18n("org.glassfish.virtualization.list-templates"))
+    @Delete(value="remove-template", resolver = TypeAndNameResolver.class, i18n = @I18n("org.glassfish.virtualization.remove-template"))
+    List<Template> getTemplates();
+
+    @Element("server-pool-master")
+//    @Create(value = "create-serverPool-manager", resolver = VirtResolver.class, i18n = @I18n("org.glassfish.virtualization.create-serverPool-manager"))
+    @Listing(value = "list-group-master", resolver = VirtResolver.class, i18n = @I18n("org.glassfish.virtualization.list-serverPool-managers"))
+    @Delete(value="delete-group-master", resolver= TypeAndNameResolver.class, i18n = @I18n("org.glassfish.virtualization.delete-serverPool-manager"))
+    List<GroupManager> getServerPoolMaster();
+
+    /**
+     * This really should not be here mixing clients and providers information , but for prototyping
+     * it's fine.
+     */
+    @Element("server-pool")
+    @Create(value = "create-server-pool", resolver = VirtResolver.class, decorator = ServerPoolDecorator.class, i18n = @I18n("org.glassfish.virtualization.create-virt-serverPool"))
+    @Listing(value = "list-server-pools", resolver = VirtResolver.class, i18n = @I18n("org.glassfish.virtualization.list-virt-groups"))
+    @Delete(value="delete-server-pool", resolver= TypeAndNameResolver.class, i18n = @I18n("org.glassfish.virtualization.list-virt-serverPool"))
+    List<ServerPoolConfig> getServerPools();
+
     /**
      * For future use, we can have scripts attached to machine/virtual machine lifecycle that could be
      * triggered at each event.
@@ -85,31 +120,65 @@ public interface Virtualization extends ConfigBeanProxy {
     List<Action> getActions();
 
     /**
-     * Sets the default emulator
-     * @return
+     * Looks up a registered template by the name and returns it.
+     * @param name template name
+     * @return the template if found or null otherwise
      */
-    @Attribute(reference = true)
-    Emulator getDefaultEmulator();
-    void setDefaultEmulator(Emulator emulator);
+    @DuckTyped
+    Template templateByName(String name);
+
+    /**
+     * Returns a serverPool configuration using a serverPool name
+     * @param name the serverPool name
+     * @return group configuration or null if not found
+     */
+    @DuckTyped
+    ServerPoolConfig serverPoolByName(String name);
 
     @Service
     public class VirtResolver implements CrudResolver {
 
-        @Param(name="virtName")
-        String virt;
+        @Param
+        String virtualization;
 
         @Inject
-        Virtualizations virtulizations;
+        Virtualizations virtualizations;
 
         @Override
         @SuppressWarnings("unchecked")
         public <T extends ConfigBeanProxy> T resolve(AdminCommandContext context, Class<T> type)  {
-            for (Virtualization v : virtulizations.getVirtualizations()) {
-                if (v.getName().equals(virt)) {
-                    return (T) v;
+            return (T) virtualizations.byName(virtualization);
+        }
+    }
+
+    public static class Duck {
+        public static Template templateByName(Virtualization self, String name) {
+            for (Template template : self.getTemplates()) {
+                if (template.getName().equals(name)) {
+                    return template;
                 }
             }
             return null;
+        }
+
+        public static ServerPoolConfig serverPoolByName(Virtualization self, String name) {
+            for (ServerPoolConfig groupConfig : self.getServerPools()) {
+                if (groupConfig.getName().equals(name)) {
+                    return groupConfig;
+                }
+            }
+            return null;
+        }
+    }
+
+    // ToDo : I should not have to do this, the CRUD framework should do it for me since VirtUser is annotated with @NotNull
+    @Service
+    public class ServerPoolDecorator implements CreationDecorator<ServerPoolConfig> {
+
+        @Override
+        public void decorate(AdminCommandContext context, ServerPoolConfig instance) throws TransactionFailure, PropertyVetoException {
+            VirtUser user = instance.createChild(VirtUser.class);
+            instance.setUser(user);
         }
     }
 }

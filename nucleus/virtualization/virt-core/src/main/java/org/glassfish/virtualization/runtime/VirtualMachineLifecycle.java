@@ -40,6 +40,8 @@
 
 package org.glassfish.virtualization.runtime;
 
+import com.sun.enterprise.config.serverbeans.Cluster;
+import com.sun.enterprise.config.serverbeans.Domain;
 import org.glassfish.virtualization.config.VirtualMachineConfig;
 import org.glassfish.virtualization.spi.TemplateInstance;
 import org.glassfish.virtualization.spi.TemplateRepository;
@@ -61,9 +63,11 @@ public class VirtualMachineLifecycle {
 
     final TemplateRepository templateRepository;
     final Map<String, CountDownLatch> inStartup = new HashMap<String, CountDownLatch>();
+    final Domain domain;
 
-    public VirtualMachineLifecycle(@Inject TemplateRepository templateRepository) {
+    public VirtualMachineLifecycle(@Inject TemplateRepository templateRepository, @Inject Domain domain) {
         this.templateRepository = templateRepository;
+        this.domain = domain;
     }
 
     public synchronized CountDownLatch inStartup(String name) {
@@ -78,9 +82,9 @@ public class VirtualMachineLifecycle {
 
     public void start(VirtualMachine vm) throws VirtException {
         vm.start();
-        TemplateInstance ti = getTemplateInstance(vm);
-        if (ti.getCustomizer()!=null)
-            ti.getCustomizer().start(vm);
+        // we do not call the customizer from here since we don't know the
+        // virtual machine address, etc...
+        // so we wait for the register-startup or register-virtual-machine calls
     }
 
     public void stop(VirtualMachine vm) throws VirtException {
@@ -93,12 +97,19 @@ public class VirtualMachineLifecycle {
     public void delete(VirtualMachine vm) throws VirtException {
         TemplateInstance ti = getTemplateInstance(vm);
         if (ti.getCustomizer()!=null)
+            ti.getCustomizer().stop(vm);
             ti.getCustomizer().clean(vm);
         vm.delete();
     }
 
     private TemplateInstance getTemplateInstance(VirtualMachine vm) {
-        VirtualMachineConfig vmc = vm.getServerPool().getConfig().virtualMachineRefByName(vm.getName());
-        return templateRepository.byName(vmc.getTemplate().getName());
+        for (Cluster cluster : domain.getClusters().getCluster()) {
+            for (VirtualMachineConfig vmc : cluster.getExtensionsByType(VirtualMachineConfig.class)) {
+                if (vmc.getName().equals(vm.getName())) {
+                    return templateRepository.byName(vmc.getTemplate().getName());
+                }
+            }
+        }
+        throw new RuntimeException("Cannot find registered virtual machine " + vm.getName());
     }
 }

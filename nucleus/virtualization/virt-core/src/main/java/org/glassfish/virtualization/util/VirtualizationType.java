@@ -40,7 +40,9 @@
 
 package org.glassfish.virtualization.util;
 
+import org.glassfish.hk2.scopes.PerLookup;
 import org.glassfish.virtualization.config.TemplateIndex;
+import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 
 /**
@@ -48,6 +50,7 @@ import org.jvnet.hk2.annotations.Service;
  * @author Jerome Dochez
  */
 @Service(name="VirtualizationType")
+@Scoped(PerLookup.class)
 public class VirtualizationType extends ValueBasedTemplateIndex {
 
     public enum Type {libvirt, OVM, virtualbox, Native}

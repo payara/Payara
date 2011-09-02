@@ -82,7 +82,7 @@ class LibVirtMachine extends LibVirtLocalMachine {
     }
 
     @Override
-    public boolean mkdir(String destPath) throws IOException {
+    public synchronized boolean mkdir(String destPath) throws IOException {
        getSSH();
 
         final SFTPClient sftpClient = sshLauncher.getSFTPClient();
@@ -93,7 +93,7 @@ class LibVirtMachine extends LibVirtLocalMachine {
         return false;
     }
 
-    public boolean delete(String path) throws IOException {
+    public synchronized boolean delete(String path) throws IOException {
         getSSH();
 
         final SFTPClient sftpClient = sshLauncher.getSFTPClient();
@@ -106,7 +106,7 @@ class LibVirtMachine extends LibVirtLocalMachine {
     }
 
     @Override
-    public boolean mv(String source, String dest) throws IOException {
+    public synchronized boolean mv(String source, String dest) throws IOException {
         getSSH();
 
         final SFTPClient sftpClient = sshLauncher.getSFTPClient();
@@ -117,7 +117,7 @@ class LibVirtMachine extends LibVirtLocalMachine {
         return true;
     }
 
-    public long length(String path) throws IOException {
+    public synchronized long length(String path) throws IOException {
         getSSH();
 
         final SFTPClient sftpClient = sshLauncher.getSFTPClient();
@@ -129,7 +129,7 @@ class LibVirtMachine extends LibVirtLocalMachine {
     }
 
     @Override
-    public boolean exists(String path) throws IOException {
+    public synchronized boolean exists(String path) throws IOException {
         getSSH();
 
         final SFTPClient sftpClient = sshLauncher.getSFTPClient();
@@ -141,7 +141,7 @@ class LibVirtMachine extends LibVirtLocalMachine {
     }
 
     @Override
-    public void copy(File source, File destination) throws IOException {
+    public synchronized void copy(File source, File destination) throws IOException {
 
         getSSH();
 
@@ -159,7 +159,7 @@ class LibVirtMachine extends LibVirtLocalMachine {
         sshLauncher.getSCPClient().put(source.getAbsolutePath(), destination.getPath());
     }
 
-    public void mkdirs(SFTPClient client, File path) throws IOException {
+    public synchronized void mkdirs(SFTPClient client, File path) throws IOException {
         if (path.getParentFile()!=null) {
             mkdirs(client, path.getParentFile());
         }
@@ -169,7 +169,7 @@ class LibVirtMachine extends LibVirtLocalMachine {
     }
 
     @Override
-    public void localCopy(String source, String destDir) throws IOException {
+    public synchronized void localCopy(String source, String destDir) throws IOException {
         getSSH();
 
         try {
