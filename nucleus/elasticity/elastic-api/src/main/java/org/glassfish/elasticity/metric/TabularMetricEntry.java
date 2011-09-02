@@ -39,8 +39,29 @@
  */
 package org.glassfish.elasticity.metric;
 
-public interface TabularMetricEntry {
+/**
+ * A TabularMetricEntry contains a metric data that was collcted at a specific time
+ * 
+ * @author Mahesh Kannan
+ *
+ * @param <V> The type of Object that this entry holds
+ */
+public interface TabularMetricEntry<V> {
 
+	/**
+	 * Returns the time (in milliseconds) at which the data was collected 
+	 * 
+	 * @return the time in milliseconds
+	 */
+	public long getTimestamp();
+	
+	/**
+	 * Return the accumulated value
+	 * 
+	 * @return the value object
+	 */
+	public V getV();
+	
 	/**
 	 * Retrieves the value of the specified column in this tabular entry.
 	 *  

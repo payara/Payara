@@ -52,10 +52,10 @@ import java.util.concurrent.TimeUnit;
  * This class also provides the ability to iterate over the entries that
  *  satisfy certain criteria as determined by the filter.
  * 
- * @author mk
+ * @author Mahesh Kannan
  *
  */
-public interface TabularMetricAttribute
+public interface TabularMetricAttribute<V>
 	extends MetricAttribute {
 
 	/**
@@ -65,13 +65,17 @@ public interface TabularMetricAttribute
 	public String[] getColumnNames();
 	
 	/**
-	 * Returns an iterator of TabularMetricEntry that satisfies the filter.
+	 * Returns an iterator of TabularMetricEntry that were collected 
+	 * 	for the specified time period
 	 * 
-	 * @param filter The filter whose satisfies() method returns true
-	 * 	for each entry in the iterator
+	 * @param duration the duration of sample data. For example,
+	 *   a duration of 15 minutes mean "iterate over the entries that
+	 *   were collected in the last 15 minutes".
+	 *  
+	 * @param unit The time unit the duration is specified
 	 * 
 	 * @return An iterator of TabularMetricEntry 
 	 */
-	public Iterator<TabularMetricEntry> iterator(MetricEntryFilter filter);
+	public Iterator<TabularMetricEntry<V>> iterator(long duration, TimeUnit unit);
 	
 }

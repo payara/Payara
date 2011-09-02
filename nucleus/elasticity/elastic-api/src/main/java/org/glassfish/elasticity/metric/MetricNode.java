@@ -72,7 +72,7 @@ public interface MetricNode {
 	 *   
 	 * @return An array of MetricAttribute
 	 */
-	public MetricAttribute[] getAttribute();
+	public MetricAttribute[] getAttributes();
 	
 	/**
 	 * A MetricNode can contain zero or more child MetricNodes
