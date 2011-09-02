@@ -41,7 +41,7 @@
   -->
 
 <services>
-<service-description name="glassfish" init-type="lazy">
+<service-description name="mycluster" init-type="lazy">
   <characteristics>
     <characteristic name="service-type" value="JavaEE"/>
     <characteristic name="os-name" value="Linux"/>
