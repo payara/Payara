@@ -38,13 +38,22 @@
 # holder.
 #
 
-$S1AS_HOME/bin/asadmin start-domain
-$S1AS_HOME/bin/asadmin create-emulator --virt-type kvm --emulator-path /usr/bin/kvm --connection-string qemu:///system kvm
-$S1AS_HOME/bin/asadmin add-virtualization --type libvirt --emulator kvm
-$S1AS_HOME/bin/asadmin create-server-pool --subnet 192.168.1.102/250 --portName "br0" --virtName libvirt cloud
-#$S1AS_HOME/bin/asadmin create-server-pool --subnet 129.158.193.100/250 --portName "br0" --virtName libvirt cloud
-$S1AS_HOME/bin/asadmin create-template --files /space/bhavani/Desktop/ubuntu.img,/space/bhavani/Desktop/ubuntu.xml --indexes ServiceType=JavaEE,VirtualizationType=libvirt ubuntu
-$S1AS_HOME/bin/asadmin create-template-user --userid 1000 --groupid 1000 --template ubuntu cloud
+$S1AS_HOME/bin/asadmin start-domain --debug
+$S1AS_HOME/bin/asadmin add-libvirt-virtualization  kvm
+$S1AS_HOME/bin/asadmin create-server-pool --virtualization kvm --subnet 192.168.1.102/250 --portName "br0" cloud
+#$S1AS_HOME/bin/asadmin create-server-pool --virtualization kvm --subnet 129.158.239.70/250 --portName "br0" cloud
+$S1AS_HOME/bin/asadmin create-server-pool-user --serverPool cloud --userId 1001 --groupId 1001 cloud
+$S1AS_HOME/bin/asadmin create-template --virtualization kvm --files /space/bhavani/Desktop/ubuntu.img,/space/bhavani/Desktop/ubuntu.xml --indexes ServiceType=JavaEE,VirtualizationType=libvirt ubuntu
+$S1AS_HOME/bin/asadmin create-template-user --virtualization kvm --userid 1000 --groupid 1000 --template ubuntu cloud
 $S1AS_HOME/bin/asadmin create-machine --serverPool cloud --networkName localhost local
 $S1AS_HOME/bin/asadmin create-machine-user --serverPool cloud --machine local --userId 1000 --groupId 1000 bhavani
-$S1AS_HOME/bin/asadmin stop-domain
+
+#$S1AS_HOME/bin/asadmin create-emulator --virt-type kvm --emulator-path /usr/bin/kvm --connection-string qemu:///system kvm
+#$S1AS_HOME/bin/asadmin add-virtualization --type libvirt --emulator kvm
+#$S1AS_HOME/bin/asadmin create-server-pool --subnet 192.168.1.102/250 --portName "br0" --virtName libvirt cloud
+#$S1AS_HOME/bin/asadmin create-server-pool --subnet 129.158.239.70/250 --portName "br0" --virtName libvirt cloud
+#$S1AS_HOME/bin/asadmin create-template --files /space/bhavani/Desktop/ubuntu.img,/space/bhavani/Desktop/ubuntu.xml --indexes ServiceType=JavaEE,VirtualizationType=libvirt ubuntu
+#$S1AS_HOME/bin/asadmin create-template-user --userid 1000 --groupid 1000 --template ubuntu cloud
+#$S1AS_HOME/bin/asadmin create-machine --serverPool cloud --networkName localhost local
+#$S1AS_HOME/bin/asadmin create-machine-user --serverPool cloud --machine local --userId 1000 --groupId 1000 bhavani
+#$S1AS_HOME/bin/asadmin stop-domain
