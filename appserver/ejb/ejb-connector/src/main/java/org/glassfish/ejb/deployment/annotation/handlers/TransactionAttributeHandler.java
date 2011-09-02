@@ -42,7 +42,6 @@ package org.glassfish.ejb.deployment.annotation.handlers;
 
 import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;
-import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Method;
 
 import java.util.Set;
@@ -55,11 +54,9 @@ import com.sun.enterprise.deployment.EjbDescriptor;
 import com.sun.enterprise.deployment.MethodDescriptor;
 
 import org.glassfish.apf.AnnotationInfo;
-import org.glassfish.apf.AnnotatedElementHandler;
 import org.glassfish.apf.AnnotationProcessorException;
 import org.glassfish.apf.HandlerProcessingResult;
 import com.sun.enterprise.deployment.annotation.context.EjbContext;
-import org.glassfish.ejb.deployment.annotation.handlers.AbstractAttributeHandler;
 import com.sun.enterprise.deployment.annotation.handlers.PostProcessor;
 import org.jvnet.hk2.annotations.Service;
 
@@ -70,7 +67,7 @@ import org.jvnet.hk2.annotations.Service;
  */
 @Service
 public class TransactionAttributeHandler extends AbstractAttributeHandler
-        implements PostProcessor {
+        implements PostProcessor<EjbContext> {
 
     public TransactionAttributeHandler() {
     }
@@ -166,10 +163,8 @@ public class TransactionAttributeHandler extends AbstractAttributeHandler
      * Set the default value (from class type annotation) on all
      * methods that don't have a value.
      */
-    public void postProcessAnnotation(AnnotationInfo ainfo,
-            AnnotatedElementHandler aeHandler)
+    public void postProcessAnnotation(AnnotationInfo ainfo, EjbContext ejbContext)
             throws AnnotationProcessorException {
-        EjbContext ejbContext = (EjbContext)aeHandler;
         EjbDescriptor ejbDesc = ejbContext.getDescriptor();
         TransactionAttribute taAn = 
             (TransactionAttribute) ainfo.getAnnotation();

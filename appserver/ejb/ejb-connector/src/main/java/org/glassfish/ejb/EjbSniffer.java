@@ -43,14 +43,12 @@ package org.glassfish.ejb;
 import org.glassfish.internal.deployment.GenericSniffer;
 import com.sun.enterprise.module.Module;
 import com.sun.enterprise.module.ModuleDefinition;
-import com.sun.enterprise.module.ModulesRegistry;
 import com.sun.enterprise.module.common_impl.DirectoryBasedRepository;
 import com.sun.enterprise.module.common_impl.AbstractModulesRegistryImpl;
 import com.sun.hk2.component.InhabitantsParser;
 
 import org.glassfish.api.deployment.archive.ReadableArchive;
 
-import org.glassfish.api.container.Sniffer;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Inject;
@@ -72,10 +70,7 @@ import java.lang.annotation.Annotation;
  */
 @Service(name="Ejb")
 @Scoped(Singleton.class)
-public class EjbSniffer  extends GenericSniffer implements Sniffer {
-
-    @Inject
-    ModulesRegistry modulesRegistry;
+public class EjbSniffer  extends GenericSniffer {
 
     @Inject
     Habitat habitat;    

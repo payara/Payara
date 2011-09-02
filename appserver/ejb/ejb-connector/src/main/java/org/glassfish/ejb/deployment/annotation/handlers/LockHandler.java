@@ -42,7 +42,6 @@ package org.glassfish.ejb.deployment.annotation.handlers;
 
 import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;
-import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 
@@ -55,7 +54,6 @@ import com.sun.enterprise.deployment.util.TypeUtil;
 import com.sun.enterprise.deployment.MethodDescriptor;
 
 import org.glassfish.apf.AnnotationInfo;
-import org.glassfish.apf.AnnotatedElementHandler;
 import org.glassfish.apf.AnnotationProcessorException;
 import org.glassfish.apf.HandlerProcessingResult;
 import com.sun.enterprise.deployment.EjbSessionDescriptor;
@@ -70,7 +68,8 @@ import org.jvnet.hk2.annotations.Service;
  * @author Marina Vatkina
  */
 @Service
-public class LockHandler extends AbstractAttributeHandler implements PostProcessor {
+public class LockHandler extends AbstractAttributeHandler 
+        implements PostProcessor<EjbContext> {
 
     public LockHandler() {
     }
@@ -140,10 +139,8 @@ public class LockHandler extends AbstractAttributeHandler implements PostProcess
      * Set the default value (from class type annotation) on all
      * methods that don't have a value.
      */
-    public void postProcessAnnotation(AnnotationInfo ainfo,
-            AnnotatedElementHandler aeHandler)
+    public void postProcessAnnotation(AnnotationInfo ainfo, EjbContext ejbContext)
             throws AnnotationProcessorException {
-        EjbContext ejbContext = (EjbContext)aeHandler;
         EjbSessionDescriptor ejbDesc = (EjbSessionDescriptor) ejbContext.getDescriptor();
 
         Class classAn = (Class)ainfo.getAnnotatedElement();

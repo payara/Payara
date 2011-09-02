@@ -44,7 +44,6 @@ import com.sun.enterprise.deployment.EjbDescriptor;
 import com.sun.enterprise.deployment.MethodDescriptor;
 import com.sun.enterprise.deployment.annotation.context.*;
 import com.sun.enterprise.deployment.util.TypeUtil;
-import org.glassfish.apf.AnnotatedElementHandler;
 import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.apf.AnnotationProcessorException;
 import org.glassfish.apf.HandlerProcessingResult;
@@ -76,7 +75,7 @@ import javax.annotation.security.RolesAllowed;
  * @author Shing Wai Chan
  */
 abstract class AbstractAuthAnnotationHandler extends AbstractCommonAttributeHandler
-        implements PostProcessor {
+        implements PostProcessor<EjbContext> {
 
     /**
      * This method processes the EJB Security for the given Annotation.
@@ -162,11 +161,8 @@ abstract class AbstractAuthAnnotationHandler extends AbstractCommonAttributeHand
      *         MethodDescriptor md, EjbDescriptor ejbDesc)
      */
     @Override
-    public void postProcessAnnotation(AnnotationInfo ainfo,
-            AnnotatedElementHandler aeHandler)
+    public void postProcessAnnotation(AnnotationInfo ainfo, EjbContext ejbContext)
             throws AnnotationProcessorException {
-
-        EjbContext ejbContext = (EjbContext)aeHandler;
         EjbDescriptor ejbDesc = ejbContext.getDescriptor();
         Annotation authAnnotation = ainfo.getAnnotation();
 

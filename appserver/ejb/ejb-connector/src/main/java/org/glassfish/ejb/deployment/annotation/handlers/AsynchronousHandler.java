@@ -42,28 +42,20 @@ package org.glassfish.ejb.deployment.annotation.handlers;
 
 import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;
-import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Method;
-import java.lang.reflect.Type;
-import java.lang.reflect.ParameterizedType;
 
-import java.util.Set;
-import java.util.concurrent.Future;
 import java.util.logging.Level;
 
 import javax.ejb.*;
 
-import com.sun.enterprise.deployment.util.TypeUtil;
 import com.sun.enterprise.deployment.EjbDescriptor;
 import com.sun.enterprise.deployment.MethodDescriptor;
 import com.sun.enterprise.deployment.EjbSessionDescriptor;
 
 import org.glassfish.apf.AnnotationInfo;
-import org.glassfish.apf.AnnotatedElementHandler;
 import org.glassfish.apf.AnnotationProcessorException;
 import org.glassfish.apf.HandlerProcessingResult;
 import com.sun.enterprise.deployment.annotation.context.EjbContext;
-import org.glassfish.ejb.deployment.annotation.handlers.AbstractAttributeHandler;
 import com.sun.enterprise.deployment.annotation.handlers.PostProcessor;
 import org.jvnet.hk2.annotations.Service;
 
@@ -75,7 +67,7 @@ import org.jvnet.hk2.annotations.Service;
  */
 @Service
 public class AsynchronousHandler extends AbstractAttributeHandler
-        implements PostProcessor {
+        implements PostProcessor<EjbContext> {
 
     public AsynchronousHandler() {
     }
@@ -126,10 +118,8 @@ public class AsynchronousHandler extends AbstractAttributeHandler
      * Class type annotation applies to all EJB 3.x Local/Remote/no-interface 
      * views in which  that  business method is exposed for that bean. 
      */
-    public void postProcessAnnotation(AnnotationInfo ainfo,
-            AnnotatedElementHandler aeHandler)
+    public void postProcessAnnotation(AnnotationInfo ainfo, EjbContext ejbContext)
             throws AnnotationProcessorException {
-        EjbContext ejbContext = (EjbContext)aeHandler;
         EjbDescriptor ejbDesc = ejbContext.getDescriptor();
         Class classAn = (Class)ainfo.getAnnotatedElement();
 

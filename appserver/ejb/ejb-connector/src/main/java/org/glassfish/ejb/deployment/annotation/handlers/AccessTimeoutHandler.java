@@ -55,7 +55,6 @@ import com.sun.enterprise.deployment.MethodDescriptor;
 import com.sun.enterprise.deployment.EjbSessionDescriptor;
 
 import org.glassfish.apf.AnnotationInfo;
-import org.glassfish.apf.AnnotatedElementHandler;
 import org.glassfish.apf.AnnotationProcessorException;
 import org.glassfish.apf.HandlerProcessingResult;
 import com.sun.enterprise.deployment.annotation.context.EjbContext;
@@ -69,7 +68,8 @@ import org.jvnet.hk2.annotations.Service;
  * @author Marina Vatkina
  */
 @Service
-public class AccessTimeoutHandler extends AbstractAttributeHandler implements PostProcessor {
+public class AccessTimeoutHandler extends AbstractAttributeHandler 
+        implements PostProcessor<EjbContext> {
 
     public AccessTimeoutHandler() {
     }
@@ -137,10 +137,8 @@ public class AccessTimeoutHandler extends AbstractAttributeHandler implements Po
      * Set the default value (from class type annotation) on all
      * methods that don't have a value.
      */
-    public void postProcessAnnotation(AnnotationInfo ainfo,
-            AnnotatedElementHandler aeHandler)
+    public void postProcessAnnotation(AnnotationInfo ainfo, EjbContext ejbContext)
             throws AnnotationProcessorException {
-        EjbContext ejbContext = (EjbContext)aeHandler;
         EjbSessionDescriptor ejbDesc = (EjbSessionDescriptor) ejbContext.getDescriptor();
 
         // At this point, all method-level specific annotations have been processed.
