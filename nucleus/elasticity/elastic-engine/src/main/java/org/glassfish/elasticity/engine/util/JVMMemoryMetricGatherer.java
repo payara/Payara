@@ -44,7 +44,6 @@ import java.lang.management.MemoryMXBean;
 import java.lang.management.MemoryUsage;
 import java.util.concurrent.TimeUnit;
 
-import org.glassfish.elasticity.api.MetricAttributeRetriever;
 import org.glassfish.elasticity.api.MetricEntry;
 import org.glassfish.elasticity.util.Average;
 import org.glassfish.elasticity.util.SimpleMetricHolder;
@@ -79,7 +78,7 @@ public class JVMMemoryMetricGatherer
 
 		Average<Number> avg = new Average<Number>();
 		for (MetricEntry<JVMMemoryMetricEntry> e : super.values(1, TimeUnit.MINUTES)) {
-			avg.visit((Long) e.geAttribute("used", Long.class));
+			avg.visit((Long) e.geAttribute("used"));
 		}
 
 //		System.out.println("Avg mem for the last one minute: "

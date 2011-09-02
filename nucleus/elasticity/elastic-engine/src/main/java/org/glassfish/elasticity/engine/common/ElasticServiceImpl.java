@@ -56,7 +56,6 @@ public class ElasticServiceImpl
 	
 	private int reconfigurationPeriodInSeconds;
 	
-	private boolean reconfiguring;
 	
 	public ElasticServiceImpl(String name) {
 		this.name = name;

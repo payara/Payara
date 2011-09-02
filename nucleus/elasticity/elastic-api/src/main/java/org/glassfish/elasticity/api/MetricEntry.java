@@ -47,6 +47,6 @@ public interface MetricEntry<V> {
 	
 	public V getValue();
 	
-	public <T> T geAttribute(String name, Class<T> type);
+	public Object geAttribute(String name);
 
 }

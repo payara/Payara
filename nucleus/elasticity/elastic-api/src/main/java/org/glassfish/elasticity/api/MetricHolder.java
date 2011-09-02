@@ -53,6 +53,8 @@ import org.jvnet.hk2.annotations.Contract;
 @Contract
 public interface MetricHolder<V> {
 	
+	public String getName();
+	
 	public Class<V> getValueClass();
 	
 	public boolean isEmpty();

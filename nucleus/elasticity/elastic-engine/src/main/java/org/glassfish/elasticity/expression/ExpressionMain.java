@@ -39,15 +39,49 @@
  */
 package org.glassfish.elasticity.expression;
 
+import java.util.ArrayList;
 
 public class ExpressionMain {
-
-	public static void main(String[] args) {
-		ExpressionLexer lexer = new ExpressionLexer("countTrue(avg(cpu.load) > 0.60) / MAX_INSTANCE > 0.60 &&"
+	ArrayList<Token> tokens1 = new ArrayList<Token>();
+	
+	public static void main(String[] args) throws Exception {
+		
+		ExpressionMain expr = new ExpressionMain();
+		
+		String expr1 = "  countTrue(avg(cpu.load) >= 0.60) / MAX_INSTANCE > 0.60 &&"
 				+ "countTrue(avg(mem.used / mem.max) > 0.60) > 0.70) "
-				+ "||countTrue(avg(mem.used / mem.max) > 0.60) > 0.70");
-		for (Token tok = lexer.next(); tok != lexer.EOSTREAM; tok = lexer.next()) {
-			System.out.println("Token ==> " + tok);
+				+ "||countTrue(avg(mem.used / mem.max) > 0.60) > 0.70%";
+		String expr2 = "countTrue[avg(cpu.load) >= 0.6]";
+		String expr3 = "true";
+		
+		//BufferedExpressionLexer lexer = new BufferedExpressionLexer(new ExpressionLexer(expr2));
+		ExpressionParser parser = new ExpressionParser("countTrue[avg(memory.used, 60) > 0.75] / cluster.size >= 0.60");
+		parser.parse();
+	}
+	
+	private void testLexer(ExpressionLexer lexer) {
+		lexer.mark();
+		int index = 0;
+		for (Token tok = lexer.next(); tok.getTokenType() != TokenType.EOSTREAM; tok = lexer.next()) {
+			System.out.println("Token[" + index + "]: " + tok);
+			tokens1.add(tok);
+		}
+		
+
+		lexer.reset();
+		index = 0;
+		int resetAt = 1;
+		for (Token tok = lexer.next(); tok.getTokenType() != TokenType.EOSTREAM; tok = lexer.next()) {
+			
+			System.out.println("Token[" + index + "]: " + tok + " == " + tokens1.get(index)
+					+ " ==> " + (tok.getTokenType() == tokens1.get(index).getTokenType()));
+			index++;
+			if (index > resetAt) {
+				resetAt *= 2;
+				index = 0;
+				lexer.reset();
+				lexer.mark();
+			}
 		}
 	}
 }

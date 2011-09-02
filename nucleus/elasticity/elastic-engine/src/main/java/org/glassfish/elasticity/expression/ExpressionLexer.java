@@ -39,6 +39,8 @@
  */
 package org.glassfish.elasticity.expression;
 
+import java.util.ArrayList;
+
 
 /**
  * Lexer
@@ -52,9 +54,9 @@ public class ExpressionLexer {
 	
 	private int index = 0;
 	
-	private int size;
+	private int size = 0;
 
-	public static final Token EOSTREAM = new TokenImpl(TokenType.EOSTREAM, "");
+	public static final Token EOSTREAM = new TokenImpl(TokenType.EOSTREAM, "__EOSTREAM__");
 	public static final Token MULT = new TokenImpl(TokenType.MULT, "*");
 	public static final Token DIV = new TokenImpl(TokenType.DIV, "/");
 	public static final Token PLUS = new TokenImpl(TokenType.PLUS, "+");
@@ -63,7 +65,10 @@ public class ExpressionLexer {
 	public static final Token CPAR = new TokenImpl(TokenType.CPAR, ")");
 	public static final Token OBRACE = new TokenImpl(TokenType.OBRACE, "{");
 	public static final Token CBRACE = new TokenImpl(TokenType.CBRACE, "}");
+	public static final Token OARRAY = new TokenImpl(TokenType.OARRAY, "[");
+	public static final Token CARRAY = new TokenImpl(TokenType.CARRAY, "]");
 	public static final Token DOT = new TokenImpl(TokenType.DOT, ".");
+	public static final Token COMA = new TokenImpl(TokenType.COMA, ",");
 
 	public static final Token LAND = new TokenImpl(TokenType.LOGICAL_AND, "&&");
 	public static final Token LOR = new TokenImpl(TokenType.LOGICAL_OR, "||");
@@ -79,43 +84,71 @@ public class ExpressionLexer {
 	public static final Token GTE = new TokenImpl(TokenType.LTE, ">=");
 	public static final Token EQ = new TokenImpl(TokenType.EQ, "=");
 	public static final Token EQEQ = new TokenImpl(TokenType.EQEQ, "==");
+
+	private int tokenIndex = 0;
+	
+	private int tokenMark = 0;
+	
+	private ArrayList<Token> tokens = new ArrayList<Token>();
 	
 	public ExpressionLexer(CharSequence stream) {
 		this.stream = stream;
-		this.index = 0;
 		this.size = stream.length();
+		
+		for (Token tok = getNextToken(); tok != EOSTREAM; tok = getNextToken()) {
+			System.out.println("Got token: " + tok);
+			tokens.add(tok);
+		}
+		
+		tokens.add(EOSTREAM);
+	}
+
+	
+	public Token peek() {
+		return tokens.get(tokenIndex);
+	}
+	public Token next() {
+		return tokenIndex < tokens.size() ? tokens.get(tokenIndex++) : EOSTREAM;
+	}
+
+	public void mark() {
+		this.tokenMark = tokenIndex;
 	}
 	
-	public Token next() {
+	public void reset() {
+		this.tokenIndex = tokenMark >= 0 ? tokenMark : tokenIndex;
+		System.out.println("index reset to : " + tokenMark + "; tokens.size: " + tokens.size());
+	}
+	
+	private Token getNextToken() {
+		
 		Token tok = EOSTREAM;
+		
 		if (index >= size) {
 			tok = EOSTREAM;
 		} else if (Character.isJavaIdentifierStart(stream.charAt(index))) {
-			for (int p = index; index < size; index++) {
-				if (! Character.isJavaIdentifierPart(stream.charAt(index))) {
-					String value = stream.subSequence(p,  index).toString();
-					TokenType tokId = "true".equals(value) 
-							? TokenType.TRUE
-							: ("false".equals(value) ? TokenType.FALSE : TokenType.IDENTIFIER);
-					tok = new TokenImpl(tokId, value);
-					break;
-				}
+			int p = index;
+			while ((index < size) && (Character.isJavaIdentifierPart(stream.charAt(index)))) {
+				index++;
 			}
+			
+			String value = stream.subSequence(p,  index).toString();
+			TokenType tokId = "true".equals(value) 
+					? TokenType.TRUE
+					: ("false".equals(value) ? TokenType.FALSE : TokenType.IDENTIFIER);
+			tok = new TokenImpl(tokId, value);
 		} else if (Character.isDigit(stream.charAt(index))) {
 			int startIndex = index;
 			boolean isDouble = false;
-			for (int p = index; index < size; index++) {
-				if (! Character.isDigit(stream.charAt(index))) {
-					break;
-				}
+			while ((index < size) && Character.isDigit(stream.charAt(index))) {
+				index++;
 			}	
 
-			if (stream.charAt(index) == '.') {
+			if (index < size && stream.charAt(index) == '.') {
 				isDouble = true;
-				for (int p = ++index; index < size; index++) {
-					if (! Character.isDigit(stream.charAt(index))) {
-						break;
-					}
+				index++; //for the dot
+				while ((index < size) && Character.isDigit(stream.charAt(index))) {
+					index++;
 				}	
 			}
 			
@@ -131,7 +164,7 @@ public class ExpressionLexer {
 			}
 			
 			//return tok OR call nextToken() to eat whitespace
-			return next();
+			return getNextToken();
 		} else {
 			switch (stream.charAt(index)) {
 			case '*' : 
@@ -166,8 +199,20 @@ public class ExpressionLexer {
 				tok = CBRACE;
 				index++;
 				break;
+			case '[' : 
+				tok = OARRAY;
+				index++;
+				break;
+			case ']' : 
+				tok = CARRAY;
+				index++;
+				break;
 			case '.' : 
 				tok = DOT;
+				index++;
+				break;
+			case ',' : 
+				tok = COMA;
 				index++;
 				break;
 			case '>' :
@@ -215,31 +260,6 @@ public class ExpressionLexer {
 		}
 		
 		return tok;
-	}
-	
-	private static final class TokenImpl
-		implements Token {
-		
-		private TokenType id;
-		private String value;
-		
-		
-		public TokenImpl(TokenType id, String value) {
-			super();
-			this.id = id;
-			this.value = value;
-		}
-		
-		public TokenType getTokenType() {
-			return TokenType.IDENTIFIER; 
-		}
-		public String value() {
-			return value;
-		}		
-		
-		public String toString() {
-			return value;
-		}
 	}
 	
 }

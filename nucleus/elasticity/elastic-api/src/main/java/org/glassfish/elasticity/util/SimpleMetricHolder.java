@@ -76,6 +76,10 @@ public class SimpleMetricHolder<V>
 		this.metricAttributeRetriever = createMetricAttributeRetriever();
 	}
 	
+	public String getName() {
+		return valueClass.getName();
+	}
+	
     public void add(long timeStamp, V v) {
         this.add(timeStamp, TimeUnit.MILLISECONDS, v);
     }
@@ -163,8 +167,8 @@ public class SimpleMetricHolder<V>
 			return v;
 		}
 
-		public <T> T geAttribute(String name, Class<T> type) {
-			return metricAttributeRetriever.getAttribute(name, v, type);
+		public Object geAttribute(String name) {
+			return metricAttributeRetriever.getAttribute(name, v);
 		}
 		
 	}
@@ -204,15 +208,14 @@ public class SimpleMetricHolder<V>
 			this.vClazz = vClazz;
 		}
 		
-		@SuppressWarnings("unchecked")
-		public <T> T getAttribute(String attributeName, V value, Class<T> type) {
+		public Object getAttribute(String attributeName, V value) {
 			try {
 				String getterName = "get" + Character.toTitleCase(attributeName.charAt(0)) + attributeName.substring(1);
 				Method getter = vClazz.getMethod(getterName , (Class<?>[]) null);
 				
 				//TODO: Enclose this with doPrivleged
 				getter.setAccessible(true);
-				return (T) getter.invoke(value, (Object[]) null);
+				return getter.invoke(value, (Object[]) null);
 			} catch (Exception ex) {
 				throw new IllegalArgumentException("Exception while retrieving attribute: " + attributeName, ex);
 			}
