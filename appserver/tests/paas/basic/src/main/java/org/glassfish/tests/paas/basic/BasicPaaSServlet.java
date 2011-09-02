@@ -132,7 +132,7 @@ public final class BasicPaaSServlet extends HttpServlet {
                 }
             }
         } else {
-            writer.println("DataSource is null");
+            //writer.println("DataSource is null");
         }
         writer.println("</body>");
         writer.println("</html>");
