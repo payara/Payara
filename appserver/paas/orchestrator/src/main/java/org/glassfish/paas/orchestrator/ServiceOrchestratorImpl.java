@@ -40,10 +40,7 @@
 
 package org.glassfish.paas.orchestrator;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -195,7 +192,7 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator, Application
             appServiceMetadata.setAppName(appName);
         }
 
-        logger.log(Level.INFO, "Discovered declared service metadata via glassfish-services.xml = " + appServiceMetadata);
+        logger.log(Level.INFO, "Discovered declared service metadata via services.xml = " + appServiceMetadata);
 
         //1.2 Get implicit service-definitions (for instance a war is deployed, and it has not
         //specified a javaee service-definition in its orchestration.xml, the PaaS runtime
@@ -203,7 +200,7 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator, Application
         //is implied
         for (Plugin svcPlugin : installedPlugins) {
             if (svcPlugin.handles(cloudArchive)) {
-                //If a ServiceDefinition has not been declared explicitly in
+                //If a ServiceDescription has not been declared explicitly in
                 //the application for the plugin's type, ask the plugin
                 //if it has any implicit service-definition for this
                 //application
@@ -275,19 +272,23 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator, Application
     private void dissociateProvisionedServices(Set<Plugin> installedPlugins,
                                                ServiceMetadata appServiceMetadata,
                                                Set<ProvisionedService> appProvisionedSvcs, boolean beforeUndeploy,
-                                               DeploymentContext dc) {
+                                               DeploymentContext context) {
         logger.entering(getClass().getName(), "dissociateProvisionedServices=" + beforeUndeploy);
-        for (ProvisionedService ps : appProvisionedSvcs) {
+        for (ProvisionedService serviceProvider : appProvisionedSvcs) {
             for (Plugin<?> svcPlugin : installedPlugins) {
                 //Dissociate the provisioned service only with plugins that handle other service types.
                 //TODO why is this check done ?
-                //if (!ps.getServiceType().equals(svcPlugin.getServiceType())) {
-                Set<ServiceReference> appSRs = appServiceMetadata.getServiceReferences();
-                for (ServiceReference sr : appSRs) {
-                    logger.log(Level.INFO, "Dissociating ProvisionedService " + ps + " for ServiceReference " + sr + " through " + svcPlugin);
-                    svcPlugin.dissociateServices(ps, sr, beforeUndeploy, dc);
+                if (!serviceProvider.getServiceType().equals(svcPlugin.getServiceType())) {
+                    Set<ServiceReference> appSRs = appServiceMetadata.getServiceReferences();
+                    for (ServiceReference serviceRef : appSRs) {
+                        logger.log(Level.INFO, "Dissociating ProvisionedService " + serviceProvider + " for ServiceReference " + serviceRef + " through " + svcPlugin);
+                        Collection<ProvisionedService> serviceConsumers = getServicesProvisionedByPlugin(svcPlugin, appProvisionedSvcs);
+                        for (ProvisionedService serviceConsumer : serviceConsumers) {
+                            svcPlugin.dissociateServices(serviceConsumer, serviceRef, serviceProvider, beforeUndeploy, context);
+                        }
+
+                    }
                 }
-                //}
             }
         }
     }
@@ -295,20 +296,34 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator, Application
     private void associateProvisionedServices(Set<Plugin> installedPlugins,
                                               ServiceMetadata appServiceMetadata,
                                               Set<ProvisionedService> appProvisionedSvcs,
-                                              boolean preDeployment, DeploymentContext dc) {
+                                              boolean preDeployment, DeploymentContext context) {
         logger.entering(getClass().getName(), "associateProvisionedServices-beforeDeployment=" + preDeployment);
-        for (ProvisionedService ps : appProvisionedSvcs) {
+        for (ProvisionedService serviceProducer : appProvisionedSvcs) {
             for (Plugin<?> svcPlugin : installedPlugins) {
                 //associate the provisioned service only with plugins that handle other service types.
-                if (!ps.getServiceType().equals(svcPlugin.getServiceType())) {
+                if (!serviceProducer.getServiceType().equals(svcPlugin.getServiceType())) {
                     Set<ServiceReference> appSRs = appServiceMetadata.getServiceReferences();
-                    for (ServiceReference sr : appSRs) {
-                        logger.log(Level.INFO, "Associating ProvisionedService " + ps + " for ServiceReference " + sr + " through " + svcPlugin);
-                        svcPlugin.associateServices(ps, sr, preDeployment, dc);
+                    for (ServiceReference serviceRef : appSRs) {
+                        logger.log(Level.INFO, "Associating ProvisionedService " + serviceProducer + " for ServiceReference " + serviceRef + " through " + svcPlugin);
+                        Collection<ProvisionedService> serviceConsumers = getServicesProvisionedByPlugin(svcPlugin, appProvisionedSvcs);
+                        for(ProvisionedService serviceConsumer : serviceConsumers){
+                            svcPlugin.associateServices(serviceConsumer, serviceRef, serviceProducer, preDeployment, context);
+                        }
                     }
                 }
             }
         }
+    }
+
+    private Collection<ProvisionedService> getServicesProvisionedByPlugin(Plugin plugin,
+                                                                          Set<ProvisionedService> allProvisionedServices){
+        List<ProvisionedService> provisionedServices = new ArrayList<ProvisionedService>();
+        for(ProvisionedService ps : allProvisionedServices){
+            if(ps.getServiceType().equals(plugin.getServiceType())){
+                provisionedServices.add(ps);
+            }
+        }
+        return provisionedServices;
     }
 
     private void unprovisionServices(Set<Plugin> installedPlugins, ServiceMetadata appServiceMetadata,

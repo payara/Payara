@@ -183,8 +183,8 @@ public class DerbyPlugin implements Plugin<RDBMSServiceType> {
         return new DerbyProvisionedService(serviceDescription, serviceProperties, ServiceStatus.STARTED);
     }
 
-    public void associateServices(ProvisionedService provisionedSvc, ServiceReference svcRef, boolean beforeDeployment,
-                                  DeploymentContext dc) {
+    public void associateServices(ProvisionedService serviceConsumer, ServiceReference svcRef,
+                                  ProvisionedService serviceProvider, boolean beforeDeployment, DeploymentContext dc) {
         //no-op
     }
 
@@ -228,8 +228,8 @@ public class DerbyPlugin implements Plugin<RDBMSServiceType> {
         }
     }
 
-    public void dissociateServices(ProvisionedService provisionedSvc,
-                                  ServiceReference svcRef, boolean beforeUndeploy, DeploymentContext dc){
+    public void dissociateServices(ProvisionedService serviceConsumer, ServiceReference svcRef,
+                                   ProvisionedService serviceProvider, boolean beforeUndeploy, DeploymentContext dc){
         //no-op
     }
 

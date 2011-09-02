@@ -63,7 +63,6 @@ import org.glassfish.paas.orchestrator.service.metadata.Property;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceCharacteristics;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceDescription;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceReference;
-import org.glassfish.paas.orchestrator.service.metadata.TemplateIdentifier;
 import org.glassfish.paas.orchestrator.service.spi.Plugin;
 import org.glassfish.paas.orchestrator.service.spi.ProvisionedService;
 import org.jvnet.hk2.annotations.Inject;
@@ -107,7 +106,7 @@ public class GlassFishPlugin implements Plugin<JavaEEServiceType> {
 
     public static final String JAVAEE_SERVICE_TYPE = "JavaEE";
 
-    // TODO :: how can plugin hold the reference to the glassfish prosioned service?
+    // TODO :: how can plugin hold the reference to the glassfish provisioned service?
     // TODO :: Plugin should be stateless, and its job is just to configure the service(s)
     private GlassFishProvisionedService glassfishProvisionedService;
 
@@ -240,7 +239,6 @@ public class GlassFishPlugin implements Plugin<JavaEEServiceType> {
                 dcp.target = clusterName;
             }
 
-
             return glassfishProvisionedService;
 
         } else {
@@ -253,35 +251,36 @@ public class GlassFishPlugin implements Plugin<JavaEEServiceType> {
     }
 
     /**
-     * @param provisionedSvc   Provisioned service like DB service or JMS service.
+     * @param serviceConsumer   Service that consumes the service provided by serviceProvider referred via service-reference
+     * @param serviceProvider   Provisioned service like DB service or JMS service.
      * @param svcRef           Service Reference from GlassFish to that service.
      * @param beforeDeployment indicates if this association is happening before the
      */
-    public void associateServices(ProvisionedService provisionedSvc,
-                                  ServiceReference svcRef, boolean beforeDeployment, DeploymentContext dc) {
+    public void associateServices(ProvisionedService serviceConsumer, ServiceReference svcRef,
+                                  ProvisionedService serviceProvider, boolean beforeDeployment, DeploymentContext dc) {
 //        if (provisionedSvc instanceof DerbyProvisionedService) {
         if (svcRef.getServiceRefType().equals("javax.sql.DataSource")) {
 
             if (!beforeDeployment) return;
 
             // JDBC connection properties
-            ServiceDescription serviceDescription = provisionedSvc.getServiceDescription();
+            ServiceDescription serviceDescription = serviceProvider.getServiceDescription();
 //                        (SimpleServiceDefinition) derbyProvisionedService.getServiceDefinition();
             Properties derbyProperties = new Properties();
             derbyProperties.putAll(svcRef.getProperties());
             derbyProperties.setProperty("serverName",
-                    provisionedSvc.getServiceProperties().getProperty("host"));
+                    serviceProvider.getServiceProperties().getProperty("host"));
 //                serviceDescription.getProperties();
 
             // Get the domain and cluster names.
 //                SimpleServiceDefinition serviceDefinition =
 //                        (SimpleServiceDefinition) glassfishProvisionedService.getServiceDesription();
-            String serviceName = glassfishProvisionedService.getServiceDescription().getName();
+            String serviceName = serviceConsumer.getServiceDescription().getName();
 //                String domainName = glassfishProvisionedService.getServiceProperties().getProperty("domainName"); // serviceUtil.getDomainName(serviceName);
             //String clusterName = gfServiceUtil.getClusterName(serviceName);
             //String dasIPAddress = glassfishProvisionedService.getServiceProperties().getProperty("host"); // serviceUtil.getIPAddress(domainName, ServiceUtil.SERVICE_TYPE.APPLICATION_SERVER);
             String clusterName = gfServiceUtil.getClusterName(serviceName, serviceDescription.getAppName());
-            String dasIPAddress = gfServiceUtil.getDASIPAddress(glassfishProvisionedService.getServiceDescription().getName());
+            String dasIPAddress = gfServiceUtil.getDASIPAddress(serviceConsumer.getServiceDescription().getName());
 
             String poolName = serviceName + ".pool";
             String resourceName = svcRef.getServiceRefName();
@@ -303,12 +302,12 @@ public class GlassFishPlugin implements Plugin<JavaEEServiceType> {
 
 //                SimpleServiceDefinition gfServiceDefinition =
 //                        (SimpleServiceDefinition) glassfishProvisionedService.getServiceDesription();
-            String appServerServiceName = glassfishProvisionedService.getServiceDescription().getName();//gfServiceDefinition.getProperties().getProperty("servicename");
+            String appServerServiceName = serviceConsumer.getServiceDescription().getName();//gfServiceDefinition.getProperties().getProperty("servicename");
             //String domainName = glassfishProvisionedService.getServiceProperties().getProperty("domainName");//serviceUtil.getDomainName(appServerServiceName);
             //String clusterName = gfServiceUtil.getClusterName(appServerServiceName);
             //String dasIPAddress = glassfishProvisionedService.getServiceProperties().getProperty("host"); //serviceUtil.getIPAddress(domainName, ServiceUtil.SERVICE_TYPE.APPLICATION_SERVER);
-            String clusterName = gfServiceUtil.getClusterName(appServerServiceName, glassfishProvisionedService.getServiceDescription().getAppName());
-            String dasIPAddress = gfServiceUtil.getDASIPAddress(glassfishProvisionedService.getServiceDescription().getName());
+            String clusterName = gfServiceUtil.getClusterName(appServerServiceName, serviceConsumer.getServiceDescription().getAppName());
+            String dasIPAddress = gfServiceUtil.getDASIPAddress(serviceConsumer.getServiceDescription().getName());
 
             ApplicationServerProvisioner appServerProvisioner = provisionerUtil.getAppServerProvisioner(dasIPAddress);
 
@@ -316,12 +315,12 @@ public class GlassFishPlugin implements Plugin<JavaEEServiceType> {
 //                        (GlassFishLBProvisionedService) provisionedSvc;
 //                SimpleServiceDefinition lbServiceDefinition = (SimpleServiceDefinition)
 //                        gfLBProvisionedService.getServiceDescription();
-            String lbServiceName = provisionedSvc.getServiceDescription().getName();
+            String lbServiceName = serviceProvider.getServiceDescription().getName();
 
             String domainName = domain.getProperty(Domain.DOMAIN_NAME_PROPERTY).getValue();
             if (beforeDeployment) {
                 LBProvisioner lbProvisioner = provisionerUtil.getLBProvisioner();
-                String lbIPAddress = gfServiceUtil.getIPAddress(lbServiceName, glassfishProvisionedService.getServiceDescription().getAppName(), ServiceType.LOAD_BALANCER);
+                String lbIPAddress = gfServiceUtil.getIPAddress(lbServiceName, serviceConsumer.getServiceDescription().getAppName(), ServiceType.LOAD_BALANCER);
                 lbProvisioner.associateApplicationServerWithLB(lbIPAddress, dasIPAddress, domainName);
 
                 //restart
@@ -337,26 +336,26 @@ public class GlassFishPlugin implements Plugin<JavaEEServiceType> {
             }
 
             //if (svcRef.getServiceRefType().equals(ServiceType.APPLICATION_SERVER.toString())) {
-                if (provisionedSvc instanceof GlassFishProvisionedService) {
+                //if (serviceConsumer instanceof GlassFishProvisionedService) {
                     if (beforeDeployment) {
-                        GlassFishProvisionedService gfps = (GlassFishProvisionedService) provisionedSvc;
-                        String clusterServiceName = gfServiceUtil.getClusterName(provisionedSvc.getName(), gfps.getServiceDescription().getAppName());
+                        GlassFishProvisionedService gfps = (GlassFishProvisionedService) serviceConsumer;
+                        String clusterServiceName = gfServiceUtil.getClusterName(serviceConsumer.getName(), gfps.getServiceDescription().getAppName());
                         if (dc != null) { //TODO remove once "deploy-service" is made obselete
                             DeployCommandParameters ucp = dc.getCommandParameters(DeployCommandParameters.class);
                             ucp.target = clusterServiceName;
                         }
-                    }
-             //   }
+                  //  }
+              //  }
 
         }
     }
 
-    public void dissociateServices(ProvisionedService provisionedSvc,
-                                   ServiceReference svcRef, boolean beforeUndeploy, DeploymentContext dc) {
+    public void dissociateServices(ProvisionedService serviceConsumer, ServiceReference svcRef,
+                                   ProvisionedService serviceProvider, boolean beforeUndeploy, DeploymentContext dc) {
         if (beforeUndeploy) {
-            if (provisionedSvc instanceof GlassFishProvisionedService) {
+            //if (serviceConsumer instanceof GlassFishProvisionedService) {
                // if (svcRef.getServiceRefType().equals(ServiceType.APPLICATION_SERVER.toString())) {
-                    GlassFishProvisionedService gfps = (GlassFishProvisionedService) provisionedSvc;
+                    GlassFishProvisionedService gfps = (GlassFishProvisionedService) serviceConsumer;
                     String serviceName = gfps.getServiceDescription().getName();
                     String clusterName = gfServiceUtil.getClusterName(serviceName, gfps.getServiceDescription().getAppName());
 
@@ -365,12 +364,12 @@ public class GlassFishPlugin implements Plugin<JavaEEServiceType> {
                         ucp.target = clusterName;
                     }
                 //}
-            }
+            //}
         } else {
             //TODO temporary workaround. What if multiple resource-refs are present ?
             if (svcRef.getServiceRefType().equals("javax.sql.DataSource")) {
-                if (provisionedSvc instanceof GlassFishProvisionedService) {
-                    GlassFishProvisionedService glassfishProvisionedService = (GlassFishProvisionedService) provisionedSvc;
+                //if (serviceProvider instanceof GlassFishProvisionedService) {
+                    GlassFishProvisionedService glassfishProvisionedService = (GlassFishProvisionedService) serviceConsumer;
                     String serviceName = glassfishProvisionedService.getServiceDescription().getName();
                     String clusterName = gfServiceUtil.getClusterName(serviceName, glassfishProvisionedService.getServiceDescription().getAppName());
                     String poolName = serviceName + ".pool";
@@ -382,7 +381,7 @@ public class GlassFishPlugin implements Plugin<JavaEEServiceType> {
                             provisionerUtil.getAppServerProvisioner(dasIPAddress);
                     glassFishProvisioner.deleteJdbcResource(dasIPAddress, clusterName, resourceName);
                     glassFishProvisioner.deleteJdbcConnectionPool(dasIPAddress, poolName);
-                }
+                //}
             }
         }
     }
@@ -410,12 +409,16 @@ public class GlassFishPlugin implements Plugin<JavaEEServiceType> {
     }
 
     public boolean isRunning(ProvisionedService provisionedSvc) {
+        boolean isRunning = false;
         try {
-            return (glassfishProvisionedService.getProvisionedGlassFish().getStatus()
+            if(provisionedSvc instanceof GlassFishProvisionedService){
+                isRunning = (((GlassFishProvisionedService)provisionedSvc).getProvisionedGlassFish().getStatus()
                     == GlassFish.Status.STARTED);
+            }
         } catch (Exception ex) {
             return false;
         }
+        return isRunning;
     }
 
     public ProvisionedService match(ServiceReference svcRef) {
@@ -430,9 +433,10 @@ public class GlassFishPlugin implements Plugin<JavaEEServiceType> {
             ReadableArchive readableArchive, String appName) {
         HashSet<ServiceDescription> defs = new HashSet<ServiceDescription>();
 
-        //check if the readableArchive is a Java EE archive.
-        //XXX: For now, only check for the name war. Later detect 
-        if (DeploymentUtils.isWebArchive(readableArchive)) {
+/*
+        if (DeploymentUtils.isWebArchive(readableArchive) || DeploymentUtils.isEAR(readableArchive) ||
+            DeploymentUtils.isRAR(readableArchive)) {
+*/
             List<Property> characteristics = new ArrayList<Property>();
             characteristics.add(new Property("service-type", JAVAEE_SERVICE_TYPE));
 //            characteristics.add(new Property("service-vendor", "GlassFish"));
@@ -448,8 +452,9 @@ public class GlassFishPlugin implements Plugin<JavaEEServiceType> {
                     readableArchive.getName() + "-service", appName, "lazy",
                     new ServiceCharacteristics(characteristics), configurations);
             defs.add(sd);
+/*
         }
+*/
         return defs;
     }
-
 }

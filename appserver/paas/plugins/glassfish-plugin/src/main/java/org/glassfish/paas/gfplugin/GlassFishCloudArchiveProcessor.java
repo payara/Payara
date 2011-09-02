@@ -47,6 +47,7 @@ import com.sun.enterprise.deployment.ResourceReferenceDescriptor;
 import com.sun.enterprise.deployment.WebBundleDescriptor;
 import com.sun.enterprise.deployment.archivist.ApplicationFactory;
 import org.glassfish.api.deployment.archive.ReadableArchive;
+import org.glassfish.paas.orchestrator.provisioning.cli.ServiceType;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceReference;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
@@ -96,15 +97,14 @@ public class GlassFishCloudArchiveProcessor {
                         resRef.getType(), null, resRef.getSchemaGeneratorProperties()));
             }
 
-/*            //add an implicit service-reference of type "glassfish"/"javaee" so that
+            //add an implicit service-reference of type "glassfish"/"javaee" so that
             //glassfish plugin will always get called during association/dissociation phase
             //This will be used to set "target" during "deploy" and "undeploy"
-            serviceReferences.add(new ServiceReference(cloudArchive.getName(),
-                    ServiceType.APPLICATION_SERVER.toString(), null, null));*/
+            //serviceReferences.add(new ServiceReference(cloudArchive.getName(),
+            //        ServiceType.APPLICATION_SERVER.toString(), null, null));
         } catch (Exception e) {
             e.printStackTrace();
         }
         return serviceReferences;
     }
-
 }

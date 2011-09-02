@@ -56,7 +56,7 @@ import org.glassfish.api.deployment.ApplicationContainer;
  * An SPI to allow the plugging in of multiple service provider implementations.
  * Each Plugin supports a Service of a particular <code>ServiceType</code>
  * <p/>
- * Each Plugin provides its own implementation of <code>ServiceDefinition</code>
+ * Each Plugin provides its own implementation of <code>ServiceDescription</code>
  * and <code>ProvisionedService</code>.
  * <p/>
  * XXX: Parsing orchestration.xml
@@ -101,7 +101,7 @@ public interface Plugin<T extends ServiceType> {
     /**
      * Discover the implicit service references in the orchestration enabled archive.
      * For instance, a orchestration.xml may not explicitly provide a RDBMS ServiceType
-     * ServiceDefinition and a ServiceReference for a JDBC connection pool and
+     * ServiceDescription and a ServiceReference for a JDBC connection pool and
      * resource used by the application. The plugin could figure out that a
      * RDBMS ServiceType service reference is implicit in the application by
      * virtue of the application having a reference to a JDBC resource in
@@ -120,13 +120,13 @@ public interface Plugin<T extends ServiceType> {
      * may not have provided corresponding ServiceDefinitions to satisfy the
      * ServiceReference. Since the Service Provisioning layer works with
      * concrete ServiceDefinitions to provision a service, the CAS uses this
-     * method to obtain a ServiceDefinition, defaulted to known values, for a
-     * ServiceRefence.
+     * method to obtain a ServiceDescription, defaulted to known values, for a
+     * ServiceReference.
      *
      * ServiceReference can also be modified to fill in additional details.
      * For eg., default jdbc-connection-pool properties.
      *
-     * @return A valid ServiceDefinition with defaults filled in.
+     * @return A valid ServiceDescription with defaults filled in.
      */
     public ServiceDescription getDefaultServiceDescription(
             String appName, ServiceReference svcRef);
@@ -142,8 +142,9 @@ public interface Plugin<T extends ServiceType> {
 
     public boolean unprovisionService(ServiceDescription serviceDescription, DeploymentContext dc);
 
-    public void dissociateServices(ProvisionedService provisionedSvc,
-                                  ServiceReference svcRef, boolean beforeUndeploy, DeploymentContext dc);
+    public void dissociateServices(ProvisionedService serviceConsumer, ServiceReference svcRef,
+                                   ProvisionedService serviceProvider, boolean beforeUndeploy,
+                                  DeploymentContext dc);
 
     /**
      * A <code>ProvisionedService</code> for a <code>ServiceReference</code> is
@@ -152,8 +153,9 @@ public interface Plugin<T extends ServiceType> {
      * @param beforeDeployment indicates if this association is happening before the
      *                         deployment of the application.
      */
-    public void associateServices(ProvisionedService provisionedSvc,
-                                  ServiceReference svcRef, boolean beforeDeployment, DeploymentContext dc);
+    public void associateServices(ProvisionedService serviceConsumer, ServiceReference svcRef,
+                                  ProvisionedService serviceProvider, boolean beforeDeployment,
+                                  DeploymentContext dc);
 
     /**
      * Deploy the orchestration-enabled archive
