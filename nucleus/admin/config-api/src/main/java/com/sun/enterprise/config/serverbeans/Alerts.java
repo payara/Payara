@@ -40,17 +40,21 @@
 package com.sun.enterprise.config.serverbeans;
 
 
+import com.sun.enterprise.util.i18n.StringManager;
 import org.glassfish.api.I18n;
 import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.config.support.Create;
 import org.glassfish.config.support.Delete;
 import org.glassfish.config.support.TypeAndNameResolver;
 import org.glassfish.config.support.TypeResolver;
+import org.glassfish.grizzly.http.server.StaticHttpHandler;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.component.Injectable;
 import org.jvnet.hk2.config.Configured;
 import org.jvnet.hk2.config.Element;
 import org.jvnet.hk2.config.DuckTyped;
+import org.slf4j.impl.StaticLoggerBinder;
+
 import java.util.List;
 
 /**
@@ -78,7 +82,7 @@ public interface Alerts  extends ConfigBeanProxy, Injectable {
    * @return          the Alert object, or null if no such alert
    */
   @DuckTyped
-  public Alerts  getAlert(String name);
+  public AlertConfig  getAlert(String name);
 
   class Duck {
       public static AlertConfig getAlert(Alerts instance, String name) {

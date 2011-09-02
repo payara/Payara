@@ -42,6 +42,7 @@ package com.sun.enterprise.config.serverbeans;
 import com.sun.enterprise.config.serverbeans.customvalidators.NotTargetKeyword;
 import com.sun.enterprise.config.serverbeans.customvalidators.NotDuplicateTargetName;
 import com.sun.enterprise.util.LocalStringManagerImpl;
+import com.sun.enterprise.util.i18n.StringManager;
 import com.sun.enterprise.util.net.NetUtils;
 import com.sun.enterprise.util.StringUtils;
 import com.sun.logging.LogDomains;
@@ -60,6 +61,7 @@ import org.jvnet.hk2.component.Injectable;
 import org.glassfish.api.admin.config.Named;
 import org.glassfish.api.admin.config.ReferenceContainer;
 
+import javax.validation.OverridesAttribute;
 import javax.validation.Payload;
 import java.beans.PropertyVetoException;
 import java.io.File;
@@ -146,4 +148,18 @@ public interface AlertConfig extends ConfigBeanProxy, Injectable, Named, Referen
 
     @Attribute
     public String getService();
+
+    /**
+     * List of actions associated with this alert
+     */
+    @Element
+    AlertActions getAlertActions();
+
+      /**
+     * Sets the AlertActions element
+     * @param actions
+     */
+
+    void setAlertActions(AlertActions alertActions);
+
 }

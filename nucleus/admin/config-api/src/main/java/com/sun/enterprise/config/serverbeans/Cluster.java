@@ -45,6 +45,7 @@ import com.sun.enterprise.config.serverbeans.customvalidators.NotDuplicateTarget
 import com.sun.enterprise.config.serverbeans.customvalidators.ConfigRefConstraint;
 import com.sun.enterprise.config.serverbeans.customvalidators.ConfigRefValidator;
 import com.sun.enterprise.util.LocalStringManagerImpl;
+import com.sun.enterprise.util.i18n.StringManager;
 import com.sun.enterprise.util.io.FileUtils;
 import com.sun.logging.LogDomains;
 import java.io.*;
@@ -57,6 +58,7 @@ import static org.glassfish.config.support.Constants.NAME_SERVER_REGEX;
 
 import com.sun.enterprise.config.serverbeans.BindableResource;
 import com.sun.enterprise.config.serverbeans.ResourceRef;
+import org.glassfish.hk2.Services;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
@@ -67,6 +69,7 @@ import org.jvnet.hk2.component.Injectable;
 import org.glassfish.api.admin.config.Named;
 import org.glassfish.api.admin.config.PropertyDesc;
 import org.glassfish.api.admin.config.ReferenceContainer;
+// import org.glassfish.virtualization.util.RuntimeContext;
 
 import java.beans.PropertyVetoException;
 import java.util.List;
@@ -519,6 +522,9 @@ public interface Cluster extends ConfigBeanProxy, Injectable, PropertyBag, Named
     @Scoped(PerLookup.class)
     class Decorator implements CreationDecorator<Cluster> {
 
+        @Param
+        String name=null;
+
         @Param(name="config", optional=true)
         String configRef=null;
 
@@ -557,6 +563,9 @@ public interface Cluster extends ConfigBeanProxy, Injectable, PropertyBag, Named
 
         @Inject
         CommandRunner runner;
+
+//        @Inject
+//        RuntimeContext rtContext;
 
         /**
          * Decorates the newly CRUD created cluster configuration instance.
@@ -665,6 +674,19 @@ public interface Cluster extends ConfigBeanProxy, Injectable, PropertyBag, Named
                     ) {
                context.getActionReport().setActionExitCode(ActionReport.ExitCode.WARNING);
                context.getActionReport().setMessage("Obsolete options used.");
+            }
+
+            // create the elasticity elements for now
+             ActionReport report = context.getActionReport();
+
+              ParameterMap params = new ParameterMap();
+              params.add("DEFAULT", name);
+              CommandRunner.CommandInvocation inv = runner.getCommandInvocation("_create-elastic-service", report);
+             inv.parameters(params);
+             inv.execute();
+//            rtContext.executeAdminCommand(report,"_create-elastic-service", name);
+            if (report.hasFailures())    {
+                throw new TransactionFailure("Can not create elastic config info");
             }
         }
 
