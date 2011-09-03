@@ -41,6 +41,8 @@ package com.sun.enterprise.admin.util;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 /**
  *
@@ -74,6 +76,27 @@ public class ColumnFormatter {
             v[i] = values[i] == null ? "" : values[i].toString();
         }
         valList.add(v);
+    }
+
+    /**
+     * Get the content of all rows along with the headings as a List of Map.
+     * Note : If there are duplicate headings, latest entry and its value will take precedence.
+     * This can be useful in case the CLI is used by GUI via REST as GUI expects a List of Map.
+     * @return List of Map all entries in in the ColumnFormatter
+     */
+    public List<Map<String,String>> getContent(){
+        List<Map<String,String>> rows = new ArrayList<Map<String, String>>();
+
+        for(String[] values : valList){
+            Map<String,String> entry = new TreeMap<String, String>();
+            int i = 0;
+            for(String value : values){
+                entry.put(headings[i], value);
+                i++;
+            }
+            rows.add(entry);
+        }
+        return rows;
     }
 
     @Override
