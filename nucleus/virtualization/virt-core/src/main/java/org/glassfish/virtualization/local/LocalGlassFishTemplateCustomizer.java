@@ -47,6 +47,7 @@ import com.sun.enterprise.util.ExecException;
 import com.sun.enterprise.util.ProcessExecutor;
 import org.glassfish.api.ActionReport;
 import org.glassfish.hk2.Services;
+import org.glassfish.internal.api.ServerContext;
 import org.glassfish.virtualization.config.Template;
 import org.glassfish.virtualization.runtime.VirtualCluster;
 import org.glassfish.virtualization.spi.*;
@@ -59,6 +60,7 @@ import org.jvnet.hk2.config.TransactionFailure;
 import org.jvnet.hk2.config.types.Property;
 
 import java.beans.PropertyVetoException;
+import java.io.File;
 import java.util.logging.Level;
 
 /**
@@ -75,6 +77,9 @@ public class LocalGlassFishTemplateCustomizer implements TemplateCustomizer {
     RuntimeContext rtContext;
 
     @Inject
+    private ServerContext serverContext;
+
+    @Inject
     Services services;
 
     @Override
@@ -82,14 +87,23 @@ public class LocalGlassFishTemplateCustomizer implements TemplateCustomizer {
 
         ActionReport report = services.forContract(ActionReport.class).named("plain").get();
        // this line below needs to come from the template...
-        String[] args = {"asadmin" , "create-local-instance", "--cluster",
-                cluster.getConfig().getName(), virtualMachine.getName()};
-        ProcessExecutor processExecutor = new ProcessExecutor(args);
+        String[] createArgs = {serverContext.getInstallRoot().getAbsolutePath() +
+                File.separator + "bin" + File.separator + "asadmin" , "create-local-instance",
+                "--cluster", cluster.getConfig().getName(),
+                 virtualMachine.getName()};
+        String[] startArgs = {serverContext.getInstallRoot().getAbsolutePath() +
+                File.separator + "bin" + File.separator + "asadmin" , "start-local-instance",
+                 virtualMachine.getName()};
+        ProcessExecutor createInstance = new ProcessExecutor(createArgs);
+        ProcessExecutor startInstance = new ProcessExecutor(startArgs);
+
         try {
-            processExecutor.execute();
+            createInstance.execute();
+            startInstance.execute();
         } catch (ExecException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
+        
         for (Server instance : cluster.getConfig().getInstances()) {
             if (instance.getName().equals(virtualMachine.getName())) {
                 try {
