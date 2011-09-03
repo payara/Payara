@@ -77,7 +77,7 @@ public class GlassFishTemplateCustomizer implements TemplateCustomizer {
         // create-node-ssh --nodehost $ip_address --installdir $GLASSFISH_HOME $node_name
         String installDir = virtualMachine.getProperty(VirtualMachine.PropertyName.INSTALL_DIR);
         rtContext.executeAdminCommand(report, "create-node-ssh", nodeName, "nodehost", virtualMachine.getAddress(),
-                "sshUser", virtualMachine.getUser().getUserId(), "installdir", installDir);
+                "sshUser", virtualMachine.getUser().getName(), "installdir", installDir);
 
         if (report.hasFailures()) {
             return;

@@ -40,6 +40,7 @@
 package org.glassfish.virtualization.libvirt;
 
 import org.glassfish.cluster.ssh.launcher.SSHLauncher;
+import org.glassfish.virtualization.config.VirtUser;
 import org.glassfish.virtualization.libvirt.jna.Domain;
 import org.glassfish.virtualization.libvirt.jna.DomainInfo;
 import org.glassfish.virtualization.spi.*;
@@ -63,14 +64,17 @@ public class LibVirtVirtualMachine extends AbstractVirtualMachine {
 
     final private Machine owner;
     final private Domain domain;
+    final private List<StorageVol> storageVols;
     final private String name;
     private String address;
 
-    protected LibVirtVirtualMachine(Machine owner, Domain domain)
+    protected LibVirtVirtualMachine(VirtUser user, Machine owner, Domain domain, List<StorageVol> storageVols)
             throws VirtException {
+        super(user);
         this.domain = domain;
         this.owner = owner;
         this.name = domain.getName();
+        this.storageVols = new ArrayList<StorageVol>(storageVols);
     }
 
     public void setAddress(String address) {
@@ -112,23 +116,10 @@ public class LibVirtVirtualMachine extends AbstractVirtualMachine {
             e.printStackTrace();
             // ignore any shutdown failure
         }
-        for (StorageVol volume : volumes()) {
+        for (StorageVol volume : storageVols) {
             volume.delete();
         }
         domain.undefine();
-    }
-
-    public Iterable<StorageVol> volumes() throws VirtException {
-
-        List<StorageVol> volumes = new ArrayList<StorageVol>();
-        for (StoragePool pool : owner.getStoragePools().values()) {
-            for (StorageVol volume : pool.volumes()) {
-                if (volume.getName().startsWith(getName())) {
-                    volumes.add(volume);
-                }
-            }
-        }
-        return volumes;
     }
 
     @Override
@@ -220,7 +211,7 @@ public class LibVirtVirtualMachine extends AbstractVirtualMachine {
         SSHLauncher sshLauncher = new SSHLauncher();
         File home = new File(System.getProperty("user.home"));
         String keyFile = new File(home,".ssh/id_dsa").getAbsolutePath();
-        sshLauncher.init(getUser().getUserId(), address, 22, null, keyFile, null, Logger.getAnonymousLogger());
+        sshLauncher.init(getUser().getName(), address, 22, null, keyFile, null, Logger.getAnonymousLogger());
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         StringBuilder stringBuilder = new StringBuilder();
         for (String arg : args) {

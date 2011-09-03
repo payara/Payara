@@ -40,6 +40,8 @@
 
 package org.glassfish.virtualization.spi;
 
+import org.glassfish.virtualization.config.VirtUser;
+
 import java.io.IOException;
 
 /**
@@ -128,14 +130,7 @@ public interface VirtualMachine {
      * Returns the user used to run software in this virtual machine
      * @return the virtual machine user
      */
-    VMUser getUser();
-
-    /**
-     * Sets the user running sofware on this virtual machine instance
-     *
-     * @param user the vm user.
-     */
-    void setUser(VMUser user);
+    VirtUser getUser();
 
     /**
      * Sets a {@link PropertyName} property on this virtual machine instance.

@@ -43,6 +43,7 @@ package org.glassfish.virtualization.local;
 import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.util.ExecException;
 import com.sun.enterprise.util.ProcessExecutor;
+import org.glassfish.virtualization.config.VirtUser;
 import org.glassfish.virtualization.config.VirtualMachineConfig;
 import org.glassfish.virtualization.spi.*;
 import org.glassfish.virtualization.util.AbstractVirtualMachine;
@@ -66,7 +67,8 @@ class LocalVirtualMachine extends AbstractVirtualMachine {
     final Machine machine;
     final LocalServerPool pool;
 
-    LocalVirtualMachine(LocalServerPool pool, Machine machine, String vmName) {
+    LocalVirtualMachine(VirtUser user, LocalServerPool pool, Machine machine, String vmName) {
+        super(user);
         this.vmName = vmName;
         this.pool = pool;
         this.machine = machine;

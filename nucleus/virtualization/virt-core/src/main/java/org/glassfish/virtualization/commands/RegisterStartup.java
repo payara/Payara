@@ -123,7 +123,10 @@ public class RegisterStartup implements AdminCommand {
                     vm.setProperty(VirtualMachine.PropertyName.valueOf(property.getName()), property.getValue());
                 }
                 Template template = vmConfig.getTemplate();
-                templateRepository.byName(template.getName()).getCustomizer().start(vm);
+                TemplateCustomizer customizer = templateRepository.byName(template.getName()).getCustomizer();
+                if (customizer!=null) {
+                    customizer.start(vm);
+                }
             }
         } catch(VirtException e) {
             RuntimeContext.logger.log(Level.SEVERE, e.getMessage(),e);

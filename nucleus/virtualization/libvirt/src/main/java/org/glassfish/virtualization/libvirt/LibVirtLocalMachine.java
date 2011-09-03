@@ -254,8 +254,36 @@ public class LibVirtLocalMachine extends AbstractMachine implements PostConstruc
             Connect connection = connection();
             if (connection!=null) {
                 populateStoragePools(connection().listStoragePools());
-                populateDomain(connection().listDomains());
-                populateDomain(connection().listDefinedDomains());
+                Collection<StorageVol> storageVols = new ArrayList<StorageVol>();
+                for (StoragePool pool : storagePools.values()) {
+                    for (StorageVol vol : pool.volumes()) {
+                        storageVols.add(vol);
+                    }
+                }
+                for (int domainId : connection().listDomains())  {
+                    try {
+                        populateDomain(domainId, storageVols);
+                    } catch (VirtException e) {
+                        // the virtual machine may have disappeared.
+                        for (int d : connection().listDomains()) {
+                            if (d == domainId) {
+                                throw e;
+                            }
+                        }
+                    }
+                }
+                for (String domainId : connection().listDefinedDomains())  {
+                    try {
+                        populateDomain(domainId, storageVols);
+                    } catch (VirtException e) {
+                        // the virtual machine may have disappeared.
+                        for (String d : connection().listDefinedDomains()) {
+                            if (d.equals(domainId)) {
+                                throw e;
+                            }
+                        }
+                    }
+                }
             }
 
         } catch(VirtException e) {
@@ -276,25 +304,28 @@ public class LibVirtLocalMachine extends AbstractMachine implements PostConstruc
         storagePools.put(name, gfPool);
     }
 
-    private void populateDomain(int[] domainIds) throws VirtException {
-        for (int domainId : domainIds) {
-            addDomain(connection().domainLookupByID(domainId));
-        }
+    private void populateDomain(int domainId, Collection<StorageVol> volumes) throws VirtException {
+        addDomain(connection().domainLookupByID(domainId), volumes);
     }
 
-    private void populateDomain(String[] domainIds) throws VirtException {
-        for (String domainId : domainIds) {
-            addDomain(connect.domainLookupByName(domainId));
-        }
+    private void populateDomain(String domainId, Collection<StorageVol> volumes) throws VirtException {
+        addDomain(connect.domainLookupByName(domainId), volumes);
     }
 
-    private void addDomain(Domain domain) throws VirtException {
+
+    private void addDomain(Domain domain, Collection<StorageVol> volumes) throws VirtException {
         String domainName = domain.getName();
         if (!domains.containsKey(domainName)) {
             for (Cluster cluster : domainConfig.getClusters().getCluster()) {
                 for (VirtualMachineConfig vmc : cluster.getExtensionsByType(VirtualMachineConfig.class)) {
                     if (vmc.getName().equals(domainName)) {
-                        LibVirtVirtualMachine gfVM = new LibVirtVirtualMachine(this, domain);
+                        List<StorageVol> storageVols = new ArrayList<StorageVol>();
+                        for (StorageVol storageVol : volumes) {
+                            if (storageVol.getName().startsWith(domainName)) {
+                                storageVols.add(storageVol);
+                            }
+                        }
+                        LibVirtVirtualMachine gfVM = new LibVirtVirtualMachine(vmc.getTemplate().getUser(), this, domain, storageVols);
                         domains.put(domainName, gfVM );
                         return;
                     }
@@ -399,7 +430,7 @@ public class LibVirtLocalMachine extends AbstractMachine implements PostConstruc
             Domain domain = connection().domainDefineXML(getConfig(vmConfig));
             source.fireEvent(AllocationPhase.VM_SPAWN);
             final CountDownLatch latch = vmLifecycle.inStartup(name);
-            final LibVirtVirtualMachine vm = new LibVirtVirtualMachine(this, domain);
+            final LibVirtVirtualMachine vm = new LibVirtVirtualMachine(template.getConfig().getUser(), this, domain, volumes);
             domains.put(name, vm);
             cluster.add(template, vm);
 

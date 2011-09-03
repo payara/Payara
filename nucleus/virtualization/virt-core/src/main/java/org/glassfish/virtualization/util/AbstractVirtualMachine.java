@@ -40,7 +40,7 @@
 
 package org.glassfish.virtualization.util;
 
-import org.glassfish.virtualization.spi.VMUser;
+import org.glassfish.virtualization.config.VirtUser;
 import org.glassfish.virtualization.spi.VirtualMachine;
 
 import java.util.HashMap;
@@ -52,15 +52,15 @@ import java.util.Map;
  */
 public abstract class AbstractVirtualMachine implements VirtualMachine {
 
-    VMUser user;
-    Map<PropertyName, String> properties = new HashMap<PropertyName, String>();
+    final VirtUser user;
+    final Map<PropertyName, String> properties = new HashMap<PropertyName, String>();
 
-    public void setUser(VMUser user) {
+    protected AbstractVirtualMachine(VirtUser user) {
         this.user = user;
     }
 
     @Override
-    public VMUser getUser() {
+    public VirtUser getUser() {
         return user;
     }
 

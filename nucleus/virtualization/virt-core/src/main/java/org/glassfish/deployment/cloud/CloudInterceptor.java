@@ -41,6 +41,8 @@
 package org.glassfish.deployment.cloud;
 
 import org.glassfish.api.ActionReport;
+import org.glassfish.api.admin.AdminCommandLock;
+import org.glassfish.api.admin.CommandLock;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.deployment.admin.DeployCommand;
@@ -84,7 +86,7 @@ public class CloudInterceptor implements DeployCommand.Interceptor {
     @Inject
     RuntimeContext rtContext;
 
-    @Inject(name="plain")
+    @Inject(name = "plain")
     ActionReport actionReport;
 
     @Inject
@@ -97,67 +99,81 @@ public class CloudInterceptor implements DeployCommand.Interceptor {
     VirtualClusters virtualClusters;
 
     @Override
-    public void intercept(DeployCommand command, DeploymentContext context) {
+    public void intercept(final DeployCommand command, final DeploymentContext context) {
         System.out.println("Interceptor called for ..." + command.name());
-        boolean clusterCreated = false;
         try {
             if (context.getSource().exists("META-INF/cloud.xml")) {
-                System.out.println("This is a virtual application !");
-                CloudApplication cloudApplication = readConfig(context.getSource());
-                for (CloudService cloudService : cloudApplication.getServices().getServices()) {
-                    if (cloudService instanceof JavaEEService) {
-                        JavaEEService javaEE = (JavaEEService) cloudService;
-                        System.out.println("Applications wants " + javaEE.getMinInstances() + " Java EE instances");
-                        rtContext.executeAdminCommand(actionReport, "create-virtual-cluster", command.name(), "min", javaEE.getMinInstances());
-                        if (actionReport.hasFailures()) {
-                            throw new DeploymentException(actionReport.getMessage());
-                        }
-                        clusterCreated = true;
-                        command.target = command.name();
-                    } else if (cloudService instanceof DatabaseService) {
+                AdminCommandLock.runWithSuspendedLock(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        //To change body of implemented methods use File | Settings | File Templates.
+                        boolean clusterCreated = false;
                         try {
-                            VirtualCluster virtualCluster = virtualClusters.byName(command.name());
-                            for (ServerPool serverPool : iaas) {
-                                String virtTypeName = serverPool.getConfig().getVirtualization().getType();
-                                VirtualizationType virtType = new VirtualizationType(virtTypeName);
-                                ServiceType serviceType = new ServiceType("Database");
-                                TemplateRepository templateRepository = services.forContract(TemplateRepository.class).get();
-                                for (TemplateInstance ti : templateRepository.all()) {
-                                    if (ti.satisfies(virtType) && (ti.satisfies(serviceType))) {
-                                        VMOrder vmOrder = new VMOrder(ti, virtualCluster );
-                                        Future<?> future = iaas.allocate(vmOrder, null);
-                                        try {
-                                            future.get();
-                                        } catch (InterruptedException e) {
-                                            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-                                        } catch (ExecutionException e) {
-                                            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                            System.out.println("This is a virtual application !");
+                            CloudApplication cloudApplication = readConfig(context.getSource());
+                            for (CloudService cloudService : cloudApplication.getServices().getServices()) {
+                                if (cloudService instanceof JavaEEService) {
+                                    JavaEEService javaEE = (JavaEEService) cloudService;
+                                    System.out.println("Applications wants " + javaEE.getMinInstances() + " Java EE instances");
+                                    rtContext.executeAdminCommand(actionReport, "create-virtual-cluster", command.name(), "min", javaEE.getMinInstances());
+                                    if (actionReport.hasFailures()) {
+                                        throw new DeploymentException(actionReport.getMessage());
+                                    }
+                                    clusterCreated = true;
+                                    command.target = command.name();
+                                } else if (cloudService instanceof DatabaseService) {
+                                    try {
+                                        VirtualCluster virtualCluster = virtualClusters.byName(command.name());
+                                        for (ServerPool serverPool : iaas) {
+                                            String virtTypeName = serverPool.getConfig().getVirtualization().getType();
+                                            VirtualizationType virtType = new VirtualizationType(virtTypeName);
+                                            ServiceType serviceType = new ServiceType("Database");
+                                            TemplateRepository templateRepository = services.forContract(TemplateRepository.class).get();
+                                            for (TemplateInstance ti : templateRepository.all()) {
+                                                if (ti.satisfies(virtType) && (ti.satisfies(serviceType))) {
+                                                    VMOrder vmOrder = new VMOrder(ti, virtualCluster);
+                                                    Future<?> future = iaas.allocate(vmOrder, null);
+                                                    try {
+                                                        future.get();
+                                                    } catch (InterruptedException e) {
+                                                        e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                                                    } catch (ExecutionException e) {
+                                                        e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                                                    }
+                                                }
+                                            }
+
                                         }
+                                    } catch (VirtException e) {
+                                        e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
                                     }
                                 }
 
                             }
-                        } catch (VirtException e) {
-                            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                            if (clusterCreated) {
+                                rtContext.executeAdminCommand(actionReport, "delete-virtual-cluster", command.name());
+                            }
                         }
-                    }
 
-                }
+                    }
+                });
+
             }
+
         } catch(IOException e) {
             e.printStackTrace();
-            if (clusterCreated) {
-                rtContext.executeAdminCommand(actionReport, "delete-virtual-cluster", command.name());
-            }
         }
     }
 
     private CloudApplication readConfig(ReadableArchive archive) throws IOException {
-        InputStream is=null;
+        InputStream is = null;
 
         try {
             is = archive.getEntry("META-INF/cloud.xml");
-            if (is==null) return null;
+            if (is == null) return null;
 
             final XMLStreamReader reader;
             try {
@@ -168,16 +184,18 @@ public class CloudInterceptor implements DeployCommand.Interceptor {
             }
 
             final ConfigParser configParser = new ConfigParser(habitat);
-            DomDocument document =  configParser.parse(reader);
+            DomDocument document = configParser.parse(reader);
             return document.getRoot().createProxy(CloudApplication.class);
 
-       } catch(Exception e) {
-            if (is!=null) {
-                try { is.close(); } catch(Exception ex) { // ignore
+        } catch (Exception e) {
+            if (is != null) {
+                try {
+                    is.close();
+                } catch (Exception ex) { // ignore
                 }
                 throw new IOException(e);
             }
-       }
-       return null;
+        }
+        return null;
     }
 }

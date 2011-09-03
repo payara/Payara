@@ -93,7 +93,7 @@ public class LocalServerPool implements ServerPool {
             for (Cluster cluster : domain.getClusters().getCluster()) {
                 for (VirtualMachineConfig vmc : cluster.getExtensionsByType(VirtualMachineConfig.class)) {
                     if (vmc.getServerPool().equals(config)) {
-                        vms.put(vmc.getName(), new LocalVirtualMachine(this, null, vmc.getName()));
+                        vms.put(vmc.getName(), new LocalVirtualMachine(vmc.getTemplate().getUser(), this, null, vmc.getName()));
                     }
                 }
             }
@@ -121,7 +121,7 @@ public class LocalServerPool implements ServerPool {
             throws VirtException {
 
         String vmName = getName() + "-" + (vms.size()+1);
-        LocalVirtualMachine vm = new LocalVirtualMachine(this, null, vmName);
+        LocalVirtualMachine vm = new LocalVirtualMachine(template.getConfig().getUser(), this, null, vmName);
         // this needs to be improved.
         vm.setProperty(VirtualMachine.PropertyName.INSTALL_DIR,
                 env.getInstallRoot().getParentFile().getAbsolutePath());

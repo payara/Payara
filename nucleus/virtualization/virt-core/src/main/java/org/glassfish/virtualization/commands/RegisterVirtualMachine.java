@@ -52,7 +52,6 @@ import org.glassfish.virtualization.runtime.VirtualCluster;
 import org.glassfish.virtualization.runtime.VirtualClusters;
 import org.glassfish.virtualization.runtime.VirtualMachineLifecycle;
 import org.glassfish.virtualization.spi.*;
-import org.glassfish.virtualization.spi.VMUser;
 import org.glassfish.virtualization.util.RuntimeContext;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
@@ -131,12 +130,7 @@ public class RegisterVirtualMachine implements AdminCommand {
         try {
             VirtualMachine vm = targetGroup.vmByName(virtualMachine);
             if (vm!=null) {
-                CountDownLatch latch = vmLifecycle.getStartupLatch(vm.getName());
-                if (latch!=null) {
-                    latch.countDown();
-                }
                 vm.setAddress(address);
-                vm.setUser(new VMUser(sshUser, VMUser.ConnectionType.SSH));
                 vm.setProperty(VirtualMachine.PropertyName.INSTALL_DIR, installDir);
                 Cluster clusterConfig = domain.getClusterNamed(cluster);
                 VirtualMachineConfig vmConfig = clusterConfig.getExtensionsByTypeAndName(VirtualMachineConfig.class, vm.getName());
@@ -157,8 +151,15 @@ public class RegisterVirtualMachine implements AdminCommand {
                 }
                 Template template = vmConfig.getTemplate();
                 VirtualCluster virtualCluster = virtualClusters.byName(cluster);
-                templateRepository.byName(template.getName()).getCustomizer().customize(virtualCluster, vm);
-                templateRepository.byName(template.getName()).getCustomizer().start(vm);
+                TemplateCustomizer customizer = templateRepository.byName(template.getName()).getCustomizer();
+                if (customizer!=null) {
+                    customizer.customize(virtualCluster, vm);
+                    customizer.start(vm);
+                }
+                CountDownLatch latch = vmLifecycle.getStartupLatch(vm.getName());
+                if (latch!=null) {
+                    latch.countDown();
+                }
             }
         } catch(VirtException e) {
             RuntimeContext.logger.log(Level.SEVERE, e.getMessage(),e);
