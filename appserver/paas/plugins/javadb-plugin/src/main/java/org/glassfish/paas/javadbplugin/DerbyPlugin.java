@@ -67,6 +67,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+import java.util.logging.Logger;
 
 /**
  * @author Jagadish Ramu
@@ -88,6 +89,8 @@ public class DerbyPlugin implements Plugin<RDBMSServiceType> {
 
     public static final String GLASSFISH_DERBY = "GLASSFISH_DERBY";
     public static final String RDBMS_ServiceType = "RDBMS";
+
+    private static Logger logger = Logger.getLogger(DerbyPlugin.class.getName());
 
     public RDBMSServiceType getServiceType() {
         return new RDBMSServiceType();
@@ -134,6 +137,8 @@ public class DerbyPlugin implements Plugin<RDBMSServiceType> {
 
     public ProvisionedService provisionService(ServiceDescription serviceDescription, DeploymentContext dc) {
         String serviceName = serviceDescription.getName();
+        logger.entering(getClass().getName(), "provisionService");
+
 
         ArrayList<String> params;
         String[] parameters;

@@ -41,6 +41,8 @@
 package org.glassfish.paas.orchestrator;
 
 import java.util.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -53,6 +55,7 @@ import org.glassfish.api.deployment.OpsParams;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.internal.deployment.ApplicationLifecycleInterceptor;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
+import org.glassfish.paas.orchestrator.provisioning.cli.ServiceUtil;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceReference;
 import org.glassfish.paas.orchestrator.service.ServiceType;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceMetadata;
@@ -332,29 +335,76 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator, Application
         return provisionedServices;
     }
 
-    private void unprovisionServices(Set<Plugin> installedPlugins, ServiceMetadata appServiceMetadata,
-                                     DeploymentContext dc) {
+    private void unprovisionServices(final Set<Plugin> installedPlugins, ServiceMetadata appServiceMetadata,
+                                     final DeploymentContext dc) {
         Set<ServiceDescription> appSDs = appServiceMetadata.getServiceDescriptions();
-        for (ServiceDescription sd : appSDs) {
-            Plugin<?> chosenPlugin = getPluginForServiceType(installedPlugins, sd.getServiceType());
-            logger.log(Level.INFO, "Unprovisioning Service for " + sd + " through " + chosenPlugin);
-            chosenPlugin.unprovisionService(sd, dc);
+        List<Future> unprovisioningFutures = new ArrayList<Future>();
+
+        for (final ServiceDescription sd : appSDs) {
+            Future future = ServiceUtil.getThreadPool().submit(new Runnable() {
+                public void run() {
+                    Plugin<?> chosenPlugin = getPluginForServiceType(installedPlugins, sd.getServiceType());
+                    logger.log(Level.INFO, "Unprovisioning Service for " + sd + " through " + chosenPlugin);
+                    chosenPlugin.unprovisionService(sd, dc);
+                }
+            });
+            unprovisioningFutures.add(future);
         }
+
+        boolean failed = false;
+        for(Future future : unprovisioningFutures){
+            try {
+                future.get();
+            } catch (InterruptedException e) {
+                failed = true;
+                e.printStackTrace();
+            } catch (ExecutionException e) {
+                failed = true;
+                e.printStackTrace();
+            }
+        }
+        if(failed){
+            //TODO need a better mechanism ?
+            throw new RuntimeException("Failure while unprovisioning services, refer server.log for more details");
+        }
+
     }
 
-    private Set<ProvisionedService> provisionServices(Set<Plugin> installedPlugins,
-                                                      ServiceMetadata appServiceMetadata, DeploymentContext dc) {
+    private Set<ProvisionedService> provisionServices(final Set<Plugin> installedPlugins,
+                                                      ServiceMetadata appServiceMetadata, final DeploymentContext dc) {
         logger.entering(getClass().getName(), "provisionServices");
-        Set<ProvisionedService> appPSs = new HashSet<ProvisionedService>();
+        final Set<ProvisionedService> appPSs = new HashSet<ProvisionedService>();
 
         Set<ServiceDescription> appSDs = appServiceMetadata.getServiceDescriptions();
-        for (ServiceDescription sd : appSDs) {
-            Plugin<?> chosenPlugin = getPluginForServiceType(installedPlugins, sd.getServiceType());
-            logger.log(Level.INFO, "Provisioning Service for " + sd + " through " + chosenPlugin);
-            ProvisionedService ps = chosenPlugin.provisionService(sd, dc);
-            appPSs.add(ps);
+        List<Future> provisioningFutures = new ArrayList<Future>();
+        for (final ServiceDescription sd : appSDs) {
+            Future future = ServiceUtil.getThreadPool().submit(new Runnable() {
+                public void run() {
+                    Plugin<?> chosenPlugin = getPluginForServiceType(installedPlugins, sd.getServiceType());
+                    logger.log(Level.INFO, "Provisioning Service for " + sd + " through " + chosenPlugin);
+                    ProvisionedService ps = chosenPlugin.provisionService(sd, dc);
+                    appPSs.add(ps);
+                }
+            });
+            provisioningFutures.add(future);
         }
 
+        boolean failed = false;
+        for(Future future : provisioningFutures){
+            try {
+                future.get();
+            } catch (InterruptedException e) {
+                failed = true;
+                e.printStackTrace();
+            } catch (ExecutionException e) {
+                failed = true;
+                e.printStackTrace();
+            }
+        }
+        if(failed){
+            //TODO need a better mechanism ?
+            throw new RuntimeException("Failure while provisioning services, refer server.log for more details");
+        }
         return appPSs;
     }
 

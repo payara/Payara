@@ -70,6 +70,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+import java.util.logging.Logger;
 
 /**
  * @author Jagadish Ramu
@@ -94,6 +95,8 @@ public class LBPlugin implements Plugin<HTTPLoadBalancerServiceType> {
 
     public static final String GLASSFISH_LB = "GLASSFISH_LB";
     public static final String LB_ServiceType = "LB";
+
+    private static Logger logger = Logger.getLogger(LBPlugin.class.getName());
 
     public HTTPLoadBalancerServiceType getServiceType() {
         return new HTTPLoadBalancerServiceType();
@@ -138,7 +141,7 @@ public class LBPlugin implements Plugin<HTTPLoadBalancerServiceType> {
 
     public ProvisionedService provisionService(ServiceDescription serviceDescription, DeploymentContext dc) {
         String serviceName = serviceDescription.getName();
-
+        logger.entering(getClass().getName(), "provisionService");
         ArrayList<String> params;
         String[] parameters;
 

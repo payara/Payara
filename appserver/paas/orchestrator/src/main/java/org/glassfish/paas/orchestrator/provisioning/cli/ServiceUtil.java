@@ -63,7 +63,7 @@ import java.util.concurrent.Executors;
 @org.jvnet.hk2.annotations.Service
 public class ServiceUtil implements PostConstruct {
 
-    private static ExecutorService threadPool = Executors.newFixedThreadPool(1);
+    private static ExecutorService threadPool = Executors.newCachedThreadPool();
 
     @Inject
     private Domain domain;

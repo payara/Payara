@@ -56,26 +56,14 @@ import java.util.List;
 
 @org.jvnet.hk2.annotations.Service
 @Scoped(Singleton.class)
-public class GlassFishServiceUtil implements PostConstruct {
+public class GlassFishServiceUtil{
 
     private static final String SEPARATOR = ".";
     public static final String NODE_PREFIX = "node-";
     public static final String INSTANCE_PREFIX = "instance-";
 
-    //private DataSource ds = null;
-
     @Inject
     private ServiceUtil serviceUtil;
-
-    public void postConstruct() {
-        /*InitialContext ic = null;
-        try {
-            ic = new InitialContext();
-            ds = (DataSource) ic.lookup(ProvisionerUtil.RESOURCE_NAME);
-        } catch (NamingException e) {
-            throw new RuntimeException("Unable to get datasource : " + ProvisionerUtil.RESOURCE_NAME);
-        }*/
-    }
 
     public boolean isServiceAlreadyConfigured(String serviceName, String appName, ServiceType type) {
         return serviceUtil.isServiceAlreadyConfigured(serviceName, appName, type);
@@ -128,11 +116,6 @@ public class GlassFishServiceUtil implements PostConstruct {
     public void unregisterASInfo(String serviceName, String appName) {
         serviceUtil.unregisterCloudEntry(serviceName, appName);
     }
-/*
-    public void closeDBObjects(Connection con, Statement stmt, ResultSet rs) {
-        serviceUtil.closeDBObjects(con, stmt, rs);
-    }
-*/
 
     public boolean isInstance(String serviceName) {
         boolean instance = false;
@@ -271,13 +254,6 @@ public class GlassFishServiceUtil implements PostConstruct {
             isDomain = true;
         }
         return isDomain;
-    }
-*/
-
-/*
-    private PreparedStatement prepareStatement(Connection con, final String query)
-            throws SQLException {
-        return con.prepareStatement(query);
     }
 */
 

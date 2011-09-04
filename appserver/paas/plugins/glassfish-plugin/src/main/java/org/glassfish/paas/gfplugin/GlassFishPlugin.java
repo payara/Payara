@@ -78,6 +78,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+import java.util.logging.Logger;
 
 /**
  * @author bhavanishankar@java.net
@@ -105,6 +106,8 @@ public class GlassFishPlugin implements Plugin<JavaEEServiceType> {
     private Domain domain;
 
     public static final String JAVAEE_SERVICE_TYPE = "JavaEE";
+
+    private static Logger logger = Logger.getLogger(GlassFishPlugin.class.getName());
 
     // TODO :: how can plugin hold the reference to the glassfish provisioned service?
     // TODO :: Plugin should be stateless, and its job is just to configure the service(s)
@@ -184,12 +187,14 @@ public class GlassFishPlugin implements Plugin<JavaEEServiceType> {
 //        if (serviceDescription instanceof SimpleServiceDefinition) {
         // TODO :: Figure out that it is for GlassFish.
 //            ServiceDescription serviceDefinition = (SimpleServiceDefinition) serviceDescription;
+        String serviceName = serviceDescription.getName();
+        logger.entering(getClass().getName(), "provisionService");
+
         String appNameParam = "";
         if (serviceDescription.getAppName() != null) {
             appNameParam = "--appname=" + serviceDescription.getAppName();
         }
 
-        String serviceName = serviceDescription.getName();
         String serviceConfigurations = formatArgument(serviceDescription.getConfigurations());
 
         CommandResult result = null;
