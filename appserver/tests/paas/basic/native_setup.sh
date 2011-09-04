@@ -37,9 +37,10 @@
 # only if the new code is made subject to such option by the copyright
 # holder.
 #
-
-$S1AS_HOME/bin/asadmin start-domain --debug
-$S1AS_HOME/bin/asadmin add-virtualization --type Native
-$S1AS_HOME/bin/asadmin create-server-pool --virtualization Native --subnet 192.168.1.102/250 --portName "br0" Native
-#$S1AS_HOME/bin/asadmin create-template --indexes ServiceType=JavaEE,VirtualizationType=Native Native
-#$S1AS_HOME/bin/asadmin create-template --indexes ServiceType=Database,VirtualizationType=Native DBNative
+GF_HOME=${GF_HOME:-$S1AS_HOME}
+echo "Your GlassFish is at $GF_HOME"
+$GF_HOME/bin/asadmin start-domain --debug
+$GF_HOME/bin/asadmin add-virtualization --type Native
+$GF_HOME/bin/asadmin create-server-pool --virtualization Native --subnet 192.168.1.102/250 --portName "br0" Native
+#$GF_HOME/bin/asadmin create-template --indexes ServiceType=JavaEE,VirtualizationType=Native Native
+#$GF_HOME/bin/asadmin create-template --indexes ServiceType=Database,VirtualizationType=Native DBNative
