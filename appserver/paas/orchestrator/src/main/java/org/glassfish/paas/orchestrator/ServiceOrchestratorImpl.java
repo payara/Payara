@@ -44,7 +44,9 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.deploy.shared.ArchiveFactory;
+import org.glassfish.api.admin.AdminCommandLock;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.OpsParams;
@@ -57,6 +59,7 @@ import org.glassfish.paas.orchestrator.service.metadata.ServiceMetadata;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceDescription;
 import org.glassfish.paas.orchestrator.service.spi.Plugin;
 import org.glassfish.paas.orchestrator.service.spi.ProvisionedService;
+import org.glassfish.virtualization.config.Virtualizations;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
@@ -72,6 +75,9 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator, Application
 
     @Inject
     private ServerEnvironment serverEnvironment;
+
+    @Inject
+    private Domain domain;
 
     private Map<String, ServiceMetadata> serviceMetadata = new HashMap<String, ServiceMetadata>();
     private Map<String, Set<ProvisionedService>> provisionedServices = new HashMap<String, Set<ProvisionedService>>();
@@ -385,65 +391,90 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator, Application
         }
     }
 
-    public void before(ExtendedDeploymentContext.Phase phase, ExtendedDeploymentContext context) {
-        if (!usingDeployService) {
-            //OpsParams tmp = context.getCommandParameters(OpsParams.class);
-            //System.out.println("before" + phase + " " + tmp.command);
-            //System.out.println("ApplicationLifecycleListener before : " + phase);
-            OpsParams params = context.getCommandParameters(OpsParams.class);
-            if (phase.equals(ExtendedDeploymentContext.Phase.PREPARE)) {
-                if (serverEnvironment.isDas()) {
-                    ReadableArchive archive = context.getSource();
-                    if (params.origin == OpsParams.Origin.deploy) {
-                        String appName = params.name();
-                        provisionServicesForApplication(appName, archive, context);
-                    }
-                }
-            } else if (phase.equals(ExtendedDeploymentContext.Phase.STOP)) {
-                if (serverEnvironment.isDas()) {
-                    ReadableArchive archive = context.getSource();
-                    if(params.origin == OpsParams.Origin.undeploy){
-                        if(params.command == OpsParams.Command.disable){
-                            String appName = params.name();
-                            prepareForUndeploy(appName, archive, context);
+    public void before(final ExtendedDeploymentContext.Phase phase, final ExtendedDeploymentContext context) {
+        if (isOrchestrationEnabled()) {
+            AdminCommandLock.runWithSuspendedLock(new Runnable() {
+                public void run() {
+                    if (!usingDeployService) {
+                        //OpsParams tmp = context.getCommandParameters(OpsParams.class);
+                        //System.out.println("before" + phase + " " + tmp.command);
+                        //System.out.println("ApplicationLifecycleListener before : " + phase);
+                        OpsParams params = context.getCommandParameters(OpsParams.class);
+                        if (phase.equals(ExtendedDeploymentContext.Phase.PREPARE)) {
+                            if (serverEnvironment.isDas()) {
+                                ReadableArchive archive = context.getSource();
+                                if (params.origin == OpsParams.Origin.deploy) {
+                                    String appName = params.name();
+                                    provisionServicesForApplication(appName, archive, context);
+                                }
+                            }
+                        } else if (phase.equals(ExtendedDeploymentContext.Phase.STOP)) {
+                            if (serverEnvironment.isDas()) {
+                                ReadableArchive archive = context.getSource();
+                                if (params.origin == OpsParams.Origin.undeploy) {
+                                    if (params.command == OpsParams.Command.disable) {
+                                        String appName = params.name();
+                                        prepareForUndeploy(appName, archive, context);
+                                    }
+                                }
+                            }
                         }
                     }
                 }
-            }
+            });
         }
     }
 
-    public void after(ExtendedDeploymentContext.Phase phase, ExtendedDeploymentContext context) {
-        if (!usingDeployService) {
-            //OpsParams tmp = context.getCommandParameters(OpsParams.class);
-            //System.out.println("after" + phase + " " + tmp.command);
-            //System.out.println("ApplicationLifecycleListener after : " + phase);
-            if (phase.equals(ExtendedDeploymentContext.Phase.REPLICATION)) {
-                if (serverEnvironment.isDas()) {
-                    OpsParams params = context.getCommandParameters(OpsParams.class);
-                    ReadableArchive archive = context.getSource();
-                    if (params.origin == OpsParams.Origin.deploy) {
-                        String appName = params.name();
-                        postDeploy(appName, archive, context);
+    public void after(final ExtendedDeploymentContext.Phase phase, final ExtendedDeploymentContext context) {
+        if (isOrchestrationEnabled()) {
+            AdminCommandLock.runWithSuspendedLock(new Runnable() {
+                public void run() {
+                    if (!usingDeployService) {
+                        //OpsParams tmp = context.getCommandParameters(OpsParams.class);
+                        //System.out.println("after" + phase + " " + tmp.command);
+                        //System.out.println("ApplicationLifecycleListener after : " + phase);
+                        if (phase.equals(ExtendedDeploymentContext.Phase.REPLICATION)) {
+                            if (serverEnvironment.isDas()) {
+                                OpsParams params = context.getCommandParameters(OpsParams.class);
+                                ReadableArchive archive = context.getSource();
+                                if (params.origin == OpsParams.Origin.deploy) {
+                                    String appName = params.name();
+                                    postDeploy(appName, archive, context);
 
-                    }
-                    //make sure that it is indeed undeploy and not disable.
-                    //params.origin is "undeploy" for both "undeploy" as well "disable" phase
-                    //hence using the actual command being used.
-                    if(params.origin == OpsParams.Origin.undeploy){
-                        if(params.command == OpsParams.Command.undeploy){
-                            String appName = params.name();
-                                postUndeploy(appName, context.getSource(), context);
-                                serviceMetadata.remove(appName);
-                                provisionedServices.remove(appName);
+                                }
+                                //make sure that it is indeed undeploy and not disable.
+                                //params.origin is "undeploy" for both "undeploy" as well "disable" phase
+                                //hence using the actual command being used.
+                                if (params.origin == OpsParams.Origin.undeploy) {
+                                    if (params.command == OpsParams.Command.undeploy) {
+                                        String appName = params.name();
+                                        postUndeploy(appName, context.getSource(), context);
+                                        serviceMetadata.remove(appName);
+                                        provisionedServices.remove(appName);
+                                    }
+                                }
+                            }
                         }
                     }
                 }
-            }
+            });
         }
     }
 
     public void setUsingDeployService(boolean usingDeployService) {
         this.usingDeployService = usingDeployService;
+    }
+
+    private boolean isVirtualizationEnabled(){
+        boolean isVirtualEnvironment = false;
+        Virtualizations v = domain.getExtensionByType(Virtualizations.class);
+        if (v!=null && v.getVirtualizations().size()>0) {
+                isVirtualEnvironment = true;
+        }
+        return isVirtualEnvironment;
+    }
+
+    private boolean isOrchestrationEnabled(){
+        return isVirtualizationEnabled() || Boolean.getBoolean("org.glassfish.paas.orchestrator.enabled");
     }
 }
