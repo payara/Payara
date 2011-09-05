@@ -123,6 +123,7 @@
                 <module>grizzly</module>
                 <module>deployment</module>
 				<module>virtualization</module>                
+                <module>paas</module> 
                 <module>packager</module>
                 <module>distributions</module>
                 <module>security</module>
@@ -169,6 +170,7 @@
                 <module>grizzly</module>
                 <module>deployment</module>
 				<module>virtualization</module>                                
+                <module>paas</module> 
                 <module>packager</module>    
                 <module>distributions</module>    
                 <module>security</module>
@@ -215,6 +217,7 @@
                 <module>grizzly</module>
                 <module>deployment</module>
 				<module>virtualization</module>                                
+                <module>paas</module> 
                 <module>packager</module>
                 <module>distributions</module>
                 <module>security</module>
@@ -237,6 +240,7 @@
                 <module>grizzly</module>
                 <module>deployment</module>
 				<module>virtualization</module>                                
+                <module>paas</module> 
                 <module>packager</module> 
                 <module>distributions</module> 
                 <module>security</module>
