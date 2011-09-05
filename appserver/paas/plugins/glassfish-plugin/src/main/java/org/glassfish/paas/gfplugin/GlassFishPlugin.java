@@ -122,9 +122,9 @@ public class GlassFishPlugin implements Plugin<JavaEEServiceType> {
     }
 
     public boolean isReferenceTypeSupported(String referenceType) {
-       /* if(referenceType.equals(ServiceType.APPLICATION_SERVER.toString())){
+        /*if(referenceType.equals(JAVAEE_SERVICE_TYPE)){
             return true;
-        } */
+        }*/
         //GlassFish plugin would not be able to support any other reference types
         return false;
     }
@@ -340,7 +340,7 @@ public class GlassFishPlugin implements Plugin<JavaEEServiceType> {
 
             }
 
-            //if (svcRef.getServiceRefType().equals(ServiceType.APPLICATION_SERVER.toString())) {
+            //if (svcRef.getServiceRefType().equals(JAVAEE_SERVICE_TYPE)) {
                 //if (serviceConsumer instanceof GlassFishProvisionedService) {
                     if (beforeDeployment) {
                         GlassFishProvisionedService gfps = (GlassFishProvisionedService) serviceConsumer;
@@ -359,7 +359,7 @@ public class GlassFishPlugin implements Plugin<JavaEEServiceType> {
                                    ProvisionedService serviceProvider, boolean beforeUndeploy, DeploymentContext dc) {
         if (beforeUndeploy) {
             //if (serviceConsumer instanceof GlassFishProvisionedService) {
-               // if (svcRef.getServiceRefType().equals(ServiceType.APPLICATION_SERVER.toString())) {
+               // if (svcRef.getServiceRefType().equals(JAVAEE_SERVICE_TYPE)) {
                     GlassFishProvisionedService gfps = (GlassFishProvisionedService) serviceConsumer;
                     String serviceName = gfps.getServiceDescription().getName();
                     String clusterName = gfServiceUtil.getClusterName(serviceName, gfps.getServiceDescription().getAppName());

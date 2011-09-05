@@ -47,6 +47,6 @@ public interface ServiceDefinition {
 
     public String getName(); //Unique identifier for the ServiceDefinition
 
-    //application name is not null when the definition is in services.xml
+    //application name is not null when the definition is in glassfish-services.xml
     public String getAppName();
 }

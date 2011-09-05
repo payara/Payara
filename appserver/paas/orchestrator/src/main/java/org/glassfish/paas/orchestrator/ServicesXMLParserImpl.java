@@ -64,9 +64,9 @@ public class ServicesXMLParserImpl implements ServicesXMLParser {
         try {
             InputStream inputStream = null;
             if(DeploymentUtils.isWebArchive(ra)){
-                inputStream = ra.getEntry("WEB-INF/services.xml");
+                inputStream = ra.getEntry("WEB-INF/glassfish-services.xml");
             }else{
-                inputStream = ra.getEntry("META-INF/services.xml");
+                inputStream = ra.getEntry("META-INF/glassfish-services.xml");
             }
 
             if (inputStream != null) {

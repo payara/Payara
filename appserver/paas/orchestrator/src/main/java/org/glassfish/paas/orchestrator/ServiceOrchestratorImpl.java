@@ -156,7 +156,7 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator, Application
                 appProvisionedSvcs, false /*after deployment*/, null);
     }
 
-    public void prepareForUndeploy(String appName, ReadableArchive cloudArchive, DeploymentContext dc) {
+    public void prepareForUndeploy(String appName, ReadableArchive archive, DeploymentContext dc) {
         logger.entering(getClass().getName(), "prepareForUndeploy");
         //Get all plugins installed in this runtime
         Set<Plugin> installedPlugins = getPlugins();
@@ -167,7 +167,7 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator, Application
         dissociateProvisionedServices(installedPlugins, appServiceMetadata, appProvisionedServices, true, dc);
     }
 
-    public void postUndeploy(String appName, ReadableArchive cloudArchive, DeploymentContext dc) {
+    public void postUndeploy(String appName, ReadableArchive archive, DeploymentContext dc) {
         logger.entering(getClass().getName(), "postUndeploy");
         //4b. post-undeploy disassociation
 
@@ -183,17 +183,17 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator, Application
     }
 
 
-    private ServiceMetadata serviceDependencyDiscovery(String appName, ReadableArchive cloudArchive, Set<Plugin> installedPlugins) {
+    private ServiceMetadata serviceDependencyDiscovery(String appName, ReadableArchive archive, Set<Plugin> installedPlugins) {
         logger.entering(getClass().getName(), "serviceDependencyDiscovery");
         //1. SERVICE DISCOVERY
-        //parse services.xml to get all declared SRs and SDs
+        //parse glassfish-services.xml to get all declared SRs and SDs
         //Get the first ServicesXMLParser implementation
 
         ServicesXMLParser parser = habitat.getAllByContract(
                 ServicesXMLParser.class).iterator().next();
 
         //1.1 discover all Service References and Definitions already declared for this application
-        ServiceMetadata appServiceMetadata = parser.discoverDeclaredServices(appName, cloudArchive);
+        ServiceMetadata appServiceMetadata = parser.discoverDeclaredServices(appName, archive);
 
         //if no meta-data is found, create empty ServiceMetadata
         if (appServiceMetadata == null) {
@@ -201,20 +201,20 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator, Application
             appServiceMetadata.setAppName(appName);
         }
 
-        logger.log(Level.INFO, "Discovered declared service metadata via services.xml = " + appServiceMetadata);
+        logger.log(Level.INFO, "Discovered declared service metadata via glassfish-services.xml = " + appServiceMetadata);
 
         //1.2 Get implicit service-definitions (for instance a war is deployed, and it has not
         //specified a javaee service-definition in its orchestration.xml, the PaaS runtime
         //through the GlassFish plugin that a default javaee service-definition
         //is implied
         for (Plugin svcPlugin : installedPlugins) {
-            if (svcPlugin.handles(cloudArchive)) {
+            if (svcPlugin.handles(archive)) {
                 //If a ServiceDescription has not been declared explicitly in
                 //the application for the plugin's type, ask the plugin
                 //if it has any implicit service-definition for this
                 //application
                 if (!serviceDefinitionExistsForType(appServiceMetadata, svcPlugin.getServiceType())) {
-                    Set<ServiceDescription> implicitServiceDescs = svcPlugin.getImplicitServiceDescriptions(cloudArchive, appName);
+                    Set<ServiceDescription> implicitServiceDescs = svcPlugin.getImplicitServiceDescriptions(archive, appName);
                     for (ServiceDescription sd : implicitServiceDescs) {
                         System.out.println("Implicit ServiceDescription:" + sd);
                         appServiceMetadata.addServiceDescription(sd);
@@ -227,8 +227,8 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator, Application
 
         //1.2 Get implicit ServiceReferences
         for (Plugin svcPlugin : installedPlugins) {
-            if (svcPlugin.handles(cloudArchive)) {
-                Set<ServiceReference> implicitServiceRefs = svcPlugin.getServiceReferences(cloudArchive);
+            if (svcPlugin.handles(archive)) {
+                Set<ServiceReference> implicitServiceRefs = svcPlugin.getServiceReferences(archive);
                 for (ServiceReference sr : implicitServiceRefs) {
                     System.out.println("ServiceReference:" + sr);
                     appServiceMetadata.addServiceReference(sr);
@@ -295,7 +295,6 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator, Application
                         for (ProvisionedService serviceConsumer : serviceConsumers) {
                             svcPlugin.dissociateServices(serviceConsumer, serviceRef, serviceProvider, beforeUndeploy, context);
                         }
-
                     }
                 }
             }

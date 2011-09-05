@@ -58,7 +58,7 @@ import java.util.Set;
  * of the archive, this object will hold ALL the required service description and
  * references.
  *
- * Currently the initial service descriptions are read from META-INF/services.xml.
+ * Currently the initial service descriptions are read from META-INF/glassfish-services.xml.
  * But this is a generic holder object that can hold service descriptions and references
  * from different descriptor file(s).
  *

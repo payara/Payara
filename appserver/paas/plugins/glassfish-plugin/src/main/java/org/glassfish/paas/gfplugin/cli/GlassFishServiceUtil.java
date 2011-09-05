@@ -39,7 +39,6 @@
  */
 package org.glassfish.paas.gfplugin.cli;
 
-import org.glassfish.hk2.PostConstruct;
 import org.glassfish.hk2.scopes.Singleton;
 import org.glassfish.paas.orchestrator.config.ApplicationScopedService;
 import org.glassfish.paas.orchestrator.config.Service;
@@ -73,8 +72,8 @@ public class GlassFishServiceUtil{
         return serviceUtil.getServiceState(serviceName, appName, type);
     }
 
-    public void updateInstanceID(String serviceName,  String appName,String instanceID, ServiceType type) {
-        serviceUtil.updateInstanceID(serviceName, appName, instanceID, type);
+    public void updateVMID(String serviceName, String appName, String instanceID, ServiceType type) {
+        serviceUtil.updateVMID(serviceName, appName, instanceID, type);
     }
 
     // Set the value of a property in application-scoped-service config element for given service name.

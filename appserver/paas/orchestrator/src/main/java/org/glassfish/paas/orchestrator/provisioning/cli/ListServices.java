@@ -218,7 +218,7 @@ public class ListServices implements AdminCommand {
                 if (ipAddress == null) {
                     ipAddress = "-";
                 }
-                String instanceID = service.getPropertyValue("instance-id");
+                String instanceID = service.getPropertyValue("vm-id");
                 if (instanceID == null) {
                     instanceID = "-";
                 }

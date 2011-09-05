@@ -101,7 +101,7 @@ public class GlassFishCloudArchiveProcessor {
             //glassfish plugin will always get called during association/dissociation phase
             //This will be used to set "target" during "deploy" and "undeploy"
             //serviceReferences.add(new ServiceReference(cloudArchive.getName(),
-            //        ServiceType.APPLICATION_SERVER.toString(), null, null));
+            //        GlassFishPlugin.JAVAEE_SERVICE_TYPE, null, null));
         } catch (Exception e) {
             e.printStackTrace();
         }

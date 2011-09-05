@@ -330,7 +330,7 @@ public class CreateGlassFishService implements AdminCommand, Runnable {
 
             // Invoke CloudProvisioner to install DAS image on an VM
             String instanceID = cloudProvisioner.createMasterInstance();
-            gfServiceUtil.updateInstanceID(domainName, instanceID, ServiceType.APPLICATION_SERVER);
+            gfServiceUtil.updateVMID(domainName, instanceID, ServiceType.APPLICATION_SERVER);
             String ipAddress = cloudProvisioner.getIPAddress(instanceID);
 
             cloudProvisioner.uploadCredentials(ipAddress);

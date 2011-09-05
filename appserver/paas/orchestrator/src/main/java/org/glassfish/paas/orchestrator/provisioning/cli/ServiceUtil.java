@@ -116,33 +116,33 @@ public class ServiceUtil implements PostConstruct {
         }
     }
 
-    public void updateInstanceID(String serviceName, String appName, final String instanceID, ServiceType type) {
-        updateInstanceIDThroughConfig(serviceName, appName, instanceID);
+    public void updateVMID(String serviceName, String appName, final String instanceID, ServiceType type) {
+        updateVMIDThroughConfig(serviceName, appName, instanceID);
     }
 
-    private void updateInstanceIDThroughConfig(String serviceName, String appName, final String instanceID) {
+    private void updateVMIDThroughConfig(String serviceName, String appName, final String vmId) {
         Service matchingService = getService(serviceName, appName);
         if(matchingService != null){
             try {
                 if (ConfigSupport.apply(new SingleConfigCode<Service>() {
                     public Object run(Service serviceConfig) throws PropertyVetoException, TransactionFailure {
-                        Property property = serviceConfig.getProperty("instance-id");
+                        Property property = serviceConfig.getProperty("vm-id");
                         if (property != null) {
                             Transaction t = Transaction.getTransaction(serviceConfig);
                             Property p_w = t.enroll(property);
-                            p_w.setValue(instanceID);
+                            p_w.setValue(vmId);
 
                         } else {
                             Property prop = serviceConfig.createChild(Property.class);
                             //TODO should this be changed to vm-id
-                            prop.setName("instance-id");
-                            prop.setValue(instanceID);
+                            prop.setName("vm-id");
+                            prop.setValue(vmId);
                             serviceConfig.getProperty().add(prop);
                         }
                         return serviceConfig;
                     }
                 }, matchingService) == null) {
-                    String msg = "Unable to update instance-id ["+instanceID+"] of service ["+serviceName+"]";
+                    String msg = "Unable to update vm-id ["+vmId+"] of service ["+serviceName+"]";
                     System.out.println(msg);
                     throw new RuntimeException(msg);
                 }
@@ -307,8 +307,8 @@ public class ServiceUtil implements PostConstruct {
                     cre.setIpAddress(matchingService.getProperty("ip-address").getValue());
                 }
 
-                if(matchingService.getProperty("instance-id") != null){
-                    cre.setInstanceId(matchingService.getProperty("instance-id").getValue());
+                if(matchingService.getProperty("vm-id") != null){
+                    cre.setInstanceId(matchingService.getProperty("vm-id").getValue());
                 }
             }
 
@@ -426,8 +426,7 @@ public class ServiceUtil implements PostConstruct {
 
                     {
                         Property prop = service.createChild(Property.class);
-                        //TODO should this be changed to vm-id
-                        prop.setName("instance-id");
+                        prop.setName("vm-id");
                         prop.setValue(entry.getInstanceId());
                         service.getProperty().add(prop);
                     }
