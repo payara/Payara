@@ -92,7 +92,6 @@
         </developer>
     </developers>
     <modules>
-        <module>orchestrator</module>
         <module>plugins</module>
     </modules>
 </project>
