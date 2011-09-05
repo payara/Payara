@@ -40,7 +40,7 @@
   ~ holder.
   -->
 
-<services>
+<glassfish-services>
 <service-description name="mycluster" init-type="lazy">
   <characteristics>
     <characteristic name="service-type" value="JavaEE"/>
@@ -51,4 +51,4 @@
     <configuration name="max.clustersize" value="2"/>
   </configurations>
 </service-description>
-</services>
+</glassfish-services>
