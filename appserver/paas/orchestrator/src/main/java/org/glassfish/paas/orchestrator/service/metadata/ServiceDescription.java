@@ -44,6 +44,7 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlElements;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import java.util.List;
 
@@ -89,8 +90,7 @@ public class ServiceDescription {
         return initType;
     }
 
-    //TODO  hack ?
-    @XmlAttribute(name = "app-name", required = false)
+    @XmlTransient
     public String getAppName() {
         return appName;
     }

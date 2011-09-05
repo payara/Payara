@@ -38,7 +38,7 @@
   ~ holder.
   -->
 
-<services>
+<glassfish-services>
   <!--Zero or more repetitions:-->
   <service-description init-type="string" name="string">
     <!--You have a CHOICE of the next 2 items at this level-->
@@ -53,4 +53,4 @@
       <configuration name="string" value="string"/>
     </configurations>
   </service-description>
-</services>
+</glassfish-services>

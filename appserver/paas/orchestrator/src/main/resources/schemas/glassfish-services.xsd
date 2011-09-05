@@ -41,7 +41,7 @@
 
 <xs:schema version="1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema">
 
-  <xs:element name="services" type="serviceMetadata"/>
+  <xs:element name="glassfish-services" type="serviceMetadata"/>
 
   <xs:complexType name="property">
     <xs:sequence/>
@@ -58,7 +58,7 @@
   <xs:complexType name="serviceDescription">
     <xs:sequence>
       <xs:choice minOccurs="0">
-        <xs:element name="template" type="serviceTemplate"/>
+        <xs:element name="template" type="templateIdentifier"/>
         <xs:element name="characteristics" type="serviceCharacteristics"/>
       </xs:choice>
       <xs:element name="configurations" minOccurs="0">
@@ -73,7 +73,7 @@
     <xs:attribute name="name" type="xs:string" use="required"/>
   </xs:complexType>
 
-  <xs:complexType name="serviceTemplate">
+  <xs:complexType name="templateIdentifier">
     <xs:sequence/>
     <xs:attribute name="id" type="xs:string" use="required"/>
   </xs:complexType>

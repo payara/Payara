@@ -64,7 +64,7 @@ import java.util.Set;
  *
  * @author bhavanishankar@java.net
  */
-@XmlRootElement(name = "services")
+@XmlRootElement(name = "glassfish-services")
 public class ServiceMetadata {
 
     private Set<ServiceDescription> serviceDescriptions;
@@ -101,6 +101,7 @@ public class ServiceMetadata {
         getServiceReferences().add(sr);
     }
 
+    @XmlTransient
     public String getAppName(){
         return appName;
     }
