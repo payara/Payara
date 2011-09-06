@@ -43,11 +43,11 @@ public class RDBMSServiceType extends ServiceType {
 
     @Override
     public String toString() {
-        return "RDBMS";
+        return "Database";
     }
 
     @Override
     public String getName() {
-        return "RDBMS";
+        return "Database";
     }
 }

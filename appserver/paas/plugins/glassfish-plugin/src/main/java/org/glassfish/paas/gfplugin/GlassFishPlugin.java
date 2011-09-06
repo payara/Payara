@@ -271,10 +271,16 @@ public class GlassFishPlugin implements Plugin<JavaEEServiceType> {
             // JDBC connection properties
             ServiceDescription serviceDescription = serviceProvider.getServiceDescription();
 //                        (SimpleServiceDefinition) derbyProvisionedService.getServiceDefinition();
-            Properties derbyProperties = new Properties();
-            derbyProperties.putAll(svcRef.getProperties());
-            derbyProperties.setProperty("serverName",
-                    serviceProvider.getServiceProperties().getProperty("host"));
+            Properties dbProperties = new Properties();
+            dbProperties.putAll(svcRef.getProperties());
+            String serverName = serviceProvider.getServiceProperties().getProperty("host");
+            String url = serviceProvider.getServiceProperties().getProperty("URL");
+            if(serverName != null) {
+                dbProperties.setProperty("serverName", serverName);
+            }
+            if(url != null) {
+                dbProperties.setProperty("URL", url);
+            }
 //                serviceDescription.getProperties();
 
             // Get the domain and cluster names.
@@ -296,7 +302,7 @@ public class GlassFishPlugin implements Plugin<JavaEEServiceType> {
             GlassFishProvisioner glassFishProvisioner = (GlassFishProvisioner)
                     provisionerUtil.getAppServerProvisioner(dasIPAddress);
             glassFishProvisioner.createJdbcConnectionPool(dasIPAddress, clusterName,
-                    derbyProperties, poolName);
+                    dbProperties, poolName);
             glassFishProvisioner.createJdbcResource(dasIPAddress, clusterName,
                     poolName, resourceName);
         }
