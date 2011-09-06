@@ -42,26 +42,27 @@ package org.glassfish.elasticity.api;
 import org.jvnet.hk2.annotations.Contract;
 
 import com.sun.enterprise.config.serverbeans.AlertConfig;
+import org.jvnet.hk2.component.Habitat;
 
 /**
  * An Alert typically uses some metrics and determines if the Alert's state.
  * The ElasticityEngine will then use this Alert's state to execute a set
  * of Actions.
- * 
+ *
  * @author Mahesh.Kannan@Oracle.Com
  *
  */
 @Contract
 public interface Alert<C extends AlertConfig> {
-	
+
 	public enum AlertState {OK, ALARM, NO_DATA};
-	
+
 	/**
 	 * Called by the framework when the rule is instantiated.
-	 * 
+	 *
 	 * @param config
 	 */
-	public void initialize(C config);
+	public void initialize(Habitat h, C config);
 	
 	/**
 	 * Execute this rule and return the state of this rule

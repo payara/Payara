@@ -41,29 +41,83 @@ package org.glassfish.elasticity.engine.util;
 
 import org.glassfish.elasticity.api.Alert;
 import com.sun.enterprise.config.serverbeans.AlertConfig;
+import org.glassfish.elasticity.api.MetricGatherer;
+import org.glassfish.elasticity.metric.MetricAttribute;
+import org.glassfish.elasticity.metric.MetricNode;
+import org.glassfish.elasticity.metric.TabularMetricAttribute;
+import org.glassfish.elasticity.metric.TabularMetricEntry;
+import org.jvnet.hk2.annotations.Inject;
+import org.jvnet.hk2.component.Habitat;
+
+import java.util.Iterator;
+import java.util.concurrent.TimeUnit;
 
 /**
  * A simple Alert that uses an expression
- * @author Mahesh Kannan
  *
  * @param <C>
+ * @author Mahesh Kannan
  */
 public class ExpressionBasedAlert<C extends AlertConfig>
-	implements Alert<C>, Runnable {
+        implements Alert<C>, Runnable {
 
-	private C config;
-	
-	public void initialize(C config) {
-		this.config = config;
-	}
+    private C config;
 
-	public AlertState execute() {
-		System.out.println("*** Executed ExpressionBasedAlert.execute(): ");
-		return AlertState.ALARM;
-	}
-	
-	public void run() {
-		execute();
-	}
+    Habitat habitat;
+
+    public void initialize(Habitat habitat, C config) {
+        this.habitat = habitat;
+        this.config = config;
+        System.out.println("*** Entered ExpressionBasedAlert.initialize()....");
+    }
+
+    public AlertState execute() {
+
+        System.out.println("*** Entered ExpressionBasedAlert.execute()....");
+
+        MetricNode metricNode = null;
+
+        try {
+            metricNode = (MetricNode) habitat.getComponent(MetricNode.class, "jvm_memory");
+
+
+            StringBuilder sb = new StringBuilder("jvm_memory: ");
+            if (metricNode != null) {
+                for (MetricAttribute ma : metricNode.getAttributes()) {
+                    sb.append("*").append(ma.getName()).append("= ");
+                    if (ma instanceof TabularMetricAttribute) {
+                        sb.append("\n===================================================================\n");
+                        TabularMetricAttribute tma = (TabularMetricAttribute) ma;
+                        for (String name : tma.getColumnNames()) {
+                            sb.append(" | ").append(name).append(" | ");
+                        }
+                        sb.append("\n===================================================================\n");
+                        Iterator<TabularMetricEntry> iter = tma.iterator(120, TimeUnit.SECONDS);
+                        for (TabularMetricEntry tme; iter.hasNext(); ) {
+                            tme = iter.next();
+                            for (String name : tma.getColumnNames()) {
+                                sb.append(" | ").append(tme.getValue(name)).append(" | ");
+                            }
+                            sb.append("\n");
+                        }
+                    } else {
+                        sb.append(ma.getValue());
+                    }
+                }
+            } else {
+                sb.append("jvm_memory is NULL");
+            }
+
+
+            System.out.println("*** Executed ExpressionBasedAlert.execute(): \n" + sb.toString());
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return AlertState.ALARM;
+    }
+
+    public void run() {
+        execute();
+    }
 
 }

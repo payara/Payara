@@ -40,14 +40,15 @@
 package org.glassfish.elasticity.util;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.concurrent.ConcurrentNavigableMap;
+import java.util.NavigableMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.TimeUnit;
 
 import org.glassfish.elasticity.api.MetricAttributeRetriever;
-import org.glassfish.elasticity.api.MetricEntry;
-import org.glassfish.elasticity.api.MetricHolder;
+import org.glassfish.elasticity.metric.TabularMetricAttribute;
+import org.glassfish.elasticity.metric.TabularMetricEntry;
 
 
 /**
@@ -55,8 +56,8 @@ import org.glassfish.elasticity.api.MetricHolder;
  * 
  * @author Mahesh.Kannan@Oracle.Com
  */
-public class SimpleMetricHolder<V>
-	implements MetricHolder<V> {
+public class TabularMetricHolder<V>
+	implements TabularMetricAttribute<V> {
 
 	private final ConcurrentSkipListMap<Long, MetricEntryHolder> _emptyMap =
 			new ConcurrentSkipListMap<Long, MetricEntryHolder>();
@@ -69,17 +70,40 @@ public class SimpleMetricHolder<V>
     private Class<V> valueClass;
 
     private MetricAttributeRetriever<V> metricAttributeRetriever;
-    
-	public SimpleMetricHolder(String metricName, Class<V> valueClass) {
+
+    private String[] columnNames;
+
+	public TabularMetricHolder(String metricName, Class<V> valueClass) {
 		this.metricName = metricName;
 		this.valueClass = valueClass;
 		this.metricAttributeRetriever = createMetricAttributeRetriever();
+
+        ArrayList<String> colNames = new ArrayList<String>();
+        for (Method m : valueClass.getDeclaredMethods()) {
+            if (m.getName().startsWith("get") && m.getParameterTypes().length == 0) {
+                String attrName = m.getName().substring(3);
+                attrName = ("" + attrName.charAt(0)).toLowerCase() + attrName.substring(1);
+                colNames.add(attrName);
+            }
+        }
+
+        columnNames = colNames.toArray(new String[colNames.size()]);
 	}
 	
 	public String getName() {
-		return valueClass.getName();
+		return metricName;
 	}
-	
+
+    @Override
+    public String[] getColumnNames() {
+        return columnNames;
+    }
+
+    @Override
+    public Object getValue() {
+        return map;
+    }
+
     public void add(long timeStamp, V v) {
         this.add(timeStamp, TimeUnit.MILLISECONDS, v);
     }
@@ -101,7 +125,7 @@ public class SimpleMetricHolder<V>
         return map.isEmpty();
     }
 	
-	public Iterable<MetricEntry<V>> values(long duration, TimeUnit unit) {
+	public Iterator<TabularMetricEntry<V>> iterator(long duration, TimeUnit unit) {
 		return new SubMapValueIterator(getView(duration, unit));
 	}
 	
@@ -118,8 +142,8 @@ public class SimpleMetricHolder<V>
 		return new ReflectiveAttributeRetriever(valueClass);
     }
     
-    private ConcurrentNavigableMap<Long, MetricEntryHolder> getView(long duration, TimeUnit unit) {
-    	ConcurrentNavigableMap<Long, MetricEntryHolder> result = _emptyMap;
+    private NavigableMap<Long, MetricEntryHolder> getView(long duration, TimeUnit unit) {
+    	NavigableMap<Long, MetricEntryHolder> result = _emptyMap;
     	if (! map.isEmpty()) {
 	        Long maxKey = map.lastKey();
 	        if (maxKey != null) {
@@ -133,8 +157,8 @@ public class SimpleMetricHolder<V>
     	return result;
     }
     
-    private ConcurrentNavigableMap<Long, MetricEntryHolder> getOldestView(long duration, TimeUnit unit) {
-    	ConcurrentNavigableMap<Long, MetricEntryHolder> result = _emptyMap;
+    private NavigableMap<Long, MetricEntryHolder> getOldestView(long duration, TimeUnit unit) {
+    	NavigableMap<Long, MetricEntryHolder> result = _emptyMap;
     	if (! map.isEmpty()) {
 	        Long maxKey = map.lastKey();
 	        if (maxKey != null) {
@@ -149,7 +173,7 @@ public class SimpleMetricHolder<V>
     }
 	
 	protected class MetricEntryHolder
-		implements MetricEntry<V> {
+		implements TabularMetricEntry<V> {
 
 		private long ts;
 		private V v;
@@ -163,9 +187,17 @@ public class SimpleMetricHolder<V>
 			return sourceUnit.convert(ts, TimeUnit.MILLISECONDS);
 		}
 
-		public V getValue() {
+		public long getTimestamp() {
+			return getTimestamp(TimeUnit.MILLISECONDS);
+		}
+
+		public V getV() {
 			return v;
 		}
+
+        public Object getValue(String attrName) {
+            return metricAttributeRetriever.getAttribute(attrName, v);
+        }
 
 		public Object geAttribute(String name) {
 			return metricAttributeRetriever.getAttribute(name, v);
@@ -174,15 +206,15 @@ public class SimpleMetricHolder<V>
 	}
 
 	protected class SubMapValueIterator
-		implements Iterable<MetricEntry<V>>, Iterator<MetricEntry<V>> {
+		implements Iterable<TabularMetricEntry<V>>, Iterator<TabularMetricEntry<V>> {
 		
 		Iterator<MetricEntryHolder> iter;
 		
-		SubMapValueIterator(ConcurrentNavigableMap<Long, MetricEntryHolder> subMap) {
+		SubMapValueIterator(NavigableMap<Long, MetricEntryHolder> subMap) {
 			iter = subMap.values().iterator();
 		}
 		
-		public Iterator<MetricEntry<V>> iterator() {
+		public Iterator<TabularMetricEntry<V>> iterator() {
 			return this;
 		}
 		
@@ -190,7 +222,7 @@ public class SimpleMetricHolder<V>
 			return iter.hasNext();
 		}
 
-		public MetricEntry<V> next() {
+		public TabularMetricEntry<V> next() {
 			return iter.next();
 		}
 

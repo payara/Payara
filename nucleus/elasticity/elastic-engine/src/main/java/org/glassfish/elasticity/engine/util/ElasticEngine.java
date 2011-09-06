@@ -42,8 +42,7 @@ package org.glassfish.elasticity.engine.util;
 import java.util.concurrent.TimeUnit;
 
 import org.glassfish.api.Startup;
-import org.glassfish.elasticity.api.MetricEntry;
-import org.glassfish.elasticity.api.MetricHolder;
+import org.glassfish.elasticity.api.MetricGatherer;
 import org.glassfish.hk2.PostConstruct;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
@@ -51,6 +50,7 @@ import org.jvnet.hk2.annotations.Service;
 import com.sun.enterprise.config.serverbeans.AlertConfig;
 import com.sun.enterprise.config.serverbeans.ElasticService;
 import com.sun.enterprise.config.serverbeans.ElasticServices;
+import org.jvnet.hk2.component.Habitat;
 
 /**
  * Elastic Engine for a service. An instance of ElasticEngine keeps track
@@ -63,6 +63,9 @@ import com.sun.enterprise.config.serverbeans.ElasticServices;
 public class ElasticEngine
 	implements Startup, PostConstruct {
 
+    @Inject
+    Habitat habitat;
+
 	@Inject
 	ElasticServices elasticServices;
 	
@@ -70,7 +73,7 @@ public class ElasticEngine
 	ElasticEngineThreadPool threadPool;
 	
 	@Inject
-	MetricHolder<? extends MetricEntry>[] metricHolders;
+	MetricGatherer[] metricHolders;
 	
 	private String serviceName;
 
@@ -92,18 +95,45 @@ public class ElasticEngine
 				System.out.println("Got Altert[" + service.getName() + "]: " + alertConfig.getName());
 			
 				String sch = alertConfig.getSchedule().trim();
-				long frequencyInMills = getFrequencyOfAlertExecutionInSeconds(sch);
+				long frequencyInSeconds = getFrequencyOfAlertExecutionInSeconds(sch);
 				String alertName = alertConfig.getName();
 				System.out.println("Alert[name=" + alertName + "; schedule=" + sch
-						+ "; expression=" + alertConfig.getExpression() + "; will be executed every= " + frequencyInMills);
+						+ "; expression=" + alertConfig.getExpression() + "; will be executed every= " + frequencyInSeconds);
 				ExpressionBasedAlert<AlertConfig> wrapper = new ExpressionBasedAlert<AlertConfig>();
-				wrapper.initialize(alertConfig);
-				threadPool.scheduleAtFixedRate(wrapper, frequencyInMills, frequencyInMills, TimeUnit.SECONDS);
+				wrapper.initialize(habitat, alertConfig);
+				threadPool.scheduleAtFixedRate(wrapper, frequencyInSeconds, frequencyInSeconds, TimeUnit.SECONDS);
 			}
 		}
 		
-		for (MetricHolder<? extends MetricEntry> m : metricHolders) {
-			System.out.println("Loaded " + m);
+		for (MetricGatherer mg : metricHolders) {
+			System.out.println("Loaded " + mg);
+            String sch  = mg.getSchedule();
+            long frequency = 10 * 1000;
+            if (sch != null) {
+                sch = sch.trim();
+                int index = 0;
+                while (index < sch.length() && Character.isDigit(sch.charAt(index))) {
+                    index++;
+                }
+
+                try {
+                    if (index == sch.length()) {
+                        frequency = Long.parseLong(sch);
+                    } else {
+
+                        frequency = Long.parseLong(sch.substring(0, index));
+                        String unit = sch.substring(index);
+                        if (unit.equals("s") || unit.equals("seconds")) {
+                            frequency *= 1000;
+                        }
+                    }
+                } catch (NumberFormatException nfEx) {
+                    //TODO
+                }
+
+                threadPool.scheduleAtFixedRate(new MetricGathererWrapper(mg), frequency, frequency, TimeUnit.MILLISECONDS);
+            }
+
 		}
 	}
 	
@@ -149,9 +179,24 @@ public class ElasticEngine
 //		}
 		
 		public void run() {
+            System.out.println("AlertWrapper.run called");
 			alert.execute();
 		}
 	}
+
+    private class MetricGathererWrapper
+        implements Runnable {
+
+        MetricGatherer mg;
+
+        MetricGathererWrapper(MetricGatherer mg) {
+            this.mg = mg;
+        }
+
+        public void run() {
+            mg.gatherMetric();
+        }
+    }
 
 	public Lifecycle getLifecycle() {
 		return Startup.Lifecycle.START;
