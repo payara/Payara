@@ -53,6 +53,10 @@
     <artifactId>gf-ejb-connector</artifactId>
     <packaging>hk2-jar</packaging>
     <name>EJB Container connector for Glassfish</name>
+
+    <properties>
+        <findbugs.exclude>${project.basedir}/exclude.xml</findbugs.exclude>
+    </properties>
     
     <developers>
         <developer>
