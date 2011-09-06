@@ -38,10 +38,12 @@
  * holder.
  */
 
-package com.sun.enterprise.deployment.node;
+package org.glassfish.webservices.node;
 
 import com.sun.enterprise.deployment.NameValuePairDescriptor;
 import com.sun.enterprise.deployment.WebServiceHandler;
+import com.sun.enterprise.deployment.node.DisplayableComponentNode;
+import com.sun.enterprise.deployment.node.XMLElement;
 import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.deployment.xml.TagNames;
 import com.sun.enterprise.deployment.xml.WebServicesTagNames;
@@ -60,7 +62,7 @@ import java.util.logging.Level;
  */
 public class WebServiceHandlerNode extends DisplayableComponentNode {
 
-    private final static XMLElement tag = 
+    private final static XMLElement tag =
         new XMLElement(WebServicesTagNames.HANDLER);
 
     private NameValuePairDescriptor initParam = null;
@@ -90,6 +92,10 @@ public class WebServiceHandlerNode extends DisplayableComponentNode {
         table.put(WebServicesTagNames.HANDLER_PORT_NAME, "addPortName");
         return table;
     }
+
+    protected WebServiceHandler createDescriptor() {
+       return new WebServiceHandler();
+   }
 
     /**
      * receives notification of the value for a particular tag
@@ -136,8 +142,8 @@ public class WebServiceHandlerNode extends DisplayableComponentNode {
      * return it
      *
      * @param parent node in the DOM tree 
-     * @param node name for the root element of this xml fragment      
-     * @param the descriptor to write
+     * @param nodeName name for the root element of this xml fragment
+     * @param handler the descriptor to write
      * @return the DOM tree top node
      */
     public Node writeDescriptor(Node parent, String nodeName, 

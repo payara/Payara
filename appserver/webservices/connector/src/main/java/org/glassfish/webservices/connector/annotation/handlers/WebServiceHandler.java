@@ -70,6 +70,7 @@ import javax.ejb.Stateless;
 import javax.ejb.Singleton;
 
 import org.glassfish.api.deployment.archive.ReadableArchive;
+import org.glassfish.webservices.node.WebServicesDescriptorNode;
 import org.jvnet.hk2.annotations.Service;
 
 /**
@@ -339,7 +340,7 @@ public class WebServiceHandler extends AbstractHandler {
                 endpoint.setEndpointName(((Class) annElem).getName());
             }
             newWS.addEndpoint(endpoint);
-            wsDesc.setSpecVersion (com.sun.enterprise.deployment.node.WebServicesDescriptorNode.SPEC_VERSION);
+            wsDesc.setSpecVersion (WebServicesDescriptorNode.SPEC_VERSION);
         } else {
             newWS = endpoint.getWebService();
         }

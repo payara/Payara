@@ -38,9 +38,11 @@
  * holder.
  */
 
-package com.sun.enterprise.deployment.node;
+package org.glassfish.webservices.node;
 
 import com.sun.enterprise.deployment.*;
+import com.sun.enterprise.deployment.node.AbstractBundleNode;
+import com.sun.enterprise.deployment.node.XMLElement;
 import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.deployment.xml.TagNames;
 import com.sun.enterprise.deployment.xml.WebServicesTagNames;
@@ -63,7 +65,7 @@ import java.util.List;
  */
 @Service
 public class WebServicesDescriptorNode extends AbstractBundleNode {    
-    public final static XMLElement ROOT_ELEMENT = 
+    public final static XMLElement ROOT_ELEMENT =
         new XMLElement(WebServicesTagNames.WEB_SERVICES);
     public final static String SCHEMA_ID = "javaee_web_services_1_3.xsd";
     public final static String SCHEMA_ID_12 = "javaee_web_services_1_2.xsd";

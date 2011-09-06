@@ -38,10 +38,12 @@
  * holder.
  */
 
-package com.sun.enterprise.deployment.node;
+package org.glassfish.webservices.node;
 
 import com.sun.enterprise.deployment.WebService;
 import com.sun.enterprise.deployment.WebServiceEndpoint;
+import com.sun.enterprise.deployment.node.DisplayableComponentNode;
+import com.sun.enterprise.deployment.node.XMLElement;
 import com.sun.enterprise.deployment.xml.WebServicesTagNames;
 import org.w3c.dom.Node;
 
@@ -55,7 +57,7 @@ import java.util.Map;
  */
 public class WebServiceNode extends DisplayableComponentNode {
 
-    private final static XMLElement tag = 
+    private final static XMLElement tag =
         new XMLElement(WebServicesTagNames.WEB_SERVICE);
 
     public WebServiceNode() {
@@ -70,7 +72,11 @@ public class WebServiceNode extends DisplayableComponentNode {
      */
     protected void init() {
     }
-    
+
+    @Override
+    protected WebService createDescriptor() {
+        return new WebService();
+    }
     /**
      * all sub-implementation of this class can use a dispatch table 
      * to map xml element to method name on the descriptor class for 
@@ -111,8 +117,8 @@ public class WebServiceNode extends DisplayableComponentNode {
      * return it
      *
      * @param parent node in the DOM tree 
-     * @param node name for the root element of this xml fragment      
-     * @param the descriptor to write
+     * @param nodeName name for the root element of this xml fragment
+     * @param descriptor the descriptor to write
      * @return the DOM tree top node
      */
     public Node writeDescriptor(Node parent, String nodeName, 

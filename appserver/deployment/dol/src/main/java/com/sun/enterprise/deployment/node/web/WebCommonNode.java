@@ -50,6 +50,8 @@ import com.sun.enterprise.deployment.xml.TagNames;
 import com.sun.enterprise.deployment.xml.WebServicesTagNames;
 import com.sun.enterprise.deployment.xml.WebTagNames;
 import org.w3c.dom.Node;
+import org.jvnet.hk2.component.Habitat;
+import org.glassfish.internal.api.Globals;
 
 import java.util.*;
 
@@ -71,7 +73,10 @@ public abstract class WebCommonNode<T extends WebBundleDescriptor> extends Abstr
         registerElementHandler(new XMLElement(TagNames.ENVIRONMENT_PROPERTY), EnvEntryNode.class);                          
         registerElementHandler(new XMLElement(TagNames.EJB_REFERENCE), EjbReferenceNode.class);     
         registerElementHandler(new XMLElement(TagNames.EJB_LOCAL_REFERENCE), EjbLocalReferenceNode.class);     
-        registerElementHandler(new XMLElement(WebServicesTagNames.SERVICE_REF), ServiceReferenceNode.class, "addServiceReferenceDescriptor");        
+        JndiEnvRefNode serviceRefNode = habitat.getComponent(JndiEnvRefNode.class, WebServicesTagNames.SERVICE_REF);
+        if (serviceRefNode != null) {
+            registerElementHandler(new XMLElement(WebServicesTagNames.SERVICE_REF), serviceRefNode.getClass(),"addServiceReferenceDescriptor");
+        }
         registerElementHandler(new XMLElement(TagNames.RESOURCE_REFERENCE), 
                                                             ResourceRefNode.class, "addResourceReferenceDescriptor");   
         registerElementHandler(new XMLElement(TagNames.RESOURCE_ENV_REFERENCE), 
@@ -119,7 +124,7 @@ public abstract class WebCommonNode<T extends WebBundleDescriptor> extends Abstr
      * Adds  a new DOL descriptor instance to the descriptor instance associated with 
      * this XMLNode
      *
-     * @param descriptor the new descriptor
+     * @param newDescriptor the new descriptor
      */    
     public void addDescriptor(Object  newDescriptor) {       
         if (newDescriptor instanceof EjbReference) {            
@@ -237,7 +242,7 @@ public abstract class WebCommonNode<T extends WebBundleDescriptor> extends Abstr
      * write the descriptor class to a DOM tree and return it
      *
      * @param parent node for the DOM tree
-     * @param the descriptor to write
+     * @param webBundleDesc descriptor to write
      * @return the DOM tree top node
      */    
     public Node writeDescriptor(Node parent, 

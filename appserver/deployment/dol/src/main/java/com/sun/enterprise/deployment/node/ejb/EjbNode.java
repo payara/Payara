@@ -48,7 +48,9 @@ import com.sun.enterprise.deployment.xml.EjbTagNames;
 import com.sun.enterprise.deployment.xml.TagNames;
 import com.sun.enterprise.deployment.xml.WebServicesTagNames;
 import org.glassfish.deployment.common.Descriptor;
+import org.glassfish.internal.api.Globals;
 import org.w3c.dom.Node;
+import org.jvnet.hk2.component.Habitat;
 
 import java.util.Map;
 import java.util.Iterator;
@@ -70,7 +72,10 @@ public abstract class EjbNode extends DisplayableComponentNode {
                                                              EnvEntryNode.class, "addEnvironmentProperty");                          
         registerElementHandler(new XMLElement(EjbTagNames.EJB_REFERENCE), EjbReferenceNode.class);     
         registerElementHandler(new XMLElement(EjbTagNames.EJB_LOCAL_REFERENCE), EjbLocalReferenceNode.class);     
-        registerElementHandler(new XMLElement(WebServicesTagNames.SERVICE_REF), ServiceReferenceNode.class, "addServiceReferenceDescriptor");
+        JndiEnvRefNode serviceRefNode = habitat.getComponent(JndiEnvRefNode.class, WebServicesTagNames.SERVICE_REF);
+        if (serviceRefNode != null) {
+            registerElementHandler(new XMLElement(WebServicesTagNames.SERVICE_REF), serviceRefNode.getClass(),"addServiceReferenceDescriptor");
+        }
         registerElementHandler(new XMLElement(EjbTagNames.RESOURCE_REFERENCE), 
                                                              ResourceRefNode.class, "addResourceReferenceDescriptor");
         registerElementHandler(new XMLElement(TagNames.DATA_SOURCE), DataSourceDefinitionNode.class, "addDataSourceDefinitionDescriptor");

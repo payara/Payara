@@ -74,6 +74,7 @@ import org.glassfish.deployment.common.XModuleType;
 import javax.xml.namespace.QName;
 
 import org.glassfish.api.deployment.archive.ReadableArchive;
+import org.glassfish.webservices.node.WebServicesDescriptorNode;
 import org.jvnet.hk2.annotations.Service;
 
 /**
@@ -219,7 +220,7 @@ public class WebServiceProviderHandler extends AbstractHandler {
             // port-component-name is fully qualified class name
             endpoint.setEndpointName(portComponentName);
             newWS.addEndpoint(endpoint);            
-            wsDesc.setSpecVersion(com.sun.enterprise.deployment.node.WebServicesDescriptorNode.SPEC_VERSION);            
+            wsDesc.setSpecVersion(WebServicesDescriptorNode.SPEC_VERSION);
         } else {
             newWS = endpoint.getWebService();
         }

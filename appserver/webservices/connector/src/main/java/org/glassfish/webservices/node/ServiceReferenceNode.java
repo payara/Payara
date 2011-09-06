@@ -44,19 +44,29 @@
  * Created on March 21, 2002, 2:38 PM
  */
 
-package com.sun.enterprise.deployment.node;
+package org.glassfish.webservices.node;
 
 import com.sun.enterprise.deployment.InjectionTarget;
 import com.sun.enterprise.deployment.ServiceRefPortInfo;
 import com.sun.enterprise.deployment.ServiceReferenceDescriptor;
+import com.sun.enterprise.deployment.node.DisplayableComponentNode;
+import com.sun.enterprise.deployment.node.JndiEnvRefNode;
+import com.sun.enterprise.deployment.node.InjectionTargetNode;
+import com.sun.enterprise.deployment.node.XMLElement;
 import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.deployment.xml.TagNames;
 import com.sun.enterprise.deployment.xml.WebServicesTagNames;
 import org.w3c.dom.Node;
+import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.PerLookup;
+import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.annotations.Scoped;
+import org.glassfish.internal.api.Globals;
 
 import javax.xml.namespace.QName;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.HashMap;
 import java.util.logging.Level;
 
 /** 
@@ -65,9 +75,12 @@ import java.util.logging.Level;
  *
  * @author  Kenneth Saks
  */
-public class ServiceReferenceNode extends DisplayableComponentNode {
-    // used for temporary storage during element processing
-    private String serviceEndpointInterface = null;
+//public class ServiceReferenceNode extends DisplayableComponentNode {
+@Service(name="service-ref")
+@Scoped(PerLookup.class)
+public class ServiceReferenceNode extends DisplayableComponentNode implements JndiEnvRefNode<ServiceReferenceDescriptor> {
+
+    
     private ServiceRefPortInfo  portInfo = null;
 
     /** Creates a new instance of ServiceReferenceNode */
@@ -154,87 +167,92 @@ public class ServiceReferenceNode extends DisplayableComponentNode {
             super.setElementValue(element, value);
         }
     }    
-    
-    /**
-     * write the method descriptor class to a query-method DOM tree and 
-     * return it
-     *
-     * @param parent node in the DOM tree 
-     * @param node name for the root element of this xml fragment      
-     * @param the descriptor to write
-     * @return the DOM tree top node
-     */
-    public Node writeDescriptor(Node parent, String nodeName, 
-                                ServiceReferenceDescriptor descriptor) {        
-        Node serviceRefNode = 
-            super.writeDescriptor(parent, nodeName, descriptor);
 
+      public Node writeDeploymentDescriptor( Node parent,ServiceReferenceDescriptor descriptor) {
+
+        Node serviceRefNode =
+            super.writeDescriptor(parent, WebServicesTagNames.SERVICE_REF, descriptor);
         writeDisplayableComponentInfo(serviceRefNode, descriptor);
-        appendTextChild(serviceRefNode, WebServicesTagNames.SERVICE_REF_NAME, 
-                        descriptor.getName());
-        appendTextChild(serviceRefNode, WebServicesTagNames.SERVICE_INTERFACE, 
-                        descriptor.getServiceInterface());
+        appendTextChild(serviceRefNode, WebServicesTagNames.SERVICE_REF_NAME,
+                descriptor.getName());
+        appendTextChild(serviceRefNode, WebServicesTagNames.SERVICE_INTERFACE,
+                descriptor.getServiceInterface());
         appendTextChild(serviceRefNode, TagNames.LOOKUP_NAME,
                 descriptor.getLookupName());
-        appendTextChild(serviceRefNode, WebServicesTagNames.SERVICE_REF_TYPE, 
-                descriptor.getInjectionTargetType());        
+        appendTextChild(serviceRefNode, WebServicesTagNames.SERVICE_REF_TYPE,
+                descriptor.getInjectionTargetType());
         appendTextChild(serviceRefNode, WebServicesTagNames.WSDL_FILE,
-                        descriptor.getWsdlFileUri());
+                descriptor.getWsdlFileUri());
         appendTextChild(serviceRefNode, WebServicesTagNames.JAXRPC_MAPPING_FILE,
-                        descriptor.getMappingFileUri());
+                descriptor.getMappingFileUri());
 
         if( descriptor.hasServiceName() ) {
             QName serviceName = descriptor.getServiceName();
             appendQNameChild(WebServicesTagNames.SERVICE_QNAME, serviceRefNode,
-                             serviceName.getNamespaceURI(),
-                             serviceName.getLocalPart(), 
-                             descriptor.getServiceNameNamespacePrefix());
+                    serviceName.getNamespaceURI(),
+                    serviceName.getLocalPart(),
+                    descriptor.getServiceNameNamespacePrefix());
         }
 
-        for(Iterator iter = descriptor.getPortsInfo().iterator(); 
+
+        for(Iterator iter = descriptor.getPortsInfo().iterator();
             iter.hasNext();) {
             ServiceRefPortInfo next = (ServiceRefPortInfo) iter.next();
             String sei = next.getServiceEndpointInterface();
             Node portComponentRefNode = appendChild(
-                serviceRefNode, WebServicesTagNames.PORT_COMPONENT_REF);
+                    serviceRefNode, WebServicesTagNames.PORT_COMPONENT_REF);
             appendTextChild(portComponentRefNode,
-                WebServicesTagNames.SERVICE_ENDPOINT_INTERFACE,
-                sei);
+                    WebServicesTagNames.SERVICE_ENDPOINT_INTERFACE,
+                    sei);
             appendTextChild(portComponentRefNode,
-                WebServicesTagNames.ENABLE_MTOM,
-                next.getMtomEnabled());
+                    WebServicesTagNames.ENABLE_MTOM,
+                    next.getMtomEnabled());
             if (descriptor.getAddressing() != null) {
                 AddressingNode adNode = new AddressingNode();
                 adNode.writeDescriptor(portComponentRefNode,
-                    WebServicesTagNames.ADDRESSING,
-                    descriptor.getAddressing());
+                        WebServicesTagNames.ADDRESSING,
+                        descriptor.getAddressing());
             }
             appendTextChild(portComponentRefNode,
-                WebServicesTagNames.PORT_COMPONENT_LINK,
-                next.getPortComponentLinkName());
+                    WebServicesTagNames.PORT_COMPONENT_LINK,
+                    next.getPortComponentLinkName());
         }
 
         WebServiceHandlerNode handlerNode = new WebServiceHandlerNode();
-        handlerNode.writeWebServiceHandlers(serviceRefNode, 
-                                            descriptor.getHandlers());
+        handlerNode.writeWebServiceHandlers(serviceRefNode,
+                descriptor.getHandlers());
 
-        WebServiceHandlerChainNode handlerChainNode = 
+        WebServiceHandlerChainNode handlerChainNode =
                 new WebServiceHandlerChainNode();
-        handlerChainNode.writeWebServiceHandlerChains(serviceRefNode, 
-                                            descriptor.getHandlerChain());
-                
+        handlerChainNode.writeWebServiceHandlerChains(serviceRefNode,
+                descriptor.getHandlerChain());
+
         appendTextChild(serviceRefNode, WebServicesTagNames.MAPPED_NAME,
                 descriptor.getMappedName());
 
-        if (descriptor.isInjectable()) {
+         if (descriptor.isInjectable()) {
             InjectionTargetNode ijNode = new InjectionTargetNode();
             for (InjectionTarget target : descriptor.getInjectionTargets()) {
                 ijNode.writeDescriptor(serviceRefNode, TagNames.INJECTION_TARGET, target);
             }
         }
 
-        
+
         return serviceRefNode;
-    }    
+
+    }
+
+    public ServiceReferenceDescriptor getDescriptor(){
+        return (ServiceReferenceDescriptor) super.getDescriptor();
+
+    }
+
+    public String getTagName() {
+        return WebServicesTagNames.SERVICE_REF;
+    }
+
+
+
+
     
 }

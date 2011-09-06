@@ -44,9 +44,11 @@
  * Created on March 21, 2002, 4:16 PM
  */
 
-package com.sun.enterprise.deployment.node;
+package org.glassfish.webservices.node;
 
 import com.sun.enterprise.deployment.WebServiceEndpoint;
+import com.sun.enterprise.deployment.node.DisplayableComponentNode;
+import com.sun.enterprise.deployment.node.XMLElement;
 import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.deployment.xml.WebServicesTagNames;
 import org.w3c.dom.Node;
@@ -62,7 +64,7 @@ import java.util.logging.Level;
  */
 public class WebServiceEndpointNode extends DisplayableComponentNode {
 
-    private final static XMLElement tag = 
+    private final static XMLElement tag =
         new XMLElement(WebServicesTagNames.PORT_COMPONENT);
 
     /** Creates a new instance of WebServiceEndpointNode */
@@ -87,6 +89,11 @@ public class WebServiceEndpointNode extends DisplayableComponentNode {
      */
     protected XMLElement getXMLRootTag() {
         return tag;
+    }
+
+    @Override
+    protected WebServiceEndpoint createDescriptor() {
+        return new WebServiceEndpoint();
     }
     
     /**
@@ -149,8 +156,8 @@ public class WebServiceEndpointNode extends DisplayableComponentNode {
      * and return it
      *
      * @param parent node in the DOM tree 
-     * @param node name for the root element of this xml fragment      
-     * @param the descriptor to write
+     * @param nodeName name for the root element of this xml fragment
+     * @param descriptor the descriptor to write
      * @return the DOM tree top node
      */
     public Node writeDescriptor(Node parent, String nodeName, 

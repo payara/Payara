@@ -166,17 +166,7 @@ public class DescriptorFactory {
         register(new XMLElement(WebTagNames.MULTIPART_CONFIG), MultipartConfigDescriptor.class);                         
 
         // JSR 109 integration
-        register(new XMLElement(WebServicesTagNames.SERVICE_REF), ServiceReferenceDescriptor.class);
-        register(new XMLElement(WebServicesTagNames.WEB_SERVICE), WebService.class);
-        register(new XMLElement(WebServicesTagNames.PORT_COMPONENT), com.sun.enterprise.deployment.WebServiceEndpoint.class);
-        register(new XMLElement(WebServicesTagNames.HANDLER), 
-                 com.sun.enterprise.deployment.WebServiceHandler.class);
-        register(new XMLElement(WebServicesTagNames.ADDRESSING),
-                 com.sun.enterprise.deployment.Addressing.class);
-        register(new XMLElement(WebServicesTagNames.RESPECT_BINDING),
-                 com.sun.enterprise.deployment.RespectBinding.class);
-        register(new XMLElement(WebServicesTagNames.HANDLER_CHAIN), 
-                 com.sun.enterprise.deployment.WebServiceHandlerChain.class);
+        register(new XMLElement(WebServicesTagNames.SERVICE_REF),ServiceReferenceDescriptor.class);
         register(new XMLElement(WebServicesTagNames.PORT_INFO),
                com.sun.enterprise.deployment.ServiceRefPortInfo.class);
         register(new XMLElement(WebServicesTagNames.STUB_PROPERTY),

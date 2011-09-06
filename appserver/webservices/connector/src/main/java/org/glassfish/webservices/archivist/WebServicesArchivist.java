@@ -43,13 +43,13 @@ package org.glassfish.webservices.archivist;
 import com.sun.enterprise.deployment.archivist.ExtensionsArchivist;
 import com.sun.enterprise.deployment.archivist.Archivist;
 import com.sun.enterprise.deployment.io.DeploymentDescriptorFile;
-import com.sun.enterprise.deployment.io.WebServicesDeploymentDescriptorFile;
 import org.glassfish.deployment.common.RootDeploymentDescriptor;
 import com.sun.enterprise.deployment.WebServicesDescriptor;
 import com.sun.enterprise.deployment.BundleDescriptor;
 import org.glassfish.deployment.common.XModuleType;
 import com.sun.enterprise.deployment.io.runtime.WLWebServicesDeploymentDescriptorFile;
 import org.glassfish.api.deployment.archive.ReadableArchive;
+import org.glassfish.webservices.io.WebServicesDeploymentDescriptorFile;
 import org.jvnet.hk2.annotations.Service;
 
 import java.io.IOException;

@@ -38,14 +38,17 @@
  * holder.
  */
 
-package com.sun.enterprise.deployment.io;
+package org.glassfish.webservices.io;
 
 import com.sun.enterprise.deployment.BundleDescriptor;
 import org.glassfish.deployment.common.Descriptor;
 import com.sun.enterprise.deployment.WebBundleDescriptor;
+import com.sun.enterprise.deployment.io.DeploymentDescriptorFile;
+import com.sun.enterprise.deployment.io.DescriptorConstants;
 import org.glassfish.deployment.common.RootDeploymentDescriptor;
+import org.glassfish.webservices.node.WebServicesDescriptorNode;
 import com.sun.enterprise.deployment.node.RootXMLNode;
-import com.sun.enterprise.deployment.node.WebServicesDescriptorNode;
+
 
 import java.util.Vector;
 

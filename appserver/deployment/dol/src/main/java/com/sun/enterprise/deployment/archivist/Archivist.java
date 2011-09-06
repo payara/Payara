@@ -48,7 +48,8 @@ import com.sun.enterprise.deployment.annotation.impl.ModuleScanner;
 import com.sun.enterprise.deployment.io.DeploymentDescriptorFile;
 import static com.sun.enterprise.deployment.io.DescriptorConstants.PERSISTENCE_DD_ENTRY;
 
-import com.sun.enterprise.deployment.io.WebServicesDeploymentDescriptorFile;
+import static   com.sun.enterprise.deployment.io.DescriptorConstants.WEB_WEBSERVICES_JAR_ENTRY;
+import static   com.sun.enterprise.deployment.io.DescriptorConstants.EJB_WEBSERVICES_JAR_ENTRY;
 import com.sun.enterprise.deployment.util.*;
 import com.sun.enterprise.deployment.io.runtime.WLWebServicesDeploymentDescriptorFile;
 import com.sun.enterprise.util.LocalStringManagerImpl;
@@ -1072,10 +1073,12 @@ public abstract class Archivist<T extends RootDeploymentDescriptor> {
     protected void writeWebServicesDescriptors(BundleDescriptor desc, WritableArchive out)
             throws IOException {
         if (desc.hasWebServices()) {
-            DeploymentDescriptorFile webServicesDD = getWebServicesDDFile(desc);
+            //TODO FIX ME
+            /*DeploymentDescriptorFile webServicesDD = getWebServicesDDFile(desc);
             OutputStream os = out.putNextEntry(webServicesDD.getDeploymentDescriptorPath());
             webServicesDD.write(desc, os);
             out.closeEntry();
+            */
         }
     }
 
@@ -1238,7 +1241,7 @@ public abstract class Archivist<T extends RootDeploymentDescriptor> {
      *         handling the web services deployment descriptors
      */
     public DeploymentDescriptorFile getWebServicesDDFile(RootDeploymentDescriptor desc) {
-        return new WebServicesDeploymentDescriptorFile(desc);
+        return null;//todo fix later
     }
 
     /**
@@ -1550,8 +1553,8 @@ public abstract class Archivist<T extends RootDeploymentDescriptor> {
 
         // Can't depend on having a descriptor, so skip all possible
         // web service deployment descriptor paths.
-        filesToSkip.addAll(WebServicesDeploymentDescriptorFile.
-                getAllDescriptorPaths());
+        filesToSkip.addAll(
+                getAllWebservicesDeploymentDescriptorPaths());
 
         return filesToSkip;
     }
@@ -1907,10 +1910,11 @@ public abstract class Archivist<T extends RootDeploymentDescriptor> {
         if (desc instanceof BundleDescriptor) {
             BundleDescriptor desc2 = (BundleDescriptor) desc;
             if (desc2.hasWebServices()) {
-                DeploymentDescriptorFile webServicesDD =
+                //TODO fix me
+                /*DeploymentDescriptorFile webServicesDD =
                         getWebServicesDDFile((BundleDescriptor) desc2);
                 String anEntry = webServicesDD.getDeploymentDescriptorPath();
-                copyAnEntry(in, out, anEntry);
+                copyAnEntry(in, out, anEntry);*/
             }
         }
     }
@@ -1977,5 +1981,13 @@ public abstract class Archivist<T extends RootDeploymentDescriptor> {
             }
         });
         return executorService;
+    }
+
+    public Vector getAllWebservicesDeploymentDescriptorPaths() {
+        Vector allDescPaths = new Vector();
+        allDescPaths.add(WEB_WEBSERVICES_JAR_ENTRY);
+        allDescPaths.add(EJB_WEBSERVICES_JAR_ENTRY);
+
+        return allDescPaths;
     }
 }

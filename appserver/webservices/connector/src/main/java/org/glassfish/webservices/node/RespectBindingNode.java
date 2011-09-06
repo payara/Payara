@@ -38,35 +38,30 @@
  * holder.
  */
 
-package com.sun.enterprise.deployment.node;
+package org.glassfish.webservices.node;
 
 import com.sun.enterprise.deployment.xml.WebServicesTagNames;
-import com.sun.enterprise.deployment.xml.TagNames;
-import com.sun.enterprise.deployment.NameValuePairDescriptor;
-import com.sun.enterprise.deployment.WebServiceHandler;
 import com.sun.enterprise.deployment.Addressing;
-import com.sun.enterprise.deployment.util.DOLUtils;
+import com.sun.enterprise.deployment.RespectBinding;
+import com.sun.enterprise.deployment.node.DisplayableComponentNode;
+import com.sun.enterprise.deployment.node.XMLElement;
 
-import javax.xml.namespace.QName;
 import java.util.Map;
-import java.util.Iterator;
-import java.util.List;
-import java.util.logging.Level;
 
 import org.w3c.dom.Node;
 
 /**
- * This node does xml marshalling to/from web service addressing elements
+ * This node does xml marshalling to/from web service respect-binding elements
  *
  * @author Bhakti Mehta
  */
-public class AddressingNode extends DisplayableComponentNode{
+public class RespectBindingNode extends DisplayableComponentNode {
 
     private final static XMLElement tag =
-        new XMLElement(WebServicesTagNames.ADDRESSING);
+        new XMLElement(WebServicesTagNames.RESPECT_BINDING);
 
 
-    public AddressingNode() {
+    public RespectBindingNode() {
         super();
     }
 
@@ -77,6 +72,12 @@ public class AddressingNode extends DisplayableComponentNode{
         return tag;
     }
 
+    @Override
+    protected RespectBinding createDescriptor() {
+       return new RespectBinding();
+    }
+
+
     /**
      * all sub-implementation of this class can use a dispatch table to map xml element to
      * method name on the descriptor class for setting the element value.
@@ -85,9 +86,7 @@ public class AddressingNode extends DisplayableComponentNode{
      */
     protected Map getDispatchTable() {
         Map table = super.getDispatchTable();
-        table.put(WebServicesTagNames.ADDRESSING_ENABLED, "setEnabled");
-        table.put(WebServicesTagNames.ADDRESSING_REQUIRED, "setRequired");
-        table.put(WebServicesTagNames.ADDRESSING_RESPONSES, "setResponses");
+        table.put(WebServicesTagNames.RESPECT_BINDING_ENABLED, "setEnabled");
 
         return table;
     }
@@ -100,13 +99,9 @@ public class AddressingNode extends DisplayableComponentNode{
      */
     public void setElementValue(XMLElement element, String value) {
         String qname = element.getQName();
-        Addressing addressing = (Addressing) getDescriptor();
-        if (WebServicesTagNames.ADDRESSING_ENABLED.equals(qname)) {
-            addressing.setEnabled(Boolean.valueOf(value));
-        } else if (WebServicesTagNames.ADDRESSING_REQUIRED.equals(qname)) {
-            addressing.setRequired(Boolean.valueOf(value));
-        } else if (WebServicesTagNames.ADDRESSING_RESPONSES.equals(qname)) {
-            addressing.setResponses(value);
+        RespectBinding rb = (RespectBinding) getDescriptor();
+        if (WebServicesTagNames.RESPECT_BINDING_ENABLED.equals(qname)) {
+            rb.setEnabled( Boolean.valueOf(value));
         } else super.setElementValue(element, value);
     }
 
@@ -120,25 +115,16 @@ public class AddressingNode extends DisplayableComponentNode{
      * @return the DOM tree top node
      */
     public Node writeDescriptor(Node parent, String nodeName,
-                                Addressing addressing) {
-        Node wshNode = super.writeDescriptor(parent, nodeName, addressing);
+                                RespectBinding rb) {
+        Node wshNode = super.writeDescriptor(parent, nodeName, rb);
 
-        writeDisplayableComponentInfo(wshNode, addressing);
+        writeDisplayableComponentInfo(wshNode, rb);
         appendTextChild(wshNode,
-                WebServicesTagNames.ADDRESSING_ENABLED,
-                Boolean.valueOf(addressing.isEnabled()).toString());
-        appendTextChild(wshNode,
-                WebServicesTagNames.ADDRESSING_REQUIRED,
-                Boolean.valueOf(addressing.isRequired()).toString());
-        appendTextChild(wshNode,
-                WebServicesTagNames.ADDRESSING_RESPONSES,
-                addressing.getResponses());
-
-
-
+                WebServicesTagNames.RESPECT_BINDING_ENABLED,
+                Boolean.valueOf(rb.isEnabled()).toString());
 
         return wshNode;
     }
 
-    
+  
 }

@@ -40,7 +40,6 @@
 
 package com.sun.enterprise.deployment;
 
-import com.sun.enterprise.deployment.node.WebServicesDescriptorNode;
 import org.glassfish.deployment.common.RootDeploymentDescriptor;
 import org.glassfish.deployment.common.XModuleType;
 
@@ -73,7 +72,7 @@ public class WebServicesDescriptor extends RootDeploymentDescriptor {
      * loaded by this descriptor
      */
     public String getDefaultSpecVersion() {
-        return WebServicesDescriptorNode.SPEC_VERSION;
+        return new String("1.3");//TODO fix this WebServicesDescriptorNode.SPEC_VERSION;
     }
 
     public void setBundleDescriptor(BundleDescriptor module) {

@@ -53,6 +53,7 @@ import com.sun.enterprise.deployment.xml.TagNames;
 import com.sun.enterprise.deployment.xml.WebServicesTagNames;
 import com.sun.enterprise.deployment.xml.EjbTagNames;
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.component.Habitat;
 import org.w3c.dom.Node;
 import org.glassfish.internal.api.Globals;
 
@@ -94,6 +95,9 @@ public class ApplicationNode extends AbstractBundleNode<Application> {
      
     // The XML tag associated with this Node
     public final static XMLElement tag = new XMLElement(ApplicationTagNames.APPLICATION);
+
+    private final static Habitat habitat = Globals.getDefaultHabitat();
+
     
     private final static List<String> initSystemIDs() {
         List<String> systemIDs = new ArrayList<String>();
@@ -151,7 +155,11 @@ public class ApplicationNode extends AbstractBundleNode<Application> {
         registerElementHandler(new XMLElement(TagNames.ENVIRONMENT_PROPERTY), EnvEntryNode.class, "addEnvironmentProperty");
         registerElementHandler(new XMLElement(EjbTagNames.EJB_REFERENCE), EjbReferenceNode.class);
         registerElementHandler(new XMLElement(EjbTagNames.EJB_LOCAL_REFERENCE), EjbLocalReferenceNode.class);
-        registerElementHandler(new XMLElement(WebServicesTagNames.SERVICE_REF), ServiceReferenceNode.class, "addServiceReferenceDescriptor");
+        JndiEnvRefNode serviceRefNode = habitat.getComponent(JndiEnvRefNode.class, WebServicesTagNames.SERVICE_REF); 
+        if (serviceRefNode != null) {
+            registerElementHandler(new XMLElement(WebServicesTagNames.SERVICE_REF), serviceRefNode.getClass(),"addServiceReferenceDescriptor");
+        }
+
         registerElementHandler(new XMLElement(EjbTagNames.RESOURCE_REFERENCE),
                                                              ResourceRefNode.class, "addResourceReferenceDescriptor");
         registerElementHandler(new XMLElement(TagNames.RESOURCE_ENV_REFERENCE),
@@ -248,7 +256,7 @@ public class ApplicationNode extends AbstractBundleNode<Application> {
      * write the descriptor class to a DOM tree and return it
      *
      * @param parent parent node
-     * @param descriptor the descriptor to write
+     * @param application  to write
      * @return the DOM tree top node
      */    
     public Node writeDescriptor(Node parent, Application application) {

@@ -37,59 +37,23 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
 package com.sun.enterprise.deployment.node;
 
-
-import org.glassfish.deployment.common.Descriptor;
-import com.sun.enterprise.deployment.xml.TagNames;
+import org.jvnet.hk2.annotations.Contract;
 import org.w3c.dom.Node;
 
-
 /**
- * This node class is responsible for handling all the information 
- * related to displayable elements like display-name or icons.
- * 
- * @author  Jerome Dochez
- * @version 
+ * This is the base interface for the JndiEnvRefNodes like ServiceReferenceNode so that
+ * the implementation can lie in their respective modules
+ * @author Bhakti Mehta
  */
-public abstract class DisplayableComponentNode<T extends Descriptor> extends DeploymentDescriptorNode<T> {
 
-    public DisplayableComponentNode() {
-        super();
-        registerElementHandler(new XMLElement(TagNames.NAME), LocalizedInfoNode.class);       
-        registerElementHandler(new XMLElement(TagNames.ICON), IconNode.class);           
-        registerElementHandler(new XMLElement(TagNames.SMALL_ICON), IconNode.class);           
-        registerElementHandler(new XMLElement(TagNames.LARGE_ICON), IconNode.class);           
-    }
-    
-    /**
-     * write the descriptor class to a DOM tree and return it
-     *
-     * @param parent node for the DOM tree
-     * @param the descriptor to write
-     * @return the DOM tree top node
-     */    
-    public Node writeDescriptor(Node parent, T descriptor) {
-        Node node = super.writeDescriptor(parent, descriptor);        
-        
-        // description, display-name, icons...
-        writeDisplayableComponentInfo(node, descriptor);
-        return node;
-    } 
-    
-    /**
-     * write the localized descriptions, display-names and icons info
-     *
-     * @param the node to write the info to
-     * @param the descriptor containing the displayable information
-     */
-    public void writeDisplayableComponentInfo(Node node, T descriptor) {
-        LocalizedNode localizedNode = new LocalizedNode();
-        localizedNode.writeLocalizedMap(node, TagNames.DESCRIPTION, descriptor.getLocalizedDescriptions());
-        localizedNode.writeLocalizedMap(node, TagNames.NAME, descriptor.getLocalizedDisplayNames());
-        IconNode iconNode = new IconNode();
-        iconNode.writeLocalizedInfo(node, descriptor);
-        
-    }       
-}
+@Contract
+public interface SubNode<T> {
+
+  public Node writeDeploymentDescriptor( Node parentNode,T next);
+
+  public String getTagName();
+
+  public T getDescriptor();
+}    

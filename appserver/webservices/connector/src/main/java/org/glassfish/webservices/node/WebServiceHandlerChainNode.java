@@ -38,9 +38,11 @@
  * holder.
  */
 
-package com.sun.enterprise.deployment.node;
+package org.glassfish.webservices.node;
 
 import com.sun.enterprise.deployment.WebServiceHandlerChain;
+import com.sun.enterprise.deployment.node.DisplayableComponentNode;
+import com.sun.enterprise.deployment.node.XMLElement;
 import com.sun.enterprise.deployment.xml.WebServicesTagNames;
 import org.w3c.dom.Node;
 
@@ -50,7 +52,7 @@ import java.util.Map;
 
 public class WebServiceHandlerChainNode extends DisplayableComponentNode {
 
-    private final static XMLElement tag = 
+    private final static XMLElement tag =
         new XMLElement(WebServicesTagNames.HANDLER_CHAIN);
 
     public WebServiceHandlerChainNode() {
@@ -58,6 +60,11 @@ public class WebServiceHandlerChainNode extends DisplayableComponentNode {
         registerElementHandler
             (new XMLElement(WebServicesTagNames.HANDLER),
              WebServiceHandlerNode.class, "addHandler");
+    }
+
+    @Override
+    protected WebServiceHandlerChain createDescriptor() {
+        return new WebServiceHandlerChain();
     }
 
     /**
@@ -96,8 +103,8 @@ public class WebServiceHandlerChainNode extends DisplayableComponentNode {
      * return it
      *
      * @param parent node in the DOM tree 
-     * @param node name for the root element of this xml fragment      
-     * @param the descriptor to write
+     * @param nodeName name for the root element of this xml fragment
+     * @param handler the descriptor to write
      * @return the DOM tree top node
      */
     public Node writeDescriptor(Node parent, String nodeName, 

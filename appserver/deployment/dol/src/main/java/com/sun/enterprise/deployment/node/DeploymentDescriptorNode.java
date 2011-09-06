@@ -50,10 +50,14 @@ import com.sun.enterprise.deployment.xml.TagNames;
 import com.sun.enterprise.deployment.xml.WebServicesTagNames;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.deployment.common.Descriptor;
+import org.glassfish.internal.api.Globals;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xml.sax.Attributes;
+import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.annotations.Inject;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -81,8 +85,12 @@ import java.util.logging.Level;
  * @author  Jerome Dochez
  * @version 
  */
+@Service
 public abstract class DeploymentDescriptorNode<T> implements XMLNode<T>  {
 
+
+    public Habitat habitat = Globals.getDefaultHabitat();;
+    
     private static final String QNAME_SEPARATOR = ":";
 
     // handlers is the list of XMLNodes  registered for handling sub xml tags of the current
@@ -111,7 +119,7 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T>  {
 
     // for i18N
     protected static final LocalStringManagerImpl localStrings=
-	    new LocalStringManagerImpl(DeploymentDescriptorNode.class);        
+	    new LocalStringManagerImpl(DeploymentDescriptorNode.class);
     
     /** Creates new DeploymentDescriptorNode */
     public DeploymentDescriptorNode() {
@@ -230,7 +238,7 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T>  {
      * @param addMethodName is the method name for adding the descriptor
      * extracted by the handler node to the current descriptor
      */
-    protected void registerElementHandler(XMLElement element, Class  handler, 
+    public void registerElementHandler(XMLElement element, Class  handler, 
                                             String addMethodName) {
                                                                                              
        registerElementHandler(element, handler);       
@@ -671,12 +679,14 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T>  {
             return;
         }
 
-        ServiceReferenceNode serviceRefNode = new ServiceReferenceNode();
-        while(refs.hasNext()) {
-            ServiceReferenceDescriptor next = (ServiceReferenceDescriptor)
-                refs.next();
-            serviceRefNode.writeDescriptor
-                (parentNode, WebServicesTagNames.SERVICE_REF, next);
+        JndiEnvRefNode serviceRefNode = habitat.getComponent(JndiEnvRefNode.class, WebServicesTagNames.SERVICE_REF);
+        if (serviceRefNode != null) {
+            while(refs.hasNext()) {
+                ServiceReferenceDescriptor next = (ServiceReferenceDescriptor)
+                        refs.next();
+                serviceRefNode.writeDeploymentDescriptor
+                        (parentNode,next);
+            }
         }
     }
 
