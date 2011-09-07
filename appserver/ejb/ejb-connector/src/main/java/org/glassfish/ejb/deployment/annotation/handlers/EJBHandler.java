@@ -262,10 +262,10 @@ public class EJBHandler extends AbstractResourceHandler {
 
         if (beanInterface.getAnnotation(Local.class) != null) {
             ejbRef.setLocal(true);
-        } else if (beanInterface.getAnnotation(Remote.class) != null) {
-            ejbRef.setLocal(false);
         } else {
-            // Assume remote for now. We can't know for sure until the
+            // If beanInterface has @Remote annotation, setLocal(false);
+            // If beanInterface has neither @Local nor @Remote,
+            // assume remote for now. We can't know for sure until the
             // post-validation stage.  Even though local business will 
             // probably be more common than remote business, defaulting 
             // to remote business simplifies the post-application 
