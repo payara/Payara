@@ -181,12 +181,16 @@ public class GenericCreateCommand extends GenericCrudCommand implements AdminCom
                         throw new TransactionFailure(msg,e);
                     }
 
-                    CreationDecorator<ConfigBeanProxy> decorator = habitat.getComponent(create.decorator());
+                    
+                    CreationDecorator<ConfigBeanProxy> decorator = null;
+                    if (create != null) {
+                        decorator = habitat.getComponent(create.decorator());
+                    }
                     if (decorator==null) {
                         String msg = localStrings.getLocalString(GenericCrudCommand.class,
                                 "GenericCreateCommand.decorator_not_found",
                                 "The CreationDecorator {0} could not be found in the habitat, is it annotated with @Service ?",
-                                create.decorator().toString());
+                                create == null ? "null" : create.decorator().toString());
                         result.failure(logger, msg);
                         throw new TransactionFailure(msg);
                     } else {

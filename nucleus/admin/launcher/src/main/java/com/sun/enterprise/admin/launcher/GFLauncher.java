@@ -39,7 +39,6 @@
  */
 package com.sun.enterprise.admin.launcher;
 
-import com.sun.enterprise.util.Utility;
 import java.io.*;
 import java.util.*;
 import java.util.logging.Level;
@@ -56,7 +55,6 @@ import com.sun.enterprise.universal.glassfish.ASenvPropertyReader;
 import com.sun.enterprise.universal.xml.MiniXmlParser;
 import static com.sun.enterprise.util.SystemPropertyConstants.*;
 import static com.sun.enterprise.admin.launcher.GFLauncherConstants.*;
-import java.util.logging.Logger;
 
 /**
  * This is the main Launcher class designed for external and internal usage.
@@ -457,13 +455,15 @@ public abstract class GFLauncher {
     private void writeSecurityTokens(Process sp) throws GFLauncherException, IOException {
         handleDeadProcess();
         OutputStream os = sp.getOutputStream();
+        OutputStreamWriter osw = null;
         BufferedWriter bw = null;
         try {
-            bw = new BufferedWriter(new OutputStreamWriter(os));
+            osw = new OutputStreamWriter(os);
+            bw = new BufferedWriter(osw);
             for (String token : info.securityTokens) {
                 bw.write(token);
                 bw.newLine();
-                bw.flush();      //flusing once is ok too
+                bw.flush();      //flushing once is ok too
             }
         }
         catch (IOException e) {
@@ -472,16 +472,22 @@ public abstract class GFLauncher {
         }
         finally {
             if (bw != null) {
-                handleDeadProcess();
                 bw.close();
             }
-            else if (os != null)
+            if (osw != null) {
+                osw.close();
+            }
+            if (os != null) {
                 try {
                     os.close();
                 }
                 catch (IOException ioe) {
                     // nothing to do
                 }
+            }
+            if (bw != null) {
+                handleDeadProcess();
+            }
         }
     }
 

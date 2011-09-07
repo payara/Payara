@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -260,7 +260,7 @@ public class WindowsService extends NonSMFServiceAdapter {
         StringBuilder sb = new StringBuilder();
 
         if (user != null) {
-            StringBuilder append = sb.append(" " + begin + "--user" + end);
+            sb.append(" " + begin + "--user" + end);
             sb.append("  ").append(begin).append(user).append(end);
         }
         sb.append("  ").append(begin).append("--passwordfile").append(end);
@@ -336,15 +336,12 @@ public class WindowsService extends NonSMFServiceAdapter {
         return "  " + STOP_ARG_START + s + STOP_ARG_END + "\n";
     }
 
-    private static boolean ok(String s) {
-        return s != null && s.length() > 0;
-    }
     private static final String SOURCE_WIN32_EXE_FILENAME = "winsw.exe";
     private static final String TARGET_DIR = "bin";
     private static final String TEMPLATE_FILE_NAME = "Domain-service-winsw.xml.template";
     private File sourceWin32Exe;
     private File targetDir;
-    private File targetXml;
-    private File targetWin32Exe;
+    private File targetXml = null;
+    private File targetWin32Exe = null;;
     private String xmlFileCopy;
 }

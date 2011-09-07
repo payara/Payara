@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -57,10 +57,10 @@ public class ServicesUtils {
 
     static TokenValueSet map2Set(final Map<String, String> map){
         final Set<TokenValue> set = new HashSet<TokenValue> ();
-        final Set<String> keys = map.keySet();
-        for (final String key : keys) {
-            final String value      = map.get(key);
-            final TokenValue tv     = new TokenValue(key, value);
+        for (final Map.Entry<String,String> e : map.entrySet()) {
+            final String key = e.getKey();
+            final String value = e.getValue();
+            final TokenValue tv = new TokenValue(key, value);
             set.add(tv);
         }
         final TokenValueSet tvset = new TokenValueSet(set);

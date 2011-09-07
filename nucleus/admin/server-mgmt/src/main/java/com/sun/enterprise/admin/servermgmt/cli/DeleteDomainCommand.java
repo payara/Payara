@@ -53,9 +53,6 @@ import com.sun.enterprise.admin.servermgmt.DomainsManager;
 import com.sun.enterprise.admin.servermgmt.pe.PEDomainsManager;
 import com.sun.enterprise.util.HostAndPort;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
-import com.sun.appserv.management.client.prefs.LoginInfoStoreFactory;
-import com.sun.appserv.management.client.prefs.LoginInfoStore;
-import com.sun.appserv.management.client.prefs.StoreException;
 
 /**
  *  This is a local command that deletes a domain.
@@ -141,11 +138,4 @@ public final class DeleteDomainCommand extends LocalDomainCommand {
        }
     }
 
-    /**
-     * This method will delete the entry in the .asadminpass file if exists
-     */
-    private void deleteLoginInfo() throws CommandException, StoreException {
-        LoginInfoStore store = LoginInfoStoreFactory.getDefaultStore();
-        store.remove(adminAddress.getHost(), adminAddress.getPort());
-    }
-}
+ }

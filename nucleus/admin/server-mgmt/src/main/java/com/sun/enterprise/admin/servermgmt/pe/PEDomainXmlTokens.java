@@ -87,11 +87,6 @@ public final class PEDomainXmlTokens
     
     public static TokenValueSet getTokenValueSet(DomainConfig domainConfig)
     {
-        final String  installRoot = 
-        (String)domainConfig.get(DomainConfig.K_INSTALL_ROOT);
-        final String  domainRoot  = 
-        (String)domainConfig.get(DomainConfig.K_DOMAINS_ROOT);
-
         final TokenValueSet tokens = new TokenValueSet();
 
         String instanceName = (String)domainConfig.get(DomainConfig.K_SERVERID);

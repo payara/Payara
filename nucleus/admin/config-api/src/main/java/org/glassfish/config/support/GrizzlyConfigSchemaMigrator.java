@@ -181,53 +181,6 @@ public class GrizzlyConfigSchemaMigrator implements ConfigurationUpgrade, PostCo
         getNetworkConfig();
     }
 
-    private void createPortUnification(final NetworkListener listener) throws TransactionFailure {
-        ConfigSupport.apply(new SingleConfigCode<Protocols>() {
-            @Override
-            public Object run(final Protocols protocols) throws TransactionFailure {
-                final Protocol puProtocol = createProtocol(protocols, "pu-" + listener.getName());
-                final PortUnification pu = puProtocol.createChild(PortUnification.class);
-                puProtocol.setPortUnification(pu);
-                createProtocolFinder(pu, listener.getProtocol(), listener.getProtocol(),
-                    "org.glassfish.grizzly.config.portunif.HttpProtocolFinder");
-                createProtocolFinder(pu, "soap-tcp", "soap-tcp-finder",
-                    "org.glassfish.webservices.transport.tcp.WSTCPProtocolFinder");
-                final Protocol soap = createProtocol(protocols, "soap-tcp");
-                final ProtocolChainInstanceHandler handler = soap.createChild(ProtocolChainInstanceHandler.class);
-                soap.setProtocolChainInstanceHandler(handler);
-                final ProtocolChain chain = handler.createChild(ProtocolChain.class);
-                handler.setProtocolChain(chain);
-                createProtocolFilter(chain, "soap-tcp-filter",
-                    "org.glassfish.webservices.transport.tcp.WSTCPProtocolFilter");
-                return null;
-            }
-        }, getNetworkConfig().getProtocols());
-    }
-
-    private Protocol createProtocol(final Protocols protocols, final String name) throws TransactionFailure {
-        final Protocol puProtocol = protocols.createChild(Protocol.class);
-        protocols.getProtocol().add(puProtocol);
-        puProtocol.setName(name);
-        return puProtocol;
-    }
-
-    private void createProtocolFinder(final PortUnification pu, final String protocolName, final String name,
-        final String className) throws TransactionFailure {
-        final ProtocolFinder finder = pu.createChild(ProtocolFinder.class);
-        pu.getProtocolFinder().add(finder);
-        finder.setProtocol(protocolName);
-        finder.setName(name);
-        finder.setClassname(className);
-    }
-
-    private void createProtocolFilter(final ProtocolChain chain, final String name, final String className)
-        throws TransactionFailure {
-        final ProtocolFilter filter = chain.createChild(ProtocolFilter.class);
-        chain.getProtocolFilter().add(filter);
-        filter.setName(name);
-        filter.setClassname(className);
-    }
-
     private ThreadPools createThreadPools() throws TransactionFailure {
         return (ThreadPools) ConfigSupport.apply(new SingleConfigCode<Config>() {
             public Object run(Config param) throws PropertyVetoException, TransactionFailure {
@@ -255,20 +208,6 @@ public class GrizzlyConfigSchemaMigrator implements ConfigurationUpgrade, PostCo
         return config;
     }
 
-    private NetworkListeners getNetworkListeners(NetworkConfig config) throws TransactionFailure {
-        NetworkListeners listeners = config.getNetworkListeners();
-        if (listeners == null) {
-            listeners = (NetworkListeners) ConfigSupport.apply(new SingleConfigCode<NetworkConfig>() {
-                public Object run(NetworkConfig param) throws TransactionFailure {
-                    final NetworkListeners child = param.createChild(NetworkListeners.class);
-                    param.setNetworkListeners(child);
-                    return child;
-                }
-            }, config);
-        }
-        return listeners;
-    }
-
     public static Protocols getProtocols(NetworkConfig config) throws TransactionFailure {
         Protocols protocols = config.getProtocols();
         if (protocols == null) {
@@ -281,21 +220,6 @@ public class GrizzlyConfigSchemaMigrator implements ConfigurationUpgrade, PostCo
             }, config);
         }
         return protocols;
-    }
-
-    private Transports getTransports(NetworkConfig config) throws TransactionFailure {
-        Transports transports = config.getTransports();
-        if (transports == null) {
-            transports = (Transports) ConfigSupport.apply(new SingleConfigCode<NetworkConfig>() {
-                public Object run(NetworkConfig param) throws TransactionFailure {
-                    final Transports child = param.createChild(Transports.class);
-                    param.setTransports(child);
-                    return child;
-                }
-            }, config);
-        }
-        return transports;
-
     }
 
     private void migrateThreadPools(ThreadPools threadPools) throws TransactionFailure {

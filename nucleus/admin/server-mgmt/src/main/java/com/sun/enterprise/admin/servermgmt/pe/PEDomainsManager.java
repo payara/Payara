@@ -40,12 +40,7 @@
 
 package com.sun.enterprise.admin.servermgmt.pe;
 
-import com.sun.enterprise.admin.servermgmt.InstanceException;
-import com.sun.enterprise.admin.servermgmt.InstancesManager;
 //import com.sun.enterprise.admin.servermgmt.launch.LaunchConstants;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 import com.sun.enterprise.util.io.FileUtils;
 import com.sun.enterprise.util.i18n.StringManager;
@@ -61,28 +56,16 @@ import com.sun.enterprise.admin.servermgmt.RepositoryManager;
 import com.sun.enterprise.admin.servermgmt.util.DomainXmlSAXParser;
 
 //import com.sun.enterprise.admin.common.Status;
-import com.sun.enterprise.admin.util.TokenValue;
 
 import com.sun.enterprise.admin.util.TokenValueSet;
 //import com.sun.enterprise.config.serverbeans.ServerValidationHandler;
 import java.util.Map;
-import org.xml.sax.helpers.DefaultHandler;
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
-import java.util.ArrayList;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.util.HashMap;
 import java.util.BitSet;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
-import java.util.Set;
-import java.util.StringTokenizer;
-import javax.xml.transform.OutputKeys;
-import org.xml.sax.EntityResolver;
 
 public class PEDomainsManager extends RepositoryManager 
     implements DomainsManager
@@ -331,39 +314,14 @@ public class PEDomainsManager extends RepositoryManager
         {
             final PEFileLayout layout = getFileLayout(domainConfig);
             final File dx = layout.getDomainConfigFile();
-            final File dxt, tr;
             TokenValueSet tokens = getDomainXmlTokens(domainConfig);
             String tn = (String)domainConfig.get(DomainConfig.K_TEMPLATE_NAME);
             if((tn == null)||(tn.equals(""))) {
-                //use profiles in this case
-                dxt = layout.getDomainXmlTemplate();
-                
-                /* Comment out for V3, till decision is taken on profiles*/
-                /*
-                final String p = domainConfig.getProfile();
-                final File pf = layout.getProfileFolder(p);
-                System.out.println("pf = " + pf.getAbsolutePath() + " " + pf.getName() );
-                if (!pf.exists()) {
-                    final String key = "profileNotFound";
-                    final String path = pf.getAbsolutePath();
-                    final String name = domainConfig.getRepositoryName();
-                    final String msg = strMgr.getString(key, p, path, name);
-                    throw new IllegalArgumentException(msg);
-                }
-                if (new File(pf, layout.DOMAIN_XML_FILE).exists()) {
-                // takes care of the default profiles that we bundle.
-                    tr = new File(pf, layout.DOMAIN_XML_FILE);
-                }
-                else { //now transform for generic xsl
-                    tr = invokeGenericXmlTemplateProcessing(dxt, domainConfig, 
-                        PROFILEPROPERTY_DOMAINXML_STYLESHEETS, layout.getConfigRoot());
-                    addTokenValuesIfAny(tokens, layout, p, this.PROFILEPROPERTY_DOMAINXML_TOKENVALUES);
-                }*/
-                tr = new File(layout.getTemplatesDir(), layout.DOMAIN_XML_FILE);
+                File tr = new File(layout.getTemplatesDir(), layout.DOMAIN_XML_FILE);
                 generateFromTemplate(tokens, tr, dx);
             }
             else {
-                dxt = layout.getDomainXmlTemplate(tn);
+                File dxt = layout.getDomainXmlTemplate(tn);
                 generateFromTemplate(tokens, dxt, dx);
             }
         }
@@ -647,99 +605,6 @@ public class PEDomainsManager extends RepositoryManager
     {
         return null;
     }
-    /*
-    public void stopDomainForcibly(DomainConfig domainConfig, int timeout) 
-        throws DomainException 
-    {
-        try {
-            checkRepository(domainConfig);
-            InstancesManager domainMgr = getInstancesManager(domainConfig);
-
-            boolean stopped = false;
-            
-            if(timeout > 0)
-                stopped = domainMgr.stopInstanceWithinTime(timeout);
-            
-            if (!stopped) domainMgr.killRelatedProcesses(); 
-        } catch (Exception e) {
-            throw new DomainException(e);
-        }        
-    }
-
-    protected Properties getEnvProps(DomainConfig dc)
-    {
-        Properties p = new Properties();
-
-        p.setProperty(SystemPropertyConstants.INSTANCE_ROOT_PROPERTY,
-                    dc.getRepositoryRoot() + File.separator + dc.getRepositoryName());
-        
-        // this will be set again by ASLauncher.  It doesn't hurt to do it here too
-        p.setProperty("domain.name", dc.getRepositoryName());
-      
-        p.setProperty(LaunchConstants.PROCESS_NAME_PROP, "as9-server");
-        
-        return p;
-    }
-
-    private boolean isDomainNotRunning(DomainConfig domainConfig) 
-        throws InstanceException
-    {
-        InstancesManager instMgr = getInstancesManager(domainConfig);
-        
-        return (Status.kInstanceNotRunningCode ==
-                instMgr.getInstanceStatus());
-    }
-    */
-    
-    private File invokeGenericXmlTemplateProcessing(final File base, final DomainConfig
-        dc, final String propName, final File destDir) 
-        throws ProfileTransformationException {
-        final PEFileLayout layout                 = getFileLayout(dc);
-        final String profileName                  = dc.getProfile();
-        final File profileFolder                  = layout.getProfileFolder(profileName);
-        String msg = strMgr.getString("genericProfileHandlingStarts", profileFolder.getName());
-        System.out.println(msg);
-        msg = strMgr.getString("genericXmlProcessing", base, profileFolder.getName(), propName);
-        System.out.println(msg);
-        final File propsFile = layout.getProfilePropertiesFile(profileName);
-        final List<File> styleSheets = getStyleSheetList(profileFolder, propsFile, propName);
-        final Properties p = new Properties();
-    //    p.setProperty(OutputKeys.DOCTYPE_PUBLIC, ServerValidationHandler.SERVER_DTD_PUBLIC_ID);
-    //    p.setProperty(OutputKeys.DOCTYPE_SYSTEM, ServerValidationHandler.SERVER_DTD_SYSTEM_ID);
-        //final EntityResolver er = new ServerValidationHandler();
-        final EntityResolver er = new DefaultHandler();
-        final ProfileTransformer px = new ProfileTransformer(base, styleSheets, destDir, er, p);
-        final File transformed = px.transform();
-        return ( transformed );
-    }
-    
-    private static List<File> getStyleSheetList(final File pf,
-        final File propsFile, final String p) throws RuntimeException {
-        /* Implementation note: I have chosen to throw a runtime exception here
-         * because if this fails, there is no way to recover. It almost
-         * certainly means that there is something wrong with the installation.
-         */
-        if (! propsFile.exists() || ! propsFile.canRead()) {
-            final String msg = strMgr.getString("profilePropertiesMissing", propsFile.getAbsolutePath());
-            throw new IllegalArgumentException(msg);
-        }
-        try {
-            final String ssNames    = readProfilePropertyValue(propsFile, p);
-            final StringTokenizer tk = new StringTokenizer(ssNames, NAME_DELIMITER);
-            final List<File> list    = new ArrayList<File>(tk.countTokens());
-            while (tk.hasMoreTokens()) {
-                final File ss = new File(pf, tk.nextToken().trim());
-                if (! ss.exists()) {
-                    final String msg = strMgr.getString("styleSheetNotFound", ss.getAbsolutePath());
-                    throw new RuntimeException(msg);
-                }
-                list.add(ss);
-            }
-            return ( list );
-        } catch (final IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
     
     private static String readProfilePropertyValue(final File propsFile, final
         String propName) throws IOException {
@@ -770,34 +635,4 @@ public class PEDomainsManager extends RepositoryManager
         return ( propValue ); 
     }
     
-    private static void addTokenValuesIfAny(final TokenValueSet tokens, 
-        final PEFileLayout layout, final String profileName, final String propName) 
-        throws IOException {
-        final File propsFile      = layout.getProfilePropertiesFile(profileName);
-        final String tvsAsString  = readProfilePropertyValue(propsFile, propName);
-        final Set<TokenValue> tvs = s2TV(tvsAsString);
-        tokens.addAll(tvs);
-    }
-    
-    private static Set<TokenValue> s2TV(final String nvpairs) {
-        final Set<TokenValue> set = new HashSet<TokenValue>();
-        final StringTokenizer st = new StringTokenizer(nvpairs, NAME_DELIMITER);
-        String msg;
-        while (st.hasMoreTokens()) {
-            String tvs = st.nextToken();
-            if (tvs == null || tvs.indexOf("=") == -1 || tvs.length() < 3) {
-                msg = strMgr.getString("invalidToken", tvs);
-            }
-            tvs = tvs.trim();
-            final int e2 = tvs.indexOf("=");
-            final String t = tvs.substring(0, e2);
-            final String v = tvs.substring(e2+1);
-            msg = strMgr.getString("processingToken", new String[] {t, v});
-            System.out.println(msg);
-            final TokenValue tv = new TokenValue(t, v); //default delimiter
-            set.add(tv);
-        }
-        return ( set );
-    }
-
 }

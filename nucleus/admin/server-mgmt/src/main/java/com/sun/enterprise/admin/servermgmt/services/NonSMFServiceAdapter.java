@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,14 +41,9 @@
 package com.sun.enterprise.admin.servermgmt.services;
 
 import com.sun.enterprise.universal.PropertiesDecoder;
-import com.sun.enterprise.universal.io.SmartFile;
-import com.sun.enterprise.util.StringUtils;
-import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.enterprise.util.io.ServerDirs;
 import java.io.*;
-import java.util.*;
 import java.util.Map;
-import static com.sun.enterprise.admin.servermgmt.services.Constants.*;
 
 /**
  * The original implementation of Services had serious design problems.  The Service interface
@@ -98,10 +93,7 @@ public abstract class NonSMFServiceAdapter extends ServiceAdapter {
 
     @Override
     public final String getManifestFilePath() {
-        UnsupportedOperationException ex = new UnsupportedOperationException("getManifestFilePath() is not supported in this platform.");
-
-        ex.printStackTrace();
-        throw ex;
+        throw new UnsupportedOperationException("getManifestFilePath() is not supported in this platform.");
     }
 
     @Override
@@ -125,25 +117,6 @@ public abstract class NonSMFServiceAdapter extends ServiceAdapter {
 
     void setTemplateFile(String name) {
         templateFile = new File(info.libDir, "install/templates/" + name);
-    }
-
-
-
-    /**
-     * This method is here to get rid of painful boilerplating...
-     * @return
-     */
-    private String validateProperty(File f, Properties p, String key) {
-        String value = (String) p.get(key);
-
-        if (!ok(value))
-            throw new IllegalArgumentException(Strings.get("missingParamsInFile", f, key));
-
-        return value;
-    }
-
-    private static boolean ok(String s) {
-        return s != null && s.length() > 0;
     }
     private String flattenedServicePropertes;
     private File templateFile;

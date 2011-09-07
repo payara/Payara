@@ -353,8 +353,6 @@ public class LinuxService extends NonSMFServiceAdapter {
 
     // This is what happens when you hate copy&paste code duplication.  Lots of methods!!
     private void createLinks(String[] cmds, String linkname, List<File> dirs) {
-        String path = target.getAbsolutePath();
-
         for (File dir : dirs) {
             File link = new File(dir, linkname);
             cmds[3] = link.getAbsolutePath();
@@ -385,15 +383,15 @@ public class LinuxService extends NonSMFServiceAdapter {
 
     private void tooManyLinks(File[] matches) {
         // this is complicated enough to turn it into a method
-        String theMatches = "";
+        StringBuffer theMatches = new StringBuffer();
         boolean first = true;
         for (File f : matches) {
             if (first)
                 first = false;
             else
-                theMatches += "\n";
+                theMatches.append("\n");
 
-            theMatches += f.getAbsolutePath();
+            theMatches.append(f.getAbsolutePath());
         }
         throw new RuntimeException(Strings.get("too_many_links", theMatches));
     }

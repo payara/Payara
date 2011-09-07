@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -77,7 +77,6 @@ public class PlatformServicesInfo {
         // used by SMF only
         fqsn = serverDirs.getServerName() + serverDirs.getServerParentDir().getPath().replace('/', '_');
         smfFullServiceName = SERVICE_NAME_PREFIX + serviceName;
-        valid = true;
     }
 
     /**
@@ -177,11 +176,10 @@ public class PlatformServicesInfo {
     File asadminScript;
     boolean force;
     String serviceUser;
-    Date date;
+    Date date = null;
     File passwordFile;
     String appserverUser;
     // private to this implementation
-    private boolean valid;
     private File installRootDir;
     int sPriority;
     int kPriority;

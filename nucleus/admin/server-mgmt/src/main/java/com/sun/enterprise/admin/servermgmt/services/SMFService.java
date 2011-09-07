@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -117,7 +117,6 @@ public final class SMFService extends ServiceAdapter {
      */
     @Override
     public void createServiceInternal() {
-        boolean success = false;
         boolean previousManifestExists = new File(getManifestFilePath()).exists();
         try {
             isConfigValid(); //safe, throws exception if not valid
@@ -130,10 +129,10 @@ public final class SMFService extends ServiceAdapter {
                     getManifestFileTemplatePath(),
                     getManifestFilePath());
             validateService();
-            success = importService();
+            importService();
         }
         catch (final Exception e) {
-            if (!success && !previousManifestExists) {
+            if (!previousManifestExists) {
                 cleanupManifest();
             }
             throw new RuntimeException(e);
@@ -429,38 +428,6 @@ public final class SMFService extends ServiceAdapter {
         }
     }
 
-    private boolean fileContainsToken(final String path, final String t, final Map<String, String> tv) throws RuntimeException {
-        BufferedInputStream bis = null;
-        try {
-            boolean present = false;
-            bis = new BufferedInputStream(new FileInputStream(path));
-            final Properties p = new Properties();
-            p.load(bis);
-            if (p.containsKey(t)) {
-                tv.put(t, (String) p.get(t));
-                present = true;
-            }
-            return (present);
-        }
-        catch (final Exception e) {
-            throw new RuntimeException(e);
-        }
-        finally {
-            if (bis != null) {
-                try {
-                    bis.close();
-                }
-                catch (Exception ee) {
-                    IGNORE_EXCEPTION(ee);
-                }
-            }
-        }
-    }
-
-    private static void IGNORE_EXCEPTION(final Exception e) {
-        // ignore
-    }
-
     private boolean serviceNameExists(final String sn) {
         boolean exists = false;
         try {
@@ -486,7 +453,7 @@ public final class SMFService extends ServiceAdapter {
             if (info.force) {
                 FileUtils.whack(manifestParent);
 
-                if (manifestParent != null && manifestParent.isDirectory()) {
+                if (manifestParent.isDirectory()) {
                     throw new IllegalArgumentException(msg);
                 }
             }
