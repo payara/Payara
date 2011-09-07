@@ -72,6 +72,8 @@ import org.glassfish.api.admin.config.ReferenceContainer;
 // import org.glassfish.virtualization.util.RuntimeContext;
 
 import java.beans.PropertyVetoException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.logging.Level;
@@ -159,6 +161,32 @@ public interface Cluster extends ConfigBeanProxy, Injectable, PropertyBag, Named
     void setGmsEnabled(String value) throws PropertyVetoException;
 
     /**
+     * Gets the value of the broadcast property.
+     *
+     * When "broadcast" is set to default of "udpmulticast" and GmsMulticastPort
+     * GMSMulticastAddress are not set, then their values are generated.
+     * When "broadcast" is set to implied unicast using udp or tcp protocol,
+     * then the VIRUTAL_MUTLICAST_URI_LIST is generated
+     * for virtual broadcast over unicast mode.
+     *
+     * @return true | false as a string, null means false
+     */
+    @Attribute (defaultValue="udpmulticast", dataType=String.class, required=true)
+    @NotNull
+    String getBroadcast();
+
+    /**
+     * Sets the value of the broadcast property.
+     *
+     * @param value allowed object is
+     *              {@link String }
+     * @throws PropertyVetoException if a listener vetoes the change
+     */
+    @Param(name="gmsbroadcast", optional=true)
+    void setBroadcast(String value) throws PropertyVetoException;
+
+
+    /**
      * Gets the value of the gmsMulticastPort property.
      *
      * This is the communication port GMS uses to listen for group  events.
@@ -170,7 +198,6 @@ public interface Cluster extends ConfigBeanProxy, Injectable, PropertyBag, Named
     @Attribute
     @Min(value=2048)
     @Max(value=32000)
-    @NotNull
     String getGmsMulticastPort();
 
     /**
@@ -193,7 +220,6 @@ public interface Cluster extends ConfigBeanProxy, Injectable, PropertyBag, Named
      *         {@link String }
      */
     @Attribute
-    @NotNull
     String getGmsMulticastAddress();
 
     /**
@@ -598,12 +624,6 @@ public interface Cluster extends ConfigBeanProxy, Injectable, PropertyBag, Named
                     "${GMS-BIND-INTERFACE-ADDRESS-%s}",
                     instanceName));
             }
-            if (instance.getGmsMulticastAddress() == null) {
-                instance.setGmsMulticastAddress(generateHeartbeatAddress());
-            }
-            if (instance.getGmsMulticastPort() == null) {
-                instance.setGmsMulticastPort(generateHeartbeatPort());
-            }
 
             Property gmsListenerPort = instance.createChild(Property.class);
             gmsListenerPort.setName("GMS_LISTENER_PORT");
@@ -637,6 +657,78 @@ public interface Cluster extends ConfigBeanProxy, Injectable, PropertyBag, Named
                 }
             }
 
+            // handle generation of udp multicast and non-multicast mode for DAS managed cluster.
+            // inspect cluster attribute broadcast and cluster property GMS_DISCOVERY_URI_LIST.
+            String broadcastProtocol = instance.getBroadcast();
+            Property discoveryUriListProp = instance.getProperty("GMS_DISCOVERY_URI_LIST");
+            String  discoveryUriList = discoveryUriListProp != null ? discoveryUriListProp.getValue() : null;
+            if (discoveryUriList != null  && broadcastProtocol != null && broadcastProtocol.equals("udpmulticast")) {
+
+                // override default broadcast protocol of udp multicast when GMS_DISCOVERY_URI_LIST has been set.
+                instance.setBroadcast("tcp");
+                broadcastProtocol = "tcp";
+            }
+            if (logger.isLoggable(Level.FINE)) {
+                logger.log(Level.FINE, "cluster attribute gms broadcast=" + instance.getBroadcast());
+                logger.log(Level.FINE, "cluster property GMS_DISCOVERY_URI_LIST=" + discoveryUriList);
+            }
+            if (broadcastProtocol.equals("udpmulticast")) {
+
+                // only generate these values when they are not set AND broadcastProtocol is set to enable UDP multicast.
+                // Note: that this is the default for DAS controlled clusters.
+                if (instance.getGmsMulticastAddress() == null) {
+                    instance.setGmsMulticastAddress(generateHeartbeatAddress());
+                }
+                if (instance.getGmsMulticastPort() == null) {
+                    instance.setGmsMulticastPort(generateHeartbeatPort());
+                }
+            } else {
+
+                // cover case that broadcast is set to non-multicast and no cluster property GMS_DISCOVERY_URI_LIST exists.
+                // create the property.
+                if (discoveryUriListProp == null) {
+                    discoveryUriListProp = instance.createChild(Property.class);
+                    discoveryUriListProp.setName("GMS_DISCOVERY_URI_LIST");
+                    discoveryUriList = null;
+                    instance.getProperty().add(discoveryUriListProp);
+
+                }
+
+                // non mulitcast case.  genereate GMS_DISCOVERY_URI_LIST value with DAS as the seed.
+                // must explicitly set GMS_LISTENER_PORT-clustername system property for DAS and
+                // use this in generated GMS_DISCOVERY_URI_LIST.
+                if (discoveryUriList == null || discoveryUriList.equals("generate")) {
+
+                    // TODO: implement UDP unicast.
+
+                    // Only tcp mode is supported now.
+                    // So either "udpunicast" or "tcp" for broadcast mode is treated the same.
+                    String TCPPORT = "9090";
+
+                    // TBD: consider calling GMS NetworkUtility.getFirstAddress() here to copy how GMS gets the
+                    // network address of DAS.
+                    // TBD:  This is just an initial phase that will only work for a single cluster.
+                    String hostAddress = "localhost";
+                    try {
+                        hostAddress = InetAddress.getLocalHost().getHostAddress();
+                    } catch (UnknownHostException uhe)  {}
+                    String uriValue = "http://" + hostAddress + ":" + TCPPORT;
+                    discoveryUriListProp.setValue(uriValue);
+                    if (logger.isLoggable(Level.FINE)) {
+                        logger.log(Level.FINE,"Generated GMS_DISCOVERY_URI_LIST value " + uriValue);
+                    }
+
+                    // lookup server-config and set environment property value GMS_LISTENER_PORT-clusterName to 9090.
+                    Config config = habitat.getComponent(Config.class, "server-config");
+                    if (config != null) {
+                        Config writeableConfig = t.enroll(config);
+                        SystemProperty gmsListenerPortSysProp = instance.createChild(SystemProperty.class);
+                        gmsListenerPortSysProp.setName(String.format("GMS_LISTENER_PORT-%s", instanceName));
+                        gmsListenerPortSysProp.setValue(TCPPORT);
+                        boolean result = writeableConfig.getSystemProperty().add(gmsListenerPortSysProp);
+                    }
+                }
+            }
             Resources resources = domain.getResources();
             for (Resource resource : resources.getResources()) {
                 if (resource.getObjectType().equals("system-all") || resource.getObjectType().equals("system-instance")) {
