@@ -55,7 +55,7 @@ public class UndeployCommandParameters extends OpsParams {
     public String name=null;
 
     @Param(optional=true)
-    public String target = "server";
+    public String target;
 
     @Param(optional=true, defaultValue="false")
     public Boolean keepreposdir;

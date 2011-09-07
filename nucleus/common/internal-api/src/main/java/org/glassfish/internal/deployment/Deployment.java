@@ -259,4 +259,9 @@ public interface Deployment {
 
     public List<Sniffer> getSniffersFromApp(Application app);
 
+    // determine if it's in PaaS environment or not
+    public boolean isPaaSEnv();
+
+    // sets the default target when the target is not specified
+    public String setDefaultTarget(String appName);
 }

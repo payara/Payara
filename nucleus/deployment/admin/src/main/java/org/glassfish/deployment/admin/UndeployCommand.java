@@ -145,7 +145,6 @@ public class UndeployCommand extends UndeployCommandParameters implements AdminC
          */
         name = (new File(name)).getName();
 
-
         // I should really look if the associated cluster is virtual
         Cluster cluster = domain.getClusterNamed(name);
         if (cluster!=null) {
@@ -187,6 +186,10 @@ public class UndeployCommand extends UndeployCommandParameters implements AdminC
         Iterator it = matchedVersions.iterator();
         while (it.hasNext()) {
             String appName = (String)it.next();
+
+            if (target == null) {
+                target = deployment.setDefaultTarget(appName);
+            }
             
             ApplicationInfo info = deployment.get(appName);
 

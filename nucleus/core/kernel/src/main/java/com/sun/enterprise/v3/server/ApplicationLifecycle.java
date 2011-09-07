@@ -67,6 +67,7 @@ import com.sun.enterprise.module.Module;
 import com.sun.enterprise.module.ModulesRegistry;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.common.util.admin.ParameterMapExtractor;
+//import org.glassfish.virtualization.config.Virtualizations;
 
 import com.sun.logging.LogDomains;
 import org.glassfish.api.*;
@@ -1312,7 +1313,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                 Transaction t = Transaction.getTransaction(param);
                 if (t!=null) {
                     List<String> targets = new ArrayList<String>();
-                    if (!tgt.equals("domain")) {
+                    if (!DeploymentUtils.isDomainTarget(tgt)) {
                         targets.add(tgt);    
                     } else {
                         targets = domain.getAllReferencedTargetsForApplication(appName);
@@ -1470,6 +1471,31 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
         return appRegistry.get(appName);
     }
 
+    // determine if it's in PaaS environment or not
+    public boolean isPaaSEnv() {
+/*
+        Virtualizations v = domain.getExtensionByType(Virtualizations.class);
+	if (v!=null && v.getVirtualizations().size()>0) {
+            return true;
+	}
+        return false;
+*/
+        return false;
+    }
+
+    //sets the default target when the target is not specified
+    public String setDefaultTarget(String appName) {
+        if (!isPaaSEnv()) {
+            return DeploymentUtils.DAS_TARGET_NAME;     
+        } else {
+           List<String> targets = 
+               domain.getAllReferencedTargetsForApplication(appName); 
+           if (targets.size() != 1) {
+               throw new IllegalArgumentException("Cannot determine the default target. Please specify an explicit target for the operation.");
+           }
+           return targets.get(0);
+        }
+    }
 
     public class DeploymentContextBuidlerImpl implements DeploymentContextBuilder {
         private final Logger logger;
@@ -1942,7 +1968,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
             return;
         }
         if (!isRedeploy) { 
-            if (target.equals("domain")) {
+            if (DeploymentUtils.isDomainTarget(target)) {
                 throw new IllegalArgumentException(localStrings.getLocalString("application.deploy_domain", "Application with name {0} is already referenced by other target(s). Please specify force option to redeploy to domain.", name));
             }
             if (referencedTargets.size() == 1 && 
@@ -1956,7 +1982,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                 referencedTargets.contains(target)) {
                 return;
             } else {
-                if (!target.equals("domain")) {
+                if (!DeploymentUtils.isDomainTarget(target)) {
                     throw new IllegalArgumentException(localStrings.getLocalString("redeploy_on_multiple_targets", "Application {0} is referenced by more than one targets. Please remove other references or specify all targets (or domain target if using asadmin command line) before attempting redeploy operation.", name)); 
                 }
             } 
@@ -1967,7 +1993,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
         List<String> referencedTargets = domain.getAllReferencedTargetsForApplication(name);
         if (referencedTargets.size() > 1) {
             Application app = applications.getApplication(name);
-            if (!target.equals("domain")) {
+            if (!DeploymentUtils.isDomainTarget(target)) {
                 if (app.isLifecycleModule()) {  
                     throw new IllegalArgumentException(localStrings.getLocalString("delete_lifecycle_on_multiple_targets", "Lifecycle module {0} is referenced by more than one targets. Please remove other references before attempting delete operation.", name)); 
                 } else {

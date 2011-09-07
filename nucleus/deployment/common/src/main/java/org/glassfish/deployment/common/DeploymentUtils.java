@@ -102,7 +102,7 @@ public class DeploymentUtils {
     
     private static final String INSTANCE_ROOT_URI_PROPERTY_NAME = "com.sun.aas.instanceRootURI";
 
-    private final static String DAS_TARGET_NAME = "server";
+    public final static String DAS_TARGET_NAME = "server";
     public final static String DOMAIN_TARGET_NAME = "domain";
 
     private final static String DOWNLOADABLE_ARTIFACTS_KEY_PREFIX = "downloadable";

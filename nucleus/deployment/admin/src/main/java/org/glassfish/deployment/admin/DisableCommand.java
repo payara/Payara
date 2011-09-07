@@ -153,30 +153,7 @@ public class DisableCommand extends UndeployCommandParameters implements AdminCo
                 VersioningUtils.isVersionExpressionWithWildCard(appName);
 
         Set<String> enabledVersionsToDisable = Collections.EMPTY_SET;
-        InterceptorNotifier notifier = null;
-        ApplicationInfo appInfo = deployment.get(appName);
-        
-        try {
-            Application app = applications.getApplication(appName);
-            this.name = appName;
-
-            final DeploymentContext basicDC = deployment.disable(this, app, appInfo, report, logger);
-            
-            notifier = new InterceptorNotifier(habitat, basicDC);
-            
-            final DeployCommandSupplementalInfo suppInfo = new DeployCommandSupplementalInfo();
-            suppInfo.setDeploymentContext(notifier.dc());
-            report.setResultType(DeployCommandSupplementalInfo.class, suppInfo);
-
-        } catch (Exception e) {
-            logger.log(Level.SEVERE, "Error during disabling: ", e);
-            if (env.isDas() || !isundeploy) {
-                // we should let undeployment go through
-                // on instance side for partial deployment case
-                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-                report.setMessage(e.getMessage());
-            }
-        }
+        InterceptorNotifier notifier = new InterceptorNotifier(habitat, null);
 
         if (env.isDas() && DeploymentUtils.isDomainTarget(target)) {
 
@@ -198,6 +175,7 @@ public class DisableCommand extends UndeployCommandParameters implements AdminCo
 
                 Map.Entry entry = (Map.Entry)it.next();
                 appName = (String)entry.getKey();
+
                 List<String> targets =
                         new ArrayList<String>((Set<String>)entry.getValue());
 
@@ -240,6 +218,13 @@ public class DisableCommand extends UndeployCommandParameters implements AdminCo
             }
         }
 
+        // now we resolved the version expression when applicable, we are
+        // ready to do the real work
+
+        if (target == null) {
+            target = deployment.setDefaultTarget(appName);
+        }
+
         if (env.isDas() || !isundeploy) {
             // we should let undeployment go through
             // on instance side for partial deployment case
@@ -280,6 +265,28 @@ public class DisableCommand extends UndeployCommandParameters implements AdminCo
             } catch (Exception e) {
                 report.failure(logger, e.getMessage());
                 return;
+            }
+        }
+
+        ApplicationInfo appInfo = deployment.get(appName);
+        
+        try {
+            Application app = applications.getApplication(appName);
+            this.name = appName;
+
+            final DeploymentContext basicDC = deployment.disable(this, app, appInfo, report, logger);
+            
+            final DeployCommandSupplementalInfo suppInfo = new DeployCommandSupplementalInfo();
+            suppInfo.setDeploymentContext((ExtendedDeploymentContext)basicDC);
+            report.setResultType(DeployCommandSupplementalInfo.class, suppInfo);
+
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "Error during disabling: ", e);
+            if (env.isDas() || !isundeploy) {
+                // we should let undeployment go through
+                // on instance side for partial deployment case
+                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                report.setMessage(e.getMessage());
             }
         }
 

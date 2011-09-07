@@ -125,6 +125,10 @@ public class EnableCommand extends StateCommandParameters implements AdminComman
         final ActionReport report = context.getActionReport();
         final Logger logger = context.getLogger();
 
+        if (target == null) {
+            target = deployment.setDefaultTarget(name());
+        }
+
         if (!deployment.isRegistered(name())) {
             report.setMessage(localStrings.getLocalString("application.notreg","Application {0} not registered", name()));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);

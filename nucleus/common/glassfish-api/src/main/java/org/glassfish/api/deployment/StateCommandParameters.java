@@ -51,7 +51,7 @@ public class StateCommandParameters extends OpsParams {
     public String component = null;
 
     @Param(optional=true)
-    public String target = "server";
+    public String target;
 
     public String name() {
         return component;
