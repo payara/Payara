@@ -52,7 +52,7 @@
     <groupId>org.glassfish</groupId>
     <artifactId>paas</artifactId>
     <packaging>pom</packaging>
-    <name>GlassFish Service Orchestration related modules</name>
+    <name>GlassFish Service Provisioning Engine related modules</name>
     <developers>
         <developer>
             <id>bhavanishankar</id>

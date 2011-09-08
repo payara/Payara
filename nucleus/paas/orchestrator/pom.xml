@@ -110,11 +110,6 @@
             <groupId>javax.xml.bind</groupId>
             <artifactId>jaxb-api-osgi</artifactId>
         </dependency>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.3.1</version>
-        </dependency>
     </dependencies>
 </project>
 
