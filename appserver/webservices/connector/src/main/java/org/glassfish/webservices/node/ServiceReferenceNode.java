@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -75,7 +75,7 @@ import java.util.logging.Level;
  *
  * @author  Kenneth Saks
  */
-//public class ServiceReferenceNode extends DisplayableComponentNode {
+
 @Service(name="service-ref")
 @Scoped(PerLookup.class)
 public class ServiceReferenceNode extends DisplayableComponentNode implements JndiEnvRefNode<ServiceReferenceDescriptor> {
@@ -166,12 +166,12 @@ public class ServiceReferenceNode extends DisplayableComponentNode implements Jn
         } else {
             super.setElementValue(element, value);
         }
-    }    
+    }
 
-      public Node writeDeploymentDescriptor( Node parent,ServiceReferenceDescriptor descriptor) {
+    public Node writeDeploymentDescriptor( Node parent,ServiceReferenceDescriptor descriptor) {
 
         Node serviceRefNode =
-            super.writeDescriptor(parent, WebServicesTagNames.SERVICE_REF, descriptor);
+                super.writeDescriptor(parent, WebServicesTagNames.SERVICE_REF, descriptor);
         writeDisplayableComponentInfo(serviceRefNode, descriptor);
         appendTextChild(serviceRefNode, WebServicesTagNames.SERVICE_REF_NAME,
                 descriptor.getName());
@@ -230,7 +230,7 @@ public class ServiceReferenceNode extends DisplayableComponentNode implements Jn
         appendTextChild(serviceRefNode, WebServicesTagNames.MAPPED_NAME,
                 descriptor.getMappedName());
 
-         if (descriptor.isInjectable()) {
+        if (descriptor.isInjectable()) {
             InjectionTargetNode ijNode = new InjectionTargetNode();
             for (InjectionTarget target : descriptor.getInjectionTargets()) {
                 ijNode.writeDescriptor(serviceRefNode, TagNames.INJECTION_TARGET, target);

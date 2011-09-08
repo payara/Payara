@@ -89,7 +89,7 @@ import java.util.logging.Level;
 public abstract class DeploymentDescriptorNode<T> implements XMLNode<T>  {
 
 
-    public Habitat habitat = Globals.getDefaultHabitat();;
+    public Habitat habitat = Globals.getDefaultHabitat();
     
     private static final String QNAME_SEPARATOR = ":";
 
