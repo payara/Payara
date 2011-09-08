@@ -183,9 +183,9 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator, Application
 
         Set<ProvisionedService> appProvisionedServices = getProvisionedServices(appName);
         if(appProvisionedServices == null){
-            Set<ProvisionedService> provisionedServiceSet =
+            appProvisionedServices =
                     retrieveProvisionedServices(installedPlugins, appServiceMetadata, dc);
-            provisionedServices.put(appName, provisionedServiceSet);
+            provisionedServices.put(appName, appProvisionedServices);
         }
 
         dissociateProvisionedServices(installedPlugins, appServiceMetadata, appProvisionedServices, true, dc);

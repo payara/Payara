@@ -147,7 +147,7 @@ public interface Plugin<T extends ServiceType> {
 
     public void dissociateServices(ProvisionedService serviceConsumer, ServiceReference svcRef,
                                    ProvisionedService serviceProvider, boolean beforeUndeploy,
-                                  DeploymentContext dc);
+                                   DeploymentContext dc);
 
     /**
      * A <code>ProvisionedService</code> for a <code>ServiceReference</code> is
