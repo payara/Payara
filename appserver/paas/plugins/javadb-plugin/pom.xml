@@ -81,11 +81,6 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.admin</groupId>
-            <artifactId>admin-cli</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
             <groupId>org.glassfish</groupId>
             <artifactId>paas.orchestrator</artifactId>
             <version>${project.version}</version>
@@ -94,7 +89,6 @@
             <groupId>org.glassfish.virtualization</groupId>
             <artifactId>virt-core</artifactId>
             <version>${project.version}</version>
-            <scope>provided</scope>
         </dependency>
     </dependencies>
 </project>
