@@ -94,7 +94,7 @@ public class JVMStatsImpl implements MonitorContract {
     public ActionReport process(final ActionReport report, final String filter) {
 
         if (monitoringService != null) {
-            String level = monitoringService.getMonitoringLevel(ContainerMonitoring.JVM);
+            String level = monitoringService.getMonitoringLevel("jvm");
             if ((level != null) && (level.equals(ContainerMonitoring.LEVEL_OFF))) {
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                 report.setMessage(localStrings.getLocalString("level.off",

@@ -40,6 +40,7 @@
 
 package com.sun.enterprise.config.serverbeans;
 
+import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.api.monitoring.ContainerMonitoring;
 import org.glassfish.api.monitoring.MonitoringItem;
 import org.jvnet.hk2.config.*;
@@ -183,6 +184,9 @@ public interface MonitoringService extends ConfigBeanProxy, Injectable, Property
 
     @DuckTyped
     String getMonitoringLevel(String name);
+    
+    @DuckTyped
+    void setMonitoringLevel(String name, String level);
 
     public class Duck {
         public static ContainerMonitoring getContainerMonitoring(MonitoringService ms, String name) {
@@ -257,5 +261,81 @@ public interface MonitoringService extends ConfigBeanProxy, Injectable, Property
 
             return null;
         }
+        
+        private final static List<String> setMethods = new ArrayList<String>();
+        
+        public static boolean setMonitoringLevel(MonitoringService ms, String name, String level) throws PropertyVetoException, TransactionFailure {
+
+            // It is possible that the given module name might exist as
+            // attribute of module-monitoring-levels or
+            // as container-monitoring element provided for extensibility.
+
+            // Order of precedence is to first check module-monitoring-levels
+            // then container-monitoring.
+
+            // module-monitoring-levels
+            // We need to use reflection to comapre the given name with the
+            // getters of ModuleMonitoringLevel.
+            // For performance, the method names are cached when this is run first time.
+            
+          boolean isLevelUpdated = false;
+
+          synchronized (setMethods) {
+            if (setMethods.isEmpty()) {
+                for (Method method : ModuleMonitoringLevels.class.getDeclaredMethods()) {
+                    // If it is a setter store it in the list
+                    String str = method.getName();
+                    if (str.startsWith("set")) {
+                        setMethods.add(str);
+                    }
+                }
+            }
+          }
+
+            // strip - part from name
+            String rName = name.replaceAll("-", "");
+
+            Iterator<String> itr = setMethods.iterator();
+
+            while (itr.hasNext()) {
+                String methodName = itr.next();
+                if (rName.equalsIgnoreCase(methodName.substring(3))) {
+                    try {
+                        Method mthd = ModuleMonitoringLevels.class.getMethod(methodName, new Class[] {java.lang.String.class});
+                        Transaction tx = Transaction.getTransaction(ms);
+                        if (tx == null) {
+                            throw new TransactionFailure(localStrings.getLocalString(
+                            "noTransaction", "Internal Error - Cannot obtain transaction object"));
+                        }
+                        ModuleMonitoringLevels mml = tx.enroll(ms.getModuleMonitoringLevels());
+                        mthd.invoke(mml, level);
+                        isLevelUpdated = true;
+                    } catch (NoSuchMethodException nsme) {
+                        Logger.getAnonymousLogger().log(Level.WARNING, nsme.getMessage(), nsme);
+                    } catch (IllegalAccessException ile) {
+                        Logger.getAnonymousLogger().log(Level.WARNING, ile.getMessage(), ile);
+                    } catch (java.lang.reflect.InvocationTargetException ite) {
+                        Logger.getAnonymousLogger().log(Level.WARNING, ite.getMessage(), ite);
+                    }
+                    break;
+                }
+            }
+
+
+            if (!isLevelUpdated) {
+                // container-monitoring
+                for (ContainerMonitoring cm : ms.getContainerMonitoring()) {
+                    if (cm.getName().equals(name)) {
+                        cm.setLevel(level);
+                        isLevelUpdated = true;
+                    }
+                }
+            }
+            return isLevelUpdated;
+
+        }
     }
+    
+    final LocalStringManagerImpl localStrings =
+            new LocalStringManagerImpl(MonitoringService.class);
 }

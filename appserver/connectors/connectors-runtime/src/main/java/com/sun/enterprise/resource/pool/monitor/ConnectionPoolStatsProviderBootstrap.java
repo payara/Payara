@@ -184,7 +184,7 @@ public class ConnectionPoolStatsProviderBootstrap implements PostConstruct,
             JdbcConnPoolStatsProvider jdbcPoolStatsProvider =
                     new JdbcConnPoolStatsProvider(poolInfo, logger);
             StatsProviderManager.register(
-                    ContainerMonitoring.JDBC_CONNECTION_POOL,
+                    "jdbc-connection-pool",
                     PluginPoint.SERVER,
                     ConnectorsUtil.getPoolMonitoringSubTreeRoot(poolInfo, true), jdbcPoolStatsProvider);
             //String jdbcPoolName = jdbcPoolStatsProvider.getJdbcPoolName();
@@ -211,7 +211,7 @@ public class ConnectionPoolStatsProviderBootstrap implements PostConstruct,
                     new ConnectorConnPoolStatsProvider(poolInfo, logger);
 
             StatsProviderManager.register(
-                    ContainerMonitoring.CONNECTOR_CONNECTION_POOL,
+                    "connector-connection-pool",
                     PluginPoint.SERVER,
                     ConnectorsUtil.getPoolMonitoringSubTreeRoot(poolInfo, true), ccPoolStatsProvider);
 

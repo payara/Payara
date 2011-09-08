@@ -398,7 +398,7 @@ public class ConnectionPoolEmitterImpl implements PoolLifeCycleListener {
             JdbcConnPoolAppStatsProvider jdbcPoolAppStatsProvider =
                     new JdbcConnPoolAppStatsProvider(poolInfo, appName);
             StatsProviderManager.register(
-                    ContainerMonitoring.JDBC_CONNECTION_POOL,
+                    "jdbc-connection-pool",
                     PluginPoint.SERVER,
                     "resources/" + ConnectorsUtil.escapeResourceNameForMonitoring(poolName) + "/" + appName,
                     jdbcPoolAppStatsProvider);
@@ -408,7 +408,7 @@ public class ConnectionPoolEmitterImpl implements PoolLifeCycleListener {
             ConnectorConnPoolAppStatsProvider ccPoolAppStatsProvider =
                     new ConnectorConnPoolAppStatsProvider(poolInfo, appName);
             StatsProviderManager.register(
-                    ContainerMonitoring.CONNECTOR_CONNECTION_POOL,
+                    "connector-connection-pool",
                     PluginPoint.SERVER,
                     "resources/" + ConnectorsUtil.escapeResourceNameForMonitoring(poolName) + "/" + appName,
                     ccPoolAppStatsProvider);

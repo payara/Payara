@@ -127,62 +127,27 @@ public class MonitoringConfig {
     static void setMonitoringLevel(MonitoringService ms, 
         final String moduleName, final String level, final ActionReport report) {
 
-        ModuleMonitoringLevels mmls = ms.getModuleMonitoringLevels();
+        if (ms.getMonitoringLevel(moduleName) == null) {
+            report.setMessage(localStrings.getLocalString("invalid.module",
+                    "Invalid module name {0}",
+                    moduleName));
+            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+        }
 
-        synchronized(valueUpdated) {
-          valueUpdated.set(true);
-          try {
-            ConfigSupport.apply(new SingleConfigCode<ModuleMonitoringLevels>() {
-                public Object run(ModuleMonitoringLevels param)
-                throws PropertyVetoException, TransactionFailure {
-                    // check in module-monitoring-levels first and then in
-                    if (moduleName.equals(ContainerMonitoring.CONNECTOR_CONNECTION_POOL)) {
-                        param.setConnectorConnectionPool(level);
-                    } else if (moduleName.equals(ContainerMonitoring.CONNECTOR_SERVICE)) {
-                        param.setConnectorService(level);
-                    } else if (moduleName.equals(ContainerMonitoring.EJB_CONTAINER)) {
-                        param.setEjbContainer(level);
-                    } else if (moduleName.equals(ContainerMonitoring.HTTP_SERVICE)) {
-                        param.setHttpService(level);
-                    } else if (moduleName.equals(ContainerMonitoring.JDBC_CONNECTION_POOL)) {
-                        param.setJdbcConnectionPool(level);
-                    } else if (moduleName.equals(ContainerMonitoring.JMS_SERVICE)) {
-                        param.setJmsService(level);
-                    } else if (moduleName.equals(ContainerMonitoring.JVM)) {
-                        param.setJvm(level);
-                    } else if (moduleName.equals(ContainerMonitoring.ORB)) {
-                        param.setOrb(level);
-                    } else if (moduleName.equals(ContainerMonitoring.THREAD_POOL)) {
-                        param.setThreadPool(level);
-                    } else if (moduleName.equals(ContainerMonitoring.TRANSACTION_SERVICE)) {
-                        param.setTransactionService(level);
-                    } else if (moduleName.equals(ContainerMonitoring.WEB_CONTAINER)) {
-                        param.setWebContainer(level);
-                    } else if (moduleName.equals(ContainerMonitoring.SECURITY)) {
-                        param.setSecurity(level);
-                    } else if (moduleName.equals(ContainerMonitoring.WEB_SERVICES_CONTAINER)) {
-                        param.setWebServicesContainer(level);
-                    } else if (moduleName.equals(ContainerMonitoring.JPA)) {
-                        param.setJpa(level);
-                    } else if (moduleName.equals(ContainerMonitoring.JERSEY)) {
-                        param.setJersey(level);
-                    } else if (moduleName.equals(ContainerMonitoring.DEPLOYMENT)) {
-                        param.setDeployment(level);
-                    } else {
-                        valueUpdated.set(false);
-                    }
+        try {
+            ConfigSupport.apply(new SingleConfigCode<MonitoringService>() {
+
+                public Object run(MonitoringService param)
+                        throws PropertyVetoException, TransactionFailure {
+                    param.setMonitoringLevel(moduleName, level);
                     return null;
                 }
-            }, mmls);
-          } catch(TransactionFailure tfe) {
-            report.setMessage(localStrings.getLocalString("disable.monitoring.level",
-                "Encountered exception {0} while setting monitoring level to OFF for {1}", 
-                tfe.getMessage(), moduleName));
+            }, ms);
+        } catch (TransactionFailure tfe) {
+            report.setMessage(localStrings.getLocalString("monitoring.config.exception",
+                    "Encountered exception {0} while setting monitoring level to {1} for {2}",
+                    tfe.getMessage(), level, moduleName));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-          }
-          if (!valueUpdated.get()) {
-            setContainerMonitoringLevel(ms, moduleName, level, report);
-          }
         }
     }
 

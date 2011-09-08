@@ -1403,7 +1403,7 @@ public abstract class ManagedConnectionFactory implements javax.resource.spi.Man
                     sqlTraceCacheSize, timeToKeepQueries);
             //get the poolname and use it to initialize the stats provider n register
             StatsProviderManager.register(
-                    ContainerMonitoring.JDBC_CONNECTION_POOL,
+                    "jdbc-connection-pool",
                     PluginPoint.SERVER,
                     poolMonitoringSubTreeRoot, jdbcStatsProvider);
             if(jdbcStatsProvider.getSqlTraceCache() != null) {
