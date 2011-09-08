@@ -48,6 +48,7 @@ import org.glassfish.paas.orchestrator.config.SharedService;
 import org.glassfish.paas.orchestrator.provisioning.ServiceInfo;
 
 
+import org.glassfish.paas.orchestrator.service.ServiceStatus;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.component.PostConstruct;
 import org.jvnet.hk2.config.ConfigSupport;
@@ -454,5 +455,23 @@ public class ServiceUtil implements PostConstruct {
 
     private void debug(String message) {
         System.out.println("[ServiceUtil] " + message);
+    }
+
+    public ServiceStatus getServiceStatus(ServiceInfo entry){
+        if(entry.getState() != null && entry.getState().equals(ServiceInfo.State.Running.toString())){
+            return ServiceStatus.RUNNING;
+        }
+        if(entry.getState() != null && entry.getState().equals(ServiceInfo.State.Start_in_progress.toString())){
+            return ServiceStatus.STARTING;
+        }
+        if(entry.getState() != null && entry.getState().equals(ServiceInfo.State.Stop_in_progress.toString())){
+            return ServiceStatus.STOPPED;
+        }
+        if(entry.getState() != null && entry.getState().equals(ServiceInfo.State.NotRunning.toString())){
+            return ServiceStatus.STOPPED;
+        }
+        //TODO handle delete in progress/create in progress later.
+
+        return ServiceStatus.UNKNOWN;
     }
 }

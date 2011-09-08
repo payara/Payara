@@ -46,6 +46,7 @@ import org.glassfish.paas.orchestrator.config.Services;
 import org.glassfish.paas.orchestrator.provisioning.ServiceInfo;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceType;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceUtil;
+import org.glassfish.paas.orchestrator.service.ServiceStatus;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
@@ -91,5 +92,9 @@ public class DatabaseServiceUtil {
 
     public void unregisterCloudEntry(String serviceName, String appName) {
         serviceUtil.unregisterCloudEntry(serviceName, appName);
+    }
+
+    public ServiceStatus getServiceStatus(ServiceInfo entry){
+        return serviceUtil.getServiceStatus(entry);
     }
 }

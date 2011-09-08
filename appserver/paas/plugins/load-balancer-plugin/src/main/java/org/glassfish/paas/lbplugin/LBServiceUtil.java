@@ -45,6 +45,7 @@ import org.glassfish.paas.orchestrator.config.Services;
 import org.glassfish.paas.orchestrator.provisioning.ServiceInfo;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceType;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceUtil;
+import org.glassfish.paas.orchestrator.service.ServiceStatus;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
@@ -82,5 +83,13 @@ public class LBServiceUtil {
 
     public Services getServices(){
         return serviceUtil.getServices();
+    }
+
+    public ServiceStatus getServiceStatus(ServiceInfo entry){
+        return serviceUtil.getServiceStatus(entry);
+    }
+
+    public String getInstanceID(String serviceName, String appName, ServiceType type) {
+        return serviceUtil.getInstanceID(serviceName, appName, type);
     }
 }

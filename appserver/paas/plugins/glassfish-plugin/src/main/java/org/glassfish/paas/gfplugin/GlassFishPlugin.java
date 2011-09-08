@@ -57,6 +57,7 @@ import org.glassfish.paas.gfplugin.cli.GlassFishServiceUtil;
 import org.glassfish.paas.orchestrator.provisioning.ApplicationServerProvisioner;
 import org.glassfish.paas.orchestrator.provisioning.ProvisionerUtil;
 import org.glassfish.paas.orchestrator.provisioning.LBProvisioner;
+import org.glassfish.paas.orchestrator.provisioning.ServiceInfo;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceType;
 import org.glassfish.paas.orchestrator.service.JavaEEServiceType;
 import org.glassfish.paas.orchestrator.service.metadata.Property;
@@ -232,9 +233,8 @@ public class GlassFishPlugin implements Plugin<JavaEEServiceType> {
                     provisionerUtil.getAppServerProvisioner(dasIPAddress);
 
             GlassFish provisionedGlassFish = gfProvisioner.getGlassFish();
-
-            glassfishProvisionedService =
-                    new GlassFishProvisionedService(serviceDescription, serviceProperties, provisionedGlassFish);
+            GlassFishProvisionedService gfps = new GlassFishProvisionedService(serviceDescription, serviceProperties, provisionedGlassFish);
+            glassfishProvisionedService = gfps; //TODO remove initializing this, once cloud-deploy is removed.
 
             //set the target to the newly created cluster.
             //TODO what if someone requests for multiple GlassFish services ?
@@ -244,7 +244,7 @@ public class GlassFishPlugin implements Plugin<JavaEEServiceType> {
                 dcp.target = clusterName;
             }
 
-            return glassfishProvisionedService;
+            return gfps;
 
         } else {
             //TODO throw exception ?
@@ -253,6 +253,95 @@ public class GlassFishPlugin implements Plugin<JavaEEServiceType> {
         }
 //        }
 
+    }
+
+    public ProvisionedService startService(ServiceDescription serviceDescription, ServiceInfo serviceInfo){
+        String serviceName = serviceDescription.getName();
+        logger.entering(getClass().getName(), "startService");
+
+        String appNameParam = "";
+        if (serviceDescription.getAppName() != null) {
+            appNameParam = "--appname=" + serviceDescription.getAppName();
+        }
+
+        String serviceConfigurations = formatArgument(serviceDescription.getConfigurations());
+
+        CommandResult result = null;
+        // either template identifier or service characteristics are specified, not both.
+        if (serviceDescription.getTemplateIdentifier() != null) {
+            String templateId = serviceDescription.getTemplateIdentifier().getId();
+/*
+            result = commandRunner.run("_start-glassfish-service",
+                    appNameParam, serviceName);
+*/
+        } else if (serviceDescription.getServiceCharacteristics() != null) {
+            String serviceCharacteristics = formatArgument(serviceDescription.
+                    getServiceCharacteristics().getServiceCharacteristics());
+
+            result = commandRunner.run("_start-glassfish-service",
+                    appNameParam, serviceName);
+
+        } else {
+            // TODO :: remove this else block...in an ideal world we should not land up here....
+            result = commandRunner.run("_start-glassfish-service", appNameParam, serviceName);
+        }
+
+        String clusterName = gfServiceUtil.getClusterName(serviceDescription.getName(), serviceDescription.getAppName());
+        System.out.println("_start-glassfish-service command output [" + result.getOutput() + "]");
+        if (result.getExitStatus() == CommandResult.ExitStatus.SUCCESS) {
+
+            String dasIPAddress = gfServiceUtil.getDASIPAddress(serviceDescription.getName());
+            Properties serviceProperties = new Properties();
+            serviceProperties.setProperty("host", dasIPAddress);
+//                serviceProperties.setProperty("domainName", domainName);
+
+            GlassFishProvisioner gfProvisioner = (GlassFishProvisioner)
+                    provisionerUtil.getAppServerProvisioner(dasIPAddress);
+
+            GlassFish provisionedGlassFish = gfProvisioner.getGlassFish();
+            GlassFishProvisionedService gfps = new GlassFishProvisionedService(serviceDescription, serviceProperties, provisionedGlassFish);
+            glassfishProvisionedService = gfps; //TODO remove initializing this, once cloud-deploy is removed.
+
+            return gfps;
+
+        } else {
+            //TODO throw exception ?
+            result.getFailureCause().printStackTrace();
+            return null;
+        }
+    }
+
+    public boolean stopService(ServiceDescription serviceDescription, ServiceInfo serviceInfo){
+        String appNameParam = "";
+        if (serviceDescription.getAppName() != null) {
+            appNameParam = "--appname=" + serviceDescription.getAppName();
+        }
+        CommandResult result = commandRunner.run("_stop-glassfish-service",
+                appNameParam, "--cascade=true", serviceDescription.getName());
+
+        System.out.println("_stop-glassfish-service command output [" + result.getOutput() + "]");
+        if (result.getExitStatus() == CommandResult.ExitStatus.SUCCESS) {
+            return true;
+        } else {
+            //TODO throw exception ?
+            result.getFailureCause().printStackTrace();
+            return false;
+        }
+    }
+
+
+    public ProvisionedService getProvisionedService(ServiceDescription serviceDescription, ServiceInfo serviceInfo){
+        String dasIPAddress = gfServiceUtil.getDASIPAddress(serviceDescription.getName());
+        Properties serviceProperties = new Properties();
+        serviceProperties.setProperty("host", dasIPAddress);
+//                serviceProperties.setProperty("domainName", domainName);
+
+        GlassFishProvisioner gfProvisioner = (GlassFishProvisioner)
+                provisionerUtil.getAppServerProvisioner(dasIPAddress);
+        GlassFish provisionedGlassFish = gfProvisioner.getGlassFish();
+        GlassFishProvisionedService gfps =new GlassFishProvisionedService(serviceDescription, serviceProperties, provisionedGlassFish);
+        glassfishProvisionedService = gfps; //TODO remove initializing this, once cloud-deploy is removed.
+        return gfps;
     }
 
     /**

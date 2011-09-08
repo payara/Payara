@@ -199,12 +199,23 @@ public static final String RDBMS_ServiceType = "Database";
         }
 
         Properties serviceProperties = new Properties();
-        //TODO HACK as we use dbServiceUtil to get DB's IP Address.
-        String ipAddress = dbServiceUtil.getIPAddress(serviceName, serviceDescription.getAppName(), ServiceType.DATABASE);
+        String ipAddress = entry.getIpAddress();
         serviceProperties.put("host", ipAddress);
         serviceProperties.put("port", "1527"); // TODO :: grab the actual port.
 
-        return new DerbyProvisionedService(serviceDescription, serviceProperties, ServiceStatus.STARTED);
+        DerbyProvisionedService dps = new DerbyProvisionedService(serviceDescription, serviceProperties);
+        dps.setStatus(ServiceStatus.STARTED);
+        return dps;
+    }
+
+    public ProvisionedService getProvisionedService(ServiceDescription serviceDescription, ServiceInfo serviceInfo){
+        Properties serviceProperties = new Properties();
+        String ipAddress = serviceInfo.getIpAddress();
+        serviceProperties.put("host", ipAddress);
+        serviceProperties.put("port", "1527"); // TODO :: grab the actual port.
+        DerbyProvisionedService dps = new DerbyProvisionedService(serviceDescription, serviceProperties);
+        dps.setStatus(dbServiceUtil.getServiceStatus(serviceInfo));
+        return dps;
     }
 
     public void associateServices(ProvisionedService serviceConsumer, ServiceReference svcRef,
@@ -214,6 +225,62 @@ public static final String RDBMS_ServiceType = "Database";
 
     public ApplicationContainer deploy(ReadableArchive cloudArchive) {
         return null;
+    }
+
+    public ProvisionedService startService(ServiceDescription serviceDescription, ServiceInfo serviceInfo) {
+        String serviceName = serviceDescription.getName();
+        logger.entering(getClass().getName(), "startService");
+
+        ArrayList<String> params;
+        String[] parameters;
+
+        CommandResult result = commandRunner.run("_list-derby-services");
+        if (result.getOutput().contains(serviceName)) {
+            params = new ArrayList<String>();
+
+            if(serviceDescription.getAppName() != null){
+                params.add("--appname="+serviceDescription.getAppName());
+            }
+            params.add(serviceName);
+            parameters = new String[params.size()];
+            parameters = params.toArray(parameters);
+
+            result = commandRunner.run("_start-derby-service", parameters);
+            if (result.getExitStatus().equals(CommandResult.ExitStatus.FAILURE)) {
+                System.out.println("_start-derby-service [" + serviceName + "] failed");
+            }
+        }
+
+        ServiceInfo entry = dbServiceUtil.retrieveCloudEntry(serviceName, serviceDescription.getAppName(), ServiceType.DATABASE);
+        if (entry == null) {
+            throw new RuntimeException("unable to get DB service : " + serviceName);
+        }
+
+        Properties serviceProperties = new Properties();
+        String ipAddress = entry.getIpAddress();
+        serviceProperties.put("host", ipAddress);
+        serviceProperties.put("port", "1527"); // TODO :: grab the actual port.
+
+        DerbyProvisionedService dps = new DerbyProvisionedService(serviceDescription, serviceProperties);
+        dps.setStatus(ServiceStatus.STARTED);
+        return dps;
+    }
+
+    public boolean stopService(ServiceDescription serviceDescription, ServiceInfo serviceInfo) {
+        String appNameParam="";
+        if(serviceDescription.getAppName() != null){
+            appNameParam="--appname="+serviceDescription.getAppName();
+        }
+        CommandResult result = commandRunner.run("_stop-derby-service",
+                appNameParam, serviceDescription.getName());
+        System.out.println("_stop-derby-service command output [" + result.getOutput() + "]");
+        if (result.getExitStatus() == CommandResult.ExitStatus.SUCCESS) {
+            return true;
+        } else {
+            //TODO throw exception ?
+            result.getFailureCause().printStackTrace();
+            return false;
+        }
     }
 
     public boolean isRunning(ProvisionedService provisionedSvc) {

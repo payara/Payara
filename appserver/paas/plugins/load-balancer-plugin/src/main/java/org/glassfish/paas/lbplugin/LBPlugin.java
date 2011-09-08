@@ -179,7 +179,16 @@ public class LBPlugin implements Plugin<HTTPLoadBalancerServiceType> {
             System.out.println("_start-lb-service [" + serviceName + "] failed");
         }
 
-        return new GlassFishLBProvisionedService(serviceDescription, new Properties(), ServiceStatus.STARTED);
+        GlassFishLBProvisionedService ps = new GlassFishLBProvisionedService(serviceDescription, new Properties());
+        ps.setStatus(ServiceStatus.STARTED);
+        return ps;
+    }
+
+    public ProvisionedService getProvisionedService(ServiceDescription serviceDescription, ServiceInfo serviceInfo) {
+        ServiceInfo entry = lbServiceUtil.retrieveCloudEntry(serviceDescription.getAppName(), serviceDescription.getAppName(), ServiceType.LOAD_BALANCER);
+        GlassFishLBProvisionedService ps = new GlassFishLBProvisionedService(serviceDescription, new Properties());
+        ps.setStatus(lbServiceUtil.getServiceStatus(entry));
+        return ps;
     }
 
     public void associateServices(ProvisionedService serviceConsumer, ServiceReference svcRef,
@@ -189,6 +198,14 @@ public class LBPlugin implements Plugin<HTTPLoadBalancerServiceType> {
 
     public ApplicationContainer deploy(ReadableArchive cloudArchive) {
         return null;
+    }
+
+    public ProvisionedService startService(ServiceDescription serviceDescription, ServiceInfo serviceInfo) {
+        return null;  //TODO
+    }
+
+    public boolean stopService(ServiceDescription serviceDescription, ServiceInfo serviceInfo) {
+        return true; //TODO
     }
 
     public boolean isRunning(ProvisionedService provisionedSvc) {

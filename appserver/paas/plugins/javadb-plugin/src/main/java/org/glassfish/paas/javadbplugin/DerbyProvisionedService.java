@@ -57,11 +57,9 @@ public class DerbyProvisionedService implements ProvisionedService {
     private Properties serviceProperties; // contains host, port properties.
 
     public DerbyProvisionedService(ServiceDescription serviceDescription,
-                                   Properties serviceProperties,
-                                   ServiceStatus status) {
+                                   Properties serviceProperties) {
         this.serviceDescription = serviceDescription;
         this.serviceProperties = serviceProperties;
-        this.status = status;
     }
 
     public ServiceType getServiceType() {

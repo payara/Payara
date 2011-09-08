@@ -39,4 +39,4 @@
  */
 package org.glassfish.paas.orchestrator.service;
 
-public enum ServiceStatus {UNKNOWN, STARTING, STARTED, STOPPING, STOPPED}
+public enum ServiceStatus {UNKNOWN, STARTING, STARTED, STOPPING, STOPPED, RUNNING}

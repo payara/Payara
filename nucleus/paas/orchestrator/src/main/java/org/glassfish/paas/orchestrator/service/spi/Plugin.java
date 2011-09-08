@@ -44,6 +44,7 @@ import java.util.Set;
 
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.paas.orchestrator.config.Service;
+import org.glassfish.paas.orchestrator.provisioning.ServiceInfo;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceDescription;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceReference;
 import org.jvnet.hk2.annotations.Contract;
@@ -140,6 +141,8 @@ public interface Plugin<T extends ServiceType> {
      */
     public ProvisionedService provisionService(ServiceDescription serviceDescription, DeploymentContext dc);
 
+    public ProvisionedService getProvisionedService(ServiceDescription serviceDescription, ServiceInfo serviceInfo);
+
     public boolean unprovisionService(ServiceDescription serviceDescription, DeploymentContext dc);
 
     public void dissociateServices(ProvisionedService serviceConsumer, ServiceReference svcRef,
@@ -161,6 +164,10 @@ public interface Plugin<T extends ServiceType> {
      * Deploy the orchestration-enabled archive
      */
     public ApplicationContainer deploy(ReadableArchive cloudArchive);
+
+    public ProvisionedService startService(ServiceDescription serviceDescription, ServiceInfo serviceInfo);
+
+    public boolean stopService(ServiceDescription serviceDescription, ServiceInfo serviceInfo);
 
     // The methods that follow are not relevant for the first prototype
     // Capturing these here for completeness

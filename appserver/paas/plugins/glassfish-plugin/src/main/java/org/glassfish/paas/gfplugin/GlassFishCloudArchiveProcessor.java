@@ -82,7 +82,7 @@ public class GlassFishCloudArchiveProcessor {
                 resRefs.addAll(descriptor.getResourceReferenceDescriptors());
             }
 //            if (isDistributable) {
-//                serviceReferences.add(new ServiceReference(application.getName() + "-lbs", "HTTP_LOAD_BALANCER", null));
+//                serviceReferences.add(new ServiceReference(cloudArchive.getName() + "-lb", "LB", null));
 //            }
             for (EjbBundleDescriptor descriptor : application.getBundleDescriptors(EjbBundleDescriptor.class)) {
                 resRefs.addAll(descriptor.getResourceReferenceDescriptors());

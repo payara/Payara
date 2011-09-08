@@ -59,11 +59,9 @@ public class GlassFishLBProvisionedService implements ProvisionedService {
     private ServiceStatus status;
 
     public GlassFishLBProvisionedService(ServiceDescription serviceDescription,
-                                         Properties serviceProperties,
-                                         ServiceStatus status) {
+                                         Properties serviceProperties) {
         this.serviceDescription = serviceDescription;
         this.serviceProperties = serviceProperties;
-        this.status = status;
     }
 
     public ServiceType getServiceType() {
