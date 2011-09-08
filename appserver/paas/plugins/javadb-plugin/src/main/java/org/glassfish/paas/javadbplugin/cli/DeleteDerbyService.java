@@ -44,24 +44,27 @@ import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
+import org.glassfish.api.admin.CommandLock;
+import org.glassfish.paas.orchestrator.provisioning.ApplicationServerProvisioner;
 import org.glassfish.paas.orchestrator.provisioning.ServiceInfo;
 import org.glassfish.paas.orchestrator.provisioning.ProvisionerUtil;
 import org.glassfish.paas.orchestrator.provisioning.DatabaseProvisioner;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceType;
-import org.glassfish.paas.orchestrator.provisioning.iaas.CloudProvisioner;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
-
-import java.util.ArrayList;
-import java.util.List;
+import org.glassfish.virtualization.runtime.VirtualCluster;
+import org.glassfish.virtualization.runtime.VirtualClusters;
+import org.glassfish.virtualization.spi.TemplateRepository;
+import org.glassfish.virtualization.spi.VirtualMachine;
 
 /**
  * @author Jagadish Ramu
  */
 @Service(name = "_delete-derby-service")
 @Scoped(PerLookup.class)
+@CommandLock(CommandLock.LockType.NONE)
 public class DeleteDerbyService implements AdminCommand {
 
     @Param(name = "servicename", primary = true, optional = false)
@@ -76,6 +79,17 @@ public class DeleteDerbyService implements AdminCommand {
     @Param(name = "appname", optional = true)
     private String appName;
 
+    @Param(name = "waitforcompletion", optional = true, defaultValue = "false")
+    private boolean waitforcompletion;
+
+    @Inject(optional = true) // made it optional for non-virtual scenario to work
+    private TemplateRepository templateRepository;
+
+    // TODO :: remove dependency on VirtualCluster(s).
+    @Inject(optional = true) // made it optional for non-virtual scenario to work
+    VirtualClusters virtualClusters;
+
+
     public void execute(AdminCommandContext context) {
 
         final ActionReport report = context.getActionReport();
@@ -86,32 +100,44 @@ public class DeleteDerbyService implements AdminCommand {
             return;
         }
 
-        try {
-            CloudProvisioner cloudProvisioner = provisionerUtil.getCloudProvisioner();
-            String ipAddress = dbServiceUtil.getIPAddress(serviceName, appName, ServiceType.DATABASE);
+        if (templateRepository != null && virtualClusters != null) { // we are in virtualized environment.
+            ApplicationServerProvisioner provisioner =
+                    provisionerUtil.getAppServerProvisioner("localhost");
+            provisioner.stopCluster("localhost", serviceName); // this stops all the VMs also.
+            if (virtualClusters != null && serviceName != null) {
+                try {
+                    VirtualCluster virtualCluster = virtualClusters.byName(serviceName);
+                    String vmId = dbServiceUtil.getInstanceID(serviceName, appName, ServiceType.DATABASE);
+                    VirtualMachine vm = virtualCluster.vmByName(vmId);
 
-            dbServiceUtil.updateState(serviceName, appName, ServiceInfo.State.Stop_in_progress.toString(), ServiceType.DATABASE);
+                    //dbServiceUtil.updateState(serviceName, appName,
+                      //      ServiceInfo.State.Stop_in_progress.toString(), ServiceType.DATABASE);
 
-            DatabaseProvisioner dbProvisioner = provisionerUtil.getDatabaseProvisioner();
-            dbProvisioner.stopDatabase(ipAddress);
-            dbServiceUtil.updateState(serviceName, appName, ServiceInfo.State.NotRunning.toString(), ServiceType.DATABASE);
+                    //DatabaseProvisioner dbProvisioner = provisionerUtil.getDatabaseProvisioner();
+                    //dbProvisioner.stopDatabase(vm.getAddress());
+                    //dbServiceUtil.updateState(serviceName, appName,
+                      //      ServiceInfo.State.NotRunning.toString(), ServiceType.DATABASE);
 
-            //TODO should we delete the database (similar to deleting the cluster and instances ?)
 
-            String instanceID = dbServiceUtil.getInstanceID(serviceName, appName, ServiceType.DATABASE);
-            List<String> instanceIDs = new ArrayList<String>();
-            instanceIDs.add(instanceID);
-            cloudProvisioner.deleteInstances(instanceIDs);
+                    vm.delete();
+                    dbServiceUtil.unregisterCloudEntry(serviceName, appName);
 
-            dbServiceUtil.unregisterCloudEntry(serviceName, appName);
+                    if (virtualCluster != null) {
+                        virtualClusters.remove(virtualCluster);  // removes config.
+                    }
 
-            report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
-            report.setMessage("Service with name [" +
-                    serviceName + "] is decommissioned successfully.");
-        } catch (Exception e) {
-            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            report.setMessage("deleting service [" + serviceName + "] failed");
-            report.setFailureCause(e);
+                    report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
+                    report.setMessage("Service with name [" +
+                            serviceName + "] is decommissioned successfully.");
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                    report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                    report.setMessage("deleting service [" + serviceName + "] failed");
+                    report.setFailureCause(ex);
+                }
+            }
+            provisioner.deleteCluster("localhost", serviceName, false);
+            return;
         }
     }
 }

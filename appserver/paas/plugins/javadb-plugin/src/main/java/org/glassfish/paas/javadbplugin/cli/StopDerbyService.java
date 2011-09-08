@@ -45,6 +45,7 @@ import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
+import org.glassfish.paas.orchestrator.provisioning.ApplicationServerProvisioner;
 import org.glassfish.paas.orchestrator.provisioning.ProvisionerUtil;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceType;
 import org.glassfish.paas.orchestrator.provisioning.iaas.CloudProvisioner;
@@ -92,16 +93,16 @@ public class StopDerbyService implements AdminCommand {
                 return;
             }
 
-            dbServiceUtil.updateState(serviceName, appName, State.Stop_in_progress.toString(), ServiceType.DATABASE);
+            //dbServiceUtil.updateState(serviceName, appName,
+              //      State.Stop_in_progress.toString(), ServiceType.DATABASE);
 
-            provisionerUtil.getDatabaseProvisioner().stopDatabase(ipAddress);
+            //provisionerUtil.getDatabaseProvisioner().stopDatabase(ipAddress);
 
-            CloudProvisioner cloudProvisioner = provisionerUtil.getCloudProvisioner();
-            Collection<String> list = new ArrayList<String>();
-            list.add(entry.getIpAddress());
-            cloudProvisioner.stopInstances(list);
+            ApplicationServerProvisioner provisioner = provisionerUtil.getAppServerProvisioner("localhost");
+            provisioner.stopInstance(entry.getIpAddress(), entry.getInstanceId());
 
-            dbServiceUtil.updateState(serviceName, appName, State.NotRunning.toString(), ServiceType.DATABASE);
+            //dbServiceUtil.updateState(serviceName, appName,
+              //      State.NotRunning.toString(), ServiceType.DATABASE);
             report.setMessage("db-service [" + serviceName + "] stopped");
             report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
 

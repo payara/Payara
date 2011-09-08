@@ -44,22 +44,64 @@ import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
+import org.glassfish.api.admin.CommandLock;
+import org.glassfish.paas.javadbplugin.DerbyProvisioner;
+import org.glassfish.paas.orchestrator.provisioning.ApplicationServerProvisioner;
 import org.glassfish.paas.orchestrator.provisioning.DatabaseProvisioner;
 import org.glassfish.paas.orchestrator.provisioning.ServiceInfo;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceType;
+import org.glassfish.paas.orchestrator.provisioning.cli.ServiceUtil;
 import org.glassfish.paas.orchestrator.provisioning.iaas.CloudProvisioner;
 import org.glassfish.paas.orchestrator.provisioning.ProvisionerUtil;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.virtualization.runtime.VirtualCluster;
+import org.glassfish.virtualization.runtime.VirtualClusters;
+import org.glassfish.virtualization.spi.AllocationPhase;
+import org.glassfish.virtualization.spi.IAAS;
+import org.glassfish.virtualization.spi.ListenableFuture;
+import org.glassfish.virtualization.spi.TemplateCondition;
+import org.glassfish.virtualization.spi.TemplateInstance;
+import org.glassfish.virtualization.spi.TemplateRepository;
+import org.glassfish.virtualization.spi.VMOrder;
+import org.glassfish.virtualization.spi.VirtualMachine;
+
+import java.util.HashSet;
+import java.util.Properties;
+import java.util.Set;
 
 /**
  * @author Jagadish Ramu
  */
 @Service(name = "_create-derby-service")
 @Scoped(PerLookup.class)
-public class CreateDerbyService implements AdminCommand {
+@CommandLock(CommandLock.LockType.NONE)
+public class CreateDerbyService implements AdminCommand, Runnable {
+
+    @Param(name = "waitforcompletion", optional = true, defaultValue = "false")
+    private boolean waitforcompletion;
+
+    @Param(name="templateid", optional=true)
+    private String templateId;
+
+    @Param(name="servicecharacteristics", optional=true, separator=':')
+    public Properties serviceCharacteristics;
+
+    @Param(name="serviceconfigurations", optional=true, separator=':')
+    public Properties serviceConfigurations;
+
+    @Inject(optional = true) // made it optional for non-virtual scenario to work
+    private TemplateRepository templateRepository;
+
+    @Inject(optional = true) // made it optional for non-virtual scenario to work
+    IAAS iaas;
+
+    // TODO :: remove dependency on VirtualCluster(s).
+    @Inject(optional = true) // // made it optional for non-virtual scenario to work
+    VirtualClusters virtualClusters;
+
 
     @Param(name = "servicename", primary = true, optional = false)
     private String serviceName;
@@ -83,28 +125,90 @@ public class CreateDerbyService implements AdminCommand {
                     serviceName + "] is already configured.");
             return;
         }
-
-        //hack : We are using the default AMI which will work fine, but not for other DBs.
-        CloudProvisioner cloudProvisioner = provisionerUtil.getCloudProvisioner();
-        String instanceID = cloudProvisioner.createMasterInstance();
-        String ipAddress = cloudProvisioner.getIPAddress(instanceID);
-
-        DatabaseProvisioner dbProvisioner = provisionerUtil.getDatabaseProvisioner();
-        dbProvisioner.startDatabase(ipAddress);
-
-        ServiceInfo entry = new ServiceInfo();
-        entry.setInstanceId(instanceID);
-        entry.setIpAddress(ipAddress);
-        entry.setState(ServiceInfo.State.Running.toString());
-        entry.setServiceName(serviceName);
-        entry.setAppName(appName);
-        entry.setServerType("database");
-
-        dbServiceUtil.registerDBInfo(entry);
+        if (waitforcompletion) {
+            run();
+        } else {
+            ServiceUtil.getThreadPool().execute(this);
+        }
 
         report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
         report.setMessage("Service with name [" +
                 serviceName + "] is configured successfully.");
     }
 
+    public void run() {
+        TemplateInstance matchingTemplate = null;
+        if (templateRepository != null) {
+            if (templateId == null) {
+                // search for matching template based on service characteristics
+                if (serviceCharacteristics != null) {
+                    /**
+                     * TODO :: use templateRepository.get(SearchCriteria) when
+                     * an implementation of SearchCriteria becomes available.
+                     * for now, iterate over all template instances and find the right one.
+                     */
+                    Set<TemplateCondition> andConditions = new HashSet<TemplateCondition>();
+                    andConditions.add(new org.glassfish.virtualization.util.ServiceType(
+                            serviceCharacteristics.getProperty("service-type")));
+                    for (TemplateInstance ti : templateRepository.all()) {
+                        boolean allConditionsSatisfied = true;
+                        for (TemplateCondition condition : andConditions) {
+                            if (!ti.satisfies(condition)) {
+                                allConditionsSatisfied = false;
+                                break;
+                            }
+                        }
+                        if (allConditionsSatisfied) {
+                            matchingTemplate = ti;
+                            break;
+                        }
+                    }
+                    if (matchingTemplate != null) {
+                        templateId = matchingTemplate.getConfig().getName();
+                    }
+                }
+            } else {
+                for (TemplateInstance ti : templateRepository.all()) {
+                    if (ti.getConfig().getName().equals(templateId)) {
+                        matchingTemplate = ti;
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (matchingTemplate != null) {
+            try {
+                // Create the cluster.
+                // TODO :: we may need to create cluster in remote DAS.
+                // TODO :: So, first we may first need to provision the remote DAS
+                // TODO :: for now, everything is managed by the local DAS.
+                ApplicationServerProvisioner provisioner =
+                        provisionerUtil.getAppServerProvisioner("localhost");
+                provisioner.createCluster("localhost", serviceName);
+
+                // provision VMs.
+                VirtualCluster vCluster = virtualClusters.byName(serviceName);
+                ListenableFuture<AllocationPhase, VirtualMachine> future =
+                        iaas.allocate(new VMOrder(matchingTemplate, vCluster), null);
+
+                VirtualMachine vm = future.get();
+                // add app-scoped-service config for each vm instance as well.
+                //DatabaseProvisioner dbProvisioner = new DerbyProvisioner();//provisionerUtil.getDatabaseProvisioner();
+                //dbProvisioner.startDatabase(vm.getAddress());
+                ServiceInfo entry = new ServiceInfo();
+                entry.setInstanceId(vm.getName());
+                entry.setIpAddress(vm.getAddress());
+                entry.setState(ServiceInfo.State.Running.toString());
+                entry.setServiceName(serviceName);
+                entry.setAppName(appName);
+                entry.setServerType("database");
+
+                dbServiceUtil.registerDBInfo(entry);
+            } catch (Throwable ex) {
+                throw new RuntimeException(ex);
+            }
+            return;
+        }
+    }
 }

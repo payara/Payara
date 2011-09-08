@@ -100,7 +100,7 @@ public class DerbyProvisioner implements DatabaseProvisioner {
     }
 
     public String getDefaultServiceName() {
-        return "default-derby-dbs";
+        return "default-derby-db-service";
     }
 
     public String getVendorName() {

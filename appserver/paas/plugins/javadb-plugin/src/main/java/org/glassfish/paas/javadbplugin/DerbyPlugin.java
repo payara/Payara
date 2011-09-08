@@ -46,7 +46,6 @@ import org.glassfish.embeddable.CommandResult;
 import org.glassfish.embeddable.CommandRunner;
 import org.glassfish.paas.javadbplugin.cli.DatabaseServiceUtil;
 import org.glassfish.paas.orchestrator.provisioning.ServiceInfo;
-import org.glassfish.paas.orchestrator.provisioning.ProvisionerUtil;
 import org.glassfish.paas.orchestrator.provisioning.DatabaseProvisioner;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceType;
 import org.glassfish.paas.orchestrator.service.RDBMSServiceType;
@@ -77,18 +76,13 @@ import java.util.logging.Logger;
 public class DerbyPlugin implements Plugin<RDBMSServiceType> {
 
     @Inject
-    private ProvisionerUtil registryService;
-
-    @Inject
     private CommandRunner commandRunner;
 
     @Inject
     private DatabaseServiceUtil dbServiceUtil;
 
     private static final String DATASOURCE = "javax.sql.DataSource";
-
-    public static final String GLASSFISH_DERBY = "GLASSFISH_DERBY";
-    public static final String RDBMS_ServiceType = "RDBMS";
+public static final String RDBMS_ServiceType = "Database";
 
     private static Logger logger = Logger.getLogger(DerbyPlugin.class.getName());
 
@@ -114,7 +108,7 @@ public class DerbyPlugin implements Plugin<RDBMSServiceType> {
 
         if (DATASOURCE.equals(svcRef.getServiceRefType())) {
 
-            DatabaseProvisioner dbProvisioner = registryService.getDatabaseProvisioner(GLASSFISH_DERBY);
+            DatabaseProvisioner dbProvisioner = new DerbyProvisioner();
 
             // create default service description.
             String defaultServiceName = dbProvisioner.getDefaultServiceName();
@@ -135,10 +129,23 @@ public class DerbyPlugin implements Plugin<RDBMSServiceType> {
         }
     }
 
+    private String formatArgument(List<Property> properties) {
+        StringBuilder sb = new StringBuilder();
+        if (properties != null) {
+            for (Property p : properties) {
+                sb.append(p.getName() + "=" + p.getValue() + ":");
+            }
+        }
+        // remove the last ':'
+        if (sb.length() > 0) {
+            sb.deleteCharAt(sb.length() - 1);
+        }
+        return sb.toString();
+    }
+
     public ProvisionedService provisionService(ServiceDescription serviceDescription, DeploymentContext dc) {
         String serviceName = serviceDescription.getName();
         logger.entering(getClass().getName(), "provisionService");
-
 
         ArrayList<String> params;
         String[] parameters;
@@ -146,21 +153,34 @@ public class DerbyPlugin implements Plugin<RDBMSServiceType> {
         CommandResult result = commandRunner.run("_list-derby-services");
         if (!result.getOutput().contains(serviceName)) {
             //create-derby-service
-            params = new ArrayList<String>();
-            if(serviceDescription.getAppName() != null){
-                params.add("--appname="+serviceDescription.getAppName());
+            String serviceConfigurations = formatArgument(serviceDescription.getConfigurations());
+            String appNameParam = "";
+            if (serviceDescription.getAppName() != null) {
+                appNameParam = "--appname=" + serviceDescription.getAppName();
             }
-            params.add(serviceName);
-            parameters = new String[params.size()];
-            parameters = params.toArray(parameters);
 
-            result = commandRunner.run("_create-derby-service", parameters);
+        // either template identifier or service characteristics are specified, not both.
+        if (serviceDescription.getTemplateIdentifier() != null) {
+            String templateId = serviceDescription.getTemplateIdentifier().getId();
+            result = commandRunner.run("_create-derby-service",
+                    "--templateid=" + templateId,
+                    "--serviceconfigurations", serviceConfigurations,
+                    "--waitforcompletion=true", appNameParam, serviceName);
+        } else if (serviceDescription.getServiceCharacteristics() != null) {
+            String serviceCharacteristics = formatArgument(serviceDescription.
+                    getServiceCharacteristics().getServiceCharacteristics());
+            result = commandRunner.run("_create-derby-service",
+                    "--servicecharacteristics=" + serviceCharacteristics,
+                    "--serviceconfigurations", serviceConfigurations,
+                    "--waitforcompletion=true", appNameParam, serviceName);
+        }
             if (result.getExitStatus().equals(CommandResult.ExitStatus.FAILURE)) {
                 System.out.println("_create-derby-service [" + serviceName + "] failed");
             }
         }
 
-        ServiceInfo entry = dbServiceUtil.retrieveCloudEntry(serviceName, serviceDescription.getAppName(), ServiceType.DATABASE);
+        ServiceInfo entry = dbServiceUtil.retrieveCloudEntry(serviceName,
+                serviceDescription.getAppName(), ServiceType.DATABASE);
         if (entry == null) {
             throw new RuntimeException("unable to get DB service : " + serviceName);
         }
@@ -177,7 +197,6 @@ public class DerbyPlugin implements Plugin<RDBMSServiceType> {
         if (result.getExitStatus().equals(CommandResult.ExitStatus.FAILURE)) {
             System.out.println("_start-derby-service [" + serviceName + "] failed");
         }
-
 
         Properties serviceProperties = new Properties();
         //TODO HACK as we use dbServiceUtil to get DB's IP Address.
@@ -222,7 +241,7 @@ public class DerbyPlugin implements Plugin<RDBMSServiceType> {
             appNameParam="--appname="+serviceDescription.getAppName();
         }
         CommandResult result = commandRunner.run("_delete-derby-service",
-                appNameParam, serviceDescription.getName());
+                "--waitforcompletion=true", appNameParam, serviceDescription.getName());
         System.out.println("_delete-derby-service command output [" + result.getOutput() + "]");
         if (result.getExitStatus() == CommandResult.ExitStatus.SUCCESS) {
             return true;

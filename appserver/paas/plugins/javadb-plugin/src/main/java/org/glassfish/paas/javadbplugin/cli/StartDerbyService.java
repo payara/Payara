@@ -45,18 +45,15 @@ import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
+import org.glassfish.paas.orchestrator.provisioning.ApplicationServerProvisioner;
 import org.glassfish.paas.orchestrator.provisioning.ProvisionerUtil;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceType;
-import org.glassfish.paas.orchestrator.provisioning.iaas.CloudProvisioner;
 import org.glassfish.paas.orchestrator.provisioning.ServiceInfo;
 import org.glassfish.paas.orchestrator.provisioning.ServiceInfo.State;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * @author Jagadish Ramu
@@ -92,17 +89,18 @@ public class StartDerbyService implements AdminCommand {
                 return;
             }
 
-            dbServiceUtil.updateState(serviceName, appName, State.Start_in_progress.toString(), ServiceType.DATABASE);
+            //dbServiceUtil.updateState(serviceName, appName,
+              //      State.Start_in_progress.toString(), ServiceType.DATABASE);
 
-            CloudProvisioner cloudProvisioner = provisionerUtil.getCloudProvisioner();
-            Map<String, String> map = new HashMap<String, String>();
-            map.put(entry.getInstanceId(), entry.getIpAddress());
-            cloudProvisioner.startInstances(map);
+            ApplicationServerProvisioner provisioner =
+                    provisionerUtil.getAppServerProvisioner("localhost");
+            provisioner.startInstance(entry.getIpAddress(), entry.getInstanceId());
 
 
-            provisionerUtil.getDatabaseProvisioner().startDatabase(ipAddress);
+            //provisionerUtil.getDatabaseProvisioner().startDatabase(ipAddress);
 
-            dbServiceUtil.updateState(serviceName, appName, State.Running.toString(), ServiceType.DATABASE);
+            //dbServiceUtil.updateState(serviceName, appName,
+              //      State.Running.toString(), ServiceType.DATABASE);
             report.setMessage("db-service [" + serviceName + "] started");
             report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
 
