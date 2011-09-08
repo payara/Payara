@@ -209,6 +209,23 @@ public class CreateDerbyService implements AdminCommand, Runnable {
                 throw new RuntimeException(ex);
             }
             return;
+        }else{
+            //local mode related functionality.
+            CloudProvisioner cloudProvisioner = provisionerUtil.getCloudProvisioner();
+            String instanceID = cloudProvisioner.createMasterInstance();
+            String ipAddress = cloudProvisioner.getIPAddress(instanceID);
+
+            DatabaseProvisioner dbProvisioner = provisionerUtil.getDatabaseProvisioner();
+            dbProvisioner.startDatabase(ipAddress);
+
+            ServiceInfo entry = new ServiceInfo();
+            entry.setInstanceId(instanceID);
+            entry.setIpAddress(ipAddress);
+            entry.setState(ServiceInfo.State.Running.toString());
+            entry.setServiceName(serviceName);
+            entry.setAppName(appName);
+            entry.setServerType("database");
+            dbServiceUtil.registerDBInfo(entry);
         }
     }
 }

@@ -78,6 +78,13 @@ public class StartDerbyService implements AdminCommand {
 
         final ActionReport report = context.getActionReport();
 
+/*          IaaS specific code
+            ApplicationServerProvisioner provisioner =
+                    provisionerUtil.getAppServerProvisioner("localhost");
+            provisioner.startInstance(entry.getIpAddress(), entry.getInstanceId());
+*/
+
+
         if (dbServiceUtil.isValidService(serviceName, appName, ServiceType.DATABASE)) {
             ServiceInfo entry = dbServiceUtil.retrieveCloudEntry(serviceName, appName, ServiceType.DATABASE);
             String ipAddress = entry.getIpAddress();
@@ -89,18 +96,14 @@ public class StartDerbyService implements AdminCommand {
                 return;
             }
 
-            //dbServiceUtil.updateState(serviceName, appName,
-              //      State.Start_in_progress.toString(), ServiceType.DATABASE);
-
-            ApplicationServerProvisioner provisioner =
-                    provisionerUtil.getAppServerProvisioner("localhost");
-            provisioner.startInstance(entry.getIpAddress(), entry.getInstanceId());
+            dbServiceUtil.updateState(serviceName, appName,
+                    State.Start_in_progress.toString(), ServiceType.DATABASE);
 
 
-            //provisionerUtil.getDatabaseProvisioner().startDatabase(ipAddress);
+            provisionerUtil.getDatabaseProvisioner().startDatabase(ipAddress);
 
-            //dbServiceUtil.updateState(serviceName, appName,
-              //      State.Running.toString(), ServiceType.DATABASE);
+            dbServiceUtil.updateState(serviceName, appName,
+                    State.Running.toString(), ServiceType.DATABASE);
             report.setMessage("db-service [" + serviceName + "] started");
             report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
 

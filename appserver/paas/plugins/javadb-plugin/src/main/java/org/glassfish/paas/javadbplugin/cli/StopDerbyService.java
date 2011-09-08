@@ -82,6 +82,13 @@ public class StopDerbyService implements AdminCommand {
 
         final ActionReport report = context.getActionReport();
 
+/*
+            IaaS Specific Code
+            ApplicationServerProvisioner provisioner = provisionerUtil.getAppServerProvisioner("localhost");
+            provisioner.stopInstance(entry.getIpAddress(), entry.getInstanceId());
+*/
+
+
         if (dbServiceUtil.isValidService(serviceName, appName, ServiceType.DATABASE)) {
             ServiceInfo entry = dbServiceUtil.retrieveCloudEntry(serviceName, appName, ServiceType.DATABASE);
             String ipAddress = entry.getIpAddress();
@@ -93,16 +100,13 @@ public class StopDerbyService implements AdminCommand {
                 return;
             }
 
-            //dbServiceUtil.updateState(serviceName, appName,
-              //      State.Stop_in_progress.toString(), ServiceType.DATABASE);
+            dbServiceUtil.updateState(serviceName, appName,
+                    State.Stop_in_progress.toString(), ServiceType.DATABASE);
 
-            //provisionerUtil.getDatabaseProvisioner().stopDatabase(ipAddress);
+            provisionerUtil.getDatabaseProvisioner().stopDatabase(ipAddress);
 
-            ApplicationServerProvisioner provisioner = provisionerUtil.getAppServerProvisioner("localhost");
-            provisioner.stopInstance(entry.getIpAddress(), entry.getInstanceId());
-
-            //dbServiceUtil.updateState(serviceName, appName,
-              //      State.NotRunning.toString(), ServiceType.DATABASE);
+            dbServiceUtil.updateState(serviceName, appName,
+                    State.NotRunning.toString(), ServiceType.DATABASE);
             report.setMessage("db-service [" + serviceName + "] stopped");
             report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
 

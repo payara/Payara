@@ -50,6 +50,7 @@ import org.glassfish.paas.orchestrator.provisioning.ServiceInfo;
 import org.glassfish.paas.orchestrator.provisioning.ProvisionerUtil;
 import org.glassfish.paas.orchestrator.provisioning.DatabaseProvisioner;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceType;
+import org.glassfish.paas.orchestrator.provisioning.iaas.CloudProvisioner;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
@@ -58,6 +59,9 @@ import org.glassfish.virtualization.runtime.VirtualCluster;
 import org.glassfish.virtualization.runtime.VirtualClusters;
 import org.glassfish.virtualization.spi.TemplateRepository;
 import org.glassfish.virtualization.spi.VirtualMachine;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author Jagadish Ramu
@@ -110,15 +114,6 @@ public class DeleteDerbyService implements AdminCommand {
                     String vmId = dbServiceUtil.getInstanceID(serviceName, appName, ServiceType.DATABASE);
                     VirtualMachine vm = virtualCluster.vmByName(vmId);
 
-                    //dbServiceUtil.updateState(serviceName, appName,
-                      //      ServiceInfo.State.Stop_in_progress.toString(), ServiceType.DATABASE);
-
-                    //DatabaseProvisioner dbProvisioner = provisionerUtil.getDatabaseProvisioner();
-                    //dbProvisioner.stopDatabase(vm.getAddress());
-                    //dbServiceUtil.updateState(serviceName, appName,
-                      //      ServiceInfo.State.NotRunning.toString(), ServiceType.DATABASE);
-
-
                     vm.delete();
                     dbServiceUtil.unregisterCloudEntry(serviceName, appName);
 
@@ -138,6 +133,34 @@ public class DeleteDerbyService implements AdminCommand {
             }
             provisioner.deleteCluster("localhost", serviceName, false);
             return;
+        }else{
+            try{
+                //local mode related functionality.
+                String ipAddress = dbServiceUtil.getIPAddress(serviceName, appName, ServiceType.DATABASE);
+
+                dbServiceUtil.updateState(serviceName, appName,
+                ServiceInfo.State.Stop_in_progress.toString(), ServiceType.DATABASE);
+
+                DatabaseProvisioner dbProvisioner = provisionerUtil.getDatabaseProvisioner();
+                dbProvisioner.stopDatabase(ipAddress);
+                dbServiceUtil.updateState(serviceName, appName,
+                ServiceInfo.State.NotRunning.toString(), ServiceType.DATABASE);
+
+                CloudProvisioner cloudProvisioner = provisionerUtil.getCloudProvisioner();
+                String instanceID = dbServiceUtil.getInstanceID(serviceName, appName, ServiceType.DATABASE);
+                List<String> instanceIDs = new ArrayList<String>();
+                instanceIDs.add(instanceID);
+                cloudProvisioner.deleteInstances(instanceIDs);
+                dbServiceUtil.unregisterCloudEntry(serviceName, appName);
+                report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
+                report.setMessage("Service with name [" +
+                        serviceName + "] is decommissioned successfully.");
+
+            } catch (Exception e) {
+                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                report.setMessage("deleting service [" + serviceName + "] failed");
+                report.setFailureCause(e);
+            }
         }
     }
 }
