@@ -49,8 +49,8 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.glassfish.api.admin.AdminCommand;
-import org.glassfish.api.admin.RestAttachment;
-import org.glassfish.api.admin.RestAttachments;
+import org.glassfish.api.admin.RestEndpoint;
+import org.glassfish.api.admin.RestEndpoints;
 import org.glassfish.api.admin.RestParam;
 import org.glassfish.internal.api.Globals;
 import org.jvnet.hk2.annotations.Service;
@@ -129,24 +129,24 @@ public class CommandResourceMetaData {
                 while (iter.hasNext()) {
                     Inhabitant<?> inhab = iter.next();
                     final Class<? extends AdminCommand> clazz = (Class<? extends AdminCommand>)inhab.type();
-                    RestAttachments attachments = clazz.getAnnotation(RestAttachments.class);
-                    if (attachments != null) {
+                    RestEndpoints endpoints = clazz.getAnnotation(RestEndpoints.class);
+                    if (endpoints != null) {
                         //Logger.getLogger("CommandResourceMetaData").log(Level.FINE, "Found annotations on {0}", clazz.getName());
-                        RestAttachment[] list = attachments.value();
+                        RestEndpoint[] list = endpoints.value();
                         if ((list != null) && (list.length > 0)) {
-                            for (RestAttachment attachment : list) {
+                            for (RestEndpoint endpoint : list) {
                                 Service service = clazz.getAnnotation(Service.class);
-                                String configBean = attachment.configBean().getSimpleName();
+                                String configBean = endpoint.configBean().getSimpleName();
 
                                 CommandResourceMetaData metaData = new CommandResourceMetaData();
                                 metaData.command = service.name();
-                                metaData.httpMethod = attachment.opType().name();
-                                metaData.resourcePath = attachment.path();
-                                metaData.displayName = attachment.description();
+                                metaData.httpMethod = endpoint.opType().name();
+                                metaData.resourcePath = endpoint.path();
+                                metaData.displayName = endpoint.description();
 
-                                metaData.commandParams = new ParameterMetaData[attachment.params().length];
+                                metaData.commandParams = new ParameterMetaData[endpoint.params().length];
                                 int index = 0;
-                                for (RestParam param : attachment.params()) {
+                                for (RestParam param : endpoint.params()) {
                                     ParameterMetaData currentParam = new ParameterMetaData();
                                     metaData.commandParams[index] = currentParam;
                                     currentParam.name = param.name();

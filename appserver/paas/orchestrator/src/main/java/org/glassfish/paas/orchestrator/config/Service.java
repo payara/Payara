@@ -37,16 +37,49 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package org.glassfish.api.admin;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
+package org.glassfish.paas.orchestrator.config;
 
-/**
- *
- * @author Jason Lee
- */
-@Retention(RetentionPolicy.RUNTIME)
-public @interface RestAttachments {
-    RestAttachment[] value();
+import org.glassfish.api.Param;
+import org.glassfish.api.admin.config.PropertiesDesc;
+import org.glassfish.quality.ToDo;
+import org.jvnet.hk2.component.Injectable;
+import org.jvnet.hk2.config.Attribute;
+import org.jvnet.hk2.config.ConfigBeanProxy;
+import org.jvnet.hk2.config.Configured;
+import org.jvnet.hk2.config.Element;
+import org.jvnet.hk2.config.types.Property;
+import org.jvnet.hk2.config.types.PropertyBag;
+
+import java.beans.PropertyVetoException;
+import java.util.List;
+
+import javax.validation.constraints.NotNull;
+
+@Configured
+public interface Service extends ConfigBeanProxy, Injectable, PropertyBag{
+
+    /**
+    	Properties as per {@link PropertyBag}
+     */
+    @ToDo(priority=ToDo.Priority.IMPORTANT, details="Provide PropertyDesc for legal props" )
+    @PropertiesDesc(props={})
+    @Element
+    List<Property> getProperty();
+
+
+    @Attribute
+    @Param
+    @NotNull
+    String getType();
+
+    void setType(String type) throws PropertyVetoException;
+
+    //TODO later (when app-scoped-service and service-ref are stored within <application>) this attribute should be key
+    @Param
+    @NotNull
+    @Attribute()
+    String getServiceName();
+
+    void setServiceName(String name) throws PropertyVetoException;
 }

@@ -37,34 +37,33 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package org.glassfish.api.admin;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
+package org.glassfish.paas.orchestrator.config;
 
-/**
- *
- * @author Jason Lee
- */
-@Retention(RetentionPolicy.RUNTIME)
-public @interface RestAttachment {
-    enum OpType { GET, PUT, POST, DELETE}
+import org.glassfish.api.Param;
+import org.jvnet.hk2.component.Injectable;
+import org.jvnet.hk2.config.Attribute;
+import org.jvnet.hk2.config.ConfigBeanProxy;
+import org.jvnet.hk2.config.Configured;
 
-    /**
-     * Rest operation type that should trigger a redirect to an actual asadmin
-     * command invocation
-     *
-     * @return the rest operation type for this redirect
-     */
-    OpType opType();
+import java.beans.PropertyVetoException;
+import javax.validation.constraints.NotNull;
 
-    /**
-     * ConfigBean to which to attach the AdminCommand
-     *
-     * @return the name of the target ConfigBean
-     */
-    Class configBean();
-    String path();
-    String description();
-    RestParam[] params() default {};
+@Configured
+public interface ServiceRef extends ConfigBeanProxy, Injectable{
+    //TODO later (when app-scoped-service and service-ref are stored within <application>) this attribute should be key
+    @Param
+    @NotNull
+    @Attribute
+    String getServiceName();
+
+    void setServiceName(String name) throws PropertyVetoException;
+
+    /*TODO for now service-ref of an application is also stored in domain.xml
+           as part of global <services> section */
+    @Attribute
+    @Param
+    String getApplicationName();
+
+    void setApplicationName(String applicationName) throws PropertyVetoException;
 }

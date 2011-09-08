@@ -60,8 +60,6 @@ import org.glassfish.api.admin.RestEndpoints;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Properties;
 
 @org.jvnet.hk2.annotations.Service(name = "list-services")
 @Scoped(PerLookup.class)
@@ -190,22 +188,18 @@ public class ListServices implements AdminCommand {
                 }
             }
         }
-
-        Properties extraProperties = new Properties();
-        extraProperties.put("list", new ArrayList<Map<String,String>>());
-
         if (matchedServices.size() > 0) {
 
-            String headings[] = new String[]{"SERVICE-NAME", "IP-ADDRESS", "VM-ID", "SERVER-TYPE", "STATE", "SCOPE"};
+            String headings[] = new String[]{"SERVICE_NAME", "IP_ADDRESS", "VM_ID", "SERVER_TYPE", "STATE", "SCOPE"};
             if(type != null){
                 if(scope != null){
-                    headings = new String[]{"SERVICE-NAME", "IP-ADDRESS", "VM-ID", "STATE"};
+                    headings = new String[]{"SERVICE_NAME", "IP_ADDRESS", "VM_ID", "STATE"};
                 }else{
-                    headings = new String[]{"SERVICE-NAME", "IP-ADDRESS", "VM-ID", "STATE", "SCOPE"};
+                    headings = new String[]{"SERVICE_NAME", "IP_ADDRESS", "VM_ID", "STATE", "SCOPE"};
                 }
             }else{
                 if(scope != null){
-                    headings = new String[]{"SERVICE-NAME", "IP-ADDRESS", "VM-ID", "SERVER-TYPE", "STATE"};
+                    headings = new String[]{"SERVICE_NAME", "IP_ADDRESS", "VM_ID", "SERVER_TYPE", "STATE"};
                 }
             }
             ColumnFormatter cf = new ColumnFormatter(headings);
@@ -218,7 +212,7 @@ public class ListServices implements AdminCommand {
                 if (ipAddress == null) {
                     ipAddress = "-";
                 }
-                String instanceID = service.getPropertyValue("vm-id");
+                String instanceID = service.getPropertyValue("instance-id");
                 if (instanceID == null) {
                     instanceID = "-";
                 }
@@ -255,19 +249,14 @@ public class ListServices implements AdminCommand {
                     }
                 }
             }
-
-
             if (foundRows) {
                 report.setMessage(cf.toString());
-                extraProperties.put("list", cf.getContent());
             } else {
                 report.setMessage("Nothing to list.");
             }
         } else {
             report.setMessage("Nothing to list.");
         }
-
-        report.setExtraProperties(extraProperties);
         ActionReport.ExitCode ec = ActionReport.ExitCode.SUCCESS;
         report.setActionExitCode(ec);
     }

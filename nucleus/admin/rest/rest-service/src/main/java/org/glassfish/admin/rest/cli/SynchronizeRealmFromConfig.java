@@ -60,9 +60,9 @@ import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.CommandLock;
 import org.glassfish.api.admin.ExecuteOn;
-import org.glassfish.api.admin.RestAttachment;
-import org.glassfish.api.admin.RestAttachment.OpType;
-import org.glassfish.api.admin.RestAttachments;
+import org.glassfish.api.admin.RestEndpoint;
+import org.glassfish.api.admin.RestEndpoint.OpType;
+import org.glassfish.api.admin.RestEndpoints;
 import org.glassfish.api.admin.RestParam;
 import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.api.admin.ServerEnvironment;
@@ -86,8 +86,8 @@ import org.jvnet.hk2.config.types.Property;
 @TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE,
     CommandTarget.CLUSTER, CommandTarget.CONFIG, CommandTarget.CLUSTERED_INSTANCE})
 //        {"Config", "__synchronize-realm-from-config", "POST", "synchronize-realm-from-config", "Synchronize-realm-from-config", "target=$parent"},
-@RestAttachments({
-    @RestAttachment(configBean=Config.class,
+@RestEndpoints({
+    @RestEndpoint(configBean=Config.class,
         opType=OpType.POST,
         description="Synchronize-realm-from-config",
         path="synchronize-realm-from-config",

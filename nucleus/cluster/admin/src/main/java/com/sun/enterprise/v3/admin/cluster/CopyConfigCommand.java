@@ -55,9 +55,9 @@ import org.jvnet.hk2.config.TransactionFailure;
 
 import java.beans.PropertyVetoException;
 import java.util.logging.Logger;
-import org.glassfish.api.admin.RestAttachment;
-import org.glassfish.api.admin.RestAttachment.OpType;
-import org.glassfish.api.admin.RestAttachments;
+import org.glassfish.api.admin.RestEndpoint;
+import org.glassfish.api.admin.RestEndpoint.OpType;
+import org.glassfish.api.admin.RestEndpoints;
 
 /**
  *  This is a remote command that copies a config to a destination config.
@@ -70,8 +70,8 @@ import org.glassfish.api.admin.RestAttachments;
 @I18n("copy.config.command")
 @Scoped(PerLookup.class)
 //        {"Configs", "copy-config", "POST", "copy-config", "Copy Config"},
-@RestAttachments({
-    @RestAttachment(configBean=Configs.class, opType=OpType.POST, path="copy-config", description="Copy Config")
+@RestEndpoints({
+    @RestEndpoint(configBean=Configs.class, opType=OpType.POST, path="copy-config", description="Copy Config")
 })
 public final class CopyConfigCommand extends CopyConfig {
 
