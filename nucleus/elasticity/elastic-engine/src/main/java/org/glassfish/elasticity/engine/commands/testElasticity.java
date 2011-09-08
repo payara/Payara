@@ -37,13 +37,14 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package com.sun.enterprise.v3.admin.cluster;
+package org.glassfish.elasticity.engine.commands;
 
-import com.sun.enterprise.config.serverbeans.*;
+import org.glassfish.elasticity.config.serverbeans.*;
 import com.sun.enterprise.universal.glassfish.TokenResolver;
 import com.sun.enterprise.util.StringUtils;
 import java.beans.PropertyVetoException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.glassfish.api.ActionReport;
@@ -57,40 +58,21 @@ import org.jvnet.hk2.config.*;
 import java.util.logging.Logger;
 
 /**
- ** Remote AdminCommand to create an alert element.  This command is run only on DAS.
  * Created by IntelliJ IDEA.
  * User: cmott
- * Date: 8/22/11
+ * Date: 8/24/11
+ * Time: 3:57 PM
+ * To change this template use File | Settings | File Templates.
  */
-@Service(name = "create-alert")
-@I18n("create.alert")
+@Service(name = "test-alert")
 @Scoped(PerLookup.class)
-@ExecuteOn({RuntimeType.DAS})
-public class CreateAlertCommand implements AdminCommand {
+public class testElasticity implements AdminCommand {
 
- @Inject
+@Inject
   ElasticServices elasticServices;
 
-  @Inject
-  Domain domain;
-
   @Param(name="name", primary = true)
-   String name;
-
-  @Param(name="service")
-  String servicename;
-
-  @Param(name="schedule", optional = true)
-  String schedule;
-
-  @Param(name="sampleinterval", optional = true)
-  int sampleInterval;
-
-  @Param(name="expression")
-  String expression;
-
-  @Param(name="enabled", defaultValue = "true", optional = true)
-  boolean enabled;
+   String servicename;
 
     @Override
     public void execute(AdminCommandContext context) {
@@ -100,55 +82,41 @@ public class CreateAlertCommand implements AdminCommand {
         ElasticService elasticService= elasticServices.getElasticService(servicename);
         if (elasticService == null) {
             //node doesn't exist
-            String msg = Strings.get("noSuchService", name);
+            String msg = Strings.get("noSuchService", servicename);
             logger.warning(msg);
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setMessage(msg);
             return;
         }
 
-        try {
-            createAlertElement(name);
-        } catch(TransactionFailure e) {
-            logger.warning("failed.to.create.alert " + name);
-            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            report.setMessage(e.getMessage());
+        ElasticService es = elasticServices.getElasticService(servicename);
+        System.out.println("enabled "+es.getEnabled());
+        System.out.println("service min "+es.getMin());
+        System.out.println("service max "+es.getMax());
+
+        Alerts alerts= es.getAlerts();
+        if (alerts != null) {
+        for (AlertConfig a : alerts.getAlert()) {
+            System.out.println("alert name "+a.getName());
+            System.out.println("Schedule "+ a.getSchedule());
         }
-    }
+        }
 
-    public void createAlertElement(final String alertName) throws TransactionFailure {
-        ConfigSupport.apply(new SingleConfigCode() {
-            @Override
-            public Object run(ConfigBeanProxy param) throws PropertyVetoException, TransactionFailure {
-                // get the transaction
-                Transaction t = Transaction.getTransaction(param);
-                if (t!=null) {
-                    ElasticServices elasticServices = ((Domain)param).getElasticServices();
-                    ElasticService elasticService = elasticServices.getElasticService(servicename);
-                    ElasticService writeableService = t.enroll(elasticService);
-                    Alerts writeableAlerts = elasticService.getAlerts();
-                    if (writeableAlerts == null)
-                        writeableAlerts =writeableService.createChild(Alerts.class);
-                    else
-                         writeableAlerts = t.enroll(writeableAlerts);
+        MetricGatherers mgs = es.getMetricGatherers();
+        for (MetricGatherer mg: mgs.getMetricGatherer()){
+            System.out.println("metric gatherer type "+ mg.getName());
+            System.out.println("metric gatherer rate "+ mg.getCollectionRate());
+        }
 
-                    AlertConfig writeableAlert = writeableAlerts.createChild(AlertConfig.class);
-                    if (name != null)
-                        writeableAlert.setName(name);
-                    if (schedule != null)
-                        writeableAlert.setSchedule(schedule);
-                    if (expression != null)
-                        writeableAlert.setExpression(expression);
-                    if (sampleInterval != 0)
-                        writeableAlert.setSampleInterval(sampleInterval);
-                    if (!enabled)
-                        writeableAlert.setEnabled(enabled);
-                    writeableAlerts.getAlert().add(writeableAlert);
-                    writeableService.setAlerts(writeableAlerts);
-                }
-                return Boolean.TRUE;
-            }
+        Actions ac = es.getActions();
+        for (LogAction la: ac.getLogAction())  {
+            System.out.println("name "+ la.getName());
+            System.out.println("log-level "+ la.getLogLevel());
+        }
 
-        }, domain);
+        System.out.println("done");
+
+
+
     }
 }

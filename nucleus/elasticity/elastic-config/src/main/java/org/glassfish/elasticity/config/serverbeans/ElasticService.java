@@ -38,46 +38,25 @@
  * holder.
  */
 
-package com.sun.enterprise.config.serverbeans;
+package org.glassfish.elasticity.config.serverbeans;
 
-import com.sun.enterprise.config.serverbeans.customvalidators.NotTargetKeyword;
-import com.sun.enterprise.config.serverbeans.customvalidators.NotDuplicateTargetName;
-import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.enterprise.util.net.NetUtils;
-import com.sun.enterprise.util.StringUtils;
-import com.sun.logging.LogDomains;
+import com.sun.enterprise.config.serverbeans.*;
+
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommandContext;
-import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.config.support.*;
-import static org.glassfish.config.support.Constants.*;
 import org.jvnet.hk2.annotations.Inject;
-import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
-import org.jvnet.hk2.component.PerLookup;
 import org.jvnet.hk2.config.*;
-import org.jvnet.hk2.component.Injectable;
-import org.glassfish.api.admin.config.Named;
-import org.glassfish.api.admin.config.ReferenceContainer;
-
-import javax.validation.Payload;
 import java.beans.PropertyVetoException;
-import java.io.File;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import javax.validation.constraints.Pattern;
 
 /**
  * A cluster defines a homogeneous set of service instances that share the same
  * applications, resources, and configuration.
  */
 @Configured
-@SuppressWarnings("unused")
-@NotDuplicateTargetName(message="{elastic.service.duplicate.name}", payload=ElasticService.class)
-public interface ElasticService extends ConfigBeanProxy, Injectable, Named, ReferenceContainer, RefContainer, Payload {
+public interface ElasticService extends ConfigBeanProxy  {
 
     /**
      * Sets the elastic service name
@@ -85,12 +64,9 @@ public interface ElasticService extends ConfigBeanProxy, Injectable, Named, Refe
      * @throws PropertyVetoException if a listener vetoes the change
      */
     @Param(name="name", primary = true)
-    @Override
     public void setName(String value) throws PropertyVetoException;
 
-    @NotTargetKeyword(message="{elastic.service.reserved.name}", payload=ElasticService.class)
-    @Pattern(regexp=NAME_SERVER_REGEX, message="{elastic.service.invalid.name}", payload=ElasticService.class)
-    @Override
+    @Attribute
     public String getName();
 
     /*
@@ -208,9 +184,28 @@ public interface ElasticService extends ConfigBeanProxy, Injectable, Named, Refe
 
     void setActions(Actions actions);
 
+    @Service
+    public class ElasticServiceResolver implements CrudResolver {
+
+        @Param(name="name")
+        String name;
+
+        @Inject
+        ElasticServices elasticServices;
+
+        @Override
+        @SuppressWarnings("unchecked")
+        public <T extends ConfigBeanProxy> T resolve(AdminCommandContext context, Class<T> type)  {
+            for (ElasticService elasticService : elasticServices.getElasticService()) {
+                if (elasticService.getName().equals(name)) {
+                    return (T) elasticService;
+                }
+            }
+            return null;
+        }
+    }
 
     @Service
-    @Scoped(PerLookup.class)
     class Decorator implements CreationDecorator<ElasticService> {
         /**
           * Decorates the newly CRUD created elastic configuration instance.
@@ -233,14 +228,13 @@ public interface ElasticService extends ConfigBeanProxy, Injectable, Named, Refe
              instance.setMetricGatherers(mgs);
 
              // create the scale up action element
+
              Actions actionsS = instance.createChild(Actions.class);
              ScaleUpAction scaleUpAction = actionsS.createChild(ScaleUpAction.class);
              scaleUpAction.setName("scale-up-action");
              actionsS.setScaleUpAction(scaleUpAction);
              instance.setActions(actionsS);
-
-
-
          }
     }
+
 }

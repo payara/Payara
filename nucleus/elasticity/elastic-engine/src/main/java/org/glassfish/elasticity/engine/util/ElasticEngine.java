@@ -47,9 +47,9 @@ import org.glassfish.hk2.PostConstruct;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
 
-import com.sun.enterprise.config.serverbeans.AlertConfig;
-import com.sun.enterprise.config.serverbeans.ElasticService;
-import com.sun.enterprise.config.serverbeans.ElasticServices;
+import org.glassfish.elasticity.config.serverbeans.AlertConfig;
+import org.glassfish.elasticity.config.serverbeans.ElasticService;
+import org.glassfish.elasticity.config.serverbeans.ElasticServices;
 import org.jvnet.hk2.component.Habitat;
 
 /**

@@ -38,20 +38,21 @@
  * holder.
  */
 
-package com.sun.enterprise.config.serverbeans;
+package org.glassfish.elasticity.config.serverbeans;
 
-import org.glassfish.api.I18n;
-import org.glassfish.api.admin.RuntimeType;
-import org.glassfish.config.support.Create;
-import org.glassfish.config.support.Delete;
-import org.glassfish.config.support.TypeAndNameResolver;
-import org.glassfish.config.support.TypeResolver;
-import org.jvnet.hk2.config.ConfigBeanProxy;
-import org.jvnet.hk2.component.Injectable;
-import org.jvnet.hk2.config.Configured;
-import org.jvnet.hk2.config.Element;
-import org.jvnet.hk2.config.DuckTyped;
+import com.sun.enterprise.config.serverbeans.*;
 import java.util.List;
+
+import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.config.serverbeans.DomainExtension;
+import org.glassfish.api.I18n;
+import org.glassfish.api.Param;
+import org.glassfish.api.admin.AdminCommandContext;
+import org.glassfish.config.support.*;
+import org.jvnet.hk2.annotations.Inject;
+import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.config.*;
+import java.beans.PropertyVetoException;
 
 /**
  * Created by IntelliJ IDEA.
@@ -59,7 +60,8 @@ import java.util.List;
  * Date: 8/17/11
  */
 @Configured
-public interface ElasticServices extends ConfigBeanProxy, Injectable {
+@Singleton
+public interface ElasticServices extends DomainExtension {
       /**
      * Return the list of currently configured elastic service. Services can
      * be added or removed by using the returned {@link java.util.List}
@@ -67,10 +69,8 @@ public interface ElasticServices extends ConfigBeanProxy, Injectable {
      *
      * @return the list of configured {@link ElasticService}
      */
-    @Element
-    @Create(value="_create-elastic-service",  decorator=ElasticService.Decorator.class,  i18n=@I18n("create-elastic.service.command"))
-//    @Create(value="_create-elastic-service",  i18n=@I18n("create-elastic.service.command"))
-    @Delete(value="_delete-elastic-service",   i18n=@I18n("delete-elastic.service.command"))
+    @Element ("elasticservice")
+    @Create(value = "_create-elastic-service", decorator=ElasticService.Decorator.class, resolver = ESResolver.class, i18n = @I18n("org.glassfish.elasticity.config.create-elastic-service"))
     public List<ElasticService> getElasticService();
 
     /**
@@ -92,6 +92,33 @@ public interface ElasticServices extends ConfigBeanProxy, Injectable {
             return null;
         }
 
+    }
+
+    @Service
+    public class ESResolver implements CrudResolver {
+        @Inject
+        Domain domain;
+
+        @Inject(optional = true)
+        ElasticServices elasticServices = null;
+
+        @Override
+        public <T extends ConfigBeanProxy> T resolve(AdminCommandContext context, Class<T> type)  {
+            if (elasticServices!=null) return (T) elasticServices;
+            try {
+                elasticServices = (ElasticServices) ConfigSupport.apply(new SingleConfigCode<Domain>() {
+                    @Override
+                    public Object run(Domain wDomain) throws PropertyVetoException, TransactionFailure {
+                        ElasticServices es = wDomain.createChild(ElasticServices.class);
+                        wDomain.getExtensions().add(es);
+                        return es;
+                    }
+                }, domain);
+            } catch (TransactionFailure t)  {
+                throw new RuntimeException(t);
+            }
+            return (T) elasticServices;
+        }
     }
 
 }

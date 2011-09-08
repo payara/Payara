@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,31 +37,47 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+package org.glassfish.elasticity.engine.commands;
 
-package com.sun.enterprise.admin.cli.cluster;
+import java.util.logging.Level;
 
-import com.sun.enterprise.universal.i18n.LocalStringsImpl;
+import org.glassfish.api.Param;
+import org.glassfish.api.admin.AdminCommand;
+import org.glassfish.api.admin.AdminCommandContext;
+import org.glassfish.elasticity.engine.common.ElasticServiceImpl;
+import org.glassfish.elasticity.engine.common.ElasticServiceManager;
+import org.glassfish.elasticity.engine.util.EngineUtil;
+import org.glassfish.hk2.scopes.PerLookup;
+import org.jvnet.hk2.annotations.Inject;
+import org.jvnet.hk2.annotations.Scoped;
+import org.jvnet.hk2.annotations.Service;
 
 /**
- * Strings -- Get your Strings here.
- * One file with Strings
- * So one class for messing with them!
- * Nothing in here is public protected.  Only for use by this one java package.
- * @author Byron Nevins
+ * Enable auto scaling
+ * 
+ * @author Mahesh Kannan
+ *
  */
+@Service(name="enable-auto-scaling")
+@Scoped(PerLookup.class)
+public class EnableAutoScaling
+	implements AdminCommand {
 
-final class Strings {
-    private Strings() {
-        // no instances allowed!
+	@Inject
+	EngineUtil util;
+	
+	@Param(name="name", optional=false)
+	private String name;
+	
+    public void execute(AdminCommandContext context) {
+    	ElasticServiceImpl service = (ElasticServiceImpl) ElasticServiceManager.getElasticService(name);
+    	if (service != null) {
+	    	service.setEnabled(true);
+	    	util.getLogger().log(Level.INFO, "enabled elastic-service: " + name);
+    	} else {
+	    	util.getLogger().log(Level.WARNING, "No such elastic-service named: " + name);
+    	}
+
     }
 
-    final static String get(String indexString) {
-        return strings.get(indexString);
-    }
-
-    final static String get(String indexString, Object... objects) {
-        return strings.get(indexString, objects);
-    }
-
-    final private static LocalStringsImpl strings = new LocalStringsImpl(Strings.class);
 }

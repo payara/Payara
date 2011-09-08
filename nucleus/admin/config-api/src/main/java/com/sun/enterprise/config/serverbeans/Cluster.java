@@ -768,18 +768,6 @@ public interface Cluster extends ConfigBeanProxy, Injectable, PropertyBag, Named
                context.getActionReport().setMessage("Obsolete options used.");
             }
 
-            // create the elasticity elements for now
-             ActionReport report = context.getActionReport();
-
-              ParameterMap params = new ParameterMap();
-              params.add("DEFAULT", name);
-              CommandRunner.CommandInvocation inv = runner.getCommandInvocation("_create-elastic-service", report);
-             inv.parameters(params);
-             inv.execute();
-//            rtContext.executeAdminCommand(report,"_create-elastic-service", name);
-            if (report.hasFailures())    {
-                throw new TransactionFailure("Can not create elastic config info");
-            }
         }
 
     private String generateHeartbeatPort() {

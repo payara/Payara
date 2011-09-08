@@ -1,4 +1,4 @@
-package com.sun.enterprise.config.serverbeans;
+package org.glassfish.elasticity.config.serverbeans;
 
 import com.sun.enterprise.config.serverbeans.customvalidators.NotDuplicateTargetName;
 import com.sun.enterprise.config.serverbeans.customvalidators.NotTargetKeyword;
@@ -24,9 +24,7 @@ import static org.glassfish.config.support.Constants.NAME_SERVER_REGEX;
  * Date: 8/26/11
  */
 @Configured
-@SuppressWarnings("unused")
-@NotDuplicateTargetName(message="{action.duplicate.name}", payload=ScaleUpAction.class)
-public interface ScaleUpAction extends ConfigBeanProxy, Injectable, Named, ReferenceContainer, RefContainer, Payload {
+public interface ScaleUpAction extends ConfigBeanProxy {
 
     /**
    * Sets the action name
@@ -34,12 +32,9 @@ public interface ScaleUpAction extends ConfigBeanProxy, Injectable, Named, Refer
    * @throws PropertyVetoException if a listener vetoes the change
    */
   @Param(name="name", primary = true, defaultValue = "scale-up-action")
-  @Override
   public void setName(String value) throws PropertyVetoException;
 
-  @NotTargetKeyword(message="{action.reserved.name}", payload=ScaleUpAction.class)
-  @Pattern(regexp=NAME_SERVER_REGEX, message="{action.invalid.name}", payload=ScaleUpAction.class)
-  @Override
+  @Attribute (defaultValue = "scale-up-action")
   public String getName();
 
 

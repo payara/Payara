@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,46 +37,63 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package org.glassfish.elasticity.engine.command;
+package org.glassfish.elasticity.config.serverbeans;
 
-import java.util.logging.Level;
+import com.sun.enterprise.config.serverbeans.*;
+import com.sun.enterprise.util.i18n.StringManager;
+import org.glassfish.api.I18n;
+import org.glassfish.api.admin.RuntimeType;
+import org.glassfish.config.support.Create;
+import org.glassfish.config.support.Delete;
+import org.glassfish.config.support.TypeAndNameResolver;
+import org.glassfish.config.support.TypeResolver;
+import org.glassfish.grizzly.http.server.StaticHttpHandler;
+import org.jvnet.hk2.config.ConfigBeanProxy;
+import org.jvnet.hk2.component.Injectable;
+import org.jvnet.hk2.config.Configured;
+import org.jvnet.hk2.config.Element;
+import org.jvnet.hk2.config.DuckTyped;
+import org.slf4j.impl.StaticLoggerBinder;
 
-import org.glassfish.api.Param;
-import org.glassfish.api.admin.AdminCommand;
-import org.glassfish.api.admin.AdminCommandContext;
-import org.glassfish.elasticity.engine.common.ElasticServiceImpl;
-import org.glassfish.elasticity.engine.common.ElasticServiceManager;
-import org.glassfish.elasticity.engine.util.EngineUtil;
-import org.glassfish.hk2.scopes.PerLookup;
-import org.jvnet.hk2.annotations.Inject;
-import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.annotations.Service;
+import java.util.List;
 
 /**
- * Enable auto scaling
- * 
- * @author Mahesh Kannan
- *
+ * Created by IntelliJ IDEA.
+ * User: cmott
+ * Date: 8/18/11
  */
-@Service(name="enable-auto-scaling")
-@Scoped(PerLookup.class)
-public class EnableAutoScaling
-	implements AdminCommand {
+@Configured
+public interface Alerts  extends ConfigBeanProxy {
+    /**
+   * Return the list of currently configured alert. Alerts can
+   * be added or removed by using the returned {@link java.util.List}
+   * instance
+   *
+   * @return the list of configured {@link Alerts}
+   */
 
-	@Inject
-	EngineUtil util;
-	
-	@Param(name="name", optional=false)
-	private String name;
-	
-    public void execute(AdminCommandContext context) {
-    	ElasticServiceImpl service = (ElasticServiceImpl) ElasticServiceManager.getElasticService(name);
-    	if (service != null) {
-	    	service.setEnabled(true);
-	    	util.getLogger().log(Level.INFO, "enabled elastic-service: " + name);
-    	} else {
-	    	util.getLogger().log(Level.WARNING, "No such elastic-service named: " + name);
-    	}
-    }
+  @Element
+   public List<AlertConfig> getAlert();
+
+  /**
+   * Return the alert with the given name, or null if no such alert exists.
+   *
+   * @param   name    the name of the alert
+   * @return          the Alert object, or null if no such alert
+   */
+  @DuckTyped
+  public AlertConfig  getAlert(String name);
+
+  class Duck {
+      public static AlertConfig getAlert(Alerts instance, String name) {
+          for (AlertConfig alert : instance.getAlert()) {
+              if (alert.getName().equals(name)) {
+                  return alert;
+              }
+          }
+          return null;
+      }
+
+  }
 
 }

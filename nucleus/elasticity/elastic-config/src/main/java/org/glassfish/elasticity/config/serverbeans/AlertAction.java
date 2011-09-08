@@ -37,8 +37,9 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package com.sun.enterprise.config.serverbeans;
+package org.glassfish.elasticity.config.serverbeans;
 
+import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.config.serverbeans.customvalidators.NotTargetKeyword;
 import com.sun.enterprise.config.serverbeans.customvalidators.NotDuplicateTargetName;
 import com.sun.enterprise.util.LocalStringManagerImpl;
@@ -63,103 +64,52 @@ import org.glassfish.api.admin.config.ReferenceContainer;
 
 import javax.validation.OverridesAttribute;
 import javax.validation.Payload;
+import javax.validation.constraints.Pattern;
 import java.beans.PropertyVetoException;
 import java.io.File;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.validation.constraints.Pattern;
 /**
  * Created by IntelliJ IDEA.
  * User: cmott
- * Date: 8/18/11
+ * Date: 8/30/11
  */
-
 @Configured
-@SuppressWarnings("unused")
-@NotDuplicateTargetName(message="{alert.duplicate.name}", payload=AlertConfig.class)
-public interface AlertConfig extends ConfigBeanProxy, Injectable, Named, ReferenceContainer, RefContainer, Payload {
+public interface AlertAction extends ConfigBeanProxy {
 
-    /**
+        /**
      * Sets the alert name
      * @param value alert name
      * @throws PropertyVetoException if a listener vetoes the change
      */
-    @Param(name="name", primary = true)
-    @Override
+    @Param(name="name")
     public void setName(String value) throws PropertyVetoException;
 
-    @NotTargetKeyword(message="{alert.reserved.name}", payload=AlertConfig.class)
-    @Pattern(regexp=NAME_SERVER_REGEX, message="{alert.invalid.name}", payload=AlertConfig.class)
-    @Override
-    public String getName();
-    /**
-     * Sets the alert schedule
-     * @param value alert schedule
-     * @throws PropertyVetoException if a listener vetoes the change
-     */
-    @Param(name="schedule", optional=true, defaultValue="10m")
-    public void setSchedule(String value) throws PropertyVetoException;
-
-    @Attribute (defaultValue = "10m")
-    public String getSchedule();
-
-    /**
-     * Sets the alert sample interval in minutes
-     * @param value alert interval
-     * @throws PropertyVetoException if a listener vetoes the change
-     */
-    @Param(name="sample-interval", optional=true, defaultValue="5")
-    public void setSampleInterval(int value) throws PropertyVetoException;
-
-    @Attribute (defaultValue = "5")
-    public int getSampleInterval();
-
-    /**
-     * Sets the alert sample interval in minutes
-     * @param value alert interval
-     * @throws PropertyVetoException if a listener vetoes the change
-     */
-    @Param(name="enabled", optional=true, defaultValue="true")
-    public void setEnabled(boolean value) throws PropertyVetoException;
-
-    @Attribute  (defaultValue = "true")
-    public int getEnabled();
-
-    /**
-     * Sets the alert expression
-     * @param value alert expression
-     * @throws PropertyVetoException if a listener vetoes the change
-     */
-    @Param(name="expression")
-    public void setExpression(String value) throws PropertyVetoException;
-
     @Attribute
-    public String getExpression();
+    public String getName();
 
    /**
-     * Sets the alert service
-     * @param value alert service
+     * Sets the action state
+     * @param value action state
      * @throws PropertyVetoException if a listener vetoes the change
      */
-    @Param(name="service")
-    public void setService(String value) throws PropertyVetoException;
+    @Param(name="state", defaultValue = "ok")
+    public void setState(String value) throws PropertyVetoException;
 
     @Attribute
-    public String getService();
+    public String getState();
 
     /**
-     * List of actions associated with this alert
-     */
-    @Element
-    AlertActions getAlertActions();
+      * Sets the action state
+      * @param value action state
+      * @throws PropertyVetoException if a listener vetoes the change
+      */
+     @Param(name="action-ref", primary = true)
+     public void setAction(String value) throws PropertyVetoException;
 
-      /**
-     * Sets the AlertActions element
-     * @param actions
-     */
-
-    void setAlertActions(AlertActions alertActions);
+     @Attribute
+     public String getAction();
 
 }

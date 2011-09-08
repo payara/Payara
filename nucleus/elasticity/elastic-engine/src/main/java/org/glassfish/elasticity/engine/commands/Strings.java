@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,63 +37,32 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package com.sun.enterprise.config.serverbeans;
 
+package org.glassfish.elasticity.engine.commands;
 
-import com.sun.enterprise.util.i18n.StringManager;
-import org.glassfish.api.I18n;
-import org.glassfish.api.admin.RuntimeType;
-import org.glassfish.config.support.Create;
-import org.glassfish.config.support.Delete;
-import org.glassfish.config.support.TypeAndNameResolver;
-import org.glassfish.config.support.TypeResolver;
-import org.glassfish.grizzly.http.server.StaticHttpHandler;
-import org.jvnet.hk2.config.ConfigBeanProxy;
-import org.jvnet.hk2.component.Injectable;
-import org.jvnet.hk2.config.Configured;
-import org.jvnet.hk2.config.Element;
-import org.jvnet.hk2.config.DuckTyped;
-import org.slf4j.impl.StaticLoggerBinder;
-
-import java.util.List;
+import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 
 /**
- * Created by IntelliJ IDEA.
- * User: cmott
- * Date: 8/18/11
+ * Strings -- Get your Strings here.
+ * One file with Strings
+ * So one class for messing with them!
+ * Nothing in here is public protected.  Only for use by this one java package.
+ * @author Byron Nevins
  */
-@Configured
-public interface Alerts  extends ConfigBeanProxy, Injectable {
-    /**
-   * Return the list of currently configured alert. Alerts can
-   * be added or removed by using the returned {@link java.util.List}
-   * instance
-   *
-   * @return the list of configured {@link Alerts}
-   */
 
-  @Element
-   public List<AlertConfig> getAlert();
+final class Strings {
+    private Strings() {
+        // no instances allowed!
+    }
 
-  /**
-   * Return the alert with the given name, or null if no such alert exists.
-   *
-   * @param   name    the name of the alert
-   * @return          the Alert object, or null if no such alert
-   */
-  @DuckTyped
-  public AlertConfig  getAlert(String name);
+    final static String get(String indexString) {
+        return strings.get(indexString);
+    }
 
-  class Duck {
-      public static AlertConfig getAlert(Alerts instance, String name) {
-          for (AlertConfig alert : instance.getAlert()) {
-              if (alert.getName().equals(name)) {
-                  return alert;
-              }
-          }
-          return null;
-      }
+    final static String get(String indexString, Object... objects) {
+        return strings.get(indexString, objects);
+    }
 
-  }
-
+    final private static LocalStringsImpl strings = new LocalStringsImpl(Strings.class);
 }
+

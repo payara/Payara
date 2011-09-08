@@ -35,18 +35,17 @@
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
-	<artifactId>elastic-api</artifactId>
+	<artifactId>elastic-config</artifactId>
 	<packaging>hk2-jar</packaging>
-	<name>GlassFish Elasticity API</name>
+	<name>GlassFish Elasticity Config</name>
 
 	<developers>
 		<developer>
-			<id>mk111283</id>
-			<name>Mahesh Kannan</name>
+			<id>cmott</id>
+			<name>Carla Mott</name>
 			<organization>Oracle, Inc.</organization>
 			<roles>
 				<role>developer</role>
-				<role>lead</role>
 			</roles>
 		</developer>
 	</developers>
@@ -58,11 +57,6 @@
 		<dependency>
 			<groupId>org.glassfish.admin</groupId>
 			<artifactId>config-api</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.glassfish.elasticity</groupId>
-			<artifactId>elastic-config</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 	</dependencies>

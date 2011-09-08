@@ -268,23 +268,6 @@ public interface Domain extends ConfigBeanProxy, Injectable, PropertyBag, System
     void setNodes(Nodes value) throws PropertyVetoException;
 
     /**
-      * Gets the value of the elastic-services property.
-      *
-      * @return possible object is
-      *         {@link ElasticServices }
-      */
-     @Element
-     ElasticServices getElasticServices();
-
-     /**
-      * Sets the value of the elastic-services property.
-      *
-      * @param value allowed object is
-      *              {@link ElasticServices }
-      */
-     void setElasticServices(ElasticServices value) throws PropertyVetoException;
-
-    /**
      * Gets the value of the nodeAgents property.
      *
      * @return possible object is

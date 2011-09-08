@@ -37,80 +37,73 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package com.sun.enterprise.config.serverbeans;
+package org.glassfish.elasticity.config.serverbeans;
+
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
-import org.glassfish.api.admin.RuntimeType;
+import org.glassfish.api.admin.config.Named;
+import org.glassfish.api.admin.config.ReferenceContainer;
 import org.glassfish.config.support.Create;
-import org.glassfish.config.support.Delete;
-import org.glassfish.config.support.TypeAndNameResolver;
 import org.glassfish.config.support.TypeResolver;
-import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.component.Injectable;
+import org.jvnet.hk2.config.Attribute;
+import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.Configured;
-import org.jvnet.hk2.config.Element;
-import org.jvnet.hk2.config.DuckTyped;
+import org.glassfish.config.support.*;
 
-import javax.validation.OverridesAttribute;
-import java.util.List;
+import java.beans.PropertyVetoException;
+
+import static org.glassfish.config.support.Constants.NAME_SERVER_REGEX;
 
 /**
  * Created by IntelliJ IDEA.
  * User: cmott
- * Date: 8/18/11
+ * Date: 8/26/11
  */
-
 @Configured
-public interface Actions  extends ConfigBeanProxy, Injectable {
+public interface LogAction extends ConfigBeanProxy {
+      /**
+     * Sets the action name
+     * @param value action name
+     * @throws PropertyVetoException if a listener vetoes the change
+     */
+    @Param(name="name", primary = true)
+    //@Create(value="create-log-action", decorator=Decorator.class, resolver = ElasticServices.ESResolver.class,   i18n=@I18n("_create.log.action.command"))
+    public void setName(String value) throws PropertyVetoException;
 
-   /**
-   * Return the list of currently configured alert. Actions can
-   * be added or removed by using the returned {@link java.util.List}
-   * instance
-   *
-   * @return the list of configured {@link Actions}
-   */
-  @Element
-  @Create(value="create-action", resolver= TypeResolver.class,   i18n=@I18n("_create.action.command"))
-  @Delete(value="delete-action", resolver= TypeAndNameResolver.class,  i18n=@I18n("_delete.action.command"))
-  public List<ElasticAction> getElasticAction();
+    @Attribute(defaultValue="log-action")
+    public String getName();
 
-  @Element
-  public List<LogAction> getLogAction();
+    @Param(name="log-level", optional = true, defaultValue = "INFO")
+    public void setLogLevel(String value) throws PropertyVetoException;
 
-  void setScaleUpAction(ScaleUpAction scAction);
+    @Attribute(defaultValue = "INFO")
+    String getLogLevel();
 
-  @Element
-   ScaleUpAction getScaleUpAction();
+//    @Service
+//    class Decorator implements CreationDecorator<Actions> {
+        /**
+          * Decorates the newly CRUD created elastic configuration instance.
+          * tasks :
+          *      - create the LogAction subelement
+          *
+          * @param context administration command context
+          * @param instance newly created configuration element
+          * @throws TransactionFailure
+          * @throws PropertyVetoException
+          */
+/*
+        @Param(name="name")
+        String name;
 
-  /**
-   * Return the action with the given name, or null if no such action exists.
-   *
-   * @param   name    the name of the action
-   * @return          the Action object, or null if no such action
-   */
-  @DuckTyped
-  public ElasticAction  getElasticAction(String name);
+         @Override
+         public void decorate(AdminCommandContext context, final Actions instance) throws TransactionFailure, PropertyVetoException {
 
-    @DuckTyped
-    public LogAction getLogAction(String name);
+              Actions actionL = instance.createChild(LogAction.class);
+             actionL.setName(name);
+             instance.setActions(actionsL);
+         }
 
-  class Duck {
-      public static ElasticAction getElasticAction(Actions instance, String name) {
-          for (ElasticAction action : instance.getElasticAction()) {
-              if (action.getName().equals(name)) {
-                  return action;
-              }
-          }
-          return null;
-      }
-      public static LogAction getLogAction(Actions instance, String name) {
-          for (LogAction action : instance.getLogAction()) {
-              if (action.getName().equals(name)) {
-                  return action;
-              }
-          }
-          return null;
-      }
-  }
+    }   */
+
 }

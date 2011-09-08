@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,31 +37,70 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+package org.glassfish.elasticity.config.serverbeans;
 
-package com.sun.enterprise.admin.cli.cluster;
+import com.sun.enterprise.config.serverbeans.*;
+import com.sun.enterprise.config.serverbeans.*;
+import org.glassfish.api.I18n;
+import org.glassfish.api.Param;
+import org.glassfish.api.admin.RuntimeType;
+import org.glassfish.config.support.Create;
+import org.glassfish.config.support.Delete;
+import org.glassfish.config.support.TypeAndNameResolver;
+import org.glassfish.config.support.TypeResolver;
+import org.jvnet.hk2.config.ConfigBeanProxy;
+import org.jvnet.hk2.component.Injectable;
+import org.jvnet.hk2.config.Configured;
+import org.jvnet.hk2.config.Element;
+import org.jvnet.hk2.config.DuckTyped;
 
-import com.sun.enterprise.universal.i18n.LocalStringsImpl;
+import javax.validation.OverridesAttribute;
+import java.util.List;
 
 /**
- * Strings -- Get your Strings here.
- * One file with Strings
- * So one class for messing with them!
- * Nothing in here is public protected.  Only for use by this one java package.
- * @author Byron Nevins
+ * Created by IntelliJ IDEA.
+ * User: cmott
+ * Date: 8/18/11
  */
 
-final class Strings {
-    private Strings() {
-        // no instances allowed!
-    }
+@Configured
+public interface Actions  extends ConfigBeanProxy {
 
-    final static String get(String indexString) {
-        return strings.get(indexString);
-    }
+   /**
+   * Return the list of currently configured actions. Actions can
+   * be added or removed by using the returned {@link java.util.List}
+   * instance
+   *
+   * @return the list of configured {@link Actions}
+   */
 
-    final static String get(String indexString, Object... objects) {
-        return strings.get(indexString, objects);
-    }
 
-    final private static LocalStringsImpl strings = new LocalStringsImpl(Strings.class);
+  @Element
+  public List<LogAction> getLogAction();
+
+  void setScaleUpAction(ScaleUpAction scAction);
+
+  @Element
+   ScaleUpAction getScaleUpAction();
+
+  /**
+   * Return the action with the given name, or null if no such action exists.
+   *
+   * @param   name    the name of the action
+   * @return          the Action object, or null if no such action
+   */
+
+    @DuckTyped
+    public LogAction getLogAction(String name);
+
+    class Duck {
+      public static LogAction getLogAction(Actions instance, String name) {
+          for (LogAction action : instance.getLogAction()) {
+              if (action.getName().equals(name)) {
+                  return action;
+              }
+          }
+          return null;
+       }
+    }
 }

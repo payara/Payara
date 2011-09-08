@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package org.glassfish.elasticity.engine.command;
+package org.glassfish.elasticity.engine.commands;
 
 import java.util.logging.Level;
 

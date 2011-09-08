@@ -41,7 +41,7 @@ package org.glassfish.elasticity.api;
 
 import org.jvnet.hk2.annotations.Contract;
 
-import com.sun.enterprise.config.serverbeans.AlertConfig;
+import org.glassfish.elasticity.config.serverbeans.AlertConfig;
 import org.jvnet.hk2.component.Habitat;
 
 /**

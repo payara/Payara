@@ -37,60 +37,68 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package com.sun.enterprise.config.serverbeans;
 
+package org.glassfish.elasticity.config.serverbeans;
+
+import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.config.serverbeans.customvalidators.NotTargetKeyword;
-import com.sun.enterprise.config.serverbeans.customvalidators.NotDuplicateTargetName;
-import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.enterprise.util.net.NetUtils;
-import com.sun.enterprise.util.StringUtils;
-import com.sun.logging.LogDomains;
 import org.glassfish.api.Param;
-import org.glassfish.api.admin.AdminCommandContext;
-import org.glassfish.api.admin.ServerEnvironment;
-import org.glassfish.config.support.*;
-import static org.glassfish.config.support.Constants.*;
-import org.jvnet.hk2.annotations.Inject;
-import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
-import org.jvnet.hk2.component.PerLookup;
-import org.jvnet.hk2.config.*;
-import org.jvnet.hk2.component.Injectable;
 import org.glassfish.api.admin.config.Named;
 import org.glassfish.api.admin.config.ReferenceContainer;
+import org.jvnet.hk2.component.Injectable;
+import org.jvnet.hk2.config.Attribute;
+import org.jvnet.hk2.config.ConfigBeanProxy;
+import org.jvnet.hk2.config.Configured;
+import java.beans.PropertyVetoException;
 
 import javax.validation.Payload;
-import java.beans.PropertyVetoException;
-import java.io.File;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import javax.validation.constraints.Pattern;
-/**
+
+import static org.glassfish.config.support.Constants.NAME_SERVER_REGEX;
+
 /**
  * Created by IntelliJ IDEA.
  * User: cmott
- * Date: 8/18/11
+ * Date: 8/19/11
+ * Time: 11:07 AM
+ * To change this template use File | Settings | File Templates.
  */
-
 @Configured
-@SuppressWarnings("unused")
-@NotDuplicateTargetName(message="{action.duplicate.name}", payload=ElasticAction.class)
-public interface ElasticAction extends ConfigBeanProxy, Injectable, Named, ReferenceContainer, RefContainer, Payload {
-   /**
-     * Sets the action name
-     * @param value action name
+public interface MetricGatherer extends ConfigBeanProxy {
+
+    /**
+     * Sets the metric type
+     * @param value type
      * @throws PropertyVetoException if a listener vetoes the change
      */
     @Param(name="name", primary = true)
-    @Override
     public void setName(String value) throws PropertyVetoException;
 
-    @NotTargetKeyword(message="{action.reserved.name}", payload=ElasticAction.class)
-    @Pattern(regexp=NAME_SERVER_REGEX, message="{action.invalid.name}", payload=ElasticAction.class)
-    @Override
+    @Attribute
     public String getName();
+
+    /*
+     *  sets the collection rate for data collection  in milliseconds
+     * @param value collection rate
+     * @throws PropertyVetoException if a listener vetoes the change
+     */
+    @Param(name="collection-rate",defaultValue = "15")
+    public void setCollectionRate(int value) throws PropertyVetoException;
+
+    @Attribute(defaultValue = "15")
+    public int getCollectionRate();
+
+    /*
+     *  sets how long the data will be retain in the system. in hours
+     * @param value retain data
+     * @throws PropertyVetoException if a listener vetoes the change
+     */
+    @Param(name="retain-data", defaultValue = "2")
+    public void setRetainData(int value) throws PropertyVetoException;
+
+    @Attribute(defaultValue = "2")
+    public int getRetainData();
+
+
 
 }

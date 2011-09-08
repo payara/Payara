@@ -56,6 +56,7 @@
     <name>GlassFish Elasticity Engine related modules</name>  
 
     <modules>
+	<module>elastic-config</module>
 	<module>elastic-api</module>
 	<module>elastic-engine</module>
     </modules>

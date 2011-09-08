@@ -37,68 +37,60 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+package org.glassfish.elasticity.config.serverbeans;
 
-package com.sun.enterprise.config.serverbeans;
-
-import com.sun.enterprise.config.serverbeans.customvalidators.NotTargetKeyword;
-import org.glassfish.api.Param;
-import org.glassfish.api.admin.config.Named;
-import org.glassfish.api.admin.config.ReferenceContainer;
+import com.sun.enterprise.config.serverbeans.*;
+import org.glassfish.api.I18n;
+import org.glassfish.config.support.Create;
+import org.glassfish.config.support.Delete;
+import org.glassfish.config.support.TypeAndNameResolver;
+import org.glassfish.config.support.TypeResolver;
 import org.jvnet.hk2.component.Injectable;
-import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.Configured;
-import java.beans.PropertyVetoException;
-
-import javax.validation.Payload;
-import javax.validation.constraints.Pattern;
-
-import static org.glassfish.config.support.Constants.NAME_SERVER_REGEX;
+import org.jvnet.hk2.config.DuckTyped;
+import org.jvnet.hk2.config.Element;
+import java.util.List;
 
 /**
  * Created by IntelliJ IDEA.
  * User: cmott
- * Date: 8/19/11
- * Time: 11:07 AM
- * To change this template use File | Settings | File Templates.
+ * Date: 8/18/11
+ * Time: 5:32 PM
  */
 @Configured
-public interface MetricGatherer extends Injectable, ConfigBeanProxy, Named, ReferenceContainer, RefContainer, Payload {
-
+public interface MetricGatherers extends ConfigBeanProxy    {
     /**
-     * Sets the metric type
-     * @param value type
-     * @throws PropertyVetoException if a listener vetoes the change
-     */
-    @Param(name="name", primary = true)
-    @Override
-    public void setName(String value) throws PropertyVetoException;
+   * Return the list of currently configured alert. Alerts can
+   * be added or removed by using the returned {@link java.util.List}
+   * instance
+   *
+   * @return the list of configured {@link Alerts}
+   */
+  @Element
+  public List<MetricGatherer> getMetricGatherer();
 
-    @Override
-    public String getName();
+  /**
+   * Return the metric gatherer with the given type, or null if no such alert exists.
+   *
+   * @param   name    the type of the metric gatherer
+   * @return          the MetricGatherer object, or null if no such type
+   */
 
-    /*
-     *  sets the collection rate for data collection  in milliseconds
-     * @param value collection rate
-     * @throws PropertyVetoException if a listener vetoes the change
-     */
-    @Param(name="collection-rate",defaultValue = "15")
-    public void setCollectionRate(int value) throws PropertyVetoException;
-
-    @Attribute(defaultValue = "15")
-    public int getCollectionRate();
-
-    /*
-     *  sets how long the data will be retain in the system. in hours
-     * @param value retain data
-     * @throws PropertyVetoException if a listener vetoes the change
-     */
-    @Param(name="retain-data", defaultValue = "2")
-    public void setRetainData(int value) throws PropertyVetoException;
-
-    @Attribute(defaultValue = "2")
-    public int getRetainData();
+  @DuckTyped
+  public MetricGatherer  getMetricGatherer(String type);
 
 
+  class Duck {
+      public static MetricGatherer getMetricGatherer(MetricGatherers instance, String type) {
+          for (MetricGatherer mg : instance.getMetricGatherer()) {
+              if (mg.getName().equals(type)) {
+                  return mg;
+              }
+          }
+          return null;
+      }
+
+  }
 
 }
