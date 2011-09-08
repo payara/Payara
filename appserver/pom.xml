@@ -180,7 +180,6 @@
             <modules>
                 <!-- Every time you change module list, please change
                      the same under release profiles as well (below) -->
-                <module>cluster</module>
                 <module>javaee-api</module>
                 <module>common</module>
                 <module>ha</module>
@@ -233,7 +232,6 @@
             </build>
 
             <modules>
-                <module>cluster</module>
                 <module>javaee-api</module>
                 <module>common</module>
                 <module>ha</module>
@@ -263,11 +261,6 @@
                 <module>paas</module>
                 <module>orb</module>
                 <module>installer</module>
-                <module>sun-glassfish</module>
-                <module>sun-glassfish/packager</module>
-                <module>sun-glassfish/distributions</module>
-                <module>sun-glassfish/installer</module>
-                <module>javaee-sdk</module>
                 <module>appclient</module>
                 <module>verifier/verifier-impl</module>
                 <module>verifier/verifier-scripts</module>
@@ -285,7 +278,6 @@
             -->
             <id>release-phase-all</id>
             <modules>
-                <module>cluster</module>
                 <module>build</module>
                 <module>javaee-api</module>
                 <module>common</module>
@@ -316,13 +308,6 @@
                 <module>webservices</module>
                 <module>orb</module>
                 <module>installer</module>
-                <module>sun-glassfish</module>
-                <module>sun-glassfish/packager</module>
-                <module>sun-glassfish/distributions</module>
-                <module>sun-glassfish/installer</module>
-                <module>javaee-sdk</module>
-                <module>sun-glassfish/distributions/web-ri</module>
-                <module>sun-glassfish/distributions/glassfish-ri</module>
                 <module>appclient</module>
                 <module>verifier/verifier-impl</module>
                 <module>verifier/verifier-scripts</module>
