@@ -39,7 +39,6 @@
  */
 package org.glassfish.virtualization.spi;
 
-import org.glassfish.virtualization.runtime.VirtualCluster;
 import org.jvnet.hk2.annotations.Contract;
 
 import java.util.List;
@@ -64,11 +63,11 @@ public interface IAAS extends Iterable<ServerPool> {
      * @param order the allocation constraints for the virtual machine allocation
      * @param listeners list of synchronous {@link Listener} to register before starting any allocation
      * work.
-     * @return a {@link ListenableFuture} to get asynchronous phases completion notification and the
+     * @return a {@link PhasedFuture} to get asynchronous phases completion notification and the
      * {@link VirtualMachine} instance upon allocation completion.
      * @throws VirtException when the virtual machine creation failed.
      */
-    ListenableFuture<AllocationPhase, VirtualMachine> allocate(VMOrder order,
+    PhasedFuture<AllocationPhase, VirtualMachine> allocate(AllocationConstraints order,
                                                                List<Listener<AllocationPhase>> listeners)
             throws VirtException;
 
@@ -76,15 +75,15 @@ public interface IAAS extends Iterable<ServerPool> {
      * Allocate a virtual machine based on the provided template.
      *
      * @param strategy strategy to allocate the virtual machines within the machine pools.
-     * @param order the allocation constraints for the virtual machine allocation
-     * @return a {@link ListenableFuture} to get asynchronous phases completion notification and the
+     * @param constraints the allocation constraints for the virtual machine allocation
+     * @return a {@link PhasedFuture} to get asynchronous phases completion notification and the
      * {@link VirtualMachine} instance upon allocation completion.
      * @param listeners list of synchronous {@link Listener} to register before starting any allocation
      * work.
      * @throws VirtException when the virtual machine creation failed.
      */
-    ListenableFuture<AllocationPhase, VirtualMachine> allocate(AllocationStrategy strategy,
-                                                               VMOrder order,
+    PhasedFuture<AllocationPhase, VirtualMachine> allocate(AllocationStrategy strategy,
+                                                               AllocationConstraints constraints,
                                                                List<Listener<AllocationPhase>> listeners)
             throws VirtException;
 }

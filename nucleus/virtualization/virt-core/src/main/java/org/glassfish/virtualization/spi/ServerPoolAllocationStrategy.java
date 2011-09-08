@@ -55,11 +55,12 @@ public interface ServerPoolAllocationStrategy {
 
     /**
      * Allocates a virtual machine using the passed allocation characteristics
-     * @param order the requested virtual machine allocation characteristics
+     * @param constraints the requested virtual machine allocation characteristics
      * @param source a facility to register events listeners for allocation phases.
-     * @return the {@link ListenableFuture} instance giving access to the {@link VirtualMachine}
+     * @return the {@link PhasedFuture} instance giving access to the {@link VirtualMachine}
      * @throws VirtException if the allocation is not successful.
      */
-    ListenableFuture<AllocationPhase, VirtualMachine> allocate(VMOrder order, EventSource<AllocationPhase> source)
+    PhasedFuture<AllocationPhase, VirtualMachine> allocate(AllocationConstraints constraints,
+                                                           EventSource<AllocationPhase> source)
             throws VirtException;
 }

@@ -335,7 +335,7 @@ public class LibVirtLocalMachine extends AbstractMachine implements PostConstruc
         }
     }
 
-    public ListenableFuture<AllocationPhase, VirtualMachine> create(
+    public PhasedFuture<AllocationPhase, VirtualMachine> create(
                 final TemplateInstance template,
                 final VirtualCluster cluster,
                 final EventSource<AllocationPhase> source)

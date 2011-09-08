@@ -41,6 +41,7 @@ package org.glassfish.virtualization.os;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Date;
 
 /**
  * Abstraction for local/remote file operations on a machine. Operations
@@ -59,6 +60,14 @@ public interface FileOperations {
      * @throws IOException if the path cannot be checked.
      */
     boolean exists(String path) throws IOException;
+
+    /**
+     * Returns the Date of the last modification of the file.
+     * @param path file path on the machine
+     * @return the last modification time of that file
+     * @throws IOException if the operation fialed.
+     */
+    Date mod(String path) throws IOException;
 
     /**
      *  mkdir on the target machine

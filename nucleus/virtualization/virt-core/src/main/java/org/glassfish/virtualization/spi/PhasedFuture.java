@@ -38,29 +38,26 @@
  * holder.
  */
 
-package org.glassfish.deployment.cloud;
+package org.glassfish.virtualization.spi;
 
-import org.jvnet.hk2.config.ConfigBeanProxy;
-import org.jvnet.hk2.config.Configured;
-import org.jvnet.hk2.config.Element;
-
-import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 
 /**
- * Created by IntelliJ IDEA.
- * User: dochez
- * Date: 3/2/11
- * Time: 9:53 PM
- * To change this template use File | Settings | File Templates.
+ * A phased future is a {@link Future} which provides phases completion
+ * access.
+ *
+ * @param <T> the phases definition as an {@link Enum}
+ * @param <U> the result type returned by the {@link java.util.concurrent.Future#get()}
+ *
+ * @author Jerome Dochez
  */
-@Configured
-public interface CloudServices extends ConfigBeanProxy {
+public interface PhasedFuture<T extends Enum, U> extends Future<U> {
 
     /**
-     * services requested by this application
+     * Returns the last completed phase by this future's job.
      *
-     * @return list of cloud services
+     * @return the last completed phase
      */
-    @Element("*")
-    List<CloudService> getServices();
+    T getCurrentPhase();
 }

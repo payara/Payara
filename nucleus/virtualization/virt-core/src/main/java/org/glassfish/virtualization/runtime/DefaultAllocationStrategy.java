@@ -44,7 +44,6 @@ import org.glassfish.virtualization.spi.*;
 import org.glassfish.virtualization.util.EventSource;
 import org.glassfish.virtualization.util.EventSourceImpl;
 import org.glassfish.virtualization.util.RuntimeContext;
-import org.jvnet.tiger_types.Lister;
 
 import java.util.*;
 import java.util.logging.Level;
@@ -58,8 +57,8 @@ public class DefaultAllocationStrategy implements AllocationStrategy {
     final Map<ServerPool, Integer> allocationMap = new HashMap<ServerPool, Integer>();
 
     @Override
-    public ListenableFuture<AllocationPhase, VirtualMachine>
-                allocate(Collection<ServerPool> serverPools, VMOrder order, List<Listener<AllocationPhase>> listeners)
+    public PhasedFuture<AllocationPhase, VirtualMachine>
+                allocate(Collection<ServerPool> serverPools, AllocationConstraints constraints, List<Listener<AllocationPhase>> listeners)
         throws VirtException {
 
         EventSource<AllocationPhase> source = new EventSourceImpl<AllocationPhase>();
@@ -91,15 +90,15 @@ public class DefaultAllocationStrategy implements AllocationStrategy {
         while (!potentialServerPools.isEmpty()) {
             ServerPool serverPool = potentialServerPools.iterator().next();
             try {
-                ListenableFuture<AllocationPhase, VirtualMachine> vm;
+                PhasedFuture<AllocationPhase, VirtualMachine> vm;
                 if (serverPool instanceof PhysicalServerPool) {
                     ServerPoolAllocationStrategy serverPoolStrategy = getServerPoolStrategy(serverPool);
                     if (serverPoolStrategy==null) {
                         serverPoolStrategy = new DefaultServerPoolAllocationStrategy((PhysicalServerPool) serverPool);
                     }
-                    vm = serverPoolStrategy.allocate(order, source);
+                    vm = serverPoolStrategy.allocate(constraints, source);
                 } else {
-                    vm = serverPool.allocate(order.getTemplate(), order.getTargetCluster(), source);
+                    vm = serverPool.allocate(constraints.getTemplate(), constraints.getTargetCluster(), source);
                 }
                 // record the allocation
                 if (vm!=null) {

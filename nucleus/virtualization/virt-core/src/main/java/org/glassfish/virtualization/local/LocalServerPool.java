@@ -42,7 +42,6 @@ package org.glassfish.virtualization.local;
 
 import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.config.serverbeans.Domain;
-import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.hk2.scopes.PerLookup;
 import org.glassfish.internal.api.ServerContext;
 import org.glassfish.virtualization.config.ServerPoolConfig;
@@ -116,7 +115,7 @@ public class LocalServerPool implements ServerPool {
     }
 
     @Override
-    public ListenableFuture<AllocationPhase, VirtualMachine> allocate(
+    public PhasedFuture<AllocationPhase, VirtualMachine> allocate(
             TemplateInstance template, VirtualCluster cluster, EventSource<AllocationPhase> source)
             throws VirtException {
 
@@ -129,7 +128,7 @@ public class LocalServerPool implements ServerPool {
         vms.put(vmName, vm);
         CountDownLatch latch = new CountDownLatch(1);
 
-        ListenableFuture<AllocationPhase, VirtualMachine> future =
+        PhasedFuture<AllocationPhase, VirtualMachine> future =
                 new ListenableFutureImpl<AllocationPhase, VirtualMachine>(latch, vm, source);
         template.getCustomizer().customize(cluster, vm);
         latch.countDown();

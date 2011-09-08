@@ -44,19 +44,15 @@ package org.glassfish.virtualization.commands;
  * Creates a virtual cluster
  */
 
-import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.config.serverbeans.Domain;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
-import org.glassfish.virtualization.config.Template;
-import org.glassfish.virtualization.config.Virtualization;
 import org.glassfish.virtualization.config.Virtualizations;
 import org.glassfish.virtualization.runtime.VirtualCluster;
 import org.glassfish.virtualization.runtime.VirtualClusters;
 import org.glassfish.virtualization.spi.*;
-import org.glassfish.virtualization.spi.templates.TemplateInstanceImpl;
 import org.glassfish.virtualization.util.RuntimeContext;
 import org.glassfish.virtualization.util.ServiceType;
 import org.glassfish.virtualization.virtmgt.GroupAccess;
@@ -69,8 +65,7 @@ import org.jvnet.hk2.component.PerLookup;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
-import java.util.concurrent.Future;
-import java.util.logging.Level;
+
 import org.glassfish.api.admin.CommandLock;
 
 @Service(name="create-virtual-cluster")
@@ -190,14 +185,14 @@ public class CreateVirtualCluster implements AdminCommand {
 
         try {
             VirtualCluster vCluster = virtualClusters.byName(name);
-            List<ListenableFuture<AllocationPhase, VirtualMachine>> futures =
-                    new ArrayList<ListenableFuture<AllocationPhase, VirtualMachine>>();
+            List<PhasedFuture<AllocationPhase, VirtualMachine>> futures =
+                    new ArrayList<PhasedFuture<AllocationPhase, VirtualMachine>>();
 
             for (int i=0;i<minNumber;i++) {
-                futures.add(iaas.allocate(new VMOrder(templateInstance, vCluster), null));
+                futures.add(iaas.allocate(new AllocationConstraints(templateInstance, vCluster), null));
             }
 
-            for (ListenableFuture<AllocationPhase, VirtualMachine> future : futures) {
+            for (PhasedFuture<AllocationPhase, VirtualMachine> future : futures) {
                 VirtualMachine vm;
                 try {
                     vm = future.get();

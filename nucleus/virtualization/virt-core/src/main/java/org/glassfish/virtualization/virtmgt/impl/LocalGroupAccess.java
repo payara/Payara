@@ -66,7 +66,7 @@ public class LocalGroupAccess implements GroupAccess {
     }
 
     @Override
-    public ListenableFuture<AllocationPhase, VirtualMachine> allocate(
+    public PhasedFuture<AllocationPhase, VirtualMachine> allocate(
             TemplateInstance template, VirtualCluster cluster,
             EventSource<AllocationPhase> source) throws VirtException {
         return group.allocate(template, cluster, source);

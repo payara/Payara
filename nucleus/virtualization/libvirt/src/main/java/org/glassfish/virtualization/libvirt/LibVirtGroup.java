@@ -39,14 +39,9 @@
  */
 package org.glassfish.virtualization.libvirt;
 
-import com.sun.enterprise.config.serverbeans.Node;
-import com.sun.enterprise.config.serverbeans.Server;
-import org.glassfish.api.ActionReport;
 import org.glassfish.hk2.Services;
 import org.glassfish.hk2.inject.Injector;
 import org.glassfish.virtualization.config.*;
-import org.glassfish.virtualization.libvirt.jna.Domain;
-import org.glassfish.virtualization.runtime.VMTemplate;
 import org.glassfish.virtualization.runtime.VirtualCluster;
 import org.glassfish.virtualization.spi.*;
 import org.glassfish.virtualization.util.EventSource;
@@ -59,12 +54,7 @@ import org.jvnet.hk2.component.PerLookup;
 import org.jvnet.hk2.config.*;
 
 import java.beans.PropertyChangeEvent;
-import java.beans.PropertyVetoException;
 import java.io.*;
-import java.net.InetAddress;
-import java.net.NetworkInterface;
-import java.net.SocketException;
-import java.net.UnknownHostException;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -148,8 +138,12 @@ public class LibVirtGroup implements PhysicalServerPool, ConfigListener {
                     if (t instanceof MachineConfig) {
                         MachineConfig machineConfig = MachineConfig.class.cast(t);
                         if (type.equals(TYPE.ADD)) {
-                            Map<String, String> macToIps = macAddressesToIps();
-                            addMachine(machineConfig, macToIps.get(machineConfig.getMacAddress()));
+                            if (machineConfig.getIpAddress()==null) {
+                                Map<String, String> macToIps = macAddressesToIps();
+                                addMachine(machineConfig, macToIps.get(machineConfig.getMacAddress()));
+                            } else {
+                                addMachine(machineConfig, machineConfig.getIpAddress());
+                            }
                             // we should update our cache as well...
                         }
                     }
@@ -300,7 +294,7 @@ public class LibVirtGroup implements PhysicalServerPool, ConfigListener {
     }
 
     @Override
-    public ListenableFuture<AllocationPhase, VirtualMachine> allocate(
+    public PhasedFuture<AllocationPhase, VirtualMachine> allocate(
             final TemplateInstance template, final VirtualCluster cluster, final EventSource<AllocationPhase> source)
             throws VirtException {
         // for now, could not be simpler, iterate over machines I own and ask for a virtual machine to
@@ -356,12 +350,8 @@ public class LibVirtGroup implements PhysicalServerPool, ConfigListener {
 
         final Machine targetMachine = machine;
         allocationCount.incrementAndGet();
-        final String suffix = allocationCount.toString();
 
-        // so far, if some of the virtual machines allocation failed, we don't handle it.
-        // we could : revert the entire allocation or continue more allocation until the desire number
-        // is achieved and flag the failing machine as invalid.
-        ListenableFuture<AllocationPhase, VirtualMachine> vm = null;
+        PhasedFuture<AllocationPhase, VirtualMachine> vm = null;
         try {
             vm = targetMachine.create(template, cluster, source);
         } catch (IOException e) {

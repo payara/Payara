@@ -40,7 +40,7 @@
 
 package org.glassfish.virtualization.util;
 
-import org.glassfish.virtualization.spi.ListenableFuture;
+import org.glassfish.virtualization.spi.PhasedFuture;
 import org.glassfish.virtualization.spi.Listener;
 
 import java.util.ArrayList;
@@ -54,7 +54,7 @@ import java.util.concurrent.*;
  * Time: 1:20 AM
  * To change this template use File | Settings | File Templates.
  */
-public class ListenableFutureImpl<T extends Enum, U> implements ListenableFuture<T, U>, EventSource<T> {
+public class ListenableFutureImpl<T extends Enum, U> implements PhasedFuture<T, U>, EventSource<T> {
 
     final CountDownLatch latch;
     final EventSource<T> sink;

@@ -100,7 +100,9 @@ public class TemplateRepositoryImpl implements TemplateRepository {
         }
         for (File f : files) {
             try {
-                FileUtils.copy(f, new File(templateLocation, f.getName()));
+                File destination = new File(templateLocation, f.getName());
+                FileUtils.copy(f, destination);
+                destination.setLastModified(f.lastModified());
             } catch (IOException e) {
                 logger.log(Level.SEVERE, "Cannot copy file " + f.getAbsolutePath(), e);
                 FileUtils.whack(templateLocation);

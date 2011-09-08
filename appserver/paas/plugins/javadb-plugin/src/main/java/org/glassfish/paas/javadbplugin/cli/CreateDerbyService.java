@@ -53,20 +53,15 @@ import org.glassfish.paas.orchestrator.provisioning.cli.ServiceType;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceUtil;
 import org.glassfish.paas.orchestrator.provisioning.iaas.CloudProvisioner;
 import org.glassfish.paas.orchestrator.provisioning.ProvisionerUtil;
+import org.glassfish.virtualization.spi.*;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
 import org.glassfish.virtualization.runtime.VirtualCluster;
 import org.glassfish.virtualization.runtime.VirtualClusters;
-import org.glassfish.virtualization.spi.AllocationPhase;
-import org.glassfish.virtualization.spi.IAAS;
-import org.glassfish.virtualization.spi.ListenableFuture;
-import org.glassfish.virtualization.spi.TemplateCondition;
-import org.glassfish.virtualization.spi.TemplateInstance;
-import org.glassfish.virtualization.spi.TemplateRepository;
-import org.glassfish.virtualization.spi.VMOrder;
-import org.glassfish.virtualization.spi.VirtualMachine;
+import org.glassfish.virtualization.spi.PhasedFuture;
+import org.glassfish.virtualization.spi.AllocationConstraints;
 
 import java.util.HashSet;
 import java.util.Properties;
@@ -189,8 +184,8 @@ public class CreateDerbyService implements AdminCommand, Runnable {
 
                 // provision VMs.
                 VirtualCluster vCluster = virtualClusters.byName(serviceName);
-                ListenableFuture<AllocationPhase, VirtualMachine> future =
-                        iaas.allocate(new VMOrder(matchingTemplate, vCluster), null);
+                PhasedFuture<AllocationPhase, VirtualMachine> future =
+                        iaas.allocate(new AllocationConstraints(matchingTemplate, vCluster), null);
 
                 VirtualMachine vm = future.get();
                 // add app-scoped-service config for each vm instance as well.

@@ -102,7 +102,7 @@ public class CreateVirtualMachine implements AdminCommand {
         }
         try {
             // multi-threading bug possible here, need a better way to allocated tokens.
-            ListenableFuture<AllocationPhase, VirtualMachine> future = group.allocate(
+            PhasedFuture<AllocationPhase, VirtualMachine> future = group.allocate(
                     new TemplateInstanceImpl(services, template), clusters.byName(clusterName),
                     new EventSourceImpl<AllocationPhase>());
             try {

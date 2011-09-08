@@ -70,15 +70,15 @@ class DefaultServerPoolAllocationStrategy implements ServerPoolAllocationStrateg
     }
 
     @Override
-    public ListenableFuture<AllocationPhase, VirtualMachine> allocate(
-            VMOrder order, EventSource<AllocationPhase> source)
+    public PhasedFuture<AllocationPhase, VirtualMachine> allocate(
+            AllocationConstraints constraints, EventSource<AllocationPhase> source)
             throws VirtException {
 
         List<Machine> potentialMachines = new ArrayList<Machine>();
         for (Machine machine : targetPool.machines()) {
             boolean foundOne=false;
             for (VirtualMachine vm : machine.getVMs()) {
-                for (VirtualMachine noColocate : order.separateFrom()) {
+                for (VirtualMachine noColocate : constraints.separateFrom()) {
                     if (noColocate.getName().equals(vm.getName())) {
                         foundOne=true;
                         break;
@@ -104,7 +104,7 @@ class DefaultServerPoolAllocationStrategy implements ServerPoolAllocationStrateg
             }
             assert(targetMachine!=null);
             try {
-                return targetMachine.create(order.getTemplate(), order.getTargetCluster(), source);
+                return targetMachine.create(constraints.getTemplate(), constraints.getTargetCluster(), source);
             } catch(IOException e) {
                 RuntimeContext.logger.log(Level.SEVERE, "Cannot allocate virtual machine on " + targetMachine);
                 potentialMachines.remove(targetMachine); // let's try on the remaining machines...

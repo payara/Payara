@@ -43,8 +43,6 @@ import org.glassfish.virtualization.runtime.VirtualCluster;
 import org.glassfish.virtualization.spi.*;
 import org.glassfish.virtualization.util.EventSource;
 
-import java.util.concurrent.Future;
-
 /**
  * Access to a configured serverPool master
  * @author Jerome Dochez
@@ -59,7 +57,7 @@ public interface GroupAccess {
      * @return instance of future contract for a virtual machine instance.
      * @throws VirtException if the allocation failed.
      */
-    ListenableFuture<AllocationPhase, VirtualMachine> allocate(
+    PhasedFuture<AllocationPhase, VirtualMachine> allocate(
             TemplateInstance template, VirtualCluster cluster, EventSource<AllocationPhase> source)
             throws VirtException;
 

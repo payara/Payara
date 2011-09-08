@@ -44,28 +44,21 @@ package org.glassfish.virtualization;
 import org.glassfish.api.Startup;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.hk2.Services;
-import org.glassfish.virtualization.config.Template;
 import org.glassfish.virtualization.config.Virtualization;
 import org.glassfish.virtualization.runtime.DefaultAllocationStrategy;
 import org.glassfish.virtualization.runtime.VirtualCluster;
 import org.glassfish.virtualization.spi.*;
 import org.glassfish.virtualization.config.ServerPoolConfig;
 import org.glassfish.virtualization.config.Virtualizations;
-import org.glassfish.virtualization.util.RuntimeContext;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
-import org.jvnet.hk2.component.PostConstruct;
 import org.jvnet.hk2.config.*;
 
 import java.beans.PropertyChangeEvent;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 
 /**
@@ -154,12 +147,12 @@ public class GroupMembersPopulator implements Startup, IAAS, ConfigListener {
     }
 
     @Override
-    public ListenableFuture<AllocationPhase, VirtualMachine> allocate(VMOrder order, List<Listener<AllocationPhase>> listeners) throws VirtException {
+    public PhasedFuture<AllocationPhase, VirtualMachine> allocate(AllocationConstraints order, List<Listener<AllocationPhase>> listeners) throws VirtException {
         return allocate(new DefaultAllocationStrategy(), order, listeners);
     }
 
     @Override
-    public ListenableFuture<AllocationPhase, VirtualMachine> allocate(AllocationStrategy strategy, VMOrder order, List<Listener<AllocationPhase>> listeners) throws VirtException {
-        return strategy.allocate(groups.values(), order, listeners);
+    public PhasedFuture<AllocationPhase, VirtualMachine> allocate(AllocationStrategy strategy, AllocationConstraints constraints, List<Listener<AllocationPhase>> listeners) throws VirtException {
+        return strategy.allocate(groups.values(), constraints, listeners);
     }
 }

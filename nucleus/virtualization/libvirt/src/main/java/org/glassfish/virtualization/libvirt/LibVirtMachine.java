@@ -52,6 +52,7 @@ import org.jvnet.hk2.annotations.Inject;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -135,6 +136,18 @@ class LibVirtMachine extends LibVirtLocalMachine {
         final SFTPClient sftpClient = sshLauncher.getSFTPClient();
         try {
             return sftpClient.exists(path);
+        } finally {
+            sftpClient.close();
+        }
+    }
+
+    public synchronized Date mod(String path) throws IOException {
+        getSSH();
+
+        final SFTPClient sftpClient = sshLauncher.getSFTPClient();
+        try {
+            long mTimeinSeconds = sftpClient._stat(path).mtime;
+            return new Date(mTimeinSeconds*1000); // in milliseconds.
         } finally {
             sftpClient.close();
         }

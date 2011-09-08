@@ -48,6 +48,7 @@ import org.glassfish.virtualization.util.RuntimeContext;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -76,13 +77,31 @@ public class LocalTemplate extends VMTemplate {
             String destPath = destinationDirectory + "/" + file.getName();
 
             try {
+                boolean needRefresh=false;
                 if (!files.exists(destPath)) {
+                    needRefresh = true;
+                } else {
+                    Date lastModification = files.mod(destPath);
+                    RuntimeContext.logger.info(file.getName() + " last modified on " + destination.getName() + " is " + lastModification.toString());
+                    Date sourceLastModification = new Date(file.lastModified());
+                    RuntimeContext.logger.info("while here, the last mod for " + file.getName() + " is " + sourceLastModification.toString());
+                    if (lastModification.compareTo(sourceLastModification)>0) {
+                        RuntimeContext.logger.info("There is no need to copy " + file.getName());
+                    } else {
+                        RuntimeContext.logger.info(file.getName() + " need to be updated ");
+                        needRefresh=true;
+                    }
+                }
+                if (needRefresh) {
                     files.mkdir(destinationDirectory);
-                    RuntimeContext.logger.info("Copying template " + getDefinition().getName() + " on "
-                        + destination.getName());
+                    if (files.exists(destPath)) {
+                        files.delete(destPath);
+                    }
+                    RuntimeContext.logger.info("Copying template " + getDefinition().getName() + " file "
+                            + file.getName() + " on " + destination.getName());
                     files.copy(file, new File(destinationDirectory));
-                    RuntimeContext.logger.info("Finished copying template " + getDefinition().getName() + " on "
-                        + destination.getName());
+                    RuntimeContext.logger.info("Finished copying template " + getDefinition().getName() + " file "
+                            + file.getName() + " on " + destination.getName());
                 }
             } catch (IOException e) {
                 RuntimeContext.logger.log(Level.SEVERE, "Cannot copy template on " + getDefinition().getName(),e);

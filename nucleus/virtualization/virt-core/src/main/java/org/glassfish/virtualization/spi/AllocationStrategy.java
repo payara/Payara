@@ -54,14 +54,14 @@ public interface AllocationStrategy {
      * allocate a virtual machine within the provided server pools, notifying of progress all listeners
      *
      * @param serverPools the server pools elligible to run the virtual machine
-     * @param order the virtual machine requested characteristics
+     * @param constraints the virtual machine requested characteristics
      * @param listeners listeners to register before any work is performed
-     * @return a listenable future implementation that can be used to monitor progress and get the
+     * @return a phased future implementation that can be used to monitor progress and get the
      * result of the allocation as {@link VirtualMachine} instance.
      * @throws VirtException if the allocation failed.
      */
-    ListenableFuture<AllocationPhase, VirtualMachine> allocate(Collection<ServerPool> serverPools,
-                                                               VMOrder order,
+    PhasedFuture<AllocationPhase, VirtualMachine> allocate(Collection<ServerPool> serverPools,
+                                                               AllocationConstraints constraints,
                                                                List<Listener<AllocationPhase>> listeners)
         throws VirtException;
 

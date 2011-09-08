@@ -54,15 +54,8 @@ import org.glassfish.paas.orchestrator.provisioning.cli.ServiceUtil;
 import org.glassfish.paas.orchestrator.provisioning.iaas.CloudProvisioner;
 import org.glassfish.virtualization.runtime.VirtualCluster;
 import org.glassfish.virtualization.runtime.VirtualClusters;
-import org.glassfish.virtualization.spi.AllocationPhase;
-import org.glassfish.virtualization.spi.IAAS;
-import org.glassfish.virtualization.spi.ListenableFuture;
-import org.glassfish.virtualization.spi.TemplateCondition;
-import org.glassfish.virtualization.spi.TemplateInstance;
-import org.glassfish.virtualization.spi.TemplateRepository;
-import org.glassfish.virtualization.spi.VMOrder;
-import org.glassfish.virtualization.spi.VirtualMachine;
-import org.glassfish.virtualization.util.VirtualizationType;
+import org.glassfish.virtualization.spi.*;
+import org.glassfish.virtualization.spi.PhasedFuture;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
@@ -291,16 +284,16 @@ public class CreateGlassFishService implements AdminCommand, Runnable {
                 VirtualCluster vCluster = virtualClusters.byName(serviceName);
                 String maxClusterSize = serviceConfigurations.getProperty("max.clustersize");
                 int max = maxClusterSize != null ? Integer.parseInt(maxClusterSize) : 0;
-                List<ListenableFuture<AllocationPhase, VirtualMachine>> futures =
-                        new ArrayList<ListenableFuture<AllocationPhase, VirtualMachine>>();
+                List<PhasedFuture<AllocationPhase, VirtualMachine>> futures =
+                        new ArrayList<PhasedFuture<AllocationPhase, VirtualMachine>>();
 
                 for (int i = 0; i < max; i++) {
-                    ListenableFuture<AllocationPhase, VirtualMachine> future =
-                            iaas.allocate(new VMOrder(matchingTemplate, vCluster), null);
+                    PhasedFuture<AllocationPhase, VirtualMachine> future =
+                            iaas.allocate(new AllocationConstraints(matchingTemplate, vCluster), null);
                     futures.add(future);
                 }
 
-                for (ListenableFuture<AllocationPhase, VirtualMachine> future : futures) {
+                for (PhasedFuture<AllocationPhase, VirtualMachine> future : futures) {
                     VirtualMachine vm = future.get();
                     // add app-scoped-service config for each vm instance as well.
                     entry = new ServiceInfo();

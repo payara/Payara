@@ -39,16 +39,16 @@
  */
 package org.glassfish.virtualization.spi;
 
-import com.sun.enterprise.config.serverbeans.Cluster;
 import org.glassfish.virtualization.runtime.VirtualCluster;
 
 import java.util.*;
 
 /**
- * Virtual machine procurement order.
+ * Virtual machine allocation constraints such as groups to privilege or ignore.
+ *
  * @author Jerome Dochez
  */
-public class VMOrder {
+public class AllocationConstraints {
 
     final TemplateInstance template;
     final VirtualCluster targetCluster;
@@ -56,7 +56,7 @@ public class VMOrder {
     final List<VirtualMachine> noColocationList = new ArrayList<VirtualMachine>();
     final Properties vmProps = new Properties();
 
-    public VMOrder(TemplateInstance template, VirtualCluster targetCluster) {
+    public AllocationConstraints(TemplateInstance template, VirtualCluster targetCluster) {
         this.template = template;
         this.targetCluster = targetCluster;
     }
@@ -87,7 +87,7 @@ public class VMOrder {
      * @param groups desired serverPool instance
      * @return itself
      */
-    public VMOrder in(ServerPool... groups) {
+    public AllocationConstraints in(ServerPool... groups) {
         this.groups.addAll(Arrays.asList(groups));
         return this;
     }
@@ -101,7 +101,7 @@ public class VMOrder {
      * @param vms list of virtual machines to not co-locate with.
      * @return itself.
      */
-    public VMOrder noColocationWith(VirtualMachine... vms) {
+    public AllocationConstraints noColocationWith(VirtualMachine... vms) {
         this.noColocationList.addAll(Arrays.asList(vms));
         return this;
     }

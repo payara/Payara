@@ -48,11 +48,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
@@ -264,6 +260,11 @@ public abstract class AbstractMachine implements PostConstruct, Machine, FileOpe
     @Override
     public boolean exists(String path) throws IOException {
         return (absolutize(new File(path))).exists();
+    }
+
+    @Override
+    public Date mod(String path) throws IOException {
+        return new Date(absolutize(new File(path)).lastModified());
     }
 
     protected List<StorageVol> prepare(final TemplateInstance templateInstance, final String name, final VirtualCluster cluster)
