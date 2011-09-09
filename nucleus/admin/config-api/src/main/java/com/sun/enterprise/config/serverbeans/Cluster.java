@@ -684,41 +684,29 @@ public interface Cluster extends ConfigBeanProxy, Injectable, PropertyBag, Named
                 }
             } else {
 
-                // cover case that broadcast is set to non-multicast and no cluster property GMS_DISCOVERY_URI_LIST exists.
-                // create the property.
+                final String GENERATE = "generate";
+
+                // cover case that broadcast is set to non-multicast and no
+                // cluster property GMS_DISCOVERY_URI_LIST exists.
+                // create the property and set to "generate".
+                // gms-adapter will handle generation of the list when needed
                 if (discoveryUriListProp == null) {
                     discoveryUriListProp = instance.createChild(Property.class);
                     discoveryUriListProp.setName("GMS_DISCOVERY_URI_LIST");
-                    discoveryUriList = null;
+                    discoveryUriListProp.setValue(GENERATE);
                     instance.getProperty().add(discoveryUriListProp);
-
                 }
 
-                // non mulitcast case.  genereate GMS_DISCOVERY_URI_LIST value with DAS as the seed.
-                // must explicitly set GMS_LISTENER_PORT-clustername system property for DAS and
-                // use this in generated GMS_DISCOVERY_URI_LIST.
-                if (discoveryUriList == null || discoveryUriList.equals("generate")) {
+                if (GENERATE.equals(discoveryUriListProp.getValue())) {
 
                     // TODO: implement UDP unicast.
 
                     // Only tcp mode is supported now.
                     // So either "udpunicast" or "tcp" for broadcast mode is treated the same.
-                    String TCPPORT = "9090";
+                    final String TCPPORT = "9090";
 
-                    // TBD: consider calling GMS NetworkUtility.getFirstAddress() here to copy how GMS gets the
-                    // network address of DAS.
-                    // TBD:  This is just an initial phase that will only work for a single cluster.
-                    String hostAddress = "localhost";
-                    try {
-                        hostAddress = InetAddress.getLocalHost().getHostAddress();
-                    } catch (UnknownHostException uhe)  {}
-                    String uriValue = "http://" + hostAddress + ":" + TCPPORT;
-                    discoveryUriListProp.setValue(uriValue);
-                    if (logger.isLoggable(Level.FINE)) {
-                        logger.log(Level.FINE,"Generated GMS_DISCOVERY_URI_LIST value " + uriValue);
-                    }
-
-                    // lookup server-config and set environment property value GMS_LISTENER_PORT-clusterName to 9090.
+                    // lookup server-config and set environment property value
+                    // GMS_LISTENER_PORT-clusterName to 9090.
                     Config config = habitat.getComponent(Config.class, "server-config");
                     if (config != null) {
                         Config writeableConfig = t.enroll(config);
@@ -729,6 +717,7 @@ public interface Cluster extends ConfigBeanProxy, Injectable, PropertyBag, Named
                     }
                 }
             }
+            
             Resources resources = domain.getResources();
             for (Resource resource : resources.getResources()) {
                 if (resource.getObjectType().equals("system-all") || resource.getObjectType().equals("system-instance")) {
@@ -837,6 +826,17 @@ public interface Cluster extends ConfigBeanProxy, Injectable, PropertyBag, Named
 
                 logger.log(Level.SEVERE, msg);
                 throw new TransactionFailure(msg);
+            }
+
+            // remove GMS_LISTENER_PORT-clusterName prop from server config
+            Config serverConfig = configs.getConfigByName("server-config");
+            String propName = String.format(
+                "GMS_LISTENER_PORT-%s", child.getName());
+            SystemProperty gmsProp = serverConfig.getSystemProperty(propName);
+            if (gmsProp != null && t != null) {
+                Config c = t.enroll(serverConfig);
+                List<SystemProperty> propList = c.getSystemProperty();
+                propList.remove(gmsProp);
             }
 
             // check if the config is null or still in use by some other
