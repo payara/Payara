@@ -84,8 +84,8 @@ public final class BookStoreServlet extends HttpServlet {
         writer.println("<body bgcolor=white>");
         writer.println("<h1>Simple PaaS Enabled BookStore Application</h1>");
         writer.println("<p>This application is served by <b>" +
-                getServletContext().getServerInfo() + "</b> running at " +
-                request.getHeader("host") + "</p>");
+                getServletContext().getServerInfo() + "</b> [" +
+                System.getProperty("com.sun.aas.instanceName") + "]</p>");
         writer.println("Please wait while accessing the bookstore database.....");
         if (ds != null) {
             DatabaseOperations operations = new DatabaseOperations();
@@ -102,6 +102,7 @@ public final class BookStoreServlet extends HttpServlet {
             
         }
 
+        writer.println("<p/><a href=\'BookStoreServlet\'>My Home</a>");
         writer.println("<p><font color=red>Thanks for using Oracle PaaS Solutions</font></p>");
         writer.println("</body>");
         writer.println("</html>");
@@ -129,7 +130,7 @@ public final class BookStoreServlet extends HttpServlet {
 
 
     private void generateNewBookForm(PrintWriter out) {
-        out.println("<form name=\'add_new_book\' method=\'POST\' action=\'BookStoreServlet\'>");
+        out.println("<form name=\'add_new_book\' method=\'GET\' action=\'BookStoreServlet\'>");
         out.println("<p/><b>Add a new book to the store:</b>");
         out.println("<table>");
         out.println("<tr><td>Title: </td><td><input type=text name=\'title\' size=30 " +
