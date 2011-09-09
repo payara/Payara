@@ -121,6 +121,9 @@
   <!--   useAcceptRanges     Should the Accept-Ranges header be included    -->
   <!--                       in responses where appropriate? [true]         -->
   <!--                                                                      -->
+  <!--   maxHeaderRangeItems The max number of items in Range header.       -->
+  <!--                       -1 means unbounded.  [10]                      -->
+  <!--                                                                      -->
   <!--  For directory listing customization. Checks localXsltFile, then     -->
   <!--  globalXsltFile, then defaults to original behavior.                 -->
   <!--                                                                      -->

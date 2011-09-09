@@ -230,6 +230,12 @@ public class DefaultServlet
      */
     protected static final ArrayList<Range> FULL = new ArrayList<Range>();
     
+    /**
+     * The maximum number of items allowed in Range header.
+     * -1 means unbounded.
+     */
+    protected int maxHeaderRangeItems = 10;
+
     
     // ----------------------------------------------------- Static Initializer
 
@@ -310,6 +316,11 @@ public class DefaultServlet
         if (sc.getInitParameter("sendfileSize") != null)
             sendfileSize = 
                 Integer.parseInt(sc.getInitParameter("sendfileSize")) * 1024;
+
+        if (sc.getInitParameter("maxHeaderRangeItems") != null) {
+            maxHeaderRangeItems = 
+                Integer.parseInt(sc.getInitParameter("maxHeaderRangeItems"));
+        }
 
         fileEncoding = sc.getInitParameter("fileEncoding");
 
@@ -1020,6 +1031,11 @@ public class DefaultServlet
 
             if ((ranges == null) || (ranges.isEmpty()))
                 return;
+
+            if (maxHeaderRangeItems >= 0 && ranges.size() > maxHeaderRangeItems) {
+                response.sendError(HttpServletResponse.SC_FORBIDDEN);
+                return;
+            }
 
             // Partial content response.
 
