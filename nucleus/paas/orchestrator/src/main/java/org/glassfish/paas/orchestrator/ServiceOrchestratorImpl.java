@@ -46,21 +46,14 @@ import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.sun.enterprise.config.serverbeans.Application;
-import com.sun.enterprise.config.serverbeans.Applications;
 import com.sun.enterprise.config.serverbeans.Domain;
-import com.sun.enterprise.deploy.shared.ArchiveFactory;
 import org.glassfish.api.admin.AdminCommandLock;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.OpsParams;
 import org.glassfish.api.deployment.archive.ReadableArchive;
-import org.glassfish.internal.api.PostStartup;
 import org.glassfish.internal.deployment.ApplicationLifecycleInterceptor;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
-import org.glassfish.paas.orchestrator.config.ApplicationScopedService;
-import org.glassfish.paas.orchestrator.config.Service;
-import org.glassfish.paas.orchestrator.config.Services;
 import org.glassfish.paas.orchestrator.provisioning.ServiceInfo;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceUtil;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceReference;
@@ -78,9 +71,6 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator, Application
 
     @Inject
     protected Habitat habitat;
-
-    @Inject
-    private ArchiveFactory archiveFactory;
 
     @Inject
     private ServerEnvironment serverEnvironment;
@@ -208,6 +198,93 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator, Application
         unprovisionServices(installedPlugins, appServiceMetadata, dc);
 
         logger.exiting(getClass().getName(), "postUndeploy");
+    }
+
+    public ServiceMetadata getServices(ReadableArchive archive){
+        Set<Plugin> installedPlugins = getPlugins();
+        String appName = archive.getName(); //temporary appName.
+
+        ServicesXMLParser parser = habitat.getAllByContract(
+                ServicesXMLParser.class).iterator().next();
+
+        //1.1 discover all Service References and Definitions already declared for this application
+        ServiceMetadata appServiceMetadata = parser.discoverDeclaredServices(appName, archive);
+
+        //if no meta-data is found, create empty ServiceMetadata
+        if (appServiceMetadata == null) {
+            appServiceMetadata = new ServiceMetadata();
+            appServiceMetadata.setAppName(appName);
+        }
+
+        logger.log(Level.INFO, "Discovered declared service metadata via glassfish-services.xml = " + appServiceMetadata);
+
+        //1.2 Get implicit service-definitions (for instance a war is deployed, and it has not
+        //specified a javaee service-definition in its orchestration.xml, the PaaS runtime
+        //through the GlassFish plugin that a default javaee service-definition
+        //is implied
+        for (Plugin svcPlugin : installedPlugins) {
+            if (svcPlugin.handles(archive)) {
+                //If a ServiceDescription has not been declared explicitly in
+                //the application for the plugin's type, ask the plugin
+                //if it has any implicit service-definition for this
+                //application
+                if (!serviceDefinitionExistsForType(appServiceMetadata, svcPlugin.getServiceType())) {
+                    Set<ServiceDescription> implicitServiceDescs = svcPlugin.getImplicitServiceDescriptions(archive, appName);
+                    for (ServiceDescription sd : implicitServiceDescs) {
+                        System.out.println("Implicit ServiceDescription:" + sd);
+                        appServiceMetadata.addServiceDescription(sd);
+                    }
+                }
+            }
+        }
+        logger.log(Level.INFO, "After adding implicit ServiceDescriptions = " + appServiceMetadata);
+
+
+        //1.2 Get implicit ServiceReferences
+        for (Plugin svcPlugin : installedPlugins) {
+            if (svcPlugin.handles(archive)) {
+                Set<ServiceReference> implicitServiceRefs = svcPlugin.getServiceReferences(archive);
+                for (ServiceReference sr : implicitServiceRefs) {
+                    System.out.println("ServiceReference:" + sr);
+                    appServiceMetadata.addServiceReference(sr);
+                }
+            }
+        }
+        logger.log(Level.INFO, "After adding ServiceReferences = " + appServiceMetadata);
+
+        //1.3 Ensure all service references have a related service definition
+        Set<ServiceDescription> appSDs = appServiceMetadata.getServiceDescriptions();
+        Set<ServiceReference> appSRs = appServiceMetadata.getServiceReferences();
+        for (ServiceReference sr : appSRs) {
+            String targetSD = sr.getTarget();
+            String svcRefType = sr.getServiceRefType();
+            boolean serviceDefinitionExists = false;
+            for (ServiceDescription sd : appSDs) {
+                //XXX: For now we assume all SRs are satisfied by app-scoped SDs
+                //In the future this has to be modified to search in global SDs
+                //as well
+                if (sd.getName().equals(targetSD)) {
+                    serviceDefinitionExists = true;
+                }
+            }
+            if (!serviceDefinitionExists) {
+                //create a default SD for this service ref and add to application's
+                //service metadata
+                for (Plugin svcPlugin : installedPlugins) {
+                    if (svcPlugin.isReferenceTypeSupported(svcRefType)) {
+                        ServiceDescription defSD = svcPlugin.getDefaultServiceDescription(appName, sr);
+                        appServiceMetadata.addServiceDescription(defSD);
+                        continue; //ignore the rest of the plugins
+                    }
+                }
+            }
+        }
+
+        //TODO should it be validated in this case ?
+        //TODO user can always add them via GUI ?
+        assertMetadataComplete(appSDs, appSRs);
+        logger.log(Level.INFO, "Final Service Metadata = " + appServiceMetadata);
+        return appServiceMetadata;
     }
 
 
@@ -589,12 +666,9 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator, Application
                                         provisionedServices.remove(appName);
                                     }
                                 }
-                            }
-                        } else if(phase.equals(ExtendedDeploymentContext.Phase.CLEAN)){
                             //TODO as of today, we get only after-CLEAN-unload-disable event.
                             //TODO we expect after-STOP-unload-disable, but since the target is not "DAS",
                             //TODO DAS will not receive such event.
-                            OpsParams params = context.getCommandParameters(OpsParams.class);
                             String appName = params.name();
                             if(params.origin == OpsParams.Origin.unload) {
                                 if(params.command == OpsParams.Command.disable) {
@@ -607,6 +681,8 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator, Application
                                     }
                                 }
                             }
+                            }
+                        } else if(phase.equals(ExtendedDeploymentContext.Phase.CLEAN)){
                         }
                     }
                 }

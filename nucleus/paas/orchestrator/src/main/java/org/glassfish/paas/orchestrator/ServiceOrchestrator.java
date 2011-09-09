@@ -42,6 +42,7 @@ package org.glassfish.paas.orchestrator;
 
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.archive.ReadableArchive;
+import org.glassfish.paas.orchestrator.service.metadata.ServiceMetadata;
 import org.jvnet.hk2.annotations.Contract;
 
 @Contract
@@ -50,5 +51,6 @@ public interface ServiceOrchestrator {
     public void provisionServicesForApplication(String appName, ReadableArchive archive, DeploymentContext dc);
     //TODO temporary flag to use "cloud-deploy" command.
     public void setUsingDeployService(boolean usingDeployService);
+    public ServiceMetadata getServices(ReadableArchive archive);
 
 }
