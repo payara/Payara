@@ -49,7 +49,7 @@
         <version>3.2-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
-    
+
     <artifactId>cluster-cli</artifactId>
     <packaging>hk2-jar</packaging>
     <name>cluster-cli</name>

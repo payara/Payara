@@ -39,12 +39,20 @@
  */
 package com.sun.enterprise.admin.cli.cluster;
 
+import com.sun.enterprise.universal.io.SmartFile;
+import com.sun.enterprise.universal.process.WindowsCredentials;
+import com.sun.enterprise.universal.process.WindowsException;
+import com.sun.enterprise.universal.process.WindowsRemoteScripter;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.enterprise.util.io.FileListerRelative;
 import com.sun.enterprise.util.io.FileUtils;
+import com.sun.enterprise.util.io.WindowsRemoteFile;
+import com.sun.enterprise.util.io.WindowsRemoteFileCopyProgress;
+import com.sun.enterprise.util.io.WindowsRemoteFileSystem;
 import com.sun.enterprise.util.zip.ZipFileException;
 import com.sun.enterprise.util.zip.ZipWriter;
 import com.trilead.ssh2.SCPClient;
+import java.io.*;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.CommandException;
 import org.glassfish.cluster.ssh.launcher.SSHLauncher;
@@ -81,12 +89,17 @@ public class InstallNodeCommand extends NativeRemoteCommandsBase {
     private boolean save;
     @Param(name = "force", optional = true, defaultValue = "false")
     private boolean force;
+    @Param(name = "dcom", shortName = "d", optional = true, defaultValue = "false")
+    private boolean dcomNode;
+    @Param(name = "windowsdomain", shortName = "w", optional = true, defaultValue = "")
+    private String windowsDomain;
     @Inject
     private Habitat habitat;
     @Inject
     private SSHLauncher sshLauncher;
     private String archiveName;
     private boolean delete = true;
+    private String dcomuser;
 
     @Override
     protected void validate() throws CommandException {
@@ -100,7 +113,10 @@ public class InstallNodeCommand extends NativeRemoteCommandsBase {
                 }
             }
         }
-        sshuser = resolver.resolve(sshuser);
+
+        dcomuser = sshuser = resolver.resolve(sshuser);
+        dcomuser = sshuser;
+
         if (sshkeyfile == null) {
             //if user hasn't specified a key file check if key exists in
             //default location
@@ -120,25 +136,18 @@ public class InstallNodeCommand extends NativeRemoteCommandsBase {
         if (sshkeyfile != null && isEncryptedKey()) {
             sshkeypassphrase = getSSHPassphrase(true);
         }
-
     }
 
     @Override
     protected int executeCommand() throws CommandException {
-
         File zipFile = null;
+
         try {
             ArrayList<String> binDirFiles = new ArrayList<String>();
             zipFile = createZipFileIfNeeded(binDirFiles);
             copyToHosts(zipFile, binDirFiles);
         }
-        catch (IOException ioe) {
-            throw new CommandException(ioe);
-        }
-        catch (ZipFileException ze) {
-            throw new CommandException(ze);
-        }
-        catch (InterruptedException e) {
+        catch (Exception e) {
             throw new CommandException(e);
         }
         finally {
@@ -153,7 +162,61 @@ public class InstallNodeCommand extends NativeRemoteCommandsBase {
         return SUCCESS;
     }
 
-    private void copyToHosts(File zipFile, ArrayList<String> binDirFiles) throws IOException, InterruptedException, CommandException {
+    private void copyToHosts(File zipFile, ArrayList<String> binDirFiles)
+            throws WindowsException, CommandException, IOException, InterruptedException {
+        if (dcomNode)
+            copyToHostsWindows(zipFile);
+        else
+            copyToHostsSSH(zipFile, binDirFiles);
+    }
+
+    private void copyToHostsWindows(File zipFile)
+            throws WindowsException, CommandException  {
+        final String zipFileName = "glassfish_install.zip";
+        final String unpackScriptName = "unpack.bat";
+
+        for (String host : hosts) {
+            String remotePassword = getDCOMPassword(host);
+            WindowsRemoteFileSystem wrfs = new WindowsRemoteFileSystem(host, dcomuser, remotePassword);
+            WindowsRemoteFile remoteInstallDir = new WindowsRemoteFile(wrfs, installDir);
+            remoteInstallDir.mkdirs();
+            WindowsRemoteFile remoteZip = new WindowsRemoteFile(remoteInstallDir, zipFileName);
+            WindowsRemoteFile unpackScript = new WindowsRemoteFile(remoteInstallDir, unpackScriptName);
+            //createUnpackScript
+            System.out.printf("Copying %d bytes", zipFile.length());
+            remoteZip.copyFrom(zipFile, new WindowsRemoteFileCopyProgress() {
+                @Override
+                public void callback(long numcopied, long numtotal) {
+                    //final int percent = (int)((double)numcopied / (double)numtotal * 100.0);
+                    System.out.print(".");
+                }
+            });
+            System.out.println("");
+            String fullZipFileName = SmartFile.sanitize(installDir + "/" + zipFileName);
+            String fullUnpackScriptPath = SmartFile.sanitize(installDir + "/" + unpackScriptName);
+            unpackScript.copyFrom(makeScriptString(installDir, zipFileName));
+            logger.fine("WROTE FILE TO REMOTE SYSTEM: " + fullZipFileName + " and " + fullUnpackScriptPath);
+            unpackOnHostsWindows(host, remotePassword, fullUnpackScriptPath.replace('/', '\\'));
+        }
+    }
+
+    /*
+     * This is where it gets hairy.  We need to unpack the files on Windows...
+     * This is NOT FINISHED OBVIOUSLY!!!!
+     */
+    private void unpackOnHostsWindows(String host, String remotePassword,
+            String unpackScript) throws WindowsException {
+        String domain = windowsDomain;
+
+        if(!ok(domain))
+            domain = host;
+
+        WindowsCredentials bonafides = new WindowsCredentials(host, domain, sshuser, remotePassword);
+        WindowsRemoteScripter scripter = new WindowsRemoteScripter(bonafides);
+        scripter.run(unpackScript);
+    }
+
+    private void copyToHostsSSH(File zipFile, ArrayList<String> binDirFiles) throws IOException, InterruptedException, CommandException {
 
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
 
@@ -367,7 +430,7 @@ public class InstallNodeCommand extends NativeRemoteCommandsBase {
                 res = true;
             }
             else {
-                logger.finer(host + ":'" + cmd + "'" + " failed [" + outStream.toString() + "]");
+                logger.finer(host + ":'" + cmd + "'" + " fa iled [" + outStream.toString() + "]");
             }
         }
         catch (IOException ex) {
@@ -375,5 +438,26 @@ public class InstallNodeCommand extends NativeRemoteCommandsBase {
             throw new IOException(ex);
         }
         return res;
+    }
+
+    public static String toString(InputStream ins) throws IOException {
+        StringWriter sw = new StringWriter();
+        InputStreamReader reader = new InputStreamReader(ins);
+
+        char[] buffer = new char[4096];
+        int n;
+        while ((n = reader.read(buffer)) >= 0)
+            sw.write(buffer, 0, n);
+
+        return sw.toString();
+    }
+
+    private String makeScriptString(String installDir, String zipFileName) {
+        // first line is drive designator to make sure we are on the right drive.  E.g. "C:"
+        StringBuilder scriptString = new StringBuilder(installDir.substring(0, 2));
+        scriptString.append("\r\n").append("cd \"").append(installDir).append("\"\r\n").
+                append("jar xvf ").append(zipFileName).append("\r\n");
+
+        return scriptString.toString();
     }
 }

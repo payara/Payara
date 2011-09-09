@@ -78,26 +78,29 @@ import org.jvnet.hk2.component.Habitat;
 import org.glassfish.security.common.MasterPassword;
 
 import com.sun.enterprise.security.store.PasswordAdapter;
+import com.sun.enterprise.util.OS;
 
 /**
  *  Base class for SSH provisioning commands.
  *
+ *  Byron Nevins Aug 2011.  SSH was totally hard-coded in.  Now we
+ *  want to use jcifs (SAMBA) for Windows.  It's difficult to do this cleanly.
  */
-public abstract class NativeRemoteCommandsBase extends CLICommand {
+abstract class NativeRemoteCommandsBase extends CLICommand {
     @Param(optional = true, defaultValue = "${user.name}")
-    protected String sshuser;
+    String sshuser;
     @Param(optional = true, defaultValue = "22")
-    protected int sshport;
+    int sshport;
     @Param(optional = true)
-    protected String sshkeyfile;
+    String sshkeyfile;
     @Param(optional = false, primary = true, multiple = true)
-    protected String[] hosts;
-    protected String sshpassword;
-    protected String sshkeypassphrase = null;
-    protected boolean promptPass = false;
-    protected TokenResolver resolver = null;
+    String[] hosts;
+    String sshpassword;
+    String sshkeypassphrase = null;
+    boolean promptPass = false;
+    TokenResolver resolver = null;
 
-    public NativeRemoteCommandsBase() {
+    NativeRemoteCommandsBase() {
         // Create a resolver that can replace system properties in strings
         Map<String, String> systemPropsMap =
                 new HashMap<String, String>((Map) (System.getProperties()));
@@ -107,8 +110,22 @@ public abstract class NativeRemoteCommandsBase extends CLICommand {
     /**
      * Get SSH password from password file or user.
      */
-    protected String getSSHPassword(String node) throws CommandException {
-        String password = getFromPasswordFile("AS_ADMIN_SSHPASSWORD");
+    String getSSHPassword(String node) throws CommandException {
+        return getRemotePassword(node, "AS_ADMIN_SSHPASSWORD");
+    }
+
+    /**
+     * Get DCOM password from password file or user.
+     */
+    String getDCOMPassword(String node) throws CommandException {
+        return getRemotePassword(node, "AS_ADMIN_DCOMPASSWORD");
+    }
+
+    /**
+     * Get SSH password from password file or user.
+     */
+    private String getRemotePassword(String node, String key) throws CommandException {
+        String password = getFromPasswordFile(key);
 
         if (password != null) {
             String alias = RelativePathResolver.getAlias(password);
@@ -131,7 +148,7 @@ public abstract class NativeRemoteCommandsBase extends CLICommand {
     /**
      * Get SSH key passphrase from password file or user.
      */
-    protected String getSSHPassphrase(boolean verifyConn) throws CommandException {
+    String getSSHPassphrase(boolean verifyConn) throws CommandException {
         String passphrase = getFromPasswordFile("AS_ADMIN_SSHKEYPASSPHRASE");
 
         if (passphrase != null) {
@@ -177,12 +194,12 @@ public abstract class NativeRemoteCommandsBase extends CLICommand {
         return passwords.get(name);
     }
 
-    protected boolean isValidAnswer(String val) {
+    boolean isValidAnswer(String val) {
         return val.equalsIgnoreCase("yes") || val.equalsIgnoreCase("no")
                 || val.equalsIgnoreCase("y") || val.equalsIgnoreCase("n");
     }
 
-    protected boolean isEncryptedKey() throws CommandException {
+    boolean isEncryptedKey() throws CommandException {
         boolean res = false;
         try {
             res = SSHUtil.isEncryptedKey(sshkeyfile);
@@ -204,7 +221,8 @@ public abstract class NativeRemoteCommandsBase extends CLICommand {
      *              untouched
      * @throws IOException in case of error
      */
-    protected void deleteRemoteFiles(SFTPClient sftpClient, List<String> dasFiles, String dir, boolean force)
+    // byron XXXX
+    void deleteRemoteFiles(SFTPClient sftpClient, List<String> dasFiles, String dir, boolean force)
             throws IOException {
 
         for (SFTPv3DirectoryEntry directoryEntry : (List<SFTPv3DirectoryEntry>) sftpClient.ls(dir)) {
@@ -253,6 +271,7 @@ public abstract class NativeRemoteCommandsBase extends CLICommand {
      * @return true if empty, false otherwise
      * @throws IOException
      */
+    // byron XXXX
     private boolean isRemoteDirectoryEmpty(SFTPClient sftp, String file) throws IOException {
         List<SFTPv3DirectoryEntry> l = (List<SFTPv3DirectoryEntry>) sftp.ls(file);
         if (l.size() > 2)
@@ -266,7 +285,7 @@ public abstract class NativeRemoteCommandsBase extends CLICommand {
      * @param host remote host
      * @return true|false
      */
-    protected boolean checkIfNodeExistsForHost(String host, String iDir) {
+    boolean checkIfNodeExistsForHost(String host, String iDir) {
         boolean result = false;
         try {
             File domainsDirFile = DomainDirs.getDefaultDomainsDir();
@@ -342,7 +361,8 @@ public abstract class NativeRemoteCommandsBase extends CLICommand {
      * @param alias password alias of form ${ALIAS=xxx}
      * @return real password of ssh user, null if not found
      */
-    protected String expandPasswordAlias(String host, String alias, boolean verifyConn) {
+    // byron XXXX
+    String expandPasswordAlias(String host, String alias, boolean verifyConn) {
         String expandedPassword = null;
         boolean connStatus = false;
 
@@ -421,7 +441,8 @@ public abstract class NativeRemoteCommandsBase extends CLICommand {
      * @return List of files and directories
      * @throws IOException
      */
-    protected List<String> getListOfInstallFiles(String installDir) throws IOException {
+    // byron XXXX
+    List<String> getListOfInstallFiles(String installDir) throws IOException {
         String ins = resolver.resolve("${com.sun.aas.productRoot}");
         Set files = FileUtils.getAllFilesAndDirectoriesUnder(new File(ins));
         logger.finer("Total number of files under " + ins + " = " + files.size());
@@ -441,7 +462,7 @@ public abstract class NativeRemoteCommandsBase extends CLICommand {
      * @param file
      * @throws CommandException
      */
-    protected void validateKey(String file) throws CommandException {
+    void validateKey(String file) throws CommandException {
         File f = new File(file);
         if (!f.exists()) {
             throw new CommandException(Strings.get("KeyDoesNotExist", file));
