@@ -40,8 +40,6 @@
 
 package org.glassfish.deployment.admin;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.List;
 
 import com.sun.enterprise.config.serverbeans.ApplicationRef;
@@ -210,7 +208,7 @@ public class GetHostAndPortCommand implements AdminCommand {
                         String serverName = protocol.getHttp().getServerName();
                         if (serverName == null ||
                             serverName.trim().equals("")) {
-                            serverName = getDefaultHostName();
+                            serverName = DeploymentCommandUtils.getLocalHostName();
                         }
                         String portStr = httpListener.getPort();
                         String redirPort = protocol.getHttp().getRedirectPort();
@@ -247,7 +245,7 @@ public class GetHostAndPortCommand implements AdminCommand {
                 String serverName = http.getServerName();
                 if (serverName == null ||
                     serverName.trim().equals("")) {
-                    serverName = getDefaultHostName();
+                    serverName = DeploymentCommandUtils.getLocalHostName();
                 }
                 String portStr = httpListener.getPort();
                 String redirPort = http.getRedirectPort();
@@ -261,17 +259,5 @@ public class GetHostAndPortCommand implements AdminCommand {
             }
         }
         return null;
-    }
-
-    private String getDefaultHostName() {
-        String defaultHostName = "localhost";
-        try {
-            InetAddress host = InetAddress.getLocalHost();
-            defaultHostName = host.getCanonicalHostName();
-        } catch(UnknownHostException uhe) {
-
-           // ignore
-        }
-        return defaultHostName;
     }
 }

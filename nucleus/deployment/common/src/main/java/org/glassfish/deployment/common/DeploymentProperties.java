@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -545,6 +545,12 @@ public class DeploymentProperties extends Properties {
     public static final String IGNORE_CASCADE = "_ignoreCascade";
     public static final String KEEP_STATE = "keepstate";
     public static final String DROP_TABLES = "droptables";
+
+
+    public static final String PROTOCOL = "protocol";
+    public static final String HOST = "host";
+    public static final String PORT = "port";
+    public static final String CONTEXT_PATH = "contextpath";
 
     // internal use - from .reload support
     public static final String KEEP_REPOSITORY_DIRECTORY = "keepreposdir";

@@ -52,6 +52,8 @@ import org.glassfish.api.admin.FailurePolicy;
 import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.common.util.admin.ParameterMapExtractor;
 import org.jvnet.hk2.component.Habitat;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 
 /**
  * Utility methods useful from deployment-related commands.
@@ -102,5 +104,16 @@ public class DeploymentCommandUtils {
                     habitat);
         }
         return ActionReport.ExitCode.SUCCESS;
+    }
+
+    public static String getLocalHostName() {
+        String defaultHostName = "localhost";
+        try {
+            InetAddress host = InetAddress.getLocalHost();
+            defaultHostName = host.getCanonicalHostName();
+        } catch(UnknownHostException uhe) {
+           // ignore
+        }
+        return defaultHostName;
     }
 }
