@@ -154,21 +154,26 @@ public class InstanceReaderImpl implements InstanceReader {
         while (listenerIter.hasNext()) {
             NetworkListener listener = listenerIter.next();
             NetworkListener rawListener = GlassFishConfigBean.getRawView(listener);
-            String prot = rawListener.getProtocol();
-            Protocol protocol = protocols.findProtocol(prot);
-
             if (rawListener.getName().equals(ADMIN_LISTENER)) {
                 continue;
             }
+
+            String prot = rawListener.getProtocol();
+            Protocol protocol = protocols.findProtocol(prot);
+
             if (i > 0) {
                 listenerStr.append(' '); // space between listener names
             }
             i++;
 
+            if (Boolean.valueOf(protocol.getHttp().getJkEnabled())){
+                listenerStr.append(AJP_PROTO);
+            } else {
             if (Boolean.valueOf(protocol.getSecurityEnabled()).booleanValue()) {
                 listenerStr.append(HTTPS_PROTO);
             } else {
                 listenerStr.append(HTTP_PROTO);
+            }
             }
             String hostName = getResolvedHostName(rawListener.getAddress());
             listenerStr.append(hostName);
@@ -228,6 +233,7 @@ public class InstanceReaderImpl implements InstanceReader {
     private Server _server = null;
     private static final String HTTP_PROTO = "http://";
     private static final String HTTPS_PROTO = "https://";
+    private static final String AJP_PROTO = "ajp://";
     private static final String ADMIN_LISTENER = ServerTags.ADMIN_LISTENER_ID;
     private static final String BIND_TO_ANY = "0.0.0.0";
     private static final String LOCALHOST = "localhost";
