@@ -66,7 +66,7 @@ public class ElasticEngine
     @Inject
     Habitat habitat;
 
-	@Inject
+	@Inject(optional = true)
 	ElasticServices elasticServices;
 	
 	@Inject
@@ -87,26 +87,26 @@ public class ElasticEngine
 		}
 		
 		System.out.println("Elastic Services: " + elasticServices);
-		for (ElasticService service : elasticServices.getElasticService()) {
-			System.out.println("Got ElasticService: " + service.getName());
-			System.out.println("Got Alerts: " + service.getAlerts());
-			System.out.println("Got getAlerts: " + service.getAlerts().getAlert());
-			for (AlertConfig alertConfig : service.getAlerts().getAlert()) {
-				System.out.println("Got Altert[" + service.getName() + "]: " + alertConfig.getName());
-			
-				String sch = alertConfig.getSchedule().trim();
-				long frequencyInSeconds = getFrequencyOfAlertExecutionInSeconds(sch);
-				String alertName = alertConfig.getName();
-				System.out.println("Alert[name=" + alertName + "; schedule=" + sch
-						+ "; expression=" + alertConfig.getExpression() + "; will be executed every= " + frequencyInSeconds);
-				ExpressionBasedAlert<AlertConfig> wrapper = new ExpressionBasedAlert<AlertConfig>();
-				wrapper.initialize(habitat, alertConfig);
-				threadPool.scheduleAtFixedRate(wrapper, frequencyInSeconds, frequencyInSeconds, TimeUnit.SECONDS);
-			}
-		}
+        if (elasticServices != null && elasticServices.getElasticService() != null) {
+            for (ElasticService service : elasticServices.getElasticService()) {
+                if (service.getAlerts() != null && service.getAlerts().getAlert() != null) {
+                    for (AlertConfig alertConfig : service.getAlerts().getAlert()) {
+                        System.out.println("Got Altert[" + service.getName() + "]: " + alertConfig.getName());
+
+                        String sch = alertConfig.getSchedule().trim();
+                        long frequencyInSeconds = getFrequencyOfAlertExecutionInSeconds(sch);
+                        String alertName = alertConfig.getName();
+                        System.out.println("Alert[name=" + alertName + "; schedule=" + sch
+                                + "; expression=" + alertConfig.getExpression() + "; will be executed every= " + frequencyInSeconds);
+                        ExpressionBasedAlert<AlertConfig> wrapper = new ExpressionBasedAlert<AlertConfig>();
+                        wrapper.initialize(habitat, alertConfig);
+                        threadPool.scheduleAtFixedRate(wrapper, frequencyInSeconds, frequencyInSeconds, TimeUnit.SECONDS);
+                    }
+                }
+            }
+        }
 		
 		for (MetricGatherer mg : metricHolders) {
-			System.out.println("Loaded " + mg);
             String sch  = mg.getSchedule();
             long frequency = 10 * 1000;
             if (sch != null) {
@@ -132,6 +132,8 @@ public class ElasticEngine
                 }
 
                 threadPool.scheduleAtFixedRate(new MetricGathererWrapper(mg), frequency, frequency, TimeUnit.MILLISECONDS);
+
+			    System.out.println("Loaded  and started MetricGatherer " + mg);
             }
 
 		}

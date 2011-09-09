@@ -41,7 +41,6 @@ package org.glassfish.elasticity.engine.util;
 
 import org.glassfish.elasticity.api.Alert;
 import org.glassfish.elasticity.config.serverbeans.AlertConfig;
-import org.glassfish.elasticity.api.MetricGatherer;
 import org.glassfish.elasticity.metric.MetricAttribute;
 import org.glassfish.elasticity.metric.MetricNode;
 import org.glassfish.elasticity.metric.TabularMetricAttribute;
