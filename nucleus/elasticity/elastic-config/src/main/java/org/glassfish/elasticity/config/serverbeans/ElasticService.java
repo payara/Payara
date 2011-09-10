@@ -234,6 +234,9 @@ public interface ElasticService extends ConfigBeanProxy  {
              scaleUpAction.setName("scale-up-action");
              actionsS.setScaleUpAction(scaleUpAction);
              instance.setActions(actionsS);
+
+             Alerts alerts = instance.createChild(Alerts.class);
+             instance.setAlerts(alerts);
          }
     }
 
