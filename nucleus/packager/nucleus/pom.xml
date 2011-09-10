@@ -160,6 +160,21 @@
 	    <version>${project.version}</version>
         </dependency> 
         <dependency>
+            <groupId>org.glassfish.elasticity</groupId>
+            <artifactId>elastic-api</artifactId>
+	    <version>${project.version}</version>
+        </dependency> 
+        <dependency>
+            <groupId>org.glassfish.elasticity</groupId>
+            <artifactId>elastic-config</artifactId>
+	    <version>${project.version}</version>
+        </dependency>
+                <dependency>
+            <groupId>org.glassfish.elasticity</groupId>
+            <artifactId>elastic-engine</artifactId>
+	    <version>${project.version}</version>
+        </dependency>
+        <dependency>
            <!-- base distribution image, move assembly here later -->
            <groupId>org.glassfish.packager</groupId>
            <artifactId>nucleus-base</artifactId>

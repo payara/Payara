@@ -51,6 +51,9 @@ import org.glassfish.hk2.scopes.PerLookup;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
+import org.glassfish.elasticity.config.serverbeans.ElasticServices;
+import org.glassfish.elasticity.config.serverbeans.ElasticService;
+import java.beans.PropertyVetoException;
 
 /**
  * Enable auto scaling
@@ -65,15 +68,24 @@ public class EnableAutoScaling
 
 	@Inject
 	EngineUtil util;
-	
+
+    @Inject
+    ElasticServices elasticServices;
+
 	@Param(name="name", optional=false)
 	private String name;
 	
     public void execute(AdminCommandContext context) {
     	ElasticServiceImpl service = (ElasticServiceImpl) ElasticServiceManager.getElasticService(name);
-    	if (service != null) {
-	    	service.setEnabled(true);
-	    	util.getLogger().log(Level.INFO, "enabled elastic-service: " + name);
+        ElasticService elasticService = elasticServices.getElasticService(name);
+    	if (service != null && elasticService != null) {
+            try {
+                elasticService.setEnabled(true);
+                service.setEnabled(true);
+                util.getLogger().log(Level.INFO, "enabled elastic-service: " + name);
+            } catch (PropertyVetoException ex){
+                util.getLogger().log(Level.WARNING, "Exception while setting enabled flag: " + name);
+            }
     	} else {
 	    	util.getLogger().log(Level.WARNING, "No such elastic-service named: " + name);
     	}
