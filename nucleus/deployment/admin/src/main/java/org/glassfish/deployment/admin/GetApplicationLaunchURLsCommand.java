@@ -57,9 +57,10 @@ import org.jvnet.hk2.component.PerLookup;
 import org.glassfish.config.support.PropertyResolver;
 import com.sun.enterprise.util.StringUtils;
 import com.sun.enterprise.config.serverbeans.*;
-import org.glassfish.grizzly.config.dom.Http;
 import org.glassfish.grizzly.config.dom.NetworkListener;
 import org.glassfish.grizzly.config.dom.Protocol;
+import org.glassfish.api.admin.RestEndpoints;
+import org.glassfish.api.admin.RestEndpoint;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.logging.Level;
@@ -70,6 +71,9 @@ import java.net.URL;
 @ExecuteOn(value={RuntimeType.DAS})
 @Scoped(PerLookup.class)
 @CommandLock(CommandLock.LockType.NONE)
+@RestEndpoints({
+    @RestEndpoint(configBean=Applications.class, opType= RestEndpoint.OpType.GET, path="_get-application-launch-urls", description="Get Urls for launch the application")
+})
 public class GetApplicationLaunchURLsCommand implements AdminCommand {
 
     @Param(primary=true)
