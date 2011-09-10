@@ -37,7 +37,6 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
 package com.sun.enterprise.config.serverbeans;
 
 import com.sun.enterprise.config.serverbeans.customvalidators.NotTargetKeyword;
@@ -76,24 +75,23 @@ import javax.validation.constraints.Pattern;
  */
 @Configured
 @SuppressWarnings("unused")
-@NotDuplicateTargetName(message="{node.duplicate.name}", payload=Node.class)
+@NotDuplicateTargetName(message = "{node.duplicate.name}", payload = Node.class)
 public interface Node extends ConfigBeanProxy, Injectable, Named, ReferenceContainer, RefContainer, Payload {
-
     /**
      * Sets the node name
      * @param value node name
      * @throws PropertyVetoException if a listener vetoes the change
      */
-    @Param(name="name", primary = true)
+    @Param(name = "name", primary = true)
     @Override
     public void setName(String value) throws PropertyVetoException;
 
-    @NotTargetKeyword(message="{node.reserved.name}", payload=Node.class)
-    @Pattern(regexp=NAME_SERVER_REGEX, message="{node.invalid.name}", payload=Node.class)
+    @NotTargetKeyword(message = "{node.reserved.name}", payload = Node.class)
+    @Pattern(regexp = NAME_SERVER_REGEX, message = "{node.invalid.name}", payload = Node.class)
     @Override
     public String getName();
 
-    /**                                                                      
+    /**
      * points to the parent directory of the node(s) directory.
      *
      * @return path location of node-dir
@@ -108,17 +106,16 @@ public interface Node extends ConfigBeanProxy, Injectable, Named, ReferenceConta
      *              {@link String }
      * @throws PropertyVetoException if a listener vetoes the change
      */
-    @Param(name="nodedir", optional=true)
+    @Param(name = "nodedir", optional = true)
     void setNodeDir(String value) throws PropertyVetoException;
 
     /**
-     * points to a named host. 
+     * points to a named host.
      *
      * @return a named host name
      */
-
     @Attribute
-    @Pattern(regexp=NAME_REGEX, message="{nodehost.invalid.name}", payload=Node.class)
+    @Pattern(regexp = NAME_REGEX, message = "{nodehost.invalid.name}", payload = Node.class)
     String getNodeHost();
 
     /**
@@ -128,7 +125,7 @@ public interface Node extends ConfigBeanProxy, Injectable, Named, ReferenceConta
      *              {@link String }
      * @throws PropertyVetoException if a listener vetoes the change
      */
-    @Param(name="nodehost", optional=true)
+    @Param(name = "nodehost", optional = true)
     void setNodeHost(String value) throws PropertyVetoException;
 
     /**
@@ -136,7 +133,6 @@ public interface Node extends ConfigBeanProxy, Injectable, Named, ReferenceConta
      *
      * @return value of install-dir
      */
-
     @Attribute
     String getInstallDir();
 
@@ -147,7 +143,7 @@ public interface Node extends ConfigBeanProxy, Injectable, Named, ReferenceConta
      *              {@link String }
      * @throws PropertyVetoException if a listener vetoes the change
      */
-    @Param(name="installdir", optional=true)
+    @Param(name = "installdir", optional = true)
     void setInstallDir(String value) throws PropertyVetoException;
 
     @Attribute()
@@ -160,14 +156,13 @@ public interface Node extends ConfigBeanProxy, Injectable, Named, ReferenceConta
      *              {@link String }
      * @throws PropertyVetoException if a listener vetoes the change
      */
-    @Param(name="type")
+    @Param(name = "type")
     void setType(String value) throws PropertyVetoException;
 
     @Element
     SshConnector getSshConnector();
 
     void setSshConnector(SshConnector connector);
-
 
     /**
      * Returns the install dir with separators as forward slashes.  This is needed to run commands
@@ -177,7 +172,6 @@ public interface Node extends ConfigBeanProxy, Injectable, Named, ReferenceConta
      */
     @DuckTyped
     String getInstallDirUnixStyle();
-
 
     /**
      * Returns the node dir with separators as forward slashes.  This is needed to run commands
@@ -222,33 +216,32 @@ public interface Node extends ConfigBeanProxy, Injectable, Named, ReferenceConta
     boolean isLocal();
 
     class Duck {
-
         public static String getInstallDirUnixStyle(Node node) {
-            String installDir= node.getInstallDir();
+            String installDir = node.getInstallDir();
             if (installDir == null)
                 return null;
-            return installDir.replaceAll("\\\\","/");
+            return installDir.replaceAll("\\\\", "/");
         }
 
         public static String getNodeDirUnixStyle(Node node) {
-            String nodeDir= node.getNodeDir();
+            String nodeDir = node.getNodeDir();
             if (nodeDir == null)
-               return null;
-            return nodeDir.replaceAll("\\\\","/");
+                return null;
+            return nodeDir.replaceAll("\\\\", "/");
         }
 
         public static String getNodeDirAbsolute(Node node) {
             // If nodedir is relative make it absolute relative to installRoot
-            String nodeDir= node.getNodeDir();
+            String nodeDir = node.getNodeDir();
             if (nodeDir == null || nodeDir.length() == 0)
-               return null;
+                return null;
             File nodeDirFile = new File(nodeDir);
             if (nodeDirFile.isAbsolute()) {
                 return nodeDir;
             }
             // node-dir is relative. Make it absolute. We root it under the
             // GlassFish root install directory.
-            String installDir= node.getInstallDir();
+            String installDir = node.getInstallDir();
             File installRootFile = new File(installDir, "glassfish");
             File absoluteNodeDirFile = new File(installRootFile, nodeDir);
             return absoluteNodeDirFile.getPath();
@@ -257,8 +250,8 @@ public interface Node extends ConfigBeanProxy, Injectable, Named, ReferenceConta
         public static String getNodeDirAbsoluteUnixStyle(Node node) {
             String nodeDirAbsolute = getNodeDirAbsolute(node);
             if (nodeDirAbsolute == null)
-               return null;
-            return nodeDirAbsolute.replaceAll("\\\\","/");
+                return null;
+            return nodeDirAbsolute.replaceAll("\\\\", "/");
         }
 
         public static boolean isDefaultLocalNode(Node node) {
@@ -289,10 +282,10 @@ public interface Node extends ConfigBeanProxy, Injectable, Named, ReferenceConta
             String nodeName = node.getName();
             Dom serverDom = Dom.unwrap(node);
             Servers servers = serverDom.getHabitat().getComponent(Servers.class);
-            List<Server> serverList=servers.getServer();
+            List<Server> serverList = servers.getServer();
             if (serverList != null) {
-                for (Server server : serverList){
-                    if (nodeName.equals(server.getNodeRef())){
+                for (Server server : serverList) {
+                    if (nodeName.equals(server.getNodeRef())) {
                         return true;
                     }
                 }
@@ -300,46 +293,34 @@ public interface Node extends ConfigBeanProxy, Injectable, Named, ReferenceConta
             return false;
         }
     }
-    
+
     @Service
     @Scoped(PerLookup.class)
     class Decorator implements CreationDecorator<Node> {
-        @Param(name="nodedir", optional=true)
-        String nodedir=null;
-
-        @Param(name="nodehost", optional=true)
-        String nodehost=null;
-
-        @Param(name="installdir", optional=true)
-        String installdir=null;
-
-        @Param(name="type")
-        String type=null;
-
-        @Param(name="sshport",optional=true)
-        String sshPort=null;
-
-        @Param(name="sshnodehost",optional=true)
-        String sshHost=null;
-
-        @Param (name="sshuser", optional=true)
-        String sshuser=null;
-
-        @Param (name="sshkeyfile", optional=true)
+        @Param(name = "nodedir", optional = true)
+        String nodedir = null;
+        @Param(name = "nodehost", optional = true)
+        String nodehost = null;
+        @Param(name = "installdir", optional = true)
+        String installdir = null;
+        @Param(name = "type")
+        String type = null;
+        @Param(name = "sshport", optional = true)
+        String sshPort = null;
+        @Param(name = "sshnodehost", optional = true)
+        String sshHost = null;
+        @Param(name = "sshuser", optional = true)
+        String sshuser = null;
+        @Param(name = "sshkeyfile", optional = true)
         String sshkeyfile;
-
-        @Param (name="sshpassword", optional=true)
+        @Param(name = "sshpassword", optional = true)
         String sshpassword;
-
-        @Param (name="sshkeypassphrase", optional=true)
+        @Param(name = "sshkeypassphrase", optional = true)
         String sshkeypassphrase;
-
         @Inject
         Habitat habitat;
-
         @Inject
         ServerEnvironment env;
-
         @Inject
         Domain domain;
 
@@ -363,11 +344,11 @@ public interface Node extends ConfigBeanProxy, Injectable, Named, ReferenceConta
             // we want to make sure they are null in the Node. The
             // admin console often passes the empty string instead of null.
             // See bug 14873
-            if ( !StringUtils.ok(nodedir))
+            if (!StringUtils.ok(nodedir))
                 instance.setNodeDir(null);
-            if ( !StringUtils.ok(installdir))
+            if (!StringUtils.ok(installdir))
                 instance.setInstallDir(null);
-            if  (!StringUtils.ok(nodehost))
+            if (!StringUtils.ok(nodehost))
                 instance.setNodeHost(null);
 
             //only create-node-ssh and update-node-ssh should be changing the type to SSH
@@ -388,46 +369,42 @@ public interface Node extends ConfigBeanProxy, Injectable, Named, ReferenceConta
                 sshA.setKeyPassphrase(sshkeypassphrase);
             sshC.setSshAuth(sshA);
 
-            if (StringUtils.ok(sshPort)  )
+            if (StringUtils.ok(sshPort))
                 sshC.setSshPort(sshPort);
 
             if (StringUtils.ok(sshHost))
                 sshC.setSshHost(sshHost);
 
             instance.setSshConnector(sshC);
-            
+
         }
     }
-
 
     @Service
     @Scoped(PerLookup.class)
     class DeleteDecorator implements DeletionDecorator<Nodes, Node> {
         @Inject
         private Domain domain;
-
         @Inject
         Nodes nodes;
-
         @Inject
         Servers servers;
-
         @Inject
         private ServerEnvironment env;
 
         @Override
         public void decorate(AdminCommandContext context, Nodes parent, Node child) throws
-                PropertyVetoException, TransactionFailure{
+                PropertyVetoException, TransactionFailure {
             Logger logger = LogDomains.getLogger(Node.class, LogDomains.ADMIN_LOGGER);
             LocalStringManagerImpl localStrings = new LocalStringManagerImpl(Node.class);
             String nodeName = child.getName();
-            
-            if (nodeName.equals("localhost-" + domain.getName()))  { // can't delete localhost node
+
+            if (nodeName.equals("localhost-" + domain.getName())) { // can't delete localhost node
                 final String msg = localStrings.getLocalString(
-                 "Node.localhost",
-                 "Cannot remove Node {0}. ",child.getName() );
-                
-                 logger.log(Level.SEVERE, msg);
+                        "Node.localhost",
+                        "Cannot remove Node {0}. ", child.getName());
+
+                logger.log(Level.SEVERE, msg);
                 throw new TransactionFailure(msg);
             }
 
@@ -447,11 +424,10 @@ public interface Node extends ConfigBeanProxy, Injectable, Named, ReferenceConta
                 }
 
                 final String msg = localStrings.getLocalString(
-                            "Node.referencedByInstance",
-                            "Node {0} referenced in server instance(s): {1}.  Remove instances before removing node."
-                            , child.getName(), sb.toString() );
-                            logger.log(Level.SEVERE, msg);
-                            throw new TransactionFailure(msg);
+                        "Node.referencedByInstance",
+                        "Node {0} referenced in server instance(s): {1}.  Remove instances before removing node.", child.getName(), sb.toString());
+                logger.log(Level.SEVERE, msg);
+                throw new TransactionFailure(msg);
             }
 
             nodeList.remove(child);
