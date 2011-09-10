@@ -169,6 +169,7 @@
             <artifactId>glassfish-grizzly-container</artifactId>
             <version>${project.version}</version>
         </dependency>
+<!--
         <dependency>
     	    <groupId>org.glassfish</groupId>
             <artifactId>paas.gfplugin</artifactId>
@@ -184,7 +185,7 @@
             <artifactId>paas.lbplugin</artifactId>
             <version>${project.version}</version>
         </dependency>
-        
+-->      
         <!-- Shared OSGi support for Java EE -->
        <dependency>
             <groupId>org.glassfish.fighterfish</groupId>
