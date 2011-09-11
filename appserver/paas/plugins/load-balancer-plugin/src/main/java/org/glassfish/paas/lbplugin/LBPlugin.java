@@ -49,8 +49,6 @@ import org.glassfish.embeddable.CommandResult;
 import org.glassfish.embeddable.CommandRunner;
 import org.glassfish.paas.lbplugin.cli.GlassFishLBProvisionedService;
 import org.glassfish.paas.orchestrator.provisioning.ServiceInfo;
-import org.glassfish.paas.orchestrator.provisioning.ProvisionerUtil;
-import org.glassfish.paas.orchestrator.provisioning.LBProvisioner;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceType;
 import org.glassfish.paas.orchestrator.service.HTTPLoadBalancerServiceType;
 import org.glassfish.paas.orchestrator.service.ServiceStatus;
@@ -70,17 +68,16 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.glassfish.paas.lbplugin.logger.LBPluginLogger;
 
 /**
  * @author Jagadish Ramu
  */
 @Scoped(PerLookup.class)
 @Service
-public class LBPlugin implements Plugin<HTTPLoadBalancerServiceType> {
-
-    @Inject
-    private ProvisionerUtil registryService;
+public class LBPlugin implements Plugin {
 
     @Inject
     private CommandRunner commandRunner;
@@ -93,8 +90,8 @@ public class LBPlugin implements Plugin<HTTPLoadBalancerServiceType> {
 
     private static final String LB = "HTTP_LOAD_BALANCER";
 
-    public static final String GLASSFISH_LB = "GLASSFISH_LB";
-    public static final String LB_ServiceType = "LB";
+    public static final String LB_ServiceType =
+            org.glassfish.virtualization.util.ServiceType.Type.LB.name();
 
     private static Logger logger = Logger.getLogger(LBPlugin.class.getName());
 
@@ -108,20 +105,21 @@ public class LBPlugin implements Plugin<HTTPLoadBalancerServiceType> {
     }
 
     public boolean isReferenceTypeSupported(String referenceType) {
+        LBPluginLogger.getLogger().log(Level.INFO,"Given referenceType : " + referenceType + " : " + LB.equalsIgnoreCase(referenceType));
         return LB.equalsIgnoreCase(referenceType);
     }
 
     public Set<ServiceReference> getServiceReferences(ReadableArchive cloudArchive) {
-        //LB plugin does not scan anything for prototype
-        return new HashSet<ServiceReference>();
+        HashSet<ServiceReference> serviceReferences = new HashSet<ServiceReference>();
+        serviceReferences.add(new ServiceReference(cloudArchive.getName(), "JavaEE", null));
+        return serviceReferences;
     }
 
     public ServiceDescription getDefaultServiceDescription(String appName, ServiceReference svcRef) {
         if (LB.equals(svcRef.getServiceRefType())) {
-            LBProvisioner lbProvisioner = registryService.getLBProvisioner(GLASSFISH_LB);
-
             // create default service description.
-            String defaultServiceName = lbProvisioner.getDefaultServiceName();
+            String defaultServiceName = appName + "-lb";
+            LBPluginLogger.getLogger().log(Level.INFO,"Default lb service name : " + defaultServiceName);
             List<Property> properties = new ArrayList<Property>();
             properties.add(new Property("service-type", LB_ServiceType));
             properties.add(new Property("os-name", System.getProperty("os.name"))); // default OS will be same as that of what Orchestrator is running on.
@@ -129,7 +127,7 @@ public class LBPlugin implements Plugin<HTTPLoadBalancerServiceType> {
                     "lazy", new ServiceCharacteristics(properties), null);
 
             // Fill the required details in service reference.
-            Properties svcRefProps = lbProvisioner.getDefaultConnectionProperties();
+            Properties svcRefProps = new Properties();//lbProvisioner.getDefaultConnectionProperties();
             svcRefProps.setProperty("serviceName", defaultServiceName);
             svcRef.setProperties(svcRefProps);
 
@@ -141,42 +139,56 @@ public class LBPlugin implements Plugin<HTTPLoadBalancerServiceType> {
 
     public ProvisionedService provisionService(ServiceDescription serviceDescription, DeploymentContext dc) {
         String serviceName = serviceDescription.getName();
+        LBPluginLogger.getLogger().log(Level.INFO,"Given serviceName : " + serviceName);
         logger.entering(getClass().getName(), "provisionService");
         ArrayList<String> params;
         String[] parameters;
 
-        CommandResult result = commandRunner.run("_list-lb-services");
-        if (!result.getOutput().contains(serviceName)) {
+        CommandResult result;// = commandRunner.run("_list-lb-services");
+        //if (!result.getOutput().contains(serviceName)) {
             //_create-lb-service
             params = new ArrayList<String>();
-            params.add("--_ignore_appserver_association");
-            params.add("true");
+            //params.add("--_ignore_appserver_association");
+            //params.add("true");
             if(serviceDescription.getAppName() != null){
-                params.add("appname="+serviceDescription.getAppName());
+                params.add("--appname");
+                params.add(serviceDescription.getAppName());
             }
+            String serviceCharacteristics = formatArgument(serviceDescription.
+                    getServiceCharacteristics().getServiceCharacteristics());
+            String serviceConfigurations = formatArgument(serviceDescription.getConfigurations());
+            params.add("--servicecharacteristics=" + serviceCharacteristics);
+            params.add("--serviceconfigurations");
+            params.add(serviceConfigurations);
+            params.add("--waitforcompletion=true");
             params.add(serviceName);
             parameters = new String[params.size()];
             parameters = params.toArray(parameters);
 
             result = commandRunner.run("_create-lb-service", parameters);
             if (result.getExitStatus().equals(CommandResult.ExitStatus.FAILURE)) {
-                System.out.println("_create-lb-service [" + serviceName + "] failed");
+                LBPluginLogger.getLogger().log(Level.INFO,"_create-lb-service [" + serviceName + "] failed");
             }
-        }
+        //}
 
         ServiceInfo entry = lbServiceUtil.retrieveCloudEntry(serviceName, serviceDescription.getAppName(), ServiceType.LOAD_BALANCER);
         if (entry == null) {
             throw new RuntimeException("unable to get LB service : " + serviceName);
         }
 
+        
         params = new ArrayList<String>();
+        if (serviceDescription.getAppName() != null) {
+            params.add("--appname");
+            params.add(serviceDescription.getAppName());
+        }
         params.add(serviceName);
         parameters = new String[params.size()];
         parameters = params.toArray(parameters);
 
         result = commandRunner.run("_start-lb-service", parameters);
         if (result.getExitStatus().equals(CommandResult.ExitStatus.FAILURE)) {
-            System.out.println("_start-lb-service [" + serviceName + "] failed");
+            LBPluginLogger.getLogger().log(Level.INFO,"_start-lb-service [" + serviceName + "] failed");
         }
 
         GlassFishLBProvisionedService ps = new GlassFishLBProvisionedService(serviceDescription, new Properties());
@@ -193,7 +205,35 @@ public class LBPlugin implements Plugin<HTTPLoadBalancerServiceType> {
 
     public void associateServices(ProvisionedService serviceConsumer, ServiceReference svcRef,
                                   ProvisionedService serviceProvider, boolean beforeDeployment, DeploymentContext dc) {
-        //no-op
+        if(beforeDeployment){
+            return;
+        }
+
+        if (!serviceConsumer.getServiceType().toString().equals("LB")
+                || !serviceProvider.getServiceType().toString().equals("JavaEE")){
+            return;
+        }
+
+        ServiceDescription serviceDescription = serviceConsumer.getServiceDescription();
+        String serviceName = serviceDescription.getName();
+        logger.entering(getClass().getName(), "provisionService");
+        ArrayList<String> params;
+        String[] parameters;
+        params = new ArrayList<String>();
+        if (serviceDescription.getAppName() != null) {
+            params.add("--appname");
+            params.add(serviceDescription.getAppName());
+        }
+        params.add("--clustername");
+        params.add(serviceProvider.getServiceDescription().getName());
+        params.add(serviceName);
+        parameters = new String[params.size()];
+        parameters = params.toArray(parameters);
+
+        CommandResult result = commandRunner.run("_associate-lb-service", parameters);
+        if (result.getExitStatus().equals(CommandResult.ExitStatus.FAILURE)) {
+            LBPluginLogger.getLogger().log(Level.INFO,"_associate-lb-service [" + serviceName + "] failed");
+        }
     }
 
     public ApplicationContainer deploy(ReadableArchive cloudArchive) {
@@ -201,11 +241,47 @@ public class LBPlugin implements Plugin<HTTPLoadBalancerServiceType> {
     }
 
     public ProvisionedService startService(ServiceDescription serviceDescription, ServiceInfo serviceInfo) {
-        return null;  //TODO
+        String serviceName = serviceDescription.getName();
+        ArrayList params = new ArrayList<String>();
+        
+        if (serviceDescription.getAppName() != null) {
+            params.add("--appname");
+            params.add(serviceDescription.getAppName());
+        }
+        params.add("--startvm=true");
+        params.add(serviceName);
+        String[] parameters = new String[params.size()];
+        parameters = (String[]) params.toArray(parameters);
+
+        CommandResult result = commandRunner.run("_start-lb-service", parameters);
+        if (result.getExitStatus().equals(CommandResult.ExitStatus.FAILURE)) {
+            LBPluginLogger.getLogger().log(Level.INFO,"_start-lb-service [" + serviceName + "] failed");
+        }
+
+        GlassFishLBProvisionedService ps = new GlassFishLBProvisionedService(serviceDescription, new Properties());
+        ps.setStatus(ServiceStatus.STARTED);
+        return ps;
     }
 
     public boolean stopService(ServiceDescription serviceDescription, ServiceInfo serviceInfo) {
-        return true; //TODO
+        String serviceName = serviceDescription.getName();
+        ArrayList params = new ArrayList<String>();
+
+        if (serviceDescription.getAppName() != null) {
+            params.add("--appname");
+            params.add(serviceDescription.getAppName());
+        }
+        params.add("--stopvm=true");
+        params.add(serviceName);
+        String[] parameters = new String[params.size()];
+        parameters = (String[]) params.toArray(parameters);
+
+        CommandResult result = commandRunner.run("_stop-lb-service", parameters);
+        if (result.getExitStatus().equals(CommandResult.ExitStatus.FAILURE)) {
+            LBPluginLogger.getLogger().log(Level.INFO,"_stop-lb-service [" + serviceName + "] failed");
+        }
+
+        return true;
     }
 
     public boolean isRunning(ProvisionedService provisionedSvc) {
@@ -229,24 +305,18 @@ public class LBPlugin implements Plugin<HTTPLoadBalancerServiceType> {
         try {
             application = applicationFactory.openArchive(cloudArchive.getURI());
         } catch(Exception ex) {
-            ex.printStackTrace();
+            LBPluginLogger.getLogger().log(Level.INFO,"exception",ex);
         }
 
         if(application != null ) {
-            boolean isDistributable = false;
-            for (WebBundleDescriptor descriptor : application.getBundleDescriptors(
-                    WebBundleDescriptor.class)) {
-                if (descriptor.isDistributable()) {
-                    isDistributable = true;
-                    break;
-                }
-            }
-            if(isDistributable) {
+            boolean isWebApp = (application.getBundleDescriptors(
+                    WebBundleDescriptor.class).size() > 0);
+            if(isWebApp) {
                 List<Property> properties = new ArrayList<Property>();
                 properties.add(new Property("service-type", LB_ServiceType));
                 // TODO :: check if the cloudArchive.getName() is okay.
                 ServiceDescription sd = new ServiceDescription(
-                        cloudArchive.getName(), appName, "lazy",
+                        cloudArchive.getName() + "-lb", appName, "lazy",
                         new ServiceCharacteristics(properties), null);
                 defs.add(sd);
             }
@@ -255,12 +325,44 @@ public class LBPlugin implements Plugin<HTTPLoadBalancerServiceType> {
     }
 
     public boolean unprovisionService(ServiceDescription serviceDescription, DeploymentContext dc){
-        //TODO impl.
+        String serviceName = serviceDescription.getName();
+        logger.entering(getClass().getName(), "provisionService");
+        ArrayList<String> params;
+        String[] parameters;
+        params = new ArrayList<String>();
+        if (serviceDescription.getAppName() != null) {
+            params.add("--appname");
+            params.add(serviceDescription.getAppName());
+        }
+        params.add(serviceName);
+        parameters = new String[params.size()];
+        parameters = params.toArray(parameters);
+
+        CommandResult result = commandRunner.run("_delete-lb-service", parameters);
+        if (result.getExitStatus().equals(CommandResult.ExitStatus.FAILURE)) {
+            LBPluginLogger.getLogger().log(Level.INFO,"_delete-lb-service [" + serviceName + "] failed");
+            return false;
+        }
         return true;
     }
 
     public void dissociateServices(ProvisionedService serviceConsumer, ServiceReference svcRef,
                                    ProvisionedService serviceProvider, boolean beforeUndeploy, DeploymentContext dc){
-        //no-op
+        //TBD
+    }
+
+    // TODO :: move this utility method to plugin-common module.
+    private String formatArgument(List<Property> properties) {
+        StringBuilder sb = new StringBuilder();
+        if (properties != null) {
+            for (Property p : properties) {
+                sb.append(p.getName() + "=" + p.getValue() + ":");
+            }
+        }
+        // remove the last ':'
+        if (sb.length() > 0) {
+            sb.deleteCharAt(sb.length() - 1);
+        }
+        return sb.toString();
     }
 }

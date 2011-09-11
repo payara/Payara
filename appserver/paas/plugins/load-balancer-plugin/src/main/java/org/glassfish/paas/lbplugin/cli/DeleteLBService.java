@@ -37,78 +37,52 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
 package org.glassfish.paas.lbplugin.cli;
 
 import java.util.logging.Level;
+import javax.inject.Inject;
 import org.glassfish.api.ActionReport;
-import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.CommandLock;
-import org.glassfish.paas.orchestrator.provisioning.ServiceInfo;
-
-import static org.glassfish.paas.orchestrator.provisioning.ServiceInfo.State.*;
-
-
-import static org.glassfish.paas.orchestrator.provisioning.cli.ServiceType.*;
-
+import org.glassfish.embeddable.CommandResult;
+import org.glassfish.embeddable.CommandRunner;
+import org.glassfish.paas.lbplugin.logger.LBPluginLogger;
+import org.glassfish.paas.orchestrator.provisioning.cli.ServiceType.*;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
 
-import org.glassfish.paas.lbplugin.LBProvisionerFactory;
-import org.glassfish.paas.lbplugin.logger.LBPluginLogger;
-
 /**
  * @author Jagadish Ramu
  */
-@Service(name = "_start-lb-service")
+@Service(name = "_delete-lb-service")
 @Scoped(PerLookup.class)
 @CommandLock(CommandLock.LockType.NONE)
-public class StartLBService extends BaseLBService implements AdminCommand {
+public class DeleteLBService extends BaseLBService implements AdminCommand {
+    
+    @Inject
+    private CommandRunner commandRunner;
 
-    @Param(name = "startvm", optional = true)
-    boolean startVM;
-
-    @Override
     public void execute(AdminCommandContext context) {
-
         final ActionReport report = context.getActionReport();
-        LBPluginLogger.getLogger().log(Level.INFO,"_start-lb-service called.");
 
-        if (lbServiceUtil.isValidService(serviceName, appName, LOAD_BALANCER)) {
-            ServiceInfo entry = lbServiceUtil.retrieveCloudEntry(serviceName, appName, LOAD_BALANCER);
-            String ipAddress = entry.getIpAddress();
-            String status = entry.getState();
-            if (status == null || status.equalsIgnoreCase(ServiceInfo.State.Start_in_progress.toString())
-                    || status.equalsIgnoreCase(Running.toString())) {
-                report.setMessage("Invalid lb-service [" + serviceName + "] state [" + status + "]");
-                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-                return;
-            }
-
-            lbServiceUtil.updateState(serviceName, appName, Start_in_progress.toString(), LOAD_BALANCER);
-            try {
-                retrieveVirtualMachine();
-                if (startVM) {
-                    virtualMachine.start();
+        LBPluginLogger.getLogger().log(Level.INFO,"_delete-lb-service called.");
+        try {
+            retrieveVirtualMachine();
+            if (virtualMachine != null) {
+                LBPluginLogger.getLogger().log(Level.INFO,"Calling delete on load-balancer VM with id : " + virtualMachine.getName());
+                virtualMachine.delete(); // TODO :: use executor service.
+                lbServiceUtil.unregisterLBInfo(serviceName, appName);
+                CommandResult result = commandRunner.run("delete-cluster", new String[]{serviceName});
+                if (result.getExitStatus().equals(CommandResult.ExitStatus.FAILURE)) {
+                    LBPluginLogger.getLogger().log(Level.INFO,"Command delete-cluster failed. Cleanup of load-balancer service failed");
+                    throw new Exception("Command create-cluster failed. Cleanup of load-balancer service failed");
                 }
-                LBProvisionerFactory.getInstance().getLBProvisioner().startLB(virtualMachine);
-                lbServiceUtil.updateState(serviceName, appName, Running.toString(), LOAD_BALANCER);
-                report.setMessage("lb-service [" + serviceName + "] started");
-                report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
-            } catch (Exception ex) {
-                LBPluginLogger.getLogger().log(Level.INFO,"exception",ex);
-                lbServiceUtil.updateState(serviceName, appName, ServiceInfo.State.NotRunning.toString(), LOAD_BALANCER);
-                report.setMessage("lb-service [" + serviceName + "] start failed");
-                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             }
-            
-
-        } else {
-            report.setMessage("Invalid lb-service name [" + serviceName + "]");
-            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+        } catch (Exception ex) {
+            LBPluginLogger.getLogger().log(Level.INFO,"exception",ex);
         }
+        return; //we are done unprovisioning...
     }
 }

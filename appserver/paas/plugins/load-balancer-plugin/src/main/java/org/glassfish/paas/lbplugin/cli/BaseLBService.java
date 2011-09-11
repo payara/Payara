@@ -39,52 +39,61 @@
  */
 package org.glassfish.paas.lbplugin.cli;
 
+import java.util.Collection;
 import java.util.logging.Level;
-import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
-import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
-import org.glassfish.api.admin.CommandLock;
-import org.glassfish.embeddable.CommandRunner;
-import org.glassfish.paas.lbplugin.LBProvisionerFactory;
+import org.glassfish.paas.lbplugin.LBServiceUtil;
 import org.glassfish.paas.lbplugin.logger.LBPluginLogger;
+import org.glassfish.paas.orchestrator.provisioning.cli.ServiceType;
+import org.glassfish.virtualization.runtime.VirtualCluster;
+import org.glassfish.virtualization.runtime.VirtualClusters;
+import org.glassfish.virtualization.spi.VirtException;
+import org.glassfish.virtualization.spi.VirtualMachine;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.PerLookup;
 
 /**
- * @author Jagadish Ramu
+ *
+ * @author kshitiz
  */
-@Service(name = "_associate-lb-service")
+@Service
 @Scoped(PerLookup.class)
-@CommandLock(CommandLock.LockType.NONE)
-public class AssociateLBService extends BaseLBService implements AdminCommand {
+public class BaseLBService {
 
+    @Param(name = "servicename", primary = true)
+    String serviceName;
+    @Param(name = "appname", optional = true)
+    String appName;
     @Inject
-    private Habitat habitat;
+    LBServiceUtil lbServiceUtil;
+    // TODO :: remove dependency on VirtualCluster(s).
+    @Inject(optional = true) // // made it optional for non-virtual scenario to work
+    VirtualClusters virtualClusters;
 
-    @Inject
-    private CommandRunner commandRunner;
-
-    @Param(name = "clustername")
-    String clusterName;
+    VirtualCluster virtualCluster;
+    VirtualMachine virtualMachine;
 
     public void execute(AdminCommandContext context) {
-        ActionReport report = context.getActionReport();
-        LBPluginLogger.getLogger().log(Level.INFO,"_associate-lb-service called.");
-        try {
-            retrieveVirtualMachine();
-            LBProvisionerFactory.getInstance().getLBProvisioner()
-                    .associateApplicationServerWithLB(virtualMachine,
-                    serviceName, commandRunner, clusterName, habitat);
-            report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
-            report.setMessage("Service with name [" + serviceName + "] is associated with cluster  " + "[ " + clusterName + " ] successfully.");
-        } catch (Exception ex) {
-            LBPluginLogger.getLogger().log(Level.INFO,"exception",ex);
-            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            report.setMessage("Unable to associate service with name [" + serviceName + "] with cluster  " + "[ " + clusterName + " ] successfully.");
+    }
+    
+    void retrieveVirtualMachine() throws VirtException {
+        if (virtualClusters != null && serviceName != null) {
+            virtualCluster = virtualClusters.byName(serviceName);
+            String vmId = lbServiceUtil.getInstanceID(
+                    serviceName, appName, ServiceType.LOAD_BALANCER);
+            if (vmId != null) {
+                LBPluginLogger.getLogger().log(Level.INFO,"Found VirtualMachine for load-balancer with id : " + vmId);
+                virtualMachine = virtualCluster.vmByName(vmId);
+                // TODO :: IMS should give differnt way to get hold of VM using the vmId
+                return;
+            }
+            LBPluginLogger.getLogger().log(Level.INFO,"Unable to find VirtualMachine for load-balancer with vmId : " + vmId);
+        } else {
+            LBPluginLogger.getLogger().log(Level.INFO,"Unable to find VirtualMachine for load-balancer as virtualCluters or serviceName is null");
         }
     }
+
 }

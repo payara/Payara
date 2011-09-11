@@ -40,48 +40,43 @@
 
 package org.glassfish.paas.lbplugin.cli;
 
+import java.util.logging.Level;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
+import org.glassfish.api.admin.CommandLock;
 import org.glassfish.paas.lbplugin.LBServiceUtil;
 import org.glassfish.paas.orchestrator.provisioning.ServiceInfo;
 
 import static org.glassfish.paas.orchestrator.provisioning.ServiceInfo.State.*;
 
-import org.glassfish.paas.orchestrator.provisioning.ProvisionerUtil;
 
 import static org.glassfish.paas.orchestrator.provisioning.cli.ServiceType.*;
 
-import org.glassfish.paas.orchestrator.provisioning.iaas.CloudProvisioner;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
 
-import java.util.ArrayList;
-import java.util.Collection;
+import org.glassfish.paas.lbplugin.LBProvisionerFactory;
+import org.glassfish.paas.lbplugin.logger.LBPluginLogger;
 
 /**
  * @author Jagadish Ramu
  */
 @Service(name = "_stop-lb-service")
 @Scoped(PerLookup.class)
-public class StopLBService implements AdminCommand {
+@CommandLock(CommandLock.LockType.NONE)
+public class StopLBService extends BaseLBService implements AdminCommand {
 
-    @Param(name = "servicename", primary = true, optional = false)
-    private String serviceName;
+    @Param(name = "stopvm", optional = true)
+    boolean stopVM;
 
-    @Param(name="appname", optional = true)
-    private String appName;
-
-    @Inject
-    private ProvisionerUtil provisionerUtil;
-
-    @Inject
-    private LBServiceUtil lbServiceUtil;
-
+    @Override
     public void execute(AdminCommandContext context) {
+
+        LBPluginLogger.getLogger().log(Level.INFO,"_stop-lb-service called.");
 
         final ActionReport report = context.getActionReport();
 
@@ -98,16 +93,21 @@ public class StopLBService implements AdminCommand {
 
             lbServiceUtil.updateState(serviceName, appName, Stop_in_progress.toString(), LOAD_BALANCER);
 
-            provisionerUtil.getLBProvisioner().stopLB(ipAddress);
-
-            CloudProvisioner cloudProvisioner = provisionerUtil.getCloudProvisioner();
-            Collection<String> list = new ArrayList<String>();
-            list.add(entry.getIpAddress());
-            cloudProvisioner.stopInstances(list);
-
-            lbServiceUtil.updateState(serviceName, appName, NotRunning.toString(), LOAD_BALANCER);
-            report.setMessage("lb-service [" + serviceName + "] stopped");
-            report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
+            try {
+                retrieveVirtualMachine();
+                LBProvisionerFactory.getInstance().getLBProvisioner().stopLB(virtualMachine);
+                lbServiceUtil.updateState(serviceName, appName, NotRunning.toString(), LOAD_BALANCER);
+                if(stopVM){
+                    virtualMachine.stop();
+                }
+                report.setMessage("lb-service [" + serviceName + "] stopped");
+                report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
+            } catch (Exception ex) {
+                LBPluginLogger.getLogger().log(Level.INFO,"exception",ex);
+                lbServiceUtil.updateState(serviceName, appName, ServiceInfo.State.NotRunning.toString(), LOAD_BALANCER);
+                report.setMessage("lb-service [" + serviceName + "] stop failed");
+                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            }
 
         } else {
             report.setMessage("Invalid lb-service name [" + serviceName + "]");

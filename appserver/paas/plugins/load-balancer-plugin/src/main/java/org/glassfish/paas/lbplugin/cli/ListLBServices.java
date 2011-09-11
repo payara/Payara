@@ -42,40 +42,27 @@ package org.glassfish.paas.lbplugin.cli;
 
 import com.sun.enterprise.admin.util.ColumnFormatter;
 import org.glassfish.api.ActionReport;
-import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
-import org.glassfish.paas.lbplugin.LBServiceUtil;
 import org.glassfish.paas.orchestrator.config.ApplicationScopedService;
 import org.glassfish.paas.orchestrator.config.Service;
 import org.glassfish.paas.orchestrator.config.Services;
 import org.glassfish.paas.orchestrator.config.SharedService;
-import org.glassfish.paas.orchestrator.provisioning.ProvisionerUtil;
-import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.component.PerLookup;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import org.glassfish.api.admin.CommandLock;
+import org.glassfish.paas.orchestrator.provisioning.cli.ServiceType;
 
 /**
  * @author Jagadish Ramu
  */
 @org.jvnet.hk2.annotations.Service(name = "_list-lb-services")
 @Scoped(PerLookup.class)
-public class ListLBServices implements AdminCommand {
-
-    @Inject
-    private ProvisionerUtil registryService;
-
-    @Inject
-    private LBServiceUtil lbServiceUtil;
-
-    @Param(name = "servicename", defaultValue = "*", optional = true, primary = true)
-    private String serviceName;
-
-    @Param(optional = true, name = "appname")
-    private String appName;
+@CommandLock(CommandLock.LockType.NONE)
+public class ListLBServices extends BaseLBService implements AdminCommand {
 
     public void execute(AdminCommandContext context) {
         final ActionReport report = context.getActionReport();
@@ -84,7 +71,7 @@ public class ListLBServices implements AdminCommand {
             if (serviceName.equals("*")) {
                 Services services = lbServiceUtil.getServices();
                 for (Service service : services.getServices()) {
-                    if (service.getType().equals("load-balancer")) {
+                    if (service.getType().equals(ServiceType.LOAD_BALANCER)) {
                         if (appName != null) {
                             if (service instanceof ApplicationScopedService) {
                                 if (appName.equals(((ApplicationScopedService) service).getApplicationName())) {

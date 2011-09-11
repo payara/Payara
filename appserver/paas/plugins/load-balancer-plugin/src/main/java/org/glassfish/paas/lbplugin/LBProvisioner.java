@@ -37,54 +37,28 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package org.glassfish.paas.lbplugin.cli;
 
-import java.util.logging.Level;
-import org.glassfish.api.ActionReport;
-import org.glassfish.api.Param;
-import org.glassfish.api.admin.AdminCommand;
-import org.glassfish.api.admin.AdminCommandContext;
-import org.glassfish.api.admin.CommandLock;
+package org.glassfish.paas.lbplugin;
+
+import com.sun.enterprise.config.serverbeans.Cluster;
 import org.glassfish.embeddable.CommandRunner;
-import org.glassfish.paas.lbplugin.LBProvisionerFactory;
-import org.glassfish.paas.lbplugin.logger.LBPluginLogger;
-import org.jvnet.hk2.annotations.Inject;
-import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.annotations.Service;
+import org.glassfish.virtualization.spi.VirtualMachine;
 import org.jvnet.hk2.component.Habitat;
-import org.jvnet.hk2.component.PerLookup;
 
 /**
- * @author Jagadish Ramu
+ *
+ * @author kshitiz
  */
-@Service(name = "_associate-lb-service")
-@Scoped(PerLookup.class)
-@CommandLock(CommandLock.LockType.NONE)
-public class AssociateLBService extends BaseLBService implements AdminCommand {
+public interface LBProvisioner {
 
-    @Inject
-    private Habitat habitat;
+    public void startLB(VirtualMachine virtualMachine) throws Exception;
 
-    @Inject
-    private CommandRunner commandRunner;
+    public void stopLB(VirtualMachine virtualMachine) throws Exception;
 
-    @Param(name = "clustername")
-    String clusterName;
+    public void configureLB(VirtualMachine virtualMachine)  throws Exception;
 
-    public void execute(AdminCommandContext context) {
-        ActionReport report = context.getActionReport();
-        LBPluginLogger.getLogger().log(Level.INFO,"_associate-lb-service called.");
-        try {
-            retrieveVirtualMachine();
-            LBProvisionerFactory.getInstance().getLBProvisioner()
-                    .associateApplicationServerWithLB(virtualMachine,
-                    serviceName, commandRunner, clusterName, habitat);
-            report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
-            report.setMessage("Service with name [" + serviceName + "] is associated with cluster  " + "[ " + clusterName + " ] successfully.");
-        } catch (Exception ex) {
-            LBPluginLogger.getLogger().log(Level.INFO,"exception",ex);
-            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            report.setMessage("Unable to associate service with name [" + serviceName + "] with cluster  " + "[ " + clusterName + " ] successfully.");
-        }
-    }
+    public void associateApplicationServerWithLB(VirtualMachine virtualMachine,
+            String serviceName, CommandRunner commandRunner, String clusterName,
+            Habitat habitat) throws Exception;
+
 }

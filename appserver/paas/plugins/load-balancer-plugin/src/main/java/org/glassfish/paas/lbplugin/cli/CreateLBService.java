@@ -39,23 +39,32 @@
  */
 package org.glassfish.paas.lbplugin.cli;
 
+import java.util.HashSet;
+import java.util.Properties;
+import java.util.Set;
+import java.util.logging.Level;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
-import org.glassfish.paas.gfplugin.cli.GlassFishServiceUtil;
-import org.glassfish.paas.lbplugin.LBServiceUtil;
+import org.glassfish.api.admin.CommandLock;
+import org.glassfish.embeddable.CommandResult;
+import org.glassfish.embeddable.CommandRunner;
+import org.glassfish.paas.lbplugin.LBProvisionerFactory;
+import org.glassfish.paas.lbplugin.logger.LBPluginLogger;
 import org.glassfish.paas.orchestrator.provisioning.*;
-
-import static org.glassfish.paas.orchestrator.provisioning.ServiceInfo.State.*;
-
-import org.glassfish.paas.orchestrator.provisioning.ApplicationServerProvisioner;
-
-import static org.glassfish.paas.orchestrator.provisioning.cli.ServiceType.*;
-
-import org.glassfish.paas.orchestrator.provisioning.iaas.CloudProvisioner;
-import org.glassfish.paas.lbplugin.GlassFishLBProvisioner;
-import org.glassfish.paas.orchestrator.provisioning.LBProvisioner;
+import org.glassfish.paas.orchestrator.provisioning.cli.ServiceType.*;
+import org.glassfish.paas.orchestrator.provisioning.cli.ServiceType;
+import org.glassfish.paas.orchestrator.provisioning.cli.ServiceUtil;
+import org.glassfish.virtualization.runtime.VirtualCluster;
+import org.glassfish.virtualization.spi.AllocationConstraints;
+import org.glassfish.virtualization.spi.AllocationPhase;
+import org.glassfish.virtualization.spi.IAAS;
+import org.glassfish.virtualization.spi.PhasedFuture;
+import org.glassfish.virtualization.spi.TemplateCondition;
+import org.glassfish.virtualization.spi.TemplateInstance;
+import org.glassfish.virtualization.spi.TemplateRepository;
+import org.glassfish.virtualization.spi.VirtualMachine;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
@@ -66,132 +75,153 @@ import org.jvnet.hk2.component.PerLookup;
  */
 @Service(name = "_create-lb-service")
 @Scoped(PerLookup.class)
-public class CreateLBService implements AdminCommand {
+@CommandLock(CommandLock.LockType.NONE)
+public class CreateLBService extends BaseLBService implements AdminCommand, Runnable {
 
-    @Param(name = "servicename", primary = true, optional = false)
-    private String serviceName;
+    @Param(name = "waitforcompletion", optional = true, defaultValue = "false")
+    private boolean waitforcompletion;
 
-    @Param(name = "appserver_servicename", optional = true)
-    private String appServerServiceName;
+    @Param(name="templateid", optional=true)
+    private String templateId;
 
-    @Param(name = "_ignore_appserver_association", optional = true, defaultValue = "false")
-    private boolean _ignoreAppServerAssociation;
+    @Param(name="servicecharacteristics", optional=true, separator=':')
+    public Properties serviceCharacteristics;
 
-    @Param(name="appname", optional = true)
-    private String appName;
+    @Param(name="serviceconfigurations", optional=true, separator=':')
+    public Properties serviceConfigurations;
 
-    @Inject
-    private ProvisionerUtil provisionerUtil;
-
-    @Inject
-    private LBServiceUtil lbServiceUtil;
+    @Inject(optional = true) // made it optional for non-virtual scenario to work
+    private TemplateRepository templateRepository;
 
     @Inject
-    private GlassFishServiceUtil gfServiceUtil;
+    private CommandRunner commandRunner;
 
+    @Inject(optional = true) // made it optional for non-virtual scenario to work
+    IAAS iaas;
+
+    @Override
     public void execute(AdminCommandContext context) {
-
         final ActionReport report = context.getActionReport();
-        // Check if the service is already configured.
-        if (lbServiceUtil.isServiceAlreadyConfigured(serviceName, appName,  LOAD_BALANCER)) {
-            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            report.setMessage("Service with name [" + serviceName + "] is already configured.");
-            return;
+
+        LBPluginLogger.getLogger().log(Level.INFO,"_create-lb-service called.");
+
+        if (waitforcompletion) {
+            run();
+        } else {
+            ServiceUtil.getThreadPool().execute(this);
         }
+    }
 
-        String domainName = null;
-        String targetName = null;
 
-        if (!_ignoreAppServerAssociation) {
-            if (!lbServiceUtil.isValidService(appServerServiceName, appName, APPLICATION_SERVER)) {
-                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-                report.setMessage("Invalid AppServer Service name [" + appServerServiceName + "].");
-                return;
-            }
-
-            //domainName = gfServiceUtil.getDomainName(appServerServiceName);
-            //targetName = null;
-            targetName = appServerServiceName;
-
-            /*if (gfServiceUtil.isDomain(appServerServiceName)) {
-                targetName = appServerServiceName;
-            } else*/ if (gfServiceUtil.isCluster(appServerServiceName, appName)) {
-                targetName = gfServiceUtil.getClusterName(appServerServiceName, appName);
-            } /*else if (gfServiceUtil.isStandaloneInstance(appServerServiceName)) {
-                targetName = gfServiceUtil.getStandaloneInstanceName(appServerServiceName);
-            } */else if (gfServiceUtil.isClusteredInstance(appServerServiceName)) {
-                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-                report.setMessage("Invalid AppServer Service name [" + appServerServiceName + "], " +
-                        "clustered instance is not supported");
-                return;
+    @Override
+    public void run() {
+        TemplateInstance matchingTemplate = null;
+        if (templateRepository != null) {
+            if (templateId == null) {
+                // search for matching template based on service characteristics
+                if (serviceCharacteristics != null) {
+                    /**
+                     * TODO :: use templateRepository.get(SearchCriteria) when
+                     * an implementation of SearchCriteria becomes available.
+                     * for now, iterate over all template instances and find the right one.
+                     */
+                    Set<TemplateCondition> andConditions = new HashSet<TemplateCondition>();
+                    andConditions.add(new org.glassfish.virtualization.util.ServiceType(
+                            //org.glassfish.virtualization.util.ServiceType.Type.LB.name()));
+                            serviceCharacteristics.getProperty("service-type")));
+//                    andConditions.add(new VirtualizationType(
+//                            serviceCharacteristics.getProperty("virtualization-type")));
+                    for (TemplateInstance ti : templateRepository.all()) {
+                        boolean allConditionsSatisfied = true;
+                        for (TemplateCondition condition : andConditions) {
+                            if (!ti.satisfies(condition)) {
+                                LBPluginLogger.getLogger().log(Level.INFO,"Matching failed for template : " + ti + " due to condition - " + condition);
+                                allConditionsSatisfied = false;
+                                break;
+                            }
+                        }
+                        if (allConditionsSatisfied) {
+                            LBPluginLogger.getLogger().log(Level.INFO,"Matching template found : " + ti);
+                            matchingTemplate = ti;
+                            break;
+                        }
+                    }
+                    if (matchingTemplate != null) {
+                        templateId = matchingTemplate.getConfig().getName();
+                        LBPluginLogger.getLogger().log(Level.INFO,"Matching template name : " + templateId);
+                    }
+                }
             } else {
-                //Not necessary as we have already completed validation for invalid service. TBS
-                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-                report.setMessage("Invalid AppServer Service name [" + appServerServiceName + "].");
-                return;
+                for (TemplateInstance ti : templateRepository.all()) {
+                    if (ti.getConfig().getName().equals(templateId)) {
+                        matchingTemplate = ti;
+                        break;
+                    }
+                }
             }
         }
 
-        String dasIPAddress = lbServiceUtil.getIPAddress(domainName, appName, APPLICATION_SERVER);
+        if (matchingTemplate != null) {
+            try {
+                CommandResult result = commandRunner.run("create-cluster", new String[]{serviceName});
+                if (result.getExitStatus().equals(CommandResult.ExitStatus.FAILURE)) {
+                    LBPluginLogger.getLogger().log(Level.INFO,"Command create-cluster failed. Unable to create VM for Load-balancer");
+                    throw new RuntimeException("Command create-cluster failed. Unable to create VM for Load-balancer");
+                }
+                
+                ServiceInfo entry = new ServiceInfo();
+                // provision VMs.
+                VirtualCluster vCluster = virtualClusters.byName(serviceName);
 
-        CloudProvisioner cloudProvisioner = provisionerUtil.getCloudProvisioner();
-        String instanceID = cloudProvisioner.createInstance(
-                provisionerUtil.getProperties().getProperty(GlassFishLBProvisioner.LB_IMAGE_ID));
-        String ipAddress = cloudProvisioner.getIPAddress(instanceID);
+                LBPluginLogger.getLogger().log(Level.INFO,"Calling allocate for template ...." + matchingTemplate);
+                PhasedFuture<AllocationPhase, VirtualMachine> future = null;
+                boolean allocateStatus = false;
+                for (int i = 0; i < 3 && !allocateStatus; i++) {
+                    i++;
+                    try {
+                        future = iaas.allocate(new AllocationConstraints(matchingTemplate, vCluster), null);
+                        allocateStatus = true;
+                    } catch (Exception ex) {
+                        if(future != null){
+                            try{
+                                future.cancel(true);
+                            } catch (Exception ex1){
+                            }
+                        }
+                        LBPluginLogger.getLogger().log(Level.INFO,"Allocate failed for load-balancer ... attempt count" + i);
+                        LBPluginLogger.getLogger().log(Level.INFO,"exception",ex);
+                    }
+                }
+                if(!allocateStatus){
+                    throw new RuntimeException("Unable to allocate load-balancer");
+                }
+                LBPluginLogger.getLogger().log(Level.INFO,"Done  allocate for template ...." + matchingTemplate);
+                LBPluginLogger.getLogger().log(Level.INFO,"Calling future.get() for template ...." + matchingTemplate);
+                VirtualMachine vm = future.get();
 
-        LBProvisioner lbProvisioner = provisionerUtil.getLBProvisioner();
+                LBProvisionerFactory.getInstance().getLBProvisioner()
+                        .configureLB(vm);
 
-        lbProvisioner.configureLB(ipAddress);
-
-        if (!_ignoreAppServerAssociation) {
-            lbProvisioner.associateApplicationServerWithLB(ipAddress, dasIPAddress, domainName);
+                // add app-scoped-service config for each vm instance as well.
+                entry = new ServiceInfo();
+                entry.setServiceName(serviceName);
+                entry.setServerType(ServiceType.LOAD_BALANCER.toString());
+                entry.setIpAddress(vm.getAddress());
+                entry.setInstanceId(vm.getName());
+                entry.setState(ServiceInfo.State.NotRunning.toString());
+                entry.setAppName(appName);
+                lbServiceUtil.registerLBInfo(entry);
+            } catch (Throwable ex) {
+                LBPluginLogger.getLogger().log(Level.INFO,"Exception : " + ex);
+                LBPluginLogger.getLogger().log(Level.INFO,"exception",ex);
+                throw new RuntimeException(ex);
+            }
+            return; // we are done provisioning, thanks. Bye...
+        } else {
+            LBPluginLogger.getLogger().log(Level.INFO,"No matching template found .... exiting");
         }
 
-        lbProvisioner.startLB(ipAddress);
-
-        if (!_ignoreAppServerAssociation) {
-            createHttpLBConfig(targetName, dasIPAddress, ipAddress, serviceName);
-        }
-
-        registerLBInfo(instanceID, ipAddress);
-
-        report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
-        report.setMessage("Service with name [" + serviceName + "] is configured successfully.");
+        //TBD return error
     }
 
-    private void registerLBInfo(String instanceID, String ipAddress) {
-        ServiceInfo entry = new ServiceInfo();
-        entry.setInstanceId(instanceID);
-        entry.setIpAddress(ipAddress);
-        entry.setState(Running.toString());
-        entry.setServiceName(serviceName);
-        entry.setAppName(appName);
-        entry.setServerType("load-balancer");
-
-        lbServiceUtil.registerLBInfo(entry);
-    }
-
-
-    private void createHttpLBConfig(String targetName, String dasIPAddress, String ipAddress, String lbConfigName) {
-        ApplicationServerProvisioner asProvisioner = provisionerUtil.getAppServerProvisioner(dasIPAddress);
-        String deviceHost = ipAddress;
-        String command = "create-http-lb";
-        String[] options = new String[]{
-                "--target", targetName,
-                "--devicehost", deviceHost,
-                "--deviceport", "50443",
-                lbConfigName};
-
-        asProvisioner.executeRemoteCommand(command, options);
-
-
-        //apply http-lb-changes to that initial setup is done.
-        command = "apply-http-lb-changes";
-        options = new String[]{
-                lbConfigName
-        };
-        asProvisioner.executeRemoteCommand(command, options);
-        //TODO HACK : executing it twice makes the command succeed.
-        asProvisioner.executeRemoteCommand(command, options);
-    }
 }

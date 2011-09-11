@@ -40,17 +40,21 @@
 
 package org.glassfish.paas.lbplugin;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import org.glassfish.hk2.scopes.Singleton;
+import org.glassfish.paas.orchestrator.config.ApplicationScopedService;
 import org.glassfish.paas.orchestrator.config.Services;
+import org.glassfish.paas.orchestrator.config.Service;
 import org.glassfish.paas.orchestrator.provisioning.ServiceInfo;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceType;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceUtil;
 import org.glassfish.paas.orchestrator.service.ServiceStatus;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.annotations.Service;
 
-@Service
+@org.jvnet.hk2.annotations.Service
 @Scoped(Singleton.class)
 public class LBServiceUtil {
 
@@ -85,11 +89,16 @@ public class LBServiceUtil {
         return serviceUtil.getServices();
     }
 
-    public ServiceStatus getServiceStatus(ServiceInfo entry){
+    public String getInstanceID(String instance, String appName, ServiceType serviceType) {
+        return serviceUtil.getInstanceID(instance, appName, serviceType);
+    }
+
+    public void unregisterLBInfo(String instance, String appName) {
+        serviceUtil.unregisterCloudEntry(instance, appName);
+    }
+
+    public ServiceStatus getServiceStatus(ServiceInfo entry) {
         return serviceUtil.getServiceStatus(entry);
     }
 
-    public String getInstanceID(String serviceName, String appName, ServiceType type) {
-        return serviceUtil.getInstanceID(serviceName, appName, type);
-    }
 }
