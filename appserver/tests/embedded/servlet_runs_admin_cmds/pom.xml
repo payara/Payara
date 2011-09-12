@@ -45,9 +45,9 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.glassfish.tests.embedded.basic</groupId>
-    <artifactId>scatteredarchive</artifactId>
+    <artifactId>servlet_runs_admin_cmds</artifactId>
     <version>3.2-SNAPSHOT</version>
-    <name>Scattered Archive Test</name>
+    <name>Servlet Running Admin Commands using org.glassfish.embeddable.CommandRunner</name>
     <packaging>war</packaging>
     <build>
 	<finalName>servlet_runs_admin_cmds</finalName>
