@@ -197,7 +197,7 @@ public class CreateDerbyService implements AdminCommand, Runnable {
                 entry.setState(ServiceInfo.State.Running.toString());
                 entry.setServiceName(serviceName);
                 entry.setAppName(appName);
-                entry.setServerType("database");
+                entry.setServerType(ServiceType.DATABASE.toString());
 
                 dbServiceUtil.registerDBInfo(entry);
             } catch (Throwable ex) {
@@ -219,7 +219,7 @@ public class CreateDerbyService implements AdminCommand, Runnable {
             entry.setState(ServiceInfo.State.Running.toString());
             entry.setServiceName(serviceName);
             entry.setAppName(appName);
-            entry.setServerType("database");
+            entry.setServerType(ServiceType.DATABASE.toString());
             dbServiceUtil.registerDBInfo(entry);
         }
     }
