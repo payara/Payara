@@ -400,6 +400,9 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                     tempAppInfo.addMetaData(m);
                 }
                 tempAppInfo.setIsJavaEEApp(sortedEngineInfos);
+                // set the flag on the archive to indicate whether it's 
+                // a JavaEE archive or not
+                context.getSource().setExtraData(Boolean.class, tempAppInfo.isJavaEEApp());
                 appRegistry.add(appName, tempAppInfo);
 
                 events.send(new Event<DeploymentContext>(Deployment.DEPLOYMENT_BEFORE_CLASSLOADER_CREATION, context), false);
@@ -410,7 +413,6 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                 }
 
                 notifyLifecycleInterceptorsBefore(ExtendedDeploymentContext.Phase.PREPARE, context);
-
 
                     // this is a first time deployment as opposed as load following an unload event,
                     // we need to create the application info
