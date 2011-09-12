@@ -39,7 +39,7 @@
   -->
 
   <virtualizations>
-      <virtualization name="Native" type="Native">
+      <native-virtualization name="Native" type="Native">
         <template name="Native">
           <template-index value="JavaEE" type="ServiceType"></template-index>
           <template-index value="Native" type="VirtualizationType"></template-index>
@@ -51,5 +51,5 @@
         <server-pool port-name="en0" name="cloud" sub-net="10.132.181.0/24">
           <user></user>
         </server-pool>
-      </virtualization>
+      </native-virtualization>
   </virtualizations>

@@ -67,7 +67,7 @@ import java.util.Map;
  *
  */
 @Service
-public class GroupMembersPopulator implements Startup, IAAS, ConfigListener {
+public class IAASImpl implements Startup, IAAS, ConfigListener {
 
     private final Services services;
     private final Map<String, ServerPool> groups = new HashMap<String, ServerPool>();
@@ -88,10 +88,10 @@ public class GroupMembersPopulator implements Startup, IAAS, ConfigListener {
         return groups.get(groupName);
     }
 
-    public GroupMembersPopulator(@Inject(optional=true) Virtualizations virtualizations,
-                                 @Inject Transactions transactions,
-                                 @Inject ServerEnvironment env,
-                                 @Inject Services services) {
+    public IAASImpl(@Inject(optional = true) Virtualizations virtualizations,
+                    @Inject Transactions transactions,
+                    @Inject ServerEnvironment env,
+                    @Inject Services services) {
 
         this.services = services;
         // first executeAndWait the fping command to populate our arp table.

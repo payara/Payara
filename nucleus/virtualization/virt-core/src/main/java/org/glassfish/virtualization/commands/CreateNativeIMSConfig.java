@@ -38,7 +38,7 @@
  * holder.
  */
 
-package org.glassfish.virtualization;
+package org.glassfish.virtualization.commands;
 
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.module.bootstrap.Populator;
@@ -48,11 +48,9 @@ import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.ServerEnvironment;
-import org.glassfish.api.admin.Supplemental;
 import org.glassfish.config.support.GlassFishConfigBean;
 import org.glassfish.internal.api.ServerContext;
 import org.glassfish.virtualization.config.*;
-import org.glassfish.virtualization.util.RuntimeContext;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
@@ -69,19 +67,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Add virtualization configuration to the configuration.
+ * Add virtualization configuration to the native mode.
  * @author Jerome Dochez
  */
-@Service(name="add-virtualization")
-@Supplemental(on=Supplemental.Timing.Before, value="create-vm-cluster")
+@Service(name="create-ims-config-native")
 @Scoped(PerLookup.class)
-public class AddVirtualizationCapabilities implements AdminCommand {
-
-    @Param
-    String type;
-
-    @Param(optional = true)
-    String emulator=null;
+public class CreateNativeIMSConfig implements AdminCommand {
 
     @Inject
     ServerContext serverContext;
@@ -95,7 +86,7 @@ public class AddVirtualizationCapabilities implements AdminCommand {
     @Inject
     Domain domain;
     
-    final Logger logger = LogDomains.getLogger(AddVirtualizationCapabilities.class, LogDomains.CORE_LOGGER);
+    final Logger logger = LogDomains.getLogger(CreateNativeIMSConfig.class, LogDomains.CORE_LOGGER);
     
     @Override
     public void execute(AdminCommandContext context) {
@@ -119,7 +110,7 @@ public class AddVirtualizationCapabilities implements AdminCommand {
 
         if (virtualizations!=null) {
             for (Virtualization virtualization : virtualizations.getVirtualizations()) {
-                if (virtualization.getName().equals(type)) {
+                if (virtualization.getName().equals("Native")) {
                     // already added, nothing to do anymore.
                     context.getActionReport().setActionExitCode(ActionReport.ExitCode.WARNING);
                     context.getActionReport().setActionDescription("Configuration already present in the domain.xml");
@@ -127,18 +118,16 @@ public class AddVirtualizationCapabilities implements AdminCommand {
                 }
             }
         }
-        final String virtType = type;
-
         // add initial domain.xml configuration.
 
         final long now = System.currentTimeMillis();
         File f = new File(serverContext.getInstallRoot(), "config");
-        String defaultConfigFileName = type + ".xml";
+        String defaultConfigFileName = "Native.xml";
         f = new File(f, defaultConfigFileName);
         URL temp;
         if (!f.exists()) {
             logger.info("Cannot find default virtualization at " + f.getAbsolutePath());
-            temp = getClass().getClassLoader().getResource(virtType + "/ " + defaultConfigFileName);
+            temp = getClass().getClassLoader().getResource( "Native/ " + defaultConfigFileName);
         } else {
             try {
                 temp = f.toURI().toURL();
@@ -188,7 +177,7 @@ public class AddVirtualizationCapabilities implements AdminCommand {
         }
 
         // make room for scripts to the script location.
-        File destDir = new File(env.getConfigDirPath(), virtType);
+        File destDir = new File(env.getConfigDirPath(), "Native");
         if (!destDir.exists()) {
             if (!destDir.mkdirs()) {
                 logger.severe("Cannot create " + destDir);
