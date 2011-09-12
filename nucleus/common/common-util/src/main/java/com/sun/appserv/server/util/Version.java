@@ -49,6 +49,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
 *
@@ -84,15 +86,24 @@ public class Version {
                                 return f.getName().endsWith(".properties") && f.canRead();
                             }   
                     })) {
+                    FileReader fr = null;
                     try {
-                        FileReader fr = new FileReader(f);
+                        fr = new FileReader(f);
                         Properties p = new Properties();
                         p.load(fr);
                         versionProps.add(p);
                         fr.close();
                     } catch (IOException ex) {
                         // ignore files that cannot be read
-                    }                                   
+                    } finally {
+                        if (fr != null) {
+                            try {
+                                fr.close();
+                            } catch (IOException ex) {
+                                // nothing to do
+                            }
+                        }
+                    }                                  
                 }
             }
             // sort the list based on the based-on property.  If a is based on b,
@@ -145,7 +156,7 @@ public class Version {
         String upd = getUpdateVersion();
         String v;
         try {
-            if (min != null & min.length() > 0 && Integer.parseInt(min) >= 0) {
+            if (min != null && min.length() > 0 && Integer.parseInt(min) >= 0) {
                 if (upd != null && upd.length() > 0 && Integer.parseInt(upd) >= 0) {
                     v = maj + "." + min + "." + upd;
                 }
