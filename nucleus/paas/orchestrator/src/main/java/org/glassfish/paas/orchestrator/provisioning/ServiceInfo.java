@@ -42,9 +42,11 @@ package org.glassfish.paas.orchestrator.provisioning;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 
 /**
+ * A subset of a <code>ProvisionedService</code> that is persisted in CPAS'
+ * configuration store.
+ *  
  * @author bhavanishankar@java.net
  */
 public class ServiceInfo {
@@ -59,11 +61,11 @@ public class ServiceInfo {
 
     private String state;
 
-    //not-null when its application scoped service.
+    //not-null when it is an application scoped service.
     private String appName;
 
     // general name-values.
-    Map<String,String> properties = new HashMap();
+    Map<String,String> properties = new HashMap<String, String>();
 
     public static enum State {
         Initializing, NotRunning, Running, Stop_in_progress, Start_in_progress, Delete_in_progress

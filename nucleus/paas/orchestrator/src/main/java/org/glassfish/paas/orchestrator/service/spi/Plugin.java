@@ -1,5 +1,4 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  * Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
  *
@@ -42,33 +41,36 @@ package org.glassfish.paas.orchestrator.service.spi;
 
 import java.util.Set;
 
+import org.glassfish.api.deployment.ApplicationContainer;
 import org.glassfish.api.deployment.DeploymentContext;
-import org.glassfish.paas.orchestrator.config.Service;
+import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.paas.orchestrator.provisioning.ServiceInfo;
+import org.glassfish.paas.orchestrator.service.ServiceType;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceDescription;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceReference;
 import org.jvnet.hk2.annotations.Contract;
 
-import org.glassfish.api.deployment.archive.ReadableArchive;
-import org.glassfish.paas.orchestrator.service.ServiceType;
-import org.glassfish.api.deployment.ApplicationContainer;
-
 /**
- * An SPI to allow the plugging in of multiple service provider implementations.
- * Each Plugin supports a Service of a particular <code>ServiceType</code>
+ * An SPI to allow the adding in of multiple service provider implementations
+ * into the PaaS runtime. Each <code>Plugin</code> supports a Service of a 
+ * particular <code>ServiceType</code>
  * <p/>
  * Each Plugin provides its own implementation of <code>ServiceDescription</code>
  * and <code>ProvisionedService</code>.
  * <p/>
- * XXX: Parsing orchestration.xml
- * XXX: find out how schema.service requirements could become ServiceDefinitions
- * XXX: Implement GlassFishPlugin and learn what would go into GlassFishProvisionedService
- * XXX: Start implementing other plugins(GF, DB, HTTP LB, JMS?)
- * XXX: Orchestrator to use HK2 Services mechanism to discover deployed Plugins.
- * XXX: How can we ensure Cloud sniffer and deployer alone is used in CAS?
- * XXX: Support service-requirements (a lighter-weight vendor-neutral mechanism
- * to specify requirements of an application)
- *
+ * A Plugin for a Service implementation performs the following functions:
+ * <ul>
+ * <b>Service Dependency Discovery</b> 
+ * <li>provides explicit service dependencies from an application to a service<li>
+ * <li>discovers implicit and discovered service dependencies of an application
+ * and helps the orchestrator in finding out the effective set of service 
+ * dependencies of the application<li>
+ * <b>Service Provisioning and Service Association</b>
+ * <li> provisions/decomissions a Service <li>
+ * <li> associates/disassociates a target ProvisionedService from/to a 
+ * source ProvisionedService <li>
+ * </ul>
+ * 
  * @author Sivakumar Thyagarajan
  */
 @Contract
@@ -99,6 +101,8 @@ public interface Plugin<T extends ServiceType> {
      */
     public boolean isReferenceTypeSupported(String referenceType);
 
+    /* SERVICE DEPENDENCY DISCOVERY */
+    
     /**
      * Discover the implicit service references in the orchestration enabled archive.
      * For instance, a orchestration.xml may not explicitly provide a RDBMS ServiceType
@@ -133,7 +137,24 @@ public interface Plugin<T extends ServiceType> {
             String appName, ServiceReference svcRef);
 
     /**
-     * Once the CAS merges all discovered and explicit
+     * OE gets implicit <code>ServiceDescription</code> associated with an 
+     * application from the <code>Plugin</code> through this method, 
+     * if the application does not have explicit <code>ServiceDescription<code>s 
+     * in its services metadata deployment descriptor, for the type supported
+     * by the <code>Plugin</code>.
+     * 
+     * @param cloudArchive The application archive
+     * @param appName The application Name
+     * @return A <code>Set</code> of implicit <code>ServiceDescription</code>s
+     * that this Plugin "implies" for the provided application archive. 
+     */
+    public Set<ServiceDescription> getImplicitServiceDescriptions(
+            ReadableArchive cloudArchive, String appName);
+    
+    /* SERVICE PROVISIONING */
+    
+    /**
+     * Once the CPAS merges all discovered and explicit
      * <code>ServiceDefinitions</code>s, it provisions the required Services
      * through the <code>Plugin</code>.
      *
@@ -141,32 +162,121 @@ public interface Plugin<T extends ServiceType> {
      */
     public ProvisionedService provisionService(ServiceDescription serviceDescription, DeploymentContext dc);
 
+    /**
+     * When CPAS is restarted, the CPAS uses this method to get the 
+     * <code>ProvisionedService</code> that were provisioned earlier 
+     * through the plugin.
+     * 
+     * @param serviceDescription <code>ServiceDescription</code> for the
+     * service dependency.
+     * @param serviceInfo The <code>ServiceInfo</code> persisted in the 
+     * configuration store for the <code>ProvisionedService</code>
+     * 
+     * @return A <code>ProvisionedService</code> instance that represents
+     * details about the provisioned service.
+     */
     public ProvisionedService getProvisionedService(ServiceDescription serviceDescription, ServiceInfo serviceInfo);
 
+    /**
+     * During undeployment of an application, OE decommissions
+     * the Services that are scoped to the application. The Orchestrator uses
+     * this method to let the plugin decommission a Service provisioned by it.
+     * The plugin stops the Service and then performs any cleanup required
+     * for a service to be decomissioned. It should be noted that the state of
+     * the Service may be lost as part of the decomissioning process. [for 
+     * instance the data in a Database may be lost during application 
+     * undeployment unless the user explicitly indicates that undeployment
+     * must retain prior state or the Service provider implementation provides
+     * a mechanism to persist the State before destroying the Service.]
+     *  
+     * @param serviceDescription The <code>ServiceDescription</code> associated
+     * with the provisioned service that needs to be decommissioned.
+     * @param dc The <code>DeploymentContext</code> associated with the
+     * undeployment operation that initiated this decomissioning process.
+     * 
+     * @return true if the Service was successful unprovisioned, false otherwise.
+     */
     public boolean unprovisionService(ServiceDescription serviceDescription, DeploymentContext dc);
 
-    public void dissociateServices(ProvisionedService serviceConsumer, ServiceReference svcRef,
-                                   ProvisionedService serviceProvider, boolean beforeUndeploy,
-                                   DeploymentContext dc);
-
+    /* SERVICE ASSOCIATION/BINDING */
+    
     /**
      * A <code>ProvisionedService</code> for a <code>ServiceReference</code> is
-     * associated with each other through this method.
+     * associated with another <code>ProvisionedService</code> through this method.
+     * See the section on "Service Association/Binding" at 
+     * http://wikis.sun.com/display/GlassFish/3.2+Service+Orchestration+One+Pager
+     * for more information.
      *
-     * @param beforeDeployment indicates if this association is happening before the
-     *                         deployment of the application.
+     * @param serviceConsumer The "target" <code>ProvisionedService</code>
+     * @param svcRef The <code>ServiceReference</code> that binds the "source"
+     * and "target" <code>ServiceReference</code>s.
+     * @param serviceProvider The "source" <code>ProvisionedService</code>
+     * @param beforeDeployment Indicates if this association is happening before
+     * the deployment of the application
+     * @param dc The <code>DeploymentContext</code> associated with the application
+     * deployment or enablement that caused this association
+     *                         
      */
     public void associateServices(ProvisionedService serviceConsumer, ServiceReference svcRef,
                                   ProvisionedService serviceProvider, boolean beforeDeployment,
                                   DeploymentContext dc);
 
     /**
-     * Deploy the orchestration-enabled archive
+     * A <code>ProvisionedService</code> for a <code>ServiceReference</code> is
+     * dis-associated from another <code>ProvisionedService</code> through this method.
+     * 
+     * See the section on "Service Association/Binding" at 
+     * http://wikis.sun.com/display/GlassFish/3.2+Service+Orchestration+One+Pager
+     * for more information.
+
+     * @param serviceConsumer The "target" <code>ProvisionedService</code>
+     * @param svcRef The <code>ServiceReference</code> that bound the "source"
+     * and "target" <code>ServiceReference</code>s.
+     * @param serviceProvider The "source" <code>ProvisionedService</code>
+     * @param beforeUndeploy Indicates if this dis-association is happening before
+     * the deployment of the application
+     * @param dc The <code>DeploymentContext</code> associated with the application
+     * undeployment or disablement that caused this dis-association
+     */
+    public void dissociateServices(ProvisionedService serviceConsumer, ServiceReference svcRef,
+                                   ProvisionedService serviceProvider, boolean beforeUndeploy,
+                                   DeploymentContext dc);
+    
+    /**
+     * Deploy the orchestration-enabled archive. 
+     * 
+     * At present, the deployment to the provisioned GlassFish Service
+     * is performed by the deployment infrastructure in CPAS/DAS. In the future,
+     * when we support non-Java EE archives that the deployment infrastructure
+     * cannot control, OE would invoke this method in the plugin to initiate
+     * deployment of the archive in that container service.
      */
     public ApplicationContainer deploy(ReadableArchive cloudArchive);
 
+    /* SERVICE LIFECYCLE MANAGEMENT */
+    
+    /**
+     * Start a Service that had been provisioned earlier and is now Stopped.
+     * 
+     * @param serviceDescription The <code>ServiceDescription</code> of the 
+     * Service that needs to be started
+     * @param serviceInfo The <code>ServiceInfo</code> that captures the prior 
+     * provisioning state of the Service 
+     * 
+     * @return A reference to the started Service.
+     */
     public ProvisionedService startService(ServiceDescription serviceDescription, ServiceInfo serviceInfo);
 
+    /**
+     * Stop a <code>ProvisionedService</code>.
+     * 
+     * @param serviceDescription The <code>ServiceDescription</code> of the 
+     * Service that needs to be stopped
+     * @param serviceInfo The <code>ServiceInfo</code> that captures the 
+     * provisioned state of the Service 
+     * 
+     * @return True if the Service was successfully stopped, False otherwise.
+     */
     public boolean stopService(ServiceDescription serviceDescription, ServiceInfo serviceInfo);
 
     // The methods that follow are not relevant for the first prototype
@@ -194,8 +304,5 @@ public interface Plugin<T extends ServiceType> {
      */
     public boolean reconfigureServices(ProvisionedService oldPS,
                                        ProvisionedService newPS);
-
-    public Set<ServiceDescription> getImplicitServiceDescriptions(
-            ReadableArchive cloudArchive, String appName);
 
 }

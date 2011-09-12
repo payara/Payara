@@ -40,16 +40,20 @@
 package org.glassfish.paas.orchestrator.service;
 
 /**
- * Represents a type of Service that is supported by GlassFish PaaS.
+ * Represents a type of Service that is supported by the GlassFish PaaS runtime.
  *
  * @author Sivakumar Thyagarajan
  */
 public abstract class ServiceType {
 
-
+    /**
+     * Provides a user-friendly name for the <code>ServiceType</code>
+     * that could be used by IDE plugin and admin console.
+     * 
+     * @return
+     */
     public abstract String getName();
 
-    // TODO :: Siva should review/fix this.
     @Override
     public boolean equals(Object other) {
         if(other == null){

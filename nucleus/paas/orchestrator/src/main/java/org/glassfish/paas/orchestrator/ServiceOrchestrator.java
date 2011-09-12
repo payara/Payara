@@ -40,17 +40,89 @@
 
 package org.glassfish.paas.orchestrator;
 
-import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceMetadata;
+import org.glassfish.virtualization.spi.AllocationStrategy;
 import org.jvnet.hk2.annotations.Contract;
+
+/**
+ * The Orchestration Engine (OE) component in a PaaS runtime 
+ * performs the following functions during deployment of an archive.
+ * 
+ * <ul>
+ * <li>Service Dependency Discovery</li>
+ * <li>Service Provisioning</li>
+ * <li>Service Association/Binding</li>
+ * <li>Application Deployment</li>
+ * </ul>
+ * 
+ * The Orchestrator performs these functions through the use of Service implementation
+ * specific Service Provisioning Engines (SPEs)
+ */
 
 @Contract
 public interface ServiceOrchestrator {
+    
+    /**
+     * Deploys an application archive into the PaaS runtime.
+     * 
+     * XXX: This is currently used by the cloud-deploy command. The deploy
+     * command integration is through <code>ApplicationLifecycleInterceptor</code>
+     * and hence this can be removed later once we move to the deploy 
+     * command fully.
+     * 
+     * @param appName the name of the application as it should be referenced
+     * in the PaaS console
+     * @param cloudArchive the application archive 
+     */
     public void deployApplication(String appName, ReadableArchive cloudArchive);
-    public void provisionServicesForApplication(String appName, ReadableArchive archive, DeploymentContext dc);
-    //TODO temporary flag to use "cloud-deploy" command.
+    
+    
+    /**
+     * A temporary flag/hack used by "cloud-deploy" command, to indicate that
+     * the deployment is cloud-deploy scheme and hence may not have access to
+     * a <code>DeploymentContext</code>.
+     * 
+     * XXX: This is currently used by the cloud-deploy command. The deploy
+     * command integration is through <code>ApplicationLifecycleInterceptor</code>
+     * and hence this can be removed later once we move to the deploy 
+     * command fully.
+     * 
+     * @param usingDeployService true if the deployment is happening through
+     * the cloud-deploy command, false otherwise.
+     */
     public void setUsingDeployService(boolean usingDeployService);
+    
+    /**
+     * Provides the <code>ServiceMetadata</code> associated with an application
+     * archive. This is used by GUI and the IDE plugin to get the service
+     * dependencies and default <code>ServiceDescription</code>s associated
+     * that the OE and SPEs have discovered for the provided application archive.
+     * 
+     * @param archive Application archive
+     * @return The <code>ServiceMetadata</code> of the application discovered
+     * by OE and SPEs.
+     */
     public ServiceMetadata getServices(ReadableArchive archive);
+    
+    /**
+     * Scales the size of a Service up or down as per the provided scalingFactor.
+     * The Cloud Elasticity Manager(CEM) component uses this method to perform
+     * auto-scaling of Services (GlassFish Cluster etc) based on user-defined
+     * alerts and alarms.
+     * 
+     * @param appName Name of the application
+     * @param svcName Names of the service to be scaled
+     * @param scaleCount Number of units of the Service that needs to be scaled.
+     * A positive number for scaling up and a negative number for scaling down.
+     * @param allocStrategy The allocationStrategy that needs to be utilized
+     * to scale the Service. The allocationStrategy implementation that is 
+     * provided could be used to spawn a new instance in a less-loaded/underutilized
+     * machine in the <code>ServerPool</code>. This could be null, if the default
+     * allocation strategy needs to be employed.
+     * @return true if the scaling operation was successful, and false otherwise
+     */
+    public boolean scaleService(String appName, String svcName, 
+            int scaleCount, AllocationStrategy allocStrategy);
 
 }

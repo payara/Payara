@@ -40,13 +40,18 @@
 
 package org.glassfish.paas.orchestrator;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.sun.enterprise.config.serverbeans.Domain;
 import org.glassfish.api.admin.AdminCommandLock;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.deployment.DeploymentContext;
@@ -56,15 +61,18 @@ import org.glassfish.internal.deployment.ApplicationLifecycleInterceptor;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
 import org.glassfish.paas.orchestrator.provisioning.ServiceInfo;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceUtil;
-import org.glassfish.paas.orchestrator.service.metadata.ServiceReference;
 import org.glassfish.paas.orchestrator.service.ServiceType;
-import org.glassfish.paas.orchestrator.service.metadata.ServiceMetadata;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceDescription;
+import org.glassfish.paas.orchestrator.service.metadata.ServiceMetadata;
+import org.glassfish.paas.orchestrator.service.metadata.ServiceReference;
 import org.glassfish.paas.orchestrator.service.spi.Plugin;
 import org.glassfish.paas.orchestrator.service.spi.ProvisionedService;
 import org.glassfish.virtualization.config.Virtualizations;
+import org.glassfish.virtualization.spi.AllocationStrategy;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.component.Habitat;
+
+import com.sun.enterprise.config.serverbeans.Domain;
 
 @org.jvnet.hk2.annotations.Service
 public class ServiceOrchestratorImpl implements ServiceOrchestrator, ApplicationLifecycleInterceptor {
@@ -95,7 +103,15 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator, Application
     }
 
 
-    public void provisionServicesForApplication(String appName, ReadableArchive archive, DeploymentContext dc) {
+    /**
+     * Discover the dependencies of the application and provision the various 
+     * Services that are needed by the application.
+     * 
+     * @param appName Application Name
+     * @param archive Application Archive
+     * @param dc DeploymentContext associated with the current deployment operation
+     */
+    private void provisionServicesForApplication(String appName, ReadableArchive archive, DeploymentContext dc) {
         logger.entering(getClass().getName(), "provisionServicesForApplication");
         //Get all plugins installed in this runtime
         Set<Plugin> installedPlugins = getPlugins();
@@ -220,7 +236,7 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator, Application
 
         //1.2 Get implicit service-definitions (for instance a war is deployed, and it has not
         //specified a javaee service-definition in its orchestration.xml, the PaaS runtime
-        //through the GlassFish plugin that a default javaee service-definition
+        //discovers through the GlassFish plugin that a default javaee service-definition
         //is implied
         for (Plugin svcPlugin : installedPlugins) {
             if (svcPlugin.handles(archive)) {
@@ -538,7 +554,7 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator, Application
     }
 
 
-    private Plugin getPluginForServiceType(Set<Plugin> installedPlugins, String serviceType) {
+    private Plugin<?> getPluginForServiceType(Set<Plugin> installedPlugins, String serviceType) {
         //XXX: for now assume that there is one plugin per servicetype
         //and choose the first plugin that handles this service type.
         //in the future, need to handle conflicts
@@ -739,4 +755,16 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator, Application
     private boolean isOrchestrationEnabled(){
         return isVirtualizationEnabled() || Boolean.getBoolean("org.glassfish.paas.orchestrator.enabled");
     }
+
+
+    @Override
+    public boolean scaleService(String appName, String svcName,
+            int scaleCount, AllocationStrategy allocStrategy) {
+        //XXX: Dummy implementation for now.
+        System.out.println("Scaling Service " + svcName + " for Application " 
+                                + appName + "by " + scaleCount + "instances");
+        return true;
+    }
+
+
 }

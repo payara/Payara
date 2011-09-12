@@ -62,6 +62,18 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
+/**
+ * Returns the service metadata associated with an application archive.
+ * This internal command is used by the GUI (cloud console) and the IDE 
+ * plugin to get the service-dependencies and detailed <code>ServiceDescription</code>s 
+ * associated that the OE and SPEs have discovered for the 
+ * user provided application archive.
+ * 
+ * This command runs on CPAS and does not acquire any lock as there is
+ * no state modified by the command. 
+ * 
+ * @author Jagadish Ramu
+ */
 @Service(name = "get-service-metadata")
 @Scoped(PerLookup.class)
 @ExecuteOn(RuntimeType.DAS)
