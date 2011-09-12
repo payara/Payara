@@ -88,9 +88,12 @@ public class GetApplicationLaunchURLsCommand implements AdminCommand {
         ActionReport report = context.getActionReport();
         Logger logger = context.getLogger();
         ActionReport.MessagePart part = report.getTopMessagePart();
+        part.setMessage("A");
         List<URL> launchURLs = getLaunchURLInformation(appname, logger);
+        int j = 0;
         for (URL url : launchURLs) {
             ActionReport.MessagePart childPart = part.addChild();
+            childPart.setMessage(Integer.toString(j++));
             childPart.addProperty(DeploymentProperties.PROTOCOL,
                 url.getProtocol());
             childPart.addProperty(DeploymentProperties.HOST,
