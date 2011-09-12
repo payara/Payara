@@ -144,7 +144,7 @@ public class CreateGlassFishService implements AdminCommand, Runnable {
                 serviceName.substring(0, serviceName.indexOf(".")) : serviceName;
 */
         instanceCount = instanceCount <= 0 ? Integer.parseInt(
-                serviceConfigurations.getProperty("max.clustersize")) : instanceCount;
+                serviceConfigurations.getProperty("min.clustersize")) : instanceCount;
         
         if (instanceCount >= 0) {
             clusterName = serviceName.indexOf(".") > -1 ?
@@ -282,12 +282,12 @@ public class CreateGlassFishService implements AdminCommand, Runnable {
 
                 // provision VMs.
                 VirtualCluster vCluster = virtualClusters.byName(serviceName);
-                String maxClusterSize = serviceConfigurations.getProperty("max.clustersize");
-                int max = maxClusterSize != null ? Integer.parseInt(maxClusterSize) : 0;
+                String minClusterSize = serviceConfigurations.getProperty("min.clustersize");
+                int min = minClusterSize != null ? Integer.parseInt(minClusterSize) : 0;
                 List<PhasedFuture<AllocationPhase, VirtualMachine>> futures =
                         new ArrayList<PhasedFuture<AllocationPhase, VirtualMachine>>();
 
-                for (int i = 0; i < max; i++) {
+                for (int i = 0; i < min; i++) {
                     PhasedFuture<AllocationPhase, VirtualMachine> future =
                             iaas.allocate(new AllocationConstraints(matchingTemplate, vCluster), null);
                     futures.add(future);

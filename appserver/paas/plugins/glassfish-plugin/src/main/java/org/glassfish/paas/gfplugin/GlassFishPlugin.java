@@ -216,7 +216,7 @@ public class GlassFishPlugin implements Plugin<JavaEEServiceType> {
         } else {
             // TODO :: remove this else block...in an ideal world we should not land up here....
             result = commandRunner.run("_create-glassfish-service",
-                    "--instancecount=" + serviceDescription.getConfiguration("max.clustersize"),
+                    "--instancecount=" + serviceDescription.getConfiguration("min.clustersize"),
                     "--waitforcompletion=true", appNameParam, serviceName);
         }
 
@@ -353,7 +353,8 @@ public class GlassFishPlugin implements Plugin<JavaEEServiceType> {
     public void associateServices(ProvisionedService serviceConsumer, ServiceReference svcRef,
                                   ProvisionedService serviceProvider, boolean beforeDeployment, DeploymentContext dc) {
 //        if (provisionedSvc instanceof DerbyProvisionedService) {
-        if (svcRef.getServiceRefType().equals("javax.sql.DataSource")) {
+        if (svcRef.getServiceRefType().equals("javax.sql.DataSource") && 
+	    serviceProvider.getServiceType().toString().equals("Database")) {
 
             if (!beforeDeployment) return;
 
@@ -543,8 +544,8 @@ public class GlassFishPlugin implements Plugin<JavaEEServiceType> {
 //            characteristics.add(new Property("service-product-name", "GlassFish"));
 
             List<Property> configurations = new ArrayList<Property>();
-            configurations.add(new Property("min.clustersize", "1"));
-            configurations.add(new Property("max.clustersize", "2"));
+            configurations.add(new Property("min.clustersize", "2"));
+            configurations.add(new Property("max.clustersize", "4"));
 
             //we append -service in the service-name so that cluster-name and app-name
             //are not same. If they are same, delete-virtual-cluster gets initiated and fails.
