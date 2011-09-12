@@ -1623,14 +1623,6 @@ public abstract class Archivist<T extends RootDeploymentDescriptor> {
             throws IOException {
 
         Enumeration entries = in.entries();
-        // we need to add the list of existing entries in the output
-        // archive to the list of files to ignore to avoid any collision
-        for (Enumeration outEntriesItr = out.entries(); outEntriesItr.hasMoreElements();) {
-            if (ignoreList == null) {
-                ignoreList = new Vector();
-            }
-            ignoreList.add(outEntriesItr.nextElement());
-        }
         if (entries != null) {
             for (; entries.hasMoreElements();) {
                 String anEntry = (String) entries.nextElement();
