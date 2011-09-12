@@ -268,67 +268,7 @@ public class ProviderUtil {
         } else {
             return "";
         }
-
-//        return result;
     }
-
-//    static protected String getHtmlRespresentationsForCommand(String command,
-//            String commandMethod, String commandDisplayName, UriInfo uriInfo) {
-//        return getHtmlRespresentationsForCommand(command, commandMethod,
-//            commandDisplayName, uriInfo, true);
-//    }
-
-//
-//    static protected String getHtmlRespresentationsForCommand(String command,
-//            String commandMethod, String commandDisplayName, UriInfo uriInfo,
-//                boolean displayId) {
-//        String result ="";
-//        if ((command != null) && (!command.equals(""))) {
-//            ResourceUtil resourceUtil = new ResourceUtil();
-//            MethodMetaData methodMetaData = resourceUtil.getMethodMetaData(
-//            command, RestService.getHabitat(), RestService.logger);
-//            Set<String> parameters = methodMetaData.parameters();
-//            Iterator<String> iterator = parameters.iterator();
-//            String parameter;
-//            ParameterMetaData parameterMetaData;
-//            while (iterator.hasNext()) {
-//                parameter = iterator.next();
-//                if (!(parameter.equals("id") && (!displayId))) { //do not display id in case of command resources. displayId = false for command resources.
-//                     if ((!commandMethod.equals("delete")) ||                                //in case of delete operation(command),
-//                        ((commandMethod.equals("delete")) && (!parameter.equals("id")))) {  //do not  display/provide id attribute.
-//                        parameterMetaData = methodMetaData.getParameterMetaData(parameter);
-//                        result = result +
-//                            getHtmlRespresentationForParameter(parameter, parameterMetaData);
-//                    }
-//                }
-//            }
-//
-//            //Fix to diplay component for commands with 0 arguments.
-//            //For example, rotate-log or restart.
-//            if (result.equals("")) {
-//                result = " ";
-//            }
-//
-//        }
-//
-//        if (!result.equals("")) {
-//            result = "<div><form action=\"" + uriInfo.getAbsolutePath().toString() +
-//                "\" method=\"" + /*commandMethod*/"post" + "\">" +  //hack-1 : support delete method for html
-//                "<dl>" + result;                       //hardcode "post" instead of commandMethod which chould be post or delete.
-//
-//            //hack-1 : support delete method for html
-//            //add hidden field
-//            if(commandMethod.equals("delete")) {
-//                result = result +
-//                    "<input name=\"operation\" value=\"__deleteoperation\" type=\"hidden\">";
-//            }
-//
-//            result = result + "<dt class=\"button\"></dt><dd class=\"button\"><input value=\"" + commandDisplayName + "\" type=\"submit\"></dd>";
-//            result = result + "</dl></form></div>";
-//        }
-//
-//        return result;
-//    }
 
     static protected String getHtmlRespresentationsForCommand(MethodMetaData methodMetaData, String commandMethod,
                                                               String commandDisplayName, UriInfo uriInfo) {
@@ -623,26 +563,5 @@ public class ProviderUtil {
     private static String getInternalStyleSheet(String baseUri) {
 
         return " <link rel=\"stylesheet\" type=\"text/css\" href=\""+baseUri+"static/std.css\" />";
-       /* String result = "<style type=\"text/css\">";
-        result = result + "body {";
-        result = result + "font-size:75%;font-family:verdana,arial,'sans serif';";
-        result = result + "background-repeat:repeat-x;background-color:#F0F0F0;";
-        result = result + "color:#303030;";
-        result = result + "margin:60px;margin-top:20px;margin-bottom:20px;margin-right:60px;margin-left:60px;";
-        result = result + "}";
-        result = result + "h1 {font-size:200%;background-color:#E0E0E0}";
-        result = result + "h2 {font-size:140%;background-color:#E8E8E8}";
-        result = result + "h3 {font-size:110%;background-color:#E8E8E8}";
-        result = result + "h1.mainheader {color:#101010;font-size:200%;background-color:#D8D8D8;text-align:center}";
-        result = result + "a:link {color:#000080;}";
-        result = result + "a:hover {color:red;}";
-        result = result + "input[type=\"text\"] {background-color:#F8F8F8;border-style:inset;width:350px}";
-        result = result + "dl {position: relative;width:500px}";
-        result = result + "dt {clear: both;float:left;width: 210px;padding: 4px 0 2px 0;text-align:left}";
-        result = result + "dd {float: left;width: 200px;margin: 0 0 8px 0;padding-left: 6px;}";
-        result = result + ".separator{clear:both}";
-        result = result + "td {vertical-align: top}";
-        result = result + "</style>";
-        return result;*/
     }
 }
