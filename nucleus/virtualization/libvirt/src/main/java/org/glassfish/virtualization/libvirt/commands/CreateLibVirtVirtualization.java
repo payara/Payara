@@ -62,7 +62,7 @@ import java.beans.PropertyVetoException;
  * Creates the default libvirt virtualization configuration
  * @author Jerome Dochez
  */
-@Service(name="add-libvirt-virtualization")
+@Service(name="create-ims-config-libvirt")
 @Scoped(PerLookup.class)
 public class CreateLibVirtVirtualization implements AdminCommand {
 
