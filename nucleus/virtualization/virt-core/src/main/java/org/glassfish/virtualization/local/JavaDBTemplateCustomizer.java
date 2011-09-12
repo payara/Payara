@@ -72,7 +72,6 @@ public class JavaDBTemplateCustomizer implements TemplateCustomizer {
 
     @Override
     public void start(VirtualMachine virtualMachine) {
-        ActionReport report = services.forContract(ActionReport.class).named("plain").get();
        // this line below needs to come from the template...
         String installDir = virtualMachine.getProperty(VirtualMachine.PropertyName.INSTALL_DIR);
         String[] args = {installDir + "/glassfish/bin/asadmin" , "start-database"};

@@ -131,6 +131,7 @@ public class LocalServerPool implements ServerPool {
         PhasedFuture<AllocationPhase, VirtualMachine> future =
                 new ListenableFutureImpl<AllocationPhase, VirtualMachine>(latch, vm, source);
         template.getCustomizer().customize(cluster, vm);
+        vm.start();
         latch.countDown();
         return future;
     }
