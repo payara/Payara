@@ -128,24 +128,6 @@ public class SystemPropertiesCliResource extends TemplateExecCommand {
         Map<String, Map<String, String>> properties = new TreeMap<String, Map<String, String>>();
 
         RestActionReporter actionReport = new RestActionReporter();
-
-        Property domainProp = domain.getProperty("administrative.domain.name");
-        String domainName = domainProp.getValue();
-        SystemPropertyBag spb = null;
-        String target = getEntity().attribute("name");
-
-        if ("domain".equals(target) || target.equals(domainName)) {
-            spb = domain;
-        } else {
-            spb = domain.getConfigNamed(target);
-            if (spb == null) {
-                spb = domain.getClusterNamed(target);
-                if (spb == null) {
-                    spb = domain.getServerNamed(target);
-                }
-            }
-        }
-
         getSystemProperties(properties, getEntity(), false);
 
         actionReport.getExtraProperties().put("systemProperties", new ArrayList(properties.values()));

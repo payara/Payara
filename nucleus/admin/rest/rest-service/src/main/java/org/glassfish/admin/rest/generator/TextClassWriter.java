@@ -66,7 +66,10 @@ public class TextClassWriter implements ClassWriter {
     public TextClassWriter(Habitat habitat,File generationDir, String className, String baseClassName, String resourcePath) throws IOException {
         this.habitat = habitat;
         File file = new File(generationDir, className + ".java");
-        file.createNewFile();
+        boolean success = file.createNewFile();
+        if (!success) {
+            throw new IOException("Unable to create file: " + file.getAbsolutePath()); //i18n
+        }
         FileWriter fstream = new FileWriter(file);
         writer = new BufferedWriter(fstream);
 

@@ -135,7 +135,7 @@ public class SessionManager {
         /** IP address of client as obtained from Grizzly request */
         private String clientAddress;
         private long lastAccessedTime = System.currentTimeMillis();
-        private final String DISABLE_REMOTE_ADDRESS_VALIDATION_PROPERTY_NAME = "org.glassfish.admin.rest.disable.remote.address.validation";
+        private final static String DISABLE_REMOTE_ADDRESS_VALIDATION_PROPERTY_NAME = "org.glassfish.admin.rest.disable.remote.address.validation";
         private final boolean disableRemoteAddressValidation = Boolean.getBoolean(DISABLE_REMOTE_ADDRESS_VALIDATION_PROPERTY_NAME);
 
         public SessionData(String sessionId, Request req) {
@@ -149,7 +149,7 @@ public class SessionManager {
             long inactiveSessionLifeTime = 30 /*mins*/ * 60 /*secs/min*/ * 1000 /*milis/seconds*/;
             RestConfig restConfig = ResourceUtil.getRestConfig(habitat);
             if (restConfig != null) {
-                inactiveSessionLifeTime = Integer.parseInt(restConfig.getSessionTokenTimeout()) * 60000; // minutes * 60 seconds * 1000 millis
+                inactiveSessionLifeTime = Integer.parseInt(restConfig.getSessionTokenTimeout()) * 60000L; // minutes * 60 seconds * 1000 millis
             }
             return lastAccessedTime + inactiveSessionLifeTime > System.currentTimeMillis();
         }

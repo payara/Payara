@@ -41,6 +41,8 @@
 package org.glassfish.admin.rest.provider;
 
 import com.sun.enterprise.v3.common.ActionReporter;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -51,6 +53,8 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.ext.Provider;
 import java.lang.reflect.Field;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.*;
 import org.glassfish.admin.rest.utils.xml.RestActionReporter;
 
@@ -193,14 +197,21 @@ public class ActionReportResultJsonProvider extends BaseProvider<ActionReportRes
         return result;
     }
 
-    protected <T> T getFieldValue (ActionReporter ar, String name, T type) {
-        try {
-            Class<?> clazz = ar.getClass().getSuperclass();
-            Field field = clazz.getDeclaredField(name);
-            field.setAccessible(true);
-            return (T)field.get(ar);
-        } catch (Exception ex) {
-            throw new RuntimeException(ex);
-        }
+    protected <T> T getFieldValue(final ActionReporter ar, final String name, final T type) {
+        return AccessController.doPrivileged(new PrivilegedAction<T>() {
+            @Override
+            public T run() {
+                T value = null;
+                try {
+                    final Class<?> clazz = ar.getClass().getSuperclass();
+                    final Field field = clazz.getDeclaredField(name);
+                    field.setAccessible(true);
+                    value = (T) field.get(ar);
+                } catch (Exception ex) {
+                    throw new RuntimeException(ex);
+                }
+                return value;
+            }
+        });
     }
 }

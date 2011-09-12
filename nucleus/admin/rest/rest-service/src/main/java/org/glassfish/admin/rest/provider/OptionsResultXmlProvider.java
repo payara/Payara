@@ -174,9 +174,9 @@ public class OptionsResultXmlProvider extends BaseProvider<OptionsResult> {
 
     //get xml representation for the given parameter
     private String getParameter(String parameter, ParameterMetaData parameterMetaData, String indent) {
-        String result = "\n" + indent;
+        StringBuilder result = new StringBuilder("\n" + indent);
 
-        result = result + "<" + parameter;
+        result.append("<").append(parameter);
 
         Set<String> attributes = parameterMetaData.attributes();
         Iterator<String> iterator = attributes.iterator();
@@ -185,10 +185,10 @@ public class OptionsResultXmlProvider extends BaseProvider<OptionsResult> {
            attributeName = iterator.next();
            String attributeValue =
                parameterMetaData.getAttributeValue(attributeName);
-           result = result + getAttribute(attributeName, attributeValue);
+           result.append(getAttribute(attributeName, attributeValue));
         }
-        result = result + "/>";
-        return result;
+        result.append("/>");
+        return result.toString();
     }
 
 

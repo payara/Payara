@@ -98,18 +98,21 @@ public class ClientGeneratorBaseResource {
 
     @GET
     public String get(@QueryParam("outputDir")String outputDir) {
+        String retVal = "Code Generation done at : " + outputDir + "\n";
         if(outputDir == null) {
             outputDir = DEFAULT_OUTPUT_DIR;
         }
         baseDirectory = new File(outputDir);
-        baseDirectory.mkdirs();
-        String retVal = "Code Generation done at : " + outputDir + "\n";
-
-        try {
-            generateClasses();
-        } catch (Exception ex) {
-            Logger.getLogger(GeneratorResource.class.getName()).log(Level.SEVERE, null, ex);
-            retVal = "Exception encountered during generation process: " + ex.toString() + "\nPlease look at server.log for more information.";
+        boolean success = baseDirectory.mkdirs();
+        if (success) {
+            try {
+                generateClasses();
+            } catch (Exception ex) {
+                Logger.getLogger(GeneratorResource.class.getName()).log(Level.SEVERE, null, ex);
+                retVal = "Exception encountered during generation process: " + ex.toString() + "\nPlease look at server.log for more information."; //i18n
+            }
+        } else {
+            retVal = "Unable to create outout directory"; // i18n
         }
         return retVal;
     }
@@ -135,13 +138,21 @@ public class ClientGeneratorBaseResource {
 
     protected void writeClassFile(String className, StringBuilder source) {
         File classFile = new File(baseDirectory, className + ".java");
-
+        BufferedWriter bw = null;
+                
         try {
-            BufferedWriter bw = new BufferedWriter(new FileWriter(classFile));
+            bw = new BufferedWriter(new FileWriter(classFile));
             bw.write(source.toString());
-            bw.close();
         } catch (IOException ioe) {
             throw new RuntimeException(ioe);
+        } finally {
+            if (bw != null) {
+                try {
+                    bw.close();
+                } catch (IOException ex) {
+                    Logger.getLogger(ClientGeneratorBaseResource.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
         }
     }
 
@@ -529,22 +540,22 @@ public class ClientGeneratorBaseResource {
     }
 
     private String getBeanName(String elementName) {
-        String ret = "";
+        StringBuilder ret = new StringBuilder();
         boolean nextisUpper = true;
         for (int i = 0; i < elementName.length(); i++) {
             if (nextisUpper == true) {
-                ret = ret + elementName.substring(i, i + 1).toUpperCase(Locale.US);
+                ret.append(elementName.substring(i, i + 1).toUpperCase(Locale.US));
                 nextisUpper = false;
             } else {
                 if (elementName.charAt(i) == '-') {
                     nextisUpper = true;
                 } else {
                     nextisUpper = false;
-                    ret = ret + elementName.substring(i, i + 1);
+                    ret.append(elementName.substring(i, i + 1));
                 }
             }
         }
-        return ret;
+        return ret.toString();
     }
 
     private boolean alreadyGenerated(String className) {

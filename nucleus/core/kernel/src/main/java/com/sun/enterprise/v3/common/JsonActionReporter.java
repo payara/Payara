@@ -120,7 +120,8 @@ public class JsonActionReporter extends ActionReporter {
         if (props == null || props.size() == 0) {
             return;
         }
-        String result = "," + quote("properties") + " : {";
+        StringBuilder result = new StringBuilder(",");
+        result.append(quote("properties")).append(" : {");
         String sep = "";
         for (Map.Entry entry : props.entrySet()) {
             String line = quote("" + entry.getKey()) + " : ";
@@ -132,50 +133,50 @@ public class JsonActionReporter extends ActionReporter {
             } else {
                 line += quote("" + value.toString());
             }
-            result += sep + line;
+            result.append(sep).append(line);
 
             sep = ",";
         }
-        writer.println(result + "}");
+        writer.println(result.append("}").toString());
 
     }
 
     private String encodeList (List list) {
-        String result = "[";
+        StringBuilder result = new StringBuilder("[");
         String sep = "";
         for (Object entry : list) {
             if (entry instanceof List) {
-                result += sep + encodeList((List)entry);
+                result.append(sep).append(encodeList((List)entry));
             } else if (entry instanceof Map) {
-                result += sep + encodeMap((Map)entry);
+                result.append(sep).append(encodeMap((Map)entry));
             } else {
-                result += sep + quote (entry.toString());
+                result.append(sep).append(quote (entry.toString()));
             }
 
             sep = ",";
         }
-        return result + "]";
+        return result.append("]").toString();
     }
 
     private String encodeMap (Map map) {
-        String result = "{";
+        StringBuilder result = new StringBuilder("{");
         String sep = "";
         for (Map.Entry entry : (Set<Map.Entry>)map.entrySet()) {
             String key = entry.getKey().toString();
             Object value = entry.getValue();
-            result += sep + quote(key) + ":";
+            result.append(sep).append(quote(key)).append(":");
 
             if (value instanceof List) {
-                result += encodeList((List) value);
+                result.append(encodeList((List) value));
             } else if (value instanceof Map) {
-                result += encodeMap((Map) value);
+                result.append(encodeMap((Map) value));
             } else {
-                result += quote(value.toString());
+                result.append(quote(value.toString()));
             }
             sep = ",";
         }
 
-        return result += "}";
+        return result.append("}").toString();
     }
 
     /**

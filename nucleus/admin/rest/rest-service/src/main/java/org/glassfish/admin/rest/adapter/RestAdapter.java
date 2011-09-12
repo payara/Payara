@@ -405,7 +405,7 @@ public abstract class RestAdapter extends HttpHandler implements Adapter, PostCo
             throws EndpointRegistrationException {
         String context = getContextRoot();
         logger.log(Level.FINE, "Exposing rest resource context root: {0}", context);
-        if ((context != null) || (!"".equals(context))) {
+        if ((context != null) && (!"".equals(context))) {
             Set<Class<?>> classes = getResourcesConfig();
             adapter = lazyJerseyInterface.exposeContext(classes, sc, habitat);
 //            ((HttpHandler) adapter).setResourcesContextPath(context);

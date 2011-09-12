@@ -387,22 +387,22 @@ public abstract class ResourcesGeneratorBase implements ResourcesGenerator {
      *         eliminating hyphens from elementName and uppercasing letter followed by hyphen
      */
     public static String getBeanName(String elementName) {
-        String ret = "";
+        StringBuilder ret = new StringBuilder();
         boolean nextisUpper = true;
         for (int i = 0; i < elementName.length(); i++) {
             if (nextisUpper == true) {
-                ret = ret + elementName.substring(i, i + 1).toUpperCase(Locale.US);
+                ret.append(elementName.substring(i, i + 1).toUpperCase(Locale.US));
                 nextisUpper = false;
             } else {
                 if (elementName.charAt(i) == '-') {
                     nextisUpper = true;
                 } else {
                     nextisUpper = false;
-                    ret = ret + elementName.substring(i, i + 1);
+                    ret.append(elementName.substring(i, i + 1));
                 }
             }
         }
-        return ret;
+        return ret.toString();
     }
 
     /**
@@ -439,33 +439,16 @@ public abstract class ResourcesGeneratorBase implements ResourcesGenerator {
          Class<? extends ConfigBeanProxy> cbp = null;
         try {
             cbp = (Class<? extends ConfigBeanProxy>) model.classLoaderHolder.get().loadClass(model.targetTypeName);
-            // cbp = (Class<? extends ConfigBeanProxy>)this.getClass().getClassLoader().loadClass(model.targetTypeName) ;
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        }
-        org.glassfish.config.support.Singleton sing = cbp.getAnnotation(org.glassfish.config.support.Singleton.class);
-        return (sing!=null);       
-    }
-    
-    
-    private void processRedirectsAnnotation(ConfigModel model) {
-        Class<? extends ConfigBeanProxy> cbp = null;
-        try {
-            cbp = (Class<? extends ConfigBeanProxy>) model.classLoaderHolder.get().loadClass(model.targetTypeName);
-            // cbp = (Class<? extends ConfigBeanProxy>)this.getClass().getClassLoader().loadClass(model.targetTypeName) ;
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        }
-        RestRedirects restRedirects = cbp.getAnnotation(RestRedirects.class);
-        if (restRedirects != null) {
-
-            RestRedirect[] values = restRedirects.value();
-            for (RestRedirect r : values) {
-                System.out.println(r.commandName());
-                System.out.println(r.opType());
+            if (cbp != null) {
+                org.glassfish.config.support.Singleton sing = cbp.getAnnotation(org.glassfish.config.support.Singleton.class);
+                return (sing!=null);       
             }
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
         }
+        return false;
     }
+    
     //TODO - fetch command name from config bean(RestRedirect annotation).
     //RESTREdirect currently only support automatically these deletes:
     /*

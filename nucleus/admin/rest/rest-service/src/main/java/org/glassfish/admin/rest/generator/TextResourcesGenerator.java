@@ -60,7 +60,9 @@ public class TextResourcesGenerator extends ResourcesGeneratorBase {
     public TextResourcesGenerator(String outputDir, Habitat habitat) {
         super(habitat);
         generationDir= new File(outputDir);
-        generationDir.mkdirs();
+        if (!generationDir.mkdirs()) {
+            throw new RuntimeException("Unable to create output directory: " + outputDir);
+        }
     }
     
     @Override
@@ -80,15 +82,27 @@ public class TextResourcesGenerator extends ResourcesGeneratorBase {
     public String endGeneration() {
         //generate date info in 1 single file
         File file = new File(generationDir+ "/codegeneration.properties");
+        BufferedWriter out = null;
         try {
-            file.createNewFile();
-            FileWriter fstream = new FileWriter(file);
-            BufferedWriter out = new BufferedWriter(fstream);
-            out.write("generation_date=" + new Date() + "\n");
-            out.close();
+            if (file.createNewFile()) {
+                FileWriter fstream = new FileWriter(file);
+                out = new BufferedWriter(fstream);
+                out.write("generation_date=" + new Date() + "\n");
+            } else {
+                Logger.getLogger(TextResourcesGenerator.class.getName()).log(Level.SEVERE, 
+                        "Unable to create codegeneration.properties"); // i18n
+            }
 
         } catch (Exception e) {
             e.printStackTrace();
+        } finally {
+            if (out != null) {
+                try {
+                    out.close();
+                } catch (IOException ex) {
+                    Logger.getLogger(TextResourcesGenerator.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
         }
 
         return  "Code Generation done at : " + generationDir;

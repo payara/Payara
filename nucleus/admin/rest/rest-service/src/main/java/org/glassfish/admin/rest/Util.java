@@ -230,8 +230,6 @@ public class Util {
             uri = uri + "/..";
         }
         String name = upperCaseFirstLetter(eleminateHypen(getName(uri, '/')));
-        String parentName =
-                upperCaseFirstLetter(eleminateHypen(getParentName(uri)));
 
         result = result + "<h1>" + name + "</h1>";
         result = result + message;//+ "<br><br>";

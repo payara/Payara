@@ -216,17 +216,20 @@ public class TemplateRestResource {
                 if (exitCode != ActionReport.ExitCode.FAILURE) {
                     String successMessage = localStrings.getLocalString("rest.resource.delete.message",
                             "\"{0}\" deleted successfully.", new Object[]{uriInfo.getAbsolutePath()});
-                    return Response.ok(ResourceUtil.getActionReportResult(actionReport,  successMessage, requestHeaders, uriInfo)).build(); //200 - ok
+                    return Response.ok(ResourceUtil.getActionReportResult(actionReport,  
+                            successMessage, requestHeaders, uriInfo)).build(); //200 - ok
                 }
 
                 String errorMessage = actionReport.getMessage();
 
-                return Response.status(400).entity(ResourceUtil.getActionReportResult(actionReport, errorMessage, requestHeaders, uriInfo)).build(); //400 - bad request
+                return Response.status(400).entity(ResourceUtil.getActionReportResult(actionReport, 
+                        errorMessage, requestHeaders, uriInfo)).build(); //400 - bad request
             }
 
             String message = localStrings.getLocalString("rest.resource.delete.forbidden",
                     "DELETE on \"{0}\" is forbidden.", new Object[]{uriInfo.getAbsolutePath()});
-            return Response.status(400).entity(ResourceUtil.getActionReportResult(actionReport, message, requestHeaders, uriInfo)).build(); //403 - forbidden
+            return Response.status(400).entity(ResourceUtil.getActionReportResult(new RestActionReporter(), 
+                    message, requestHeaders, uriInfo)).build(); //403 - forbidden
         } catch (Exception e) {
             throw new WebApplicationException(e, Response.Status.INTERNAL_SERVER_ERROR);
         }

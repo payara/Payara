@@ -44,6 +44,7 @@ package org.glassfish.admin.rest.generator;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.security.PrivilegedActionException;
 import java.security.ProtectionDomain;
@@ -455,11 +456,8 @@ public class ASMClassWriter implements ClassWriter, Opcodes {
                     /*Thread.currentThread().getContextClassLoader()*/, generatedClassName, byteContent, 0,
                      byteContent.length, pd);
 
-            //load it
-            Class c=null;
-
             try {
-               c= similarClass.getClassLoader().loadClass(generatedClassName);
+               similarClass.getClassLoader().loadClass(generatedClassName);
             } catch (ClassNotFoundException cnfEx) {
                 throw new RuntimeException(cnfEx);
             }
@@ -492,6 +490,7 @@ public class ASMClassWriter implements ClassWriter, Opcodes {
             clsName = clsName.substring(index + 1);
         }
 
+        FileOutputStream fos = null;
         try {
             String rootPath = System.getProperty(SystemPropertyConstants.INSTALL_ROOT_PROPERTY)
                     + File.separator + "lib" + File.separator;
@@ -500,13 +499,24 @@ public class ASMClassWriter implements ClassWriter, Opcodes {
 
 
             File file = new File(fileName);
-            file.getParentFile().mkdirs();
-            FileOutputStream fos = new FileOutputStream(file);
-            fos.write(classData);
-            fos.flush();
-            fos.close();
+            if (file.getParentFile().mkdirs()) {
+                fos = new FileOutputStream(file);
+                fos.write(classData);
+                fos.flush();
+            } else {
+                Logger.getLogger(ASMClassWriter.class.getName()).log(Level.INFO, null, 
+                        "Unable to make directories");
+            }
         } catch (Exception ex) {
             ex.printStackTrace();
+        } finally {
+            if (fos != null) {
+                try {
+                    fos.close();
+                } catch (IOException ex) {
+                    Logger.getLogger(ASMClassWriter.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
         }
     }
 

@@ -175,12 +175,14 @@ public class ResourceUtil {
             e.printStackTrace();
         }
 
-        RestRedirects restRedirects = cbp.getAnnotation(RestRedirects.class);
-        if (restRedirects != null) {
-            RestRedirect[] values = restRedirects.value();
-            for (RestRedirect r : values) {
-                if (r.opType().equals(type)) {
-                    return r.commandName();
+        if (cbp != null) {
+            RestRedirects restRedirects = cbp.getAnnotation(RestRedirects.class);
+            if (restRedirects != null) {
+                RestRedirect[] values = restRedirects.value();
+                for (RestRedirect r : values) {
+                    if (r.opType().equals(type)) {
+                        return r.commandName();
+                    }
                 }
             }
         }
@@ -701,17 +703,6 @@ public class ResourceUtil {
         return false;
     }
 
-    //print given parameter meta-data.
-
-    private static void print(Collection<CommandModel.ParamModel> params) {
-        for (CommandModel.ParamModel pm : params) {
-            System.out.println("Command Param: " + pm.getName());
-            System.out.println("Command Param Type: " + pm.getType());
-            System.out.println("Command Param Name: " + pm.getParam().name());
-            System.out.println("Command Param Shortname: " + pm.getParam().shortName());
-        }
-    }
-
     //returns true only if the request is from browser
 
     private static boolean isBrowser(HttpHeaders requestHeaders) {
@@ -1048,7 +1039,7 @@ public class ResourceUtil {
         ar.getExtraProperties().put("methods", methodMetaData);
     }
 
-     public static RestConfig getRestConfig(Habitat habitat) {
+     public static synchronized RestConfig getRestConfig(Habitat habitat) {
         if (restConfig == null) {
             if (habitat == null) {
                 return null;

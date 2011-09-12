@@ -264,14 +264,13 @@ public abstract class InputObject extends ProviderUtil {
                 if (s.length() > 2 &&
                         (s.charAt(1) == 'x' || s.charAt(1) == 'X')) {
                     try {
-                        return new Integer(Integer.parseInt(s.substring(2),
-                                16));
+                        return Integer.parseInt(s.substring(2),16);
                     } catch (Exception e) {
                         /* Ignore the error */
                     }
                 } else {
                     try {
-                        return new Integer(Integer.parseInt(s, 8));
+                        return Integer.parseInt(s, 8);
                     } catch (Exception e) {
                         /* Ignore the error */
                     }
@@ -283,7 +282,7 @@ public abstract class InputObject extends ProviderUtil {
                 } else {
                     Long myLong = new Long(s);
                     if (myLong.longValue() == myLong.intValue()) {
-                        return new Integer(myLong.intValue());
+                        return myLong.intValue();
                     } else {
                         return myLong;
                     }

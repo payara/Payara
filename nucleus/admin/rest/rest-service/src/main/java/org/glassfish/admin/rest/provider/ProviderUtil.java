@@ -244,8 +244,6 @@ public class ProviderUtil {
     static protected String getHtmlRepresentationForAttributes(ConfigBean proxy, UriInfo uriInfo) {
         StringBuilder result = new StringBuilder();
 
-        Set<String> attributes = proxy.model.getAttributeNames();
-
         MethodMetaData methodMetaData = ResourceUtil.getMethodMetaData(proxy.model);
 
         Set<String> parameters = methodMetaData.parameters();
@@ -334,7 +332,7 @@ public class ProviderUtil {
 
     static protected String getHtmlRespresentationsForCommand(MethodMetaData methodMetaData, String commandMethod,
                                                               String commandDisplayName, UriInfo uriInfo) {
-        String result ="";
+        StringBuilder result = new StringBuilder();
         if (methodMetaData != null) {
             Set<String> parameters = methodMetaData.parameters();
             Iterator<String> iterator = parameters.iterator();
@@ -346,14 +344,13 @@ public class ProviderUtil {
                 if ((methodMetaData.isFileUploadOperation()) && (parameter.equals("id"))) {
                     parameterMetaData.setIsFileParameter(true);
                 }
-                result = result +
-                    getHtmlRespresentationForParameter(parameter, parameterMetaData);
+                result.append(getHtmlRespresentationForParameter(parameter, parameterMetaData));
             }
 
             //Fix to diplay component for commands with 0 arguments.
             //For example, rotate-log or restart.
-            if (result.equals("")) {
-                result = " ";
+            if (result.length() == 0) {
+                result.append(" ");
             }
 
         }
@@ -363,30 +360,36 @@ public class ProviderUtil {
         if (commandMethod.equalsIgnoreCase("get")){
              webMethod="get";
         }
-        if (!result.equals("")) {
+        if (result.length() != 0) {
             //set encType if file upload operation
             String encType = methodMetaData.isFileUploadOperation() ?
                 " enctype=\"multipart/form-data\"" : "" ;
-            result = "<div><form action=\"" + uriInfo.getAbsolutePath().toString() +
-                "\" method=\"" + webMethod+ "\"" + encType + ">" +
-                "<dl>" + result;
+            result = new StringBuilder("<div><form action=\"")
+                    .append(uriInfo.getAbsolutePath().toString())
+                    .append("\" method=\"")
+                    .append(webMethod)
+                    .append("\"")
+                    .append(encType)
+                    .append(">")
+                    .append("<dl>")
+                    .append(result);
 
             //hack-1 : support delete method for html
             //add hidden field
             if(commandMethod.equalsIgnoreCase("DELETE")) {
-                result = result +
-                    "<dd><input name=\"operation\" value=\"__deleteoperation\" type=\"hidden\"></dd>";
+                result.append("<dd><input name=\"operation\" value=\"__deleteoperation\" type=\"hidden\"></dd>");
             }
             //hack-2 : put a flag to delte the empty value for CLI parameters...
             //add hidden field
-            result = result +
-                    "<dd><input name=\"__remove_empty_entries__\" value=\"true\" type=\"hidden\"></dd>";
+            result.append("<dd><input name=\"__remove_empty_entries__\" value=\"true\" type=\"hidden\"></dd>");
 
-            result = result + "<dt class=\"button\"></dt><dd class=\"button\"><input value=\"" + commandDisplayName + "\" type=\"submit\"></dd>";
-            result = result + "</dl></form></div>";
+            result.append("<dt class=\"button\"></dt><dd class=\"button\"><input value=\"")
+                    .append(commandDisplayName)
+                    .append("\" type=\"submit\"></dd>");
+            result.append("</dl></form></div>");
         }
 
-        return result;
+        return result.toString();
     }
 
     static protected String getHtmlForComponent(String component, String heading, String result) {
@@ -496,17 +499,22 @@ public class ProviderUtil {
             return "";
         }
 
-        String result = parameter;
+        StringBuilder result = new StringBuilder(parameter);
         //set appropriate type of input field. In can be of type file or text
         //file type is used in case of deploy operation
         String parameterType = parameterMetaData.isFileParameter() ? "file" : "text";
 
         //indicate mandatory field with * super-script
         if (parameterMetaData.getAttributeValue(Constants.OPTIONAL).equalsIgnoreCase("false")) {
-            result = result + "<sup>*</sup>";
+            result.append("<sup>*</sup>");
         }
 
-        result = "<dt><label for=\"" + parameter + "\">" + result + ":&nbsp;" + "</label></dt>";
+        result.append("<dt><label for=\"")
+                .append(parameter)
+                .append("\">")
+                .append(result)
+                .append(":&nbsp;")
+                .append("</label></dt>");
 
         boolean isBoolean = false;
         if((parameterMetaData.getAttributeValue(Constants.TYPE).endsWith(Constants.JAVA_BOOLEAN_TYPE)) ||
@@ -535,16 +543,25 @@ public class ProviderUtil {
         boolean keyAttribute = Boolean.valueOf(parameterMetaData.getAttributeValue(Constants.KEY)).booleanValue();
         if (keyAttribute) {
             if (hasValue) {
-                result = result + "<dd><input name=\"" + parameter + "\" value =\"" +
-                    parameterValue + "\" type=\"" + parameterType + "\" disabled=\"disabled\"></dd>";
+                result.append("<dd><input name=\"")
+                        .append(parameter)
+                        .append("\" value =\"")
+                        .append(parameterValue)
+                        .append("\" type=\"")
+                        .append(parameterType)
+                        .append("\" disabled=\"disabled\"></dd>");
             } else { //no value for the key, so we are in create mode, enable the entry field in the ui
                 //control should never reach here.
-                result = result + "<dd><input name=\"" + parameter + "\" type=\"" + parameterType + "\"></dd>";
+                result.append("<dd><input name=\"")
+                        .append(parameter)
+                        .append("\" type=\"")
+                        .append(parameterType)
+                        .append("\"></dd>");
            }
         } else {
             if (isBoolean || hasAcceptableValues) {
                 //use combo box
-                result = result + "<dd><select name=" + parameter + ">";
+                result.append("<dd><select name=").append(parameter).append(">");
                 String[] values;
                 if (isBoolean) {
                     values = new String[] {"true", "false"};
@@ -555,12 +572,12 @@ public class ProviderUtil {
                 for (String value : values) {
                     if ((hasValue) && (value.equalsIgnoreCase(parameterValue))){
                         if (isBoolean) { parameterValue = parameterValue.toLowerCase(Locale.US);} //boolean options are all displayed as lowercase
-                        result = result + "<option selected>" + parameterValue + "<br>";
+                        result.append("<option selected>").append(parameterValue).append("<br>");
                     } else {
-                        result = result + "<option>" + value + "<br>";
+                        result.append("<option>").append(value).append("<br>");
                     }
                 }
-                result = result + "</select></dd>";
+                result.append("</select></dd>");
             } else {
                 //use text box
                 String field;
@@ -571,15 +588,15 @@ public class ProviderUtil {
                 } else {
                     field = "<input name=\"" + parameter + "\" type=\"" + parameterType + "\">";
                 }
-                result += "<dd>" + field;
+                result.append("<dd>").append(field);
                 if (isList) {
-                    result +=  "<a href=\"#\" onclick=\"try { var newNode = this.previousSibling.cloneNode(false); this.parentNode.insertBefore(newNode, this);} catch (err) { alert (err); } return false; return false;\">Add row<a/>";
+                    result.append("<a href=\"#\" onclick=\"try { var newNode = this.previousSibling.cloneNode(false); this.parentNode.insertBefore(newNode, this);} catch (err) { alert (err); } return false; return false;\">Add row<a/>");
                 }
-                result += "</dd>";
+                result.append("</dd>");
             }
         }
 
-        return result;
+        return result.toString();
     }
 
     /**
