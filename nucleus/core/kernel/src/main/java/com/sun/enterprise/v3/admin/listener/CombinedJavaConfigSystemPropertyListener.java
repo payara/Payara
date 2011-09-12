@@ -62,6 +62,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.glassfish.api.Startup;
 import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.config.support.TranslatedConfigView;
 
 import org.jvnet.hk2.annotations.*;
 import org.jvnet.hk2.component.Habitat;
@@ -352,7 +353,7 @@ public final class CombinedJavaConfigSystemPropertyListener implements PostConst
         if ( value.startsWith("=") ) {
             value = value.substring(1);
         }
-        
+        value = TranslatedConfigView.getTranslatedValue(value).toString();
         return new String[] { name, value };
     }
     
