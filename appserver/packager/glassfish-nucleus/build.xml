@@ -52,6 +52,15 @@
 	<unzip src="${nucleus.zip}" dest="target/stage/${install.dir.name}">
         </unzip>   
 
+	<rename src="target/stage/glassfish3/nucleus/lib/templates/logging.properties" dest="target/stage/glassfish3/nucleus/lib/templates/nucleus-logging.properties"/>
+
+        <concat destfile="target/stage/glassfish3/nucleus/lib/templates/logging.properties">
+		<fileset file="target/stage/glassfish3/nucleus/lib/templates/nucleus-logging.properties" />
+		<fileset file="../../logging/logging.properties" />
+	</concat>
+
+	<delete file="target/stage/glassfish3/nucleus/lib/templates/nucleus-logging.properties"/>
+
         <move file="target/stage/${install.dir.name}/nucleus"
             tofile="target/stage/${install.dir.name}/glassfish" 
             failonerror="false" />
