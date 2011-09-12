@@ -57,7 +57,6 @@
     <modules>
         <module>bootstrap</module>
 	<module>kernel</module>
-        <module>branding</module>
         <module>api-exporter</module>
         <module>extra-jre-packages</module>
         <module>logging</module>

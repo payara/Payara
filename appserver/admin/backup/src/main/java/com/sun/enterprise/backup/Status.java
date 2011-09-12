@@ -52,7 +52,6 @@ import java.util.*;
 import java.util.zip.*;
 
 import com.sun.appserv.server.util.Version;
-import org.glassfish.branding.GlassFishBranding;
 
 /**
  *
@@ -299,13 +298,8 @@ class Status {
         props.setProperty(Constants.PROPS_TIMESTAMP_HUMAN,
                           new Date(request.timestamp).toString());
 
-        GlassFishBranding br = new GlassFishBranding();
-        br.postConstruct();
-        Version version = new Version();
-        version.setBranding(br);
-        version.postConstruct();
         props.setProperty(Constants.PROPS_VERSION,
-                          version.getFullVersion());
+                          Version.getFullVersion());
          
         String type = request.configOnly ? Constants.CONFIG_ONLY :
                 Constants.FULL;

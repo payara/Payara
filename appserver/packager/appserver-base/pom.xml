@@ -58,6 +58,38 @@
     <build>
         <plugins>
             <plugin>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>process-sources</phase>
+                        <configuration>
+                            <tasks>
+                                <delete file="src/main/resources/glassfish-version.properties"/>
+                                <copy file="src/main/resources/glassfish-version.properties.template"
+                                      tofile="src/main/resources/glassfish-version.properties">
+                                    <filterset>
+                                        <filter token="BRAND_NAME" value="${brand_name}"/>
+                                        <filter token="PRODUCT_NAME" value="${product.name}"/>
+                                        <filter token="ABBREV_PRODUCT_NAME" value="${abbrev_product_name}"/>
+                                        <filter token="FULL_VERSION" value="${project.version}"/>
+                                        <filter token="MAJOR_VERSION" value="${major_version}"/>
+                                        <filter token="MINOR_VERSION" value="${minor_version}"/>
+                                        <filter token="UPDATE_VERSION" value="${update_version}"/>
+                                        <filter token="BUILD_ID" value="${build.id}"/>
+                                        <filter token="VERSION_PREFIX" value="${version_prefix}"/>
+                                        <filter token="VERSION_SUFFIX" value="${version_suffix}"/>
+                                    </filterset>
+                                </copy>
+                            </tasks>
+                        </configuration>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
                 <groupId>org.jvnet.maven-antrun-extended-plugin</groupId>
                 <artifactId>maven-antrun-extended-plugin</artifactId>
                 <configuration>

@@ -1,0 +1,8 @@
+product_name=@PRODUCT_NAME@
+abbrev_product_name=@ABBREV_PRODUCT_NAME@
+major_version=@MAJOR_VERSION@
+minor_version=@MINOR_VERSION@
+update_version=@UPDATE_VERSION@
+build_id=@BUILD_ID@
+version_prefix=@VERSION_PREFIX@
+version_suffix=@VERSION_SUFFIX@

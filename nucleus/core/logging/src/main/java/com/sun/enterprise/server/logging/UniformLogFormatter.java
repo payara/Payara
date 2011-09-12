@@ -41,8 +41,7 @@
 package com.sun.enterprise.server.logging;
 
 
-import org.glassfish.api.branding.Branding;
-import org.glassfish.internal.api.Globals;
+import com.sun.appserv.server.util.Version;
 import org.jvnet.hk2.annotations.ContractProvided;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
@@ -158,32 +157,24 @@ public class UniformLogFormatter extends Formatter {
      */
 
 
+    @Override
     public String format(LogRecord record) {
         return uniformLogFormat(record);
     }
 
+    @Override
     public String formatMessage(LogRecord record) {
         return uniformLogFormat(record);
     }
 
 
     /**
-     * Sun One AppServer SE/EE can override to specify their product version
+     * GlassFish can override to specify their product version
      */
     protected String getProductId() {
 
-        Branding branding = null;
-        // I have to use Globals rather than injection because the formatter lifecyle
-        // is managed by the JDK and therefore this instance can be "in-use" long
-        // before the habitat is ready. We still need to function, even in a degraded
-        // mode.
-        if (Globals.getDefaultHabitat() != null) {
-            branding = Globals.getDefaultHabitat().getByContract(Branding.class);
-        }
-        if (branding == null) {
-            return null;
-        }
-        String version = branding.getAbbreviatedVersion() + branding.getVersionPrefix() + branding.getMajorVersion() + "." + branding.getMinorVersion();
+        String version = Version.getAbbreviatedVersion() + Version.getVersionPrefix() + 
+                Version.getMajorVersion() + "." + Version.getMinorVersion();
         return (version);
     }
 
@@ -355,7 +346,7 @@ public class UniformLogFormatter extends Formatter {
                 }
             }
 
-            recordBuffer.append((getRecordEndMarker() != null ? getRecordEndMarker() : RECORD_END_MARKER) + LINE_SEPARATOR + LINE_SEPARATOR);
+            recordBuffer.append(getRecordEndMarker() != null ? getRecordEndMarker() : RECORD_END_MARKER).append(LINE_SEPARATOR).append(LINE_SEPARATOR);
             return recordBuffer.toString();
 
         } catch (Exception ex) {

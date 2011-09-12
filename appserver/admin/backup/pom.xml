@@ -64,11 +64,6 @@
             <artifactId>common-util</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
-        <dependency>
-            <groupId>org.glassfish.branding</groupId>
-            <artifactId>branding</artifactId>
-            <version>${project.parent.version}</version>
-        </dependency>
     </dependencies>
 	<developers>
 		<developer>

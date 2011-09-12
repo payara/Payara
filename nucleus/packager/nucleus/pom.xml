@@ -140,11 +140,6 @@
            <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.branding</groupId>
-            <artifactId>branding</artifactId>
-	    <version>${project.version}</version>
-        </dependency>
-        <dependency>
             <groupId>org.glassfish.deployment</groupId>
             <artifactId>deployment-admin</artifactId>
             <version>${project.version}</version>

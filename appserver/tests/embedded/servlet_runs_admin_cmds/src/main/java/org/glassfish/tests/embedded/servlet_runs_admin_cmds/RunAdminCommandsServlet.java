@@ -76,6 +76,8 @@ public class RunAdminCommandsServlet extends HttpServlet {
                     "sample_derby_pool");
             out.println("Ran create-jdbc-connection-pool command. Output = [ " +
                     result.getOutput() + "]");
+            result = cr.run("version");
+            out.println("Ran version command. Output = [" + result.getOutput() + "]");
         }
         out.flush();
         out.close();
