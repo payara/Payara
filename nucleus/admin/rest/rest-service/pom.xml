@@ -154,6 +154,11 @@
             <artifactId>security</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.glassfish.elasticity</groupId>
+            <artifactId>elastic-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
     <build>
                 <resources>
