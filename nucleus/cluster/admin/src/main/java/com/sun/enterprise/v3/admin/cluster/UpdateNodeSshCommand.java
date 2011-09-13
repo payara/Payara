@@ -141,10 +141,10 @@ public class UpdateNodeSshCommand implements AdminCommand  {
         map.add(NodeUtils.PARAM_INSTALLDIR, installdir);
         map.add(NodeUtils.PARAM_NODEHOST, nodehost);
         map.add(NodeUtils.PARAM_NODEDIR, nodedir);
-        map.add(NodeUtils.PARAM_SSHPORT, sshport);
-        map.add(NodeUtils.PARAM_SSHUSER, sshuser);
+        map.add(NodeUtils.PARAM_REMOTEPORT, sshport);
+        map.add(NodeUtils.PARAM_REMOTEUSER, sshuser);
         map.add(NodeUtils.PARAM_SSHKEYFILE, sshkeyfile);
-        map.add(NodeUtils.PARAM_SSHPASSWORD, sshpassword);
+        map.add(NodeUtils.PARAM_REMOTEPASSWORD, sshpassword);
         map.add(NodeUtils.PARAM_SSHKEYPASSPHRASE, sshkeypassphrase);
         map.add(NodeUtils.PARAM_TYPE, "SSH");
 
@@ -164,10 +164,10 @@ public class UpdateNodeSshCommand implements AdminCommand  {
         validateMap.add(NodeUtils.PARAM_INSTALLDIR, installdir);
         validateMap.add(NodeUtils.PARAM_NODEHOST, nodehost);
         validateMap.add(NodeUtils.PARAM_NODEDIR, nodedir);
-        validateMap.add(NodeUtils.PARAM_SSHPORT, sshport);
-        validateMap.add(NodeUtils.PARAM_SSHUSER, sshuser);
+        validateMap.add(NodeUtils.PARAM_REMOTEPORT, sshport);
+        validateMap.add(NodeUtils.PARAM_REMOTEUSER, sshuser);
         validateMap.add(NodeUtils.PARAM_SSHKEYFILE, sshkeyfile);
-        validateMap.add(NodeUtils.PARAM_SSHPASSWORD, sshpassword);
+        validateMap.add(NodeUtils.PARAM_REMOTEPASSWORD, sshpassword);
         validateMap.add(NodeUtils.PARAM_SSHKEYPASSPHRASE, sshkeypassphrase);
 
         // Validate the settings
@@ -257,7 +257,7 @@ public class UpdateNodeSshCommand implements AdminCommand  {
             sshport = NodeUtils.NODE_DEFAULT_SSH_PORT;
         }
         if (!StringUtils.ok(sshuser)) {
-            sshuser = NodeUtils.NODE_DEFAULT_SSH_USER;
+            sshuser = NodeUtils.NODE_DEFAULT_REMOTE_USER;
         }
         if (!StringUtils.ok(installdir)) {
             installdir = NodeUtils.NODE_DEFAULT_INSTALLDIR;

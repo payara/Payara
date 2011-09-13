@@ -77,7 +77,7 @@ import com.sun.enterprise.universal.process.ProcessManagerException;
 @ExecuteOn({RuntimeType.DAS})
 public class DeleteNodeSshCommand implements AdminCommand {
     private static final int DEFAULT_TIMEOUT_MSEC = 300000; // 5 minutes
-    
+
     @Inject
     Habitat habitat;
 
@@ -89,20 +89,20 @@ public class DeleteNodeSshCommand implements AdminCommand {
 
     @Inject
     private CommandRunner cr;
-    
+
     @Param(name="name", primary = true)
     String name;
-    
+
     @Param(optional = true, defaultValue = "false")
     boolean uninstall;
 
     @Param(optional = true, defaultValue = "false")
     boolean force;
-    
+
     private String sshpassword = null;
     private String sshkeypassphrase = null;
-    
-    private static final String NL = System.getProperty("line.separator");    
+
+    private static final String NL = System.getProperty("line.separator");
     private Logger logger = null;
 
     @Override
@@ -129,44 +129,44 @@ public class DeleteNodeSshCommand implements AdminCommand {
             return;
 
         }
-        
+
         ParameterMap info = new ParameterMap();
-        
+
         if(uninstall) {
             //store needed info for uninstall
             SshConnector sshC = node.getSshConnector();
             SshAuth sshAuth = sshC.getSshAuth();
-            
+
             if(sshAuth.getPassword() != null)
-                info.add(NodeUtils.PARAM_SSHPASSWORD, sshAuth.getPassword());
-            
+                info.add(NodeUtils.PARAM_REMOTEPASSWORD, sshAuth.getPassword());
+
             if(sshAuth.getKeyPassphrase() != null)
                 info.add(NodeUtils.PARAM_SSHKEYPASSPHRASE, sshAuth.getKeyPassphrase());
-            
+
             if(sshAuth.getKeyfile() != null)
                 info.add(NodeUtils.PARAM_SSHKEYFILE, sshAuth.getKeyfile());
-            
+
             info.add(NodeUtils.PARAM_INSTALLDIR, node.getInstallDir());
-            info.add(NodeUtils.PARAM_SSHPORT, sshC.getSshPort());
-            info.add(NodeUtils.PARAM_SSHUSER, sshAuth.getUserName());
-            
-            
+            info.add(NodeUtils.PARAM_REMOTEPORT, sshC.getSshPort());
+            info.add(NodeUtils.PARAM_REMOTEUSER, sshAuth.getUserName());
+
+
             info.add(NodeUtils.PARAM_NODEHOST, node.getNodeHost());
-            
+
         }
-     
+
         CommandInvocation ci = cr.getCommandInvocation("_delete-node", report);
         ParameterMap map = new ParameterMap();
         map.add("DEFAULT", name);
         ci.parameters(map);
         ci.execute();
-        
+
         //uninstall GlassFish after deleting the node
         if (uninstall) {
             boolean s = uninstallNode(context, info);
             if(!s && !force) {
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-                return; 
+                return;
             }
         }
     }
@@ -178,10 +178,10 @@ public class DeleteNodeSshCommand implements AdminCommand {
      */
     private boolean uninstallNode(AdminCommandContext ctx, ParameterMap map) {
         boolean res = false;
-        
-        sshpassword = map.getOne(NodeUtils.PARAM_SSHPASSWORD);
+
+        sshpassword = map.getOne(NodeUtils.PARAM_REMOTEPASSWORD);
         sshkeypassphrase = map.getOne(NodeUtils.PARAM_SSHKEYPASSPHRASE);
-        
+
         ArrayList<String> command = new ArrayList<String>();
 
         command.add("uninstall-node");
@@ -192,15 +192,15 @@ public class DeleteNodeSshCommand implements AdminCommand {
         if (force) {
             command.add("--force");
         }
-        
+
         command.add("--sshport");
-        command.add(map.getOne(NodeUtils.PARAM_SSHPORT));
-        
+        command.add(map.getOne(NodeUtils.PARAM_REMOTEPORT));
+
         command.add("--sshuser");
-        command.add(map.getOne(NodeUtils.PARAM_SSHUSER));
-        
+        command.add(map.getOne(NodeUtils.PARAM_REMOTEUSER));
+
         String key = map.getOne(NodeUtils.PARAM_SSHKEYFILE);
-        
+
         if (key != null) {
             command.add("--sshkeyfile");
             command.add(key);
@@ -215,7 +215,7 @@ public class DeleteNodeSshCommand implements AdminCommand {
 
         //capture the output in server.log
         logger.info(out.toString().trim());
-        
+
         ActionReport report = ctx.getActionReport();
         if (exitCode == 0) {
             // If it was successful say so and display the command output
@@ -236,7 +236,7 @@ public class DeleteNodeSshCommand implements AdminCommand {
      */
     private int execCommand(List<String> cmdLine, StringBuilder output) {
         int exit = -1;
-        
+
         List<String> fullcommand = new ArrayList<String>();
         String installDir = nodes.getDefaultLocalNode().getInstallDirUnixStyle() + "/glassfish";
         if (!StringUtils.ok(installDir)) {
@@ -245,12 +245,12 @@ public class DeleteNodeSshCommand implements AdminCommand {
 
         File asadmin = new File(SystemPropertyConstants.getAsAdminScriptLocation(installDir));
         fullcommand.add(asadmin.getAbsolutePath());
-        
+
         BufferedWriter out = null;
         File f = null;
         //if password auth is used by node, use the same auth mechanism for
         //uninstall-node as well. The passwords are passed using a temporary password file
-        if(sshpassword != null) {        
+        if(sshpassword != null) {
             try {
                 NodeUtils nu = new NodeUtils(habitat, logger);
                 f = new File(System.getProperty("java.io.tmpdir"), "pass.tmp");
@@ -277,13 +277,13 @@ public class DeleteNodeSshCommand implements AdminCommand {
                     }
                 }
             }
-            
+
             fullcommand.add("--passwordfile");
             fullcommand.add(f.getAbsolutePath());
         }
-        
+
         fullcommand.addAll(cmdLine);
-        
+
         ProcessManager pm = new ProcessManager(fullcommand);
 
         if(logger.isLoggable(Level.INFO)) {
@@ -297,7 +297,7 @@ public class DeleteNodeSshCommand implements AdminCommand {
             pm.setEcho(false);
 
         try {
-            exit = pm.execute();            
+            exit = pm.execute();
         }
         catch (ProcessManagerException ex) {
             if(logger.isLoggable(Level.FINE)) {
@@ -308,7 +308,7 @@ public class DeleteNodeSshCommand implements AdminCommand {
 
         String stdout = pm.getStdout();
         String stderr = pm.getStderr();
-        
+
         if (output != null) {
             if (StringUtils.ok(stdout)) {
                 output.append(stdout);
@@ -321,7 +321,7 @@ public class DeleteNodeSshCommand implements AdminCommand {
                 output.append(stderr);
             }
         }
-        
+
         if (f != null) {
             boolean didDelete = f.delete();
             if(!didDelete) {
@@ -332,7 +332,7 @@ public class DeleteNodeSshCommand implements AdminCommand {
         }
         return exit;
     }
-    
+
     private String commandListToString(List<String> command) {
         StringBuilder fullCommand = new StringBuilder();
 

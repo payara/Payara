@@ -72,17 +72,18 @@ import java.net.UnknownHostException;
  */
 public class NodeUtils {
     static final String NODE_DEFAULT_SSH_PORT = "22";
-    static final String NODE_DEFAULT_SSH_USER = "${user.name}";
+    static final String NODE_DEFAULT_DCOM_PORT = "135";
+    static final String NODE_DEFAULT_REMOTE_USER = "${user.name}";
     static final String NODE_DEFAULT_INSTALLDIR =
             "${com.sun.aas.productRoot}";
     // Command line option parameter names
     static final String PARAM_NODEHOST = "nodehost";
     static final String PARAM_INSTALLDIR = "installdir";
     static final String PARAM_NODEDIR = "nodedir";
-    static final String PARAM_SSHPORT = "sshport";
-    static final String PARAM_SSHUSER = "sshuser";
+    static final String PARAM_REMOTEPORT = "sshport";
+    static final String PARAM_REMOTEUSER = "sshuser";
     static final String PARAM_SSHKEYFILE = "sshkeyfile";
-    static final String PARAM_SSHPASSWORD = "sshpassword";
+    static final String PARAM_REMOTEPASSWORD = "sshpassword";
     static final String PARAM_SSHKEYPASSPHRASE = "sshkeypassphrase";
     static final String PARAM_TYPE = "type";
     static final String PARAM_INSTALL = "install";
@@ -92,6 +93,10 @@ public class NodeUtils {
     private Logger logger = null;
     private Habitat habitat = null;
     SSHLauncher sshL = null;
+
+    enum RemoteType {
+        SSH, DCOM
+    };
 
     NodeUtils(Habitat habitat, Logger logger) {
         this.logger = logger;
@@ -152,11 +157,12 @@ public class NodeUtils {
 
         SshConnector sshc = node.getSshConnector();
         if (sshc != null) {
-            map.add(NodeUtils.PARAM_SSHPORT, sshc.getSshPort());
+            // DCOMFIX
+            map.add(NodeUtils.PARAM_REMOTEPORT, sshc.getSshPort());
             SshAuth ssha = sshc.getSshAuth();
-            map.add(NodeUtils.PARAM_SSHUSER, ssha.getUserName());
+            map.add(NodeUtils.PARAM_REMOTEUSER, ssha.getUserName());
             map.add(NodeUtils.PARAM_SSHKEYFILE, ssha.getKeyfile());
-            map.add(NodeUtils.PARAM_SSHPASSWORD, ssha.getPassword());
+            map.add(NodeUtils.PARAM_REMOTEPASSWORD, ssha.getPassword());
             map.add(NodeUtils.PARAM_SSHKEYPASSPHRASE, ssha.getKeyPassphrase());
             map.add(NodeUtils.PARAM_TYPE, "SSH");
         }
@@ -166,12 +172,52 @@ public class NodeUtils {
     }
 
     /**
+     * Validate all the parameters used to create a remote node
+     * @param map   Map with all parameters used to create a remote node.
+     *              The map values can contain system property tokens.
+     * @throws CommandValidationException
+     */
+    void validate(ParameterMap map) throws
+            CommandValidationException {
+
+        // guaranteed to either get a valid type -- or a CommandValidationException
+        RemoteType type = parseType(map);
+
+        switch (type) {
+            case SSH:
+                validateSsh(map);
+                break;
+            case DCOM:
+                validateDcom(map);
+                break;
+        }
+    }
+
+    /**
+     * Validate all the parameters used to create a dcom node
+     * @param map   Map with all parameters used to create a dcom node.
+     *              The map values can contain system property tokens.
+     * @throws CommandValidationException
+     */
+    private void validateDcom(ParameterMap map) throws
+            CommandValidationException {
+        throw new UnsupportedOperationException("Not yet implemented");
+        // DCOMFIX
+        // DCOMFIX
+        // DCOMFIX
+        // DCOMFIX
+        // DCOMFIX
+        // DCOMFIX
+        // DCOMFIX
+    }
+
+    /**
      * Validate all the parameters used to create an ssh node
      * @param map   Map with all parameters used to create an ssh node.
      *              The map values can contain system property tokens.
      * @throws CommandValidationException
      */
-    void validate(ParameterMap map) throws
+    private void validateSsh(ParameterMap map) throws
             CommandValidationException {
 
         String sshkeyfile = map.getOne(PARAM_SSHKEYFILE);
@@ -195,7 +241,7 @@ public class NodeUtils {
             }
         }
 
-        validatePassword(map.getOne(PARAM_SSHPASSWORD));
+        validatePassword(map.getOne(PARAM_REMOTEPASSWORD));
         validatePassword(map.getOne(PARAM_SSHKEYPASSPHRASE));
 
         String nodehost = map.getOne(PARAM_NODEHOST);
@@ -285,10 +331,10 @@ public class NodeUtils {
 
         String nodehost = map.getOne(PARAM_NODEHOST);
         String installdir = map.getOne(PARAM_INSTALLDIR);
-        String sshport = map.getOne(PARAM_SSHPORT);
-        String sshuser = map.getOne(PARAM_SSHUSER);
+        String sshport = map.getOne(PARAM_REMOTEPORT);
+        String sshuser = map.getOne(PARAM_REMOTEUSER);
         String sshkeyfile = map.getOne(PARAM_SSHKEYFILE);
-        String sshpassword = map.getOne(PARAM_SSHPASSWORD);
+        String sshpassword = map.getOne(PARAM_REMOTEPASSWORD);
         String sshkeypassphrase = map.getOne(PARAM_SSHKEYPASSPHRASE);
         boolean installFlag = Boolean.parseBoolean(map.getOne(PARAM_INSTALL));
 
@@ -465,5 +511,15 @@ public class NodeUtils {
 
         runAdminCommandOnNode(node, command, context, firstErrorMessage,
                 humanCommand, output, true);
+    }
+
+    private RemoteType parseType(ParameterMap map) throws CommandValidationException {
+
+        try {
+            return RemoteType.valueOf(map.getOne(PARAM_TYPE));
+        }
+        catch (Exception e) {
+            throw new CommandValidationException(e);
+        }
     }
 }

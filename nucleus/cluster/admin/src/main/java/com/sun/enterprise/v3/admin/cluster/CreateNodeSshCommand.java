@@ -37,7 +37,6 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
 package com.sun.enterprise.v3.admin.cluster;
 
 import java.util.List;
@@ -77,196 +76,69 @@ import com.sun.enterprise.universal.process.ProcessManagerException;
 @I18n("create.node.ssh")
 @Scoped(PerLookup.class)
 @ExecuteOn({RuntimeType.DAS})
-public class CreateNodeSshCommand implements AdminCommand  {
-    private static final int DEFAULT_TIMEOUT_MSEC = 300000; // 5 minutes
-    
-    @Inject
-    private CommandRunner cr;
-
-    @Inject
-    Habitat habitat;
-    
-    @Inject
-    Nodes nodes;
-
-    @Param(name="name", primary = true)
-    private String name;
-
-    @Param(name="nodehost")
-    private String nodehost;
-
-    @Param(name = "installdir", optional=true, defaultValue = NodeUtils.NODE_DEFAULT_INSTALLDIR)
-    private String installdir;
-
-    @Param(name="nodedir", optional=true)
-    private String nodedir;
-
-    @Param(name="sshport", optional=true, defaultValue = NodeUtils.NODE_DEFAULT_SSH_PORT)
+public class CreateNodeSshCommand extends CreateRemoteNodeCommand {
+    @Param(name = "sshport", optional = true, defaultValue = NodeUtils.NODE_DEFAULT_SSH_PORT)
     private String sshport;
-
-    @Param(name = "sshuser", optional = true, defaultValue = NodeUtils.NODE_DEFAULT_SSH_USER)
+    @Param(name = "sshuser", optional = true, defaultValue = NodeUtils.NODE_DEFAULT_REMOTE_USER)
     private String sshuser;
-
-    @Param(name = "sshkeyfile", optional = true)
-    private String sshkeyfile;
-
     @Param(name = "sshpassword", optional = true, password = true)
     private String sshpassword;
-
+    @Param(name = "sshkeyfile", optional = true)
+    private String sshkeyfile;
     @Param(name = "sshkeypassphrase", optional = true, password=true)
     private String sshkeypassphrase;
 
-    @Param(name = "force", optional = true, defaultValue = "false")
-    private boolean force;
-    
-    @Param(optional = true, defaultValue = "false")
-    boolean install;
-
-    @Param(optional = true)
-    String archive;
-    
-    private static final String NL = System.getProperty("line.separator");
-
-    private Logger logger = null;
-    
     @Override
-    public void execute(AdminCommandContext context) {
-        ActionReport report = context.getActionReport();
-        StringBuilder msg = new StringBuilder();
-
-        logger = context.getLogger();
-
-        checkDefaults();
-
-        ParameterMap map = new ParameterMap();
-        map.add("DEFAULT", name);
-        map.add(NodeUtils.PARAM_INSTALLDIR, installdir);
-        map.add(NodeUtils.PARAM_NODEHOST, nodehost);
-        map.add(NodeUtils.PARAM_NODEDIR, nodedir);
-        map.add(NodeUtils.PARAM_SSHPORT, sshport);
-        map.add(NodeUtils.PARAM_SSHUSER, sshuser);
-        map.add(NodeUtils.PARAM_SSHKEYFILE, sshkeyfile);
-        map.add(NodeUtils.PARAM_SSHPASSWORD, sshpassword);
-        map.add(NodeUtils.PARAM_SSHKEYPASSPHRASE, sshkeypassphrase);
-        map.add(NodeUtils.PARAM_TYPE,"SSH");
-        map.add(NodeUtils.PARAM_INSTALL, Boolean.toString(install));
-
-        try {
-            NodeUtils nodeUtils = new NodeUtils(habitat, logger);
-            nodeUtils.validate(map);
-            if (install) {
-                boolean s = installNode(context, nodeUtils.sshL);
-                if(!s && !force) {
-                    report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-                    return; 
-                }
-            }
-        } catch (CommandValidationException e) {
-            String m1 = Strings.get("node.ssh.invalid.params");
-            if (!force) {
-                String m2 = Strings.get("create.node.ssh.not.created");
-                msg.append(StringUtils.cat(NL, m1, m2, e.getMessage()));
-                report.setMessage(msg.toString());
-                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-                return;
-            } else {
-                String m2 = Strings.get("create.node.ssh.continue.force");
-                msg.append(StringUtils.cat(NL, m1, e.getMessage(), m2));
-            }
-        }
-
-        map.remove(NodeUtils.PARAM_INSTALL);
-        CommandInvocation ci = cr.getCommandInvocation("_create-node", report);
-        ci.parameters(map);
-        ci.execute();
-
-        NodeUtils.sanitizeReport(report);
-
-        if (StringUtils.ok(report.getMessage())) {
-            if (msg.length() > 0) {
-                msg.append(NL);
-            }
-            msg.append(report.getMessage());
-        }
-  
-        report.setMessage(msg.toString());
+    public final void execute(AdminCommandContext context) {
+        populateBaseClass();
+        executeInternal(context);
     }
-    
-    /**
-     * Prepares for invoking install-node on DAS
-     * @param ctx command context
-     * @return true if install-node succeeds, false otherwise
-     */
-    private boolean installNode(AdminCommandContext ctx, SSHLauncher launcher) throws CommandValidationException {
-        boolean res = false;        
-        ArrayList<String> command = new ArrayList<String>();
 
-        command.add("install-node");
-
-        command.add("--installdir");
-        command.add(installdir);
-
-        if (force) {
-            command.add("--force");
-        }
-        
-        if(archive != null) {
-            File ar = new File(archive);
-            if(ar.exists() && ar.canRead()) {
-                command.add("--archive");
-                command.add(archive);
-            }
-        }
-        
-        command.add("--sshuser");
-        command.add(sshuser);
-        
-        command.add("--sshport");
-        command.add(sshport);
-
-        if (sshkeyfile == null) {
-            sshkeyfile=SSHUtil.getExistingKeyFile();
-        }
-        
-        if(sshkeyfile!= null) {
-            command.add("--sshkeyfile");
-            command.add(sshkeyfile);
-        }
-
-        command.add(nodehost);
-        
-        String firstErrorMessage = Strings.get("create.node.ssh.install.failed", nodehost);
-        StringBuilder out = new StringBuilder();
-        int exitCode = execCommand(command, launcher, out);
-
-        //capture the output in server.log
-        logger.info(out.toString().trim());
-        
-        ActionReport report = ctx.getActionReport();
-        if (exitCode == 0) {
-            // If it was successful say so and display the command output
-            String msg = Strings.get("create.node.ssh.install.success", nodehost);
-            report.setMessage(msg);
-            res=true;
-        } else {
-            report.setMessage(firstErrorMessage);
-        }
-        return res;
-    }
-    
     /**
      * Sometimes the console passes an empty string for a parameter. This
      * makes sure those are defaulted correctly.
      */
-    void checkDefaults() {
-        if (!StringUtils.ok(installdir)) {
-            installdir = NodeUtils.NODE_DEFAULT_INSTALLDIR;
+    @Override
+    final void checkDefaults() {
+        super.checkDefaults();
+
+        if (!StringUtils.ok(remotePort)) {
+            remotePort = NodeUtils.NODE_DEFAULT_SSH_PORT;
         }
-        if (!StringUtils.ok(sshport)) {
-            sshport = NodeUtils.NODE_DEFAULT_SSH_PORT;
+    }
+
+    @Override
+    final NodeUtils.RemoteType getType() {
+        return NodeUtils.RemoteType.SSH;
+    }
+
+    /**
+     * We can't put these values into the base class simply to get the names that
+     * the user sees correct.  I.e. "ssh" versus "dcom" versus future types...
+     *
+     */
+    @Override
+    void populateBaseClass() {
+        remotePort = sshport;
+        remoteUser = sshuser;
+        remotePassword = sshpassword;
+    }
+
+    @Override
+    final void populateParameters(ParameterMap pmap) {
+        pmap.add(NodeUtils.PARAM_SSHKEYFILE, sshkeyfile);
+        pmap.add(NodeUtils.PARAM_SSHKEYPASSPHRASE, sshkeypassphrase);
+    }
+
+    @Override
+    final void populateCommandArgs(List<String> args) {
+        if (sshkeyfile == null) {
+            sshkeyfile=SSHUtil.getExistingKeyFile();
         }
-        if (!StringUtils.ok(sshuser)) {
-            sshuser = NodeUtils.NODE_DEFAULT_SSH_USER;
+
+        if(sshkeyfile!= null) {
+            args.add("--sshkeyfile");
+            args.add(sshkeyfile);
         }
     }
 
@@ -276,9 +148,9 @@ public class CreateNodeSshCommand implements AdminCommand  {
      * @param output contains output message
      * @return exit status of install-node
      */
-    private int execCommand(List<String> cmdLine, SSHLauncher launcher, StringBuilder output) {
+    @Override
+    int execCommand(List<String> cmdLine, StringBuilder output) {
         int exit = -1;
-        
         List<String> fullcommand = new ArrayList<String>();
         String installDir = nodes.getDefaultLocalNode().getInstallDirUnixStyle() + "/glassfish";
         if (!StringUtils.ok(installDir)) {
@@ -287,20 +159,20 @@ public class CreateNodeSshCommand implements AdminCommand  {
 
         File asadmin = new File(SystemPropertyConstants.getAsAdminScriptLocation(installDir));
         fullcommand.add(asadmin.getAbsolutePath());
-        
+
         BufferedWriter out = null;
         File f = null;
-        
+
         //if password auth is used for creating node, use the same auth mechanism for
         //install-node as well. The passwords are passed using a temporary password file
-        if(sshpassword != null) {        
+        if(remotePassword != null) {
             try {
                 f = new File(System.getProperty("java.io.tmpdir"), "pass.tmp");
                 out = new BufferedWriter(new FileWriter(f));
                 out.newLine();
-                out.write("AS_ADMIN_SSHPASSWORD=" + launcher.expandPasswordAlias(sshpassword) + "\n");
+                out.write("AS_ADMIN_SSHPASSWORD=" + nodeUtils.sshL.expandPasswordAlias(remotePassword) + "\n");
                 if(sshkeypassphrase != null)
-                    out.write("AS_ADMIN_SSHKEYPASSPHRASE=" + launcher.expandPasswordAlias(sshkeypassphrase) + "\n");
+                    out.write("AS_ADMIN_SSHKEYPASSPHRASE=" + nodeUtils.sshL.expandPasswordAlias(sshkeypassphrase) + "\n");
                 out.flush();
             } catch (IOException ioe) {
                 if (logger.isLoggable(Level.FINE)) {
@@ -311,7 +183,7 @@ public class CreateNodeSshCommand implements AdminCommand  {
             }
             finally {
                 try {
-                    if (out != null)                        
+                    if (out != null)
                         out.close();
                 } catch(final Exception ex){
                     if (logger.isLoggable(Level.FINE)) {
@@ -319,14 +191,14 @@ public class CreateNodeSshCommand implements AdminCommand  {
                     }
                 }
             }
-            
+
             fullcommand.add("--passwordfile");
             fullcommand.add(f.getAbsolutePath());
         }
-        
-        fullcommand.add("--interactive=false");     
+
+        fullcommand.add("--interactive=false");
         fullcommand.addAll(cmdLine);
-        
+
         ProcessManager pm = new ProcessManager(fullcommand);
 
         if(logger.isLoggable(Level.INFO)) {
@@ -340,7 +212,7 @@ public class CreateNodeSshCommand implements AdminCommand  {
             pm.setEcho(false);
 
         try {
-            exit = pm.execute();            
+            exit = pm.execute();
         }
         catch (ProcessManagerException ex) {
             if(logger.isLoggable(Level.FINE)) {
@@ -351,7 +223,7 @@ public class CreateNodeSshCommand implements AdminCommand  {
 
         String stdout = pm.getStdout();
         String stderr = pm.getStderr();
-        
+
         if (output != null) {
             if (StringUtils.ok(stdout)) {
                 output.append(stdout);
@@ -364,7 +236,7 @@ public class CreateNodeSshCommand implements AdminCommand  {
                 output.append(stderr);
             }
         }
-        
+
         if (f != null) {
             boolean didDelete = f.delete();
             if(!didDelete) {
@@ -375,15 +247,4 @@ public class CreateNodeSshCommand implements AdminCommand  {
         }
         return exit;
     }
-    
-    private String commandListToString(List<String> command) {
-        StringBuilder fullCommand = new StringBuilder();
-
-        for (String s : command) {
-            fullCommand.append(" ");
-            fullCommand.append(s);
-        }
-
-        return fullCommand.toString();
-    }
-}    
+}
