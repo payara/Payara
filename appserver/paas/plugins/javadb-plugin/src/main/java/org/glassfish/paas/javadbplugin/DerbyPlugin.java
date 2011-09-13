@@ -45,6 +45,8 @@ import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.embeddable.CommandResult;
 import org.glassfish.embeddable.CommandRunner;
 import org.glassfish.paas.javadbplugin.cli.DatabaseServiceUtil;
+import org.glassfish.paas.orchestrator.ServiceOrchestrator;
+import org.glassfish.paas.orchestrator.ServiceOrchestrator.ReconfigAction;
 import org.glassfish.paas.orchestrator.provisioning.ServiceInfo;
 import org.glassfish.paas.orchestrator.provisioning.DatabaseProvisioner;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceType;
@@ -56,6 +58,7 @@ import org.glassfish.paas.orchestrator.service.metadata.ServiceDescription;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceReference;
 import org.glassfish.paas.orchestrator.service.spi.Plugin;
 import org.glassfish.paas.orchestrator.service.spi.ProvisionedService;
+import org.glassfish.virtualization.spi.AllocationStrategy;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
@@ -291,9 +294,6 @@ public static final String RDBMS_ServiceType = "Database";
         throw new UnsupportedOperationException("Not implemented yet");
     }
 
-    public boolean reconfigureServices(ProvisionedService oldPS, ProvisionedService newPS) {
-        throw new UnsupportedOperationException("Not implemented yet");
-    }
 
     public Set<ServiceDescription> getImplicitServiceDescriptions(
             ReadableArchive cloudArchive, String appName) {
@@ -322,6 +322,30 @@ public static final String RDBMS_ServiceType = "Database";
     public void dissociateServices(ProvisionedService serviceConsumer, ServiceReference svcRef,
                                    ProvisionedService serviceProvider, boolean beforeUndeploy, DeploymentContext dc){
         //no-op
+    }
+
+    @Override
+    public ProvisionedService scaleService(ServiceDescription serviceDesc,
+            int scaleCount, AllocationStrategy allocStrategy) {
+        //no-op
+        throw new UnsupportedOperationException("Scaling of Derby Service " +
+        		"not supported in this release");
+    }
+
+    @Override
+    public boolean reconfigureServices(ProvisionedService oldPS,
+            ProvisionedService newPS) {
+        //no-op
+        throw new UnsupportedOperationException("Reconfiguration of Service " +
+                "not supported in this release");
+    }
+
+    @Override
+    public boolean reassociateServices(ProvisionedService oldPS,
+            ProvisionedService newPS, ReconfigAction reason) {
+        //no-op
+        throw new UnsupportedOperationException("Reassociation of Service " +
+                "not supported in this release");
     }
 
 }

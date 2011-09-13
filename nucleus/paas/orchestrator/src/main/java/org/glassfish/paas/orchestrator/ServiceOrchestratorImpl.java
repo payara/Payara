@@ -223,7 +223,7 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator, Application
         ServicesXMLParser parser = habitat.getAllByContract(
                 ServicesXMLParser.class).iterator().next();
 
-        //1.1 discover all Service References and Definitions already declared for this application
+        //1.1 discover all Service References and Descriptions already declared for this application
         ServiceMetadata appServiceMetadata = parser.discoverDeclaredServices(appName, archive);
 
         //if no meta-data is found, create empty ServiceMetadata
@@ -232,19 +232,20 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator, Application
             appServiceMetadata.setAppName(appName);
         }
 
-        logger.log(Level.INFO, "Discovered declared service metadata via glassfish-services.xml = " + appServiceMetadata);
+        logger.log(Level.INFO, "Discovered declared service metadata " +
+        		"via glassfish-services.xml = " + appServiceMetadata);
 
-        //1.2 Get implicit service-definitions (for instance a war is deployed, and it has not
-        //specified a javaee service-definition in its orchestration.xml, the PaaS runtime
-        //discovers through the GlassFish plugin that a default javaee service-definition
+        //1.2 Get implicit service-descriptions (for instance a war is deployed, and it has not
+        //specified a javaee service-description in its orchestration.xml, the PaaS runtime
+        //discovers through the GlassFish plugin that a default javaee service-description
         //is implied
         for (Plugin svcPlugin : installedPlugins) {
             if (svcPlugin.handles(archive)) {
                 //If a ServiceDescription has not been declared explicitly in
                 //the application for the plugin's type, ask the plugin
-                //if it has any implicit service-definition for this
+                //if it has any implicit service-description for this
                 //application
-                if (!serviceDefinitionExistsForType(appServiceMetadata, svcPlugin.getServiceType())) {
+                if (!serviceDescriptionExistsForType(appServiceMetadata, svcPlugin.getServiceType())) {
                     Set<ServiceDescription> implicitServiceDescs = svcPlugin.getImplicitServiceDescriptions(archive, appName);
                     for (ServiceDescription sd : implicitServiceDescs) {
                         System.out.println("Implicit ServiceDescription:" + sd);
@@ -253,7 +254,8 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator, Application
                 }
             }
         }
-        logger.log(Level.INFO, "After adding implicit ServiceDescriptions = " + appServiceMetadata);
+        logger.log(Level.INFO, "After adding implicit " +
+        		"ServiceDescriptions = " + appServiceMetadata);
 
 
         //1.2 Get implicit ServiceReferences
@@ -261,31 +263,35 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator, Application
             if (svcPlugin.handles(archive)) {
                 Set<ServiceReference> implicitServiceRefs = svcPlugin.getServiceReferences(archive);
                 for (ServiceReference sr : implicitServiceRefs) {
-                    System.out.println("ServiceReference:" + sr);
+                    System.out.println("Detected Implicit ServiceReference:" + sr);
                     appServiceMetadata.addServiceReference(sr);
                 }
             }
         }
-        logger.log(Level.INFO, "After adding ServiceReferences = " + appServiceMetadata);
+        logger.log(Level.INFO, "After adding implicit " +
+        		"ServiceReferences = " + appServiceMetadata);
 
-        //1.3 Ensure all service references have a related service definition
+        //1.3 Ensure all service references have a related service description
         Set<ServiceDescription> appSDs = appServiceMetadata.getServiceDescriptions();
         Set<ServiceReference> appSRs = appServiceMetadata.getServiceReferences();
         for (ServiceReference sr : appSRs) {
             String targetSD = sr.getTarget();
             String svcRefType = sr.getServiceRefType();
-            boolean serviceDefinitionExists = false;
+            boolean serviceDescriptionExists = false;
             for (ServiceDescription sd : appSDs) {
                 //XXX: For now we assume all SRs are satisfied by app-scoped SDs
                 //In the future this has to be modified to search in global SDs
                 //as well
                 if (sd.getName().equals(targetSD)) {
-                    serviceDefinitionExists = true;
+                    serviceDescriptionExists = true;
                 }
             }
-            if (!serviceDefinitionExists) {
+            if (!serviceDescriptionExists) {
                 //create a default SD for this service ref and add to application's
                 //service metadata
+                //XXX: creating the defaultSD is left to the first plugin that 
+                //supports that ServiceReference type. Need to validate this
+                //when multiple plugins of the same ServiceType is deployed.
                 for (Plugin svcPlugin : installedPlugins) {
                     if (svcPlugin.isReferenceTypeSupported(svcRefType)) {
                         ServiceDescription defSD = svcPlugin.getDefaultServiceDescription(appName, sr);
@@ -299,7 +305,7 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator, Application
         //TODO should it be validated in this case ?
         //TODO user can always add them via GUI ?
         assertMetadataComplete(appSDs, appSRs);
-        logger.log(Level.INFO, "Final Service Metadata = " + appServiceMetadata);
+        logger.log(Level.INFO, "Final Service Dependency Metadata = " + appServiceMetadata);
         return appServiceMetadata;
     }
 
@@ -313,7 +319,7 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator, Application
         ServicesXMLParser parser = habitat.getAllByContract(
                 ServicesXMLParser.class).iterator().next();
 
-        //1.1 discover all Service References and Definitions already declared for this application
+        //1.1 discover all Service References and Descriptions already declared for this application
         ServiceMetadata appServiceMetadata = parser.discoverDeclaredServices(appName, archive);
 
         //if no meta-data is found, create empty ServiceMetadata
@@ -324,17 +330,17 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator, Application
 
         logger.log(Level.INFO, "Discovered declared service metadata via glassfish-services.xml = " + appServiceMetadata);
 
-        //1.2 Get implicit service-definitions (for instance a war is deployed, and it has not
-        //specified a javaee service-definition in its orchestration.xml, the PaaS runtime
-        //through the GlassFish plugin that a default javaee service-definition
+        //1.2 Get implicit service-descriptions (for instance a war is deployed, and it has not
+        //specified a javaee service-description in its orchestration.xml, the PaaS runtime
+        //through the GlassFish plugin that a default javaee service-description
         //is implied
         for (Plugin svcPlugin : installedPlugins) {
             if (svcPlugin.handles(archive)) {
                 //If a ServiceDescription has not been declared explicitly in
-                //the application for the plugin's type, ask the plugin
-                //if it has any implicit service-definition for this
-                //application
-                if (!serviceDefinitionExistsForType(appServiceMetadata, svcPlugin.getServiceType())) {
+                //the application for the plugin's type, ask the plugin (since it 
+                //supports this type of archive) if it has any implicit 
+                //service-description for this application
+                if (!serviceDescriptionExistsForType(appServiceMetadata, svcPlugin.getServiceType())) {
                     Set<ServiceDescription> implicitServiceDescs = svcPlugin.getImplicitServiceDescriptions(archive, appName);
                     for (ServiceDescription sd : implicitServiceDescs) {
                         System.out.println("Implicit ServiceDescription:" + sd);
@@ -358,22 +364,22 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator, Application
         }
         logger.log(Level.INFO, "After adding ServiceReferences = " + appServiceMetadata);
 
-        //1.3 Ensure all service references have a related service definition
+        //1.3 Ensure all service references have a related service description
         Set<ServiceDescription> appSDs = appServiceMetadata.getServiceDescriptions();
         Set<ServiceReference> appSRs = appServiceMetadata.getServiceReferences();
         for (ServiceReference sr : appSRs) {
             String targetSD = sr.getTarget();
             String svcRefType = sr.getServiceRefType();
-            boolean serviceDefinitionExists = false;
+            boolean serviceDescriptionExists = false;
             for (ServiceDescription sd : appSDs) {
                 //XXX: For now we assume all SRs are satisfied by app-scoped SDs
                 //In the future this has to be modified to search in global SDs
                 //as well
                 if (sd.getName().equals(targetSD)) {
-                    serviceDefinitionExists = true;
+                    serviceDescriptionExists = true;
                 }
             }
-            if (!serviceDefinitionExists) {
+            if (!serviceDescriptionExists) {
                 //create a default SD for this service ref and add to application's
                 //service metadata
                 for (Plugin svcPlugin : installedPlugins) {
@@ -498,6 +504,8 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator, Application
         Set<ServiceDescription> appSDs = appServiceMetadata.getServiceDescriptions();
         List<Future> provisioningFutures = new ArrayList<Future>();
         for (final ServiceDescription sd : appSDs) {
+            //XXX (Jagadish): Use a Callable<ProvisionedService>. Then, we can
+            //cleanup gracefully below in case of failure?
             Future future = ServiceUtil.getThreadPool().submit(new Runnable() {
                 public void run() {
                     Plugin<?> chosenPlugin = getPluginForServiceType(installedPlugins, sd.getServiceType());
@@ -523,6 +531,7 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator, Application
         }
         if(failed){
             //TODO need a better mechanism ?
+            //XXX (Siva): Failure handling. Exception design.
             throw new RuntimeException("Failure while provisioning services, refer server.log for more details");
         }
         return appPSs;
@@ -564,7 +573,7 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator, Application
         return null;
     }
 
-    private boolean serviceDefinitionExistsForType(
+    private boolean serviceDescriptionExistsForType(
             ServiceMetadata appServiceMetadata, ServiceType svcType) {
         for (ServiceDescription sd : appServiceMetadata.getServiceDescriptions()) {
             if (sd.getServiceType().equalsIgnoreCase(svcType.toString())) return true;
@@ -577,13 +586,13 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator, Application
         //Assert that all SRs have their corresponding SDs
         for (ServiceReference sr : appSRs) {
             String targetSD = sr.getTarget();
-            boolean serviceDefinitionExists = false;
+            boolean serviceDescriptionExists = false;
             for (ServiceDescription sd : appSDs) {
                 if (sd.getName().equals(targetSD)) {
-                    serviceDefinitionExists = true;
+                    serviceDescriptionExists = true;
                 }
             }
-            assert serviceDefinitionExists;
+            assert serviceDescriptionExists;
         }
     }
 
@@ -645,6 +654,7 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator, Application
     }
 
 
+    //XXX (Jagadish): Needed anymore?
     private boolean isValidApplication(String appName) {
         boolean isValid = true;
         //TODO check whether the application uses any <services> and then invoke orchestrator.
@@ -760,11 +770,49 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator, Application
     @Override
     public boolean scaleService(String appName, String svcName,
             int scaleCount, AllocationStrategy allocStrategy) {
-        //XXX: Dummy implementation for now.
         System.out.println("Scaling Service " + svcName + " for Application " 
                                 + appName + "by " + scaleCount + "instances");
+
+        //Get Old PS
+        Set<ProvisionedService> appPS = provisionedServices.get(appName);
+        ProvisionedService oldPS = null;
+        for(ProvisionedService ps: appPS) {
+            if (ps.getName().equals(svcName)) oldPS = ps;
+        }
+        
+        //Find Plugin that provided this Service
+        Set<Plugin> installedPlugins = getPlugins();
+        Plugin<?> chosenPlugin = getPluginForServiceType(
+                installedPlugins, oldPS.getServiceDescription().getServiceType());
+        
+        //ask it to scale the service and get new PS
+        ProvisionedService newPS = chosenPlugin.scaleService(
+                oldPS.getServiceDescription(), scaleCount, allocStrategy);
+        
+        //Simple assertions to ensure that we have the scaled Service.
+        assert newPS.getName().equals(oldPS.getName());
+        assert newPS.getServiceType().equals(oldPS.getServiceType());
+        
+        //now re-associate all plugins with the new PS.
+        ServiceMetadata appServiceMetadata = serviceMetadata.get(appName); 
+        for (Plugin<?> svcPlugin : installedPlugins) {
+            //re-associate the new PS only with plugins that handle other service types.
+            if (!newPS.getServiceType().equals(svcPlugin.getServiceType())) {
+                Set<ServiceReference> appSRs = appServiceMetadata.getServiceReferences();
+                for (ServiceReference serviceRef : appSRs) {
+                    logger.log(Level.INFO, "Re-associating New ProvisionedService " 
+                            + newPS + " for ServiceReference " + serviceRef 
+                            + " through " + svcPlugin);
+                    Collection<ProvisionedService> serviceConsumers = 
+                            getServicesProvisionedByPlugin(svcPlugin, appPS);
+                    for(ProvisionedService serviceConsumer : serviceConsumers){
+                        svcPlugin.reassociateServices(oldPS, newPS, ReconfigAction.AUTO_SCALING);
+                    }
+                }
+            }
+        }
+        
         return true;
     }
-
 
 }

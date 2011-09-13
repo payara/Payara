@@ -124,5 +124,7 @@ public interface ServiceOrchestrator {
      */
     public boolean scaleService(String appName, String svcName, 
             int scaleCount, AllocationStrategy allocStrategy);
+    
+    public static enum ReconfigAction {AUTO_SCALING, RESTART};
 
 }

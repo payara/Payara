@@ -54,6 +54,8 @@ import org.glassfish.embeddable.Deployer;
 import org.glassfish.embeddable.GlassFish;
 import org.glassfish.embeddable.GlassFishException;
 import org.glassfish.paas.gfplugin.cli.GlassFishServiceUtil;
+import org.glassfish.paas.orchestrator.ServiceOrchestrator;
+import org.glassfish.paas.orchestrator.ServiceOrchestrator.ReconfigAction;
 import org.glassfish.paas.orchestrator.provisioning.ApplicationServerProvisioner;
 import org.glassfish.paas.orchestrator.provisioning.ProvisionerUtil;
 import org.glassfish.paas.orchestrator.provisioning.LBProvisioner;
@@ -66,6 +68,7 @@ import org.glassfish.paas.orchestrator.service.metadata.ServiceDescription;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceReference;
 import org.glassfish.paas.orchestrator.service.spi.Plugin;
 import org.glassfish.paas.orchestrator.service.spi.ProvisionedService;
+import org.glassfish.virtualization.spi.AllocationStrategy;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
@@ -157,6 +160,8 @@ public class GlassFishPlugin implements Plugin<JavaEEServiceType> {
         CommandResult result = commandRunner.run("_delete-glassfish-service",
                 "--waitforcompletion=true", appNameParam,
                 serviceDescription.getName());
+        
+        //XXX (Bhavani): What is this clusterName used for?
         String clusterName = gfServiceUtil.getClusterName(serviceDescription.getName(), serviceDescription.getAppName());
         System.out.println("_delete-glassfish-service command output [" + result.getOutput() + "]");
         if (result.getExitStatus() == CommandResult.ExitStatus.SUCCESS) {
@@ -526,9 +531,6 @@ public class GlassFishPlugin implements Plugin<JavaEEServiceType> {
         return null;
     }
 
-    public boolean reconfigureServices(ProvisionedService oldPS, ProvisionedService newPS) {
-        return false;
-    }
 
     public Set<ServiceDescription> getImplicitServiceDescriptions(
             ReadableArchive readableArchive, String appName) {
@@ -558,4 +560,28 @@ public class GlassFishPlugin implements Plugin<JavaEEServiceType> {
 */
         return defs;
     }
+
+    @Override
+    public ProvisionedService scaleService(ServiceDescription serviceDesc,
+            int scaleCount, AllocationStrategy allocStrategy) {
+        //XXX: No-op for now. Needs to be modified to scale the GF cluster
+        return null;
+    }
+    
+    @Override
+    public boolean reconfigureServices(ProvisionedService oldPS,
+            ProvisionedService newPS) {
+        //no-op
+        throw new UnsupportedOperationException("Reconfiguration of Service " +
+                "not supported in this release");
+    }
+
+    @Override
+    public boolean reassociateServices(ProvisionedService oldPS,
+            ProvisionedService newPS, ReconfigAction reason) {
+        //no-op
+        throw new UnsupportedOperationException("Reassociation of Service " +
+                "not supported in this release");
+    }
+    
 }

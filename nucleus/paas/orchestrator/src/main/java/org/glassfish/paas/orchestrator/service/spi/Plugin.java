@@ -1,4 +1,5 @@
 /*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  * Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
  *
@@ -44,10 +45,12 @@ import java.util.Set;
 import org.glassfish.api.deployment.ApplicationContainer;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.archive.ReadableArchive;
+import org.glassfish.paas.orchestrator.ServiceOrchestrator;
 import org.glassfish.paas.orchestrator.provisioning.ServiceInfo;
 import org.glassfish.paas.orchestrator.service.ServiceType;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceDescription;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceReference;
+import org.glassfish.virtualization.spi.AllocationStrategy;
 import org.jvnet.hk2.annotations.Contract;
 
 /**
@@ -198,6 +201,24 @@ public interface Plugin<T extends ServiceType> {
      */
     public boolean unprovisionService(ServiceDescription serviceDescription, DeploymentContext dc);
 
+    /**
+     * Scales the size of a Service up or down as per the provided scalingFactor.
+     * 
+     * @param serviceDesc The original ServiceDescription of the Service
+     * @param scaleCount Number of units of the Service that needs to be scaled.
+     * A positive number for scaling up and a negative number for scaling down.
+     * @param allocStrategy The allocationStrategy that needs to be utilized
+     * to scale the Service. The allocationStrategy implementation that is 
+     * provided could be used to spawn a new instance in a less-loaded/underutilized
+     * machine in the <code>ServerPool</code>. This could be null, if the default
+     * allocation strategy needs to be employed.
+     * 
+     * @return the new ProvisionedService scaling operation was successful
+     */
+    public ProvisionedService scaleService(ServiceDescription serviceDesc, 
+            int scaleCount, AllocationStrategy allocStrategy);
+
+
     /* SERVICE ASSOCIATION/BINDING */
     
     /**
@@ -305,4 +326,20 @@ public interface Plugin<T extends ServiceType> {
     public boolean reconfigureServices(ProvisionedService oldPS,
                                        ProvisionedService newPS);
 
+    /**
+     * When a Service has been re-provisioned, and a prior deployment has
+     * already been bound to the earlier ProvisionedService, CAS uses this
+     * method to reassociate resources to point to the newly
+     * <code>ProvisionedService</code>.
+     * 
+     * Some of the reasons reconfiguration may occur are auto-scaling
+     * of Services, CPAS or VM restarts.
+     * 
+     * @param oldPS The old ProvisionedService
+     * @param newPS The new ProvisionedService
+     * @param reason The reason for the re-configuration.
+     */
+    public boolean reassociateServices(ProvisionedService oldPS,
+            ProvisionedService newPS, 
+            ServiceOrchestrator.ReconfigAction reason);
 }

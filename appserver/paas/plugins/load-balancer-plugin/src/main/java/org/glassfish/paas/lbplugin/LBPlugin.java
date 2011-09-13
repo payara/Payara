@@ -39,15 +39,22 @@
  */
 package org.glassfish.paas.lbplugin;
 
-import com.sun.enterprise.deployment.Application;
-import com.sun.enterprise.deployment.WebBundleDescriptor;
-import com.sun.enterprise.deployment.archivist.ApplicationFactory;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import org.glassfish.api.deployment.ApplicationContainer;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.embeddable.CommandResult;
 import org.glassfish.embeddable.CommandRunner;
 import org.glassfish.paas.lbplugin.cli.GlassFishLBProvisionedService;
+import org.glassfish.paas.lbplugin.logger.LBPluginLogger;
+import org.glassfish.paas.orchestrator.ServiceOrchestrator.ReconfigAction;
 import org.glassfish.paas.orchestrator.provisioning.ServiceInfo;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceType;
 import org.glassfish.paas.orchestrator.service.HTTPLoadBalancerServiceType;
@@ -58,19 +65,15 @@ import org.glassfish.paas.orchestrator.service.metadata.ServiceDescription;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceReference;
 import org.glassfish.paas.orchestrator.service.spi.Plugin;
 import org.glassfish.paas.orchestrator.service.spi.ProvisionedService;
+import org.glassfish.virtualization.spi.AllocationStrategy;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.glassfish.paas.lbplugin.logger.LBPluginLogger;
+import com.sun.enterprise.deployment.Application;
+import com.sun.enterprise.deployment.WebBundleDescriptor;
+import com.sun.enterprise.deployment.archivist.ApplicationFactory;
 
 /**
  * @author Jagadish Ramu
@@ -292,9 +295,6 @@ public class LBPlugin implements Plugin {
         throw new UnsupportedOperationException("Not implemented yet");
     }
 
-    public boolean reconfigureServices(ProvisionedService oldPS, ProvisionedService newPS) {
-        throw new UnsupportedOperationException("Not implemented yet");
-    }
 
     public Set<ServiceDescription> getImplicitServiceDescriptions(ReadableArchive cloudArchive, String appName) {
         //no-op. Just by looking at a orchestration archive
@@ -365,4 +365,29 @@ public class LBPlugin implements Plugin {
         }
         return sb.toString();
     }
+
+    @Override
+    public ProvisionedService scaleService(ServiceDescription serviceDesc,
+            int scaleCount, AllocationStrategy allocStrategy) {
+        //no-op
+        throw new UnsupportedOperationException("Scaling of LB Service " +
+                "not supported in this release");
+    }
+    
+    @Override
+    public boolean reconfigureServices(ProvisionedService oldPS,
+            ProvisionedService newPS) {
+        //no-op
+        throw new UnsupportedOperationException("Reconfiguration of Service " +
+                "not supported in this release");
+    }
+
+    @Override
+    public boolean reassociateServices(ProvisionedService oldPS,
+            ProvisionedService newPS, ReconfigAction reason) {
+        //no-op
+        throw new UnsupportedOperationException("Reassociation of Service " +
+                "not supported in this release");
+    }
+    
 }
