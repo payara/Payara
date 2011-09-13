@@ -39,60 +39,42 @@
  */
 package org.glassfish.elasticity.engine.commands;
 
-import org.glassfish.elasticity.config.serverbeans.*;
-import com.sun.enterprise.config.serverbeans.Domain;
-import com.sun.enterprise.universal.glassfish.TokenResolver;
-import com.sun.enterprise.util.StringUtils;
+ import org.glassfish.elasticity.config.serverbeans.*;
+ import org.glassfish.api.ActionReport;
+ import org.glassfish.api.I18n;
+ import org.glassfish.api.Param;
+ import org.glassfish.api.admin.*;
+ import org.glassfish.hk2.Services;
+ import org.jvnet.hk2.annotations.*;
+ import org.jvnet.hk2.component.*;
+ import org.jvnet.hk2.config.*;
+ import java.util.logging.Logger;
 import java.beans.PropertyVetoException;
-import java.util.HashMap;
-import java.util.Map;
-import org.glassfish.elasticity.config.serverbeans.*;
+ import com.sun.enterprise.config.serverbeans.Domain;
 
-import org.glassfish.api.ActionReport;
-import org.glassfish.api.I18n;
-import org.glassfish.api.Param;
-import org.glassfish.api.admin.*;
-import org.glassfish.hk2.Services;
-import org.jvnet.hk2.annotations.*;
-import org.jvnet.hk2.component.*;
-import org.jvnet.hk2.config.*;
-import java.util.logging.Logger;
-
-/**
- ** Remote AdminCommand to create an alert element.  This command is run only on DAS.
- * Created by IntelliJ IDEA.
- * User: cmott
- * Date: 8/22/11
+/*
+  * command used by GUI for OOW
  */
-@Service(name = "create-alert")
-@I18n("create.alert")
+
+@Service(name = "configure-elastic-service-limits")
+@I18n("configure.elastic.service.limits")
 @Scoped(PerLookup.class)
-@ExecuteOn({RuntimeType.DAS})
-public class CreateAlertCommand implements AdminCommand {
+public class ConfigureElasticServiceLimits implements AdminCommand{
 
-  @Inject
-  ElasticServices elasticServices;
+    @Inject
+    ElasticServices elasticServices;
 
-  @Inject
-  Domain domain;
+    @Inject
+    Domain domain;
 
-  @Param(name="name", primary = true)
-   String name;
+    @Param(name="servicename", primary=true)
+    String servicename;
 
-  @Param(name="service")
-  String servicename;
+    @Param(name="min", optional=true)
+    int min=-1;
 
-  @Param(name="schedule", optional = true)
-  String schedule;
-
-  @Param(name="sampleinterval", optional = true)
-  int sampleInterval;
-
-  @Param(name="expression")
-  String expression;
-
-  @Param(name="enabled", defaultValue = "true", optional = true)
-  boolean enabled;
+    @Param(name="max", optional=true)
+    int max=-1;
 
     @Override
     public void execute(AdminCommandContext context) {
@@ -102,52 +84,49 @@ public class CreateAlertCommand implements AdminCommand {
         ElasticService elasticService= elasticServices.getElasticService(servicename);
         if (elasticService == null) {
             //service doesn't exist
-            String msg = Strings.get("noSuchService", name);
+            String msg = Strings.get("noSuchService", servicename);
             logger.warning(msg);
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setMessage(msg);
             return;
         }
 
+        int currentMax = elasticService.getMax();
+        if (min > currentMax && min > max)  {
+            String msg =  "Min must be less than max limit";
+            logger.warning(msg);
+            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            report.setMessage(msg);
+            return;
+         }
+
         try {
-            createAlertElement(name);
+            updateESElement(servicename);
         } catch(TransactionFailure e) {
-            logger.warning("failed.to.create.alert " + name);
+            logger.warning("failed.to.configure..elastic-service " + servicename);
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setMessage(e.getMessage());
         }
+
     }
 
-    public void createAlertElement(final String alertName) throws TransactionFailure {
+         public void updateESElement(final String servicename) throws TransactionFailure {
         ConfigSupport.apply(new SingleConfigCode() {
             @Override
             public Object run(ConfigBeanProxy param) throws PropertyVetoException, TransactionFailure {
                 // get the transaction
                 Transaction t = Transaction.getTransaction(param);
                 if (t!=null) {
-                    ElasticService elasticService = elasticServices.getElasticService(servicename);
-                    if (elasticService != null ){
-                    ElasticService writeableService = t.enroll(elasticService);
-                    Alerts writeableAlerts = elasticService.getAlerts();
-                    if (writeableAlerts == null)
-                        writeableAlerts =writeableService.createChild(Alerts.class);
-                    else
-                         writeableAlerts = t.enroll(writeableAlerts);
+                    ElasticService welasticService = elasticServices.getElasticService(servicename);
+                    if (welasticService != null ){
+                        welasticService = t.enroll(welasticService);
+                        if (min != -1)
+                            welasticService.setMin(min);
 
-                    AlertConfig writeableAlert = writeableAlerts.createChild(AlertConfig.class);
-                    if (name != null)
-                        writeableAlert.setName(name);
-                    if (schedule != null)
-                        writeableAlert.setSchedule(schedule);
-                    if (expression != null)
-                        writeableAlert.setExpression(expression);
-                    if (sampleInterval != 0)
-                        writeableAlert.setSampleInterval(sampleInterval);
-                    if (!enabled)
-                        writeableAlert.setEnabled(enabled);
-                    writeableAlerts.getAlert().add(writeableAlert);
-                    writeableService.setAlerts(writeableAlerts);
-                    }
+                        if(max != -1 )
+                             welasticService.setMax(max);
+
+                     }
                 }
                 return Boolean.TRUE;
             }

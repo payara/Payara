@@ -39,60 +39,39 @@
  */
 package org.glassfish.elasticity.engine.commands;
 
-import org.glassfish.elasticity.config.serverbeans.*;
-import com.sun.enterprise.config.serverbeans.Domain;
-import com.sun.enterprise.universal.glassfish.TokenResolver;
-import com.sun.enterprise.util.StringUtils;
-import java.beans.PropertyVetoException;
-import java.util.HashMap;
-import java.util.Map;
-import org.glassfish.elasticity.config.serverbeans.*;
+ import org.glassfish.elasticity.config.serverbeans.*;
+ import org.glassfish.api.ActionReport;
+ import org.glassfish.api.I18n;
+ import org.glassfish.api.Param;
+ import org.glassfish.api.admin.*;
+ import org.glassfish.hk2.Services;
+ import org.jvnet.hk2.annotations.*;
+ import org.jvnet.hk2.component.*;
+ import org.jvnet.hk2.config.*;
+ import java.util.logging.Logger;
+ import com.sun.enterprise.config.serverbeans.Domain;
+ import java.beans.PropertyVetoException;
 
-import org.glassfish.api.ActionReport;
-import org.glassfish.api.I18n;
-import org.glassfish.api.Param;
-import org.glassfish.api.admin.*;
-import org.glassfish.hk2.Services;
-import org.jvnet.hk2.annotations.*;
-import org.jvnet.hk2.component.*;
-import org.jvnet.hk2.config.*;
-import java.util.logging.Logger;
-
-/**
- ** Remote AdminCommand to create an alert element.  This command is run only on DAS.
- * Created by IntelliJ IDEA.
- * User: cmott
- * Date: 8/22/11
+/*
+  * command used by GUI for OOW
  */
-@Service(name = "create-alert")
-@I18n("create.alert")
+
+@Service(name = "delete-alert")
+@I18n("delete.alert")
 @Scoped(PerLookup.class)
-@ExecuteOn({RuntimeType.DAS})
-public class CreateAlertCommand implements AdminCommand {
+public class DeleteAlertCommand implements AdminCommand{
 
-  @Inject
-  ElasticServices elasticServices;
+    @Inject
+    ElasticServices elasticServices;
 
-  @Inject
-  Domain domain;
+    @Inject
+    Domain domain;
 
-  @Param(name="name", primary = true)
-   String name;
+    @Param (name ="alert", primary = true)
+    String alertname;
 
-  @Param(name="service")
-  String servicename;
-
-  @Param(name="schedule", optional = true)
-  String schedule;
-
-  @Param(name="sampleinterval", optional = true)
-  int sampleInterval;
-
-  @Param(name="expression")
-  String expression;
-
-  @Param(name="enabled", defaultValue = "true", optional = true)
-  boolean enabled;
+    @Param(name="service")
+    String servicename;
 
     @Override
     public void execute(AdminCommandContext context) {
@@ -102,23 +81,34 @@ public class CreateAlertCommand implements AdminCommand {
         ElasticService elasticService= elasticServices.getElasticService(servicename);
         if (elasticService == null) {
             //service doesn't exist
-            String msg = Strings.get("noSuchService", name);
+            String msg = Strings.get("noSuchService", servicename);
             logger.warning(msg);
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setMessage(msg);
             return;
         }
 
+        AlertConfig  alert = elasticService.getAlerts().getAlert(alertname);
+        if (elasticService == null) {
+            //alert doesn't exist
+            String msg = Strings.get("noSuchAlert", alertname);
+            logger.warning(msg);
+            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            report.setMessage(msg);
+            return;
+        }
+        //delete the config element
         try {
-            createAlertElement(name);
+            deleteAlertElement(alertname);
         } catch(TransactionFailure e) {
-            logger.warning("failed.to.create.alert " + name);
+            logger.warning("failed.to.delete.alert " + alertname);
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setMessage(e.getMessage());
         }
+        //notify elastic engine to stop running the alert
     }
 
-    public void createAlertElement(final String alertName) throws TransactionFailure {
+     public void deleteAlertElement(final String alertName) throws TransactionFailure {
         ConfigSupport.apply(new SingleConfigCode() {
             @Override
             public Object run(ConfigBeanProxy param) throws PropertyVetoException, TransactionFailure {
@@ -127,31 +117,20 @@ public class CreateAlertCommand implements AdminCommand {
                 if (t!=null) {
                     ElasticService elasticService = elasticServices.getElasticService(servicename);
                     if (elasticService != null ){
-                    ElasticService writeableService = t.enroll(elasticService);
-                    Alerts writeableAlerts = elasticService.getAlerts();
-                    if (writeableAlerts == null)
-                        writeableAlerts =writeableService.createChild(Alerts.class);
-                    else
-                         writeableAlerts = t.enroll(writeableAlerts);
+                        Alerts writeableAlerts = elasticService.getAlerts();
+                        if (writeableAlerts != null)  {
+                            writeableAlerts = t.enroll(writeableAlerts);
+                            AlertConfig alert=writeableAlerts.getAlert(alertname);
+                            writeableAlerts.getAlert().remove(alert);
+                        }
+                         //nothing to delete
 
-                    AlertConfig writeableAlert = writeableAlerts.createChild(AlertConfig.class);
-                    if (name != null)
-                        writeableAlert.setName(name);
-                    if (schedule != null)
-                        writeableAlert.setSchedule(schedule);
-                    if (expression != null)
-                        writeableAlert.setExpression(expression);
-                    if (sampleInterval != 0)
-                        writeableAlert.setSampleInterval(sampleInterval);
-                    if (!enabled)
-                        writeableAlert.setEnabled(enabled);
-                    writeableAlerts.getAlert().add(writeableAlert);
-                    writeableService.setAlerts(writeableAlerts);
-                    }
+                     }
                 }
                 return Boolean.TRUE;
             }
 
         }, domain);
     }
+
 }
