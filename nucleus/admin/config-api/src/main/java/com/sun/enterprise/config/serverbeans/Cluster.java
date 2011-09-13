@@ -659,10 +659,11 @@ public interface Cluster extends ConfigBeanProxy, Injectable, PropertyBag, Named
 
             // handle generation of udp multicast and non-multicast mode for DAS managed cluster.
             // inspect cluster attribute broadcast and cluster property GMS_DISCOVERY_URI_LIST.
+            String DEFAULT_BROADCAST = "udpmulticast";
             String broadcastProtocol = instance.getBroadcast();
             Property discoveryUriListProp = instance.getProperty("GMS_DISCOVERY_URI_LIST");
             String  discoveryUriList = discoveryUriListProp != null ? discoveryUriListProp.getValue() : null;
-            if (discoveryUriList != null  && broadcastProtocol != null && broadcastProtocol.equals("udpmulticast")) {
+            if (discoveryUriList != null  && DEFAULT_BROADCAST.equals(broadcastProtocol)) {
 
                 // override default broadcast protocol of udp multicast when GMS_DISCOVERY_URI_LIST has been set.
                 instance.setBroadcast("tcp");
@@ -672,7 +673,7 @@ public interface Cluster extends ConfigBeanProxy, Injectable, PropertyBag, Named
                 logger.log(Level.FINE, "cluster attribute gms broadcast=" + instance.getBroadcast());
                 logger.log(Level.FINE, "cluster property GMS_DISCOVERY_URI_LIST=" + discoveryUriList);
             }
-            if (broadcastProtocol.equals("udpmulticast")) {
+            if (DEFAULT_BROADCAST.equals(broadcastProtocol)) {
 
                 // only generate these values when they are not set AND broadcastProtocol is set to enable UDP multicast.
                 // Note: that this is the default for DAS controlled clusters.
@@ -713,7 +714,7 @@ public interface Cluster extends ConfigBeanProxy, Injectable, PropertyBag, Named
                         SystemProperty gmsListenerPortSysProp = instance.createChild(SystemProperty.class);
                         gmsListenerPortSysProp.setName(String.format("GMS_LISTENER_PORT-%s", instanceName));
                         gmsListenerPortSysProp.setValue(TCPPORT);
-                        boolean result = writeableConfig.getSystemProperty().add(gmsListenerPortSysProp);
+                        writeableConfig.getSystemProperty().add(gmsListenerPortSysProp);
                     }
                 }
             }
