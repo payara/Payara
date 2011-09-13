@@ -67,7 +67,6 @@ import com.sun.enterprise.module.Module;
 import com.sun.enterprise.module.ModulesRegistry;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.common.util.admin.ParameterMapExtractor;
-//import org.glassfish.virtualization.config.Virtualizations;
 
 import com.sun.logging.LogDomains;
 import org.glassfish.api.*;
@@ -81,6 +80,7 @@ import org.glassfish.api.deployment.*;
 import org.glassfish.api.deployment.archive.ArchiveHandler;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.api.deployment.archive.CompositeHandler;
+import org.glassfish.api.virtualization.VirtualizationEnv;
 import org.glassfish.internal.data.*;
 import org.glassfish.internal.api.*;
 import org.glassfish.internal.deployment.Deployment;
@@ -153,6 +153,9 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
 
     @Inject
     ServerEnvironmentImpl env;
+   
+    @Inject(optional=true)
+    VirtualizationEnv virtEnv;
 
     @Inject
     Events events;
@@ -1473,21 +1476,9 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
         return appRegistry.get(appName);
     }
 
-    // determine if it's in PaaS environment or not
-    public boolean isPaaSEnv() {
-/*
-        Virtualizations v = domain.getExtensionByType(Virtualizations.class);
-	if (v!=null && v.getVirtualizations().size()>0) {
-            return true;
-	}
-        return false;
-*/
-        return false;
-    }
-
     //sets the default target when the target is not specified
     public String setDefaultTarget(String appName) {
-        if (!isPaaSEnv()) {
+        if (virtEnv == null || !virtEnv.isPaasEnabled()) {
             return DeploymentUtils.DAS_TARGET_NAME;     
         } else {
            List<String> targets = 
