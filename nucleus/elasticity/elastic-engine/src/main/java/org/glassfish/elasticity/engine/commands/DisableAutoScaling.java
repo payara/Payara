@@ -44,8 +44,8 @@ import java.util.logging.Level;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
-import org.glassfish.elasticity.engine.common.ElasticServiceImpl;
-import org.glassfish.elasticity.engine.common.ElasticServiceManager;
+import org.glassfish.elasticity.engine.container.ElasticServiceContainer;
+import org.glassfish.elasticity.engine.container.ElasticServiceManager;
 import org.glassfish.elasticity.engine.util.EngineUtil;
 import org.glassfish.hk2.scopes.PerLookup;
 import org.jvnet.hk2.annotations.Inject;
@@ -74,18 +74,21 @@ public class DisableAutoScaling
 
     @Inject
     ElasticServices elasticServices;
-	
+
+    @Inject
+    ElasticServiceManager elasticServiceManager;
+
     public void execute(AdminCommandContext context) {
-    	ElasticServiceImpl service = (ElasticServiceImpl) ElasticServiceManager.getElasticService(name);
+    	ElasticServiceContainer service = (ElasticServiceContainer) elasticServiceManager.getElasticServiceContainer(name);
         ElasticService elasticService = elasticServices.getElasticService(name);
 
     	if (service != null && elasticService !=null ) {
             try {
                 elasticService.setEnabled(false);
                 service.setEnabled(false);
-                util.getLogger().log(Level.INFO, "enabled elastic-service: " + name);
+                util.getLogger().log(Level.INFO, "disabled elastic-service: " + name);
             } catch (PropertyVetoException ex){
-                util.getLogger().log(Level.WARNING, "Exception while setting enabled flag: " + name);
+                util.getLogger().log(Level.WARNING, "Exception while setting disabled flag: " + name, ex);
             }
     	} else {
 	    	util.getLogger().log(Level.WARNING, "No such elastic-service named: " + name);

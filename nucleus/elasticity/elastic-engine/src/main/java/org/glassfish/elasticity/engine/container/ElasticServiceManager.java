@@ -37,56 +37,31 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package org.glassfish.elasticity.engine.common;
+package org.glassfish.elasticity.engine.container;
 
-import org.glassfish.elasticity.api.ElasticService;
+import java.util.concurrent.ConcurrentHashMap;
+
+import org.glassfish.hk2.scopes.Singleton;
+import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 
 @Service
-public class ElasticServiceImpl
-	implements ElasticService {
+@Scoped(Singleton.class)
+public class ElasticServiceManager {
 
-	private String name;
-	
-	private boolean enabled;
-	
-	private int minSize;
-	
-	private int maxSize;
-	
-	private int reconfigurationPeriodInSeconds;
-	
-	
-	public ElasticServiceImpl(String name) {
-		this.name = name;
-	}
-	
-	public String getName() {
-		return this.name;
+	private ConcurrentHashMap<String, ElasticServiceContainer> _containers
+		= new ConcurrentHashMap<String, ElasticServiceContainer>();
+
+	public ElasticServiceContainer getElasticServiceContainer(String name) {
+		return _containers.get(name);
 	}
 
-	public boolean isEnabled() {
-		return true;
+	public void addElasticServiceContainer(String name, ElasticServiceContainer service) {
+		_containers.put(name, service);
 	}
 	
-	public void setEnabled(boolean value) {
-		this.enabled = value;
+	public void removeElasticServiceContainer(String name) {
+		_containers.remove(name);
 	}
-
-	public int getMinimumSize() {
-		return minSize;
-	}
-
-	public int getMaximumSize() {
-		return maxSize;
-	}
-
-	public void setMinimumSize(int minSize) {
-		this.minSize = minSize;
-	}
-
-	public void setMaximumSize(int maxSize) {
-		this.maxSize = maxSize;
-	}
-
+	
 }

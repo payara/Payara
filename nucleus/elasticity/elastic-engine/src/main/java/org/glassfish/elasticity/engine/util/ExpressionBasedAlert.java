@@ -67,13 +67,10 @@ public class ExpressionBasedAlert<C extends AlertConfig>
     public void initialize(Habitat habitat, C config) {
         this.habitat = habitat;
         this.config = config;
-        System.out.println("*** Entered ExpressionBasedAlert.initialize()....");
     }
 
     public AlertState execute() {
-
-        System.out.println("*** Entered ExpressionBasedAlert.execute()....");
-
+/*
         MetricNode metricNode = null;
 
         try {
@@ -112,6 +109,8 @@ public class ExpressionBasedAlert<C extends AlertConfig>
         } catch (Exception ex) {
             ex.printStackTrace();
         }
+*/
+
         return AlertState.ALARM;
     }
 

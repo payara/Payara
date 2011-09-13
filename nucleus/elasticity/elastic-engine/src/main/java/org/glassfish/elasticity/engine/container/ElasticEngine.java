@@ -37,12 +37,14 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package org.glassfish.elasticity.engine.util;
+package org.glassfish.elasticity.engine.container;
 
 import java.util.concurrent.TimeUnit;
 
 import org.glassfish.api.Startup;
 import org.glassfish.elasticity.api.MetricGatherer;
+import org.glassfish.elasticity.engine.util.ElasticEngineThreadPool;
+import org.glassfish.elasticity.engine.util.ExpressionBasedAlert;
 import org.glassfish.hk2.PostConstruct;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
@@ -70,11 +72,14 @@ public class ElasticEngine
 	ElasticServices elasticServices;
 	
 	@Inject
-	ElasticEngineThreadPool threadPool;
+    ElasticEngineThreadPool threadPool;
 	
 	@Inject
 	MetricGatherer[] metricHolders;
-	
+
+    @Inject
+    ElasticServiceManager elasticServiceManager;
+
 	private String serviceName;
 
 	public void initialize(String serviceName) {
@@ -89,19 +94,10 @@ public class ElasticEngine
 		System.out.println("Elastic Services: " + elasticServices);
         if (elasticServices != null && elasticServices.getElasticService() != null) {
             for (ElasticService service : elasticServices.getElasticService()) {
-                if (service.getAlerts() != null && service.getAlerts().getAlert() != null) {
-                    for (AlertConfig alertConfig : service.getAlerts().getAlert()) {
-                        System.out.println("Got Altert[" + service.getName() + "]: " + alertConfig.getName());
-
-                        String sch = alertConfig.getSchedule().trim();
-                        long frequencyInSeconds = getFrequencyOfAlertExecutionInSeconds(sch);
-                        String alertName = alertConfig.getName();
-                        System.out.println("Alert[name=" + alertName + "; schedule=" + sch
-                                + "; expression=" + alertConfig.getExpression() + "; will be executed every= " + frequencyInSeconds);
-                        ExpressionBasedAlert<AlertConfig> wrapper = new ExpressionBasedAlert<AlertConfig>();
-                        wrapper.initialize(habitat, alertConfig);
-                        threadPool.scheduleAtFixedRate(wrapper, frequencyInSeconds, frequencyInSeconds, TimeUnit.SECONDS);
-                    }
+                if (service.getEnabled()) {
+                    ElasticServiceContainer container = habitat.getComponent(ElasticServiceContainer.class);
+                    container.initialize(service);
+                    elasticServiceManager.addElasticServiceContainer(service.getName(), container);
                 }
             }
         }
@@ -141,49 +137,6 @@ public class ElasticEngine
 	
 	public void stop() {
 		
-	}
-	
-	private int getFrequencyOfAlertExecutionInSeconds(String sch) {
-		String schStr = sch.trim();
-		int index = 0;
-		for (; index < schStr.length(); index++) {
-			if (Character.isDigit(schStr.charAt(index))) {
-				break;
-			}
-		}
-		
-		int frequencyInSeconds = 30;
-		try {
-			frequencyInSeconds = Integer.parseInt(schStr.substring(0, index));
-		} catch (NumberFormatException nfEx) {
-			//TODO
-		}
-		if (index < schStr.length()) {
-			switch (schStr.charAt(index)) {
-			case 's':
-				break;
-			case 'm':
-				frequencyInSeconds *= 60;
-				break;
-			}	
-		}
-		
-		return frequencyInSeconds;
-	}
-	
-	private static class AlertWrapper
-		implements Runnable {
-		
-		private ExpressionBasedAlert<AlertConfig> alert;
-//		
-//		AlertWrapper(ExpressionBasedAlert<Alert> alert) {
-//			this.alert = alert;
-//		}
-		
-		public void run() {
-            System.out.println("AlertWrapper.run called");
-			alert.execute();
-		}
 	}
 
     private class MetricGathererWrapper
