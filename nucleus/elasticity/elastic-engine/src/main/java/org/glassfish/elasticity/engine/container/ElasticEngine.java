@@ -73,9 +73,10 @@ public class ElasticEngine
 	
 	@Inject
     ElasticEngineThreadPool threadPool;
-	
-	@Inject
-	MetricGatherer[] metricHolders;
+
+    @Inject
+    MetricGathererContainer metricGathererContainer;
+
 
     @Inject
     ElasticServiceManager elasticServiceManager;
@@ -86,11 +87,13 @@ public class ElasticEngine
 		this.serviceName = serviceName;
 	}
 	
-	public void start() {
+	public void postConstruct() {
 		if (serviceName == null) {
 			//throw new IllegalStateException("ElasticEngine not initialized with a service name");
 		}
-		
+
+        metricGathererContainer.startMetricGatherers();
+
 		System.out.println("Elastic Services: " + elasticServices);
         if (elasticServices != null && elasticServices.getElasticService() != null) {
             for (ElasticService service : elasticServices.getElasticService()) {
@@ -98,67 +101,21 @@ public class ElasticEngine
                     ElasticServiceContainer container = habitat.getComponent(ElasticServiceContainer.class);
                     container.initialize(service);
                     elasticServiceManager.addElasticServiceContainer(service.getName(), container);
+                    container.startContainer();
                 }
             }
         }
-		
-		for (MetricGatherer mg : metricHolders) {
-            String sch  = mg.getSchedule();
-            long frequency = 10 * 1000;
-            if (sch != null) {
-                sch = sch.trim();
-                int index = 0;
-                while (index < sch.length() && Character.isDigit(sch.charAt(index))) {
-                    index++;
-                }
 
-                try {
-                    if (index == sch.length()) {
-                        frequency = Long.parseLong(sch);
-                    } else {
-
-                        frequency = Long.parseLong(sch.substring(0, index));
-                        String unit = sch.substring(index);
-                        if (unit.equals("s") || unit.equals("seconds")) {
-                            frequency *= 1000;
-                        }
-                    }
-                } catch (NumberFormatException nfEx) {
-                    //TODO
-                }
-
-                threadPool.scheduleAtFixedRate(new MetricGathererWrapper(mg), frequency, frequency, TimeUnit.MILLISECONDS);
-
-			    System.out.println("Loaded  and started MetricGatherer " + mg);
-            }
-
-		}
 	}
 	
 	public void stop() {
-		
+        for (ElasticServiceContainer container : elasticServiceManager.containers()) {
+            container.stopContainer();
+        }
 	}
-
-    private class MetricGathererWrapper
-        implements Runnable {
-
-        MetricGatherer mg;
-
-        MetricGathererWrapper(MetricGatherer mg) {
-            this.mg = mg;
-        }
-
-        public void run() {
-            mg.gatherMetric();
-        }
-    }
 
 	public Lifecycle getLifecycle() {
 		return Startup.Lifecycle.START;
 	}
 
-	public void postConstruct() {
-		System.out.println("Elastic Engine started... " + metricHolders);
-		start();
-	}
 }

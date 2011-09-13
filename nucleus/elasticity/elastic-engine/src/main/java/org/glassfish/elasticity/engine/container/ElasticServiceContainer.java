@@ -39,10 +39,14 @@
  */
 package org.glassfish.elasticity.engine.container;
 
+import org.glassfish.api.Startup;
+import org.glassfish.elasticity.api.MetricGatherer;
 import org.glassfish.elasticity.config.serverbeans.AlertConfig;
 import org.glassfish.elasticity.config.serverbeans.ElasticService;
 import org.glassfish.elasticity.engine.util.ElasticEngineThreadPool;
+import org.glassfish.elasticity.engine.util.EngineUtil;
 import org.glassfish.elasticity.engine.util.ExpressionBasedAlert;
+import org.glassfish.hk2.PostConstruct;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
@@ -57,16 +61,23 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Logger;
 
 @Service
 @Scoped(PerLookup.class)
-public class ElasticServiceContainer {
+public class ElasticServiceContainer
+    implements PostConstruct {
 
     @Inject
     Habitat habitat;
 
     @Inject
     ElasticEngineThreadPool threadPool;
+
+    @Inject
+    EngineUtil engineUtil;
+
+    Logger logger;
 
     ElasticService service;
 
@@ -85,6 +96,14 @@ public class ElasticServiceContainer {
     private ConcurrentHashMap<String, AlertWrapper> alerts
             = new ConcurrentHashMap<String, AlertWrapper>();
 
+	public Startup.Lifecycle getLifecycle() {
+		return Startup.Lifecycle.START;
+	}
+
+    public void postConstruct() {
+        logger = engineUtil.getLogger();
+    }
+
     public void initialize(ElasticService service) {
         this.service = service;
         this.name = service.getName();
@@ -92,13 +111,8 @@ public class ElasticServiceContainer {
         this.minSize.set(service.getMin());
         this.maxSize.set(service.getMax());
 
-        if (this.enabled.get() && service.getAlerts().getAlert() != null) {
-            for (AlertConfig alertConfig : service.getAlerts().getAlert()) {
-                addAlert(alertConfig);
-            }
-        }
     }
-	
+
 	public String getName() {
 		return this.name;
 	}
@@ -147,19 +161,12 @@ public class ElasticServiceContainer {
         }
     }
 
-    public void start() {
-        if (service.getAlerts() != null && service.getAlerts().getAlert() != null) {
-            for (AlertConfig alertConfig : service.getAlerts().getAlert()) {
-                addAlert(alertConfig);
-            }
-        }
+    public void startContainer() {
+        loadAlerts();
     }
 
-    public void stop() {
-        for (String alertName : alerts.keySet()) {
-            System.out.println("Stopping alert: " + alertName);
-            removeAlert(alertName);
-        }
+    public void stopContainer() {
+        unloadAlerts();
     }
 
     public void addAlert(AlertConfig alertConfig) {
@@ -198,6 +205,21 @@ public class ElasticServiceContainer {
                 ", currentSize=" + currentSize +
                 ", reconfigurationPeriodInSeconds=" + reconfigurationPeriodInSeconds +
                 '}';
+    }
+
+    private void loadAlerts() {
+        if (this.enabled.get() && service.getAlerts().getAlert() != null) {
+            for (AlertConfig alertConfig : service.getAlerts().getAlert()) {
+                addAlert(alertConfig);
+            }
+        }
+    }
+
+    private void unloadAlerts() {
+        for (String alertName : alerts.keySet()) {
+            System.out.println("Stopping alert: " + alertName);
+            removeAlert(alertName);
+        }
     }
 
     private static class AlertWrapper {

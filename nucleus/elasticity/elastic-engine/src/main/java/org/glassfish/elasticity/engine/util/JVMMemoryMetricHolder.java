@@ -39,6 +39,8 @@ public class JVMMemoryMetricHolder
         this.attributes = new MetricAttribute[] {new MaxSizeAttribute(), table};
         this.memBean = ManagementFactory.getMemoryMXBean();
         this.max = memBean.getHeapMemoryUsage().getMax();
+
+        System.out.println("Loaded MetricGatherer: " + this.getClass().getName());
     }
 
     @Override
@@ -54,8 +56,12 @@ public class JVMMemoryMetricHolder
         Iterator<TabularMetricEntry<MemoryStat>> iter = table.iterator(10, TimeUnit.SECONDS);
         while (iter.hasNext()) {
             TabularMetricEntry<MemoryStat> tme = iter.next();
-            //System.out.println("JVMMemoryMetricHolder Gathered metric: " + tme.getTimestamp() + " " + tme.getV());
         }
+    }
+
+    @Override
+    public void purgeDataOlderThan(int time, TimeUnit unit) {
+        table.purgeEntriesOlderThan(time, unit);
     }
 
     @Override

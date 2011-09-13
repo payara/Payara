@@ -39,6 +39,7 @@
  */
 package org.glassfish.elasticity.engine.container;
 
+import java.util.Collection;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.glassfish.hk2.scopes.Singleton;
@@ -63,5 +64,9 @@ public class ElasticServiceManager {
 	public void removeElasticServiceContainer(String name) {
 		_containers.remove(name);
 	}
+
+    public Collection<ElasticServiceContainer> containers() {
+        return _containers.values();
+    }
 	
 }
