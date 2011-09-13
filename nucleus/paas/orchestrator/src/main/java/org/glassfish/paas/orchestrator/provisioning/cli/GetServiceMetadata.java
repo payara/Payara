@@ -74,13 +74,13 @@ import java.util.*;
  * 
  * @author Jagadish Ramu
  */
-@Service(name = "get-service-metadata")
+@Service(name = "_get-service-metadata")
 @Scoped(PerLookup.class)
 @ExecuteOn(RuntimeType.DAS)
 @TargetType(value={CommandTarget.DAS})
 @CommandLock(CommandLock.LockType.NONE)
 @RestEndpoints({
-    @RestEndpoint(configBean=Domain.class, opType= RestEndpoint.OpType.GET, path="get-service-metadata", description="Get Service Metadata")
+    @RestEndpoint(configBean=Domain.class, opType= RestEndpoint.OpType.GET, path="_get-service-metadata", description="Get Service Metadata")
 })
 public class GetServiceMetadata implements AdminCommand {
 
