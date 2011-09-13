@@ -53,6 +53,7 @@ import org.glassfish.paas.orchestrator.provisioning.cli.ServiceType;
 import org.glassfish.paas.orchestrator.provisioning.iaas.CloudProvisioner;
 import org.glassfish.virtualization.runtime.VirtualCluster;
 import org.glassfish.virtualization.runtime.VirtualClusters;
+import org.glassfish.virtualization.runtime.VirtualMachineLifecycle;
 import org.glassfish.virtualization.spi.TemplateRepository;
 import org.glassfish.virtualization.spi.VirtualMachine;
 import org.jvnet.hk2.annotations.Inject;
@@ -95,6 +96,9 @@ public class DeleteGlassFishService implements AdminCommand {
     @Inject(optional = true) // made it optional for non-virtual scenario to work
     VirtualClusters virtualClusters;
 
+    @Inject
+    VirtualMachineLifecycle vmLifecycle;
+
     public void execute(AdminCommandContext context) {
         final ActionReport report = context.getActionReport();
 
@@ -126,7 +130,7 @@ public class DeleteGlassFishService implements AdminCommand {
                         String vmId = gfServiceUtil.getInstanceID(
                                 instance, appName, ServiceType.APPLICATION_SERVER);
                         VirtualMachine vm = virtualCluster.vmByName(vmId); // TODO :: IMS should give differnt way to get hold of VM using the vmId
-                        vm.delete(); // TODO :: use executor service.
+                        vmLifecycle.delete(vm); // TODO :: use executor service.
                         gfServiceUtil.unregisterASInfo(instance, appName);
                     }
                     if (virtualCluster != null) {
