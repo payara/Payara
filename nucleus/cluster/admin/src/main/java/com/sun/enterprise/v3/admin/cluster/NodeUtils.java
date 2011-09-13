@@ -37,7 +37,6 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
 package com.sun.enterprise.v3.admin.cluster;
 
 import org.jvnet.hk2.component.Habitat;
@@ -72,12 +71,10 @@ import java.net.UnknownHostException;
  * @author Joe Di Pol
  */
 public class NodeUtils {
-
     static final String NODE_DEFAULT_SSH_PORT = "22";
     static final String NODE_DEFAULT_SSH_USER = "${user.name}";
     static final String NODE_DEFAULT_INSTALLDIR =
-                                                "${com.sun.aas.productRoot}";
-
+            "${com.sun.aas.productRoot}";
     // Command line option parameter names
     static final String PARAM_NODEHOST = "nodehost";
     static final String PARAM_INSTALLDIR = "installdir";
@@ -89,14 +86,11 @@ public class NodeUtils {
     static final String PARAM_SSHKEYPASSPHRASE = "sshkeypassphrase";
     static final String PARAM_TYPE = "type";
     static final String PARAM_INSTALL = "install";
-    static final String LANDMARK_FILE = "glassfish/modules/admin-cli.jar";    
-
+    static final String LANDMARK_FILE = "glassfish/modules/admin-cli.jar";
     private static final String NL = System.getProperty("line.separator");
-
     private TokenResolver resolver = null;
     private Logger logger = null;
     private Habitat habitat = null;
-
     SSHLauncher sshL = null;
 
     NodeUtils(Habitat habitat, Logger logger) {
@@ -105,7 +99,7 @@ public class NodeUtils {
 
         // Create a resolver that can replace system properties in strings
         Map<String, String> systemPropsMap =
-                new HashMap<String, String>((Map)(System.getProperties()));
+                new HashMap<String, String>((Map) (System.getProperties()));
         resolver = new TokenResolver(systemPropsMap);
         sshL = habitat.getComponent(SSHLauncher.class);
     }
@@ -113,7 +107,7 @@ public class NodeUtils {
     static boolean isSSHNode(Node node) {
         if (node == null)
             return false;
-       return node.getType().equals("SSH");
+        return node.getType().equals("SSH");
     }
 
     /**
@@ -137,10 +131,11 @@ public class NodeUtils {
             if (commandStatus != 0) {
                 return "unknown version: " + output.toString();
             }
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             throw new CommandValidationException(
                     Strings.get("failed.to.run", command.toString(),
-                                    node.getNodeHost()), e);
+                    node.getNodeHost()), e);
         }
         return output.toString().trim();
     }
@@ -163,7 +158,7 @@ public class NodeUtils {
             map.add(NodeUtils.PARAM_SSHKEYFILE, ssha.getKeyfile());
             map.add(NodeUtils.PARAM_SSHPASSWORD, ssha.getPassword());
             map.add(NodeUtils.PARAM_SSHKEYPASSPHRASE, ssha.getKeyPassphrase());
-            map.add(NodeUtils.PARAM_TYPE,"SSH");
+            map.add(NodeUtils.PARAM_TYPE, "SSH");
         }
 
         validate(map);
@@ -183,30 +178,30 @@ public class NodeUtils {
         if (StringUtils.ok(sshkeyfile)) {
             // User specified a key file. Make sure we get use it
             File kfile = new File(resolver.resolve(sshkeyfile));
-            if (! kfile.isAbsolute()) {
+            if (!kfile.isAbsolute()) {
                 throw new CommandValidationException(
                         Strings.get("key.path.not.absolute",
                         kfile.getPath()));
             }
-            if (! kfile.exists()) {
+            if (!kfile.exists()) {
                 throw new CommandValidationException(
                         Strings.get("key.path.not.found",
                         kfile.getPath()));
             }
-            if (! kfile.canRead() ) {
+            if (!kfile.canRead()) {
                 throw new CommandValidationException(
                         Strings.get("key.path.not.readable",
-                        kfile.getPath(), System.getProperty("user.name")) );
+                        kfile.getPath(), System.getProperty("user.name")));
             }
         }
 
         validatePassword(map.getOne(PARAM_SSHPASSWORD));
         validatePassword(map.getOne(PARAM_SSHKEYPASSPHRASE));
 
-        String  nodehost = map.getOne(PARAM_NODEHOST);
+        String nodehost = map.getOne(PARAM_NODEHOST);
         validateHostName(nodehost);
 
-        if (sshL != null && ! nodehost.equals("localhost")) {
+        if (sshL != null && !nodehost.equals("localhost")) {
             validateSSHConnection(map);
         }
     }
@@ -214,14 +209,15 @@ public class NodeUtils {
     void validateHostName(String hostName)
             throws CommandValidationException {
 
-        if (! StringUtils.ok(hostName)) {
+        if (!StringUtils.ok(hostName)) {
             throw new CommandValidationException(
                     Strings.get("nodehost.required"));
         }
         try {
             // Check if hostName is valid by looking up it's address
             InetAddress.getByName(hostName);
-        } catch (UnknownHostException e) {
+        }
+        catch (UnknownHostException e) {
             throw new CommandValidationException(
                     Strings.get("unknown.host", hostName),
                     e);
@@ -236,10 +232,12 @@ public class NodeUtils {
         if (StringUtils.ok(p)) {
             try {
                 expandedPassword = RelativePathResolver.getRealPasswordFromAlias(p);
-            } catch (IllegalArgumentException e) {
+            }
+            catch (IllegalArgumentException e) {
                 throw new CommandValidationException(
                         Strings.get("no.such.password.alias", p));
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 throw new CommandValidationException(
                         Strings.get("no.such.password.alias", p),
                         e);
@@ -266,7 +264,8 @@ public class NodeUtils {
         try {
             sshL.init(node, logger);
             sshL.pingConnection();
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             String m1 = e.getMessage();
             String m2 = "";
             Throwable e2 = e.getCause();
@@ -275,12 +274,11 @@ public class NodeUtils {
             }
             String msg = Strings.get("ssh.bad.connect", node.getNodeHost());
             logger.warning(StringUtils.cat(": ", msg, m1, m2,
-                                            sshL.toString()));
+                    sshL.toString()));
             throw new CommandValidationException(StringUtils.cat(NL,
-                                           msg, m1, m2));
+                    msg, m1, m2));
         }
     }
-
 
     private void validateSSHConnection(ParameterMap map) throws
             CommandValidationException {
@@ -295,7 +293,7 @@ public class NodeUtils {
         boolean installFlag = Boolean.parseBoolean(map.getOne(PARAM_INSTALL));
 
         // We use the resolver to expand any system properties
-        if (! NetUtils.isPortStringValid(resolver.resolve(sshport))) {
+        if (!NetUtils.isPortStringValid(resolver.resolve(sshport))) {
             throw new CommandValidationException(Strings.get(
                     "ssh.invalid.port", sshport));
         }
@@ -308,16 +306,17 @@ public class NodeUtils {
             String resolvedInstallDir = resolver.resolve(installdir);
 
             sshL.validate(resolver.resolve(nodehost),
-                          port,
-                          resolver.resolve(sshuser),
-                          sshpassword,      
-                          resolver.resolve(sshkeyfile),
-                          sshkeypassphrase, 
-                          resolvedInstallDir,
-                          // Landmark file to ensure valid GF install
-                          LANDMARK_FILE,
-                          logger);
-        } catch (IOException e) {
+                    port,
+                    resolver.resolve(sshuser),
+                    sshpassword,
+                    resolver.resolve(sshkeyfile),
+                    sshkeypassphrase,
+                    resolvedInstallDir,
+                    // Landmark file to ensure valid GF install
+                    LANDMARK_FILE,
+                    logger);
+        }
+        catch (IOException e) {
             String m1 = e.getMessage();
             String m2 = "";
             Throwable e2 = e.getCause();
@@ -328,13 +327,14 @@ public class NodeUtils {
                 logger.warning(StringUtils.cat(": ", m1, m2, sshL.toString()));
                 if (!installFlag)
                     throw new CommandValidationException(StringUtils.cat(NL,
-                                            m1, m2));
-            } else {
+                            m1, m2));
+            }
+            else {
                 String msg = Strings.get("ssh.bad.connect", nodehost);
                 logger.warning(StringUtils.cat(": ", msg, m1, m2,
-                                            sshL.toString()));
+                        sshL.toString()));
                 throw new CommandValidationException(StringUtils.cat(NL,
-                                            msg, m1, m2));
+                        msg, m1, m2));
             }
         }
     }
@@ -346,8 +346,8 @@ public class NodeUtils {
      * @param report
      */
     static void sanitizeReport(ActionReport report) {
-        if (report != null && report.hasFailures() &&
-                              report.getFailureCause() != null) {
+        if (report != null && report.hasFailures()
+                && report.getFailureCause() != null) {
             Throwable rootCause = ExceptionUtil.getRootCause(
                     report.getFailureCause());
             if (rootCause != null && StringUtils.ok(rootCause.getMessage())) {
@@ -356,7 +356,7 @@ public class NodeUtils {
         }
     }
 
-  /**
+    /**
      * Run on admin command on a node and handle setting the message in the
      * ActionReport on an error. Note that on success no message is set in
      * the action report
@@ -378,12 +378,12 @@ public class NodeUtils {
      *                      process to end.
      *                      Currently this only applies to locally run commands
      *                      and should only be set to false by start-instance
-     *                      (see bug 12777). 
+     *                      (see bug 12777).
      */
-   void runAdminCommandOnNode(Node node, List<String> command,
-           AdminCommandContext context, String firstErrorMessage,
-           String humanCommand, StringBuilder output,
-           boolean waitForReaderThreads) {
+    void runAdminCommandOnNode(Node node, List<String> command,
+            AdminCommandContext context, String firstErrorMessage,
+            String humanCommand, StringBuilder output,
+            boolean waitForReaderThreads) {
 
         ActionReport report = context.getActionReport();
         boolean failure = true;
@@ -400,13 +400,13 @@ public class NodeUtils {
 
         if (StringUtils.ok(humanCommand)) {
             msg3 = Strings.get("node.ssh.tocomplete",
-                        nodeHost, installDir, humanCommand);
+                    nodeHost, installDir, humanCommand);
         }
 
         NodeRunner nr = new NodeRunner(habitat, logger);
         try {
             int status = nr.runAdminCommandOnNode(node, output, waitForReaderThreads,
-                                                  command);
+                    command);
             if (status != 0) {
                 // Command ran, but didn't succeed. Log full information
                 msg2 = Strings.get("node.command.failed", nodeName,
@@ -415,29 +415,34 @@ public class NodeUtils {
                 // Don't expose command name to user in case it is a hidden command
                 msg2 = Strings.get("node.command.failed.short", nodeName,
                         nodeHost, output.toString().trim());
-            } else {
+            }
+            else {
                 failure = false;
                 logger.info(output.toString().trim());
             }
-        } catch (SSHCommandExecutionException ec) {
+        }
+        catch (SSHCommandExecutionException ec) {
             msg2 = Strings.get("node.ssh.bad.connect",
-                        nodeName, nodeHost, ec.getMessage());
+                    nodeName, nodeHost, ec.getMessage());
             // Log some extra info
             String msg = Strings.get("node.command.failed.ssh.details",
                     nodeName, nodeHost, ec.getCommandRun(), ec.getMessage(),
                     ec.getSSHSettings());
             logger.warning(StringUtils.cat(": ", msg1, msg, msg3));
-        } catch (ProcessManagerException ex) {
+        }
+        catch (ProcessManagerException ex) {
             msg2 = Strings.get("node.command.failed.local.details",
                     ex.getMessage(), nr.getLastCommandRun());
             logger.warning(StringUtils.cat(": ", msg1, msg2, msg3));
             // User message doesn't have command that was run
             msg2 = Strings.get("node.command.failed.local.exception",
                     ex.getMessage());
-        } catch (UnsupportedOperationException e) {
+        }
+        catch (UnsupportedOperationException e) {
             msg2 = Strings.get("node.not.ssh", nodeName, nodeHost);
             logger.warning(StringUtils.cat(": ", msg1, msg2, msg3));
-        } catch (IllegalArgumentException e) {
+        }
+        catch (IllegalArgumentException e) {
             msg2 = e.getMessage();
             logger.warning(StringUtils.cat(": ", msg1, msg2, msg3));
         }
@@ -445,19 +450,20 @@ public class NodeUtils {
         if (failure) {
             report.setMessage(StringUtils.cat(NL + NL, msg1, msg2, msg3));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-        } else {
+        }
+        else {
             report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
-       }
-       
+        }
 
-       return;
-   }
 
-   void runAdminCommandOnNode(Node node, List<String> command,
-           AdminCommandContext context, String firstErrorMessage,
-           String humanCommand, StringBuilder output) {
+        return;
+    }
 
-       runAdminCommandOnNode(node, command, context, firstErrorMessage,
-               humanCommand, output, true);
-   }
+    void runAdminCommandOnNode(Node node, List<String> command,
+            AdminCommandContext context, String firstErrorMessage,
+            String humanCommand, StringBuilder output) {
+
+        runAdminCommandOnNode(node, command, context, firstErrorMessage,
+                humanCommand, output, true);
+    }
 }
