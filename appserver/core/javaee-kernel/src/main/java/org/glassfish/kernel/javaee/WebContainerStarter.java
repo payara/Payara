@@ -38,7 +38,7 @@
  * holder.
  */
 
-package com.sun.enterprise.v3.services.impl;
+package org.glassfish.kernel.javaee;
 
 import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.module.Module;
