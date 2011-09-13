@@ -51,9 +51,11 @@ import org.glassfish.hk2.scopes.PerLookup;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.config.*;
 import org.glassfish.elasticity.config.serverbeans.ElasticServices;
 import org.glassfish.elasticity.config.serverbeans.ElasticService;
 import java.beans.PropertyVetoException;
+import com.sun.enterprise.config.serverbeans.Domain;
 
 /**
  * Enable auto scaling
@@ -72,7 +74,10 @@ public class EnableAutoScaling
     @Inject
     ElasticServices elasticServices;
 
-	@Param(name="name", optional=false)
+    @Inject
+    Domain domain;
+
+	@Param(name="name", primary=true)
 	private String name;
 
     @Inject
@@ -83,10 +88,10 @@ public class EnableAutoScaling
         ElasticService elasticService = elasticServices.getElasticService(name);
     	if (service != null && elasticService != null) {
             try {
-                elasticService.setEnabled(true);
+                updateEnabledElement(name);
                 service.setEnabled(true);
                 util.getLogger().log(Level.INFO, "enabled elastic-service: " + name);
-            } catch (PropertyVetoException ex){
+            } catch (org.jvnet.hk2.config.TransactionFailure ex){
                 util.getLogger().log(Level.WARNING, "Exception while setting enabled flag: " + name, ex);
             }
     	} else {
@@ -94,5 +99,20 @@ public class EnableAutoScaling
     	}
 
     }
+        public void updateEnabledElement(final String name) throws TransactionFailure {
+        ConfigSupport.apply(new SingleConfigCode() {
+            @Override
+            public Object run(ConfigBeanProxy param) throws PropertyVetoException, TransactionFailure {
+                // get the transaction
+                Transaction t = Transaction.getTransaction(param);
+                if (t!=null) {
+                    ElasticService welasticService = elasticServices.getElasticService(name);
+                    welasticService = t.enroll(welasticService);
+                    welasticService.setEnabled(true);
+                }
+                return Boolean.TRUE;
+            }
 
+        }, domain);
+    }
 }

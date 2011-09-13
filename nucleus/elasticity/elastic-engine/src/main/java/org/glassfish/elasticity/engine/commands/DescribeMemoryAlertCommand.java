@@ -39,28 +39,27 @@
  */
 package org.glassfish.elasticity.engine.commands;
 
-import org.glassfish.elasticity.config.serverbeans.*;
-import org.glassfish.api.ActionReport;
-import org.glassfish.api.I18n;
-import org.glassfish.api.Param;
-import org.glassfish.api.admin.*;
-import org.glassfish.hk2.Services;
-import org.jvnet.hk2.annotations.*;
-import org.jvnet.hk2.component.*;
-import org.jvnet.hk2.config.*;
-import java.util.logging.Logger;
+ import org.glassfish.elasticity.config.serverbeans.*;
+ import org.glassfish.api.ActionReport;
+ import org.glassfish.api.I18n;
+ import org.glassfish.api.Param;
+ import org.glassfish.api.admin.*;
+ import org.glassfish.hk2.Services;
+ import org.jvnet.hk2.annotations.*;
+ import org.jvnet.hk2.component.*;
+ import org.jvnet.hk2.config.*;
+ import java.util.logging.Logger;
 import java.beans.PropertyVetoException;
-import com.sun.enterprise.config.serverbeans.Domain;
-import org.glassfish.elasticity.engine.container.ElasticServiceContainer;
-import org.glassfish.elasticity.engine.container.ElasticServiceManager;
+ import com.sun.enterprise.config.serverbeans.Domain;
+
 /*
   * command used by GUI for OOW
  */
 
-@Service(name = "configure-elastic-service-limits")
-@I18n("configure.elastic.service.limits")
+@Service(name = "describe-memory-alert")
+@I18n("describe.memory.alert")
 @Scoped(PerLookup.class)
-public class ConfigureElasticServiceLimits implements AdminCommand{
+public class DescribeMemoryAlertCommand implements AdminCommand{
 
     @Inject
     ElasticServices elasticServices;
@@ -68,17 +67,13 @@ public class ConfigureElasticServiceLimits implements AdminCommand{
     @Inject
     Domain domain;
 
-    @Inject
-    ElasticServiceManager elasticServiceManager;
-
     @Param(name="servicename", primary=true)
     String servicename;
 
-    @Param(name="min", optional=true)
-    int min=-1;
+    @Param(name="alertname", primary=true)
+    String alertname;
 
-    @Param(name="max", optional=true)
-    int max=-1;
+    private static final String EOL = "\n";
 
     @Override
     public void execute(AdminCommandContext context) {
@@ -94,49 +89,28 @@ public class ConfigureElasticServiceLimits implements AdminCommand{
             report.setMessage(msg);
             return;
         }
-
-        int currentMax = elasticService.getMax();
-        if (min > currentMax && min > max)  {
-            String msg =  "Min must be less than max limit";
+        AlertConfig  alert = elasticService.getAlerts().getAlert(alertname);
+        if (elasticService == null) {
+            //alert doesn't exist
+            String msg = Strings.get("noSuchAlert", alertname);
             logger.warning(msg);
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setMessage(msg);
             return;
-         }
-
-        try {
-            updateESElement(servicename);
-        } catch(TransactionFailure e) {
-            logger.warning("failed.to.configure..elastic-service " + servicename);
-            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            report.setMessage(e.getMessage());
         }
-         // notify elastic engine of cluster size change
-        ElasticServiceContainer service = (ElasticServiceContainer) elasticServiceManager.getElasticServiceContainer(servicename);
-        service.reconfigureClusterLimits(min, max);
-    }
 
-         public void updateESElement(final String servicename) throws TransactionFailure {
-        ConfigSupport.apply(new SingleConfigCode() {
-            @Override
-            public Object run(ConfigBeanProxy param) throws PropertyVetoException, TransactionFailure {
-                // get the transaction
-                Transaction t = Transaction.getTransaction(param);
-                if (t!=null) {
-                    ElasticService welasticService = elasticServices.getElasticService(servicename);
-                    if (welasticService != null ){
-                        welasticService = t.enroll(welasticService);
-                        if (min != -1)
-                            welasticService.setMin(min);
+        StringBuilder sb = new StringBuilder();
 
-                        if(max != -1 )
-                             welasticService.setMax(max);
+        sb.append(servicename);
+        sb.append(EOL);
+        sb.append(alertname);
+        sb.append(EOL);
+        //get the threshold value
+        String expr = alert.getExpression();
 
-                     }
-                }
-                return Boolean.TRUE;
-            }
+        int threshold = -1;
 
-        }, domain);
+        report.setMessage(sb.toString());
+
     }
 }

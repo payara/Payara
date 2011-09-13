@@ -41,13 +41,13 @@ package org.glassfish.elasticity.engine.commands;
 
 import org.glassfish.elasticity.config.serverbeans.*;
 import com.sun.enterprise.config.serverbeans.Domain;
-import com.sun.enterprise.universal.glassfish.TokenResolver;
 import com.sun.enterprise.util.StringUtils;
 import java.beans.PropertyVetoException;
 import java.util.HashMap;
 import java.util.Map;
 import org.glassfish.elasticity.config.serverbeans.*;
-
+import org.glassfish.elasticity.engine.container.ElasticServiceContainer;
+import org.glassfish.elasticity.engine.container.ElasticServiceManager;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
@@ -75,6 +75,9 @@ public class CreateAlertCommand implements AdminCommand {
 
   @Inject
   Domain domain;
+
+  @Inject
+   ElasticServiceManager elasticServiceManager;
 
   @Param(name="name", primary = true)
    String name;
@@ -116,6 +119,11 @@ public class CreateAlertCommand implements AdminCommand {
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setMessage(e.getMessage());
         }
+
+        //notify elastic container to run this alert
+        ElasticServiceContainer service = (ElasticServiceContainer) elasticServiceManager.getElasticServiceContainer(servicename);
+        AlertConfig alert  = elasticServices.getElasticService(servicename).getAlerts().getAlert(name);
+        service.addAlert(alert);
     }
 
     public void createAlertElement(final String alertName) throws TransactionFailure {

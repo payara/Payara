@@ -129,6 +129,4 @@ public class CreateMemoryAlert implements AdminCommand{
         ci.parameters(map);
         ci.execute();
     }
-
-    // notify runtime that new alert needs to be runs  Shouldn't this be in the real create-alert command...?
 }

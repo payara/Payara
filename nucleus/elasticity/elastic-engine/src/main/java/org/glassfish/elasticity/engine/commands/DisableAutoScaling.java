@@ -51,9 +51,11 @@ import org.glassfish.hk2.scopes.PerLookup;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.config.*;
 import org.glassfish.elasticity.config.serverbeans.ElasticServices;
 import org.glassfish.elasticity.config.serverbeans.ElasticService;
 import java.beans.PropertyVetoException;
+import com.sun.enterprise.config.serverbeans.Domain;
 
 /**
  * Disable auto-scaling
@@ -66,7 +68,7 @@ import java.beans.PropertyVetoException;
 public class DisableAutoScaling
 	implements AdminCommand {
 
-	@Param(name="name", optional=false)
+	@Param(name="name", primary=true)
 	private String name;
 	
 	@Inject
@@ -78,16 +80,19 @@ public class DisableAutoScaling
     @Inject
     ElasticServiceManager elasticServiceManager;
 
+    @Inject
+    Domain domain;
+
     public void execute(AdminCommandContext context) {
     	ElasticServiceContainer service = (ElasticServiceContainer) elasticServiceManager.getElasticServiceContainer(name);
         ElasticService elasticService = elasticServices.getElasticService(name);
 
     	if (service != null && elasticService !=null ) {
             try {
-                elasticService.setEnabled(false);
+                updateEnabledElement(name);
                 service.setEnabled(false);
                 util.getLogger().log(Level.INFO, "disabled elastic-service: " + name);
-            } catch (PropertyVetoException ex){
+            } catch (org.jvnet.hk2.config.TransactionFailure ex){
                 util.getLogger().log(Level.WARNING, "Exception while setting disabled flag: " + name, ex);
             }
     	} else {
@@ -95,4 +100,20 @@ public class DisableAutoScaling
     	}
     }
 
+        public void updateEnabledElement(final String name) throws TransactionFailure {
+        ConfigSupport.apply(new SingleConfigCode() {
+            @Override
+            public Object run(ConfigBeanProxy param) throws PropertyVetoException, TransactionFailure {
+                // get the transaction
+                Transaction t = Transaction.getTransaction(param);
+                if (t!=null) {
+                    ElasticService welasticService = elasticServices.getElasticService(name);
+                    welasticService = t.enroll(welasticService);
+                    welasticService.setEnabled(false);
+                }
+                return Boolean.TRUE;
+            }
+
+        }, domain);
+    }
 }

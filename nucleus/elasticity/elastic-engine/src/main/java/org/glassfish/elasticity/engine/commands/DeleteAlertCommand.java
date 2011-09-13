@@ -39,19 +39,20 @@
  */
 package org.glassfish.elasticity.engine.commands;
 
- import org.glassfish.elasticity.config.serverbeans.*;
- import org.glassfish.api.ActionReport;
- import org.glassfish.api.I18n;
- import org.glassfish.api.Param;
- import org.glassfish.api.admin.*;
- import org.glassfish.hk2.Services;
- import org.jvnet.hk2.annotations.*;
- import org.jvnet.hk2.component.*;
- import org.jvnet.hk2.config.*;
- import java.util.logging.Logger;
- import com.sun.enterprise.config.serverbeans.Domain;
- import java.beans.PropertyVetoException;
-
+import org.glassfish.elasticity.config.serverbeans.*;
+import org.glassfish.api.ActionReport;
+import org.glassfish.api.I18n;
+import org.glassfish.api.Param;
+import org.glassfish.api.admin.*;
+import org.glassfish.hk2.Services;
+import org.jvnet.hk2.annotations.*;
+import org.jvnet.hk2.component.*;
+import org.jvnet.hk2.config.*;
+import java.util.logging.Logger;
+import com.sun.enterprise.config.serverbeans.Domain;
+import java.beans.PropertyVetoException;
+import org.glassfish.elasticity.engine.container.ElasticServiceContainer;
+import org.glassfish.elasticity.engine.container.ElasticServiceManager;
 /*
   * command used by GUI for OOW
  */
@@ -66,6 +67,9 @@ public class DeleteAlertCommand implements AdminCommand{
 
     @Inject
     Domain domain;
+
+    @Inject
+    ElasticServiceManager elasticServiceManager;
 
     @Param (name ="alert", primary = true)
     String alertname;
@@ -106,6 +110,8 @@ public class DeleteAlertCommand implements AdminCommand{
             report.setMessage(e.getMessage());
         }
         //notify elastic engine to stop running the alert
+        ElasticServiceContainer service = (ElasticServiceContainer) elasticServiceManager.getElasticServiceContainer(servicename);
+        service.removeAlert(alertname);
     }
 
      public void deleteAlertElement(final String alertName) throws TransactionFailure {
