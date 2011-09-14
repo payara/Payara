@@ -39,14 +39,10 @@
  */
 package com.sun.enterprise.v3.admin.cluster;
 
-import com.sun.enterprise.v3.admin.cluster.CreateRemoteNodeCommand;
-import com.sun.enterprise.v3.admin.cluster.NodeUtils;
 import java.util.List;
-import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
 import org.jvnet.hk2.annotations.*;
-import java.util.logging.Logger;
 import org.jvnet.hk2.component.PerLookup;
 import static com.sun.enterprise.util.StringUtils.ok;
 
@@ -70,6 +66,11 @@ public class CreateNodeDcom extends CreateRemoteNodeCommand {
     @Override
     public final void execute(AdminCommandContext context) {
         executeInternal(context);
+    }
+    @Override
+    void validate() throws CommandValidationException {
+        if(!ok(dcompassword))
+            throw new CommandValidationException(Strings.get("update.node.dcom.no.password"));
     }
 
     @Override
@@ -108,6 +109,11 @@ public class CreateNodeDcom extends CreateRemoteNodeCommand {
 
     @Override
     final void populateCommandArgs(List<String> args) {
+    }
+
+    @Override
+    String getPasswordsForFile() {
+        return "AS_ADMIN_DCOMPASSWORD=" + dcompassword + "\n";
     }
 
     @Override

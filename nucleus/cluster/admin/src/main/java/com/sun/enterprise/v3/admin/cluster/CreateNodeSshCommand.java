@@ -85,13 +85,18 @@ public class CreateNodeSshCommand extends CreateRemoteNodeCommand {
     private String sshpassword;
     @Param(name = "sshkeyfile", optional = true)
     private String sshkeyfile;
-    @Param(name = "sshkeypassphrase", optional = true, password=true)
+    @Param(name = "sshkeypassphrase", optional = true, password = true)
     private String sshkeypassphrase;
 
     @Override
     public final void execute(AdminCommandContext context) {
         populateBaseClass();
         executeInternal(context);
+    }
+
+    @Override
+    void validate() throws CommandValidationException {
+        // nothing to do
     }
 
     /**
@@ -133,118 +138,27 @@ public class CreateNodeSshCommand extends CreateRemoteNodeCommand {
     @Override
     final void populateCommandArgs(List<String> args) {
         if (sshkeyfile == null) {
-            sshkeyfile=SSHUtil.getExistingKeyFile();
+            sshkeyfile = SSHUtil.getExistingKeyFile();
         }
 
-        if(sshkeyfile!= null) {
+        if (sshkeyfile != null) {
             args.add("--sshkeyfile");
             args.add(sshkeyfile);
         }
     }
 
-    /**
-     * Invokes install-node using ProcessManager and returns the exit message/status.
-     * @param cmdLine list of args
-     * @param output contains output message
-     * @return exit status of install-node
-     */
     @Override
-    int execCommand(List<String> cmdLine, StringBuilder output) {
-        int exit = -1;
-        List<String> fullcommand = new ArrayList<String>();
-        String installDir = nodes.getDefaultLocalNode().getInstallDirUnixStyle() + "/glassfish";
-        if (!StringUtils.ok(installDir)) {
-            throw new IllegalArgumentException(Strings.get("create.node.ssh.no.installdir"));
+    String getPasswordsForFile() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("AS_ADMIN_SSHPASSWORD=");
+        sb.append(nodeUtils.sshL.expandPasswordAlias(remotePassword));
+        sb.append('\n');
+
+        if (sshkeypassphrase != null) {
+            sb.append("AS_ADMIN_SSHKEYPASSPHRASE=");
+            sb.append(nodeUtils.sshL.expandPasswordAlias(sshkeypassphrase));
+            sb.append('\n');
         }
-
-        File asadmin = new File(SystemPropertyConstants.getAsAdminScriptLocation(installDir));
-        fullcommand.add(asadmin.getAbsolutePath());
-
-        BufferedWriter out = null;
-        File f = null;
-
-        //if password auth is used for creating node, use the same auth mechanism for
-        //install-node as well. The passwords are passed using a temporary password file
-        if(remotePassword != null) {
-            try {
-                f = new File(System.getProperty("java.io.tmpdir"), "pass.tmp");
-                out = new BufferedWriter(new FileWriter(f));
-                out.newLine();
-                out.write("AS_ADMIN_SSHPASSWORD=" + nodeUtils.sshL.expandPasswordAlias(remotePassword) + "\n");
-                if(sshkeypassphrase != null)
-                    out.write("AS_ADMIN_SSHKEYPASSPHRASE=" + nodeUtils.sshL.expandPasswordAlias(sshkeypassphrase) + "\n");
-                out.flush();
-            } catch (IOException ioe) {
-                if (logger.isLoggable(Level.FINE)) {
-                    logger.fine("Failed to create the temporary password file: " + ioe.getMessage());
-                }
-                output.append(Strings.get("create.node.ssh.passfile.error"));
-                return 1;
-            }
-            finally {
-                try {
-                    if (out != null)
-                        out.close();
-                } catch(final Exception ex){
-                    if (logger.isLoggable(Level.FINE)) {
-                        logger.fine("Failed to close stream: " + ex.getMessage());
-                    }
-                }
-            }
-
-            fullcommand.add("--passwordfile");
-            fullcommand.add(f.getAbsolutePath());
-        }
-
-        fullcommand.add("--interactive=false");
-        fullcommand.addAll(cmdLine);
-
-        ProcessManager pm = new ProcessManager(fullcommand);
-
-        if(logger.isLoggable(Level.INFO)) {
-            logger.info("Running command on DAS: " + commandListToString(fullcommand));
-        }
-        pm.setTimeoutMsec(DEFAULT_TIMEOUT_MSEC);
-
-        if (logger.isLoggable(Level.FINER))
-            pm.setEcho(true);
-        else
-            pm.setEcho(false);
-
-        try {
-            exit = pm.execute();
-        }
-        catch (ProcessManagerException ex) {
-            if(logger.isLoggable(Level.FINE)) {
-                logger.fine("Error while executing command: " + ex.getMessage());
-            }
-            exit = 1;
-        }
-
-        String stdout = pm.getStdout();
-        String stderr = pm.getStderr();
-
-        if (output != null) {
-            if (StringUtils.ok(stdout)) {
-                output.append(stdout);
-            }
-
-            if (StringUtils.ok(stderr)) {
-                if (output.length() > 0) {
-                    output.append(NL);
-                }
-                output.append(stderr);
-            }
-        }
-
-        if (f != null) {
-            boolean didDelete = f.delete();
-            if(!didDelete) {
-                if(logger.isLoggable(Level.WARNING)) {
-                    logger.log(Level.WARNING, Strings.get("node.ssh.passfile.delete.error", f.getPath()));
-                }
-            }
-        }
-        return exit;
+        return sb.toString();
     }
 }
