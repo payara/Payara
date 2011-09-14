@@ -167,8 +167,10 @@ class LocalVirtualMachine extends AbstractVirtualMachine {
         try {
             String[] returnLines = processExecutor.execute(true);
             StringBuffer stringBuffer = new StringBuffer();
-            for (String returnLine : returnLines) {
-                stringBuffer.append(returnLine);
+            if (returnLines != null) {
+                for (String returnLine : returnLines) {
+                    stringBuffer.append(returnLine);
+                }
             }
             return stringBuffer.toString();
         } catch (ExecException e) {
