@@ -40,6 +40,7 @@
 
 package org.glassfish.paas.lbplugin;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import org.glassfish.common.util.admin.AuthTokenManager;
@@ -47,22 +48,28 @@ import org.glassfish.embeddable.CommandResult;
 import org.glassfish.embeddable.CommandRunner;
 import org.glassfish.paas.lbplugin.logger.LBPluginLogger;
 import org.glassfish.virtualization.spi.VirtualMachine;
+import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.component.ComponentException;
 import org.jvnet.hk2.component.Habitat;
 
 /**
  *
  * @author kshitiz
  */
+@Service
 public class ApacheLBProvisioner implements LBProvisioner{
 
-    private static final String APACHE_INSTALL_DIR = "/home/cloud/workspace/apache/install";
+    private static final String APACHE_INSTALL_DIR = "/u01/glassfish/lb/install";
     private static final String APACHECTL = APACHE_INSTALL_DIR + "/bin/apachectl";
-    private static final String SCRIPTS_DIR = "/home/cloud/workspace/scripts";
+    private static final String SCRIPTS_DIR = "/u01/glassfish/lb/scripts";
     private static final String ASSOCIATE_SERVERS_SCRIPT = SCRIPTS_DIR + "/associateServer.sh";
-    private static final String CONFIGURE_SERVER_SCRIPT = SCRIPTS_DIR + "/configurerServer.sh";
+    private static final String CONFIGURE_SERVER_SCRIPT = SCRIPTS_DIR + "/configureServer.sh";
 
     private static final String LISTENER_NAME = "ajp-listener-1";
+    private static final String HTTP_LISTENER_NAME = "http-listener-1";
     private static final String LISTENER_PORT = "28009";//"\\$\\{AJP_LISTENER_PORT\\}"
+
+    public static final String VENDOR_NAME = "apache";
 
     @Override
     public void startLB(VirtualMachine virtualMachine) throws Exception{
@@ -86,10 +93,35 @@ public class ApacheLBProvisioner implements LBProvisioner{
     @Override
     public void associateApplicationServerWithLB(VirtualMachine virtualMachine,
             String serviceName, CommandRunner commandRunner, String clusterName,
-            Habitat habitat) throws Exception{
+            Habitat habitat, String glassfishHome, boolean isReconfig) throws Exception{
+        if(!isReconfig){
+            createApacheConfig(clusterName, commandRunner, serviceName);
+        }
+        reconfigureApache(habitat, virtualMachine, serviceName, glassfishHome);
+    }
+
+    private void reconfigureApache(Habitat habitat, VirtualMachine virtualMachine,
+            String serviceName, String glassfishHome) throws IOException, ComponentException, InterruptedException {
+        AuthTokenManager tokenMgr = habitat.getComponent(AuthTokenManager.class);
+        String output = virtualMachine.executeOn(new String[]{ASSOCIATE_SERVERS_SCRIPT, serviceName + "-lb-config", tokenMgr.createToken(30L * 60L * 1000L), glassfishHome});
+        LBPluginLogger.getLogger().log(Level.INFO, "Output of associate apache servers command : " + output);
+    }
+
+    private void createApacheConfig(String clusterName,
+            CommandRunner commandRunner, String serviceName)
+            throws RuntimeException {
         ArrayList params = new ArrayList();
         CommandResult result;
-
+        params.add("--target");
+        params.add(clusterName);
+        params.add("\"-DjvmRoute=\\${com.sun.aas.instanceName}\"");
+        result = commandRunner.run("create-jvm-options", (String[]) params.toArray(new String[params.size()]));
+        if (result.getExitStatus().equals(CommandResult.ExitStatus.FAILURE)) {
+            LBPluginLogger.getLogger().log(Level.INFO, "create-jvm-options failed");
+            throw new RuntimeException("Creation of jvm option \"-DjvmRoute=\\${com.sun.aas.instanceName}\" failed");
+        }
+        /*
+        params.clear();
         params.add("--target");
         params.add(clusterName);
         params.add("--listenerport");
@@ -99,47 +131,36 @@ public class ApacheLBProvisioner implements LBProvisioner{
         params.add("--default-virtual-server");
         params.add("server");
         params.add(LISTENER_NAME);
-
-        result = commandRunner.run("create-http-listener",
-                (String[])params.toArray(new String[params.size()]));
-
+        result = commandRunner.run("create-http-listener", (String[]) params.toArray(new String[params.size()]));
         if (result.getExitStatus().equals(CommandResult.ExitStatus.FAILURE)) {
-            LBPluginLogger.getLogger().log(Level.INFO,"create-http-listener failed");
-            throw new Exception("Creation of " + LISTENER_NAME + " failed.");
+            LBPluginLogger.getLogger().log(Level.INFO, "create-http-listener failed");
+            throw new RuntimeException("Creation of " + LISTENER_NAME + " failed.");
         }
-        LBPluginLogger.getLogger().log(Level.INFO,"create-http-listener succeeded");
-
+        LBPluginLogger.getLogger().log(Level.INFO, "create-http-listener succeeded");
+         */
         params.clear();
-        params.add("configs.config." + clusterName
-                + "-config.network-config.protocols.protocol."
-                + LISTENER_NAME + ".http.jk-enabled=true");
-        result = commandRunner.run("set",
-                (String[])params.toArray(new String[params.size()]));
-
+        params.add("configs.config." + clusterName + "-config.network-config.protocols.protocol." + HTTP_LISTENER_NAME + ".http.jk-enabled=true");
+        result = commandRunner.run("set", (String[]) params.toArray(new String[params.size()]));
         if (result.getExitStatus().equals(CommandResult.ExitStatus.FAILURE)) {
-            LBPluginLogger.getLogger().log(Level.INFO,"jk-enabled failed");
-            throw new Exception("jk-enabled for " + LISTENER_NAME + " failed.");
+            LBPluginLogger.getLogger().log(Level.INFO, "jk-enabled failed");
+            throw new RuntimeException("jk-enabled for " + LISTENER_NAME + " failed.");
         }
-        LBPluginLogger.getLogger().log(Level.INFO,"jk-enabled succeeded");
-
+        LBPluginLogger.getLogger().log(Level.INFO, "jk-enabled succeeded");
         params.clear();
         params.add("--target");
         params.add(clusterName);
-        params.add(serviceName+"-lb-config");
-        result = commandRunner.run("create-http-lb-config",
-                (String[])params.toArray(new String[params.size()]));
-
+        params.add(serviceName + "-lb-config");
+        result = commandRunner.run("create-http-lb-config", (String[]) params.toArray(new String[params.size()]));
         if (result.getExitStatus().equals(CommandResult.ExitStatus.FAILURE)) {
-            LBPluginLogger.getLogger().log(Level.INFO,"create-http-lb-config failed");
-            throw new Exception("create-http-lb-config failed.");
+            LBPluginLogger.getLogger().log(Level.INFO, "create-http-lb-config failed");
+            throw new RuntimeException("create-http-lb-config failed.");
         }
-        LBPluginLogger.getLogger().log(Level.INFO,"create-http-lb-config succeeded");
+        LBPluginLogger.getLogger().log(Level.INFO, "create-http-lb-config succeeded");
+    }
 
-        AuthTokenManager tokenMgr = habitat.getComponent(AuthTokenManager.class);
-        String output = virtualMachine.executeOn(new String[]{
-            ASSOCIATE_SERVERS_SCRIPT, serviceName + "-lb-config",
-            tokenMgr.createToken(30L*60L*1000L)});
-        LBPluginLogger.getLogger().log(Level.INFO,"Output of associate apache servers command : " + output);
+    @Override
+    public boolean handles(String vendorName) {
+        return vendorName.equalsIgnoreCase(VENDOR_NAME);
     }
 
 }

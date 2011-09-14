@@ -39,7 +39,9 @@
  */
 package org.glassfish.paas.lbplugin.cli;
 
+import java.util.Collection;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Level;
@@ -51,6 +53,7 @@ import org.glassfish.api.admin.CommandLock;
 import org.glassfish.embeddable.CommandResult;
 import org.glassfish.embeddable.CommandRunner;
 import org.glassfish.paas.lbplugin.LBProvisionerFactory;
+import org.glassfish.paas.lbplugin.LBProvisioner;
 import org.glassfish.paas.lbplugin.logger.LBPluginLogger;
 import org.glassfish.paas.orchestrator.provisioning.*;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceType.*;
@@ -68,6 +71,7 @@ import org.glassfish.virtualization.spi.VirtualMachine;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.PerLookup;
 
 /**
@@ -98,6 +102,11 @@ public class CreateLBService extends BaseLBService implements AdminCommand, Runn
 
     @Inject(optional = true) // made it optional for non-virtual scenario to work
     IAAS iaas;
+
+    @Inject
+    Habitat habitat;
+
+    private static final String VENDOR_NAME = "org.glassfish.paas.lbplugin.vendor-name";
 
     @Override
     public void execute(AdminCommandContext context) {
@@ -199,6 +208,8 @@ public class CreateLBService extends BaseLBService implements AdminCommand, Runn
                 LBPluginLogger.getLogger().log(Level.INFO,"Calling future.get() for template ...." + matchingTemplate);
                 VirtualMachine vm = future.get();
 
+                LBProvisionerFactory.getInstance().setLBProvisioner(
+                        getLBProvisioner());
                 LBProvisionerFactory.getInstance().getLBProvisioner()
                         .configureLB(vm);
 
@@ -222,6 +233,35 @@ public class CreateLBService extends BaseLBService implements AdminCommand, Runn
         }
 
         //TBD return error
+    }
+
+    public LBProvisioner getLBProvisioner() {
+        LBProvisioner provisioner = null;
+        String vendorName = System.getProperty(VENDOR_NAME);
+        if(vendorName == null){
+            LBPluginLogger.getLogger().log(Level.INFO, "Vendor name not specified. Using default");
+        }
+        vendorName = LBProvisionerFactory.getInstance().getDefaultProvisionerName();
+        Collection<LBProvisioner> allProvisioners =
+                habitat.getAllByContract(LBProvisioner.class);
+        if(allProvisioners == null || allProvisioners.isEmpty()){
+            String msg = "No lbprovisioners found.";
+            LBPluginLogger.getLogger().log(Level.SEVERE, msg);
+            throw new RuntimeException(msg);
+        }
+        Iterator<LBProvisioner> iter = allProvisioners.iterator();
+        while(iter.hasNext()){
+            provisioner = iter.next();
+            if(provisioner.handles(vendorName)){
+                break;
+            }
+        }
+        if(provisioner == null){
+            String msg = "No matching lbprovisioners found for " + vendorName;
+            LBPluginLogger.getLogger().log(Level.SEVERE, msg);
+            throw new RuntimeException(msg);
+        }
+        return provisioner;
     }
 
 }

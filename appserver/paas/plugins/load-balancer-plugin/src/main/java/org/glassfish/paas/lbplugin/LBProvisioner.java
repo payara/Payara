@@ -40,15 +40,16 @@
 
 package org.glassfish.paas.lbplugin;
 
-import com.sun.enterprise.config.serverbeans.Cluster;
 import org.glassfish.embeddable.CommandRunner;
 import org.glassfish.virtualization.spi.VirtualMachine;
+import org.jvnet.hk2.annotations.Contract;
 import org.jvnet.hk2.component.Habitat;
 
 /**
  *
  * @author kshitiz
  */
+@Contract
 public interface LBProvisioner {
 
     public void startLB(VirtualMachine virtualMachine) throws Exception;
@@ -59,6 +60,8 @@ public interface LBProvisioner {
 
     public void associateApplicationServerWithLB(VirtualMachine virtualMachine,
             String serviceName, CommandRunner commandRunner, String clusterName,
-            Habitat habitat) throws Exception;
+            Habitat habitat, String glassfishHome, boolean isReconfig) throws Exception;
+
+    public boolean handles(String vendorName);
 
 }

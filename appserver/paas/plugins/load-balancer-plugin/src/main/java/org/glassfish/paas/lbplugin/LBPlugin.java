@@ -213,11 +213,15 @@ public class LBPlugin implements Plugin {
             return;
         }
 
-        if (!serviceConsumer.getServiceType().toString().equals("LB")
-                || !serviceProvider.getServiceType().toString().equals("JavaEE")){
+        if (!(serviceConsumer.getServiceType().toString().equals("LB")
+                && serviceProvider.getServiceType().toString().equals("JavaEE"))){
             return;
         }
+        callAssociateService(serviceConsumer, serviceProvider, false);
+    }
 
+    private void callAssociateService(ProvisionedService serviceConsumer,
+            ProvisionedService serviceProvider, boolean isReconfig) {
         ServiceDescription serviceDescription = serviceConsumer.getServiceDescription();
         String serviceName = serviceDescription.getName();
         logger.entering(getClass().getName(), "provisionService");
@@ -228,15 +232,15 @@ public class LBPlugin implements Plugin {
             params.add("--appname");
             params.add(serviceDescription.getAppName());
         }
+        params.add("--reconfig="+isReconfig);
         params.add("--clustername");
         params.add(serviceProvider.getServiceDescription().getName());
         params.add(serviceName);
         parameters = new String[params.size()];
         parameters = params.toArray(parameters);
-
         CommandResult result = commandRunner.run("_associate-lb-service", parameters);
         if (result.getExitStatus().equals(CommandResult.ExitStatus.FAILURE)) {
-            LBPluginLogger.getLogger().log(Level.INFO,"_associate-lb-service [" + serviceName + "] failed");
+            LBPluginLogger.getLogger().log(Level.INFO, "_associate-lb-service [" + serviceName + "] failed");
         }
     }
 
@@ -384,12 +388,12 @@ public class LBPlugin implements Plugin {
     }
 
     @Override
-    public boolean reassociateServices(ProvisionedService svcConsumer, 
-            ProvisionedService oldSvcProvider, ProvisionedService newSvcProvider, 
+    public boolean reassociateServices(ProvisionedService serviceConsumer,
+            ProvisionedService oldServiceProvider,
+            ProvisionedService newServiceProvider,
             ServiceOrchestrator.ReconfigAction reason) {
-        //no-op
-        throw new UnsupportedOperationException("Reassociation of Service " +
-                "not supported in this release");
+        callAssociateService(serviceConsumer, newServiceProvider, true);
+        return true;
     }
     
 }

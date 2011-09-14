@@ -40,6 +40,9 @@
 
 package org.glassfish.paas.lbplugin;
 
+import java.util.logging.Level;
+import org.glassfish.paas.lbplugin.logger.LBPluginLogger;
+
 /**
  *
  * @author kshitiz
@@ -48,7 +51,7 @@ public class LBProvisionerFactory {
 
     private static final LBProvisionerFactory factory =  new LBProvisionerFactory();
 
-    private static final LBProvisioner apache = new ApacheLBProvisioner();
+    private LBProvisioner provisioner;
 
     private LBProvisionerFactory() {
     }
@@ -58,7 +61,14 @@ public class LBProvisionerFactory {
     }
 
     public LBProvisioner getLBProvisioner(){
-        return apache;
+        return provisioner;
     }
 
+    public void setLBProvisioner(LBProvisioner provisioner){
+        this.provisioner = provisioner;
+    }
+
+    public String getDefaultProvisionerName(){
+        return ApacheLBProvisioner.VENDOR_NAME;
+    }
 }

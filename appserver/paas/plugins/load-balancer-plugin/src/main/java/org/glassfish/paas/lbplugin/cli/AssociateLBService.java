@@ -46,6 +46,7 @@ import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.CommandLock;
 import org.glassfish.embeddable.CommandRunner;
+import org.glassfish.internal.api.ServerContext;
 import org.glassfish.paas.lbplugin.LBProvisionerFactory;
 import org.glassfish.paas.lbplugin.logger.LBPluginLogger;
 import org.jvnet.hk2.annotations.Inject;
@@ -68,8 +69,14 @@ public class AssociateLBService extends BaseLBService implements AdminCommand {
     @Inject
     private CommandRunner commandRunner;
 
+    @Param(name = "reconfig", optional=true, defaultValue="false")
+    boolean isReconfig;
+
     @Param(name = "clustername")
     String clusterName;
+
+    @Inject
+    private ServerContext serverContext;
 
     public void execute(AdminCommandContext context) {
         ActionReport report = context.getActionReport();
@@ -78,7 +85,9 @@ public class AssociateLBService extends BaseLBService implements AdminCommand {
             retrieveVirtualMachine();
             LBProvisionerFactory.getInstance().getLBProvisioner()
                     .associateApplicationServerWithLB(virtualMachine,
-                    serviceName, commandRunner, clusterName, habitat);
+                    serviceName, commandRunner, clusterName, habitat,
+                    serverContext.getInstallRoot().getAbsolutePath(),
+                    isReconfig);
             report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
             report.setMessage("Service with name [" + serviceName + "] is associated with cluster  " + "[ " + clusterName + " ] successfully.");
         } catch (Exception ex) {
