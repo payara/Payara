@@ -74,7 +74,7 @@ import java.util.concurrent.TimeUnit;
 @Supplemental(value = "start-instance", on= Supplemental.Timing.Before )
 @Scoped(PerLookup.class)
 @CommandLock(CommandLock.LockType.NONE)
-public class SupplementStartInstance implements AdminCommand {
+public class SupplementalStartInstance implements AdminCommand {
 
     @Param(name="instance_name", primary = true)
     String instanceName;
@@ -167,7 +167,13 @@ public class SupplementStartInstance implements AdminCommand {
 
             CountDownLatch latch = vmLifecycle.get().inStartup(vm.getName());
             vmLifecycle.get().start(vm);
-            latch.await(30, TimeUnit.SECONDS);
+            try {
+                latch.await(90, TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+                context.getActionReport().failure(RuntimeContext.logger, "Virtual machine " + vmName +
+                    " took too long to register its startup");
+                return;
+            }
 
         } catch(Exception e) {
             e.printStackTrace();

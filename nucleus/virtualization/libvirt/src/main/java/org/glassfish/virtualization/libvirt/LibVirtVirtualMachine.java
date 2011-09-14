@@ -41,6 +41,7 @@ package org.glassfish.virtualization.libvirt;
 
 import org.glassfish.cluster.ssh.launcher.SSHLauncher;
 import org.glassfish.virtualization.config.VirtUser;
+import org.glassfish.virtualization.config.VirtualMachineConfig;
 import org.glassfish.virtualization.libvirt.jna.Domain;
 import org.glassfish.virtualization.libvirt.jna.DomainInfo;
 import org.glassfish.virtualization.spi.*;
@@ -68,9 +69,9 @@ public class LibVirtVirtualMachine extends AbstractVirtualMachine {
     final private String name;
     private String address;
 
-    protected LibVirtVirtualMachine(VirtUser user, Machine owner, Domain domain, List<StorageVol> storageVols)
+    protected LibVirtVirtualMachine(VirtualMachineConfig config, VirtUser user, Machine owner, Domain domain, List<StorageVol> storageVols)
             throws VirtException {
-        super(user);
+        super(config, user);
         this.domain = domain;
         this.owner = owner;
         this.name = domain.getName();
@@ -117,7 +118,15 @@ public class LibVirtVirtualMachine extends AbstractVirtualMachine {
             // ignore any shutdown failure
         }
         for (StorageVol volume : storageVols) {
-            volume.delete();
+            String volumeName = volume.getName();
+            try {
+                volume.delete();
+            } catch (VirtException e) {
+                RuntimeContext.logger.log(Level.SEVERE,
+                        "Error while deleting the " + volumeName + " virtual machine disk", e);
+            }
+            RuntimeContext.logger.log(Level.INFO,
+                    getName() + " disk " + volume.getName() + " deleted successfully");
         }
         domain.undefine();
     }

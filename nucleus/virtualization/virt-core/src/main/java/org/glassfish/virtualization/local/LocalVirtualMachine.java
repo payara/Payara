@@ -67,8 +67,8 @@ class LocalVirtualMachine extends AbstractVirtualMachine {
     final Machine machine;
     final LocalServerPool pool;
 
-    LocalVirtualMachine(VirtUser user, LocalServerPool pool, Machine machine, String vmName) {
-        super(user);
+    LocalVirtualMachine(VirtualMachineConfig config, VirtUser user, LocalServerPool pool, Machine machine, String vmName) {
+        super(config, user);
         this.vmName = vmName;
         this.pool = pool;
         this.machine = machine;

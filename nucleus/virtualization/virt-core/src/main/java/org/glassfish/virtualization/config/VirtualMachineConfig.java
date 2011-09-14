@@ -40,14 +40,14 @@
 
 package org.glassfish.virtualization.config;
 
+import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.config.serverbeans.ClusterExtension;
+import com.sun.jdi.VirtualMachine;
 import org.glassfish.api.admin.config.Named;
-import org.jvnet.hk2.config.Attribute;
-import org.jvnet.hk2.config.ConfigBeanProxy;
-import org.jvnet.hk2.config.Configured;
-import org.jvnet.hk2.config.Element;
+import org.jvnet.hk2.config.*;
 import org.jvnet.hk2.config.types.Property;
 
+import java.beans.PropertyVetoException;
 import java.util.List;
 
 /**
@@ -67,4 +67,29 @@ public interface VirtualMachineConfig extends Named, ConfigBeanProxy, ClusterExt
 
     @Element
     List<Property> getProperty();
+
+    static class Utils {
+        public static VirtualMachineConfig create(final String name,
+                                           final Template template,
+                                           final ServerPoolConfig serverPool,
+                                           final Cluster cluster) {
+           try {
+                return (VirtualMachineConfig) ConfigSupport.apply(new SingleConfigCode<Cluster>(){
+                    @Override
+                    public Object run(Cluster wCluster) throws PropertyVetoException, TransactionFailure {
+                        VirtualMachineConfig vmConfig =
+                                wCluster.createChild(VirtualMachineConfig.class);
+                        vmConfig.setName(name);
+                        vmConfig.setTemplate(template);
+                        vmConfig.setServerPool(serverPool);
+                        wCluster.getExtensions().add(vmConfig);
+                        return vmConfig;
+                    }
+                }, cluster);
+            } catch (TransactionFailure transactionFailure) {
+                throw new RuntimeException(transactionFailure);
+            }
+        }
+    }
+
 }

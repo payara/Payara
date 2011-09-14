@@ -325,7 +325,7 @@ public class LibVirtLocalMachine extends AbstractMachine implements PostConstruc
                                 storageVols.add(storageVol);
                             }
                         }
-                        LibVirtVirtualMachine gfVM = new LibVirtVirtualMachine(vmc.getTemplate().getUser(), this, domain, storageVols);
+                        LibVirtVirtualMachine gfVM = new LibVirtVirtualMachine(vmc, vmc.getTemplate().getUser(), this, domain, storageVols);
                         domains.put(domainName, gfVM );
                         return;
                     }
@@ -350,7 +350,7 @@ public class LibVirtLocalMachine extends AbstractMachine implements PostConstruc
 
         // 2. load the xml dump from the template ?
         File xml = template.getFileByExtension("xml");
-        Element vmConfig = loadConfigFile(xml);
+        Element xmlConfig = loadConfigFile(xml);
 
         List<StorageVol> volumes = prepare(template, name, cluster);
 
@@ -373,8 +373,8 @@ public class LibVirtLocalMachine extends AbstractMachine implements PostConstruc
         // 3. generate mac address
         String macAddress = os.macAddressGen();
 
-        vmConfig.setAttribute("type", getVirtualizationConfig().getName());
-        NodeList children = vmConfig.getChildNodes();
+        xmlConfig.setAttribute("type", getVirtualizationConfig().getName());
+        NodeList children = xmlConfig.getChildNodes();
         for (int k=0;k<children.getLength();k++) {
 
             Node node = children.item(k);
@@ -421,18 +421,25 @@ public class LibVirtLocalMachine extends AbstractMachine implements PostConstruc
 
         // write out to a temporary file.
         File destXml = new File(System.getProperty("java.io.tmpdir"),"foo.xml");
-        writeConfig(vmConfig, destXml);
+        writeConfig(xmlConfig, destXml);
 
         System.out.println("I would use " + uuid + " id with mac " + macAddress);
 
 
         try {
-            Domain domain = connection().domainDefineXML(getConfig(vmConfig));
+            Domain domain = connection().domainDefineXML(getConfig(xmlConfig));
             source.fireEvent(AllocationPhase.VM_SPAWN);
             final CountDownLatch latch = vmLifecycle.inStartup(name);
-            final LibVirtVirtualMachine vm = new LibVirtVirtualMachine(template.getConfig().getUser(), this, domain, volumes);
+            VirtualMachineConfig vmConfig = VirtualMachineConfig.Utils.create(
+                    domain.getName(),
+                    template.getConfig(),
+                    serverPool.getConfig(),
+                    cluster.getConfig());
+
+            final LibVirtVirtualMachine vm = new LibVirtVirtualMachine(vmConfig,
+                    template.getConfig().getUser(), this, domain, volumes);
             domains.put(name, vm);
-            cluster.add(template, vm);
+            cluster.add(vm);
 
             ListenableFutureImpl<AllocationPhase, VirtualMachine> future =
                     new ListenableFutureImpl<AllocationPhase, VirtualMachine>(latch, vm, source);

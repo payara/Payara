@@ -84,25 +84,11 @@ public class VirtualCluster {
         return token.addAndGet(1);
     }
 
-    public synchronized void add(final TemplateInstance template, final VirtualMachine vm) {
-        try {
-            ConfigSupport.apply(new SingleConfigCode<Cluster>(){
-                @Override
-                public Object run(Cluster wCluster) throws PropertyVetoException, TransactionFailure {
-                    VirtualMachineConfig vmConfig =
-                            wCluster.createChild(VirtualMachineConfig.class);
-                    vmConfig.setName(vm.getName());
-                    vmConfig.setTemplate(template.getConfig());
-                    vmConfig.setServerPool(vm.getServerPool().getConfig());
-                    wCluster.getExtensions().add(vmConfig);
-                    return vmConfig;
-                }
-            }, config);
-        } catch (TransactionFailure transactionFailure) {
-            throw new RuntimeException(transactionFailure);
-        }
+    public synchronized void add(final VirtualMachine vm) {
         vms.add(vm);
     }
+
+
 
     public synchronized void remove(final VirtualMachine vm) {
         try {

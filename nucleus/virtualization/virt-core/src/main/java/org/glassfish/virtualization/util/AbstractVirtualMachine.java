@@ -41,6 +41,7 @@
 package org.glassfish.virtualization.util;
 
 import org.glassfish.virtualization.config.VirtUser;
+import org.glassfish.virtualization.config.VirtualMachineConfig;
 import org.glassfish.virtualization.spi.VirtualMachine;
 
 import java.util.HashMap;
@@ -54,8 +55,10 @@ public abstract class AbstractVirtualMachine implements VirtualMachine {
 
     final VirtUser user;
     final Map<PropertyName, String> properties = new HashMap<PropertyName, String>();
+    final VirtualMachineConfig config;
 
-    protected AbstractVirtualMachine(VirtUser user) {
+    protected AbstractVirtualMachine(VirtualMachineConfig config, VirtUser user) {
+        this.config = config;
         this.user = user;
     }
 
@@ -72,5 +75,10 @@ public abstract class AbstractVirtualMachine implements VirtualMachine {
     @Override
     public String getProperty(PropertyName name) {
         return properties.get(name);
+    }
+
+    @Override
+    public VirtualMachineConfig getConfig() {
+        return config;
     }
 }

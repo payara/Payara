@@ -50,6 +50,7 @@ import org.glassfish.virtualization.util.RuntimeContext;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.*;
+import org.jvnet.hk2.config.types.Property;
 
 import java.util.List;
 import java.util.logging.Level;
@@ -76,6 +77,9 @@ public interface Template extends ConfigBeanProxy, Named {
     VirtUser getUser();
     @Create(value="create-template-user", resolver = TemplateResolver.class, i18n = @I18n("org.glassfish.virtualization.create-machine"))
     void setUser(VirtUser user);
+
+    @Element
+    List<Property> getProperties();
 
     @DuckTyped
     TemplateIndex byName(String name);

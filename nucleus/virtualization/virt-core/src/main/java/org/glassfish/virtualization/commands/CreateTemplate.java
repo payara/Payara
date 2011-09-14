@@ -57,12 +57,11 @@ import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
+import org.jvnet.hk2.config.types.Property;
 
 import java.beans.PropertyVetoException;
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.StringTokenizer;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -84,6 +83,9 @@ public class CreateTemplate implements AdminCommand {
 
     @Param
     String indexes;
+
+    @Param(optional = true)
+    Properties properties;
 
     @Param(optional = true)
     String virtualization=null;
@@ -146,6 +148,30 @@ public class CreateTemplate implements AdminCommand {
                             indexPersistence.setType(indexType);
                             indexPersistence.setValue(indexValue);
                             template.getIndexes().add(indexPersistence);
+
+                        }
+                    }
+                    /**final StringTokenizer props = new StringTokenizer(properties, ",");
+                    while (props.hasMoreElements()) {
+                        String index = props.nextToken();
+                        Pattern pattern = Pattern.compile("([^\\=]*)=(.*)");
+                        Matcher matcher  = pattern.matcher(index);
+                        if (matcher.matches()) {
+                            final String indexType = matcher.group(1);
+                            final String indexValue = matcher.group(2);
+                            Property property = template.createChild(Property.class);
+                            property.setName(indexType);
+                            property.setValue(indexValue);
+                            template.getProperties().add(property);
+
+                        }
+                    }  */
+                    if (properties!=null) {
+                        for (String propName : properties.stringPropertyNames()) {
+                            Property property = template.createChild(Property.class);
+                            property.setName(propName);
+                            property.setValue(properties.getProperty(propName));
+                            template.getProperties().add(property);
 
                         }
                     }

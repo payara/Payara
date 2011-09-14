@@ -41,6 +41,7 @@
 package org.glassfish.virtualization.spi;
 
 import org.glassfish.virtualization.config.VirtUser;
+import org.glassfish.virtualization.config.VirtualMachineConfig;
 
 import java.io.IOException;
 
@@ -149,4 +150,11 @@ public interface VirtualMachine {
 
 
     String executeOn(String[] args) throws IOException, InterruptedException;
+
+    /**
+     * Returns the persisted information for this virtual machine.
+     *
+     * @return the configuration of this virtual machine
+     */
+    VirtualMachineConfig getConfig();
 }

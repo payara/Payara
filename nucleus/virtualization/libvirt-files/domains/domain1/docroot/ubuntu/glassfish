@@ -137,6 +137,3 @@ else
     echo "$GLASSFISH_HOME/glassfish/bin/asadmin -H $GroupMasterMachine -p $GroupMasterPort --_authtoken $AuthToken2 register-startup $ip_address --group $Group --machine $Machine --address $ip_address --cluster $Cluster $nodeName"
     $GLASSFISH_HOME/glassfish/bin/asadmin -H $GroupMasterMachine -p $GroupMasterPort --_authtoken $AuthToken2 register-startup --group $Group --machine $Machine --address $ip_address --cluster $Cluster $nodeName
 fi
-
-# finally, start the virtual machine
-sudo -u \#$UserId $GLASSFISH_HOME/glassfish/bin/asadmin --_authtoken $StartToken start-local-instance

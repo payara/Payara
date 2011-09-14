@@ -104,6 +104,7 @@ public class RegisterStartup implements AdminCommand {
 
     @Override
     public void execute(AdminCommandContext context) {
+        RuntimeContext.logger.log(Level.INFO, "Virtual Machine " + virtualMachine + " registering its startup at " + address);
         ServerPool targetGroup = iaas.byName(group);
         if (targetGroup==null) {
             context.getActionReport().failure(RuntimeContext.logger, "Cannot find serverPool " + group);
@@ -133,6 +134,7 @@ public class RegisterStartup implements AdminCommand {
             context.getActionReport().failure(RuntimeContext.logger, e.getMessage());
             return;
         }
+        RuntimeContext.logger.log(Level.INFO, "Virtual Machine " + virtualMachine + " registered its startup");
 
         context.getActionReport().setActionExitCode(ActionReport.ExitCode.SUCCESS);
     }

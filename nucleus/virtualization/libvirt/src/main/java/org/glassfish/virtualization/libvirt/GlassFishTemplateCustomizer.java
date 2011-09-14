@@ -85,6 +85,9 @@ public class GlassFishTemplateCustomizer implements TemplateCustomizer {
         rtContext.executeAdminCommand(report, "create-instance", nodeName + "Instance", "node", nodeName,
                 "cluster", cluster.getConfig().getName());
 
+        // finally starts the instance.
+        rtContext.executeAdminCommand(report, "start-instance", nodeName + "Instance");
+
     }
 
     @Override
