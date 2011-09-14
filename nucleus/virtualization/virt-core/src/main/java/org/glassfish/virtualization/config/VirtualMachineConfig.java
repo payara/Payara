@@ -42,7 +42,6 @@ package org.glassfish.virtualization.config;
 
 import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.config.serverbeans.ClusterExtension;
-import com.sun.jdi.VirtualMachine;
 import org.glassfish.api.admin.config.Named;
 import org.jvnet.hk2.config.*;
 import org.jvnet.hk2.config.types.Property;
