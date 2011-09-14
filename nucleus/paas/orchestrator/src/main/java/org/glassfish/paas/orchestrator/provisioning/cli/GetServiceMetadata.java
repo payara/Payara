@@ -40,7 +40,7 @@
 
 package org.glassfish.paas.orchestrator.provisioning.cli;
 
-import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.config.serverbeans.Applications;
 import com.sun.enterprise.deploy.shared.ArchiveFactory;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
@@ -80,7 +80,7 @@ import java.util.*;
 @TargetType(value={CommandTarget.DAS})
 @CommandLock(CommandLock.LockType.NONE)
 @RestEndpoints({
-    @RestEndpoint(configBean=Domain.class, opType= RestEndpoint.OpType.GET, path="_get-service-metadata", description="Get Service Metadata")
+    @RestEndpoint(configBean=Applications.class, opType= RestEndpoint.OpType.GET, path="_get-service-metadata", description="Get Service Metadata")
 })
 public class GetServiceMetadata implements AdminCommand {
 

@@ -40,7 +40,7 @@
 
 package org.glassfish.paas.orchestrator.provisioning.cli;
 
-import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.config.serverbeans.Applications;
 import com.sun.enterprise.deploy.shared.ArchiveFactory;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
@@ -81,13 +81,19 @@ import java.util.jar.JarOutputStream;
 @TargetType(value = {CommandTarget.DAS})
 @CommandLock(CommandLock.LockType.NONE)
 @RestEndpoints({
-        @RestEndpoint(configBean = Domain.class, opType = RestEndpoint.OpType.GET, path = "_generate-glassfish-services-deployment-plan",
+        @RestEndpoint(configBean = Applications.class, opType = RestEndpoint.OpType.GET, path = "_generate-glassfish-services-deployment-plan",
                 description = "Generate glassfish-services.xml deployment plan from the list of services")
 })
 public class GenerateGlassFishServicesDeploymentPlan implements AdminCommand {
 
     @Param(optional = false)
     private File archive;
+
+    @Param(optional = true)
+    private List<Map<String, Object>> modifiedServiceDesc ;
+
+    @Param(optional = true)
+    private String test;
 
     @Inject
     private ArchiveFactory archiveFactory;
@@ -96,13 +102,10 @@ public class GenerateGlassFishServicesDeploymentPlan implements AdminCommand {
     private ServiceOrchestrator orchestrator;
 
 
-    public String generateDeploymentPlan(List<Map<String, Object>> modifiedServiceDesc) {
-        System.out.println(modifiedServiceDesc);
-        return "dummy";
-    }
-
     public void execute(AdminCommandContext context) {
 
+        System.out.println("===== test param = " + test);
+        System.out.println("===== modifiedServiceDesc = " + modifiedServiceDesc );
         ActionReport report = context.getActionReport();
         List<Map<String, Object>> serviceMetadata = getServiceMetadata();
         List<ServiceDescription> serviceDescriptions = generateServiceMetadata(serviceMetadata);
@@ -136,7 +139,9 @@ public class GenerateGlassFishServicesDeploymentPlan implements AdminCommand {
                 properties.put("deployment-plan-file-path", jarFilepath);
                 report.setExtraProperties(properties);
 
-                report.setMessage("generated deployment plan jar file [ " + jarFilepath + " ]");
+                report.setMessage("generated deployment plan jar file [ " + jarFilepath + " ]"
+                        + " test = " + test
+                        + " odifiedServiceDesc = " + modifiedServiceDesc );
 
             } catch (Exception ex) {
                 ex.printStackTrace();
