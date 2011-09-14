@@ -119,7 +119,23 @@
               <artifactId>gms-adapter</artifactId>
               <version>${project.version}</version>
           </dependency>
-          
+          <!-- adding elasticity modules here since it fits dependency
+               chain, may move to dedicated elasticity package later -->
+          <dependency>
+             <groupId>org.glassfish.elasticity</groupId>
+             <artifactId>elastic-api</artifactId>
+	     <version>${project.version}</version>
+          </dependency> 
+          <dependency>
+             <groupId>org.glassfish.elasticity</groupId>
+             <artifactId>elastic-config</artifactId>
+	     <version>${project.version}</version>
+          </dependency>
+          <dependency>
+             <groupId>org.glassfish.elasticity</groupId>
+             <artifactId>elastic-engine</artifactId>
+	     <version>${project.version}</version>
+          </dependency>
     	<!-- now, listing package dependencies so that their content
              can be excluded during staging -->	
 	<!-- package level dependency -->
