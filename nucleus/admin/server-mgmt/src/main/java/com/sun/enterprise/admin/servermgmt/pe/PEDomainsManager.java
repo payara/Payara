@@ -282,7 +282,7 @@ public class PEDomainsManager extends RepositoryManager
                 final File domainXml = layout.getDomainConfigFile();
                 DomainXmlSAXParser parser = new DomainXmlSAXParser();
                 try {
-                    parser.parse(domainXml,layout.getDtdFile());
+                    parser.parse(domainXml);
                 }
                 catch(Exception e) {
                     throw new DomainException(

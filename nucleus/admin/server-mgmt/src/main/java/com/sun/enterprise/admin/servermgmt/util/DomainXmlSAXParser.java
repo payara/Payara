@@ -47,21 +47,18 @@ import org.xml.sax.EntityResolver;
 import org.xml.sax.helpers.DefaultHandler;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
-import java.io.File;
 
 public class DomainXmlSAXParser extends DefaultHandler {
   private static final String PROPERTY = "property";
   private int level = 0;
   private String domainXmlEventListenerClass= null;
-  private File dtd;
-
+  
   public String getDomainXmlEventListenerClass() {
 	return domainXmlEventListenerClass;
   }
 
-  public void parse(java.io.File domainXml,java.io.File dtd) throws javax.xml.parsers.ParserConfigurationException,org.xml.sax.SAXException,java.io.IOException {
-            this.dtd = dtd;
-	    SAXParser saxParser; 
+  public void parse(java.io.File domainXml) throws javax.xml.parsers.ParserConfigurationException,org.xml.sax.SAXException,java.io.IOException {
+            SAXParser saxParser; 
 	    SAXParserFactory factory = SAXParserFactory.newInstance();
 	    saxParser = factory.newSAXParser();
             saxParser.getXMLReader().setEntityResolver((EntityResolver)this);
@@ -69,6 +66,7 @@ public class DomainXmlSAXParser extends DefaultHandler {
   }
 
 
+    @Override
   public void startElement(String namespaceURI, String localName, String qName, Attributes attrs)
   throws SAXException {
       level++;
@@ -86,12 +84,14 @@ public class DomainXmlSAXParser extends DefaultHandler {
   }
 
 
+    @Override
   public void endElement(String namespaceURI, String localName, String qName)
       throws SAXException {
       level--;
   }
 
-  public InputSource resolveEntity(String publicId,String systemId) throws SAXException {
+    @Override
+  public InputSource resolveEntity(String publicId, String systemId) throws SAXException {
       return null;
   }
 }

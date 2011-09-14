@@ -515,14 +515,6 @@ public class PEFileLayout
         return new File(lib, DTDS_DIR);
     }
 
-//$INSTALL_ROOT/lib/dtds
-
-    public static final String DOMAIN_DTD    = "sun-domain_1_3.dtd";
-    public File getDtdFile()
-    {
-        return new File(getDtdsDir(), DOMAIN_DTD);
-    }
-
     public static final String DOMAIN_XML_TEMPLATE = "default-domain.xml.template";
     public File getDomainXmlTemplate()
     {
