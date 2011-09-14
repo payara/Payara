@@ -786,8 +786,12 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator, Application
                 installedPlugins, oldPS.getServiceDescription().getServiceType());
         
         //ask it to scale the service and get new PS
+        logger.log(Level.INFO, "Scaling Service " + svcName 
+                + " using Plugin:" + chosenPlugin);
         ProvisionedService newPS = chosenPlugin.scaleService(
                 oldPS.getServiceDescription(), scaleCount, allocStrategy);
+        logger.log(Level.INFO, "New Provisioned Service after scaling " + svcName 
+                + " is:" + newPS);
         
         //Simple assertions to ensure that we have the scaled Service.
         assert newPS.getName().equals(oldPS.getName());
