@@ -54,6 +54,8 @@ import org.glassfish.embeddable.Deployer;
 import org.glassfish.embeddable.GlassFish;
 import org.glassfish.embeddable.GlassFishException;
 import org.glassfish.paas.gfplugin.cli.GlassFishServiceUtil;
+import org.glassfish.paas.gfplugin.cli.ScaleDownGlassFishService;
+import org.glassfish.paas.gfplugin.cli.ScaleUpGlassFishService;
 import org.glassfish.paas.orchestrator.ServiceOrchestrator;
 import org.glassfish.paas.orchestrator.ServiceOrchestrator.ReconfigAction;
 import org.glassfish.paas.orchestrator.provisioning.ApplicationServerProvisioner;
@@ -110,6 +112,12 @@ public class GlassFishPlugin implements Plugin<JavaEEServiceType> {
     private Domain domain;
 
     public static final String JAVAEE_SERVICE_TYPE = "JavaEE";
+
+    @Inject
+    private ScaleUpGlassFishService scaleUpGlassFishService;
+
+    @Inject
+    private ScaleDownGlassFishService scaleDownGlassFishService;
 
     private static Logger logger = Logger.getLogger(GlassFishPlugin.class.getName());
 
@@ -552,7 +560,7 @@ public class GlassFishPlugin implements Plugin<JavaEEServiceType> {
             //we append -service in the service-name so that cluster-name and app-name
             //are not same. If they are same, delete-virtual-cluster gets initiated and fails.
             ServiceDescription sd = new ServiceDescription(
-                    readableArchive.getName() + "-service", appName, "lazy",
+                    readableArchive.getName(), appName, "lazy",
                     new ServiceCharacteristics(characteristics), configurations);
             defs.add(sd);
 /*
@@ -563,11 +571,16 @@ public class GlassFishPlugin implements Plugin<JavaEEServiceType> {
 
     @Override
     public ProvisionedService scaleService(ServiceDescription serviceDesc,
-            int scaleCount, AllocationStrategy allocStrategy) {
+                                           int scaleCount, AllocationStrategy allocStrategy) {
         //XXX: No-op for now. Needs to be modified to scale the GF cluster
-        return null;
+        StringBuilder errorMessages = new StringBuilder();
+        ProvisionedService scaledService = scaleCount > 0 ?
+                scaleUpGlassFishService.scaleUp(scaleCount, serviceDesc, allocStrategy, errorMessages) :
+                scaleDownGlassFishService.scaleDown(-scaleCount, serviceDesc,errorMessages);
+        logger.warning(errorMessages.toString()); // print any warnings..
+        return scaledService;
     }
-    
+
     @Override
     public boolean reconfigureServices(ProvisionedService oldPS,
             ProvisionedService newPS) {

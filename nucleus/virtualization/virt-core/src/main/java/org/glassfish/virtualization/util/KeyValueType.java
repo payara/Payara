@@ -57,6 +57,15 @@ public class KeyValueType extends TemplateCondition {
     String key;
     String value;
 
+    public KeyValueType() {
+        // default no-op constructor.
+    }
+
+    public KeyValueType(String key, String value) {
+        this.key = key;
+        this.value = value;
+    }
+
     @Override
     public void load(TemplateIndex persistence) {
         key = persistence.getType();

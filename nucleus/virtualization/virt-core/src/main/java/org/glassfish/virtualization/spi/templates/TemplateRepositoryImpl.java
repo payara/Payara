@@ -139,15 +139,17 @@ public class TemplateRepositoryImpl implements TemplateRepository {
             }
         }
         // now the OR.
-        for (TemplateInstance templateInstance : new ArrayList<TemplateInstance>(candidates)) {
-            boolean foundOne=false;
-            for (TemplateCondition templateIndex : criteria.or()) {
-                if (templateInstance.satisfies(templateIndex)) {
-                    foundOne=true;
-                    break;
+        if (!criteria.or().isEmpty()) { // if no OR conditions are specified, retain all the previously matched candidates.
+            for (TemplateInstance templateInstance : new ArrayList<TemplateInstance>(candidates)) {
+                boolean foundOne = false;
+                for (TemplateCondition templateIndex : criteria.or()) {
+                    if (templateInstance.satisfies(templateIndex)) {
+                        foundOne = true;
+                        break;
+                    }
                 }
+                if (!foundOne) candidates.remove(templateInstance);
             }
-            if (!foundOne) candidates.remove(templateInstance);
         }
         // todo optionals
         return candidates;
