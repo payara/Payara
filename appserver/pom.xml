@@ -278,7 +278,6 @@
             -->
             <id>release-phase-all</id>
             <modules>
-                <module>build</module>
                 <module>javaee-api</module>
                 <module>common</module>
                 <module>ha</module>
