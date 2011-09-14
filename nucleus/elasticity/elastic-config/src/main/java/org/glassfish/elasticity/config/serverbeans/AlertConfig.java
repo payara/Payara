@@ -95,10 +95,10 @@ public interface AlertConfig extends ConfigBeanProxy {
      * @param value alert schedule
      * @throws PropertyVetoException if a listener vetoes the change
      */
-    @Param(name="schedule", optional=true, defaultValue="10m")
+    @Param(name="schedule", optional=true, defaultValue="30s")
     public void setSchedule(String value) throws PropertyVetoException;
 
-    @Attribute (defaultValue = "10m")
+    @Attribute (defaultValue = "30s")
     public String getSchedule();
 
     /**

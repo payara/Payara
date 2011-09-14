@@ -70,6 +70,15 @@ public class ExpressionBasedAlert<C extends AlertConfig>
     }
 
     public AlertState execute() {
+
+
+/*        StringBuilder sb = new StringBuilder("Alert {");
+        sb.append("name=").append(config.getName()).append("; ")
+           .append("expr=").append(config.getExpression()).append("; ")
+           .append("schedule=").append(config.getSchedule()).append("; ")
+                .append("}");
+        System.out.println("Alert executed with: " + sb.toString());*/
+
 /*
         MetricNode metricNode = null;
 

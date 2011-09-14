@@ -39,8 +39,6 @@ public class JVMMemoryMetricHolder
         this.attributes = new MetricAttribute[] {new MaxSizeAttribute(), table};
         this.memBean = ManagementFactory.getMemoryMXBean();
         this.max = memBean.getHeapMemoryUsage().getMax();
-
-        System.out.println("Loaded MetricGatherer: " + this.getClass().getName());
     }
 
     @Override

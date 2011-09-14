@@ -61,6 +61,7 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 @Service
@@ -141,13 +142,18 @@ public class ElasticServiceContainer
 
 	public synchronized void reconfigureClusterLimits(int minSize, int maxSize) {
 
+            logger.log(Level.INFO, "reconfigure service; service-name=" + service.getName()
+                    + "; minSize=" + minSize + "; maxSize=" + maxSize);
+
 		this.minSize.set(minSize);
 		this.maxSize.set(maxSize);
 
         if (currentSize.get() < minSize) {
-            //Scale up
+            logger.log(Level.INFO, "SCALE UP: reconfigure service; service-name=" + service.getName()
+                    + "; minSize=" + minSize + "; maxSize=" + maxSize);
         } else if (currentSize.get() > maxSize) {
-            //Scale down
+            logger.log(Level.INFO, "SCALE DOWN: reconfigure service; service-name=" + service.getName()
+                    + "; minSize=" + minSize + "; maxSize=" + maxSize);
         }
 	}
 
