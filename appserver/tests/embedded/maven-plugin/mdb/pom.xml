@@ -48,7 +48,7 @@
     <groupId>org.glassfish.tests.embedded.maven-plugin</groupId>
     <artifactId>mdb</artifactId>
     <packaging>war</packaging>
-    <version>3.2-SNAPSHOT</version>
+    <version>4.0-SNAPSHOT</version>
 
     <build>
         <defaultGoal>install</defaultGoal>

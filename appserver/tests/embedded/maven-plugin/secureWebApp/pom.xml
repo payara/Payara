@@ -49,7 +49,7 @@
     <groupId>org.glassfish.tests.embedded.maven-plugin</groupId>
     <artifactId>securewebapp</artifactId>
     <packaging>war</packaging>
-    <version>3.2-SNAPSHOT</version>
+    <version>4.0-SNAPSHOT</version>
     <name>Test https and other plugin configurations (maven-plugin/secureWebApp)</name>
 
     <build>
@@ -75,7 +75,7 @@
             <plugin>
                 <groupId>org.glassfish</groupId>
                 <artifactId>maven-embedded-glassfish-plugin</artifactId>
-    	        <version>3.2-SNAPSHOT</version>
+    	        <version>4.0-SNAPSHOT</version>
                 <configuration>
                     <goalPrefix>glassfish</goalPrefix>
                     <app>target/securewebapp.war</app>

@@ -46,12 +46,12 @@
     <parent>
         <groupId>org.glassfish</groupId>
         <artifactId>glassfish-main-parent</artifactId>
-        <version>3.2-SNAPSHOT</version>
+        <version>4.0-SNAPSHOT</version>
     </parent>
     
     <groupId>org.glassfish</groupId>
     <artifactId>glassfish-nucleus-parent</artifactId>
-  <version>3.2-SNAPSHOT</version>
+  <version>4.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>GlassFish Nucleus Parent Project</name>
     <scm>

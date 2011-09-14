@@ -47,7 +47,7 @@
     <parent>
         <groupId>org.glassfish.osgi-platforms</groupId>
         <artifactId>osgi-console-extensions</artifactId>
-        <version>3.2-SNAPSHOT</version>
+        <version>4.0-SNAPSHOT</version>
     </parent>
     <artifactId>felix-webconsole-extension</artifactId>
     <packaging>hk2-jar</packaging>

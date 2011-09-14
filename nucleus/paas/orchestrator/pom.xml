@@ -46,14 +46,14 @@
     <parent>
         <groupId>org.glassfish</groupId>
         <artifactId>nucleus.paas</artifactId>
-        <version>3.2-SNAPSHOT</version>
+        <version>4.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.glassfish</groupId>
     <artifactId>paas.orchestrator</artifactId>
     <packaging>hk2-jar</packaging>
-    <version>3.2-SNAPSHOT</version>
+    <version>4.0-SNAPSHOT</version>
     <name>Orchestrator</name>
 
     <build>

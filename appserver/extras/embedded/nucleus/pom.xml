@@ -48,12 +48,12 @@
     <parent>
         <groupId>org.glassfish.extras</groupId>
         <artifactId>extras</artifactId>
-        <version>3.2-SNAPSHOT</version>
+        <version>4.0-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
   <artifactId>glassfish-embedded-nucleus</artifactId>
-  <version>3.2-SNAPSHOT</version>
+  <version>4.0-SNAPSHOT</version>
   <name>Embedded GlassFish nucleus</name>
       <packaging>jar</packaging>
 

@@ -46,7 +46,7 @@
     <parent>
         <groupId>org.glassfish.jms</groupId>
         <artifactId>jms</artifactId>
-        <version>3.2-SNAPSHOT</version>
+        <version>4.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -55,7 +55,7 @@
     <artifactId>jms-core</artifactId>
     <name>JMS Module</name>
     <packaging>hk2-jar</packaging>
-    <version>3.2-SNAPSHOT</version>
+    <version>4.0-SNAPSHOT</version>
     <developers>
         <developer>
             <id>sats</id>
@@ -86,37 +86,37 @@
         <dependency>
             <groupId>org.glassfish.common</groupId>
             <artifactId>internal-api</artifactId>
-            <version>3.2-SNAPSHOT</version>
+            <version>4.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish.connectors</groupId>
             <artifactId>connectors-internal-api</artifactId>
-            <version>3.2-SNAPSHOT</version>
+            <version>4.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish.connectors</groupId>
             <artifactId>connectors-inbound-runtime</artifactId>
-            <version>3.2-SNAPSHOT</version>
+            <version>4.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish.connectors</groupId>
             <artifactId>connectors-runtime</artifactId>
-            <version>3.2-SNAPSHOT</version>
+            <version>4.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish.admin</groupId>
             <artifactId>admin-util</artifactId>
-            <version>3.2-SNAPSHOT</version>
+            <version>4.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish.transaction</groupId>
             <artifactId>transaction-internal-api</artifactId>
-            <version>3.2-SNAPSHOT</version>
+            <version>4.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish.ejb</groupId>
             <artifactId>ejb-internal-api</artifactId>
-            <version>3.2-SNAPSHOT</version>
+            <version>4.0-SNAPSHOT</version>
         </dependency>
     	<dependency>
             <groupId>org.glassfish.core</groupId>

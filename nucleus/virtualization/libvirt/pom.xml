@@ -49,7 +49,7 @@
     <parent>
         <groupId>org.glassfish.virtualization</groupId>
         <artifactId>virtualization</artifactId>
-        <version>3.2-SNAPSHOT</version>
+        <version>4.0-SNAPSHOT</version>
     </parent>
     <artifactId>libvirt</artifactId>
     <packaging>hk2-jar</packaging>

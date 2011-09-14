@@ -46,7 +46,7 @@
     <parent>
         <groupId>org.glassfish.appclient</groupId>
         <artifactId>server</artifactId>
-        <version>3.2-SNAPSHOT</version>
+        <version>4.0-SNAPSHOT</version>
     </parent>
 
     <groupId>org.glassfish.appclient.server</groupId>
