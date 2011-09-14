@@ -251,6 +251,11 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
                   name = sb.toString();
                 }
             }
+
+            if (target == null) {
+                target = deployment.getDefaultTarget(name, origin);
+            }
+
             // needs to be fixed in hk2, we don't generate the right innerclass index. it should use $
             Collection<Interceptor> interceptors = habitat.getAllByContract("org.glassfish.deployment.admin.DeployCommand.Interceptor");
             if (interceptors!=null) {

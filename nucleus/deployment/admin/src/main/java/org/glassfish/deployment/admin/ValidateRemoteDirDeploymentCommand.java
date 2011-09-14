@@ -59,6 +59,7 @@ import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.api.admin.Supplemental;
 import org.glassfish.api.deployment.DeployCommandParameters;
 import org.glassfish.api.deployment.archive.ReadableArchive;
+import org.glassfish.internal.deployment.Deployment;
 import org.glassfish.deployment.common.DeploymentUtils;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
@@ -92,6 +93,9 @@ public class ValidateRemoteDirDeploymentCommand extends DeployCommandParameters
 
     @Inject
     private Habitat habitat;
+
+    @Inject
+    private Deployment deployment;
 
     @Override
     public void execute(AdminCommandContext context) {
@@ -131,6 +135,10 @@ public class ValidateRemoteDirDeploymentCommand extends DeployCommandParameters
              */
             reportSuccess(report);
             return;
+        }
+
+        if (target == null) {
+            target = deployment.getDefaultTarget(name, origin);
         }
 
         final TargetInfo targetInfo = new TargetInfo(target);

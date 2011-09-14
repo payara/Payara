@@ -71,6 +71,7 @@ import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.GenericCrudCommand;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.internal.api.*;
+import org.glassfish.internal.deployment.DeploymentTargetResolver;
 
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
@@ -937,7 +938,11 @@ public class CommandRunnerImpl implements CommandRunner {
 
             String targetName = parameters.getOne("target");
             if (targetName == null || model.getModelFor("target").getParam().obsolete()) {
-                targetName = "server";
+                if (command instanceof DeploymentTargetResolver) {
+                    targetName = ((DeploymentTargetResolver)command).getTarget(parameters);
+                } else {
+                    targetName = "server";
+                }
             }
 
             logger.fine(adminStrings.getLocalString("dynamicreconfiguration.diagnostics.target",

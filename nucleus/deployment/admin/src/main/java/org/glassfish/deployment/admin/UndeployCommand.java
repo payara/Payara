@@ -45,6 +45,7 @@ import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.deployment.Deployment;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
+import org.glassfish.internal.deployment.DeploymentTargetResolver;
 import com.sun.enterprise.deploy.shared.ArchiveFactory;
 import com.sun.enterprise.admin.util.ClusterOperationUtil;
 import org.glassfish.deployment.common.DeploymentUtils;
@@ -99,7 +100,7 @@ import org.glassfish.deployment.versioning.VersioningException;
 @Scoped(PerLookup.class)
 @ExecuteOn(value={RuntimeType.DAS, RuntimeType.INSTANCE})
 @TargetType(value={CommandTarget.DOMAIN, CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER})
-public class UndeployCommand extends UndeployCommandParameters implements AdminCommand {
+public class UndeployCommand extends UndeployCommandParameters implements AdminCommand, DeploymentTargetResolver {
 
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(UndeployCommand.class);
    
@@ -188,7 +189,7 @@ public class UndeployCommand extends UndeployCommandParameters implements AdminC
             String appName = (String)it.next();
 
             if (target == null) {
-                target = deployment.setDefaultTarget(appName);
+                target = deployment.getDefaultTarget(appName, origin);
             }
             
             ApplicationInfo info = deployment.get(appName);
@@ -379,5 +380,9 @@ public class UndeployCommand extends UndeployCommandParameters implements AdminC
 
             } // else a message should have been provided.
         }
+    }
+
+    public String getTarget(ParameterMap parameters) {
+        return DeploymentCommandUtils.getTarget(parameters, origin, deployment);
     }
 }

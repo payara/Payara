@@ -49,6 +49,7 @@ import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.api.admin.FailurePolicy;
 import org.glassfish.api.deployment.StateCommandParameters;
+import org.glassfish.api.deployment.OpsParams;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.config.support.CommandTarget;
 import com.sun.enterprise.util.LocalStringManagerImpl;
@@ -62,6 +63,7 @@ import org.glassfish.api.I18n;
 import org.glassfish.internal.deployment.Deployment;
 import org.glassfish.common.util.admin.ParameterMapExtractor;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
+import org.glassfish.internal.deployment.DeploymentTargetResolver;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
@@ -89,7 +91,7 @@ import org.glassfish.internal.deployment.ExtendedDeploymentContext.Phase;
 @ExecuteOn(value={RuntimeType.DAS, RuntimeType.INSTANCE})
 @Scoped(PerLookup.class)
 @TargetType(value={CommandTarget.DOMAIN, CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE})
-public class EnableCommand extends StateCommandParameters implements AdminCommand {
+public class EnableCommand extends StateCommandParameters implements AdminCommand, DeploymentTargetResolver {
 
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(EnableCommand.class);
 
@@ -126,7 +128,7 @@ public class EnableCommand extends StateCommandParameters implements AdminComman
         final Logger logger = context.getLogger();
 
         if (target == null) {
-            target = deployment.setDefaultTarget(name());
+            target = deployment.getDefaultTarget(name(), OpsParams.Origin.load);
         }
 
         if (!deployment.isRegistered(name())) {
@@ -215,4 +217,8 @@ public class EnableCommand extends StateCommandParameters implements AdminComman
             report.setMessage(e.getMessage());
         } 
     }        
+
+    public String getTarget(ParameterMap parameters) {
+        return DeploymentCommandUtils.getTarget(parameters, OpsParams.Origin.load, deployment);
+    }
 }

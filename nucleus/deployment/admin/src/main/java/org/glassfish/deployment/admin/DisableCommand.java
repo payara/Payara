@@ -62,6 +62,7 @@ import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.api.event.Events;
 import org.glassfish.internal.deployment.Deployment;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
+import org.glassfish.internal.deployment.DeploymentTargetResolver;
 import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.config.support.CommandTarget;
@@ -98,7 +99,7 @@ import org.glassfish.deployment.versioning.VersioningUtils;
 @ExecuteOn(value={RuntimeType.DAS, RuntimeType.INSTANCE})
 @Scoped(PerLookup.class)
 @TargetType(value={CommandTarget.DOMAIN, CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE})
-public class DisableCommand extends UndeployCommandParameters implements AdminCommand {
+public class DisableCommand extends UndeployCommandParameters implements AdminCommand, DeploymentTargetResolver {
 
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(DisableCommand.class);    
 
@@ -222,7 +223,7 @@ public class DisableCommand extends UndeployCommandParameters implements AdminCo
         // ready to do the real work
 
         if (target == null) {
-            target = deployment.setDefaultTarget(appName);
+            target = deployment.getDefaultTarget(appName, origin);
         }
 
         if (env.isDas() || !isundeploy) {
@@ -309,4 +310,8 @@ public class DisableCommand extends UndeployCommandParameters implements AdminCo
             }
         }
     }        
+
+    public String getTarget(ParameterMap parameters) {
+        return DeploymentCommandUtils.getTarget(parameters, origin, deployment);
+    }
 }

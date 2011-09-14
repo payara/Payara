@@ -50,6 +50,8 @@ import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.FailurePolicy;
 import org.glassfish.api.admin.ParameterMap;
+import org.glassfish.api.deployment.OpsParams;
+import org.glassfish.internal.deployment.Deployment;
 import org.glassfish.common.util.admin.ParameterMapExtractor;
 import org.jvnet.hk2.component.Habitat;
 import java.net.InetAddress;
@@ -115,5 +117,12 @@ public class DeploymentCommandUtils {
            // ignore
         }
         return defaultHostName;
+    }
+
+    public static String getTarget(ParameterMap parameters, OpsParams.Origin origin, Deployment deployment) {
+        String appName = parameters.getOne("DEFAULT");
+        String targetName = deployment.getDefaultTarget(appName, origin);
+        parameters.set("target", targetName);
+        return targetName;
     }
 }

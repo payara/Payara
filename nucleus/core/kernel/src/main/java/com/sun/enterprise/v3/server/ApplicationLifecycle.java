@@ -1476,14 +1476,22 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
         return appRegistry.get(appName);
     }
 
-    //sets the default target when the target is not specified
-    public String setDefaultTarget(String appName) {
+    // gets the default target when no target is specified
+    public String getDefaultTarget(String appName, OpsParams.Origin origin) {
         if (virtEnv == null || !virtEnv.isPaasEnabled()) {
             return DeploymentUtils.DAS_TARGET_NAME;     
         } else {
+           // for deploy case, OE will set the deploy target later
+           if (origin == OpsParams.Origin.deploy) {
+              return null;
+           }
+           // for other cases, we try to derive it from domain.xml
            List<String> targets = 
                domain.getAllReferencedTargetsForApplication(appName); 
-           if (targets.size() != 1) {
+           if (targets.size() == 0) {
+               throw new IllegalArgumentException("Application not registered");
+           }
+           if (targets.size() > 1) {
                throw new IllegalArgumentException("Cannot determine the default target. Please specify an explicit target for the operation.");
            }
            return targets.get(0);
@@ -1708,6 +1716,13 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
      * of __asadmin)
      */
     private String getVirtualServers(String target) {
+        if (target == null) {
+            // return null;
+            // work around till the OE sets the virtualservers param when it's 
+            // handling the default target 
+            target = "server";
+        }
+
         if (env.isDas() && DeploymentUtils.isDomainTarget(target)) {
             target = "server";
         }

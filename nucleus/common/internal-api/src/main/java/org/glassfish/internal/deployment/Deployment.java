@@ -260,5 +260,5 @@ public interface Deployment {
     public List<Sniffer> getSniffersFromApp(Application app);
 
     // sets the default target when the target is not specified
-    public String setDefaultTarget(String appName);
+    public String getDefaultTarget(String appName, OpsParams.Origin origin);
 }
