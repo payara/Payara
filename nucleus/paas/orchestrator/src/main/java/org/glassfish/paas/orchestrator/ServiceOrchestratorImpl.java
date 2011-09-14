@@ -806,7 +806,8 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator, Application
                     Collection<ProvisionedService> serviceConsumers = 
                             getServicesProvisionedByPlugin(svcPlugin, appPS);
                     for(ProvisionedService serviceConsumer : serviceConsumers){
-                        svcPlugin.reassociateServices(oldPS, newPS, ReconfigAction.AUTO_SCALING);
+                        svcPlugin.reassociateServices(serviceConsumer, oldPS, 
+                                newPS, ReconfigAction.AUTO_SCALING);
                     }
                 }
             }

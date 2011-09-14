@@ -328,18 +328,20 @@ public interface Plugin<T extends ServiceType> {
 
     /**
      * When a Service has been re-provisioned, and a prior deployment has
-     * already been bound to the earlier ProvisionedService, CAS uses this
-     * method to reassociate resources to point to the newly
+     * already been bound to the earlier ProvisionedService, CPAS uses this
+     * method to reassociate resources of the "Service Consumer" 
+     * <code>ProvisionedService</code> to point to the new "Service Provider"
      * <code>ProvisionedService</code>.
      * 
      * Some of the reasons reconfiguration may occur are auto-scaling
      * of Services, CPAS or VM restarts.
      * 
-     * @param oldPS The old ProvisionedService
-     * @param newPS The new ProvisionedService
+     * @param svcConsumer The Service Consumer ProvisionedService
+     * @param oldSvcProvider The old Service Provider ProvisionedService
+     * @param newSvcProvider The new Service Provider ProvisionedService
      * @param reason The reason for the re-configuration.
      */
-    public boolean reassociateServices(ProvisionedService oldPS,
-            ProvisionedService newPS, 
+    public boolean reassociateServices(ProvisionedService svcConsumer, ProvisionedService oldSvcProvider,
+            ProvisionedService newSvcProvider, 
             ServiceOrchestrator.ReconfigAction reason);
 }

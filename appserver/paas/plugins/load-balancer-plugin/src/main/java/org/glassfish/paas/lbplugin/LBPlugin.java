@@ -54,6 +54,7 @@ import org.glassfish.embeddable.CommandResult;
 import org.glassfish.embeddable.CommandRunner;
 import org.glassfish.paas.lbplugin.cli.GlassFishLBProvisionedService;
 import org.glassfish.paas.lbplugin.logger.LBPluginLogger;
+import org.glassfish.paas.orchestrator.ServiceOrchestrator;
 import org.glassfish.paas.orchestrator.ServiceOrchestrator.ReconfigAction;
 import org.glassfish.paas.orchestrator.provisioning.ServiceInfo;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceType;
@@ -383,8 +384,9 @@ public class LBPlugin implements Plugin {
     }
 
     @Override
-    public boolean reassociateServices(ProvisionedService oldPS,
-            ProvisionedService newPS, ReconfigAction reason) {
+    public boolean reassociateServices(ProvisionedService svcConsumer, 
+            ProvisionedService oldSvcProvider, ProvisionedService newSvcProvider, 
+            ServiceOrchestrator.ReconfigAction reason) {
         //no-op
         throw new UnsupportedOperationException("Reassociation of Service " +
                 "not supported in this release");

@@ -577,8 +577,9 @@ public class GlassFishPlugin implements Plugin<JavaEEServiceType> {
     }
 
     @Override
-    public boolean reassociateServices(ProvisionedService oldPS,
-            ProvisionedService newPS, ReconfigAction reason) {
+    public boolean reassociateServices(ProvisionedService svcConsumer, 
+            ProvisionedService oldSvcProvider, ProvisionedService newSvcProvider, 
+            ServiceOrchestrator.ReconfigAction reason) {
         //no-op
         throw new UnsupportedOperationException("Reassociation of Service " +
                 "not supported in this release");
