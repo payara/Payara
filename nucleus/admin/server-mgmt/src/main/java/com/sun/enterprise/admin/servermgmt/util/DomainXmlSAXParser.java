@@ -92,13 +92,7 @@ public class DomainXmlSAXParser extends DefaultHandler {
   }
 
   public InputSource resolveEntity(String publicId,String systemId) throws SAXException {
-      InputSource is = null;
-      try {
-          is = new InputSource(new java.io.FileInputStream(dtd));
-      } catch(Exception e) {
-          throw new SAXException("cannot resolve dtd", e);
-      }
-      return is;
+      return null;
   }
 }
 
