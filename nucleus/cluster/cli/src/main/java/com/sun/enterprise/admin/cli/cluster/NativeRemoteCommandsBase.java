@@ -87,9 +87,9 @@ import com.sun.enterprise.util.OS;
  *  want to use jcifs (SAMBA) for Windows.  It's difficult to do this cleanly.
  */
 abstract class NativeRemoteCommandsBase extends CLICommand {
-    @Param(optional = true, defaultValue = "${user.name}")
+    @Param(optional = true, defaultValue = "${user.name}", alias = "dcomuser")
     String sshuser;
-    @Param(optional = true, defaultValue = "22")
+    @Param(optional = true, defaultValue = "22", alias = "dcomport")
     int sshport;
     @Param(optional = true)
     String sshkeyfile;
