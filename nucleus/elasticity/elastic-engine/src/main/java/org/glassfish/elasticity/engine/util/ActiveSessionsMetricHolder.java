@@ -109,7 +109,7 @@ public class ActiveSessionsMetricHolder
                     
                     table.add(System.currentTimeMillis(), new ActiveSessionsStat(
                             statisticObject.getHighWaterMark(),
-                            statisticObject.getLowWaterMark(),
+                            statisticObject.getLastSampleTime(),
                             statisticObject.getDescription(),
                             statisticObject.getUnit(),
                             statisticObject.getName(),
@@ -210,6 +210,7 @@ public class ActiveSessionsMetricHolder
         private long lastSampleTime;
         private String description;
         private String unit;
+        private String name;
         private long startTime;
         private long current;
         private long lowWaterMark;
@@ -220,6 +221,7 @@ public class ActiveSessionsMetricHolder
             this.lastSampleTime = lastSampleTime;
             this.description = description;
             this.unit = unit;
+            this.name = name;
             this.startTime = startTime;
             this.current = current;
             this.lowWaterMark = lowWaterMark;
@@ -233,12 +235,16 @@ public class ActiveSessionsMetricHolder
             return lastSampleTime;
         }
         
-        public String Description() {
+        public String getDescription() {
             return description;
         }
         
         public String getUnit() {
             return unit;
+        }
+        
+        public String getName() {
+            return name;
         }
         
         public long getStartTime() {
@@ -255,7 +261,7 @@ public class ActiveSessionsMetricHolder
 
         public String toString() {
             return "highWaterMark=" + highWaterMark + "; lastSampleTime=" + lastSampleTime + "; description=" + description + "; unit=" + unit +
-                    "; startTime=" + startTime + "; current="+ current + "; + lowWaterMark=" + lowWaterMark;
+                    "; name=" +name + "; startTime=" + startTime + "; current="+ current + "; + lowWaterMark=" + lowWaterMark;
         }
     }
 }
