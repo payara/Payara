@@ -51,6 +51,7 @@ package org.glassfish.elasticity.engine.commands;
  import java.util.logging.Logger;
 import java.beans.PropertyVetoException;
  import com.sun.enterprise.config.serverbeans.Domain;
+ import org.glassfish.api.ActionReport.MessagePart;
 
 /*
   * command used by GUI for OOW
@@ -67,7 +68,7 @@ public class DescribeMemoryAlertCommand implements AdminCommand{
     @Inject
     Domain domain;
 
-    @Param(name="servicename", primary=true)
+    @Param(name="service")
     String servicename;
 
     @Param(name="alertname", primary=true)
@@ -98,19 +99,18 @@ public class DescribeMemoryAlertCommand implements AdminCommand{
             report.setMessage(msg);
             return;
         }
-
-        StringBuilder sb = new StringBuilder();
-
-        sb.append(servicename);
-        sb.append(EOL);
-        sb.append(alertname);
-        sb.append(EOL);
         //get the threshold value
         String expr = alert.getExpression();
+        String threshold = "";
+        int i =expr.indexOf(">");
+        int j = expr.indexOf("]");
+        threshold = expr.substring(++i,j);
 
-        int threshold = -1;
-
-        report.setMessage(sb.toString());
+        report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
+        MessagePart mp = report.getTopMessagePart();
+        mp.addProperty("servce ", servicename );
+        mp.addProperty("alert", alertname);
+        mp.addProperty("threshold", threshold);
 
     }
 }
