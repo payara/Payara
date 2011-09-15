@@ -69,7 +69,14 @@ public class ApacheNativeTemplateCustomizer implements TemplateCustomizer {
     @Inject
     private ServerContext serverContext;
 
-    private static final String LB_INSTALL_LOC = "/u01/glassfish/lb";
+    private static String LB_INSTALL_LOC = "/u01/glassfish/lb";
+
+    static {
+        String osName= System.getProperty("os.name").toLowerCase();
+        if(osName.contains("win")) {
+            LB_INSTALL_LOC = "c:\\glassfish\\lb";
+        }
+    }
 
     private static final String LB_ZIP_FILE_LOC = "config" + File.separator + "lb.zip";
 

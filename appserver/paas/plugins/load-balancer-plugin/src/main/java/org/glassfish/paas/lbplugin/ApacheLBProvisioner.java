@@ -59,16 +59,23 @@ import org.jvnet.hk2.component.Habitat;
 @Service
 public class ApacheLBProvisioner implements LBProvisioner{
 
-    private static final String APACHE_INSTALL_DIR = "/u01/glassfish/lb/install";
-    private static final String APACHECTL = APACHE_INSTALL_DIR + "/bin/apachectl";
-    private static final String SCRIPTS_DIR = "/u01/glassfish/lb/scripts";
-    private static final String ASSOCIATE_SERVERS_SCRIPT = SCRIPTS_DIR + "/associateServer.sh";
-    private static final String CONFIGURE_SERVER_SCRIPT = SCRIPTS_DIR + "/configureServer.sh";
+    private static String APACHE_INSTALL_DIR = "/u01/glassfish/lb/install";
+    private static String APACHECTL = APACHE_INSTALL_DIR + "/bin/apachectl";
+    private static String SCRIPTS_DIR = "/u01/glassfish/lb/scripts";
+    private static String ASSOCIATE_SERVERS_SCRIPT = SCRIPTS_DIR + "/associateServer.sh";
+    private static String CONFIGURE_SERVER_SCRIPT = SCRIPTS_DIR + "/configureServer.sh";
+
+    static {
+        APACHE_INSTALL_DIR = "c:\\glassfish\\lb\\install";
+        APACHECTL = APACHE_INSTALL_DIR + "\\bin\\apachectl";
+        SCRIPTS_DIR = "c:\\glassfish\\lb\\scripts";
+        ASSOCIATE_SERVERS_SCRIPT = SCRIPTS_DIR + "\\associateServer.sh";
+        CONFIGURE_SERVER_SCRIPT = SCRIPTS_DIR + "\\configureServer.sh";
+    }
 
     private static final String LISTENER_NAME = "ajp-listener-1";
     private static final String HTTP_LISTENER_NAME = "http-listener-1";
     private static final String LISTENER_PORT = "28009";//"\\$\\{AJP_LISTENER_PORT\\}"
-
     public static final String VENDOR_NAME = "apache";
 
     @Override
