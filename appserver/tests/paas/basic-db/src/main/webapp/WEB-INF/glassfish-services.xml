@@ -44,7 +44,6 @@
 <service-description name="basic-db" init-type="lazy">
   <characteristics>
     <characteristic name="service-type" value="JavaEE"/>
-    <characteristic name="os-name" value="Linux"/>
   </characteristics>
   <configurations>
     <configuration name="min.clustersize" value="1"/>
