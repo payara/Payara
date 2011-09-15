@@ -84,7 +84,7 @@ public class CreateTemplate implements AdminCommand {
     @Param
     String indexes;
 
-    @Param(optional = true)
+    @Param(optional = true, separator=':')
     Properties properties;
 
     @Param(optional = true)
