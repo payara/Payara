@@ -106,8 +106,7 @@ public class DescribeMemoryAlertCommand implements AdminCommand{
         String expr = alert.getExpression();
         String threshold = "";
         int i =expr.indexOf(">");
-        int j = expr.indexOf("]");
-        threshold = expr.substring(++i,j);
+        threshold = expr.substring(++i);
 
         report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
         MessagePart mp = report.getTopMessagePart();
