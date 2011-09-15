@@ -117,7 +117,7 @@ public class CreateMemoryAlert implements AdminCommand{
         ci.execute();
 
         //create a new alert with new values
-        String expression = "any([jvm.memory.heap >" + threshold+"])" ;
+        String expression = "any[avg(jvm.memory.heap)  > " + threshold ;
 
         ci = cr.getCommandInvocation("create-alert", report);
         map = new ParameterMap();

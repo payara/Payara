@@ -96,7 +96,7 @@ public class ExpressionLexer {
 		this.size = stream.length();
 		
 		for (Token tok = getNextToken(); tok != EOSTREAM; tok = getNextToken()) {
-			System.out.println("Got token: " + tok);
+//			System.out.println("Got token: " + tok);
 			tokens.add(tok);
 		}
 		
@@ -117,7 +117,7 @@ public class ExpressionLexer {
 	
 	public void reset() {
 		this.tokenIndex = tokenMark >= 0 ? tokenMark : tokenIndex;
-		System.out.println("index reset to : " + tokenMark + "; tokens.size: " + tokens.size());
+//		System.out.println("index reset to : " + tokenMark + "; tokens.size: " + tokens.size());
 	}
 	
 	private Token getNextToken() {

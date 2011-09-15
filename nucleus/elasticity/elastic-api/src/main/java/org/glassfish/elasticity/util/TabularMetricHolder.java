@@ -256,3 +256,12 @@ public class TabularMetricHolder<V>
 	}
 
 }
+
+/*
+[#|2011-09-15T10:00:29.016-0700|INFO|44.0|javax.enterprise.system.std.com.sun.enterprise.server.logging|_ThreadID=12;_ThreadName=Thread-2;| 0 | Thu Sep 15 09:43:54 PDT 2011 | used=49113800; committed=222429184; |#]
+
+[#|2011-09-15T10:00:29.016-0700|INFO|44.0|javax.enterprise.system.std.com.sun.enterprise.server.logging|_ThreadID=12;_ThreadName=Thread-2;| 200 | Thu Sep 15 10:00:29 PDT 2011 | used=74770216; committed=222429184; |#]
+
+[#|2011-09-15T10:00:29.016-0700|INFO|44.0|javax.enterprise.system.std.com.sun.enterprise.server.logging|_ThreadID=12;_ThreadName=Thread-2;|So far has collected: 200|#]
+
+*/

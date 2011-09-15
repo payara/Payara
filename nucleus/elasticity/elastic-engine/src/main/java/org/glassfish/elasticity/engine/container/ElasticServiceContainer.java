@@ -39,13 +39,23 @@
  */
 package org.glassfish.elasticity.engine.container;
 
+import com.sun.enterprise.ee.cms.core.CallBack;
+import com.sun.enterprise.ee.cms.core.MessageSignal;
+import com.sun.enterprise.ee.cms.core.Signal;
 import org.glassfish.api.Startup;
+import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.elasticity.api.AlertContext;
 import org.glassfish.elasticity.api.MetricGatherer;
 import org.glassfish.elasticity.config.serverbeans.AlertConfig;
 import org.glassfish.elasticity.config.serverbeans.ElasticService;
 import org.glassfish.elasticity.engine.util.ElasticEngineThreadPool;
 import org.glassfish.elasticity.engine.util.EngineUtil;
 import org.glassfish.elasticity.engine.util.ExpressionBasedAlert;
+import org.glassfish.elasticity.group.ElasticMessageHandler;
+import org.glassfish.elasticity.group.GroupMemberEventListener;
+import org.glassfish.elasticity.group.gms.GroupServiceProvider;
+import org.glassfish.gms.bootstrap.GMSAdapter;
+import org.glassfish.gms.bootstrap.GMSAdapterService;
 import org.glassfish.hk2.PostConstruct;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
@@ -53,34 +63,40 @@ import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.PerLookup;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 @Service
 @Scoped(PerLookup.class)
 public class ElasticServiceContainer
-    implements PostConstruct {
+    implements PostConstruct, GroupMemberEventListener, ElasticMessageHandler {
 
     @Inject
-    Habitat habitat;
+    private Habitat habitat;
 
     @Inject
-    ElasticEngineThreadPool threadPool;
+    private ElasticEngineThreadPool threadPool;
 
     @Inject
-    EngineUtil engineUtil;
+    private EngineUtil engineUtil;
 
-    Logger logger;
+    @Inject(optional = true)
+    private GMSAdapterService gmsAdapterService;
 
-    ElasticService service;
+    @Inject
+    private ServerEnvironment serverEnvironment;
+
+    private Logger logger;
+
+    private ElasticService service;
 
 	private String name;
 	
@@ -94,8 +110,14 @@ public class ElasticServiceContainer
 	
 	private AtomicInteger reconfigurationPeriodInSeconds = new AtomicInteger(3 * 60);
 
-    private ConcurrentHashMap<String, AlertWrapper> alerts
-            = new ConcurrentHashMap<String, AlertWrapper>();
+    private ConcurrentHashMap<String, AlertContextImpl> alerts
+            = new ConcurrentHashMap<String, AlertContextImpl>();
+
+    private boolean isDAS;
+
+    private GroupServiceProvider gsp;
+
+    private AtomicReference<Set<String>> currentMembers = new AtomicReference<Set<String>>();
 
 	public Startup.Lifecycle getLifecycle() {
 		return Startup.Lifecycle.START;
@@ -112,6 +134,7 @@ public class ElasticServiceContainer
         this.minSize.set(service.getMin());
         this.maxSize.set(service.getMax());
 
+        System.out.println("**Initialized ElasticService name = " + this.service.getName());
     }
 
 	public String getName() {
@@ -168,10 +191,29 @@ public class ElasticServiceContainer
     }
 
     public void startContainer() {
-        loadAlerts();
+
+        isDAS = serverEnvironment.isDas();
+
+        if (gmsAdapterService != null && gmsAdapterService.getGMSAdapter() != null) {
+            GMSAdapter gmsAdapter = gmsAdapterService.getGMSAdapter();
+
+            System.out.println("isDAS: " + serverEnvironment.isDas()
+                + "; ClusterName=" + gmsAdapter.getClusterName()
+                + "; instanceName=" + gmsAdapter.getModule().getInstanceName());
+
+            gsp = new GroupServiceProvider(gmsAdapter.getModule().getInstanceName(),
+                    gmsAdapter.getClusterName(), false);
+            gsp.registerGroupMemberEventListener(this);
+            gsp.registerGroupMessageReceiver(service.getName(), this);
+        }
+
+        if (isDAS) {
+            loadAlerts();
+        }
     }
 
     public void stopContainer() {
+        //Unload even if not DAS
         unloadAlerts();
     }
 
@@ -184,20 +226,22 @@ public class ElasticServiceContainer
             String alertName = alertConfig.getName();
             ExpressionBasedAlert<AlertConfig> alert = new ExpressionBasedAlert<AlertConfig>();
             alert.initialize(habitat, alertConfig);
-            AlertWrapper alertWrapper = new AlertWrapper(alert,
-                    threadPool.scheduleAtFixedRate(alert, frequencyInSeconds, frequencyInSeconds, TimeUnit.SECONDS));
-            alerts.put(alertConfig.getName(), alertWrapper);
-//                System.out.println("SCHEDULED Alert[name=" + alertName + "; schedule=" + sch
-//                        + "; expression=" + alertConfig.getExpression() + "; will be executed every= " + frequencyInSeconds);
+            AlertContextImpl alertCtx = new AlertContextImpl(service, alertConfig, alert);
+            ScheduledFuture<?> future =
+                    threadPool.scheduleAtFixedRate(alertCtx, frequencyInSeconds, frequencyInSeconds, TimeUnit.SECONDS);
+            alertCtx.setFuture(future);
+            alerts.put(alertConfig.getName(), alertCtx);
+                System.out.println("SCHEDULED Alert[name=" + alertName + "; schedule=" + sch
+                        + "; expression=" + alertConfig.getExpression() + "; will be executed every= " + frequencyInSeconds);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
     }
 
     public void removeAlert(String alertName) {
-        AlertWrapper wrapper = alerts.remove(alertName);
-        if (wrapper != null && wrapper.getFuture() != null) {
-            wrapper.getFuture().cancel(false);
+        AlertContextImpl ctx = alerts.remove(alertName);
+        if (ctx != null && ctx.getFuture() != null) {
+            ctx.getFuture().cancel(false);
         }
     }
 
@@ -228,24 +272,27 @@ public class ElasticServiceContainer
         }
     }
 
-    private static class AlertWrapper {
+    @Override
+    public void onViewChange(String memberName, Collection<String> currentAliveAndReadyMembers, Collection<String> previousView, boolean isJoinEvent) {
+        System.out.println("ElasticEvent[service=" + service.getName() + "]: Member " + memberName
+            + (isJoinEvent ? " JOINED" : " LEFT") + " the cluster"
+            + "; currentView: " + currentAliveAndReadyMembers);
 
-        private ScheduledFuture<?> future;
+        Set<String> members = new HashSet<String>();
+        members.addAll(currentAliveAndReadyMembers);
 
-        private ExpressionBasedAlert<? extends AlertConfig> alert;
+        currentMembers.set(members);
+        currentSize.set(members.size());
 
-        AlertWrapper(ExpressionBasedAlert<? extends AlertConfig> alert, ScheduledFuture<?> future) {
-            this.alert = alert;
-            this.future = future;
-        }
+        System.out.println("ElasticEvent[service=" + service.getName() + "]: There are "
+                + currentSize + " members in the cluster");
+    }
 
-        ScheduledFuture<?> getFuture() {
-            return future;
-        }
 
-        ExpressionBasedAlert<? extends AlertConfig> getAlert() {
-            return alert;
-        }
+    @Override
+    public void handleMessage(String senderName, String messageToken, byte[] data) {
+        System.out.println("Received a message from " + senderName + "; messageToken=" + messageToken
+                + "; data= " + (new String(data)));
     }
 
     private int getFrequencyOfAlertExecutionInSeconds(String sch) {

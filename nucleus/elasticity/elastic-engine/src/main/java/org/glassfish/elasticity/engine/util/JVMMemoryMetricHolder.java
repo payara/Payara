@@ -12,15 +12,16 @@ import org.jvnet.hk2.component.PostConstruct;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
 import java.lang.management.MemoryUsage;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.concurrent.TimeUnit;
 
 /**
  * @author Mahesh.Kannan@Oracle.Com
  */
-@Service(name="jvm_memory")
+@Service(name = "jvm_memory")
 public class JVMMemoryMetricHolder
-    implements MetricNode, MetricGatherer, PostConstruct {
+        implements MetricNode, MetricGatherer, PostConstruct {
 
     static final String _NAME = "jvm_memory";
 
@@ -32,11 +33,13 @@ public class JVMMemoryMetricHolder
 
     MemoryMXBean memBean;
 
+    private boolean debug;
+
     @Override
     public void postConstruct() {
         this.table = new TabularMetricHolder<MemoryStat>("heap", MemoryStat.class);
 
-        this.attributes = new MetricAttribute[] {new MaxSizeAttribute(), table};
+        this.attributes = new MetricAttribute[]{new MaxSizeAttribute(), table};
         this.memBean = ManagementFactory.getMemoryMXBean();
         this.max = memBean.getHeapMemoryUsage().getMax();
     }
@@ -48,12 +51,25 @@ public class JVMMemoryMetricHolder
 
     @Override
     public void gatherMetric() {
-		MemoryUsage memUsage = memBean.getHeapMemoryUsage();
+        MemoryUsage memUsage = memBean.getHeapMemoryUsage();
         table.add(System.currentTimeMillis(), new MemoryStat(memUsage.getUsed(), memUsage.getCommitted()));
 
-        Iterator<TabularMetricEntry<MemoryStat>> iter = table.iterator(10, TimeUnit.SECONDS);
-        while (iter.hasNext()) {
-            TabularMetricEntry<MemoryStat> tme = iter.next();
+        if (debug) {
+            Iterator<TabularMetricEntry<MemoryStat>> iter = table.iterator(2 * 60 * 60, TimeUnit.SECONDS);
+            int count = 1;
+            TabularMetricEntry<MemoryStat> lastEntry = null;
+            while (iter.hasNext()) {
+                TabularMetricEntry<MemoryStat> tme = iter.next();
+                if (count == 1) {
+                    System.out.println(" " + count + " | " + new Date(tme.getTimestamp()) + " | " + tme.getV() + "; ");
+                }
+                lastEntry = tme;
+                count++;
+            }
+            if (lastEntry != null) {
+                System.out.println(" " + count + " | " + new Date(lastEntry.getTimestamp()) + " | " + lastEntry.getV() + "; ");
+            }
+            System.out.println("So far collected: " + count);
         }
     }
 
@@ -87,7 +103,7 @@ public class JVMMemoryMetricHolder
     }
 
     private class MaxSizeAttribute
-        implements MetricAttribute {
+            implements MetricAttribute {
 
         @Override
         public String getName() {

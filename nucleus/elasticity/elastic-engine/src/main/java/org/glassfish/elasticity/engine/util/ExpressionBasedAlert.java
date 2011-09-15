@@ -40,16 +40,18 @@
 package org.glassfish.elasticity.engine.util;
 
 import org.glassfish.elasticity.api.Alert;
+import org.glassfish.elasticity.api.AlertContext;
 import org.glassfish.elasticity.config.serverbeans.AlertConfig;
-import org.glassfish.elasticity.metric.MetricAttribute;
-import org.glassfish.elasticity.metric.MetricNode;
-import org.glassfish.elasticity.metric.TabularMetricAttribute;
-import org.glassfish.elasticity.metric.TabularMetricEntry;
-import org.jvnet.hk2.annotations.Inject;
+import org.glassfish.elasticity.expression.ExpressionNode;
+import org.glassfish.elasticity.expression.ExpressionParser;
+import org.glassfish.elasticity.expression.Token;
+import org.glassfish.elasticity.expression.TokenType;
 import org.jvnet.hk2.component.Habitat;
 
-import java.util.Iterator;
-import java.util.concurrent.TimeUnit;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectOutputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A simple Alert that uses an expression
@@ -58,73 +60,91 @@ import java.util.concurrent.TimeUnit;
  * @author Mahesh Kannan
  */
 public class ExpressionBasedAlert<C extends AlertConfig>
-        implements Alert<C>, Runnable {
+        implements Alert<C> {
 
     private C config;
 
-    Habitat habitat;
+    private Habitat habitat;
+
+    private ExpressionNode parsedNode;
+
+    private List<List<ExpressionNode>> remoteNodes = new ArrayList<List<ExpressionNode>>();
+
+    private byte[] remoteData;
 
     public void initialize(Habitat habitat, C config) {
         this.habitat = habitat;
         this.config = config;
-    }
-
-    public AlertState execute() {
-
-
-/*        StringBuilder sb = new StringBuilder("Alert {");
-        sb.append("name=").append(config.getName()).append("; ")
-           .append("expr=").append(config.getExpression()).append("; ")
-           .append("schedule=").append(config.getSchedule()).append("; ")
-                .append("}");
-        System.out.println("Alert executed with: " + sb.toString());*/
-
-/*
-        MetricNode metricNode = null;
 
         try {
-            metricNode = (MetricNode) habitat.getComponent(MetricNode.class, "jvm_memory");
+            ExpressionParser parser = new ExpressionParser(config.getExpression());
+            parsedNode = parser.parse();
 
+            remoteNodes = new ArrayList<List<ExpressionNode>>();
+            getExpressionNodeForRemoteExecution(parsedNode, remoteNodes);
 
-            StringBuilder sb = new StringBuilder("jvm_memory: ");
-            if (metricNode != null) {
-                for (MetricAttribute ma : metricNode.getAttributes()) {
-                    sb.append("*").append(ma.getName()).append("= ");
-                    if (ma instanceof TabularMetricAttribute) {
-                        sb.append("\n===================================================================\n");
-                        TabularMetricAttribute tma = (TabularMetricAttribute) ma;
-                        for (String name : tma.getColumnNames()) {
-                            sb.append(" | ").append(name).append(" | ");
-                        }
-                        sb.append("\n===================================================================\n");
-                        Iterator<TabularMetricEntry> iter = tma.iterator(120, TimeUnit.SECONDS);
-                        for (TabularMetricEntry tme; iter.hasNext(); ) {
-                            tme = iter.next();
-                            for (String name : tma.getColumnNames()) {
-                                sb.append(" | ").append(tme.getValue(name)).append(" | ");
-                            }
-                            sb.append("\n");
-                        }
-                    } else {
-                        sb.append(ma.getValue());
-                    }
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            ObjectOutputStream oos = null;
+            try {
+                oos = new ObjectOutputStream(bos);
+                oos.writeObject(remoteNodes);
+
+                oos.close();
+                remoteData = bos.toByteArray();
+
+                System.out.println("Parsed and ready to transmit " + remoteData.length + " bytes of data");
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            } finally {
+                try {
+                    oos.close();
+                } catch (Exception ex) {
                 }
-            } else {
-                sb.append("jvm_memory is NULL");
             }
 
-
-            System.out.println("*** Executed ExpressionBasedAlert.execute(): \n" + sb.toString());
         } catch (Exception ex) {
             ex.printStackTrace();
         }
-*/
+    }
 
+    public AlertState execute(AlertContext ctx) {
+
+        System.out.println("About to execute alert: " + config.getName() + "; service = "
+                + ctx.getElasticService().getName());
         return AlertState.ALARM;
     }
 
-    public void run() {
-        execute();
+
+    private void getExpressionNodeForRemoteExecution(ExpressionNode node, List<List<ExpressionNode>> nodes) {
+        if (node != null) {
+            if (node.getToken().getTokenType() == TokenType.FUNCTION_CALL) {
+                ExpressionParser.FunctionCall fcall = (ExpressionParser.FunctionCall) node;
+                System.out.println("Looking into function: " + node);
+                if (fcall.isRemote()) {
+                    nodes.add(((ExpressionParser.FunctionCall) node).getParams());
+                    return;
+                }
+            }
+
+            getExpressionNodeForRemoteExecution(node.getLeft(), nodes);
+            getExpressionNodeForRemoteExecution(node.getRight(), nodes);
+        }
+    }
+
+    private void printExpression() {
+
+            StringBuilder sb = new StringBuilder("ExpressionBasedAlert[" + config.getName() + "] Expression: " + parsedNode);
+            sb.append("; Will execute: ");
+            for (List<ExpressionNode> nodeList : remoteNodes) {
+                sb.append("\n{");
+                String delim = "";
+                for (ExpressionNode node : nodeList) {
+                    sb.append(delim).append(node.toString());
+                    delim = ", ";
+                }
+                sb.append("}");
+            }
+            System.out.println(sb.toString());
     }
 
 }

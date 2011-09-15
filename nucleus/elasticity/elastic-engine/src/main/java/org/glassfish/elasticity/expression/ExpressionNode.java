@@ -1,12 +1,15 @@
 package org.glassfish.elasticity.expression;
 
+import java.io.Serializable;
+
 /**
  * A node in a parse tree
  * 
  * @author Mahesh Kannan
  *
  */
-public class ExpressionNode {
+public class ExpressionNode
+    implements Serializable {
 	
 	/**
 	 * The token that contains the type and value

@@ -1,7 +1,9 @@
 package org.glassfish.elasticity.expression;
 
+import java.io.Serializable;
+
 public class TokenImpl
-	implements Token {
+	implements Token, Serializable {
 	
 	private TokenType id;
 	private String value;

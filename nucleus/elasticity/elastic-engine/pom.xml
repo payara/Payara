@@ -95,5 +95,15 @@
             <artifactId>elastic-config</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.glassfish.cluster</groupId>
+            <artifactId>gms-bootstrap</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.shoal</groupId>
+            <artifactId>shoal-gms-impl</artifactId>
+            <version>${shoal.version}</version>
+        </dependency>
     </dependencies>
 </project>

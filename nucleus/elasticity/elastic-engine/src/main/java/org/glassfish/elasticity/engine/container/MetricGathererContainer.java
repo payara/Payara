@@ -107,7 +107,7 @@ public class MetricGathererContainer
             mg.gatherMetric();
 
             long now = System.currentTimeMillis();
-            if ((now - prevPurgeTime) > maxDataHoldingTimeInSeconds) {
+            if (((now - prevPurgeTime) / 1000) > maxDataHoldingTimeInSeconds) {
                 prevPurgeTime = now;
                 logger.log(Level.INFO, "Purging data for MetricGatherer: " + mg.getClass().getName());
                 mg.purgeDataOlderThan(maxDataHoldingTimeInSeconds, TimeUnit.SECONDS);

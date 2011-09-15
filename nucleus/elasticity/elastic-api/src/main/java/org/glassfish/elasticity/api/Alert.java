@@ -69,6 +69,6 @@ public interface Alert<C extends AlertConfig> {
 	 * 
 	 * @return the rule's state
 	 */
-	public AlertState execute();
+	public AlertState execute(AlertContext<C> ctx);
 	
 }

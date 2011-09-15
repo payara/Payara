@@ -44,8 +44,11 @@ public class ExpressionParser {
 		lexer = new ExpressionLexer(seq);
 	}
 
-	public void parse() {
-		System.out.println("ExpressionTree: " + booleanExpr());
+	public ExpressionNode parse() {
+        ExpressionNode node = booleanExpr();
+		System.out.println("ExpressionTree: " + node);
+
+        return node;
 	}
 
 	private ExpressionNode booleanExpr() {
@@ -139,27 +142,26 @@ public class ExpressionParser {
 		case IDENTIFIER:
 			Token metricNameToken = match(TokenType.IDENTIFIER);
 			if (peek(TokenType.DOT)) {
-				match(TokenType.DOT);
-				Token attributeNameToken = match(TokenType.IDENTIFIER);
-				System.out.println("Matched attribute access: "
-						+ metricNameToken.value() + "."
-						+ attributeNameToken.value());
-				root = new ExpressionNode(new TokenImpl(TokenType.ATTR_ACCESS, "."),
-						new ExpressionNode(metricNameToken, null, null), 
-						new ExpressionNode(attributeNameToken, null, null));
+                do {
+                    match(TokenType.DOT);
+                    Token attributeNameToken = match(TokenType.IDENTIFIER);
+//                    System.out.println("Matched attribute access: "
+//                            + metricNameToken.value() + "." + attributeNameToken.value());
+                    root = new ExpressionNode(new TokenImpl(TokenType.ATTR_ACCESS, "."),
+                            new ExpressionNode(metricNameToken, null, null),
+                            new ExpressionNode(attributeNameToken, null, null));
+                } while (peek(TokenType.DOT));
 			} else if (peek(TokenType.OPAR)) {
 				Token funcCall = match(TokenType.OPAR);
 				root = new FunctionCall(funcCall, metricNameToken);
 				functionCallParams((FunctionCall) root);
-				System.out.println("Matched function call: "
-						+ metricNameToken.value());
+//				System.out.println("Matched function call: " + metricNameToken.value());
 				match(TokenType.CPAR);
 			} else if (peek(TokenType.OARRAY)) {
 				Token funcCall = match(TokenType.OARRAY);
 				root = new FunctionCall(funcCall, metricNameToken);
 				functionCallParams((FunctionCall) root);
-				System.out.println("Matched function remote call access: "
-						+ metricNameToken.value());
+//				System.out.println("Matched function remote call access: " + metricNameToken.value());
 				match(TokenType.CARRAY);
 			}
 			break;
@@ -207,24 +209,37 @@ public class ExpressionParser {
 		boolean remote;
 		
 		FunctionCall(Token tok, Token functionNameToken) {
-			super(tok, null, null);
+			super(new TokenImpl(TokenType.FUNCTION_CALL, tok.getTokenType().toString()), null, null);
 			this.functionNameToken = functionNameToken;
 			remote = tok.getTokenType() == TokenType.OARRAY;
 
-			System.out.println("Function call: " + functionNameToken);
+			System.out.println("Function call: " + functionNameToken + "; isRemote: " + remote
+            + "; this.getToken.getTokenType: " + (this.getToken().getTokenType() == TokenType.FUNCTION_CALL));
 		}
 		
 		void addParam(ExpressionNode param) {
 			params.add(param);
-			System.out.println("added param: " + param.getToken());
+//			System.out.println("added param: " + param.getToken());
 		}
-		
+
+        public boolean isRemote() {
+            return remote;
+        }
+
+        public Token getFunctionNameToken() {
+            return functionNameToken;
+        }
+
+        public List<ExpressionNode> getParams() {
+            return params;
+        }
+
 		public String toString() {
-			StringBuilder sb = new StringBuilder("{" + functionNameToken.value() + "(");
+			StringBuilder sb = new StringBuilder("{" + functionNameToken.value() + ":");
 			for (ExpressionNode param : params) {
 				sb.append(param.toString()).append(" ");
 			}
-			sb.append(")");
+			sb.append("); isRemote = " + remote + "}");
 			
 			return sb.toString();
 		}

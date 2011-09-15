@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,51 +37,58 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package org.glassfish.elasticity.expression;
 
-import java.util.ArrayList;
+package org.glassfish.elasticity.group;
 
-public class ExpressionMain {
-	ArrayList<Token> tokens1 = new ArrayList<Token>();
-	
-	public static void main(String[] args) throws Exception {
+import org.glassfish.elasticity.group.gms.GroupServiceProvider;
 
-		/*
-		ExpressionMain expr = new ExpressionMain();
+import java.util.concurrent.ConcurrentHashMap;
 
-		String expr1 = "  countTrue(avg(cpu.load) >= 0.60) / MAX_INSTANCE > 0.60 &&"
-				+ "countTrue(avg(mem.used / mem.max) > 0.60) > 0.70) "
-				+ "||countTrue(avg(mem.used / mem.max) > 0.60) > 0.70%";
-		String expr2 = "countTrue[avg(cpu.load) >= 0.6]";
-		String expr3 = "true";
-		*/
-		ExpressionParser parser = new ExpressionParser("countTrue[avg(memory.used, 60) > 0.75] / cluster.size >= 0.60");
-		parser.parse();
-	}
-	
-	private void testLexer(ExpressionLexer lexer) {
-		lexer.mark();
-		int index = 0;
-		for (Token tok = lexer.next(); tok.getTokenType() != TokenType.EOSTREAM; tok = lexer.next()) {
-			System.out.println("Token[" + index + "]: " + tok);
-			tokens1.add(tok);
-		}
-		
 
-		lexer.reset();
-		index = 0;
-		int resetAt = 1;
-		for (Token tok = lexer.next(); tok.getTokenType() != TokenType.EOSTREAM; tok = lexer.next()) {
-			
-			System.out.println("Token[" + index + "]: " + tok + " == " + tokens1.get(index)
-					+ " ==> " + (tok.getTokenType() == tokens1.get(index).getTokenType()));
-			index++;
-			if (index > resetAt) {
-				resetAt *= 2;
-				index = 0;
-				lexer.reset();
-				lexer.mark();
-			}
-		}
-	}
+/**
+ * @author Mahesh Kannan
+ *
+ */
+public class GroupServiceFactory {
+
+    private ConcurrentHashMap<String, GroupServiceProvider> groupHandles
+            = new ConcurrentHashMap<String, GroupServiceProvider>();
+
+    private static final GroupServiceFactory _instance = new GroupServiceFactory();
+
+    private GroupServiceFactory() {
+    }
+
+    public static GroupServiceFactory getInstance() {
+        return _instance;
+    }
+
+    public synchronized GroupService getGroupService(String myName, String groupName, boolean startGMS) {
+        String key = makeKey(myName, groupName);
+        GroupServiceProvider server = groupHandles.get(key);
+        if (server == null) {
+            server = new GroupServiceProvider(myName, groupName, startGMS);
+            groupHandles.put(key, server);
+        }
+
+        return server;
+    }
+
+    private static String makeKey(String myName, String groupName) {
+        return myName + ":" + groupName;
+    }
+
+    public void shutdown(String myName, String groupName) {
+        String key = makeKey(myName, groupName);
+        GroupServiceProvider server = groupHandles.remove(key);
+        if (server != null) {
+            server.shutdown();
+        }
+    }
+
+    public static void main(String[] args)
+            throws Exception {
+        GroupServiceFactory factory = GroupServiceFactory.getInstance();
+        factory.getGroupService(args[0], args[1], true/*startGMS*/);
+    }
 }
