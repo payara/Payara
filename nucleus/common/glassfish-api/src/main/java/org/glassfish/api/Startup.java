@@ -46,6 +46,9 @@ import org.jvnet.hk2.annotations.Contract;
  * Implementation of this interface will be run during the application server 
  * startup sequence.
  *
+ * @deprecated Use the {@link StartupRunLevel} annotation on the Service instead of
+ * 		implementing this interface.
+ * 
  * @author Jerome Dochez
  */
 @Contract

@@ -52,6 +52,9 @@ import org.jvnet.hk2.annotations.Contract;
  * One of the thing that an Init service can do is initialize the security manager
  * or logging or even add modules and repositories to GlassFish where Startup services
  * can be loaded from.
+ * 
+ * @deprecated Use the {@link InitRunLevel} annotation on the Service instead of
+ * 		implementing this interface.
  */
 @Contract
 public interface Init {

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2008-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,20 +37,27 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
 package org.glassfish.internal.api;
 
-import org.jvnet.hk2.annotations.Contract;
+import static java.lang.annotation.ElementType.TYPE;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
+
+import java.lang.annotation.Inherited;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
+
+import org.jvnet.hk2.annotations.RunLevel;
 
 /**
- * Denotes a service that should be ran after the server has finished
- * starting.
- *
- * @deprecated Use the {@link PostStartupRunLevel} annotation on the Service instead of
- * 		implementing this interface.
+ * The meta annotation representing the {@link Init} RunLevel.
  * 
- * @author Jerome Dochez
+ * @author Jeff Trent
+ * @see {@link RunLevelService} in Hk2
  */
-@Contract
-public interface PostStartup {
+@Retention(RUNTIME)
+@Target(TYPE)
+@Inherited
+@RunLevel(1)
+public @interface InitRunLevel {
+    public static final int VAL = 1;
 }

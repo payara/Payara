@@ -65,12 +65,15 @@ import org.glassfish.api.event.EventListener.Event;
 import org.glassfish.api.event.EventTypes;
 import org.glassfish.api.event.Events;
 import org.glassfish.internal.api.Init;
+import org.glassfish.internal.api.InitRunLevel;
 import org.glassfish.internal.api.PostStartup;
+import org.glassfish.internal.api.PostStartupRunLevel;
 import org.glassfish.server.ServerEnvironmentImpl;
 import org.jvnet.hk2.annotations.*;
 import org.jvnet.hk2.component.ComponentException;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.Inhabitant;
+import org.jvnet.hk2.component.RunLevelService;
 
 /**
  * Main class for Glassfish v3 startup
@@ -115,6 +118,9 @@ public class AppServerStartup implements ModuleStartup {
 
     @Inject
     SystemTasks pidWriter;
+    
+    @Inject
+    RunLevelService<?> rls;
 
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ApplicationLifecycle.class);
     
@@ -221,6 +227,7 @@ public class AppServerStartup implements ModuleStartup {
 
         Map<Class, Long> servicesTiming = new HashMap<Class, Long>();
 
+        // TODO: convert these to RunLevel-based
         // run the init services
         for (Inhabitant<? extends Init> init : habitat.getInhabitants(Init.class)) {
             long start = System.currentTimeMillis();
@@ -232,6 +239,9 @@ public class AppServerStartup implements ModuleStartup {
                 servicesTiming.put(init.type(), (System.currentTimeMillis() - start));
             }
         }
+        // the new way
+        rls.proceedTo(InitRunLevel.VAL);
+        
         // run the startup services
         final Collection<Inhabitant<? extends Startup>> startups = habitat.getInhabitants(Startup.class);
         PriorityQueue<Inhabitant<? extends Startup>> startupSvcs;
@@ -267,6 +277,9 @@ public class AppServerStartup implements ModuleStartup {
                 }
             }
         }
+
+        // the new way
+        rls.proceedTo(PostStartupRunLevel.VAL);
 
         env.setStatus(ServerEnvironment.Status.starting);        
         events.send(new Event(EventTypes.SERVER_STARTUP), false);
@@ -396,6 +409,7 @@ public class AppServerStartup implements ModuleStartup {
         env.setStatus(ServerEnvironment.Status.stopping);
         events.send(new Event(EventTypes.PREPARE_SHUTDOWN), false);
 
+        // TODO: old way, replace with RunLevelService
         try {
 
             // Startup and PostStartup are merged acoording to their priority level and released
@@ -427,6 +441,9 @@ public class AppServerStartup implements ModuleStartup {
                 }
             }
 
+            // the new way
+            rls.proceedTo(InitRunLevel.VAL);
+
 
             // first send the shutdown event synchronously
             env.setStatus(ServerEnvironment.Status.stopped);
@@ -434,6 +451,7 @@ public class AppServerStartup implements ModuleStartup {
 
             logger.info(localStrings.getLocalString("shutdownfinished","Shutdown procedure finished"));            
 
+            // TODO: old way; replace this with the RunLevelService
             // we send the shutdown events before the Init services are released since
             // evens handler can still rely on services like logging during their processing
             for (Inhabitant<? extends Init> svc : habitat.getInhabitants(Init.class)) {
@@ -451,6 +469,11 @@ public class AppServerStartup implements ModuleStartup {
             // do nothing.
         }
 
+        
+        // the new way
+        rls.proceedTo(0);
+        
+        
         // notify the server thread that we are done, so that it can come out.
         if (serverThread!=null) {
             synchronized (serverThread) {
