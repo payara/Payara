@@ -17,8 +17,12 @@ Steps to run this test:
    For example, modify kvm_setup.sh/native_setup.sh to suite your system details and run it.
 
 This step is optional in which case the service(s) required for this PaaS app will be provisioned in non-virtualized environment.
+
+4. Compile this test : mvn clean compile war:war
+
+5. Deploy the war : asadmin deploy target/basic_db_paas_sample.war
  
-4. GF_EMBEDDED_ENABLE_CLI=true mvn clean verify
+6. GF_EMBEDDED_ENABLE_CLI=true mvn clean verify
 
 Note : Since the unprovisioning is not clean as of now, so in order to re-run the test it is recommendded to delete the GF installation and start fresh from step (1). Also make sure all ASMain processes are killed before you start.
 
