@@ -42,7 +42,12 @@ package org.glassfish.loadbalancer.admin.cli.helper;
 
 import java.io.OutputStream;
 import java.util.Date;
+import java.util.Properties;
+import java.util.StringTokenizer;
+import java.util.Vector;
 
+import org.glassfish.loadbalancer.admin.cli.reader.api.ClusterReader;
+import org.glassfish.loadbalancer.admin.cli.reader.api.InstanceReader;
 import org.glassfish.loadbalancer.config.LbConfig;
 import com.sun.enterprise.config.serverbeans.Domain;
 import org.glassfish.loadbalancer.config.LoadBalancer;
@@ -57,9 +62,11 @@ import org.glassfish.internal.data.ApplicationRegistry;
 import org.glassfish.loadbalancer.admin.cli.LbLogUtil;
 import org.glassfish.loadbalancer.admin.cli.beans.Loadbalancer;
 
+import javax.print.DocFlavor;
+
 /**
  * Export support class
- * 
+ *
  * @author Kshitiz Saxena
  */
 public class LbConfigHelper {
@@ -67,7 +74,7 @@ public class LbConfigHelper {
     /**
      * exports the loadbalancer.xml from the config to the outputstream provided
      * @param ctx ConfigContext
-     * @param lbConfigName name of lb-config 
+     * @param lbConfigName name of lb-config
      * @param out OutputStream into which the loadbalancer.xml is written
      */
     public static LoadbalancerReader getLbReader(Domain domain, ApplicationRegistry appRegistry,
@@ -99,7 +106,7 @@ public class LbConfigHelper {
     /**
      * exports the loadbalancer.xml from the config to the outputstream provided
      * @param ctx ConfigContext
-     * @param lbConfigName name of lb-config 
+     * @param lbConfigName name of lb-config
      * @param out OutputStream into which the loadbalancer.xml is written
      */
     public static void exportXml(LoadbalancerReader lbRdr, OutputStream out)
@@ -125,7 +132,98 @@ public class LbConfigHelper {
             }
         }
     }
+
+    /**
+     * exports the workser.properties from the config to the outputstream provided
+     * @param ctx ConfigContext
+     * @param lbConfigName name of lb-config
+     * @param out OutputStream into which the loadbalancer.xml is written
+     */
+    public static void exportWorkerProperties(LoadbalancerReader lbRdr, OutputStream out)
+            throws Exception {
+
+        // tranform the data using visitor pattern
+        Loadbalancer _lb = new Loadbalancer();
+
+        Properties props = new Properties();
+
+        String WORKER = "worker";
+        String SEPARATOR = ".";
+        String HOST = "host";
+        String PORT = "port";
+        String LIST = "list";
+        String TYPE = "type";
+        String TYPE_VALUE = "ajp13";
+        String LBFACTOR = "lbfactor";
+        String LBFACTOR_VALUE = "1";
+        String SOCKET_KEEPALIVE = "socket_keepalive";
+        String SOCKET_TIMEOUT = "socket_timeout";
+        String SOCKET_KEEPALIVE_VALUE = "1";
+        String SOCKET_TIMEOUT_VALUE = "300";
+        String LOADBALANCER = "loadbalancer";
+        String BALANCER_WORKERS = "balance_workers";
+        String LB = "lb";
+
+        String workerList = "";
+
+        LoadbalancerVisitor lbVstr = new LoadbalancerVisitor(_lb);
+        lbRdr.accept(lbVstr);
+
+        ClusterReader clusterReaders[] = lbRdr.getClusters();
+
+        Vector<String> instanceListeners = new Vector<String>();
+
+        for(int i=0;i<clusterReaders.length;i++) {
+            ClusterReader clusterReader = clusterReaders[i];
+            InstanceReader instanceReaders[] = clusterReader.getInstances();
+            for(int j =0; j<instanceReaders.length;j++) {
+                InstanceReader instanceReader = instanceReaders[j];
+                instanceListeners.add(instanceReader.getListeners());
+                instanceListeners.add(instanceReader.getName());
+            }
+        }
+
+        for(int i=0;i<instanceListeners.size();i++) {
+
+            String listenerHost ="";
+            String listenerPort="";
+            StringTokenizer st = new StringTokenizer(instanceListeners.get(i)," ");
+            while(st.hasMoreElements()) {
+                String listener = st.nextToken();
+                if(listener.contains("ajp://")) {
+                    listenerHost = listener.substring(listener.lastIndexOf("/")+1,listener.lastIndexOf(":"));
+                    listenerPort = listener.substring(listener.lastIndexOf(":")+1,listener.length());
+                }
+            }
+            String listenterName = instanceListeners.get(++i);
+
+            props.setProperty(WORKER+SEPARATOR+listenterName+SEPARATOR+HOST,listenerHost);
+            props.setProperty(WORKER+SEPARATOR+listenterName+SEPARATOR+PORT,listenerPort);
+            props.setProperty(WORKER+SEPARATOR+listenterName+SEPARATOR+TYPE,TYPE_VALUE );
+            props.setProperty(WORKER+SEPARATOR+listenterName+SEPARATOR+LBFACTOR, LBFACTOR_VALUE);
+            props.setProperty(WORKER+SEPARATOR+listenterName+SEPARATOR+SOCKET_KEEPALIVE,SOCKET_KEEPALIVE_VALUE);
+            props.setProperty(WORKER+SEPARATOR+listenterName+SEPARATOR+SOCKET_TIMEOUT,SOCKET_TIMEOUT_VALUE);
+            workerList = workerList + listenterName + ",";
+        }
+
+        props.setProperty(WORKER+SEPARATOR+LIST,workerList + LOADBALANCER);
+        props.setProperty(WORKER+SEPARATOR+LOADBALANCER+SEPARATOR+TYPE,LB);
+        props.setProperty(WORKER+SEPARATOR+LOADBALANCER+SEPARATOR+BALANCER_WORKERS,workerList.substring(0,workerList.length()-1));
+
+        try {
+            
+        props.store(out, "worker.properties");
+
+        } finally {
+            if (out != null) {
+                out.close();
+                out = null;
+            }
+        }
+    }
     private static final String PUBLICID =
             "-//Sun Microsystems Inc.//DTD Sun Java System Application Server 9.1//EN";
     private static final String SYSTEMID = "glassfish-loadbalancer_1_3.dtd";
 }
+
+
