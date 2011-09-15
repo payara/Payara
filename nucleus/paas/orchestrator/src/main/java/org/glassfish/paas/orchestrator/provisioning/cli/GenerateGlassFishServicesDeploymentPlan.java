@@ -50,6 +50,7 @@ import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.paas.orchestrator.ServiceOrchestrator;
 import org.glassfish.paas.orchestrator.service.metadata.*;
+import org.glassfish.paas.orchestrator.provisioning.util.JSONUtil;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
@@ -81,7 +82,7 @@ import java.util.jar.JarOutputStream;
 @TargetType(value = {CommandTarget.DAS})
 @CommandLock(CommandLock.LockType.NONE)
 @RestEndpoints({
-        @RestEndpoint(configBean = Applications.class, opType = RestEndpoint.OpType.GET, path = "_generate-glassfish-services-deployment-plan",
+        @RestEndpoint(configBean = Applications.class, opType = RestEndpoint.OpType.POST, path = "_generate-glassfish-services-deployment-plan",
                 description = "Generate glassfish-services.xml deployment plan from the list of services")
 })
 public class GenerateGlassFishServicesDeploymentPlan implements AdminCommand {
@@ -90,10 +91,7 @@ public class GenerateGlassFishServicesDeploymentPlan implements AdminCommand {
     private File archive;
 
     @Param(optional = true)
-    private List<Map<String, Object>> modifiedServiceDesc ;
-
-    @Param(optional = true)
-    private String test;
+    private String modifiedServiceDesc;
 
     @Inject
     private ArchiveFactory archiveFactory;
@@ -104,8 +102,8 @@ public class GenerateGlassFishServicesDeploymentPlan implements AdminCommand {
 
     public void execute(AdminCommandContext context) {
 
-        System.out.println("===== test param = " + test);
-        System.out.println("===== modifiedServiceDesc = " + modifiedServiceDesc );
+        List<Map> modifiedServiceDescList = (List<Map> ) JSONUtil.jsonToJava(modifiedServiceDesc);
+
         ActionReport report = context.getActionReport();
         List<Map<String, Object>> serviceMetadata = getServiceMetadata();
         List<ServiceDescription> serviceDescriptions = generateServiceMetadata(serviceMetadata);
@@ -139,9 +137,7 @@ public class GenerateGlassFishServicesDeploymentPlan implements AdminCommand {
                 properties.put("deployment-plan-file-path", jarFilepath);
                 report.setExtraProperties(properties);
 
-                report.setMessage("generated deployment plan jar file [ " + jarFilepath + " ]"
-                        + " test = " + test
-                        + " odifiedServiceDesc = " + modifiedServiceDesc );
+                report.setMessage("generated deployment plan jar file [ " + jarFilepath + " ]");
 
             } catch (Exception ex) {
                 ex.printStackTrace();
