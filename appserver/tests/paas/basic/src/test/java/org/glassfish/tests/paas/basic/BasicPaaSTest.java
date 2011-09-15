@@ -41,8 +41,7 @@
 package org.glassfish.tests.paas.basic;
 
 import junit.framework.Assert;
-import org.glassfish.embeddable.CommandResult;
-import org.glassfish.embeddable.CommandRunner;
+import org.glassfish.embeddable.Deployer;
 import org.glassfish.embeddable.GlassFish;
 import org.glassfish.embeddable.GlassFishProperties;
 import org.glassfish.embeddable.GlassFishRuntime;
@@ -89,24 +88,20 @@ public class BasicPaaSTest {
         File archive = new File(System.getProperty("basedir") +
                 "/target/basic_paas_sample.war"); // TODO :: use mvn apis to get the archive location.
         Assert.assertTrue(archive.exists());
-        CommandRunner commandRunner = glassfish.getCommandRunner();
-        CommandResult result = commandRunner.run("cloud-deploy",
-                archive.getAbsolutePath());
-        System.err.println("Deployed basic_paas_sample, command result = ["
-                + result.getOutput() + "]");
-        Assert.assertNull(result.getFailureCause());
+
+        Deployer deployer = glassfish.getDeployer();
+        String appName = deployer.deploy(archive);
+
+        System.err.println("Deployed [" + appName + "]");
+        Assert.assertNotNull(appName);
 
         // 4. Access the app to make sure PaaS app is correctly provisioned.
         get("http://localhost:28080/basic_paas_sample/BasicPaaSServlet",
                 "Request headers from the request:");
 
         // 5. Undeploy the PaaS application . TODO :: use cloud-undeploy??
-        result = commandRunner.run("undeploy", "basic_paas_sample");
-        System.err.println("Undeployed basic_paas_sample, command result = [" +
-                result.getOutput() + "]");
-        // TODO :: stop-cluster and unprovisioning should be done automatically
-        // by the orchestrator during undeploy. For now, we need to do it manually.
-        commandRunner.run("stop-cluster", "mycluster");
+        deployer.undeploy(appName);
+        System.err.println("Undeployed [" + appName + "]");
 
         // 6. Stop the GlassFish DAS
         glassfish.dispose();

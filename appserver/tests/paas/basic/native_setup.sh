@@ -42,5 +42,6 @@ echo "Your GlassFish is at $GF_HOME"
 $GF_HOME/bin/asadmin start-domain --debug
 $GF_HOME/bin/asadmin create-ims-config-native
 $GF_HOME/bin/asadmin create-server-pool --virtualization Native --subnet 192.168.1.102/250 --portName "br0" Native
+$GF_HOME/bin/asadmin stop-domain 
 #$GF_HOME/bin/asadmin create-template --indexes ServiceType=JavaEE,VirtualizationType=Native Native
 #$GF_HOME/bin/asadmin create-template --indexes ServiceType=Database,VirtualizationType=Native DBNative
