@@ -86,7 +86,7 @@ public class ScaleDownGlassFishService {
     @Inject
     private ProvisionerUtil provisionerUtil;
 
-    @Inject
+    @Inject(optional=true)
     VirtualMachineLifecycle vmLifecycle;
 
     @Inject

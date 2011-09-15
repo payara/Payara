@@ -418,7 +418,7 @@ public class ServiceUtil implements PostConstruct {
                     ApplicationScopedService service = servicesConfig.createChild(ApplicationScopedService.class);
 
                     service.setServiceName(entry.getServiceName());
-                    service.setType(entry.getServerType());
+                    service.setType(entry.getServerType().toLowerCase());
 
                     if (entry.getAppName() != null) {
                         service.setApplicationName(entry.getAppName());

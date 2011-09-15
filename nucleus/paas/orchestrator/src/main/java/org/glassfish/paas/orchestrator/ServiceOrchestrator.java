@@ -44,6 +44,7 @@ import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceMetadata;
 import org.glassfish.virtualization.spi.AllocationStrategy;
 import org.jvnet.hk2.annotations.Contract;
+import org.glassfish.paas.orchestrator.service.metadata.ServiceDescription;
 
 /**
  * The Orchestration Engine (OE) component in a PaaS runtime 
@@ -126,5 +127,15 @@ public interface ServiceOrchestrator {
             int scaleCount, AllocationStrategy allocStrategy);
     
     public static enum ReconfigAction {AUTO_SCALING, RESTART};
+    
+    /**
+     * given the application-name and service-name, retrieve the service-description
+     * info. </BR>
+     * Useful for GUI/Tooling modules to retrieve the service-description.
+     * @param appName application-name
+     * @param service service-name
+     * @return ServiceDescription
+     */
+    public ServiceDescription getServiceDescription(String appName, String service);
 
 }

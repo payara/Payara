@@ -654,7 +654,6 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator, Application
     }
 
 
-    //XXX (Jagadish): Needed anymore?
     private boolean isValidApplication(String appName) {
         boolean isValid = true;
         //TODO check whether the application uses any <services> and then invoke orchestrator.
@@ -820,4 +819,19 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator, Application
         return true;
     }
 
+    /**
+     * @inheritDoc
+     */
+    @Override
+    public ServiceDescription getServiceDescription (String appName, String service) {
+        
+        ServiceMetadata appServiceMetadata = this.getServiceMetadata(appName);
+        
+        for(ServiceDescription desc : appServiceMetadata.getServiceDescriptions()){
+            if (desc.getName().equals(service)){
+                return desc;
+            }
+        }
+        return null;
+    }
 }

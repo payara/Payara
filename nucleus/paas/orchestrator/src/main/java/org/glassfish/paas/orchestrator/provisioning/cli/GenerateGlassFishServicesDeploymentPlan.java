@@ -82,7 +82,8 @@ import java.util.jar.JarOutputStream;
 @TargetType(value = {CommandTarget.DAS})
 @CommandLock(CommandLock.LockType.NONE)
 @RestEndpoints({
-        @RestEndpoint(configBean = Applications.class, opType = RestEndpoint.OpType.POST, path = "_generate-glassfish-services-deployment-plan",
+        @RestEndpoint(configBean = Applications.class, opType = RestEndpoint.OpType.POST,
+                path = "_generate-glassfish-services-deployment-plan",
                 description = "Generate glassfish-services.xml deployment plan from the list of services")
 })
 public class GenerateGlassFishServicesDeploymentPlan implements AdminCommand {
@@ -90,7 +91,7 @@ public class GenerateGlassFishServicesDeploymentPlan implements AdminCommand {
     @Param(optional = false)
     private File archive;
 
-    @Param(optional = true)
+    @Param(optional = false)
     private String modifiedServiceDesc;
 
     @Inject
@@ -102,10 +103,10 @@ public class GenerateGlassFishServicesDeploymentPlan implements AdminCommand {
 
     public void execute(AdminCommandContext context) {
 
-        List<Map> modifiedServiceDescList = (List<Map> ) JSONUtil.jsonToJava(modifiedServiceDesc);
+        List<Map<String, Object>> serviceMetadata = (List<Map<String, Object>> ) JSONUtil.jsonToJava(modifiedServiceDesc);
 
         ActionReport report = context.getActionReport();
-        List<Map<String, Object>> serviceMetadata = getServiceMetadata();
+
         List<ServiceDescription> serviceDescriptions = generateServiceMetadata(serviceMetadata);
 
         if (archive == null || !archive.exists()) {
@@ -228,12 +229,13 @@ public class GenerateGlassFishServicesDeploymentPlan implements AdminCommand {
                 tid.setId(templateID);
                 sd.setTemplateOrCharacteristics(templateID);
             } else if (sdMap.get("characteristics") != null) {
-                Properties characteristics = (Properties) sdMap.get("characteristics");
-                Enumeration propertyNames = characteristics.propertyNames();
+                HashMap characteristics = (HashMap) sdMap.get("characteristics");
+                Set keySet = characteristics.keySet();
+                Iterator keySetIterator = keySet.iterator();
                 List<Property> characteristicsList = new ArrayList<Property>();
-                while (propertyNames.hasMoreElements()) {
+                while (keySetIterator.hasNext()) {
                     Property property = new Property();
-                    String name = (String) propertyNames.nextElement();
+                    String name = (String) keySetIterator.next();
                     String value = (String) characteristics.get(name);
                     property.setName(name);
                     property.setValue(value);
@@ -249,12 +251,13 @@ public class GenerateGlassFishServicesDeploymentPlan implements AdminCommand {
             }
 
             if (sdMap.get("configurations") != null) {
-                Properties configuration = (Properties) sdMap.get("configurations");
-                Enumeration propertyNames = configuration.propertyNames();
+                HashMap configuration = (HashMap) sdMap.get("configurations");
+                Set keySet = configuration.keySet();
+                Iterator keySetIterator = keySet.iterator();
                 List<Property> configurationList = new ArrayList<Property>();
-                while (propertyNames.hasMoreElements()) {
+                while (keySetIterator.hasNext()) {
                     Property property = new Property();
-                    String name = (String) propertyNames.nextElement();
+                    String name = (String) keySetIterator.next();
                     String value = (String) configuration.get(name);
                     property.setName(name);
                     property.setValue(value);
@@ -290,8 +293,7 @@ public class GenerateGlassFishServicesDeploymentPlan implements AdminCommand {
 
             serviceMetadata.add(serviceDescription);
         }
-/*
-        {
+        /*{
         Map<String, Object> serviceDescription = new TreeMap<String, Object>();
         serviceDescription.put("init-type", "lazy");
         serviceDescription.put("name", "my-service-2");

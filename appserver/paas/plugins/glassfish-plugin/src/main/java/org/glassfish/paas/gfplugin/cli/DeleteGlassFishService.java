@@ -96,7 +96,7 @@ public class DeleteGlassFishService implements AdminCommand {
     @Inject(optional = true) // made it optional for non-virtual scenario to work
     VirtualClusters virtualClusters;
 
-    @Inject
+    @Inject(optional=true)
     VirtualMachineLifecycle vmLifecycle;
 
     public void execute(AdminCommandContext context) {

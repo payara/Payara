@@ -130,6 +130,8 @@ public class GlassFishPlugin implements Plugin<JavaEEServiceType> {
     }
 
     public boolean handles(ReadableArchive cloudArchive) {
+        Boolean isJavaEEArchive = cloudArchive.getExtraData(Boolean.class);
+        //return isJavaEEArchive;
         return true;
     }
 
@@ -544,10 +546,9 @@ public class GlassFishPlugin implements Plugin<JavaEEServiceType> {
             ReadableArchive readableArchive, String appName) {
         HashSet<ServiceDescription> defs = new HashSet<ServiceDescription>();
 
-/*
-        if (DeploymentUtils.isWebArchive(readableArchive) || DeploymentUtils.isEAR(readableArchive) ||
-            DeploymentUtils.isRAR(readableArchive)) {
-*/
+        Boolean isJavaEEArchive = readableArchive.getExtraData(Boolean.class);
+        isJavaEEArchive = true;
+        if (isJavaEEArchive) {
             List<Property> characteristics = new ArrayList<Property>();
             characteristics.add(new Property("service-type", JAVAEE_SERVICE_TYPE));
 //            characteristics.add(new Property("service-vendor", "GlassFish"));
@@ -563,9 +564,7 @@ public class GlassFishPlugin implements Plugin<JavaEEServiceType> {
                     readableArchive.getName(), appName, "lazy",
                     new ServiceCharacteristics(characteristics), configurations);
             defs.add(sd);
-/*
         }
-*/
         return defs;
     }
 

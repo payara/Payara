@@ -281,7 +281,9 @@ public static final String RDBMS_ServiceType = "Database";
             return true;
         } else {
             //TODO throw exception ?
-            result.getFailureCause().printStackTrace();
+            if(result.getFailureCause() != null){
+                result.getFailureCause().printStackTrace();
+            }
             return false;
         }
     }
