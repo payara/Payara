@@ -112,6 +112,14 @@ public class AdminCommandLock {
         return null;    // no lock
     }
 
+    public void dumpState(Logger logger, Level level) {
+        if (logger.isLoggable(level)) {
+            logger.log(level, "Current locking conditions are " + rwlock.getReadLockCount()
+                         + "/"+ rwlock.getReadHoldCount() + " shared locks"
+                         + "and " + rwlock.getWriteHoldCount() + " write lock");
+        }
+    }
+
     /**
      * Return the appropriate Lock object for the specified command.
      * The returned lock has not been locked.  If this command needs

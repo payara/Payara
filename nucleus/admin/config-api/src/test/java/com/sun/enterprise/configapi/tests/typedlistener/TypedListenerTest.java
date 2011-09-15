@@ -62,7 +62,7 @@ import static org.junit.Assert.assertTrue;
 public class TypedListenerTest extends ConfigApiTest {
 
     List<PropertyChangeEvent> events = null;
-    int listenersInvoked=0;
+    volatile int listenersInvoked=0;
 
     @Override
     public String getFileName() {

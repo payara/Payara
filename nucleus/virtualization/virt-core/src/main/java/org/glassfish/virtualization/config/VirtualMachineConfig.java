@@ -42,12 +42,16 @@ package org.glassfish.virtualization.config;
 
 import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.config.serverbeans.ClusterExtension;
+import org.glassfish.api.admin.AdminCommandLock;
+import org.glassfish.api.admin.CommandLock;
 import org.glassfish.api.admin.config.Named;
+import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.*;
 import org.jvnet.hk2.config.types.Property;
 
 import java.beans.PropertyVetoException;
 import java.util.List;
+import java.util.concurrent.locks.Lock;
 
 /**
  * Persisted information about created virtual machine
@@ -73,18 +77,30 @@ public interface VirtualMachineConfig extends Named, ConfigBeanProxy, ClusterExt
                                            final ServerPoolConfig serverPool,
                                            final Cluster cluster) {
            try {
-                return (VirtualMachineConfig) ConfigSupport.apply(new SingleConfigCode<Cluster>(){
-                    @Override
-                    public Object run(Cluster wCluster) throws PropertyVetoException, TransactionFailure {
-                        VirtualMachineConfig vmConfig =
-                                wCluster.createChild(VirtualMachineConfig.class);
-                        vmConfig.setName(name);
-                        vmConfig.setTemplate(template);
-                        vmConfig.setServerPool(serverPool);
-                        wCluster.getExtensions().add(vmConfig);
-                        return vmConfig;
-                    }
-                }, cluster);
+
+               // this code can happen on any thread, so we manually acquire the shared lock.
+               Habitat habitat = Dom.unwrap(cluster).getHabitat();
+               AdminCommandLock adminCommandLock = habitat.getComponent(AdminCommandLock.class);
+               Lock lock=null;
+               try {
+
+                   lock = adminCommandLock.getLock(CommandLock.LockType.SHARED);
+                   lock.lock();
+                   return (VirtualMachineConfig) ConfigSupport.apply(new SingleConfigCode<Cluster>() {
+                       @Override
+                       public Object run(Cluster wCluster) throws PropertyVetoException, TransactionFailure {
+                           VirtualMachineConfig vmConfig =
+                                   wCluster.createChild(VirtualMachineConfig.class);
+                           vmConfig.setName(name);
+                           vmConfig.setTemplate(template);
+                           vmConfig.setServerPool(serverPool);
+                           wCluster.getExtensions().add(vmConfig);
+                           return vmConfig;
+                       }
+                   }, cluster);
+               } finally {
+                   if (lock!=null) lock.unlock();
+               }
             } catch (TransactionFailure transactionFailure) {
                 throw new RuntimeException(transactionFailure);
             }

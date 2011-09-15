@@ -45,6 +45,7 @@ import com.sun.enterprise.config.serverbeans.Domain;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
+import org.glassfish.api.admin.AdminCommandLock;
 import org.glassfish.api.admin.CommandLock;
 import org.glassfish.virtualization.config.Template;
 import org.glassfish.virtualization.config.VirtualMachineConfig;
@@ -53,6 +54,7 @@ import org.glassfish.virtualization.runtime.VirtualClusters;
 import org.glassfish.virtualization.runtime.VirtualMachineLifecycle;
 import org.glassfish.virtualization.spi.*;
 import org.glassfish.virtualization.util.RuntimeContext;
+import org.hibernate.validator.util.privilegedactions.LoadClass;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
@@ -65,6 +67,8 @@ import org.jvnet.hk2.config.types.Property;
 
 import java.beans.PropertyVetoException;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
 
 /**
@@ -116,6 +120,12 @@ public class RegisterVirtualMachine implements AdminCommand {
     @Inject
     VirtualMachineLifecycle vmLifecycle;
 
+    final AdminCommandLock adminCommandLock;
+
+    public RegisterVirtualMachine(@Inject AdminCommandLock adminCommandLock) {
+        this.adminCommandLock = adminCommandLock;
+    }
+
     @Override
     public void execute(AdminCommandContext context) {
         if (group==null) {
@@ -153,7 +163,10 @@ public class RegisterVirtualMachine implements AdminCommand {
                 VirtualCluster virtualCluster = virtualClusters.byName(cluster);
                 TemplateCustomizer customizer = templateRepository.byName(template.getName()).getCustomizer();
                 if (customizer!=null) {
-                    customizer.customize(virtualCluster, vm);
+                    adminCommandLock.dumpState(RuntimeContext.logger, Level.INFO);
+                    synchronized (adminCommandLock) {
+                        customizer.customize(virtualCluster, vm);
+                    }
                     customizer.start(vm);
                 }
                 CountDownLatch latch = vmLifecycle.getStartupLatch(vm.getName());

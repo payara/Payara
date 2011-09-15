@@ -49,6 +49,7 @@ import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
+import org.glassfish.api.admin.AdminCommandLock;
 import org.glassfish.virtualization.config.Virtualizations;
 import org.glassfish.virtualization.runtime.VirtualCluster;
 import org.glassfish.virtualization.runtime.VirtualClusters;
@@ -110,7 +111,7 @@ public class CreateVirtualCluster implements AdminCommand {
     VirtualClusters virtualClusters;
 
     @Override
-    public void execute(AdminCommandContext context) {
+    public void execute(final AdminCommandContext context) {
 
         if (virts==null) {
             context.getActionReport().failure(RuntimeContext.logger, "No virtualization configuration present");
@@ -149,7 +150,7 @@ public class CreateVirtualCluster implements AdminCommand {
         }
 
         ActionReport report = context.getActionReport();
-        StringBuilder sb = new StringBuilder();
+        final StringBuilder sb = new StringBuilder();
         int minNumber = Integer.parseInt(min);
         sb.append("Successfully created ").append(minNumber).append(" virtual machine(s) : ");
 
@@ -185,7 +186,7 @@ public class CreateVirtualCluster implements AdminCommand {
 
         try {
             VirtualCluster vCluster = virtualClusters.byName(name);
-            List<PhasedFuture<AllocationPhase, VirtualMachine>> futures =
+            final List<PhasedFuture<AllocationPhase, VirtualMachine>> futures =
                     new ArrayList<PhasedFuture<AllocationPhase, VirtualMachine>>();
 
             for (int i=0;i<minNumber;i++) {
