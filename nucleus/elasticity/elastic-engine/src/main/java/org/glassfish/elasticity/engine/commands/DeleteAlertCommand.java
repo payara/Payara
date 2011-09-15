@@ -53,6 +53,9 @@ import com.sun.enterprise.config.serverbeans.Domain;
 import java.beans.PropertyVetoException;
 import org.glassfish.elasticity.engine.container.ElasticServiceContainer;
 import org.glassfish.elasticity.engine.container.ElasticServiceManager;
+import org.glassfish.api.admin.RestEndpoint;
+import org.glassfish.api.admin.RestEndpoint.OpType;
+import org.glassfish.api.admin.RestEndpoints;
 /*
   * command used by GUI for OOW
  */
@@ -60,6 +63,7 @@ import org.glassfish.elasticity.engine.container.ElasticServiceManager;
 @Service(name = "delete-alert")
 @I18n("delete.alert")
 @Scoped(PerLookup.class)
+@RestEndpoints({ @RestEndpoint(configBean = AlertConfig.class, opType = OpType.POST, path = "delete-alert", description = "Delete alert") })
 public class DeleteAlertCommand implements AdminCommand{
 
     @Inject

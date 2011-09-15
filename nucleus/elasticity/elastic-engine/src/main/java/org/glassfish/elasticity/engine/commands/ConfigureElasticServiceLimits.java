@@ -53,6 +53,9 @@ import java.beans.PropertyVetoException;
 import com.sun.enterprise.config.serverbeans.Domain;
 import org.glassfish.elasticity.engine.container.ElasticServiceContainer;
 import org.glassfish.elasticity.engine.container.ElasticServiceManager;
+import org.glassfish.api.admin.RestEndpoint;
+import org.glassfish.api.admin.RestEndpoint.OpType;
+import org.glassfish.api.admin.RestEndpoints;
 /*
   * command used by GUI for OOW
  */
@@ -60,6 +63,7 @@ import org.glassfish.elasticity.engine.container.ElasticServiceManager;
 @Service(name = "configure-elastic-service-limits")
 @I18n("configure.elastic.service.limits")
 @Scoped(PerLookup.class)
+@RestEndpoints({ @RestEndpoint(configBean = ElasticService.class, opType = OpType.POST, path = "configure-elastic-service-limits", description = "Configure Elastic Service limits") })
 public class ConfigureElasticServiceLimits implements AdminCommand{
 
     @Inject
@@ -71,7 +75,7 @@ public class ConfigureElasticServiceLimits implements AdminCommand{
     @Inject
     ElasticServiceManager elasticServiceManager;
 
-    @Param(name="servicename", primary=true)
+    @Param(name="service", primary=true)
     String servicename;
 
     @Param(name="min", optional=true)

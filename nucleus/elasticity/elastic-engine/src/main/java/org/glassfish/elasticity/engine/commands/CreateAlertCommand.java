@@ -57,6 +57,9 @@ import org.jvnet.hk2.annotations.*;
 import org.jvnet.hk2.component.*;
 import org.jvnet.hk2.config.*;
 import java.util.logging.Logger;
+import org.glassfish.api.admin.RestEndpoint;
+import org.glassfish.api.admin.RestEndpoint.OpType;
+import org.glassfish.api.admin.RestEndpoints;
 
 /**
  ** Remote AdminCommand to create an alert element.  This command is run only on DAS.
@@ -68,6 +71,7 @@ import java.util.logging.Logger;
 @I18n("create.alert")
 @Scoped(PerLookup.class)
 @ExecuteOn({RuntimeType.DAS})
+@RestEndpoints({ @RestEndpoint(configBean = AlertConfig.class, opType = OpType.POST, path = "create-alert", description = "Create alert") })
 public class CreateAlertCommand implements AdminCommand {
 
   @Inject
@@ -105,7 +109,7 @@ public class CreateAlertCommand implements AdminCommand {
         ElasticService elasticService= elasticServices.getElasticService(servicename);
         if (elasticService == null) {
             //service doesn't exist
-            String msg = Strings.get("noSuchService", name);
+            String msg = Strings.get("noSuchService", servicename);
             logger.warning(msg);
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setMessage(msg);

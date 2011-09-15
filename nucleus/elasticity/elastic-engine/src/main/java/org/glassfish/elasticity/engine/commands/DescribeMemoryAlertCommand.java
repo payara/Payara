@@ -52,7 +52,9 @@ package org.glassfish.elasticity.engine.commands;
 import java.beans.PropertyVetoException;
  import com.sun.enterprise.config.serverbeans.Domain;
  import org.glassfish.api.ActionReport.MessagePart;
-
+import org.glassfish.api.admin.RestEndpoint;
+import org.glassfish.api.admin.RestEndpoint.OpType;
+import org.glassfish.api.admin.RestEndpoints;
 /*
   * command used by GUI for OOW
  */
@@ -60,6 +62,7 @@ import java.beans.PropertyVetoException;
 @Service(name = "describe-memory-alert")
 @I18n("describe.memory.alert")
 @Scoped(PerLookup.class)
+@RestEndpoints({ @RestEndpoint(configBean = AlertConfig.class, opType = OpType.GET, path = "describe-memory-alert", description = "Describe memory alert") })
 public class DescribeMemoryAlertCommand implements AdminCommand{
 
     @Inject
@@ -108,7 +111,7 @@ public class DescribeMemoryAlertCommand implements AdminCommand{
 
         report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
         MessagePart mp = report.getTopMessagePart();
-        mp.addProperty("servce ", servicename );
+        mp.addProperty("service ", servicename );
         mp.addProperty("alert", alertname);
         mp.addProperty("threshold", threshold);
 
