@@ -121,7 +121,7 @@ public class LocalServerPool implements ServerPool {
 
         String vmName = getName() + "-" + (vms.size()+1);
         VirtualMachineConfig config = VirtualMachineConfig.Utils.create(
-                domain.getName(),
+                vmName,
                 template.getConfig(),
                 getConfig(),
                 cluster.getConfig());
