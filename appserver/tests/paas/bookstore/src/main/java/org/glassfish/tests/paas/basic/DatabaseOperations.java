@@ -116,7 +116,7 @@ public class DatabaseOperations {
                         Timestamp lastDate = rs.getTimestamp("Last_Accessed");
                         out.println("<br>");
 //                        out.println("Retrieving your database access times <br>");
-                        out.println("Welcome " + userName + "!!! Your last access of this database is " +
+                        out.println("Hello " + userName + "!!! Your last access of this database is " +
                                 (lastDate != null ? lastDate.toString() : curDate.toString()) + "<br>");
                         lastDate = curDate;
                         curDate = new Timestamp(System.currentTimeMillis());
@@ -134,7 +134,7 @@ public class DatabaseOperations {
                     }
                 }
                 if(!foundUser) {
-                    out.println("<br/>Welcome " + userName + "!!! You are accessing our database for the first time <br>");
+                    out.println("<br/>Hello " + userName + "!!! You are accessing our database for the first time <br>");
                     out.println("<br>");
                     PreparedStatement prep1 = conn.prepareStatement("INSERT INTO " + tableName + " values(?,?,?)");
                     prep1.setString(1, userName);

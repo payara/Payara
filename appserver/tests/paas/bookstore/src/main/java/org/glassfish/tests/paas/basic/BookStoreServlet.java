@@ -89,7 +89,7 @@ public final class BookStoreServlet extends HttpServlet {
         writer.println("Please wait while accessing the bookstore database.....");
         if (ds != null) {
             DatabaseOperations operations = new DatabaseOperations();
-            String userName = System.getenv("USER");
+            String userName = "World";//System.getenv("USER");
 
             operations.createAccessInfoTable(ds, writer);
             operations.createBookStoreTable(ds, writer);
