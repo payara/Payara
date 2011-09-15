@@ -64,4 +64,8 @@ public interface LBProvisioner {
 
     public boolean handles(String vendorName);
 
+    public void setInstallDir(String installDir);
+
+    public void setScriptsDir(String scriptsDir);
+
 }

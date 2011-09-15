@@ -42,6 +42,7 @@ package org.glassfish.paas.lbplugin.cli;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Level;
@@ -73,6 +74,7 @@ import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.PerLookup;
+import org.jvnet.hk2.config.types.Property;
 
 /**
  * @author Jagadish Ramu
@@ -106,7 +108,9 @@ public class CreateLBService extends BaseLBService implements AdminCommand, Runn
     @Inject
     Habitat habitat;
 
-    private static final String VENDOR_NAME = "org.glassfish.paas.lbplugin.vendor-name";
+    private static final String VENDOR_NAME = "vendor-name";
+    private static final String SCRIPTS_DIR_PROP_NAME = "scripts-dir";
+    private static final String INSTALL_DIR_PROP_NAME = "install-dir";
 
     @Override
     public void execute(AdminCommandContext context) {
@@ -172,6 +176,35 @@ public class CreateLBService extends BaseLBService implements AdminCommand, Runn
 
         if (matchingTemplate != null) {
             try {
+                String installDir = null;
+                String scriptsDir = null;
+                String vendorName = null;
+                List<Property> properties = matchingTemplate.getConfig().getProperties();
+                Iterator<Property> iter = properties.iterator();
+                while (iter.hasNext()) {
+                    Property property = iter.next();
+                    LBPluginLogger.getLogger().log(Level.INFO, "TemplateID : " + templateId + ", Property - " + property.getName() + " : " + property.getValue());
+                    if(property.getName().equalsIgnoreCase(VENDOR_NAME)){
+                        vendorName = property.getValue();
+                    }else if(property.getName().equalsIgnoreCase(SCRIPTS_DIR_PROP_NAME)){
+                        scriptsDir = property.getValue();
+                    }else if(property.getName().equalsIgnoreCase(INSTALL_DIR_PROP_NAME)){
+                        installDir = property.getValue();
+                    }
+                }
+                LBProvisionerFactory.getInstance().setLBProvisioner(getLBProvisioner(vendorName));
+                if(installDir != null){
+                    LBProvisionerFactory.getInstance().getLBProvisioner().setInstallDir(installDir);
+                }
+                if(scriptsDir != null){
+                    LBProvisionerFactory.getInstance().getLBProvisioner().setScriptsDir(scriptsDir);
+                }
+
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+
+            try {
                 CommandResult result = commandRunner.run("create-cluster", new String[]{serviceName});
                 if (result.getExitStatus().equals(CommandResult.ExitStatus.FAILURE)) {
                     LBPluginLogger.getLogger().log(Level.INFO,"Command create-cluster failed. Unable to create VM for Load-balancer");
@@ -185,12 +218,13 @@ public class CreateLBService extends BaseLBService implements AdminCommand, Runn
                 LBPluginLogger.getLogger().log(Level.INFO,"Calling allocate for template ...." + matchingTemplate);
                 PhasedFuture<AllocationPhase, VirtualMachine> future = null;
                 boolean allocateStatus = false;
+                /* Commenting multiple attempt code
                 for (int i = 0; i < 3 && !allocateStatus; i++) {
                     i++;
-                    try {
+                    try {*/
                         future = iaas.allocate(new AllocationConstraints(matchingTemplate, vCluster), null);
                         allocateStatus = true;
-                    } catch (Exception ex) {
+                    /*} catch (Exception ex) {
                         if(future != null){
                             try{
                                 future.cancel(true);
@@ -200,7 +234,7 @@ public class CreateLBService extends BaseLBService implements AdminCommand, Runn
                         LBPluginLogger.getLogger().log(Level.INFO,"Allocate failed for load-balancer ... attempt count" + i);
                         LBPluginLogger.getLogger().log(Level.INFO,"exception",ex);
                     }
-                }
+                }*/
                 if(!allocateStatus){
                     throw new RuntimeException("Unable to allocate load-balancer");
                 }
@@ -208,8 +242,6 @@ public class CreateLBService extends BaseLBService implements AdminCommand, Runn
                 LBPluginLogger.getLogger().log(Level.INFO,"Calling future.get() for template ...." + matchingTemplate);
                 VirtualMachine vm = future.get();
 
-                LBProvisionerFactory.getInstance().setLBProvisioner(
-                        getLBProvisioner());
                 LBProvisionerFactory.getInstance().getLBProvisioner()
                         .configureLB(vm);
 
@@ -235,13 +267,11 @@ public class CreateLBService extends BaseLBService implements AdminCommand, Runn
         //TBD return error
     }
 
-    public LBProvisioner getLBProvisioner() {
-        LBProvisioner provisioner = null;
-        String vendorName = System.getProperty(VENDOR_NAME);
+    public LBProvisioner getLBProvisioner(String vendorName) {
         if(vendorName == null){
             LBPluginLogger.getLogger().log(Level.INFO, "Vendor name not specified. Using default");
+            vendorName = LBProvisionerFactory.getInstance().getDefaultProvisionerName();
         }
-        vendorName = LBProvisionerFactory.getInstance().getDefaultProvisionerName();
         Collection<LBProvisioner> allProvisioners =
                 habitat.getAllByContract(LBProvisioner.class);
         if(allProvisioners == null || allProvisioners.isEmpty()){
@@ -251,17 +281,16 @@ public class CreateLBService extends BaseLBService implements AdminCommand, Runn
         }
         Iterator<LBProvisioner> iter = allProvisioners.iterator();
         while(iter.hasNext()){
-            provisioner = iter.next();
+            LBProvisioner provisioner = iter.next();
             if(provisioner.handles(vendorName)){
-                break;
+                LBPluginLogger.getLogger().log(Level.INFO, "Found provisioner "
+                        + provisioner + " for vendor name " + vendorName);
+                return provisioner;
             }
         }
-        if(provisioner == null){
-            String msg = "No matching lbprovisioners found for " + vendorName;
-            LBPluginLogger.getLogger().log(Level.SEVERE, msg);
-            throw new RuntimeException(msg);
-        }
-        return provisioner;
+        String msg = "No matching lbprovisioners found for " + vendorName;
+        LBPluginLogger.getLogger().log(Level.SEVERE, msg);
+        throw new RuntimeException(msg);
     }
 
 }

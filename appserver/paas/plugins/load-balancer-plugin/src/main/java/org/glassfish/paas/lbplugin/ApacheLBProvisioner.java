@@ -59,40 +59,42 @@ import org.jvnet.hk2.component.Habitat;
 @Service
 public class ApacheLBProvisioner implements LBProvisioner{
 
-    private static String APACHE_INSTALL_DIR = "/u01/glassfish/lb/install";
-    private static String APACHECTL = APACHE_INSTALL_DIR + "/bin/apachectl";
-    private static String SCRIPTS_DIR = "/u01/glassfish/lb/scripts";
-    private static String ASSOCIATE_SERVERS_SCRIPT = SCRIPTS_DIR + "/associateServer.sh";
-    private static String CONFIGURE_SERVER_SCRIPT = SCRIPTS_DIR + "/configureServer.sh";
+    private static final String DEFAULT_APACHE_INSTALL_DIR = "/u01/glassfish/lb/install";
+    private static final String DEFAULT_SCRIPTS_DIR = "/u01/glassfish/lb/scripts";
+    private static final String ASSOCIATE_SERVERS_SCRIPT_NAME = "associateServer.sh";
+    private static final String CONFIGURE_SERVER_SCRIPT_NAME = "configureServer.sh";
 
-    static {
-        APACHE_INSTALL_DIR = "c:\\glassfish\\lb\\install";
-        APACHECTL = APACHE_INSTALL_DIR + "\\bin\\apachectl";
-        SCRIPTS_DIR = "c:\\glassfish\\lb\\scripts";
-        ASSOCIATE_SERVERS_SCRIPT = SCRIPTS_DIR + "\\associateServer.sh";
-        CONFIGURE_SERVER_SCRIPT = SCRIPTS_DIR + "\\configureServer.sh";
-    }
+    private String apacheInstallDir;
+    private String apachectl;
+    private String scriptsDir;
+    private String associateServerScript;
+    private String configureServerScript;
 
     private static final String LISTENER_NAME = "ajp-listener-1";
     private static final String HTTP_LISTENER_NAME = "http-listener-1";
     private static final String LISTENER_PORT = "28009";//"\\$\\{AJP_LISTENER_PORT\\}"
     public static final String VENDOR_NAME = "apache";
 
+    public ApacheLBProvisioner() {
+        setInstallDir(DEFAULT_APACHE_INSTALL_DIR);
+        setScriptsDir(DEFAULT_SCRIPTS_DIR);
+    }
+
     @Override
     public void startLB(VirtualMachine virtualMachine) throws Exception{
-        String output = virtualMachine.executeOn(new String[]{APACHECTL, "start"});
+        String output = virtualMachine.executeOn(new String[]{apachectl, "start"});
         LBPluginLogger.getLogger().log(Level.INFO,"Start apache command output : " + output);
     }
 
     @Override
     public void stopLB(VirtualMachine virtualMachine)  throws Exception {
-        String output = virtualMachine.executeOn(new String[]{APACHECTL, "stop"});
+        String output = virtualMachine.executeOn(new String[]{apachectl, "stop"});
         LBPluginLogger.getLogger().log(Level.INFO,"Stop apache command output : " + output);
     }
 
     @Override
     public void configureLB(VirtualMachine virtualMachine) throws Exception{
-        String output = virtualMachine.executeOn(new String[]{CONFIGURE_SERVER_SCRIPT});
+        String output = virtualMachine.executeOn(new String[]{configureServerScript});
         LBPluginLogger.getLogger().log(Level.INFO,"Output of configure apache server command : " + output);
         
     }
@@ -110,7 +112,7 @@ public class ApacheLBProvisioner implements LBProvisioner{
     private void reconfigureApache(Habitat habitat, VirtualMachine virtualMachine,
             String serviceName, String glassfishHome) throws IOException, ComponentException, InterruptedException {
         AuthTokenManager tokenMgr = habitat.getComponent(AuthTokenManager.class);
-        String output = virtualMachine.executeOn(new String[]{ASSOCIATE_SERVERS_SCRIPT, serviceName + "-lb-config", tokenMgr.createToken(30L * 60L * 1000L), glassfishHome});
+        String output = virtualMachine.executeOn(new String[]{associateServerScript, serviceName + "-lb-config", tokenMgr.createToken(30L * 60L * 1000L), glassfishHome});
         LBPluginLogger.getLogger().log(Level.INFO, "Output of associate apache servers command : " + output);
     }
 
@@ -168,6 +170,19 @@ public class ApacheLBProvisioner implements LBProvisioner{
     @Override
     public boolean handles(String vendorName) {
         return vendorName.equalsIgnoreCase(VENDOR_NAME);
+    }
+
+    @Override
+    public final void setInstallDir(String installDir) {
+        apacheInstallDir =  installDir;
+        apachectl = apacheInstallDir + "/bin/apachectl";
+    }
+
+    @Override
+    public final void setScriptsDir(String scriptsDir) {
+        this.scriptsDir = scriptsDir;
+        associateServerScript = this.scriptsDir + "/" + ASSOCIATE_SERVERS_SCRIPT_NAME;
+        configureServerScript = this.scriptsDir + "/" + CONFIGURE_SERVER_SCRIPT_NAME;
     }
 
 }
