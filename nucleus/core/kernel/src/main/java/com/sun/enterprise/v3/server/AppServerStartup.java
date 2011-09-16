@@ -89,6 +89,7 @@ public class AppServerStartup implements ModuleStartup {
     StartupContext context;
 
     final static Logger logger = LogDomains.getLogger(AppServerStartup.class, LogDomains.CORE_LOGGER);
+    final static Level level = Level.FINE;
 
     @Inject
     ServerEnvironmentImpl env;
@@ -155,7 +156,7 @@ public class AppServerStartup implements ModuleStartup {
         serverThread = new Thread("GlassFish Kernel Main Thread"){
             @Override
             public void run() {
-                logger.logp(Level.FINE, "AppServerStartup", "run",
+                logger.logp(level, "AppServerStartup", "run",
                         "[{0}] started", new Object[]{this});
 
                 // notify the other thread to continue now that a non-daemon
@@ -169,7 +170,7 @@ public class AppServerStartup implements ModuleStartup {
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }
-                logger.logp(Level.INFO, "AppServerStartup", "run",
+                logger.logp(level, "AppServerStartup", "run",
                         "[{0}] exiting", new Object[]{this});
             }
         };
@@ -200,10 +201,9 @@ public class AppServerStartup implements ModuleStartup {
             return;
         }
         final long platformInitTime = System.currentTimeMillis();
-        if (logger.isLoggable(Level.FINE)) {
-            logger.fine("Startup class : " + this.getClass().getName());
+        if (logger.isLoggable(level)) {
+            logger.log(level, "Startup class : {0}", getClass().getName());
         }
-        final Level level = Level.FINE;
 
         // prepare the global variables
         habitat.addComponent(this);
@@ -227,18 +227,6 @@ public class AppServerStartup implements ModuleStartup {
 
         Map<Class, Long> servicesTiming = new HashMap<Class, Long>();
 
-        // TODO: convert these to RunLevel-based
-        // run the init services
-        for (Inhabitant<? extends Init> init : habitat.getInhabitants(Init.class)) {
-            long start = System.currentTimeMillis();
-            init.get();
-            if (logger.isLoggable(level)) {
-                logger.log(level, init.type() + " Init done in " + (System.currentTimeMillis() - context.getCreationTime()) + " ms");
-            }
-            if (logger.isLoggable(level)) {
-                servicesTiming.put(init.type(), (System.currentTimeMillis() - start));
-            }
-        }
         // the new way
         rls.proceedTo(InitRunLevel.VAL);
         
@@ -267,7 +255,7 @@ public class AppServerStartup implements ModuleStartup {
                         futures.addAll(((FutureProvider) startup).getFutures());
                     }
                 } catch(RuntimeException e) {
-                    logger.log(Level.FINE, e.getMessage(), e);
+                    logger.log(level, e.getMessage(), e);
                     logger.log(Level.SEVERE,
                             localStrings.getLocalString("startupservicefailure",
                                     "Startup service failed to start {0} due to {1} ", i.typeName()), e.getMessage());
@@ -304,7 +292,7 @@ public class AppServerStartup implements ModuleStartup {
 
         if (logger.isLoggable(level)) {
             for (Map.Entry<Class, Long> service : servicesTiming.entrySet()) {
-                logger.info("Service : " + service.getKey() + " took " + service.getValue() + " ms");
+                logger.log(level, "Service : " + service.getKey() + " took " + service.getValue() + " ms");
             }
         }
 
@@ -323,7 +311,7 @@ public class AppServerStartup implements ModuleStartup {
                                     localStrings.getLocalString("startupfatalstartup",
                                             "Shutting down v3 due to startup exception : ",
                                             t.getMessage()));
-                            logger.log(Level.FINE, future.get().exception().getMessage(), t);
+                            logger.log(level, future.get().exception().getMessage(), t);
                             events.send(new Event(EventTypes.SERVER_SHUTDOWN));
                             shutdown();
                             return;
@@ -431,8 +419,8 @@ public class AppServerStartup implements ModuleStartup {
             for (Inhabitant<?> svc : services) {
                 if (svc.isActive()) {
                     try {
-                        if (logger.isLoggable(Level.FINE)) {
-                            logger.fine("Releasing services " + svc.type());
+                        if (logger.isLoggable(level)) {
+                            logger.log(level, "Releasing services {0}", svc.type());
                         }
                         svc.release();
                     } catch(Throwable e) {
@@ -449,22 +437,6 @@ public class AppServerStartup implements ModuleStartup {
             env.setStatus(ServerEnvironment.Status.stopped);
             events.send(new Event(EventTypes.SERVER_SHUTDOWN), false);
 
-            logger.info(localStrings.getLocalString("shutdownfinished","Shutdown procedure finished"));            
-
-            // TODO: old way; replace this with the RunLevelService
-            // we send the shutdown events before the Init services are released since
-            // evens handler can still rely on services like logging during their processing
-            for (Inhabitant<? extends Init> svc : habitat.getInhabitants(Init.class)) {
-                if (svc.isActive()) {
-                    try {
-                        svc.release();
-                    } catch(Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-
-
         } catch(ComponentException e) {
             // do nothing.
         }
@@ -472,7 +444,10 @@ public class AppServerStartup implements ModuleStartup {
         
         // the new way
         rls.proceedTo(0);
+
         
+        logger.info(localStrings.getLocalString("shutdownfinished","Shutdown procedure finished"));            
+
         
         // notify the server thread that we are done, so that it can come out.
         if (serverThread!=null) {
