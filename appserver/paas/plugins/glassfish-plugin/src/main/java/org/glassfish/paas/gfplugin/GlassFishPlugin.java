@@ -74,6 +74,7 @@ import org.glassfish.virtualization.spi.AllocationStrategy;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.PerLookup;
 
 import java.io.File;
@@ -111,6 +112,9 @@ public class GlassFishPlugin implements Plugin<JavaEEServiceType> {
     @Inject
     private Domain domain;
 
+    @Inject
+    private Habitat habitat;
+
     public static final String JAVAEE_SERVICE_TYPE = "JavaEE";
 
     @Inject
@@ -130,9 +134,7 @@ public class GlassFishPlugin implements Plugin<JavaEEServiceType> {
     }
 
     public boolean handles(ReadableArchive cloudArchive) {
-        Boolean isJavaEEArchive = cloudArchive.getExtraData(Boolean.class);
-        //return isJavaEEArchive;
-        return true;
+        return DeploymentUtils.isJavaEE(cloudArchive, habitat);
     }
 
     public boolean isReferenceTypeSupported(String referenceType) {
@@ -546,9 +548,7 @@ public class GlassFishPlugin implements Plugin<JavaEEServiceType> {
             ReadableArchive readableArchive, String appName) {
         HashSet<ServiceDescription> defs = new HashSet<ServiceDescription>();
 
-        Boolean isJavaEEArchive = readableArchive.getExtraData(Boolean.class);
-        isJavaEEArchive = true;
-        if (isJavaEEArchive) {
+        if (DeploymentUtils.isJavaEE(readableArchive, habitat)) {
             List<Property> characteristics = new ArrayList<Property>();
             characteristics.add(new Property("service-type", JAVAEE_SERVICE_TYPE));
 //            characteristics.add(new Property("service-vendor", "GlassFish"));

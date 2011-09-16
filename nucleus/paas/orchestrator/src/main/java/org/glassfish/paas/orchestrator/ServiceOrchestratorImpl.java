@@ -47,6 +47,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
@@ -57,6 +58,7 @@ import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.OpsParams;
 import org.glassfish.api.deployment.archive.ReadableArchive;
+import org.glassfish.deployment.common.DeploymentException;
 import org.glassfish.internal.deployment.ApplicationLifecycleInterceptor;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
 import org.glassfish.paas.orchestrator.provisioning.ServiceInfo;
@@ -502,37 +504,48 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator, Application
         final Set<ProvisionedService> appPSs = new HashSet<ProvisionedService>();
 
         Set<ServiceDescription> appSDs = appServiceMetadata.getServiceDescriptions();
-        List<Future> provisioningFutures = new ArrayList<Future>();
+        List<Future<ProvisionedService>> provisioningFutures = new ArrayList<Future<ProvisionedService>>();
         for (final ServiceDescription sd : appSDs) {
-            //XXX (Jagadish): Use a Callable<ProvisionedService>. Then, we can
-            //cleanup gracefully below in case of failure?
-            Future future = ServiceUtil.getThreadPool().submit(new Runnable() {
-                public void run() {
+            Future<ProvisionedService> future = ServiceUtil.getThreadPool().submit(new Callable<ProvisionedService>() {
+                public ProvisionedService call() {
                     Plugin<?> chosenPlugin = getPluginForServiceType(installedPlugins, sd.getServiceType());
                     logger.log(Level.INFO, "Provisioning Service for " + sd + " through " + chosenPlugin);
-                    ProvisionedService ps = chosenPlugin.provisionService(sd, dc);
-                    appPSs.add(ps);
+                    return chosenPlugin.provisionService(sd, dc);
                 }
             });
             provisioningFutures.add(future);
         }
 
         boolean failed = false;
-        for(Future future : provisioningFutures){
+        Exception rootCause = null;
+        for(Future<ProvisionedService> future : provisioningFutures){
             try {
-                future.get();
-            } catch (InterruptedException e) {
+                ProvisionedService ps = future.get();
+                appPSs.add(ps);
+            } catch (Exception e) {
                 failed = true;
-                e.printStackTrace();
-            } catch (ExecutionException e) {
-                failed = true;
-                e.printStackTrace();
+                logger.log(Level.WARNING, "Failure while provisioning service", e);
+                if(rootCause == null){
+                    rootCause = e; //we are caching only the first failure and logging all failures
+                }
             }
         }
         if(failed){
-            //TODO need a better mechanism ?
+            for(ProvisionedService ps : appPSs){
+                try{
+                    ServiceDescription sd = ps.getServiceDescription();
+                    Plugin<?> chosenPlugin = getPluginForServiceType(installedPlugins, sd.getServiceType());
+                    logger.log(Level.INFO, "Rolling back provisioned-service for " + sd + " through " + chosenPlugin );
+                    chosenPlugin.unprovisionService(sd, dc); //TODO we could do unprovisioning in parallel.
+                    logger.log(Level.INFO, "Rolled back provisioned-service for " + sd + " through " + chosenPlugin );
+                }catch(Exception e){
+                    logger.log(Level.FINEST, "Failure while rolling back provisioned service " + ps, e);
+                }
+            }
             //XXX (Siva): Failure handling. Exception design.
-            throw new RuntimeException("Failure while provisioning services, refer server.log for more details");
+            DeploymentException re = new DeploymentException("Failure while provisioning services");
+            re.initCause(rootCause);
+            throw re;
         }
         return appPSs;
     }
