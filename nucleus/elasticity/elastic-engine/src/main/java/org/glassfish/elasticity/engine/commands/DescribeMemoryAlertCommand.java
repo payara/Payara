@@ -62,7 +62,7 @@ import org.glassfish.api.admin.RestEndpoints;
 @Service(name = "describe-memory-alert")
 @I18n("describe.memory.alert")
 @Scoped(PerLookup.class)
-@RestEndpoints({ @RestEndpoint(configBean = AlertConfig.class, opType = OpType.GET, path = "describe-memory-alert", description = "Describe memory alert") })
+@RestEndpoints({ @RestEndpoint(configBean = AlertConfig.class, opType = OpType.GET, path = "describe-memory-alert", description = "Describe memory alert", params = {@RestParam(name="alertname", value="$parent")}) })
 public class DescribeMemoryAlertCommand implements AdminCommand{
 
     @Inject

@@ -49,7 +49,9 @@ package org.glassfish.elasticity.engine.commands;
  import org.jvnet.hk2.config.*;
  import java.util.logging.Logger;
  import org.glassfish.api.admin.CommandRunner.CommandInvocation;
-
+ import org.glassfish.api.admin.RestEndpoint;
+import org.glassfish.api.admin.RestEndpoint.OpType;
+import org.glassfish.api.admin.RestEndpoints;
 /*
   * command used by GUI for OOW
  */
@@ -57,6 +59,7 @@ package org.glassfish.elasticity.engine.commands;
 @Service(name = "create-memory-alert")
 @I18n("create.memory.alert")
 @Scoped(PerLookup.class)
+@RestEndpoints({ @RestEndpoint(configBean = AlertConfig.class, opType = OpType.POST, path = "create-memory-alert", description = "Create memory alert") })
 public class CreateMemoryAlert implements AdminCommand{
 
     @Inject
