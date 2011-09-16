@@ -56,6 +56,7 @@ import com.sun.jdo.spi.persistence.support.sqlstore.LogHelperSQLStore;
 
 import java.sql.*;
 import java.util.Properties;
+import java.util.concurrent.Executor;
 
 /**
  * This class implements the <code>java.sql.Connection</code>
@@ -877,5 +878,25 @@ public class ConnectionImpl implements Connection, Linkable {
         } catch (SQLException se) {
             ;
         }
+    }
+
+    public void setSchema(String schema) throws SQLException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public String getSchema() throws SQLException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void abort(Executor executor) throws SQLException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void setNetworkTimeout(Executor executor, int milliseconds) throws SQLException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public int getNetworkTimeout() throws SQLException {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 }
