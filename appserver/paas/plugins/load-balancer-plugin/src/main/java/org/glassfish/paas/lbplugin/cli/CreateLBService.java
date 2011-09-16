@@ -196,6 +196,7 @@ public class CreateLBService extends BaseLBService implements AdminCommand, Runn
             TemplateIndex index = matchingTemplate.getConfig().byName("VirtualizationType");
             LBProvisionerFactory.getInstance().getLBProvisioner()
                     .setVirtualizationType(index.getValue());
+            LBProvisionerFactory.getInstance().getLBProvisioner().initialize();
 
             try {
                 CommandResult result = commandRunner.run("create-cluster", new String[]{serviceName});

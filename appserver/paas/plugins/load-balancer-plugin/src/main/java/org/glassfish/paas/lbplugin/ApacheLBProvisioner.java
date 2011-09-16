@@ -40,11 +40,13 @@
 
 package org.glassfish.paas.lbplugin;
 
+import com.sun.enterprise.util.ExecException;
 import com.sun.enterprise.util.OS;
-import java.io.File;
+import com.sun.enterprise.util.ProcessExecutor;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.glassfish.common.util.admin.AuthTokenManager;
 import org.glassfish.embeddable.CommandResult;
 import org.glassfish.embeddable.CommandRunner;
@@ -85,8 +87,14 @@ public class ApacheLBProvisioner implements LBProvisioner{
     private static final String LISTENER_PORT = "28009";//"\\$\\{AJP_LISTENER_PORT\\}"
     public static final String VENDOR_NAME = "apache";
     private String virtualizationType;
+    private HttpdThread httpdThread;
+    private boolean isConfigured = false;
 
     public ApacheLBProvisioner() {
+    }
+    
+    @Override
+    public void initialize() {
         if(useWindowsConfig()){
             setInstallDir(DEFAULT_APACHE_INSTALL_DIR_WINDOWS);
             setScriptsDir(DEFAULT_SCRIPTS_DIR_WINDOWS);
@@ -94,19 +102,26 @@ public class ApacheLBProvisioner implements LBProvisioner{
             setInstallDir(DEFAULT_APACHE_INSTALL_DIR);
             setScriptsDir(DEFAULT_SCRIPTS_DIR);
         }
-        
     }
 
     @Override
     public void startLB(VirtualMachine virtualMachine) throws Exception{
-        String output = virtualMachine.executeOn(new String[]{apachectl, "start"});
-        LBPluginLogger.getLogger().log(Level.INFO,"Start apache command output : " + output);
+        if(useWindowsConfig()){
+            startHttpdProcess();
+        } else {
+            String output = virtualMachine.executeOn(new String[]{apachectl, "start"});
+            LBPluginLogger.getLogger().log(Level.INFO,"Start apache command output : " + output);
+        }
     }
 
     @Override
     public void stopLB(VirtualMachine virtualMachine)  throws Exception {
-        String output = virtualMachine.executeOn(new String[]{apachectl, "stop"});
-        LBPluginLogger.getLogger().log(Level.INFO,"Stop apache command output : " + output);
+        if(useWindowsConfig()){
+            stopHttpdProcess();
+        } else {
+            String output = virtualMachine.executeOn(new String[]{apachectl, "stop"});
+            LBPluginLogger.getLogger().log(Level.INFO,"Stop apache command output : " + output);
+        }
     }
 
     @Override
@@ -131,6 +146,15 @@ public class ApacheLBProvisioner implements LBProvisioner{
         AuthTokenManager tokenMgr = habitat.getComponent(AuthTokenManager.class);
         String output = virtualMachine.executeOn(new String[]{associateServerScript, serviceName + "-lb-config", tokenMgr.createToken(30L * 60L * 1000L), glassfishHome});
         LBPluginLogger.getLogger().log(Level.INFO, "Output of associate apache servers command : " + output);
+        //Doing hard reconfig  on windows till a solution is found for graceful reconfig
+        if(useWindowsConfig()){
+            if(isConfigured){
+                LBPluginLogger.getLogger().log(Level.SEVERE, "Reconfigure not supported on windows!!!");
+            } else {
+                isConfigured = true;
+                startHttpdProcess();
+            }
+        }
     }
 
     private void createApacheConfig(String clusterName,
@@ -190,7 +214,7 @@ public class ApacheLBProvisioner implements LBProvisioner{
     }
 
     @Override
-    public final void setInstallDir(String installDir) {
+    public void setInstallDir(String installDir) {
         apacheInstallDir =  installDir;
         if(useWindowsConfig()){
             apachectl = apacheInstallDir + APACHECTL_SCRIPT_NAME_WINDOWS;
@@ -200,7 +224,7 @@ public class ApacheLBProvisioner implements LBProvisioner{
     }
 
     @Override
-    public final void setScriptsDir(String scriptsDir) {
+    public void setScriptsDir(String scriptsDir) {
         this.scriptsDir = scriptsDir;
         if(useWindowsConfig()){
             associateServerScript = this.scriptsDir + ASSOCIATE_SERVERS_SCRIPT_NAME_WINDOWS;
@@ -221,4 +245,48 @@ public class ApacheLBProvisioner implements LBProvisioner{
                 virtualizationType.equals(VirtualizationType.Type.Native.name());
     }
 
+    private void startHttpdProcess() {
+        if(!isConfigured){
+            LBPluginLogger.getLogger().log(Level.INFO, "Not starting http process. Waiting for first config ...");
+            return;
+        }
+        LBPluginLogger.getLogger().log(Level.INFO, "Starting httpd process ...");
+        httpdThread = new HttpdThread();
+        httpdThread.start();
+        LBPluginLogger.getLogger().log(Level.INFO, "Started httpd process");
+    }
+
+    private void stopHttpdProcess() {
+        LBPluginLogger.getLogger().log(Level.INFO, "Stopping httpd process ...");
+        httpdThread.stopProcess();
+        LBPluginLogger.getLogger().log(Level.INFO, "Stopped httpd process");
+    }
+
+    class HttpdThread extends Thread{
+
+        ProcessExecutor executor;
+
+        HttpdThread() {
+        }
+
+        @Override
+        public void run() {
+            executor = new ProcessExecutor(new String[]{apachectl});
+            try {
+                executor.execute();
+            } catch (ExecException ex) {
+                executor = null;
+                LBPluginLogger.getLogger().log(Level.SEVERE,
+                        "Httpd process exited ...", ex);
+            }
+        }
+
+        private void stopProcess() {
+            if(executor != null){
+                Process process = executor.getSubProcess();
+
+            }
+        }
+        
+    }
 }

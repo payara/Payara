@@ -70,4 +70,6 @@ public interface LBProvisioner {
 
     public void setVirtualizationType(String value);
 
+    public void initialize();
+
 }
