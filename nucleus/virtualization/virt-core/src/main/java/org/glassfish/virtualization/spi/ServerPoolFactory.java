@@ -41,58 +41,23 @@
 package org.glassfish.virtualization.spi;
 
 import org.glassfish.virtualization.config.ServerPoolConfig;
-import org.glassfish.virtualization.runtime.VirtualCluster;
-import org.glassfish.virtualization.util.EventSource;
-
-import java.io.IOException;
-import java.util.Collection;
+import org.jvnet.hk2.annotations.Contract;
 
 /**
- * Abstract a set of servers than can be used to provide {@link VirtualMachine}
+ * Factory for {@link ServerPool} instances. Implementations are virtualization
+ * technology dependent and should be registered using the virtualization
+ * name.
  *
  * @author Jerome Dochez
  */
-public interface ServerPool {
+@Contract
+public interface ServerPoolFactory {
 
     /**
-     * Returns the configuration for this server pool.
+     * Creates a new {@link ServerPool} instance from a persisted configuration.
      *
-     * @return  the server pool's configuration.
+     * @param config the server pool configuration
+     * @return the {@link ServerPool} instance.
      */
-    ServerPoolConfig getConfig();
-
-    /**
-     * Returns this pool's name.
-     * @return  this pool's name
-     */
-    String getName();
-
-    /**
-     * Returns all allocated virtual machine in this server pool
-     * @return the list of allocated virtual machines
-     */
-    Collection<VirtualMachine> getVMs() throws VirtException;
-
-    /**
-     * Returns an allocated virtual machine in this server pool using its name.
-     * @param name virtual machine name
-     * @return virtual machine instance if found or null otherwise.
-     * @throws VirtException if the vm cannot be obtained
-     */
-    VirtualMachine vmByName(String name) throws VirtException;
-
-    /**
-     * Allocates number of virtual machines on any machine belonging to this server pool, each virtual machine
-     * should be based on the provided template.
-     * @param template  template for the virtual machines
-     * @param cluster the virtual cluster in which  the virtual machine must be added
-     * using the {@link VirtualCluster#add(TemplateInstance, VirtualMachine)}  method
-     * @return Listenable future for the VirtualMachine instance
-     * @throws VirtException when the virtual machine creation failed.
-     */
-    PhasedFuture<AllocationPhase, VirtualMachine> allocate(
-            TemplateInstance template, VirtualCluster cluster, EventSource<AllocationPhase> source)
-            throws VirtException;
-
-    void install(TemplateInstance template) throws IOException;
+    ServerPool build(ServerPoolConfig config);
 }

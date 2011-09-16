@@ -37,62 +37,53 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+package org.glassfish.virtualization.local;
 
-package org.glassfish.virtualization.spi;
-
+import com.sun.enterprise.config.serverbeans.Domain;
+import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.hk2.inject.Injector;
+import org.glassfish.internal.api.ServerContext;
 import org.glassfish.virtualization.config.ServerPoolConfig;
-import org.glassfish.virtualization.runtime.VirtualCluster;
-import org.glassfish.virtualization.util.EventSource;
-
-import java.io.IOException;
-import java.util.Collection;
+import org.glassfish.virtualization.spi.ServerPool;
+import org.glassfish.virtualization.spi.ServerPoolFactory;
+import org.glassfish.virtualization.spi.TemplateRepository;
+import org.jvnet.hk2.annotations.Inject;
+import org.jvnet.hk2.annotations.Service;
 
 /**
- * Abstract a set of servers than can be used to provide {@link VirtualMachine}
+ * Implementation of the {@link ServerPoolFactory} for laptop mode
  *
  * @author Jerome Dochez
  */
-public interface ServerPool {
+@Service(name="Native")
+public class LocalServerPoolFactory implements ServerPoolFactory {
 
-    /**
-     * Returns the configuration for this server pool.
-     *
-     * @return  the server pool's configuration.
-     */
-    ServerPoolConfig getConfig();
+    final private TemplateRepository templateRepository;
+    final private Domain domain;
+    final private ServerContext environment;
 
-    /**
-     * Returns this pool's name.
-     * @return  this pool's name
-     */
-    String getName();
+    public LocalServerPoolFactory(@Inject TemplateRepository templateRepository,
+                                  @Inject Domain domain,
+                                  @Inject ServerContext environment) {
+        this.templateRepository = templateRepository;
+        this.domain = domain;
+        this.environment = environment;
+    }
 
-    /**
-     * Returns all allocated virtual machine in this server pool
-     * @return the list of allocated virtual machines
-     */
-    Collection<VirtualMachine> getVMs() throws VirtException;
+    @Override
+    public ServerPool build(ServerPoolConfig config) {
+        return new LocalServerPool(config, this);
+    }
 
-    /**
-     * Returns an allocated virtual machine in this server pool using its name.
-     * @param name virtual machine name
-     * @return virtual machine instance if found or null otherwise.
-     * @throws VirtException if the vm cannot be obtained
-     */
-    VirtualMachine vmByName(String name) throws VirtException;
+    Domain getDomain() {
+        return domain;
+    }
 
-    /**
-     * Allocates number of virtual machines on any machine belonging to this server pool, each virtual machine
-     * should be based on the provided template.
-     * @param template  template for the virtual machines
-     * @param cluster the virtual cluster in which  the virtual machine must be added
-     * using the {@link VirtualCluster#add(TemplateInstance, VirtualMachine)}  method
-     * @return Listenable future for the VirtualMachine instance
-     * @throws VirtException when the virtual machine creation failed.
-     */
-    PhasedFuture<AllocationPhase, VirtualMachine> allocate(
-            TemplateInstance template, VirtualCluster cluster, EventSource<AllocationPhase> source)
-            throws VirtException;
+    TemplateRepository getTemplateRepository() {
+        return templateRepository;
+    }
 
-    void install(TemplateInstance template) throws IOException;
+    ServerContext getServerContext() {
+        return environment;
+    }
 }

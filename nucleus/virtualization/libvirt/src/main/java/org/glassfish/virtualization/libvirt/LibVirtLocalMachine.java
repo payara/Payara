@@ -103,11 +103,11 @@ public class LibVirtLocalMachine extends AbstractMachine implements PostConstruc
     @Inject
     com.sun.enterprise.config.serverbeans.Domain domainConfig;
 
-    public static LibVirtLocalMachine from(Injector injector,  LibVirtGroup group, MachineConfig config) {
+    public static LibVirtLocalMachine from(Injector injector,  LibVirtServerPool group, MachineConfig config) {
         return injector.inject(new LibVirtLocalMachine(group, config));
     }
 
-    protected  LibVirtLocalMachine(LibVirtGroup group, MachineConfig config) {
+    protected  LibVirtLocalMachine(LibVirtServerPool group, MachineConfig config) {
         super(group, config);
     }
 

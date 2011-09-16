@@ -69,11 +69,11 @@ class LibVirtMachine extends LibVirtLocalMachine {
     @Inject
     SSHLauncher sshLauncher;
 
-    public static LibVirtMachine from(Injector injector, LibVirtGroup group, MachineConfig config, String ipAddress) {
+    public static LibVirtMachine from(Injector injector, LibVirtServerPool group, MachineConfig config, String ipAddress) {
         return injector.inject(new LibVirtMachine(group, config, ipAddress));
     }
 
-    protected  LibVirtMachine(LibVirtGroup group, MachineConfig config, String ipAddress) {
+    protected  LibVirtMachine(LibVirtServerPool group, MachineConfig config, String ipAddress) {
         super(group, config);
         this.ipAddress = ipAddress;
     }

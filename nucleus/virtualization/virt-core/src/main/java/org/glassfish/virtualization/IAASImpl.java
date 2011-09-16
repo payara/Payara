@@ -124,13 +124,14 @@ public class IAASImpl implements Startup, IAAS, ConfigListener {
     }
 
     private ServerPool addServerPool(ServerPoolConfig serverPoolConfig) {
-        ServerPool group = services.forContract(ServerPool.class).named(
+        ServerPoolFactory spf = services.forContract(ServerPoolFactory.class).named(
                 serverPoolConfig.getVirtualization().getType()).get();
-        group.setConfig(serverPoolConfig);
+
+        ServerPool serverPool = spf.build(serverPoolConfig);
         synchronized (this) {
-            groups.put(serverPoolConfig.getName(), group);
+            groups.put(serverPoolConfig.getName(), serverPool);
         }
-        return group;
+        return serverPool;
     }
 
     @Override

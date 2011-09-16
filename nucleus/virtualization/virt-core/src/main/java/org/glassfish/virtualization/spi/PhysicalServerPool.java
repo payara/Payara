@@ -40,15 +40,12 @@
 
 package org.glassfish.virtualization.spi;
 
-import org.jvnet.hk2.annotations.Contract;
-
 /**
  * Represents a serverPool of machines. How machines are allocated to groups is defined
  * by the user.
  *
  * @author  Jerome Dochez
  */
-@Contract
 public interface PhysicalServerPool extends ServerPool {
 
     /**

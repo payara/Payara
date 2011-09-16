@@ -64,30 +64,15 @@ import java.util.logging.Logger;
 /**
  * Runtime representation of a serverPool, with its members and such.
  */
-@Service(name="libvirt")
-@Scoped(PerLookup.class)
-public class LibVirtGroup implements PhysicalServerPool, ConfigListener {
+public class LibVirtServerPool implements PhysicalServerPool, ConfigListener {
 
-    @Inject
-    Injector injector;
-
-    @Inject
-    ExecutorService executorService;
-
-    @Inject
-    RuntimeContext rtContext;
-
-    @Inject
-    com.sun.enterprise.config.serverbeans.Domain domain;
-
-    @Inject
-    Services services;
-
-    public ServerPoolConfig config;
     final ConcurrentMap<String, Machine> machines = new ConcurrentHashMap<String, Machine>();
     final AtomicInteger allocationCount = new AtomicInteger();
+    final Injector injector;
+    final ServerPoolConfig config;
 
-    public void setConfig(ServerPoolConfig config) {
+    public LibVirtServerPool(Injector injector, ServerPoolConfig config) {
+        this.injector = injector;
         this.config = config;
         Dom.unwrap(config).addListener(this);
         populateGroup();

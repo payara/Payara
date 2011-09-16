@@ -112,10 +112,10 @@ class LocalVirtualMachine extends AbstractVirtualMachine {
 
     @Override
     public void start() throws VirtException {
-        for (Cluster cluster : pool.domain.getClusters().getCluster()) {
+        for (Cluster cluster : pool.serverPoolFactory.getDomain().getClusters().getCluster()) {
             for (VirtualMachineConfig vmc : cluster.getExtensionsByType(VirtualMachineConfig.class)) {
                 if (vmc.getName().equals(getName())) {
-                    TemplateInstance ti = pool.templateRepository .byName(vmc.getTemplate().getName());
+                    TemplateInstance ti = pool.serverPoolFactory.getTemplateRepository() .byName(vmc.getTemplate().getName());
                     if (ti!=null) {
                         ti.getCustomizer().start(this);
                     }

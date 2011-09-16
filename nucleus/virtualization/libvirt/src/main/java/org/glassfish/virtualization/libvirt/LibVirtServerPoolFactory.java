@@ -37,62 +37,31 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+package org.glassfish.virtualization.libvirt;
 
-package org.glassfish.virtualization.spi;
-
+import org.glassfish.hk2.inject.Injector;
 import org.glassfish.virtualization.config.ServerPoolConfig;
-import org.glassfish.virtualization.runtime.VirtualCluster;
-import org.glassfish.virtualization.util.EventSource;
-
-import java.io.IOException;
-import java.util.Collection;
+import org.glassfish.virtualization.spi.ServerPool;
+import org.glassfish.virtualization.spi.ServerPoolFactory;
+import org.jvnet.hk2.annotations.Inject;
+import org.jvnet.hk2.annotations.Service;
 
 /**
- * Abstract a set of servers than can be used to provide {@link VirtualMachine}
+ * Implementation of the {@link ServerPoolFactory} for libvirt.
  *
  * @author Jerome Dochez
  */
-public interface ServerPool {
+@Service(name="libvirt")
+public class LibVirtServerPoolFactory implements ServerPoolFactory {
 
-    /**
-     * Returns the configuration for this server pool.
-     *
-     * @return  the server pool's configuration.
-     */
-    ServerPoolConfig getConfig();
+    final Injector injector;
 
-    /**
-     * Returns this pool's name.
-     * @return  this pool's name
-     */
-    String getName();
+    public LibVirtServerPoolFactory(@Inject Injector injector) {
+        this.injector = injector;
+    }
 
-    /**
-     * Returns all allocated virtual machine in this server pool
-     * @return the list of allocated virtual machines
-     */
-    Collection<VirtualMachine> getVMs() throws VirtException;
-
-    /**
-     * Returns an allocated virtual machine in this server pool using its name.
-     * @param name virtual machine name
-     * @return virtual machine instance if found or null otherwise.
-     * @throws VirtException if the vm cannot be obtained
-     */
-    VirtualMachine vmByName(String name) throws VirtException;
-
-    /**
-     * Allocates number of virtual machines on any machine belonging to this server pool, each virtual machine
-     * should be based on the provided template.
-     * @param template  template for the virtual machines
-     * @param cluster the virtual cluster in which  the virtual machine must be added
-     * using the {@link VirtualCluster#add(TemplateInstance, VirtualMachine)}  method
-     * @return Listenable future for the VirtualMachine instance
-     * @throws VirtException when the virtual machine creation failed.
-     */
-    PhasedFuture<AllocationPhase, VirtualMachine> allocate(
-            TemplateInstance template, VirtualCluster cluster, EventSource<AllocationPhase> source)
-            throws VirtException;
-
-    void install(TemplateInstance template) throws IOException;
+    @Override
+    public ServerPool build(ServerPoolConfig config) {
+        return new LibVirtServerPool(injector, config);
+    }
 }

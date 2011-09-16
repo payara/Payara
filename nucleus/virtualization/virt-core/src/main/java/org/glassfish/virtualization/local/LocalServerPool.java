@@ -64,32 +64,17 @@ import java.util.concurrent.CountDownLatch;
  *
  * @author Jerome Dochez
  */
-@Service(name="Native")
-@Scoped(PerLookup.class)
-public class LocalServerPool implements ServerPool {
+class LocalServerPool implements ServerPool {
 
     final Map<String, VirtualMachine> vms = new HashMap<String, VirtualMachine>();
-    ServerPoolConfig config;
+    final ServerPoolConfig config;
+    final LocalServerPoolFactory serverPoolFactory;
 
-    @Inject
-    Domain domain;
-
-    @Inject
-    ServerContext env;
-
-    @Inject
-    TemplateRepository templateRepository;
-
-    @Override
-    public ServerPoolConfig getConfig() {
-        return config;
-    }
-
-    @Override
-    public void setConfig(ServerPoolConfig config) {
+    public LocalServerPool(ServerPoolConfig config, LocalServerPoolFactory serverPoolFactory) {
         this.config = config;
-        if (domain.getClusters()!=null) {
-            for (Cluster cluster : domain.getClusters().getCluster()) {
+        this.serverPoolFactory = serverPoolFactory;
+        if (serverPoolFactory.getDomain().getClusters()!=null) {
+            for (Cluster cluster : serverPoolFactory.getDomain().getClusters().getCluster()) {
                 for (VirtualMachineConfig vmc : cluster.getExtensionsByType(VirtualMachineConfig.class)) {
                     if (vmc.getServerPool().equals(config)) {
                         vms.put(vmc.getName(), new LocalVirtualMachine(vmc, vmc.getTemplate().getUser(), this, null, vmc.getName()));
@@ -97,6 +82,11 @@ public class LocalServerPool implements ServerPool {
                 }
             }
         }
+    }
+
+    @Override
+    public ServerPoolConfig getConfig() {
+        return config;
     }
 
     @Override
@@ -129,7 +119,7 @@ public class LocalServerPool implements ServerPool {
         LocalVirtualMachine vm = new LocalVirtualMachine(config, template.getConfig().getUser(), this, null, vmName);
         // this needs to be improved.
         vm.setProperty(VirtualMachine.PropertyName.INSTALL_DIR,
-                env.getInstallRoot().getParentFile().getAbsolutePath());
+                serverPoolFactory.getServerContext().getInstallRoot().getParentFile().getAbsolutePath());
         cluster.add(vm);
         vms.put(vmName, vm);
         CountDownLatch latch = new CountDownLatch(1);
