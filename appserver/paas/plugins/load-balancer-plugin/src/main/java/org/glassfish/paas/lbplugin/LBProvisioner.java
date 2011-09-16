@@ -68,4 +68,6 @@ public interface LBProvisioner {
 
     public void setScriptsDir(String scriptsDir);
 
+    public void setVirtualizationType(String value);
+
 }

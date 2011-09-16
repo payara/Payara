@@ -39,6 +39,7 @@
  */
 package org.glassfish.paas.lbplugin;
 
+import com.sun.enterprise.util.OS;
 import java.io.BufferedOutputStream;
 import org.glassfish.internal.api.ServerContext;
 import org.glassfish.virtualization.runtime.VirtualCluster;
@@ -47,6 +48,7 @@ import org.glassfish.virtualization.spi.VirtException;
 import org.glassfish.virtualization.spi.VirtualMachine;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.config.types.Property;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -54,11 +56,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Enumeration;
+import java.util.Iterator;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import org.glassfish.paas.lbplugin.logger.LBPluginLogger;
-import org.glassfish.virtualization.spi.VirtualMachine.PropertyName;
 
 /**
  * @author kshitiz
@@ -69,17 +72,14 @@ public class ApacheNativeTemplateCustomizer implements TemplateCustomizer {
     @Inject
     private ServerContext serverContext;
 
-    private static String LB_INSTALL_LOC = "/u01/glassfish/lb";
+    private static final String DEFAULT_LB_INSTALL_LOC = "/u01/glassfish/lb";
+    private static final String DEFAULT_LB_INSTALL_LOC_WINDOWS = "c:\\glassfish\\lb";
 
-    static {
-        String osName= System.getProperty("os.name").toLowerCase();
-        if(osName.contains("win")) {
-            LB_INSTALL_LOC = "c:\\glassfish\\lb";
-        }
-    }
+    private static final String LB_UNZIP_LOC_PROP_NAME = "unzip-loc";
 
     private static final String LB_ZIP_FILE_LOC = "config" + File.separator + "lb.zip";
 
+    @Override
     public void customize(VirtualCluster cluster, VirtualMachine virtualMachine) throws VirtException {
 
         File lbZipFile = new File(serverContext.getInstallRoot() + File.separator + LB_ZIP_FILE_LOC);
@@ -89,7 +89,7 @@ public class ApacheNativeTemplateCustomizer implements TemplateCustomizer {
             throw new RuntimeException(msg);
         }
 
-        File lbInstallDir = new File(LB_INSTALL_LOC);
+        File lbInstallDir = getUnzipLoc(virtualMachine);
 
         if(lbInstallDir.exists()){
             String msg = "Directory " + lbInstallDir + " already exists. Cannot create native load-balancer";
@@ -148,22 +148,48 @@ public class ApacheNativeTemplateCustomizer implements TemplateCustomizer {
         out.close();
     }
 
+    @Override
     public void start(VirtualMachine virtualMachine) {
     }
 
+    @Override
     public void stop(VirtualMachine virtualMachine) {
     }
 
+    @Override
     public void clean(VirtualMachine virtualMachine) {
-        File lbInstallDir = new File(LB_INSTALL_LOC);
-
-        if(lbInstallDir.exists()){
-            File[] files = lbInstallDir.listFiles();
-            for(int i=0; i < files.length; i++){
-                files[i].delete();
-            }
-            lbInstallDir.delete();
-        }
-
+        File lbInstallDir = getUnzipLoc(virtualMachine);
+        cleanupDir(lbInstallDir);
     }
+
+    private void cleanupDir(File dir){
+        if(dir.exists()){
+            File[] files = dir.listFiles();
+            for(int i=0; i < files.length; i++){
+                if(files[i].isDirectory()){
+                    cleanupDir(files[i]);
+                } else {
+                    files[i].delete();
+                }
+            }
+            dir.delete();
+        }
+    }
+
+    private File getUnzipLoc(VirtualMachine virtualMachine){
+        List<Property> properties = virtualMachine.getConfig()
+                .getTemplate().getProperties();
+        String unzipLoc = (OS.isWindows() ?
+            DEFAULT_LB_INSTALL_LOC_WINDOWS : DEFAULT_LB_INSTALL_LOC);
+        Iterator<Property> iter = properties.iterator();
+        while(iter.hasNext()){
+            Property property = iter.next();
+            if(property.getName().equalsIgnoreCase(LB_UNZIP_LOC_PROP_NAME)){
+                unzipLoc = property.getValue();
+                break;
+            }
+        }
+        return new File(unzipLoc);
+    }
+
 }

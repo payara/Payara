@@ -41,8 +41,6 @@ package org.glassfish.paas.lbplugin.cli;
 
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Level;
@@ -60,6 +58,7 @@ import org.glassfish.paas.orchestrator.provisioning.*;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceType.*;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceType;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceUtil;
+import org.glassfish.virtualization.config.TemplateIndex;
 import org.glassfish.virtualization.runtime.VirtualCluster;
 import org.glassfish.virtualization.spi.AllocationConstraints;
 import org.glassfish.virtualization.spi.AllocationPhase;
@@ -175,34 +174,28 @@ public class CreateLBService extends BaseLBService implements AdminCommand, Runn
         }
 
         if (matchingTemplate != null) {
-            try {
-                String installDir = null;
-                String scriptsDir = null;
-                String vendorName = null;
-                List<Property> properties = matchingTemplate.getConfig().getProperties();
-                Iterator<Property> iter = properties.iterator();
-                while (iter.hasNext()) {
-                    Property property = iter.next();
-                    LBPluginLogger.getLogger().log(Level.INFO, "TemplateID : " + templateId + ", Property - " + property.getName() + " : " + property.getValue());
-                    if(property.getName().equalsIgnoreCase(VENDOR_NAME)){
-                        vendorName = property.getValue();
-                    }else if(property.getName().equalsIgnoreCase(SCRIPTS_DIR_PROP_NAME)){
-                        scriptsDir = property.getValue();
-                    }else if(property.getName().equalsIgnoreCase(INSTALL_DIR_PROP_NAME)){
-                        installDir = property.getValue();
-                    }
+            String installDir = null;
+            String scriptsDir = null;
+            String vendorName = null;
+            for (Property property : matchingTemplate.getConfig().getProperties()) {
+                if (property.getName().equalsIgnoreCase(VENDOR_NAME)) {
+                    vendorName = property.getValue();
+                } else if (property.getName().equalsIgnoreCase(SCRIPTS_DIR_PROP_NAME)) {
+                    scriptsDir = property.getValue();
+                } else if (property.getName().equalsIgnoreCase(INSTALL_DIR_PROP_NAME)) {
+                    installDir = property.getValue();
                 }
-                LBProvisionerFactory.getInstance().setLBProvisioner(getLBProvisioner(vendorName));
-                if(installDir != null){
-                    LBProvisionerFactory.getInstance().getLBProvisioner().setInstallDir(installDir);
-                }
-                if(scriptsDir != null){
-                    LBProvisionerFactory.getInstance().getLBProvisioner().setScriptsDir(scriptsDir);
-                }
-
-            } catch (Exception ex) {
-                ex.printStackTrace();
             }
+            LBProvisionerFactory.getInstance().setLBProvisioner(getLBProvisioner(vendorName));
+            if (installDir != null) {
+                LBProvisionerFactory.getInstance().getLBProvisioner().setInstallDir(installDir);
+            }
+            if (scriptsDir != null) {
+                LBProvisionerFactory.getInstance().getLBProvisioner().setScriptsDir(scriptsDir);
+            }
+            TemplateIndex index = matchingTemplate.getConfig().byName("VirtualizationType");
+            LBProvisionerFactory.getInstance().getLBProvisioner()
+                    .setVirtualizationType(index.getValue());
 
             try {
                 CommandResult result = commandRunner.run("create-cluster", new String[]{serviceName});
@@ -279,9 +272,7 @@ public class CreateLBService extends BaseLBService implements AdminCommand, Runn
             LBPluginLogger.getLogger().log(Level.SEVERE, msg);
             throw new RuntimeException(msg);
         }
-        Iterator<LBProvisioner> iter = allProvisioners.iterator();
-        while(iter.hasNext()){
-            LBProvisioner provisioner = iter.next();
+        for(LBProvisioner provisioner : allProvisioners){
             if(provisioner.handles(vendorName)){
                 LBPluginLogger.getLogger().log(Level.INFO, "Found provisioner "
                         + provisioner + " for vendor name " + vendorName);

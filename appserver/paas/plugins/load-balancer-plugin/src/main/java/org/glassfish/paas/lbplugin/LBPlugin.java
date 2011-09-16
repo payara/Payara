@@ -331,19 +331,31 @@ public class LBPlugin implements Plugin {
 
     public boolean unprovisionService(ServiceDescription serviceDescription, DeploymentContext dc){
         String serviceName = serviceDescription.getName();
-        logger.entering(getClass().getName(), "provisionService");
-        ArrayList<String> params;
-        String[] parameters;
-        params = new ArrayList<String>();
+        ArrayList params = new ArrayList<String>();
+
+        if (serviceDescription.getAppName() != null) {
+            params.add("--appname");
+            params.add(serviceDescription.getAppName());
+        }
+        params.add(serviceName);
+        String[] parameters = new String[params.size()];
+        parameters = (String[]) params.toArray(parameters);
+
+        CommandResult result = commandRunner.run("_stop-lb-service", parameters);
+        if (result.getExitStatus().equals(CommandResult.ExitStatus.FAILURE)) {
+            LBPluginLogger.getLogger().log(Level.INFO,"_stop-lb-service [" + serviceName + "] failed");
+        }
+
+        params.clear();
         if (serviceDescription.getAppName() != null) {
             params.add("--appname");
             params.add(serviceDescription.getAppName());
         }
         params.add(serviceName);
         parameters = new String[params.size()];
-        parameters = params.toArray(parameters);
+        parameters = (String[]) params.toArray(parameters);
 
-        CommandResult result = commandRunner.run("_delete-lb-service", parameters);
+        result = commandRunner.run("_delete-lb-service", parameters);
         if (result.getExitStatus().equals(CommandResult.ExitStatus.FAILURE)) {
             LBPluginLogger.getLogger().log(Level.INFO,"_delete-lb-service [" + serviceName + "] failed");
             return false;

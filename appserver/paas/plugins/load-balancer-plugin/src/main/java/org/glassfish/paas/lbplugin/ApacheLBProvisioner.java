@@ -40,6 +40,8 @@
 
 package org.glassfish.paas.lbplugin;
 
+import com.sun.enterprise.util.OS;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.logging.Level;
@@ -48,6 +50,7 @@ import org.glassfish.embeddable.CommandResult;
 import org.glassfish.embeddable.CommandRunner;
 import org.glassfish.paas.lbplugin.logger.LBPluginLogger;
 import org.glassfish.virtualization.spi.VirtualMachine;
+import org.glassfish.virtualization.util.VirtualizationType;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.ComponentException;
 import org.jvnet.hk2.component.Habitat;
@@ -61,8 +64,15 @@ public class ApacheLBProvisioner implements LBProvisioner{
 
     private static final String DEFAULT_APACHE_INSTALL_DIR = "/u01/glassfish/lb/install";
     private static final String DEFAULT_SCRIPTS_DIR = "/u01/glassfish/lb/scripts";
-    private static final String ASSOCIATE_SERVERS_SCRIPT_NAME = "associateServer.sh";
-    private static final String CONFIGURE_SERVER_SCRIPT_NAME = "configureServer.sh";
+    private static final String ASSOCIATE_SERVERS_SCRIPT_NAME = "/associateServer.sh";
+    private static final String CONFIGURE_SERVER_SCRIPT_NAME = "/configureServer.sh";
+    private static final String APACHECTL_SCRIPT_NAME = "/bin/apachectl";
+
+    private static final String DEFAULT_APACHE_INSTALL_DIR_WINDOWS = "c:\\glassfish\\lb\\install";
+    private static final String DEFAULT_SCRIPTS_DIR_WINDOWS = "c:\\glassfish\\lb\\scripts";
+    private static final String ASSOCIATE_SERVERS_SCRIPT_NAME_WINDOWS = "\\associateServer.bat";
+    private static final String CONFIGURE_SERVER_SCRIPT_NAME_WINDOWS = "\\configureServer.bat";
+    private static final String APACHECTL_SCRIPT_NAME_WINDOWS = "\\bin\\httpd.exe";
 
     private String apacheInstallDir;
     private String apachectl;
@@ -74,10 +84,17 @@ public class ApacheLBProvisioner implements LBProvisioner{
     private static final String HTTP_LISTENER_NAME = "http-listener-1";
     private static final String LISTENER_PORT = "28009";//"\\$\\{AJP_LISTENER_PORT\\}"
     public static final String VENDOR_NAME = "apache";
+    private String virtualizationType;
 
     public ApacheLBProvisioner() {
-        setInstallDir(DEFAULT_APACHE_INSTALL_DIR);
-        setScriptsDir(DEFAULT_SCRIPTS_DIR);
+        if(useWindowsConfig()){
+            setInstallDir(DEFAULT_APACHE_INSTALL_DIR_WINDOWS);
+            setScriptsDir(DEFAULT_SCRIPTS_DIR_WINDOWS);
+        } else {
+            setInstallDir(DEFAULT_APACHE_INSTALL_DIR);
+            setScriptsDir(DEFAULT_SCRIPTS_DIR);
+        }
+        
     }
 
     @Override
@@ -175,14 +192,33 @@ public class ApacheLBProvisioner implements LBProvisioner{
     @Override
     public final void setInstallDir(String installDir) {
         apacheInstallDir =  installDir;
-        apachectl = apacheInstallDir + "/bin/apachectl";
+        if(useWindowsConfig()){
+            apachectl = apacheInstallDir + APACHECTL_SCRIPT_NAME_WINDOWS;
+        } else {
+            apachectl = apacheInstallDir + APACHECTL_SCRIPT_NAME;
+        }
     }
 
     @Override
     public final void setScriptsDir(String scriptsDir) {
         this.scriptsDir = scriptsDir;
-        associateServerScript = this.scriptsDir + "/" + ASSOCIATE_SERVERS_SCRIPT_NAME;
-        configureServerScript = this.scriptsDir + "/" + CONFIGURE_SERVER_SCRIPT_NAME;
+        if(useWindowsConfig()){
+            associateServerScript = this.scriptsDir + ASSOCIATE_SERVERS_SCRIPT_NAME_WINDOWS;
+            configureServerScript = this.scriptsDir + CONFIGURE_SERVER_SCRIPT_NAME_WINDOWS;
+        } else {
+            associateServerScript = this.scriptsDir + ASSOCIATE_SERVERS_SCRIPT_NAME;
+            configureServerScript = this.scriptsDir + CONFIGURE_SERVER_SCRIPT_NAME;
+        }
+    }
+
+    @Override
+    public void setVirtualizationType(String value) {
+        virtualizationType = value;
+    }
+
+    private boolean useWindowsConfig(){
+        return OS.isWindows() &&
+                virtualizationType.equals(VirtualizationType.Type.Native.name());
     }
 
 }
