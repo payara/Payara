@@ -41,6 +41,7 @@
 package org.glassfish.admin.rest;
 
 
+import javax.ws.rs.core.PathSegment;
 import com.sun.enterprise.config.serverbeans.AdminService;
 import com.sun.enterprise.config.serverbeans.SecureAdmin;
 import com.sun.enterprise.v3.admin.AdminAdapter;
@@ -328,7 +329,7 @@ public class ResourceUtil {
      *
      * @param uriInfo the uri context to extract parent name value.
      */
-    public static void resolveParentParamValue(HashMap<String, String> commandParams, UriInfo uriInfo) {
+    private static void resolveParentParamValue(Map<String, String> commandParams, UriInfo uriInfo) {
         String parent = getParentName(uriInfo);
         if (parent != null) {
             for (String key : commandParams.keySet()) {
@@ -338,19 +339,30 @@ public class ResourceUtil {
                 }
 
             }
-            /*
-            Set<String> keys = commandParams.keySet();
-            Iterator<String> iterator = keys.iterator();
-            String key;
-            while (iterator.hasNext()) {
-                key = iterator.next();
-                if (commandParams.get(key).equals(Constants.VAR_PARENT)) {
-                    commandParams.put(key, parent);
-                    break;
-                }
-            }
-            */
         }
+    }
+    
+    public static void resolveParamValues(Map<String, String> commandParams, UriInfo uriInfo) {
+        List<PathSegment> pathSegments = uriInfo.getPathSegments();
+        Map<String, String> processParams = new HashMap<String, String>();
+        processParams.putAll(commandParams);
+        
+        for (Map.Entry<String,String> entry : commandParams.entrySet()) {
+            String value = entry.getValue();
+            if (value.equals(Constants.VAR_PARENT)) {
+                processParams.put(entry.getKey(), pathSegments.get(pathSegments.size()-2).getPath());
+            } else if (value.startsWith(Constants.VAR_GRANDPARENT)) {
+                int number = 
+                        (value.equals(Constants.VAR_GRANDPARENT)) ? 
+                        1 : // no number given
+                        Integer.parseInt(value.substring(Constants.VAR_GRANDPARENT.length()));
+                
+                processParams.put(entry.getKey(), pathSegments.get(pathSegments.size()-(number + 2)).getPath());
+            }
+        }
+        
+        commandParams.clear();
+        commandParams.putAll(processParams);
     }
 
 

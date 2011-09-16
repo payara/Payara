@@ -151,17 +151,7 @@ public class TemplateExecCommand {
     protected void processCommandParams(ParameterMap data) {
         HashMap<String, String> commandParams = getCommandParams();
         if (commandParams != null) {
-            for (Map.Entry<String, String> entry : commandParams.entrySet()) {
-                String value = entry.getValue();
-                if (Constants.VAR_GRANDPARENT.equals(value)) {
-                    entry.setValue(Util.getGrandparentName(uriInfo));
-                }
-            }
-            //formulate parent-link attribute for this command resource
-            //Parent link attribute may or may not be the id/target attribute
-            if (isLinkedToParent) {
-                ResourceUtil.resolveParentParamValue(commandParams, uriInfo);
-            }
+            ResourceUtil.resolveParamValues(commandParams, uriInfo);
             for (Map.Entry<String, String> entry : commandParams.entrySet()) {
                 data.add(entry.getKey(), entry.getValue());
             }

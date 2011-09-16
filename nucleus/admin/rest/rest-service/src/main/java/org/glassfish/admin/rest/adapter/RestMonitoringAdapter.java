@@ -52,6 +52,7 @@ import org.jvnet.hk2.annotations.Service;
  */
 @Service
 public class RestMonitoringAdapter extends RestAdapter {
+    public static final String CONTEXT = "/monitoring";
 
     @Override
     public String getContextRoot() {
@@ -64,5 +65,4 @@ public class RestMonitoringAdapter extends RestAdapter {
       return  getLazyJersey().getResourcesConfigForMonitoring(habitat);
 
     }
-    public static final String CONTEXT = "/monitoring";
 }
