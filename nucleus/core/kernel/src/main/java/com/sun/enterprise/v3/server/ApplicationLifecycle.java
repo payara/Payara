@@ -314,7 +314,9 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                         // ignore
                     }
                 }
-                notifyLifecycleInterceptorsAfter(ExtendedDeploymentContext.Phase.REPLICATION, context);
+                // comment this out for now as the interceptor seems to use 
+                // a different hook to roll back failure
+                // notifyLifecycleInterceptorsAfter(ExtendedDeploymentContext.Phase.REPLICATION, context);
                 
                 if (!commandParams.keepfailedstubs) {
                     try {
@@ -415,7 +417,15 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                     tracing.addMark(DeploymentTracing.Mark.CLASS_LOADER_CREATED);
                 }
 
-                notifyLifecycleInterceptorsBefore(ExtendedDeploymentContext.Phase.PREPARE, context);
+                try {
+                    notifyLifecycleInterceptorsBefore(ExtendedDeploymentContext.Phase.PREPARE, context);
+                } catch(Throwable interceptorException) {
+                    report.failure(logger, "Exception while invoking the lifecycle interceptor", null);
+                    report.setFailureCause(interceptorException);
+                    logger.log(Level.SEVERE, interceptorException.getMessage(), interceptorException);
+                    tracker.actOn(logger);
+                    return null;
+                }
 
                     // this is a first time deployment as opposed as load following an unload event,
                     // we need to create the application info
