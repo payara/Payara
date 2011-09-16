@@ -48,9 +48,12 @@ import org.glassfish.elasticity.api.AlertContext;
 import org.glassfish.elasticity.api.MetricGatherer;
 import org.glassfish.elasticity.config.serverbeans.AlertConfig;
 import org.glassfish.elasticity.config.serverbeans.ElasticService;
+import org.glassfish.elasticity.engine.message.ElasticMessage;
 import org.glassfish.elasticity.engine.util.ElasticEngineThreadPool;
 import org.glassfish.elasticity.engine.util.EngineUtil;
 import org.glassfish.elasticity.engine.util.ExpressionBasedAlert;
+import org.glassfish.elasticity.expression.ExpressionNode;
+import org.glassfish.elasticity.expression.RemoteExpressionHandler;
 import org.glassfish.elasticity.group.ElasticMessageHandler;
 import org.glassfish.elasticity.group.GroupMemberEventListener;
 import org.glassfish.elasticity.group.gms.GroupServiceProvider;
@@ -63,6 +66,10 @@ import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.PerLookup;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Future;
@@ -119,6 +126,12 @@ public class ElasticServiceContainer
 
     private AtomicReference<Set<String>> currentMembers = new AtomicReference<Set<String>>();
 
+    private String remoteExpHandlerToken;
+
+    private RemoteExpressionHandler remoteExpHandler;
+
+    private AtomicInteger messageIdCounter = new AtomicInteger();
+
 	public Startup.Lifecycle getLifecycle() {
 		return Startup.Lifecycle.START;
 	}
@@ -134,7 +147,8 @@ public class ElasticServiceContainer
         this.minSize.set(service.getMin());
         this.maxSize.set(service.getMax());
 
-        System.out.println("**Initialized ElasticService name = " + this.service.getName());
+        remoteExpHandlerToken = service.getName() + ":RemoteExpressionHandler";
+        remoteExpHandler = new RemoteExpressionHandler(remoteExpHandlerToken);
     }
 
 	public String getName() {
@@ -190,6 +204,14 @@ public class ElasticServiceContainer
         }
     }
 
+    public GroupServiceProvider getGroupServiceProvider() {
+        return gsp;
+    }
+
+    public ElasticService getElasticService() {
+        return service;
+    }
+
     public void startContainer() {
 
         isDAS = serverEnvironment.isDas();
@@ -197,18 +219,16 @@ public class ElasticServiceContainer
         if (gmsAdapterService != null && gmsAdapterService.getGMSAdapter() != null) {
             GMSAdapter gmsAdapter = gmsAdapterService.getGMSAdapter();
 
-            System.out.println("isDAS: " + serverEnvironment.isDas()
-                + "; ClusterName=" + gmsAdapter.getClusterName()
-                + "; instanceName=" + gmsAdapter.getModule().getInstanceName());
-
             gsp = new GroupServiceProvider(gmsAdapter.getModule().getInstanceName(),
                     gmsAdapter.getClusterName(), false);
+
             gsp.registerGroupMemberEventListener(this);
             gsp.registerGroupMessageReceiver(service.getName(), this);
         }
 
         if (isDAS) {
             loadAlerts();
+            System.out.println("**Initialized & Loaded Alerts ElasticService = " + this.service.getName());
         }
     }
 
@@ -226,12 +246,12 @@ public class ElasticServiceContainer
             String alertName = alertConfig.getName();
             ExpressionBasedAlert<AlertConfig> alert = new ExpressionBasedAlert<AlertConfig>();
             alert.initialize(habitat, alertConfig);
-            AlertContextImpl alertCtx = new AlertContextImpl(service, alertConfig, alert);
+            AlertContextImpl alertCtx = new AlertContextImpl(this, alertConfig, alert);
             ScheduledFuture<?> future =
                     threadPool.scheduleAtFixedRate(alertCtx, frequencyInSeconds, frequencyInSeconds, TimeUnit.SECONDS);
             alertCtx.setFuture(future);
             alerts.put(alertConfig.getName(), alertCtx);
-                System.out.println("SCHEDULED Alert[name=" + alertName + "; schedule=" + sch
+                logger.log(Level.FINE, "SCHEDULED Alert[name=" + alertName + "; schedule=" + sch
                         + "; expression=" + alertConfig.getExpression() + "; will be executed every= " + frequencyInSeconds);
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -289,10 +309,59 @@ public class ElasticServiceContainer
     }
 
 
+    public ElasticMessage createElasticMessage(String targetInstanceName, String subComponentToken) {
+        ElasticMessage message = new ElasticMessage();
+        message.setMessageId("" + messageIdCounter.incrementAndGet())
+                .setServiceName(service.getName())
+                .setSourceMemberName(serverEnvironment.getInstanceName())
+                .setSubComponentName(targetInstanceName)
+                .setSubComponentName(subComponentToken);
+
+        return message;
+    }
+
+    public void sendMessage(ElasticMessage message) {
+        byte[] data = null;
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        ObjectOutputStream oos = null;
+        try {
+            oos = new ObjectOutputStream(bos);
+            oos.writeObject(message);
+            oos.close();
+            data = bos.toByteArray();
+
+            if (message.getTargetMemberName() == null) {
+                for (String member : currentMembers.get()) {
+                    gsp.sendMessage(member, service.getName(), data);
+                }
+            }
+        } catch (Exception ex) {
+            logger.log(Level.WARNING, "Exception during message sending", ex);
+        } finally {
+            try {oos.close();} catch (Exception ex) {}
+        }
+
+    }
+
     @Override
     public void handleMessage(String senderName, String messageToken, byte[] data) {
-        System.out.println("Received a message from " + senderName + "; messageToken=" + messageToken
-                + "; data= " + (new String(data)));
+
+        ByteArrayInputStream bis = new ByteArrayInputStream(data);
+        ObjectInputStream ois = null;
+        try {
+            ois = new ObjectInputStream(bis);
+            ElasticMessage message = (ElasticMessage) ois.readObject();
+            if ("RemoteExpressionHandler".equals(message.getSubComponentName())) {
+//                System.out.println("Received a RemoteExpressionHandler message");
+            } else {
+//                System.out.println("Received a generic message");
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        } finally {
+            try { ois.close(); } catch (Exception ex) {}
+            try { bis.close(); } catch (Exception ex) {}
+        }
     }
 
     private int getFrequencyOfAlertExecutionInSeconds(String sch) {
@@ -323,24 +392,4 @@ public class ElasticServiceContainer
 		return frequencyInSeconds;
 	}
 
-    private class ElasticServiceResizerTask
-        implements Runnable {
-
-        int size;
-
-        Future<Boolean> done;
-
-        public ElasticServiceResizerTask(int size) {
-            this.size = size;
-
-        }
-
-        public void run() {
-            if (size > 0) {
-                //orchestrator.scale(1);
-            } else if (size < 0) {
-                //orchestrator.scale(-1);
-            }
-        }
-    }
 }

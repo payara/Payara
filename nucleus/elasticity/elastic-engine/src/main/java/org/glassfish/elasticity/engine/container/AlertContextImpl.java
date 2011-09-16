@@ -4,7 +4,10 @@ import org.glassfish.elasticity.api.Alert;
 import org.glassfish.elasticity.api.AlertContext;
 import org.glassfish.elasticity.config.serverbeans.AlertConfig;
 import org.glassfish.elasticity.config.serverbeans.ElasticService;
+import org.glassfish.elasticity.group.ElasticMessageHandler;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ScheduledFuture;
 
 /**
@@ -13,7 +16,7 @@ import java.util.concurrent.ScheduledFuture;
 public class AlertContextImpl<C extends AlertConfig>
     implements AlertContext<C>, Runnable {
 
-    private ElasticService elasticService;
+    private ElasticServiceContainer elasticServiceContainer;
 
     private C config;
 
@@ -21,14 +24,22 @@ public class AlertContextImpl<C extends AlertConfig>
 
     private ScheduledFuture<?> future;
 
-    public AlertContextImpl(ElasticService elasticService, C config, Alert alert) {
-        this.elasticService = elasticService;
+    private Map transientData = new HashMap();
+
+    private String alertToken;
+
+    public AlertContextImpl(ElasticServiceContainer elasticServiceContainer, C config, Alert alert) {
+        this.elasticServiceContainer = elasticServiceContainer;
         this.config = config;
         this.alert = alert;
     }
 
     public ElasticService getElasticService() {
-        return elasticService;
+        return elasticServiceContainer.getElasticService();
+    }
+
+    public ElasticServiceContainer getElasticServiceContainer() {
+        return elasticServiceContainer;
     }
 
     public C getAlertConfig() {
@@ -47,7 +58,13 @@ public class AlertContextImpl<C extends AlertConfig>
         this.future = future;
     }
 
+    public Map getTransientData() {
+        return transientData;
+    }
+
     public void run() {
         alert.execute(this);
+        transientData.clear();
     }
+
 }

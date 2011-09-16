@@ -99,16 +99,11 @@ public class GroupServiceProvider
 
             checkAndNotifyAboutCurrentAndPreviousMembers(notification.getMemberToken(), isJoin, true);
         } else if (notification instanceof MessageSignal) {
-            logger.log(Level.INFO, "Received ElasticMessage. Source Member: " + notification.getMemberToken() + " group : " + notification.getGroupName());
-
             MessageSignal messageSignal = (MessageSignal) notification;
             byte[] message = ((MessageSignal) notification).getMessage();
-                logger.log(Level.INFO, "\t\t***  Message received: "
-                        + ((MessageSignal) notification).getTargetComponent() + "; "
-                        + ((MessageSignal) notification).getMemberToken());
 
             if (messageSignal != null) {
-                ElasticMessageHandler handler = handlers.get(messageSignal.getMemberToken());
+                ElasticMessageHandler handler = handlers.get(messageSignal.getTargetComponent());
                 if (handler != null) {
                     handler.handleMessage(messageSignal.getMemberToken(), messageSignal.getMemberToken(), message);
                 }
@@ -312,7 +307,7 @@ public class GroupServiceProvider
 
     public void registerGroupMessageReceiver(String serviceName, ElasticMessageHandler handler) {
         logger.fine("[GroupServiceProvider]:  REGISTERED A MESSAGE LISTENER: "
-                + handler + "; for token: " + serviceName);
+                + handler + "; for token: <" + serviceName + ">");
         handlers.put(serviceName, handler);
     }
 

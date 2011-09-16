@@ -201,7 +201,9 @@ public class ExpressionParser {
 	
 	public static class FunctionCall
 		extends ExpressionNode {
-		
+
+        private int nodeID;
+
 		Token functionNameToken;
 		
 		List<ExpressionNode> params = new ArrayList<ExpressionNode>();
@@ -216,8 +218,16 @@ public class ExpressionParser {
 			System.out.println("Function call: " + functionNameToken + "; isRemote: " + remote
             + "; this.getToken.getTokenType: " + (this.getToken().getTokenType() == TokenType.FUNCTION_CALL));
 		}
-		
-		void addParam(ExpressionNode param) {
+
+        public int getNodeID() {
+            return nodeID;
+        }
+
+        public void setNodeID(int nodeID) {
+            this.nodeID = nodeID;
+        }
+
+        void addParam(ExpressionNode param) {
 			params.add(param);
 //			System.out.println("added param: " + param.getToken());
 		}

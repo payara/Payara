@@ -42,9 +42,10 @@ package org.glassfish.elasticity.engine.util;
 import org.glassfish.elasticity.api.Alert;
 import org.glassfish.elasticity.api.AlertContext;
 import org.glassfish.elasticity.config.serverbeans.AlertConfig;
+import org.glassfish.elasticity.engine.container.AlertContextImpl;
+import org.glassfish.elasticity.engine.message.ElasticMessage;
 import org.glassfish.elasticity.expression.ExpressionNode;
 import org.glassfish.elasticity.expression.ExpressionParser;
-import org.glassfish.elasticity.expression.Token;
 import org.glassfish.elasticity.expression.TokenType;
 import org.jvnet.hk2.component.Habitat;
 
@@ -68,7 +69,7 @@ public class ExpressionBasedAlert<C extends AlertConfig>
 
     private ExpressionNode parsedNode;
 
-    private List<List<ExpressionNode>> remoteNodes = new ArrayList<List<ExpressionNode>>();
+    private ArrayList<List<ExpressionNode>> remoteNodes = new ArrayList<List<ExpressionNode>>();
 
     private byte[] remoteData;
 
@@ -111,17 +112,25 @@ public class ExpressionBasedAlert<C extends AlertConfig>
 
         System.out.println("About to execute alert: " + config.getName() + "; service = "
                 + ctx.getElasticService().getName());
+
+        AlertContextImpl ctxImpl = (AlertContextImpl) ctx;
+        ElasticMessage message =
+                ctxImpl.getElasticServiceContainer().createElasticMessage(null, "RemoteExpressionHandler");
+        message.setData(remoteData);
+
+        ctxImpl.getElasticServiceContainer().sendMessage(message);
         return AlertState.ALARM;
     }
 
 
-    private void getExpressionNodeForRemoteExecution(ExpressionNode node, List<List<ExpressionNode>> nodes) {
+    private void getExpressionNodeForRemoteExecution(ExpressionNode node, ArrayList<List<ExpressionNode>> nodes) {
         if (node != null) {
             if (node.getToken().getTokenType() == TokenType.FUNCTION_CALL) {
                 ExpressionParser.FunctionCall fcall = (ExpressionParser.FunctionCall) node;
                 System.out.println("Looking into function: " + node);
                 if (fcall.isRemote()) {
-                    nodes.add(((ExpressionParser.FunctionCall) node).getParams());
+                    fcall.setNodeID(nodes.size());
+                    nodes.add(fcall.getParams());
                     return;
                 }
             }
