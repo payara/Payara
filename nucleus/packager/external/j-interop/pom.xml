@@ -67,7 +67,7 @@
                              in the final bundle 
                         -->
                         <_exportcontents>*</_exportcontents>
-                        <Import-Package>*</Import-Package>
+						<Import-Package>!javax.servlet,!javax.servlet.http,*</Import-Package>
                         <!-- !* matches with nothing, so no other class will be included in this bundle,
                          other than what is specified above -->
                         <Private-Package>!*</Private-Package>
