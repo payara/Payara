@@ -64,6 +64,7 @@ import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.event.EventListener.Event;
 import org.glassfish.api.event.EventTypes;
 import org.glassfish.api.event.Events;
+import org.glassfish.hk2.RunLevelDefaultScope;
 import org.glassfish.internal.api.Init;
 import org.glassfish.internal.api.InitRunLevel;
 import org.glassfish.internal.api.PostStartup;
@@ -73,7 +74,11 @@ import org.jvnet.hk2.annotations.*;
 import org.jvnet.hk2.component.ComponentException;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.Inhabitant;
+import org.jvnet.hk2.component.RunLevelListener;
 import org.jvnet.hk2.component.RunLevelService;
+import org.jvnet.hk2.component.RunLevelState;
+import org.jvnet.hk2.component.ServiceContext;
+import org.jvnet.hk2.component.internal.runlevel.DefaultRunLevelService;
 
 /**
  * Main class for Glassfish v3 startup
@@ -84,7 +89,7 @@ import org.jvnet.hk2.component.RunLevelService;
  * @author Jerome Dochez, sahoo@sun.com
  */
 @Service
-public class AppServerStartup implements ModuleStartup {
+public class AppServerStartup implements ModuleStartup, RunLevelListener {
     
     StartupContext context;
 
@@ -123,6 +128,8 @@ public class AppServerStartup implements ModuleStartup {
     @Inject
     RunLevelService<?> rls;
 
+    boolean shutdownRequested;
+    
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ApplicationLifecycle.class);
     
 
@@ -205,6 +212,7 @@ public class AppServerStartup implements ModuleStartup {
             logger.log(level, "Startup class : {0}", getClass().getName());
         }
 
+        
         // prepare the global variables
         habitat.addComponent(this);
         habitat.addComponent(systemRegistry);
@@ -227,16 +235,20 @@ public class AppServerStartup implements ModuleStartup {
 
         Map<Class, Long> servicesTiming = new HashMap<Class, Long>();
 
-        // the new way
+        // start-up through the init level
+        shutdownRequested = false;
         rls.proceedTo(InitRunLevel.VAL);
-        
+        if (shutdownRequested) {
+            shutdown();
+            return;
+        }
+
         // run the startup services
         final Collection<Inhabitant<? extends Startup>> startups = habitat.getInhabitants(Startup.class);
         PriorityQueue<Inhabitant<? extends Startup>> startupSvcs;
-        startupSvcs = new PriorityQueue<Inhabitant<? extends Startup>>(startups.size(), getInhabitantComparator());
+        startupSvcs = new PriorityQueue<Inhabitant<? extends Startup>>(startups.size(), RunLevelBridge.getInhabitantComparator());
         startupSvcs.addAll(startups);
 
-        boolean shutdownRequested=false;
         ArrayList<Future<Result<Thread>>> futures = new ArrayList<Future<Result<Thread>>>();
         while (!startupSvcs.isEmpty()) {
             final Inhabitant<? extends Startup> i=startupSvcs.poll();
@@ -268,6 +280,10 @@ public class AppServerStartup implements ModuleStartup {
 
         // the new way
         rls.proceedTo(PostStartupRunLevel.VAL);
+        if (shutdownRequested) {
+            shutdown();
+            return;
+        }
 
         env.setStatus(ServerEnvironment.Status.starting);        
         events.send(new Event(EventTypes.SERVER_STARTUP), false);
@@ -288,7 +304,7 @@ public class AppServerStartup implements ModuleStartup {
             logger.info("TOTAL TIME INCLUDING CLI: "  + (System.currentTimeMillis() - realstart));
         }
         catch(Exception e) {
-		}
+        }
 
         if (logger.isLoggable(level)) {
             for (Map.Entry<Class, Long> service : servicesTiming.entrySet()) {
@@ -300,6 +316,7 @@ public class AppServerStartup implements ModuleStartup {
         // if a severe error happened that should trigger shutdown.
         if (shutdownRequested) {
             shutdown();
+            return;
         }   else {
             for (Future<Result<Thread>> future : futures) {
                 try {
@@ -335,11 +352,9 @@ public class AppServerStartup implements ModuleStartup {
             postStartup.get();
         }
         printModuleStatus(systemRegistry, level);
+    }
 
-     }
-
-    public static void printModuleStatus(ModulesRegistry registry, Level level)
-    {
+    public static void printModuleStatus(ModulesRegistry registry, Level level) {
         if (!logger.isLoggable(level)) {
             return;
         }
@@ -405,7 +420,7 @@ public class AppServerStartup implements ModuleStartup {
             Collection<Inhabitant<? extends PostStartup>> postStartups = habitat.getInhabitants(PostStartup.class);
 
             PriorityQueue<Inhabitant<?>> mergedStartup = new PriorityQueue<Inhabitant<?>>(
-                    startups.size()+postStartups.size(), getInhabitantComparator());
+                    startups.size()+postStartups.size(), RunLevelBridge.getInhabitantComparator());
             mergedStartup.addAll(postStartups);
             mergedStartup.addAll(startups);
 
@@ -462,20 +477,20 @@ public class AppServerStartup implements ModuleStartup {
         }
     }
 
-    private Comparator<Inhabitant<?>> getInhabitantComparator() {
-        return new Comparator<Inhabitant<?>>() {
-            public int compare(Inhabitant<?> o1, Inhabitant<?> o2) {
-                int o1level = (o1.type().getAnnotation(Priority.class)!=null?
-                        o1.type().getAnnotation(Priority.class).value():5);
-                int o2level = (o2.type().getAnnotation(Priority.class)!=null?
-                        o2.type().getAnnotation(Priority.class).value():5);
-                if (o1level==o2level) {
-                    return 0;
-                } else if (o1level<o2level) {
-                    return -1;
-                } else return 1;
-            }
-
-        };
+    @Override
+    public void onCancelled(RunLevelState<?> state, ServiceContext ctx, int previousProceedTo, boolean isInterrupt) {
+        logger.log(Level.INFO, "shutdown requested");
+        shutdownRequested = true;
     }
+
+    @Override
+    public void onError(RunLevelState<?> state, ServiceContext ctx, Throwable t, boolean willContinue) {
+        logger.log(Level.INFO, "shutdown requested", t);
+        shutdownRequested = true;
+    }
+
+    @Override
+    public void onProgress(RunLevelState<?> state) {
+    }
+    
 }

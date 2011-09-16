@@ -167,7 +167,7 @@ import org.jvnet.hk2.component.Inhabitant;
         return sorted;
     }
     
-    protected Comparator<Inhabitant<?>> getInhabitantComparator() {
+    static Comparator<Inhabitant<?>> getInhabitantComparator() {
         return new Comparator<Inhabitant<?>>() {
             public int compare(Inhabitant<?> o1, Inhabitant<?> o2) {
                 int o1level = (o1.type().getAnnotation(Priority.class)!=null?
