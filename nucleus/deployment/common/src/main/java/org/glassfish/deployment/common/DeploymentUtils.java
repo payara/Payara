@@ -47,11 +47,13 @@ import com.sun.enterprise.util.io.FileUtils;
 import com.sun.logging.LogDomains;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.api.deployment.archive.ArchiveHandler;
+import org.glassfish.api.container.Sniffer;
 import com.sun.enterprise.deployment.deploy.shared.Util;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.loader.util.ASClassLoaderUtil;
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.component.Habitat;
 
 import java.io.File;
 import java.io.IOException;
@@ -66,6 +68,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.zip.Adler32;
 import java.util.jar.Manifest;
+import java.util.jar.Attributes;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 
@@ -93,6 +96,12 @@ public class DeploymentUtils {
     private static final String APPLICATION_XML = "META-INF/application.xml";
     private static final String SUN_APPLICATION_XML = "META-INF/sun-application.xml";    
     private static final String GF_APPLICATION_XML = "META-INF/glassfish-application.xml";    
+    private static final String APPLICATION_CLIENT_XML = "META-INF/application-client.xml";
+    private static final String SUN_APPLICATION_CLIENT_XML = "META-INF/sun-application-client.xml";
+    private static final String GF_APPLICATION_CLIENT_XML = "META-INF/glassfish-application-client.xml";
+   private static final String EJB_JAR_XML = "META-INF/ejb-jar.xml";
+    private static final String SUN_EJB_JAR_XML = "META-INF/sun-ejb-jar.xml";
+    private static final String GF_EJB_JAR_XML = "META-INF/glassfish-ejb-jar.xml";
     private static final String EAR_EXTENSION = ".ear";
     private static final String WAR_EXTENSION = ".war";
     private static final String RAR_EXTENSION = ".rar";
@@ -195,6 +204,21 @@ public class DeploymentUtils {
             }
         }
     }
+
+    /**
+     * check whether the archive is a JavaEE archive
+     * @param archive archive to be tested
+     * @param habitat
+     * @return whether the archive is a JavaEE archive
+     */
+    public static boolean isJavaEE(ReadableArchive archive, Habitat habitat) {
+        if (isEAR(archive) || isWebArchive(archive) || isCAR(archive) ||
+            isRAR(archive, habitat) || isEjbJar(archive, habitat)) {
+            return true;
+        }
+        return false;
+    }
+
     
     // checking whether the archive is a web archive
     public static boolean isWebArchive(ReadableArchive archive) {
@@ -303,6 +327,78 @@ public class DeploymentUtils {
             //ignore
         }
         return isRar;
+    }
+
+    /**
+     * check whether the archive is a .rar, it also scans annotations
+     * @param archive archive to be tested
+     * @param habitat
+     * @return status of .rar or not
+     */
+    public static boolean isRAR(ReadableArchive archive, Habitat habitat) {
+        if (isRAR(archive)) {
+            return true;
+        }
+        if (archive instanceof FileArchive) {
+            Sniffer sniffer = habitat.getComponent(Sniffer.class,
+                "connector");
+            if (sniffer != null) {
+                GenericAnnotationDetector detector = new GenericAnnotationDetector(sniffer.getAnnotationTypes());
+                return detector.hasAnnotationInArchive(archive);
+            }
+        }
+        return false;
+    }
+
+    /**
+     * check whether the archive is an appclient archive
+     * @param archive archive to be tested
+     * @return whether the archive is an appclient archive or not
+     */
+    public static boolean isCAR(ReadableArchive archive) {
+        try {
+            if (archive.exists(APPLICATION_CLIENT_XML) ||
+                archive.exists(SUN_APPLICATION_CLIENT_XML) ||
+                archive.exists(GF_APPLICATION_CLIENT_XML)) {
+                return true;
+            }
+
+            Manifest manifest = archive.getManifest();
+            if (manifest != null &&
+                manifest.getMainAttributes().containsKey(
+                Attributes.Name.MAIN_CLASS)) {
+                return true;
+            }
+        }catch(IOException ioe){
+            //ignore
+        }
+        return false;
+    }
+
+    /**
+     * check whether the archive is an ejb archive
+     * @param archive archive to be tested
+     * @param habitat
+     * @return whether the archive is an ejb archive or not
+     */
+    public static boolean isEjbJar(ReadableArchive archive, Habitat habitat) {
+        try {
+            if (archive.exists(EJB_JAR_XML) ||
+                archive.exists(SUN_EJB_JAR_XML) ||
+                archive.exists(GF_EJB_JAR_XML)) {
+                return true;
+            }
+
+            Sniffer sniffer = habitat.getComponent(Sniffer.class, "Ejb");
+            if (sniffer != null) {
+                GenericAnnotationDetector detector =
+                    new GenericAnnotationDetector(sniffer.getAnnotationTypes());
+                return detector.hasAnnotationInArchive(archive);
+            }
+        }catch(IOException ioe){
+            //ignore
+        }
+        return false;
     }
 
     /**

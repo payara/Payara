@@ -48,6 +48,7 @@ import org.glassfish.api.admin.*;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
+import org.glassfish.deployment.common.DeploymentUtils;
 import org.glassfish.paas.orchestrator.ServiceOrchestrator;
 import org.glassfish.paas.orchestrator.service.metadata.Property;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceCharacteristics;
@@ -57,6 +58,7 @@ import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
+import org.jvnet.hk2.component.Habitat;
 
 import java.io.File;
 import java.io.IOException;
@@ -93,6 +95,9 @@ public class GetServiceMetadata implements AdminCommand {
     @Inject
     private ServiceOrchestrator orchestrator;
 
+    @Inject 
+    private Habitat habitat;
+
     public void execute(AdminCommandContext context) {
 
         ActionReport report = context.getActionReport();
@@ -104,6 +109,8 @@ public class GetServiceMetadata implements AdminCommand {
         ReadableArchive readableArchive = null;
         try {
             readableArchive = archiveFactory.openArchive(archive);
+            readableArchive.setExtraData(Boolean.class, 
+                    DeploymentUtils.isJavaEE(readableArchive, habitat));
             ServiceMetadata metadata = orchestrator.getServices(readableArchive);
             List<Map<String,Object>> serviceMetadataList = new ArrayList<Map<String, Object>>();
             for(ServiceDescription desc : metadata.getServiceDescriptions()){
