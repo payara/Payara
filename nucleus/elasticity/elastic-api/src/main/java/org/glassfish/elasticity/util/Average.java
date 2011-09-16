@@ -40,10 +40,15 @@
 package org.glassfish.elasticity.util;
 
 import org.glassfish.elasticity.api.MetricFunction;
+import org.jvnet.hk2.annotations.Scoped;
+import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.component.PerLookup;
 
 /**
  * @author Mahesh.Kannan@Oracle.Com
  */
+@Service(name="avg")
+@Scoped(PerLookup.class)
 public class Average<T extends Number>
 	implements MetricFunction<T, Double>{
 
@@ -65,6 +70,7 @@ public class Average<T extends Number>
     }
 
     public Double value() {
+//        System.out.println(this.getClass().getName() + ": sum = " + sum + "; count = " + count);
         return count > 0 ? sum / count : 0;
     }
 

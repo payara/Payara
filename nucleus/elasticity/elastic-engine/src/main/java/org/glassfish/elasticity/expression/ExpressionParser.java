@@ -141,27 +141,25 @@ public class ExpressionParser {
 			break;
 		case IDENTIFIER:
 			Token metricNameToken = match(TokenType.IDENTIFIER);
+            root = new ExpressionNode(metricNameToken, null, null);
 			if (peek(TokenType.DOT)) {
+                AttributeAccessNode attrNode = new AttributeAccessNode(metricNameToken);
+                root = attrNode;
                 do {
                     match(TokenType.DOT);
-                    Token attributeNameToken = match(TokenType.IDENTIFIER);
-//                    System.out.println("Matched attribute access: "
-//                            + metricNameToken.value() + "." + attributeNameToken.value());
-                    root = new ExpressionNode(new TokenImpl(TokenType.ATTR_ACCESS, "."),
-                            new ExpressionNode(metricNameToken, null, null),
-                            new ExpressionNode(attributeNameToken, null, null));
+                    attrNode.addAttribute(match(TokenType.IDENTIFIER));
                 } while (peek(TokenType.DOT));
 			} else if (peek(TokenType.OPAR)) {
 				Token funcCall = match(TokenType.OPAR);
 				root = new FunctionCall(funcCall, metricNameToken);
 				functionCallParams((FunctionCall) root);
-//				System.out.println("Matched function call: " + metricNameToken.value());
+				System.out.println("Matched function call: " + metricNameToken.value() + " has " + ((FunctionCall) root).getParams().size() + " params");
 				match(TokenType.CPAR);
 			} else if (peek(TokenType.OARRAY)) {
 				Token funcCall = match(TokenType.OARRAY);
 				root = new FunctionCall(funcCall, metricNameToken);
 				functionCallParams((FunctionCall) root);
-//				System.out.println("Matched function remote call access: " + metricNameToken.value());
+				System.out.println("Matched function remote call access: " + metricNameToken.value() + " has " + ((FunctionCall) root).getParams().size() + " params");
 				match(TokenType.CARRAY);
 			}
 			break;
@@ -197,8 +195,40 @@ public class ExpressionParser {
 
 	private boolean peek(TokenType type) {
 		return lexer.peek().getTokenType() == type;
-	}	
-	
+	}
+
+    public static class AttributeAccessNode
+        extends ExpressionNode {
+
+        private Object evaluatedResult;
+
+        private boolean isTabularMetric;
+
+        public AttributeAccessNode(Token metricHolderToken) {
+            super(new TokenImpl(TokenType.ATTR_ACCESS, metricHolderToken.value()), null, null);
+            super.setData(new ArrayList());
+        }
+
+        public void addAttribute(Token token) {
+            ((ArrayList) super.getData()).add(token.value());
+        }
+
+        public boolean isTabularMetric() {
+            return isTabularMetric;
+        }
+
+        public void setTabularMetric(boolean tabularMetric) {
+            isTabularMetric = tabularMetric;
+        }
+
+        public Object getEvaluatedResult() {
+            return evaluatedResult;
+        }
+
+        public void setEvaluatedResult(Object evaluatedResult) {
+            this.evaluatedResult = evaluatedResult;
+        }
+    }
 	public static class FunctionCall
 		extends ExpressionNode {
 

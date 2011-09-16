@@ -16,6 +16,12 @@ public class ExpressionNode
 	 */
 	private Token token;
 
+    private Object data;
+
+    private Object evaluatedResult;
+
+    private Class evaulatedType;
+
 	/**
 	 * The subtrees that represents the arguments of this node
 	 */
@@ -51,9 +57,33 @@ public class ExpressionNode
 	public ExpressionNode setRight(ExpressionNode right) {
 		this.right = right;
 		return this;
-	}	
-	
-	public String toString() {
+	}
+
+    public Object getData() {
+        return data;
+    }
+
+    public void setData(Object data) {
+        this.data = data;
+    }
+
+    public Object getEvaluatedResult() {
+        return evaluatedResult;
+    }
+
+    public void setEvaluatedResult(Object evaluatedResult) {
+        this.evaluatedResult = evaluatedResult;
+    }
+
+    public Class getEvaulatedType() {
+        return evaulatedType;
+    }
+
+    public void setEvaulatedType(Class evaulatedType) {
+        this.evaulatedType = evaulatedType;
+    }
+
+    public String toString() {
 		return "{" + token.value() + " " + (left == null ? "" : left.toString()) + " " + (left == null ? "" : right.toString()) + "}";
 	}
 	

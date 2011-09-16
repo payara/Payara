@@ -53,6 +53,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Future;
 
 /**
  * A simple Alert that uses an expression
@@ -110,15 +111,17 @@ public class ExpressionBasedAlert<C extends AlertConfig>
 
     public AlertState execute(AlertContext ctx) {
 
-        System.out.println("About to execute alert: " + config.getName() + "; service = "
-                + ctx.getElasticService().getName());
+//        System.out.println("About to execute alert: " + config.getName() + "; service = "
+//                + ctx.getElasticService().getName());
 
         AlertContextImpl ctxImpl = (AlertContextImpl) ctx;
+        String remoteExpHandlerToken = ctx.getElasticService().getName() + ":RemoteExpressionHandler";
         ElasticMessage message =
-                ctxImpl.getElasticServiceContainer().createElasticMessage(null, "RemoteExpressionHandler");
-        message.setData(remoteData);
+                ctxImpl.getElasticServiceContainer().createElasticMessage(null, remoteExpHandlerToken);
+        message.setData(remoteNodes);
 
-        ctxImpl.getElasticServiceContainer().sendMessage(message);
+        //Future[] responses =
+                ctxImpl.getElasticServiceContainer().sendMessage(message);
         return AlertState.ALARM;
     }
 
@@ -127,7 +130,6 @@ public class ExpressionBasedAlert<C extends AlertConfig>
         if (node != null) {
             if (node.getToken().getTokenType() == TokenType.FUNCTION_CALL) {
                 ExpressionParser.FunctionCall fcall = (ExpressionParser.FunctionCall) node;
-                System.out.println("Looking into function: " + node);
                 if (fcall.isRemote()) {
                     fcall.setNodeID(nodes.size());
                     nodes.add(fcall.getParams());

@@ -18,7 +18,11 @@ public class ElasticMessage
 
     private String messageId;
 
-    private byte[] data;
+    private String inResponseToMessageId;
+
+    private boolean isResponseMessage;
+
+    private Object data;
 
     public String getSourceMemberName() {
         return sourceMemberName;
@@ -65,11 +69,29 @@ public class ElasticMessage
         return this;
     }
 
-    public byte[] getData() {
+    public Object getData() {
         return data;
     }
 
-    public ElasticMessage setData(byte[] data) {
+    public String getInResponseToMessageId() {
+        return inResponseToMessageId;
+    }
+
+    public ElasticMessage setInResponseToMessageId(String inResponseToMessageId) {
+        this.inResponseToMessageId = inResponseToMessageId;
+        return this;
+    }
+
+    public boolean isResponseMessage() {
+        return isResponseMessage;
+    }
+
+    public ElasticMessage setIsResponseMessage(boolean responseMessage) {
+        isResponseMessage = responseMessage;
+        return this;
+    }
+
+    public ElasticMessage setData(Object data) {
         this.data = data;
         return this;
     }

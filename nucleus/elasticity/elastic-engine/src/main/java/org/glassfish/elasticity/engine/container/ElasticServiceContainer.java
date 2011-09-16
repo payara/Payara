@@ -71,10 +71,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Future;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -84,7 +81,7 @@ import java.util.logging.Logger;
 @Service
 @Scoped(PerLookup.class)
 public class ElasticServiceContainer
-    implements PostConstruct, GroupMemberEventListener, ElasticMessageHandler {
+        implements PostConstruct, GroupMemberEventListener, ElasticMessageHandler {
 
     @Inject
     private Habitat habitat;
@@ -105,17 +102,17 @@ public class ElasticServiceContainer
 
     private ElasticService service;
 
-	private String name;
-	
-	private AtomicBoolean enabled = new AtomicBoolean(true);
-	
-	private AtomicInteger minSize = new AtomicInteger();
-	
-	private AtomicInteger maxSize = new AtomicInteger();
+    private String name;
+
+    private AtomicBoolean enabled = new AtomicBoolean(true);
+
+    private AtomicInteger minSize = new AtomicInteger();
+
+    private AtomicInteger maxSize = new AtomicInteger();
 
     private AtomicInteger currentSize = new AtomicInteger();
-	
-	private AtomicInteger reconfigurationPeriodInSeconds = new AtomicInteger(3 * 60);
+
+    private AtomicInteger reconfigurationPeriodInSeconds = new AtomicInteger(3 * 60);
 
     private ConcurrentHashMap<String, AlertContextImpl> alerts
             = new ConcurrentHashMap<String, AlertContextImpl>();
@@ -132,9 +129,12 @@ public class ElasticServiceContainer
 
     private AtomicInteger messageIdCounter = new AtomicInteger();
 
-	public Startup.Lifecycle getLifecycle() {
-		return Startup.Lifecycle.START;
-	}
+    private ConcurrentHashMap<String, Future[]> futureTasks
+            = new ConcurrentHashMap<String, Future[]>();
+
+    public Startup.Lifecycle getLifecycle() {
+        return Startup.Lifecycle.START;
+    }
 
     public void postConstruct() {
         logger = engineUtil.getLogger();
@@ -148,42 +148,42 @@ public class ElasticServiceContainer
         this.maxSize.set(service.getMax());
 
         remoteExpHandlerToken = service.getName() + ":RemoteExpressionHandler";
-        remoteExpHandler = new RemoteExpressionHandler(remoteExpHandlerToken);
+        remoteExpHandler = new RemoteExpressionHandler(habitat, remoteExpHandlerToken);
     }
 
-	public String getName() {
-		return this.name;
-	}
+    public String getName() {
+        return this.name;
+    }
 
-	public boolean isEnabled() {
-		return enabled.get();
-	}
+    public boolean isEnabled() {
+        return enabled.get();
+    }
 
-	public int getMinimumSize() {
-		return minSize.get();
-	}
+    public int getMinimumSize() {
+        return minSize.get();
+    }
 
-	public int getMaximumSize() {
-		return maxSize.get();
-	}
+    public int getMaximumSize() {
+        return maxSize.get();
+    }
 
-	public synchronized void setEnabled(boolean value) {
+    public synchronized void setEnabled(boolean value) {
         if (this.enabled.get() == true && value == false) {
             //Request to disable this service
         } else if (this.enabled.get() == false && value == true) {
             //Request to enable
         }
 
-		this.enabled.set(value);
-	}
+        this.enabled.set(value);
+    }
 
-	public synchronized void reconfigureClusterLimits(int minSize, int maxSize) {
+    public synchronized void reconfigureClusterLimits(int minSize, int maxSize) {
 
-            logger.log(Level.INFO, "reconfigure service; service-name=" + service.getName()
-                    + "; minSize=" + minSize + "; maxSize=" + maxSize);
+        logger.log(Level.INFO, "reconfigure service; service-name=" + service.getName()
+                + "; minSize=" + minSize + "; maxSize=" + maxSize);
 
-		this.minSize.set(minSize);
-		this.maxSize.set(maxSize);
+        this.minSize.set(minSize);
+        this.maxSize.set(maxSize);
 
         if (currentSize.get() < minSize) {
             logger.log(Level.INFO, "SCALE UP: reconfigure service; service-name=" + service.getName()
@@ -192,7 +192,7 @@ public class ElasticServiceContainer
             logger.log(Level.INFO, "SCALE DOWN: reconfigure service; service-name=" + service.getName()
                     + "; minSize=" + minSize + "; maxSize=" + maxSize);
         }
-	}
+    }
 
     public void setCurrentSize(int val) {
         this.currentSize.set(val);
@@ -251,8 +251,8 @@ public class ElasticServiceContainer
                     threadPool.scheduleAtFixedRate(alertCtx, frequencyInSeconds, frequencyInSeconds, TimeUnit.SECONDS);
             alertCtx.setFuture(future);
             alerts.put(alertConfig.getName(), alertCtx);
-                logger.log(Level.FINE, "SCHEDULED Alert[name=" + alertName + "; schedule=" + sch
-                        + "; expression=" + alertConfig.getExpression() + "; will be executed every= " + frequencyInSeconds);
+            logger.log(Level.FINE, "SCHEDULED Alert[name=" + alertName + "; schedule=" + sch
+                    + "; expression=" + alertConfig.getExpression() + "; will be executed every= " + frequencyInSeconds);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -294,18 +294,15 @@ public class ElasticServiceContainer
 
     @Override
     public void onViewChange(String memberName, Collection<String> currentAliveAndReadyMembers, Collection<String> previousView, boolean isJoinEvent) {
-        System.out.println("ElasticEvent[service=" + service.getName() + "]: Member " + memberName
-            + (isJoinEvent ? " JOINED" : " LEFT") + " the cluster"
-            + "; currentView: " + currentAliveAndReadyMembers);
+        logger.log(Level.FINE, "ElasticEvent[service=" + service.getName() + "]: Member " + memberName
+                + (isJoinEvent ? " JOINED" : " LEFT") + " the cluster"
+                + "; currentView: " + currentAliveAndReadyMembers);
 
         Set<String> members = new HashSet<String>();
         members.addAll(currentAliveAndReadyMembers);
 
         currentMembers.set(members);
         currentSize.set(members.size());
-
-        System.out.println("ElasticEvent[service=" + service.getName() + "]: There are "
-                + currentSize + " members in the cluster");
     }
 
 
@@ -331,14 +328,24 @@ public class ElasticServiceContainer
             data = bos.toByteArray();
 
             if (message.getTargetMemberName() == null) {
+//                FutureTask[] futures = null;
+//                if (! message.isResponseMessage()) {
+//                    futures = new FutureTask[currentMembers.get().size()];
+//                }
+//                futureTasks.put(message.getMessageId(), futures);
                 for (String member : currentMembers.get()) {
                     gsp.sendMessage(member, service.getName(), data);
                 }
+            } else {
+                gsp.sendMessage(message.getTargetMemberName(), service.getName(), data);
             }
         } catch (Exception ex) {
             logger.log(Level.WARNING, "Exception during message sending", ex);
         } finally {
-            try {oos.close();} catch (Exception ex) {}
+            try {
+                oos.close();
+            } catch (Exception ex) {
+            }
         }
 
     }
@@ -351,45 +358,85 @@ public class ElasticServiceContainer
         try {
             ois = new ObjectInputStream(bis);
             ElasticMessage message = (ElasticMessage) ois.readObject();
-            if ("RemoteExpressionHandler".equals(message.getSubComponentName())) {
-//                System.out.println("Received a RemoteExpressionHandler message");
+            if (remoteExpHandlerToken.equals(message.getSubComponentName())) {
+                if (message.isResponseMessage()) {
+                    List<List<Object>> result =
+                            (List<List<Object>>) message.getData();
+
+//                    System.out.println("RECEIVED RESPONSE MESSAGE: " + result.get(0).get(0));
+                } else {
+                    List<List<Object>> result =
+                            remoteExpHandler.handleMessage(senderName, message);
+
+                    ElasticMessage responseMessage = new ElasticMessage();
+                    responseMessage.setMessageId("" + messageIdCounter.incrementAndGet())
+                            .setTargetMemberName(senderName)
+                            .setServiceName(service.getName())
+                            .setSourceMemberName(serverEnvironment.getInstanceName())
+                            .setSubComponentName(message.getSubComponentName())
+                            .setInResponseToMessageId(message.getMessageId())
+                            .setIsResponseMessage(true)
+                            .setData(result);
+
+                    sendMessage(responseMessage);
+                }
             } else {
-//                System.out.println("Received a generic message");
+                System.out.println("Received a generic message");
             }
         } catch (Exception ex) {
             ex.printStackTrace();
         } finally {
-            try { ois.close(); } catch (Exception ex) {}
-            try { bis.close(); } catch (Exception ex) {}
+            try {
+                ois.close();
+            } catch (Exception ex) {
+            }
+            try {
+                bis.close();
+            } catch (Exception ex) {
+            }
         }
     }
 
     private int getFrequencyOfAlertExecutionInSeconds(String sch) {
-		String schStr = sch.trim();
-		int index = 0;
-		for (; index < schStr.length(); index++) {
-			if (Character.isDigit(schStr.charAt(index))) {
-				break;
-			}
-		}
+        String schStr = sch.trim();
+        int index = 0;
+        for (; index < schStr.length(); index++) {
+            if (Character.isDigit(schStr.charAt(index))) {
+                break;
+            }
+        }
 
-		int frequencyInSeconds = 30;
-		try {
-			frequencyInSeconds = Integer.parseInt(schStr.substring(0, index));
-		} catch (NumberFormatException nfEx) {
-			//TODO
-		}
-		if (index < schStr.length()) {
-			switch (schStr.charAt(index)) {
-			case 's':
-				break;
-			case 'm':
-				frequencyInSeconds *= 60;
-				break;
-			}
-		}
+        int frequencyInSeconds = 30;
+        try {
+            frequencyInSeconds = Integer.parseInt(schStr.substring(0, index));
+        } catch (NumberFormatException nfEx) {
+            //TODO
+        }
+        if (index < schStr.length()) {
+            switch (schStr.charAt(index)) {
+                case 's':
+                    break;
+                case 'm':
+                    frequencyInSeconds *= 60;
+                    break;
+            }
+        }
 
-		return frequencyInSeconds;
-	}
+        return frequencyInSeconds;
+    }
+
+    private static class ResponseInfo {
+
+        private HashMap<String, Future> response
+                = new HashMap<String, Future>();
+
+        public void add(String instanceName) {
+            //response.put(instanceName, new FutureTask());
+        }
+
+        public HashMap<String, Future> getResponseInfoMap() {
+            return response;
+        }
+    }
 
 }

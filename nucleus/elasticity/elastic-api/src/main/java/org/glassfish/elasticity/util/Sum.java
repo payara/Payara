@@ -40,10 +40,15 @@
 package org.glassfish.elasticity.util;
 
 import org.glassfish.elasticity.api.MetricFunction;
+import org.jvnet.hk2.annotations.Scoped;
+import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.component.PerLookup;
 
 /**
  * @author Mahesh.Kannan@Oracle.Com
  */
+@Service(name="sum")
+@Scoped(PerLookup.class)
 public class Sum<T extends Number>
 	implements MetricFunction<T, Double>{
 

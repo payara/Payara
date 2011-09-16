@@ -7,7 +7,7 @@ public class TokenImpl
 	
 	private TokenType id;
 	private String value;
-	
+
 	
 	public TokenImpl(TokenType id, String value) {
 		super();
@@ -21,8 +21,8 @@ public class TokenImpl
 	
 	public String value() {
 		return value;
-	}		
-	
+	}
+
 	public String toString() {
 		return value;
 	}

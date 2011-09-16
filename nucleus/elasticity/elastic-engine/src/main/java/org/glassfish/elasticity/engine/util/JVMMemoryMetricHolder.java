@@ -99,7 +99,7 @@ public class JVMMemoryMetricHolder
 
     @Override
     public MetricNode[] getChildren() {
-        return new MetricNode[0];  //To change body of implemented methods use File | Settings | File Templates.
+        return new MetricNode[0];
     }
 
     private class MaxSizeAttribute
