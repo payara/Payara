@@ -78,22 +78,6 @@ public interface ServiceOrchestrator {
      */
     public void deployApplication(String appName, ReadableArchive cloudArchive);
     
-    
-    /**
-     * A temporary flag/hack used by "cloud-deploy" command, to indicate that
-     * the deployment is cloud-deploy scheme and hence may not have access to
-     * a <code>DeploymentContext</code>.
-     * 
-     * XXX: This is currently used by the cloud-deploy command. The deploy
-     * command integration is through <code>ApplicationLifecycleInterceptor</code>
-     * and hence this can be removed later once we move to the deploy 
-     * command fully.
-     * 
-     * @param usingDeployService true if the deployment is happening through
-     * the cloud-deploy command, false otherwise.
-     */
-    public void setUsingDeployService(boolean usingDeployService);
-    
     /**
      * Provides the <code>ServiceMetadata</code> associated with an application
      * archive. This is used by GUI and the IDE plugin to get the service

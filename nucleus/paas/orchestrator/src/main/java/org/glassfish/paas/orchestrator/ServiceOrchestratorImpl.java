@@ -95,7 +95,6 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator, Application
     private Map<String, Set<ProvisionedService>> provisionedServices = new HashMap<String, Set<ProvisionedService>>();
 
     private static Logger logger = Logger.getLogger(ServiceOrchestratorImpl.class.getName());
-    private boolean usingDeployService = false;
 
     public Set<Plugin> getPlugins() {
         Set<Plugin> plugins = new HashSet<Plugin>();
@@ -154,27 +153,33 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator, Application
 
 
     public void deployApplication(String appName, ReadableArchive cloudArchive) {
-        logger.entering(getClass().getName(), "deployApplication");
-        //Get all plugins installed in this runtime
-        Set<Plugin> installedPlugins = getPlugins();
+        /*
+                logger.entering(getClass().getName(), "deployApplication");
+                //Get all plugins installed in this runtime
+                Set<Plugin> installedPlugins = getPlugins();
 
-        //1. Perform service dependency discovery
-        ServiceMetadata appServiceMetadata = serviceDependencyDiscovery(appName, cloudArchive, installedPlugins);
+                //1. Perform service dependency discovery
+                ServiceMetadata appServiceMetadata = serviceDependencyDiscovery(appName, cloudArchive, installedPlugins);
 
-        //2. Provision dependent services
-        //TODO passing null for deploymentContext which will break "cloud-deploy" command. FIX IT
-        Set<ProvisionedService> appProvisionedSvcs = provisionServices(installedPlugins, appServiceMetadata, null);
+                //2. Provision dependent services
+                //TODO passing null for deploymentContext which will break "cloud-deploy" command. FIX IT
+                Set<ProvisionedService> appProvisionedSvcs = provisionServices(installedPlugins, appServiceMetadata, null);
 
-        //3. Associate provisioned services with each other
-        associateProvisionedServices(installedPlugins, appServiceMetadata,
-                appProvisionedSvcs, true /*before deployment*/, null);
+                //3. Associate provisioned services with each other
+                associateProvisionedServices(installedPlugins, appServiceMetadata,
+                        appProvisionedSvcs, true */
+        /*before deployment*//*
+        , null);
 
-        //4a. Application Deployment
-        deployArchive(cloudArchive, installedPlugins);
+                //4a. Application Deployment
+                deployArchive(cloudArchive, installedPlugins);
 
-        //4b. post-deployment association
-        associateProvisionedServices(installedPlugins, appServiceMetadata,
-                appProvisionedSvcs, false /*after deployment*/, null);
+                //4b. post-deployment association
+                associateProvisionedServices(installedPlugins, appServiceMetadata,
+                        appProvisionedSvcs, false */
+        /*after deployment*//*
+        , null);
+        */
     }
 
     public void prepareForUndeploy(String appName, ReadableArchive archive, DeploymentContext dc) {
@@ -613,51 +618,50 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator, Application
         if (isOrchestrationEnabled() && serverEnvironment.isDas()) {
             AdminCommandLock.runWithSuspendedLock(new Runnable() {
                 public void run() {
-                    if (!usingDeployService) {
 
-                        //OpsParams tmp = context.getCommandParameters(OpsParams.class);
-                        //System.out.println("before" + phase + " " + tmp.command);
-                        //System.out.println("ApplicationLifecycleListener before : " + phase);
-                        if (phase.equals(ExtendedDeploymentContext.Phase.PREPARE)) {
-                            ReadableArchive archive = context.getSource();
-                            OpsParams params = context.getCommandParameters(OpsParams.class);
-                            String appName = params.name();
-                            if (params.origin == OpsParams.Origin.deploy) {
-                                provisionServicesForApplication(appName, archive, context);
-                            }else if(params.origin == OpsParams.Origin.load){
-                                if(params.command == OpsParams.Command.startup_server){
-                                    if(isValidApplication(appName)){
+                    OpsParams tmp = context.getCommandParameters(OpsParams.class);
+                    logger.log(Level.FINEST, "before " + phase + " " + tmp.command);
+                    logger.log(Level.FINEST, "ApplicationLifecycleListener before : " + phase);
+
+                    if (phase.equals(ExtendedDeploymentContext.Phase.PREPARE)) {
+                        ReadableArchive archive = context.getSource();
+                        OpsParams params = context.getCommandParameters(OpsParams.class);
+                        String appName = params.name();
+                        if (params.origin == OpsParams.Origin.deploy) {
+                            provisionServicesForApplication(appName, archive, context);
+                        } else if (params.origin == OpsParams.Origin.load) {
+                            if (params.command == OpsParams.Command.startup_server) {
+                                if (isValidApplication(appName)) {
+                                    Set<Plugin> installedPlugins = getPlugins();
+                                    ServiceMetadata appServiceMetadata =
+                                            serviceDependencyDiscovery(appName, archive, installedPlugins);
+                                    serviceMetadata.put(appName, appServiceMetadata);
+                                    Set<ProvisionedService> provisionedServiceSet =
+                                            retrieveProvisionedServices(installedPlugins, appServiceMetadata, context);
+                                    provisionedServices.put(appName, provisionedServiceSet);
+                                }
+                            } else {
+                                if (params.command == OpsParams.Command.enable) {
+                                    if (isValidApplication(appName)) {
                                         Set<Plugin> installedPlugins = getPlugins();
                                         ServiceMetadata appServiceMetadata =
                                                 serviceDependencyDiscovery(appName, archive, installedPlugins);
                                         serviceMetadata.put(appName, appServiceMetadata);
-                                        Set<ProvisionedService> provisionedServiceSet =
-                                                retrieveProvisionedServices(installedPlugins, appServiceMetadata, context);
-                                        provisionedServices.put(appName, provisionedServiceSet);
-                                    }
-                                }else{
-                                    if(params.command == OpsParams.Command.enable){
-                                        if(isValidApplication(appName)){
-                                            Set<Plugin> installedPlugins = getPlugins();
-                                            ServiceMetadata appServiceMetadata =
-                                                    serviceDependencyDiscovery(appName, archive, installedPlugins);
-                                            serviceMetadata.put(appName, appServiceMetadata);
 
-                                            Set<ProvisionedService> provisionedServiceSet =
-                                                    startServices(installedPlugins, appServiceMetadata, context);
-                                            provisionedServices.put(appName, provisionedServiceSet);
-                                        }
+                                        Set<ProvisionedService> provisionedServiceSet =
+                                                startServices(installedPlugins, appServiceMetadata, context);
+                                        provisionedServices.put(appName, provisionedServiceSet);
                                     }
                                 }
                             }
-                        } else if (phase.equals(ExtendedDeploymentContext.Phase.STOP)) {
-                            ReadableArchive archive = context.getSource();
-                            OpsParams params = context.getCommandParameters(OpsParams.class);
-                            String appName = params.name();
-                            if (params.origin == OpsParams.Origin.undeploy) {
-                                if (params.command == OpsParams.Command.disable) {
-                                    prepareForUndeploy(appName, archive, context);
-                                }
+                        }
+                    } else if (phase.equals(ExtendedDeploymentContext.Phase.STOP)) {
+                        ReadableArchive archive = context.getSource();
+                        OpsParams params = context.getCommandParameters(OpsParams.class);
+                        String appName = params.name();
+                        if (params.origin == OpsParams.Origin.undeploy) {
+                            if (params.command == OpsParams.Command.disable) {
+                                prepareForUndeploy(appName, archive, context);
                             }
                         }
                     }
@@ -680,37 +684,37 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator, Application
         if (isOrchestrationEnabled()) {
             AdminCommandLock.runWithSuspendedLock(new Runnable() {
                 public void run() {
-                    if (!usingDeployService) {
-                        //OpsParams tmp = context.getCommandParameters(OpsParams.class);
-                        //System.out.println("after" + phase + " " + tmp.command);
-                        //System.out.println("ApplicationLifecycleListener after : " + phase);
-                        if (phase.equals(ExtendedDeploymentContext.Phase.REPLICATION)) {
-                            if (serverEnvironment.isDas()) {
-                                OpsParams params = context.getCommandParameters(OpsParams.class);
-                                ReadableArchive archive = context.getSource();
-                                if (params.origin == OpsParams.Origin.deploy) {
-                                    String appName = params.name();
-                                    postDeploy(appName, archive, context);
+                    OpsParams tmp = context.getCommandParameters(OpsParams.class);
+                    logger.log(Level.FINEST, "after " + phase + " " + tmp.command);
+                    logger.log(Level.FINEST, "ApplicationLifecycleListener after : " + phase);
 
+                    if (phase.equals(ExtendedDeploymentContext.Phase.REPLICATION)) {
+                        if (serverEnvironment.isDas()) {
+                            OpsParams params = context.getCommandParameters(OpsParams.class);
+                            ReadableArchive archive = context.getSource();
+                            if (params.origin == OpsParams.Origin.deploy) {
+                                String appName = params.name();
+                                postDeploy(appName, archive, context);
+
+                            }
+                            //make sure that it is indeed undeploy and not disable.
+                            //params.origin is "undeploy" for both "undeploy" as well "disable" phase
+                            //hence using the actual command being used.
+                            if (params.origin == OpsParams.Origin.undeploy) {
+                                if (params.command == OpsParams.Command.undeploy) {
+                                    String appName = params.name();
+                                    postUndeploy(appName, context.getSource(), context);
+                                    serviceMetadata.remove(appName);
+                                    provisionedServices.remove(appName);
                                 }
-                                //make sure that it is indeed undeploy and not disable.
-                                //params.origin is "undeploy" for both "undeploy" as well "disable" phase
-                                //hence using the actual command being used.
-                                if (params.origin == OpsParams.Origin.undeploy) {
-                                    if (params.command == OpsParams.Command.undeploy) {
-                                        String appName = params.name();
-                                        postUndeploy(appName, context.getSource(), context);
-                                        serviceMetadata.remove(appName);
-                                        provisionedServices.remove(appName);
-                                    }
-                                }
+                            }
                             //TODO as of today, we get only after-CLEAN-unload-disable event.
                             //TODO we expect after-STOP-unload-disable, but since the target is not "DAS",
                             //TODO DAS will not receive such event.
                             String appName = params.name();
-                            if(params.origin == OpsParams.Origin.unload) {
-                                if(params.command == OpsParams.Command.disable) {
-                                    if(isValidApplication(appName)){
+                            if (params.origin == OpsParams.Origin.unload) {
+                                if (params.command == OpsParams.Command.disable) {
+                                    if (isValidApplication(appName)) {
                                         Set<Plugin> installedPlugins = getPlugins();
                                         ServiceMetadata appServiceMetadata = getServiceMetadata(appName);
                                         stopServices(installedPlugins, appServiceMetadata, context);
@@ -719,9 +723,8 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator, Application
                                     }
                                 }
                             }
-                            }
-                        } else if(phase.equals(ExtendedDeploymentContext.Phase.CLEAN)){
                         }
+                    } else if (phase.equals(ExtendedDeploymentContext.Phase.CLEAN)) {
                     }
                 }
             });
@@ -759,10 +762,6 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator, Application
                 logger.warning("unable to retrieve service-info for service : " + sd.getName() + " of application : " + appName);
             }
         }
-    }
-
-    public void setUsingDeployService(boolean usingDeployService) {
-        this.usingDeployService = usingDeployService;
     }
 
     private boolean isVirtualizationEnabled(){

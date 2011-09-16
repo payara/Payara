@@ -57,11 +57,11 @@ import org.glassfish.api.admin.RestEndpoint.OpType;
 import org.glassfish.api.admin.RestEndpoints;
 import java.io.File;
 
-@Service(name = "cloud-deploy")
+@Service(name = "_cloud-deploy")
 @Scoped(PerLookup.class)
 @CommandLock(CommandLock.LockType.NONE)
 @RestEndpoints({
-    @RestEndpoint(configBean=Applications.class, opType=OpType.POST, path="cloud-deploy", description="Deploy Cloud Application")
+    @RestEndpoint(configBean=Applications.class, opType=OpType.POST, path="_cloud-deploy", description="Deploy Cloud Application")
 })
 public class DeployService implements AdminCommand {
 
@@ -81,6 +81,11 @@ public class DeployService implements AdminCommand {
     public void execute(AdminCommandContext context) {
         final ActionReport report = context.getActionReport();
 
+        report.setMessage("Command not supported anymore");
+        report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+        return;
+
+/*
         try {
             orchestrator.setUsingDeployService(true);
             File app = new File(application);
@@ -97,6 +102,7 @@ public class DeployService implements AdminCommand {
         }finally{
             orchestrator.setUsingDeployService(false);
         }
+*/
 
 /*
         if (serviceUtil.isValidService(servicename)) {

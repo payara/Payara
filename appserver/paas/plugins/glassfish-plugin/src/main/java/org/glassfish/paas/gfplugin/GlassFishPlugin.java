@@ -125,10 +125,6 @@ public class GlassFishPlugin implements Plugin<JavaEEServiceType> {
 
     private static Logger logger = Logger.getLogger(GlassFishPlugin.class.getName());
 
-    // TODO :: how can plugin hold the reference to the glassfish provisioned service?
-    // TODO :: Plugin should be stateless, and its job is just to configure the service(s)
-    private GlassFishProvisionedService glassfishProvisionedService;
-
     public JavaEEServiceType getServiceType() {
         return new JavaEEServiceType();
     }
@@ -251,15 +247,12 @@ public class GlassFishPlugin implements Plugin<JavaEEServiceType> {
 
             GlassFish provisionedGlassFish = gfProvisioner.getGlassFish();
             GlassFishProvisionedService gfps = new GlassFishProvisionedService(serviceDescription, serviceProperties, provisionedGlassFish);
-            glassfishProvisionedService = gfps; //TODO remove initializing this, once cloud-deploy is removed.
 
             //set the target to the newly created cluster.
             //TODO what if someone requests for multiple GlassFish services ?
             //TODO As of now, the last one is considered as deployment target.
-            if (dc != null) { //TODO remove once "deploy-service" is made obselete
-                DeployCommandParameters dcp = dc.getCommandParameters(DeployCommandParameters.class);
-                dcp.target = clusterName;
-            }
+            DeployCommandParameters dcp = dc.getCommandParameters(DeployCommandParameters.class);
+            dcp.target = clusterName;
 
             return gfps;
 
@@ -316,11 +309,7 @@ public class GlassFishPlugin implements Plugin<JavaEEServiceType> {
                     provisionerUtil.getAppServerProvisioner(dasIPAddress);
 
             GlassFish provisionedGlassFish = gfProvisioner.getGlassFish();
-            GlassFishProvisionedService gfps = new GlassFishProvisionedService(serviceDescription, serviceProperties, provisionedGlassFish);
-            glassfishProvisionedService = gfps; //TODO remove initializing this, once cloud-deploy is removed.
-
-            return gfps;
-
+            return new GlassFishProvisionedService(serviceDescription, serviceProperties, provisionedGlassFish);
         } else {
             //TODO throw exception ?
             result.getFailureCause().printStackTrace();
@@ -357,7 +346,6 @@ public class GlassFishPlugin implements Plugin<JavaEEServiceType> {
                 provisionerUtil.getAppServerProvisioner(dasIPAddress);
         GlassFish provisionedGlassFish = gfProvisioner.getGlassFish();
         GlassFishProvisionedService gfps =new GlassFishProvisionedService(serviceDescription, serviceProperties, provisionedGlassFish);
-        glassfishProvisionedService = gfps; //TODO remove initializing this, once cloud-deploy is removed.
         return gfps;
     }
 
@@ -506,6 +494,7 @@ public class GlassFishPlugin implements Plugin<JavaEEServiceType> {
 
 
     public ApplicationContainer deploy(ReadableArchive cloudArchive) {
+/*
         GlassFish provisionedGlassFish =
                 glassfishProvisionedService.getProvisionedGlassFish();
 //        SimpleServiceDefinition serviceDefinition =
@@ -523,6 +512,8 @@ public class GlassFishPlugin implements Plugin<JavaEEServiceType> {
         } catch (GlassFishException e) {
             e.printStackTrace();
         }
+        return null;
+*/
         return null;
     }
 
