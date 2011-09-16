@@ -595,22 +595,24 @@ public class AdminCommandLock {
            
             Lock lock = null;
 
-            // We need to determine the type of lock this thread holds.
-            if (rwlock.isWriteLockedByCurrentThread()) {
-                lock = rwlock.writeLock();
-            } else if (rwlock.getReadHoldCount() > 0) {
-                lock = rwlock.readLock();
+            try {
+                // We need to determine the type of lock this thread holds.
+                if (rwlock.isWriteLockedByCurrentThread()) {
+                    lock = rwlock.writeLock();
+                } else if (rwlock.getReadHoldCount() > 0) {
+                    lock = rwlock.readLock();
+                }
+
+                if (lock != null)
+                    lock.unlock();
+
+                // Run the caller's commands without a lock in place.
+                r.run();
+            } finally {
+                // Relock before returning.  This may block if someone else
+                // already grabbed the lock.
+                if (lock != null)
+                    lock.lock();
             }
-
-            if (lock != null)
-                lock.unlock();
-            
-            // Run the caller's commands without a lock in place.
-            r.run();
-
-            // Relock before returning.  This may block if someone else
-            // already grabbed the lock.
-            if (lock != null)
-                lock.lock();
         }
 }
