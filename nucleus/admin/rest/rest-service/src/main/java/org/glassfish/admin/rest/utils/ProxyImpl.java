@@ -78,7 +78,7 @@ public abstract class ProxyImpl implements Proxy {
             Server forwardInstance = domain.getServerNamed(forwardInstanceName);
             if (forwardInstance != null) {
                 UriBuilder forwardUriBuilder = constructForwardURLPath(sourceUriInfo);
-                URI forwardURI = forwardUriBuilder.host(forwardInstance.getAdminHost()).port(forwardInstance.getAdminPort()).build(); //Host and Port are replaced to that of forwardInstanceName
+                URI forwardURI = forwardUriBuilder.scheme("https").host(forwardInstance.getAdminHost()).port(forwardInstance.getAdminPort()).build(); //Host and Port are replaced to that of forwardInstanceName
                 WebResource.Builder resourceBuilder = client.resource(forwardURI).accept(MediaType.APPLICATION_JSON);
                 addAuthenticationInfo(client, resourceBuilder, forwardInstance, habitat);
                 ClientResponse response = resourceBuilder.get(ClientResponse.class); //TODO if the target server is down, we get ClientResponseException. Need to handle it
@@ -128,18 +128,14 @@ public abstract class ProxyImpl implements Proxy {
     }
 
     /**
-     * If SecureAdmin is enabled, use SSL to authenticate else add a special header that identifies the request as coming from DAS
+     * Use SSL to authenticate
      */
     private void addAuthenticationInfo(Client client, WebResource.Builder resourceBuilder, Server server, Habitat habitat) {
         SecureAdmin secureAdmin = habitat.getComponent(SecureAdmin.class);
-        if (SecureAdmin.Util.isEnabled(secureAdmin)) {
-            //SecureAdmin is enabled, instruct Jersey to use HostNameVerifier and SSLContext provided by us.
-            HTTPSProperties httpsProperties = new HTTPSProperties(new BasicHostnameVerifier(server.getAdminHost()),
-                    habitat.getComponent(SSLUtils.class).getAdminSSLContext(SecureAdmin.Util.DASAlias(secureAdmin), "TLS" )); //TODO need to get hardcoded "TLS" from corresponding ServerRemoteAdminCommand constant
-            client.getProperties().put(HTTPSProperties.PROPERTY_HTTPS_PROPERTIES, httpsProperties);
-        } else {
-            resourceBuilder.header(SecureAdmin.Util.ADMIN_INDICATOR_HEADER_NAME, SecureAdmin.Util.configuredAdminIndicator(secureAdmin));
-        }
+        //Instruct Jersey to use HostNameVerifier and SSLContext provided by us.
+        HTTPSProperties httpsProperties = new HTTPSProperties(new BasicHostnameVerifier(server.getAdminHost()),
+                habitat.getComponent(SSLUtils.class).getAdminSSLContext(SecureAdmin.Util.DASAlias(secureAdmin), "TLS" )); //TODO need to get hardcoded "TLS" from corresponding ServerRemoteAdminCommand constant
+        client.getProperties().put(HTTPSProperties.PROPERTY_HTTPS_PROPERTIES, httpsProperties);
     }
 
     /**
