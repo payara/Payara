@@ -75,13 +75,10 @@ public class CreateMemoryAlert implements AdminCommand{
     String servicename;
 
     @Param(name="threshold")
-    int threshold;
+    String threshold;
 
-    @Param(name="alarm-state", optional = true)
-    String alarmstate;
-
-    @Param(name="ok-state", optional = true)
-    String okstate;
+    @Param(name="enabled", defaultValue="true",optional=true)
+    boolean enabled;
 
     @Param(name="sample-interval", optional = true)
     String sampleInterval;
@@ -120,7 +117,7 @@ public class CreateMemoryAlert implements AdminCommand{
         ci.execute();
 
         //create a new alert with new values
-        String expression = "any[avg(jvm.memory.heap)]  > " + threshold ;
+        String expression = "any[avg(jvm_memory.heap.used)*100/jvm_memory.maxMemory]  > " +threshold ;
 
         ci = cr.getCommandInvocation("create-alert", report);
         map = new ParameterMap();
@@ -128,6 +125,18 @@ public class CreateMemoryAlert implements AdminCommand{
         if (sampleInterval != null)
             map.add("sampleinterval",sampleInterval);
         map.add("expression", expression);
+        if(!enabled)
+            map.add("enabled", "false");
+        map.add("DEFAULT", alertname);
+        ci.parameters(map);
+        ci.execute();
+
+        //add alarm to the alert , only add alarm state
+        ci = cr.getCommandInvocation("add-alert-action",report);
+        map = new ParameterMap();
+        map.add("service", servicename);
+        map.add("actionref","scale-up-action");
+        map.add("state","alarm-state");
         map.add("DEFAULT", alertname);
         ci.parameters(map);
         ci.execute();
