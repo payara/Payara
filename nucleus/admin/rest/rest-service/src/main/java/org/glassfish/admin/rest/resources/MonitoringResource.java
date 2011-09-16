@@ -183,11 +183,11 @@ public class MonitoringResource {
 
     @GET
     @Produces({MediaType.APPLICATION_JSON,MediaType.APPLICATION_XML,"text/html;qs=2"})
-    @Path("elasticity{path:.*}")
+    @Path("elasticity/domain{path:.*}")
     public Response getElasticity(@PathParam("path")List<PathSegment> pathSegments, @QueryParam("timePeriod") @DefaultValue("120")int timePeriod) {
 
         Response.ResponseBuilder responseBuilder = Response.status(OK);
-        MetricNode rootNode = habitat.getByContract(MetricNode.class);
+        MetricNode rootNode = habitat.getComponent(MetricNode.class, "elasticity");
 
         //The pathSegments will always contain "elasticity". Discard it
         pathSegments = pathSegments.subList(1, pathSegments.size());
