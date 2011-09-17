@@ -40,6 +40,7 @@
 
 package com.sun.enterprise.util.io;
 
+import java.net.*;
 import jcifs.smb.NtlmPasswordAuthentication;
 
 /**
@@ -51,14 +52,14 @@ public class WindowsRemoteFileSystem {
     private final String host;
     private final NtlmPasswordAuthentication authorization;
 
-    public WindowsRemoteFileSystem(String host, NtlmPasswordAuthentication authorization) {
-        this.host = host;
-        this.authorization = authorization;
+    public WindowsRemoteFileSystem(String hostname, NtlmPasswordAuthentication auth) {
+        host = getIP(hostname);
+        authorization = auth;
     }
 
-    public WindowsRemoteFileSystem(String host, String username, String password) {
-        this.host = host;
-        this.authorization = new NtlmPasswordAuthentication(host, username, password);
+    public WindowsRemoteFileSystem(String hostname, String username, String password) {
+        host = getIP(hostname);
+        authorization = new NtlmPasswordAuthentication(host, username, password);
     }
 
     /**
@@ -73,5 +74,13 @@ public class WindowsRemoteFileSystem {
      */
     public NtlmPasswordAuthentication getAuthorization() {
         return authorization;
+    }
+
+    private String getIP(String hostname) {
+        try {
+            return InetAddress.getByName(hostname).getHostAddress();
+        } catch (Exception e) {
+            return hostname;
+        }
     }
 }
