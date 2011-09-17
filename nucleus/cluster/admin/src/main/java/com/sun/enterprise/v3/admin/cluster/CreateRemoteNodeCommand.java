@@ -203,10 +203,7 @@ public abstract class CreateRemoteNodeCommand implements AdminCommand {
                 command.add(archive);
             }
         }
-        command.add("--sshuser");
-        command.add(remoteUser);
-        command.add("--sshport");
-        command.add(remotePort);
+
         populateCommandArgs(command);
         command.add(nodehost);
 
@@ -242,6 +239,7 @@ public abstract class CreateRemoteNodeCommand implements AdminCommand {
             remoteUser = NodeUtils.NODE_DEFAULT_REMOTE_USER;
         }
     }
+
     /**
      * Invokes install-node using ProcessManager and returns the exit message/status.
      * @param cmdLine list of args
@@ -250,7 +248,7 @@ public abstract class CreateRemoteNodeCommand implements AdminCommand {
      *
      * This method was copied over from CreateNodeSshCommand on 9/14/11
      */
-    int execCommand(List<String> cmdLine, StringBuilder output) {
+    final int execCommand(List<String> cmdLine, StringBuilder output) {
         int exit = -1;
         List<String> fullcommand = new ArrayList<String>();
         String installDir = nodes.getDefaultLocalNode().getInstallDirUnixStyle() + "/glassfish";

@@ -158,6 +158,19 @@ public class NodeUtils {
         SshConnector sshc = node.getSshConnector();
         if (sshc != null) {
             // DCOMFIX
+            // DCOMFIX
+            // DCOMFIX
+            // DCOMFIX
+            // DCOMFIX
+            // DCOMFIX
+            // DCOMFIX
+            // DCOMFIX
+            // DCOMFIX
+            // DCOMFIX
+            // DCOMFIX
+            // DCOMFIX
+            // DCOMFIX
+            // DCOMFIX
             map.add(NodeUtils.PARAM_REMOTEPORT, sshc.getSshPort());
             SshAuth ssha = sshc.getSshAuth();
             map.add(NodeUtils.PARAM_REMOTEUSER, ssha.getUserName());
@@ -182,13 +195,16 @@ public class NodeUtils {
 
         // guaranteed to either get a valid type -- or a CommandValidationException
         RemoteType type = parseType(map);
+        validatePassword(map.getOne(PARAM_REMOTEPASSWORD));
+        String nodehost = map.getOne(PARAM_NODEHOST);
+        validateHostName(nodehost);
 
         switch (type) {
             case SSH:
-                validateSsh(map);
+                validateSsh(map, nodehost);
                 break;
             case DCOM:
-                validateDcom(map);
+                validateDcom(map, nodehost);
                 break;
         }
     }
@@ -199,16 +215,10 @@ public class NodeUtils {
      *              The map values can contain system property tokens.
      * @throws CommandValidationException
      */
-    private void validateDcom(ParameterMap map) throws
+    private void validateDcom(ParameterMap map, String nodehost) throws
             CommandValidationException {
-        throw new UnsupportedOperationException("Not yet implemented");
-        // DCOMFIX
-        // DCOMFIX
-        // DCOMFIX
-        // DCOMFIX
-        // DCOMFIX
-        // DCOMFIX
-        // DCOMFIX
+        // we will fail in the course of running the command if that is the fate...
+        // no need to pre-fail here.
     }
 
     /**
@@ -217,7 +227,7 @@ public class NodeUtils {
      *              The map values can contain system property tokens.
      * @throws CommandValidationException
      */
-    private void validateSsh(ParameterMap map) throws
+    private void validateSsh(ParameterMap map, String nodehost) throws
             CommandValidationException {
 
         String sshkeyfile = map.getOne(PARAM_SSHKEYFILE);
@@ -240,12 +250,6 @@ public class NodeUtils {
                         kfile.getPath(), System.getProperty("user.name")));
             }
         }
-
-        validatePassword(map.getOne(PARAM_REMOTEPASSWORD));
-        validatePassword(map.getOne(PARAM_SSHKEYPASSPHRASE));
-
-        String nodehost = map.getOne(PARAM_NODEHOST);
-        validateHostName(nodehost);
 
         if (sshL != null && !nodehost.equals("localhost")) {
             validateSSHConnection(map);

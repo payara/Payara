@@ -53,6 +53,7 @@ import com.sun.enterprise.util.zip.ZipFileException;
 import com.sun.enterprise.util.zip.ZipWriter;
 import com.trilead.ssh2.SCPClient;
 import java.io.*;
+import java.net.*;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.CommandException;
 import org.glassfish.cluster.ssh.launcher.SSHLauncher;
@@ -68,6 +69,7 @@ import org.glassfish.internal.api.Globals;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -100,6 +102,7 @@ public class InstallNodeCommand extends NativeRemoteCommandsBase {
     private String archiveName;
     private boolean delete = true;
     private String dcomuser;
+    private String[] hostIPs;
 
     @Override
     protected void validate() throws CommandException {
@@ -135,6 +138,12 @@ public class InstallNodeCommand extends NativeRemoteCommandsBase {
         //we need the key passphrase if key is encrypted
         if (sshkeyfile != null && isEncryptedKey()) {
             sshkeypassphrase = getSSHPassphrase(true);
+        }
+
+        hostIPs = new String[hosts.length];
+
+        for(int i = 0; i < hosts.length; i++) {
+            hostIPs[i] = getIP(hosts[i]);
         }
     }
 
@@ -175,7 +184,7 @@ public class InstallNodeCommand extends NativeRemoteCommandsBase {
         final String zipFileName = "glassfish_install.zip";
         final String unpackScriptName = "unpack.bat";
 
-        for (String host : hosts) {
+        for (String host : hostIPs) {
             String remotePassword = getDCOMPassword(host);
             WindowsRemoteFileSystem wrfs = new WindowsRemoteFileSystem(host, dcomuser, remotePassword);
             WindowsRemoteFile remoteInstallDir = new WindowsRemoteFile(wrfs, installDir);
@@ -460,4 +469,13 @@ public class InstallNodeCommand extends NativeRemoteCommandsBase {
 
         return scriptString.toString();
     }
+
+    private String getIP(String host) throws CommandException{
+        try {
+            return InetAddress.getByName(host).getHostAddress();
+        } catch (UnknownHostException e) {
+            throw new CommandException(Strings.get("cantResolveIpAddress", host));
+        }
+    }
+
 }

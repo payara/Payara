@@ -67,9 +67,10 @@ public class CreateNodeDcom extends CreateRemoteNodeCommand {
     public final void execute(AdminCommandContext context) {
         executeInternal(context);
     }
+
     @Override
     void validate() throws CommandValidationException {
-        if(!ok(dcompassword))
+        if (!ok(dcompassword))
             throw new CommandValidationException(Strings.get("update.node.dcom.no.password"));
     }
 
@@ -86,7 +87,8 @@ public class CreateNodeDcom extends CreateRemoteNodeCommand {
     final void checkDefaults() {
         super.checkDefaults();
 
-        if (!ok(remotePort)) {
+        // The default is automatically set to 22 -- which is certainly a mistake!
+        if (!ok(remotePort) || remotePort.equals(NodeUtils.NODE_DEFAULT_SSH_PORT)) {
             remotePort = NodeUtils.NODE_DEFAULT_DCOM_PORT;
         }
     }
@@ -109,15 +111,15 @@ public class CreateNodeDcom extends CreateRemoteNodeCommand {
 
     @Override
     final void populateCommandArgs(List<String> args) {
+        args.add("--dcom=true");
+        args.add("--dcomuser");
+        args.add(remoteUser);
+        args.add("--dcomport");
+        args.add(remotePort);
     }
 
     @Override
     String getPasswordsForFile() {
         return "AS_ADMIN_DCOMPASSWORD=" + dcompassword + "\n";
-    }
-
-    @Override
-    int execCommand(List<String> cmdLine, StringBuilder output) {
-        throw new UnsupportedOperationException("Not supported yet.");
     }
 }

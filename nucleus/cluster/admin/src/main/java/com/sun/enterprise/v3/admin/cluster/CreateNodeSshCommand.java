@@ -145,6 +145,11 @@ public class CreateNodeSshCommand extends CreateRemoteNodeCommand {
             args.add("--sshkeyfile");
             args.add(sshkeyfile);
         }
+
+        args.add("--sshuser");
+        args.add(remoteUser);
+        args.add("--sshport");
+        args.add(remotePort);
     }
 
     @Override
