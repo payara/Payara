@@ -95,7 +95,7 @@ public class CreateNodeSshCommand extends CreateRemoteNodeCommand {
     }
 
     @Override
-    void validate() throws CommandValidationException {
+    protected void validate() throws CommandValidationException {
         // nothing to do
     }
 
@@ -104,7 +104,7 @@ public class CreateNodeSshCommand extends CreateRemoteNodeCommand {
      * makes sure those are defaulted correctly.
      */
     @Override
-    final void checkDefaults() {
+    protected final void checkDefaults() {
         super.checkDefaults();
 
         if (!StringUtils.ok(remotePort)) {
@@ -113,7 +113,7 @@ public class CreateNodeSshCommand extends CreateRemoteNodeCommand {
     }
 
     @Override
-    final NodeUtils.RemoteType getType() {
+    protected final NodeUtils.RemoteType getType() {
         return NodeUtils.RemoteType.SSH;
     }
 
@@ -123,20 +123,20 @@ public class CreateNodeSshCommand extends CreateRemoteNodeCommand {
      *
      */
     @Override
-    void populateBaseClass() {
+    protected void populateBaseClass() {
         remotePort = sshport;
         remoteUser = sshuser;
         remotePassword = sshpassword;
     }
 
     @Override
-    final void populateParameters(ParameterMap pmap) {
+    protected final void populateParameters(ParameterMap pmap) {
         pmap.add(NodeUtils.PARAM_SSHKEYFILE, sshkeyfile);
         pmap.add(NodeUtils.PARAM_SSHKEYPASSPHRASE, sshkeypassphrase);
     }
 
     @Override
-    final void populateCommandArgs(List<String> args) {
+    protected final void populateCommandArgs(List<String> args) {
         if (sshkeyfile == null) {
             sshkeyfile = SSHUtil.getExistingKeyFile();
         }
@@ -153,7 +153,7 @@ public class CreateNodeSshCommand extends CreateRemoteNodeCommand {
     }
 
     @Override
-    String getPasswordsForFile() {
+    protected String getPasswordsForFile() {
         StringBuilder sb = new StringBuilder();
         sb.append("AS_ADMIN_SSHPASSWORD=");
         sb.append(nodeUtils.sshL.expandPasswordAlias(remotePassword));

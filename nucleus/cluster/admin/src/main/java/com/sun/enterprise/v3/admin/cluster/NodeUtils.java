@@ -39,6 +39,8 @@
  */
 package com.sun.enterprise.v3.admin.cluster;
 
+import com.sun.enterprise.universal.process.WindowsException;
+import java.util.logging.Level;
 import org.jvnet.hk2.component.Habitat;
 import org.glassfish.internal.api.RelativePathResolver;
 import com.sun.enterprise.universal.process.ProcessManagerException;
@@ -52,6 +54,8 @@ import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.*;
 import org.glassfish.api.admin.CommandValidationException;
 import com.sun.enterprise.universal.glassfish.TokenResolver;
+import com.sun.enterprise.util.io.WindowsRemoteFile;
+import com.sun.enterprise.util.io.WindowsRemoteFileSystem;
 import org.glassfish.cluster.ssh.launcher.SSHLauncher;
 import org.glassfish.cluster.ssh.connect.NodeRunner;
 import java.util.logging.Logger;
@@ -69,11 +73,12 @@ import java.net.UnknownHostException;
  * Utility methods for operating on Nodes
  *
  * @author Joe Di Pol
+ * @author Byron Nevins
  */
 public class NodeUtils {
-    static final String NODE_DEFAULT_SSH_PORT = "22";
-    static final String NODE_DEFAULT_DCOM_PORT = "135";
-    static final String NODE_DEFAULT_REMOTE_USER = "${user.name}";
+    public static final String NODE_DEFAULT_SSH_PORT = "22";
+    public static final String NODE_DEFAULT_DCOM_PORT = "135";
+    public static final String NODE_DEFAULT_REMOTE_USER = "${user.name}";
     static final String NODE_DEFAULT_INSTALLDIR =
             "${com.sun.aas.productRoot}";
     // Command line option parameter names
@@ -94,7 +99,7 @@ public class NodeUtils {
     private Habitat habitat = null;
     SSHLauncher sshL = null;
 
-    enum RemoteType {
+    public enum RemoteType {
         SSH, DCOM
     };
 
@@ -115,6 +120,12 @@ public class NodeUtils {
         return node.getType().equals("SSH");
     }
 
+    public static boolean isDcomNode(Node node) {
+        if (node == null)
+            return false;
+        return node.getType().equals("DCOM");
+    }
+
     /**
      * Get the version string from a glassfish installation on the node.
      * @param node
@@ -124,6 +135,9 @@ public class NodeUtils {
         if (node == null)
             return "";
 
+        if(RemoteType.valueOf(node.getType()) == RemoteType.DCOM) {
+            throw new CommandValidationException("NOT YET IMPLEMENTED FOR DCOM");
+        }
         List<String> command = new ArrayList<String>();
         command.add("version");
         command.add("--local");
@@ -177,7 +191,7 @@ public class NodeUtils {
             map.add(NodeUtils.PARAM_SSHKEYFILE, ssha.getKeyfile());
             map.add(NodeUtils.PARAM_REMOTEPASSWORD, ssha.getPassword());
             map.add(NodeUtils.PARAM_SSHKEYPASSPHRASE, ssha.getKeyPassphrase());
-            map.add(NodeUtils.PARAM_TYPE, "SSH");
+            map.add(NodeUtils.PARAM_TYPE, node.getType());
         }
 
         validate(map);
@@ -274,6 +288,15 @@ public class NodeUtils {
         }
     }
 
+    private String resolvePassword(String p) {
+        try {
+            return RelativePathResolver.getRealPasswordFromAlias(p);
+        }
+        catch (Exception e) {
+            return p;
+        }
+    }
+
     private void validatePassword(String p) throws CommandValidationException {
 
         String expandedPassword = null;
@@ -301,16 +324,35 @@ public class NodeUtils {
     }
 
     /**
+     * Make sure we can make an SSH or DCOM connection using an existing node.
+     *
+     * @param node  Node to connect to
+     * @throws CommandValidationException
+     */
+    void pingRemoteConnection(Node node) throws CommandValidationException {
+        RemoteType type = RemoteType.valueOf(node.getType());
+        validateHostName(node.getNodeHost());
+
+        switch (type) {
+            case SSH:
+                pingSSHConnection(node);
+                break;
+            case DCOM:
+                pingDcomConnection(node);
+                break;
+            default:
+                throw new CommandValidationException("Internal Error: unknown type");
+        }
+    }
+
+    /**
      * Make sure we can make an SSH connection using an existing node.
      *
      * @param node  Node to connect to
      * @throws CommandValidationException
      */
-    void pingSSHConnection(Node node) throws
+    private void pingSSHConnection(Node node) throws
             CommandValidationException {
-
-        validateHostName(node.getNodeHost());
-
         try {
             sshL.init(node, logger);
             sshL.pingConnection();
@@ -322,11 +364,49 @@ public class NodeUtils {
             if (e2 != null) {
                 m2 = e2.getMessage();
             }
-            String msg = Strings.get("ssh.bad.connect", node.getNodeHost());
+            String msg = Strings.get("ssh.bad.connect", node.getNodeHost(), "SSH");
             logger.warning(StringUtils.cat(": ", msg, m1, m2,
                     sshL.toString()));
             throw new CommandValidationException(StringUtils.cat(NL,
                     msg, m1, m2));
+        }
+    }
+
+    /**
+     * Make sure we can make a DCOM connection using an existing node.
+     * Simply see if the installdir exists.  If anything is wrong we will get an
+     * Exception...
+     * @param node  Node to connect to
+     * @throws CommandValidationException
+     */
+    private void pingDcomConnection(Node node) throws CommandValidationException {
+        try {
+            SshConnector connector = node.getSshConnector();
+            SshAuth auth = connector.getSshAuth();
+            String host = connector.getSshHost();
+
+            if (!StringUtils.ok(host))
+                host = node.getNodeHost();
+
+            String username = auth.getUserName();
+            String password = resolvePassword(auth.getPassword());
+            String installdir = node.getInstallDirUnixStyle();
+
+            WindowsRemoteFileSystem wrfs = new WindowsRemoteFileSystem(host, username, password);
+            WindowsRemoteFile wrf = new WindowsRemoteFile(wrfs, installdir);
+            wrf.exists();   // looking for side-effect of Exception getting thrown...
+        }
+        // very complicated catch copied from pingssh above...
+        catch (Exception e) {
+            String m1 = e.getMessage();
+            String m2 = "";
+            Throwable e2 = e.getCause();
+            if (e2 != null) {
+                m2 = e2.getMessage();
+            }
+            String msg = Strings.get("ssh.bad.connect", node.getNodeHost(), "DCOM");
+            logger.warning(StringUtils.cat(": ", msg, m1, m2));
+            throw new CommandValidationException(StringUtils.cat(NL, msg, m1, m2));
         }
     }
 

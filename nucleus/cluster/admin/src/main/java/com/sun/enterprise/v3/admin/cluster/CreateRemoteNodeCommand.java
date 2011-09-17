@@ -58,6 +58,8 @@ import org.jvnet.hk2.component.*;
 
 /**
  * Refactored from CreateNodeSshCommand.java on 9/10/11
+ * Note the use of "protected" visibility is one of those rare times when it is actually
+ * necessary.  This class is sub-classed in a different package so protected is needed...
  * @author Carla Mott
  * @author Byron Nevins
  */
@@ -87,21 +89,21 @@ public abstract class CreateRemoteNodeCommand implements AdminCommand {
     static final String NL = System.getProperty("line.separator");
     Logger logger = null;
     NodeUtils nodeUtils;
-    String remotePort;
-    String remoteUser;
-    String remotePassword;
+    protected String remotePort;
+    protected String remoteUser;
+    protected String remotePassword;
 
-    abstract void populateBaseClass();
+    protected abstract void populateBaseClass();
 
-    abstract void populateParameters(ParameterMap pmap);
+    protected abstract void populateParameters(ParameterMap pmap);
 
-    abstract void populateCommandArgs(List<String> args);
+    protected abstract void populateCommandArgs(List<String> args);
 
-    abstract NodeUtils.RemoteType getType();
+    protected abstract NodeUtils.RemoteType getType();
 
-    abstract void validate() throws CommandValidationException;
+    protected abstract void validate() throws CommandValidationException;
 
-    abstract String getPasswordsForFile();
+    protected abstract String getPasswordsForFile();
 
     public final void executeInternal(AdminCommandContext context) {
         ActionReport report = context.getActionReport();
@@ -231,7 +233,7 @@ public abstract class CreateRemoteNodeCommand implements AdminCommand {
      * Sometimes the console passes an empty string for a parameter. This
      * makes sure those are defaulted correctly.
      */
-    void checkDefaults() {
+    protected void checkDefaults() {
         if (!StringUtils.ok(installdir)) {
             installdir = NodeUtils.NODE_DEFAULT_INSTALLDIR;
         }

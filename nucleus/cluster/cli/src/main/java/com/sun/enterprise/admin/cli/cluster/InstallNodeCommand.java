@@ -209,10 +209,6 @@ public class InstallNodeCommand extends NativeRemoteCommandsBase {
         }
     }
 
-    /*
-     * This is where it gets hairy.  We need to unpack the files on Windows...
-     * This is NOT FINISHED OBVIOUSLY!!!!
-     */
     private void unpackOnHostsWindows(String host, String remotePassword,
             String unpackScript) throws WindowsException {
         String domain = windowsDomain;

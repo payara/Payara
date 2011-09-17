@@ -37,8 +37,10 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package com.sun.enterprise.v3.admin.cluster;
+package com.sun.enterprise.v3.admin.cluster.dcom;
 
+import com.sun.enterprise.v3.admin.cluster.CreateRemoteNodeCommand;
+import com.sun.enterprise.v3.admin.cluster.NodeUtils;
 import java.util.List;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
@@ -69,13 +71,13 @@ public class CreateNodeDcom extends CreateRemoteNodeCommand {
     }
 
     @Override
-    void validate() throws CommandValidationException {
+    protected void validate() throws CommandValidationException {
         if (!ok(dcompassword))
             throw new CommandValidationException(Strings.get("update.node.dcom.no.password"));
     }
 
     @Override
-    NodeUtils.RemoteType getType() {
+    protected NodeUtils.RemoteType getType() {
         return NodeUtils.RemoteType.DCOM;
     }
 
@@ -84,7 +86,7 @@ public class CreateNodeDcom extends CreateRemoteNodeCommand {
      * makes sure those are defaulted correctly.
      */
     @Override
-    final void checkDefaults() {
+    protected final void checkDefaults() {
         super.checkDefaults();
 
         // The default is automatically set to 22 -- which is certainly a mistake!
@@ -106,11 +108,11 @@ public class CreateNodeDcom extends CreateRemoteNodeCommand {
     }
 
     @Override
-    final void populateParameters(ParameterMap pmap) {
+    protected final void populateParameters(ParameterMap pmap) {
     }
 
     @Override
-    final void populateCommandArgs(List<String> args) {
+    protected final void populateCommandArgs(List<String> args) {
         args.add("--dcom=true");
         args.add("--dcomuser");
         args.add(remoteUser);
@@ -119,7 +121,7 @@ public class CreateNodeDcom extends CreateRemoteNodeCommand {
     }
 
     @Override
-    String getPasswordsForFile() {
+    protected String getPasswordsForFile() {
         return "AS_ADMIN_DCOMPASSWORD=" + dcompassword + "\n";
     }
 }

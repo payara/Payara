@@ -40,18 +40,11 @@
 
 package com.sun.enterprise.v3.admin.cluster;
 
-import com.sun.enterprise.config.serverbeans.Nodes;
 import com.sun.enterprise.config.serverbeans.Node;
-import com.sun.enterprise.util.StringUtils;
-import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
-import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
-import org.glassfish.api.admin.CommandValidationException;
 import org.jvnet.hk2.annotations.*;
-import java.util.logging.Logger;
 import org.jvnet.hk2.component.PerLookup;
-import org.jvnet.hk2.component.Habitat;
 
 /**
  * Remote AdminCommand to validate the connection to an SSH node.
@@ -63,79 +56,22 @@ import org.jvnet.hk2.component.Habitat;
 @Scoped(PerLookup.class)
 @CommandLock(CommandLock.LockType.NONE)
 @ExecuteOn({RuntimeType.DAS})
-public class PingNodeSshCommand implements AdminCommand  {
-
-    @Inject
-    private CommandRunner cr;
-
-    @Inject
-    Habitat habitat;
-
-    @Inject
-    private Nodes nodes;
-
-    @Param(name="name", primary = true)
-    private String name;
-
-    @Param(optional = true, name="validate", alias="full", defaultValue = "false")
-    private boolean validate;
-
-    private static final String NL = System.getProperty("line.separator");
-
-    private Logger logger = null;
-
+public class PingNodeSshCommand extends PingNodeRemoteCommand {
     @Override
     public void execute(AdminCommandContext context) {
-        ActionReport report = context.getActionReport();
-        StringBuilder msg = new StringBuilder();
-        Node theNode = null;
+        executeInternal(context);
+    }
 
-        logger = context.getLogger();
-        NodeUtils nodeUtils = new NodeUtils(habitat, logger);
-
-        // Make sure Node is valid
-        theNode = nodes.getNode(name);
-        if (theNode == null) {
-            String m = Strings.get("noSuchNode", name);
-            logger.warning(m);
-            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            report.setMessage(m);
-            return;
+    /**
+     *
+     * @param node the node of interest
+     * @return null if all-OK, otherwise return an error message
+     */
+    @Override
+    protected String validateSubType(Node node) {
+        if (!NodeUtils.isSSHNode(node)) {
+            return Strings.get("notSshNode", name);
         }
-
-        if (! NodeUtils.isSSHNode(theNode)) {
-            String m = Strings.get("notSshNode", name);
-            logger.warning(m);
-            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            report.setMessage(m);
-            return;
-        }
-
-        try {
-            String version = "";
-            if (validate) {
-                // Validates all parameters
-                nodeUtils.validate(theNode);
-                version = Strings.get("ping.glassfish.version",
-                        theNode.getInstallDir(),
-                        nodeUtils.getGlassFishVersionOnNode(theNode));
-            } else {
-                // Just does a basic connection check
-                nodeUtils.pingSSHConnection(theNode);
-            }
-            String m1 = Strings.get("ping.node.success", name,
-                    theNode.getNodeHost());
-            if (StringUtils.ok(version)) {
-                m1 = m1 + NL + version;
-            }
-            report.setMessage(m1);
-            report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
-        } catch (CommandValidationException e) {
-            String m1 = Strings.get("ping.node.failure", name,
-                    theNode.getNodeHost());
-            msg.append(StringUtils.cat(NL, m1, e.getMessage()));
-            report.setMessage(msg.toString());
-            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-        }
+        return null;
     }
 }

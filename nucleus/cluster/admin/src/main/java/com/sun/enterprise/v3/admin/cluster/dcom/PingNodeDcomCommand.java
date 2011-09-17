@@ -40,11 +40,11 @@
 package com.sun.enterprise.v3.admin.cluster.dcom;
 
 
-import org.glassfish.api.ActionReport;
-import org.glassfish.api.Param;
+import com.sun.enterprise.config.serverbeans.Node;
+import com.sun.enterprise.v3.admin.cluster.NodeUtils;
+import com.sun.enterprise.v3.admin.cluster.PingNodeRemoteCommand;
 import org.glassfish.api.admin.*;
 import org.jvnet.hk2.annotations.*;
-import java.util.logging.Logger;
 import org.jvnet.hk2.component.PerLookup;
 
 /**
@@ -56,19 +56,22 @@ import org.jvnet.hk2.component.PerLookup;
 @Scoped(PerLookup.class)
 @CommandLock(CommandLock.LockType.NONE)
 @ExecuteOn({RuntimeType.DAS})
-public class PingNodeDcomCommand implements AdminCommand {
-    @Param(name = "name", primary = true)
-    private String name;
-    @Param(optional = true, name = "validate", alias = "full", defaultValue = "false")
-    private boolean validate;
-    private Logger logger = null;
-    private ActionReport report;
-
+public class PingNodeDcomCommand extends PingNodeRemoteCommand {
     @Override
     public void execute(AdminCommandContext context) {
-        report = context.getActionReport();
-        logger = context.getLogger();
-        report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-        report.setMessage("ping-node-dcom is under construction and not yet available for use.");
+        executeInternal(context);
     }
+        /**
+     *
+     * @param node the node of interest
+     * @return null if all-OK, otherwise return an error message
+     */
+    @Override
+    protected String validateSubType(Node node) {
+        if (!NodeUtils.isDcomNode(node)) {
+            return Strings.get("not.dcom.node", name, node.getType());
+        }
+        return null;
+    }
+
 }
