@@ -121,7 +121,7 @@ public interface AlertConfig extends ConfigBeanProxy {
     public void setEnabled(boolean value) throws PropertyVetoException;
 
     @Attribute  (defaultValue = "true")
-    public int getEnabled();
+    public boolean getEnabled();
 
     /**
      * Sets the alert expression
