@@ -618,10 +618,11 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator, Application
         if (isOrchestrationEnabled() && serverEnvironment.isDas()) {
             AdminCommandLock.runWithSuspendedLock(new Runnable() {
                 public void run() {
-
-                    OpsParams tmp = context.getCommandParameters(OpsParams.class);
-                    logger.log(Level.FINEST, "before " + phase + " " + tmp.command);
-                    logger.log(Level.FINEST, "ApplicationLifecycleListener before : " + phase);
+                    if(context != null){
+                        OpsParams tmp = context.getCommandParameters(OpsParams.class);
+                        logger.log(Level.FINEST, "before " + phase + " " + tmp.command);
+                        logger.log(Level.FINEST, "ApplicationLifecycleListener before : " + phase);
+                    }
 
                     if (phase.equals(ExtendedDeploymentContext.Phase.PREPARE)) {
                         ReadableArchive archive = context.getSource();
@@ -684,9 +685,11 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator, Application
         if (isOrchestrationEnabled()) {
             AdminCommandLock.runWithSuspendedLock(new Runnable() {
                 public void run() {
-                    OpsParams tmp = context.getCommandParameters(OpsParams.class);
-                    logger.log(Level.FINEST, "after " + phase + " " + tmp.command);
-                    logger.log(Level.FINEST, "ApplicationLifecycleListener after : " + phase);
+                    if(context != null){
+                        OpsParams tmp = context.getCommandParameters(OpsParams.class);
+                        logger.log(Level.FINEST, "after " + phase + " " + tmp.command);
+                        logger.log(Level.FINEST, "ApplicationLifecycleListener after : " + phase);
+                    }
 
                     if (phase.equals(ExtendedDeploymentContext.Phase.REPLICATION)) {
                         if (serverEnvironment.isDas()) {
