@@ -1,0 +1,16 @@
+Here is a command to create a remote ssh node --
+
+asadmin --passwordfile ~/chandu_pw create-node-ssh --install --nodehost chandu.us.oracle.com --installdir /export/home/hudson/devtest-bnlocal/foo  --sshuser hudson ssh_node1 
+
+
+And here is the resulting config in domain.xml
+
+<nodes>
+	<node node-host="localhost" name="localhost-domain1" type="CONFIG" install-dir="${com.sun.aas.productRoot}"></node>
+	<node node-host="chandu.us.oracle.com" name="ssh_node1" type="SSH" install-dir="/export/home/hudson/devtest-bnlocal/foo">
+		<ssh-connector>
+			<ssh-auth user-name="hudson" password="actual-password-would-be-here-removed-from-readme!"></ssh-auth>
+		</ssh-connector>
+	</node>
+</nodes>
+
