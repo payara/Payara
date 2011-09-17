@@ -7,10 +7,22 @@ And here is the resulting config in domain.xml
 
 <nodes>
 	<node node-host="localhost" name="localhost-domain1" type="CONFIG" install-dir="${com.sun.aas.productRoot}"></node>
+
 	<node node-host="chandu.us.oracle.com" name="ssh_node1" type="SSH" install-dir="/export/home/hudson/devtest-bnlocal/foo">
 		<ssh-connector>
 			<ssh-auth user-name="hudson" password="actual-password-would-be-here-removed-from-readme!"></ssh-auth>
 		</ssh-connector>
 	</node>
+
+    <node node-host="wnevins-lnr" name="xyz" type="DCOM" install-dir="${com.sun.aas.productRoot}">
+      <ssh-connector ssh-port="135">
+        <ssh-auth user-name="wnevins" password="password-here!!"></ssh-auth>
+      </ssh-connector>
+    </node>
+
 </nodes>
+
+
+
+
 
