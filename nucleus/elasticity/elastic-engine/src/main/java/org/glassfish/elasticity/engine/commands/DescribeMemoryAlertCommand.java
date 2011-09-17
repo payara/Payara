@@ -62,7 +62,7 @@ import org.glassfish.api.admin.RestEndpoints;
 @Service(name = "describe-memory-alert")
 @I18n("describe.memory.alert")
 @Scoped(PerLookup.class)
-@RestEndpoints({ @RestEndpoint(configBean = AlertConfig.class, opType = OpType.GET, path = "describe-memory-alert", description = "Describe memory alert", params = {@RestParam(name="alertname", value="$parent")}) })
+@RestEndpoints({ @RestEndpoint(configBean = ElasticServices.class, opType = OpType.GET, path = "describe-memory-alert", description = "Describe memory alert")})
 public class DescribeMemoryAlertCommand implements AdminCommand{
 
     @Inject
@@ -71,7 +71,7 @@ public class DescribeMemoryAlertCommand implements AdminCommand{
     @Inject
     Domain domain;
 
-    @Param(name="service")
+    @Param(name="servicename",  optional=false)
     String servicename;
 
     @Param(name="alertname", primary=true)
@@ -108,11 +108,13 @@ public class DescribeMemoryAlertCommand implements AdminCommand{
         int i =expr.indexOf(">");
         threshold = expr.substring(++i);
 
+        String enabled = Boolean.toString(alert.getEnabled());
         report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
+        report.setMessage("threshold=" + threshold + "; enabled=" + enabled);
         MessagePart mp = report.getTopMessagePart();
         mp.addProperty("service ", servicename );
         mp.addProperty("alert", alertname);
         mp.addProperty("threshold", threshold);
-
+        mp.addProperty("enabled", enabled);
     }
 }
