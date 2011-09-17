@@ -40,20 +40,16 @@
 
 package org.glassfish.paas.gfplugin;
 
-import com.sun.enterprise.deployment.Application;
-import com.sun.enterprise.deployment.ApplicationClientDescriptor;
-import com.sun.enterprise.deployment.EjbBundleDescriptor;
-import com.sun.enterprise.deployment.ResourceReferenceDescriptor;
-import com.sun.enterprise.deployment.WebBundleDescriptor;
+import com.sun.enterprise.deployment.*;
 import com.sun.enterprise.deployment.archivist.ApplicationFactory;
 import org.glassfish.api.deployment.archive.ReadableArchive;
-import org.glassfish.paas.orchestrator.provisioning.cli.ServiceType;
+import org.glassfish.internal.data.ApplicationInfo;
+import org.glassfish.internal.data.ApplicationRegistry;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceReference;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 /**
  * This processes the orchestration archive and figures out all the GlassFish
@@ -64,16 +60,30 @@ import java.util.Set;
 @Service
 public class GlassFishCloudArchiveProcessor {
 
+
     @Inject
     private ApplicationFactory applicationFactory;
 
+
+    @Inject
+    private ApplicationRegistry appRegistry;
+
     public Set<ServiceReference> getServiceReferences(
-            ReadableArchive cloudArchive) {
+            ReadableArchive cloudArchive, String appName) {
         Set<ServiceReference> serviceReferences = new HashSet<ServiceReference>();
         Set<ResourceReferenceDescriptor> resRefs = new HashSet<ResourceReferenceDescriptor>();
         try {
-            Application application = applicationFactory.openArchive(cloudArchive.getURI());
+            //Application application = applicationFactory.openArchive(cloudArchive.getURI());
+            ApplicationInfo appInfo = appRegistry.get(appName);
+            Application application = appInfo.getMetaData(Application.class);
+            if(application == null){
+                return serviceReferences;
+            }
 
+            //determine persistence.xml's data-source dependencies
+            scanAndPopulateServiceRefsForDSRefsInPUs(serviceReferences, application);
+
+            //TODO ideally, we should be scanning any descriptor that will have resource-ref in a generic manner.
 //            boolean isDistributable = false;
             for (WebBundleDescriptor descriptor : application.getBundleDescriptors(WebBundleDescriptor.class)) {
 //                if (descriptor.isDistributable()) {
@@ -91,8 +101,32 @@ public class GlassFishCloudArchiveProcessor {
                 resRefs.addAll(descriptor.getResourceReferenceDescriptors());
             }
 
+            // make sure duplicate resource-refs (eg: @Resource(name="xyz", mappedName="jdbc/foo")
+            // and <resource-ref>jdbc/foo</resource-ref>
+            // are filtered out.
+            Set<String> resRefNames = new HashSet<String>();
+            Set<ResourceReferenceDescriptor> mappedNameSet = new HashSet<ResourceReferenceDescriptor>();
+            Set<ResourceReferenceDescriptor> filteredResRefSet = new HashSet<ResourceReferenceDescriptor>();
+
+            for(ResourceReferenceDescriptor resRef : resRefs){
+                if(resRef.getMappedName() != null && !resRef.getMappedName().isEmpty()){
+                    mappedNameSet.add(resRef);
+                    continue;
+                }
+                if(resRef.getJndiName() != null){
+                    resRefNames.add(resRef.getJndiName());
+                    filteredResRefSet.add(resRef);
+                }
+            }
+
+            for(ResourceReferenceDescriptor resRef : mappedNameSet){
+                if(!resRefNames.contains(resRef.getMappedName())){
+                    filteredResRefSet.add(resRef);
+                }
+            }
+
             // TODO :: Get the explicit service references from META-INF/glassfish-resources.xml
-            for (ResourceReferenceDescriptor resRef : resRefs) {
+            for (ResourceReferenceDescriptor resRef : filteredResRefSet) {
                 serviceReferences.add(new ServiceReference(resRef.getName(),
                         resRef.getType(), null, resRef.getSchemaGeneratorProperties()));
             }
@@ -106,5 +140,27 @@ public class GlassFishCloudArchiveProcessor {
             e.printStackTrace();
         }
         return serviceReferences;
+    }
+
+    private void scanAndPopulateServiceRefsForDSRefsInPUs(Set<ServiceReference> serviceReferences, Application application) {
+        Set<BundleDescriptor> bundleDescriptors = application.getBundleDescriptors();
+        Set<String> jndiNames = new HashSet<String>();
+        if(bundleDescriptors != null){
+            for(BundleDescriptor bundleDescriptor : bundleDescriptors){
+                Collection<? extends PersistenceUnitDescriptor> puDescriptors = bundleDescriptor.findReferencedPUs();
+                for(PersistenceUnitDescriptor pud : puDescriptors){
+                    if(pud.getJtaDataSource() != null){
+                        jndiNames.add(pud.getJtaDataSource());
+                    }
+                    if(pud.getNonJtaDataSource() != null){
+                        jndiNames.add(pud.getNonJtaDataSource());
+                    }
+                }
+            }
+        }
+
+        for(String jndiName : jndiNames){
+            serviceReferences.add(new ServiceReference(jndiName, "javax.sql.DataSource", null));
+        }
     }
 }

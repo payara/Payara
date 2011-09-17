@@ -50,14 +50,11 @@ import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.deployment.common.DeploymentUtils;
 import org.glassfish.embeddable.CommandResult;
 import org.glassfish.embeddable.CommandRunner;
-import org.glassfish.embeddable.Deployer;
 import org.glassfish.embeddable.GlassFish;
-import org.glassfish.embeddable.GlassFishException;
 import org.glassfish.paas.gfplugin.cli.GlassFishServiceUtil;
 import org.glassfish.paas.gfplugin.cli.ScaleDownGlassFishService;
 import org.glassfish.paas.gfplugin.cli.ScaleUpGlassFishService;
 import org.glassfish.paas.orchestrator.ServiceOrchestrator;
-import org.glassfish.paas.orchestrator.ServiceOrchestrator.ReconfigAction;
 import org.glassfish.paas.orchestrator.provisioning.ApplicationServerProvisioner;
 import org.glassfish.paas.orchestrator.provisioning.ProvisionerUtil;
 import org.glassfish.paas.orchestrator.provisioning.LBProvisioner;
@@ -79,7 +76,6 @@ import org.jvnet.hk2.component.PerLookup;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -141,19 +137,18 @@ public class GlassFishPlugin implements Plugin<JavaEEServiceType> {
         return false;
     }
 
-    public Set<ServiceReference> getServiceReferences(File archive) {
+    public Set<ServiceReference> getServiceReferences(File archive, String appName) {
         try {
-            return getServiceReferences(archiveFactory.openArchive(archive));
+            return getServiceReferences(appName, archiveFactory.openArchive(archive));
         } catch (IOException e) {
             e.printStackTrace();
             throw new RuntimeException(e);
         }
     }
 
-    public Set<ServiceReference> getServiceReferences(
-            ReadableArchive cloudArchive) {
+    public Set<ServiceReference> getServiceReferences(String appName, ReadableArchive cloudArchive) {
         // Parse the archive and figure out resource references.
-        return archiveProcessor.getServiceReferences(cloudArchive);
+        return archiveProcessor.getServiceReferences(cloudArchive, appName);
     }
 
     public ServiceDescription getDefaultServiceDescription(String appName, ServiceReference svcRef) {
@@ -388,7 +383,7 @@ public class GlassFishPlugin implements Plugin<JavaEEServiceType> {
             String clusterName = gfServiceUtil.getClusterName(serviceName, serviceDescription.getAppName());
             String dasIPAddress = gfServiceUtil.getDASIPAddress(serviceConsumer.getServiceDescription().getName());
 
-            String poolName = serviceName + ".pool";
+            String poolName = svcRef.getServiceRefName();
             String resourceName = svcRef.getServiceRefName();
 
             // Create JDBC resource and pool.
@@ -478,7 +473,7 @@ public class GlassFishPlugin implements Plugin<JavaEEServiceType> {
                     GlassFishProvisionedService glassfishProvisionedService = (GlassFishProvisionedService) serviceConsumer;
                     String serviceName = glassfishProvisionedService.getServiceDescription().getName();
                     String clusterName = gfServiceUtil.getClusterName(serviceName, glassfishProvisionedService.getServiceDescription().getAppName());
-                    String poolName = serviceName + ".pool";
+                    String poolName = svcRef.getServiceRefName();
                     String resourceName = svcRef.getServiceRefName();
 
                     //TODO once glassfish-resources.xml is used, deleting resources and pools explicitly is not required.

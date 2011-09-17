@@ -268,7 +268,7 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator, Application
         //1.2 Get implicit ServiceReferences
         for (Plugin svcPlugin : installedPlugins) {
             if (svcPlugin.handles(archive)) {
-                Set<ServiceReference> implicitServiceRefs = svcPlugin.getServiceReferences(archive);
+                Set<ServiceReference> implicitServiceRefs = svcPlugin.getServiceReferences(appName, archive);
                 for (ServiceReference sr : implicitServiceRefs) {
                     System.out.println("Detected Implicit ServiceReference:" + sr);
                     appServiceMetadata.addServiceReference(sr);
@@ -362,7 +362,7 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator, Application
         //1.2 Get implicit ServiceReferences
         for (Plugin svcPlugin : installedPlugins) {
             if (svcPlugin.handles(archive)) {
-                Set<ServiceReference> implicitServiceRefs = svcPlugin.getServiceReferences(archive);
+                Set<ServiceReference> implicitServiceRefs = svcPlugin.getServiceReferences(appName, archive);
                 for (ServiceReference sr : implicitServiceRefs) {
                     System.out.println("ServiceReference:" + sr);
                     appServiceMetadata.addServiceReference(sr);
