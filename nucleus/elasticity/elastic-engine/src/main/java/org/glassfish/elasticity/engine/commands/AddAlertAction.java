@@ -53,7 +53,9 @@ import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
 import org.jvnet.hk2.config.*;
-
+import org.glassfish.api.admin.RestEndpoint;
+import org.glassfish.api.admin.RestEndpoint.OpType;
+import org.glassfish.api.admin.RestEndpoints;
 import java.beans.PropertyVetoException;
 import java.util.logging.Logger;
 
@@ -66,6 +68,7 @@ import java.util.logging.Logger;
 @I18n("add.alert.action")
 @Scoped(PerLookup.class)
 @ExecuteOn({RuntimeType.DAS})
+@RestEndpoints({ @RestEndpoint(configBean = AlertConfig.class, opType = OpType.POST, path = "add-alert-action", description = "Add alert action") })
 public class AddAlertAction implements AdminCommand  {
     @Inject
     ElasticServices elasticServices;

@@ -116,6 +116,15 @@ public class CreateAlertCommand implements AdminCommand {
             return;
         }
 
+        // make sure the name of the alert is unique within this service
+        if (elasticService.getAlerts().getAlert(name) != null) {
+            String msg = Strings.get("alertNameExists", name);
+            logger.warning(msg);
+            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            report.setMessage(msg);
+            return;
+        }
+
         try {
             createAlertElement(name);
         } catch(TransactionFailure e) {
