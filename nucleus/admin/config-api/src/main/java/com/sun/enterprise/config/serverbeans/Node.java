@@ -305,15 +305,15 @@ public interface Node extends ConfigBeanProxy, Injectable, Named, ReferenceConta
         String installdir = null;
         @Param(name = "type")
         String type = null;
-        @Param(name = "sshport", optional = true)
+        @Param(name = "sshport", optional = true, alias = "dcomport")
         String sshPort = null;
-        @Param(name = "sshnodehost", optional = true)
+        @Param(name = "sshnodehost", optional = true, alias = "dcomnodehost")
         String sshHost = null;
-        @Param(name = "sshuser", optional = true)
+        @Param(name = "sshuser", optional = true, alias = "dcomuser")
         String sshuser = null;
         @Param(name = "sshkeyfile", optional = true)
         String sshkeyfile;
-        @Param(name = "sshpassword", optional = true)
+        @Param(name = "sshpassword", optional = true, alias = "dcompassword")
         String sshpassword;
         @Param(name = "sshkeypassphrase", optional = true)
         String sshkeypassphrase;
@@ -376,7 +376,6 @@ public interface Node extends ConfigBeanProxy, Injectable, Named, ReferenceConta
                 sshC.setSshHost(sshHost);
 
             instance.setSshConnector(sshC);
-
         }
     }
 

@@ -115,6 +115,24 @@ public interface SshConnector extends ConfigBeanProxy, Injectable {
      @Param(name="sshnodehost", optional=true)
       void setSshHost(String value) throws PropertyVetoException;
 
+     /**
+     * Sets the value of the Windows Domain property.
+     *
+     * @param value allowed object is
+     *              {@link String }
+     */
+    @Param(name = "windowsdomain", optional = true)
+    void setWindowsDomain(String value) throws PropertyVetoException;
+
+    /**
+     * Gets the value of the Windows Domain property.
+     *
+     * @return possible object is
+     *         {@link String }
+     */
+    @Attribute
+    String getWindowsDomain();
+
      @Element
     SshAuth getSshAuth();
 
