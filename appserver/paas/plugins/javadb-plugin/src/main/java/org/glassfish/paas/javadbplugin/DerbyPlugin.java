@@ -148,14 +148,6 @@ public static final String RDBMS_ServiceType = "Database";
 
     public ProvisionedService provisionService(ServiceDescription serviceDescription, DeploymentContext dc) {
 
-/*
-        try{
-            Thread.sleep(1000 * 60 * 10L);
-        }catch(Exception e){
-            e.printStackTrace();
-        }
-*/
-
         String serviceName = serviceDescription.getName();
         logger.entering(getClass().getName(), "provisionService");
 
