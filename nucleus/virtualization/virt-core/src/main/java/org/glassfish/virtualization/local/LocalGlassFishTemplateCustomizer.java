@@ -44,6 +44,7 @@ import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.util.ExecException;
+import com.sun.enterprise.util.OS;
 import com.sun.enterprise.util.ProcessExecutor;
 import org.glassfish.api.ActionReport;
 import org.glassfish.hk2.Services;
@@ -88,11 +89,11 @@ public class LocalGlassFishTemplateCustomizer implements TemplateCustomizer {
         ActionReport report = services.forContract(ActionReport.class).named("plain").get();
        // this line below needs to come from the template...
         String[] createArgs = {serverContext.getInstallRoot().getAbsolutePath() +
-                File.separator + "bin" + File.separator + "asadmin" , "create-local-instance",
+                File.separator + "lib" + File.separator + "nadmin" + (OS.isWindows()? ".bat" : "") , "create-local-instance",
                 "--cluster", cluster.getConfig().getName(),
                  virtualMachine.getName()};
         String[] startArgs = {serverContext.getInstallRoot().getAbsolutePath() +
-                File.separator + "bin" + File.separator + "asadmin" , "start-local-instance",
+                File.separator + "lib" + File.separator + "nadmin" +  (OS.isWindows()? ".bat" : "") , "start-local-instance",
                  virtualMachine.getName()};
         ProcessExecutor createInstance = new ProcessExecutor(createArgs);
         ProcessExecutor startInstance = new ProcessExecutor(startArgs);
