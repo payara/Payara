@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2008-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -43,9 +43,8 @@ package com.sun.enterprise.naming.impl;
 import org.glassfish.api.naming.GlassfishNamingManager;
 import org.glassfish.api.naming.JNDIBinding;
 import com.sun.enterprise.naming.spi.NamingObjectFactory;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import org.junit.*;
+import static org.junit.Assert.*;
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.api.invocation.InvocationException;
 import org.glassfish.api.invocation.InvocationManager;
@@ -60,37 +59,10 @@ import java.util.List;
 
 import java.util.Properties;
 
-/**
- * Unit test for simple App.
- */
-public class AppTest
-        extends TestCase {
-
+public class AppTest {
    private static final String INITIAL_CONTEXT_TEST_MODE = "com.sun.enterprise.naming.TestMode";
 
-    /**
-     * Create the test case
-     *
-     * @param testName name of the test case
-     */
-    public AppTest(String testName) {
-        super(testName);
-    }
-
-    /**
-     * @return the suite of tests being tested
-     */
-    public static Test suite() throws NamingException {
-        return new TestSuite(AppTest.class);
-    }
-
-    /**
-     * Rigourous Test :-)
-     */
-    public void testApp() {
-        assertTrue(true);
-    }
-
+    @Test
     public void testCreateNewInitialContext() {
         try {
             newInitialContext();
@@ -101,6 +73,7 @@ public class AppTest
         }
     }
 
+    @Test
     public void testBind() {
         GlassfishNamingManager nm = null;
         try {
@@ -122,6 +95,7 @@ public class AppTest
         }
     }
 
+    @Test
     public void testEmptySubContext() {
         try {
             String name1 = "rmi://a//b/c/d/name1";
@@ -140,8 +114,9 @@ public class AppTest
     }
 
 
-    public void testCachingNamingObjectFactory() {
-        GlassfishNamingManager nm = null;
+    @Test
+    public void testCachingNamingObjectFactoryAndEmptyJavaCompEnv() {
+        GlassfishNamingManagerImpl nm = null;
         try {
             InvocationManager im = new InvocationManagerImpl();
             InitialContext ic = newInitialContext();
@@ -167,6 +142,8 @@ public class AppTest
             nm.publishObject("bar", factory, false);
             System.out.println("**lookup() ==> " + ic.lookup("bar"));
             System.out.println("**lookup() ==> " + ic.lookup("bar"));
+            
+            testEmptyJavaCompEnv();
             assert (true);
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -176,7 +153,7 @@ public class AppTest
                 nm.unpublishObject("foo");
                 nm.unpublishObject("bar");
             } catch (Exception ex) {
-
+		//ignore
             }
         }
     }
@@ -204,7 +181,7 @@ public class AppTest
         }
    } 
 
-    public void testEmptyJavaCompEnv() {
+    private void testEmptyJavaCompEnv() {
         GlassfishNamingManagerImpl nm = null;
         InvocationManager im = new InvocationManagerImpl();
         ComponentInvocation inv = null;
@@ -222,13 +199,13 @@ public class AppTest
 
             Context ctx = (Context) ic.lookup("java:comp/env");
             System.out.println("**lookup(java:comp/env) ==> " + ctx);
-            assert(true);
         } catch (javax.naming.NamingException nnfEx) {
             nnfEx.printStackTrace();
             assert (false);
         }
     }
 
+    @Test
     public void testNonCachingNamingObjectFactory() {
         GlassfishNamingManagerImpl nm = null;
         InvocationManager im = new InvocationManagerImpl();
@@ -330,7 +307,5 @@ public class AppTest
 	props.setProperty( SerialContext.INITIAL_CONTEXT_TEST_MODE, "true");
 	
 	return new InitialContext( props );
-
     }
-
 }
