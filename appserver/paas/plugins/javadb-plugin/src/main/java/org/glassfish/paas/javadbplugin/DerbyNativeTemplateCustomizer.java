@@ -41,6 +41,7 @@ package org.glassfish.paas.javadbplugin;
 
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.util.ExecException;
+import com.sun.enterprise.util.OS;
 import com.sun.enterprise.util.ProcessExecutor;
 import org.glassfish.api.ActionReport;
 import org.glassfish.internal.api.ServerContext;
@@ -66,7 +67,7 @@ public class DerbyNativeTemplateCustomizer implements TemplateCustomizer {
 
     public void customize(VirtualCluster cluster, VirtualMachine virtualMachine) throws VirtException {
         String[] startdbArgs = {serverContext.getInstallRoot().getAbsolutePath() +
-                File.separator + "bin" + File.separator + "asadmin" , "start-database"};
+                File.separator + "bin" + File.separator + "asadmin" + (OS.isWindows() ? ".bat" : ""), "start-database"};
         ProcessExecutor startDatabase = new ProcessExecutor(startdbArgs);
 
         try {
@@ -84,7 +85,7 @@ public class DerbyNativeTemplateCustomizer implements TemplateCustomizer {
 
     public void clean(VirtualMachine virtualMachine) {
         String[] stopdbArgs = {serverContext.getInstallRoot().getAbsolutePath() +
-                File.separator + "bin" + File.separator + "asadmin" , "stop-database"};
+                File.separator + "bin" + File.separator + "asadmin" + (OS.isWindows() ? ".bat" : ""), "stop-database"};
         ProcessExecutor stopDatabase = new ProcessExecutor(stopdbArgs);
 
         try {
