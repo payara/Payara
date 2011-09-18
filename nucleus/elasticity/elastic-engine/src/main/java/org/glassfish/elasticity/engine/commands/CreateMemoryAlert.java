@@ -59,7 +59,7 @@ import org.glassfish.api.admin.RestEndpoints;
 @Service(name = "create-memory-alert")
 @I18n("create.memory.alert")
 @Scoped(PerLookup.class)
-@RestEndpoints({ @RestEndpoint(configBean = AlertConfig.class, opType = OpType.POST, path = "create-memory-alert", description = "Create memory alert") })
+@RestEndpoints({ @RestEndpoint(configBean = ElasticServices.class, opType = OpType.POST, path = "create-memory-alert", description = "Create memory alert") })
 public class CreateMemoryAlert implements AdminCommand{
 
     @Inject
@@ -68,10 +68,10 @@ public class CreateMemoryAlert implements AdminCommand{
     @Inject
     private CommandRunner cr;
 
-    @Param (name ="alert", primary = true)
+    @Param (name ="alertname", primary = true)
     String alertname;
 
-    @Param(name="service")
+    @Param(name="servicename")
     String servicename;
 
     @Param(name="threshold")
