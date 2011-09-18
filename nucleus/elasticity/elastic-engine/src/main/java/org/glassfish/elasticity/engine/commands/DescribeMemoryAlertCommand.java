@@ -115,6 +115,7 @@ public class DescribeMemoryAlertCommand implements AdminCommand{
         mp.addProperty("service ", servicename );
         mp.addProperty("alert", alertname);
         mp.addProperty("threshold", threshold);
+        mp.addProperty("sampleInterval", Integer.toString(alert.getSampleInterval()));
         mp.addProperty("enabled", enabled);
     }
 }
