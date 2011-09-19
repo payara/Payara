@@ -39,7 +39,6 @@
  */
 package org.glassfish.elasticity.engine.container;
 
-import com.sun.xml.internal.ws.api.message.Message;
 import org.glassfish.api.Startup;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.elasticity.config.serverbeans.AlertConfig;
