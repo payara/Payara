@@ -57,6 +57,7 @@ import org.jvnet.hk2.annotations.Service;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Server Pool based on non virtualized environments like the local machine
@@ -69,6 +70,7 @@ class LocalServerPool implements ServerPool {
     final Map<String, VirtualMachine> vms = new HashMap<String, VirtualMachine>();
     final ServerPoolConfig config;
     final LocalServerPoolFactory serverPoolFactory;
+    final AtomicLong vmId;
 
     public LocalServerPool(ServerPoolConfig config, LocalServerPoolFactory serverPoolFactory) {
         this.config = config;
@@ -82,6 +84,7 @@ class LocalServerPool implements ServerPool {
                 }
             }
         }
+        vmId = new AtomicLong(vms.size());
     }
 
     @Override
@@ -109,7 +112,7 @@ class LocalServerPool implements ServerPool {
             TemplateInstance template, VirtualCluster cluster, EventSource<AllocationPhase> source)
             throws VirtException {
 
-        String vmName = getName() + "-" + (vms.size()+1);
+        String vmName = getName() + "-" + vmId.incrementAndGet();
         VirtualMachineConfig config = VirtualMachineConfig.Utils.create(
                 vmName,
                 template.getConfig(),
