@@ -9,9 +9,9 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
  
-    <artifactId>paas.cloud-console-parent</artifactId>
+    <artifactId>paas-console-parent</artifactId>
     <packaging>pom</packaging>
-    <name>Cloud Console Parent</name>
+    <name>Paas Console Parent</name>
 
     <properties>
         <endorsed.dir>${project.build.directory}/endorsed</endorsed.dir>

@@ -4,12 +4,12 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.glassfish</groupId>
-        <artifactId>paas.cloud-console-parent</artifactId>
+        <artifactId>paas-console-parent</artifactId>
         <version>4.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>paas.cloud-console</artifactId>
+    <artifactId>paas-console</artifactId>
     <packaging>war</packaging>
 
     <name>Console.next Web App</name>
@@ -25,7 +25,7 @@
                 </configuration>
             </plugin>
         </plugins>
-        <finalName>admin-console</finalName>
+        <finalName>paas-console</finalName>
     </build>
     <dependencies>
         <dependency>
