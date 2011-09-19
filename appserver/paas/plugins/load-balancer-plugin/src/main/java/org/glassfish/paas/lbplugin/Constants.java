@@ -57,5 +57,7 @@ public class Constants {
     public static final String DEFAULT_HTTPS_PORT = "50443";
     public static final String ServiceTypeLB =
             org.glassfish.virtualization.util.ServiceType.Type.LB.name();
+    public static final String HTTP_PROTOCOL = "http";
+    public static final String IP_ADDRESS_PROP_NAME = "ip-address";
 
 }
