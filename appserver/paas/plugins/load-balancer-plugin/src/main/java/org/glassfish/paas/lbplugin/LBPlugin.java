@@ -116,7 +116,8 @@ public class LBPlugin implements Plugin {
         return Constants.LB.equalsIgnoreCase(referenceType);
     }
 
-    public Set<ServiceReference> getServiceReferences(ReadableArchive cloudArchive) {
+    @Override
+    public Set getServiceReferences(String appName, ReadableArchive cloudArchive) {
         HashSet<ServiceReference> serviceReferences = new HashSet<ServiceReference>();
         serviceReferences.add(new ServiceReference(cloudArchive.getName(), "JavaEE", null));
         return serviceReferences;
