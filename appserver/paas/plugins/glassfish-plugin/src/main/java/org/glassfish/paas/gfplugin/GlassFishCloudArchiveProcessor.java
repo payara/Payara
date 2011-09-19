@@ -72,10 +72,18 @@ public class GlassFishCloudArchiveProcessor {
             ReadableArchive cloudArchive, String appName) {
         Set<ServiceReference> serviceReferences = new HashSet<ServiceReference>();
         Set<ResourceReferenceDescriptor> resRefs = new HashSet<ResourceReferenceDescriptor>();
+        Application application = null;
         try {
-            //Application application = applicationFactory.openArchive(cloudArchive.getURI());
             ApplicationInfo appInfo = appRegistry.get(appName);
-            Application application = appInfo.getMetaData(Application.class);
+            if(appInfo != null){
+                application = appInfo.getMetaData(Application.class);
+            }
+            //TODO : this will not work when the application has no-descriptor
+            //and components are defined via annotations.
+            if(application == null){
+                application = applicationFactory.openArchive(cloudArchive.getURI());
+            }
+
             if(application == null){
                 return serviceReferences;
             }
