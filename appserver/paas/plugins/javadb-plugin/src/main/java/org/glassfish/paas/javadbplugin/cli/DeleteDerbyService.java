@@ -51,6 +51,7 @@ import org.glassfish.paas.orchestrator.provisioning.ProvisionerUtil;
 import org.glassfish.paas.orchestrator.provisioning.DatabaseProvisioner;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceType;
 import org.glassfish.paas.orchestrator.provisioning.iaas.CloudProvisioner;
+import org.glassfish.virtualization.runtime.VirtualMachineLifecycle;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
@@ -93,6 +94,8 @@ public class DeleteDerbyService implements AdminCommand {
     @Inject(optional = true) // made it optional for non-virtual scenario to work
     VirtualClusters virtualClusters;
 
+    @Inject(optional=true)
+    VirtualMachineLifecycle vmLifecycle;
 
     public void execute(AdminCommandContext context) {
 
@@ -113,8 +116,7 @@ public class DeleteDerbyService implements AdminCommand {
                     VirtualCluster virtualCluster = virtualClusters.byName(serviceName);
                     String vmId = dbServiceUtil.getInstanceID(serviceName, appName, ServiceType.DATABASE);
                     VirtualMachine vm = virtualCluster.vmByName(vmId);
-
-                    vm.delete();
+                    vmLifecycle.delete(vm);
                     dbServiceUtil.unregisterCloudEntry(serviceName, appName);
 
                     if (virtualCluster != null) {
