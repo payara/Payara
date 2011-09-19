@@ -45,10 +45,9 @@ import com.sun.enterprise.ee.cms.core.*;
 import com.sun.enterprise.ee.cms.core.AliveAndReadySignal;
 import com.sun.enterprise.ee.cms.core.GroupManagementService;
 import com.sun.enterprise.ee.cms.impl.client.*;
-import com.sun.enterprise.ee.cms.logging.GMSLogDomain;
-import com.sun.enterprise.ee.cms.spi.MemberStates;
 import com.sun.enterprise.mgmt.transport.NetworkUtility;
 import com.sun.enterprise.mgmt.transport.grizzly.GrizzlyConfigConstants;
+import com.sun.enterprise.util.io.ServerDirs;
 import com.sun.logging.LogDomains;
 import org.glassfish.api.Startup;
 import org.glassfish.api.admin.ServerEnvironment;
@@ -66,10 +65,13 @@ import org.jvnet.hk2.component.PostConstruct;
 import org.jvnet.hk2.config.Dom;
 import org.jvnet.hk2.config.types.Property;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
@@ -133,6 +135,12 @@ public class GMSAdapterImpl implements GMSAdapter, PostConstruct, CallBack {
 
     @Inject
     Clusters clusters;
+
+    @Inject
+    Nodes nodes;
+
+    @Inject
+    Servers servers;
 
     private HealthHistory hHistory;
 
@@ -469,6 +477,12 @@ public class GMSAdapterImpl implements GMSAdapter, PostConstruct, CallBack {
                             configProps.put(GrizzlyConfigConstants.TCPENDPORT.toString(), value);
                         } else if (name.compareTo("TEST_FAILURE_RECOVERY") == 0) {
                             testFailureRecoveryHandler = Boolean.parseBoolean(value);
+                        } else if (ServiceProviderConfigurationKeys
+                            .DISCOVERY_URI_LIST.name().equals(name) &&
+                            "generate".equals(value)) {
+
+                            value = generateDiscoveryUriList();
+                            configProps.put(name, value);
                         } else {
                             // handle normal case.  one to one mapping.
                             configProps.put(name, value);
@@ -485,18 +499,123 @@ public class GMSAdapterImpl implements GMSAdapter, PostConstruct, CallBack {
         }
     }
 
+    /*
+     * Get existing nodes based on cluster element in domain.
+     * Then check for DAS address in das.properties.
+     */
+    private String generateDiscoveryUriList() {
+        final Level level = Level.FINE;
+
+        // get cluster member server refs
+        Set<String> instanceNames = new HashSet<String>();
+        if (logger.isLoggable(level)) {
+            logger.log(level, String.format(
+                "checking cluster.getServerRef() for '%s'",
+                cluster.getName()));
+        }
+        for (ServerRef sRef : cluster.getServerRef()) {
+
+            /*
+             * When an instance (not DAS) starts up, it will add
+             * its own address to the discovery list. This is ok
+             * now. If we want to skip it, here's the place to
+             * check.
+             */
+            if (logger.isLoggable(level)) {
+                logger.log(level, String.format(
+                    "adding server ref %s to set of instance names",
+                    sRef.getRef()));
+            }
+            instanceNames.add(sRef.getRef());
+        }
+
+        StringBuilder sb = new StringBuilder();
+        final String SEP = ",";
+
+        // use server refs to find matching nodes
+        for (String name : instanceNames) {
+            Server server = servers.getServer(name);
+            if (server != null) {
+                if (logger.isLoggable(level)) {
+                    logger.log(level, String.format("found server for name %s",
+                        name));
+                }
+                Node node = nodes.getNode(server.getNodeRef());
+                if (node != null) {
+                    if (logger.isLoggable(level)) {
+                        logger.log(level, String.format(
+                            "Adding host '%s' to discovery list",
+                            node.getNodeHost()));
+                    }
+                    sb.append(node.getNodeHost()).append(SEP);
+                }
+            }
+        }
+
+        // add das location from das.properties if needed
+        if (server.isInstance()) {
+            try {
+                ServerDirs sDirs = new ServerDirs(env.getInstanceRoot());
+                File dasPropsFile = sDirs.getDasPropertiesFile();
+                if (logger.isLoggable(level)) {
+                    logger.log(level, String.format(
+                        "found das.props file at %s",
+                        dasPropsFile.getAbsolutePath()));
+                }
+                Properties dasProps = getProperties(dasPropsFile);
+                String host = dasProps.getProperty("agent.das.host");
+                if (logger.isLoggable(level)) {
+                    logger.log(level, String.format(
+                        "adding '%s' from das.props file", host));
+                }
+                sb.append(host).append(SEP);
+            } catch (IOException ioe) {
+                logger.log(Level.WARNING, ioe.toString());
+            }
+        }
+
+        // trim list if needed and return
+        int lastCommaIndex = sb.lastIndexOf(SEP);
+        if (lastCommaIndex != -1) {
+            sb.deleteCharAt(lastCommaIndex);
+        }
+        if (logger.isLoggable(level)) {
+            logger.log(level, String.format("returning discovery list '%s'",
+                sb.toString()));
+        }
+        return sb.toString();
+    }
+
+    final protected Properties getProperties(File propFile) throws IOException {
+        Properties props = new Properties();
+        FileInputStream fis = null;
+        try {
+            fis = new FileInputStream(propFile);
+            props.load(fis);
+            fis.close();
+            fis = null;
+        } finally {
+            if (fis != null) {
+                try {
+                    fis.close();
+                } catch (IOException ignored) {}
+            }
+        }
+        return props;
+    }
+
     private boolean validateGMSProperty(String propertyName) {
         boolean result = false;
         Object key = null;
         try {
             key = GrizzlyConfigConstants.valueOf(propertyName);
             result = true;
-        } catch (Throwable t) {}
+        } catch (Throwable ignored) {}
         if (key == null) {
             try {
                 key = ServiceProviderConfigurationKeys.valueOf(propertyName);
                 result = true;
-            } catch (Throwable t) {}
+            } catch (Throwable ignored) {}
         }
         return key != null && result;
     }
