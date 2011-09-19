@@ -71,7 +71,7 @@ public class ListLBServices extends BaseLBService implements AdminCommand {
             if (serviceName.equals("*")) {
                 Services services = lbServiceUtil.getServices();
                 for (Service service : services.getServices()) {
-                    if (service.getType().equals(ServiceType.LOAD_BALANCER)) {
+                    if (service.getType().equals(ServiceType.LOAD_BALANCER.name())) {
                         if (appName != null) {
                             if (service instanceof ApplicationScopedService) {
                                 if (appName.equals(((ApplicationScopedService) service).getApplicationName())) {
