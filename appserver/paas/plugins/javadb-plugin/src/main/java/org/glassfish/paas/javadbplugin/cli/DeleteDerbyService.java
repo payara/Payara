@@ -45,7 +45,6 @@ import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.CommandLock;
-import org.glassfish.paas.orchestrator.provisioning.ApplicationServerProvisioner;
 import org.glassfish.paas.orchestrator.provisioning.ServiceInfo;
 import org.glassfish.paas.orchestrator.provisioning.ProvisionerUtil;
 import org.glassfish.paas.orchestrator.provisioning.DatabaseProvisioner;
@@ -66,6 +65,7 @@ import java.util.List;
 
 /**
  * @author Jagadish Ramu
+ * @author Shalini M
  */
 @Service(name = "_delete-derby-service")
 @Scoped(PerLookup.class)
@@ -87,6 +87,9 @@ public class DeleteDerbyService implements AdminCommand {
     @Param(name = "waitforcompletion", optional = true, defaultValue = "false")
     private boolean waitforcompletion;
 
+    @Param(name="virtualcluster", optional=true)
+    private String virtualClusterName;
+    
     @Inject(optional = true) // made it optional for non-virtual scenario to work
     private TemplateRepository templateRepository;
 
@@ -108,21 +111,13 @@ public class DeleteDerbyService implements AdminCommand {
         }
 
         if (templateRepository != null && virtualClusters != null) { // we are in virtualized environment.
-            ApplicationServerProvisioner provisioner =
-                    provisionerUtil.getAppServerProvisioner("localhost");
-            provisioner.stopCluster("localhost", serviceName); // this stops all the VMs also.
             if (virtualClusters != null && serviceName != null) {
                 try {
-                    VirtualCluster virtualCluster = virtualClusters.byName(serviceName);
+                    VirtualCluster virtualCluster = virtualClusters.byName(virtualClusterName);
                     String vmId = dbServiceUtil.getInstanceID(serviceName, appName, ServiceType.DATABASE);
                     VirtualMachine vm = virtualCluster.vmByName(vmId);
                     vmLifecycle.delete(vm);
                     dbServiceUtil.unregisterCloudEntry(serviceName, appName);
-
-                    if (virtualCluster != null) {
-                        virtualClusters.remove(virtualCluster);  // removes config.
-                    }
-
                     report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
                     report.setMessage("Service with name [" +
                             serviceName + "] is decommissioned successfully.");
@@ -133,7 +128,6 @@ public class DeleteDerbyService implements AdminCommand {
                     report.setFailureCause(ex);
                 }
             }
-            provisioner.deleteCluster("localhost", serviceName, false);
             return;
         }else{
             try{

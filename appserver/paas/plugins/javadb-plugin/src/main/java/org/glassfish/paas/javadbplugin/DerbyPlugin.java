@@ -73,6 +73,7 @@ import java.util.logging.Logger;
 
 /**
  * @author Jagadish Ramu
+ * @author Shalini M
  */
 @Scoped(PerLookup.class)
 @Service
@@ -169,6 +170,7 @@ public static final String RDBMS_ServiceType = "Database";
             result = commandRunner.run("_create-derby-service",
                     "--templateid=" + templateId,
                     "--serviceconfigurations", serviceConfigurations,
+                    "--virtualcluster", serviceDescription.getVirtualClusterName(),
                     "--waitforcompletion=true", appNameParam, serviceName);
         } else if (serviceDescription.getServiceCharacteristics() != null) {
             String serviceCharacteristics = formatArgument(serviceDescription.
@@ -176,6 +178,7 @@ public static final String RDBMS_ServiceType = "Database";
             result = commandRunner.run("_create-derby-service",
                     "--servicecharacteristics=" + serviceCharacteristics,
                     "--serviceconfigurations", serviceConfigurations,
+                    "--virtualcluster", serviceDescription.getVirtualClusterName(),
                     "--waitforcompletion=true", appNameParam, serviceName);
         }
             if (result.getExitStatus().equals(CommandResult.ExitStatus.FAILURE)) {
@@ -311,7 +314,9 @@ public static final String RDBMS_ServiceType = "Database";
             appNameParam="--appname="+serviceDescription.getAppName();
         }
         CommandResult result = commandRunner.run("_delete-derby-service",
-                "--waitforcompletion=true", appNameParam, serviceDescription.getName());
+                "--waitforcompletion=true",
+                "--virtualcluster", serviceDescription.getVirtualClusterName(),
+                appNameParam, serviceDescription.getName());
         System.out.println("_delete-derby-service command output [" + result.getOutput() + "]");
         if (result.getExitStatus() == CommandResult.ExitStatus.SUCCESS) {
             return true;

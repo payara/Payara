@@ -69,6 +69,7 @@ import java.util.Set;
 
 /**
  * @author Jagadish Ramu
+ * @author Shalini M
  */
 @Service(name = "_create-derby-service")
 @Scoped(PerLookup.class)
@@ -110,8 +111,11 @@ public class CreateDerbyService implements AdminCommand, Runnable {
     @Param(name="appname", optional=true)
     private String appName;
 
-    public void execute(AdminCommandContext context) {
+    @Param(name = "virtualcluster", optional = true)
+    private String virtualClusterName;
 
+    public void execute(AdminCommandContext context) {
+        System.out.println("_create-derby-service called.");
         final ActionReport report = context.getActionReport();
         // Check if the service is already configured.
         if (dbServiceUtil.isServiceAlreadyConfigured(serviceName, appName, ServiceType.DATABASE)) {
@@ -174,16 +178,7 @@ public class CreateDerbyService implements AdminCommand, Runnable {
 
         if (matchingTemplate != null) {
             try {
-                // Create the cluster.
-                // TODO :: we may need to create cluster in remote DAS.
-                // TODO :: So, first we may first need to provision the remote DAS
-                // TODO :: for now, everything is managed by the local DAS.
-                ApplicationServerProvisioner provisioner =
-                        provisionerUtil.getAppServerProvisioner("localhost");
-                provisioner.createCluster("localhost", serviceName);
-
-                // provision VMs.
-                VirtualCluster vCluster = virtualClusters.byName(serviceName);
+                VirtualCluster vCluster = virtualClusters.byName(virtualClusterName);
                 PhasedFuture<AllocationPhase, VirtualMachine> future =
                         iaas.allocate(new AllocationConstraints(matchingTemplate, vCluster), null);
 
