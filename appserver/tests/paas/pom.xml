@@ -42,62 +42,13 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>org.glassfish.tests.paas</groupId>
-    <artifactId>service_metadata.provision_using_specified_template</artifactId>
+    <groupId>org.glassfish.tests</groupId>
+    <artifactId>paas</artifactId>
     <version>4.0-SNAPSHOT</version>
-    <name>Provision service(s) using specified template</name>
-    <packaging>war</packaging>
-    <build>
-        <finalName>basic_paas_sample2</finalName>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <source>1.6</source>
-                    <target>1.6</target>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <configuration>
-                    <skip>true</skip>
-                </configuration>
-                <executions>
-                    <execution>
-                        <phase>integration-test</phase>
-                        <goals>
-                            <goal>test</goal>
-                        </goals>
-                        <configuration>
-                            <skip>false</skip>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-    </build>
-    <dependencies>
-        <dependency>
-            <groupId>org.glassfish</groupId>
-            <artifactId>javax.servlet</artifactId>
-            <version>3.1</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.3.1</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.extras</groupId>
-            <artifactId>glassfish-embedded-static-shell</artifactId>
-            <version>${project.version}</version>
-            <scope>system</scope>
-            <systemPath>${env.S1AS_HOME}/lib/embedded/glassfish-embedded-static-shell.jar
-            </systemPath>
-        </dependency>
-    </dependencies>
+    <name>PaaS samples</name>
+    <packaging>pom</packaging>
+    <modules>
+      <module>basic</module>
+      <module>service_metadata/provision_using_specified_template</module>
+    </modules>
 </project>
