@@ -541,31 +541,7 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator, Application
 
         // Clean up the glassfish cluster, virtual cluster config, etc..
         // TODO :: assuming app-scoped virtual cluster. fix it when supporting shared/external service.
-        try {
-            VirtualCluster virtualCluster = virtualClusters.byName(virtualClusterName);
-            if (virtualCluster != null) {
-                virtualClusters.remove(virtualCluster);  // removes config.
-            }
-        } catch (Exception ex) {
-            logger.log(Level.WARNING, ex.getLocalizedMessage(), ex);
-        }
-
-        /*
-        stop-cluster is deliberately commented. invoking stop-cluster causes the
-        re-deploy to fail next time (due to IMS layer fails to create virtual-machine config).
-        But since all the instances in the cluster are already stopped we don't really need to call stop-cluster.
-        
-       CommandResult commandResult = commandRunner.run("stop-cluster", virtualClusterName);
-       Throwable failureCause = commandResult.getFailureCause();
-       if (failureCause != null) {
-           logger.log(Level.WARNING, failureCause.getLocalizedMessage(), failureCause);
-       }
-        */
-        CommandResult commandResult = commandRunner.run("delete-cluster", virtualClusterName);
-        Throwable failureCause = commandResult.getFailureCause();
-        if (failureCause != null) {
-            logger.log(Level.WARNING, failureCause.getLocalizedMessage(), failureCause);
-        }
+        removeVirtualCluster(virtualClusterName);
     }
 
     // Name of the JavaEE service will be the name of the virtual cluster.
@@ -639,6 +615,11 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator, Application
                     logger.log(Level.FINEST, "Failure while rolling back provisioned service " + ps, e);
                 }
             }
+
+            // Clean up the glassfish cluster, virtual cluster config, etc..
+            // TODO :: assuming app-scoped virtual cluster. fix it when supporting shared/external service.
+            removeVirtualCluster(virtualClusterName);
+
             //XXX (Siva): Failure handling. Exception design.
             DeploymentException re = new DeploymentException("Failure while provisioning services");
             re.initCause(rootCause);
@@ -647,6 +628,36 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator, Application
         return appPSs;
     }
 
+    private void removeVirtualCluster(String virtualClusterName) {
+        try {
+            VirtualCluster virtualCluster = virtualClusters.byName(virtualClusterName);
+            if (virtualCluster != null) {
+                virtualClusters.remove(virtualCluster);  // removes config.
+            }
+        } catch (Exception ex) {
+            logger.log(Level.WARNING, ex.getLocalizedMessage(), ex);
+        }
+
+        /*
+        stop-cluster is deliberately commented. invoking stop-cluster causes the
+        re-deploy to fail next time (due to IMS layer fails to create virtual-machine config).
+        But since all the instances in the cluster are already stopped we don't really need to call stop-cluster.
+
+       CommandResult commandResult = commandRunner.run("stop-cluster", virtualClusterName);
+       Throwable failureCause = commandResult.getFailureCause();
+       if (failureCause != null) {
+           logger.log(Level.WARNING, failureCause.getLocalizedMessage(), failureCause);
+       }
+        */
+        CommandResult commandResult = commandRunner.run("delete-cluster", virtualClusterName);
+        logger.info("Command delete-cluster [" + virtualClusterName + "] executed. " +
+                "Command Output [" + commandResult.getOutput() + "]");
+        Throwable failureCause = commandResult.getFailureCause();
+        if (failureCause != null) {
+            logger.log(Level.WARNING, failureCause.getLocalizedMessage(), failureCause);
+        }
+    }
+    
     private Set<ProvisionedService> retrieveProvisionedServices(final Set<Plugin> installedPlugins,
                                                       ServiceMetadata appServiceMetadata, final DeploymentContext dc) {
         logger.entering(getClass().getName(), "retrieveProvisionedServices");
