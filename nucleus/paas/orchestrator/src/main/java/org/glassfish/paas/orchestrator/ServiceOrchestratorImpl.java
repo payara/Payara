@@ -110,7 +110,22 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator, Application
         Set<Plugin> plugins = new HashSet<Plugin>();
         plugins.addAll(habitat.getAllByContract(Plugin.class));
         logger.log(Level.INFO, "Discovered plugins:" + plugins);
+        checkForDuplicatePlugins(plugins);
         return plugins;
+    }
+
+    private void checkForDuplicatePlugins(Set<Plugin> plugins) {
+        Map<String, Plugin> serviceTypes = new HashMap<String, Plugin>();
+        for(Plugin plugin : plugins){
+            String serviceType = plugin.getServiceType().toString();
+            if(serviceTypes.get(serviceType) != null){
+                throw new RuntimeException("Support for choosing a plugin from multiple plugins ["+plugin.getClass().getName()+ "," +
+                        serviceTypes.get(serviceType).getClass().getName() +"] that handle the service" +
+                        "type ["+serviceType+"] is not yet available");
+            }else{
+                serviceTypes.put(serviceType, plugin);
+            }
+        }
     }
 
 
@@ -380,7 +395,7 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator, Application
             }
         }
         logger.log(Level.INFO, "After adding ServiceReferences = " + appServiceMetadata);
-
+        Map<String, Plugin> existingSDs = new HashMap<String, Plugin>();
         //1.3 Ensure all service references have a related service description
         Set<ServiceDescription> appSDs = appServiceMetadata.getServiceDescriptions();
         Set<ServiceReference> appSRs = appServiceMetadata.getServiceReferences();
@@ -402,6 +417,17 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator, Application
                 for (Plugin svcPlugin : installedPlugins) {
                     if (svcPlugin.isReferenceTypeSupported(svcRefType)) {
                         ServiceDescription defSD = svcPlugin.getDefaultServiceDescription(appName, sr);
+                        if(existingSDs.containsKey(defSD.getName())){
+                            Plugin plugin = existingSDs.get(defSD.getName());
+                            if(svcPlugin.getClass().equals(plugin.getClass()) && svcPlugin.getServiceType().equals(plugin.getServiceType())){
+                                //service description provided by same plugin, avoid adding the service-description.
+                                continue;
+                            }else{
+                                existingSDs.put(defSD.getName(), svcPlugin);
+                            }
+                        }else{
+                            existingSDs.put(defSD.getName(), svcPlugin);
+                        }
                         appServiceMetadata.addServiceDescription(defSD);
                         continue; //ignore the rest of the plugins
                     }
