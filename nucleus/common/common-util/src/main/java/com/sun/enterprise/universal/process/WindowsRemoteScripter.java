@@ -39,6 +39,8 @@
  */
 package com.sun.enterprise.universal.process;
 
+import java.util.logging.Level;
+import org.jinterop.dcom.common.JISystem;
 import org.jinterop.dcom.core.IJIComObject;
 import org.jinterop.dcom.core.JIComServer;
 import org.jinterop.dcom.core.JIProgId;
@@ -66,6 +68,9 @@ public class WindowsRemoteScripter {
      */
     public final void run(String cmd) throws WindowsException {
         try {
+            // JISystem is **extremely** verbose!
+            JISystem.getLogger().setLevel(Level.SEVERE);
+
             // Create a session
             JISession session = JISession.createSession(bonafides.getDomain(),
                     bonafides.getUser(), bonafides.getPassword());
