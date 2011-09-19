@@ -40,6 +40,10 @@
 
 package org.glassfish.paas.orchestrator.service.metadata;
 
+import org.glassfish.internal.api.Globals;
+import org.glassfish.virtualization.spi.TemplateInstance;
+import org.glassfish.virtualization.spi.TemplateRepository;
+
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
@@ -155,9 +159,17 @@ public class ServiceDescription {
                     return characteristic.getValue();
                 }
             }
+        } else if (templateOrCharacteristics instanceof TemplateIdentifier) {
+            // TODO :: add service-type as an attribute of service-description.
+            // TODO :: for now, compute the service-type using template repository, search, etc...
+            TemplateIdentifier templateId = (TemplateIdentifier) templateOrCharacteristics;
+            TemplateRepository templateRepository =
+                    Globals.getDefaultHabitat().getByContract(TemplateRepository.class);
+            TemplateInstance templateInstance =
+                    templateRepository.byName(templateId.getId());
+            return templateInstance.getConfig().byName("ServiceType").getValue();
         }
-        // TODO :: retrieve the template using the template ID and identity the serviceType
-        return null;
+        return null; // should never come here.
     }
 
 
