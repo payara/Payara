@@ -75,6 +75,11 @@ import org.jvnet.hk2.component.PerLookup;
 import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.WebBundleDescriptor;
 import com.sun.enterprise.deployment.archivist.ApplicationFactory;
+import org.glassfish.paas.orchestrator.service.metadata.TemplateIdentifier;
+import org.glassfish.virtualization.config.Template;
+import org.glassfish.virtualization.spi.TemplateCondition;
+import org.glassfish.virtualization.spi.TemplateInstance;
+import org.glassfish.virtualization.spi.TemplateRepository;
 
 /**
  * @author Jagadish Ramu
@@ -92,10 +97,8 @@ public class LBPlugin implements Plugin {
     @Inject
     private ApplicationFactory applicationFactory;
 
-    private static final String LB = "HTTP_LOAD_BALANCER";
-
-    public static final String LB_ServiceType =
-            org.glassfish.virtualization.util.ServiceType.Type.LB.name();
+    @Inject(optional = true) // made it optional for non-virtual scenario to work
+    private TemplateRepository templateRepository;
 
     private static Logger logger = Logger.getLogger(LBPlugin.class.getName());
 
@@ -109,26 +112,27 @@ public class LBPlugin implements Plugin {
     }
 
     public boolean isReferenceTypeSupported(String referenceType) {
-        LBPluginLogger.getLogger().log(Level.INFO,"Given referenceType : " + referenceType + " : " + LB.equalsIgnoreCase(referenceType));
-        return LB.equalsIgnoreCase(referenceType);
+        LBPluginLogger.getLogger().log(Level.INFO,"Given referenceType : " + referenceType + " : " + Constants.LB.equalsIgnoreCase(referenceType));
+        return Constants.LB.equalsIgnoreCase(referenceType);
     }
 
-    public Set<ServiceReference> getServiceReferences(String appName, ReadableArchive cloudArchive) {
+    public Set<ServiceReference> getServiceReferences(ReadableArchive cloudArchive) {
         HashSet<ServiceReference> serviceReferences = new HashSet<ServiceReference>();
         serviceReferences.add(new ServiceReference(cloudArchive.getName(), "JavaEE", null));
         return serviceReferences;
     }
 
     public ServiceDescription getDefaultServiceDescription(String appName, ServiceReference svcRef) {
-        if (LB.equals(svcRef.getServiceRefType())) {
+        if (Constants.LB.equals(svcRef.getServiceRefType())) {
+            TemplateInstance template = getLBTemplate();
             // create default service description.
-            String defaultServiceName = appName + "-lb";
-            LBPluginLogger.getLogger().log(Level.INFO,"Default lb service name : " + defaultServiceName);
-            List<Property> properties = new ArrayList<Property>();
-            properties.add(new Property("service-type", LB_ServiceType));
-            properties.add(new Property("os-name", System.getProperty("os.name"))); // default OS will be same as that of what Orchestrator is running on.
+            String defaultServiceName = getDefaultServiceName(appName);
+            TemplateIdentifier identifier = new TemplateIdentifier();
+            identifier.setId(template.getConfig().getName());
+            //List<Property> properties = getDefaultServiceProperties(template);
+            List<Property> configurations = getDefaultServiceConfigurations(template);
             ServiceDescription sd = new ServiceDescription(defaultServiceName, appName,
-                    "lazy", new ServiceCharacteristics(properties), null);
+                    "lazy", identifier, configurations);
 
             // Fill the required details in service reference.
             Properties svcRefProps = new Properties();//lbProvisioner.getDefaultConnectionProperties();
@@ -139,6 +143,40 @@ public class LBPlugin implements Plugin {
         } else {
             return null;
         }
+    }
+
+    private TemplateInstance getLBTemplate(){
+        TemplateCondition condition =
+                new org.glassfish.virtualization.util.ServiceType(
+                Constants.ServiceTypeLB);
+        for (TemplateInstance ti : templateRepository.all()) {
+            if(ti.satisfies(condition)){
+                return ti;
+            }
+        }
+        throw new RuntimeException("No LB template exists");
+    }
+
+    private List<Property> getDefaultServiceProperties(TemplateInstance template) {
+        List<Property> properties = new ArrayList<Property>();
+        properties.add(new Property(Constants.SERVICE_TYPE_PROP_NAME,
+                Constants.ServiceTypeLB));
+        return properties;
+    }
+
+    private List<Property> getDefaultServiceConfigurations(TemplateInstance template) {
+        List<Property> properties = new ArrayList<Property>();
+        properties.add(new Property(Constants.HTTP_PORT_PROP_NAME,
+                Constants.DEFAULT_HTTP_PORT));
+        properties.add(new Property(Constants.SSL_ENABLED_PROP_NAME,
+                Constants.DEFAULT_SSL_ENABLED));
+        properties.add(new Property(Constants.HTTPS_PORT_PROP_NAME,
+                Constants.DEFAULT_HTTPS_PORT));
+        return properties;
+    }
+
+    private String getDefaultServiceName(String appName){
+        return appName + "-lb";
     }
 
     public ProvisionedService provisionService(ServiceDescription serviceDescription, DeploymentContext dc) {
@@ -158,10 +196,16 @@ public class LBPlugin implements Plugin {
                 params.add("--appname");
                 params.add(serviceDescription.getAppName());
             }
-            String serviceCharacteristics = formatArgument(serviceDescription.
-                    getServiceCharacteristics().getServiceCharacteristics());
-            String serviceConfigurations = formatArgument(serviceDescription.getConfigurations());
-            params.add("--servicecharacteristics=" + serviceCharacteristics);
+            if (serviceDescription.getServiceCharacteristics() != null) {
+                String serviceCharacteristics = formatArgument(serviceDescription
+                        .getServiceCharacteristics().getServiceCharacteristics());
+                params.add("--servicecharacteristics=" + serviceCharacteristics);
+            }else if(serviceDescription.getTemplateIdentifier() != null){
+                String templateID = serviceDescription.getTemplateIdentifier().getId();
+                params.add("--templateid=" + templateID);
+            }
+            String serviceConfigurations =
+                    formatArgument(serviceDescription.getConfigurations());
             params.add("--serviceconfigurations");
             params.add(serviceConfigurations);
             params.add("--waitforcompletion=true");
@@ -317,12 +361,15 @@ public class LBPlugin implements Plugin {
             boolean isWebApp = (application.getBundleDescriptors(
                     WebBundleDescriptor.class).size() > 0);
             if(isWebApp) {
-                List<Property> properties = new ArrayList<Property>();
-                properties.add(new Property("service-type", LB_ServiceType));
+                TemplateInstance template = getLBTemplate();
+                //List<Property> properties = getDefaultServiceProperties(template);
+                List<Property> configurations = getDefaultServiceConfigurations(template);
+                TemplateIdentifier identifier = new TemplateIdentifier();
+                identifier.setId(template.getConfig().getName());
                 // TODO :: check if the cloudArchive.getName() is okay.
                 ServiceDescription sd = new ServiceDescription(
-                        cloudArchive.getName() + "-lb", appName, "lazy",
-                        new ServiceCharacteristics(properties), null);
+                        getDefaultServiceName(cloudArchive.getName()), appName, "lazy",
+                        identifier, configurations);
                 defs.add(sd);
             }
         }
