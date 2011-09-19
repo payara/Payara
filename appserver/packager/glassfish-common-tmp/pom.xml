@@ -148,6 +148,13 @@
             <artifactId>mimepull</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>org.glassfish.external</groupId>
+            <artifactId>ant</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+
         <!-- embedded shell fragment -->
         <dependency>
            <groupId>org.glassfish.extras</groupId>
