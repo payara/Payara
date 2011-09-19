@@ -198,10 +198,10 @@ public class ElasticServiceContainer {
 
     public void startContainer() {
 
-        isDAS = serverEnvironment.isDas();
+        isDAS = "server".equals(serverEnvironment.getInstanceName());
 
-        if (gmsAdapterService != null && gmsAdapterService.getGMSAdapter() != null) {
-            GMSAdapter gmsAdapter = gmsAdapterService.getGMSAdapter();
+        if (gmsAdapterService != null && gmsAdapterService.getGMSAdapterByName(service.getName()) != null) {
+            GMSAdapter gmsAdapter = gmsAdapterService.getGMSAdapterByName(service.getName());
 
             gsp = new GroupServiceProvider(gmsAdapter.getModule().getInstanceName(),
                     gmsAdapter.getClusterName(), false);
