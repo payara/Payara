@@ -44,7 +44,7 @@ if [ "$?" -ne 0 ] ; then
 fi
 
 echo Installing modules to $MODULE_DIR
-cp plugin-system/target/plugin-system-*.jar $MODULE_DIR
+cp plugin-system/target/paas.console.plugin-system.jar $MODULE_DIR
 for PLUGIN in plugins/* ; do
     PLUGIN=`basename $PLUGIN`
     if [ -d plugins/$PLUGIN ] ; then

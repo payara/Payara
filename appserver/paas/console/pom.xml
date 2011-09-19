@@ -2,11 +2,16 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>org.glassfish.admingui</groupId>
-    <artifactId>console-next-parent</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <parent>
+        <groupId>org.glassfish</groupId>
+        <artifactId>paas</artifactId>
+        <version>4.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+ 
+    <artifactId>paas.cloud-console-parent</artifactId>
     <packaging>pom</packaging>
-    <name>Console.next Demo Parent</name>
+    <name>Cloud Console Parent</name>
 
     <properties>
         <endorsed.dir>${project.build.directory}/endorsed</endorsed.dir>
@@ -17,7 +22,7 @@
         <version.junit>4.8.2</version.junit>
         <version.mojarra>2.1.3-b01</version.mojarra>
         <version.osgi>4.2.0</version.osgi>
-        <version.trinidad>2.0.1-SNAPSHOT</version.trinidad>
+        <version.trinidad>2.0.2-SNAPSHOT</version.trinidad>
     </properties>
 
     <repositories>

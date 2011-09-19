@@ -2,16 +2,14 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-
     <parent>
-        <groupId>org.glassfish.admingui</groupId>
-        <artifactId>console-next-parent</artifactId>
-        <version>1.0-SNAPSHOT</version>
+        <groupId>org.glassfish</groupId>
+        <artifactId>paas.cloud-console-parent</artifactId>
+        <version>4.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <groupId>org.glassfish.admingui</groupId>
-    <artifactId>admin-console</artifactId>
+    <artifactId>paas.cloud-console</artifactId>
     <packaging>war</packaging>
 
     <name>Console.next Web App</name>
@@ -41,8 +39,9 @@
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.admingui</groupId>
-            <artifactId>plugin-system-jsf</artifactId>
+            <groupId>org.glassfish</groupId>
+            <artifactId>paas.console.plugin-system-jsf</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>javax.faces</groupId>
@@ -50,7 +49,7 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>plugin-system</artifactId>
+            <artifactId>paas.console.plugin-system</artifactId>
             <version>${project.version}</version>
             <scope>provided</scope>
         </dependency>
