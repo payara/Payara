@@ -1,0 +1,6 @@
+Bundle-Activator:       org.glassfish.admingui.plugins.osgi.Activator
+
+-exportcontents:        \
+                        org.glassfish.admingui.plugins;  \
+                        org.glassfish.admingui.plugins.annotations; \
+                        version=${project.osgi.version}

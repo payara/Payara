@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="iso-8859-1" standalone="yes" ?>
+<!--
+    Licensed to the Apache Software Foundation (ASF) under one
+    or more contributor license agreements.  See the NOTICE file
+    distributed with this work for additional information
+    regarding copyright ownership.  The ASF licenses this file
+    to you under the Apache License, Version 2.0 (the
+    "License"); you may not use this file except in compliance
+    with the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing,
+    software distributed under the License is distributed on an
+    "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+    KIND, either express or implied.  See the License for the
+    specific language governing permissions and limitations
+    under the License.
+	   
+-->
+
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:ps="http://admingui.glassfish.org/console"
+                xmlns:tr="http://myfaces.apache.org/trinidad"
+                xmlns:trh="http://myfaces.apache.org/trinidad/html">
+    <tr:form>
+        <tr:panelBox text="RDBMS"
+             background="light"
+             inlineStyle = "width: 600px"
+             id="databaseDetails">
+                    <tr:selectOneListbox value="#{listServicesBean.selectedDatabaseName}" inlineStyle="display: inline-block;"
+                                         contentStyle="width: 187px;" size="6">
+                        <f:selectItems value="#{listServicesBean.databaseSelectItems}" />
+                        <f:ajax render=":databaseDetails"/>
+                    </tr:selectOneListbox>
+                    <tr:panelFormLayout inlineStyle="width: 200px; display: inline-block; vertical-align: top">
+                        <tr:inputText label="Database Name:" value="#{listServicesBean.selectedDatabase.name}" />
+                        <tr:inputText label="User:" value="#{listServicesBean.selectedDatabase.user}" />
+                        <tr:inputText label="Password:" value="#{listServicesBean.selectedDatabase.password}"  secret="true"/>
+                        <tr:inputText label="JNDI Name:" value="#{listServicesBean.selectedDatabase.jndiName}"/>
+                    </tr:panelFormLayout>
+        </tr:panelBox>
+        <tr:panelBox text="JavaEE"
+             background="light"
+             inlineStyle = "width: 600px;"
+             id="javaEEDetails">
+                    <tr:selectOneListbox value="#{listServicesBean.selectedJavaEEName}" inlineStyle="display: inline-block;"
+                                         contentStyle="width: 187px;" size="6">
+                        <f:selectItems value="#{listServicesBean.javaEESelectItems}" />
+                        <f:ajax render=":javaEEDetails"/>
+                    </tr:selectOneListbox>
+                    <tr:panelFormLayout inlineStyle="width: 200px; display: inline-block; vertical-align: top">
+                        <tr:inputText label="Template Name:" value="#{listServicesBean.selectedJavaEE.name}" />
+                        <tr:inputText id="amount" label="Min-Max # of Incances:" value="#{listServicesBean.selectedJavaEE.minMaxInstances}" />
+                        <div id="slider-range"></div>
+                        <script type="text/javascript">
+                            $(function() {
+                                $( "#slider-range" ).slider({
+                                    range: true,
+                                    min: 1,
+                                    max: 5,
+                                    values: [ 1, 5 ],
+                                    slide: function( event, ui ) {
+                                        $( "#amount" ).val( ui.values[ 0 ] + " - " + ui.values[ 1 ] );
+                                    }
+                                });
+                                $( "#amount" ).val( $( "#slider-range" ).slider( "values", 0 ) +
+                                        " - " + $( "#slider-range" ).slider( "values", 1 ) );
+                            });
+                        </script>
+                    </tr:panelFormLayout>
+        </tr:panelBox>
+        <tr:panelBox text="Load Balancer"
+             background="light"
+             inlineStyle = "width: 600px">
+        </tr:panelBox>
+        </tr:form>
+</ui:composition>

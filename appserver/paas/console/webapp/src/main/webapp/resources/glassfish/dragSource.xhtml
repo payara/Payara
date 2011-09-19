@@ -1,0 +1,24 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://java.sun.com/jsf/composite">
+
+    <cc:interface>
+        <cc:attribute name="type" required="false" type="java.lang.String"/>
+        <cc:attribute name="value" required="true" type="java.lang.String"/>
+    </cc:interface>
+
+    <cc:implementation>
+        <script type="text/javascript">
+            var el = $(document.getElementById('#{cc.attrs.parent.clientId}'));
+            el.prop('source', '#{cc.attrs.value}');
+            el.draggable({
+                opacity: 0.35,
+                revert: true,
+                revertDuration: 0,
+                helper: 'clone',
+                scope: '#{cc.attrs.type}'
+            });
+        </script>
+    </cc:implementation>
+</html>

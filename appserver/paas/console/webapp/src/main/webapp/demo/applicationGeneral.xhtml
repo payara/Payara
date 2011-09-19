@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="iso-8859-1" standalone="yes" ?>
+<!--
+    Licensed to the Apache Software Foundation (ASF) under one
+    or more contributor license agreements.  See the NOTICE file
+    distributed with this work for additional information
+    regarding copyright ownership.  The ASF licenses this file
+    to you under the Apache License, Version 2.0 (the
+    "License"); you may not use this file except in compliance
+    with the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing,
+    software distributed under the License is distributed on an
+    "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+    KIND, either express or implied.  See the License for the
+    specific language governing permissions and limitations
+    under the License.
+           
+-->
+
+
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:ps="http://admingui.glassfish.org/console"
+                xmlns:tr="http://myfaces.apache.org/trinidad"
+                xmlns:trh="http://myfaces.apache.org/trinidad/html"
+                template="/layout.xhtml">
+
+    <!--
+    <ui:define name="subtabs">
+        <ui:include src="/demo/applicationTabs.xhtml" />
+    </ui:define>
+    -->
+
+    <ui:define name="content">
+        <h:form id="applicationTabsForm" style="color: black;">
+            <div style="padding-top: 10px; padding-left: 20px;">
+                <tr:inputText label="Application Name" value="#{applicationBean.appName}" readOnly="true" contentStyle="font-size=10px;font-weight: bold;"/>
+            </div>
+
+            <h:panelGroup id="applicationTabs">
+                <div class="navObjectInfo">
+                    <div class="title headerPageTitle">General</div>
+                    <div class="subHeading">General application information.</div>
+                    <br/>
+                    <tr:panelFormLayout  id="applicationDetails">
+                        <tr:inputText label="Context Root" value="#{applicationBean.appName}" readOnly="true"/>
+
+                        <tr:inputText label="Status" value="Enabled" readOnly="true"/>
+                        <!--
+                        <f:facet name="footer">
+                            <tr:panelHorizontalLayout inlineStyle="height:50px;">
+                                <tr:commandButton id="Enable" text="Enable"/>
+                                <tr:commandButton text="Disable"/>
+                            </tr:panelHorizontalLayout>
+                        </f:facet>
+                        -->
+                        <tr:outputText value="URL(s) to launch the application : "/>
+                        <tr:table id="urls" var="urls" value="#{applicationBean.urls}">
+                            <tr:column headerText ="URL">
+                                <a id="applicationURL"  href="#{urls}" > #{urls} </a>
+                            </tr:column>
+                        </tr:table>
+                    </tr:panelFormLayout>
+                </div>
+                <div class="navObjectInfo">
+                    <div class="title headerPageTitle">Environment(s)</div>
+                    <div class="subHeading">Environments for application.</div>
+                    <br/>
+                    <tr:table id="applicationInstances" var="cluster" value="#{applicationBean.instances}">
+                        <tr:column headerText="Environment">
+                            <a id="envName"  href="#{request.contextPath}/demo/environmentDetail.jsf?envName=#{cluster}" > #{cluster} </a>
+                        </tr:column>
+                    </tr:table>
+                </div>
+                <div>
+                    <div class="navObjectInfo" style="width: 555px; display: inline-block; margin:  20px; vertical-align: top;">
+                        <div class="title headerPageTitle">Services</div>
+                        <div class="subHeading">List of all services provisioned.</div>
+                        <br/>
+                        <tr:table id="services" var="svs" value="#{applicationBean.services}">
+                            <tr:column headerText="Name">
+                                #{svs.serviceName}
+                            </tr:column>
+                            <tr:column headerText="Type">
+                                #{svs.serverType}
+                            </tr:column>
+                            <tr:column headerText="State">
+                                <tr:image source="#{svs.stateImage}" shortDesc="#{svs.STATE}"/>
+                            </tr:column>
+                        </tr:table>
+                    </div>
+                    <!--
+                                            <div class="navObjectInfo">
+                                                <div class="title headerPageTitle">Elasticity Settings</div>
+                                                <tr:panelFormLayout  id="elasiticitySettings">
+                                                    <tr:inputNumberSpinbox label="Memory limit:" value="512" minimum="512" maximum="2048" stepSize="512" columns="4"/>
+                                                    <tr:inputNumberSpinbox label="Instances:" value="2" minimum="1" maximum="4"/>
+                                                </tr:panelFormLayout>
+                                            </div>
+                    -->
+                </div>
+            </h:panelGroup>
+        </h:form>
+    </ui:define>
+</ui:composition>

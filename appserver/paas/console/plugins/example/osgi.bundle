@@ -1,0 +1,10 @@
+-exportcontents: \
+                        org.glassfish.admingui.plugins.sample; \
+                        sample; \
+                        sample.icons; \
+                        META-INF; \
+                        version=${project.osgi.version}
+Console-Plugin:         true
+Import-Package: \
+                        org.glassfish.admingui.plugins.annotations;version=${project.osgi.version}, \
+                        *

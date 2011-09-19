@@ -1,0 +1,32 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://java.sun.com/jsf/composite"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:tr="http://myfaces.apache.org/trinidad">
+
+    <cc:interface>
+        <cc:attribute name="type" required="false" type="java.lang.String"/>
+        <cc:attribute name="dropListener" method-signature="java.lang.String action()" required="true"/>
+    </cc:interface>
+
+    <cc:implementation>
+        <h:outputScript library="javax.faces" name="jsf.js" target="head"/>
+
+        <h:panelGroup id="dropTarget" style="visibility: hidden">
+            <tr:commandButton id="actionButton" text="submit" action="#{cc.attrs.dropListener}"/>
+        </h:panelGroup>
+        <script type="text/javascript">
+            $(document.getElementById('#{cc.attrs.parent.clientId}')).droppable({
+                scope: '#{cc.attrs.type}',
+                drop : function (event, ui) {
+                    jsf.ajax.request('#{cc.clientId}:actionButton', null, {
+                            execute:'actionButton',
+                            render:'@form',
+                            droppedValue : ui.draggable.prop('source')
+                    });
+                }
+            });
+        </script>
+    </cc:implementation>
+</html>

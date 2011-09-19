@@ -1,0 +1,84 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://java.sun.com/jsf/composite"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+        <cc:attribute name="title" required="false" type="java.lang.String"/>
+        <cc:attribute name="currentStep" required="true" type="java.lang.Integer"/>
+        <cc:attribute name="stepLabels" required="true" type="java.util.List"/>
+        <cc:attribute name="stepPages" required="true" type="java.util.List"/>
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+        <style type="text/css">
+            .wizard {
+                border: 1px solid #567CAB;
+/*                background-color: #567CAB;*/
+                margin: 7px;
+            }
+
+            .wizardHeader {
+                font-weight: bold; 
+                font-size: larger; 
+                padding: 7px; 
+                background-color: #567CAB; 
+                color: #ffffff; 
+                height: 18px;
+                /*                background-image: url('#{request.contextPath}/images/dbcc.png');*/
+                background-repeat: repeat-x;
+                background-attachment: scroll;
+            }
+
+            .wizardNav {
+                width: 15%;
+                height: 100%;
+                font-size: larger; 
+                margin-right: 7px; 
+                background-color: #CCD6E8; 
+                color: #ffffff; 
+                vertical-align: top;
+            }
+
+            .wizardBody {
+                background-color: #ffffff;
+                border-left: 1px solid #014081;
+                padding: 0px 7px 0px 7px;
+            }
+        </style>
+        <div id="#{cc.clientId}" class="topRightRounded bottomRightRounded topLeftRounded bottomLeftRounded wizard" >
+            <div class="wizardHeader">
+                #{empty cc.attrs.title ? 'Wizard Title' : cc.attrs.title}
+            </div>
+            <table
+                style="background-color: #567CAB"
+                width="100%" cellpadding="0">
+                <tr>
+                    <td class="wizardNav">
+                        <table width="100%">
+                            <ui:repeat var="label" value="#{cc.attrs.stepLabels}" varStatus="status">
+                                <tr>
+                                    <td>
+                                        <h:outputText rendered="#{status.index == cc.attrs.currentStep}" style="font-weight: bold" value="*"/>
+                                    </td>
+                                    <td>
+                                        <h:outputText rendered="#{status.index == cc.attrs.currentStep}" style="font-weight: bold" value="#{label}"/>
+                                        <h:outputText rendered="#{status.index != cc.attrs.currentStep}" value="#{label}"/>
+                                    </td>
+                                </tr>
+                            </ui:repeat>
+                        </table>
+                    </td>
+                    <td class="wizardBody">
+                        <ui:include src="#{cc.attrs.stepPages[cc.attrs.currentStep]}"/>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </cc:implementation>
+</html>

@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="iso-8859-1" standalone="yes" ?>
+<!--
+    Licensed to the Apache Software Foundation (ASF) under one
+    or more contributor license agreements.  See the NOTICE file
+    distributed with this work for additional information
+    regarding copyright ownership.  The ASF licenses this file
+    to you under the Apache License, Version 2.0 (the
+    "License"); you may not use this file except in compliance
+    with the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing,
+    software distributed under the License is distributed on an
+    "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+    KIND, either express or implied.  See the License for the
+    specific language governing permissions and limitations
+    under the License.
+
+-->
+
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:ps="http://admingui.glassfish.org/console"
+                xmlns:tr="http://myfaces.apache.org/trinidad"
+                xmlns:trh="http://myfaces.apache.org/trinidad/html"
+                template="/layout.xhtml">
+
+
+    <ui:define name="content">
+
+        <div class="navObjectInfo">
+            <div class="title headerPageTitle">Environments</div>
+            <div class="subHeading">
+                <span>
+                    <!-- TODO -->
+                </span>
+            </div>
+            <br/>
+            <div class="subHeading">List of available environments:</div>
+            <tr:table id="envs" var="envs" value="#{listEnvironmentsBean.envsAndApps}">
+                <tr:column headerText="Environment Name">
+                    <a id="clusterName"  href="#{request.contextPath}/demo/environmentDetail.jsf?envName=#{envs.clusterName}" > #{envs.clusterName} </a>
+                </tr:column>
+                <tr:column headerText="Application Name">
+                    <!-- TODO display as list for more than 1 app -->
+                    <a id="appName"  href="#{request.contextPath}/demo/applicationGeneral.jsf?appName=#{envs.appList[0]}" > #{envs.appList[0]}  </a>
+                </tr:column>
+            </tr:table>
+        </div>
+    </ui:define>
+</ui:composition>

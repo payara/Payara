@@ -1,0 +1,10 @@
+-exportcontents: \
+                        org.glassfish.admingui.pluginprototype.hk2; \
+                        version=${project.osgi.version}
+
+Import-Package: \
+                        org.jvnet.hk2.annotations; \
+                        org.jvnet.hk2.component; \
+                        javax.servlet; \
+                        javax.faces.context;
+                        #com.sun.hk2.component

@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="iso-8859-1" standalone="yes" ?>
+<!--
+    Licensed to the Apache Software Foundation (ASF) under one
+    or more contributor license agreements.  See the NOTICE file
+    distributed with this work for additional information
+    regarding copyright ownership.  The ASF licenses this file
+    to you under the Apache License, Version 2.0 (the
+    "License"); you may not use this file except in compliance
+    with the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing,
+    software distributed under the License is distributed on an
+    "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+    KIND, either express or implied.  See the License for the
+    specific language governing permissions and limitations
+    under the License.
+           
+-->
+
+
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:fragment xmlns="http://www.w3.org/1999/xhtml"
+             xmlns:ui="http://java.sun.com/jsf/facelets"
+             xmlns:h="http://java.sun.com/jsf/html"
+             xmlns:f="http://java.sun.com/jsf/core"
+             xmlns:ps="http://admingui.glassfish.org/console"
+             xmlns:tr="http://myfaces.apache.org/trinidad"
+             xmlns:trh="http://myfaces.apache.org/trinidad/html">
+
+
+    <div style="padding-top: 10px; padding-left: 20px;">
+        <tr:inputText label="Environment Name" value="#{environmentBean.envName}" readOnly="true" contentStyle="font-size=10px;font-weight: bold;"/>
+    </div>
+
+        <div>
+            <div class="navObjectInfo">
+                <div class="title headerPageTitle">Logging Results</div>
+                <div class="subHeading">View a server log file.</div>
+                <br/>
+                <tr:selectOneChoice label="Instance: " id="instance" autoSubmit="true"
+                                    value = "#{loggingBean.selectedIndex}" valueChangeListener="#{loggingBean.valueChange}">
+                    <f:selectItems value="#{loggingBean.selectionList}"/>
+                </tr:selectOneChoice>
+                <tr:commandButton id="prevButton" text="&lt;&lt; Previous" action="#{loggingBean.previous}">
+                </tr:commandButton>
+                <tr:commandButton id="nextButton" text="Next &gt;&gt;" action="#{loggingBean.next}">
+                </tr:commandButton>
+                <tr:table partialTriggers="instance" id="logmsgs" var="logmsgs" value="#{loggingBean.logMessages}" inlineStyle="width: 100pc">
+                    <tr:column headerText="Timestamp">
+                        #{logmsgs.loggedDateTimeInMS}
+                    </tr:column>
+                    <tr:column headerText="Logger">
+                        #{logmsgs.loggerName}
+                    </tr:column>
+                    <tr:column headerText="Message">
+                        #{logmsgs.Message}
+                    </tr:column>
+                </tr:table>
+            </div>
+        </div>
+</ui:fragment>
