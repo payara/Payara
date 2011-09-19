@@ -216,7 +216,7 @@ public class DatabaseOperations {
 
     public boolean createBookStoreTable(DataSource ds, PrintWriter out) {
         String query = "create table  BOOKS_TABLE (Title char(100), " +
-                "Authors char(1024), Price char(16))";
+                "Authors char(100), Price char(16))";
         return createTable(ds, "BOOKS_TABLE", query, out);
     }
 
