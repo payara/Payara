@@ -39,6 +39,8 @@
  */
 package org.glassfish.elasticity.metric;
 
+import org.glassfish.elasticity.util.NotEnoughMetricDataException;
+
 import java.util.Iterator;
 import java.util.concurrent.TimeUnit;
 
@@ -77,5 +79,20 @@ public interface TabularMetricAttribute<V>
 	 * @return An iterator of TabularMetricEntry 
 	 */
 	public Iterator<TabularMetricEntry<V>> iterator(long duration, TimeUnit unit);
+
+	/**
+	 * Returns an iterator of TabularMetricEntry that were collected
+	 * 	for the specified time period
+	 *
+	 * @param duration the duration of sample data. For example,
+	 *   a duration of 15 minutes mean "iterate over the entries that
+	 *   were collected in the last 15 minutes".
+	 *
+	 * @param unit The time unit the duration is specified
+	 *
+	 * @return An iterator of TabularMetricEntry
+	 */
+	public Iterator<TabularMetricEntry<V>> iterator(long duration, TimeUnit unit, boolean allowPartialData)
+        throws NotEnoughMetricDataException;
 	
 }

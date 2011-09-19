@@ -44,21 +44,25 @@ import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
 
+import java.util.Collection;
+
 /**
  * @author Mahesh.Kannan@Oracle.Com
  */
 @Service(name="avg")
 @Scoped(PerLookup.class)
-public class Average<T extends Number>
-	implements MetricFunction<T, Double>{
+public class Average
+	implements MetricFunction<Number, Double>{
 
     private double sum;
 
     private int count;
 
-	public void visit(Number value) {
-		sum += value.doubleValue();
-        count++;
+	public void accept(Collection<Number> collection) {
+        for (Number value : collection) {
+		    sum += value.doubleValue();
+            count++;
+        }
     }
     
     public int getCount() {
@@ -70,7 +74,6 @@ public class Average<T extends Number>
     }
 
     public Double value() {
-//        System.out.println(this.getClass().getName() + ": sum = " + sum + "; count = " + count);
         return count > 0 ? sum / count : 0;
     }
 

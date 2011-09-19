@@ -44,25 +44,22 @@ import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
 
+import java.util.Collection;
+
 /**
  * @author Mahesh.Kannan@Oracle.Com
  */
 @Service(name="sum")
 @Scoped(PerLookup.class)
-public class Sum<T extends Number>
-	implements MetricFunction<T, Double>{
+public class Sum
+	implements MetricFunction<Number, Double>{
 
     private double sum;
 
-    private int count;
-
-	public void visit(Number value) {
-		sum += value.doubleValue();
-        count++;
-    }
-    
-    public int getCount() {
-        return count;
+    public void accept(Collection<Number> collection) {
+        for (Number value : collection) {
+		    sum += value.doubleValue();
+        }
     }
 
     public Double value() {
@@ -70,7 +67,6 @@ public class Sum<T extends Number>
     }
 
     public void reset() {
-        count = 0;
         sum = 0;
     }
 }

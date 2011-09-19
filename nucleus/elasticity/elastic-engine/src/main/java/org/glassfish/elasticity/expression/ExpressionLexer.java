@@ -80,8 +80,8 @@ public class ExpressionLexer {
 	
 	public static final Token LT = new TokenImpl(TokenType.LT, "<");
 	public static final Token LTE = new TokenImpl(TokenType.LTE, "<=");
-	public static final Token GT = new TokenImpl(TokenType.LT, ">");
-	public static final Token GTE = new TokenImpl(TokenType.LTE, ">=");
+	public static final Token GT = new TokenImpl(TokenType.GT, ">");
+	public static final Token GTE = new TokenImpl(TokenType.GTE, ">=");
 	public static final Token EQ = new TokenImpl(TokenType.EQ, "=");
 	public static final Token EQEQ = new TokenImpl(TokenType.EQEQ, "==");
 

@@ -22,7 +22,11 @@ public class ElasticMessage
 
     private boolean isResponseMessage;
 
+    private boolean responseRequired;
+
     private Object data;
+
+    private Exception exception;
 
     public String getSourceMemberName() {
         return sourceMemberName;
@@ -91,8 +95,34 @@ public class ElasticMessage
         return this;
     }
 
+    public boolean isResponseRequired() {
+        return responseRequired;
+    }
+
+    public ElasticMessage setResponseRequired(boolean responseRequired) {
+        this.responseRequired = responseRequired;
+        return this;
+    }
+
     public ElasticMessage setData(Object data) {
         this.data = data;
         return this;
+    }
+
+    public Exception getException() {
+        return exception;
+    }
+
+    public ElasticMessage setException(Exception exception) {
+        this.exception = exception;
+        return this;
+    }
+
+    public boolean isValidData() {
+        return !hasException();
+    }
+
+    public boolean hasException() {
+        return getException() != null;
     }
 }

@@ -306,7 +306,7 @@ public class GroupServiceProvider
     }
 
     public void registerGroupMessageReceiver(String serviceName, ElasticMessageHandler handler) {
-        logger.fine("[GroupServiceProvider]:  REGISTERED A MESSAGE LISTENER: "
+        logger.info("[GroupServiceProvider]:  REGISTERED A MESSAGE LISTENER: "
                 + handler + "; for token: <" + serviceName + ">");
         handlers.put(serviceName, handler);
     }

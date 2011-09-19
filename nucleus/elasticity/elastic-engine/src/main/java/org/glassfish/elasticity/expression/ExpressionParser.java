@@ -46,7 +46,6 @@ public class ExpressionParser {
 
 	public ExpressionNode parse() {
         ExpressionNode node = booleanExpr();
-		System.out.println("ExpressionTree: " + node);
 
         return node;
 	}
@@ -153,13 +152,13 @@ public class ExpressionParser {
 				Token funcCall = match(TokenType.OPAR);
 				root = new FunctionCall(funcCall, metricNameToken);
 				functionCallParams((FunctionCall) root);
-				System.out.println("Matched function call: " + metricNameToken.value() + " has " + ((FunctionCall) root).getParams().size() + " params");
+//				System.out.println("Matched function call: " + metricNameToken.value() + " has " + ((FunctionCall) root).getParams().size() + " params");
 				match(TokenType.CPAR);
 			} else if (peek(TokenType.OARRAY)) {
 				Token funcCall = match(TokenType.OARRAY);
 				root = new FunctionCall(funcCall, metricNameToken);
 				functionCallParams((FunctionCall) root);
-				System.out.println("Matched function remote call access: " + metricNameToken.value() + " has " + ((FunctionCall) root).getParams().size() + " params");
+//				System.out.println("Matched function remote call access: " + metricNameToken.value() + " has " + ((FunctionCall) root).getParams().size() + " params");
 				match(TokenType.CARRAY);
 			}
 			break;
@@ -245,8 +244,8 @@ public class ExpressionParser {
 			this.functionNameToken = functionNameToken;
 			remote = tok.getTokenType() == TokenType.OARRAY;
 
-			System.out.println("Function call: " + functionNameToken + "; isRemote: " + remote
-            + "; this.getToken.getTokenType: " + (this.getToken().getTokenType() == TokenType.FUNCTION_CALL));
+//			System.out.println("Function call: " + functionNameToken + "; isRemote: " + remote
+//            + "; this.getToken.getTokenType: " + (this.getToken().getTokenType() == TokenType.FUNCTION_CALL));
 		}
 
         public int getNodeID() {

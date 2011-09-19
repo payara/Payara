@@ -44,6 +44,8 @@ import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
 
+import java.util.Collection;
+
 /**
  * @author Mahesh.Kannan@Oracle.Com
  */
@@ -54,10 +56,12 @@ public class CountTrue
 
     private int count;
 
-	public void visit(Boolean value) {
-		if (value.booleanValue() == true) {
-			count++;
-		}
+	public void accept(Collection<Boolean> collection) {
+        for (Boolean value : collection) {
+		    if (value == true) {
+                count++;
+            }
+        }
     }
     
     public int getCount() {

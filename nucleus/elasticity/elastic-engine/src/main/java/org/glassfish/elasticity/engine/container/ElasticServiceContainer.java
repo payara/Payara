@@ -39,21 +39,18 @@
  */
 package org.glassfish.elasticity.engine.container;
 
-import com.sun.enterprise.ee.cms.core.CallBack;
-import com.sun.enterprise.ee.cms.core.MessageSignal;
-import com.sun.enterprise.ee.cms.core.Signal;
+import com.sun.xml.internal.ws.api.message.Message;
 import org.glassfish.api.Startup;
 import org.glassfish.api.admin.ServerEnvironment;
-import org.glassfish.elasticity.api.AlertContext;
-import org.glassfish.elasticity.api.MetricGatherer;
 import org.glassfish.elasticity.config.serverbeans.AlertConfig;
 import org.glassfish.elasticity.config.serverbeans.ElasticService;
 import org.glassfish.elasticity.engine.message.ElasticMessage;
+import org.glassfish.elasticity.engine.message.MessageProcessor;
 import org.glassfish.elasticity.engine.util.ElasticEngineThreadPool;
 import org.glassfish.elasticity.engine.util.EngineUtil;
 import org.glassfish.elasticity.engine.util.ExpressionBasedAlert;
+import org.glassfish.elasticity.expression.ElasticExpressionEvaluator;
 import org.glassfish.elasticity.expression.ExpressionNode;
-import org.glassfish.elasticity.expression.RemoteExpressionHandler;
 import org.glassfish.elasticity.group.ElasticMessageHandler;
 import org.glassfish.elasticity.group.GroupMemberEventListener;
 import org.glassfish.elasticity.group.gms.GroupServiceProvider;
@@ -80,8 +77,7 @@ import java.util.logging.Logger;
 
 @Service
 @Scoped(PerLookup.class)
-public class ElasticServiceContainer
-        implements PostConstruct, GroupMemberEventListener, ElasticMessageHandler {
+public class ElasticServiceContainer {
 
     @Inject
     private Habitat habitat;
@@ -89,16 +85,13 @@ public class ElasticServiceContainer
     @Inject
     private ElasticEngineThreadPool threadPool;
 
-    @Inject
-    private EngineUtil engineUtil;
-
     @Inject(optional = true)
     private GMSAdapterService gmsAdapterService;
 
     @Inject
     private ServerEnvironment serverEnvironment;
 
-    private Logger logger;
+    private Logger logger = EngineUtil.getLogger();
 
     private ElasticService service;
 
@@ -121,23 +114,10 @@ public class ElasticServiceContainer
 
     private GroupServiceProvider gsp;
 
-    private AtomicReference<Set<String>> currentMembers = new AtomicReference<Set<String>>();
-
-    private String remoteExpHandlerToken;
-
-    private RemoteExpressionHandler remoteExpHandler;
-
-    private AtomicInteger messageIdCounter = new AtomicInteger();
-
-    private ConcurrentHashMap<String, Future[]> futureTasks
-            = new ConcurrentHashMap<String, Future[]>();
+    private MessageProcessor messageProcessor;
 
     public Startup.Lifecycle getLifecycle() {
         return Startup.Lifecycle.START;
-    }
-
-    public void postConstruct() {
-        logger = engineUtil.getLogger();
     }
 
     public void initialize(ElasticService service) {
@@ -146,9 +126,6 @@ public class ElasticServiceContainer
         this.enabled.set(service.getEnabled());
         this.minSize.set(service.getMin());
         this.maxSize.set(service.getMax());
-
-        remoteExpHandlerToken = service.getName() + ":RemoteExpressionHandler";
-        remoteExpHandler = new RemoteExpressionHandler(habitat, remoteExpHandlerToken);
     }
 
     public String getName() {
@@ -165,6 +142,14 @@ public class ElasticServiceContainer
 
     public int getMaximumSize() {
         return maxSize.get();
+    }
+
+    public Habitat getHabitat() {
+        return habitat;
+    }
+
+    public MessageProcessor getMessageProcessor() {
+        return messageProcessor;
     }
 
     public synchronized void setEnabled(boolean value) {
@@ -222,8 +207,9 @@ public class ElasticServiceContainer
             gsp = new GroupServiceProvider(gmsAdapter.getModule().getInstanceName(),
                     gmsAdapter.getClusterName(), false);
 
-            gsp.registerGroupMemberEventListener(this);
-            gsp.registerGroupMessageReceiver(service.getName(), this);
+            messageProcessor = new MessageProcessor(this, serverEnvironment);
+            gsp.registerGroupMemberEventListener(messageProcessor);
+            gsp.registerGroupMessageReceiver(service.getName(), messageProcessor);
         }
 
         if (isDAS) {
@@ -233,13 +219,15 @@ public class ElasticServiceContainer
     }
 
     public void stopContainer() {
+        gsp.removeGroupMemberEventListener(messageProcessor);
+
         //Unload even if not DAS
         unloadAlerts();
     }
 
     public void addAlert(AlertConfig alertConfig) {
         try {
-            System.out.println("Creating Alert[" + service.getName() + "]: " + alertConfig.getName());
+            logger.log(Level.FINE, "Creating Alert[" + service.getName() + "]: " + alertConfig.getName());
 
             String sch = alertConfig.getSchedule().trim();
             long frequencyInSeconds = getFrequencyOfAlertExecutionInSeconds(sch);
@@ -292,110 +280,6 @@ public class ElasticServiceContainer
         }
     }
 
-    @Override
-    public void onViewChange(String memberName, Collection<String> currentAliveAndReadyMembers, Collection<String> previousView, boolean isJoinEvent) {
-        logger.log(Level.FINE, "ElasticEvent[service=" + service.getName() + "]: Member " + memberName
-                + (isJoinEvent ? " JOINED" : " LEFT") + " the cluster"
-                + "; currentView: " + currentAliveAndReadyMembers);
-
-        Set<String> members = new HashSet<String>();
-        members.addAll(currentAliveAndReadyMembers);
-
-        currentMembers.set(members);
-        currentSize.set(members.size());
-    }
-
-
-    public ElasticMessage createElasticMessage(String targetInstanceName, String subComponentToken) {
-        ElasticMessage message = new ElasticMessage();
-        message.setMessageId("" + messageIdCounter.incrementAndGet())
-                .setServiceName(service.getName())
-                .setSourceMemberName(serverEnvironment.getInstanceName())
-                .setSubComponentName(targetInstanceName)
-                .setSubComponentName(subComponentToken);
-
-        return message;
-    }
-
-    public void sendMessage(ElasticMessage message) {
-        byte[] data = null;
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        ObjectOutputStream oos = null;
-        try {
-            oos = new ObjectOutputStream(bos);
-            oos.writeObject(message);
-            oos.close();
-            data = bos.toByteArray();
-
-            if (message.getTargetMemberName() == null) {
-//                FutureTask[] futures = null;
-//                if (! message.isResponseMessage()) {
-//                    futures = new FutureTask[currentMembers.get().size()];
-//                }
-//                futureTasks.put(message.getMessageId(), futures);
-                for (String member : currentMembers.get()) {
-                    gsp.sendMessage(member, service.getName(), data);
-                }
-            } else {
-                gsp.sendMessage(message.getTargetMemberName(), service.getName(), data);
-            }
-        } catch (Exception ex) {
-            logger.log(Level.WARNING, "Exception during message sending", ex);
-        } finally {
-            try {
-                oos.close();
-            } catch (Exception ex) {
-            }
-        }
-
-    }
-
-    @Override
-    public void handleMessage(String senderName, String messageToken, byte[] data) {
-
-        ByteArrayInputStream bis = new ByteArrayInputStream(data);
-        ObjectInputStream ois = null;
-        try {
-            ois = new ObjectInputStream(bis);
-            ElasticMessage message = (ElasticMessage) ois.readObject();
-            if (remoteExpHandlerToken.equals(message.getSubComponentName())) {
-                if (message.isResponseMessage()) {
-                    List<List<Object>> result =
-                            (List<List<Object>>) message.getData();
-
-//                    System.out.println("RECEIVED RESPONSE MESSAGE: " + result.get(0).get(0));
-                } else {
-                    List<List<Object>> result =
-                            remoteExpHandler.handleMessage(senderName, message);
-
-                    ElasticMessage responseMessage = new ElasticMessage();
-                    responseMessage.setMessageId("" + messageIdCounter.incrementAndGet())
-                            .setTargetMemberName(senderName)
-                            .setServiceName(service.getName())
-                            .setSourceMemberName(serverEnvironment.getInstanceName())
-                            .setSubComponentName(message.getSubComponentName())
-                            .setInResponseToMessageId(message.getMessageId())
-                            .setIsResponseMessage(true)
-                            .setData(result);
-
-                    sendMessage(responseMessage);
-                }
-            } else {
-                System.out.println("Received a generic message");
-            }
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        } finally {
-            try {
-                ois.close();
-            } catch (Exception ex) {
-            }
-            try {
-                bis.close();
-            } catch (Exception ex) {
-            }
-        }
-    }
 
     private int getFrequencyOfAlertExecutionInSeconds(String sch) {
         String schStr = sch.trim();
@@ -423,20 +307,6 @@ public class ElasticServiceContainer
         }
 
         return frequencyInSeconds;
-    }
-
-    private static class ResponseInfo {
-
-        private HashMap<String, Future> response
-                = new HashMap<String, Future>();
-
-        public void add(String instanceName) {
-            //response.put(instanceName, new FutureTask());
-        }
-
-        public HashMap<String, Future> getResponseInfoMap() {
-            return response;
-        }
     }
 
 }

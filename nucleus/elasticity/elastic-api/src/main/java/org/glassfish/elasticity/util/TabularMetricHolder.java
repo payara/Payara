@@ -126,7 +126,18 @@ public class TabularMetricHolder<V>
     }
 	
 	public Iterator<TabularMetricEntry<V>> iterator(long duration, TimeUnit unit) {
-		return new SubMapValueIterator(getView(duration, unit));
+        try {
+		    return new SubMapValueIterator(getView(duration, unit, true));
+        } catch (NotEnoughMetricDataException ex) {
+            //Will not happen
+        }
+
+        return new SubMapValueIterator(_emptyMap);
+	}
+
+	public Iterator<TabularMetricEntry<V>> iterator(long duration, TimeUnit unit, boolean allowPartialData)
+        throws NotEnoughMetricDataException {
+		return new SubMapValueIterator(getView(duration, unit, allowPartialData));
 	}
 	
     public void purgeEntriesOlderThan(long duration, TimeUnit unit)
@@ -142,19 +153,22 @@ public class TabularMetricHolder<V>
 		return new ReflectiveAttributeRetriever(valueClass);
     }
     
-    private NavigableMap<Long, MetricEntryHolder> getView(long duration, TimeUnit unit) {
-    	NavigableMap<Long, MetricEntryHolder> result = _emptyMap;
+    private NavigableMap<Long, MetricEntryHolder> getView(long duration, TimeUnit unit, boolean allowPartialData)
+        throws NotEnoughMetricDataException {
     	if (! map.isEmpty()) {
 	        Long maxKey = map.lastKey();
 	        if (maxKey != null) {
-	            Long minKey = map.ceilingKey(maxKey - TimeUnit.MILLISECONDS.convert(duration, unit));
+	            Long minKey = map.floorKey(maxKey - TimeUnit.MILLISECONDS.convert(duration, unit));
 	            if (minKey != null) {
-	                result = map.subMap(minKey, true, maxKey, true);
-	            }
+	                return map.subMap(minKey, true, maxKey, true);
+	            } else if (allowPartialData) {
+                    minKey = map.ceilingKey(maxKey - TimeUnit.MILLISECONDS.convert(duration, unit));
+	                return map.subMap(minKey, true, maxKey, true);
+                }
 	        }
     	}
-    	
-    	return result;
+
+        throw new NotEnoughMetricDataException("Not enough metric data for "  + duration + " " + unit);
     }
     
     private NavigableMap<Long, MetricEntryHolder> getOldestView(long duration, TimeUnit unit) {
@@ -256,12 +270,3 @@ public class TabularMetricHolder<V>
 	}
 
 }
-
-/*
-[#|2011-09-15T10:00:29.016-0700|INFO|44.0|javax.enterprise.system.std.com.sun.enterprise.server.logging|_ThreadID=12;_ThreadName=Thread-2;| 0 | Thu Sep 15 09:43:54 PDT 2011 | used=49113800; committed=222429184; |#]
-
-[#|2011-09-15T10:00:29.016-0700|INFO|44.0|javax.enterprise.system.std.com.sun.enterprise.server.logging|_ThreadID=12;_ThreadName=Thread-2;| 200 | Thu Sep 15 10:00:29 PDT 2011 | used=74770216; committed=222429184; |#]
-
-[#|2011-09-15T10:00:29.016-0700|INFO|44.0|javax.enterprise.system.std.com.sun.enterprise.server.logging|_ThreadID=12;_ThreadName=Thread-2;|So far has collected: 200|#]
-
-*/

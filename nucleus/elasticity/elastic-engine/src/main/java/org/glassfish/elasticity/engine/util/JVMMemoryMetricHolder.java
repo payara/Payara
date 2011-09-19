@@ -25,7 +25,7 @@ public class JVMMemoryMetricHolder
 
     static final String _NAME = "jvm_memory";
 
-    public long max;
+    public Long max;
 
     TabularMetricHolder<MemoryStat> table;
 
@@ -111,7 +111,7 @@ public class JVMMemoryMetricHolder
         }
 
         @Override
-        public Object getValue() {
+        public Long getValue() {
             return max;
         }
     }

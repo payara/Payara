@@ -41,11 +41,13 @@ package org.glassfish.elasticity.api;
 
 import org.jvnet.hk2.annotations.Contract;
 
+import java.util.Collection;
+
 @Contract
 public interface MetricFunction<V, T> {
 
-	public void visit(V value);
-	
+	public void accept(Collection<V> value);
+
 	public T value();
-	
+
 }

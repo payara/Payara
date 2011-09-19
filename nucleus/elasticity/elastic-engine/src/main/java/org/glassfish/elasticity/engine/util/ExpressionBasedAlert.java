@@ -44,9 +44,8 @@ import org.glassfish.elasticity.api.AlertContext;
 import org.glassfish.elasticity.config.serverbeans.AlertConfig;
 import org.glassfish.elasticity.engine.container.AlertContextImpl;
 import org.glassfish.elasticity.engine.message.ElasticMessage;
-import org.glassfish.elasticity.expression.ExpressionNode;
-import org.glassfish.elasticity.expression.ExpressionParser;
-import org.glassfish.elasticity.expression.TokenType;
+import org.glassfish.elasticity.expression.*;
+import org.glassfish.elasticity.util.NotEnoughMetricDataException;
 import org.jvnet.hk2.component.Habitat;
 
 import java.io.ByteArrayOutputStream;
@@ -54,6 +53,8 @@ import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Future;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * A simple Alert that uses an expression
@@ -64,97 +65,49 @@ import java.util.concurrent.Future;
 public class ExpressionBasedAlert<C extends AlertConfig>
         implements Alert<C> {
 
+    private static final Logger _logger = EngineUtil.getLogger();
+
     private C config;
 
     private Habitat habitat;
 
-    private ExpressionNode parsedNode;
-
-    private ArrayList<List<ExpressionNode>> remoteNodes = new ArrayList<List<ExpressionNode>>();
-
-    private byte[] remoteData;
-
     public void initialize(Habitat habitat, C config) {
         this.habitat = habitat;
         this.config = config;
-
-        try {
-            ExpressionParser parser = new ExpressionParser(config.getExpression());
-            parsedNode = parser.parse();
-
-            remoteNodes = new ArrayList<List<ExpressionNode>>();
-            getExpressionNodeForRemoteExecution(parsedNode, remoteNodes);
-
-            ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            ObjectOutputStream oos = null;
-            try {
-                oos = new ObjectOutputStream(bos);
-                oos.writeObject(remoteNodes);
-
-                oos.close();
-                remoteData = bos.toByteArray();
-
-                System.out.println("Parsed and ready to transmit " + remoteData.length + " bytes of data");
-            } catch (Exception ex) {
-                ex.printStackTrace();
-            } finally {
-                try {
-                    oos.close();
-                } catch (Exception ex) {
-                }
-            }
-
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
     }
 
     public AlertState execute(AlertContext ctx) {
 
-//        System.out.println("About to execute alert: " + config.getName() + "; service = "
-//                + ctx.getElasticService().getName());
+        _logger.log(Level.FINE, "About to execute alert: " + config.getName() + "; service = "
+                + ctx.getElasticService().getName());
 
         AlertContextImpl ctxImpl = (AlertContextImpl) ctx;
-        String remoteExpHandlerToken = ctx.getElasticService().getName() + ":RemoteExpressionHandler";
-        ElasticMessage message =
-                ctxImpl.getElasticServiceContainer().createElasticMessage(null, remoteExpHandlerToken);
-        message.setData(remoteNodes);
+        ElasticExpressionEvaluator evaluator = new ElasticExpressionEvaluator(habitat, ctxImpl);
+        AlertState result = AlertState.NO_DATA;
+        try {
+            ExpressionParser parser = new ExpressionParser(config.getExpression());
+            ExpressionNode parsedNode = parser.parse();
 
-        //Future[] responses =
-                ctxImpl.getElasticServiceContainer().sendMessage(message);
-        return AlertState.ALARM;
-    }
-
-
-    private void getExpressionNodeForRemoteExecution(ExpressionNode node, ArrayList<List<ExpressionNode>> nodes) {
-        if (node != null) {
-            if (node.getToken().getTokenType() == TokenType.FUNCTION_CALL) {
-                ExpressionParser.FunctionCall fcall = (ExpressionParser.FunctionCall) node;
-                if (fcall.isRemote()) {
-                    fcall.setNodeID(nodes.size());
-                    nodes.add(fcall.getParams());
-                    return;
-                }
-            }
-
-            getExpressionNodeForRemoteExecution(node.getLeft(), nodes);
-            getExpressionNodeForRemoteExecution(node.getRight(), nodes);
+            result = ((Boolean) evaluator.evaluate(parsedNode)).booleanValue()
+                ? AlertState.ALARM : AlertState.OK;
+        } catch (NotEnoughMetricDataException nemdEx) {
+            _logger.log(Level.FINE, "Not enough data to execute alert", nemdEx);
+        } catch (ExpressionEvaluationException ex) {
+            _logger.log(Level.WARNING, "Exception during alert execution", ex);
+        } catch (Exception ex) {
+            _logger.log(Level.WARNING, "Exception during alert execution", ex);
         }
+
+        _logger.log(Level.FINE, "Alert executed. AlertState = " + result);
+        return result;
     }
+
 
     private void printExpression() {
+            ExpressionParser parser = new ExpressionParser(config.getExpression());
+            ExpressionNode parsedNode = parser.parse();
 
             StringBuilder sb = new StringBuilder("ExpressionBasedAlert[" + config.getName() + "] Expression: " + parsedNode);
-            sb.append("; Will execute: ");
-            for (List<ExpressionNode> nodeList : remoteNodes) {
-                sb.append("\n{");
-                String delim = "";
-                for (ExpressionNode node : nodeList) {
-                    sb.append(delim).append(node.toString());
-                    delim = ", ";
-                }
-                sb.append("}");
-            }
             System.out.println(sb.toString());
     }
 

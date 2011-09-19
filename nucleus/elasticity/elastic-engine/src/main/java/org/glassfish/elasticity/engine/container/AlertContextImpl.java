@@ -6,6 +6,7 @@ import org.glassfish.elasticity.config.serverbeans.AlertConfig;
 import org.glassfish.elasticity.config.serverbeans.ElasticService;
 import org.glassfish.elasticity.group.ElasticMessageHandler;
 
+import javax.swing.plaf.basic.BasicInternalFrameTitlePane;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ScheduledFuture;
@@ -63,7 +64,8 @@ public class AlertContextImpl<C extends AlertConfig>
     }
 
     public void run() {
-        alert.execute(this);
+        Alert.AlertState state = alert.execute(this);
+        System.out.println("Alert returned STATE = " + state);
         transientData.clear();
     }
 

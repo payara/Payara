@@ -41,14 +41,11 @@ package org.glassfish.elasticity.engine.util;
 
 import java.util.logging.Logger;
 
-import org.jvnet.hk2.annotations.Service;
-
-@Service
 public class EngineUtil {
 
 	public static final Logger _logger = Logger.getLogger("elasticity-logger");
 	
-	public Logger getLogger() {
+	public static Logger getLogger() {
 		return _logger;
 	}
 	
