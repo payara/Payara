@@ -59,6 +59,8 @@ import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.OpsParams;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.deployment.common.DeploymentException;
+import org.glassfish.embeddable.CommandResult;
+import org.glassfish.embeddable.CommandRunner;
 import org.glassfish.internal.deployment.ApplicationLifecycleInterceptor;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
 import org.glassfish.paas.orchestrator.provisioning.ServiceInfo;
@@ -70,6 +72,8 @@ import org.glassfish.paas.orchestrator.service.metadata.ServiceReference;
 import org.glassfish.paas.orchestrator.service.spi.Plugin;
 import org.glassfish.paas.orchestrator.service.spi.ProvisionedService;
 import org.glassfish.virtualization.config.Virtualizations;
+import org.glassfish.virtualization.runtime.VirtualCluster;
+import org.glassfish.virtualization.runtime.VirtualClusters;
 import org.glassfish.virtualization.spi.AllocationStrategy;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.component.Habitat;
@@ -90,6 +94,12 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator, Application
 
     @Inject
     private ServiceUtil serviceUtil;
+
+    @Inject
+    private CommandRunner commandRunner;
+
+    @Inject(optional = true) // injection optional for non-virtual scenario to work
+    private VirtualClusters virtualClusters;
 
     private Map<String, ServiceMetadata> serviceMetadata = new HashMap<String, ServiceMetadata>();
     private Map<String, Set<ProvisionedService>> provisionedServices = new HashMap<String, Set<ProvisionedService>>();
@@ -472,8 +482,10 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator, Application
                                      final DeploymentContext dc) {
         Set<ServiceDescription> appSDs = appServiceMetadata.getServiceDescriptions();
         List<Future> unprovisioningFutures = new ArrayList<Future>();
+        String virtualClusterName = getVirtualClusterName(appServiceMetadata);
 
         for (final ServiceDescription sd : appSDs) {
+            sd.setVirtualClusterName(virtualClusterName);
             Future future = ServiceUtil.getThreadPool().submit(new Runnable() {
                 public void run() {
                     Plugin<?> chosenPlugin = getPluginForServiceType(installedPlugins, sd.getServiceType());
@@ -501,6 +513,49 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator, Application
             throw new RuntimeException("Failure while unprovisioning services, refer server.log for more details");
         }
 
+        // Clean up the glassfish cluster, virtual cluster config, etc..
+        // TODO :: assuming app-scoped virtual cluster. fix it when supporting shared/external service.
+        try {
+            VirtualCluster virtualCluster = virtualClusters.byName(virtualClusterName);
+            if (virtualCluster != null) {
+                virtualClusters.remove(virtualCluster);  // removes config.
+            }
+        } catch (Exception ex) {
+            logger.log(Level.WARNING, ex.getLocalizedMessage(), ex);
+        }
+
+        /*
+        stop-cluster is deliberately commented. invoking stop-cluster causes the
+        re-deploy to fail next time (due to IMS layer fails to create virtual-machine config).
+        But since all the instances in the cluster are already stopped we don't really need to call stop-cluster.
+        
+       CommandResult commandResult = commandRunner.run("stop-cluster", virtualClusterName);
+       Throwable failureCause = commandResult.getFailureCause();
+       if (failureCause != null) {
+           logger.log(Level.WARNING, failureCause.getLocalizedMessage(), failureCause);
+       }
+        */
+        CommandResult commandResult = commandRunner.run("delete-cluster", virtualClusterName);
+        Throwable failureCause = commandResult.getFailureCause();
+        if (failureCause != null) {
+            logger.log(Level.WARNING, failureCause.getLocalizedMessage(), failureCause);
+        }
+    }
+
+    // Name of the JavaEE service will be the name of the virtual cluster.
+    private String getVirtualClusterName(ServiceMetadata appServiceMetadata) {
+        Set<ServiceDescription> appSDs = appServiceMetadata.getServiceDescriptions();
+        String virtualClusterName = null;
+        for(ServiceDescription sd : appSDs) {
+            if("JavaEE".equalsIgnoreCase(sd.getServiceType())) {
+                virtualClusterName = sd.getName();
+            }
+        }
+        if(virtualClusterName == null) {
+            throw new RuntimeException("Application does not seem to contain any JavaEE " +
+                    "service requirement. Hence unable compute the name of virtual cluster.");
+        }
+        return virtualClusterName;
     }
 
     private Set<ProvisionedService> provisionServices(final Set<Plugin> installedPlugins,
@@ -508,9 +563,20 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator, Application
         logger.entering(getClass().getName(), "provisionServices");
         final Set<ProvisionedService> appPSs = new HashSet<ProvisionedService>();
 
+        // create one virtual cluster per deployment unit.
+        String virtualClusterName = getVirtualClusterName(appServiceMetadata);
+        CommandResult result = commandRunner.run("create-cluster", virtualClusterName);
+        logger.info("Command create-cluster [" + virtualClusterName + "] executed. " +
+                "Command Output [" + result.getOutput() + "]");
+        if (result.getExitStatus().equals(CommandResult.ExitStatus.FAILURE)) {
+            throw new RuntimeException("Failure while provisioning services, " +
+                    "Unable to create cluster [" + virtualClusterName + "]");
+        }
+        
         Set<ServiceDescription> appSDs = appServiceMetadata.getServiceDescriptions();
         List<Future<ProvisionedService>> provisioningFutures = new ArrayList<Future<ProvisionedService>>();
         for (final ServiceDescription sd : appSDs) {
+            sd.setVirtualClusterName(virtualClusterName);
             Future<ProvisionedService> future = ServiceUtil.getThreadPool().submit(new Callable<ProvisionedService>() {
                 public ProvisionedService call() {
                     Plugin<?> chosenPlugin = getPluginForServiceType(installedPlugins, sd.getServiceType());

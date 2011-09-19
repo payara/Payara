@@ -57,6 +57,7 @@ public class ServiceDescription {
     private String name;
     private String initType;
     private String appName;
+    private String virtualClusterName;
 
     // User can either specify which template to use or the characterstics of the template.
     private Object templateOrCharacteristics;
@@ -174,5 +175,14 @@ public class ServiceDescription {
         return " \n[name=" + getName() + ", initType=" + getInitType()
                 + (templateOrCharacteristics instanceof TemplateIdentifier ? ", template=" : ", characteristics = \n")
                 + templateOrCharacteristics + ", configurations=" + configurations + "]";
+    }
+
+    @XmlTransient
+    public String getVirtualClusterName() {
+        return virtualClusterName;
+    }
+
+    public void setVirtualClusterName(String virtualClusterName) {
+        this.virtualClusterName = virtualClusterName;
     }
 }

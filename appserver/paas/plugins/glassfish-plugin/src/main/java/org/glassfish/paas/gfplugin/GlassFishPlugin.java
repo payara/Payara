@@ -162,10 +162,9 @@ public class GlassFishPlugin implements Plugin<JavaEEServiceType> {
         }
         CommandResult result = commandRunner.run("_delete-glassfish-service",
                 "--waitforcompletion=true", appNameParam,
+                "--virtualcluster", serviceDescription.getVirtualClusterName(),
                 serviceDescription.getName());
         
-        //XXX (Bhavani): What is this clusterName used for?
-        String clusterName = gfServiceUtil.getClusterName(serviceDescription.getName(), serviceDescription.getAppName());
         System.out.println("_delete-glassfish-service command output [" + result.getOutput() + "]");
         if (result.getExitStatus() == CommandResult.ExitStatus.SUCCESS) {
             return true;
@@ -213,6 +212,7 @@ public class GlassFishPlugin implements Plugin<JavaEEServiceType> {
             result = commandRunner.run("_create-glassfish-service",
                     "--templateid=" + templateId,
                     "--serviceconfigurations", serviceConfigurations,
+                    "--virtualcluster", serviceDescription.getVirtualClusterName(),
                     "--waitforcompletion=true", appNameParam, serviceName);
         } else if (serviceDescription.getServiceCharacteristics() != null) {
             String serviceCharacteristics = formatArgument(serviceDescription.
@@ -220,11 +220,13 @@ public class GlassFishPlugin implements Plugin<JavaEEServiceType> {
             result = commandRunner.run("_create-glassfish-service",
                     "--servicecharacteristics=" + serviceCharacteristics,
                     "--serviceconfigurations", serviceConfigurations,
+                    "--virtualcluster", serviceDescription.getVirtualClusterName(),
                     "--waitforcompletion=true", appNameParam, serviceName);
         } else {
             // TODO :: remove this else block...in an ideal world we should not land up here....
             result = commandRunner.run("_create-glassfish-service",
                     "--instancecount=" + serviceDescription.getConfiguration("min.clustersize"),
+                    "--virtualcluster", serviceDescription.getVirtualClusterName(),
                     "--waitforcompletion=true", appNameParam, serviceName);
         }
 

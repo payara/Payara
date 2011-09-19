@@ -83,6 +83,9 @@ public class DeleteGlassFishService implements AdminCommand {
     @Param(name="appname", optional=true)
     private String appName;
 
+    @Param(name="virtualcluster", optional=true)
+    private String virtualClusterName;
+
     @Inject
     private ProvisionerUtil provisionerUtil;
 
@@ -117,13 +120,10 @@ public class DeleteGlassFishService implements AdminCommand {
         }
 
         if (templateRepository != null && virtualClusters != null) { // we are in virtualized environment.
-            String dasIPAddress = gfServiceUtil.getDASIPAddress(serviceName);
-            ApplicationServerProvisioner provisioner =
-                    provisionerUtil.getAppServerProvisioner(dasIPAddress);
-            provisioner.stopCluster(dasIPAddress, serviceName); // this stops all the VMs also.
             if (virtualClusters != null && serviceName != null) {
                 try {
-                    VirtualCluster virtualCluster = virtualClusters.byName(serviceName);
+                    // TODO :: scaledownglassfishservice can be used here.
+                    VirtualCluster virtualCluster = virtualClusters.byName(virtualClusterName);
                     Collection<String> instances =
                             gfServiceUtil.getAllSubComponents(serviceName, appName);
                     for(String instance : instances){
@@ -133,15 +133,10 @@ public class DeleteGlassFishService implements AdminCommand {
                         vmLifecycle.delete(vm); // TODO :: use executor service.
                         gfServiceUtil.unregisterASInfo(instance, appName);
                     }
-                    if (virtualCluster != null) {
-                        virtualClusters.remove(virtualCluster);  // removes config.
-                    }
                 } catch (Exception ex) {
                     ex.printStackTrace();
                 }
             }
-            // TODO :: delete instances manually before deleting the cluster.
-            provisioner.deleteCluster(dasIPAddress, serviceName, false);
             gfServiceUtil.unregisterASInfo(serviceName, appName);
             return; //we are done unprovisioning...
         }

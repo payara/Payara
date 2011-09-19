@@ -90,6 +90,9 @@ public class CreateGlassFishService implements AdminCommand, Runnable {
     @Param(name="appname", optional=true)
     private String appName;
 
+    @Param(name="virtualcluster", optional=true)
+    private String virtualClusterName;
+
     @Param(name="templateid", optional=true)
     private String templateId;
 
@@ -258,18 +261,9 @@ public class CreateGlassFishService implements AdminCommand, Runnable {
 
         if (matchingTemplate != null) {
             try {
-                // Create the cluster.
                 // TODO :: we may need to create cluster in remote DAS.
                 // TODO :: So, first we may first need to provision the remote DAS
                 // TODO :: for now, everything is managed by the local DAS.
-                String dasIPAddress = gfServiceUtil.getDASIPAddress(serviceName);
-                ApplicationServerProvisioner provisioner =
-                        provisionerUtil.getAppServerProvisioner(dasIPAddress);
-                provisioner.createCluster(dasIPAddress, serviceName);
-
-                // start the cluster.
-                // TODO :: uncomment startCluster once the _synchronize_files issue is fixed.
-                // provisioner.startCluster(dasIPAddress, serviceName);
 
                 // add app-scoped-service config for orchestrator to keep track of services.
                 ServiceInfo entry = new ServiceInfo();
@@ -281,7 +275,7 @@ public class CreateGlassFishService implements AdminCommand, Runnable {
                 update(entry);
 
                 // provision VMs.
-                VirtualCluster vCluster = virtualClusters.byName(serviceName);
+                VirtualCluster vCluster = virtualClusters.byName(virtualClusterName);
                 String minClusterSize = serviceConfigurations.getProperty("min.clustersize");
                 int min = minClusterSize != null ? Integer.parseInt(minClusterSize) : 0;
                 List<PhasedFuture<AllocationPhase, VirtualMachine>> futures =
