@@ -73,7 +73,7 @@ import org.glassfish.api.admin.RestEndpoints;
 @ExecuteOn({RuntimeType.DAS})
 public class DeleteElasticServiceCommand implements AdminCommand {
 
-  @Inject
+  @Inject(optional=true)
   ElasticServices elasticServices;
 
   @Inject
@@ -89,15 +89,23 @@ public class DeleteElasticServiceCommand implements AdminCommand {
     public void execute(AdminCommandContext context) {
         ActionReport report = context.getActionReport();
         Logger logger= context.logger;
-
-        ElasticService elasticService= elasticServices.getElasticService(name);
-        if (elasticService == null) {
-            //service doesn't exist
-            String msg = Strings.get("noSuchService", name);
-            logger.warning(msg);
-            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            report.setMessage(msg);
-            return;
+        if(elasticServices != null){
+            ElasticService elasticService= elasticServices.getElasticService(name);
+            if (elasticService == null) {
+                //service doesn't exist
+                String msg = Strings.get("noSuchService", name);
+                logger.warning(msg);
+                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                report.setMessage(msg);
+                return;
+            }
+        }else{
+                //service doesn't exist
+                String msg = Strings.get("noSuchService", name);
+                logger.warning(msg);
+                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                report.setMessage(msg);
+                return;
         }
 
         //notify elastic container to run this alert

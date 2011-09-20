@@ -46,6 +46,7 @@ import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.CommandLock;
+import org.glassfish.paas.gfplugin.GlassFishPlugin;
 import org.glassfish.paas.orchestrator.provisioning.ServiceInfo;
 import org.glassfish.paas.orchestrator.provisioning.ProvisionerUtil;
 import org.glassfish.paas.orchestrator.provisioning.ApplicationServerProvisioner;
@@ -146,6 +147,8 @@ public class CreateGlassFishService implements AdminCommand, Runnable {
         domainName = serviceName.indexOf(".") > -1 ?
                 serviceName.substring(0, serviceName.indexOf(".")) : serviceName;
 */
+        String minClusterSize = serviceConfigurations.getProperty("min.clustersize");
+        String maxClusterSize = serviceConfigurations.getProperty("max.clustersize");
         instanceCount = instanceCount <= 0 ? Integer.parseInt(
                 serviceConfigurations.getProperty("min.clustersize")) : instanceCount;
         
@@ -184,6 +187,13 @@ public class CreateGlassFishService implements AdminCommand, Runnable {
             entry.setState(ServiceInfo.State.Initializing.toString());
             entry.setServerType(ServiceInfo.Type.Cluster.toString());
             entry.setAppName(appName);
+            if(minClusterSize != null){
+                entry.getProperties().put("min.clustersize", minClusterSize);
+            }
+            if(maxClusterSize != null){
+                entry.getProperties().put("max.clustersize", maxClusterSize);
+            }
+
             gfServiceUtil.registerASInfo(entry);
         }
 

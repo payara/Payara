@@ -119,6 +119,9 @@ public class GlassFishPlugin implements Plugin<JavaEEServiceType> {
     @Inject
     private ScaleDownGlassFishService scaleDownGlassFishService;
 
+    public static final String MIN_CLUSTER_PROPERTY_NAME = "min.clustersize";
+    public static final String MAX_CLUSTER_PROPERTY_NAME = "max.clustersize";
+
     private static Logger logger = Logger.getLogger(GlassFishPlugin.class.getName());
 
     public JavaEEServiceType getServiceType() {
@@ -164,7 +167,7 @@ public class GlassFishPlugin implements Plugin<JavaEEServiceType> {
                 "--waitforcompletion=true", appNameParam,
                 "--virtualcluster", serviceDescription.getVirtualClusterName(),
                 serviceDescription.getName());
-        
+
         System.out.println("_delete-glassfish-service command output [" + result.getOutput() + "]");
         if (result.getExitStatus() == CommandResult.ExitStatus.SUCCESS) {
             return true;
@@ -225,7 +228,7 @@ public class GlassFishPlugin implements Plugin<JavaEEServiceType> {
         } else {
             // TODO :: remove this else block...in an ideal world we should not land up here....
             result = commandRunner.run("_create-glassfish-service",
-                    "--instancecount=" + serviceDescription.getConfiguration("min.clustersize"),
+                    "--instancecount=" + serviceDescription.getConfiguration(MIN_CLUSTER_PROPERTY_NAME),
                     "--virtualcluster", serviceDescription.getVirtualClusterName(),
                     "--waitforcompletion=true", appNameParam, serviceName);
         }
@@ -355,7 +358,7 @@ public class GlassFishPlugin implements Plugin<JavaEEServiceType> {
     public void associateServices(ProvisionedService serviceConsumer, ServiceReference svcRef,
                                   ProvisionedService serviceProvider, boolean beforeDeployment, DeploymentContext dc) {
 //        if (provisionedSvc instanceof DerbyProvisionedService) {
-        if (svcRef.getServiceRefType().equals("javax.sql.DataSource") && 
+        if (svcRef.getServiceRefType().equals("javax.sql.DataSource") &&
 	    serviceProvider.getServiceType().toString().equals("Database")) {
 
             if (!beforeDeployment) return;
@@ -543,8 +546,8 @@ public class GlassFishPlugin implements Plugin<JavaEEServiceType> {
 //            characteristics.add(new Property("service-product-name", "GlassFish"));
 
             List<Property> configurations = new ArrayList<Property>();
-            configurations.add(new Property("min.clustersize", "2"));
-            configurations.add(new Property("max.clustersize", "4"));
+            configurations.add(new Property(MIN_CLUSTER_PROPERTY_NAME, "2"));
+            configurations.add(new Property(MAX_CLUSTER_PROPERTY_NAME, "4"));
 
             //we append -service in the service-name so that cluster-name and app-name
             //are not same. If they are same, delete-virtual-cluster gets initiated and fails.
