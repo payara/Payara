@@ -58,6 +58,9 @@ import org.jvnet.hk2.config.TransactionFailure;
 import org.jvnet.hk2.config.types.Property;
 
 import java.beans.PropertyVetoException;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -290,6 +293,15 @@ public class ServiceUtil implements PostConstruct {
         }
     }
 
+    public String getProperty(String serviceName, String appName, String propertyName, ServiceType type) {
+        ServiceInfo entry = retrieveCloudEntry(serviceName, appName, type);
+        if (entry != null) {
+            return entry.getProperties().get(propertyName);
+        } else {
+            return null;
+        }
+    }
+
 
     public ServiceInfo retrieveCloudEntry(String serviceName, String appName, ServiceType type) {
         return retrieveCloudEntryThroughConfig(serviceName, appName);
@@ -310,6 +322,11 @@ public class ServiceUtil implements PostConstruct {
 
                 if(matchingService.getProperty("vm-id") != null){
                     cre.setInstanceId(matchingService.getProperty("vm-id").getValue());
+                }
+
+                List<Property> properties = matchingService.getProperty();
+                for(Property property : properties){
+                    cre.getProperties().put(property.getName(), property.getValue());
                 }
             }
 
@@ -439,6 +456,17 @@ public class ServiceUtil implements PostConstruct {
                         prop.setValue(entry.getIpAddress());
                         service.getProperty().add(prop);
                     }
+
+                    Map<String, String> properties = entry.getProperties();
+                    if(properties != null){
+                        for(Map.Entry<String, String> entry : properties.entrySet()){
+                            Property prop = service.createChild(Property.class);
+                            prop.setName(entry.getKey());
+                            prop.setValue(entry.getValue());
+                            service.getProperty().add(prop);
+                        }
+                    }
+
                     servicesConfig.getServices().add(service);
                     return service;
                 }

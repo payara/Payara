@@ -40,6 +40,8 @@
 
 package org.glassfish.paas.orchestrator.provisioning;
 
+import org.jvnet.hk2.config.types.Property;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -134,11 +136,17 @@ public class ServiceInfo {
     
     @Override
     public String toString() {
-        return "ServiceInfo :: \n" +
+        StringBuilder toString = new StringBuilder();
+        toString.append("ServiceInfo :: \n" +
                 "serviceName [ " + serviceName + "] \n" +
-                "ipAddress [ " + ipAddress + "] \n" +
-                "instanceId [ " + instanceId + "] \n" +
                 "serverType [ " + serverType + "] \n" +
-                "state [ " + state + "] \n";
+                "state [ " + state + "] \n");
+        StringBuffer property = new StringBuffer("properties [\n");
+        for(Map.Entry<String, String> entry : properties.entrySet()){
+            property.append(entry.getKey() + " = " + entry.getValue() + "\n");
+        }
+        property.append("]\n");
+        toString.append(property.toString());
+        return toString.toString();
     }
 }
