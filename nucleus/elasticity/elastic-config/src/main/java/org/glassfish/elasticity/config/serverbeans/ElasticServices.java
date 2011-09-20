@@ -69,9 +69,12 @@ public interface ElasticServices extends DomainExtension {
      *
      * @return the list of configured {@link ElasticService}
      */
+     @Create(value = "_create-elastic-services-element", resolver = ESResolver.class, i18n = @I18n("org.glassfish.elasticity.config.create-elastic-service-element"))
+
     @Element ("elasticservice")
-    @Create(value = "_create-elastic-service", decorator=ElasticService.Decorator.class, resolver = ESResolver.class, i18n = @I18n("org.glassfish.elasticity.config.create-elastic-service"))
     public List<ElasticService> getElasticService();
+
+    void setElasticService(ElasticService elasticService);
 
     /**
      * Return the elastic service with the given name, or null if no such elastic service exists.

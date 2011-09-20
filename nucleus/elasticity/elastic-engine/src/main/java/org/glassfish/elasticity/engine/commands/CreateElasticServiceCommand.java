@@ -46,7 +46,7 @@ import java.beans.PropertyVetoException;
 import java.util.HashMap;
 import java.util.Map;
 import org.glassfish.elasticity.config.serverbeans.*;
-import org.glassfish.elasticity.engine.container.ElasticServiceContainer;
+import org.glassfish.elasticity.engine.container.ElasticEngine;
 import org.glassfish.elasticity.engine.container.ElasticServiceManager;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
@@ -57,6 +57,7 @@ import org.jvnet.hk2.annotations.*;
 import org.jvnet.hk2.component.*;
 import org.jvnet.hk2.config.*;
 import java.util.logging.Logger;
+import org.glassfish.api.admin.CommandRunner.CommandInvocation;
 import org.glassfish.api.admin.RestEndpoint;
 import org.glassfish.api.admin.RestEndpoint.OpType;
 import org.glassfish.api.admin.RestEndpoints;
@@ -67,17 +68,20 @@ import org.glassfish.api.admin.RestEndpoints;
  * User: cmott
  * Date: 9/19/11
  */
-@Service(name = "_delete-elastic-service")
-@I18n("delete.ealastic.service")
+@Service(name = "_create-elastic-service")
+@I18n("create.ealastic.service")
 @Scoped(PerLookup.class)
 @ExecuteOn({RuntimeType.DAS})
-public class DeleteElasticServiceCommand implements AdminCommand {
-
-  @Inject
-  ElasticServices elasticServices;
+public class CreateElasticServiceCommand implements AdminCommand {
 
   @Inject
   Domain domain;
+
+  @Inject
+  private CommandRunner cr;
+
+  @Inject
+  ElasticEngine elasticEngine;
 
   @Inject
    ElasticServiceManager elasticServiceManager;
@@ -85,37 +89,59 @@ public class DeleteElasticServiceCommand implements AdminCommand {
   @Param(name="name", primary = true)
    String name;
 
+    @Param(name="min", optional=true)
+    int min=-1;
+
+    @Param(name="max", optional=true)
+    int max=-1;
+
+    @Param(name="enabled", optional=true, defaultValue="true")
+    boolean enabled;
+
+    ElasticServices elasticServices =null;
+
     @Override
     public void execute(AdminCommandContext context) {
         ActionReport report = context.getActionReport();
         Logger logger= context.logger;
 
-        ElasticService elasticService= elasticServices.getElasticService(name);
-        if (elasticService == null) {
-            //service doesn't exist
-            String msg = Strings.get("noSuchService", name);
+        CommandInvocation ci = cr.getCommandInvocation("_create-elastic-services-element", report);
+        ParameterMap map = new ParameterMap();
+        map.add("DEFAULT", name);
+        ci.parameters(map);
+        ci.execute();
+
+        elasticServices =  domain.getExtensionByType (ElasticServices.class);
+
+        if  (min > max)  {
+            String msg =  "Min must be less than max limit";
             logger.warning(msg);
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setMessage(msg);
+/*
+            ci = cr.getCommandInvocation("_delete-elastic-service", report);
+            map = new ParameterMap();
+            map.add("DEFAULT", name);
+            ci.parameters(map);
+            ci.execute();
+            */
             return;
-        }
-
-        //notify elastic container to run this alert
-        ElasticServiceContainer service = (ElasticServiceContainer) elasticServiceManager.getElasticServiceContainer(name);
-        // need to stop the alerts and the metric gatherers
-//       service.stopContainer();
+         }
 
         try {
-            deleteESElement(name);
+            createESElement(name);
         } catch(TransactionFailure e) {
-            logger.warning("failed.to.delete.service " + name);
+            logger.warning("failed.to.create.service " + name);
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setMessage(e.getMessage());
         }
 
+        //notify elastic container to run
+        ElasticService elasticService = elasticServices.getElasticService(name);
+        elasticEngine.startElasticService(elasticService);
     }
 
-    public void deleteESElement(final String alertName) throws TransactionFailure {
+    public void createESElement(final String name) throws TransactionFailure {
         ConfigSupport.apply(new SingleConfigCode() {
             @Override
             public Object run(ConfigBeanProxy param) throws PropertyVetoException, TransactionFailure {
@@ -124,8 +150,30 @@ public class DeleteElasticServiceCommand implements AdminCommand {
                 if (t!=null) {
                     ElasticService elasticService = elasticServices.getElasticService(name);
                     if (elasticService != null ){
-                        ElasticServices writeableService = t.enroll(elasticServices);
-                        writeableService.getElasticService().remove(elasticService);
+                        ElasticService writeableService = t.enroll(elasticService);
+
+                        if (min !=-1)
+                            writeableService.setMin(min);
+                        if (max != -1)
+                         writeableService.setMax(max);
+                        writeableService.setEnabled(enabled);
+
+                        MetricGatherers mgs = writeableService.createChild(MetricGatherers.class);
+                        MetricGatherer mg  =  mgs.createChild(MetricGatherer.class);
+                        mg.setName( "memory");
+                        mgs.getMetricGatherer().add(mg);
+                        writeableService.setMetricGatherers(mgs);
+
+             // create the scale up action element
+
+                        Actions actionsS = writeableService.createChild(Actions.class);
+                        ScaleUpAction scaleUpAction = actionsS.createChild(ScaleUpAction.class);
+                        scaleUpAction.setName("scale-up-action");
+                        actionsS.setScaleUpAction(scaleUpAction);
+                        writeableService.setActions(actionsS);
+
+                        Alerts alerts = writeableService.createChild(Alerts.class);
+                        writeableService.setAlerts(alerts);
                     }
                 }
                 return Boolean.TRUE;
