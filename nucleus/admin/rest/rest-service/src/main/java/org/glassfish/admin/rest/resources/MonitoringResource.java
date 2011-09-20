@@ -189,7 +189,7 @@ public class MonitoringResource {
         Response.ResponseBuilder responseBuilder = Response.status(OK);
         MetricNode rootNode = habitat.getComponent(MetricNode.class, "elasticity");
 
-        //The pathSegments will always contain "elasticity". Discard it
+        //The pathSegments will always contain "domain". Discard it
         pathSegments = pathSegments.subList(1, pathSegments.size());
         if(!pathSegments.isEmpty()) {
             PathSegment lastSegment = pathSegments.get(pathSegments.size() - 1);
@@ -198,23 +198,54 @@ public class MonitoringResource {
             }
         }
 
-        MetricNode targetNode = rootNode;
-        if(!pathSegments.isEmpty() ) {
-            targetNode = getChildNode(rootNode, pathSegments);
-        }
-
         RestActionReporter ar = new RestActionReporter();
-        if(targetNode != null) {
-            // Return all attributes and child links
-            ResponseEntity responseEntity = constructEntity(targetNode, timePeriod);
-            ar.getExtraProperties().put("entity", responseEntity.entity);
-            ar.getExtraProperties().put("childResources", responseEntity.childLinks);
-        }  else {
-            //Could not find targetnode
-            responseBuilder.status(NOT_FOUND);
-        }
+        String currentInstanceName = System.getProperty("com.sun.aas.instanceName");
+        boolean isRunningOnDAS = "server".equals(currentInstanceName); //TODO this needs to come from an API. Check with admin team
+        if(!pathSegments.isEmpty()) {
+            String serverName = pathSegments.get(0).getPath();
+            pathSegments = pathSegments.subList(1, pathSegments.size());
+            if(serverName.equals(currentInstanceName)) { // Query for current instance. Execute it
+                MetricNode targetNode = rootNode;
+                if(!pathSegments.isEmpty() ) {
+                    targetNode = getChildNode(rootNode, pathSegments);
+                }
 
-        responseBuilder.entity(new ActionReportResult(ar));
+                if(targetNode != null) {
+                    // Return all attributes and child links
+                    ResponseEntity responseEntity = constructEntity(targetNode, timePeriod);
+                    ar.getExtraProperties().put("entity", responseEntity.entity);
+                    ar.getExtraProperties().put("childResources", responseEntity.childLinks);
+                }  else {
+                    //Could not find targetnode
+                    responseBuilder.status(NOT_FOUND);
+                }
+
+                responseBuilder.entity(new ActionReportResult(ar));
+
+            } else { //firstPathElement != currentInstanceName => A proxy request
+                if(isRunningOnDAS) { //Attempt to forward to instance if running on Das
+                    //TODO validate that firstPathElement corresponds to a valid server name
+                    Properties proxiedResponse = new ElasticityProxyImpl().proxyRequest(uriInfo, Util.getJerseyClient(), habitat);
+                    ar.setExtraProperties(proxiedResponse);
+                    responseBuilder.entity(new ActionReportResult(ar));
+                } else { // Not running on DAS and firstPathElement != currentInstanceName => Reject the request as invalid
+                    return Response.status(FORBIDDEN).build();
+                }
+            }
+        } else { // Called for /monitoring/domain/
+            if(isRunningOnDAS) { // Add links to instances from the cluster
+                Domain domain = habitat.getComponent(Domain.class);
+                Map<String, String> links = new TreeMap<String, String>();
+                for (Server s : domain.getServers().getServer()) {
+                    if (!s.getName().equals("server")) {// add all non 'server' instances
+                        links.put(s.getName(), getElementLink(uriInfo, s.getName()));
+                    }
+                }
+                ar.getExtraProperties().put("childResources", links);
+            }
+            responseBuilder.entity(new ActionReportResult(ar));
+
+        }
         return responseBuilder.build();
     }
 
@@ -332,6 +363,13 @@ public class MonitoringResource {
         @Override
         public String extractTargetInstanceName(UriInfo uriInfo) {
             return uriInfo.getPathSegments().get(1).getPath(); //pathSegment[0] == "monitoring"
+        }
+    }
+
+    private static class ElasticityProxyImpl extends MonitoringProxyImpl {
+        @Override
+        public String extractTargetInstanceName(UriInfo uriInfo) {
+            return uriInfo.getPathSegments().get(2).getPath(); //pathSegment[0] == "elasticity". pathSegment[1] == "domain"
         }
     }
 
