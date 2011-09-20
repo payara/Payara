@@ -66,6 +66,8 @@ import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.net.URL;
+import org.glassfish.api.admin.CommandRunner;
+import org.glassfish.api.admin.ParameterMap;
 
 @Service(name="_get-application-launch-urls")
 @ExecuteOn(value={RuntimeType.DAS})
@@ -82,14 +84,24 @@ public class GetApplicationLaunchURLsCommand implements AdminCommand {
     @Inject
     Domain domain;
 
+    @Inject
+    CommandRunner commandRunner;
+
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(GetApplicationLaunchURLsCommand.class);    
 
+    @Override
     public void execute(AdminCommandContext context) {
         ActionReport report = context.getActionReport();
         Logger logger = context.getLogger();
-        ActionReport.MessagePart part = report.getTopMessagePart();
-        part.setMessage("A");
+        getLBLaunchURLInformation(appname, report);
         List<URL> launchURLs = getLaunchURLInformation(appname, logger);
+        if(launchURLs == null || launchURLs.isEmpty()){
+            return;
+        }
+        ActionReport.MessagePart part = report.getTopMessagePart();
+        //Adding a new part for adding instance(s) urls
+        part = part.addChild();
+        part.setMessage("Instances");
         int j = 0;
         for (URL url : launchURLs) {
             ActionReport.MessagePart childPart = part.addChild();
@@ -102,6 +114,16 @@ public class GetApplicationLaunchURLsCommand implements AdminCommand {
                 String.valueOf(url.getPort()));
             childPart.addProperty(DeploymentProperties.CONTEXT_PATH,
                 url.getPath());
+        }
+    }
+
+    private void getLBLaunchURLInformation(String appName, ActionReport report){
+        CommandRunner.CommandInvocation invocation =
+                commandRunner.getCommandInvocation("_get-lb-launch-urls", report);
+        if(invocation != null){
+            ParameterMap map = new ParameterMap();
+            map.add("appname", appName);
+            invocation.parameters(map).execute();
         }
     }
 
@@ -131,6 +153,9 @@ public class GetApplicationLaunchURLsCommand implements AdminCommand {
 
     private String getContextRoot(String appName) {
         Application application = domain.getApplications().getApplication(appName);
+        if(application == null){
+            return "";
+        }
         String contextRoot = application.getContextRoot();
         // non standalone war cases
         if (contextRoot == null) {

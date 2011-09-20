@@ -51,20 +51,14 @@ import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.component.PerLookup;
 import com.sun.enterprise.config.serverbeans.*;
-import java.beans.PropertyVetoException;
-import java.util.logging.Level;
 import org.glassfish.api.admin.RestEndpoints;
 import org.glassfish.api.admin.RestEndpoint;
 import org.glassfish.paas.lbplugin.Constants;
 import org.glassfish.paas.lbplugin.LBServiceUtil;
-import org.glassfish.paas.lbplugin.logger.LBPluginLogger;
 import org.glassfish.paas.orchestrator.config.ApplicationScopedService;
 import org.glassfish.paas.orchestrator.config.Services;
 import org.glassfish.paas.orchestrator.config.Service;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceType;
-import org.jvnet.hk2.config.ConfigSupport;
-import org.jvnet.hk2.config.SingleConfigCode;
-import org.jvnet.hk2.config.TransactionFailure;
 
 @org.jvnet.hk2.annotations.Service(name = "_get-lb-launch-urls")
 @ExecuteOn(value = {RuntimeType.DAS})
@@ -94,7 +88,9 @@ public class GetLBLaunchURLsCommand implements AdminCommand {
             return;
         }
         ActionReport.MessagePart part = report.getTopMessagePart();
-        part.setMessage("A");
+        //Add a new part for adding LB urls
+        part = part.addChild();
+        part.setMessage("LB");
         int j = 0;
         ActionReport.MessagePart childPart = part.addChild();
         childPart.setMessage(Integer.toString(j++));
@@ -125,6 +121,9 @@ public class GetLBLaunchURLsCommand implements AdminCommand {
 
     private String getContextRoot(String appName) {
         Application application = domain.getApplications().getApplication(appName);
+        if(application == null){
+            return "";
+        }
         String contextRoot = application.getContextRoot();
         // non standalone war cases
         if (contextRoot == null) {
