@@ -40,13 +40,10 @@
 
 package org.glassfish.paas.lbplugin;
 
-import com.sun.enterprise.util.ExecException;
 import com.sun.enterprise.util.OS;
-import com.sun.enterprise.util.ProcessExecutor;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.glassfish.common.util.admin.AuthTokenManager;
 import org.glassfish.embeddable.CommandResult;
 import org.glassfish.embeddable.CommandRunner;
@@ -298,27 +295,26 @@ public class ApacheLBProvisioner implements LBProvisioner{
 
     class HttpdThread extends Thread{
 
-        ProcessExecutor executor;
+        Process process;
 
         HttpdThread() {
         }
 
         @Override
         public void run() {
-            executor = new ProcessExecutor(new String[]{apachectl});
             try {
-                executor.execute();
-            } catch (ExecException ex) {
-                executor = null;
+                process = Runtime.getRuntime().exec(apachectl);
+                process.waitFor();
+            } catch (Exception ex) {
+                process = null;
                 LBPluginLogger.getLogger().log(Level.SEVERE,
                         "Httpd process exited ...", ex);
             }
         }
 
         private void stopProcess() {
-            if(executor != null){
-                Process process = executor.getSubProcess();
-
+            if(process != null){
+                process.destroy();
             }
         }
         
