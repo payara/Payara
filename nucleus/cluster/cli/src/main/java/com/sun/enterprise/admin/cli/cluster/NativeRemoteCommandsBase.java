@@ -83,9 +83,10 @@ import com.sun.enterprise.util.OS;
 /**
  *  Base class for SSH provisioning commands.
  *
- *  Byron Nevins Aug 2011.  SSH was totally hard-coded in.  Now we
- *  want to use jcifs (SAMBA) for Windows.  It's difficult to do this cleanly.
+ *  Byron Nevins Aug 2011.  SSH was hard-coded in.  Now we
+ *  want to use jcifs (SAMBA) for Windows.
  */
+
 abstract class NativeRemoteCommandsBase extends CLICommand {
     @Param(optional = true, defaultValue = "${user.name}", alias = "dcomuser")
     String sshuser;
@@ -271,7 +272,6 @@ abstract class NativeRemoteCommandsBase extends CLICommand {
      * @return true if empty, false otherwise
      * @throws IOException
      */
-    // byron XXXX
     private boolean isRemoteDirectoryEmpty(SFTPClient sftp, String file) throws IOException {
         List<SFTPv3DirectoryEntry> l = (List<SFTPv3DirectoryEntry>) sftp.ls(file);
         if (l.size() > 2)
@@ -361,7 +361,6 @@ abstract class NativeRemoteCommandsBase extends CLICommand {
      * @param alias password alias of form ${ALIAS=xxx}
      * @return real password of ssh user, null if not found
      */
-    // byron XXXX
     String expandPasswordAlias(String host, String alias, boolean verifyConn) {
         String expandedPassword = null;
         boolean connStatus = false;
@@ -441,7 +440,6 @@ abstract class NativeRemoteCommandsBase extends CLICommand {
      * @return List of files and directories
      * @throws IOException
      */
-    // byron XXXX
     List<String> getListOfInstallFiles(String installDir) throws IOException {
         String ins = resolver.resolve("${com.sun.aas.productRoot}");
         Set files = FileUtils.getAllFilesAndDirectoriesUnder(new File(ins));

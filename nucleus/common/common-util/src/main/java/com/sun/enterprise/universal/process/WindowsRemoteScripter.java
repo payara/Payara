@@ -39,6 +39,7 @@
  */
 package com.sun.enterprise.universal.process;
 
+import java.util.*;
 import java.util.logging.Level;
 import org.jinterop.dcom.common.JISystem;
 import org.jinterop.dcom.core.IJIComObject;
@@ -62,11 +63,33 @@ public class WindowsRemoteScripter {
     }
 
     /**
+     * Run a remote script command.
+     * Convenience method which creates one big String from the substrings
+     * @param cmd e.g. "C:/glassfish3/bin/asadmin" "start-local-instance" "i1"
+     * @return The stdout of the command
+     */
+    public String run(Collection<String> cmdArgs) throws WindowsException {
+        if (cmdArgs == null || cmdArgs.isEmpty())
+            throw new IllegalArgumentException("Internal Error: No args to run");
+
+        StringBuilder sb = new StringBuilder();
+
+        for (String s: cmdArgs) {
+            sb.append(s).append(' ');
+        }
+
+        return run(sb.toString());
+    }
+
+    /**
      * Run a remote script command
      * @param cmd e.g. "C:/glassfish3/bin/asadmin start-local-instance i1"
-     *
+     * @return The stdout of the command
      */
-    public final void run(String cmd) throws WindowsException {
+    public String run(String cmd) throws WindowsException {
+         if (cmd == null || cmd.isEmpty())
+            throw new IllegalArgumentException("Internal Error: No args to run");
+
         try {
             // JISystem is **extremely** verbose!
             JISystem.getLogger().setLevel(Level.SEVERE);
@@ -87,7 +110,25 @@ public class WindowsRemoteScripter {
                 new JIString("%comspec% /c " + cmd)
             };
 
+            // ref: http://stackoverflow.com/questions/6781340/how-to-call-a-remote-bat-file-using-jinterop
+
             JIVariant results[] = shell.callMethodA("Exec", scriptArgs);
+            final IJIDispatch wbemObjectSet_dispatch =
+                    (IJIDispatch) JIObjectFactory.narrowObject((results[0]).getObjectAsComObject());
+
+            JIVariant stdOutJIVariant = wbemObjectSet_dispatch.get("StdOut");
+
+            IJIDispatch stdOut =
+                    (IJIDispatch) JIObjectFactory.narrowObject(stdOutJIVariant.getObjectAsComObject());
+
+            // Read all from stdOut
+            StringBuilder sb = new StringBuilder();
+
+            while (!((JIVariant) stdOut.get("AtEndOfStream")).getObjectAsBoolean()) {
+                sb.append(stdOut.callMethodA("ReadAll").getObjectAsString().getString());
+            }
+
+            return sb.toString();
         }
         catch (Exception e) {
             // do NOT allow j-interop exceptions to leak

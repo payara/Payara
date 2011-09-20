@@ -56,6 +56,7 @@ import org.jvnet.hk2.component.Habitat;
  * Remote AdminCommand to validate the connection to an SSH node.
  * Refactored for DCOM Sept 2011 by Byron Nevins
  * @author Joe Di Pol
+ * @author Byron Nevins
  */
 @Service
 public abstract class PingNodeRemoteCommand implements AdminCommand {
@@ -100,11 +101,6 @@ public abstract class PingNodeRemoteCommand implements AdminCommand {
         try {
             String version = "";
             if (validate) {
-                // TODO DCOMFIX
-                // TODO DCOMFIX
-                // TODO DCOMFIX
-                // TODO DCOMFIX
-                // TODO DCOMFIX
                 // Validates all parameters
                 nodeUtils.validate(theNode);
                 version = Strings.get("ping.glassfish.version",

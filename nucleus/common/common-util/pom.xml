@@ -82,11 +82,11 @@
                     <excludes>
                         <exclude>**/ha/spi/*.java</exclude>
                     </excludes>
-                <archive>
-                  <manifestEntries>
-                    <Class-Path>common-l10n.jar</Class-Path>
-                  </manifestEntries>
-                </archive>
+                    <archive>
+                        <manifestEntries>
+                            <Class-Path>common-l10n.jar</Class-Path>
+                        </manifestEntries>
+                    </archive>
                 </configuration>
             </plugin>
         </plugins>
@@ -110,9 +110,9 @@
             <artifactId>glassfish-api</artifactId>
             <version>${project.version}</version>
         </dependency>
-       <dependency>
-			<groupId>org.glassfish.main</groupId>
-			<artifactId>j-interop-repackaged</artifactId>
+        <dependency>
+            <groupId>org.glassfish.main</groupId>
+            <artifactId>j-interop-repackaged</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>

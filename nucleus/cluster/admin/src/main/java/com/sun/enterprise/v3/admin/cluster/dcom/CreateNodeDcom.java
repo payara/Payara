@@ -58,8 +58,8 @@ import static com.sun.enterprise.util.StringUtils.ok;
 @CommandLock(CommandLock.LockType.NONE)
 @ExecuteOn({RuntimeType.DAS})
 public class CreateNodeDcom extends CreateRemoteNodeCommand {
-    @Param(name = "dcomport", optional = true, defaultValue = "135")
-    private String dcomport;
+    //@Param(name = "dcomport", optional = true, defaultValue = "135")
+    //private String dcomport;
     @Param(name = "dcomuser", optional = true, defaultValue = NodeUtils.NODE_DEFAULT_REMOTE_USER)
     private String dcomuser;
     @Param(name = "dcompassword", optional = true, password = true)
@@ -102,7 +102,7 @@ public class CreateNodeDcom extends CreateRemoteNodeCommand {
      */
     @Override
     final protected void populateBaseClass() {
-        remotePort = dcomport;
+        remotePort = "135";
         remoteUser = dcomuser;
         remotePassword = dcompassword;
     }
@@ -116,8 +116,8 @@ public class CreateNodeDcom extends CreateRemoteNodeCommand {
         args.add("--dcom=true");
         args.add("--dcomuser");
         args.add(remoteUser);
-        args.add("--dcomport");
-        args.add(remotePort);
+        //args.add("--dcomport");
+        //args.add(remotePort);
     }
 
     @Override

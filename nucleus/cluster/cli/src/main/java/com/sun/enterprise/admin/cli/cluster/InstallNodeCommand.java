@@ -102,7 +102,6 @@ public class InstallNodeCommand extends NativeRemoteCommandsBase {
     private String archiveName;
     private boolean delete = true;
     private String dcomuser;
-    private String[] hostIPs;
 
     @Override
     protected void validate() throws CommandException {
@@ -138,12 +137,6 @@ public class InstallNodeCommand extends NativeRemoteCommandsBase {
         //we need the key passphrase if key is encrypted
         if (sshkeyfile != null && isEncryptedKey()) {
             sshkeypassphrase = getSSHPassphrase(true);
-        }
-
-        hostIPs = new String[hosts.length];
-
-        for(int i = 0; i < hosts.length; i++) {
-            hostIPs[i] = getIP(hosts[i]);
         }
     }
 
@@ -184,7 +177,7 @@ public class InstallNodeCommand extends NativeRemoteCommandsBase {
         final String zipFileName = "glassfish_install.zip";
         final String unpackScriptName = "unpack.bat";
 
-        for (String host : hostIPs) {
+        for (String host : hosts) {
             String remotePassword = getDCOMPassword(host);
             WindowsRemoteFileSystem wrfs = new WindowsRemoteFileSystem(host, dcomuser, remotePassword);
             WindowsRemoteFile remoteInstallDir = new WindowsRemoteFile(wrfs, installDir);
@@ -205,12 +198,12 @@ public class InstallNodeCommand extends NativeRemoteCommandsBase {
             String fullUnpackScriptPath = SmartFile.sanitize(installDir + "/" + unpackScriptName);
             unpackScript.copyFrom(makeScriptString(installDir, zipFileName));
             logger.fine("WROTE FILE TO REMOTE SYSTEM: " + fullZipFileName + " and " + fullUnpackScriptPath);
-            unpackOnHostsWindows(host, remotePassword, fullUnpackScriptPath.replace('/', '\\'));
+             unpackOnHostsWindows(host, remotePassword, fullUnpackScriptPath.replace('/', '\\'));
         }
     }
 
     private void unpackOnHostsWindows(String host, String remotePassword,
-            String unpackScript) throws WindowsException {
+            String unpackScript) throws WindowsException, CommandException {
         String domain = windowsDomain;
 
         if(!ok(domain))
@@ -218,7 +211,10 @@ public class InstallNodeCommand extends NativeRemoteCommandsBase {
 
         WindowsCredentials bonafides = new WindowsCredentials(host, domain, sshuser, remotePassword);
         WindowsRemoteScripter scripter = new WindowsRemoteScripter(bonafides);
-        scripter.run(unpackScript);
+        String out = scripter.run(unpackScript);
+
+        if(out == null || out.length() < 50)
+            throw new CommandException(Strings.get("dcom.error.unpacking", unpackScript, out));
     }
 
     private void copyToHostsSSH(File zipFile, ArrayList<String> binDirFiles) throws IOException, InterruptedException, CommandException {
