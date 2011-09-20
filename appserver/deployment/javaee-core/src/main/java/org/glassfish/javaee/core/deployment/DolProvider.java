@@ -42,42 +42,56 @@ package org.glassfish.javaee.core.deployment;
 
 import org.glassfish.deployment.common.ModuleDescriptor;
 import org.glassfish.deployment.common.RootDeploymentDescriptor;
+import org.glassfish.deployment.common.DeploymentContextImpl;
 import org.glassfish.hk2.classmodel.reflect.Parser;
 import org.glassfish.hk2.classmodel.reflect.Types;
 import org.glassfish.internal.deployment.DeploymentTracing;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.PreDestroy;
+import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.deployment.ApplicationMetaDataProvider;
 import org.glassfish.api.deployment.MetaData;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.DeployCommandParameters;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.api.deployment.archive.WritableArchive;
+import org.glassfish.api.deployment.archive.ArchiveHandler;
+import org.glassfish.api.deployment.DeployCommandParameters;
 import org.glassfish.api.ActionReport;
 import org.glassfish.deployment.common.DeploymentUtils;
 import org.glassfish.internal.deployment.ApplicationInfoProvider;
+import org.glassfish.internal.deployment.Deployment;
+import org.glassfish.internal.deployment.ExtendedDeploymentContext;
+import org.glassfish.internal.api.ClassLoaderHierarchy;
 import org.xml.sax.SAXParseException;
 import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.BundleDescriptor;
 import com.sun.enterprise.deployment.WebBundleDescriptor;
 import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.deployment.deploy.shared.DeploymentPlanArchive;
+import com.sun.enterprise.deploy.shared.FileArchive;
+import com.sun.enterprise.deployment.deploy.shared.InputJarArchive;
+import com.sun.enterprise.deployment.deploy.shared.Util;
 import com.sun.enterprise.deployment.archivist.Archivist;
 import com.sun.enterprise.deployment.archivist.ArchivistFactory;
 import com.sun.enterprise.deployment.archivist.ApplicationFactory;
 import com.sun.enterprise.deployment.archivist.ApplicationArchivist;
 import com.sun.enterprise.deployment.archivist.DescriptorArchivist;
+import com.sun.enterprise.v3.common.HTMLActionReporter;
 import com.sun.enterprise.deploy.shared.ArchiveFactory;
 import com.sun.enterprise.config.serverbeans.DasConfig;
 import com.sun.enterprise.config.serverbeans.Module;
 import com.sun.enterprise.util.LocalStringManagerImpl;
+import com.sun.enterprise.util.io.FileUtils;
 
 import java.io.IOException;
 import java.io.File;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.net.URL;
+
 import java.util.List;
 import java.util.ArrayList;
 
@@ -109,6 +123,12 @@ public class DolProvider implements ApplicationMetaDataProvider<Application>,
     @Inject
     DasConfig dasConfig;
 
+    @Inject
+    Deployment deployment;
+
+    @Inject
+    ServerEnvironment env;
+
     private static String WRITEOUT_XML = System.getProperty(
         "writeout.xml");
 
@@ -119,8 +139,7 @@ public class DolProvider implements ApplicationMetaDataProvider<Application>,
         return new MetaData(false, new Class[] { Application.class, WebBundleDescriptor.class }, null);
     }
 
-    public Application load(DeploymentContext dc) throws IOException {
-
+    private Application processDOL(DeploymentContext dc) throws IOException {
         ReadableArchive sourceArchive = dc.getSource();
 
         sourceArchive.setExtraData(Types.class, dc.getTransientAppMetaData(Types.class.getName(), Types.class));
@@ -191,12 +210,19 @@ public class DolProvider implements ApplicationMetaDataProvider<Application>,
         sourceArchive.removeExtraData(Types.class);
         sourceArchive.removeExtraData(Parser.class);
 
+        Logger.getAnonymousLogger().log(Level.FINE, "DOL Loading time" + (System.currentTimeMillis() - start));
+
+        return application;
+    }
+
+    public Application load(DeploymentContext dc) throws IOException {
+        DeployCommandParameters params = dc.getCommandParameters(DeployCommandParameters.class);
+        Application application = processDOL(dc);
+
         // write out xml files if needed
         if (Boolean.valueOf(WRITEOUT_XML)) {
             saveAppDescriptor(application, dc);
         }
-
-        Logger.getAnonymousLogger().log(Level.FINE, "DOL Loading time" + (System.currentTimeMillis() - start));
 
         if (application.isVirtual()) {
             dc.addModuleMetaData(application.getStandaloneBundleDescriptor());
@@ -246,6 +272,78 @@ public class DolProvider implements ApplicationMetaDataProvider<Application>,
             Logger.getAnonymousLogger().log(Level.WARNING, "Error occurred", e);
         }
         return null;
+    }
+
+    /**
+     * This method populates the Application object from a ReadableArchive
+     * @param archive the archive for the application
+     */
+    public Application processDeploymentMetaData(ReadableArchive archive) throws Exception {
+        FileArchive expandedArchive = null;
+        File tmpFile = null;
+        ExtendedDeploymentContext context = null;
+        Logger logger = Logger.getAnonymousLogger();
+        ClassLoader cl = null;
+        try {
+            String archiveName = Util.getURIName(archive.getURI());
+            ArchiveHandler archiveHandler = deployment.getArchiveHandler(archive);
+            if (archiveHandler==null) {
+                throw new IllegalArgumentException(localStrings.getLocalString("deploy.unknownarchivetype","Archive type of {0} was not recognized", archiveName));
+            }
+            String appName = archiveHandler.getDefaultApplicationName(archive);
+
+            DeployCommandParameters parameters = new DeployCommandParameters(new File(archive.getURI()));
+            parameters.name = appName;
+            ActionReport report = new HTMLActionReporter();
+            context = new DeploymentContextImpl(report, logger, archive, parameters, env);
+
+            if (archive instanceof InputJarArchive) {
+                // we need to expand the archive first in this case
+                tmpFile = File.createTempFile(
+                    archiveName,"");
+                String path = tmpFile.getAbsolutePath();
+                if (!tmpFile.delete()) {
+                    logger.log(Level.WARNING, "cannot.delete.temp.file", new Object[] {path});
+                }
+                File tmpDir = new File(path);
+                tmpDir.deleteOnExit();
+                expandedArchive = (FileArchive)archiveFactory.createArchive(tmpDir);
+                archiveHandler.expand(archive, expandedArchive, context);
+                context.setSource(expandedArchive);
+            }
+
+            context.setPhase(DeploymentContextImpl.Phase.PREPARE);
+            ClassLoaderHierarchy clh = habitat.getByContract(ClassLoaderHierarchy.class);
+            context.createDeploymentClassLoader(clh, archiveHandler);
+            cl = context.getClassLoader();
+            deployment.getDeployableTypes(context);
+            return processDOL(context);
+        } finally  {
+            if (cl != null) {
+                try {
+                    PreDestroy.class.cast(cl).preDestroy();
+                } catch (Exception e) {
+                    // ignore
+                }
+            }
+            if (context != null) {
+                context.postDeployClean(true);
+            }
+            if (expandedArchive != null) {
+                try {
+                    expandedArchive.close();
+                } catch (Exception e) {
+                    // ignore
+                }
+            }
+            if (tmpFile != null && tmpFile.exists()) {
+                try {
+                    FileUtils.whack(tmpFile);
+                } catch (Exception e) {
+                    // ignore
+                }
+            }
+        }
     }
 
     /*
@@ -354,4 +452,6 @@ public class DolProvider implements ApplicationMetaDataProvider<Application>,
             }
         }    
     }
+
+
 }
