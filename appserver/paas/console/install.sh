@@ -60,6 +60,6 @@ echo Deploying the application
 if [ "$DEBUG" == "true" ] ; then
     read -p "Attach debugger if desired, then press Enter to deploy the web app"
 fi
-$SERVER_DIR/bin/asadmin deploy --force=true webapp/target/admin-console/
+$SERVER_DIR/bin/asadmin deploy --force=true webapp/target/paas-console/
 
 echo Done.
