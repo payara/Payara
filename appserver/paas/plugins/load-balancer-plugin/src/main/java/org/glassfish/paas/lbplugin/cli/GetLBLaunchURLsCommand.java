@@ -56,6 +56,7 @@ import java.util.logging.Level;
 import org.glassfish.api.admin.RestEndpoints;
 import org.glassfish.api.admin.RestEndpoint;
 import org.glassfish.paas.lbplugin.Constants;
+import org.glassfish.paas.lbplugin.LBServiceUtil;
 import org.glassfish.paas.lbplugin.logger.LBPluginLogger;
 import org.glassfish.paas.orchestrator.config.ApplicationScopedService;
 import org.glassfish.paas.orchestrator.config.Services;
@@ -79,6 +80,9 @@ public class GetLBLaunchURLsCommand implements AdminCommand {
 
     @Inject
     Domain domain;
+
+    @Inject
+    LBServiceUtil lbServiceUtil;
 
     public void execute(AdminCommandContext context) {
         ActionReport report = context.getActionReport();
@@ -105,7 +109,7 @@ public class GetLBLaunchURLsCommand implements AdminCommand {
     }
 
     private ApplicationScopedService getService(String serviceType, String appName) {
-        Services services = getServices();
+        Services services = lbServiceUtil.getServices();
         for (Service service : services.getServices()) {
             if (service instanceof ApplicationScopedService) {
                 ApplicationScopedService appScopedService =
@@ -117,30 +121,6 @@ public class GetLBLaunchURLsCommand implements AdminCommand {
             }
         }
         return null;
-    }
-
-    private Services getServices() {
-        Services services = domain.getExtensionByType(Services.class);
-        if (services == null) {
-            try {
-                if (ConfigSupport.apply(new SingleConfigCode<Domain>() {
-
-                    public Object run(Domain param) throws PropertyVetoException, TransactionFailure {
-                        Services services = param.createChild(Services.class);
-                        param.getExtensions().add(services);
-                        return services;
-                    }
-                }, domain) == null) {
-                    LBPluginLogger.getLogger().log(Level.SEVERE, "Unable to create 'services' config");
-                }
-            } catch (TransactionFailure transactionFailure) {
-                LBPluginLogger.getLogger().log(Level.SEVERE, "Unable to create 'services' config due to : " + transactionFailure.getMessage());
-                throw new RuntimeException(transactionFailure.getMessage(), transactionFailure);
-            }
-        }
-
-        services = domain.getExtensionByType(Services.class);
-        return services;
     }
 
     private String getContextRoot(String appName) {
