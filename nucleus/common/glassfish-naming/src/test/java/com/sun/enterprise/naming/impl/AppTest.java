@@ -62,8 +62,7 @@ import java.util.Properties;
 public class AppTest {
    private static final String INITIAL_CONTEXT_TEST_MODE = "com.sun.enterprise.naming.TestMode";
 
-    @Test
-    public void testCreateNewInitialContext() {
+    @Test public void testCreateNewInitialContext() {
         try {
             newInitialContext();
             assert (true);
@@ -73,8 +72,7 @@ public class AppTest {
         }
     }
 
-    @Test
-    public void testBind() {
+    @Test public void testBind() {
         GlassfishNamingManager nm = null;
         try {
             InvocationManager im = new InvocationManagerImpl();
@@ -95,27 +93,15 @@ public class AppTest {
         }
     }
 
-    @Test
-    public void testEmptySubContext() {
-        try {
-            String name1 = "rmi://a//b/c/d/name1";
-
-            Context ctx = newInitialContext();
-            ctx.bind(name1, "Name1");
-	
-            String val = (String) ctx.lookup(name1);
-	    assert(false);
-
-        } catch (Exception ex) {
-            System.out.println("Got expected exception: " + ex);
-            assert (true);
-        } finally {
-        }
+    @Test(expected = Exception.class) public void testEmptySubContext() throws Exception {
+        String name1 = "rmi://a//b/c/d/name1";
+        Context ctx = newInitialContext();
+        ctx.bind(name1, "Name1");
+        String val = (String) ctx.lookup(name1);
     }
 
 
-    @Test
-    public void testCachingNamingObjectFactoryAndEmptyJavaCompEnv() {
+    @Test public void testCachingNamingObjectFactory() {
         GlassfishNamingManagerImpl nm = null;
         try {
             InvocationManager im = new InvocationManagerImpl();
@@ -142,8 +128,6 @@ public class AppTest {
             nm.publishObject("bar", factory, false);
             System.out.println("**lookup() ==> " + ic.lookup("bar"));
             System.out.println("**lookup() ==> " + ic.lookup("bar"));
-            
-            testEmptyJavaCompEnv();
             assert (true);
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -181,12 +165,13 @@ public class AppTest {
         }
    } 
 
-    private void testEmptyJavaCompEnv() {
+    @Test public void testEmptyJavaCompEnv() {
         GlassfishNamingManagerImpl nm = null;
         InvocationManager im = new InvocationManagerImpl();
         ComponentInvocation inv = null;
         try {
             InitialContext ic = newInitialContext();
+            triggerLoadingNamedProxies(ic);
             nm = new GlassfishNamingManagerImpl(ic);
             nm.setInvocationManager(im);
 
@@ -205,13 +190,13 @@ public class AppTest {
         }
     }
 
-    @Test
-    public void testNonCachingNamingObjectFactory() {
+    @Test public void testNonCachingNamingObjectFactory() {
         GlassfishNamingManagerImpl nm = null;
         InvocationManager im = new InvocationManagerImpl();
         ComponentInvocation inv = null;
         try {
             InitialContext ic = newInitialContext();
+            triggerLoadingNamedProxies(ic);
             nm = new GlassfishNamingManagerImpl(ic);
             nm.setInvocationManager(im);
 
@@ -291,6 +276,24 @@ public class AppTest {
             } catch (Exception ex) {
 
             }
+        }
+    }
+
+    /**
+     * Performs an ignored test lookup to trigger the initial loading of named proxies.
+     * See NamedNamingObjectManager.checkAndLoadProxies, which creates a default 
+     * GlassFishNamingManagerImpl.  This is not what we want in this test class; we
+     * want our own instance of GlassFishNamingManagerImpl that takes our own
+     * InvocationManagerImpl. 
+     * GlassFishNamingManagerImpl(InitialContext) calls JavaURLContext.setNamingManager(this)
+     * to save the GlassFishNamingManagerImpl into JavaURLContext, so the last call wins.
+     * We want to make sure our test GlassFishNamingManagerImpl is instantiated after the 
+     * default one.
+     */
+    private void triggerLoadingNamedProxies(InitialContext ic) {
+        try {
+            ic.lookup("java:comp/env/to-be-ingored");
+        } catch (Exception ignore) {
         }
     }
 
