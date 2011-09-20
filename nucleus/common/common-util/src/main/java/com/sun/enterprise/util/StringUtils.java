@@ -37,7 +37,6 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
 package com.sun.enterprise.util;
 
 /* WBN Valentine's Day, 2000 -- place for handy String utils.
@@ -48,7 +47,6 @@ import java.util.*;
 import java.sql.SQLException;
 
 public class StringUtils {
-
     public static final String NEWLINE = System.getProperty("line.separator");
     public static final String EOL = NEWLINE;
 
@@ -83,7 +81,8 @@ public class StringUtils {
             sb.append("Message:  ").append(ex.getMessage()).append('\n');
             sb.append("Vendor:   ").append(ex.getErrorCode()).append('\n');
             sb.append('\n');
-        } while ((ex = ex.getNextException()) != null);
+        }
+        while ((ex = ex.getNextException()) != null);
 
         return sb.toString();
     }
@@ -202,7 +201,7 @@ public class StringUtils {
         if (s == null || s.length() >= len) {
             return s;
         }
-        
+
         StringBuilder sb = new StringBuilder();
 
         for (int i = len - s.length(); i > 0; --i) {
@@ -319,9 +318,11 @@ public class StringUtils {
 
         if ((len == 1) && args[0].equalsIgnoreCase("toLine")) {
             testToLine();
-        } else if ((len > 1) && args[0].equalsIgnoreCase("isHex")) {
+        }
+        else if ((len > 1) && args[0].equalsIgnoreCase("isHex")) {
             testHex(args);
-        } else {
+        }
+        else {
             usage();
         }
     }
@@ -414,9 +415,9 @@ public class StringUtils {
      * each other by the standard separator characters and returns
      * a list of strings.
      *
-     * Splits the string <code>line</code> into individual string elements 
-     * separated by the field separators, and returns these individual 
-     * strings as a list of strings. The individual string elements are 
+     * Splits the string <code>line</code> into individual string elements
+     * separated by the field separators, and returns these individual
+     * strings as a list of strings. The individual string elements are
      * trimmed of leading and trailing whitespace. Only non-empty strings
      * are returned in the list.
      *
@@ -433,9 +434,9 @@ public class StringUtils {
      * each other by the specified set of separator characters and returns
      * a list of strings.
      *
-     * Splits the string <code>line</code> into individual string elements 
-     * separated by the field separators specified in <code>sep</code>, 
-     * and returns these individual strings as a list of strings. The 
+     * Splits the string <code>line</code> into individual string elements
+     * separated by the field separators specified in <code>sep</code>,
+     * and returns these individual strings as a list of strings. The
      * individual string elements are trimmed of leading and trailing
      * whitespace. Only non-empty strings are returned in the list.
      *
@@ -454,7 +455,8 @@ public class StringUtils {
         StringTokenizer st;
         if (sep == null) {
             st = new StringTokenizer(line);
-        } else {
+        }
+        else {
             st = new StringTokenizer(line, sep);
         }
 
@@ -513,7 +515,7 @@ public class StringUtils {
      */
     public static String removeChar(String strOrig, char c) {
         String strNew = "";
-        for (int i = 0; i < strOrig.length(); i ++) {
+        for (int i = 0; i < strOrig.length(); i++) {
             if (strOrig.charAt(i) != c) {
                 strNew += strOrig.charAt(i);
             }
@@ -528,11 +530,13 @@ public class StringUtils {
         pw.close();
         return sw.toString();
     }
+
     public static final boolean isToken(String s) {
         return s != null && s.startsWith("${") && s.endsWith("}") && s.length() > 3;
     }
+
     public static final String stripToken(String s) {
-        if(isToken(s))
+        if (isToken(s))
             // NO possible wrong assumptions here -- see isToken()
             return s.substring(2, s.length() - 1);
         else
@@ -562,7 +566,8 @@ public class StringUtils {
             }
             if (!first) {
                 sb.append(separator);
-            } else {
+            }
+            else {
                 first = false;
             }
             sb.append(s);
