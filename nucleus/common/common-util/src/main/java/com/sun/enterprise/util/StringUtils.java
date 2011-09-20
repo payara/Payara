@@ -590,6 +590,31 @@ public class StringUtils {
         return s;
     }
 
+    /**
+     * Nightmares can result from using a path with a space in it!
+     * This method will enclose in quotes if needed.
+     * @param path
+     * @return
+     */
+    public static String quotePathIfNecessary(String path) {
+        if (!ok(path)
+                || !needsQuoting(path)
+                || isDoubleQuoted(path)
+                || isSingleQuoted(path))
+            return path;
+        // needs quoting!
+        StringBuilder sb = new StringBuilder();
+        sb.append('"');
+        sb.append(path);
+        sb.append('"');
+        return sb.toString();
+    }
+
+    private static boolean needsQuoting(String path) {
+        return ok(path)
+                && (path.indexOf(' ') >= 0 || path.indexOf('\t') >= 0);
+    }
+
     private static boolean isDoubleQuoted(String s) {
         return s.startsWith("\"") && s.endsWith("\"") && s.length() > 1;
     }
