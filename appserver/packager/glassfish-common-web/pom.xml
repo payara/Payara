@@ -145,11 +145,6 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.common</groupId>
-            <artifactId>amx-javaee</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
             <groupId>org.glassfish.ejb</groupId>
             <artifactId>ejb-internal-api</artifactId>
             <version>${project.version}</version>
@@ -188,14 +183,7 @@
     	    <groupId>org.glassfish</groupId>
             <artifactId>paas.lbplugin</artifactId>
             <version>${project.version}</version>
-        </dependency>    
-        <!-- TODO - consider moving to glasfish-common-full, it seems that
-             only web services now have ant dependency -->  
-        <dependency>
-            <groupId>org.glassfish.external</groupId>
-            <artifactId>ant</artifactId>
-            <version>${project.version}</version>
-        </dependency>
+        </dependency>      
         <!-- Shared OSGi support for Java EE -->
        <dependency>
             <groupId>org.glassfish.fighterfish</groupId>
