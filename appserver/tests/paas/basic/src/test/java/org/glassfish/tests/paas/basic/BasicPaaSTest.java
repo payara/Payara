@@ -41,6 +41,8 @@
 package org.glassfish.tests.paas.basic;
 
 import junit.framework.Assert;
+import org.glassfish.embeddable.CommandResult;
+import org.glassfish.embeddable.CommandRunner;
 import org.glassfish.embeddable.Deployer;
 import org.glassfish.embeddable.GlassFish;
 import org.glassfish.embeddable.GlassFishProperties;
@@ -49,18 +51,10 @@ import org.junit.Test;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
-import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.Date;
-import java.util.Enumeration;
-import java.util.Properties;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
 
 /**
  * @author bhavanishankar@dev.java.net
@@ -71,55 +65,20 @@ public class BasicPaaSTest {
     @Test
     public void test() throws Exception {
 
-        // 1. Create the config file required for non-virtual deployment.
-        createCloudConfigFile();
+        // Bootstrap GlassFish DAS in embedded mode.
+        GlassFish glassfish = bootstrap();
 
+        // Deploy the PaaS app and verify it.
+        runTests(glassfish);
 
-        // 2. Bootstrap GlassFish DAS in embedded mode.
-        GlassFishProperties glassFishProperties = new GlassFishProperties();
-        glassFishProperties.setInstanceRoot(System.getenv("S1AS_HOME") + "/domains/domain1");
-        glassFishProperties.setConfigFileReadOnly(false);
-        GlassFish glassfish = GlassFishRuntime.bootstrap().newGlassFish(glassFishProperties);
-        PrintStream sysout = System.out;
-        glassfish.start();
-        System.setOut(sysout);
+        // Re-deploy the PaaS app and verify it.
+        String testScenarios = System.getProperty("test.scenarios");
+        if (testScenarios == null || "all".contains(testScenarios.toLowerCase())) {
+            runTests(glassfish);
+        }
 
-        // 3. Deploy the PaaS application.
-        File archive = new File(System.getProperty("basedir") +
-                "/target/basic_paas_sample.war"); // TODO :: use mvn apis to get the archive location.
-        Assert.assertTrue(archive.exists());
-
-        Deployer deployer = glassfish.getDeployer();
-        String appName = deployer.deploy(archive);
-
-        System.err.println("Deployed [" + appName + "]");
-        Assert.assertNotNull(appName);
-
-        // 4. Access the app to make sure PaaS app is correctly provisioned.
-        get("http://localhost:28080/basic_paas_sample/BasicPaaSServlet",
-                "Request headers from the request:");
-
-        // 5. Undeploy the PaaS application . TODO :: use cloud-undeploy??
-        deployer.undeploy(appName);
-        System.err.println("Undeployed [" + appName + "]");
-
-        // 6. Stop the GlassFish DAS
+        // 5. Stop the GlassFish DAS
         glassfish.dispose();
-
-    }
-
-    private void createCloudConfigFile() throws Exception {
-        File configFile = new File(System.getenv("S1AS_HOME") + "/config/cloud-config.properties");
-        Properties configProps = new Properties();
-        configProps.setProperty("APPLICATION_SERVER_PROVIDER", "GLASSFISH");
-        configProps.setProperty("GF_PORT", "4848");
-        configProps.setProperty("GF_TARGET", "server");
-        configProps.setProperty("GF_INSTALL_DIR", System.getenv("S1AS_HOME") + File.separator + "..");
-        // TODO :: remove all AWS properties later.
-        configProps.setProperty("AWS_INSTANCE_USERNAME", System.getProperty("user.name"));
-        configProps.setProperty("AWS_KEYPAIR", System.getProperty("user.home") + File.separator + ".ssh" + File.separator + "id_rsa");
-        configProps.setProperty("AWS_LOCAL_KEYPAIR_LOCATION", System.getProperty("user.home") + File.separator + ".ssh" + File.separator + "id_rsa");
-        configProps.store(new FileOutputStream(configFile), null);
     }
 
     private void get(String urlStr, String result) throws Exception {
@@ -140,15 +99,39 @@ public class BasicPaaSTest {
         System.out.println("\n***** SUCCESS **** Found [" + result + "] in the response.*****\n");
     }
 
-    void printContents(URI jarURI) throws IOException {
-        JarFile jarfile = new JarFile(new File(jarURI));
-        System.out.println("\n\n[" + jarURI + "] contents : \n");
-        Enumeration<JarEntry> entries = jarfile.entries();
-        while (entries.hasMoreElements()) {
-            JarEntry entry = entries.nextElement();
-            System.out.println(entry.getSize() + "\t" + new Date(entry.getTime()) +
-                    "\t" + entry.getName());
-        }
-        System.out.println("");
+    private void runTests(GlassFish glassfish) throws Exception {
+        // 2. Deploy the PaaS application.
+        File archive = new File(System.getProperty("basedir") +
+                "/target/basic_paas_sample.war"); // TODO :: use mvn apis to get the archive location.
+        Assert.assertTrue(archive.exists());
+
+        Deployer deployer = glassfish.getDeployer();
+        String appName = deployer.deploy(archive);
+
+        System.err.println("Deployed [" + appName + "]");
+        Assert.assertNotNull(appName);
+
+        CommandRunner commandRunner = glassfish.getCommandRunner();
+        CommandResult result = commandRunner.run("list-services");
+        System.out.println("\nlist-services command output [ " + result.getOutput() + "]");
+
+        // 3. Access the app to make sure PaaS app is correctly provisioned.
+        get("http://localhost:28080/basic_paas_sample/BasicPaaSServlet",
+                "Request headers from the request:");
+
+        // 4. Undeploy the PaaS application . TODO :: use cloud-undeploy??
+        deployer.undeploy(appName);
+        System.err.println("Undeployed [" + appName + "]");
+    }
+
+    private GlassFish bootstrap() throws Exception {
+        GlassFishProperties glassFishProperties = new GlassFishProperties();
+        glassFishProperties.setInstanceRoot(System.getenv("S1AS_HOME") + "/domains/domain1");
+        glassFishProperties.setConfigFileReadOnly(false);
+        GlassFish glassfish = GlassFishRuntime.bootstrap().newGlassFish(glassFishProperties);
+        PrintStream sysout = System.out;
+        glassfish.start();
+        System.setOut(sysout);
+        return glassfish;
     }
 }
