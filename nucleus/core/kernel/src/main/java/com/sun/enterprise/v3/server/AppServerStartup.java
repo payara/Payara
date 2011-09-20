@@ -65,7 +65,6 @@ import org.glassfish.api.event.EventListener.Event;
 import org.glassfish.api.event.EventTypes;
 import org.glassfish.api.event.Events;
 import org.glassfish.hk2.RunLevelDefaultScope;
-import org.glassfish.internal.api.Init;
 import org.glassfish.internal.api.InitRunLevel;
 import org.glassfish.internal.api.PostStartup;
 import org.glassfish.internal.api.PostStartupRunLevel;
@@ -78,7 +77,6 @@ import org.jvnet.hk2.component.RunLevelListener;
 import org.jvnet.hk2.component.RunLevelService;
 import org.jvnet.hk2.component.RunLevelState;
 import org.jvnet.hk2.component.ServiceContext;
-import org.jvnet.hk2.component.internal.runlevel.DefaultRunLevelService;
 
 /**
  * Main class for Glassfish v3 startup
@@ -89,7 +87,8 @@ import org.jvnet.hk2.component.internal.runlevel.DefaultRunLevelService;
  * @author Jerome Dochez, sahoo@sun.com
  */
 @Service
-public class AppServerStartup implements ModuleStartup, RunLevelListener {
+// TODO(jtrent) - ModuleStartup should probably be replaced by a kernel level RunLevel --- discuss with Jerome
+public class AppServerStartup implements ModuleStartup {
     
     StartupContext context;
 
@@ -128,6 +127,8 @@ public class AppServerStartup implements ModuleStartup, RunLevelListener {
     @Inject
     RunLevelService<?> rls;
 
+    private RLListener rlsListener;
+    
     boolean shutdownRequested;
     
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ApplicationLifecycle.class);
@@ -235,6 +236,12 @@ public class AppServerStartup implements ModuleStartup, RunLevelListener {
 
         Map<Class, Long> servicesTiming = new HashMap<Class, Long>();
 
+        // prepare for listening to the results of the RunLevelService
+        if (null == rlsListener) {
+            rlsListener = new RLListener();
+        }
+        rlsListener.register();
+        
         // start-up through the init level
         shutdownRequested = false;
         rls.proceedTo(InitRunLevel.VAL);
@@ -459,7 +466,10 @@ public class AppServerStartup implements ModuleStartup, RunLevelListener {
         
         // the new way
         rls.proceedTo(0);
-
+        if (null != rlsListener) {
+            rlsListener.unregister();
+            rlsListener = null;
+        }
         
         logger.info(localStrings.getLocalString("shutdownfinished","Shutdown procedure finished"));            
 
@@ -477,20 +487,63 @@ public class AppServerStartup implements ModuleStartup, RunLevelListener {
         }
     }
 
-    @Override
-    public void onCancelled(RunLevelState<?> state, ServiceContext ctx, int previousProceedTo, boolean isInterrupt) {
-        logger.log(Level.INFO, "shutdown requested");
-        shutdownRequested = true;
-    }
 
-    @Override
-    public void onError(RunLevelState<?> state, ServiceContext ctx, Throwable t, boolean willContinue) {
-        logger.log(Level.INFO, "shutdown requested", t);
-        shutdownRequested = true;
-    }
+    /**
+     * Receives notifications during startup and shutdown.
+     * 
+     * If there are any problems (i.e., exceptions) during startup we set a flag that the app server should shutdown.
+     * 
+     * We register the listener only during the lifetime of the app server because Hk2 by default seeks out all applicable
+     * RunLevelListener types and instantiates them to receive notifications.  This, however, messes up ACC because it
+     * changes the habitat before we are called.  We need to not get callbacks too early in another words.
+     */
+    private class RLListener implements RunLevelListener {
+        private Inhabitant<RunLevelListener> self;
+        
+        private synchronized void register() {
+            if (null == self) {
+                logger.log(level, "registering runlevel listener");
+                // TODO: replace with Hk2 v2
+                self = new ExistingSingletonInhabitant(RunLevelListener.class, this);
+                habitat.add(self);
+                habitat.addIndex(self, RunLevelListener.class.getName(), null);
+            }
+        }
+        
+        private synchronized void unregister() {
+            if (null != self) {
+                logger.log(level, "unregistering runlevel listener");
+                boolean removed = habitat.remove(self);
+                assert(removed);
+                removed = habitat.removeIndex(RunLevelListener.class.getName(), self);
+                assert(removed);
+                self = null;
+            }
+        }
+        
+        @Override
+        public void onCancelled(RunLevelState<?> state, ServiceContext ctx, int previousProceedTo, boolean isInterrupt) {
+            if (RunLevelDefaultScope.class.getName().equals(state.getScopeName())) {
+                logger.log(Level.INFO, "shutdown requested");
+                shutdownRequested = true;
+            }
+        }
 
-    @Override
-    public void onProgress(RunLevelState<?> state) {
+        @Override
+        public void onError(RunLevelState<?> state, ServiceContext ctx, Throwable t, boolean willContinue) {
+            if (RunLevelDefaultScope.class.getName().equals(state.getScopeName())) {
+                logger.log(Level.INFO, "shutdown requested", t);
+                shutdownRequested = true;
+            }
+        }
+
+        @Override
+        public void onProgress(RunLevelState<?> state) {
+            // don't care that much about state changes
+            if (RunLevelDefaultScope.class.getName().equals(state.getScopeName())) {
+                logger.log(level, "progress event: {0}", state);
+            }
+        }
     }
     
 }
