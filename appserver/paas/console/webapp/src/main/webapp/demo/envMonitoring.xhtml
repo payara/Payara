@@ -56,15 +56,15 @@
             <div class="title headerPageTitle">Monitoring</div>
             <div class="subHeading">Monitoring data for PaaS Environment</div>
             <br/>
-            <tr:poll id="poller" interval="5000" pollListener="#{monitoringBean.onPoll}" immediate="#{true}"/>
+            <tr:poll id="poller" interval="5000" pollListener="#{clusterSizeMonitorBean.onPoll}" immediate="#{true}"/>
             <tr:panelGroupLayout partialTriggers="poller">
                 <tr:panelHorizontalLayout>
-                    <tr:chart YMajorGridLineCount="4" value="#{monitoringBean.value}" type="line" inlineStyle="width:350px; height:150px;"/>
-                    <tr:chart YMajorGridLineCount="4" value="#{monitoringBean.value}" type="pie" inlineStyle="width:350px; height:150px;"/>
+                    <tr:chart YMajorGridLineCount="4" value="#{clusterSizeMonitorBean.value}" type="line" inlineStyle="width:550px; height:250px;"/>
+                    <tr:chart YMajorGridLineCount="4" value="#{memoryMonitorBean.value}" type="line" inlineStyle="width:550px; height:250px;"/>
                 </tr:panelHorizontalLayout>
                 <tr:panelHorizontalLayout>
-                    <tr:chart YMajorGridLineCount="4" value="#{monitoringBean.value}" type="barLine" inlineStyle="width:350px; height:150px;"/>
-                    <tr:chart YMajorGridLineCount="4" value="#{monitoringBean.value}" type="bar" inlineStyle="width:350px; height:150px;"/>
+                    <tr:chart YMajorGridLineCount="4" value="#{sessionsMonitorBean.value}" type="line" inlineStyle="width:550px; height:250px;"/>
+                    <tr:chart YMajorGridLineCount="4" value="#{processingTimeMonitorBean.value}" type="line" inlineStyle="width:550px; height:250px;"/>
                 </tr:panelHorizontalLayout>
             </tr:panelGroupLayout>
         </div>
