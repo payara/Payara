@@ -105,5 +105,10 @@
             <artifactId>shoal-gms-impl</artifactId>
             <version>${shoal.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.glassfish</groupId>
+            <artifactId>paas.orchestrator</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 </project>

@@ -73,6 +73,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.glassfish.paas.orchestrator.ServiceOrchestrator;
 
 @Service
 @Scoped(PerLookup.class)
@@ -89,6 +90,9 @@ public class ElasticServiceContainer {
 
     @Inject
     private ServerEnvironment serverEnvironment;
+
+    @Inject
+    private ServiceOrchestrator orchestrator;
 
     private Logger logger = EngineUtil.getLogger();
 
@@ -307,5 +311,32 @@ public class ElasticServiceContainer {
 
         return frequencyInSeconds;
     }
+
+    public void scaleUp() {
+        if (currentSize.get() < service.getMax()) {
+            logger.log(Level.INFO, "scaleUp[" + service.getName() + "]: Invoking orchestrator.scaleService("
+                + service.getName() + ", " + service.getName() + ", 1, null)");
+//            orchestrator.scaleService(service.getName(), service.getName(), 1, null);
+
+            logger.log(Level.INFO, "scaleUp[" + service.getName() + "]: INVOKED orchestrator.scaleService("
+                + service.getName() + ", " + service.getName() + ", 1, null)");
+        } else {
+            logger.log(Level.INFO, "scaleUp[" + service.getName() + "]: Already at max instances ( = " + service.getMin() + " )");
+        }
+    }
+
+    public void scaleDown() {
+
+        if (currentSize.get() > service.getMin()) {
+            logger.log(Level.INFO, "scaleDown[" + service.getName() + "]: Invoking orchestrator.scaleService("
+                + service.getName() + ", " + service.getName() + ", -1, null)");
+//            orchestrator.scaleService(service.getName(), service.getName(), -1, null);
+            logger.log(Level.INFO, "scaleDown[" + service.getName() + "]: INVOKED orchestrator.scaleService("
+                + service.getName() + ", " + service.getName() + ", -1, null)");
+        } else {
+            logger.log(Level.INFO, "scaleDown[" + service.getName() + "]: Already at min instances ( = " + service.getMax() + " )");
+        }
+    }
+
 
 }

@@ -116,10 +116,10 @@ public class GroupServiceProvider
         SortedSet<String> currentAliveAndReadyMembers = gms.getGroupHandle().getCurrentAliveAndReadyCoreView().getMembers();
         AliveAndReadyView aView = gms.getGroupHandle().getPreviousAliveAndReadyCoreView();
         SortedSet<String> previousAliveAndReadyMembers = new TreeSet<String>();
-
-        if (aView == null) { //Possible during unit tests when listeners are registered before GMS is started
-            return;
-        }
+//
+//        if (aView == null) { //Possible during unit tests when listeners are registered before GMS is started
+//            return;
+//        }
 
 
         long arViewId = aView.getViewId();

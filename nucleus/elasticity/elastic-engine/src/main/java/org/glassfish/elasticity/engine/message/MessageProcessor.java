@@ -82,6 +82,7 @@ public class MessageProcessor
 
     public ExpressionResponse sendMessage(ElasticMessage message) {
         if (currentMembers.get().length == 0) {
+            logger.log(Level.INFO, "No member in the cluster is alive. currentSize: " + currentMembers.get().length);
             throw new NotEnoughMetricDataException("Not enough data. Reason: No instances other than the master is running");
         }
         byte[] data = null;
@@ -148,6 +149,7 @@ public class MessageProcessor
                 } else {
                     //First prepare the response message
 
+                    System.out.println("Received an elastic message");
                     ElasticMessage responseMessage = new ElasticMessage();
                     responseMessage.setMessageId("" + messageIdCounter.incrementAndGet())
                             .setTargetMemberName(senderName)
@@ -172,6 +174,7 @@ public class MessageProcessor
                         responseMessage.setException(ex);
                     }
 
+                    System.out.println("Sending an elastic RESPONSE message: " + responseMessage.getData());
                     sendMessage(responseMessage);
                 }
             } else {

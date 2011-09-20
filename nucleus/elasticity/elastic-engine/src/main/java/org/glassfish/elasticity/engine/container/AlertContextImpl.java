@@ -4,18 +4,20 @@ import org.glassfish.elasticity.api.Alert;
 import org.glassfish.elasticity.api.AlertContext;
 import org.glassfish.elasticity.config.serverbeans.AlertConfig;
 import org.glassfish.elasticity.config.serverbeans.ElasticService;
+import org.glassfish.elasticity.engine.util.EngineUtil;
 import org.glassfish.elasticity.group.ElasticMessageHandler;
 
 import javax.swing.plaf.basic.BasicInternalFrameTitlePane;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ScheduledFuture;
+import java.util.logging.Level;
 
 /**
  * @author Mahesh.Kannan@Oracle.Com
  */
 public class AlertContextImpl<C extends AlertConfig>
-    implements AlertContext<C>, Runnable {
+        implements AlertContext<C>, Runnable {
 
     private ElasticServiceContainer elasticServiceContainer;
 
@@ -64,9 +66,22 @@ public class AlertContextImpl<C extends AlertConfig>
     }
 
     public void run() {
-        Alert.AlertState state = alert.execute(this);
-        System.out.println("Alert returned STATE = " + state);
-        transientData.clear();
+        try {
+            Alert.AlertState state = alert.execute(this);
+            System.out.println("Alert returned STATE = " + state);
+            switch (state) {
+                case NO_DATA:
+                    break;
+                case OK:
+                    elasticServiceContainer.scaleDown();
+                case ALARM:
+                    elasticServiceContainer.scaleUp();
+                    break;
+            }
+            transientData.clear();
+        } catch (Exception ex) {
+            EngineUtil.getLogger().log(Level.WARNING, "Exception during Alert execution", ex);
+        }
     }
 
 }

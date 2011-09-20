@@ -56,22 +56,21 @@ import org.jvnet.hk2.component.Habitat;
 
 /**
  * Elastic Engine for a service. An instance of ElasticEngine keeps track
- * 	of the Alerts for a service.
- * 
- * @author Mahesh Kannan
+ * of the Alerts for a service.
  *
+ * @author Mahesh Kannan
  */
 @Service
 public class ElasticEngine
-	implements Startup, PostConstruct {
+        implements Startup, PostConstruct {
 
     @Inject
     Habitat habitat;
 
-	@Inject(optional = true)
-	ElasticServices elasticServices;
-	
-	@Inject
+    @Inject(optional = true)
+    ElasticServices elasticServices;
+
+    @Inject
     ElasticEngineThreadPool threadPool;
 
     @Inject
@@ -81,43 +80,47 @@ public class ElasticEngine
     @Inject
     ElasticServiceManager elasticServiceManager;
 
-	private String serviceName;
+    private String serviceName;
 
-	public void initialize(String serviceName) {
-		this.serviceName = serviceName;
-	}
-	
-	public void postConstruct() {
-		if (serviceName == null) {
-			//throw new IllegalStateException("ElasticEngine not initialized with a service name");
-		}
+    public void initialize(String serviceName) {
+        this.serviceName = serviceName;
+    }
+
+    public void postConstruct() {
+        if (serviceName == null) {
+            //throw new IllegalStateException("ElasticEngine not initialized with a service name");
+        }
 
         metricGathererContainer.start();
 
-		System.out.println("Elastic Services: " + elasticServices);
+        System.out.println("Elastic Services: " + elasticServices);
         if (elasticServices != null && elasticServices.getElasticService() != null) {
             for (ElasticService service : elasticServices.getElasticService()) {
-                if (service.getEnabled()) {
-                    ElasticServiceContainer container = habitat.getComponent(ElasticServiceContainer.class);
-                    container.initialize(service);
-                    elasticServiceManager.addElasticServiceContainer(service.getName(), container);
-                    container.startContainer();
-                }
+                startElasticService(service);
             }
         }
 
-	}
-	
-	public void stop() {
+    }
+
+    public void startElasticService(ElasticService service) {
+        if (service.getEnabled()) {
+            ElasticServiceContainer container = habitat.getComponent(ElasticServiceContainer.class);
+            container.initialize(service);
+            elasticServiceManager.addElasticServiceContainer(service.getName(), container);
+            container.startContainer();
+        }
+    }
+
+    public void stop() {
         for (ElasticServiceContainer container : elasticServiceManager.containers()) {
             container.stopContainer();
         }
 
         metricGathererContainer.stop();
-	}
+    }
 
-	public Lifecycle getLifecycle() {
-		return Startup.Lifecycle.START;
-	}
+    public Lifecycle getLifecycle() {
+        return Startup.Lifecycle.START;
+    }
 
 }
