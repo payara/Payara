@@ -216,6 +216,9 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
     @Inject(name = ServerEnvironment.DEFAULT_INSTANCE_NAME)
     private Config serverConfig;
 
+    @Inject(name = ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    private Server server;
+
     @Inject
     ServerContext _serverContext;
 
@@ -536,6 +539,11 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
             ObservableBean managerBean = (ObservableBean) ConfigSupport.getImpl(
                     configListener.managerProperties);
             managerBean.addListener(configListener);
+        }
+
+        if (serverConfig.getJavaConfig() != null) {
+            ((ObservableBean)ConfigSupport.getImpl(
+                    serverConfig.getJavaConfig())).addListener(configListener);
         }
 
         configListener.setContainer(this);
@@ -867,6 +875,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
                 address, port, isSecure);
 
         connector.setMapper(mapper);
+        connector.setJvmRoute(engine.getJvmRoute());
 
         if (_logger.isLoggable(Level.INFO)) {
             _logger.log(Level.INFO, "webContainer.HTTP.listenerAndPort", new Object[]{listener.getName(), listener.getAddress(), listener.getPort()});
@@ -3254,6 +3263,34 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
                 habitat.getComponent(WebArchivist.class));
         if (wmInfo != null) {
             loadStandaloneWebModule(vs, wmInfo);
+        }
+    }
+
+    public void updateJvmRoute(HttpService httpService, String jvmOption) {
+        String jvmRoute = null;
+        if (jvmOption.contains("{") && jvmOption.contains("}")) {
+            // Look up system-property
+            jvmOption = jvmOption.substring(jvmOption.indexOf("{")+1,jvmOption.indexOf("}"));
+            jvmRoute = server.getSystemPropertyValue(jvmOption);
+        } else if (jvmOption.contains("=")) {
+            jvmRoute = jvmOption.substring(jvmOption.indexOf("=")+1);
+        }
+        engine.setJvmRoute(jvmRoute);
+        for (com.sun.enterprise.config.serverbeans.VirtualServer vsBean :
+                httpService.getVirtualServer()) {
+            VirtualServer vs = (VirtualServer) engine.findChild(vsBean.getId());
+            for (Container context : vs.findChildren()) {
+                if (context instanceof StandardContext) {
+                    ((StandardContext)context).setJvmRoute(jvmRoute);
+                }
+            }
+        }
+        for (Connector connector : _embedded.getConnectors()) {
+            connector.setJvmRoute(jvmRoute);
+        }
+        if (_logger.isLoggable(Level.FINE)) {
+            _logger.fine("-DjvmRoute updated with "+jvmRoute);
+
         }
     }
 

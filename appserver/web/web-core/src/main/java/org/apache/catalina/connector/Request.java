@@ -2281,7 +2281,7 @@ public class Request
     @Override
     public void setRequestedSessionId(String id) {
         requestedSessionId = id;
-        if (id != null && CoyoteAdapter.JVM_ROUTE != null) {
+        if (id != null && connector.getJvmRoute() != null) {
             // Remove jvmRoute. The assumption is that the first dot in the
             // passed in id is the separator between the session id and the
             // jvmRoute. Therefore, the session id, however generated, must

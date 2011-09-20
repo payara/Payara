@@ -291,6 +291,16 @@ public interface Connector {
      */
     String getName();
 
+    /**
+     * Sets the jvmRoute associated with this connector.
+     */
+    void setJvmRoute(String jvmRoute);
+
+    /**
+     * Get the jvmRoute associated with this connector.
+     */
+    String getJvmRoute();
+
     // --------------------------------------------------------- Public Methods
 
 

@@ -394,8 +394,9 @@ public class Connector
     /**
      * The <code>SelectorThread</code> implementation class.
      */
-    private String selectorThreadImpl = null; 
-    
+    private String selectorThreadImpl = null;
+
+    private String jvmRoute;
     
     // ------------------------------------------------------------- Properties
 
@@ -1190,6 +1191,13 @@ public class Connector
     }
     // END SJSAS 6331392
 
+    public void setJvmRoute(String jvmRoute) {
+        this.jvmRoute = jvmRoute;
+    }
+
+    public String getJvmRoute() {
+        return jvmRoute;
+    }
 
     // --------------------------------------------------------- Public Methods
 

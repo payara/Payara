@@ -43,6 +43,7 @@ package com.sun.enterprise.web.reconfig;
 import com.sun.enterprise.config.serverbeans.AccessLog;
 import com.sun.enterprise.config.serverbeans.AvailabilityService;
 import com.sun.enterprise.config.serverbeans.HttpService;
+import com.sun.enterprise.config.serverbeans.JavaConfig;
 import com.sun.enterprise.config.serverbeans.SystemProperty;
 import com.sun.enterprise.config.serverbeans.VirtualServer;
 import com.sun.enterprise.v3.services.impl.MapperUpdateListener;
@@ -56,6 +57,7 @@ import org.jvnet.hk2.config.*;
 import org.jvnet.hk2.config.types.Property;
 
 import java.beans.PropertyChangeEvent;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -163,6 +165,14 @@ public class WebConfigListener implements ConfigListener, MapperUpdateListener {
                                 if (listener.getPort().equals(((SystemProperty)t).getValue())) {
                                     container.updateConnector(listener, httpService);
                                 }
+                            }
+                        }
+                    } else if (tClass == JavaConfig.class) {
+                        JavaConfig jc = (JavaConfig) t;
+                        final List<String> jvmOptions = new ArrayList<String>(jc.getJvmOptions());
+                        for (String jvmOption : jvmOptions) {
+                            if (jvmOption.startsWith("-DjvmRoute=")) {
+                                container.updateJvmRoute(httpService, jvmOption);
                             }
                         }
                     } else {
