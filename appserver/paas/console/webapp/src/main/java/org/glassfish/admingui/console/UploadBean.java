@@ -113,24 +113,25 @@ public class UploadBean {
         for(Map oneService : metaData){
             String serviceType = (String) oneService.get("service-type");
             String serviceName = (String) oneService.get("name");
+            String templateId = (String) oneService.get("template-id");
             if (CommandUtil.SERVICE_TYPE_RDMBS.equals(serviceType)) {
                 databasesMetaData.add(oneService);
                 if (database.length() > 0)  {
                     database += ", ";
                 }
-                database += serviceName;
+                database += templateId != null ? templateId : serviceName;
             } else if (CommandUtil.SERVICE_TYPE_JAVAEE.equals(serviceType)) {
                 eeTemplatesMetaData.add(oneService);
                 if (eeTemplate.length() > 0)  {
                     eeTemplate += ", ";
                 }
-                eeTemplate += serviceName;
+                eeTemplate += templateId != null ? templateId : serviceName;
             } else if (CommandUtil.SERVICE_TYPE_LB.equals(serviceType)) {
                 loadBalancersMetaData.add(oneService);
                 if (loadBalancer.length() > 0)  {
                     loadBalancer += ", ";
                 }
-                loadBalancer += serviceName;
+                loadBalancer += templateId != null ? templateId : serviceName;
             }
         }
 
