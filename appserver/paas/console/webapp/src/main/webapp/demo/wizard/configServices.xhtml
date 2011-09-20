@@ -46,7 +46,7 @@
                 </tr:panelFormLayout>
             </tr:column>
             <tr:column headerText="Characterstics" inlineStyle="vertical-align: top" width="33%">
-                <tr:panelFormLayout rendered="#{!metaData['template-id']}">
+                <tr:panelFormLayout rendered="#{metaData['template-id'] == null}">
                     <tr:inputText label="OS Name:" value="#{metaData['characteristics']['os-name']}" readOnly="true"
                             rendered="#{metaData['characteristics']['os-name'] != null}"/>
                     <tr:inputText label="Service Type:" value="#{metaData['characteristics']['service-type']}" readOnly="true"
@@ -56,7 +56,7 @@
                                       value="#{metaData['characteristics'][char]}" columns="10" readOnly="true" simple="false"/>
                     </ui:repeat-->
                 </tr:panelFormLayout>
-                <tr:panelFormLayout rendered="#{metaData['template-id']}">
+                <tr:panelFormLayout rendered="#{metaData['template-id'] != null}">
                     <tr:selectOneChoice id="lbTemplate"
                                         label="Template:"
                                         value="#{uploadBean.loadBalancer}" inlineStyle="display: inline-block;"
@@ -87,7 +87,7 @@
                     </tr:panelFormLayout>
                 </tr:column>
                 <tr:column headerText="Characterstics"  inlineStyle="vertical-align: top" width="33%">
-                    <tr:panelFormLayout rendered="#{metaData['template-id']}">
+                    <tr:panelFormLayout rendered="#{metaData['template-id'] == null}">
                         <tr:inputText label="OS Name:" value="#{metaData['characteristics']['os-name']}" readOnly="true"
                                 rendered="#{metaData['characteristics']['os-name'] != null}"/>
                         <tr:inputText label="Service Type:" value="#{metaData['characteristics']['service-type']}" readOnly="true"
@@ -97,7 +97,7 @@
                                           value="#{metaData['characteristics'][char]}" columns="10" readOnly="true" simple="false"/>
                         </ui:repeat-->
                     </tr:panelFormLayout>
-                    <tr:panelFormLayout rendered="#{metaData['template-id']}">
+                    <tr:panelFormLayout rendered="#{metaData['template-id'] != null}">
                         <tr:selectOneChoice id="eeTemplate"
                                             label="Template:"
                                             value="#{uploadBean.eeTemplate}" inlineStyle="display: inline-block;"
@@ -150,7 +150,7 @@
                     </tr:panelFormLayout>
                 </tr:column>
                 <tr:column headerText="Characterstics" inlineStyle="vertical-align: top" width="33%">
-                    <tr:panelFormLayout rendered="#{!metaData['template-id']}">
+                    <tr:panelFormLayout rendered="#{metaData['template-id'] == null}">
                         <tr:inputText label="OS Name:" value="#{metaData['characteristics']['os-name']}" readOnly="true"
                                 rendered="#{metaData['characteristics']['os-name'] != null}"/>
                         <tr:inputText label="Service Type:" value="#{metaData['characteristics']['service-type']}" readOnly="true"
@@ -160,7 +160,7 @@
                                           value="#{metaData['characteristics'][char]}" columns="10" readOnly="true" simple="false"/>
                         </ui:repeat-->
                     </tr:panelFormLayout>
-                    <tr:panelFormLayout rendered="#{metaData['template-id']}">
+                    <tr:panelFormLayout rendered="#{metaData['template-id'] != null}">
                         <tr:selectOneChoice id="databaseTemplate"
                                             label="Template:"
                                             value="#{uploadBean.database}" inlineStyle="display: inline-block;"
