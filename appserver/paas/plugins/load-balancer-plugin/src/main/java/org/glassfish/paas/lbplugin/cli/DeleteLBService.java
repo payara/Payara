@@ -40,15 +40,14 @@
 package org.glassfish.paas.lbplugin.cli;
 
 import java.util.logging.Level;
-import javax.inject.Inject;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.CommandLock;
-import org.glassfish.embeddable.CommandResult;
-import org.glassfish.embeddable.CommandRunner;
 import org.glassfish.paas.lbplugin.logger.LBPluginLogger;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceType.*;
+import org.glassfish.virtualization.runtime.VirtualMachineLifecycle;
+import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
@@ -60,10 +59,10 @@ import org.jvnet.hk2.component.PerLookup;
 @Scoped(PerLookup.class)
 @CommandLock(CommandLock.LockType.NONE)
 public class DeleteLBService extends BaseLBService implements AdminCommand {
-    
-    @Inject
-    private CommandRunner commandRunner;
 
+    @Inject
+    VirtualMachineLifecycle vmlifecycle;
+    
     public void execute(AdminCommandContext context) {
         final ActionReport report = context.getActionReport();
 
@@ -72,13 +71,8 @@ public class DeleteLBService extends BaseLBService implements AdminCommand {
             retrieveVirtualMachine();
             if (virtualMachine != null) {
                 LBPluginLogger.getLogger().log(Level.INFO,"Calling delete on load-balancer VM with id : " + virtualMachine.getName());
-                virtualMachine.delete(); // TODO :: use executor service.
+                vmlifecycle.delete(virtualMachine); // TODO :: use executor service.
                 lbServiceUtil.unregisterLBInfo(serviceName, appName);
-                CommandResult result = commandRunner.run("delete-cluster", new String[]{serviceName});
-                if (result.getExitStatus().equals(CommandResult.ExitStatus.FAILURE)) {
-                    LBPluginLogger.getLogger().log(Level.INFO,"Command delete-cluster failed. Cleanup of load-balancer service failed");
-                    throw new Exception("Command create-cluster failed. Cleanup of load-balancer service failed");
-                }
             }
         } catch (Exception ex) {
             LBPluginLogger.getLogger().log(Level.INFO,"exception",ex);

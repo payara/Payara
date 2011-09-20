@@ -62,6 +62,10 @@ public interface LBProvisioner {
             String serviceName, CommandRunner commandRunner, String clusterName,
             Habitat habitat, String glassfishHome, boolean isReconfig) throws Exception;
 
+    public void dissociateApplicationServerWithLB(VirtualMachine virtualMachine,
+            String serviceName, CommandRunner commandRunner, String clusterName,
+            Habitat habitat) throws Exception;
+
     public boolean handles(String vendorName);
 
     public void setInstallDir(String installDir);

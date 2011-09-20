@@ -207,6 +207,40 @@ public class ApacheLBProvisioner implements LBProvisioner{
         }
         LBPluginLogger.getLogger().log(Level.INFO, "create-http-lb-config succeeded");
     }
+    
+    @Override
+    public void dissociateApplicationServerWithLB(VirtualMachine virtualMachine,
+            String serviceName, CommandRunner commandRunner, String clusterName,
+            Habitat habitat) {
+        ArrayList params = new ArrayList();
+        params.add(clusterName);
+        CommandResult result = commandRunner.run("disable-http-lb-server", (String[]) params.toArray(new String[params.size()]));
+        if (result.getExitStatus().equals(CommandResult.ExitStatus.FAILURE)) {
+            LBPluginLogger.getLogger().log(Level.INFO, "disable-http-lb-server failed");
+            throw new RuntimeException("disable-http-lb-server failed.");
+        }
+        LBPluginLogger.getLogger().log(Level.INFO, "disable-http-lb-server succeeded");
+
+        params.clear();
+        params.add("--config");
+        params.add(serviceName + "-lb-config");
+        params.add(clusterName);
+        result = commandRunner.run("delete-http-lb-ref", (String[]) params.toArray(new String[params.size()]));
+        if (result.getExitStatus().equals(CommandResult.ExitStatus.FAILURE)) {
+            LBPluginLogger.getLogger().log(Level.INFO, "delete-http-lb-ref failed");
+            throw new RuntimeException("delete-http-lb-ref failed.");
+        }
+        LBPluginLogger.getLogger().log(Level.INFO, "delete-http-lb-ref succeeded");
+
+        params.clear();
+        params.add(serviceName + "-lb-config");
+        result = commandRunner.run("delete-http-lb-config", (String[]) params.toArray(new String[params.size()]));
+        if (result.getExitStatus().equals(CommandResult.ExitStatus.FAILURE)) {
+            LBPluginLogger.getLogger().log(Level.INFO, "delete-http-lb-config failed");
+            throw new RuntimeException("delete-http-lb-config failed.");
+        }
+        LBPluginLogger.getLogger().log(Level.INFO, "delete-http-lb-config succeeded");
+    }
 
     @Override
     public boolean handles(String vendorName) {

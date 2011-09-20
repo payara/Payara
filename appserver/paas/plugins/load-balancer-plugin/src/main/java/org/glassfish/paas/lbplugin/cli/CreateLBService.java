@@ -98,9 +98,6 @@ public class CreateLBService extends BaseLBService implements AdminCommand, Runn
     @Inject(optional = true) // made it optional for non-virtual scenario to work
     private TemplateRepository templateRepository;
 
-    @Inject
-    private CommandRunner commandRunner;
-
     @Inject(optional = true) // made it optional for non-virtual scenario to work
     IAAS iaas;
 
@@ -199,15 +196,9 @@ public class CreateLBService extends BaseLBService implements AdminCommand, Runn
             LBProvisionerFactory.getInstance().getLBProvisioner().initialize();
 
             try {
-                CommandResult result = commandRunner.run("create-cluster", new String[]{serviceName});
-                if (result.getExitStatus().equals(CommandResult.ExitStatus.FAILURE)) {
-                    LBPluginLogger.getLogger().log(Level.INFO,"Command create-cluster failed. Unable to create VM for Load-balancer");
-                    throw new RuntimeException("Command create-cluster failed. Unable to create VM for Load-balancer");
-                }
-                
                 ServiceInfo entry = new ServiceInfo();
                 // provision VMs.
-                VirtualCluster vCluster = virtualClusters.byName(serviceName);
+                VirtualCluster vCluster = virtualClusters.byName(virtualClusterName);
 
                 LBPluginLogger.getLogger().log(Level.INFO,"Calling allocate for template ...." + matchingTemplate);
                 PhasedFuture<AllocationPhase, VirtualMachine> future = null;

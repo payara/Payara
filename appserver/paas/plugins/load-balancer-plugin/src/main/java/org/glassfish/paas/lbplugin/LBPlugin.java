@@ -210,6 +210,8 @@ public class LBPlugin implements Plugin {
             params.add("--serviceconfigurations");
             params.add(serviceConfigurations);
             params.add("--waitforcompletion=true");
+            params.add("--virtualcluster");
+            params.add(serviceDescription.getVirtualClusterName());
             params.add(serviceName);
             parameters = new String[params.size()];
             parameters = params.toArray(parameters);
@@ -231,6 +233,8 @@ public class LBPlugin implements Plugin {
             params.add("--appname");
             params.add(serviceDescription.getAppName());
         }
+        params.add("--virtualcluster");
+        params.add(serviceDescription.getVirtualClusterName());
         params.add(serviceName);
         parameters = new String[params.size()];
         parameters = params.toArray(parameters);
@@ -258,7 +262,8 @@ public class LBPlugin implements Plugin {
             return;
         }
 
-        if (!(serviceConsumer.getServiceType().toString().equals("LB")
+        if (!(svcRef.getServiceRefType().equals("JavaEE")
+                && serviceConsumer.getServiceType().toString().equals("LB")
                 && serviceProvider.getServiceType().toString().equals("JavaEE"))){
             return;
         }
@@ -280,6 +285,8 @@ public class LBPlugin implements Plugin {
         params.add("--reconfig="+isReconfig);
         params.add("--clustername");
         params.add(serviceProvider.getServiceDescription().getName());
+        params.add("--virtualcluster");
+        params.add(serviceDescription.getVirtualClusterName());
         params.add(serviceName);
         parameters = new String[params.size()];
         parameters = params.toArray(parameters);
@@ -302,6 +309,8 @@ public class LBPlugin implements Plugin {
             params.add(serviceDescription.getAppName());
         }
         params.add("--startvm=true");
+        params.add("--virtualcluster");
+        params.add(serviceDescription.getVirtualClusterName());
         params.add(serviceName);
         String[] parameters = new String[params.size()];
         parameters = (String[]) params.toArray(parameters);
@@ -325,6 +334,8 @@ public class LBPlugin implements Plugin {
             params.add(serviceDescription.getAppName());
         }
         params.add("--stopvm=true");
+        params.add("--virtualcluster");
+        params.add(serviceDescription.getVirtualClusterName());
         params.add(serviceName);
         String[] parameters = new String[params.size()];
         parameters = (String[]) params.toArray(parameters);
@@ -385,6 +396,8 @@ public class LBPlugin implements Plugin {
             params.add("--appname");
             params.add(serviceDescription.getAppName());
         }
+        params.add("--virtualcluster");
+        params.add(serviceDescription.getVirtualClusterName());
         params.add(serviceName);
         String[] parameters = new String[params.size()];
         parameters = (String[]) params.toArray(parameters);
@@ -399,6 +412,8 @@ public class LBPlugin implements Plugin {
             params.add("--appname");
             params.add(serviceDescription.getAppName());
         }
+        params.add("--virtualcluster");
+        params.add(serviceDescription.getVirtualClusterName());
         params.add(serviceName);
         parameters = new String[params.size()];
         parameters = (String[]) params.toArray(parameters);
@@ -413,7 +428,37 @@ public class LBPlugin implements Plugin {
 
     public void dissociateServices(ProvisionedService serviceConsumer, ServiceReference svcRef,
                                    ProvisionedService serviceProvider, boolean beforeUndeploy, DeploymentContext dc){
-        //TBD
+        if(!beforeUndeploy){
+            return;
+        }
+
+        if (!(svcRef.getServiceRefType().equals("JavaEE")
+                && serviceConsumer.getServiceType().toString().equals("LB")
+                && serviceProvider.getServiceType().toString().equals("JavaEE"))){
+            return;
+        }
+
+        ServiceDescription serviceDescription = serviceConsumer.getServiceDescription();
+        String serviceName = serviceDescription.getName();
+        logger.entering(getClass().getName(), "provisionService");
+        ArrayList<String> params;
+        String[] parameters;
+        params = new ArrayList<String>();
+        if (serviceDescription.getAppName() != null) {
+            params.add("--appname");
+            params.add(serviceDescription.getAppName());
+        }
+        params.add("--clustername");
+        params.add(serviceProvider.getServiceDescription().getName());
+        params.add("--virtualcluster");
+        params.add(serviceDescription.getVirtualClusterName());
+        params.add(serviceName);
+        parameters = new String[params.size()];
+        parameters = params.toArray(parameters);
+        CommandResult result = commandRunner.run("_dissociate-lb-service", parameters);
+        if (result.getExitStatus().equals(CommandResult.ExitStatus.FAILURE)) {
+            LBPluginLogger.getLogger().log(Level.INFO, "_dissociate-lb-service [" + serviceName + "] failed");
+        }
     }
 
     // TODO :: move this utility method to plugin-common module.
