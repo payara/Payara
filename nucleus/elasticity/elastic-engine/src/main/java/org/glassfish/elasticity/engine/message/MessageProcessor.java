@@ -62,29 +62,34 @@ public class MessageProcessor
                 .setSubComponentName(targetInstanceName)
                 .setSubComponentName(remoteExpHandlerToken);
 
-//        System.out.println("Created message for service=" + container.getElasticService().getName()
-//         + "; subComp = "  + remoteExpHandlerToken);
-
         return message;
     }
 
     @Override
     public void onViewChange(String memberName, Collection<String> currentAliveAndReadyMembers, Collection<String> previousView, boolean isJoinEvent) {
-        logger.log(Level.FINE, "ElasticEvent[service=" + serviceName + "]: Member " + memberName
+        if (logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINE, "ElasticEvent[service=" + serviceName + "]: Member " + memberName
                 + (isJoinEvent ? " JOINED" : " LEFT") + " the cluster"
                 + "; currentView: " + currentAliveAndReadyMembers);
-
+        }
         Set<String> members = new HashSet<String>();
         members.addAll(currentAliveAndReadyMembers);
 
         currentMembers.set(members.toArray(new String[0]));
     }
 
+    public int getCurrentMemberCount() {
+        return currentMembers.get().length;
+    }
+
     public ExpressionResponse sendMessage(ElasticMessage message) {
         if (currentMembers.get().length == 0) {
-            logger.log(Level.INFO, "No member in the cluster is alive. currentSize: " + currentMembers.get().length);
+            if (logger.isLoggable(Level.FINE)) {
+                logger.log(Level.FINE, "No member in the cluster is alive. currentSize: " + currentMembers.get().length);
+            }
             throw new NotEnoughMetricDataException("Not enough data. Reason: No instances other than the master is running");
         }
+
         byte[] data = null;
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         ObjectOutputStream oos = null;
@@ -140,7 +145,6 @@ public class MessageProcessor
                     ExpressionResponse resp = responses.get(respId);
                     if (resp != null) {
                         if (message.isValidData()) {
-//                            System.out.println(message.getSourceMemberName() + " reported " + result.get(0));
                             resp.addResponse(message.getSourceMemberName(), result.get(0));
                         } else {
                             resp.addException(message.getSourceMemberName(), message.getException());
@@ -148,8 +152,6 @@ public class MessageProcessor
                     }
                 } else {
                     //First prepare the response message
-
-                    System.out.println("Received an elastic message");
                     ElasticMessage responseMessage = new ElasticMessage();
                     responseMessage.setMessageId("" + messageIdCounter.incrementAndGet())
                             .setTargetMemberName(senderName)
@@ -174,11 +176,13 @@ public class MessageProcessor
                         responseMessage.setException(ex);
                     }
 
-                    System.out.println("Sending an elastic RESPONSE message: " + responseMessage.getData());
+                    if(logger.isLoggable(Level.FINE)) {
+                        logger.log(Level.FINE, "Sending an elastic RESPONSE message: " + responseMessage.getData());
+                    }
                     sendMessage(responseMessage);
                 }
             } else {
-                System.out.println("Received a generic message");
+                logger.warning("Received a generic message: " + message);
             }
         } catch (Exception ex) {
             ex.printStackTrace();

@@ -106,8 +106,6 @@ public class ElasticServiceContainer {
 
     private AtomicInteger maxSize = new AtomicInteger();
 
-    private AtomicInteger currentSize = new AtomicInteger();
-
     private AtomicInteger reconfigurationPeriodInSeconds = new AtomicInteger(3 * 60);
 
     private ConcurrentHashMap<String, AlertContextImpl> alerts
@@ -172,26 +170,25 @@ public class ElasticServiceContainer {
 
         this.minSize.set(minSize);
         this.maxSize.set(maxSize);
-
-        if (currentSize.get() < minSize) {
-            logger.log(Level.INFO, "SCALE UP: reconfigure service; service-name=" + service.getName()
-                    + "; minSize=" + minSize + "; maxSize=" + maxSize);
-        } else if (currentSize.get() > maxSize) {
-            logger.log(Level.INFO, "SCALE DOWN: reconfigure service; service-name=" + service.getName()
-                    + "; minSize=" + minSize + "; maxSize=" + maxSize);
+        try {
+            if (getCurrentMemberCount() < minSize) {
+                logger.log(Level.INFO, "SCALE UP: reconfigure service; service-name=" + service.getName()
+                        + "; minSize=" + minSize + "; maxSize=" + maxSize);
+                scaleUp();
+            } else if (getCurrentMemberCount() > maxSize) {
+                logger.log(Level.INFO, "SCALE DOWN: reconfigure service; service-name=" + service.getName()
+                        + "; minSize=" + minSize + "; maxSize=" + maxSize);
+                scaleDown();
+            }
+        } catch (Exception ex) {
+            logger.log(Level.WARNING, "Exception during orchestrator invocation", ex);
         }
     }
 
-    public void setCurrentSize(int val) {
-        this.currentSize.set(val);
-
-        if (val < minSize.get()) {
-            //We need to scale up
-        } else if (val > maxSize.get()) {
-            //We need to scale down
-        }
+    private int getCurrentMemberCount() {
+        return messageProcessor.getCurrentMemberCount();
     }
-
+    
     public GroupServiceProvider getGroupServiceProvider() {
         return gsp;
     }
@@ -263,7 +260,7 @@ public class ElasticServiceContainer {
                 ", enabled=" + enabled +
                 ", minSize=" + minSize +
                 ", maxSize=" + maxSize +
-                ", currentSize=" + currentSize +
+                ", currentSize=" + getCurrentMemberCount() +
                 ", reconfigurationPeriodInSeconds=" + reconfigurationPeriodInSeconds +
                 '}';
     }
@@ -312,29 +309,37 @@ public class ElasticServiceContainer {
         return frequencyInSeconds;
     }
 
-    public void scaleUp() {
-        if (currentSize.get() < service.getMax()) {
-            logger.log(Level.INFO, "scaleUp[" + service.getName() + "]: Invoking orchestrator.scaleService("
-                + service.getName() + ", " + service.getName() + ", 1, null)");
-//            orchestrator.scaleService(service.getName(), service.getName(), 1, null);
+    public synchronized void scaleUp() {
+        if (getCurrentMemberCount() < service.getMax()) {
+            if (logger.isLoggable(Level.FINE)) {
+                logger.log(Level.FINE, "scaleUp[" + service.getName() + ": min=" + service.getMin()
+                    + "; max=" +service.getMax() + "; current=" + getCurrentMemberCount() + "]: Invoking orchestrator.scaleService("
+                    + service.getName() + ", " + service.getName() + ", 1, null)");
+            }
 
-            logger.log(Level.INFO, "scaleUp[" + service.getName() + "]: INVOKED orchestrator.scaleService("
-                + service.getName() + ", " + service.getName() + ", 1, null)");
+            orchestrator.scaleService(service.getName(), service.getName(), 1, null);
         } else {
-            logger.log(Level.INFO, "scaleUp[" + service.getName() + "]: Already at max instances ( = " + service.getMin() + " )");
+            if (logger.isLoggable(Level.FINE)) {
+               logger.log(Level.FINE, "scaleUp[" + service.getName() + ": min=" + service.getMin()
+                + "; max=" + service.getMax() + "; current=" + getCurrentMemberCount() + "]:  Already at max instances ( = " + service.getMax() + " )");
+            }
         }
     }
 
-    public void scaleDown() {
+    public synchronized void scaleDown() {
 
-        if (currentSize.get() > service.getMin()) {
-            logger.log(Level.INFO, "scaleDown[" + service.getName() + "]: Invoking orchestrator.scaleService("
-                + service.getName() + ", " + service.getName() + ", -1, null)");
-//            orchestrator.scaleService(service.getName(), service.getName(), -1, null);
-            logger.log(Level.INFO, "scaleDown[" + service.getName() + "]: INVOKED orchestrator.scaleService("
-                + service.getName() + ", " + service.getName() + ", -1, null)");
+        if (getCurrentMemberCount() > service.getMin()) {
+            if (logger.isLoggable(Level.FINE)) {
+                logger.log(Level.FINE, "scaleDown[" + service.getName() + ": min=" + service.getMin()
+                    + "; max=" +service.getMax() + "; current=" + getCurrentMemberCount() + "]: Invoking orchestrator.scaleService("
+                    + service.getName() + ", " + service.getName() + ", -1, null)");
+            }
+            orchestrator.scaleService(service.getName(), service.getName(), -1, null);
         } else {
-            logger.log(Level.INFO, "scaleDown[" + service.getName() + "]: Already at min instances ( = " + service.getMax() + " )");
+            if (logger.isLoggable(Level.FINE)) {
+                logger.log(Level.FINE, "scaleDown[" + service.getName() + ": min=" + service.getMin()
+                    + "; max=" +service.getMax() + "; current=" + getCurrentMemberCount() + "]: Already at min instances ( = " + service.getMin() + " )");
+            }
         }
     }
 

@@ -69,14 +69,19 @@ public class AlertContextImpl<C extends AlertConfig>
         try {
             Alert.AlertState state = alert.execute(this);
             System.out.println("Alert returned STATE = " + state);
-            switch (state) {
-                case NO_DATA:
-                    break;
-                case OK:
-                    elasticServiceContainer.scaleDown();
-                case ALARM:
-                    elasticServiceContainer.scaleUp();
-                    break;
+            try {
+                switch (state) {
+                    case NO_DATA:
+                        break;
+                    case OK:
+                        elasticServiceContainer.scaleDown();
+                        break;
+                    case ALARM:
+                        elasticServiceContainer.scaleUp();
+                        break;
+                }
+            } catch (Exception ex) {
+                EngineUtil.getLogger().log(Level.WARNING, "Exception during orchestrator invocation", ex);
             }
             transientData.clear();
         } catch (Exception ex) {
