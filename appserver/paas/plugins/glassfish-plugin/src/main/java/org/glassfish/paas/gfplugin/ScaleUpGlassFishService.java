@@ -38,11 +38,10 @@
  * holder.
  */
 
-package org.glassfish.paas.gfplugin.cli;
+package org.glassfish.paas.gfplugin;
 
+import com.sun.enterprise.config.serverbeans.Domain;
 import org.glassfish.embeddable.GlassFish;
-import org.glassfish.paas.gfplugin.GlassFishProvisionedService;
-import org.glassfish.paas.gfplugin.GlassFishProvisioner;
 import org.glassfish.paas.orchestrator.provisioning.ProvisionerUtil;
 import org.glassfish.paas.orchestrator.provisioning.ServiceInfo;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceUtil;
@@ -98,7 +97,10 @@ public class ScaleUpGlassFishService {
     @Inject
     private ProvisionerUtil provisionerUtil;
 
-    public static Logger logger = Logger.getLogger(ScaleUpGlassFishService.class.
+    @Inject
+    private Domain domain;
+
+    public static final Logger logger = Logger.getLogger(ScaleUpGlassFishService.class.
             getPackage().getName());
 
     public ProvisionedService scaleUp(int scaleCount,
@@ -110,6 +112,20 @@ public class ScaleUpGlassFishService {
                     scaleCount + "]");
             return null;
         }
+
+        // make sure we don't scale up beyond max.clustersize.
+        String clusterName = serviceDescription.getVirtualClusterName();
+        int currentClusterSize = domain.getClusterNamed(clusterName).getInstances().size();
+        int maxClusterSize = Integer.parseInt(
+                serviceDescription.getConfiguration("max.clustersize"));
+        if (currentClusterSize + scaleCount > maxClusterSize) {
+            String errMsg = "\nUnable to scale the service beyond the " +
+                    "maximum size [" + maxClusterSize + "], " +
+                    "current size is [" + currentClusterSize + "]";
+            errorMessages.append(errMsg);
+            throw new RuntimeException(errMsg);
+        }
+
         ProvisionedService provisionedService = null;
         TemplateIdentifier ti = serviceDescription.getTemplateIdentifier();
         ServiceCharacteristics sc =serviceDescription.getServiceCharacteristics();
@@ -158,7 +174,8 @@ public class ScaleUpGlassFishService {
         }
         // TODO :: check for max.clustersize
         try {
-            VirtualCluster vCluster = virtualClusters.byName(serviceDescription.getName());
+            VirtualCluster vCluster = virtualClusters.byName(
+                    serviceDescription.getVirtualClusterName());
             TemplateInstance template = templateRepository.byName(templateId);
             List<PhasedFuture<AllocationPhase, VirtualMachine>> futures =
                     new ArrayList<PhasedFuture<AllocationPhase, VirtualMachine>>();

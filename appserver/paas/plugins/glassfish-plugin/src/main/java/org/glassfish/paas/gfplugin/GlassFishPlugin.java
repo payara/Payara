@@ -52,8 +52,6 @@ import org.glassfish.embeddable.CommandResult;
 import org.glassfish.embeddable.CommandRunner;
 import org.glassfish.embeddable.GlassFish;
 import org.glassfish.paas.gfplugin.cli.GlassFishServiceUtil;
-import org.glassfish.paas.gfplugin.cli.ScaleDownGlassFishService;
-import org.glassfish.paas.gfplugin.cli.ScaleUpGlassFishService;
 import org.glassfish.paas.orchestrator.ServiceOrchestrator;
 import org.glassfish.paas.orchestrator.provisioning.ApplicationServerProvisioner;
 import org.glassfish.paas.orchestrator.provisioning.ProvisionerUtil;
@@ -345,6 +343,7 @@ public class GlassFishPlugin implements Plugin<JavaEEServiceType> {
         GlassFishProvisioner gfProvisioner = (GlassFishProvisioner)
                 provisionerUtil.getAppServerProvisioner(dasIPAddress);
         GlassFish provisionedGlassFish = gfProvisioner.getGlassFish();
+        serviceDescription.setVirtualClusterName(serviceDescription.getName());
         GlassFishProvisionedService gfps =new GlassFishProvisionedService(serviceDescription, serviceProperties, provisionedGlassFish);
         return gfps;
     }

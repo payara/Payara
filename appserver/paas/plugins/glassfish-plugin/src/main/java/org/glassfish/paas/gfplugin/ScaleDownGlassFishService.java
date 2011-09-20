@@ -38,11 +38,14 @@
  * holder.
  */
 
-package org.glassfish.paas.gfplugin.cli;
+package org.glassfish.paas.gfplugin;
 
+import com.sun.enterprise.config.serverbeans.Domain;
 import org.glassfish.embeddable.GlassFish;
 import org.glassfish.paas.gfplugin.GlassFishProvisionedService;
 import org.glassfish.paas.gfplugin.GlassFishProvisioner;
+import org.glassfish.paas.gfplugin.ScaleUpGlassFishService;
+import org.glassfish.paas.gfplugin.cli.GlassFishServiceUtil;
 import org.glassfish.paas.orchestrator.provisioning.ProvisionerUtil;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceType;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceUtil;
@@ -51,7 +54,6 @@ import org.glassfish.paas.orchestrator.service.spi.ProvisionedService;
 import org.glassfish.virtualization.runtime.VirtualCluster;
 import org.glassfish.virtualization.runtime.VirtualClusters;
 import org.glassfish.virtualization.runtime.VirtualMachineLifecycle;
-import org.glassfish.virtualization.spi.AllocationStrategy;
 import org.glassfish.virtualization.spi.IAAS;
 import org.glassfish.virtualization.spi.TemplateRepository;
 import org.glassfish.virtualization.spi.VirtualMachine;
@@ -92,7 +94,10 @@ public class ScaleDownGlassFishService {
     @Inject
     private GlassFishServiceUtil gfServiceUtil;
 
-    public static Logger logger = Logger.getLogger(ScaleUpGlassFishService.class.
+    @Inject
+    private Domain domain;
+
+    public static final Logger logger = Logger.getLogger(ScaleUpGlassFishService.class.
             getPackage().getName());
 
     public ProvisionedService scaleDown(int scaleCount,
@@ -103,7 +108,20 @@ public class ScaleDownGlassFishService {
                     "Invalid scale count [-" + scaleCount + "]");
             return null;
         }
-        // TODO :: check for min.clustersize
+
+        // make sure we don't scale down below min.clustersize.
+        String clusterName = serviceDescription.getVirtualClusterName();
+        int currentClusterSize = domain.getClusterNamed(clusterName).getInstances().size();
+        int minClusterSize = Integer.parseInt(
+                serviceDescription.getConfiguration("min.clustersize"));
+        if (currentClusterSize - scaleCount < minClusterSize) {
+            String errMsg = "\nUnable to scale the service below the " +
+                    "minimum required size [" + minClusterSize + "], " +
+                    "current size is [" + currentClusterSize + "]";
+            errorMessages.append(errMsg);
+            throw new RuntimeException(errMsg);
+        }
+
         String serviceName = serviceDescription.getName();
         String appName = serviceDescription.getAppName();
         if (serviceName != null) {
