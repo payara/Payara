@@ -51,7 +51,7 @@
     </parent>
 
     <artifactId>paas.console.plugin-sample</artifactId>
-    <name>Paas Console Plugin Sample</name>
+    <name>PaaS Console Plugin Sample</name>
     <packaging>hk2-jar</packaging>
 
     <dependencies>

@@ -51,7 +51,7 @@
     </parent>
     
     <artifactId>paas.console.plugins-parent</artifactId>
-    <name>Paas Console Plugins Parent</name>
+    <name>PaaS Console Plugins Parent</name>
     <packaging>pom</packaging>
 
     <modules>

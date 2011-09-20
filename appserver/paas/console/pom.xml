@@ -11,7 +11,7 @@
  
     <artifactId>paas-console-parent</artifactId>
     <packaging>pom</packaging>
-    <name>Paas Console Parent</name>
+    <name>PaaS Console Parent</name>
 
     <properties>
         <endorsed.dir>${project.build.directory}/endorsed</endorsed.dir>
@@ -52,6 +52,7 @@
         <module>plugin-system</module>
         <module>plugin-system-jsf</module>
         <module>plugins</module>
+        <module>trinidad</module>
         <module>webapp</module>
     </modules>
     

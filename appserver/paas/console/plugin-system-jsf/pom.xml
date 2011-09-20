@@ -11,7 +11,7 @@
     
     <artifactId>paas.console.plugin-system-jsf</artifactId>
     <packaging>hk2-jar</packaging>
-    <name>Paas Console Plugin System JSF Integration</name>
+    <name>PaaS Console Plugin System JSF Integration</name>
     
     <dependencies>
         <dependency>
