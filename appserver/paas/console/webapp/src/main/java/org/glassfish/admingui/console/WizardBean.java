@@ -23,7 +23,7 @@ public class WizardBean {
     private List<String> stepLabels = Collections.unmodifiableList(new ArrayList<String>(){{ 
         add("1. Upload Application");
         add("2. Configure Services");
-        add("3. Review and Deploy");
+        add("3. Review and Confirm");
     }});
     private List<String> stepPages = Collections.unmodifiableList(new ArrayList<String>(){{ 
         add("/demo/wizard/upload.xhtml");

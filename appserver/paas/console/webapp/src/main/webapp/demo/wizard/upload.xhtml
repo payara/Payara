@@ -52,22 +52,26 @@
 
     <h3>Step 1:  Upload Application </h3>
 
-    To create a new application, enter the details of your application below.
+    To upload an application to the cloud, specify the archive file that contains the packaged application and general information about the application.
     <tr:spacer height="40px"/>
 
     <tr:panelFormLayout rows="10" labelAlignment="start">
 
 
-        <tr:inputFile label="Application Source:"
+        <tr:inputFile label="Application Archive:"
                       id="upload"
                       onchange="autofill()"
                       columns="40"
                       value="#{uploadBean.file}"
                       valueChangeListener="#{uploadBean.fileUploaded}">
         </tr:inputFile>
+        <tr:outputText value="The archive file that contains the packaged application"/>
         <tr:inputText id="appName" label="Application Name: " value="#{uploadBean.appName}" columns="40"/>
+        <tr:outputText value="The name by which to identify the application when listing or undeploying the application"/>
         <tr:inputText id="contextRoot" label="Context Root:  " value="#{uploadBean.contextRoot}"  columns="40"/>
+        <tr:outputText value="The path relative to server's base URL"/>
         <tr:inputText label="Description:  " value="#{uploadBean.description}" columns="40"/>
+        <tr:outputText value="A brief textual description of the application"/>
     </tr:panelFormLayout>
     <tr:spacer height="40px"/>
     <tr:separator/>

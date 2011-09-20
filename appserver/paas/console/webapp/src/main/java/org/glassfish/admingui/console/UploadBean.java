@@ -79,6 +79,7 @@ public class UploadBean {
 
     /*{
         metaData = CommandUtil.getPreSelectedServices("D:/Projects/console.next/svn/main/appserver/tests/paas/basic-db/target/basic_db_paas_sample.war");
+        //metaData = CommandUtil.getPreSelectedServices("D:/Projects/console.next/svn/main/appserver/tests/paas/service_metadata/provision_using_specified_template/target/basic_paas_sample2.war");
         //metaData = CommandUtil.getPreSelectedServices("/opt/console.next/svn/main/appserver/tests/paas/basic-db/target/basic_db_paas_sample.war");
         processMetaData();
     }*/
@@ -102,6 +103,13 @@ public class UploadBean {
     }
 
     void processMetaData() {
+        database = "";
+        eeTemplate = "";
+        loadBalancer = "";
+        databasesMetaData.clear();
+        eeTemplatesMetaData.clear();
+        loadBalancersMetaData.clear();
+
         for(Map oneService : metaData){
             String serviceType = (String) oneService.get("service-type");
             String serviceName = (String) oneService.get("name");

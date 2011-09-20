@@ -28,7 +28,8 @@
                 xmlns:trh="http://myfaces.apache.org/trinidad/html">
     <h3>Step 2: Configure Services</h3>
 
-    This is services that will be provisioned for the uploaded application.  You can take all the defaults or customize it.
+    To configure the services that are to be provisioned for the application, override or accept the preset values.
+    The preset values are defined in the glassfish-services.xml deployment descriptor, which is packaged with the application.
 
     <tr:panelBox text="Load Balancer"
          background="light"
@@ -108,9 +109,10 @@
                 </tr:column>
                 <tr:column headerText="Configuration" inlineStyle="vertical-align: top" width="34%">
                     <tr:panelFormLayout>
-                    <tr:outputLabel value="Cluster Size:"/>
-                    <tr:inputNumberSpinbox label="Min:" value="#{uploadBean.eeTemplateMinClusterSize}" minimum="1" maximum="16"/>
-                    <tr:inputNumberSpinbox label="Max:" value="#{uploadBean.eeTemplateMaxClusterSize}" minimum="1" maximum="16" />
+                        <tr:outputLabel value="Instance Count:"/>
+                        <tr:inputNumberSpinbox label="Minimum:" value="#{uploadBean.eeTemplateMinClusterSize}" minimum="1" maximum="16"/>
+                        <tr:inputNumberSpinbox label="Maximum:" value="#{uploadBean.eeTemplateMaxClusterSize}" minimum="1" maximum="16" />
+                        <tr:outputText value="To change these values after the application is deployed, use the Auto Scaling tab."/>
                     </tr:panelFormLayout>
                     <!--tr:inputText id="amount" label="Clustersize:" value="#{uploadBean.eeTemplateMinMaxClusterSize}" columns="16"/>
                     <div id="slider-range"></div>
