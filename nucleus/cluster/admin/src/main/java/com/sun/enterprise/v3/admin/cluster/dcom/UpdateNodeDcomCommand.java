@@ -46,6 +46,7 @@ import com.sun.enterprise.config.serverbeans.Node;
 import com.sun.enterprise.config.serverbeans.Nodes;
 import com.sun.enterprise.config.serverbeans.SshConnector;
 import com.sun.enterprise.config.serverbeans.SshAuth;
+import com.sun.enterprise.v3.admin.cluster.NodeUtils.RemoteType;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
@@ -64,33 +65,25 @@ import java.util.logging.Logger;
 @Service(name = "update-node-dcom")
 @Scoped(PerLookup.class)
 @ExecuteOn({RuntimeType.DAS})
-public class UpdateNodeDcomCommand implements AdminCommand {
-    // copied from SSH command to get going...
-    @Param(name = "name", primary = true)
-    private String name;
-    @Param(name = "nodehost", optional = true)
-    private String nodehost;
-    @Param(name = "installdir", optional = true)
-    private String installdir;
-    @Param(name = "nodedir", optional = true)
-    private String nodedir;
-    @Param(name = "dcomport", optional = true)
-    private String sshdcomport;
-    @Param(name = "dcomuser", optional = true)
-    private String dcomuser;
-    @Param(name = "dcompassword", optional = true, password = true)
-    private String dcompassword;
-    @Param(name = "force", optional = true, defaultValue = "false")
-    private boolean force;
-    private static final String NL = System.getProperty("line.separator");
-    private Logger logger = null;
-    private ActionReport report;
+public class UpdateNodeDcomCommand extends UpdateNodeRemoteCommand  {
 
     @Override
     public void execute(AdminCommandContext context) {
-        report = context.getActionReport();
-        logger = context.getLogger();
-        report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-        report.setMessage("update-node-dcom is under construction and not yet available for use.");
+        executeInternal(context);
+    }
+
+    @Override
+    protected void populateParameters(ParameterMap pmap) {
+    // DCOMFIX -- domain name!!
+    }
+
+    @Override
+    protected RemoteType getType() {
+        return RemoteType.DCOM;
+    }
+
+    @Override
+    protected String getDefaultPort() {
+        return NodeUtils.NODE_DEFAULT_DCOM_PORT;
     }
 }

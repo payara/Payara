@@ -40,20 +40,11 @@
 
 package com.sun.enterprise.v3.admin.cluster;
 
-import com.sun.enterprise.util.StringUtils;
-import com.sun.enterprise.config.serverbeans.Node;
-import com.sun.enterprise.config.serverbeans.Nodes;
-import com.sun.enterprise.config.serverbeans.SshConnector;
-import com.sun.enterprise.config.serverbeans.SshAuth;
-import org.glassfish.api.ActionReport;
+import com.sun.enterprise.v3.admin.cluster.NodeUtils.RemoteType;
 import org.glassfish.api.I18n;
-import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
-import org.glassfish.api.admin.CommandValidationException;
-import org.glassfish.api.admin.CommandRunner.CommandInvocation;
 import org.jvnet.hk2.annotations.*;
 import org.jvnet.hk2.component.*;
-import java.util.logging.Logger;
 
 /**
  * Remote AdminCommand to update an ssh node.  This command is run only on DAS.
@@ -64,203 +55,24 @@ import java.util.logging.Logger;
 @I18n("update.node.ssh")
 @Scoped(PerLookup.class)
 @ExecuteOn({RuntimeType.DAS})
-public class UpdateNodeSshCommand implements AdminCommand  {
-
-    @Inject
-    private CommandRunner cr;
-
-    @Inject
-    Habitat habitat;
-
-    @Inject
-    private Nodes nodes;
-
-    @Param(name="name", primary = true)
-    private String name;
-
-    @Param(name="nodehost", optional=true)
-    private String nodehost;
-
-    @Param(name = "installdir", optional=true)
-    private String installdir;
-
-    @Param(name = "nodedir", optional=true)
-    private String nodedir;
-
-    @Param(name = "sshport", optional=true)
-    private String sshport;
-
-    @Param(name = "sshuser", optional = true)
-    private String sshuser;
-
-    @Param(name = "sshkeyfile", optional = true)
-    private String sshkeyfile;
-
-    @Param(name = "sshpassword", optional = true, password=true)
-    private String sshpassword;
-
-    @Param(name = "sshkeypassphrase", optional = true, password=true)
-    private String sshkeypassphrase;
-
-    @Param(name =  "force", optional = true, defaultValue = "false")
-    private boolean force;
-
-    private static final String NL = System.getProperty("line.separator");
-
-    private Logger logger = null;
+public class UpdateNodeSshCommand extends UpdateNodeRemoteCommand  {
 
     @Override
     public void execute(AdminCommandContext context) {
-        ActionReport report = context.getActionReport();
-        StringBuilder msg = new StringBuilder();
-        Node node = null;
-
-        logger = context.getLogger();
-
-        // Make sure Node is valid
-        node = nodes.getNode(name);
-        if (node == null) {
-            String m = Strings.get("noSuchNode", name);
-            logger.warning(m);
-            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            report.setMessage(m);
-            return;
-        }
-        if (node.isDefaultLocalNode()) {
-            String m = Strings.get("update.node.config.defaultnode", name);
-            logger.warning(m);
-            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            report.setMessage(m);
-            return;
-        }
-
-        // First create a map that holds the parameters and reflects what
-        // the user passed on the command line.
-        ParameterMap map = new ParameterMap();
-        map.add("DEFAULT", name);
-        map.add(NodeUtils.PARAM_INSTALLDIR, installdir);
-        map.add(NodeUtils.PARAM_NODEHOST, nodehost);
-        map.add(NodeUtils.PARAM_NODEDIR, nodedir);
-        map.add(NodeUtils.PARAM_REMOTEPORT, sshport);
-        map.add(NodeUtils.PARAM_REMOTEUSER, sshuser);
-        map.add(NodeUtils.PARAM_SSHKEYFILE, sshkeyfile);
-        map.add(NodeUtils.PARAM_REMOTEPASSWORD, sshpassword);
-        map.add(NodeUtils.PARAM_SSHKEYPASSPHRASE, sshkeypassphrase);
-        map.add(NodeUtils.PARAM_TYPE, "SSH");
-
-        // Now init any parameters that weren't passed into the command
-        // using the values from the config
-        initFromConfig(node);
-
-        // Finally, anything that still isn't set, use the defaults.
-        // These should likely come from config -- but they don't
-        // as of now
-        setDefaults();
-
-        // validateMap holds the union of what the user passed and what was
-        // in the config so we have all the settings needed to validate what
-        // the node will look like after we update it.
-        ParameterMap validateMap = new ParameterMap();
-        validateMap.add(NodeUtils.PARAM_INSTALLDIR, installdir);
-        validateMap.add(NodeUtils.PARAM_NODEHOST, nodehost);
-        validateMap.add(NodeUtils.PARAM_NODEDIR, nodedir);
-        validateMap.add(NodeUtils.PARAM_REMOTEPORT, sshport);
-        validateMap.add(NodeUtils.PARAM_REMOTEUSER, sshuser);
-        validateMap.add(NodeUtils.PARAM_SSHKEYFILE, sshkeyfile);
-        validateMap.add(NodeUtils.PARAM_REMOTEPASSWORD, sshpassword);
-        validateMap.add(NodeUtils.PARAM_SSHKEYPASSPHRASE, sshkeypassphrase);
-
-        // Validate the settings
-        try {
-            NodeUtils nodeUtils = new NodeUtils(habitat, logger);
-            nodeUtils.validate(validateMap);
-        } catch (CommandValidationException e) {
-            String m1 = Strings.get("node.ssh.invalid.params");
-            if (!force) {
-                String m2 = Strings.get("update.node.ssh.not.updated");
-                msg.append(StringUtils.cat(NL, m1, m2, e.getMessage()));
-                report.setMessage(msg.toString());
-                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-                return;
-            } else {
-                String m2 = Strings.get("update.node.ssh.continue.force");
-                msg.append(StringUtils.cat(NL, m1, e.getMessage(), m2));
-            }
-        }
-
-        // Settings are valid. Now use the generic update-node command to
-        // update the node.
-        CommandInvocation ci = cr.getCommandInvocation("_update-node", report);
-        ci.parameters(map);
-        ci.execute();
-
-        if (StringUtils.ok(report.getMessage())) {
-            if (msg.length() > 0) {
-                msg.append(NL);
-            }
-            msg.append(report.getMessage());
-        }
-
-        report.setMessage(msg.toString());
+        executeInternal(context);
     }
 
-    /**
-     * Initialize any parameters not provided by the user from the
-     * configuration.
-     */
-    private void initFromConfig(Node node) {
-        if (nodehost == null) {
-            nodehost = node.getNodeHost();
-        }
-
-        if (installdir == null) {
-            installdir = node.getInstallDir();
-        }
-
-        if (nodedir == null) {
-            nodedir = node.getNodeDir();
-        }
-
-        SshConnector sshc = node.getSshConnector();
-        if (sshc == null) {
-            return;
-        }
-
-        if (sshport == null) {
-            sshport = sshc.getSshPort();
-        }
-
-        SshAuth ssha = sshc.getSshAuth();
-        if (ssha == null) {
-            return;
-        }
-
-        if (sshuser == null) {
-            sshuser = ssha.getUserName();
-        }
-
-        if (sshkeyfile == null) {
-            sshkeyfile = ssha.getKeyfile();
-        }
-
-        if (sshpassword == null) {
-            sshpassword = ssha.getPassword();
-        }
-
-        if (sshkeypassphrase == null) {
-            sshkeypassphrase = ssha.getPassword();
-        }
+    @Override
+    protected void populateParameters(ParameterMap pmap) {
     }
 
-   private void setDefaults() {
-        if (!StringUtils.ok(sshport)) {
-            sshport = NodeUtils.NODE_DEFAULT_SSH_PORT;
-        }
-        if (!StringUtils.ok(sshuser)) {
-            sshuser = NodeUtils.NODE_DEFAULT_REMOTE_USER;
-        }
-        if (!StringUtils.ok(installdir)) {
-            installdir = NodeUtils.NODE_DEFAULT_INSTALLDIR;
-        }
+    @Override
+    protected RemoteType getType() {
+        return RemoteType.SSH;
+    }
+
+    @Override
+    protected String getDefaultPort() {
+        return NodeUtils.NODE_DEFAULT_SSH_PORT;
     }
 }
