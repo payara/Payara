@@ -45,6 +45,7 @@ import com.sun.enterprise.v3.admin.cluster.CreateRemoteNodeCommand;
 import com.sun.enterprise.v3.admin.cluster.NodeUtils;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
+import org.glassfish.internal.api.RelativePathResolver;
 import org.jvnet.hk2.annotations.*;
 import org.jvnet.hk2.component.PerLookup;
 import static com.sun.enterprise.util.StringUtils.ok;
@@ -121,11 +122,6 @@ public class CreateNodeDcom extends CreateRemoteNodeCommand {
         //args.add(remotePort);
     }
 
-    @Override
-    protected String getPasswordsForFile() {
-        return "AS_ADMIN_DCOMPASSWORD=" + dcompassword + "\n";
-    }
-    
     /**
      * Get list of password file entries
      * @return List
@@ -133,7 +129,16 @@ public class CreateNodeDcom extends CreateRemoteNodeCommand {
     @Override
     protected List<String> getPasswords() {
         List tokens = new ArrayList<String>();
-        tokens.add("AS_ADMIN_DCOMPASSWORD=" + dcompassword);
+        String password = null;
+
+        try {
+            password = RelativePathResolver.getRealPasswordFromAlias(dcompassword);
+        }
+        catch (Exception e) {
+            password = dcompassword;
+        }
+
+        tokens.add("AS_ADMIN_DCOMPASSWORD=" + password);
         return tokens;
     }
 }

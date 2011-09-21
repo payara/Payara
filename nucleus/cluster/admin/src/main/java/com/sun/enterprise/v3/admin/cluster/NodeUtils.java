@@ -219,7 +219,7 @@ public class NodeUtils {
             return;
         }
 
-        // BN says: Should not be a fatal error?!?  TODO
+        // BN says: Shouldn't this be a fatal error?!?  TODO
         if (sshL == null)
             return;
 

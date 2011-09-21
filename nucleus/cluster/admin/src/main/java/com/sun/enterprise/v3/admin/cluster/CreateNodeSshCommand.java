@@ -138,21 +138,6 @@ public class CreateNodeSshCommand extends CreateRemoteNodeCommand {
         args.add(remotePort);
     }
 
-    @Override
-    protected String getPasswordsForFile() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("AS_ADMIN_SSHPASSWORD=");
-        sb.append(nodeUtils.sshL.expandPasswordAlias(remotePassword));
-        sb.append('\n');
-
-        if (sshkeypassphrase != null) {
-            sb.append("AS_ADMIN_SSHKEYPASSPHRASE=");
-            sb.append(nodeUtils.sshL.expandPasswordAlias(sshkeypassphrase));
-            sb.append('\n');
-        }
-        return sb.toString();
-    }
-    
     /**
      * Get list of password file entries
      * @return List

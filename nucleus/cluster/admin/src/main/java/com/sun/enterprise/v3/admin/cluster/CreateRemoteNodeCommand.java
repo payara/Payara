@@ -103,8 +103,6 @@ public abstract class CreateRemoteNodeCommand implements AdminCommand {
 
     protected abstract void validate() throws CommandValidationException;
 
-    protected abstract String getPasswordsForFile();
-    
     protected abstract List<String> getPasswords();
 
     public final void executeInternal(AdminCommandContext context) {
@@ -256,14 +254,14 @@ public abstract class CreateRemoteNodeCommand implements AdminCommand {
         int exit = -1;
         List<String> fullcommand = new ArrayList<String>();
         String installDir = nodes.getDefaultLocalNode().getInstallDirUnixStyle() + "/glassfish";
-        
+
         if (!StringUtils.ok(installDir)) {
             throw new IllegalArgumentException(Strings.get("create.node.ssh.no.installdir"));
         }
 
-        File asadmin = new File(SystemPropertyConstants.getAsAdminScriptLocation(installDir));      
+        File asadmin = new File(SystemPropertyConstants.getAsAdminScriptLocation(installDir));
         fullcommand.add(asadmin.getAbsolutePath());
-        
+
         //if password auth is used for creating node, use the same auth mechanism for
         //install-node as well. The passwords are passed directly through input stream
         List<String> pass = new ArrayList<String>();
@@ -272,7 +270,7 @@ public abstract class CreateRemoteNodeCommand implements AdminCommand {
             fullcommand.add("-");
             pass = getPasswords();
         }
-        
+
         fullcommand.add("--interactive=false");
         fullcommand.addAll(cmdLine);
 
