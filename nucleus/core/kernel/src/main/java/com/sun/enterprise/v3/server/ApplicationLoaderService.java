@@ -358,9 +358,8 @@ public class ApplicationLoaderService implements Startup, PreDestroy, PostConstr
                     if (domain.isAppReferencedByPaaSTarget(appName)) {
                         if (server.isDas()) {
                             // for loading PaaS application on DAS
-                            // we need to set the target as null
-                            // so OE recognizes it
-                            deploymentParams.target = null;
+                            // we set it to the real PaaS target
+                            deploymentParams.target = deployment.getDefaultTarget(appName, DeployCommandParameters.Origin.load);
                         }
                     } else {
                         deploymentParams.target = server.getName();
