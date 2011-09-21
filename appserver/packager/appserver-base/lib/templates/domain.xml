@@ -42,7 +42,16 @@
 
 <domain log-root="${com.sun.aas.instanceRoot}/logs" application-root="${com.sun.aas.instanceRoot}/applications" version="10.0">
   <system-applications />
-  <applications />
+  <applications>
+    <application context-root="/paas-console" location="${com.sun.aas.installRootURI}/lib/install/applications/__paas-console" name="paas-console" directory-deployed="true" object-type="user">
+        <property name="appLocation" value="${com.sun.aas.installRootURI}/lib/install/applications/__paas-console/"></property>
+        <property name="defaultAppName" value="paas-console"></property>
+        <module name="paas-console">
+            <engine sniffer="security"></engine>
+            <engine sniffer="web"></engine>
+        </module>
+    </application>
+  </applications>
   <resources>
     <jdbc-resource pool-name="__TimerPool" jndi-name="jdbc/__TimerPool" object-type="system-admin" />
     <jdbc-resource pool-name="DerbyPool" jndi-name="jdbc/__default" />
@@ -60,7 +69,8 @@
     </jdbc-connection-pool>
   </resources>
   <servers>
-    <server name="%%%SERVER_ID%%%" config-ref="%%%CONFIG_MODEL_NAME%%%"> 
+    <server name="%%%SERVER_ID%%%" config-ref="%%%CONFIG_MODEL_NAME%%%">
+      <application-ref ref="paas-console" virtual-servers="server"></application-ref>
       <resource-ref ref="jdbc/__TimerPool" />
       <resource-ref ref="jdbc/__default" />
     </server>
