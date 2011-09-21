@@ -83,6 +83,6 @@
                 </configuration>
             </plugin>
         </plugins>
-        <finalName>admin-console</finalName>
+        <finalName>paas-console</finalName>
     </build>
 </project>
