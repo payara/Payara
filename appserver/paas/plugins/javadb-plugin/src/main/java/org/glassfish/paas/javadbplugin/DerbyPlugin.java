@@ -200,10 +200,10 @@ public static final String RDBMS_ServiceType = "Database";
         parameters = new String[params.size()];
         parameters = params.toArray(parameters);
 
-        result = commandRunner.run("_start-derby-service", parameters);
+        /*result = commandRunner.run("_start-derby-service", parameters);
         if (result.getExitStatus().equals(CommandResult.ExitStatus.FAILURE)) {
             System.out.println("_start-derby-service [" + serviceName + "] failed");
-        }
+        }*/
 
         Properties serviceProperties = new Properties();
         String ipAddress = entry.getIpAddress();
@@ -335,26 +335,23 @@ public static final String RDBMS_ServiceType = "Database";
     @Override
     public ProvisionedService scaleService(ServiceDescription serviceDesc,
             int scaleCount, AllocationStrategy allocStrategy) {
-        //no-op
-        throw new UnsupportedOperationException("Scaling of Derby Service " +
-        		"not supported in this release");
+        // TODO :: scale database service...
+        return null;
     }
 
     @Override
     public boolean reconfigureServices(ProvisionedService oldPS,
             ProvisionedService newPS) {
-        //no-op
-        throw new UnsupportedOperationException("Reconfiguration of Service " +
-                "not supported in this release");
+        // TODO :: reconfigure database service after scaling.
+        return true;
     }
 
     @Override
     public boolean reassociateServices(ProvisionedService svcConsumer, 
             ProvisionedService oldSvcProvider, ProvisionedService newSvcProvider, 
             ServiceOrchestrator.ReconfigAction reason) {
-        //no-op
-        throw new UnsupportedOperationException("Reassociation of Service " +
-                "not supported in this release");
+        // TODO :: reassociate services after scaling.
+        return true;
     }
 
 }
