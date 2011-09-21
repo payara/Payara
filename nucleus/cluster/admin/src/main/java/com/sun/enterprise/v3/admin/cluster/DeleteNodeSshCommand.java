@@ -45,9 +45,6 @@ import java.util.ArrayList;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.io.File;
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.IOException;
 
 import com.sun.enterprise.util.StringUtils;
 import com.sun.enterprise.util.SystemPropertyConstants;
@@ -246,45 +243,21 @@ public class DeleteNodeSshCommand implements AdminCommand {
         File asadmin = new File(SystemPropertyConstants.getAsAdminScriptLocation(installDir));
         fullcommand.add(asadmin.getAbsolutePath());
 
-        BufferedWriter out = null;
-        File f = null;
-        //if password auth is used by node, use the same auth mechanism for
-        //uninstall-node as well. The passwords are passed using a temporary password file
+        //if password auth is used for deleting the node, use the same auth mechanism for
+        //uinstall-node as well. The passwords are passed directly through input stream
+        List<String> pass = new ArrayList<String>();
         if(sshpassword != null) {
-            try {
-                NodeUtils nu = new NodeUtils(habitat, logger);
-                f = new File(System.getProperty("java.io.tmpdir"), "pass.tmp");
-                out = new BufferedWriter(new FileWriter(f));
-                out.newLine();
-                out.write("AS_ADMIN_SSHPASSWORD=" + nu.sshL.expandPasswordAlias(sshpassword) + "\n");
-                if(sshkeypassphrase != null)
-                    out.write("AS_ADMIN_SSHKEYPASSPHRASE=" + nu.sshL.expandPasswordAlias(sshkeypassphrase) + "\n");
-                out.flush();
-            } catch (IOException ioe) {
-                if(logger.isLoggable(Level.FINE)) {
-                    logger.fine("Failed to create password file: " + ioe.getMessage());
-                }
-                output.append(Strings.get("create.node.ssh.passfile.error"));
-                return 1;
-            }
-            finally {
-                try {
-                    if (out != null)
-                        out.close();
-                } catch(final Exception ex){
-                    if (logger.isLoggable(Level.FINE)) {
-                        logger.fine("Failed to close stream: " + ex.getMessage());
-                    }
-                }
-            }
-
             fullcommand.add("--passwordfile");
-            fullcommand.add(f.getAbsolutePath());
+            fullcommand.add("-");
+            pass = getPasswords();
         }
 
+        fullcommand.add("--interactive=false");
         fullcommand.addAll(cmdLine);
 
         ProcessManager pm = new ProcessManager(fullcommand);
+        if(!pass.isEmpty())
+            pm.setStdinLines(getPasswords());
 
         if(logger.isLoggable(Level.INFO)) {
             logger.info("Running command on DAS: " + commandListToString(fullcommand));
@@ -321,15 +294,6 @@ public class DeleteNodeSshCommand implements AdminCommand {
                 output.append(stderr);
             }
         }
-
-        if (f != null) {
-            boolean didDelete = f.delete();
-            if(!didDelete) {
-                if(logger.isLoggable(Level.WARNING)) {
-                    logger.log(Level.WARNING, Strings.get("node.ssh.passfile.delete.error", f.getPath()));
-                }
-            }
-        }
         return exit;
     }
 
@@ -342,5 +306,20 @@ public class DeleteNodeSshCommand implements AdminCommand {
         }
 
         return fullCommand.toString();
+    }
+    
+    /**
+     * Get list of password file entries
+     * @return List
+     */
+    private List<String> getPasswords() {
+        List list = new ArrayList<String>();
+        NodeUtils nodeUtils = new NodeUtils(habitat, logger);
+        list.add("AS_ADMIN_SSHPASSWORD=" + nodeUtils.sshL.expandPasswordAlias(sshpassword));
+
+        if (sshkeypassphrase != null) {
+            list.add("AS_ADMIN_SSHKEYPASSPHRASE=" + nodeUtils.sshL.expandPasswordAlias(sshkeypassphrase));
+        }
+        return list;
     }
 }

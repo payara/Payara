@@ -41,30 +41,16 @@ package com.sun.enterprise.v3.admin.cluster;
 
 import java.util.List;
 import java.util.ArrayList;
-import java.util.logging.Logger;
-import java.util.logging.Level;
-import java.io.File;
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.IOException;
 
 import com.sun.enterprise.util.StringUtils;
-import com.sun.enterprise.util.SystemPropertyConstants;
-import com.sun.enterprise.config.serverbeans.*;
-import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
 import org.glassfish.api.admin.CommandValidationException;
-import org.glassfish.api.admin.CommandRunner.CommandInvocation;
 import org.jvnet.hk2.annotations.*;
 import org.jvnet.hk2.component.*;
 
 import org.glassfish.cluster.ssh.util.SSHUtil;
-import org.glassfish.cluster.ssh.launcher.SSHLauncher;
-
-import com.sun.enterprise.universal.process.ProcessManager;
-import com.sun.enterprise.universal.process.ProcessManagerException;
 
 /**
  * Remote AdminCommand to create and ssh node.  This command is run only on DAS.
@@ -165,5 +151,20 @@ public class CreateNodeSshCommand extends CreateRemoteNodeCommand {
             sb.append('\n');
         }
         return sb.toString();
+    }
+    
+    /**
+     * Get list of password file entries
+     * @return List
+     */
+    @Override
+    protected List<String> getPasswords() {
+        List list = new ArrayList<String>();
+        list.add("AS_ADMIN_SSHPASSWORD=" + nodeUtils.sshL.expandPasswordAlias(remotePassword));
+
+        if (sshkeypassphrase != null) {
+            list.add("AS_ADMIN_SSHKEYPASSPHRASE=" + nodeUtils.sshL.expandPasswordAlias(sshkeypassphrase));
+        }
+        return list;
     }
 }

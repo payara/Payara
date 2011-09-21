@@ -104,6 +104,8 @@ public abstract class CreateRemoteNodeCommand implements AdminCommand {
     protected abstract void validate() throws CommandValidationException;
 
     protected abstract String getPasswordsForFile();
+    
+    protected abstract List<String> getPasswords();
 
     public final void executeInternal(AdminCommandContext context) {
         ActionReport report = context.getActionReport();
@@ -254,53 +256,29 @@ public abstract class CreateRemoteNodeCommand implements AdminCommand {
         int exit = -1;
         List<String> fullcommand = new ArrayList<String>();
         String installDir = nodes.getDefaultLocalNode().getInstallDirUnixStyle() + "/glassfish";
+        
         if (!StringUtils.ok(installDir)) {
             throw new IllegalArgumentException(Strings.get("create.node.ssh.no.installdir"));
         }
 
-        File asadmin = new File(SystemPropertyConstants.getAsAdminScriptLocation(installDir));
+        File asadmin = new File(SystemPropertyConstants.getAsAdminScriptLocation(installDir));      
         fullcommand.add(asadmin.getAbsolutePath());
-
-        BufferedWriter out = null;
-        File f = null;
-
+        
         //if password auth is used for creating node, use the same auth mechanism for
-        //install-node as well. The passwords are passed using a temporary password file
+        //install-node as well. The passwords are passed directly through input stream
+        List<String> pass = new ArrayList<String>();
         if (remotePassword != null) {
-            try {
-                f = new File(System.getProperty("java.io.tmpdir"), "pass.tmp");
-                out = new BufferedWriter(new FileWriter(f));
-                out.newLine();
-                out.write(getPasswordsForFile());
-                out.flush();
-            }
-            catch (IOException ioe) {
-                if (logger.isLoggable(Level.FINE)) {
-                    logger.fine("Failed to create the temporary password file: " + ioe.getMessage());
-                }
-                output.append(Strings.get("create.node.ssh.passfile.error"));
-                return 1;
-            }
-            finally {
-                try {
-                    if (out != null)
-                        out.close();
-                }
-                catch (final Exception ex) {
-                    if (logger.isLoggable(Level.FINE)) {
-                        logger.fine("Failed to close stream: " + ex.getMessage());
-                    }
-                }
-            }
-
             fullcommand.add("--passwordfile");
-            fullcommand.add(f.getAbsolutePath());
+            fullcommand.add("-");
+            pass = getPasswords();
         }
-
+        
         fullcommand.add("--interactive=false");
         fullcommand.addAll(cmdLine);
 
         ProcessManager pm = new ProcessManager(fullcommand);
+        if (!pass.isEmpty())
+            pm.setStdinLines(getPasswords());
 
         if (logger.isLoggable(Level.INFO)) {
             logger.info("Running command on DAS: " + commandListToString(fullcommand));
@@ -335,15 +313,6 @@ public abstract class CreateRemoteNodeCommand implements AdminCommand {
                     output.append(NL);
                 }
                 output.append(stderr);
-            }
-        }
-
-        if (f != null) {
-            boolean didDelete = f.delete();
-            if (!didDelete) {
-                if (logger.isLoggable(Level.WARNING)) {
-                    logger.log(Level.WARNING, Strings.get("node.ssh.passfile.delete.error", f.getPath()));
-                }
             }
         }
         return exit;

@@ -39,9 +39,10 @@
  */
 package com.sun.enterprise.v3.admin.cluster.dcom;
 
+import java.util.List;
+import java.util.ArrayList;
 import com.sun.enterprise.v3.admin.cluster.CreateRemoteNodeCommand;
 import com.sun.enterprise.v3.admin.cluster.NodeUtils;
-import java.util.List;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
 import org.jvnet.hk2.annotations.*;
@@ -123,5 +124,16 @@ public class CreateNodeDcom extends CreateRemoteNodeCommand {
     @Override
     protected String getPasswordsForFile() {
         return "AS_ADMIN_DCOMPASSWORD=" + dcompassword + "\n";
+    }
+    
+    /**
+     * Get list of password file entries
+     * @return List
+     */
+    @Override
+    protected List<String> getPasswords() {
+        List tokens = new ArrayList<String>();
+        tokens.add("AS_ADMIN_DCOMPASSWORD=" + dcompassword);
+        return tokens;
     }
 }
