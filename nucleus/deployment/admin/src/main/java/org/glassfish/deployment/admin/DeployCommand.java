@@ -203,6 +203,8 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
         ExtendedDeploymentContext deploymentContext = null;
         try {
 
+            deployment.validateSpecifiedTarget(target);
+
             ArchiveHandler archiveHandler = deployment.getArchiveHandler(archive, type);
             if (tracing!=null) {
                 tracing.addMark(DeploymentTracing.Mark.ARCHIVE_HANDLER_OBTAINED);

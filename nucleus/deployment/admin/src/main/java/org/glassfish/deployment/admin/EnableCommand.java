@@ -127,6 +127,8 @@ public class EnableCommand extends StateCommandParameters implements AdminComman
         final ActionReport report = context.getActionReport();
         final Logger logger = context.getLogger();
 
+        deployment.validateSpecifiedTarget(target);
+
         if (target == null) {
             target = deployment.getDefaultTarget(name(), OpsParams.Origin.load);
         }

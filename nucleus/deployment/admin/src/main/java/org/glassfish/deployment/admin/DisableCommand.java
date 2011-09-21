@@ -144,6 +144,8 @@ public class DisableCommand extends UndeployCommandParameters implements AdminCo
         final ActionReport report = context.getActionReport();
         final Logger logger = context.getLogger();
         
+        deployment.validateSpecifiedTarget(target);
+
         String appName = name();
 
         if (isundeploy) {

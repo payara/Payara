@@ -140,6 +140,9 @@ public class UndeployCommand extends UndeployCommandParameters implements AdminC
         
         ActionReport report = context.getActionReport();
         final Logger logger = context.getLogger();
+
+        deployment.validateSpecifiedTarget(target);
+
         /**
          * A little bit of dancing around has to be done, in case the
          * user passed the path to the original directory.

@@ -131,6 +131,8 @@ public class ApplicationLoaderService implements Startup, PreDestroy, PostConstr
 
     protected SystemApplications systemApplications;
 
+    protected Domain domain;
+
     @Inject(name= ServerEnvironment.DEFAULT_INSTANCE_NAME)
     Server server;
 
@@ -175,7 +177,7 @@ public class ApplicationLoaderService implements Startup, PreDestroy, PostConstr
         deploymentTracingEnabled = System.getProperty(
             "org.glassfish.deployment.trace");
 
-        Domain domain = habitat.getComponent(Domain.class);
+        domain = habitat.getComponent(Domain.class);
         systemApplications = domain.getSystemApplications();
         
         for (Application systemApp : systemApplications.getApplications()) {
@@ -353,7 +355,16 @@ public class ApplicationLoaderService implements Startup, PreDestroy, PostConstr
                     }
                     DeployCommandParameters deploymentParams =
                         app.getDeployParameters(appRef);
-                    deploymentParams.target = server.getName();
+                    if (domain.isAppReferencedByPaaSTarget(appName)) {
+                        if (server.isDas()) {
+                            // for loading PaaS application on DAS
+                            // we need to set the target as null
+                            // so OE recognizes it
+                            deploymentParams.target = null;
+                        }
+                    } else {
+                        deploymentParams.target = server.getName();
+                    }
                     deploymentParams.origin = DeployCommandParameters.Origin.load;
                     deploymentParams.command = DeployCommandParameters.Command.startup_server;
                     if (app.containsSnifferType(Application.OSGI_SNIFFER_TYPE)) {

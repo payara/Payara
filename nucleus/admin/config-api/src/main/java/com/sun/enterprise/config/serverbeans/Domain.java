@@ -419,6 +419,9 @@ public interface Domain extends ConfigBeanProxy, Injectable, PropertyBag, System
     boolean isAppEnabledInTarget(String appName, String target);
 
     @DuckTyped
+    boolean isAppReferencedByPaaSTarget(String appName);
+
+    @DuckTyped
     List<String> getAllReferencedTargetsForApplication(String appName);
 
     @DuckTyped
@@ -818,6 +821,19 @@ public interface Domain extends ConfigBeanProxy, Injectable, PropertyBag, System
                 }
             }
             return referencedTargets;
+        }
+
+        public static boolean isAppReferencedByPaaSTarget(Domain me, String appName) {
+            List<String> referencedTargets = me.getAllReferencedTargetsForApplication(appName);
+            for (String target : referencedTargets) {
+                Cluster cluster = me.getClusterNamed(target);
+                if (cluster != null) {
+                    if (cluster.isVirtual()) {
+                        return true;
+                    }
+                }
+            }
+            return false;
         }
 
         public static List<Application> getApplicationsInTarget(Domain me, String target) {

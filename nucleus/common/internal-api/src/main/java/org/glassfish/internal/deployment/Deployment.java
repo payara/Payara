@@ -234,6 +234,8 @@ public interface Deployment {
 
     public void validateUndeploymentTarget(String target, String name);
 
+    public void validateSpecifiedTarget(String target);
+
     public boolean isAppEnabled(Application app);
 
     public ApplicationInfo unload(ApplicationInfo appInfo,
