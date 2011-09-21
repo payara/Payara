@@ -70,7 +70,7 @@
   </resources>
   <servers>
     <server name="%%%SERVER_ID%%%" config-ref="%%%CONFIG_MODEL_NAME%%%">
-      <application-ref ref="paas-console" virtual-servers="server"></application-ref>
+      <application-ref ref="paas-console" virtual-servers="server" enabled="false" ></application-ref>
       <resource-ref ref="jdbc/__TimerPool" />
       <resource-ref ref="jdbc/__default" />
     </server>
