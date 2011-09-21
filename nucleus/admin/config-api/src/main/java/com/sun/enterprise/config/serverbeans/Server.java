@@ -536,6 +536,34 @@ public interface Server extends ConfigBeanProxy, Injectable, PropertyBag, Named,
                             "noSuchCluster", "Cluster {0} does not exist.", clusterName));
                 }
 
+                /*
+                * We are only setting this when the discovery uri list
+                * is present, implying that we are not using multicast.
+                */
+                if (ourCluster != null &&
+                    ourCluster.getProperty("GMS_DISCOVERY_URI_LIST") != null) {
+
+                    final String propName = "GMS_LISTENER_PORT-" +
+                        ourCluster.getName();
+
+                    /*
+                     * Currently all the instances will use the same port
+                     * as the DAS. When/if we move to allow more than one
+                     * instance/machine, the value here will need to be
+                     * calculated differently.
+                     */
+                    Config serverConf = domain.getConfigNamed("server-config");
+                    SystemProperty dasGmsPortProp =
+                        serverConf.getSystemProperty(propName);
+                    if (dasGmsPortProp != null) {
+                        SystemProperty gmsListenerPortProp =
+                            instance.createChild(SystemProperty.class);
+                        gmsListenerPortProp.setName(propName);
+                        gmsListenerPortProp.setValue(dasGmsPortProp.getValue());
+                        instance.getSystemProperty().add(gmsListenerPortProp);
+                    }
+                }
+
                 final String instanceName = instance.getName();
                 File configConfigDir = new File(env.getConfigDirPath(), ourCluster.getConfigRef());
                 File docroot = new File(configConfigDir, "docroot");
