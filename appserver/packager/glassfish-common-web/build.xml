@@ -58,7 +58,11 @@
        
        <unzip src="${appserver-base.zip}" 
               dest="target/stage/${install.dir.name}/glassfish"
-              overwrite="true"/>          
+              overwrite="true"/>
+
+       <mkdir dir="target/stage/${install.dir.name}/glassfish/modules/endorsed"/>
+
+       <move file="target/stage/${install.dir.name}/glassfish/modules/javax.annotation.jar" todir="target/stage/${install.dir.name}/glassfish/modules/endorsed" failonerror="false"/>          
 
        <mkdir dir="target/stage/${install.dir.name}/glassfish/modules/autostart"/>
 
