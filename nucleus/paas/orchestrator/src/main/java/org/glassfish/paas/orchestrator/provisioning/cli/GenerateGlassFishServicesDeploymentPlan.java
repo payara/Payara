@@ -227,7 +227,7 @@ public class GenerateGlassFishServicesDeploymentPlan implements AdminCommand {
                 String templateID = (String) sdMap.get("template-id");
                 TemplateIdentifier tid = new TemplateIdentifier();
                 tid.setId(templateID);
-                sd.setTemplateOrCharacteristics(templateID);
+                sd.setTemplateOrCharacteristics(tid);
             } else if (sdMap.get("characteristics") != null) {
                 HashMap characteristics = (HashMap) sdMap.get("characteristics");
                 Set keySet = characteristics.keySet();
