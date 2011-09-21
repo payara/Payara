@@ -36,11 +36,13 @@
             <div class="title headerPageTitle">Environments</div>
             <div class="subHeading">
                 <span>
-                    <!-- TODO -->
+                    The PaaS environment of an application determines the number and type of virtual machines to
+                    which the application is deployed. The environment can be defined in the optional glassfish-services.xml deployment
+                    descriptor, which is packaged with the application.
                 </span>
             </div>
             <br/>
-            <div class="subHeading">List of available environments:</div>
+            <div class="subHeading">Environments and Associated Applications:</div>
             <tr:table id="envs" var="envs" value="#{listEnvironmentsBean.envsAndApps}">
                 <tr:column headerText="Environment Name">
                     <a id="clusterName"  href="#{request.contextPath}/demo/environmentDetail.jsf?envName=#{envs.clusterName}" > #{envs.clusterName} </a>
