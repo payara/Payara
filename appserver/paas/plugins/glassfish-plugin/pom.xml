@@ -96,6 +96,11 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
+            <groupId>org.glassfish.deployment</groupId>
+            <artifactId>deployment-javaee-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.glassfish.virtualization</groupId>
             <artifactId>virt-core</artifactId>
             <version>${project.version}</version>

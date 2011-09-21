@@ -45,6 +45,7 @@ import com.sun.enterprise.deployment.archivist.ApplicationFactory;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.data.ApplicationRegistry;
+import org.glassfish.javaee.core.deployment.DolProvider;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceReference;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
@@ -68,6 +69,9 @@ public class GlassFishCloudArchiveProcessor {
     @Inject
     private ApplicationRegistry appRegistry;
 
+    @Inject
+    private DolProvider dolProvider;
+
     public Set<ServiceReference> getServiceReferences(
             ReadableArchive cloudArchive, String appName) {
         Set<ServiceReference> serviceReferences = new HashSet<ServiceReference>();
@@ -78,10 +82,11 @@ public class GlassFishCloudArchiveProcessor {
             if(appInfo != null){
                 application = appInfo.getMetaData(Application.class);
             }
-            //TODO : this will not work when the application has no-descriptor
-            //and components are defined via annotations.
+            //Needed in case of GUI's call for introspecting the services available in the archive.
+            //In such case, its not a real deployment and hence appInfo will be null
+            //Use the following API to get Application object.
             if(application == null){
-                application = applicationFactory.openArchive(cloudArchive.getURI());
+                application = dolProvider.processDeploymentMetaData(cloudArchive);
             }
 
             if(application == null){
