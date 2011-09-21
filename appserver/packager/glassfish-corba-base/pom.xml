@@ -127,7 +127,7 @@
              can be excluded during staging -->	
         <dependency>        
            <groupId>org.glassfish.packager</groupId>
-           <artifactId>glassfish-grizzly-full</artifactId>
+           <artifactId>nucleus</artifactId>
            <version>${project.version}</version>
            <classifier>artifacts</classifier>
 	   <type>properties</type>

@@ -55,7 +55,6 @@ pkg = {
     "depends"       : { 
                         "pkg:/glassfish-nucleus" : {"type" : "require" },
 			"pkg:/glassfish-corba-base" : {"type" : "require" },
-			"pkg:/glassfish-grizzly-full" : {"type" : "require" },
                       },
     "dirtrees"      : [ "glassfish" ],
     "licenses"      : {

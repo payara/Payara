@@ -99,24 +99,13 @@
         -->
         <dependency>
             <groupId>org.glassfish.grizzly</groupId>
-            <artifactId>grizzly-comet</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.grizzly</groupId>
-            <artifactId>grizzly-websockets</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.grizzly</groupId>
-	    <artifactId>grizzly-http-servlet</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.grizzly</groupId>
-	    <artifactId>grizzly-http-ajp</artifactId>
+            <artifactId>glassfish-grizzly-extra-all</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <!-- previous package - required for dependency graph calculation -->
         <dependency>
             <groupId>org.glassfish.packager</groupId>
-	    <artifactId>nucleus</artifactId>
+	    <artifactId>glassfish-management</artifactId>
 	    <version>${project.version}</version>
 	    <classifier>artifacts</classifier>
 	    <type>properties</type>

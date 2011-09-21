@@ -46,7 +46,7 @@
 
 <target name="create.package">
 	  <property name="package.name" value="glassfish-corba-base"/> 
-          <property name="previous.package.name" value="glassfish-grizzly-full" />
+          <property name="previous.package.name" value="nucleus" />
         
        <antcall target="filter-module-artifacts"/>
        

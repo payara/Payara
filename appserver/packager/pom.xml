@@ -75,7 +75,7 @@
     <properties>
         <install.dir.name>glassfish3</install.dir.name>
         <findbugs.skip>true</findbugs.skip>
-        <packager.artifact.excludes>stax-api,stax,junit,jtype,tiger-types,servlet-api,jstl-api,el-api,jsp-api,org.osgi.core,org.osgi.compendium,concurrent,grizzly-utils,grizzly-lzma,gmbal-api-only,javax.servlet</packager.artifact.excludes>
+        <packager.artifact.excludes>stax-api,stax,junit,jtype,tiger-types,servlet-api,jstl-api,el-api,jsp-api,org.osgi.core,org.osgi.compendium,concurrent,grizzly-utils,grizzly-framework,grizzly-rcm,grizzly-portunif,grizzly-http,grizzly-http-server,grizzly-config,grizzly-comet,grizzly-websockets,grizzly-http-servlet,grizzly-http-ajp,glassfish-grizzly-container,grizzly-lzma,gmbal-api-only,javax.servlet</packager.artifact.excludes>
     </properties>
 
     <modules>
@@ -86,7 +86,6 @@
 	<module>glassfish-hk2</module>
 	<module>glassfish-grizzly</module>
         <module>glassfish-nucleus</module>
-        <module>glassfish-grizzly-full</module>
 	<module>glassfish-corba-base</module>
 	<module>glassfish-common-tmp</module>
 	<module>shoal</module>
@@ -94,6 +93,7 @@
 	<module>glassfish-javahelp</module>
 	<module>glassfish-registration</module>
 	<module>glassfish-management</module>
+        <module>glassfish-grizzly-full</module>
         <module>glassfish-common-web</module>
         <module>glassfish-ha</module>
 	<module>glassfish-jca</module>

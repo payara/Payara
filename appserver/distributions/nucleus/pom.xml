@@ -171,14 +171,7 @@
             <type>zip</type>
         </dependency>
 
-        <!-- additional grizzly modules package -->
-        <dependency>
-            <groupId>org.glassfish.packager</groupId>
-            <artifactId>glassfish-grizzly-full</artifactId>
-            <version>${project.version}</version>
-            <type>zip</type>
-        </dependency>
-
+ 
 	<!-- all previous web-nb distribution packages -->
         <dependency>
             <groupId>org.glassfish.packager</groupId>

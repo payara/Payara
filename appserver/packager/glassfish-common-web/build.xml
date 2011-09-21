@@ -46,7 +46,7 @@
 
  <target name="create.package">
 	 <property name="package.name" value="glassfish-common-web"/> 
-         <property name="previous.package.name" value="glassfish-management" />
+         <property name="previous.package.name" value="glassfish-grizzly-full" />
        
        <antcall target="filter-module-artifacts"/>
         

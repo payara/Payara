@@ -100,24 +100,10 @@
         -->
         <dependency>
             <groupId>org.glassfish.grizzly</groupId>
-            <artifactId>grizzly-framework</artifactId>
+            <artifactId>nucleus-grizzly-all</artifactId>
+            <version>${project.version}</version>
         </dependency>
-        <dependency>
-            <groupId>org.glassfish.grizzly</groupId>
-            <artifactId>grizzly-portunif</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.grizzly</groupId>
-            <artifactId>grizzly-http</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.grizzly</groupId>
-            <artifactId>grizzly-rcm</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.grizzly</groupId>
-            <artifactId>grizzly-http-server</artifactId>
-        </dependency>
+       
         <!-- previous package - required for dependency graph calculation -->
         <dependency>
             <groupId>org.glassfish.packager</groupId>
