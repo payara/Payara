@@ -358,7 +358,8 @@ public class GlassFishPlugin implements Plugin<JavaEEServiceType> {
                                   ProvisionedService serviceProvider, boolean beforeDeployment, DeploymentContext dc) {
 //        if (provisionedSvc instanceof DerbyProvisionedService) {
         if (svcRef.getServiceRefType().equals("javax.sql.DataSource") &&
-	    serviceProvider.getServiceType().toString().equals("Database")) {
+	        serviceProvider.getServiceType().toString().equals("Database")  &&
+            serviceConsumer.getServiceType().toString().equals("JavaEE")) {
 
             if (!beforeDeployment) return;
 
@@ -471,8 +472,9 @@ public class GlassFishPlugin implements Plugin<JavaEEServiceType> {
                 //}
             //}
         } else {
-            //TODO temporary workaround. What if multiple resource-refs are present ?
-            if (svcRef.getServiceRefType().equals("javax.sql.DataSource")) {
+            if (svcRef.getServiceRefType().equals("javax.sql.DataSource") &&
+                serviceProvider.getServiceType().toString().equals("Database") &&
+                serviceConsumer.getServiceType().toString().equals("JavaEE")) {
                 //if (serviceProvider instanceof GlassFishProvisionedService) {
                     GlassFishProvisionedService glassfishProvisionedService = (GlassFishProvisionedService) serviceConsumer;
                     String serviceName = glassfishProvisionedService.getServiceDescription().getName();
