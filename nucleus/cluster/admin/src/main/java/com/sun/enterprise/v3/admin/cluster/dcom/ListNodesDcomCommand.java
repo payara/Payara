@@ -39,7 +39,11 @@
  */
 package com.sun.enterprise.v3.admin.cluster.dcom;
 
+import com.sun.enterprise.config.serverbeans.Nodes;
+import com.sun.enterprise.config.serverbeans.Servers;
+import com.sun.enterprise.v3.admin.cluster.ListNodesHelper;
 import org.glassfish.api.ActionReport;
+import org.glassfish.api.ActionReport.ExitCode;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
 import org.jvnet.hk2.annotations.*;
@@ -56,18 +60,23 @@ import org.jvnet.hk2.component.PerLookup;
 @CommandLock(CommandLock.LockType.NONE)
 @ExecuteOn({RuntimeType.DAS})
 public class ListNodesDcomCommand implements AdminCommand {
+    @Inject
+    Servers servers;
+    @Inject
+    private Nodes nodes;
     @Param(optional = true, defaultValue = "false", name = "long", shortName = "l")
     private boolean long_opt;
     @Param(optional = true)
     private boolean terse;
     private ActionReport report;
-    Logger logger;
 
     @Override
     public void execute(AdminCommandContext context) {
         report = context.getActionReport();
-        logger = context.getLogger();
-        report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-        report.setMessage("list-nodes-dcom is under construction and not yet available for use.");
+        ListNodesHelper lnh = new ListNodesHelper(context.getLogger(), servers,
+                nodes, "DCOM", long_opt, terse);
+        String nodeList = lnh.getNodeList();
+        report.setMessage(nodeList);
+        report.setActionExitCode(ExitCode.SUCCESS);
     }
 }
