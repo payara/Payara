@@ -37,56 +37,57 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
 package org.glassfish.paas.orchestrator.provisioning.cli;
 
 import com.sun.enterprise.admin.util.ColumnFormatter;
 import com.sun.enterprise.config.serverbeans.Domain;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
-import org.glassfish.api.admin.AdminCommand;
-import org.glassfish.api.admin.AdminCommandContext;
-import org.glassfish.api.admin.ExecuteOn;
-import org.glassfish.api.admin.RuntimeType;
+import org.glassfish.api.admin.*;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.paas.orchestrator.config.*;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.component.PerLookup;
-import org.glassfish.api.admin.RestEndpoint;
-import org.glassfish.api.admin.RestEndpoint.OpType;
-import org.glassfish.api.admin.RestEndpoints;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.TreeSet;
 
 @org.jvnet.hk2.annotations.Service(name = "list-services")
 @Scoped(PerLookup.class)
 @ExecuteOn(RuntimeType.DAS)
 @TargetType(value = {CommandTarget.DAS})
 @RestEndpoints({
-    @RestEndpoint(configBean=Domain.class, opType=OpType.GET, path="list-services", description="List Services")
+    @RestEndpoint(configBean = Domain.class, opType = RestEndpoint.OpType.GET, path = "list-services", description = "List Services")
 })
 public class ListServices implements AdminCommand {
 
     @Param(name = "appname", optional = true)
     private String appName;
-
-    @Param(name="type", optional=true)
+    @Param(name = "type", optional = true)
     private String type;
-
-    @Param(name="scope", optional=true, acceptableValues = SCOPE_EXTERNAL+","+SCOPE_SHARED+","+SCOPE_APPLICATION)
+    @Param(name = "scope", optional = true, acceptableValues = SCOPE_EXTERNAL + "," + SCOPE_SHARED + "," + SCOPE_APPLICATION)
     private String scope;
-
+    @Param(name = "terse", optional = true, shortName = "t", defaultValue = "true")
+    private boolean terse;
+    @Param(name = "header", optional = true, shortName = "h", defaultValue = "false")
+    private boolean header;
+    @Param(name = "output", optional = true, shortName = "o")
+    private String output;
+    @Param(name = "key", optional = true)
+    private String key;
     @Inject
     private Domain domain;
-
     @Inject
     private ServiceUtil serviceUtil;
-
     public static final String SCOPE_EXTERNAL = "external";
     public static final String SCOPE_SHARED = "shared";
     public static final String SCOPE_APPLICATION = "application";
@@ -110,20 +111,20 @@ public class ListServices implements AdminCommand {
                     if (appName.equals(((ApplicationScopedService) service).getApplicationName())) {
                         if (type != null) {
                             if (service.getType().equals(type)) {
-                                if(scope != null){
-                                    if(scope.equals(getServiceScope(service))){
+                                if (scope != null) {
+                                    if (scope.equals(getServiceScope(service))) {
                                         matchedServices.add(service);
                                     }
-                                }else{
+                                } else {
                                     matchedServices.add(service);
                                 }
                             }
                         } else {
-                            if(scope != null){
-                                if(scope.equals(getServiceScope(service))){
+                            if (scope != null) {
+                                if (scope.equals(getServiceScope(service))) {
                                     matchedServices.add(service);
                                 }
-                            }else{
+                            } else {
                                 matchedServices.add(service);
                             }
                         }
@@ -135,23 +136,23 @@ public class ListServices implements AdminCommand {
                 if (appName.equals(serviceRef.getApplicationName())) {
                     for (Service service : services.getServices()) {
                         if (service.getServiceName().equals(serviceRef.getServiceName())) {
-                            if(type != null){
-                                if(service.getType().equals(type)){
-                                    if(scope != null){
-                                        if(scope.equals(getServiceScope(service))){
+                            if (type != null) {
+                                if (service.getType().equals(type)) {
+                                    if (scope != null) {
+                                        if (scope.equals(getServiceScope(service))) {
                                             matchedServices.add(service);
                                         }
-                                    }else{
+                                    } else {
                                         matchedServices.add(service);
                                         break;
                                     }
                                 }
-                            }else{
-                                if(scope != null){
-                                    if(scope.equals(getServiceScope(service))){
+                            } else {
+                                if (scope != null) {
+                                    if (scope.equals(getServiceScope(service))) {
                                         matchedServices.add(service);
                                         break;
-                                    }else{
+                                    } else {
                                         matchedServices.add(service);
                                         break;
                                     }
@@ -161,7 +162,7 @@ public class ListServices implements AdminCommand {
                     }
                 }
             }
-        }else{
+        } else {
             if (scope != null && scope.equals(SCOPE_APPLICATION)) {
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                 report.setMessage("Need application name in order to list application-scoped services");
@@ -169,22 +170,22 @@ public class ListServices implements AdminCommand {
             }
 
             for (Service service : services.getServices()) {
-                if(type != null){
-                    if(service.getType().equals(type)){
-                        if(scope != null){
-                            if(scope.equals(getServiceScope(service))){
+                if (type != null) {
+                    if (service.getType().equals(type)) {
+                        if (scope != null) {
+                            if (scope.equals(getServiceScope(service))) {
                                 matchedServices.add(service);
                             }
-                        }else{
+                        } else {
                             matchedServices.add(service);
                         }
                     }
-                }else{
-                    if(scope != null){
-                        if(scope.equals(getServiceScope(service))){
+                } else {
+                    if (scope != null) {
+                        if (scope.equals(getServiceScope(service))) {
                             matchedServices.add(service);
                         }
-                    }else{
+                    } else {
                         matchedServices.add(service);
                     }
                 }
@@ -192,25 +193,64 @@ public class ListServices implements AdminCommand {
         }
 
         Properties extraProperties = new Properties();
-        extraProperties.put("list", new ArrayList<Map<String,String>>());
+        extraProperties.put("list", new ArrayList<Map<String, String>>());
 
         if (matchedServices.size() > 0) {
 
-            String headings[] = new String[]{"SERVICE-NAME", "IP-ADDRESS", "VM-ID", "SERVER-TYPE", "STATE", "SCOPE"};
-            if(type != null){
-                if(scope != null){
-                    headings = new String[]{"SERVICE-NAME", "IP-ADDRESS", "VM-ID", "STATE"};
-                }else{
-                    headings = new String[]{"SERVICE-NAME", "IP-ADDRESS", "VM-ID", "STATE", "SCOPE"};
+            String headings[] = new String[]{"", "", "", "", "", ""};
+            if (terse) {
+                if (header) {
+                    headings = new String[]{"SERVICE-NAME", "IP-ADDRESS", "VM-ID", "SERVER-TYPE", "STATE", "SCOPE"};
+                    if (type != null) {
+                        if (scope != null) {
+                            headings = new String[]{"SERVICE-NAME", "IP-ADDRESS", "VM-ID", "STATE"};
+                        } else {
+                            headings = new String[]{"SERVICE-NAME", "IP-ADDRESS", "VM-ID", "STATE", "SCOPE"};
+                        }
+                    } else {
+                        if (scope != null) {
+                            headings = new String[]{"SERVICE-NAME", "IP-ADDRESS", "VM-ID", "SERVER-TYPE", "STATE"};
+                        }
+                    }
+
                 }
-            }else{
-                if(scope != null){
-                    headings = new String[]{"SERVICE-NAME", "IP-ADDRESS", "VM-ID", "SERVER-TYPE", "STATE"};
+
+            } else if (output != null) {
+                String[] outputheaders = output.split("[,]");
+                int count = 0;
+                for (String s : outputheaders) {
+                    s = s.toUpperCase();
+                    headings[count] = s;
+                    count++;
                 }
+            } else {
+                headings = new String[]{"SERVICE-NAME", "IP-ADDRESS", "VM-ID", "SERVER-TYPE", "STATE", "SCOPE"};
+                if (type != null) {
+                    if (scope != null) {
+                        headings = new String[]{"SERVICE-NAME", "IP-ADDRESS", "VM-ID", "STATE"};
+                    } else {
+                        headings = new String[]{"SERVICE-NAME", "IP-ADDRESS", "VM-ID", "STATE", "SCOPE"};
+                    }
+                } else {
+                    if (scope != null) {
+                        headings = new String[]{"SERVICE-NAME", "IP-ADDRESS", "VM-ID", "SERVER-TYPE", "STATE"};
+                    }
+                }
+
+
             }
+
             ColumnFormatter cf = new ColumnFormatter(headings);
 
             boolean foundRows = false;
+
+            HashMap<String, String> name_map = new HashMap<String, String>();
+            HashMap<String, String> ip_map = new HashMap<String, String>();
+            HashMap<String, String> vm_map = new HashMap<String, String>();
+            HashMap<String, String> type_map = new HashMap<String, String>();
+            HashMap<String, String> state_map = new HashMap<String, String>();
+            HashMap<String, String> scope_map = new HashMap<String, String>();
+
             for (Service service : matchedServices) {
                 foundRows = true;
                 String cloudName = service.getServiceName();
@@ -237,33 +277,100 @@ public class ListServices implements AdminCommand {
                     serviceType = SCOPE_EXTERNAL;
                 }
 
-                if(type == null){
-                    if(scope == null){
-                        cf.addRow(new Object[]{cloudName, ipAddress, instanceID, serverType, state, serviceType});
-                    }else{
-                        if(serviceType.equals(scope)){
-                            cf.addRow(new Object[]{cloudName, ipAddress, instanceID, serverType, state});
+                name_map.put(cloudName, cloudName);
+                ip_map.put(cloudName, ipAddress);
+                vm_map.put(cloudName, instanceID);
+                type_map.put(cloudName, serverType);
+                state_map.put(cloudName, state);
+                scope_map.put(cloudName, serviceType);
+
+                if (key == null) {
+                    if (output != null) {
+                        String outputstring[] = new String[]{"", "", "", "", "", ""};
+                        int count = 0;
+                        for (String s : headings) {
+                            if (s.equals("SERVICE-NAME")) {
+                                outputstring[count] = cloudName;
+                            } else if (s.equals("IP-ADDRESS")) {
+                                outputstring[count] = ipAddress;
+                            } else if (s.equals("VM-ID")) {
+                                outputstring[count] = instanceID;
+                            } else if (s.equals("SERVER-TYPE")) {
+                                outputstring[count] = serverType;
+                            } else if (s.equals("STATE")) {
+                                outputstring[count] = state;
+                            } else if (s.equals("SCOPE")) {
+                                outputstring[count] = serviceType;
+                            }
+                            count++;
                         }
-                    }
-                }else{
-                    if(scope == null){
-                        cf.addRow(new Object[]{cloudName, ipAddress, instanceID, state, serviceType});
-                    }else{
-                        if(serviceType.equals(scope)){
-                            cf.addRow(new Object[]{cloudName, ipAddress, instanceID, state});
+                        cf.addRow(outputstring);
+                    } else if (type == null) {
+                        if (scope == null) {
+                            cf.addRow(new Object[]{cloudName, ipAddress, instanceID, serverType, state, serviceType});
+                        } else {
+                            if (serviceType.equals(scope)) {
+                                cf.addRow(new Object[]{cloudName, ipAddress, instanceID, serverType, state});
+                            }
+                        }
+                    } else {
+                        if (scope == null) {
+                            cf.addRow(new Object[]{cloudName, ipAddress, instanceID, state, serviceType});
+                        } else {
+                            if (serviceType.equals(scope)) {
+                                cf.addRow(new Object[]{cloudName, ipAddress, instanceID, state});
+                            }
                         }
                     }
                 }
             }
 
+            if (key != null) {
+                if (key.equals("service-name")) {
+                    name_map = sortHashMap(name_map);
+                    for (String e : name_map.keySet()) {
+                        cf.addRow(new Object[]{name_map.get(e), ip_map.get(e), vm_map.get(e), type_map.get(e), state_map.get(e), scope_map.get(e)});
+                    }
+                } else if (key.equals("ip-address")) {
+                    ip_map = sortHashMap(ip_map);
+
+                    for (String e : ip_map.keySet()) {
+                        cf.addRow(new Object[]{name_map.get(e), ip_map.get(e), vm_map.get(e), type_map.get(e), state_map.get(e), scope_map.get(e)});
+                    }
+                } else if (key.equals("vm-id")) {
+                    vm_map = sortHashMap(vm_map);
+
+                    for (String e : vm_map.keySet()) {
+                        cf.addRow(new Object[]{name_map.get(e), ip_map.get(e), vm_map.get(e), type_map.get(e), state_map.get(e), scope_map.get(e)});
+                    }
+                } else if (key.equals("server-type")) {
+                    type_map = sortHashMap(type_map);
+
+                    for (String e : type_map.keySet()) {
+                        cf.addRow(new Object[]{name_map.get(e), ip_map.get(e), vm_map.get(e), type_map.get(e), state_map.get(e), scope_map.get(e)});
+                    }
+                } else if (key.equals("state")) {
+                    state_map = sortHashMap(state_map);
+
+                    for (String e : state_map.keySet()) {
+                        cf.addRow(new Object[]{name_map.get(e), ip_map.get(e), vm_map.get(e), type_map.get(e), state_map.get(e), scope_map.get(e)});
+                    }
+                } else if (key.equals("scope")) {
+                    scope_map = sortHashMap(scope_map);
+
+                    for (String e : scope_map.keySet()) {
+                       cf.addRow(new Object[]{name_map.get(e), ip_map.get(e), vm_map.get(e), type_map.get(e), state_map.get(e), scope_map.get(e)});
+                    }
+                }
+            }
 
             if (foundRows) {
                 report.setMessage(cf.toString());
                 extraProperties.put("list", cf.getContent());
-            } else {
+            } else if (header = true) {
                 report.setMessage("Nothing to list.");
             }
-        } else {
+        } else if (header = true){
             report.setMessage("Nothing to list.");
         }
 
@@ -272,15 +379,48 @@ public class ListServices implements AdminCommand {
         report.setActionExitCode(ec);
     }
 
-    private String getServiceScope(Service service){
+    private String getServiceScope(Service service) {
         String scope = null;
-        if(service instanceof ApplicationScopedService){
+        if (service instanceof ApplicationScopedService) {
             scope = SCOPE_APPLICATION;
-        }else if(service instanceof SharedService){
+        } else if (service instanceof SharedService) {
             scope = SCOPE_SHARED;
-        }else if(service instanceof ExternalService){
+        } else if (service instanceof ExternalService) {
             scope = SCOPE_EXTERNAL;
         }
         return scope;
     }
+
+ 
+    public LinkedHashMap sortHashMap(HashMap passedMap) {
+    List mapKeys = new ArrayList(passedMap.keySet());
+    List mapValues = new ArrayList(passedMap.values());
+    Collections.sort(mapValues);
+    Collections.sort(mapKeys);
+        
+    LinkedHashMap sortedMap = 
+        new LinkedHashMap();
+    
+    Iterator valueIt = mapValues.iterator();
+    while (valueIt.hasNext()) {
+        Object val = valueIt.next();
+        Iterator keyIt = mapKeys.iterator();
+        
+        while (keyIt.hasNext()) {
+            Object key = keyIt.next();
+            String comp1 = passedMap.get(key).toString();
+            String comp2 = val.toString();
+            
+            if (comp1.equals(comp2)){
+                passedMap.remove(key);
+                mapKeys.remove(key);
+                sortedMap.put((String)key, (String)val);
+                break;
+            }
+
+        }
+
+    }
+    return sortedMap;
+}
 }
