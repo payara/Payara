@@ -45,7 +45,6 @@ import com.sun.enterprise.config.serverbeans.customvalidators.NotDuplicateTarget
 import com.sun.enterprise.config.serverbeans.customvalidators.ConfigRefConstraint;
 import com.sun.enterprise.config.serverbeans.customvalidators.ConfigRefValidator;
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.enterprise.util.i18n.StringManager;
 import com.sun.enterprise.util.io.FileUtils;
 import com.sun.logging.LogDomains;
 import java.io.*;
@@ -56,9 +55,6 @@ import org.glassfish.api.admin.*;
 import org.glassfish.config.support.*;
 import static org.glassfish.config.support.Constants.NAME_SERVER_REGEX;
 
-import com.sun.enterprise.config.serverbeans.BindableResource;
-import com.sun.enterprise.config.serverbeans.ResourceRef;
-import org.glassfish.hk2.Services;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
@@ -72,8 +68,6 @@ import org.glassfish.api.admin.config.ReferenceContainer;
 // import org.glassfish.virtualization.util.RuntimeContext;
 
 import java.beans.PropertyVetoException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.logging.Level;
@@ -408,6 +402,9 @@ public interface Cluster extends ConfigBeanProxy, Injectable, PropertyBag, Named
     boolean isInstance();
 
     @DuckTyped
+    boolean isVirtual();
+
+    @DuckTyped
     ApplicationRef getApplicationRef(String appName);
 
     @DuckTyped
@@ -434,8 +431,12 @@ public interface Cluster extends ConfigBeanProxy, Injectable, PropertyBag, Named
         public static boolean isInstance(Cluster me) { return false; }
         public static boolean isDas(Cluster me) { return false; }
 
-            public static String getReference(Cluster cluster) {
+        public static String getReference(Cluster cluster) {
             return cluster.getConfigRef();
+        }
+
+        public static boolean isVirtual(Cluster me) {
+            return !me.getExtensionsByType(VirtualMachineExtension.class).isEmpty();
         }
 
         public static List<Server> getInstances(Cluster cluster) {

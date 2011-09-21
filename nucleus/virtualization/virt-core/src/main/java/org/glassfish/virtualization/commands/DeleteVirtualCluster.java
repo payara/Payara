@@ -101,6 +101,10 @@ public class DeleteVirtualCluster implements AdminCommand {
             context.getActionReport().failure(RuntimeContext.logger, "No cluster named " + name);
             return;
         }
+        if (!cluster.isVirtual()) {
+            context.getActionReport().failure(RuntimeContext.logger, "Cluster is not a virtual cluster");
+            return;
+        }
         List<Future> deletions = new ArrayList<Future>();
         try {
             VirtualCluster virtualCluster = virtualClusters.byName(name);

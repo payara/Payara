@@ -42,6 +42,7 @@ package org.glassfish.virtualization.config;
 
 import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.config.serverbeans.ClusterExtension;
+import com.sun.enterprise.config.serverbeans.VirtualMachineExtension;
 import org.glassfish.api.admin.AdminCommandLock;
 import org.glassfish.api.admin.CommandLock;
 import org.glassfish.api.admin.config.Named;
@@ -58,7 +59,7 @@ import java.util.concurrent.locks.Lock;
  * @author Jerome Dochez
  */
 @Configured
-public interface VirtualMachineConfig extends Named, ConfigBeanProxy, ClusterExtension {
+public interface VirtualMachineConfig extends Named, ConfigBeanProxy, VirtualMachineExtension {
 
     @Attribute(reference = true)
     Template getTemplate();
