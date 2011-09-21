@@ -62,7 +62,7 @@ import org.glassfish.api.admin.RestEndpoints;
 @RestEndpoints({ @RestEndpoint(configBean = ElasticServices.class, opType = OpType.POST, path = "create-memory-alert", description = "Create memory alert") })
 public class CreateMemoryAlert implements AdminCommand{
 
-    @Inject
+    @Inject (optional = true)
     ElasticServices elasticServices;
 
     @Inject
@@ -88,6 +88,14 @@ public class CreateMemoryAlert implements AdminCommand{
         ActionReport report = context.getActionReport();
         Logger logger= context.logger;
 
+        if (elasticServices == null)   {
+            //service doesn't exist
+            String msg = Strings.get("elasticity.not.enabled");
+            logger.warning(msg);
+            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            report.setMessage(msg);
+            return;
+        }
         ElasticService elasticService= elasticServices.getElasticService(servicename);
         if (elasticService == null) {
             //service doesn't exist

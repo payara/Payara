@@ -66,7 +66,7 @@ import org.glassfish.api.admin.RestEndpoints;
 @RestEndpoints({ @RestEndpoint(configBean = ElasticService.class, opType = OpType.POST, path = "configure-elastic-service-limits", description = "Configure Elastic Service limits") })
 public class ConfigureElasticServiceLimits implements AdminCommand{
 
-    @Inject
+    @Inject (optional = true)
     ElasticServices elasticServices;
 
     @Inject
@@ -89,6 +89,14 @@ public class ConfigureElasticServiceLimits implements AdminCommand{
         ActionReport report = context.getActionReport();
         Logger logger= context.logger;
 
+        if (elasticServices == null)   {
+            //service doesn't exist
+            String msg = Strings.get("elasticity.not.enabled");
+            logger.warning(msg);
+            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            report.setMessage(msg);
+            return;
+        }
         ElasticService elasticService= elasticServices.getElasticService(servicename);
         if (elasticService == null) {
             //service doesn't exist

@@ -14,6 +14,22 @@ public class ElasticMessage
 
     private String serviceName;
 
+    @Override
+    public String toString() {
+        return "ElasticMessage{" +
+                "sourceMemberName='" + sourceMemberName + '\'' +
+                ", targetMemberName='" + targetMemberName + '\'' +
+                ", serviceName='" + serviceName + '\'' +
+                ", subComponentName='" + subComponentName + '\'' +
+                ", messageId='" + messageId + '\'' +
+                ", inResponseToMessageId='" + inResponseToMessageId + '\'' +
+                ", isResponseMessage=" + isResponseMessage +
+                ", responseRequired=" + responseRequired +
+                ", data=" + data +
+                ", exception=" + exception +
+                '}';
+    }
+
     private String subComponentName;
 
     private String messageId;

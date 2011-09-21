@@ -74,7 +74,7 @@ import org.glassfish.api.admin.RestEndpoints;
 @RestEndpoints({ @RestEndpoint(configBean = AlertConfig.class, opType = OpType.POST, path = "create-alert", description = "Create alert") })
 public class CreateAlertCommand implements AdminCommand {
 
-  @Inject
+  @Inject(optional = true)
   ElasticServices elasticServices;
 
   @Inject
@@ -106,6 +106,14 @@ public class CreateAlertCommand implements AdminCommand {
         ActionReport report = context.getActionReport();
         Logger logger= context.logger;
 
+        if (elasticServices == null)   {
+            //service doesn't exist
+            String msg = Strings.get("elasticity.not.enabled", servicename);
+            logger.warning(msg);
+            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            report.setMessage(msg);
+            return;
+        }
         ElasticService elasticService= elasticServices.getElasticService(servicename);
         if (elasticService == null) {
             //service doesn't exist

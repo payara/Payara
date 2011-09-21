@@ -70,7 +70,7 @@ import java.util.logging.Logger;
 @ExecuteOn({RuntimeType.DAS})
 @RestEndpoints({ @RestEndpoint(configBean = AlertConfig.class, opType = OpType.POST, path = "add-alert-action", description = "Add alert action") })
 public class AddAlertAction implements AdminCommand  {
-    @Inject
+    @Inject (optional =true)
     ElasticServices elasticServices;
 
      @Inject
@@ -92,6 +92,15 @@ public class AddAlertAction implements AdminCommand  {
     public void execute(AdminCommandContext context) {
         ActionReport report = context.getActionReport();
         Logger logger= context.logger;
+
+        if (elasticServices == null)   {
+            //service doesn't exist
+            String msg = Strings.get("elasticity.not.enabled");
+            logger.warning(msg);
+            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            report.setMessage(msg);
+            return;
+        }
 
         ElasticService elasticService= elasticServices.getElasticService(servicename);
         if (elasticService == null) {

@@ -41,6 +41,7 @@ package org.glassfish.elasticity.engine.commands;
 
 import java.util.logging.Level;
 
+import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
@@ -55,6 +56,8 @@ import org.jvnet.hk2.config.*;
 import org.glassfish.elasticity.config.serverbeans.ElasticServices;
 import org.glassfish.elasticity.config.serverbeans.ElasticService;
 import java.beans.PropertyVetoException;
+import java.util.logging.Logger;
+
 import com.sun.enterprise.config.serverbeans.Domain;
 
 /**
@@ -71,7 +74,7 @@ public class EnableAutoScaling
 	@Inject
 	EngineUtil util;
 
-    @Inject
+    @Inject (optional = true)
     ElasticServices elasticServices;
 
     @Inject
@@ -85,6 +88,17 @@ public class EnableAutoScaling
 	
     public void execute(AdminCommandContext context) {
     	ElasticServiceContainer service = elasticServiceManager.getElasticServiceContainer(name);
+        ActionReport report = context.getActionReport();
+        Logger logger= context.logger;
+
+         if (elasticServices == null)   {
+            //service doesn't exist
+            String msg = Strings.get("elasticity.not.enabled");
+            logger.warning(msg);
+            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            report.setMessage(msg);
+            return;
+        }
         ElasticService elasticService = elasticServices.getElasticService(name);
     	if (service != null && elasticService != null) {
             try {

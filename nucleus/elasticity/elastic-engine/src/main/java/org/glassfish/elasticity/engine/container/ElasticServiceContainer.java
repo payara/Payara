@@ -227,7 +227,7 @@ public class ElasticServiceContainer {
 
     public void addAlert(AlertConfig alertConfig) {
         try {
-            logger.log(Level.FINE, "Creating Alert[" + service.getName() + "]: " + alertConfig.getName());
+            logger.log(Level.INFO, "Creating Alert[" + service.getName() + "]: " + alertConfig.getName());
 
             String sch = alertConfig.getSchedule().trim();
             long frequencyInSeconds = getFrequencyOfAlertExecutionInSeconds(sch);
@@ -239,7 +239,7 @@ public class ElasticServiceContainer {
                     threadPool.scheduleAtFixedRate(alertCtx, frequencyInSeconds, frequencyInSeconds, TimeUnit.SECONDS);
             alertCtx.setFuture(future);
             alerts.put(alertConfig.getName(), alertCtx);
-            logger.log(Level.FINE, "SCHEDULED Alert[name=" + alertName + "; schedule=" + sch
+            logger.log(Level.INFO, "SCHEDULED Alert[name=" + alertName + "; schedule=" + sch
                     + "; expression=" + alertConfig.getExpression() + "; will be executed every= " + frequencyInSeconds);
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -311,16 +311,16 @@ public class ElasticServiceContainer {
 
     public synchronized void scaleUp() {
         if (getCurrentMemberCount() < service.getMax()) {
-            if (logger.isLoggable(Level.FINE)) {
-                logger.log(Level.FINE, "scaleUp[" + service.getName() + ": min=" + service.getMin()
+            if (logger.isLoggable(Level.INFO)) {
+                logger.log(Level.INFO, "scaleUp[" + service.getName() + ": min=" + service.getMin()
                     + "; max=" +service.getMax() + "; current=" + getCurrentMemberCount() + "]: Invoking orchestrator.scaleService("
                     + service.getName() + ", " + service.getName() + ", 1, null)");
             }
 
             orchestrator.scaleService(service.getName(), service.getName(), 1, null);
         } else {
-            if (logger.isLoggable(Level.FINE)) {
-               logger.log(Level.FINE, "scaleUp[" + service.getName() + ": min=" + service.getMin()
+            if (logger.isLoggable(Level.INFO)) {
+               logger.log(Level.INFO, "scaleUp[" + service.getName() + ": min=" + service.getMin()
                 + "; max=" + service.getMax() + "; current=" + getCurrentMemberCount() + "]:  Already at max instances ( = " + service.getMax() + " )");
             }
         }
@@ -329,15 +329,15 @@ public class ElasticServiceContainer {
     public synchronized void scaleDown() {
 
         if (getCurrentMemberCount() > service.getMin()) {
-            if (logger.isLoggable(Level.FINE)) {
-                logger.log(Level.FINE, "scaleDown[" + service.getName() + ": min=" + service.getMin()
+            if (logger.isLoggable(Level.INFO)) {
+                logger.log(Level.INFO, "scaleDown[" + service.getName() + ": min=" + service.getMin()
                     + "; max=" +service.getMax() + "; current=" + getCurrentMemberCount() + "]: Invoking orchestrator.scaleService("
                     + service.getName() + ", " + service.getName() + ", -1, null)");
             }
             orchestrator.scaleService(service.getName(), service.getName(), -1, null);
         } else {
-            if (logger.isLoggable(Level.FINE)) {
-                logger.log(Level.FINE, "scaleDown[" + service.getName() + ": min=" + service.getMin()
+            if (logger.isLoggable(Level.INFO)) {
+                logger.log(Level.INFO, "scaleDown[" + service.getName() + ": min=" + service.getMin()
                     + "; max=" +service.getMax() + "; current=" + getCurrentMemberCount() + "]: Already at min instances ( = " + service.getMin() + " )");
             }
         }
