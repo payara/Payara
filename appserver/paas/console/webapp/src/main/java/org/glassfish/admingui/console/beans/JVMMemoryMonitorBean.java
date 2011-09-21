@@ -43,6 +43,7 @@ import java.text.SimpleDateFormat;
 import javax.faces.bean.ManagedBean;
 import java.util.*;
 import javax.faces.bean.SessionScoped;
+import javax.faces.event.ActionEvent;
 import org.apache.myfaces.trinidad.event.PollEvent;
 import org.apache.myfaces.trinidad.model.ChartModel;
 
@@ -54,6 +55,12 @@ public class JVMMemoryMonitorBean {
 
     public ChartModel getValue() {
         return value;
+    }
+
+    public void onRefresh(ActionEvent e) {
+        if (value != null) { // && value.isUpdate()) {
+            value.updateLabelsAndValues();
+        }
     }
 
     public void onPoll(PollEvent e) {
