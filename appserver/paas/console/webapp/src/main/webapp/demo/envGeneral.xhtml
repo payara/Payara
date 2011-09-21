@@ -49,6 +49,15 @@
                 xmlns:trh="http://myfaces.apache.org/trinidad/html">
 
     <div style="padding-top: 10px; padding-left: 20px;">
+        <div class="title headerPageTitle">
+            Environment General Information
+        </div>
+        <div class="subHeading">
+            View detailed information about an environment such as the applications that
+            are deployed to the environment and the GlassFish Server instances that are
+            running this environment.
+        </div>
+        <tr:spacer height="20px" />
         <tr:inputText label="Environment Name" value="#{environmentBean.envName}" readOnly="true" contentStyle="font-size=10px;font-weight: bold;"/>
     </div>
 
@@ -58,7 +67,7 @@
             <div class="title headerPageTitle">Applications</div>
             <div class="subHeading">
                 <span>
-                   List of currently deployed applications.
+                   Deployed Applications
                 </span>
             </div>
             <br/>
@@ -82,7 +91,7 @@
             <div class="title headerPageTitle">Instances</div>
             <div class="subHeading">
                 <span>
-                   List of Instances for this Environment.
+                   Instances for this Environment
                 </span>
             </div>
             <br/>
