@@ -85,7 +85,6 @@ public class ApacheLBProvisioner implements LBProvisioner{
     public static final String VENDOR_NAME = "apache";
     private String virtualizationType;
     private HttpdThread httpdThread;
-    private boolean isConfigured = false;
 
     public ApacheLBProvisioner() {
     }
@@ -145,12 +144,7 @@ public class ApacheLBProvisioner implements LBProvisioner{
         LBPluginLogger.getLogger().log(Level.INFO, "Output of associate apache servers command : " + output);
         //Doing hard reconfig  on windows till a solution is found for graceful reconfig
         if(useWindowsConfig()){
-            if(isConfigured){
-                LBPluginLogger.getLogger().log(Level.SEVERE, "Reconfigure not supported on windows!!!");
-            } else {
-                isConfigured = true;
-                startHttpdProcess();
-            }
+            restartHttpdProcess();
         }
     }
 
@@ -277,10 +271,6 @@ public class ApacheLBProvisioner implements LBProvisioner{
     }
 
     private void startHttpdProcess() {
-        if(!isConfigured){
-            LBPluginLogger.getLogger().log(Level.INFO, "Not starting http process. Waiting for first config ...");
-            return;
-        }
         LBPluginLogger.getLogger().log(Level.INFO, "Starting httpd process ...");
         httpdThread = new HttpdThread();
         httpdThread.start();
@@ -288,14 +278,23 @@ public class ApacheLBProvisioner implements LBProvisioner{
     }
 
     private void stopHttpdProcess() {
-        LBPluginLogger.getLogger().log(Level.INFO, "Stopping httpd process ...");
-        httpdThread.stopProcess();
-        LBPluginLogger.getLogger().log(Level.INFO, "Stopped httpd process");
+        if(httpdThread != null){
+            LBPluginLogger.getLogger().log(Level.INFO, "Stopping httpd process ...");
+            httpdThread.stopProcess();
+            LBPluginLogger.getLogger().log(Level.INFO, "Stopped httpd process");
+            httpdThread = null;
+        }
+    }
+    
+    private void restartHttpdProcess() {
+        stopHttpdProcess();
+        startHttpdProcess();
     }
 
     class HttpdThread extends Thread{
 
         Process process;
+        boolean killProcess = false;
 
         HttpdThread() {
         }
@@ -307,14 +306,24 @@ public class ApacheLBProvisioner implements LBProvisioner{
                 process.waitFor();
             } catch (Exception ex) {
                 process = null;
-                LBPluginLogger.getLogger().log(Level.SEVERE,
+                LBPluginLogger.getLogger().log((killProcess? Level.FINE : Level.SEVERE),
                         "Httpd process exited ...", ex);
             }
         }
 
         private void stopProcess() {
-            if(process != null){
-                process.destroy();
+            try {
+                killProcess = true;
+                Runtime.getRuntime().exec("taskkill /F /T /IM httpd.exe");
+                //Sleep for 2 seconds to 
+                try {
+                    Thread.sleep(2000);
+                } catch (InterruptedException ex) {
+                    //ignore
+                }
+            } catch (Exception ioe) {
+                LBPluginLogger.getLogger().log(Level.SEVERE,
+                        "Httpd process could not be killed ...", ioe);
             }
         }
         
