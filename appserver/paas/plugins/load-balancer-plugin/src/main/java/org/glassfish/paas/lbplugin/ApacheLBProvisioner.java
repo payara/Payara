@@ -40,7 +40,11 @@
 
 package org.glassfish.paas.lbplugin;
 
+import com.sun.enterprise.config.serverbeans.Cluster;
+import com.sun.enterprise.config.serverbeans.Server;
+import com.sun.enterprise.config.serverbeans.SystemProperty;
 import com.sun.enterprise.util.OS;
+import com.sun.enterprise.util.net.NetUtils;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.logging.Level;
@@ -79,9 +83,9 @@ public class ApacheLBProvisioner implements LBProvisioner{
     private String associateServerScript;
     private String configureServerScript;
 
-    private static final String LISTENER_NAME = "ajp-listener-1";
-    private static final String HTTP_LISTENER_NAME = "http-listener-1";
-    private static final String LISTENER_PORT = "28009";//"\\$\\{AJP_LISTENER_PORT\\}"
+    private static final String AJP_LISTENER_NAME = "ajp-listener-1";
+    private static final String AJP_LISTENER_PORT = "AJP_LISTENER_PORT";
+    private static final int DEFAULT_AJP_LISTENER_PORT = 28009;
     public static final String VENDOR_NAME = "apache";
     private String virtualizationType;
     private HttpdThread httpdThread;
@@ -132,7 +136,11 @@ public class ApacheLBProvisioner implements LBProvisioner{
             String serviceName, CommandRunner commandRunner, String clusterName,
             Habitat habitat, String glassfishHome, boolean isReconfig) throws Exception{
         if(!isReconfig){
-            createApacheConfig(clusterName, commandRunner, serviceName);
+            createApacheConfig(clusterName, commandRunner, habitat, serviceName);
+        } else {
+            if(isNativeMode()){
+                createAjpListenerPerInstance(clusterName, commandRunner, habitat);
+            }
         }
         reconfigureApache(habitat, virtualMachine, serviceName, glassfishHome);
     }
@@ -149,7 +157,7 @@ public class ApacheLBProvisioner implements LBProvisioner{
     }
 
     private void createApacheConfig(String clusterName,
-            CommandRunner commandRunner, String serviceName)
+            CommandRunner commandRunner, Habitat habitat, String serviceName)
             throws RuntimeException {
         ArrayList params = new ArrayList();
         CommandResult result;
@@ -161,30 +169,45 @@ public class ApacheLBProvisioner implements LBProvisioner{
             LBPluginLogger.getLogger().log(Level.INFO, "create-jvm-options failed");
             throw new RuntimeException("Creation of jvm option \"-DjvmRoute=\\${com.sun.aas.instanceName}\" failed");
         }
-        /*
+
+        params.clear();
+        params.add("--target");
+        params.add(clusterName);
+        params.add(AJP_LISTENER_PORT + "=" + DEFAULT_AJP_LISTENER_PORT);
+        result = commandRunner.run("create-system-properties", (String[]) params.toArray(new String[params.size()]));
+        if (result.getExitStatus().equals(CommandResult.ExitStatus.FAILURE)) {
+            LBPluginLogger.getLogger().log(Level.INFO, "create-system-properties failed");
+            throw new RuntimeException("Creation of system property " + AJP_LISTENER_PORT + " failed.");
+        }
+        LBPluginLogger.getLogger().log(Level.INFO, "create-system-properties succeeded");
+
+        if(isNativeMode()){
+            createAjpListenerPerInstance(clusterName, commandRunner, habitat);
+        }
+
         params.clear();
         params.add("--target");
         params.add(clusterName);
         params.add("--listenerport");
-        params.add(LISTENER_PORT);
+        params.add("${" + AJP_LISTENER_PORT + "}");
         params.add("--listeneraddress");
         params.add("0.0.0.0");
         params.add("--default-virtual-server");
         params.add("server");
-        params.add(LISTENER_NAME);
+        params.add(AJP_LISTENER_NAME);
         result = commandRunner.run("create-http-listener", (String[]) params.toArray(new String[params.size()]));
         if (result.getExitStatus().equals(CommandResult.ExitStatus.FAILURE)) {
             LBPluginLogger.getLogger().log(Level.INFO, "create-http-listener failed");
-            throw new RuntimeException("Creation of " + LISTENER_NAME + " failed.");
+            throw new RuntimeException("Creation of " + AJP_LISTENER_NAME + " failed.");
         }
         LBPluginLogger.getLogger().log(Level.INFO, "create-http-listener succeeded");
-         */
+
         params.clear();
-        params.add("configs.config." + clusterName + "-config.network-config.protocols.protocol." + HTTP_LISTENER_NAME + ".http.jk-enabled=true");
+        params.add("configs.config." + clusterName + "-config.network-config.protocols.protocol." + AJP_LISTENER_NAME + ".http.jk-enabled=true");
         result = commandRunner.run("set", (String[]) params.toArray(new String[params.size()]));
         if (result.getExitStatus().equals(CommandResult.ExitStatus.FAILURE)) {
             LBPluginLogger.getLogger().log(Level.INFO, "jk-enabled failed");
-            throw new RuntimeException("jk-enabled for " + LISTENER_NAME + " failed.");
+            throw new RuntimeException("jk-enabled for " + AJP_LISTENER_NAME + " failed.");
         }
         LBPluginLogger.getLogger().log(Level.INFO, "jk-enabled succeeded");
         params.clear();
@@ -266,8 +289,11 @@ public class ApacheLBProvisioner implements LBProvisioner{
     }
 
     private boolean useWindowsConfig(){
-        return OS.isWindows() &&
-                virtualizationType.equals(VirtualizationType.Type.Native.name());
+        return OS.isWindows() && isNativeMode();
+    }
+
+    private boolean isNativeMode(){
+        return virtualizationType.equals(VirtualizationType.Type.Native.name());
     }
 
     private void startHttpdProcess() {
@@ -289,6 +315,45 @@ public class ApacheLBProvisioner implements LBProvisioner{
     private void restartHttpdProcess() {
         stopHttpdProcess();
         startHttpdProcess();
+    }
+
+    private void createAjpListenerPerInstance(String clusterName, CommandRunner commandRunner, Habitat habitat) {
+        Cluster cluster = habitat.getComponent(Cluster.class, clusterName);
+        if(cluster == null){
+            throw new RuntimeException("Unable to get cluster server beans with name " + clusterName);
+        }
+        //Assuming no other command is trying to add a port
+        //So get highest current AJP port and then sequential increase from
+        //there to get a free port
+        //logic will fail if multiple simultaneous call occurs to
+        //NetUtils.getNextFreePort(..)
+        int ajpPort = DEFAULT_AJP_LISTENER_PORT;
+        for(Server server : cluster.getInstances()){
+            SystemProperty property = server.getSystemProperty(AJP_LISTENER_PORT);
+            if(property != null){
+                int port = Integer.parseInt(property.getValue());
+                if(port > ajpPort){
+                    ajpPort = port;
+                }
+            }
+        }
+        for(Server server : cluster.getInstances()){
+            SystemProperty property = server.getSystemProperty(AJP_LISTENER_PORT);
+            if(property == null){
+                //passing null assuming it is all localhost
+                ajpPort = NetUtils.getNextFreePort(null, ajpPort);
+                String[] params = {"--target", server.getName(),
+                    AJP_LISTENER_PORT + "=" + ajpPort};
+                CommandResult result = commandRunner.run("create-system-properties",
+                        params);
+                if (result.getExitStatus().equals(CommandResult.ExitStatus.FAILURE)) {
+                    LBPluginLogger.getLogger().log(Level.INFO, "create-system-properties failed for instance " + server.getName());
+                    throw new RuntimeException("Creation of system property "
+                            + AJP_LISTENER_PORT + " for instance " + server.getName() + " failed.");
+                }
+                LBPluginLogger.getLogger().log(Level.INFO, "create-system-properties succeeded for instance " + server.getName());
+            }
+        }
     }
 
     class HttpdThread extends Thread{
