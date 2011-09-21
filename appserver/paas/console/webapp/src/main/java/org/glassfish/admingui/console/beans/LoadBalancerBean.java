@@ -8,6 +8,8 @@ package org.glassfish.admingui.console.beans;
 import javax.faces.bean.*;
 import org.glassfish.admingui.console.rest.RestUtil;
 import java.util.*;
+import javax.faces.context.FacesContext;
+import org.glassfish.admingui.console.util.CommandUtil;
 import org.glassfish.admingui.console.util.GuiUtil;
 
 @ManagedBean(name="loadBalancerBean")
@@ -22,14 +24,25 @@ public class LoadBalancerBean {
         httpPort = "";
         sslEnabled = "";
         httpsPort = "";
-        String envName = "basic-db";
+        Map requestMap = FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap();
+        String envName = null;
+        envName = (String) requestMap.get("envName");
+        if (envName == null)
+            envName = "basic-db";
         String appName = null;
         String svcName = null;
         List<Map> applications = (new EnvironmentBean(envName)).getApplications();
         if (applications.size() > 0) {
             appName = (String)applications.get(0).get("appName");
-            svcName = appName + "-lb";
+            List<Map> services = CommandUtil.listServices(appName, null, "application");
+            for (Map service : services) {
+                if(service.get("serviceType").equals("load_balancer")) {
+                    svcName = (String) service.get("serviceName");
+                }
+            }
         }
+        if (svcName == null)
+                svcName = appName + "-lb";
         Map attrs = new HashMap();
         attrs.put("appname", appName);
         attrs.put("id", svcName);
