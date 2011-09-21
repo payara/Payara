@@ -50,6 +50,7 @@ import org.glassfish.virtualization.runtime.VirtualCluster;
 import org.glassfish.virtualization.spi.*;
 import org.glassfish.virtualization.config.ServerPoolConfig;
 import org.glassfish.virtualization.config.Virtualizations;
+import org.glassfish.virtualization.util.RuntimeContext;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.*;
@@ -59,6 +60,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 /**
@@ -127,6 +130,12 @@ public class IAASImpl implements Startup, IAAS, ConfigListener {
         ServerPoolFactory spf = services.forContract(ServerPoolFactory.class).named(
                 serverPoolConfig.getVirtualization().getType()).get();
 
+        if (spf==null) {
+            RuntimeContext.logger.log(Level.SEVERE, "Cannot find an implementation of the " +
+                ServerPoolFactory.class.getName() + " named " + serverPoolConfig.getVirtualization().getType());
+            throw new RuntimeException("Cannot find the plugin implementation for virtualization " +
+                serverPoolConfig.getVirtualization().getType());
+        }
         ServerPool serverPool = spf.build(serverPoolConfig);
         synchronized (this) {
             groups.put(serverPoolConfig.getName(), serverPool);

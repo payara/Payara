@@ -38,7 +38,7 @@
  * holder.
  */
 
-package org.glassfish.virtualization.libvirt;
+package org.glassfish.virtualization.spi.templates;
 
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Node;
@@ -54,10 +54,10 @@ import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
 
 /**
- * Customization of the KVM GlassFish template
+ * Customization of the GlassFish template.
+ *
  * @author Jerome Dochez
  */
-@Service(name="libvirt-JavaEE")
 public class GlassFishTemplateCustomizer implements TemplateCustomizer {
 
     @Inject
@@ -86,7 +86,11 @@ public class GlassFishTemplateCustomizer implements TemplateCustomizer {
                 "cluster", cluster.getConfig().getName());
 
         // finally starts the instance.
-        rtContext.executeAdminCommand(report, "start-instance", nodeName + "Instance");
+        try {
+            rtContext.executeAdminCommand(report, "start-instance", nodeName + "Instance");
+        } catch (Exception e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
 
     }
 

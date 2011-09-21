@@ -80,22 +80,9 @@ public class CreateLibVirtVirtualization implements AdminCommand {
 
     @Override
     public void execute(AdminCommandContext context) {
-        if (domain.getExtensionByType(Virtualizations.class)==null) {
-            try {
-                ConfigSupport.apply(new SingleConfigCode<Domain>() {
-                    @Override
-                    public Object run(Domain wDomain) throws PropertyVetoException, TransactionFailure {
-                        Virtualizations virts = wDomain.createChild(Virtualizations.class);
-                        wDomain.getExtensions().add(virts);
-                        return virts;
-                    }
-                }, domain);
-            } catch (TransactionFailure transactionFailure) {
-                context.getActionReport().failure(RuntimeContext.logger,
-                        "Cannot create parent virtualizations configuration",transactionFailure);
-                return;
-            }
-        }
+        RuntimeContext.ensureTopLevelConfig(domain, context.getActionReport());
+        if (context.getActionReport().hasFailures()) return;
+
         Virtualizations virts = domain.getExtensionByType(Virtualizations.class);
         if (virts.byName("libvirt")!=null) {
             context.getActionReport().failure(RuntimeContext.logger,

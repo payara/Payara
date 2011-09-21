@@ -70,6 +70,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Registers a new virtual machine to this serverPool master.
@@ -143,7 +144,18 @@ public class RegisterVirtualMachine implements AdminCommand {
                 vm.setAddress(address);
                 vm.setProperty(VirtualMachine.PropertyName.INSTALL_DIR, installDir);
                 Cluster clusterConfig = domain.getClusterNamed(cluster);
+                if (clusterConfig==null) {
+                    // this may happen if the cluster has failed to properly initialize and the virtual machine is orphan.
+                    RuntimeContext.logger.log(Level.FINE, "Received a virtual machine registration on a non-existing cluster");
+                    vm.delete();
+                    return;
+                }
                 VirtualMachineConfig vmConfig = clusterConfig.getExtensionsByTypeAndName(VirtualMachineConfig.class, vm.getName());
+                if (vmConfig==null) {
+                    RuntimeContext.logger.log(Level.SEVERE,  "Cannot fine virtual machine information in cluster");
+                    vm.delete();
+                    return;
+                }
                 // this will eventually go away once we have glassfish installed as part of the template customization
                 try {
                     ConfigSupport.apply(new SingleConfigCode<VirtualMachineConfig>() {

@@ -61,7 +61,7 @@ import java.util.List;
 public interface Virtualization extends ConfigBeanProxy {
 
     /**
-     * Virtualization key name, that will be used as reference index by other confguration element like
+     * Virtualization key name, that will be used as reference index by other configuration element like
      * templates, serverPool definitions etc..
      * @see ServerPoolConfig#getVirtualization() )
      * @return  the virtualization name

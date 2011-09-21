@@ -40,12 +40,19 @@
 package org.glassfish.virtualization.util;
 
 import com.sun.enterprise.config.serverbeans.Cluster;
+import com.sun.enterprise.config.serverbeans.Domain;
 import org.glassfish.api.ActionReport;
+import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.CommandRunner;
 import org.glassfish.api.admin.ParameterMap;
+import org.glassfish.virtualization.config.Virtualizations;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.config.ConfigSupport;
+import org.jvnet.hk2.config.SingleConfigCode;
+import org.jvnet.hk2.config.TransactionFailure;
 
+import java.beans.PropertyVetoException;
 import java.io.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -101,5 +108,24 @@ public class RuntimeContext {
         inv.parameters(params);
         inv.execute();
         return (report.getActionExitCode()==ActionReport.ExitCode.SUCCESS);
+    }
+
+    public static void ensureTopLevelConfig(Domain domain, ActionReport actionReport) {
+        if (domain.getExtensionByType(Virtualizations.class)==null) {
+            try {
+                ConfigSupport.apply(new SingleConfigCode<Domain>() {
+                    @Override
+                    public Object run(Domain wDomain) throws PropertyVetoException, TransactionFailure {
+                        Virtualizations virts = wDomain.createChild(Virtualizations.class);
+                        wDomain.getExtensions().add(virts);
+                        return virts;
+                    }
+                }, domain);
+            } catch (TransactionFailure transactionFailure) {
+                actionReport.failure(RuntimeContext.logger,
+                        "Cannot create parent virtualizations configuration",transactionFailure);
+                return;
+            }
+        }
     }
 }
