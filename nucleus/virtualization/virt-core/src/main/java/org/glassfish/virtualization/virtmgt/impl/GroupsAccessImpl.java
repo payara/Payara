@@ -46,41 +46,58 @@ import org.glassfish.virtualization.virtmgt.GroupAccess;
 import org.glassfish.virtualization.virtmgt.GroupsAccess;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PostConstruct;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.lang.reflect.InvocationTargetException;
+import java.util.Iterator;
 
 /**
  * Gateway to serverPool access instances.
  * @author Jerome Dochez
  */
 @Service
-public class GroupsAccessImpl implements PostConstruct, GroupsAccess {
+public class GroupsAccessImpl implements GroupsAccess {
 
-    final Map<String, GroupAccess> groups = new HashMap<String, GroupAccess>();
+    final IAAS groupMgt;
+    final Injector injector;
 
-    @Inject
-    IAAS groupMgt;
-
-    @Inject
-    Injector injector;
+    public GroupsAccessImpl(@Inject Injector injector, @Inject IAAS groupMgt) {
+        this.injector = injector;
+        this.groupMgt = groupMgt;
+    }
 
     @Override
     public Iterable<GroupAccess> groups() {
-        return groups.values();
+
+        final Iterator<ServerPool> pools = groupMgt.iterator();
+
+        return  new Iterable<GroupAccess>() {
+            @Override
+            public Iterator<GroupAccess> iterator() {
+                return new Iterator<GroupAccess>() {
+
+                    @Override
+                    public boolean hasNext() {
+                        return pools.hasNext();
+                    }
+
+                    @Override
+                    public GroupAccess next() {
+                        return LocalGroupAccess.from(injector, pools.next());
+                    }
+
+                    @Override
+                    public void remove() {
+                        throw new RuntimeException("Not Implemented");
+                    }
+                };
+            }
+        };
     }
 
     @Override
     public GroupAccess byName(String name) {
-        return groups.get(name);
+        ServerPool serverPool = groupMgt.byName(name);
+        return LocalGroupAccess.from(injector, serverPool);
     }
 
-    @Override
-    public void postConstruct() {
-        // all configured groups should be accessible as a serverPool access instance.
-        for (ServerPool group : groupMgt) {
-            groups.put(group.getName(), LocalGroupAccess.from(injector, group));
-        }
-    }
 }

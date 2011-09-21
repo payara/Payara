@@ -56,10 +56,7 @@ import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.*;
 
 import java.beans.PropertyChangeEvent;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -73,6 +70,7 @@ import java.util.logging.Logger;
 public class IAASImpl implements Startup, IAAS, ConfigListener {
 
     private final Services services;
+    private final Map<String, Virtualization> virtConfigs = new HashMap<String, Virtualization>();
     private final Map<String, ServerPool> groups = new HashMap<String, ServerPool>();
     private final Map<String, VirtualCluster> virtualClusterMap = new HashMap<String, VirtualCluster>();
 
@@ -94,39 +92,62 @@ public class IAASImpl implements Startup, IAAS, ConfigListener {
     public IAASImpl(@Inject(optional = true) Virtualizations virtualizations,
                     @Inject Transactions transactions,
                     @Inject ServerEnvironment env,
-                    @Inject Services services) {
+                    @Inject final Services services) {
 
         this.services = services;
         // first executeAndWait the fping command to populate our arp table.
-        transactions.addListenerForType(ServerPoolConfig.class, this);
+        transactions.addListenerForType(Virtualization.class, this);
+        if (virtualizations==null) {
+            transactions.addListenerForType(Virtualizations.class, new ConfigListener() {
+                @Override
+                public UnprocessedChangeEvents changed(PropertyChangeEvent[] propertyChangeEvents) {
+                    Virtualizations virts = services.forContract(Virtualizations.class).get();
+                    for (Virtualization virt : virts.getVirtualizations()) {
+                        processVirtualization(virt);
+                    }
+                    Dom.unwrap(virts).addListener(IAASImpl.this);
+                    return null;
+                }
+            });
+        }
         if (virtualizations==null || env.isInstance() ) return;
 
         for (Virtualization virt : virtualizations.getVirtualizations()) {
-            for (ServerPoolConfig groupConfig : virt.getServerPools()) {
-                try {
-                    ServerPool group = addServerPool(groupConfig);
-                    System.out.println("I have a serverPool " + group.getName());
-                    if (group instanceof PhysicalServerPool) {
-                        for (Machine machine : ((PhysicalServerPool) group).machines()) {
-                            System.out.println("LibVirtMachine  " + machine.getName() + " is at " +  machine.getIpAddress() + " state is " + machine.getState());
-                            if (machine.getState().equals(Machine.State.READY)) {
-                                try {
-                                    System.out.println(machine.toString());
-                                } catch (Exception e) {
-                                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-                                }
+            processVirtualization(virt);
+        }
+    }
+
+    private void processVirtualization(Virtualization virtualization) {
+
+        if (virtConfigs.containsKey(virtualization.getName())) return;
+        Dom.unwrap(virtualization).addListener(new VirtualizationListener(virtualization));
+        for (ServerPoolConfig groupConfig : virtualization.getServerPools()) {
+            try {
+                ServerPool group = addServerPool(groupConfig);
+                System.out.println("I have a serverPool " + group.getName());
+                if (group instanceof PhysicalServerPool) {
+                    for (Machine machine : ((PhysicalServerPool) group).machines()) {
+                        System.out.println("LibVirtMachine  " + machine.getName() + " is at " + machine.getIpAddress() + " state is " + machine.getState());
+                        if (machine.getState().equals(Machine.State.READY)) {
+                            try {
+                                System.out.println(machine.toString());
+                            } catch (Exception e) {
+                                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
                             }
                         }
                     }
-                } catch(Exception e) {
-                    e.printStackTrace();
                 }
-
+            } catch (Exception e) {
+                e.printStackTrace();
             }
+
         }
     }
 
     private ServerPool addServerPool(ServerPoolConfig serverPoolConfig) {
+        if (groups.containsKey(serverPoolConfig.getName())) {
+            return groups.get(serverPoolConfig.getName());
+        }
         ServerPoolFactory spf = services.forContract(ServerPoolFactory.class).named(
                 serverPoolConfig.getVirtualization().getType()).get();
 
@@ -147,11 +168,7 @@ public class IAASImpl implements Startup, IAAS, ConfigListener {
     public UnprocessedChangeEvents changed(PropertyChangeEvent[] propertyChangeEvents) {
         Virtualizations virtualizations = services.forContract(Virtualizations.class).get();
         for (Virtualization virt : virtualizations.getVirtualizations()) {
-            for (ServerPoolConfig config : virt.getServerPools()) {
-                if (!groups.containsKey(config.getName())) {
-                    addServerPool(config);
-                }
-            }
+            processVirtualization(virt);
         }
         return null;
     }
@@ -164,5 +181,21 @@ public class IAASImpl implements Startup, IAAS, ConfigListener {
     @Override
     public PhasedFuture<AllocationPhase, VirtualMachine> allocate(AllocationStrategy strategy, AllocationConstraints constraints, List<Listener<AllocationPhase>> listeners) throws VirtException {
         return strategy.allocate(groups.values(), constraints, listeners);
+    }
+
+    private class VirtualizationListener implements ConfigListener {
+        final Virtualization target;
+
+        private VirtualizationListener(Virtualization target) {
+            this.target = target;
+        }
+
+        @Override
+        public UnprocessedChangeEvents changed(PropertyChangeEvent[] propertyChangeEvents) {
+            for (ServerPoolConfig serverPoolConfig : target.getServerPools()) {
+                addServerPool(serverPoolConfig);
+            }
+            return null;
+        }
     }
 }

@@ -78,7 +78,7 @@ class LocalServerPool implements ServerPool {
         if (serverPoolFactory.getDomain().getClusters()!=null) {
             for (Cluster cluster : serverPoolFactory.getDomain().getClusters().getCluster()) {
                 for (VirtualMachineConfig vmc : cluster.getExtensionsByType(VirtualMachineConfig.class)) {
-                    if (vmc.getServerPool().equals(config)) {
+                    if (vmc.getServerPool().getName().equals(config.getName())) {
                         vms.put(vmc.getName(), new LocalVirtualMachine(vmc, vmc.getTemplate().getUser(), this, null, vmc.getName()));
                     }
                 }
