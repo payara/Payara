@@ -63,4 +63,13 @@
         <module>ejb-timer-databases</module>
         <module>ejb-timer-service-app</module>
     </modules>
+    <build>
+        <extensions>
+            <extension>
+                <groupId>org.glassfish.build</groupId>
+                <artifactId>maven-glassfishbuild-extension</artifactId>
+                <version>${glassfishbuild.version}</version>
+            </extension>
+        </extensions>	
+    </build>
 </project>

@@ -93,6 +93,7 @@
                 <artifactId>maven-glassfishbuild-plugin</artifactId>
             </plugin>
         </plugins>
+<!--
         <extensions>
             <extension>
                 <groupId>org.glassfish.build</groupId>
@@ -100,6 +101,7 @@
                 <version>${glassfishbuild.version}</version>
             </extension>
         </extensions>
+-->
     </build>
 
 </project>
