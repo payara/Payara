@@ -53,10 +53,13 @@ import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.sun.enterprise.config.serverbeans.Cluster;
 import org.glassfish.api.admin.AdminCommandLock;
 import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.api.deployment.DeployCommandParameters;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.OpsParams;
+import org.glassfish.api.deployment.UndeployCommandParameters;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.deployment.common.DeploymentException;
 import org.glassfish.embeddable.CommandResult;
@@ -71,6 +74,7 @@ import org.glassfish.paas.orchestrator.service.metadata.ServiceMetadata;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceReference;
 import org.glassfish.paas.orchestrator.service.spi.Plugin;
 import org.glassfish.paas.orchestrator.service.spi.ProvisionedService;
+import org.glassfish.virtualization.config.VirtualMachineConfig;
 import org.glassfish.virtualization.config.Virtualizations;
 import org.glassfish.virtualization.runtime.VirtualCluster;
 import org.glassfish.virtualization.runtime.VirtualClusters;
@@ -717,16 +721,14 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator, Application
         }
     }
 
+    //NOTE : refer & update isValidDeploymentTarget if needed as we are dependent on the list of "Origins" used in this method.
     public void before(final ExtendedDeploymentContext.Phase phase, final ExtendedDeploymentContext context) {
-        if (isOrchestrationEnabled() && serverEnvironment.isDas()) {
+
+        logEvent(true, phase, context);
+
+        if (isOrchestrationEnabled(context) && serverEnvironment.isDas()) {
             AdminCommandLock.runWithSuspendedLock(new Runnable() {
                 public void run() {
-                    if(context != null){
-                        OpsParams tmp = context.getCommandParameters(OpsParams.class);
-                        logger.log(Level.FINEST, "before " + phase + " " + tmp.command);
-                        logger.log(Level.FINEST, "ApplicationLifecycleListener before : " + phase);
-                    }
-
                     if (phase.equals(ExtendedDeploymentContext.Phase.PREPARE)) {
                         ReadableArchive archive = context.getSource();
                         OpsParams params = context.getCommandParameters(OpsParams.class);
@@ -784,16 +786,14 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator, Application
         return isValid;
     }
 
+    //NOTE : refer & update isValidDeploymentTarget if needed as we are dependent on the list of "Origins" used in this method.
     public void after(final ExtendedDeploymentContext.Phase phase, final ExtendedDeploymentContext context) {
-        if (isOrchestrationEnabled()) {
+
+        logEvent(false, phase, context);
+
+        if (isOrchestrationEnabled(context)) {
             AdminCommandLock.runWithSuspendedLock(new Runnable() {
                 public void run() {
-                    if(context != null){
-                        OpsParams tmp = context.getCommandParameters(OpsParams.class);
-                        logger.log(Level.FINEST, "after " + phase + " " + tmp.command);
-                        logger.log(Level.FINEST, "ApplicationLifecycleListener after : " + phase);
-                    }
-
                     if (phase.equals(ExtendedDeploymentContext.Phase.REPLICATION)) {
                         if (serverEnvironment.isDas()) {
                             OpsParams params = context.getCommandParameters(OpsParams.class);
@@ -830,10 +830,33 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator, Application
                                 }
                             }
                         }
-                    } else if (phase.equals(ExtendedDeploymentContext.Phase.CLEAN)) {
                     }
                 }
             });
+        }
+    }
+
+    private void logEvent(boolean before, ExtendedDeploymentContext.Phase phase, ExtendedDeploymentContext context) {
+        try{
+            StringBuilder sb = new StringBuilder();
+            if(before){
+                sb.append("ServiceOrchestrator receiving event \n { [Before] ");
+            }else{
+                sb.append("ServiceOrchestrator receiving event \n { [After] ");
+            }
+
+            sb.append(" [Phase : "+phase.toString()+"]");
+            if(context != null){
+                OpsParams params = context.getCommandParameters(OpsParams.class);
+                sb.append(" [Command : "+params.command+"]");
+                sb.append(" [Origin : "+params.origin+"]");
+            }else{
+                sb.append(" [DeploymentContext is null, command and origin not available]");
+            }
+            sb.append(" }");
+            logger.log(Level.INFO, sb.toString());
+        }catch(Exception e){
+            //ignore, this is debugging info.
         }
     }
 
@@ -879,8 +902,44 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator, Application
         return isVirtualEnvironment;
     }
 
-    private boolean isOrchestrationEnabled(){
-        return isVirtualizationEnabled() || Boolean.getBoolean("org.glassfish.paas.orchestrator.enabled");
+    private boolean isOrchestrationEnabled(DeploymentContext dc){
+        return (isVirtualizationEnabled() && isValidDeploymentTarget(dc)) ||
+                Boolean.getBoolean("org.glassfish.paas.orchestrator.enabled");
+    }
+
+    private boolean isValidDeploymentTarget(DeploymentContext dc) {
+        if(dc == null){
+            return false;
+        }
+
+        String target = null;
+        OpsParams params = dc.getCommandParameters(OpsParams.class);
+        if(params.origin == OpsParams.Origin.deploy || params.origin == OpsParams.Origin.load){
+            DeployCommandParameters dcp = dc.getCommandParameters(DeployCommandParameters.class);
+            target = dcp.target;
+        }else  if(params.origin == OpsParams.Origin.undeploy || params.origin == OpsParams.Origin.unload){
+            UndeployCommandParameters dcp = dc.getCommandParameters(UndeployCommandParameters.class);
+            target = dcp.target;
+        }else{
+            return false;//we do not handle other "Origins" for now.
+        }
+
+        if(target == null){
+            return true; // if target is null, we assume that its PaaS styled deployment.
+        }
+
+        Cluster cluster = domain.getClusterNamed(target);
+        if(cluster != null){
+            List<VirtualMachineConfig> vmcList = cluster.getExtensionsByType(VirtualMachineConfig.class);
+            if(vmcList != null && vmcList.size()  > 0){
+                return true;
+            }else{
+                return false; //not a virtual cluster.
+            }
+        }else{
+            //target is not cluster or no such target exists.
+            return false;
+        }
     }
 
 
