@@ -13,6 +13,7 @@ import org.glassfish.admingui.console.rest.RestUtil;
 import org.glassfish.admingui.console.util.CommandUtil;
 import org.glassfish.admingui.console.util.DeployUtil;
 import javax.faces.context.FacesContext;
+import org.apache.myfaces.trinidad.event.PollEvent;
 
 @ManagedBean(name="listApplicationsBean")
 @ViewScoped
@@ -63,8 +64,14 @@ public class ListApplicationsBean {
                 apps.add(app);
             }
         }
-
     }
+    
+    public void onPoll(PollEvent e) {
+        Map sessionMap = FacesContext.getCurrentInstance().getExternalContext().getSessionMap();
+        sessionMap.remove("_deployingApps");
+        updateModel();
+    }
+    
 
 
     private String getEnvironment(String appName) {

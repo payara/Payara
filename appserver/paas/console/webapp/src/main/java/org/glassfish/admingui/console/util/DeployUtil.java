@@ -218,18 +218,30 @@ public class DeployUtil {
         Map responseMap = RestUtil.restRequest(ep, new HashMap<String, Object>(), "get", null, null, false);
         Map<String, Map> data = (Map) responseMap.get("data");
         List<Map> children = (List)data.get("children");
+        boolean lbURLFound = false;
         for (Map entry : children) {
-            Map<String, String> props = (Map)entry.get("properties");
-            String protocol = props.get("protocol");
-            if (protocol == null) protocol = "http";
-            String host = props.get("host");
-            String contextPath = props.get("contextpath");
-            String port = props.get("port");
-            if (host == null || contextPath == null || port == null) continue;
-            URLs.add(protocol + "://" + host + ":" + port + contextPath  );
+            String type = (String)entry.get("message");
+            // LB URLs come first in the children list
+            if ("LB".equals(type)) {
+                lbURLFound  = true;
+            }
+            else if (lbURLFound) continue;
+            List<Map> urls =  (List)entry.get("children");
+            if (urls != null) {
+                for (Map url : urls) {
+                    Map urlProperties = (Map)url.get("properties");
+
+                    String protocol = (String)urlProperties.get("protocol");
+                    if (protocol == null) protocol = "http";
+                    String host = (String)urlProperties.get("host");
+                    String contextPath = (String)urlProperties.get("contextpath");
+                    String port = (String)urlProperties.get("port");
+                    if (host == null || contextPath == null || port == null) continue;
+                    URLs.add(protocol + "://" + host + ":" + port + contextPath  );
+                }
+            }
         }
         return URLs;
     }
-
 
 }

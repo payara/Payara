@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="iso-8859-1" standalone="yes" ?>
+<?xml version='1.0' encoding='UTF-8' ?>
 <!--
     Licensed to the Apache Software Foundation (ASF) under one
     or more contributor license agreements.  See the NOTICE file
@@ -30,7 +30,6 @@
                 template="/layout.xhtml">
 
     <ui:define name="content">
-
         <div class="navObjectInfo" style="width: 555px; display: inline-block; margin:  20px; vertical-align: top;">
             <div class="title headerPageTitle">Applications</div>
             <div class="subHeading">
@@ -46,22 +45,23 @@
                     <span style="display: inline-block; float: right">Deploy...</span>
                 </a>
             </div>
-            <tr:table id="envs" var="app" value="#{listApplicationsBean.applications}">
-
-                <tr:column headerText="Name">
-                    <tr:panelHorizontalLayout  halign="left">
-                        <tr:image id="progressBar" source="/images/progress.gif" shortDesc="Deploying Application .... " rendered="#{app.notExist}"/>
-                        <a id="applicationName"  href="#{request.contextPath}/demo/applicationGeneral.jsf?_activeTab=Applications&amp;appName=#{app.appName}" > #{app.appName} </a>
-                    </tr:panelHorizontalLayout>
-                </tr:column>
-                <tr:column headerText="Environment">
-                    <a id="environmentName"  href="#{request.contextPath}/demo/environmentDetail.jsf?_activeTab=Environments&amp;envName=#{app.environment}" > #{app.environment} </a>
-                </tr:column>
-                <tr:column width="20px">
-                    <h:commandLink id="delete" styleClass="ui-icon ui-icon-trash" onclick="confirm('This feature is not yet fully implemented. It will be available soon.');"/>
-                </tr:column>
-            </tr:table>
+            <tr:form>
+                <tr:table id="apps" var="app" value="#{listApplicationsBean.applications}">
+                    <tr:column headerText="Name">
+                        <tr:panelHorizontalLayout  id="dynamicUpdate" halign="left">
+                            <tr:poll id="poller" interval="5000" pollListener="#{listApplicationsBean.onPoll}" immediate="#{true}" rendered="#{app.notExist}"/>
+                            <tr:image partialTriggers="poller" id="progressBar" source="/images/progress.gif" shortDesc="Deploying Application .... " rendered="#{app.notExist}"/>
+                            <a id="applicationName"  href="#{request.contextPath}/demo/applicationGeneral.jsf?_activeTab=Applications&amp;appName=#{app.appName}" > #{app.appName} </a>
+                        </tr:panelHorizontalLayout>
+                    </tr:column>
+                    <tr:column headerText="Environment">
+                        <a id="environmentName"  href="#{request.contextPath}/demo/environmentDetail.jsf?_activeTab=Environments&amp;envName=#{app.environment}" > #{app.environment} </a>
+                    </tr:column>
+                    <tr:column width="20px">
+                        <h:commandLink id="delete" styleClass="ui-icon ui-icon-trash" onclick="alert('This feature is not yet fully implemented. It will be available soon.');"/>
+                    </tr:column>
+                </tr:table>
+            </tr:form>
         </div>
-
     </ui:define>
 </ui:composition>
