@@ -48,19 +48,17 @@ import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 
+import org.jvnet.hk2.annotations.Service;
 
-@Service(name="_disable-glassfish-elastic-scaling")
-@Supplemental(value="_stop-glassfish-service", ifFailure= FailurePolicy.Warn, on= Supplemental.Timing.Before)
+@Service(name="_delete-glassfish-elastic-service")
+@Supplemental(value="_delete-glassfish-service", ifFailure= FailurePolicy.Warn, on= Supplemental.Timing.Before)
 @Scoped(PerLookup.class)
 @ExecuteOn(value={RuntimeType.DAS})
 @CommandLock(CommandLock.LockType.NONE)
-public class DisableGlassFishAutoScaling implements AdminCommand {
+public class DeleteGlassFishElasticService implements AdminCommand {
 
     @Param(name = "servicename", primary = true)
     private String serviceName;
-
-    @Param(name="appname", optional=true)
-    private String appName;
 
     @Inject
     CommandRunner commandRunner;
@@ -74,6 +72,6 @@ public class DisableGlassFishAutoScaling implements AdminCommand {
         ParameterMap parameterMap = new ParameterMap();
         parameterMap.add("name",serviceName);
 
-        commandRunner.getCommandInvocation("disable-auto-scaling", report).parameters(parameterMap).execute();
+        commandRunner.getCommandInvocation("_delete-elastic-service", report).parameters(parameterMap).execute();
     }
 }
