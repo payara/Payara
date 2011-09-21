@@ -54,21 +54,28 @@
     <tr:spacer height="40px"/>
     <tr:panelFormLayout  id="appInfo" inlineStyle="width: 100%">
         <tr:group>
-            <tr:inputText label="Application Name: " value="#{uploadBean.appName}" readOnly="true"/>
-            <tr:inputText label="Context Root: " value="#{uploadBean.contextRoot}" readOnly="true"/>
-            <tr:inputText label="Description: " value="#{uploadBean.description}" readOnly="true"/>
+            <tr:inputText label="Application Name: " value="#{uploadBean.appName}" readOnly="true" contentStyle="width: 350px"/>
+            <tr:inputText label="Context Root: " value="#{uploadBean.contextRoot}" readOnly="true" contentStyle="width: 350px"/>
+            <tr:inputText label="Description: " value="#{uploadBean.description}" readOnly="true" contentStyle="width: 350px"/>
         </tr:group>
         <tr:group>
-            <tr:inputText label="Load Balancer: " value="#{uploadBean.loadBalancer}" readOnly="true"  rendered="#{!uploadBean.loadBalancer.isEmpty()}"/>
+            <tr:inputText label="Load Balancer: " value="#{uploadBean.loadBalancer}" readOnly="true"
+                          rendered="#{!uploadBean.loadBalancer.isEmpty()}" contentStyle="width: 350px"/>
             <tr:inputText label="Configuration: " value="#{uploadBean.loadBalancersMetaData[0]['configurations']['ssl-enabled'] ? 'SSL Enabled' : 'SSL Disabled'}
             #{uploadBean.loadBalancersMetaData[0]['configurations']['ssl-enabled'] ? ', HTTPS Port:' : ''}
             #{uploadBean.loadBalancersMetaData[0]['configurations']['ssl-enabled'] ? uploadBean.loadBalancersMetaData[0]['configurations']['https-port'] : ''}
             , HTTP Port: #{uploadBean.loadBalancersMetaData[0]['configurations']['http-port']}"
-                          readOnly="true" rendered="#{uploadBean.loadBalancersMetaData[0]['configurations']['ssl-enabled'] != null}"/>
-            <tr:inputText label="Java EE: " value="#{uploadBean.eeTemplate}" readOnly="true"  rendered="#{!uploadBean.eeTemplate.isEmpty()}"/>
-            <tr:inputText label="Cluster Size: " value="#{uploadBean.eeTemplatesMetaData.get(0)['configurations']['min.clustersize']} - #{uploadBean.eeTemplatesMetaData.get(0)['configurations']['max.clustersize']}"
-                          readOnly="true" rendered="#{uploadBean.eeTemplatesMetaData.get(0)['configurations']['min.clustersize'] != null}"/>
-            <tr:inputText label="Database: " value="#{uploadBean.database}" readOnly="true" rendered="#{!uploadBean.database.isEmpty()}"/>
+                          readOnly="true" rendered="#{uploadBean.loadBalancersMetaData[0]['configurations']['ssl-enabled'] != null}"
+                          contentStyle="width: 350px"/>
+            <tr:inputText label="Java EE: " value="#{uploadBean.eeTemplate}" readOnly="true"
+                          rendered="#{!uploadBean.eeTemplate.isEmpty()}" contentStyle="width: 350px"/>
+            <tr:inputText label="Cluster Size: "
+                          value="#{uploadBean.eeTemplatesMetaData[0]['configurations']['min.clustersize']} - #{uploadBean.eeTemplatesMetaData[0]['configurations']['max.clustersize']}"
+                          readOnly="true" rendered="#{uploadBean.eeTemplatesMetaData[0]['configurations']['min.clustersize'] != null}"
+                          contentStyle="width: 350px"/>
+            <tr:inputText label="Database: " value="#{uploadBean.database}" readOnly="true"
+                          rendered="#{!uploadBean.database.isEmpty()}"
+                          contentStyle="width: 350px"/>
         </tr:group>
     </tr:panelFormLayout>
     <tr:spacer height="40px"/>

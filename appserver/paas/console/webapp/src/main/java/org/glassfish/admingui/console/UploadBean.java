@@ -183,6 +183,18 @@ public class UploadBean {
         // Generate deployment plan based on modified service
         Map dpAttrs = new HashMap();
         dpAttrs.put("archive" , tmpFile.getAbsolutePath());
+
+        // ClassCastException Boolean cannot be cast to String in backend
+        if (loadBalancersMetaData.get(0) != null) {
+            Map config = (Map) loadBalancersMetaData.get(0).get("configurations");
+            if (config != null) {
+                Object sslEnabled = config.get("ssl-enabled");
+                if (sslEnabled != null) {
+                    config.put("ssl-enabled", sslEnabled.toString());
+                }
+            }
+        }
+
         String metaDataJson = JSONUtil.javaToJSON(metaData, -1);
         dpAttrs.put("modifiedServiceDesc", metaDataJson);
         //ensure that template-id is the same as templateId, ie whatever user has changed that to.
