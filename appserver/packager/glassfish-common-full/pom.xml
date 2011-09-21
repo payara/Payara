@@ -116,11 +116,6 @@
         </dependency>
         <dependency>
             <groupId>org.glassfish.common</groupId>
-            <artifactId>amx-javaee</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.common</groupId>
             <artifactId>mejb-frag</artifactId>
 	    <version>${project.version}</version>
 	    <type>distribution-fragment</type>
@@ -140,6 +135,11 @@
            <groupId>org.glassfish.admingui</groupId>
 	   <artifactId>console-common-full-plugin-help</artifactId>
        </dependency> 
+       <dependency>
+            <groupId>org.glassfish.external</groupId>
+            <artifactId>ant</artifactId>
+            <version>${project.version}</version>
+        </dependency>
    	<!-- now, listing package dependencies so that their content
              can be excluded during staging -->	
       

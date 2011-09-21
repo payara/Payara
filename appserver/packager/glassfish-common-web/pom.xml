@@ -110,6 +110,11 @@
             <artifactId>pkg-client</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.glassfish.common</groupId>
+            <artifactId>amx-javaee</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
            <groupId>org.glassfish.common</groupId>
            <artifactId>annotation-framework</artifactId>
            <version>${project.version}</version>
@@ -164,11 +169,6 @@
             <artifactId>osgi-container</artifactId>
             <version>${project.version}</version>
         </dependency>	
-        <dependency>
-    	    <groupId>org.glassfish.grizzly</groupId>
-            <artifactId>glassfish-grizzly-container</artifactId>
-            <version>${project.version}</version>
-        </dependency>
         <dependency>
     	    <groupId>org.glassfish</groupId>
             <artifactId>paas.gfplugin</artifactId>
