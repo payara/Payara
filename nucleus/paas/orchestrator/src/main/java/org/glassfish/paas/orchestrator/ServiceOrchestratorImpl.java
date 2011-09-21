@@ -68,6 +68,7 @@ import org.glassfish.internal.deployment.ApplicationLifecycleInterceptor;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
 import org.glassfish.paas.orchestrator.provisioning.ServiceInfo;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceUtil;
+import org.glassfish.paas.orchestrator.service.JavaEEServiceType;
 import org.glassfish.paas.orchestrator.service.ServiceType;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceDescription;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceMetadata;
@@ -601,8 +602,13 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator, Application
         logger.entering(getClass().getName(), "retrieveProvisionedServices");
         final Set<ProvisionedService> appPSs = new HashSet<ProvisionedService>();
         String appName = getAppName(dc);
+        String virtualClusterName = getVirtualClusterName(appServiceMetadata);
+        System.out.println("Retrieve PS for app=" + appName + " virtualCluster=" + virtualClusterName);
         Set<ServiceDescription> appSDs = appServiceMetadata.getServiceDescriptions();
         for (final ServiceDescription sd : appSDs) {
+                //Temporary workaround to set virtual-cluster in all ProvisionedServices
+                sd.setVirtualClusterName(virtualClusterName);
+                
                 Plugin<?> chosenPlugin = getPluginForServiceType(installedPlugins, sd.getServiceType());
                 logger.log(Level.INFO, "Retrieving provisioned Service for " + sd + " through " + chosenPlugin);
                 ServiceInfo serviceInfo = serviceUtil.retrieveCloudEntry(sd.getName(), appName, null );
@@ -862,6 +868,23 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator, Application
             return true; // if target is null, we assume that its PaaS styled deployment.
         }
 
+        //hack. temporary fix.
+        if (target.equals("server")) {
+            if (params.origin == OpsParams.Origin.load && params.command == OpsParams.Command.startup_server) {
+                String appName = params.name();
+
+                List<String> targets =
+                        domain.getAllReferencedTargetsForApplication(appName);
+                if (targets.size() == 1) {
+                    target = targets.get(0);
+                    /*
+                    DeployCommandParameters dcp = dc.getCommandParameters(DeployCommandParameters.class);
+                    dcp.target = target;
+                    */
+                }
+            }
+        }
+
         Cluster cluster = domain.getClusterNamed(target);
         if(cluster != null){
             List<VirtualMachineConfig> vmcList = cluster.getExtensionsByType(VirtualMachineConfig.class);
@@ -881,7 +904,7 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator, Application
     public boolean scaleService(String appName, String svcName,
             int scaleCount, AllocationStrategy allocStrategy) {
         System.out.println("Scaling Service " + svcName + " for Application " 
-                                + appName + "by " + scaleCount + "instances");
+                                + appName + " by " + scaleCount + " instances");
 
         //Get Old PS
         Set<ProvisionedService> appPS = provisionedServices.get(appName);
