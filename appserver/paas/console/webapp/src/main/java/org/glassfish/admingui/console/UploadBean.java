@@ -77,10 +77,10 @@ public class UploadBean {
     private DataModel<Map> eeTemplatesDataModel;
     private DataModel<Map> loadBalancersDataModel;
 
-    /*{
-        metaData = CommandUtil.getPreSelectedServices("D:/Projects/console.next/svn/main/appserver/tests/paas/basic-db/target/basic_db_paas_sample.war");
+   /*{
+        //metaData = CommandUtil.getPreSelectedServices("D:/Projects/console.next/svn/main/appserver/tests/paas/basic-db/target/basic_db_paas_sample.war");
         //metaData = CommandUtil.getPreSelectedServices("D:/Projects/console.next/svn/main/appserver/tests/paas/service_metadata/provision_using_specified_template/target/basic_paas_sample2.war");
-        //metaData = CommandUtil.getPreSelectedServices("/opt/console.next/svn/main/appserver/tests/paas/basic-db/target/basic_db_paas_sample.war");
+        metaData = CommandUtil.getPreSelectedServices("/opt/console.next/svn/main/appserver/tests/paas/basic/target/basic_paas_sample.war");
         processMetaData();
     }*/
 

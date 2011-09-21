@@ -60,8 +60,14 @@
         </tr:group>
         <tr:group>
             <tr:inputText label="Load Balancer: " value="#{uploadBean.loadBalancer}" readOnly="true"  rendered="#{!uploadBean.loadBalancer.isEmpty()}"/>
+            <tr:inputText label="Configuration: " value="#{uploadBean.loadBalancersMetaData[0]['configurations']['ssl-enabled'] ? 'SSL Enabled' : 'SSL Disabled'}
+            #{uploadBean.loadBalancersMetaData[0]['configurations']['ssl-enabled'] ? ', HTTPS Port:' : ''}
+            #{uploadBean.loadBalancersMetaData[0]['configurations']['ssl-enabled'] ? uploadBean.loadBalancersMetaData[0]['configurations']['https-port'] : ''}
+            , HTTP Port: #{uploadBean.loadBalancersMetaData[0]['configurations']['http-port']}"
+                          readOnly="true" rendered="#{uploadBean.loadBalancersMetaData[0]['configurations']['ssl-enabled'] != null}"/>
             <tr:inputText label="Java EE: " value="#{uploadBean.eeTemplate}" readOnly="true"  rendered="#{!uploadBean.eeTemplate.isEmpty()}"/>
-            <tr:inputText label="Cluster Size: " value="#{uploadBean.eeTemplateMinMaxClusterSize}" readOnly="true" rendered="#{!uploadBean.eeTemplate.isEmpty()}"/>
+            <tr:inputText label="Cluster Size: " value="#{uploadBean.eeTemplatesMetaData.get(0)['configurations']['min.clustersize']} - #{uploadBean.eeTemplatesMetaData.get(0)['configurations']['max.clustersize']}"
+                          readOnly="true" rendered="#{uploadBean.eeTemplatesMetaData.get(0)['configurations']['min.clustersize'] != null}"/>
             <tr:inputText label="Database: " value="#{uploadBean.database}" readOnly="true" rendered="#{!uploadBean.database.isEmpty()}"/>
         </tr:group>
     </tr:panelFormLayout>

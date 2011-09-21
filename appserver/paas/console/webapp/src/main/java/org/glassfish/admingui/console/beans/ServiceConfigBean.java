@@ -21,8 +21,6 @@ import javax.faces.bean.ApplicationScoped;
 import javax.faces.bean.ManagedBean;
 import org.apache.myfaces.trinidad.model.ChildPropertyTreeModel;
 import org.apache.myfaces.trinidad.model.TreeModel;
-import org.glassfish.admingui.plugins.NavigationNode;
-import static org.glassfish.admingui.plugins.NavigationNode.createNode;
 
 @ManagedBean
 @SessionScoped

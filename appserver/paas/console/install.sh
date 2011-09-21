@@ -26,7 +26,7 @@ do
 done;
 
 echo Stopping the server
-$SERVER_DIR/bin/asadmin undeploy admin-console
+$SERVER_DIR/bin/asadmin undeploy paas-console
 $SERVER_DIR/bin/asadmin stop-domain 
 
 echo Clearing the OSGi cache
