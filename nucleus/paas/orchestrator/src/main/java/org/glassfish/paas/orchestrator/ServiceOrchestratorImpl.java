@@ -580,30 +580,51 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator, Application
         }
         
         Set<ServiceDescription> appSDs = appServiceMetadata.getServiceDescriptions();
-        List<Future<ProvisionedService>> provisioningFutures = new ArrayList<Future<ProvisionedService>>();
-        for (final ServiceDescription sd : appSDs) {
-            sd.setVirtualClusterName(virtualClusterName);
-            Future<ProvisionedService> future = ServiceUtil.getThreadPool().submit(new Callable<ProvisionedService>() {
-                public ProvisionedService call() {
-                    Plugin<?> chosenPlugin = getPluginForServiceType(installedPlugins, sd.getServiceType());
-                    logger.log(Level.INFO, "Provisioning Service for " + sd + " through " + chosenPlugin);
-                    return chosenPlugin.provisionService(sd, dc);
-                }
-            });
-            provisioningFutures.add(future);
-        }
-
         boolean failed = false;
         Exception rootCause = null;
-        for(Future<ProvisionedService> future : provisioningFutures){
-            try {
-                ProvisionedService ps = future.get();
-                appPSs.add(ps);
-            } catch (Exception e) {
-                failed = true;
-                logger.log(Level.WARNING, "Failure while provisioning service", e);
-                if(rootCause == null){
-                    rootCause = e; //we are caching only the first failure and logging all failures
+        if (Boolean.getBoolean("org.glassfish.paas.orchestrator.parallel-provisioning")) {
+            List<Future<ProvisionedService>> provisioningFutures = new ArrayList<Future<ProvisionedService>>();
+            for (final ServiceDescription sd : appSDs) {
+                sd.setVirtualClusterName(virtualClusterName);
+                Future<ProvisionedService> future = ServiceUtil.getThreadPool().submit(new Callable<ProvisionedService>() {
+                    public ProvisionedService call() {
+                        Plugin<?> chosenPlugin = getPluginForServiceType(installedPlugins, sd.getServiceType());
+                        logger.log(Level.INFO, "Started Provisioning Service in parallel for " + sd + " through " + chosenPlugin);
+                        return chosenPlugin.provisionService(sd, dc);
+                    }
+                });
+                provisioningFutures.add(future);
+            }
+
+
+            for (Future<ProvisionedService> future : provisioningFutures) {
+                try {
+                    ProvisionedService ps = future.get();
+                    appPSs.add(ps);
+                    logger.log(Level.INFO, "Completed Provisioning Service in parallel " + ps);
+                } catch (Exception e) {
+                    failed = true;
+                    logger.log(Level.WARNING, "Failure while provisioning service", e);
+                    if (rootCause == null) {
+                        rootCause = e; //we are caching only the first failure and logging all failures
+                    }
+                }
+            }
+        } else {
+
+            for (final ServiceDescription sd : appSDs) {
+                try {
+                    sd.setVirtualClusterName(virtualClusterName);
+                    Plugin<?> chosenPlugin = getPluginForServiceType(installedPlugins, sd.getServiceType());
+                    logger.log(Level.INFO, "Started Provisioning Service serially for " + sd + " through " + chosenPlugin);
+                    ProvisionedService ps = chosenPlugin.provisionService(sd, dc);
+                    appPSs.add(ps);
+                    logger.log(Level.INFO, "Completed Provisioning Service serially " + ps);
+                } catch (Exception e) {
+                    failed = true;
+                    logger.log(Level.WARNING, "Failure while provisioning service", e);
+                    rootCause = e;
+                    break; //since we are provisioning serially, we can abort
                 }
             }
         }
@@ -626,7 +647,9 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator, Application
 
             //XXX (Siva): Failure handling. Exception design.
             DeploymentException re = new DeploymentException("Failure while provisioning services");
-            re.initCause(rootCause);
+            if(rootCause != null){
+                re.initCause(rootCause);
+            }
             throw re;
         }
         return appPSs;
