@@ -48,18 +48,17 @@
                 xmlns:tr="http://myfaces.apache.org/trinidad"
                 xmlns:trh="http://myfaces.apache.org/trinidad/html">
 
-    
+
     <div style="padding-top: 10px; padding-left: 20px;">
         <tr:inputText label="Environment Name" value="#{environmentBean.envName}" readOnly="true" contentStyle="font-size=10px;font-weight: bold;"/>
     </div>
-
-    <div class="navObjectInfo">
-        <div class="title headerPageTitle">Elasticity Settings</div>
+    <div class="navObjectInfo"  style="width: 700px;">
+        <div class="title headerPageTitle">Environment Auto Scaling</div>
         <div class="subHeading">
             <span>
-                Auto-scaling automatically launches or terminates instances based on
-                defined memory thresholds.
-                These settings allow you to control auto-scaling behavior.
+                Auto scaling automatically starts and stops GlassFish Server instances in response to
+                changes in usage of resources such as JVM memory. To control auto scaling behavior,
+                set thresholds for the usage of these resources that cause instances to be started or stopped.
             </span>
         </div>
         <tr:message for="saveButton"/>
@@ -71,15 +70,20 @@
         <tr:spacer height="40px"/>
         <tr:panelFormLayout  id="elasiticitySettings">
             <tr:inputNumberSpinbox label="Minimum Instance Count: " value="#{scaleBean.minScale}" minimum="1" maximum="10"/>
+            <tr:outputText value="If the minimum number of instances is running, no further instances are stopped even if the threshold for stopping an instance is reached."/>
             <tr:inputNumberSpinbox label="Maximum Instance Count: " value="#{scaleBean.maxScale}" minimum="1" maximum="10"/>
+            <tr:outputText value="If the maximum number of instances is running, no further instances are started even if the threshold for starting an instance is reached."/>
             <tr:spacer height="30px" />
             
-            <tr:selectOneChoice label="Select Scaling Trigger :  ">
+            <tr:selectOneChoice label="Auto Scaling Trigger :  ">
                     <f:selectItem itemLabel="JVM Memory "/>
             </tr:selectOneChoice>
+            <tr:outputText value="The resource for which changes in usage causes instances to be started or stopped." />
             <tr:selectBooleanCheckbox label="Enable: " value="#{scaleBean.enabled}"/>
             <tr:inputNumberSpinbox label="Threshold (% of JVM Memory) : " value="#{scaleBean.threshold}" minimum="1" maximum="100" stepSize="4" />
-            <tr:inputNumberSpinbox label="Sample Intervals (minutes)  : " value="#{scaleBean.sampleInterval}" minimum="1" maximum="30" />
+            <tr:outputText value="If usage of the resource exceeds this threshold, another instance is started. "/>
+            <tr:inputNumberSpinbox label="Sample Interval (minutes)  : " value="#{scaleBean.sampleInterval}" minimum="1" maximum="30" />
+            <tr:outputText value="The interval between successive measurements of resource usage."/>
         </tr:panelFormLayout>
     </div>
 </ui:fragment>
