@@ -52,12 +52,12 @@
     </div>
 
     <div class="navObjectInfo">
-        <div class="title headerPageTitle">Load Balancer Configuration for Environment</div>
+        <div class="title headerPageTitle">Environment Load-Balancer Configuration</div>
         <div class="subHeading">Configure load balancer.</div>
         <br/>
         <tr:panelFormLayout  id="loadBalancerDetails">
             <tr:inputText label="HTTP Listener Port " value="#{loadBalancerBean.httpPort}" readOnly="true"/>
-            <tr:inputText label="SSL Enabled " value="#{loadBalancerBean.sslEnabled}" readOnly="true"/>
+            <tr:inputText label="SSL Status " value="#{loadBalancerBean.sslEnabled}" readOnly="true"/>
             <tr:inputText label="HTTPS Listener Port " value="#{loadBalancerBean.httpsPort}" readOnly="true"/>
         </tr:panelFormLayout>
     </div>
