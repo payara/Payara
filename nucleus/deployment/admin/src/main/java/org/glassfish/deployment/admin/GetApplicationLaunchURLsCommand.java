@@ -204,6 +204,10 @@ public class GetApplicationLaunchURLsCommand implements AdminCommand {
                         continue;
                     }
                     Protocol protocol = httpListener.findHttpProtocol();
+                    //Do not include jk enabled listeners
+                    if(Boolean.valueOf(protocol.getHttp().getJkEnabled())){
+                        continue;
+                    }
                     boolean securityEnabled = Boolean.valueOf(protocol.getSecurityEnabled());
                     String proto = (securityEnabled ? "https" : "http");
                     String portStr = httpListener.getPort();
