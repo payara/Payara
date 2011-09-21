@@ -159,6 +159,25 @@ public interface Node extends ConfigBeanProxy, Injectable, Named, ReferenceConta
     @Param(name = "type")
     void setType(String value) throws PropertyVetoException;
 
+    /**
+     * specifies the windows domain if applicable
+     *
+     * @return the Windows domain name.
+     */
+    @Attribute
+    @Pattern(regexp = NAME_REGEX, message = "{windowsdomain.invalid.name}", payload = Node.class)
+    String getWindowsDomain();
+
+    /**
+     * Sets the value of the windows domain property.
+     *
+     * @param value allowed object is
+     *              {@link String }
+     * @throws PropertyVetoException if a listener vetoes the change
+     */
+    @Param(name = "windowsdomain", optional = true)
+    void setWindowsDomain(String value) throws PropertyVetoException;
+
     @Element
     SshConnector getSshConnector();
 
@@ -317,6 +336,8 @@ public interface Node extends ConfigBeanProxy, Injectable, Named, ReferenceConta
         String sshpassword;
         @Param(name = "sshkeypassphrase", optional = true)
         String sshkeypassphrase;
+        @Param(name = "windowsdomain", optional = true)
+        String windowsdomain;
         @Inject
         Habitat habitat;
         @Inject
@@ -350,12 +371,15 @@ public interface Node extends ConfigBeanProxy, Injectable, Named, ReferenceConta
                 instance.setInstallDir(null);
             if (!StringUtils.ok(nodehost))
                 instance.setNodeHost(null);
+            if (!StringUtils.ok(windowsdomain))
+                instance.setWindowsDomain(null);
 
             //only create-node-ssh and update-node-ssh should be changing the type to SSH
             instance.setType(type);
 
             if (type.equals("CONFIG"))
                 return;
+
             SshConnector sshC = instance.createChild(SshConnector.class);
 
             SshAuth sshA = sshC.createChild(SshAuth.class);
@@ -375,6 +399,14 @@ public interface Node extends ConfigBeanProxy, Injectable, Named, ReferenceConta
             if (StringUtils.ok(sshHost))
                 sshC.setSshHost(sshHost);
 
+            if ("DCOM".equals(type)) {
+                if (StringUtils.ok(windowsdomain))
+                    instance.setWindowsDomain(windowsdomain);
+                else if(StringUtils.ok(nodehost))
+                    instance.setWindowsDomain(nodehost);
+                else if(StringUtils.ok(sshHost))
+                    instance.setWindowsDomain(sshHost);
+            }
             instance.setSshConnector(sshC);
         }
     }
