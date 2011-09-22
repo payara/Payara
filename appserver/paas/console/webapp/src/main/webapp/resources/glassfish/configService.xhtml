@@ -57,13 +57,13 @@
                         <tr:selectBooleanCheckbox label="SSL Enabled:" value="#{metaData['configurations']['ssl-enabled']}"/>
                         <tr:inputNumberSpinbox label="HTTPS Port:" value="#{metaData['configurations']['https-port']}" minimum="1" maximum="64535" columns="5"/>
                         <tr:inputNumberSpinbox label="Maximum:" value="#{metaData['configurations']['http-port']}" minimum="1" maximum="64535" columns="5" />
-                        <tr:outputText value="To change these values after the application is deployed, use the Load Balancer tab."/>
+                        <!--<tr:outputText value="To change these values after the application is deployed, use the Load Balancer tab."/>-->
                     </tr:panelFormLayout>
                     <tr:panelFormLayout rendered="#{metaData['configurations']['min.clustersize'] != null}">
                         <tr:outputLabel value="Instance Count:"/>
                         <tr:inputNumberSpinbox label="Minimum:" value="#{metaData['configurations']['min.clustersize']}" minimum="1" maximum="16"/>
                         <tr:inputNumberSpinbox label="Maximum:" value="#{metaData['configurations']['max.clustersize']}" minimum="1" maximum="16" />
-                        <tr:outputText value="To change these values after the application is deployed, use the Auto Scaling tab."/>
+                        <!-- <tr:outputText value="To change these values after the application is deployed, use the Auto Scaling tab."/>-->
                     </tr:panelFormLayout>
                     <!--tr:inputText id="amount" label="Clustersize:" value="#{uploadBean.eeTemplateMinMaxClusterSize}" columns="16"/>
                                     <div id="slider-range"></div>
