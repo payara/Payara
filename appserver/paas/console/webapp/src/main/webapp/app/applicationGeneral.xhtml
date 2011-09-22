@@ -32,7 +32,7 @@
 
     <!--
     <ui:define name="subtabs">
-        <ui:include src="/demo/applicationTabs.xhtml" />
+        <ui:include src="/app/applicationTabs.xhtml" />
     </ui:define>
     -->
 
@@ -76,7 +76,7 @@
                     <br/>
                     <tr:table id="applicationInstances" var="cluster" value="#{applicationBean.instances}">
                         <tr:column headerText="Name">
-                            <a id="envName"  href="#{request.contextPath}/demo/environmentDetail.jsf?envName=#{cluster}" > #{cluster} </a>
+                            <a id="envName"  href="#{request.contextPath}/env/environmentDetail.jsf?envName=#{cluster}" > #{cluster} </a>
                         </tr:column>
                     </tr:table>
                 </div>

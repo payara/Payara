@@ -26,9 +26,9 @@ public class WizardBean {
         add("3. Review and Confirm");
     }});
     private List<String> stepPages = Collections.unmodifiableList(new ArrayList<String>(){{ 
-        add("/demo/wizard/upload.xhtml");
-        add("/demo/wizard/configServices.xhtml");
-        add("/demo/wizard/deploy.xhtml");
+        add("/app/wizard/upload.xhtml");
+        add("/app/wizard/configServices.xhtml");
+        add("/app/wizard/deploy.xhtml");
     }});
 
     public int getStep() {

@@ -45,11 +45,11 @@
             <div class="subHeading">Environments and Associated Applications:</div>
             <tr:table id="envs" var="envs" value="#{listEnvironmentsBean.envsAndApps}">
                 <tr:column headerText="Environment Name">
-                    <a id="clusterName"  href="#{request.contextPath}/demo/environmentDetail.jsf?envName=#{envs.clusterName}" > #{envs.clusterName} </a>
+                    <a id="clusterName"  href="#{request.contextPath}/env/environmentDetail.jsf?envName=#{envs.clusterName}" > #{envs.clusterName} </a>
                 </tr:column>
                 <tr:column headerText="Application Name">
                     <!-- TODO display as list for more than 1 app -->
-                    <a id="appName"  href="#{request.contextPath}/demo/applicationGeneral.jsf?appName=#{envs.appList[0]}" > #{envs.appList[0]}  </a>
+                    <a id="appName"  href="#{request.contextPath}/app/applicationGeneral.jsf?appName=#{envs.appList[0]}" > #{envs.appList[0]}  </a>
                 </tr:column>
             </tr:table>
         </div>

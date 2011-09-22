@@ -225,7 +225,7 @@ public class UploadBean {
             }
             deployingApps.add(this.appName);
             RestUtil.restRequest(REST_URL + "/applications/application", payload, "post", null, null, false, true);
-            return "/demo/applications";
+            return "/app/applications";
         } catch (Exception ex) {
             if (deployingApps != null && deployingApps.contains(this.appName)){
                 deployingApps.remove(this.appName);

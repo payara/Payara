@@ -48,25 +48,24 @@
     xmlns:f="http://java.sun.com/jsf/core"
     xmlns:tr="http://myfaces.apache.org/trinidad">
 
-    <ui:define name="head">
-        <f:metadata>
+    <h:form id="topLevelTabsForm" style="color: black;">
+        <h:panelGroup id="topTabs">
             <f:event type="postAddToView" listener="#{tabBean.pageLoadListener}"/>
-        </f:metadata>
-    </ui:define>
-
-    <h:form id="applicationTabsForm" style="color: black;">
-        <h:panelGroup id="applicationTabs">
-            <tr:panelTabbed id="applicationTabsPanel" position ="above" inlineStyle="padding: 0px;">
-                <tr:showDetailItem text="Configuration">
-<!--                                   disclosed="#{tabBean.isActiveTab('/demo/listApplications.jsf')}"
-                                   onclick="window.location = '#{request.contextPath}/demo/applicationGeneral.jsf?appName=#{applicationBean.appName}'; return false;"/>-->
-                    <ui:include src="/demo/applicationGeneral.xhtml"/>
-                </tr:showDetailItem>
-                <tr:showDetailItem text="Monitoring">
-<!--                    disclosed="#{tabBean.isActiveTab('/demo/environments.jsf')}"
-                    onclick="window.location = '#{request.contextPath}/demo/applicationMonitoring.jsf?appName=#{applicationBean.appName}'; return false;"/>-->
-                    <ui:include src="/demo/applicationMonitoring.xhtml"/>
-                </tr:showDetailItem>
+            <tr:panelTabbed id="topLevelTabs" position="above" inlineStyle="padding: 0px;">
+                <tr:showDetailItem text="Applications"
+                                   disclosed="#{tabBean.isActiveTab('Applications')}"
+                                   onclick="window.location = '#{request.contextPath}/app/applications.jsf?_activeTab=Applications'; return false;"/>
+                <tr:showDetailItem text="Environments"
+                                   disclosed="#{tabBean.isActiveTab('Environments')}"
+                                   onclick="window.location = '#{request.contextPath}/app/environments.jsf?_activeTab=Environments'; return false;"/>
+                <!--
+                <tr:showDetailItem text="Services"
+                                   disclosed="#{tabBean.isActiveTab('/demo/listServices.jsf')}"
+                                   onclick="window.location = '#{request.contextPath}/demo/listServices.jsf'; return false;"/>
+                <tr:showDetailItem text="Templates"
+                                   disclosed="#{tabBean.isActiveTab('/demo/listTemplates.jsf')}"
+                                   onclick="window.location = '#{request.contextPath}/demo/listTemplates.jsf'; return false;"/>
+                -->
             </tr:panelTabbed>
         </h:panelGroup>
     </h:form>

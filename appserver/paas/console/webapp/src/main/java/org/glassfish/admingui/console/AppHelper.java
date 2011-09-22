@@ -51,7 +51,7 @@ import javax.faces.context.FacesContext;
 @ManagedBean
 @SessionScoped
 public class AppHelper implements Serializable {
-    private String contentPage = "/demo/applications.xhtml";
+    private String contentPage = "/app/applications.xhtml";
 
     
     public String getNavType() {
