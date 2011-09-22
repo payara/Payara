@@ -77,12 +77,12 @@ public class UploadBean {
     private DataModel<Map> eeTemplatesDataModel;
     private DataModel<Map> loadBalancersDataModel;
 
-    {
+   /*{
         //metaData = CommandUtil.getPreSelectedServices("D:/Projects/console.next/svn/main/appserver/tests/paas/basic-db/target/basic_db_paas_sample.war");
         //metaData = CommandUtil.getPreSelectedServices("D:/Projects/console.next/svn/main/appserver/tests/paas/service_metadata/provision_using_specified_template/target/basic_paas_sample2.war");
-        metaData = CommandUtil.getPreSelectedServices("/opt/console.next/svn/main/appserver/tests/paas/basic-db/target/basic_db_paas_sample.war");
+        metaData = CommandUtil.getPreSelectedServices("/opt/console.next/svn/main/appserver/tests/paas/basic/target/basic_paas_sample.war");
         processMetaData();
-    }
+    }*/
 
     void createSelectItems(String serviceType) {
         List<SelectItem> selectItems = new ArrayList();
@@ -116,13 +116,11 @@ public class UploadBean {
             String templateId = (String) oneService.get("template-id");
             if (CommandUtil.SERVICE_TYPE_RDMBS.equals(serviceType)) {
                 databasesMetaData.add(oneService);
-                databasesMetaData.add(oneService);
                 if (database.length() > 0)  {
                     database += ", ";
                 }
                 database += templateId != null ? templateId : serviceName;
             } else if (CommandUtil.SERVICE_TYPE_JAVAEE.equals(serviceType)) {
-                eeTemplatesMetaData.add(oneService);
                 eeTemplatesMetaData.add(oneService);
                 if (eeTemplate.length() > 0)  {
                     eeTemplate += ", ";
