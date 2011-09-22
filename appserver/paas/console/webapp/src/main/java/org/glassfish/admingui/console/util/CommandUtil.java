@@ -24,7 +24,7 @@ public class CommandUtil {
      *	<p> This method returns the list of Services. </p>
      *
      *	@param	appName	    Name of Application. This is optional parameter, can be set to NULL.
-     *	@param	type        Service type. Possible value is "Cluster", "ClusterInstance", "database".
+     *	@param	type        Service type. Possible value is "Cluster", "ClusterInstance", "database", "load_balancer", "JavaEE"
      *                      This is optional parameter, can be set to Null.
      *  @param  scope       Scope of services.  Possible value is "external", "shared", "application".
      *                      This is optional parameter, can be set to NULL.
@@ -142,9 +142,19 @@ public class CommandUtil {
     public static List<Map<String, Object>> getPreSelectedServices(String filePath) {
         Map attrs = new HashMap();
         attrs.put("archive", filePath);
-        Map appData = (Map) RestUtil.restRequest(REST_URL + "/applications/_get-service-metadata", attrs, "GET", null, null, false, true).get("data");
-
-        return (List<Map<String, Object>>) ((Map) appData.get("extraProperties")).get("list");
+        try{
+            Map appData = (Map) RestUtil.restRequest(REST_URL + "/applications/_get-service-metadata", attrs, "GET", null, null, false, true).get("data");
+            List<Map<String, Object>> list = (List<Map<String, Object>>) ((Map) appData.get("extraProperties")).get("list");
+            System.out.println("========== _get-service-metadata : " );
+            System.out.println(list);
+            return list;
+        }catch(Exception ex){
+            System.out.println("Exception occurs:");
+            System.out.println(REST_URL + "/applications/_get-service-metadata");
+            System.out.println("attrs = " + attrs);
+            return new ArrayList();
+        }
+        
     }
 
     private static void putOptionalAttrs(Map attrs, String key, String value){
