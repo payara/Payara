@@ -93,5 +93,6 @@
     </developers>
     <modules>
         <module>plugins</module>
+        <module>console</module>
     </modules>
 </project>
