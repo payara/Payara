@@ -96,6 +96,7 @@ import org.glassfish.deployment.common.ApplicationConfigInfo;
 import org.glassfish.deployment.common.InstalledLibrariesResolver;
 import org.glassfish.deployment.common.DeploymentContextImpl;
 import org.glassfish.deployment.common.DeploymentProperties;
+import org.glassfish.deployment.common.DeploymentUtils;
 
 /**
  * This service is responsible for loading all deployed applications...
@@ -184,7 +185,7 @@ public class ApplicationLoaderService implements Startup, PreDestroy, PostConstr
             // check to see if we need to load up this system application
             if (Boolean.valueOf(systemApp.getDeployProperties().getProperty
                 (ServerTags.LOAD_SYSTEM_APP_ON_STARTUP))) {
-                if (deployment.isAppEnabled(systemApp) || server.isDas()) {
+                if (deployment.isAppEnabled(systemApp) || loadAppOnDAS(systemApp.getName())) {
                     ApplicationRef appRef = server.getApplicationRef(systemApp.getName());
                     processApplication(systemApp, appRef, logger);
                 }
@@ -199,9 +200,10 @@ public class ApplicationLoaderService implements Startup, PreDestroy, PostConstr
         // load standalone resource adapters first
         for (Application standaloneAdapter : standaloneAdapters) {
             // load the referenced enabled applications on this instance 
-            // and always (partially) load on DAS so the application
+            // and always (partially) load on DAS when application is 
+            // referenced by non-DAS target so the application
             // information is available on DAS
-            if (deployment.isAppEnabled(standaloneAdapter) || server.isDas()) {
+            if (deployment.isAppEnabled(standaloneAdapter) || loadAppOnDAS(standaloneAdapter.getName())) {
                 ApplicationRef appRef = server.getApplicationRef(standaloneAdapter.getName());
                 processApplication(standaloneAdapter, appRef, logger);
             }
@@ -214,9 +216,10 @@ public class ApplicationLoaderService implements Startup, PreDestroy, PostConstr
                 continue;
             }
             // load the referenced enabled applications on this instance 
-            // and always (partially) load on DAS so the application
+            // and always (partially) load on DAS when application is 
+            // referenced by non-DAS target so the application
             // information is available on DAS
-            if (deployment.isAppEnabled(app) || server.isDas()) {
+            if (deployment.isAppEnabled(app) || loadAppOnDAS(app.getName())) {
                 ApplicationRef appRef = server.getApplicationRef(app.getName());
                 processApplication(app, appRef, logger);
             }
@@ -462,5 +465,19 @@ public class ApplicationLoaderService implements Startup, PreDestroy, PostConstr
             }
             appRegistry.remove(appInfo.getName());
         }
+    }
+
+    private boolean loadAppOnDAS(String appName) {
+        if (server.isDas()) {
+            List<String> targets = domain.getAllReferencedTargetsForApplication(appName);
+            for (String target : targets) {
+                if (!DeploymentUtils.isDASTarget(target)) {
+                    // if application is referenced by any non-DAS target 
+                    // we need to partially load it on DAS
+                    return true;
+                }
+            }
+        } 
+        return false;
     }
 }
