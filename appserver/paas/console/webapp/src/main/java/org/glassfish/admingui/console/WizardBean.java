@@ -19,7 +19,7 @@ import javax.faces.bean.ViewScoped;
 @ManagedBean
 @ViewScoped
 public class WizardBean {
-    private int step = 0;
+    private int step = 1;
     private List<String> stepLabels = Collections.unmodifiableList(new ArrayList<String>(){{ 
         add("1. Upload Application");
         add("2. Configure Services");

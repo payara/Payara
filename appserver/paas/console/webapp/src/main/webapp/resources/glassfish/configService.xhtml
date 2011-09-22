@@ -3,7 +3,6 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:cc="http://java.sun.com/jsf/composite"
       xmlns:ui="http://java.sun.com/jsf/facelets"
-      xmlns:h="http://java.sun.com/jsf/html"
       xmlns:tr="http://myfaces.apache.org/trinidad"
       xmlns:f="http://java.sun.com/jsf/core">
 
@@ -17,42 +16,29 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-        <tr:panelBox text="#{cc.attrs.title}"
-             background="light"
-             inlineStyle="width: 800px;"
-             id="#{cc.clientId}"
-             icon="/images/icons/#{cc.attrs.icon}"
-             rendered="#{cc.attrs.metaData.size() > 0}">
-            <tr:table var="metaData" value="#{cc.attrs.metaData}" horizontalGridVisible="false"
-                              rowBandingInterval="1"
-                              inlineStyle="">
-                <tr:column headerText="Service Name" inlineStyle="vertical-align: top" width="33%">
-                    <tr:panelFormLayout>
-                        <tr:inputText value="#{metaData['name']}" readOnly="true" contentStyle="overflow: hidden"/>
-                    </tr:panelFormLayout>
-                </tr:column>
-                <tr:column headerText="Characterstics" inlineStyle="vertical-align: top" width="33%">
-                    <tr:panelFormLayout rendered="#{metaData['template-id'] == null}">
+        <div class="navObjectInfo" style="width: 555px; display: #{cc.attrs.metaData.size() > 0 ? 'block' : 'none'}; margin: 10px; margin-left: 0px; vertical-align: top;">
+            <div class="title headerPageTitle" style="background: url(#{request.contextPath}/images/icons/#{cc.attrs.icon}) top left no-repeat; padding-left: 25px">#{cc.attrs.title}</div>
+            <ui:repeat var="metaData" value="#{cc.attrs.metaData}" >
+                <tr:panelGroupLayout layout="horizontal" inlineStyle="width: 100%">
+                    <tr:panelFormLayout inlineStyle="padding-right: 40px">
+                        <tr:inputText label="Name:" value="#{metaData['name']}" readOnly="true" contentStyle="overflow: hidden"/>
                         <tr:inputText label="OS Name:" value="#{metaData['characteristics']['os-name']}" readOnly="true"
-                                rendered="#{metaData['characteristics']['os-name'] != null}"/>
+                                rendered="#{metaData['template-id'] == null and metaData['characteristics']['os-name'] != null}"/>
                         <tr:inputText label="Service Type:" value="#{metaData['characteristics']['service-type']}" readOnly="true"
                                 rendered="#{metaData['characteristics']['service-type'] != null}"/>
                         <!--ui:repeat value="#{uploadBean.getListAsSet(metaData['characteristics'].keySet())}" var="char">
                                                 <tr:inputText label="#{uploadBean.getCharacteristicDisplayName(char)}:" id="char"
                                                     value="#{metaData['characteristics'][char]}" columns="10" readOnly="true" simple="false"/>
                                           </ui:repeat-->
-                    </tr:panelFormLayout>
-                    <tr:panelFormLayout rendered="#{metaData['template-id'] != null}">
                         <tr:selectOneChoice id="lbTemplate"
                                             label="Template:"
-                                            value="#{metaData['template-id']}" inlineStyle="display: inline-block;"
+                                            value="#{metaData['template-id']}"
+                                            rendered="#{metaData['template-id'] != null}"
                                             contentStyle="width: 187px;" size="6">
                             <f:selectItems value="#{cc.attrs.selectItems}" />
                             <f:ajax render=":wizard:#{cc.clientId}"/>
                         </tr:selectOneChoice>
                     </tr:panelFormLayout>
-                </tr:column>
-                <tr:column headerText="Configuration" inlineStyle="vertical-align: top" width="34%">
                     <tr:panelFormLayout rendered="#{metaData['configurations']['ssl-enabled'] != null}">
                         <tr:inputNumberSpinbox label="HTTP Port" value="#{metaData['configurations']['http-port']}" minimum="1" maximum="64535" columns="5" />
                         <tr:selectBooleanCheckbox label="SSL Enabled:" value="#{metaData['configurations']['ssl-enabled']}"/>
@@ -60,9 +46,8 @@
                         <!--<tr:outputText value="To change these values after the application is deployed, use the Load Balancer tab."/>-->
                     </tr:panelFormLayout>
                     <tr:panelFormLayout rendered="#{metaData['configurations']['min.clustersize'] != null}">
-                        <tr:outputLabel value="Instance Count:"/>
-                        <tr:inputNumberSpinbox label="Minimum:" value="#{metaData['configurations']['min.clustersize']}" minimum="1" maximum="16"/>
-                        <tr:inputNumberSpinbox label="Maximum:" value="#{metaData['configurations']['max.clustersize']}" minimum="1" maximum="16" />
+                        <tr:inputNumberSpinbox label="Instance Count Minimum:" value="#{metaData['configurations']['min.clustersize']}" minimum="1" maximum="16"/>
+                        <tr:inputNumberSpinbox label="Instance Count Maximum:" value="#{metaData['configurations']['max.clustersize']}" minimum="1" maximum="16" />
                         <!-- <tr:outputText value="To change these values after the application is deployed, use the Auto Scaling tab."/>-->
                     </tr:panelFormLayout>
                     <!--tr:inputText id="amount" label="Clustersize:" value="#{uploadBean.eeTemplateMinMaxClusterSize}" columns="16"/>
@@ -83,8 +68,9 @@
                                                     " - " + $( "#slider-range" ).slider( "values", 1 ) );
                                         });
                                    </script-->
-                </tr:column>
-            </tr:table>
-        </tr:panelBox>
+                </tr:panelGroupLayout>
+            </ui:repeat>
+        </div>
+
     </cc:implementation>
 </html>
