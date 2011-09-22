@@ -2022,6 +2022,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
     }
 
     public void validateSpecifiedTarget(String target) {
+/*
         if (target == null) {
             // we only validate the specified target 
             return;
@@ -2032,6 +2033,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                 throw new IllegalArgumentException(localStrings.getLocalString("cannot_specify_managed_target", "Cannot specify target {0} for the operation. Target {0} is a managed target.", target));
             }
         }
+*/
     }
 
     public boolean isAppEnabled(Application app) {
