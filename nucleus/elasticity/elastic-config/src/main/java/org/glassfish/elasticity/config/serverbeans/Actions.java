@@ -64,7 +64,7 @@ import java.util.List;
  */
 
 @Configured
-public interface Actions  extends ConfigBeanProxy {
+public interface Actions  extends ConfigBeanProxy  {
 
    /**
    * Return the list of currently configured actions. Actions can
@@ -82,6 +82,11 @@ public interface Actions  extends ConfigBeanProxy {
 
   @Element
    ScaleUpAction getScaleUpAction();
+
+    void setScaleDownAction(ScaleDownAction scaleDownAction);
+
+    @Element
+    ScaleUpAction getScaleDownAction();
 
   /**
    * Return the action with the given name, or null if no such action exists.

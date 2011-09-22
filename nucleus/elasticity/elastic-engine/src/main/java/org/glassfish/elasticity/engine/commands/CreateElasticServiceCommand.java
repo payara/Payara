@@ -139,6 +139,28 @@ public class CreateElasticServiceCommand implements AdminCommand {
         //notify elastic container to run
         ElasticService elasticService = elasticServices.getElasticService(name);
         elasticEngine.startElasticService(elasticService);
+
+        //create lower bound alert for memory demo
+        String expression = "any[avg(jvm_memory.heap.used)*100/jvm_memory.maxMemory]  <  20" ;
+
+        ci = cr.getCommandInvocation("create-alert", report);
+        map = new ParameterMap();
+        map.add("service", name);
+        map.add("expression", expression);
+        map.add("DEFAULT", "__low-bound-alert");
+        ci.parameters(map);
+        ci.execute();
+
+        //add alarm to the alert , only add alarm state
+        ci = cr.getCommandInvocation("add-alert-action",report);
+        map = new ParameterMap();
+        map.add("service", name);
+        map.add("actionref","scale-down-action");
+        map.add("state","alarm-state");
+        map.add("DEFAULT", "__low-bound-alert");
+        ci.parameters(map);
+        ci.execute();
+
     }
 
     public void createESElement(final String name) throws TransactionFailure {
@@ -174,6 +196,7 @@ public class CreateElasticServiceCommand implements AdminCommand {
 
                         Alerts alerts = writeableService.createChild(Alerts.class);
                         writeableService.setAlerts(alerts);
+                        //commit the transaction and create the scale down action or create a command to do it
                     }
                 }
                 return Boolean.TRUE;

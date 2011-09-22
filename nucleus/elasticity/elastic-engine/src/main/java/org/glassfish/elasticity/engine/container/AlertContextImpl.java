@@ -2,6 +2,7 @@ package org.glassfish.elasticity.engine.container;
 
 import org.glassfish.elasticity.api.Alert;
 import org.glassfish.elasticity.api.AlertContext;
+import org.glassfish.elasticity.config.serverbeans.AlertAction;
 import org.glassfish.elasticity.config.serverbeans.AlertConfig;
 import org.glassfish.elasticity.config.serverbeans.ElasticService;
 import org.glassfish.elasticity.engine.util.EngineUtil;
@@ -74,10 +75,15 @@ public class AlertContextImpl<C extends AlertConfig>
                     case NO_DATA:
                         break;
                     case OK:
-                        elasticServiceContainer.scaleDown();
+ //                       elasticServiceContainer.scaleDown();
                         break;
                     case ALARM:
-                        elasticServiceContainer.scaleUp();
+                        AlertConfig c = getAlertConfig();
+                        AlertAction alertAction = c.getAlertActions().getAlertAction("alarm-state");
+                        if (alertAction.getAction().equals("scale-up-action"))
+                            elasticServiceContainer.scaleUp();
+                        else
+                            elasticServiceContainer.scaleDown();
                         break;
                 }
             } catch (Exception ex) {
