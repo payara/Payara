@@ -53,7 +53,9 @@ public class CommandUtil {
                 if ("Running".equals(oneS.get("STATE"))){
                     oneS.put("stateImage", "/images/running_small.gif");
                 }
-            }
+                else                
+                    oneS.put("stateImage", "/images/not-running_small.png");
+        }
         }
         //System.out.println("======== CommandUtil.listServices():  services = " + services);
         return services;
