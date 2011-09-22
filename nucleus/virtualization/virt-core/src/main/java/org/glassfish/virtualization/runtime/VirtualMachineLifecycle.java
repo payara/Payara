@@ -89,16 +89,18 @@ public class VirtualMachineLifecycle {
 
     public void stop(VirtualMachine vm) throws VirtException {
         TemplateInstance ti = getTemplateInstance(vm);
-        if (ti.getCustomizer()!=null)
+        if (ti.getCustomizer()!=null) {
             ti.getCustomizer().stop(vm);
+        }
         vm.stop();
     }
 
     public void delete(VirtualMachine vm) throws VirtException {
         TemplateInstance ti = getTemplateInstance(vm);
-        if (ti.getCustomizer()!=null)
+        if (ti.getCustomizer()!=null) {
             ti.getCustomizer().stop(vm);
             ti.getCustomizer().clean(vm);
+        }
         vm.delete();
     }
 
