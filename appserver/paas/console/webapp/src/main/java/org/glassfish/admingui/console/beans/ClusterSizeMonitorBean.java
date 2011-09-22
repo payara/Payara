@@ -39,62 +39,87 @@
  */
 package org.glassfish.admingui.console.beans;
 
-import java.text.SimpleDateFormat;
+import java.text.DateFormat;
 import javax.faces.bean.ManagedBean;
 import java.util.*;
-//import javax.faces.bean.ManagedProperty;
+import javax.el.ELContext;
 import javax.faces.bean.SessionScoped;
-import javax.faces.bean.ViewScoped;
+import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
 import org.apache.myfaces.trinidad.event.PollEvent;
 import org.apache.myfaces.trinidad.model.ChartModel;
+import org.glassfish.admingui.console.rest.RestUtil;
 
 @ManagedBean(name = "clusterSizeMonitorBean")
 @SessionScoped
 public class ClusterSizeMonitorBean {
-    private final int MAX_SIZE = 10;
+
+    private final int MAX_SIZE = 15;
     private MyChartModel value = new MyChartModel();
-    
-    /*@ManagedProperty(value="#{environmentBean.envName}")
-    private String envName;
+    private String envName = null;
 
     public String getEnvName() {
+        if (envName == null) {
+            ELContext elContext = FacesContext.getCurrentInstance().getELContext();
+            EnvironmentBean eBean = (EnvironmentBean) FacesContext.getCurrentInstance().getApplication().getELResolver().getValue(elContext, null, "environmentBean");
+            envName = eBean.getEnvName();
+        }
         return envName;
-    }*/
+    }
 
-    public ChartModel getValue() {        
+    public ChartModel getValue() {
         return value;
     }
 
     public void onRefresh(ActionEvent e) {
-        if (value != null) { // && value.isUpdate()) {
-            value.updateLabelsAndValues();
+        if (value != null) {
+            value.getClusterSizeMonitoringStats();
         }
     }
 
     public void onPoll(PollEvent e) {
-        if (value != null) { // && value.isUpdate()) {
-            value.updateLabelsAndValues();
+        if (value != null) {
+            value.getClusterSizeMonitoringStats();
         }
     }
-    
+
+    private class ClusterSizeStat {
+
+        Long instanceCount;
+        Long time;
+
+        public ClusterSizeStat(Long instanceCount, Long time) {
+            this.instanceCount = instanceCount;
+            this.time = time;
+        }
+
+        public Long getInstanceCount() {
+            return instanceCount;
+        }
+
+        public void setInstanceCount(Long instanceCount) {
+            this.instanceCount = instanceCount;
+        }
+
+        public Long getTime() {
+            return time;
+        }
+
+        public void setTime(Long time) {
+            this.time = time;
+        }
+    }
+
     private class MyChartModel extends ChartModel {
+
         private List<String> _groupLabels = new ArrayList<String>();
-        private List<String> _seriesLabels = Arrays.asList(new String[]{"cluster1"});
+        private List<String> _seriesLabels = Arrays.asList(new String[]{getEnvName()});
         private List<List<Double>> _chartYValues;
-        private List<List<Double>> _chartXValues;
-        Date minDate, maxDate;
+        private Double _maxYValue = 0.0;
 
         public MyChartModel() {
             _chartYValues = new ArrayList<List<Double>>();
-            _chartYValues.add(Arrays.asList(new Double[]{2.0}));
-            _chartYValues.add(Arrays.asList(new Double[]{5.0}));
-            _chartYValues.add(Arrays.asList(new Double[]{10.0}));
-            _chartYValues.add(Arrays.asList(new Double[]{15.0}));
-            _chartYValues.add(Arrays.asList(new Double[]{20.0}));
-
-            _chartXValues = new ArrayList<List<Double>>();
-            setLabelsAndValues();
+            getClusterSizeMonitoringStats();
         }
 
         @Override
@@ -104,7 +129,6 @@ public class ClusterSizeMonitorBean {
 
         @Override
         public List<String> getGroupLabels() {
-
             return _groupLabels;
         }
 
@@ -120,22 +144,12 @@ public class ClusterSizeMonitorBean {
 
         @Override
         public Double getMaxYValue() {
-            return 40.0;
+            return _maxYValue;
         }
 
         @Override
         public Double getMinYValue() {
             return 0.0;
-        }
-
-        @Override
-        public Double getMaxXValue() {
-            return Double.longBitsToDouble(maxDate.getTime());
-        }
-
-        @Override
-        public Double getMinXValue() {
-            return Double.longBitsToDouble(minDate.getTime());
         }
 
         @Override
@@ -152,42 +166,72 @@ public class ClusterSizeMonitorBean {
         public String getFootNote() {
             return "";
         }
-        
-        private void setLabelsAndValues() {
-            Calendar cal = Calendar.getInstance();
-            Date dt = new Date(2000, 7, 23, 10, 10, 10);
-            minDate = dt;
-            cal.setTime(dt);
-            cal.add(Calendar.HOUR, 2);
-            SimpleDateFormat sdf = new SimpleDateFormat("hh:mm");
-            for (int i = 0; i < 5; i++) {
-                cal.add(Calendar.HOUR, 2);
-                String formattedStr = sdf.format(cal.getTime());
-                _groupLabels.add(formattedStr);
-                _chartXValues.add(Arrays.asList(new Double[]{Double.longBitsToDouble(cal.getTimeInMillis())}));
+
+        private void getClusterSizeMonitoringStats() {
+            List<ClusterSizeStat> heapData = new ArrayList<ClusterSizeStat>();
+            Map<String, Object> result = null;
+            String clusterName = getEnvName();
+            //To get the instance Name of a cluster that is running
+            String instanceName = "";
+            String endPoint = "http://localhost:4848/management/domain/clusters/cluster/" + clusterName + "/list-instances.json";
+            result = (Map<String, Object>) RestUtil.restRequest(endPoint, null, "GET", null, null, false, true).get("data");
+            if (result != null) {
+                List<Map<String, Object>> instanceList = (List<Map<String, Object>>) ((Map<String, Object>) result.get("extraProperties")).get("instanceList");
+                if (instanceList != null) {
+                    for (Map<String, Object> instanceInfo : instanceList) {
+                        String status = (String) instanceInfo.get("status");
+                        if (status.equals("RUNNING")) {
+                            instanceName = (String) instanceInfo.get("name");
+                            break;
+                        }
+                    }
+                }
             }
-            cal.add(Calendar.HOUR, 2);
-            maxDate = cal.getTime();
+            if (instanceName == "") {
+                return;
+            }
+            //Get the Monitoring statistics
+            result = null;
+            endPoint = "http://localhost:4848/monitoring/elasticity/domain/" + instanceName + "/cluster_instance_size/" + clusterName + ".json";
+            result = (Map<String, Object>) RestUtil.restRequest(endPoint, null, "GET", null, null, false, true).get("data");
+            if (result != null) {
+                Map<String, Object> heapResultExtraProps = (Map<String, Object>) result.get("extraProperties");
+                if (heapResultExtraProps != null) {
+                    Map<String, Object> heapResultEntity = (Map<String, Object>) heapResultExtraProps.get("entity");
+                    if (heapResultEntity != null && !heapResultEntity.isEmpty()) {
+                        Map<String, Map<String, Long>> heapResultProps = (Map<String, Map<String, Long>>) (heapResultEntity.get("count"));
+                        for (String heapProp : heapResultProps.keySet()) {
+                            heapData.add(new ClusterSizeStat(heapResultProps.get(heapProp).get("instanceCount"), Long.valueOf(heapProp)));
+                        }
+                    }
+                }
+            }
+            if (heapData.size() > MAX_SIZE) {
+                heapData = heapData.subList(heapData.size() - MAX_SIZE, heapData.size());
+            }
+            setClusterSizeMonitoringChartInfo(heapData);
         }
-        
-        public void updateLabelsAndValues() {
-            Random generator = new Random();
-            
-            Calendar cal = Calendar.getInstance();
-            cal.setTime(maxDate);
-            SimpleDateFormat sdf = new SimpleDateFormat("hh:mm");
-            cal.add(Calendar.HOUR, 2);
-            String formattedStr = sdf.format(cal.getTime());
-            _groupLabels.add(formattedStr);
-            _chartXValues.add(Arrays.asList(new Double[]{Double.longBitsToDouble(cal.getTimeInMillis())}));
-            _chartYValues.add(Arrays.asList(new Double[]{generator.nextDouble()*20+10}));
-            cal.add(Calendar.HOUR, 2);
-            maxDate = cal.getTime();
-            
-            if (_chartYValues.size() > MAX_SIZE) {
-                _chartYValues = _chartYValues.subList(_chartYValues.size()-MAX_SIZE, _chartYValues.size());
-                _chartXValues = _chartXValues.subList(_chartXValues.size()-MAX_SIZE, _chartXValues.size());
-                _groupLabels = _groupLabels.subList(_groupLabels.size()-MAX_SIZE, _groupLabels.size());
+
+        private void setClusterSizeMonitoringChartInfo(List<ClusterSizeStat> data) {
+            _groupLabels.clear();
+            _chartYValues.clear();
+            _maxYValue = 0.0;
+            for (int i = 0; i < data.size(); i++) {
+                ClusterSizeStat stat = data.get(i);
+                Double usedVal = stat.getInstanceCount().doubleValue();
+                setGroupLabel(stat.getTime());
+                _chartYValues.add(Arrays.asList(new Double[]{usedVal}));
+                if (usedVal > _maxYValue) {
+                    _maxYValue = usedVal + 5;
+                }
+            }
+        }
+
+        private void setGroupLabel(Long time) {
+            if (_groupLabels.isEmpty() || _groupLabels.size() % 3 == 0) {
+                _groupLabels.add(DateFormat.getInstance().format(new Date(time)));
+            } else {
+                _groupLabels.add("");
             }
         }
     }
