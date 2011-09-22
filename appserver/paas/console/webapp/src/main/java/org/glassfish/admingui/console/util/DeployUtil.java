@@ -212,20 +212,16 @@ public class DeployUtil {
                 GuiUtil.getMessage("deploy.someEnabled", new String[]{""+numEnabled, ""+numTargets });
         
     }
-    public static List<String> getApplicationURLs(String appName) {
+    public static List<ApplicationURL> getApplicationURLs(String appName) {
         String ep = (String)GuiUtil.getSessionValue("REST_URL") + "/applications/_get-application-launch-urls?appname=" + appName;
-        List URLs = new ArrayList();
+        List<ApplicationURL> URLs = new ArrayList();
+        //List URLs = new ArrayList();
         Map responseMap = RestUtil.restRequest(ep, new HashMap<String, Object>(), "get", null, null, false);
         Map<String, Map> data = (Map) responseMap.get("data");
         List<Map> children = (List)data.get("children");
-        boolean lbURLFound = false;
+        if (children == null) return URLs; 
         for (Map entry : children) {
             String type = (String)entry.get("message");
-            // LB URLs come first in the children list
-            if ("LB".equals(type)) {
-                lbURLFound  = true;
-            }
-            else if (lbURLFound) continue;
             List<Map> urls =  (List)entry.get("children");
             if (urls != null) {
                 for (Map url : urls) {
@@ -237,11 +233,35 @@ public class DeployUtil {
                     String contextPath = (String)urlProperties.get("contextpath");
                     String port = (String)urlProperties.get("port");
                     if (host == null || contextPath == null || port == null) continue;
-                    URLs.add(protocol + "://" + host + ":" + port + contextPath  );
+                    URLs.add(
+                            new ApplicationURL(type, protocol + "://" + host + ":" + port + contextPath));
+//                    URLs.get(type).add(protocol + "://" + host + ":" + port + contextPath  );
                 }
             }
         }
         return URLs;
+    }
+    
+    
+    public static class ApplicationURL {
+        String type;
+        String URL;
+        
+        public ApplicationURL(String type, String URL) {
+            if ("Instances".equals(type))
+                this.type = "Instance";
+            else
+                this.type = type;
+            this.URL = URL;
+        }
+        
+        public String getType() {
+            return type;            
+        }
+        
+        public String getURL() {
+            return URL;
+        }
     }
 
 }

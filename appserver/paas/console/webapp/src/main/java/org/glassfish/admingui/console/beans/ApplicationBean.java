@@ -39,7 +39,7 @@ public class ApplicationBean {
         return appName;
     }
     
-    public List<String> getUrls() {
+    public List<DeployUtil.ApplicationURL> getUrls() {
         return DeployUtil.getApplicationURLs(appName);
     }
 

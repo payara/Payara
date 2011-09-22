@@ -50,10 +50,13 @@ public class EnvironmentBean implements Serializable {
                     Map aMap = new HashMap();
                     aMap.put("appName", oneApp);
                     aMap.put("contextRoot", contextRoot);
+/*                    
                     List<String> urls = getLaunchUrls(oneApp);
                     if (urls.size()>0){
                         aMap.put("url", urls.get(0));
                     }
+* 
+*/
                     applications.add(aMap);
                 }
             } catch (Exception ex) {
@@ -143,11 +146,11 @@ public class EnvironmentBean implements Serializable {
         }
         return maxScale;
     }
-
+/*
     public List<String> getLaunchUrls(String appName) {
         return DeployUtil.getApplicationURLs(appName);
     }
-
+*/
     public String getDummy(){
         instances = null;
         instanceNames = null;

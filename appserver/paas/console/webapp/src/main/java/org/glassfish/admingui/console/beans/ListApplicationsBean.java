@@ -45,6 +45,10 @@ public class ListApplicationsBean {
         Map<String, String> props = (Map) appData.get("properties");
         if (props != null) {
             for (String appName : props.keySet()) {
+                // FIXME - eventually the app would be a system app, so this check would be  not be needed. This
+                // is temporary.
+                if ("paas-console".equals(appName))
+                    continue;
                 Map app = new HashMap();
                 app.put("appName", appName);
                 app.put("notExist", false);
