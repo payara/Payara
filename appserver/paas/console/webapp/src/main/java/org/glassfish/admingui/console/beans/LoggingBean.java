@@ -27,10 +27,18 @@ public class LoggingBean {
     private String selectedIndex;
     private boolean getRecords;
 
+    @ManagedProperty(value="#{environmentBean}")
+    private EnvironmentBean environmentBean;
+
     public static final String TIME_FORMAT = " HH:mm:ss.SSS";
     
     public LoggingBean() {
-        List<String> instanceList = (new EnvironmentBean()).getInstanceNames();
+        
+    }
+
+    public void setEnvironmentBean(EnvironmentBean env) {
+        this.environmentBean = env;
+        List<String> instanceList = environmentBean.getInstanceNames();
         selectionList = new ArrayList<SelectItem>();
         for (String instance : instanceList) {
                 selectionList.add(new SelectItem(instance, instance));
