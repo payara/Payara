@@ -144,12 +144,15 @@ public class DisableCommand extends UndeployCommandParameters implements AdminCo
         final ActionReport report = context.getActionReport();
         final Logger logger = context.getLogger();
         
-        deployment.validateSpecifiedTarget(target);
-
         String appName = name();
 
         if (isundeploy) {
             origin = Origin.undeploy;
+        }
+
+        if (origin == Origin.unload && command == Command.disable) {
+            // we should only validate this for the disable command
+            deployment.validateSpecifiedTarget(target);
         }
 
         boolean isVersionExpressionWithWilcard =

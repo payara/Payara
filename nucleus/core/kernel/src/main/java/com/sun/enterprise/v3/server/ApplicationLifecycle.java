@@ -2022,18 +2022,18 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
     }
 
     public void validateSpecifiedTarget(String target) {
-/*
-        if (target == null) {
-            // we only validate the specified target 
-            return;
-        }
-        Cluster cluster = domain.getClusterNamed(target); 
-        if (cluster != null) {
-            if (cluster.isVirtual()) {
-                throw new IllegalArgumentException(localStrings.getLocalString("cannot_specify_managed_target", "Cannot specify target {0} for the operation. Target {0} is a managed target.", target));
+        if (env.isDas()) {
+            if (target == null) {
+                // we only validate the specified target 
+                return;
+            }
+            Cluster cluster = domain.getClusterNamed(target); 
+            if (cluster != null) {
+                if (cluster.isVirtual()) {
+                    throw new IllegalArgumentException(localStrings.getLocalString("cannot_specify_managed_target", "Cannot specify target {0} for the operation. Target {0} is a managed target.", target));
+                }
             }
         }
-*/
     }
 
     public boolean isAppEnabled(Application app) {
