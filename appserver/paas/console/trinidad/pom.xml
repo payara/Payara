@@ -39,6 +39,8 @@
                                     </not>
                                     <then>
                                         <exec executable="svn">
+                                            <arg value="--non-interactive"/>
+                                            <arg value="--trust-server-cert"/>
                                             <arg value="co"/>
                                             <arg value="-r"/>
                                             <arg value="1173297"/>
