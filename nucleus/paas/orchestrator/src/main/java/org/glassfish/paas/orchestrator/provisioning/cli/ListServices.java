@@ -76,7 +76,7 @@ public class ListServices implements AdminCommand {
     private String type;
     @Param(name = "scope", optional = true, acceptableValues = SCOPE_EXTERNAL + "," + SCOPE_SHARED + "," + SCOPE_APPLICATION)
     private String scope;
-    @Param(name = "terse", optional = true, shortName = "t", defaultValue = "true")
+    @Param(name = "terse", optional = true, shortName = "t", defaultValue = "false")
     private boolean terse;
     @Param(name = "header", optional = true, shortName = "h", defaultValue = "false")
     private boolean header;
@@ -197,50 +197,57 @@ public class ListServices implements AdminCommand {
 
         if (matchedServices.size() > 0) {
 
-            String headings[] = new String[]{"", "", "", "", "", ""};
-            if (terse) {
-                if (header) {
-                    headings = new String[]{"SERVICE-NAME", "IP-ADDRESS", "VM-ID", "SERVER-TYPE", "STATE", "SCOPE"};
-                    if (type != null) {
-                        if (scope != null) {
-                            headings = new String[]{"SERVICE-NAME", "IP-ADDRESS", "VM-ID", "STATE"};
-                        } else {
-                            headings = new String[]{"SERVICE-NAME", "IP-ADDRESS", "VM-ID", "STATE", "SCOPE"};
-                        }
-                    } else {
-                        if (scope != null) {
-                            headings = new String[]{"SERVICE-NAME", "IP-ADDRESS", "VM-ID", "SERVER-TYPE", "STATE"};
-                        }
-                    }
+            int heading_count = 0;
 
-                }
+            List<String> headerList = new ArrayList<String>();
 
-            } else if (output != null) {
+            if (output != null) {
                 String[] outputheaders = output.split("[,]");
                 int count = 0;
                 for (String s : outputheaders) {
-                    s = s.toUpperCase();
-                    headings[count] = s;
-                    count++;
+                    s = s.trim().toUpperCase();
+                    if (!(s.equals("SERVICE-NAME") || s.equals("IP-ADDRESS") || s.equals("VM-ID") || s.equals("SERVER-TYPE") || s.equals("STATE") || s.equals("SCOPE"))) {
+                        report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                        report.setMessage("The column name [" + s.toLowerCase() + "] provided in --output is not valid.");
+                        return;
+                    }
+                    headerList.add(s);
                 }
             } else {
-                headings = new String[]{"SERVICE-NAME", "IP-ADDRESS", "VM-ID", "SERVER-TYPE", "STATE", "SCOPE"};
+                headerList.add("SERVICE-NAME");
+                headerList.add("IP-ADDRESS");
+                headerList.add("VM-ID");
+                headerList.add("SERVER-TYPE");
+                headerList.add("STATE");
+                headerList.add("SCOPE");
                 if (type != null) {
                     if (scope != null) {
-                        headings = new String[]{"SERVICE-NAME", "IP-ADDRESS", "VM-ID", "STATE"};
+                        headerList.remove("SCOPE");
+                        headerList.remove("SERVER-TYPE");
                     } else {
-                        headings = new String[]{"SERVICE-NAME", "IP-ADDRESS", "VM-ID", "STATE", "SCOPE"};
+                        headerList.remove("SERVER-TYPE");
                     }
                 } else {
                     if (scope != null) {
-                        headings = new String[]{"SERVICE-NAME", "IP-ADDRESS", "VM-ID", "SERVER-TYPE", "STATE"};
+                        headerList.remove("SCOPE");
                     }
                 }
-
-
             }
 
-            ColumnFormatter cf = new ColumnFormatter(headings);
+            ColumnFormatter cf = new ColumnFormatter();
+            String[] headings = headerList.toArray(new String[headerList.size()]);
+            heading_count = headerList.size();
+
+            if (terse && (header == false)) {
+                String[] s = new String[headerList.size()];
+                for (int i = 0; i < heading_count; i++) {
+                    s[i] = "";
+                }
+                cf = new ColumnFormatter(s);
+            } else {
+                cf = new ColumnFormatter(headings);
+            }
+
 
             boolean foundRows = false;
 
@@ -286,7 +293,7 @@ public class ListServices implements AdminCommand {
 
                 if (key == null) {
                     if (output != null) {
-                        String outputstring[] = new String[]{"", "", "", "", "", ""};
+                        String[] outputstring = new String[heading_count];
                         int count = 0;
                         for (String s : headings) {
                             if (s.equals("SERVICE-NAME")) {
@@ -329,40 +336,37 @@ public class ListServices implements AdminCommand {
                 if (key.equals("service-name")) {
                     name_map = sortHashMap(name_map);
                     for (String e : name_map.keySet()) {
-                        cf.addRow(new Object[]{name_map.get(e), ip_map.get(e), vm_map.get(e), type_map.get(e), state_map.get(e), scope_map.get(e)});
+                        cf.addRow(this.generateOutputRow(headings, heading_count, e, name_map, ip_map, vm_map, type_map, state_map, scope_map));
                     }
                 } else if (key.equals("ip-address")) {
                     ip_map = sortHashMap(ip_map);
-
                     for (String e : ip_map.keySet()) {
-                        cf.addRow(new Object[]{name_map.get(e), ip_map.get(e), vm_map.get(e), type_map.get(e), state_map.get(e), scope_map.get(e)});
+                        cf.addRow(this.generateOutputRow(headings, heading_count, e, name_map, ip_map, vm_map, type_map, state_map, scope_map));
                     }
                 } else if (key.equals("vm-id")) {
-                    vm_map = sortHashMap(vm_map);
 
+                    vm_map = sortHashMap(vm_map);
                     for (String e : vm_map.keySet()) {
-                        cf.addRow(new Object[]{name_map.get(e), ip_map.get(e), vm_map.get(e), type_map.get(e), state_map.get(e), scope_map.get(e)});
+                        cf.addRow(this.generateOutputRow(headings, heading_count, e, name_map, ip_map, vm_map, type_map, state_map, scope_map));
                     }
                 } else if (key.equals("server-type")) {
                     type_map = sortHashMap(type_map);
-
                     for (String e : type_map.keySet()) {
-                        cf.addRow(new Object[]{name_map.get(e), ip_map.get(e), vm_map.get(e), type_map.get(e), state_map.get(e), scope_map.get(e)});
+                        cf.addRow(this.generateOutputRow(headings, heading_count, e, name_map, ip_map, vm_map, type_map, state_map, scope_map));
                     }
                 } else if (key.equals("state")) {
                     state_map = sortHashMap(state_map);
-
                     for (String e : state_map.keySet()) {
-                        cf.addRow(new Object[]{name_map.get(e), ip_map.get(e), vm_map.get(e), type_map.get(e), state_map.get(e), scope_map.get(e)});
+                        cf.addRow(this.generateOutputRow(headings, heading_count, e, name_map, ip_map, vm_map, type_map, state_map, scope_map));
                     }
                 } else if (key.equals("scope")) {
                     scope_map = sortHashMap(scope_map);
-
                     for (String e : scope_map.keySet()) {
-                       cf.addRow(new Object[]{name_map.get(e), ip_map.get(e), vm_map.get(e), type_map.get(e), state_map.get(e), scope_map.get(e)});
+                        cf.addRow(this.generateOutputRow(headings, heading_count, e, name_map, ip_map, vm_map, type_map, state_map, scope_map));
                     }
                 }
             }
+
 
             if (foundRows) {
                 report.setMessage(cf.toString());
@@ -370,7 +374,7 @@ public class ListServices implements AdminCommand {
             } else if (header = true) {
                 report.setMessage("Nothing to list.");
             }
-        } else if (header = true){
+        } else if (header = true) {
             report.setMessage("Nothing to list.");
         }
 
@@ -391,36 +395,57 @@ public class ListServices implements AdminCommand {
         return scope;
     }
 
- 
     public LinkedHashMap sortHashMap(HashMap passedMap) {
-    List mapKeys = new ArrayList(passedMap.keySet());
-    List mapValues = new ArrayList(passedMap.values());
-    Collections.sort(mapValues);
-    Collections.sort(mapKeys);
-        
-    LinkedHashMap sortedMap = 
-        new LinkedHashMap();
-    
-    Iterator valueIt = mapValues.iterator();
-    while (valueIt.hasNext()) {
-        Object val = valueIt.next();
-        Iterator keyIt = mapKeys.iterator();
-        
-        while (keyIt.hasNext()) {
-            Object key = keyIt.next();
-            String comp1 = passedMap.get(key).toString();
-            String comp2 = val.toString();
-            
-            if (comp1.equals(comp2)){
-                passedMap.remove(key);
-                mapKeys.remove(key);
-                sortedMap.put((String)key, (String)val);
-                break;
+        List mapKeys = new ArrayList(passedMap.keySet());
+        List mapValues = new ArrayList(passedMap.values());
+        Collections.sort(mapValues);
+        Collections.sort(mapKeys);
+
+        LinkedHashMap sortedMap =
+                new LinkedHashMap();
+
+        Iterator valueIt = mapValues.iterator();
+        while (valueIt.hasNext()) {
+            Object val = valueIt.next();
+            Iterator keyIt = mapKeys.iterator();
+
+            while (keyIt.hasNext()) {
+                Object key = keyIt.next();
+                String comp1 = passedMap.get(key).toString();
+                String comp2 = val.toString();
+
+                if (comp1.equals(comp2)) {
+                    passedMap.remove(key);
+                    mapKeys.remove(key);
+                    sortedMap.put((String) key, (String) val);
+                    break;
+                }
+
             }
 
         }
-
+        return sortedMap;
     }
-    return sortedMap;
-}
+
+    public String[] generateOutputRow(String[] headings, int heading_count, String e, HashMap<String, String> name_map, HashMap<String, String> ip_map, HashMap<String, String> vm_map, HashMap<String, String> type_map, HashMap<String, String> state_map, HashMap<String, String> scope_map) {
+        String[] outputRow = new String[heading_count];
+        int count = 0;
+        for (String s : headings) {
+            if (s.equals("SERVICE-NAME")) {
+                outputRow[count] = name_map.get(e);
+            } else if (s.equals("IP-ADDRESS")) {
+                outputRow[count] = ip_map.get(e);
+            } else if (s.equals("VM-ID")) {
+                outputRow[count] = vm_map.get(e);
+            } else if (s.equals("SERVER-TYPE")) {
+                outputRow[count] = type_map.get(e);
+            } else if (s.equals("STATE")) {
+                outputRow[count] = state_map.get(e);
+            } else if (s.equals("SCOPE")) {
+                outputRow[count] = scope_map.get(e);
+            }
+            count++;
+        }
+        return outputRow;
+    }
 }
