@@ -5,77 +5,92 @@
 
 package org.glassfish.admingui.console.beans;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import javax.faces.bean.*;
 import org.glassfish.admingui.console.rest.RestUtil;
-import java.util.*;
-import javax.faces.context.FacesContext;
 import org.glassfish.admingui.console.util.CommandUtil;
-import org.glassfish.admingui.console.util.GuiUtil;
 
 @ManagedBean(name="loadBalancerBean")
 @ViewScoped
 public class LoadBalancerBean {
 
-    private String httpPort;
-    private String sslEnabled;
-    private String httpsPort;
+    private String httpPort = null;
+    private String sslEnabled = null;
+    private String httpsPort = null;
+
+    @ManagedProperty(value="#{environmentBean.envName}")
+    private String envName;
+
+    @ManagedProperty(value="#{environmentBean.applicationName}")
+    private String applicationName;
     
     public LoadBalancerBean() {
-        httpPort = "";
-        sslEnabled = "";
-        httpsPort = "";
-        Map requestMap = FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap();
-        String envName = null;
-        envName = (String) requestMap.get("envName");
-        if (envName == null)
-            envName = "basic-db";
-        String appName = null;
-        String svcName = null;
-        List<Map> applications = (new EnvironmentBean(envName)).getApplications();
-        if (applications.size() > 0) {
-            appName = (String)applications.get(0).get("appName");
-            List<Map> services = CommandUtil.listServices(appName, null, "application");
-            for (Map service : services) {
-                if(service.get("serviceType").equals("load_balancer")) {
-                    svcName = (String) service.get("serviceName");
-                }
-            }
+    }
+
+    public String getEnvName(){
+        return envName;
+    }
+
+    public void setEnvName(String envN)
+    {
+        envName = envN;
+    }
+
+    public void setApplicationName(String apn){
+        applicationName = apn;
+    }
+
+    private void initInfo(){
+        Map lbProps = new HashMap();
+        List<Map> services = CommandUtil.listServices(applicationName, "load_balancer", "application");
+        if (services.size() <= 0){
+            return;
         }
-        if (svcName == null)
-                svcName = appName + "-lb";
+        String serviceName = (String) services.get(0).get("SERVICE-NAME");
         Map attrs = new HashMap();
-        attrs.put("appname", appName);
-        attrs.put("id", svcName);
+        attrs.put("appname", applicationName);
+        attrs.put("servicename", serviceName );
         String endpoint = REST_URL+"/applications/_get-service-description";
         try{
             Map responseMap = RestUtil.restRequest( endpoint , attrs, "GET" , null, null, false, true);
             Map extraPropertiesMap = (Map)((Map)responseMap.get("data")).get("extraProperties");
-            Map result;
             if (extraPropertiesMap != null){
-                result = (Map)extraPropertiesMap.get("list");
-                if (result != null) {
-                    Map configuration = (Map) result.get("configurations");
-                    if (configuration != null) {
-                        httpPort = (String) configuration.get("http-port");
-                        sslEnabled = (String) configuration.get("ssl-enabled");
-                        httpsPort = (String) configuration.get("https-port");
-                    }
+                lbProps = (Map)extraPropertiesMap.get("list");
+            }
+
+            if (lbProps != null) {
+                Map configuration = (Map) lbProps.get("configurations");
+                if (configuration != null) {
+                    httpPort = (String) configuration.get("http-port");
+                    sslEnabled = (String) configuration.get("ssl-enabled");
+                    httpsPort = (String) configuration.get("https-port");
                 }
             }
         }catch (Exception ex){
-            GuiUtil.getLogger().severe("cannot List Services");
+            System.out.println("======== error in calling _get-service-description");
         }
     }
 
     public String getHttpPort() {
+        if (httpPort == null){
+            initInfo();
+        }
         return httpPort;
     }
 
     public String getSslEnabled() {
+        if (sslEnabled == null){
+            initInfo();
+        }
         return sslEnabled;
     }
 
     public String getHttpsPort() {
+        if (httpsPort == null){
+            initInfo();
+        }
         return httpsPort;
     }
 

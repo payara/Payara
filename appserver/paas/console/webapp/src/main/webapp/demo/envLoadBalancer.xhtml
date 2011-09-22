@@ -56,9 +56,9 @@
         <div class="subHeading">Configure load balancer.</div>
         <br/>
         <tr:panelFormLayout  id="loadBalancerDetails">
-            <tr:inputText label="HTTP Listener Port " value="#{loadBalancerBean.httpPort}" readOnly="true"/>
-            <tr:inputText label="SSL Status " value="#{loadBalancerBean.sslEnabled}" readOnly="true"/>
-            <tr:inputText label="HTTPS Listener Port " value="#{loadBalancerBean.httpsPort}" readOnly="true"/>
+            <tr:inputText label="HTTP Listener Port :" value="#{loadBalancerBean.httpPort}" readOnly="true"/>
+            <tr:selectBooleanCheckbox label="SSL Status : " value="#{loadBalancerBean.sslEnabled}" readOnly="true"/>
+            <tr:inputText label="HTTPS Listener Port : " value="#{loadBalancerBean.httpsPort}" readOnly="true"/>
         </tr:panelFormLayout>
     </div>
 </ui:fragment>

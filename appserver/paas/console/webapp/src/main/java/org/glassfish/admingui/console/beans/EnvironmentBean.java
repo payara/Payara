@@ -62,6 +62,12 @@ public class EnvironmentBean implements Serializable {
         return applications;
     }
 
+
+    public String getApplicationName(){
+        return (String) getApplications().get(0).get("appName");
+    }
+
+
     //For instances, we want this to get call everytime the page is loaded.  Since this is in a tab set, so, even when declared @viewScope
     //this bean will still be cached.  However, since this is for generating table data,  this method will get called multipe times when the
     //page is loaded.  We want to avoid that too.
