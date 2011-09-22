@@ -39,22 +39,42 @@
  */
 package org.glassfish.elasticity.engine.util;
 
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.component.PostConstruct;
 
 @Service
 public class ElasticEngineThreadPool
-	extends ScheduledThreadPoolExecutor {
+    implements PostConstruct {
 
 	private static final int CORE_POOL_SIZE = 8;
-	
+
+    private ScheduledThreadPoolExecutor executor;
+
 	public ElasticEngineThreadPool() {
-		this(CORE_POOL_SIZE);
 	}	
 	
-	public ElasticEngineThreadPool(int corePoolSize) {
-		super(corePoolSize);
-	}
+	public void postConstruct() {
+        executor = new ScheduledThreadPoolExecutor(CORE_POOL_SIZE, new ThreadFactory() {
+            @Override
+            public Thread newThread(Runnable r) {
+                Thread th = new Thread(r);
+                th.setDaemon(true);
+
+                return th;
+            }
+        });
+    }
+
+    public ScheduledFuture<?> scheduleAtFixedRate(Runnable command,
+                                                  long initialDelay,
+                                                  long period,
+                                                  TimeUnit unit) {
+        return executor.scheduleAtFixedRate(command, initialDelay, period, unit);
+    }
 
 }

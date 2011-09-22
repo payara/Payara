@@ -75,7 +75,7 @@ public class MetricGathererContainer
                 threadPool.scheduleAtFixedRate(new MetricGathererWrapper(mg, MAX_DATA_HOLD_TIME_IN_SECONDS),
                         frequency, frequency, TimeUnit.SECONDS);
 
-			    System.out.println("Loaded  and started MetricGatherer " + mg.getClass().getName()
+			    EngineUtil.getLogger().log(Level.FINE, "Loaded  and started MetricGatherer " + mg.getClass().getName()
                     + " Will run every: " + frequency + " seconds");
             }
 

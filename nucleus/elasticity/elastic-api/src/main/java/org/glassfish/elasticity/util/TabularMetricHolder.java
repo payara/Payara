@@ -40,9 +40,7 @@
 package org.glassfish.elasticity.util;
 
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.NavigableMap;
+import java.util.*;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.TimeUnit;
 
@@ -126,13 +124,17 @@ public class TabularMetricHolder<V>
     }
 	
 	public Iterator<TabularMetricEntry<V>> iterator(long duration, TimeUnit unit) {
+        Collection<TabularMetricEntry<V>> normalizedCollection = new ArrayList<TabularMetricEntry<V>>();
         try {
-		    return new SubMapValueIterator(getView(duration, unit, true));
+            NavigableMap<Long, MetricEntryHolder> subMap = getView(duration, unit, true);
+            for (MetricEntryHolder entry : subMap.values()) {
+                normalizedCollection.add(new NormalizedTabularMetricEntry<V>(entry));
+            }
         } catch (NotEnoughMetricDataException ex) {
             //Will not happen
         }
 
-        return new SubMapValueIterator(_emptyMap);
+        return normalizedCollection.iterator();
 	}
 
 	public Iterator<TabularMetricEntry<V>> iterator(long duration, TimeUnit unit, boolean allowPartialData)
@@ -268,5 +270,30 @@ public class TabularMetricHolder<V>
 		}
 		
 	}
+
+    private static class NormalizedTabularMetricEntry<V>
+        implements TabularMetricEntry<V> {
+
+        TabularMetricEntry<V> delegate;
+
+        NormalizedTabularMetricEntry(TabularMetricEntry<V> delegate) {
+            this.delegate = delegate;
+        }
+
+        @Override
+        public long getTimestamp() {
+            return (delegate.getTimestamp() / 10000 * 10000);
+        }
+
+        @Override
+        public V getV() {
+            return delegate.getV();
+        }
+
+        @Override
+        public Object getValue(String columnName) throws IllegalArgumentException {
+            return delegate.getValue(columnName);
+        }
+    }
 
 }
