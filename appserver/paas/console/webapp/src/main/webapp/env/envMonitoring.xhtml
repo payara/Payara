@@ -63,12 +63,16 @@
             <tr:commandButton id="refresh" text="Refresh " immediate="#{true}" actionListener="#{monitorBean.onRefresh}"/>
             <tr:panelGroupLayout partialTriggers="refresh">
                 <tr:panelHorizontalLayout>
-                    <tr:chart YMajorGridLineCount="4" value="#{clusterSizeMonitorBean.value}" partialTriggers="poller1" type="line" inlineStyle="width:550px; height:250px;"/>
-                    <tr:chart YMajorGridLineCount="4" value="#{memoryMonitorBean.value}" partialTriggers="poller2" type="line" inlineStyle="width:550px; height:250px;"/>
+                    <tr:chart YMajorGridLineCount="4" value="#{clusterSizeMonitorBean.value}" partialTriggers="poller1"
+                              type="line" inlineStyle="width:550px; height:250px;" animationDuration="0" perspective="false"/>
+                    <tr:chart YMajorGridLineCount="4" value="#{memoryMonitorBean.value}" partialTriggers="poller2"
+                              type="line" inlineStyle="width:550px; height:250px;" animationDuration="0" perspective="false"/>
                 </tr:panelHorizontalLayout>
                 <tr:panelHorizontalLayout>
-                    <tr:chart YMajorGridLineCount="4" value="#{sessionsMonitorBean.value}" partialTriggers="poller3" type="line" inlineStyle="width:550px; height:250px;"/>
-                    <tr:chart YMajorGridLineCount="4" value="#{processingTimeMonitorBean.value}" partialTriggers="poller4" type="line" inlineStyle="width:550px; height:250px;"/>
+                    <tr:chart YMajorGridLineCount="4" value="#{sessionsMonitorBean.value}" partialTriggers="poller3"
+                              type="line" inlineStyle="width:550px; height:250px;" animationDuration="0" perspective="false"/>
+                    <tr:chart YMajorGridLineCount="4" value="#{processingTimeMonitorBean.value}" partialTriggers="poller4"
+                              type="line" inlineStyle="width:550px; height:250px;" animationDuration="0" perspective="false"/>
                 </tr:panelHorizontalLayout>
             </tr:panelGroupLayout>
         </div>
