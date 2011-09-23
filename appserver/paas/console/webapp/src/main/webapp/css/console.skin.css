@@ -96,8 +96,9 @@ af|panelBox::content {
     background: #CCD6E8 url("/adf/images/casablanca/backgrounds/buttonLikeHeadSelectedHover.png") repeat-x scroll center top;
 }
 
-.CBButtonStrongLookDisabledHover:alias {
-    color: gray;
+af|commandButton.p_AFDisabled:hover {
+    color: #999999 !important;
+    cursor: default;
 }
 
 .CBButtonStrongLookDisabled:alias {
