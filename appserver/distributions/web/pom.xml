@@ -246,6 +246,14 @@
             <artifactId>glassfish-gui</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
+        </dependency>  
+
+        <!-- PaaS admin ui package -->
+        <dependency>
+            <groupId>org.glassfish.packager</groupId>
+            <artifactId>glassfish-paas-gui</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
         </dependency>     
 
         <!-- javadb package -->
