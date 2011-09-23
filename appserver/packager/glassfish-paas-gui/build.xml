@@ -47,9 +47,9 @@
    <target name="create.package">
 
 	<resolveArtifact artifactId="paas.console" property="console.war"/>
-        <mkdir dir="target/stage/${install.dir.name}/lib/install/applications/__pass-console" />
+        <mkdir dir="target/stage/${install.dir.name}/glassfish/lib/install/applications/__pass-console" />
        
-	<unzip src="${console.war}" dest="target/stage/${install.dir.name}/lib/install/applications/__pass-console">
+	<unzip src="${console.war}" dest="target/stage/${install.dir.name}/glassfish/lib/install/applications/__pass-console">
 	</unzip>
 
 	<delete dir="target/stage/${install.dir.name}/glassfish/modules" includes="*.zip" />   
