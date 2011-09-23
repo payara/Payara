@@ -58,14 +58,6 @@
                 <tr:showDetailItem text="Environments"
                                    disclosed="#{tabBean.isActiveTab('Environments')}"
                                    onclick="window.location = '#{request.contextPath}/env/environments.jsf?_activeTab=Environments'; return false;"/>
-                <!--
-                <tr:showDetailItem text="Services"
-                                   disclosed="#{tabBean.isActiveTab('/demo/listServices.jsf')}"
-                                   onclick="window.location = '#{request.contextPath}/demo/listServices.jsf'; return false;"/>
-                <tr:showDetailItem text="Templates"
-                                   disclosed="#{tabBean.isActiveTab('/demo/listTemplates.jsf')}"
-                                   onclick="window.location = '#{request.contextPath}/demo/listTemplates.jsf'; return false;"/>
-                -->
             </tr:panelTabbed>
         </h:panelGroup>
     </h:form>
