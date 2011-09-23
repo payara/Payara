@@ -77,12 +77,12 @@ public class UploadBean {
     private DataModel<Map> eeTemplatesDataModel;
     private DataModel<Map> loadBalancersDataModel;
 
-   /*{
-        //metaData = CommandUtil.getPreSelectedServices("D:/Projects/console.next/svn/main/appserver/tests/paas/basic-db/target/basic_db_paas_sample.war");
-        //metaData = CommandUtil.getPreSelectedServices("D:/Projects/console.next/svn/main/appserver/tests/paas/service_metadata/provision_using_specified_template/target/basic_paas_sample2.war");
-        metaData = CommandUtil.getPreSelectedServices("/opt/console.next/svn/main/appserver/tests/paas/basic/target/basic_paas_sample.war");
-        processMetaData();
-    }*/
+    {
+        //tmpFile = new File("D:/Projects/console.next/svn/main/appserver/tests/paas/basic-db/target/basic_db_paas_sample.war");
+        //tmpFile = new File("D:/Projects/console.next/svn/main/appserver/tests/paas/service_metadata/provision_using_specified_template/target/basic_paas_sample2.war");
+        tmpFile = new File("/opt/console.next/svn/main/appserver/tests/paas/basic/target/basic_paas_sample.war");
+        processMetaData(tmpFile);
+    }
 
     void createSelectItems(String serviceType) {
         List<SelectItem> selectItems = new ArrayList();
@@ -102,7 +102,9 @@ public class UploadBean {
         }
     }
 
-    void processMetaData() {
+    void processMetaData(File file) {
+        metaData = CommandUtil.getPreSelectedServices(file.getAbsolutePath());
+
         database = "";
         eeTemplate = "";
         loadBalancer = "";
@@ -160,9 +162,7 @@ public class UploadBean {
                 System.out.println("getContentType=" + file.getContentType());
                 tmpFile = FileUtil.inputStreamToFile(file.getInputStream(), file.getFilename());
 
-                //each Map is a Service that will be provisioned
-                metaData =  CommandUtil.getPreSelectedServices(tmpFile.getAbsolutePath());
-                processMetaData();
+                processMetaData(tmpFile);
             }
         }catch(Exception ex){
             ex.printStackTrace();

@@ -38,6 +38,13 @@
  * holder.
  */
 
+body {
+    color: #333333;
+    font-family: Tahoma,Verdana,Helvetica,sans-serif;
+    font-size: 11px;
+    font-weight: normal;
+}
+
 .login {
     position:absolute;
     top:0;
@@ -61,18 +68,15 @@
 .productName .primaryProductName {
     color: #03274B;
     font-size: 25px;
-    font-family: inherit;
 }
 
 .productName .secondaryProductName {
     color: #3A6EB0;
     font-size: 18px;
-    font-family: inherit;
 }
 
 .login .productRelease {
     color: #7DC7F9;
-    font-family: Garamond;
     font-size: 280px;
     font-weight: bold;
     margin-left: 50px;
@@ -103,6 +107,12 @@
     font-weight: bold;
     margin: 0;
     white-space: nowrap;
+}
+
+table.af_panelGroupLayout:nth-child(n+3) {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: solid 1px #CBC3BE;
 }
 
 .nihilo .dijitButtonNode {
@@ -295,7 +305,7 @@ body {
 }
 
 .navObjectInfo .subHeading, .dropDownWidget .subHeading {
-    font-size: 11px; 
+    font-size: 11px;
     padding: 0;
     margin: 5px;
 }
@@ -352,7 +362,7 @@ body {
 }
 
 .version .copyright {
-    font-size: 10px; 
+    font-size: 10px;
     padding-top: 7px;
     color: #222;
 }
@@ -788,7 +798,7 @@ button:hover {
 #messageConsole .heading {
     font-weight:bold;
     padding: 0 0 0 5px;
-    font-size: 11px; 
+    font-size: 11px;
 }
 
 #messageConsole .heading td {
@@ -869,7 +879,7 @@ button:hover {
 }
 
 .review .reviewProp {
-    
+
 }
 
 .review .reviewProp .propertyName {
@@ -1270,7 +1280,7 @@ button:hover {
 
 /* Propertysheets */
 .propertySheetContainer {
-    
+
 }
 
 .propertySheet {
@@ -1361,7 +1371,7 @@ button:hover {
 .nihilo .dijitTitlePaneTextNode {
     font-weight: bold;
     color: #003d5b;
-    font-size: 11px; 
+    font-size: 11px;
 }
 
 .propertySheet .propertySheetSection {
@@ -1779,12 +1789,12 @@ button:hover {
 
 .summaryWidget .objectName {
     color: #003D5B;
-    font-size: 11px; 
+    font-size: 11px;
     padding: 6px 0 2px 6px;
 }
 
 .summaryWidget .summaryProp {
-    
+
 }
 
 .summaryWidget .summaryProp .statusCol {
@@ -1841,7 +1851,7 @@ button:hover {
 }
 
 .multipleAlerts .subAlert {
-    
+
 }
 
 .multipleAlerts .subAlert td {
@@ -1986,7 +1996,7 @@ button:hover {
 }
 
 .logDetails div {
-    
+
 }
 
 .logDetails .failure {
@@ -1994,7 +2004,7 @@ button:hover {
 }
 
 .logDetails .warning {
-    
+
 }
 
 .nihilo .propertyValue .dijitSelect {
@@ -2199,7 +2209,7 @@ button:hover {
     background: none repeat scroll 0 0 #F8f8f8;
     border: 2px solid #aaa;
     border-radius: 4px;
-    font-size: 11px; 
+    font-size: 11px;
     margin-bottom: 4px;
     padding: 2px 4px;
     cursor: pointer;
@@ -2237,7 +2247,7 @@ button:hover {
 }
 
 .dropDownWidget .objectName {
-    font-size: 11px; 
+    font-size: 11px;
     padding-right: 20px;
     padding-bottom: 0;
     line-height: normal;
@@ -2391,3 +2401,4 @@ button:hover {
     text-decoration: none;
     color: #333;
 }
+

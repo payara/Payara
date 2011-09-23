@@ -52,7 +52,7 @@
     If the following settings for the application are correct, click Deploy. To change a setting, click Previous.
 
     <tr:spacer height="40px"/>
-    <tr:panelFormLayout  id="appInfo" inlineStyle="width: 100%">
+    <tr:panelFormLayout  id="appInfo">
         <tr:group>
             <tr:inputText label="Application Name: " value="#{uploadBean.appName}" readOnly="true" contentStyle="width: 350px"/>
             <tr:inputText label="Context Root: " value="#{uploadBean.contextRoot}" readOnly="true" contentStyle="width: 350px"/>
@@ -78,6 +78,7 @@
                           contentStyle="width: 350px"/>
         </tr:group>
     </tr:panelFormLayout>
+    <div style="width: 600px; position: absolute; bottom: 0px">
     <tr:spacer height="40px"/>
     <tr:separator/>
     <tr:commandButton id="prevButton" text="&lt;&lt; Previous" action="#{wizardBean.previous}">
@@ -92,4 +93,5 @@
     <tr:commandButton id="cancelButton" text="Cancel" action="/app/applications"/>
     <tr:image id="progressBar" inlineStyle="padding-left: 20px; visibility:hidden;" source="/images/progress.gif" shortDesc="Deploying Applicaiton .... " />
     <tr:outputText id="progressText" value="Deploying Application, this may take a few minutes ......" inlineStyle="visibility:hidden" />
+    </div>
 </ui:composition>

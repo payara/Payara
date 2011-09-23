@@ -44,6 +44,7 @@
                       metaData="#{uploadBean.databasesMetaData}"
                       selectItems="#{uploadBean.databaseSelectItems}"/>
 
+    <div style="width: 600px; position: absolute; bottom: 0px">
     <tr:spacer height="40px"/>
     <tr:separator/>
     <tr:commandButton id="prevButton" text="&lt;&lt; Previous" action="#{wizardBean.previous}" >
@@ -53,5 +54,6 @@
         <f:ajax render="@form" execute="@form"/>
     </tr:commandButton>
     <tr:commandButton id="cancelButton" text="Cancel" action="/app/applications"/>
+    </div>
 
 </ui:composition>
