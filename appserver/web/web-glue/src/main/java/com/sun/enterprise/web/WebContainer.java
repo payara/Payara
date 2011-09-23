@@ -3272,6 +3272,10 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
             // Look up system-property
             jvmOption = jvmOption.substring(jvmOption.indexOf("{")+1,jvmOption.indexOf("}"));
             jvmRoute = server.getSystemPropertyValue(jvmOption);
+            if  (jvmRoute == null){
+                // Try to get it from System property if it exists
+                jvmRoute = System.getProperty(jvmOption);
+            }
         } else if (jvmOption.contains("=")) {
             jvmRoute = jvmOption.substring(jvmOption.indexOf("=")+1);
         }
