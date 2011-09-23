@@ -48,7 +48,7 @@
                     <tr:column headerText="Name">
                         <tr:panelHorizontalLayout  id="dynamicUpdate" halign="left">
                             <h:outputLink id="applicationsName"
-                                          value="#{request.contextPath}/demo/applicationGeneral.jsf"
+                                          value="#{request.contextPath}/applicationGeneral.jsf"
                                            rendered="#{!app.notExist}">
                                 <f:param name ="_activeTab" value="Applications"/>
                                 <f:param name ="appName" value="#{app.appName}"/>
@@ -57,7 +57,7 @@
                             <tr:image id="progressBar" source="/images/progress.gif" shortDesc="Deploying Application .... " rendered="#{app.notExist}"/>
                             <h:outputText value="Deploying #{app.appName}" rendered="#{app.notExist}"/>
                             <h:outputLink id="Refresh" 
-                                           value="#{request.contextPath}/demo/applications.jsf" 
+                                           value="#{request.contextPath}/applications.jsf" 
                                            rendered="#{app.notExist}">
                                 <f:param  name="_activeTab" value="Applications"/>
                                 <h:outputText value="Refresh"/>
