@@ -47,9 +47,21 @@
                 <tr:table id="apps" var="app" value="#{listApplicationsBean.applications}">
                     <tr:column headerText="Name">
                         <tr:panelHorizontalLayout  id="dynamicUpdate" halign="left">
-                            <tr:poll id="poller" interval="5000" pollListener="#{listApplicationsBean.onPoll}" immediate="#{true}" rendered="#{app.notExist}"/>
-                            <tr:image partialTriggers="poller" id="progressBar" source="/images/progress.gif" shortDesc="Deploying Application .... " rendered="#{app.notExist}"/>
-                            <a id="applicationName"  href="#{request.contextPath}/app/applicationGeneral.jsf?_activeTab=Applications&amp;appName=#{app.appName}" > #{app.appName} </a>
+                            <h:outputLink id="applicationsName"
+                                          value="#{request.contextPath}/demo/applicationGeneral.jsf"
+                                           rendered="#{!app.notExist}">
+                                <f:param name ="_activeTab" value="Applications"/>
+                                <f:param name ="appName" value="#{app.appName}"/>
+                                <h:outputText value="#{app.appName}"/>
+                            </h:outputLink>
+                            <tr:image id="progressBar" source="/images/progress.gif" shortDesc="Deploying Application .... " rendered="#{app.notExist}"/>
+                            <h:outputText value="Deploying #{app.appName}" rendered="#{app.notExist}"/>
+                            <h:outputLink id="Refresh" 
+                                           value="#{request.contextPath}/demo/applications.jsf" 
+                                           rendered="#{app.notExist}">
+                                <f:param  name="_activeTab" value="Applications"/>
+                                <h:outputText value="Refresh"/>
+                            </h:outputLink>
                         </tr:panelHorizontalLayout>
                     </tr:column>
                     <tr:column headerText="Environment">
