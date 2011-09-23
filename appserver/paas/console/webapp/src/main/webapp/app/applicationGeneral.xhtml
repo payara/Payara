@@ -64,7 +64,7 @@
                     <tr:outputText value="URL(s) to launch the application : "/>
                     <tr:table id="urls" var="urls" value="#{applicationBean.urls}">
                         <tr:column headerText ="URL">
-                            <a id="applicationURL"  href="#{urls.URL}" > #{urls.URL} </a>
+                            <a id="applicationURL"  href="#{urls.URL}" target="_blank"> #{urls.URL} </a>
                         </tr:column>
                         <tr:column headerText ="Type">
                             <tr:outputText value ="#{urls.type}" />
