@@ -39,6 +39,7 @@
  */
 package org.glassfish.elasticity.engine.commands;
 
+import com.sun.enterprise.util.SystemPropertyConstants;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.elasticity.config.serverbeans.*;
@@ -102,6 +103,10 @@ public class CreateElasticServiceCommand implements AdminCommand {
 
     @Param(name="enabled", optional=true, defaultValue="true")
     boolean enabled;
+
+    @Param(optional=true)
+    private String target = SystemPropertyConstants.DAS_SERVER_NAME;
+
 
     ElasticServices elasticServices =null;
 
