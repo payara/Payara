@@ -43,6 +43,7 @@ package org.glassfish.tests.embedded.web;
 import java.io.*;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.net.URLConnection;
 import java.util.logging.Level;
 
 import org.glassfish.embeddable.*;
@@ -105,6 +106,7 @@ public class EmbeddedClassLoaderTest {
         Context context = wc.createContext(path, classLoader);
         wc.addContext(context, contextRoot);
 
+        /*
         URL servlet = new URL("http://localhost:8080/"+contextRoot+"/myurl");
         URLConnection yc = servlet.openConnection();
         BufferedReader in = new BufferedReader(
@@ -116,9 +118,9 @@ public class EmbeddedClassLoaderTest {
         while ((inputLine = in.readLine()) != null){
             sb.append(inputLine);
         }
-        in.close();
+        in.close();   */
 
-        embedded.removeContext(context);
+        wc.removeContext(context);
     } 
 
     @AfterClass
