@@ -47,7 +47,7 @@
                 </tr:commandButton>
                 <tr:commandButton id="nextButton" text="Next &gt;&gt;" action="#{loggingBean.next}">
                 </tr:commandButton>
-                <tr:table partialTriggers="instance" id="logmsgs" var="logmsgs" value="#{loggingBean.logMessages}" inlineStyle="width: 100pc">
+                <tr:table partialTriggers="instance" id="logmsgs" rows="0" var="logmsgs" value="#{loggingBean.logMessages}" inlineStyle="width: 100pc">
                     <tr:column headerText="Timestamp">
                         #{logmsgs.loggedDateTimeInMS}
                     </tr:column>
