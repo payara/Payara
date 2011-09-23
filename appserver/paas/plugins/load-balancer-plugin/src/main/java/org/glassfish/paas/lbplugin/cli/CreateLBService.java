@@ -184,16 +184,16 @@ public class CreateLBService extends BaseLBService implements AdminCommand, Runn
                 }
             }
             LBProvisionerFactory.getInstance().setLBProvisioner(getLBProvisioner(vendorName));
+            TemplateIndex index = matchingTemplate.getConfig().byName("VirtualizationType");
+            LBProvisionerFactory.getInstance().getLBProvisioner()
+                    .setVirtualizationType(index.getValue());
+            LBProvisionerFactory.getInstance().getLBProvisioner().initialize();
             if (installDir != null) {
                 LBProvisionerFactory.getInstance().getLBProvisioner().setInstallDir(installDir);
             }
             if (scriptsDir != null) {
                 LBProvisionerFactory.getInstance().getLBProvisioner().setScriptsDir(scriptsDir);
             }
-            TemplateIndex index = matchingTemplate.getConfig().byName("VirtualizationType");
-            LBProvisionerFactory.getInstance().getLBProvisioner()
-                    .setVirtualizationType(index.getValue());
-            LBProvisionerFactory.getInstance().getLBProvisioner().initialize();
 
             try {
                 ServiceInfo entry = new ServiceInfo();
