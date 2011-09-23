@@ -94,6 +94,7 @@ public class NodeUtils {
     static final String PARAM_SSHKEYPASSPHRASE = "sshkeypassphrase";
     static final String PARAM_TYPE = "type";
     static final String PARAM_INSTALL = "install";
+    static final String PARAM_WINDOWS_DOMAIN = "windowsdomain";
     static final String LANDMARK_FILE = "glassfish/modules/admin-cli.jar";
     private static final String NL = System.getProperty("line.separator");
     private TokenResolver resolver = null;

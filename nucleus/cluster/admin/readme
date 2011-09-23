@@ -1,7 +1,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 2010 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -37,6 +37,12 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
+
+DOCS -- 
+1. added a new arg to uninstall-node command == --type
+
+
+
 Here is a command to create a remote ssh node --
 
 asadmin --passwordfile ~/chandu_pw create-node-ssh --install --nodehost chandu.us.oracle.com --installdir /export/home/hudson/devtest-bnlocal/foo  --sshuser hudson ssh_node1 
@@ -64,4 +70,30 @@ And here is the resulting config in domain.xml
 
 
 
+============================================================================
 
+bunch-o-nodes
+
+  <nodes>
+    <node node-host="chandu" name="ssh_node1" type="SSH" install-dir="/export/home/hudson/devtest-bnlocal/glassfish3-xyz">
+      <ssh-connector>
+        <ssh-auth user-name="hudson"></ssh-auth>
+      </ssh-connector>
+    </node>
+    <node node-host="localhost" name="localhost-domain1" type="CONFIG" install-dir="${com.sun.aas.productRoot}"></node>
+    <node node-host="wnevins-lnr" name="lnrnode" type="DCOM" install-dir="${com.sun.aas.productRoot}">
+      <ssh-connector ssh-port="135">
+        <ssh-auth password="Bolongo23Nasal"></ssh-auth>
+      </ssh-connector>
+    </node>
+    <node node-host="wnevins-lnr" name="lnr23" type="DCOM" install-dir="${com.sun.aas.productRoot}">
+      <ssh-connector ssh-port="135">
+        <ssh-auth password="Bolongo23Nasal"></ssh-auth>
+      </ssh-connector>
+    </node>
+    <node node-host="wnevins-lnr" name="foobar" windows-domain="TESTTESTTEST" type="DCOM" install-dir="${com.sun.aas.productRoot}">
+      <ssh-connector ssh-port="135">
+        <ssh-auth password="Bolongo23Nasal"></ssh-auth>
+      </ssh-connector>
+    </node>
+  </nodes>

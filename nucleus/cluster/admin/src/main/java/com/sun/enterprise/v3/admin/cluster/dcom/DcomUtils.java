@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,34 +37,34 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package com.sun.enterprise.admin.cli.cluster;
+package com.sun.enterprise.v3.admin.cluster.dcom;
 
-import com.sun.enterprise.admin.cli.*;
-import org.jvnet.hk2.annotations.*;
-import org.jvnet.hk2.component.*;
-import org.glassfish.api.admin.*;
+import java.util.*;
+import org.glassfish.internal.api.RelativePathResolver;
 
 /**
- *  This is a local command that distributes the SSH public key to remote node(s)
- *
+ * I hate to copy&paste identical code into more than one class.
+ * Hence this class!
+ * @author Byron Nevins
  */
-@Service(name = "setup-dcom")
-@Scoped(PerLookup.class)
-@ExecuteOn({RuntimeType.DAS})
-public final class SetupDcom extends CLICommand {
-    /**
-     */
-    @Override
-    protected void validate()
-            throws CommandException {
+// not public!
+final class DcomUtils {
+    private DcomUtils() {
+        // no instances allowed!
     }
 
-    /**
-     */
-    @Override
-    protected int executeCommand()
-            throws CommandException {
+    static List<String> resolvePassword(String raw) {
+        List tokens = new ArrayList<String>(1);
+        String password = null;
 
-        throw new CommandException("setup-dcom is under construction.  Please try back later...");
+        try {
+            password = RelativePathResolver.getRealPasswordFromAlias(raw);
+        }
+        catch (Exception e) {
+            password = raw;
+        }
+
+        tokens.add("AS_ADMIN_DCOMPASSWORD=" + password);
+        return tokens;
     }
 }

@@ -39,6 +39,8 @@
  */
 package com.sun.enterprise.v3.admin.cluster.dcom;
 
+import com.sun.enterprise.v3.admin.cluster.DeleteNodeRemoteCommand;
+import java.util.List;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
@@ -55,21 +57,14 @@ import org.jvnet.hk2.component.PerLookup;
 @Scoped(PerLookup.class)
 @CommandLock(CommandLock.LockType.NONE)
 @ExecuteOn({RuntimeType.DAS})
-public class DeleteNodeDcom implements AdminCommand {
-    @Param(name = "name", primary = true)
-    String name;
-    @Param(optional = true, defaultValue = "false")
-    boolean uninstall;
-    @Param(optional = true, defaultValue = "false")
-    boolean force;
-    private ActionReport report;
-    Logger logger;
-
+public class DeleteNodeDcom extends DeleteNodeRemoteCommand {
     @Override
     public void execute(AdminCommandContext context) {
-        report = context.getActionReport();
-        logger = context.getLogger();
-        report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-        report.setMessage("delete-node-dcom is under construction and not yet available for use.");
+        executeInternal(context);
+    }
+
+    @Override
+    protected List<String> getPasswords() {
+        return DcomUtils.resolvePassword(remotepassword);
     }
 }

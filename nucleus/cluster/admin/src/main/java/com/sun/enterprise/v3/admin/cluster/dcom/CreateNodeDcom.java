@@ -128,17 +128,6 @@ public class CreateNodeDcom extends CreateRemoteNodeCommand {
      */
     @Override
     protected List<String> getPasswords() {
-        List tokens = new ArrayList<String>();
-        String password = null;
-
-        try {
-            password = RelativePathResolver.getRealPasswordFromAlias(dcompassword);
-        }
-        catch (Exception e) {
-            password = dcompassword;
-        }
-
-        tokens.add("AS_ADMIN_DCOMPASSWORD=" + password);
-        return tokens;
+        return DcomUtils.resolvePassword(dcompassword);
     }
 }

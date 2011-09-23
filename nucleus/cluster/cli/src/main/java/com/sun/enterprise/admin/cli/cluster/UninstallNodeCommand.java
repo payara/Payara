@@ -39,6 +39,9 @@
  */
 package com.sun.enterprise.admin.cli.cluster;
 
+import com.sun.enterprise.universal.process.WindowsException;
+import com.sun.enterprise.util.io.WindowsRemoteFile;
+import com.sun.enterprise.util.io.WindowsRemoteFileSystem;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.CommandException;
 import org.glassfish.cluster.ssh.launcher.SSHLauncher;
@@ -64,6 +67,8 @@ public class UninstallNodeCommand extends NativeRemoteCommandsBase {
     private String installDir;
     @Param(optional = true, defaultValue = "false")
     private boolean force;
+    @Param(optional = true, defaultValue = "SSH")
+    private String type;
     @Inject
     private Habitat habitat;
     @Inject
@@ -81,7 +86,9 @@ public class UninstallNodeCommand extends NativeRemoteCommandsBase {
             }
         }
         sshuser = resolver.resolve(sshuser);
-        if (sshkeyfile == null) {
+        if ("DCOM".equals(type)) {
+        }
+        else if (sshkeyfile == null) {
             //if user hasn't specified a key file check if key exists in
             //default location
             String existingKey = SSHUtil.getExistingKeyFile();
@@ -100,7 +107,6 @@ public class UninstallNodeCommand extends NativeRemoteCommandsBase {
         if (sshkeyfile != null && isEncryptedKey()) {
             sshkeypassphrase = getSSHPassphrase(true);
         }
-
     }
 
     @Override
@@ -115,11 +121,21 @@ public class UninstallNodeCommand extends NativeRemoteCommandsBase {
         catch (InterruptedException e) {
             throw new CommandException(e);
         }
+        catch (WindowsException e) {
+            throw new CommandException(e);
+        }
 
         return SUCCESS;
     }
 
-    private void deleteFromHosts() throws CommandException, IOException, InterruptedException {
+    private void deleteFromHosts() throws CommandException, IOException, InterruptedException, WindowsException {
+        if ("SSH".equals(type))
+            deleteFromHostsSsh();
+        else if ("DCOM".equals(type))
+            deleteFromHostsDcom();
+    }
+
+    private void deleteFromHostsSsh() throws CommandException, IOException, InterruptedException {
 
         List<String> files = getListOfInstallFiles(installDir);
 
@@ -147,6 +163,24 @@ public class UninstallNodeCommand extends NativeRemoteCommandsBase {
 
             if (sftpClient.ls(installDir).isEmpty()) {
                 sftpClient.rmdir(installDir);
+            }
+        }
+    }
+
+    private void deleteFromHostsDcom() throws WindowsException, IOException, CommandException {
+        for (String host : hosts) {
+            String pw = getDCOMPassword(host);
+            WindowsRemoteFileSystem wrfs = new WindowsRemoteFileSystem(host, sshuser, pw);
+            WindowsRemoteFile remoteInstallDir = new WindowsRemoteFile(wrfs, installDir);
+
+            if (!remoteInstallDir.exists()) {
+                throw new IOException(Strings.get("remote.install.dir.already.gone", installDir));
+            }
+            remoteInstallDir.delete();
+
+           // make sure it's gone now...
+            if (remoteInstallDir.exists()) {
+                throw new IOException(Strings.get("remote.install.dir.cant.delete", installDir));
             }
         }
     }
