@@ -16,13 +16,15 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.apache.myfaces.trinidad</groupId>
+            <groupId>org.glassfish.external.trinidad</groupId>
             <artifactId>trinidad-api</artifactId>
+            <version>${version.trinidad}</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>org.apache.myfaces.trinidad</groupId>
+            <groupId>org.glassfish.external.trinidad</groupId>
             <artifactId>trinidad-impl</artifactId>
+            <version>${version.trinidad}</version>
             <scope>compile</scope>
         </dependency>
         <dependency>

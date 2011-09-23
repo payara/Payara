@@ -22,7 +22,7 @@
         <version.junit>4.8.2</version.junit>
         <version.mojarra>2.1.3-b01</version.mojarra>
         <version.osgi>4.2.0</version.osgi>
-        <version.trinidad>2.0.2-SNAPSHOT</version.trinidad>
+        <version.trinidad>2.0.2-glassfish-1</version.trinidad>
     </properties>
 
     <repositories>
@@ -52,7 +52,6 @@
         <module>plugin-system</module>
         <module>plugin-system-jsf</module>
         <module>plugins</module>
-        <module>trinidad</module>
         <module>webapp</module>
     </modules>
     
@@ -60,12 +59,12 @@
         <dependencies>
             <!-- Compile-time -->
             <dependency>
-                <groupId>org.apache.myfaces.trinidad</groupId>
+                <groupId>org.glasfish.external.trinidad</groupId>
                 <artifactId>trinidad-api</artifactId>
                 <version>${version.trinidad}</version>
             </dependency>
             <dependency>
-                <groupId>org.apache.myfaces.trinidad</groupId>
+                <groupId>org.glasfish.external.trinidad</groupId>
                 <artifactId>trinidad-impl</artifactId>
                 <version>${version.trinidad}</version>
             </dependency>
