@@ -39,6 +39,8 @@
  */
 package org.glassfish.elasticity.engine.commands;
 
+import org.glassfish.config.support.CommandTarget;
+import org.glassfish.config.support.TargetType;
 import org.glassfish.elasticity.config.serverbeans.*;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.util.StringUtils;
@@ -56,6 +58,8 @@ import org.glassfish.hk2.Services;
 import org.jvnet.hk2.annotations.*;
 import org.jvnet.hk2.component.*;
 import org.jvnet.hk2.config.*;
+
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.glassfish.api.admin.CommandRunner.CommandInvocation;
 import org.glassfish.api.admin.RestEndpoint;
@@ -63,7 +67,7 @@ import org.glassfish.api.admin.RestEndpoint.OpType;
 import org.glassfish.api.admin.RestEndpoints;
 
 /**
- ** Remote AdminCommand to create an alert element.  This command is run only on DAS.
+ ** Remote AdminCommand to create an elastic service element.  This command is run only on DAS.
  * Created by IntelliJ IDEA.
  * User: cmott
  * Date: 9/19/11
@@ -71,7 +75,8 @@ import org.glassfish.api.admin.RestEndpoints;
 @Service(name = "_create-elastic-service")
 @I18n("create.ealastic.service")
 @Scoped(PerLookup.class)
-@ExecuteOn({RuntimeType.DAS})
+@TargetType(value={CommandTarget.DAS,CommandTarget.DOMAIN, CommandTarget.CLUSTER, CommandTarget.STANDALONE_INSTANCE })
+@ExecuteOn({RuntimeType.DAS,RuntimeType.INSTANCE })
 public class CreateElasticServiceCommand implements AdminCommand {
 
   @Inject
@@ -139,6 +144,8 @@ public class CreateElasticServiceCommand implements AdminCommand {
         //notify elastic container to run
         ElasticService elasticService = elasticServices.getElasticService(name);
         elasticEngine.startElasticService(elasticService);
+
+        logger.log(Level.INFO, "Executed elasticEngine.startElasticService(" + elasticService.getName() + ")");
 
         //create lower bound alert for memory demo
         String expression = "any[avg(jvm_memory.heap.used)*100/jvm_memory.maxMemory]  <  20" ;
