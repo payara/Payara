@@ -86,7 +86,7 @@ public interface Actions  extends ConfigBeanProxy  {
     void setScaleDownAction(ScaleDownAction scaleDownAction);
 
     @Element
-    ScaleUpAction getScaleDownAction();
+    ScaleDownAction getScaleDownAction();
 
   /**
    * Return the action with the given name, or null if no such action exists.
