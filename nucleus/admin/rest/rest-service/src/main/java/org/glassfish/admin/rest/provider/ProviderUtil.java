@@ -439,20 +439,16 @@ public class ProviderUtil {
             return "";
         }
 
-        StringBuilder result = new StringBuilder(parameter);
         //set appropriate type of input field. In can be of type file or text
         //file type is used in case of deploy operation
         String parameterType = parameterMetaData.isFileParameter() ? "file" : "text";
 
-        //indicate mandatory field with * super-script
-        if (parameterMetaData.getAttributeValue(Constants.OPTIONAL).equalsIgnoreCase("false")) {
-            result.append("<sup>*</sup>");
-        }
-
+        StringBuilder result = new StringBuilder();
         result.append("<dt><label for=\"")
                 .append(parameter)
                 .append("\">")
-                .append(result)
+                .append(parameter)
+                .append(parameterMetaData.getAttributeValue(Constants.OPTIONAL).equalsIgnoreCase("false") ? "<sup>*</sup>" : "") //indicate mandatory field with * super-script
                 .append(":&nbsp;")
                 .append("</label></dt>");
 
