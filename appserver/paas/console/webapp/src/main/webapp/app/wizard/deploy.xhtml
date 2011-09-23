@@ -78,9 +78,10 @@
                           contentStyle="width: 350px"/>
         </tr:group>
     </tr:panelFormLayout>
-    <div style="width: 600px; position: absolute; bottom: 5px">
     <tr:spacer height="40px"/>
     <tr:separator/>
+    <tr:spacer height="40px"/>
+    <div style="width: 600px; position: absolute; bottom: 5px">
     <tr:commandButton id="prevButton" text="&lt;&lt; Previous" action="#{wizardBean.previous}">
     </tr:commandButton>
     <tr:commandButton id="nextButton" text=" Deploy " action="#{uploadBean.doDeploy}"
