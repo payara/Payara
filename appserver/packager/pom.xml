@@ -122,6 +122,7 @@
 	<module>mq</module>
 	<module>glassfish-common</module>
 	<module>glassfish-virtualization</module>
+        <module>glassfish-paas-gui</module>
 	<module>glassfish-web-incorporation</module>
 	<module>glassfish-full-incorporation</module>
 	<module>glassfish-web-profile</module>
