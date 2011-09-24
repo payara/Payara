@@ -45,11 +45,14 @@ public class EnvironmentBean implements Serializable {
             applications = new ArrayList();
             try {
                 List<String> appsNameList = RestUtil.getChildNameList(REST_URL + "/clusters/cluster/" + envName + "/application-ref");
+                int num = 0;
                 for (String oneApp : appsNameList) {
                     String contextRoot = (String) RestUtil.getAttributesMap(REST_URL + "/applications/application/" + oneApp).get("contextRoot");
                     Map aMap = new HashMap();
                     aMap.put("appName", oneApp);
                     aMap.put("contextRoot", contextRoot);
+                    aMap.put("appnum", ""+num);
+                    num++;
 /*                    
                     List<String> urls = getLaunchUrls(oneApp);
                     if (urls.size()>0){
@@ -70,6 +73,15 @@ public class EnvironmentBean implements Serializable {
         return (String) getApplications().get(0).get("appName");
     }
 
+
+    public String undeploy(String appName){
+        try{
+            RestUtil.restRequest(REST_URL+"/applications/application/"+appName, null, "DELETE", null, null, true);
+            return ("/env/environments");
+        }catch(Exception ex){
+            return null;
+        }
+    }
 
     //For instances, we want this to get call everytime the page is loaded.  Since this is in a tab set, so, even when declared @viewScope
     //this bean will still be cached.  However, since this is for generating table data,  this method will get called multipe times when the

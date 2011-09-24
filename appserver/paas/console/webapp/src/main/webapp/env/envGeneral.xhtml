@@ -71,7 +71,7 @@
                 </span>
             </div>
             <br/>
-            <tr:table var="app" value="#{environmentBean.applications}" horizontalGridVisible="true" verticalGridVisible="true" rowBandingInterval="1">
+            <tr:table id="apptable" var="app" value="#{environmentBean.applications}" horizontalGridVisible="true" verticalGridVisible="true" rowBandingInterval="1">
                 <tr:column headerText="Application Name">
                     <tr:panelHorizontalLayout  halign="left">
                         <tr:image id="progressBar" source="/images/progress.gif" shortDesc="Deploying Applicaiton .... " rendered="#{app.notExist}"/>
@@ -81,8 +81,17 @@
                 <tr:column  headerText="Context Root">
                     #{app.contextRoot}
                 </tr:column>
-                <tr:column width="20px">
-                    <h:commandLink id="delete" styleClass="ui-icon ui-icon-trash" onclick="confirm('This feature is not yet fully implemented. It will be available soon.');"/>
+                <tr:column width="25px">
+                    
+                     <tr:commandLink id="undeploy" styleClass="ui-icon ui-icon-trash" shortDesc="Undeploy"
+                            action="#{environmentBean.undeploy(app.appName)}"
+                            onclick="if (confirm('This environment will be removed as a result of undeploying the application. Continue ?')){
+                            document.getElementById('apptable:#{app.num}:undeploy').style.visibility='hidden';
+                            document.getElementById('apptable:#{app.num}:progress').style.visibility='visible';
+                            return true;}
+                    else return false;">
+                    </tr:commandLink>
+                     <tr:image id="progress" inlineStyle="padding-left: 5px; visibility:hidden;" source="/images/progress-small.gif" />
                 </tr:column>
             </tr:table>
         </div>
