@@ -40,17 +40,13 @@
 
 package org.glassfish.cluster.ssh.connect;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.logging.Logger;
-import org.glassfish.common.util.admin.AsadminInput;
 
 import org.jvnet.hk2.component.Habitat;
 import org.glassfish.api.admin.SSHCommandExecutionException;
-import com.sun.enterprise.universal.process.ProcessManagerException;
-import com.sun.enterprise.universal.process.ProcessManager;
 import com.sun.enterprise.config.serverbeans.Node;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.enterprise.util.StringUtils;
