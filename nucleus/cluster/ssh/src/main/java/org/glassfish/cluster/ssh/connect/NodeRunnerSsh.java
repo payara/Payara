@@ -57,12 +57,10 @@ import com.sun.enterprise.util.StringUtils;
 
 import org.glassfish.cluster.ssh.launcher.SSHLauncher;
 import java.io.ByteArrayOutputStream;
-import org.glassfish.common.util.admin.AuthTokenManager;
 
-public class NodeRunner  {
+public class NodeRunnerSsh  {
 
     private static final String NL = System.getProperty("line.separator");
-    private static final String AUTH_TOKEN_STDIN_LINE_PREFIX = "option." + AuthTokenManager.AUTH_TOKEN_OPTION_NAME + "=";
 
     private  Habitat habitat;
     private Logger logger;
@@ -73,17 +71,11 @@ public class NodeRunner  {
 
     private SSHLauncher sshL = null;
 
-    private final AuthTokenManager authTokenManager;
-
-    public NodeRunner(Habitat habitat, Logger logger) {
+    public NodeRunnerSsh(Habitat habitat, Logger logger) {
         this.logger = logger;
         this.habitat = habitat;
-        authTokenManager = habitat.getComponent(AuthTokenManager.class);
     }
 
-    public String getLastCommandRun() {
-        return lastCommandRun;
-    }
 
     public boolean isSshNode(Node node) {
 
@@ -95,122 +87,8 @@ public class NodeRunner  {
         return node.getType().equals("SSH");
     }
 
-    /**
-     * Run an asadmin command on a Node. The node may be local or remote. If
-     * it is remote then SSH is used to execute the command on the node.
-     * The args list is all parameters passed to "asadmin", but not
-     * "asadmin" itself. So an example args is:
-     * 
-     * "--host", "mydashost.com", "start-local-instance", "--node", "n1", "i1"
-     *
-     * @param node  The node to run the asadmin command on
-     * @param output    A StringBuilder to hold the command's output in. Both
-     *                  stdout and stderr are placed in output. null if you
-     *                  don't want the output.
-     * @param args  The arguments to the asadmin command. This includes
-     *              parameters for asadmin (like --host) as well as the
-     *              command (like start-local-instance) as well as an
-     *              parameters for the command. It does not include the
-     *              string "asadmin" itself.
-     * @return      The status of the asadmin command. Typically 0 if the
-     *              command was successful else 1.
-     *
-     * @throws SSHCommandExecutionException There was an error executing the
-     *                                      command via SSH.
-     * @throws ProcessManagerException      There was an error executing the
-     *                                      command locally.
-     * @throws UnsupportedOperationException The command needs to be run on
-     *                                       a remote node, but the node is not
-     *                                       of type SSH.
-     * @throws IllegalArgumentException     The passed node is malformed.
-     */
-    public int runAdminCommandOnNode(Node node, StringBuilder output,
-                                     List<String> args) throws
-        SSHCommandExecutionException,
-        ProcessManagerException,
-        UnsupportedOperationException,
-        IllegalArgumentException {
 
-        return runAdminCommandOnNode(node, output, false, args);
-    }
-
-    public int runAdminCommandOnNode(Node node, StringBuilder output,
-                                     boolean waitForReaderThreads,
-                                     List<String> args) throws
-        SSHCommandExecutionException,
-        ProcessManagerException,
-        UnsupportedOperationException,
-        IllegalArgumentException {
-
-
-        if (node == null) {
-            throw new IllegalArgumentException("Node is null");
-        }
-
-        final List<String> stdinLines = new ArrayList<String>();
-        stdinLines.add(AsadminInput.versionSpecifier());
-        stdinLines.add(AUTH_TOKEN_STDIN_LINE_PREFIX + authTokenManager.createToken());
-        args.add(0, AsadminInput.CLI_INPUT_OPTION);
-        args.add(1, AsadminInput.SYSTEM_IN_INDICATOR); // specified to read from System.in
-        args.add(2, "--interactive=false");            // No prompting!
-        
-        if (node.isLocal()) {
-            return runAdminCommandOnLocalNode(node, output, waitForReaderThreads,
-                    args, stdinLines);
-        } else {
-            return runAdminCommandOnRemoteNode(node, output, args, stdinLines);
-        }
-    }
-
-    private int runAdminCommandOnLocalNode(Node node, StringBuilder output,
-                                           boolean waitForReaderThreads,
-                                           List<String> args,
-                                           List<String> stdinLines) throws
-            ProcessManagerException {
-
-        List<String> fullcommand = new ArrayList<String>();
-        String installDir = node.getInstallDirUnixStyle() + "/" +
-            SystemPropertyConstants.getComponentName();
-        if (!StringUtils.ok(installDir)) {
-            throw new IllegalArgumentException("Node does not have an installDir");
-        }
-
-        File asadmin = new File(SystemPropertyConstants.getAsAdminScriptLocation(installDir));
-        fullcommand.add(asadmin.getAbsolutePath());
-        fullcommand.addAll(args);
-
-        if (!asadmin.canExecute())
-            throw new ProcessManagerException(asadmin.getAbsolutePath() + " is not executable.");
-
-        lastCommandRun = commandListToString(fullcommand);
-
-        trace("Running command locally: " + lastCommandRun);
-        ProcessManager pm = new ProcessManager(fullcommand);
-        pm.setStdinLines(stdinLines);
-
-        // XXX should not need this after fix for 12777, but we seem to
-        pm.waitForReaderThreads(waitForReaderThreads);
-        pm.execute();  // blocks until command is complete
-
-        String stdout = pm.getStdout();
-        String stderr = pm.getStderr();
-
-        if (output != null) {
-            if (StringUtils.ok(stdout)) {
-                output.append(stdout);
-            }
-
-            if (StringUtils.ok(stderr)) {
-                if (output.length() > 0) {
-                    output.append(NL);
-                }
-                output.append(stderr);
-            }
-        }
-        return pm.getExitValue();
-    }
-
-    private int runAdminCommandOnRemoteNode(Node node, StringBuilder output,
+    public int runAdminCommandOnRemoteNode(Node node, StringBuilder output,
                                        List<String> args,
                                        List<String> stdinLines) throws
             SSHCommandExecutionException, IllegalArgumentException,
@@ -244,7 +122,7 @@ public class NodeRunner  {
             ByteArrayOutputStream outStream = new ByteArrayOutputStream();
             commandStatus = sshL.runCommand(fullcommand, outStream, stdinLines);
             output.append(outStream.toString());
-            return commandStatus;              
+            return commandStatus;
 
         }catch (IOException ex) {
             String m1 = " Command execution failed. " +ex.getMessage();
@@ -259,7 +137,7 @@ public class NodeRunner  {
             cee.setSSHSettings(sshL.toString());
             cee.setCommandRun(lastCommandRun);
             throw cee;
-            
+
         } catch (java.lang.InterruptedException ei){
             ei.printStackTrace();
             String m1 = ei.getMessage();
@@ -276,10 +154,9 @@ public class NodeRunner  {
             throw cee;
         }
     }
-
     private void trace(String s) {
         logger.fine(String.format("%s: %s", this.getClass().getSimpleName(), s));
-    }
+   }
 
     private String commandListToString(List<String> command) {
         StringBuilder fullCommand = new StringBuilder();
@@ -291,5 +168,4 @@ public class NodeRunner  {
 
         return fullCommand.toString();
     }
-
 }

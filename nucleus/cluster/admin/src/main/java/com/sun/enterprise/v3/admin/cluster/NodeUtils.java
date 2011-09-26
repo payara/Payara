@@ -59,7 +59,6 @@ import com.sun.enterprise.universal.process.WindowsRemotePinger;
 import com.sun.enterprise.util.io.WindowsRemoteFile;
 import com.sun.enterprise.util.io.WindowsRemoteFileSystem;
 import org.glassfish.cluster.ssh.launcher.SSHLauncher;
-import org.glassfish.cluster.ssh.connect.NodeRunner;
 import java.util.logging.Logger;
 import java.io.File;
 import java.io.IOException;
@@ -570,7 +569,7 @@ public class NodeUtils {
         }
 
         if (StringUtils.ok(humanCommand)) {
-            msg3 = Strings.get("node.ssh.tocomplete",
+            msg3 = Strings.get("node.remote.tocomplete",
                     nodeHost, installDir, humanCommand);
         }
 

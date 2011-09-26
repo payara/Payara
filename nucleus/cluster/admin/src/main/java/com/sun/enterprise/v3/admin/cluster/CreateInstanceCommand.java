@@ -321,9 +321,17 @@ public class CreateInstanceCommand implements AdminCommand {
             String msg = Strings.get(
                     "create.instance.remote.boot.failed",
                     instance,
+
+
+
+                    // DCOMFIX
                     (ex instanceof SecureAdminBootstrapHelper.BootstrapException
                     ? ((SecureAdminBootstrapHelper.BootstrapException) ex).sshSettings() : null),
                     exmsg,
+
+
+
+
                     nodeHost);
             logger.log(Level.SEVERE, msg, ex);
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
@@ -358,7 +366,7 @@ public class CreateInstanceCommand implements AdminCommand {
 
         if (nodeDir != null) {
             command.add("--nodedir");
-            command.add(nodeDir); //XXX escape spaces?
+            command.add(StringUtils.quotePathIfNecessary(nodeDir));
         }
 
         command.add("--node");
@@ -367,7 +375,7 @@ public class CreateInstanceCommand implements AdminCommand {
         command.add(instance);
 
         humanCommand = makeCommandHuman(command);
-        if (!theNode.isLocal() && !theNode.getType().equals("SSH")) {
+        if (userManagedNodeType()) {
             String msg = Strings.get("create.instance.config",
                     instance, humanCommand);
             msg = StringUtils.cat(NL, registerInstanceMessage, msg);
@@ -488,5 +496,19 @@ public class CreateInstanceCommand implements AdminCommand {
         }
 
         return fullCommand.toString();
+    }
+
+    // verbose but very readable...
+    private boolean userManagedNodeType() {
+        if(theNode.isLocal())
+            return false;
+
+        if(theNode.getType().equals("SSH"))
+            return false;
+
+        if(theNode.getType().equals("DCOM"))
+            return false;
+
+        return true;
     }
 }
