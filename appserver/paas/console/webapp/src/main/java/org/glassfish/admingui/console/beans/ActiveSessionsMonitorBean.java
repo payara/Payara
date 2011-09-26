@@ -39,53 +39,60 @@
  */
 package org.glassfish.admingui.console.beans;
 
-import java.text.SimpleDateFormat;
+import java.text.DateFormat;
 import javax.faces.bean.ManagedBean;
 import java.util.*;
+import java.util.ArrayList;
+import javax.el.ELContext;
 import javax.faces.bean.SessionScoped;
+import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
 import org.apache.myfaces.trinidad.event.PollEvent;
 import org.apache.myfaces.trinidad.model.ChartModel;
+import org.glassfish.admingui.console.rest.RestUtil;
 
 @ManagedBean(name = "sessionsMonitorBean")
 @SessionScoped
 public class ActiveSessionsMonitorBean {
-    private final int MAX_SIZE = 10;
-    private MyChartModel value = new MyChartModel();
 
-    public ChartModel getValue() {        
+    private final int MAX_SIZE = 15;
+    private MyChartModel value = new MyChartModel();
+    private String envName = null;
+
+    public String getEnvName() {
+        if (envName == null) {
+            ELContext elContext = FacesContext.getCurrentInstance().getELContext();
+            EnvironmentBean eBean = (EnvironmentBean) FacesContext.getCurrentInstance().getApplication().getELResolver().getValue(elContext, null, "environmentBean");
+            envName = eBean.getEnvName();
+        }
+        return envName;
+    }
+
+    public ChartModel getValue() {
         return value;
     }
 
     public void onRefresh(ActionEvent e) {
-        if (value != null) { // && value.isUpdate()) {
-            value.updateLabelsAndValues();
+        if (value != null) {
+            value.getActiveSessionsMonitoringStats();
         }
     }
 
     public void onPoll(PollEvent e) {
-        if (value != null) { // && value.isUpdate()) {
-            value.updateLabelsAndValues();
+        if (value != null) {
+            value.getActiveSessionsMonitoringStats();
         }
     }
-    
+
     private class MyChartModel extends ChartModel {
+
         private List<String> _groupLabels = new ArrayList<String>();
-        private List<String> _seriesLabels = Arrays.asList(new String[]{"instance1", "instance2"});
-        private List<List<Double>> _chartYValues;
-        private List<List<Double>> _chartXValues;
-        Date minDate, maxDate;
+        private List<String> _seriesLabels = new ArrayList<String>();
+        private List<List<Double>> _chartYValues = new ArrayList<List<Double>>();
+        private Double _maxYValue = 5.0;
 
         public MyChartModel() {
-            _chartYValues = new ArrayList<List<Double>>();
-            _chartYValues.add(Arrays.asList(new Double[]{2.0, 1.0}));
-            _chartYValues.add(Arrays.asList(new Double[]{5.0, 2.0}));
-            _chartYValues.add(Arrays.asList(new Double[]{10.0, 4.0}));
-            _chartYValues.add(Arrays.asList(new Double[]{15.0, 6.0}));
-            _chartYValues.add(Arrays.asList(new Double[]{20.0, 2.0}));
-
-            _chartXValues = new ArrayList<List<Double>>();
-            setLabelsAndValues();
+            getActiveSessionsMonitoringStats();
         }
 
         @Override
@@ -95,13 +102,7 @@ public class ActiveSessionsMonitorBean {
 
         @Override
         public List<String> getGroupLabels() {
-
             return _groupLabels;
-        }
-
-        @Override
-        public List<List<Double>> getXValues() {
-            return null;
         }
 
         @Override
@@ -111,7 +112,7 @@ public class ActiveSessionsMonitorBean {
 
         @Override
         public Double getMaxYValue() {
-            return 40.0;
+            return _maxYValue;
         }
 
         @Override
@@ -120,65 +121,84 @@ public class ActiveSessionsMonitorBean {
         }
 
         @Override
-        public Double getMaxXValue() {
-            return Double.longBitsToDouble(maxDate.getTime());
-        }
-
-        @Override
-        public Double getMinXValue() {
-            return Double.longBitsToDouble(minDate.getTime());
-        }
-
-        @Override
         public String getTitle() {
             return "Active Sessions Statistics";
         }
 
-        @Override
-        public String getSubTitle() {
-            return "";
+        private void getActiveSessionsMonitoringStats() {
+            Map<String, Object> instanceSessionData = new HashMap<String, Object>();
+            Map<String, Object> result = null;
+            String clusterName = getEnvName();
+            List<String> instanceNames = MonitoringBean.getClusterInstances(clusterName);
+            //Get the Monitoring statistics
+            for (String instanceName : instanceNames) {
+                result = null;
+                String endPoint = "http://localhost:4848/monitoring/elasticity/domain/" + instanceName + "/session_count.json";
+                result = (Map<String, Object>) RestUtil.restRequest(endPoint, null, "GET", null, null, false, true).get("data");
+                if (result != null) {
+                    Map<String, Object> sessionResultExtraProps = (Map<String, Object>) result.get("extraProperties");
+                    if (sessionResultExtraProps != null) {
+                        Map<String, Object> sessionResultEntity = (Map<String, Object>) sessionResultExtraProps.get("entity");
+                        if (sessionResultEntity != null && !sessionResultEntity.isEmpty()) {
+                            Map<String, Map<String, Long>> sessionResultProps = (Map<String, Map<String, Long>>) (sessionResultEntity.get("activeSessions"));
+                            instanceSessionData.put(instanceName, sessionResultProps);
+                        }
+                    }
+                }
+            }
+            normalizeMonitoringData(instanceSessionData);
         }
 
-        @Override
-        public String getFootNote() {
-            return "";
-        }
-        
-        private void setLabelsAndValues() {
-            Calendar cal = Calendar.getInstance();
-            Date dt = new Date(2000, 7, 23, 10, 10, 10);
-            minDate = dt;
-            cal.setTime(dt);
-            cal.add(Calendar.HOUR, 2);
-            SimpleDateFormat sdf = new SimpleDateFormat("hh:mm");
-            for (int i = 0; i < 5; i++) {
-                cal.add(Calendar.HOUR, 2);
-                String formattedStr = sdf.format(cal.getTime());
-                _groupLabels.add(formattedStr);
-                _chartXValues.add(Arrays.asList(new Double[]{Double.longBitsToDouble(cal.getTimeInMillis())}));
+        private void normalizeMonitoringData(Map<String, Object> data) {
+            //sessionMap to prepare the data for chart.. time as key and list of instances current values as value.
+            Map<Double, List<Double>> sessionMap = new HashMap<Double, List<Double>>();
+            _maxYValue = 5.0;
+            _seriesLabels.clear();
+
+            for (String inst : data.keySet()) {
+                _seriesLabels.add(inst);
+                Map<String, Map<String, Long>> sessionResultProps = (Map<String, Map<String, Long>>) data.get(inst);
+                for (String sessionProp : sessionResultProps.keySet()) {
+                    Long time = Long.valueOf(sessionProp);
+                    Long currentValue = sessionResultProps.get(sessionProp).get("current");
+                    List<Double> val = sessionMap.get(time.doubleValue());
+                    if (val == null) {
+                        val = new ArrayList<Double>();
+                        val.add(currentValue.doubleValue());
+                    } else {
+                        val.add(currentValue.doubleValue());
+                    }
+                    sessionMap.put(time.doubleValue(), val);
+                    if (currentValue.doubleValue() > _maxYValue) {
+                        _maxYValue = currentValue.doubleValue() + 5;
+                    }
+                }
             }
-            cal.add(Calendar.HOUR, 2);
-            maxDate = cal.getTime();
+            setSessionMonitoringChartInfo(sessionMap);
         }
-        
-        public void updateLabelsAndValues() {
-            Random generator = new Random();
-            
-            Calendar cal = Calendar.getInstance();
-            cal.setTime(maxDate);
-            SimpleDateFormat sdf = new SimpleDateFormat("hh:mm");
-            cal.add(Calendar.HOUR, 2);
-            String formattedStr = sdf.format(cal.getTime());
-            _groupLabels.add(formattedStr);
-            _chartXValues.add(Arrays.asList(new Double[]{Double.longBitsToDouble(cal.getTimeInMillis())}));
-            _chartYValues.add(Arrays.asList(new Double[]{generator.nextDouble()*20+10, generator.nextDouble()*10}));
-            cal.add(Calendar.HOUR, 2);
-            maxDate = cal.getTime();
-            
+
+        private void setSessionMonitoringChartInfo(Map<Double, List<Double>> data) {
+            _groupLabels.clear();
+            _chartYValues.clear();
+            int instanceCount = _seriesLabels.size();
+            for (Double time : data.keySet()) {
+                List<Double> sessionValList = data.get(time);
+                if (sessionValList.size() == instanceCount) {
+                    setGroupLabel(time.longValue());
+                    _chartYValues.add(sessionValList);
+                }
+            }
             if (_chartYValues.size() > MAX_SIZE) {
-                _chartYValues = _chartYValues.subList(_chartYValues.size()-MAX_SIZE, _chartYValues.size());
-                _chartXValues = _chartXValues.subList(_chartXValues.size()-MAX_SIZE, _chartXValues.size());
-                _groupLabels = _groupLabels.subList(_groupLabels.size()-MAX_SIZE, _groupLabels.size());
+                _chartYValues = _chartYValues.subList(_chartYValues.size() - MAX_SIZE, _chartYValues.size());
+                _groupLabels = _groupLabels.subList(_groupLabels.size() - MAX_SIZE, _groupLabels.size());
+            }
+        }
+
+        private void setGroupLabel(Long time) {
+            if (_groupLabels.isEmpty() || _groupLabels.size() % 3 == 0) {
+                _groupLabels.add(DateFormat.getInstance().format(new Date(time)));
+            } else {
+                _groupLabels.add("");
             }
         }
     }

@@ -115,7 +115,7 @@ public class ClusterSizeMonitorBean {
         private List<String> _groupLabels = new ArrayList<String>();
         private List<String> _seriesLabels = Arrays.asList(new String[]{getEnvName()});
         private List<List<Double>> _chartYValues;
-        private Double _maxYValue = 0.0;
+        private Double _maxYValue = 5.0;
 
         public MyChartModel() {
             _chartYValues = new ArrayList<List<Double>>();
@@ -172,27 +172,13 @@ public class ClusterSizeMonitorBean {
             Map<String, Object> result = null;
             String clusterName = getEnvName();
             //To get the instance Name of a cluster that is running
-            String instanceName = "";
-            String endPoint = "http://localhost:4848/management/domain/clusters/cluster/" + clusterName + "/list-instances.json";
-            result = (Map<String, Object>) RestUtil.restRequest(endPoint, null, "GET", null, null, false, true).get("data");
-            if (result != null) {
-                List<Map<String, Object>> instanceList = (List<Map<String, Object>>) ((Map<String, Object>) result.get("extraProperties")).get("instanceList");
-                if (instanceList != null) {
-                    for (Map<String, Object> instanceInfo : instanceList) {
-                        String status = (String) instanceInfo.get("status");
-                        if (status.equals("RUNNING")) {
-                            instanceName = (String) instanceInfo.get("name");
-                            break;
-                        }
-                    }
-                }
-            }
+            String instanceName = getClusterInstanceName(clusterName);
             if (instanceName == "") {
                 return;
             }
             //Get the Monitoring statistics
             result = null;
-            endPoint = "http://localhost:4848/monitoring/elasticity/domain/" + instanceName + "/cluster_instance_size/" + clusterName + ".json";
+            String endPoint = "http://localhost:4848/monitoring/elasticity/domain/" + instanceName + "/cluster_instance_size/" + clusterName + ".json";
             result = (Map<String, Object>) RestUtil.restRequest(endPoint, null, "GET", null, null, false, true).get("data");
             if (result != null) {
                 Map<String, Object> heapResultExtraProps = (Map<String, Object>) result.get("extraProperties");
@@ -215,7 +201,7 @@ public class ClusterSizeMonitorBean {
         private void setClusterSizeMonitoringChartInfo(List<ClusterSizeStat> data) {
             _groupLabels.clear();
             _chartYValues.clear();
-            _maxYValue = 0.0;
+            _maxYValue = 5.0;
             for (int i = 0; i < data.size(); i++) {
                 ClusterSizeStat stat = data.get(i);
                 Double usedVal = stat.getInstanceCount().doubleValue();
@@ -233,6 +219,26 @@ public class ClusterSizeMonitorBean {
             } else {
                 _groupLabels.add("");
             }
+        }
+
+        private String getClusterInstanceName(String cluster) {
+            String endPoint = "http://localhost:4848/management/domain/clusters/cluster/" + cluster + "/list-instances.json";
+            Map<String, Object> result = (Map<String, Object>) RestUtil.restRequest(endPoint, null, "GET", null, null, false, true).get("data");
+            if (result != null) {
+                Map<String, Object> heapResultExtraProps = (Map<String, Object>) result.get("extraProperties");
+                if (heapResultExtraProps != null) {
+                    List<Map<String, Object>> instancesDeatils = (List<Map<String, Object>>) heapResultExtraProps.get("instanceList");
+                    if (instancesDeatils != null && !instancesDeatils.isEmpty()) {
+                        for (Map<String, Object> instanceInfo : instancesDeatils) {
+                            String status = (String) instanceInfo.get("status");
+                            if (status.equals("RUNNING")) {
+                                return (String) instanceInfo.get("name");
+                            }
+                        }
+                    }
+                }
+            }
+            return "";
         }
     }
 }

@@ -39,10 +39,14 @@
  */
 package org.glassfish.admingui.console.beans;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ManagedProperty;
 import javax.faces.bean.SessionScoped;
 import javax.faces.event.ActionEvent;
+import org.glassfish.admingui.console.rest.RestUtil;
 
 @ManagedBean(name = "monitorBean")
 @SessionScoped
@@ -83,5 +87,26 @@ public class MonitoringBean {
         memoryBean.onRefresh(e);
         sessionBean.onRefresh(e);
         processTimeBean.onRefresh(e);
+    }
+
+    public static List<String> getClusterInstances(String cluster) {
+        List<String> instanceNames = new ArrayList<String>();
+        String endPoint = "http://localhost:4848/management/domain/clusters/cluster/" + cluster + "/list-instances.json";
+        Map<String, Object> result = (Map<String, Object>) RestUtil.restRequest(endPoint, null, "GET", null, null, false, true).get("data");
+        if (result != null) {
+            Map<String, Object> heapResultExtraProps = (Map<String, Object>) result.get("extraProperties");
+            if (heapResultExtraProps != null) {
+                List<Map<String, Object>> instancesDeatils = (List<Map<String, Object>>) heapResultExtraProps.get("instanceList");
+                if (instancesDeatils != null && !instancesDeatils.isEmpty()) {
+                    for (Map<String, Object> instanceInfo : instancesDeatils) {
+                        String status = (String) instanceInfo.get("status");
+                        if (status.equals("RUNNING")) {
+                            instanceNames.add((String) instanceInfo.get("name"));
+                        }
+                    }
+                }
+            }
+        }
+        return instanceNames;
     }
 }
