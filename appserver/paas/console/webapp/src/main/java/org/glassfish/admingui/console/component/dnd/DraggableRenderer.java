@@ -57,7 +57,12 @@ public class DraggableRenderer extends Renderer {
     @Override
     public void encodeEnd(FacesContext facesContext, UIComponent component) throws IOException {
         ResponseWriter writer = facesContext.getResponseWriter();
-        Draggable draggable = (Draggable) component;
+        Draggable draggable;
+        if (component instanceof Draggable) {
+            draggable = (Draggable) component;
+        } else {
+            throw new FacesException("Cannot cast component to Draggable for \"" + component.getId());
+        }
         String target = findTarget(facesContext, draggable);
 
         writer.startElement("script", draggable);

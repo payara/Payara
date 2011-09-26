@@ -14,7 +14,7 @@ import org.glassfish.admingui.console.rest.RestUtil;
  * @author anilam
  */
 public class CommandUtil {
-    public static String SERVICE_TYPE_RDMBS = "Database";
+    public static final String SERVICE_TYPE_RDMBS = "Database";
     public static final String SERVICE_TYPE_JAVAEE = "JavaEE";
     public static final String SERVICE_TYPE_LB = "LB";
 

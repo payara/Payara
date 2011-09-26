@@ -77,12 +77,12 @@ public class UploadBean {
     private DataModel<Map> eeTemplatesDataModel;
     private DataModel<Map> loadBalancersDataModel;
 
-    {
+    /*{
         //tmpFile = new File("D:/Projects/console.next/svn/main/appserver/tests/paas/basic-db/target/basic_db_paas_sample.war");
         //tmpFile = new File("D:/Projects/console.next/svn/main/appserver/tests/paas/service_metadata/provision_using_specified_template/target/basic_paas_sample2.war");
         tmpFile = new File("/opt/console.next/svn/main/appserver/tests/paas/basic/target/basic_paas_sample.war");
         processMetaData(tmpFile);
-    }
+    }*/
 
     void createSelectItems(String serviceType) {
         List<SelectItem> selectItems = new ArrayList();
@@ -137,15 +137,9 @@ public class UploadBean {
             }
         }
 
-        if (databasesMetaData != null) {
-            createSelectItems(CommandUtil.SERVICE_TYPE_RDMBS);
-        }
-        if (eeTemplatesMetaData != null) {
-            createSelectItems(CommandUtil.SERVICE_TYPE_JAVAEE);
-        }
-        if (loadBalancersMetaData != null) {
-            createSelectItems(CommandUtil.SERVICE_TYPE_LB);
-        }
+        createSelectItems(CommandUtil.SERVICE_TYPE_RDMBS);
+        createSelectItems(CommandUtil.SERVICE_TYPE_JAVAEE);
+        createSelectItems(CommandUtil.SERVICE_TYPE_LB);
     }
 
     public void fileUploaded(ValueChangeEvent event) {
