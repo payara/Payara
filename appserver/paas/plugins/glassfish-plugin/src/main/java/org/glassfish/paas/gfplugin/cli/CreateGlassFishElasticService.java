@@ -73,7 +73,7 @@ public class CreateGlassFishElasticService implements AdminCommand {
         final ActionReport report = context.getActionReport();
 
         ParameterMap parameterMap = new ParameterMap();
-        parameterMap.add("name",serviceName);
+        parameterMap.add("DEFAULT",serviceName);
 
         String min = gfServiceUtil.getProperty(serviceName, GlassFishPlugin.MIN_CLUSTER_PROPERTY_NAME);
         if(min != null){
