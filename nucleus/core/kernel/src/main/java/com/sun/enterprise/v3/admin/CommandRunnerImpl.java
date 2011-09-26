@@ -946,7 +946,7 @@ public class CommandRunnerImpl implements CommandRunner {
             }
 
             logger.fine(adminStrings.getLocalString("dynamicreconfiguration.diagnostics.target",
-                    "@ExecuteOn parsing and default settings done; Current target is " + targetName));
+                    "@ExecuteOn parsing and default settings done; Current target is {0}", targetName));
 
             if (serverEnv.isDas()) {
 
@@ -977,9 +977,9 @@ public class CommandRunnerImpl implements CommandRunner {
                 }
 
                 logger.fine(adminStrings.getLocalString("dynamicreconfiguration.diagnostics.runtimeTypes",
-                        "RuntimeTypes are : " + runtimeTypes.toString()));
+                        "RuntimeTypes are: {0}", runtimeTypes.toString()));
                 logger.fine(adminStrings.getLocalString("dynamicreconfiguration,diagnostics.targetTypes",
-                        "TargetTypes are : " + targetTypesAllowed.toString()));
+                        "TargetTypes are: {0}", targetTypesAllowed.toString()));
 
                 // Check if the target is valid
                 //Is there a server or a cluster or a config with given name ?
@@ -1044,10 +1044,10 @@ public class CommandRunnerImpl implements CommandRunner {
                 if (command instanceof UndoableCommand) {
                     UndoableCommand uCmd = (UndoableCommand) command;
                     logger.fine(adminStrings.getLocalString("dynamicreconfiguration.diagnostics.prepareunodable",
-                            "Command execution stage 1 : Calling prepare for undoable command " + inv.name()));
+                            "Command execution stage 1 : Calling prepare for undoable command {0}", inv.name()));
                     if (!uCmd.prepare(context, parameters).equals(ActionReport.ExitCode.SUCCESS)) {
                         report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-                        report.setMessage(adminStrings.getLocalString("commandrunner.executor..errorinprepare",
+                        report.setMessage(adminStrings.getLocalString("commandrunner.executor.errorinprepare",
                                 "The command {0} cannot be completed because the preparation for the command failed "
                                 + "indicating potential issues : {1}", model.getCommandName(), report.getMessage()));
                         return;
@@ -1058,7 +1058,7 @@ public class CommandRunnerImpl implements CommandRunner {
 
                 // Run Supplemental commands that have to run before this command on this instance type
                 logger.fine(adminStrings.getLocalString("dynamicreconfiguration.diagnostics.presupplemental",
-                        "Command execution stage 2 : Call pre supplemental commands for " + inv.name()));
+                        "Command execution stage 2 : Call pre supplemental commands for {0}", inv.name()));
                 preSupplementalReturn = supplementalExecutor.execute(model.getCommandName(),
                         Supplemental.Timing.Before, context, parameters, ufm.optionNameToFileMap());
                 if (preSupplementalReturn.equals(ActionReport.ExitCode.FAILURE)) {
@@ -1073,7 +1073,7 @@ public class CommandRunnerImpl implements CommandRunner {
                                            runtimeTypes.contains(RuntimeType.DAS))) || 
                     (serverEnv.isInstance() && runtimeTypes.contains(RuntimeType.INSTANCE))) {
                     logger.fine(adminStrings.getLocalString("dynamicreconfiguration.diagnostics.maincommand",
-                            "Command execution stage 3 : Calling main command implementation for " + inv.name()));
+                            "Command execution stage 3 : Calling main command implementation for {0}", inv.name()));
                     report = doCommand(model, command, context);
                     inv.setReport(report);
                 }
@@ -1082,7 +1082,7 @@ public class CommandRunnerImpl implements CommandRunner {
                         report.getActionExitCode()).equals(ActionReport.ExitCode.FAILURE)) {
                     //Run Supplemental commands that have to be run after this command on this instance type
                     logger.fine(adminStrings.getLocalString("dynamicreconfiguration.diagnostics.postsupplemental",
-                            "Command execution stage 4 : Call post supplemental commands for " + inv.name()));
+                            "Command execution stage 4 : Call post supplemental commands for {0}", inv.name()));
                     postSupplementalReturn = supplementalExecutor.execute(model.getCommandName(),
                             Supplemental.Timing.After, context, parameters, ufm.optionNameToFileMap());
                     if (postSupplementalReturn.equals(ActionReport.ExitCode.FAILURE)) {
@@ -1199,7 +1199,7 @@ public class CommandRunnerImpl implements CommandRunner {
                     if (!FailurePolicy.applyFailurePolicy(fp,
                         report.getActionExitCode()).equals(ActionReport.ExitCode.FAILURE)) {
                         logger.fine(adminStrings.getLocalString("dynamicreconfiguration.diagnostics.afterreplsupplemental",
-                                "Command execution stage 5 : Call post-replication supplemental commands for {0}" + inv.name()));
+                                "Command execution stage 5 : Call post-replication supplemental commands for {0}", inv.name()));
                         afterReplicationSupplementalReturn = supplementalExecutor.execute(model.getCommandName(),
                                 Supplemental.Timing.AfterReplication, context, parameters, ufm.optionNameToFileMap());
                         if (afterReplicationSupplementalReturn.equals(ActionReport.ExitCode.FAILURE)) {
@@ -1217,7 +1217,7 @@ public class CommandRunnerImpl implements CommandRunner {
             if (command instanceof UndoableCommand) {
                 UndoableCommand uCmd = (UndoableCommand) command;
                 logger.fine(adminStrings.getLocalString("dynamicreconfiguration.diagnostics.undo",
-                        "Command execution failed; calling undo() for command " + inv.name()));
+                        "Command execution failed; calling undo() for command {0}", inv.name()));
                 uCmd.undo(context, parameters, ClusterOperationUtil.getCompletedInstances());
             }
         } else {
