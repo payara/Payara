@@ -48,6 +48,7 @@ import org.glassfish.paas.orchestrator.provisioning.cli.ServiceType;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceUtil;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
+import org.jvnet.hk2.config.types.Property;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -84,8 +85,14 @@ public class GlassFishServiceUtil{
     // Get the value of a property in application-scoped-service config element for given service name.
     public String getProperty(String serviceName, String property) {
         for(Service service : serviceUtil.getServices().getServices()) {
-            return service.getServiceName().equals(serviceName) ?
-                    service.getProperty(property).getValue() : null;
+            if(service.getServiceName().equals(serviceName)){
+                Property p = service.getProperty(property);
+                if(p != null){
+                    return p.getValue();
+                }else{
+                    return null;
+                }
+            }
         }
         return null;
     }
