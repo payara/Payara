@@ -37,7 +37,6 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
 package com.sun.enterprise.v3.admin.cluster;
 
 import com.sun.enterprise.util.SystemPropertyConstants;
@@ -67,7 +66,7 @@ import java.util.logging.Logger;
 /**
  * Remote AdminCommand to create an instance.  This command is run only on DAS.
  *  1. Register the instance on DAS
- *  2. Create the file system on the instance node via ssh, node agent, or other
+ *  2. Create the file system on the instance node via ssh, DCOM, node agent, or other
  *  3. Bootstrap a minimal set of config files on the instance for secure admin.
  *
  * @author Jennifer Chou
@@ -77,58 +76,40 @@ import java.util.logging.Logger;
 @Scoped(PerLookup.class)
 @ExecuteOn({RuntimeType.DAS})
 public class CreateInstanceCommand implements AdminCommand {
-
     private static final String NL = System.getProperty("line.separator");
-
     @Inject
     private CommandRunner cr;
-    
     @Inject
     Habitat habitat;
-
     @Inject
     Node[] nodeList;
-
     @Inject
     private Nodes nodes;
-
     @Inject
     private Servers servers;
-
     @Inject
     private ServerEnvironment env;
-
     @Inject
     private ServerContext serverContext;
-
-    @Param(name="node", alias="nodeagent")
+    @Param(name = "node", alias = "nodeagent")
     String node;
-
-    @Param(name = "config", optional=true)
+    @Param(name = "config", optional = true)
     @I18n("generic.config")
     String configRef;
-
-    @Param(name="cluster", optional=true)
+    @Param(name = "cluster", optional = true)
     String clusterName;
-
-    @Param(name="lbenabled", optional = true)
+    @Param(name = "lbenabled", optional = true)
     private Boolean lbEnabled;
-
     @Param(name = "checkports", optional = true, defaultValue = "true")
     private boolean checkPorts;
-
     @Param(optional = true, defaultValue = "false")
     private boolean terse;
-
     @Param(name = "portbase", optional = true)
     private String portBase;
-
     @Param(name = "systemproperties", optional = true, separator = ':')
     private String systemProperties;
-
     @Param(name = "instance_name", primary = true)
     private String instance;
-
     private Logger logger;
     private AdminCommandContext ctx;
     private Node theNode = null;
@@ -144,7 +125,7 @@ public class CreateInstanceCommand implements AdminCommand {
         ctx = context;
         logger = context.logger;
 
-        if(!env.isDas()) {
+        if (!env.isDas()) {
             String msg = Strings.get("notAllowed");
             logger.warning(msg);
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
@@ -180,13 +161,13 @@ public class CreateInstanceCommand implements AdminCommand {
         map.add("node", node);
         map.add("config", configRef);
         map.add("cluster", clusterName);
-        if(lbEnabled != null){
+        if (lbEnabled != null) {
             map.add("lbenabled", lbEnabled.toString());
         }
-        if(!checkPorts){
+        if (!checkPorts) {
             map.add("checkports", "false");
         }
-        if(StringUtils.ok(portBase)){
+        if (StringUtils.ok(portBase)) {
             map.add("portbase", portBase);
         }
         map.add("systemproperties", systemProperties);
@@ -195,8 +176,8 @@ public class CreateInstanceCommand implements AdminCommand {
         ci.execute();
 
 
-        if (report.getActionExitCode() != ActionReport.ExitCode.SUCCESS &&
-            report.getActionExitCode() != ActionReport.ExitCode.WARNING) {
+        if (report.getActionExitCode() != ActionReport.ExitCode.SUCCESS
+                && report.getActionExitCode() != ActionReport.ExitCode.WARNING) {
             // If we couldn't update domain.xml then stop!
             return;
         }
@@ -205,7 +186,7 @@ public class CreateInstanceCommand implements AdminCommand {
 
         // if nodehost is localhost and installdir is null and config node, update config node
         // so installdir is product root. see register-instance above
-        if (theNode.isLocal() && installDir ==null){
+        if (theNode.isLocal() && installDir == null) {
             ci = cr.getCommandInvocation("_update-node", report);
             map = new ParameterMap();
             map.add("installdir", "${com.sun.aas.productRoot}");
@@ -215,8 +196,8 @@ public class CreateInstanceCommand implements AdminCommand {
             ci.execute();
 
 
-            if (report.getActionExitCode() != ActionReport.ExitCode.SUCCESS &&
-                report.getActionExitCode() != ActionReport.ExitCode.WARNING) {
+            if (report.getActionExitCode() != ActionReport.ExitCode.SUCCESS
+                    && report.getActionExitCode() != ActionReport.ExitCode.WARNING) {
                 // If we couldn't update domain.xml then stop!
                 return;
             }
@@ -228,7 +209,7 @@ public class CreateInstanceCommand implements AdminCommand {
         }
 
         // Then go create the instance filesystem on the node
-        createInstanceFilesystem(context);            
+        createInstanceFilesystem(context);
     }
 
     /**
@@ -243,14 +224,14 @@ public class CreateInstanceCommand implements AdminCommand {
          * Pass the node directory parent and the node directory name explicitly
          * or else InstanceDirs will not work as we want if there are multiple
          * nodes registered on this node.
-         * 
+         *
          * If the configuration recorded an explicit directory for the node,
          * then use it.  Otherwise, use the default node directory of
          * ${installDir}/glassfish/nodes/${nodeName}.
          */
-        final File nodeDirFile = (nodeDir != null ?
-            new File(nodeDir) :
-            defaultLocalNodeDirFile());
+        final File nodeDirFile = (nodeDir != null
+                ? new File(nodeDir)
+                : defaultLocalNodeDirFile());
         InstanceDirs instanceDirs = new InstanceDirs(nodeDirFile.toString(), theNode.getName(), instance);
         return instanceDirs.getInstanceDir();
     }
@@ -267,10 +248,9 @@ public class CreateInstanceCommand implements AdminCommand {
          * use the DAS's install directory (because this method applies in the
          * local instance case).
          */
-        final File nodeParentDir = (
-                installDir == null
-                    ? serverContext.getInstallRoot()
-                    : new File(installDir, "glassfish"));
+        final File nodeParentDir = (installDir == null
+                ? serverContext.getInstallRoot()
+                : new File(installDir, "glassfish"));
         return new File(nodeParentDir, "nodes");
     }
 
@@ -292,12 +272,13 @@ public class CreateInstanceCommand implements AdminCommand {
         try {
             final SecureAdminBootstrapHelper bootHelper =
                     SecureAdminBootstrapHelper.getLocalHelper(
-                        env.getInstanceRoot(),
-                        getLocalInstanceDir());
+                    env.getInstanceRoot(),
+                    getLocalInstanceDir());
             bootHelper.bootstrapInstance();
             bootHelper.close();
             return 0;
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             String msg = Strings.get("create.instance.local.boot.failed", instance, node, nodeHost);
             logger.log(Level.SEVERE, msg, ex);
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
@@ -314,14 +295,14 @@ public class CreateInstanceCommand implements AdminCommand {
      */
     private int bootstrapSecureAdminRemotely() {
         ActionReport report = ctx.getActionReport();
-        // nodedir is the root of where all the node dirs will be created.  
+        // nodedir is the root of where all the node dirs will be created.
         // add the name of the node as that is where the instance files should be created
         String thisNodeDir = null;
         if (nodeDir != null)
             thisNodeDir = nodeDir + "/" + node;
         try {
             final SecureAdminBootstrapHelper bootHelper =
-                SecureAdminBootstrapHelper.getRemoteHelper(
+                    SecureAdminBootstrapHelper.getRemoteHelper(
                     habitat,
                     getDomainInstanceDir(),
                     thisNodeDir,
@@ -330,7 +311,8 @@ public class CreateInstanceCommand implements AdminCommand {
             bootHelper.bootstrapInstance();
             bootHelper.close();
             return 0;
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             String exmsg = ex.getMessage();
             if (exmsg == null) {
                 // The root cause message is better than no message at all
@@ -339,8 +321,8 @@ public class CreateInstanceCommand implements AdminCommand {
             String msg = Strings.get(
                     "create.instance.remote.boot.failed",
                     instance,
-                    (ex instanceof SecureAdminBootstrapHelper.BootstrapException ? 
-                        ((SecureAdminBootstrapHelper.BootstrapException)ex).sshSettings() : null),
+                    (ex instanceof SecureAdminBootstrapHelper.BootstrapException
+                    ? ((SecureAdminBootstrapHelper.BootstrapException) ex).sshSettings() : null),
                     exmsg,
                     nodeHost);
             logger.log(Level.SEVERE, msg, ex);
@@ -385,17 +367,17 @@ public class CreateInstanceCommand implements AdminCommand {
         command.add(instance);
 
         humanCommand = makeCommandHuman(command);
-        if (!theNode.isLocal() && !theNode.getType().equals("SSH")){
+        if (!theNode.isLocal() && !theNode.getType().equals("SSH")) {
             String msg = Strings.get("create.instance.config",
                     instance, humanCommand);
-            msg = StringUtils.cat(NL, registerInstanceMessage, msg );
+            msg = StringUtils.cat(NL, registerInstanceMessage, msg);
             report.setMessage(msg);
             return;
         }
 
         // First error message displayed if we fail
         String firstErrorMessage = Strings.get("create.instance.filesystem.failed",
-                        instance, node, nodeHost );
+                instance, node, nodeHost);
 
         StringBuilder output = new StringBuilder();
 
@@ -406,13 +388,13 @@ public class CreateInstanceCommand implements AdminCommand {
         if (report.getActionExitCode() != ActionReport.ExitCode.SUCCESS) {
             // something went wrong with the nonlocal command don't continue but set status to warning
             // because config was updated correctly or we would not be here.
-            report.setActionExitCode(ActionReport.ExitCode.WARNING);            
+            report.setActionExitCode(ActionReport.ExitCode.WARNING);
             return;
         }
 
         // If it was successful say so and display the command output
         String msg = Strings.get("create.instance.success",
-                    instance, nodeHost);
+                instance, nodeHost);
         if (!terse) {
             msg = StringUtils.cat(NL,
                     output.toString().trim(), registerInstanceMessage, msg);
@@ -422,12 +404,13 @@ public class CreateInstanceCommand implements AdminCommand {
         // Bootstrap secure admin files
         if (theNode.isLocal()) {
             bootstrapSecureAdminLocally();
-        } else {
+        }
+        else {
             bootstrapSecureAdminRemotely();
         }
         if (report.getActionExitCode() != ActionReport.ExitCode.SUCCESS) {
 
-             // something went wrong with the nonlocal command don't continue but set status to warning
+            // something went wrong with the nonlocal command don't continue but set status to warning
             // because config was updated correctly or we would not be here.
             report.setActionExitCode(ActionReport.ExitCode.WARNING);
         }
@@ -453,7 +436,7 @@ public class CreateInstanceCommand implements AdminCommand {
             String humanCommand = null;
 
             if (!theNode.isLocal()) {
-            // Only specify the DAS host if the node is remote. See issue 13993
+                // Only specify the DAS host if the node is remote. See issue 13993
                 command.add("--host");
                 command.add(dasHost);
             }
@@ -497,7 +480,8 @@ public class CreateInstanceCommand implements AdminCommand {
                 // hidden command
                 fullCommand.append(" ");
                 fullCommand.append("create-local-instance");
-            } else {
+            }
+            else {
                 fullCommand.append(" ");
                 fullCommand.append(s);
             }
@@ -505,5 +489,4 @@ public class CreateInstanceCommand implements AdminCommand {
 
         return fullCommand.toString();
     }
-
 }
