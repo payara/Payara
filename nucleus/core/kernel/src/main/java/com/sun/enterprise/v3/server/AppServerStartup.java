@@ -237,11 +237,13 @@ public class AppServerStartup implements ModuleStartup {
         Map<Class, Long> servicesTiming = new HashMap<Class, Long>();
 
         // prepare for listening to the results of the RunLevelService
-        if (null == rlsListener) {
-            rlsListener = new RLListener();
+        synchronized (this) {
+            if (null == rlsListener) {
+                rlsListener = new RLListener();
+            }
+            rlsListener.register();
         }
-        rlsListener.register();
-        
+
         // start-up through the init level
         shutdownRequested = false;
         rls.proceedTo(InitRunLevel.VAL);
