@@ -198,6 +198,7 @@ public class UploadBean {
         Map payload = new HashMap();
         payload.put("deploymentplan", deploymentPlanPath);
         payload.put("id", this.tmpFile.getAbsolutePath());
+        payload.put("availabilityEnabled", "true");
         if (!GuiUtil.isEmpty(this.appName)){
             payload.put("name", this.appName);
         }
