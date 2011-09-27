@@ -40,22 +40,18 @@
 
 package com.sun.enterprise.v3.server;
 
-import com.sun.enterprise.v3.common.DoNothingActionReporter;
-import java.util.*;
-import java.util.concurrent.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.PriorityQueue;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.sun.enterprise.module.*;
-import com.sun.enterprise.module.bootstrap.ModuleStartup;
-import com.sun.enterprise.module.bootstrap.StartupContext;
-import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.enterprise.util.Result;
-import com.sun.hk2.component.ExistingSingletonInhabitant;
-import com.sun.logging.LogDomains;
-import com.sun.appserv.server.util.Version;
-import org.glassfish.api.Async;
-import org.glassfish.api.FutureProvider;
 import org.glassfish.api.Startup;
 import org.glassfish.api.admin.CommandRunner;
 import org.glassfish.api.admin.ParameterMap;
@@ -64,12 +60,15 @@ import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.event.EventListener.Event;
 import org.glassfish.api.event.EventTypes;
 import org.glassfish.api.event.Events;
+import org.glassfish.hk2.Bindings;
+import org.glassfish.hk2.DynamicBinderFactory;
 import org.glassfish.hk2.RunLevelDefaultScope;
 import org.glassfish.internal.api.InitRunLevel;
 import org.glassfish.internal.api.PostStartup;
 import org.glassfish.internal.api.PostStartupRunLevel;
 import org.glassfish.server.ServerEnvironmentImpl;
-import org.jvnet.hk2.annotations.*;
+import org.jvnet.hk2.annotations.Inject;
+import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.ComponentException;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.Inhabitant;
@@ -77,6 +76,17 @@ import org.jvnet.hk2.component.RunLevelListener;
 import org.jvnet.hk2.component.RunLevelService;
 import org.jvnet.hk2.component.RunLevelState;
 import org.jvnet.hk2.component.ServiceContext;
+
+import com.sun.appserv.server.util.Version;
+import com.sun.enterprise.module.Module;
+import com.sun.enterprise.module.ModuleState;
+import com.sun.enterprise.module.ModulesRegistry;
+import com.sun.enterprise.module.bootstrap.ModuleStartup;
+import com.sun.enterprise.module.bootstrap.StartupContext;
+import com.sun.enterprise.util.LocalStringManagerImpl;
+import com.sun.enterprise.v3.common.DoNothingActionReporter;
+import com.sun.hk2.component.ExistingSingletonInhabitant;
+import com.sun.logging.LogDomains;
 
 /**
  * Main class for Glassfish v3 startup
@@ -94,7 +104,8 @@ public class AppServerStartup implements ModuleStartup {
 
     final static Logger logger = LogDomains.getLogger(AppServerStartup.class, LogDomains.CORE_LOGGER);
     final static Level level = Level.FINE;
-
+    final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ApplicationLifecycle.class);
+    
     @Inject
     ServerEnvironmentImpl env;
 
@@ -130,8 +141,6 @@ public class AppServerStartup implements ModuleStartup {
     private RLListener rlsListener;
     
     boolean shutdownRequested;
-    
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ApplicationLifecycle.class);
     
 
     /**
@@ -252,40 +261,9 @@ public class AppServerStartup implements ModuleStartup {
             return;
         }
 
-        // run the startup services
-        final Collection<Inhabitant<? extends Startup>> startups = habitat.getInhabitants(Startup.class);
-        PriorityQueue<Inhabitant<? extends Startup>> startupSvcs;
-        startupSvcs = new PriorityQueue<Inhabitant<? extends Startup>>(startups.size(), RunLevelBridge.getInhabitantComparator());
-        startupSvcs.addAll(startups);
 
-        ArrayList<Future<Result<Thread>>> futures = new ArrayList<Future<Result<Thread>>>();
-        while (!startupSvcs.isEmpty()) {
-            final Inhabitant<? extends Startup> i=startupSvcs.poll();
-            if (i.type().getAnnotation(Async.class)==null) {
-                long start = System.currentTimeMillis();
-                try {
-                    if (logger.isLoggable(level)) {
-                        logger.log(level, "Running Startup services " + i.type());
-                    }
-                    Startup startup = i.get();
-                    if (logger.isLoggable(level)) {
-                        logger.log(level, "Startup services finished" + startup);
-                    }
-                    // the synchronous service was started successfully, let's check that it's not in fact a FutureProvider
-                    if (startup instanceof FutureProvider) {
-                        futures.addAll(((FutureProvider) startup).getFutures());
-                    }
-                } catch(RuntimeException e) {
-                    logger.log(level, e.getMessage(), e);
-                    logger.log(Level.SEVERE,
-                            localStrings.getLocalString("startupservicefailure",
-                                    "Startup service failed to start {0} due to {1} ", i.typeName()), e.getMessage());
-                }
-                if (logger.isLoggable(level)) {
-                    servicesTiming.put(i.type(), (System.currentTimeMillis() - start));
-                }
-            }
-        }
+        env.setStatus(ServerEnvironment.Status.starting);        
+        events.send(new Event(EventTypes.SERVER_STARTUP), false);
 
         // the new way
         rls.proceedTo(PostStartupRunLevel.VAL);
@@ -293,10 +271,7 @@ public class AppServerStartup implements ModuleStartup {
             shutdown();
             return;
         }
-
-        env.setStatus(ServerEnvironment.Status.starting);        
-        events.send(new Event(EventTypes.SERVER_STARTUP), false);
-
+        
         // finally let's calculate our starting times
         logger.info(localStrings.getLocalString("startup_end_message",
                 "{0} ({1}) startup time : {2} ({3}ms), startup services({4}ms), total({5}ms)",
@@ -326,41 +301,11 @@ public class AppServerStartup implements ModuleStartup {
         if (shutdownRequested) {
             shutdown();
             return;
-        }   else {
-            for (Future<Result<Thread>> future : futures) {
-                try {
-                    try {
-                        // wait for 3 seconds for an eventual status, otherwise ignore
-                        if (future.get(3, TimeUnit.SECONDS).isFailure()) {
-                            final Throwable t = future.get().exception();
-                            logger.log(Level.SEVERE,
-                                    localStrings.getLocalString("startupfatalstartup",
-                                            "Shutting down v3 due to startup exception : ",
-                                            t.getMessage()));
-                            logger.log(level, future.get().exception().getMessage(), t);
-                            events.send(new Event(EventTypes.SERVER_SHUTDOWN));
-                            shutdown();
-                            return;
-                        }
-                    } catch(TimeoutException e) {
-                        logger.warning(localStrings.getLocalString("startupwaittimeout",
-                                "Timed out, ignoring some startup service status"));
-                    }
-                } catch(Throwable t) {
-                    logger.log(Level.SEVERE, t.getMessage(), t);    
-                }
-            }
         }
 
         env.setStatus(ServerEnvironment.Status.started);
         events.send(new Event(EventTypes.SERVER_READY), false);
         pidWriter.writePidFile();
-
-        // now run the post Startup service
-        for (Inhabitant<? extends PostStartup> postStartup : habitat.getInhabitants(PostStartup.class)) {
-            postStartup.get();
-        }
-        printModuleStatus(systemRegistry, level);
     }
 
     public static void printModuleStatus(ModulesRegistry registry, Level level) {
@@ -500,25 +445,21 @@ public class AppServerStartup implements ModuleStartup {
      * changes the habitat before we are called.  We need to not get callbacks too early in another words.
      */
     private class RLListener implements RunLevelListener {
-        private Inhabitant<RunLevelListener> self;
+        Bindings self;
         
         private synchronized void register() {
             if (null == self) {
                 logger.log(level, "registering runlevel listener");
-                // TODO: replace with Hk2 v2
-                self = new ExistingSingletonInhabitant(RunLevelListener.class, this);
-                habitat.add(self);
-                habitat.addIndex(self, RunLevelListener.class.getName(), null);
+                DynamicBinderFactory bfactory = habitat.bindDynamically();
+                bfactory.bind(RunLevelListener.class).toInstance(this);
+                self = bfactory.commit();
             }
         }
         
         private synchronized void unregister() {
             if (null != self) {
                 logger.log(level, "unregistering runlevel listener");
-                boolean removed = habitat.remove(self);
-                assert(removed);
-                removed = habitat.removeIndex(RunLevelListener.class.getName(), self);
-                assert(removed);
+                self.release();
                 self = null;
             }
         }
