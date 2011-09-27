@@ -947,8 +947,15 @@ if (!((jsf && jsf.specversion && jsf.specversion >= 20000 ) &&
                         html = html.replace(/<script[^>]*>([\S\s]*?)<\/script>/igm,"");
                         parserElement.innerHTML = html;
                     }
-                    replaceNode(parserElement.firstChild, d);
-                    deleteNode(parserElement);
+                    if (typeof jQuery == 'undefined' || d.className != 'af_chart') {
+                        replaceNode(parserElement.firstChild, d);
+                        deleteNode(parserElement);
+                    } else if (typeof jQuery != 'undefined') {
+                        var apacheChart = jQuery('body').data(d.id);
+                        if (typeof apacheChart != 'undefined') {
+                            apacheChart.clear();
+                        }
+                    }
                     runScripts(scripts);
                 }
             }
