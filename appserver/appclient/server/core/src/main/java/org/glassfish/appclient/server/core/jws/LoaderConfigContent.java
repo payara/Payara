@@ -54,7 +54,7 @@ import java.net.URI;
  */
 class LoaderConfigContent {
 
-    private static final String OSGI_CONFIG_FILE_PATH = "osgi/felix/conf/config.properties";
+    private static final String OSGI_CONFIG_FILE_PATH = "config/osgi.properties";
     private final String content;
     
     LoaderConfigContent(final File installDir) throws FileNotFoundException, IOException {

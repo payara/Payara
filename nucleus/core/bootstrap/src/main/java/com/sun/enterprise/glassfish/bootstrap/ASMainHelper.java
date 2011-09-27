@@ -662,7 +662,13 @@ public class ASMainHelper {
 
         protected Properties properties;
         protected File glassfishDir;
+        protected File domainDir;
         protected File fwDir;
+
+        /**
+         * Location of the unified config properties file relative to the domain directory
+         */
+        public static final String CONFIG_PROPERTIES = "config/osgi.properties";
 
         /**
          * @param properties Initial properties
@@ -670,6 +676,7 @@ public class ASMainHelper {
         void init(Properties properties) {
             this.properties = properties;
             glassfishDir = StartupContextUtil.getInstallRoot(properties);
+            domainDir = StartupContextUtil.getInstanceRoot(properties);
             setFwDir();
         }
 
@@ -696,7 +703,17 @@ public class ASMainHelper {
             return platformConfig;
         }
 
-        protected abstract File getFrameworkConfigFile();
+        protected File getFrameworkConfigFile() {
+            String fileName = CONFIG_PROPERTIES;
+            // First we search in domainDir. If it's not found there, we fall back on installDir
+            File f = new File(domainDir, fileName);
+            if (!f.exists()) {
+                f = new File(glassfishDir, fileName);
+            } else {
+                logger.info("Using " + f.getAbsolutePath() + " as the framework configuration file.");
+            }
+            return f;
+        }
     }
 
     static class FelixHelper extends PlatformHelper {
@@ -708,9 +725,9 @@ public class ASMainHelper {
         public static final String GF_FELIX_HOME = "osgi/felix";
 
         /**
-         * Location of the config properties file relative to the fw installation
+         * Location of the config properties file relative to the domain directory
          */
-        public static final String CONFIG_PROPERTIES = "conf/config.properties";
+        public static final String CONFIG_PROPERTIES = "config/osgi.properties";
 
         @Override
         protected void setFwDir() {
@@ -727,15 +744,21 @@ public class ASMainHelper {
         }
 
         @Override
-        protected File getFrameworkConfigFile() {
-            String fileName = CONFIG_PROPERTIES;
-            return new File(fwDir, fileName);
-        }
-
-        @Override
         protected void addFrameworkJars(ClassPathBuilder cpb) throws IOException {
             cpb.addJar(new File(fwDir, "bin/felix.jar"));
         }
+      
+        @Override
+        protected Properties readPlatformConfiguration() throws IOException {
+            // GlassFish filesystem layout does not recommend use of upper case char in file names.
+            // So, we can't use ${GlassFish_Platform} to generically set the cache dir.
+            // Hence, we set it here.
+            Properties platformConfig = super.readPlatformConfiguration();
+            platformConfig.setProperty(org.osgi.framework.Constants.FRAMEWORK_STORAGE, 
+                                       new File(domainDir, "osgi-cache/felix/").getAbsolutePath());
+            return platformConfig;
+        }
+            
     }
 
     static class EquinoxHelper extends PlatformHelper {
@@ -753,23 +776,8 @@ public class ASMainHelper {
             }
             fwDir = new File(fwPath);
             if (!fwDir.exists()) {
-                fwDir = new File(glassfishDir, "osgi/eclipse");
-            }
-            if (fwDir.exists()) {//default Eclipse equinox structure from a equinoz zip distro
-                pluginsDir = new File(fwDir, "plugins");
-                if (!pluginsDir.exists()) {
-                    pluginsDir = null;//no luck
-                }
-            }
-
-            if (!fwDir.exists()) {
                 throw new RuntimeException("Can't locate Equinox at " + fwPath);
             }
-        }
-
-        @Override
-        protected File getFrameworkConfigFile() {
-            return new File(fwDir, "configuration/config.ini");
         }
 
         @Override
@@ -782,6 +790,17 @@ public class ASMainHelper {
                 cpb.addJarFolder(fwDir);
             }
         }
+
+        @Override
+        protected Properties readPlatformConfiguration() throws IOException {
+            // GlassFish filesystem layout does not recommend use of upper case char in file names.
+            // So, we can't use ${GlassFish_Platform} to generically set the cache dir.
+            // Hence, we set it here.
+            Properties platformConfig = super.readPlatformConfiguration();
+            platformConfig.setProperty(org.osgi.framework.Constants.FRAMEWORK_STORAGE, 
+                                       new File(domainDir, "osgi-cache/equinox/").getAbsolutePath());
+            return platformConfig;
+        }
     }
 
     static class KnopflerfishHelper extends PlatformHelper {
@@ -792,11 +811,6 @@ public class ASMainHelper {
          * Home of fw installation relative to Glassfish root installation.
          */
         public static final String GF_KF_HOME = "osgi/knopflerfish.org/osgi/";
-
-        /**
-         * Location of the config properties file relative to the fw installation
-         */
-        public static final String CONFIG_PROPERTIES = "conf/config.properties";
 
         protected void setFwDir() {
             String fwPath = System.getenv(KF_HOME);
@@ -815,8 +829,14 @@ public class ASMainHelper {
         }
 
         @Override
-        protected File getFrameworkConfigFile() {
-            return new File(fwDir, CONFIG_PROPERTIES);
+        protected Properties readPlatformConfiguration() throws IOException {
+            // GlassFish filesystem layout does not recommend use of upper case char in file names.
+            // So, we can't use ${GlassFish_Platform} to generically set the cache dir.
+            // Hence, we set it here.
+            Properties platformConfig = super.readPlatformConfiguration();
+            platformConfig.setProperty(org.osgi.framework.Constants.FRAMEWORK_STORAGE, 
+                                       new File(domainDir, "osgi-cache/knopflerfish/").getAbsolutePath());
+            return platformConfig;
         }
     }
 
