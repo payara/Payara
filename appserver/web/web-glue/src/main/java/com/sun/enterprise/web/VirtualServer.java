@@ -1912,10 +1912,25 @@ public class VirtualServer extends StandardHost
 
                 WebModule wm = (WebModule) findChild(contextName);
                 if (wm != null) {
+                    WebModuleConfig wmInfo = wm.getWebModuleConfig();
                     if (classLoader != null) {
-                        wm.setParentClassLoader(classLoader);
+                        wmInfo.setParentLoader(classLoader);
+                        WebappClassLoader old_wacl = (WebappClassLoader)wmInfo.getAppClassLoader();
+                        WebappClassLoader wacl = new WebappClassLoader(classLoader);
+
+                        wacl.setJarPath(old_wacl.getJarPath());
+                        wacl.setResources(old_wacl.getResources());
+                        wacl.setDelegate(old_wacl.getDelegate());
+
+                        java.net.URL[] urls = old_wacl.getURLs();
+                        wacl.addRepository("WEB-INF/classes/", new File(urls[0].getFile()));
+
+                        wacl.start();
+                        wmInfo.setAppClassLoader(wacl);
+                        V3WebappLoader loader = new V3WebappLoader(wmInfo.getAppClassLoader());
+                        wm.setLoader(loader);
                     } else {
-                        wm.setParentClassLoader(serverContext.getSharedClassLoader());
+                        // Use default
                     }
                     facade.setUnwrappedContext(wm);
                     wm.setEmbedded(true);
