@@ -22,6 +22,7 @@ import org.glassfish.admingui.console.event.DragDropEvent;
 import org.glassfish.admingui.console.rest.JSONUtil;
 import org.glassfish.admingui.console.rest.RestUtil;
 import org.glassfish.admingui.console.util.CommandUtil;
+import org.glassfish.admingui.console.util.DeployUtil;
 import org.glassfish.admingui.console.util.FileUtil;
 import org.glassfish.admingui.console.util.GuiUtil;
 import org.glassfish.admingui.console.util.TargetUtil;
@@ -220,6 +221,17 @@ public class UploadBean {
             }
             deployingApps.add(this.appName);
             RestUtil.restRequest(REST_URL + "/applications/application", payload, "post", null, null, false, true);
+
+            //after deployment, always turn the Web Container monitoring to HIGH so that the monitoring charts has info.
+            List clusterList = DeployUtil.getApplicationEnvironments(appName);
+            if ((clusterList != null) && (clusterList.size() > 0 )){
+                String clusterName = (String) clusterList.get(0);
+                String configName = (String)RestUtil.getAttributesMap(REST_URL+"/clusters/cluster/" + clusterName).get("configRef");
+                Map payload2 = new HashMap();
+                payload2.put("WebContainer", "HIGH");
+                String mEndpoint = REST_URL + "/configs/config/" + configName + "/monitoring-service/module-monitoring-levels";
+                RestUtil.restRequest(mEndpoint, payload2, "POST", null, null, false, true);
+            }
             return "/app/applications";
         } catch (Exception ex) {
             if (deployingApps != null && deployingApps.contains(this.appName)){
