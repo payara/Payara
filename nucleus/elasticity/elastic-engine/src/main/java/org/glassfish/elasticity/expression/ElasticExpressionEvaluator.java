@@ -178,7 +178,7 @@ public class ElasticExpressionEvaluator {
             } else if (metric instanceof TabularMetricAttribute) {
                 try {
                     TabularMetricAttribute parent = (TabularMetricAttribute) metric;
-                    Iterator<TabularMetricEntry> tabIter = parent.iterator(1 * 60, TimeUnit.SECONDS, false/*allowPartialView*/);
+                    Iterator<TabularMetricEntry> tabIter = parent.iterator(15, TimeUnit.SECONDS, false/*allowPartialView*/);
                     LinkedList result = new LinkedList();
                     while (tabIter.hasNext()) {
                         result.add(tabIter.next().getValue(attrName));
