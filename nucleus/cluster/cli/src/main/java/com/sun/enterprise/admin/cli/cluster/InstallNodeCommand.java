@@ -173,7 +173,7 @@ public class InstallNodeCommand extends NativeRemoteCommandsBase {
     }
 
     private void copyToHostsWindows(File zipFile)
-            throws WindowsException, CommandException  {
+            throws WindowsException, CommandException {
         final String zipFileName = "glassfish_install.zip";
         final String unpackScriptName = "unpack.bat";
 
@@ -198,7 +198,7 @@ public class InstallNodeCommand extends NativeRemoteCommandsBase {
             String fullUnpackScriptPath = SmartFile.sanitize(installDir + "/" + unpackScriptName);
             unpackScript.copyFrom(makeScriptString(installDir, zipFileName));
             logger.fine("WROTE FILE TO REMOTE SYSTEM: " + fullZipFileName + " and " + fullUnpackScriptPath);
-             unpackOnHostsWindows(host, remotePassword, fullUnpackScriptPath.replace('/', '\\'));
+            unpackOnHostsWindows(host, remotePassword, fullUnpackScriptPath.replace('/', '\\'));
         }
     }
 
@@ -206,14 +206,14 @@ public class InstallNodeCommand extends NativeRemoteCommandsBase {
             String unpackScript) throws WindowsException, CommandException {
         String domain = windowsDomain;
 
-        if(!ok(domain))
+        if (!ok(domain))
             domain = host;
 
         WindowsCredentials bonafides = new WindowsCredentials(host, domain, sshuser, remotePassword);
         WindowsRemoteScripter scripter = new WindowsRemoteScripter(bonafides);
         String out = scripter.run(unpackScript);
 
-        if(out == null || out.length() < 50)
+        if (out == null || out.length() < 50)
             throw new CommandException(Strings.get("dcom.error.unpacking", unpackScript, out));
     }
 
@@ -462,12 +462,12 @@ public class InstallNodeCommand extends NativeRemoteCommandsBase {
         return scriptString.toString();
     }
 
-    private String getIP(String host) throws CommandException{
+    private String getIP(String host) throws CommandException {
         try {
             return InetAddress.getByName(host).getHostAddress();
-        } catch (UnknownHostException e) {
+        }
+        catch (UnknownHostException e) {
             throw new CommandException(Strings.get("cantResolveIpAddress", host));
         }
     }
-
 }

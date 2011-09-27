@@ -37,15 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package com.sun.enterprise.v3.admin.cluster;
+package org.glassfish.cluster.ssh.connect;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.logging.Logger;
+import java.io.*;
+import java.util.*;
+import java.util.logging.*;
 import org.glassfish.common.util.admin.AsadminInput;
-
 import org.jvnet.hk2.component.Habitat;
 import org.glassfish.api.admin.SSHCommandExecutionException;
 import com.sun.enterprise.universal.process.ProcessManagerException;
@@ -53,9 +50,7 @@ import com.sun.enterprise.universal.process.ProcessManager;
 import com.sun.enterprise.config.serverbeans.Node;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.enterprise.util.StringUtils;
-
 import org.glassfish.cluster.ssh.launcher.SSHLauncher;
-import java.io.ByteArrayOutputStream;
 import org.glassfish.cluster.ssh.connect.NodeRunnerSsh;
 import org.glassfish.common.util.admin.AuthTokenManager;
 
@@ -222,22 +217,24 @@ public class NodeRunner {
             UnsupportedOperationException {
 
         // don't want to call a config object proxy more than absolutely necessary!
-        NodeUtils.RemoteType type = NodeUtils.RemoteType.valueOf(node.getType());
+        String type = node.getType();
 
-        switch (type) {
-            case SSH:
-                NodeRunnerSsh nrs = new NodeRunnerSsh(habitat, logger);
-                return nrs.runAdminCommandOnRemoteNode(node, output, args, stdinLines);
-            case DCOM:
-                throw new UnsupportedOperationException("DCOM not finished yet!!");
-            default:
-                throw new UnsupportedOperationException("Node is not of type SSH or DCOM");
+        if ("SSH".equals(type)) {
+            NodeRunnerSsh nrs = new NodeRunnerSsh(habitat, logger);
+            return nrs.runAdminCommandOnRemoteNode(node, output, args, stdinLines);
         }
+
+        if ("DCOM".equals(type)) {
+            NodeRunnerDcom nrd = new NodeRunnerDcom(logger);
+            return nrd.runAdminCommandOnRemoteNode(node, output, args, stdinLines);
+        }
+
+        throw new UnsupportedOperationException("Node is not of type SSH or DCOM");
     }
 
     private void trace(String s) {
         logger.fine(String.format("%s: %s", this.getClass().getSimpleName(), s));
-   }
+    }
 
     private String commandListToString(List<String> command) {
         StringBuilder fullCommand = new StringBuilder();
