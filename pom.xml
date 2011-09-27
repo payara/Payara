@@ -110,7 +110,7 @@
         <jsf-ext.version>0.2</jsf-ext.version>
         <woodstock.version>4.0.2.8</woodstock.version>
         <jaxrpc-api.version>1.1</jaxrpc-api.version>
-        <grizzly.version>2.1.2</grizzly.version>
+        <grizzly.version>2.1.3</grizzly.version>
         <jsr181-api.version>1.0-MR1</jsr181-api.version>
         <saaj-api.version>1.3</saaj-api.version>
         <hk2.version>1.6.19</hk2.version>
