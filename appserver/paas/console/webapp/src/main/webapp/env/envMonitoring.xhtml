@@ -56,23 +56,32 @@
             <div class="title headerPageTitle">Monitoring</div>
             <div class="subHeading">Monitoring data for PaaS Environment</div>
             <br/>            
-            <tr:poll id="poller1" interval="5000" pollListener="#{clusterSizeMonitorBean.onPoll}" immediate="#{true}"/>
-            <tr:poll id="poller2" interval="7000" pollListener="#{memoryMonitorBean.onPoll}" immediate="#{true}"/>
-            <tr:poll id="poller3" interval="8000" pollListener="#{sessionsMonitorBean.onPoll}" immediate="#{true}"/>
-            <tr:poll id="poller4" interval="9000" pollListener="#{processingTimeMonitorBean.onPoll}" immediate="#{true}"/>
-            <tr:commandButton id="refresh" text="Refresh " immediate="#{true}" actionListener="#{monitorBean.onRefresh}"/>
-            <tr:panelGroupLayout partialTriggers="refresh">
+            <!--
+                    <tr:poll id="poller1" interval="5000" pollListener="#{clusterSizeMonitorBean.onPoll}" immediate="#{true}"/>
+                    <tr:poll id="poller2" interval="7000" pollListener="#{memoryMonitorBean.onPoll}" immediate="#{true}"/>
+                    <tr:poll id="poller3" interval="8000" pollListener="#{sessionsMonitorBean.onPoll}" immediate="#{true}"/>
+                    <tr:poll id="poller4" interval="9000" pollListener="#{processingTimeMonitorBean.onPoll}" immediate="#{true}"/>
+                    -->
+            <tr:inputNumberSpinbox id="interval" label="Refresh interval:" value="#{monitorBean.pollInterval}"
+                                   autoSubmit="true" minimum="5" maximum="3600"/>
+            <tr:commandButton id="refresh" text="Refresh " actionListener="#{monitorBean.onRefresh}"/>
+            <tr:panelGroupLayout partialTriggers="refresh poller interval">
+                <tr:poll id="poller" interval="#{monitorBean.pollInterval * 1000}" pollListener="#{monitorBean.onPoll}"/>
                 <tr:panelHorizontalLayout>
-                    <tr:chart YMajorGridLineCount="4" value="#{clusterSizeMonitorBean.value}" partialTriggers="poller1"
-                              type="line" inlineStyle="width:550px; height:250px;" animationDuration="0" perspective="false"/>
-                    <tr:chart YMajorGridLineCount="4" value="#{memoryMonitorBean.value}" partialTriggers="poller2"
-                              type="line" inlineStyle="width:550px; height:250px;" animationDuration="0" perspective="false"/>
+                    <tr:chart YMajorGridLineCount="4" value="#{clusterSizeMonitorBean.value}"
+                              type="line" inlineStyle="width:550px; height:250px;" animationDuration="0" perspective="false"
+                              templateSource="/images/chart.svg"/>
+                    <tr:chart YMajorGridLineCount="4" value="#{memoryMonitorBean.value}"
+                              type="line" inlineStyle="width:550px; height:250px;" animationDuration="0" perspective="false"
+                              templateSource="/images/chart.svg"/>
                 </tr:panelHorizontalLayout>
                 <tr:panelHorizontalLayout>
-                    <tr:chart YMajorGridLineCount="4" value="#{sessionsMonitorBean.value}" partialTriggers="poller3"
-                              type="line" inlineStyle="width:550px; height:250px;" animationDuration="0" perspective="false"/>
-                    <tr:chart YMajorGridLineCount="4" value="#{processingTimeMonitorBean.value}" partialTriggers="poller4"
-                              type="line" inlineStyle="width:550px; height:250px;" animationDuration="0" perspective="false"/>
+                    <tr:chart YMajorGridLineCount="4" value="#{sessionsMonitorBean.value}"
+                              type="line" inlineStyle="width:550px; height:250px;" animationDuration="0" perspective="false"
+                              templateSource="/images/chart.svg"/>
+                    <tr:chart YMajorGridLineCount="4" value="#{processingTimeMonitorBean.value}"
+                              type="line" inlineStyle="width:550px; height:250px;" animationDuration="0" perspective="false"
+                              templateSource="/images/chart.svg"/>
                 </tr:panelHorizontalLayout>
             </tr:panelGroupLayout>
         </div>

@@ -46,6 +46,8 @@ import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ManagedProperty;
 import javax.faces.bean.SessionScoped;
 import javax.faces.event.ActionEvent;
+
+import org.apache.myfaces.trinidad.event.PollEvent;
 import org.glassfish.admingui.console.rest.RestUtil;
 
 @ManagedBean(name = "monitorBean")
@@ -65,6 +67,8 @@ public class MonitoringBean {
     
     @ManagedProperty(value = "#{processingTimeMonitorBean}")
     private ProcessingTimeMonitorBean processTimeBean;
+
+    private Integer pollInterval = 5;
 
     public void setClusterSizeBean(ClusterSizeMonitorBean clusterSizeBean) {
         this.clusterSizeBean = clusterSizeBean;
@@ -87,6 +91,21 @@ public class MonitoringBean {
         memoryBean.onRefresh(e);
         sessionBean.onRefresh(e);
         processTimeBean.onRefresh(e);
+    }
+
+    public void onPoll(PollEvent e) {
+        clusterSizeBean.onPoll(e);
+        memoryBean.onPoll(e);
+        sessionBean.onPoll(e);
+        processTimeBean.onPoll(e);
+    }
+
+    public Integer getPollInterval() {
+        return pollInterval;
+    }
+
+    public void setPollInterval(Integer pollInterval) {
+        this.pollInterval = pollInterval;
     }
 
     public static List<String> getClusterInstances(String cluster) {
