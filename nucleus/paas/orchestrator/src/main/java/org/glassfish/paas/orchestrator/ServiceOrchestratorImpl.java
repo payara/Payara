@@ -347,7 +347,7 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator, Application
                         }else{
                             existingSDs.put(defSD.getName(), svcPlugin);
                         }
-                        appServiceMetadata.addServiceDescription(defSD);
+                        addServiceDescriptionWithoutDuplicate(appServiceMetadata, defSD);
                         continue; //ignore the rest of the plugins
                     }
                 }
@@ -357,6 +357,19 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator, Application
         assertMetadataComplete(appSDs, appSRs);
         logger.log(Level.INFO, "Final Service Metadata = " + appServiceMetadata);
         return appServiceMetadata;
+    }
+
+    private void addServiceDescriptionWithoutDuplicate(ServiceMetadata appServiceMetadata, ServiceDescription defSD) {
+        Set<ServiceDescription> serviceDescriptions = appServiceMetadata.getServiceDescriptions();
+        for(ServiceDescription sd : serviceDescriptions){
+            if(sd.getName().equals(defSD.getName())){
+                if(sd.getServiceType().equals(defSD.getServiceType())){
+                    return; //duplicate. We may also have to check whether its provided by same plugin
+                    //or implement equals in service-description so as to make it easier for comparisons.
+                }
+            }
+        }
+        appServiceMetadata.addServiceDescription(defSD);
     }
 
     private void deployArchive(ReadableArchive cloudArchive,
