@@ -97,12 +97,7 @@ public class DeployUtil {
             for(String oneCluster:  clusters){
                 List appRefs = new ArrayList(RestUtil.getChildMap(GuiUtil.getSessionValue("REST_URL")+"/clusters/cluster/"+oneCluster+"/application-ref").keySet());
                 if (appRefs.contains(appName)){
-                    List<String> instanceList = RestUtil.getChildNameList(prefix+oneCluster+"/server-ref");
-                    if (instanceList == null || instanceList.isEmpty()){
-                        continue;
-                    }
-                    //assume that if the cluster has VMC, thats an environment
-                    if (RestUtil.doesProxyExist( prefix + oneCluster + "/virtual-machine-config/" + instanceList.get(0))){
+                    if ( isClusterAnEnvironment(oneCluster)){
                         targets.add(oneCluster);
                     }
                 }
@@ -114,6 +109,18 @@ public class DeployUtil {
             }
         }
         return targets;
+    }
+
+
+    //If a cluster contains virtual-machine-config as its child element,  it is considered as an Environment
+    static public boolean isClusterAnEnvironment(String clusterName){
+        try{
+            String prefix = GuiUtil.getSessionValue("REST_URL") + "/clusters/cluster/" ;
+            List childList = RestUtil.getChildNameList(prefix + clusterName + "/virtual-machine-config");
+            return (childList != null) && (childList.size()>0) ? true : false;
+        }catch(Exception ex){
+            return false;
+        }
     }
 
 
