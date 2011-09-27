@@ -148,8 +148,8 @@ public class ProcessingTimeMonitorBean {
         }
 
         private void normalizeMonitoringData(Map<String, Object> data) {
-            //processingTimeMap to prepare the data for chart.. time as key and list of instances count as value.
-            Map<Double, List<Double>> processingTimeMap = new HashMap<Double, List<Double>>();
+            //sortedMap to prepare the data for chart.. time as key and list of instances count as value.
+            SortedMap<Double, List<Double>> sortedMap = new TreeMap<Double, List<Double>>();
             _maxYValue = 5.0;
             _seriesLabels.clear();
 
@@ -159,23 +159,24 @@ public class ProcessingTimeMonitorBean {
                 for (String processingTimeProp : processingTimeResultProps.keySet()) {
                     Long time = Long.valueOf(processingTimeProp);
                     Long count = processingTimeResultProps.get(processingTimeProp).get("count");
-                    List<Double> val = processingTimeMap.get(time.doubleValue());
+                    List<Double> val = sortedMap.get(time.doubleValue());
                     if (val == null) {
                         val = new ArrayList<Double>();
                         val.add(count.doubleValue());
                     } else {
                         val.add(count.doubleValue());
                     }
-                    processingTimeMap.put(time.doubleValue(), val);
+                    sortedMap.put(time.doubleValue(), val);
                     if (count.doubleValue() > _maxYValue) {
                         _maxYValue = count.doubleValue() + 5;
                     }
                 }
             }
-            setProcessingTimeMonitoringChartInfo(processingTimeMap);
+            setProcessingTimeMonitoringChartInfo(sortedMap);
+            System.out.println("Processing Time Monitoring data for chart= "+sortedMap.toString());
         }
 
-        private void setProcessingTimeMonitoringChartInfo(Map<Double, List<Double>> data) {
+        private void setProcessingTimeMonitoringChartInfo(SortedMap<Double, List<Double>> data) {
             _groupLabels.clear();
             _chartYValues.clear();
             int instanceCount = _seriesLabels.size();

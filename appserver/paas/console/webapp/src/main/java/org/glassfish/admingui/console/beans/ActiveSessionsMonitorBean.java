@@ -150,8 +150,8 @@ public class ActiveSessionsMonitorBean {
         }
 
         private void normalizeMonitoringData(Map<String, Object> data) {
-            //sessionMap to prepare the data for chart.. time as key and list of instances current values as value.
-            Map<Double, List<Double>> sessionMap = new HashMap<Double, List<Double>>();
+            //sortedMap to prepare the data for chart.. time as key and list of instances current values as value.
+            SortedMap<Double, List<Double>> sortedMap = new TreeMap<Double, List<Double>>();
             _maxYValue = 5.0;
             _seriesLabels.clear();
 
@@ -161,23 +161,24 @@ public class ActiveSessionsMonitorBean {
                 for (String sessionProp : sessionResultProps.keySet()) {
                     Long time = Long.valueOf(sessionProp);
                     Long currentValue = sessionResultProps.get(sessionProp).get("current");
-                    List<Double> val = sessionMap.get(time.doubleValue());
+                    List<Double> val = sortedMap.get(time.doubleValue());
                     if (val == null) {
                         val = new ArrayList<Double>();
                         val.add(currentValue.doubleValue());
                     } else {
                         val.add(currentValue.doubleValue());
                     }
-                    sessionMap.put(time.doubleValue(), val);
+                    sortedMap.put(time.doubleValue(), val);
                     if (currentValue.doubleValue() > _maxYValue) {
                         _maxYValue = currentValue.doubleValue() + 5;
                     }
                 }
             }
-            setSessionMonitoringChartInfo(sessionMap);
+            setSessionMonitoringChartInfo(sortedMap);
+            System.out.println("Active Sessions Monitoring data for chart= "+sortedMap.toString());
         }
 
-        private void setSessionMonitoringChartInfo(Map<Double, List<Double>> data) {
+        private void setSessionMonitoringChartInfo(SortedMap<Double, List<Double>> data) {
             _groupLabels.clear();
             _chartYValues.clear();
             int instanceCount = _seriesLabels.size();

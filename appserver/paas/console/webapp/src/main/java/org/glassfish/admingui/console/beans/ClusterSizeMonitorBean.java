@@ -169,11 +169,12 @@ public class ClusterSizeMonitorBean {
 
         private void getClusterSizeMonitoringStats() {
             List<ClusterSizeStat> heapData = new ArrayList<ClusterSizeStat>();
+            SortedMap<Long, Long> sortedMap = new TreeMap<Long, Long>();
             Map<String, Object> result = null;
             String clusterName = getEnvName();
             //To get the instance Name of a cluster that is running
             String instanceName = getClusterInstanceName(clusterName);
-            if (instanceName == "") {
+            if (instanceName.equals("")) {
                 return;
             }
             //Get the Monitoring statistics
@@ -187,29 +188,30 @@ public class ClusterSizeMonitorBean {
                     if (heapResultEntity != null && !heapResultEntity.isEmpty()) {
                         Map<String, Map<String, Long>> heapResultProps = (Map<String, Map<String, Long>>) (heapResultEntity.get("count"));
                         for (String heapProp : heapResultProps.keySet()) {
-                            heapData.add(new ClusterSizeStat(heapResultProps.get(heapProp).get("instanceCount"), Long.valueOf(heapProp)));
+                            sortedMap.put(Long.valueOf(heapProp), heapResultProps.get(heapProp).get("instanceCount"));
                         }
                     }
                 }
             }
-            if (heapData.size() > MAX_SIZE) {
-                heapData = heapData.subList(heapData.size() - MAX_SIZE, heapData.size());
-            }
-            setClusterSizeMonitoringChartInfo(heapData);
+            setClusterSizeMonitoringChartInfo(sortedMap);
+            System.out.println("Cluster Size Monitoring data for chart= "+sortedMap.toString());
         }
 
-        private void setClusterSizeMonitoringChartInfo(List<ClusterSizeStat> data) {
+        private void setClusterSizeMonitoringChartInfo(SortedMap<Long, Long> data) {
             _groupLabels.clear();
             _chartYValues.clear();
             _maxYValue = 5.0;
-            for (int i = 0; i < data.size(); i++) {
-                ClusterSizeStat stat = data.get(i);
-                Double usedVal = stat.getInstanceCount().doubleValue();
-                setGroupLabel(stat.getTime());
-                _chartYValues.add(Arrays.asList(new Double[]{usedVal}));
-                if (usedVal > _maxYValue) {
-                    _maxYValue = usedVal + 5;
+            for (Long time : data.keySet()) {
+                Double instanceCount = data.get(time).doubleValue();
+                setGroupLabel(time);
+                _chartYValues.add(Arrays.asList(new Double[]{instanceCount}));
+                if (instanceCount > _maxYValue) {
+                    _maxYValue = instanceCount + 5;
                 }
+            }
+            if (_chartYValues.size() > MAX_SIZE) {
+                _chartYValues = _chartYValues.subList(_chartYValues.size() - MAX_SIZE, _chartYValues.size());
+                _groupLabels = _groupLabels.subList(_groupLabels.size() - MAX_SIZE, _groupLabels.size());
             }
         }
 

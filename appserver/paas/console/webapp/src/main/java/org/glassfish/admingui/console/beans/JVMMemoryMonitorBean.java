@@ -141,6 +141,7 @@ public class JVMMemoryMonitorBean {
                         if (heapResultEntity != null && !heapResultEntity.isEmpty()) {
                             Map<String, Map<String, Long>> heapResultProps = (Map<String, Map<String, Long>>) (heapResultEntity.get("heap"));
                             instanceMemoryData.put(instanceName, heapResultProps);
+                            System.out.println("JVM Memory Statistics for instance " + instanceName + " = " + heapResultProps.toString());
                         }
                     }
                 }
@@ -149,8 +150,8 @@ public class JVMMemoryMonitorBean {
         }
 
         private void normalizeMonitoringData(Map<String, Object> data) {
-            //heapMap to prepare the data for chart.. time as key and list of instances values as value.
-            Map<Double, List<Double>> heapMap = new HashMap<Double, List<Double>>();
+            //sortedMap to prepare the data for chart.. time as key and list of instances values as value.
+            SortedMap<Double, List<Double>> sortedMap = new TreeMap<Double, List<Double>>();
             _maxYValue = 5.0;
             _seriesLabels.clear();
 
@@ -160,23 +161,24 @@ public class JVMMemoryMonitorBean {
                 for (String heapProp : heapResultProps.keySet()) {
                     Long time = Long.valueOf(heapProp);
                     Long usedValue = heapResultProps.get(heapProp).get("used");
-                    List<Double> val = heapMap.get(time.doubleValue());
+                    List<Double> val = sortedMap.get(time.doubleValue());
                     if (val == null) {
                         val = new ArrayList<Double>();
                         val.add(usedValue.doubleValue());
                     } else {
                         val.add(usedValue.doubleValue());
                     }
-                    heapMap.put(time.doubleValue(), val);
+                    sortedMap.put(time.doubleValue(), val);
                     if (usedValue.doubleValue() > _maxYValue) {
                         _maxYValue = usedValue.doubleValue() + 5;
                     }
                 }
             }
-            setMemoryMonitoringChartInfo(heapMap);
+            setMemoryMonitoringChartInfo(sortedMap);            
+            System.out.println("JVM Memory Monitoring data for chart= "+sortedMap.toString());
         }
 
-        private void setMemoryMonitoringChartInfo(Map<Double, List<Double>> data) {
+        private void setMemoryMonitoringChartInfo(SortedMap<Double, List<Double>> data) {
             _groupLabels.clear();
             _chartYValues.clear();
             int instanceCount = _seriesLabels.size();
