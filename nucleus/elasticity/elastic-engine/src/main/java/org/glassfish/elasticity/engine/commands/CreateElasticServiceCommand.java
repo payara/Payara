@@ -40,13 +40,19 @@
 package org.glassfish.elasticity.engine.commands;
 
 import com.sun.enterprise.util.SystemPropertyConstants;
+
+import org.glassfish.common.util.admin.ParameterMapExtractor;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.elasticity.config.serverbeans.*;
+
+import com.sun.enterprise.admin.util.ClusterOperationUtil;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.util.StringUtils;
 import java.beans.PropertyVetoException;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.glassfish.elasticity.config.serverbeans.*;
 import org.glassfish.elasticity.engine.container.ElasticEngine;
@@ -76,10 +82,13 @@ import org.glassfish.api.admin.RestEndpoints;
 @Service(name = "_create-elastic-service")
 @I18n("create.ealastic.service")
 @Scoped(PerLookup.class)
-@TargetType(value={CommandTarget.DAS,CommandTarget.DOMAIN, CommandTarget.CLUSTER, CommandTarget.STANDALONE_INSTANCE })
-@ExecuteOn({RuntimeType.DAS,RuntimeType.INSTANCE })
-public class CreateElasticServiceCommand implements AdminCommand {
-
+@ExecuteOn(value={RuntimeType.ALL})
+@TargetType(value={CommandTarget.DOMAIN, CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CONFIG})
+public class CreateElasticServiceCommand implements AdminCommand  {
+ 
+	@Inject
+	Habitat habitat;
+	
   @Inject
   Domain domain;
 
@@ -92,6 +101,9 @@ public class CreateElasticServiceCommand implements AdminCommand {
   @Inject
    ElasticServiceManager elasticServiceManager;
 
+  @Inject
+  ServerEnvironment serverEnv;
+  
   @Param(name="name", primary = true)
    String name;
 
@@ -105,7 +117,7 @@ public class CreateElasticServiceCommand implements AdminCommand {
     boolean enabled;
 
     @Param(optional=true)
-    private String target = SystemPropertyConstants.DAS_SERVER_NAME;
+    private String target = "domain";
 
 
     ElasticServices elasticServices =null;
@@ -114,6 +126,8 @@ public class CreateElasticServiceCommand implements AdminCommand {
     public void execute(AdminCommandContext context) {
         ActionReport report = context.getActionReport();
         Logger logger= context.logger;
+        
+        logger.log(Level.INFO, "**_CREATE_ELASTIC_SERVICES_ELEMENT called....");
 
         CommandInvocation ci = cr.getCommandInvocation("_create-elastic-services-element", report);
         ParameterMap map = new ParameterMap();
@@ -152,14 +166,15 @@ public class CreateElasticServiceCommand implements AdminCommand {
 
         logger.log(Level.INFO, "Executed elasticEngine.startElasticService(" + elasticService.getName() + ")");
 
-        //create lower bound alert for memory demo
-        String expression = "any[avg(jvm_memory.heap.used)*100/jvm_memory.maxMemory]  <  20" ;
+        //create the  alert for memory demo
+        String expression = "any[avg(jvm_memory.heap.used)*100/jvm_memory.maxMemory]  >  50" ;
 
         ci = cr.getCommandInvocation("create-alert", report);
         map = new ParameterMap();
         map.add("service", name);
+        map.add("schedule","10s");
         map.add("expression", expression);
-        map.add("DEFAULT", "__low-bound-alert");
+        map.add("DEFAULT", "_high-memory-alert");
         ci.parameters(map);
         ci.execute();
 
@@ -167,9 +182,9 @@ public class CreateElasticServiceCommand implements AdminCommand {
         ci = cr.getCommandInvocation("add-alert-action",report);
         map = new ParameterMap();
         map.add("service", name);
-        map.add("actionref","scale-down-action");
+        map.add("actionref","scale-up-action");
         map.add("state","alarm-state");
-        map.add("DEFAULT", "__low-bound-alert");
+        map.add("DEFAULT", "_high-memory-alert");
         ci.parameters(map);
         ci.execute();
 
