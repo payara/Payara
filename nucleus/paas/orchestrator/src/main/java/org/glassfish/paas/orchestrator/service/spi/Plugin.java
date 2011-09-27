@@ -162,7 +162,11 @@ public interface Plugin<T extends ServiceType> {
      * Once the CPAS merges all discovered and explicit
      * <code>ServiceDefinitions</code>s, it provisions the required Services
      * through the <code>Plugin</code>.
-     *
+     * 
+     * The <code>Plugin</code> is responsible for ensuring that the provisioning
+     * action is atomic. That is, the Service that is being provisioned must be
+     * completely provisioned or not at all.
+     * 
      * @return a Set of <code>ProvisionedService</code>s
      */
     public ProvisionedService provisionService(ServiceDescription serviceDescription, DeploymentContext dc);

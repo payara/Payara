@@ -53,7 +53,6 @@ import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.sun.enterprise.config.serverbeans.Cluster;
 import org.glassfish.api.admin.AdminCommandLock;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.deployment.DeployCommandParameters;
@@ -64,11 +63,11 @@ import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.deployment.common.DeploymentException;
 import org.glassfish.embeddable.CommandResult;
 import org.glassfish.embeddable.CommandRunner;
+import org.glassfish.hk2.scopes.Singleton;
 import org.glassfish.internal.deployment.ApplicationLifecycleInterceptor;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
 import org.glassfish.paas.orchestrator.provisioning.ServiceInfo;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceUtil;
-import org.glassfish.paas.orchestrator.service.JavaEEServiceType;
 import org.glassfish.paas.orchestrator.service.ServiceType;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceDescription;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceMetadata;
@@ -81,11 +80,14 @@ import org.glassfish.virtualization.runtime.VirtualCluster;
 import org.glassfish.virtualization.runtime.VirtualClusters;
 import org.glassfish.virtualization.spi.AllocationStrategy;
 import org.jvnet.hk2.annotations.Inject;
+import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.component.Habitat;
 
+import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.config.serverbeans.Domain;
 
 @org.jvnet.hk2.annotations.Service
+@Scoped(Singleton.class)
 public class ServiceOrchestratorImpl implements ServiceOrchestrator, ApplicationLifecycleInterceptor {
 
     @Inject
@@ -152,12 +154,13 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator, Application
 
         //2. Provision dependent services
         Set<ProvisionedService> appProvisionedSvcs = provisionServices(installedPlugins, appServiceMetadata, dc);
+        logger.log(Level.FINE, "Provisioned Services for Application " + appName + " : " + appProvisionedSvcs);
+        serviceMetadata.put(appName, appServiceMetadata);
+        provisionedServices.put(appName, appProvisionedSvcs);
 
         //3. Associate provisioned services with each other
         associateProvisionedServices(installedPlugins, appServiceMetadata,
                 appProvisionedSvcs, true /*before deployment*/, dc);
-        serviceMetadata.put(appName, appServiceMetadata);
-        provisionedServices.put(appName, appProvisionedSvcs);
         logger.exiting(getClass().getName(), "provisionServicesForApplication");
     }
 
@@ -908,10 +911,12 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator, Application
 
         //Get Old PS
         Set<ProvisionedService> appPS = provisionedServices.get(appName);
+        logger.log(Level.FINE, "appPS: " + appPS);
         ProvisionedService oldPS = null;
         for(ProvisionedService ps: appPS) {
             if (ps.getName().equals(svcName)) oldPS = ps;
         }
+        logger.log(Level.FINE, "oldPS: " + oldPS);
         
         //Find Plugin that provided this Service
         Set<Plugin> installedPlugins = getPlugins();
