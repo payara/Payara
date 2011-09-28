@@ -44,13 +44,9 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.glassfish.api.FutureProvider;
 import org.glassfish.hk2.PostConstruct;
 import org.glassfish.hk2.PreDestroy;
 import org.jvnet.hk2.annotations.Inject;
@@ -58,9 +54,6 @@ import org.jvnet.hk2.annotations.Priority;
 import org.jvnet.hk2.annotations.RunLevel;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.Inhabitant;
-
-import com.sun.enterprise.util.Result;
-import com.sun.hk2.component.Holder;
 
 /**
  * Abstract based for all run level bridges.
@@ -70,43 +63,39 @@ import com.sun.hk2.component.Holder;
 @SuppressWarnings("rawtypes")
 /* public */abstract class RunLevelBridge implements PostConstruct, PreDestroy {
 
-    private final static Logger logger = AppServerStartup.logger;
-//    private final static Logger logger = Logger.getLogger(RunLevelBridge.class.getName());
+//    private final static Logger logger = AppServerStartup.logger;
+    private final static Logger logger = Logger.getLogger(RunLevelBridge.class.getName());
     private final static Level level = AppServerStartup.level;
 
     @Inject
     private Habitat habitat;
-    
-    @Inject
-    private Holder<AppServerStartup> appServerStartup;
 
     // the legacy type we are bridging to
     private final Class bridgeClass;
     
+    // optionally the class to stop during shutdown as well
+    private final Class additionalShutdownClass;
 
     RunLevelBridge(Class bridgeClass) {
         this.bridgeClass = bridgeClass;
+        this.additionalShutdownClass = null;
     }
 
+    RunLevelBridge(Class bridgeClass, Class additionalShutdownClass) {
+        this.bridgeClass = bridgeClass;
+        this.additionalShutdownClass = additionalShutdownClass;
+    }
+    
     @SuppressWarnings("unchecked")
     @Override
     public void postConstruct() {
-        // start all services from the first bridge class
         List<Inhabitant<?>> inhabitants = sort(habitat.getInhabitants(bridgeClass));
-        start(inhabitants);
-    }
-
-    private void start(List<Inhabitant<?>> inhabitants) {
-        ArrayList<Future<Result<Thread>>> futures = new ArrayList<Future<Result<Thread>>>();
         for (Inhabitant<?> i : inhabitants) {
             if (qualifies(true, i)) {
                 long start = System.currentTimeMillis();
                 logger.log(level, "starting {0}", i);
                 try {
-                    Object service = i.get();
-                    if (FutureProvider.class.isInstance(service)) {
-                        futures.addAll(FutureProvider.class.cast(service).getFutures());
-                    }
+                    i.get();
                 } catch (Exception e) {
                     logger.log(Level.SEVERE, "problem starting {0}: {1}", new Object[] {i, e.getMessage()});
                     logger.log(level, "nested error", e);
@@ -117,41 +106,26 @@ import com.sun.hk2.component.Holder;
                 }
             }
         }
-     
-        for (Future<Result<Thread>> future : futures) {
-            try {
-                try {
-                    // wait for 3 seconds for an eventual status, otherwise ignore
-                    if (future.get(3, TimeUnit.SECONDS).isFailure()) {
-                        final Throwable t = future.get().exception();
-                        logger.log(Level.SEVERE,
-                                AppServerStartup.localStrings.getLocalString("startupfatalstartup",
-                                        "Shutting down v3 due to startup exception : ",
-                                        t.getMessage()));
-                        logger.log(level, future.get().exception().getMessage(), t);
-                        appServerStartup.get().shutdownRequested = true;
-                        return;
-                    }
-                } catch (TimeoutException e) {
-                    logger.warning(AppServerStartup.localStrings.getLocalString("startupwaittimeout",
-                            "Timed out, ignoring some startup service status"));
-                }
-            } catch(Throwable t) {
-                logger.log(Level.SEVERE, t.getMessage(), t);    
-            }
-        }
-
     }
 
     @SuppressWarnings("unchecked")
     @Override
     public void preDestroy() {
-        List<Inhabitant<?>> inhabitants = sort(habitat.getInhabitants(bridgeClass));
-        Collections.reverse(inhabitants);
-        stop(inhabitants);
-    }
+        List<Inhabitant<?>> inhabitants;
+        if (null == additionalShutdownClass) {
+            inhabitants = sort(habitat.getInhabitants(bridgeClass));
+        } else {
+            // Startup and PostStartup are merged according to their priority level and released
+            Collection<Inhabitant<?>> inhabitants1 = habitat.getInhabitants(bridgeClass);
+            Collection<Inhabitant<?>> inhabitants2 = habitat.getInhabitants(additionalShutdownClass);
 
-    private void stop(List<Inhabitant<?>> inhabitants) {
+            inhabitants = new ArrayList<Inhabitant<?>>();
+            inhabitants.addAll(inhabitants2);
+            inhabitants.addAll(inhabitants1);
+
+            Collections.reverse(sort(inhabitants));
+        }
+        
         for (Inhabitant<?> i : inhabitants) {
             if (qualifies(false, i)) {
                 logger.log(level, "releasing {0}", i);
@@ -187,6 +161,7 @@ import com.sun.hk2.component.Holder;
     protected List<Inhabitant<?>> sort(Collection<Inhabitant<?>> coll) {
         List<Inhabitant<?>> sorted = (List.class.isInstance(coll)) ? List.class.cast(coll) : new ArrayList<Inhabitant<?>>(coll);
         if (sorted.size() > 1) {
+            logger.log(level, "sorting {0},{1}", new Object[] {bridgeClass, additionalShutdownClass});
             Collections.sort(sorted, getInhabitantComparator());
         }
         return sorted;
