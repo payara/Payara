@@ -50,6 +50,9 @@
                         <tr:inputNumberSpinbox label="Instance Count Maximum:" value="#{metaData['configurations']['max.clustersize']}" minimum="1" maximum="16" />
                         <!-- <tr:outputText value="To change these values after the application is deployed, use the Auto Scaling tab."/>-->
                     </tr:panelFormLayout>
+                    <tr:panelFormLayout rendered="#{metaData['configurations']['init-sql-file'] != null}" inlineStyle="float: right; margin-right: 20px">
+                        <tr:inputText label="Init SQL File:" value="#{metaData['configurations']['init-sql-file']}" columns="25" />
+                    </tr:panelFormLayout>
                     <!--tr:inputText id="amount" label="Clustersize:" value="#{uploadBean.eeTemplateMinMaxClusterSize}" columns="16"/>
                                     <div id="slider-range"></div>
                                     <script type="text/javascript">
