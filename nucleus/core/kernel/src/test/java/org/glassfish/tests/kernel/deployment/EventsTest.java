@@ -188,6 +188,7 @@ public class EventsTest extends ConfigApiTest {
         Deployment deployment = habitat.getByContract(Deployment.class);
         DeployCommandParameters params = new DeployCommandParameters(application);
         params.name = "fakeApplication";
+        params.target = "server";
         ActionReport report = habitat.getComponent(ActionReport.class, "hk2-agent");
         ExtendedDeploymentContext dc = deployment.getBuilder(Logger.getAnonymousLogger(), params, report).source(application).build();
         deployment.deploy(dc);
@@ -214,6 +215,7 @@ public class EventsTest extends ConfigApiTest {
         events.register(listener);
         Deployment deployment = habitat.getByContract(Deployment.class);
         UndeployCommandParameters params = new UndeployCommandParameters("fakeApplication");
+        params.target = "server";
         ActionReport report = habitat.getComponent(ActionReport.class, "hk2-agent");
         ExtendedDeploymentContext dc = deployment.getBuilder(logger, params, report).source(application).build();
         deployment.undeploy("fakeApplication", dc);
@@ -231,9 +233,10 @@ public class EventsTest extends ConfigApiTest {
     public void badUndeployTest() throws Exception {
         Deployment deployment = habitat.getByContract(Deployment.class);
         UndeployCommandParameters params = new UndeployCommandParameters("notavalidname");
+        params.target = "server";
         ActionReport report = habitat.getComponent(ActionReport.class, "hk2-agent");
         ExtendedDeploymentContext dc = deployment.getBuilder(Logger.getAnonymousLogger(), params, report).source(application).build();
-        deployment.undeploy("fakeApplication", dc);
+        deployment.undeploy("notavalidname", dc);
         Assert.assertEquals(report.getActionExitCode(), ActionReport.ExitCode.FAILURE);
     }
 
