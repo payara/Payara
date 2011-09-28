@@ -40,28 +40,20 @@
 
 package org.glassfish.tests.embedded.web;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.security.KeyStore;
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSession;
-import javax.net.ssl.SSLSocketFactory;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.TrustManagerFactory;
+import java.io.*;
+import java.net.*;
+import java.security.*;
+import java.security.cert.X509Certificate;
+import javax.net.ssl.*;
 
-import java.util.logging.Level;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+
 import org.glassfish.embeddable.*;
 import org.glassfish.embeddable.web.*;
 import org.glassfish.embeddable.web.config.*;
+
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -99,18 +91,19 @@ public class EmbeddedAddHttpsListenerTest {
     @Test
     public void test() throws Exception {
 
-        /*
-        String keyStorePath = "/tmp/mykeystore.jks";
-        String trustStorePath = "/tmp/mycacerts.jks";
-
         HttpsListener listener = new HttpsListener();
         listener.setPort(9191);
         listener.setId("https-listener-2");
         listener.setProtocol("https");
-        SslConfig sslConfig = new SslConfig();
-        sslConfig.setKeyStore(keyStorePath);
-        sslConfig.setTrustStore(trustStorePath);
-        listener.setSslConfig(sslConfig);      
+
+        String keyStorePath = root + "/keystore.jks";
+        String trustStorePath = root + "/cacerts.jks";
+        String keyPassword = "changeit";
+        SslConfig sslConfig = new SslConfig(keyStorePath, trustStorePath);
+        sslConfig.setKeyPassword(keyPassword.toCharArray());
+
+        listener.setSslConfig(sslConfig);
+
         embedded.addWebListener(listener);
 
         Deployer deployer = glassfish.getDeployer();
@@ -122,7 +115,6 @@ public class EmbeddedAddHttpsListenerTest {
         File path = new File(p).getParentFile().getParentFile();
 
         String name = null;
-
         if (path.getName().lastIndexOf('.') != -1) {
             name = path.getName().substring(0, path.getName().lastIndexOf('.'));
         } else {
@@ -130,69 +122,51 @@ public class EmbeddedAddHttpsListenerTest {
         }
 
         System.out.println("Deploying " + path + ", name = " + name);
-
         String appName = deployer.deploy(path.toURI(), "--name=" + name);
-
         System.out.println("Deployed " + appName);
-
         Assert.assertTrue(appName != null);
 
-        SSLSocketFactory ssf = getSSLSocketFactory(trustStorePath);
-        final String url = "https://localhost:9191/classes/hello";
-        HttpURLConnection connection = doSSLHandshake(url, ssf);
-        BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+        disableCertValidation();
+        URL servlet = new URL("https://localhost:9191/classes/hello");
+        HttpsURLConnection uc = (HttpsURLConnection) servlet.openConnection();
+        BufferedReader in = new BufferedReader(new InputStreamReader(uc.getInputStream()));
         StringBuilder sb = new StringBuilder();
         String inputLine;
         while ((inputLine = in.readLine()) != null){
             sb.append(inputLine);
         }
         in.close();
-        System.out.println(inputLine);
+        System.out.println(sb);
         Assert.assertEquals("Hello World!", sb.toString());
         
         if (appName!=null)
             deployer.undeploy(appName);
-
-            */
         
     }
 
-    private SSLSocketFactory getSSLSocketFactory(String trustStorePath)
-        throws Exception {
-        SSLContext sc = SSLContext.getInstance("SSL");
-        sc.init(null, getTrustManagers(trustStorePath), null);
-        return sc.getSocketFactory();
-    }
+    public static void disableCertValidation() {
+        // Create a trust manager that does not validate certificate chains
+        TrustManager[] trustAllCerts = new TrustManager[]{new X509TrustManager() {
+            public X509Certificate[] getAcceptedIssuers() {
+                return null;
+            }
 
-    private HttpsURLConnection doSSLHandshake(String urlAddress, SSLSocketFactory ssf)
-        throws Exception {
-        URL url = new URL(urlAddress);
-        HttpsURLConnection.setDefaultSSLSocketFactory(ssf);
-        HttpsURLConnection.setFollowRedirects(true);
-        HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
-        connection.setHostnameVerifier(
-            new HostnameVerifier() {
-                public boolean verify(String server, SSLSession session) {
-                    return true;
-                }
-            });
-        connection.setDoOutput(true);
-        return connection;
-    }
-    
-    private TrustManager[] getTrustManagers(String path) throws Exception {
-        TrustManager[] tms = null;
-        InputStream stream = new FileInputStream(path);
+            public void checkClientTrusted(X509Certificate[] certs, String authType) {
+                return;
+            }
+
+            public void checkServerTrusted(X509Certificate[] certs, String authType) {
+                return;
+            }
+        }};
+
         try {
-            KeyStore trustStore = KeyStore.getInstance("JKS");
-            trustStore.load(stream, null);
-            TrustManagerFactory tmf = TrustManagerFactory.getInstance("SunX509");
-            tmf.init(trustStore);
-            tms = tmf.getTrustManagers();
-        } finally {
-            stream.close();
+            SSLContext sc = SSLContext.getInstance("TLS");
+            sc.init(null, trustAllCerts, new SecureRandom());
+            HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
+        } catch (Exception e) {
+            return;
         }
-        return tms;
     }
 
     @AfterClass
