@@ -68,7 +68,6 @@ pkg = {
     "files"         : { "glassfish/config/asenv.conf" : { "preserve" : "renamenew"},
                         "glassfish/config/asenv.bat" : { "preserve" : "renamenew"},
                         "glassfish/config/glassfish.container" : { "preserve" : "renamenew"},
-                        "glassfish/osgi/equinox/configuration/config.ini" : { "preserve" : "renamenew"},
                       },
     "licenses"      : {
                         "../../../../CDDL+GPL.txt" : {"license" : "CDDL and GPL v2 with classpath exception"},
