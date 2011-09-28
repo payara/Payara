@@ -34,6 +34,10 @@ public class FileUtil {
 
         String tmpdir = System.getProperty("java.io.tmpdir");
         File tmpFile = new File(tmpdir, origFileName);
+        if (tmpFile.exists()){
+            tmpFile.delete();
+            tmpFile = new File(tmpdir, origFileName);
+        }
         tmpFile.deleteOnExit();
           
         OutputStream out = new FileOutputStream(tmpFile);
