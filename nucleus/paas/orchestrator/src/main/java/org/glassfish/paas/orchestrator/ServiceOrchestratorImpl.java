@@ -917,56 +917,84 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator, Application
 
 
     @Override
-    public boolean scaleService(String appName, String svcName,
-            int scaleCount, AllocationStrategy allocStrategy) {
+    public boolean scaleService(final String appName, final String svcName,
+            final int scaleCount, final AllocationStrategy allocStrategy) {
         System.out.println("Scaling Service " + svcName + " for Application " 
                                 + appName + " by " + scaleCount + " instances");
-
-        //Get Old PS
-        Set<ProvisionedService> appPS = provisionedServices.get(appName);
-        logger.log(Level.FINE, "appPS: " + appPS);
-        ProvisionedService oldPS = null;
-        for(ProvisionedService ps: appPS) {
-            if (ps.getName().equals(svcName)) oldPS = ps;
-        }
-        logger.log(Level.FINE, "oldPS: " + oldPS);
         
-        //Find Plugin that provided this Service
-        Set<Plugin> installedPlugins = getPlugins();
-        Plugin<?> chosenPlugin = getPluginForServiceType(
-                installedPlugins, oldPS.getServiceDescription().getServiceType());
         
-        //ask it to scale the service and get new PS
-        logger.log(Level.INFO, "Scaling Service " + svcName 
-                + " using Plugin:" + chosenPlugin);
-        ProvisionedService newPS = chosenPlugin.scaleService(
-                oldPS.getServiceDescription(), scaleCount, allocStrategy);
-        logger.log(Level.INFO, "New Provisioned Service after scaling " + svcName 
-                + " is:" + newPS);
-        
-        //Simple assertions to ensure that we have the scaled Service.
-        assert newPS.getName().equals(oldPS.getName());
-        assert newPS.getServiceType().equals(oldPS.getServiceType());
-        
-        //now re-associate all plugins with the new PS.
-        ServiceMetadata appServiceMetadata = serviceMetadata.get(appName); 
-        for (Plugin<?> svcPlugin : installedPlugins) {
-            //re-associate the new PS only with plugins that handle other service types.
-            if (!newPS.getServiceType().equals(svcPlugin.getServiceType())) {
-                Set<ServiceReference> appSRs = appServiceMetadata.getServiceReferences();
-                for (ServiceReference serviceRef : appSRs) {
-                    logger.log(Level.INFO, "Re-associating New ProvisionedService " 
-                            + newPS + " for ServiceReference " + serviceRef 
-                            + " through " + svcPlugin);
-                    Collection<ProvisionedService> serviceConsumers = 
-                            getServicesProvisionedByPlugin(svcPlugin, appPS);
-                    for(ProvisionedService serviceConsumer : serviceConsumers){
-                        svcPlugin.reassociateServices(serviceConsumer, oldPS, 
-                                newPS, ReconfigAction.AUTO_SCALING);
+        AdminCommandLock.runWithSuspendedLock(new Runnable() {
+            public void run() {
+            /*
+             * At this point in time, the CEM passes the Service Name as the
+             * app Name and hence a temproary workaround to find the right appName 
+             */
+            //Hack starts here.
+            String effectiveAppName = appName;
+            
+            String tmpAppName = null;
+            for (String app: provisionedServices.keySet()){
+                System.out.println("Checking app for Service " + svcName);
+                Set<ProvisionedService> appsServices = provisionedServices.get(app);
+                for(ProvisionedService p: appsServices){
+                    if (p.getName().equals(svcName)) {
+                        tmpAppName = app;
                     }
                 }
             }
-        }
+            if (tmpAppName != null) {
+                effectiveAppName = tmpAppName; //reset
+                System.out.println("Setting application name as appName");
+            }
+            //Hack ends here.
+    
+            //Get Old PS
+            Set<ProvisionedService> appPS = provisionedServices.get(effectiveAppName);
+            logger.log(Level.FINE, "appPS: " + appPS);
+            ProvisionedService oldPS = null;
+            for(ProvisionedService ps: appPS) {
+                if (ps.getName().equals(svcName)) oldPS = ps;
+            }
+            logger.log(Level.FINE, "oldPS: " + oldPS);
+            
+            //Find Plugin that provided this Service
+            Set<Plugin> installedPlugins = getPlugins();
+            Plugin<?> chosenPlugin = getPluginForServiceType(
+                    installedPlugins, oldPS.getServiceDescription().getServiceType());
+            
+            //ask it to scale the service and get new PS
+            logger.log(Level.INFO, "Scaling Service " + svcName 
+                    + " using Plugin:" + chosenPlugin);
+            ProvisionedService newPS = chosenPlugin.scaleService(
+                    oldPS.getServiceDescription(), scaleCount, allocStrategy);
+            logger.log(Level.INFO, "New Provisioned Service after scaling " + svcName 
+                    + " is:" + newPS);
+            
+            //Simple assertions to ensure that we have the scaled Service.
+            assert newPS.getName().equals(oldPS.getName());
+            assert newPS.getServiceType().equals(oldPS.getServiceType());
+            
+            //now re-associate all plugins with the new PS.
+            ServiceMetadata appServiceMetadata = serviceMetadata.get(effectiveAppName); 
+            for (Plugin<?> svcPlugin : installedPlugins) {
+                //re-associate the new PS only with plugins that handle other service types.
+                if (!newPS.getServiceType().equals(svcPlugin.getServiceType())) {
+                    Set<ServiceReference> appSRs = appServiceMetadata.getServiceReferences();
+                    for (ServiceReference serviceRef : appSRs) {
+                        logger.log(Level.INFO, "Re-associating New ProvisionedService " 
+                                + newPS + " for ServiceReference " + serviceRef 
+                                + " through " + svcPlugin);
+                        Collection<ProvisionedService> serviceConsumers = 
+                                getServicesProvisionedByPlugin(svcPlugin, appPS);
+                        for(ProvisionedService serviceConsumer : serviceConsumers){
+                            svcPlugin.reassociateServices(serviceConsumer, oldPS, 
+                                    newPS, ReconfigAction.AUTO_SCALING);
+                        }
+                    }
+                }
+            }
+            }
+        });
         
         return true;
     }
