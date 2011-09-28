@@ -18,14 +18,24 @@ import java.io.OutputStream;
 public class FileUtil {
 
     static public File inputStreamToFile(InputStream inputStream, String origFileName) throws IOException {
-        int index = origFileName.indexOf(".");
-        String suffix = null;
-        if (index > 0) {
-            suffix = origFileName.substring(index);
-        }
-        String prefix = origFileName.substring(0, index);
-        File tmpFile = File.createTempFile("gf-" + prefix, suffix);
+
+          /* We don't want to use a random tmpfile name, just use the same file name as uploaded.
+           * Otherwise, OE will use this random filename to create the services, adding all the random number.
+           */
+//        int index = origFileName.indexOf(".");
+//        String suffix = null;
+//        if (index > 0) {
+//            suffix = origFileName.substring(index);
+//        }
+//        String prefix = origFileName.substring(0, index);
+//        File tmpFile = File.createTempFile("gf-" + prefix, suffix);
+//        tmpFile.deleteOnExit();
+
+
+        String tmpdir = System.getProperty("java.io.tmpdir");
+        File tmpFile = new File(tmpdir, origFileName);
         tmpFile.deleteOnExit();
+          
         OutputStream out = new FileOutputStream(tmpFile);
         byte buf[] = new byte[4096];
         int len;

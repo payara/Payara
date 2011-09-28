@@ -175,7 +175,7 @@ public class ActiveSessionsMonitorBean {
                 }
             }
             setSessionMonitoringChartInfo(sortedMap);
-            //System.out.println("Active Sessions Monitoring data for chart= "+sortedMap.toString());
+            System.out.println("Active Sessions Monitoring data for chart= "+sortedMap.toString());
         }
 
         private void setSessionMonitoringChartInfo(SortedMap<Double, List<Double>> data) {

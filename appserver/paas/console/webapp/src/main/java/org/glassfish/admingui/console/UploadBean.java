@@ -144,7 +144,7 @@ public class UploadBean {
     }
 
     public void fileUploaded(ValueChangeEvent event) {
-        System.out.println("------ in filUploaded");
+        //System.out.println("------ in filUploaded");
         UploadedFile file = (UploadedFile) event.getNewValue();
         try{
             if (file != null) {

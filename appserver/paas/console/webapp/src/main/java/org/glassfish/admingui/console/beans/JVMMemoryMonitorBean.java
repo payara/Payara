@@ -141,7 +141,7 @@ public class JVMMemoryMonitorBean {
                         if (heapResultEntity != null && !heapResultEntity.isEmpty()) {
                             Map<String, Map<String, Long>> heapResultProps = (Map<String, Map<String, Long>>) (heapResultEntity.get("heap"));
                             instanceMemoryData.put(instanceName, heapResultProps);
-                            //System.out.println("JVM Memory Statistics for instance " + instanceName + " = " + heapResultProps.toString());
+                            System.out.println("JVM Memory Statistics for instance " + instanceName + " = " + heapResultProps.toString());
                         }
                     }
                 }
@@ -175,7 +175,7 @@ public class JVMMemoryMonitorBean {
                 }
             }
             setMemoryMonitoringChartInfo(sortedMap);            
-            //System.out.println("JVM Memory Monitoring data for chart= "+sortedMap.toString());
+            System.out.println("JVM Memory Monitoring data for chart= "+sortedMap.toString());
         }
 
         private void setMemoryMonitoringChartInfo(SortedMap<Double, List<Double>> data) {
