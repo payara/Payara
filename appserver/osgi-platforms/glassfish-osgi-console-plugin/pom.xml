@@ -49,8 +49,8 @@
     </parent>
     <artifactId>glassfish-osgi-console-plugin</artifactId>
     <packaging>hk2-jar</packaging>
-    <name>Glassfish OSGI Console Plugin</name>
-    <description>OSGI Console Plugin for GlassFish Administration Console</description>
+    <name>GlassFish OSGi Console Plugin</name>
+    <description>OSGi Console Plugin for GlassFish Administration Console</description>
 
     <developers>
         <developer>
