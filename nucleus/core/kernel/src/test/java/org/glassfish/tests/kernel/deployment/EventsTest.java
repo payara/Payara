@@ -136,8 +136,9 @@ public class EventsTest extends ConfigApiTest {
 
     @AfterClass
     public static void tearDown() {
-       application.delete();
-
+       if (application != null) {
+           application.delete();
+       }
     }
 
     public static List<EventTypes> getSingletonModuleSuccessfullDeploymentEvents() {
@@ -173,7 +174,7 @@ public class EventsTest extends ConfigApiTest {
     }
 
     @Test
-    public void deployTest() throws Exception {
+    public void deployUndeployTest() throws Exception {
 
         final List<EventTypes> myTestEvents = getSingletonModuleSuccessfullDeploymentEvents();
         Events events = habitat.getByContract(Events.class);
@@ -193,34 +194,27 @@ public class EventsTest extends ConfigApiTest {
         ExtendedDeploymentContext dc = deployment.getBuilder(Logger.getAnonymousLogger(), params, report).source(application).build();
         deployment.deploy(dc);
         events.unregister(listener);
-        Assert.assertEquals(report.getActionExitCode(), ActionReport.ExitCode.SUCCESS);
         for (EventTypes et : myTestEvents) {
             System.out.println("An expected event of type " + et.type() + " was not received");
         }
-    }
-
-    @Test
-    public void undeployTest() throws Exception {
 
         try {
-        final List<EventTypes> myTestEvents = getSingletonModuleSuccessfullUndeploymentEvents();
-        Events events = habitat.getByContract(Events.class);
-        EventListener listener = new EventListener() {
+        final List<EventTypes> myTestEvents2 = getSingletonModuleSuccessfullUndeploymentEvents();
+        EventListener listener2 = new EventListener() {
             public void event(Event event) {
-                if (myTestEvents.contains(event.type())) {
-                    myTestEvents.remove(event.type());
+                if (myTestEvents2.contains(event.type())) {
+                    myTestEvents2.remove(event.type());
                 }
             }
         };
-        events.register(listener);
-        Deployment deployment = habitat.getByContract(Deployment.class);
-        UndeployCommandParameters params = new UndeployCommandParameters("fakeApplication");
-        params.target = "server";
-        ActionReport report = habitat.getComponent(ActionReport.class, "hk2-agent");
-        ExtendedDeploymentContext dc = deployment.getBuilder(logger, params, report).source(application).build();
-        deployment.undeploy("fakeApplication", dc);
-        Assert.assertEquals(report.getActionExitCode(), ActionReport.ExitCode.SUCCESS);
-        for (EventTypes et : myTestEvents) {
+        events.register(listener2);
+        UndeployCommandParameters params2 = new UndeployCommandParameters("fakeApplication");
+        params2.target = "server";
+        ActionReport report2 = habitat.getComponent(ActionReport.class, "hk2-agent");
+        ExtendedDeploymentContext dc2 = deployment.getBuilder(Logger.getAnonymousLogger(), params2, report2).source(application).build();
+        deployment.undeploy("fakeApplication", dc2);
+        events.unregister(listener2);
+        for (EventTypes et : myTestEvents2) {
             System.out.println("An expected event of type " + et.type() + " was not received");
         }
         } catch(Throwable t) {
