@@ -173,7 +173,7 @@ public class ProcessingTimeMonitorBean {
                 }
             }
             setProcessingTimeMonitoringChartInfo(sortedMap);
-            System.out.println("Processing Time Monitoring data for chart= "+sortedMap.toString());
+            //System.out.println("Processing Time Monitoring data for chart= "+sortedMap.toString());
         }
 
         private void setProcessingTimeMonitoringChartInfo(SortedMap<Double, List<Double>> data) {
