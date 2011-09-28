@@ -40,16 +40,22 @@
 
 package org.glassfish.paas.javadbplugin;
 
+import org.apache.tools.ant.Project;
+import org.apache.tools.ant.taskdefs.SQLExec;
+import org.apache.tools.ant.types.Path;
 import org.glassfish.paas.orchestrator.provisioning.DatabaseProvisioner;
 import org.glassfish.paas.orchestrator.provisioning.util.RemoteCommandExecutor;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
-
+import org.apache.tools.ant.taskdefs.SQLExec.OnError;
 import java.io.File;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * @author Jagadish Ramu
+ * @author Shalini M
  */
 @Service
 public class DerbyProvisioner implements DatabaseProvisioner {
@@ -68,6 +74,10 @@ public class DerbyProvisioner implements DatabaseProvisioner {
     public static final String DERBY_GLASSFISH_INSTALL_LOCATION = "DERBY_GLASSFISH_INSTALL_LOCATION";
     public static final String DERBY_INSTANCE_USER_NAME = "DERBY_INSTANCE_USER_NAME";
 
+    private static final String DERBY_USERNAME = "APP";
+    private static final String DERBY_PASSWORD = "APP";
+
+    private static Logger logger = Logger.getLogger(DerbyProvisioner.class.getName());
 
     public boolean handles(Properties metaData) {
         String value = (String) metaData.get(DATABASE_PROVIDER);
@@ -109,13 +119,42 @@ public class DerbyProvisioner implements DatabaseProvisioner {
 
     public Properties getDefaultConnectionProperties() {
         Properties properties = new Properties();
-        properties.put(DatabaseProvisioner.USER, "APP");
-        properties.put(DatabaseProvisioner.PASSWORD, "APP");
+        properties.put(DatabaseProvisioner.USER, DERBY_USERNAME);
+        properties.put(DatabaseProvisioner.PASSWORD, DERBY_PASSWORD);
         properties.put(DatabaseProvisioner.DATABASENAME, "sample-db");
         properties.put("CONNECTIONATTRIBUTES", ";create\\=true");
 //        properties.put(DatabaseProvisioner.PORTNUMBER, "1527");
         properties.put(DatabaseProvisioner.RESOURCE_TYPE, "javax.sql.XADataSource");
         properties.put(DatabaseProvisioner.CLASSNAME, "org.apache.derby.jdbc.ClientXADataSource");
         return properties;
+    }
+
+    public void executeInitSql(Properties dbProps, String sqlFile) {
+        try {
+            Project project = new Project();
+            project.init();
+            SQLExec task = new SQLExec();
+            SQLExec.OnError error = new SQLExec.OnError();
+            error.setValue("continue");
+            task.setDriver("org.apache.derby.jdbc.ClientDriver");
+            String url = "jdbc:derby://" + dbProps.getProperty("serverName") + ":" +
+                    dbProps.getProperty("port") + "/" +
+                    dbProps.getProperty(DatabaseProvisioner.DATABASENAME) + ";create=true;";
+            task.setUrl(url);
+            task.setUserid(dbProps.getProperty(DatabaseProvisioner.USER));
+            task.setPassword(dbProps.getProperty(DatabaseProvisioner.PASSWORD));
+            task.setSrc(new File(sqlFile));
+            task.setOnerror(error);
+            String derbyClient = new File(System.getProperty("com.sun.aas.installRoot")).getParent() +
+                    File.separator + "javadb" + File.separator + "lib" + File.separator + "derbyclient.jar";
+            Path path = new Path(project, derbyClient);
+            path.addJavaRuntime();
+            task.setClasspath(path);
+            task.setProject(project);
+            task.setAutocommit(true);
+            task.execute();
+        } catch(Exception ex) {
+            logger.log(Level.WARNING, "Init SQL execution failed with exception : " + ex);
+        }
     }
 }

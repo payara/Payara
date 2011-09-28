@@ -50,4 +50,14 @@
     <configuration name="max.clustersize" value="2"/>
   </configurations>
 </service-description>
+
+<service-description name="basic-derby-db" init-type="lazy">
+  <characteristics>
+    <characteristic name="service-type" value="Database"/>
+  </characteristics>
+  <configurations>
+    <configuration name="database.init.sql" value="/tmp/initsql.sql"/>
+  </configurations>
+</service-description>
+
 </glassfish-services>

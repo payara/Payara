@@ -183,9 +183,21 @@ public class CreateDerbyService implements AdminCommand, Runnable {
                         iaas.allocate(new AllocationConstraints(matchingTemplate, vCluster), null);
 
                 VirtualMachine vm = future.get();
+
+                // TODO :: create user specified database.
+                
                 // add app-scoped-service config for each vm instance as well.
                 //DatabaseProvisioner dbProvisioner = new DerbyProvisioner();//provisionerUtil.getDatabaseProvisioner();
                 //dbProvisioner.startDatabase(vm.getAddress());
+                String initSqlFile = serviceConfigurations.getProperty("database.init.sql");
+                if (initSqlFile != null) {
+                    DerbyProvisioner derbyProvisioner = new DerbyProvisioner();
+                    Properties serviceProperties = new Properties();
+                    serviceProperties.putAll(derbyProvisioner.getDefaultConnectionProperties()); // TODO :: use user supplied database info.
+                    serviceProperties.put("serverName", vm.getAddress());
+                    serviceProperties.put("port", "1527"); // TODO :: grab the actual port.
+                    derbyProvisioner.executeInitSql(serviceProperties, initSqlFile);
+                }
                 ServiceInfo entry = new ServiceInfo();
                 entry.setInstanceId(vm.getName());
                 entry.setIpAddress(vm.getAddress());
