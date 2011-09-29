@@ -50,7 +50,8 @@
     <h3>Step 3: Review and Confirm Deployment</h3>
 
     If the following settings for the application are correct, click Deploy. To change a setting, click Previous.
-
+    <tr:spacer height="20px"/>
+    <tr:message for="deployButton"/>
     <tr:spacer height="40px"/>
     <tr:panelFormLayout  id="appInfo">
         <tr:group>
@@ -76,6 +77,9 @@
             <tr:inputText label="Database: " value="#{uploadBean.database}" readOnly="true"
                           rendered="#{!uploadBean.database.isEmpty()}"
                           contentStyle="width: 350px"/>
+            <tr:inputText label="Database: " value="#{uploadBean.sqlInitFileName}" readOnly="true"
+                          rendered="#{uploadBean.hasSqlInitFileName()}"
+                          contentStyle="width: 350px"/>
         </tr:group>
     </tr:panelFormLayout>
     <tr:spacer height="40px"/>
@@ -84,9 +88,9 @@
     <div style="width: 600px; position: absolute; bottom: 5px">
     <tr:commandButton id="prevButton" text="&lt;&lt; Previous" action="#{wizardBean.previous}">
     </tr:commandButton>
-    <tr:commandButton id="nextButton" text=" Deploy " action="#{uploadBean.doDeploy}"
+    <tr:commandButton id="deployButton" text=" Deploy " action="#{uploadBean.doDeploy}"
                       onclick="document.getElementById('wizard:prevButton').disabled=true;
-                          document.getElementById('wizard:nextButton').disabled=true;
+                          document.getElementById('wizard:deployButton').disabled=true;
                           document.getElementById('wizard:progressBar').style.visibility='visible';
                           document.getElementById('wizard:progressText').style.visibility='visible';
                           return true;">

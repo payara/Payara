@@ -7,8 +7,8 @@ package org.glassfish.admingui.console;
 
 import java.io.File;
 import java.util.*;
+import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
-import javax.faces.bean.SessionScoped;
 import javax.faces.bean.ViewScoped;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ValueChangeEvent;
@@ -16,7 +16,6 @@ import javax.faces.model.DataModel;
 import javax.faces.model.ListDataModel;
 import javax.faces.model.SelectItem;
 
-import com.sun.faces.taglib.jsf_core.SelectItemTag;
 import org.apache.myfaces.trinidad.model.UploadedFile;
 import org.glassfish.admingui.console.event.DragDropEvent;
 import org.glassfish.admingui.console.rest.JSONUtil;
@@ -25,7 +24,6 @@ import org.glassfish.admingui.console.util.CommandUtil;
 import org.glassfish.admingui.console.util.DeployUtil;
 import org.glassfish.admingui.console.util.FileUtil;
 import org.glassfish.admingui.console.util.GuiUtil;
-import org.glassfish.admingui.console.util.TargetUtil;
 
 
 /**
@@ -37,6 +35,9 @@ import org.glassfish.admingui.console.util.TargetUtil;
 public class UploadBean {
     private UploadedFile _file;
     private File tmpFile;
+    private UploadedFile _sqlInitFile;
+    private File sqlInitFile = null;
+    private String sqlInitFileName = null;
     private String appName;
     private String desc;
     private String contextRoot;
@@ -165,12 +166,49 @@ public class UploadBean {
     }
 
 
+    public void sqlFileUploaded(ValueChangeEvent event) {
+        //System.out.println("------ in filUploaded");
+        UploadedFile file = (UploadedFile) event.getNewValue();
+        try{
+            if (file != null) {
+                //FacesContext context = FacesContext.getCurrentInstance();
+                //FacesMessage message = new FacesMessage( "Successfully uploaded file " + file.getFilename() + " (" + file.getLength() + " bytes)");
+                //context.addMessage(event.getComponent().getClientId(context), message);
+                // Here's where we could call file.getInputStream()
+                sqlInitFileName =  file.getFilename();
+                System.out.println("init sql filename =" + sqlInitFileName );
+                System.out.println("getLength=" + file.getLength());
+                System.out.println("getContentType=" + file.getContentType());
+                sqlInitFile = FileUtil.inputStreamToFile(file.getInputStream(), sqlInitFileName);
+            }
+        }catch(Exception ex){
+            ex.printStackTrace();
+        }
+    }
+
+
     public UploadedFile getFile() {
         return _file;
     }
 
     public void setFile(UploadedFile file) {
         _file = file;
+    }
+
+    public UploadedFile getSqlInitFile() {
+        return _sqlInitFile;
+    }
+
+    public void setSqlInitFile(UploadedFile file) {
+        _sqlInitFile = file;
+    }
+
+    public boolean  hasSqlInitFileName(){
+         return (sqlInitFile == null) ? false : true;
+    }
+
+    public String getSqlInitFileName(){
+        return sqlInitFileName;
     }
 
     public String doDeploy(){
@@ -180,7 +218,7 @@ public class UploadBean {
         dpAttrs.put("archive" , tmpFile.getAbsolutePath());
 
         // ClassCastException Boolean cannot be cast to String in backend
-        if (loadBalancersMetaData.get(0) != null) {
+        if (!loadBalancersMetaData.isEmpty()) {
             Map config = (Map) loadBalancersMetaData.get(0).get("configurations");
             if (config != null) {
                 Object sslEnabled = config.get("ssl-enabled");
@@ -190,12 +228,29 @@ public class UploadBean {
             }
         }
 
+        if (sqlInitFile != null){
+            for(Map oneDB: databasesMetaData){
+                Map config = (Map)oneDB.get("configurations");
+                if (config.containsKey("database.init.sql")){
+                    config.put("database.init.sql", sqlInitFile.getAbsolutePath());
+                    break;
+                }
+            }
+        }
         String metaDataJson = JSONUtil.javaToJSON(metaData, -1);
+        System.out.println("====== metaDataJson =");
+        System.out.println(metaDataJson);
         dpAttrs.put("modifiedServiceDesc", metaDataJson);
         //ensure that template-id is the same as templateId, ie whatever user has changed that to.
-        Map res = (Map) RestUtil.restRequest(REST_URL + "/applications/_generate-glassfish-services-deployment-plan", dpAttrs, "POST", null, null, false, true).get("data");
+        Map res = (Map) RestUtil.restRequest(REST_URL + "/applications/_generate-glassfish-services-deployment-plan", dpAttrs, "POST", null, null, false, false).get("data");
         Map extr = (Map) res.get("extraProperties");
         String deploymentPlanPath = (String) extr.get("deployment-plan-file-path");
+        if (GuiUtil.isEmpty(deploymentPlanPath)){
+            System.out.println(" Failed to create deployment plan ;  Deployment aborted");
+            FacesContext.getCurrentInstance().addMessage("wizard:deployButton",
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error",  "Error in creating Deployment Plan. Refer to server.log for more info."));
+            return null;
+        }
         Map payload = new HashMap();
         payload.put("deploymentplan", deploymentPlanPath);
         payload.put("id", this.tmpFile.getAbsolutePath());
@@ -237,8 +292,8 @@ public class UploadBean {
             if (deployingApps != null && deployingApps.contains(this.appName)){
                 deployingApps.remove(this.appName);
             }
-            ex.printStackTrace();
-            System.out.println("------------- do Deploy returns NULL");
+            FacesContext.getCurrentInstance().addMessage("wizard:deployButton",
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error",  "Deployment failed. Refer to server.log for more info."));
             return null;
         }
     }
@@ -322,6 +377,7 @@ public class UploadBean {
         Map databaseMetaData = databasesDataModel.getRowData();
         databaseMetaData.put("template-id", database);
     }
+
 
     public String getEeTemplate() {
         if (eeTemplatesDataModel != null && eeTemplatesDataModel.isRowAvailable()) {

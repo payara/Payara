@@ -51,7 +51,13 @@
                         <!-- <tr:outputText value="To change these values after the application is deployed, use the Auto Scaling tab."/>-->
                     </tr:panelFormLayout>
                     <tr:panelFormLayout rendered="#{metaData['configurations']['database.init.sql'] != null}" inlineStyle="float: right; margin-right: 20px">
-                        <tr:inputText label="Init SQL File:" value="#{metaData['configurations']['database.init.sql']}" columns="25" />
+                        <tr:inputFile label="Init SQL File:"
+                          id="sqlfile"
+                          onchange="autofill()"
+                          value="#{uploadBean.sqlInitFile}"
+                          columns="20"
+                          valueChangeListener="#{uploadBean.sqlFileUploaded}">
+                    </tr:inputFile>
                     </tr:panelFormLayout>
                     <!--tr:inputText id="amount" label="Clustersize:" value="#{uploadBean.eeTemplateMinMaxClusterSize}" columns="16"/>
                                     <div id="slider-range"></div>
