@@ -173,13 +173,13 @@ public class ClusterSizeMonitorBean {
             Map<String, Object> result = null;
             String clusterName = getEnvName();
             //To get the instance Name of a cluster that is running
-            String instanceName = getClusterInstanceName(clusterName);
-            if (instanceName.equals("")) {
-                return;
-            }
+//            String instanceName = getClusterInstanceName(clusterName);
+//            if (instanceName.equals("")) {
+//                return;
+//            }
             //Get the Monitoring statistics
             result = null;
-            String endPoint = "http://localhost:4848/monitoring/elasticity/domain/" + instanceName + "/cluster_instance_size/" + clusterName + ".json";
+            String endPoint = "http://localhost:4848/monitoring/elasticity/domain/server/cluster_instance_size/" + clusterName + ".json";
             result = (Map<String, Object>) RestUtil.restRequest(endPoint, null, "GET", null, null, false, true).get("data");
             if (result != null) {
                 Map<String, Object> heapResultExtraProps = (Map<String, Object>) result.get("extraProperties");

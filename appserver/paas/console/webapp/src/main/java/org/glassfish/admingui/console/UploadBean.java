@@ -153,9 +153,9 @@ public class UploadBean {
                 //FacesMessage message = new FacesMessage( "Successfully uploaded file " + file.getFilename() + " (" + file.getLength() + " bytes)");
                 //context.addMessage(event.getComponent().getClientId(context), message);
                 // Here's where we could call file.getInputStream()
-                System.out.println("getFilename=" + file.getFilename());
-                System.out.println("getLength=" + file.getLength());
-                System.out.println("getContentType=" + file.getContentType());
+                System.out.println("fileUploaded =" + file.getFilename());
+                //System.out.println("getLength=" + file.getLength());
+                //System.out.println("getContentType=" + file.getContentType());
                 tmpFile = FileUtil.inputStreamToFile(file.getInputStream(), file.getFilename());
 
                 processMetaData(tmpFile);
@@ -177,8 +177,8 @@ public class UploadBean {
                 // Here's where we could call file.getInputStream()
                 sqlInitFileName =  file.getFilename();
                 System.out.println("init sql filename =" + sqlInitFileName );
-                System.out.println("getLength=" + file.getLength());
-                System.out.println("getContentType=" + file.getContentType());
+                //System.out.println("getLength=" + file.getLength());
+                //System.out.println("getContentType=" + file.getContentType());
                 sqlInitFile = FileUtil.inputStreamToFile(file.getInputStream(), sqlInitFileName);
             }
         }catch(Exception ex){
@@ -238,8 +238,8 @@ public class UploadBean {
             }
         }
         String metaDataJson = JSONUtil.javaToJSON(metaData, -1);
-        System.out.println("====== metaDataJson =");
-        System.out.println(metaDataJson);
+        //System.out.println("====== metaDataJson =");
+        //System.out.println(metaDataJson);
         dpAttrs.put("modifiedServiceDesc", metaDataJson);
         //ensure that template-id is the same as templateId, ie whatever user has changed that to.
         Map res = (Map) RestUtil.restRequest(REST_URL + "/applications/_generate-glassfish-services-deployment-plan", dpAttrs, "POST", null, null, false, false).get("data");

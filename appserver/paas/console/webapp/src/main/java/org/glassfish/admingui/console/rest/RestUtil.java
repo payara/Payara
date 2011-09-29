@@ -692,8 +692,8 @@ public class RestUtil {
                 response.close();
         }
         }
-        System.out.println("======== doesProxyExist: " + endpoint);
-        System.out.println("======== doesProxyExist returns false ");
+//        System.out.println("======== doesProxyExist: " + endpoint);
+//        System.out.println("======== doesProxyExist returns false ");
         return false;
     }
 
