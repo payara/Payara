@@ -40,7 +40,9 @@
 
 package org.glassfish.paas.lbplugin;
 
+import java.util.Properties;
 import org.glassfish.embeddable.CommandRunner;
+import org.glassfish.paas.lbplugin.util.LBServiceConfiguration;
 import org.glassfish.virtualization.spi.VirtualMachine;
 import org.jvnet.hk2.annotations.Contract;
 import org.jvnet.hk2.component.Habitat;
@@ -55,8 +57,6 @@ public interface LBProvisioner {
     public void startLB(VirtualMachine virtualMachine) throws Exception;
 
     public void stopLB(VirtualMachine virtualMachine) throws Exception;
-
-    public void configureLB(VirtualMachine virtualMachine)  throws Exception;
 
     public void associateApplicationServerWithLB(VirtualMachine virtualMachine,
             String serviceName, CommandRunner commandRunner, String clusterName,
@@ -75,5 +75,7 @@ public interface LBProvisioner {
     public void setVirtualizationType(String value);
 
     public void initialize();
+
+    public void configureLB(VirtualMachine vm, LBServiceConfiguration configuration) throws Exception;
 
 }

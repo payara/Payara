@@ -75,6 +75,7 @@ import org.jvnet.hk2.component.PerLookup;
 import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.WebBundleDescriptor;
 import com.sun.enterprise.deployment.archivist.ApplicationFactory;
+import org.glassfish.paas.lbplugin.util.LBServiceConfiguration;
 import org.glassfish.paas.orchestrator.service.metadata.TemplateIdentifier;
 import org.glassfish.virtualization.config.Template;
 import org.glassfish.virtualization.spi.TemplateCondition;
@@ -166,14 +167,7 @@ public class LBPlugin implements Plugin {
     }
 
     private List<Property> getDefaultServiceConfigurations(TemplateInstance template) {
-        List<Property> properties = new ArrayList<Property>();
-        properties.add(new Property(Constants.HTTP_PORT_PROP_NAME,
-                Constants.DEFAULT_HTTP_PORT));
-        properties.add(new Property(Constants.SSL_ENABLED_PROP_NAME,
-                Constants.DEFAULT_SSL_ENABLED));
-        properties.add(new Property(Constants.HTTPS_PORT_PROP_NAME,
-                Constants.DEFAULT_HTTPS_PORT));
-        return properties;
+        return LBServiceConfiguration.getDefaultLBServiceConfigurations();
     }
 
     private String getDefaultServiceName(String appName){

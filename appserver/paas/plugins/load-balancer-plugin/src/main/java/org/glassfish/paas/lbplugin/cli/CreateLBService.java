@@ -54,6 +54,7 @@ import org.glassfish.embeddable.CommandRunner;
 import org.glassfish.paas.lbplugin.LBProvisionerFactory;
 import org.glassfish.paas.lbplugin.LBProvisioner;
 import org.glassfish.paas.lbplugin.logger.LBPluginLogger;
+import org.glassfish.paas.lbplugin.util.LBServiceConfiguration;
 import org.glassfish.paas.orchestrator.provisioning.*;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceType.*;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceType;
@@ -227,8 +228,14 @@ public class CreateLBService extends BaseLBService implements AdminCommand, Runn
                 LBPluginLogger.getLogger().log(Level.INFO,"Calling future.get() for template ...." + matchingTemplate);
                 VirtualMachine vm = future.get();
 
+                LBServiceConfiguration configuration =
+                        LBServiceConfiguration.parseServiceConfigurations(
+                        serviceConfigurations);
+
                 LBProvisionerFactory.getInstance().getLBProvisioner()
-                        .configureLB(vm);
+                        .configureLB(vm, configuration);
+
+
 
                 // add app-scoped-service config for each vm instance as well.
                 entry = new ServiceInfo();
@@ -238,6 +245,7 @@ public class CreateLBService extends BaseLBService implements AdminCommand, Runn
                 entry.setInstanceId(vm.getName());
                 entry.setState(ServiceInfo.State.NotRunning.toString());
                 entry.setAppName(appName);
+                configuration.updateServiceInfo(entry);
                 lbServiceUtil.registerLBInfo(entry);
             } catch (Throwable ex) {
                 LBPluginLogger.getLogger().log(Level.INFO,"Exception : " + ex);

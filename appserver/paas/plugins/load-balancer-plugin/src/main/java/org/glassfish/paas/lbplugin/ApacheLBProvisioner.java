@@ -52,6 +52,7 @@ import org.glassfish.common.util.admin.AuthTokenManager;
 import org.glassfish.embeddable.CommandResult;
 import org.glassfish.embeddable.CommandRunner;
 import org.glassfish.paas.lbplugin.logger.LBPluginLogger;
+import org.glassfish.paas.lbplugin.util.LBServiceConfiguration;
 import org.glassfish.virtualization.spi.VirtualMachine;
 import org.glassfish.virtualization.util.VirtualizationType;
 import org.jvnet.hk2.annotations.Service;
@@ -125,8 +126,16 @@ public class ApacheLBProvisioner implements LBProvisioner{
     }
 
     @Override
-    public void configureLB(VirtualMachine virtualMachine) throws Exception{
-        String output = virtualMachine.executeOn(new String[]{configureServerScript});
+    public void configureLB(VirtualMachine virtualMachine, LBServiceConfiguration configuration) throws Exception{
+        String[] command = null;
+        if (configuration.isSslEnabled()) {
+            command = new String[]{configureServerScript,
+                        configuration.getHttpPort(), configuration.getHttpsPort()};
+        } else {
+            command = new String[]{configureServerScript,
+                        configuration.getHttpPort()};
+        }
+        String output = virtualMachine.executeOn(command);
         LBPluginLogger.getLogger().log(Level.INFO,"Output of configure apache server command : " + output);
         
     }

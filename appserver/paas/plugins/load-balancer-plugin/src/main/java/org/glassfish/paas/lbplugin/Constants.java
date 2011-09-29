@@ -58,6 +58,7 @@ public class Constants {
     public static final String ServiceTypeLB =
             org.glassfish.virtualization.util.ServiceType.Type.LB.name();
     public static final String HTTP_PROTOCOL = "http";
+    public static final String HTTPS_PROTOCOL = "https";
     public static final String IP_ADDRESS_PROP_NAME = "ip-address";
 
 }

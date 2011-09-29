@@ -51,13 +51,16 @@ import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.component.PerLookup;
 import com.sun.enterprise.config.serverbeans.*;
+import java.util.Map;
 import org.glassfish.api.admin.RestEndpoints;
 import org.glassfish.api.admin.RestEndpoint;
 import org.glassfish.paas.lbplugin.Constants;
 import org.glassfish.paas.lbplugin.LBServiceUtil;
+import org.glassfish.paas.lbplugin.util.LBServiceConfiguration;
 import org.glassfish.paas.orchestrator.config.ApplicationScopedService;
 import org.glassfish.paas.orchestrator.config.Services;
 import org.glassfish.paas.orchestrator.config.Service;
+import org.glassfish.paas.orchestrator.provisioning.ServiceInfo;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceType;
 
 @org.jvnet.hk2.annotations.Service(name = "_get-lb-launch-urls")
@@ -87,6 +90,18 @@ public class GetLBLaunchURLsCommand implements AdminCommand {
         if(appScopedService == null){
             return;
         }
+
+        ServiceInfo entry = lbServiceUtil.retrieveCloudEntry(
+                appScopedService.getServiceName(),
+                appName, ServiceType.LOAD_BALANCER);
+        if(entry == null){
+            throw new RuntimeException("Unable to get entry for lb service");
+        }
+        LBServiceConfiguration configuration = LBServiceConfiguration.
+                parseServiceInfo(entry);
+        String ipAddress = appScopedService.getPropertyValue(
+                Constants.IP_ADDRESS_PROP_NAME);
+
         ActionReport.MessagePart part = report.getTopMessagePart();
         //Add a new part for adding LB urls
         part = part.addChild();
@@ -96,12 +111,21 @@ public class GetLBLaunchURLsCommand implements AdminCommand {
         childPart.setMessage(Integer.toString(j++));
         childPart.addProperty(DeploymentProperties.PROTOCOL,
                 Constants.HTTP_PROTOCOL);
-        childPart.addProperty(DeploymentProperties.HOST,
-                appScopedService.getPropertyValue(Constants.IP_ADDRESS_PROP_NAME));
+        childPart.addProperty(DeploymentProperties.HOST, ipAddress);
         childPart.addProperty(DeploymentProperties.PORT,
-                Constants.DEFAULT_HTTP_PORT);
+                configuration.getHttpPort());
         childPart.addProperty(DeploymentProperties.CONTEXT_PATH,
                 contextRoot);
+        if(configuration.isSslEnabled()){
+            childPart = part.addChild();
+            childPart.addProperty(DeploymentProperties.PROTOCOL,
+                    Constants.HTTPS_PROTOCOL);
+            childPart.addProperty(DeploymentProperties.HOST, ipAddress);
+            childPart.addProperty(DeploymentProperties.PORT,
+                    configuration.getHttpsPort());
+            childPart.addProperty(DeploymentProperties.CONTEXT_PATH,
+                    contextRoot);
+        }
     }
 
     private ApplicationScopedService getService(String serviceType, String appName) {

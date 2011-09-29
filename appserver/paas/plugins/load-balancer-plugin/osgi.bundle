@@ -41,5 +41,6 @@
 #DynamicImport-Package: *; resolution:=optional
 
 -exportcontents: \
+    org.glassfish.paas.lbplugin.util;\
     org.glassfish.paas.lbplugin.cli;\
     org.glassfish.paas.lbplugin; version=${project.osgi.version}
