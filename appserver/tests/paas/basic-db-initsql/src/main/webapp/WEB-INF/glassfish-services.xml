@@ -41,7 +41,7 @@
   -->
 
 <glassfish-services>
-<service-description name="basic-db" init-type="lazy">
+<service-description name="basic-db-initsql" init-type="lazy">
   <characteristics>
     <characteristic name="service-type" value="JavaEE"/>
   </characteristics>
@@ -50,4 +50,14 @@
     <configuration name="max.clustersize" value="2"/>
   </configurations>
 </service-description>
+
+<service-description name="basic-derby-db" init-type="lazy">
+  <characteristics>
+    <characteristic name="service-type" value="Database"/>
+  </characteristics>
+  <configurations>
+    <configuration name="database.init.sql" value="/space/shalini/latest-v3/main/appserver/tests/paas/basic-db-initsql/initsql.sql"/>
+  </configurations>
+</service-description>
+
 </glassfish-services>

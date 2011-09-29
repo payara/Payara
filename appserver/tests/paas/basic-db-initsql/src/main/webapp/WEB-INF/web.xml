@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <!--
   ~ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
   ~
@@ -40,14 +39,29 @@
   ~ holder.
   -->
 
-<glassfish-services>
-<service-description name="basic-db" init-type="lazy">
-  <characteristics>
-    <characteristic name="service-type" value="JavaEE"/>
-  </characteristics>
-  <configurations>
-    <configuration name="min.clustersize" value="1"/>
-    <configuration name="max.clustersize" value="2"/>
-  </configurations>
-</service-description>
-</glassfish-services>
+<web-app version="2.5" 
+  xmlns="http://java.sun.com/xml/ns/javaee" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+  xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd">
+    <servlet>
+        <servlet-name>BasicDBInitSqlServlet</servlet-name>
+        <servlet-class>org.glassfish.tests.paas.basicdbinitsql.BasicDBInitSqlServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>BasicDBInitSqlServlet</servlet-name>
+        <url-pattern>/BasicDBInitSqlServlet</url-pattern>
+    </servlet-mapping>
+    <session-config>
+        <session-timeout>
+            30
+        </session-timeout>
+    </session-config>
+    <resource-ref>
+        <res-ref-name>jdbc/__basic_db_initsql_paas_sample</res-ref-name>
+        <res-type>javax.sql.DataSource</res-type>
+<!--
+        <res-auth>Container</res-auth>
+        <res-sharing-scope>Shareable</res-sharing-scope>
+-->
+    </resource-ref>
+ </web-app>
