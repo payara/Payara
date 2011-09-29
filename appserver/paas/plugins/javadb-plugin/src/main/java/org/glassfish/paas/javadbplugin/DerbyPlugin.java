@@ -46,7 +46,6 @@ import org.glassfish.embeddable.CommandResult;
 import org.glassfish.embeddable.CommandRunner;
 import org.glassfish.paas.javadbplugin.cli.DatabaseServiceUtil;
 import org.glassfish.paas.orchestrator.ServiceOrchestrator;
-import org.glassfish.paas.orchestrator.ServiceOrchestrator.ReconfigAction;
 import org.glassfish.paas.orchestrator.provisioning.ServiceInfo;
 import org.glassfish.paas.orchestrator.provisioning.DatabaseProvisioner;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceType;
@@ -85,6 +84,8 @@ public class DerbyPlugin implements Plugin<RDBMSServiceType> {
     @Inject
     private DatabaseServiceUtil dbServiceUtil;
 
+    public static final String INIT_SQL_PROPERTY="database.init.sql";
+
     private static final String DATASOURCE = "javax.sql.DataSource";
 public static final String RDBMS_ServiceType = "Database";
 
@@ -119,8 +120,13 @@ public static final String RDBMS_ServiceType = "Database";
             List<Property> properties = new ArrayList<Property>();
             properties.add(new Property("service-type", RDBMS_ServiceType));
             properties.add(new Property("os-name", System.getProperty("os.name"))); // default OS will be same as that of what Orchestrator is running on.
+
+            String initSqlFile = "";
+            List<Property> configurations = new ArrayList<Property>();
+            configurations.add(new Property(INIT_SQL_PROPERTY, initSqlFile));
+
             ServiceDescription sd = new ServiceDescription(defaultServiceName, appName,
-                    "lazy", new ServiceCharacteristics(properties), null);
+                    "lazy", new ServiceCharacteristics(properties), configurations);
 
             // Fill the required details in service reference.
             Properties defaultConnPoolProperties = dbProvisioner.getDefaultConnectionProperties();
@@ -134,13 +140,17 @@ public static final String RDBMS_ServiceType = "Database";
     }
 
     private String formatArgument(List<Property> properties) {
+        return formatArgument(properties, ":");
+    }
+
+    private String formatArgument(List<Property> properties, String delimiter) {
         StringBuilder sb = new StringBuilder();
         if (properties != null) {
             for (Property p : properties) {
-                sb.append(p.getName() + "=" + p.getValue() + ":");
+                sb.append(p.getName() + "=" + "'" + p.getValue() +"'" + delimiter);
             }
         }
-        // remove the last ':'
+        // remove the last occurrence of delimiter
         if (sb.length() > 0) {
             sb.deleteCharAt(sb.length() - 1);
         }
@@ -158,7 +168,7 @@ public static final String RDBMS_ServiceType = "Database";
         CommandResult result = commandRunner.run("_list-derby-services");
         if (!result.getOutput().contains(serviceName)) {
             //create-derby-service
-            String serviceConfigurations = formatArgument(serviceDescription.getConfigurations());
+            String serviceConfigurations = formatArgument(serviceDescription.getConfigurations(),";");
             String appNameParam = "";
             if (serviceDescription.getAppName() != null) {
                 appNameParam = "--appname=" + serviceDescription.getAppName();

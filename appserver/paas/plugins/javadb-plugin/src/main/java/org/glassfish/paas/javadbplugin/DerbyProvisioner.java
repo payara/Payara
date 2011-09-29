@@ -131,6 +131,7 @@ public class DerbyProvisioner implements DatabaseProvisioner {
 
     public void executeInitSql(Properties dbProps, String sqlFile) {
         try {
+            System.out.println("executing init-sql : " + sqlFile);
             Project project = new Project();
             project.init();
             SQLExec task = new SQLExec();
@@ -153,8 +154,9 @@ public class DerbyProvisioner implements DatabaseProvisioner {
             task.setProject(project);
             task.setAutocommit(true);
             task.execute();
+            System.out.println("Completed executing init-sql : " + sqlFile);
         } catch(Exception ex) {
-            logger.log(Level.WARNING, "Init SQL execution failed with exception : " + ex);
+            logger.log(Level.WARNING, "Init SQL execution [ "+sqlFile+" ] failed with exception : " + ex);
         }
     }
 }

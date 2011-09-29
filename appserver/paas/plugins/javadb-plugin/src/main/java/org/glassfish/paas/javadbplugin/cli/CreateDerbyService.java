@@ -85,7 +85,7 @@ public class CreateDerbyService implements AdminCommand, Runnable {
     @Param(name="servicecharacteristics", optional=true, separator=':')
     public Properties serviceCharacteristics;
 
-    @Param(name="serviceconfigurations", optional=true, separator=':')
+    @Param(name="serviceconfigurations", optional=true, separator=';')
     public Properties serviceConfigurations;
 
     @Inject(optional = true) // made it optional for non-virtual scenario to work
@@ -190,7 +190,7 @@ public class CreateDerbyService implements AdminCommand, Runnable {
                 //DatabaseProvisioner dbProvisioner = new DerbyProvisioner();//provisionerUtil.getDatabaseProvisioner();
                 //dbProvisioner.startDatabase(vm.getAddress());
                 String initSqlFile = serviceConfigurations.getProperty("database.init.sql");
-                if (initSqlFile != null) {
+                if (initSqlFile != null && initSqlFile.trim().length() > 0) {
                     DerbyProvisioner derbyProvisioner = new DerbyProvisioner();
                     Properties serviceProperties = new Properties();
                     serviceProperties.putAll(derbyProvisioner.getDefaultConnectionProperties()); // TODO :: use user supplied database info.
