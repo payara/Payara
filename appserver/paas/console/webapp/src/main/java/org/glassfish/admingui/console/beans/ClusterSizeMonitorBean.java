@@ -194,7 +194,7 @@ public class ClusterSizeMonitorBean {
                 }
             }
             setClusterSizeMonitoringChartInfo(sortedMap);
-            System.out.println("Cluster Size Monitoring data for chart= "+sortedMap.toString());
+            //System.out.println("Cluster Size Monitoring data for chart= "+sortedMap.toString());
         }
 
         private void setClusterSizeMonitoringChartInfo(SortedMap<Long, Long> data) {

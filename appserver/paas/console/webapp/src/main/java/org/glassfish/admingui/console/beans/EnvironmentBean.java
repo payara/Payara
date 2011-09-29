@@ -169,6 +169,11 @@ public class EnvironmentBean implements Serializable {
         return dummy;
     }
 
+    public void setDummy(String s){
+        instances = null;
+        instanceNames = null;
+    }
+
     private final static String REST_URL = "http://localhost:4848/management/domain";
 
 }
