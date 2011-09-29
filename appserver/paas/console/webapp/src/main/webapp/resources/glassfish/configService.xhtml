@@ -53,9 +53,8 @@
                     <tr:panelFormLayout rendered="#{metaData['configurations']['database.init.sql'] != null}" inlineStyle="float: right; margin-right: 20px">
                         <tr:inputFile label="Init SQL File:"
                           id="sqlfile"
-                          onchange="autofill()"
                           value="#{uploadBean.sqlInitFile}"
-                          columns="20"
+                          columns="10"
                           valueChangeListener="#{uploadBean.sqlFileUploaded}">
                     </tr:inputFile>
                     </tr:panelFormLayout>
