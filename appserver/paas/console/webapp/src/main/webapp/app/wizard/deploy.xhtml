@@ -77,7 +77,7 @@
             <tr:inputText label="Database: " value="#{uploadBean.database}" readOnly="true"
                           rendered="#{!uploadBean.database.isEmpty()}"
                           contentStyle="width: 350px"/>
-            <tr:inputText label="Database: " value="#{uploadBean.sqlInitFileName}" readOnly="true"
+            <tr:inputText label="Init SQL File:" value="#{uploadBean.sqlInitFileName}" readOnly="true"
                           rendered="#{uploadBean.hasSqlInitFileName()}"
                           contentStyle="width: 350px"/>
         </tr:group>
