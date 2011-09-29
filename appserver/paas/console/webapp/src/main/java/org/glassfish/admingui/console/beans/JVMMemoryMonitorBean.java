@@ -88,7 +88,7 @@ public class JVMMemoryMonitorBean {
         private List<String> _groupLabels = new ArrayList<String>();
         private List<String> _seriesLabels = new ArrayList<String>();
         private List<List<Double>> _chartYValues =  new ArrayList<List<Double>>();
-        private Double _maxYValue = 5.0;
+        private Double _maxYValue = 100.0;
 
         public MyChartModel() {
             getJvmMemoryMonitoringStats();
@@ -121,7 +121,7 @@ public class JVMMemoryMonitorBean {
 
         @Override
         public String getTitle() {
-            return "JVM Memory Usage Statistics";
+            return "JVM Memory Usage Statistics (MB)";
         }
 
         private void getJvmMemoryMonitoringStats() {
@@ -152,7 +152,7 @@ public class JVMMemoryMonitorBean {
         private void normalizeMonitoringData(Map<String, Object> data) {
             //sortedMap to prepare the data for chart.. time as key and list of instances values as value.
             SortedMap<Double, List<Double>> sortedMap = new TreeMap<Double, List<Double>>();
-            _maxYValue = 5.0;
+            _maxYValue = 100.0;
             _seriesLabels.clear();
 
             for (String inst : data.keySet()) {
@@ -160,17 +160,21 @@ public class JVMMemoryMonitorBean {
                 Map<String, Map<String, Long>> heapResultProps = (Map<String, Map<String, Long>>) data.get(inst);
                 for (String heapProp : heapResultProps.keySet()) {
                     Long time = Long.valueOf(heapProp);
-                    Long usedValue = heapResultProps.get(heapProp).get("used");
+                    Double usedValue = heapResultProps.get(heapProp).get("used").doubleValue() / 1000000;
                     List<Double> val = sortedMap.get(time.doubleValue());
                     if (val == null) {
                         val = new ArrayList<Double>();
-                        val.add(usedValue.doubleValue());
+                        val.add(usedValue);
                     } else {
-                        val.add(usedValue.doubleValue());
+                        val.add(usedValue);
                     }
                     sortedMap.put(time.doubleValue(), val);
-                    if (usedValue.doubleValue() > _maxYValue) {
-                        _maxYValue = usedValue.doubleValue() + 5;
+                    if (usedValue > _maxYValue) {
+                        if (usedValue % 100 != 0) {
+                            _maxYValue = usedValue + (100 - (usedValue % 100));
+                        } else {
+                            _maxYValue = usedValue;
+                        }
                     }
                 }
             }
