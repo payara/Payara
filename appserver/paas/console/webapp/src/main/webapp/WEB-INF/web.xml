@@ -111,6 +111,20 @@
         <param-name>javax.faces.FACELETS_LIBRARIES</param-name>
         <param-value>/WEB-INF/admingui-gf.taglib.xml</param-value>
     </context-param>
+
+
+    <context-param>
+	<!-- Maximum memory per request (in bytes) -->
+	<param-name>org.apache.myfaces.trinidad.UPLOAD_MAX_MEMORY</param-name>
+        <param-value>1024000</param-value>
+    </context-param>
+
+    <context-param>
+	<!-- Maximum disk space  per request (in bytes) -->
+	<param-name>org.apache.myfaces.trinidad.UPLOAD_MAX_DISK_SPACE</param-name>
+        <param-value>10240000</param-value>
+    </context-param>
+
     <!--
         <context-param>
             <param-name>org.apache.myfaces.trinidad.ALTERNATE_VIEW_HANDLER</param-name>
