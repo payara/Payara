@@ -69,7 +69,7 @@ public class AlertContextImpl<C extends AlertConfig>
     public void run() {
         try {
             Alert.AlertState state = alert.execute(this);
-            System.out.println("Alert[" + config.getName() + "]: returned STATE = " + state);
+//            System.out.println("Alert[" + config.getName() + "]: returned STATE = " + state);
             try {
                 switch (state) {
                     case NO_DATA:

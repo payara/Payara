@@ -145,7 +145,7 @@ public class MessageProcessor
                     ExpressionResponse resp = responses.get(respId);
                     if (resp != null) {
                         if (message.isValidData()) {
-                            System.out.println("EXPR RESPONSE: Got response from " + message.getSourceMemberName() + " result = " + result.get(0));
+//                            System.out.println("EXPR RESPONSE: Got response from " + message.getSourceMemberName() + " result = " + result.get(0));
                             resp.addResponse(message.getSourceMemberName(), result.get(0));
                         } else {
                             resp.addException(message.getSourceMemberName(), message.getException());
@@ -161,7 +161,7 @@ public class MessageProcessor
                             .setSubComponentName(message.getSubComponentName())
                             .setInResponseToMessageId(message.getMessageId())
                             .setIsResponseMessage(true);
-                    System.out.println(" received message "+message.toString());
+//                    System.out.println(" received message "+message.toString());
                     List<Object> resultList = new ArrayList<Object>();
                     try {
                         List<ExpressionNode> list = (List<ExpressionNode>) message.getData();

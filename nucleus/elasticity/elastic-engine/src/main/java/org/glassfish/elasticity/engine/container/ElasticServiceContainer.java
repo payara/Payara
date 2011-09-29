@@ -211,7 +211,7 @@ public class ElasticServiceContainer {
 
         if (isDAS) {
             loadAlerts();
-            System.out.println("**Initialized & Loaded Alerts ElasticService = " + this.service.getName());
+             logger.log(Level.FINE, "**Initialized & Loaded Alerts ElasticService = " + this.service.getName());
         }
     }
 
@@ -275,7 +275,7 @@ public class ElasticServiceContainer {
 
     private void unloadAlerts() {
         for (String alertName : alerts.keySet()) {
-            System.out.println("Stopping alert: " + alertName);
+            logger.log(Level.FINE,  "Stopping alert: " + alertName);
             removeAlert(alertName);
         }
     }

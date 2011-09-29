@@ -93,7 +93,7 @@ public class ElasticEngine
 
         metricGathererContainer.start();
 
-        System.out.println("Elastic Services: " + elasticServices);
+//        System.out.println("Elastic Services: " + elasticServices);
         if (elasticServices != null && elasticServices.getElasticService() != null) {
             for (ElasticService service : elasticServices.getElasticService()) {
                 startElasticService(service);
