@@ -183,6 +183,7 @@ public class GFFileHandler extends StreamHandler implements PostConstruct, PreDe
                 }
             }
         };
+        pump.setDaemon(true);
         pump.start();
         LogRecord lr = new LogRecord(Level.INFO, "Running GlassFish Version: " + version.getFullVersion());
         lr.setThreadID((int) Thread.currentThread().getId());
