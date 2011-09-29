@@ -53,6 +53,9 @@ Import-Package: \
 
 DynamicImport-Package: *
 
+# For embeddable packages, we use semantic versioning. Their version is still 3.1.1,
+# since they have not changed since 3.1.1. This version must match what is found in 
+# osgi.properties file.
 -exportcontents: \
     org.glassfish.embeddable.*; \
-    com.sun.enterprise.glassfish.bootstrap; version=${project.osgi.version}
+    com.sun.enterprise.glassfish.bootstrap; version=3.1.1
