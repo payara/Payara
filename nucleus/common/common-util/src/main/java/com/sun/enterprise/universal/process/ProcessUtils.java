@@ -89,7 +89,7 @@ public final class ProcessUtils {
      * Try and find the Process ID of "our" process.
      * @return the process id or -1 if not known
      */
-    public static final int getPid() {
+    public static int getPid() {
         return pid;
     }
 
@@ -141,8 +141,8 @@ public final class ProcessUtils {
         StringBuilder sb = new StringBuilder();
         int numDead = 0;
 
-        for (int pid : pids) {
-            String s = kill(pid);
+        for (int p : pids) {
+            String s = kill(p);
             if (s != null)
                 sb.append(s).append('\n');
             else
@@ -162,7 +162,7 @@ public final class ProcessUtils {
      * @return true if it's running, false if not and null if we don't know.
      * I.e the return value is a true tri-state Boolean.
      */
-    public static final Boolean isProcessRunning(int aPid) {
+    public static Boolean isProcessRunning(int aPid) {
         try {
             if (OS.isWindowsForSure())
                 return isProcessRunningWindows(aPid);
@@ -181,7 +181,7 @@ public final class ProcessUtils {
 
     private static boolean isProcessRunningWindows(int aPid) throws ProcessManagerException {
         String pidString = Integer.toString(aPid);
-        ProcessManager pm = new ProcessManager("tasklist", "/FI", "\"pid eq " + pidString + "\"");
+        ProcessManager pm = new ProcessManager("tasklist", "/NH", "/FI", "\"pid eq " + pidString + "\"");
         pm.setEcho(false);
         pm.execute();
         String out = pm.getStdout() + pm.getStderr();
@@ -190,8 +190,6 @@ public final class ProcessUtils {
         (1) 
         INFO: No tasks running with the specified criteria.
         (2) 
-        Image Name                   PID Session Name     Session#    Mem Usage
-        ========================= ====== ================ ======== ============
         java.exe                    3760 Console                 0     64,192 K
          */
 
@@ -202,7 +200,10 @@ public final class ProcessUtils {
         }
 
         if (ok(out)) {
-            if (out.indexOf("" + aPid) >= 0)
+            // check for java.exe because tasklist or some other command might 
+            // be reusing the pid. This isn't a guarantee because some other 
+            // java process might be reusing the pid.
+            if (out.indexOf("java.exe") >= 0 && out.indexOf(pidString) >= 0)
                 return true;
             else
                 return false;
