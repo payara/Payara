@@ -96,7 +96,7 @@ public class DatabaseOperations {
                 conn = ds.getConnection();
                 DatabaseMetaData dmd = conn.getMetaData();
 
-                out.println("Successfully established connection to " + dmd.getDatabaseProductVersion());
+                out.println("Successfully established connection to " + dmd.getDatabaseProductName() + " Version : " + dmd.getDatabaseProductVersion());
 
 //                out.println("Database : " + dmd.getDatabaseProductName() + "<br>");
 //                out.println("Product Version : " + dmd.getDatabaseProductVersion() + "<br>");
