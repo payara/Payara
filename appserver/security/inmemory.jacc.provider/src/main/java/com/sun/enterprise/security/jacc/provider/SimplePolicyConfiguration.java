@@ -630,9 +630,9 @@ public class SimplePolicyConfiguration implements PolicyConfiguration {
         pcwLock.lock();
         try {
             removePolicy();
-        } finally {
-            setState(DELETED_STATE);
+        } finally {            
             pcwLock.unlock();
+            setState(DELETED_STATE);
         }
 
     }
@@ -804,7 +804,7 @@ public class SimplePolicyConfiguration implements PolicyConfiguration {
 
         if (index < 0) {
             roleTable.add(rvalue);
-            index = roleTable.indexOf(rvalue);
+            roleTable.indexOf(rvalue);
         } else {
             rvalue = roleTable.get(index);
         }

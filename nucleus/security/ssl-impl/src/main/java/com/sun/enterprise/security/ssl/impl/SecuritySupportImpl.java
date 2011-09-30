@@ -99,7 +99,7 @@ public class SecuritySupportImpl extends SecuritySupport {
 
     protected static final Logger _logger =
             LogDomains.getLogger(SecuritySupportImpl.class, LogDomains.SECURITY_SSL_LOGGER);
-    protected static boolean initialized = false;
+    private static boolean initialized = false;
     protected static final List<KeyStore> keyStores = new ArrayList<KeyStore>();
     protected static final List<KeyStore> trustStores = new ArrayList<KeyStore>();
     protected static final List<char[]> keyStorePasswords = new ArrayList<char[]>();
@@ -136,7 +136,7 @@ public class SecuritySupportImpl extends SecuritySupport {
             if (masterPasswordHelper == null && Globals.getDefaultHabitat() != null) {
                 masterPasswordHelper = Globals.getDefaultHabitat().getByType(MasterPasswordImpl.class);
             }
-            if (masterPasswordHelper instanceof MasterPasswordImpl) {
+            if (masterPasswordHelper != null) {
                 keyStorePass = masterPasswordHelper.getMasterPassword();
                 trustStorePass = keyStorePass;
             }

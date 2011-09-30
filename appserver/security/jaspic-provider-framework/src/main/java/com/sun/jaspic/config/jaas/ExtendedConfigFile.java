@@ -116,7 +116,7 @@ public class ExtendedConfigFile extends ConfigFile {
                     public Object run() throws Exception {
                         ClassLoader loader =
                                 Thread.currentThread().getContextClassLoader();
-                        String[] names = nameSet.toArray(new String[0]);
+                        String[] names = nameSet.toArray(new String[nameSet.size()]);
                         for (String id : names) {
                             boolean hasAuthModule = false;
                             AppConfigurationEntry[] entry = getAppConfigurationEntry(id);
@@ -149,6 +149,6 @@ public class ExtendedConfigFile extends ConfigFile {
             }
 
         }
-        return nameSet.toArray(new String[0]);
+        return nameSet.toArray(new String[nameSet.size()]);
     }
 }

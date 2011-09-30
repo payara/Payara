@@ -308,7 +308,7 @@ public class GSSUPToken {
                     name = username.substring(0, second_at_index);
                     name = name.replaceAll(ESCAPE_CHAR_REGEXP, DELIMITER);
                     realm = username.substring(second_at_index+1);
-                    if(realm == null){
+                    if(realm == null || realm.isEmpty()){
                         // user\\@foo.com@ type
                         if(_logger.isLoggable(Level.FINE)){
                             _logger.log(Level.FINE, "IIOP:No Realm specified, "+
@@ -329,7 +329,7 @@ public class GSSUPToken {
                 // for realm-per-app
                 // if ( !realm.equals("default") )
                 // throw new SecurityMechanismException("Unknown realm");
-                if(realm == null){
+                if(realm.isEmpty()){
                     if(_logger.isLoggable(Level.FINE)){
                         _logger.log(Level.FINE, "IIOP:No Realm specified, "+
                             " creating a default realm for login");

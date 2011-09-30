@@ -363,7 +363,7 @@ public final class CSIV2TaggedComponentInfo
             int target_requires = getTargetRequires(iorDesc);
 	    org.omg.IOP.TaggedComponent comp = maker.evaluate( iorDesc ) ;
 	    
-            if(desc != null && desc.getApplication() != null)  {
+            if( desc.getApplication() != null)  {
                 realmName = desc.getApplication().getRealm();
             }
 

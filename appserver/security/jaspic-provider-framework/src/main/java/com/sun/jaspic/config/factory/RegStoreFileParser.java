@@ -327,13 +327,17 @@ public final class RegStoreFileParser {
     private void clearExistingFile() throws IOException {
         boolean newCreation = !confFile.exists();
         if (!newCreation) {
-            confFile.delete();
+            if(!confFile.delete()) {
+                throw new IOException();
+            }
         } 
         if (newCreation) {
             logger.log(Level.INFO, "jmac.factory_creating_conf_file",
                     confFile.getPath());
         }
-        confFile.createNewFile(); 
+        if (!confFile.createNewFile()) {
+            throw new IOException();
+        }
     }
 
     /*
@@ -372,7 +376,10 @@ public final class RegStoreFileParser {
 
     private EntryInfo readConEntry(BufferedReader reader) throws IOException {
         // entry must contain class name as next line
-        String className = reader.readLine().trim();
+        String className = reader.readLine();
+        if(className != null) {
+            className = className.trim();
+        }
         Map<String, String> properties = readProperties(reader);
         return new EntryInfo(className, properties);
     }
@@ -386,15 +393,22 @@ public final class RegStoreFileParser {
     private Map<String, String> readProperties(BufferedReader reader)
         throws IOException {
 
-        String line = reader.readLine().trim();
-        if (line.equals("}")) {
+        String line = reader.readLine();
+        if(line != null) {
+            line = line.trim();
+        }
+
+        if ("}".equals(line)) {
             return null;
         }
         Map<String, String> properties = new HashMap<String, String>();
-        while (!line.equals("}")) {
+        while (!"}".equals(line)) {
             properties.put(line.substring(0, line.indexOf(SEP)),
                 line.substring(line.indexOf(SEP) + 1, line.length()));
-            line = reader.readLine().trim();
+            line = reader.readLine();
+            if (line != null) {
+                line = line.trim();
+            }
         }
         return properties;
     }
@@ -404,8 +418,11 @@ public final class RegStoreFileParser {
         Map<String, String> properties = null;
         List<RegistrationContext> ctxs =
             new ArrayList<RegistrationContext>();
-        String line = reader.readLine().trim();
-        while (!line.equals("}")) {
+        String line = reader.readLine();
+        if(line != null) {
+            line = line.trim();
+        }
+        while (!"}".equals(line)) {
             if (line.startsWith(CON_ENTRY)) {
                 EntryInfo conEntry = readConEntry(reader);
                 className = conEntry.getClassName();
@@ -413,7 +430,11 @@ public final class RegStoreFileParser {
             } else if (line.startsWith(REG_CTX)) {
                 ctxs.add(readRegContext(reader));
             }
-            line = reader.readLine().trim();
+            line = reader.readLine();
+            if(line != null) {
+                line = line.trim();
+            }
+
         }
         return new EntryInfo(className, properties, ctxs);
     }
@@ -424,8 +445,11 @@ public final class RegStoreFileParser {
         String layer = null;
         String appCtx = null;
         String description = null;
-        String line = reader.readLine().trim();
-        while (!line.equals("}")) {
+        String line = reader.readLine();
+        if(line != null) {
+            line = line.trim();
+        }
+        while (!"}".equals(line)) {
             String value = line.substring(line.indexOf(SEP) + 1,
                 line.length());
             if (line.startsWith(LAYER)) {
@@ -435,7 +459,10 @@ public final class RegStoreFileParser {
             } else if (line.startsWith(DESCRIPTION)) {
                 description = value;
             }
-            line = reader.readLine().trim();
+           line = reader.readLine();
+            if(line != null) {
+                line = line.trim();
+            }
         }
         return new RegistrationContextImpl(layer, appCtx, description, true);
     }

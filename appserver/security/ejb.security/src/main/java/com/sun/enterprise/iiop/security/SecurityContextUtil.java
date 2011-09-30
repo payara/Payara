@@ -252,7 +252,7 @@ public class SecurityContextUtil implements PostConstruct {
         com.sun.enterprise.security.SecurityContext sc =
                 com.sun.enterprise.security.SecurityContext.getCurrent();
         Set principalSet = sc.getPrincipalSet();
-        Principal[] principals = (principalSet == null ? null : (Principal[]) principalSet.toArray(new Principal[0]));
+        Principal[] principals = (principalSet == null ? null : (Principal[])principalSet.toArray(new Principal[principalSet.size()]));
         CodeSource cs = new CodeSource(new java.net.URL("file://"),
                 (java.security.cert.Certificate[]) null);
         ProtectionDomain prdm = new ProtectionDomain(cs, null, null, principals);

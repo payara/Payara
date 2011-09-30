@@ -73,13 +73,14 @@ public abstract class AuthContextHelper {
     protected void logIfLevel(Level level, Throwable t, String... msgParts) {
         Logger logger = Logger.getLogger(loggerName);
         if (logger.isLoggable(level)) {
-            String msg = null;
+            StringBuffer msgB = new StringBuffer("");
             for (String m : msgParts) {
-                msg += m;
+                msgB.append(m);
             }
-            if (msg != null && t != null) {
+            String msg = msgB.toString();
+            if ( !msg.isEmpty() && t != null) {
                 logger.log(level, msg, t);
-            } else if (msg != null) {
+            } else if (!msg.isEmpty()) {
                 logger.log(level, msg);
             }
         }

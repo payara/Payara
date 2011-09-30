@@ -178,7 +178,7 @@ public class GlassfishRoleMapper implements JACCRoleMapper {
     public Set<String> getRolesOfPrincipals(String pcid, Principal[] principals)
             throws SecurityException, UnsupportedOperationException {
 
-        if (principals == null || principals.length == 0) {
+        if ( principals.length == 0) {
             return null;
         }
 
@@ -225,7 +225,7 @@ public class GlassfishRoleMapper implements JACCRoleMapper {
     public BitSet getRolesOfPrincipals(String pcid, String[] roles, Principal[] principals)
             throws SecurityException, UnsupportedOperationException {
         BitSet roleSet = new BitSet(roles.length);
-        if (principals == null || principals.length == 0 ||
+        if ( principals.length == 0 ||
                 roles == null || roles.length == 0) {
             return null;
         }

@@ -42,6 +42,7 @@ package com.sun.enterprise.iiop.security;
 
 import org.glassfish.orb.admin.config.IiopListener;
 import java.util.logging.*;
+import java.util.List;
 
 import org.omg.IOP.Codec;
 import org.omg.IOP.TaggedComponent;
@@ -192,8 +193,13 @@ public class SecIORInterceptor extends org.omg.CORBA.LocalObject
     }
 
     private int getServerPort(String mech) {
-        IiopListener[] iiopListenerBeans = (IiopListener[]) IIOPUtils.getInstance().
-                getIiopService().getIiopListener().toArray(new IiopListener[0]);
+        
+        List<IiopListener> listenersList = IIOPUtils.getInstance().
+                getIiopService().getIiopListener();
+        IiopListener[] iiopListenerBeans = listenersList.toArray(
+                new IiopListener[listenersList.size()]);
+        
+        
         for (IiopListener ilisten : iiopListenerBeans) {
             if (mech.equalsIgnoreCase("SSL")) {
                 if (ilisten.getSecurityEnabled().equalsIgnoreCase("true") &&

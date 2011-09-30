@@ -547,9 +547,6 @@ public final class SecurityMechanismSelector implements PostConstruct {
         byte[][] mechanisms = sas.supported_naming_mechanisms;
         byte[] mechSupported = GSSUtils.getMechanism();
 
-	if (mechSupported == null) {
-	    return false;
-	}
         if (mechanisms == null) {
             return false;
         }
@@ -1046,9 +1043,7 @@ localStrings.getLocalString("securitymechansimselector.runas_cannot_propagate_us
         byte[] mechanism = as.client_authentication_mech;
         byte[] mechSupported = GSSUtils.getMechanism();
 
-        if (mechSupported == null) {
-            return false;
-        }
+
         if (mechanism == null) {
             return false;
         }
@@ -1177,7 +1172,6 @@ localStrings.getLocalString("securitymechansimselector.runas_cannot_propagate_us
         if(_logger.isLoggable(Level.FINE)) {
 	    _logger.log(Level.FINE,
 			"SecurityMechanismSelector.evaluate_client_conformance_ssl:"
-			+ " " + certchain
 			+ " " + isSet(ssl_target_requires, EstablishTrustInClient.value)
 			+ " " + isSet(ssl_target_supports, EstablishTrustInClient.value));
 	}
@@ -1229,11 +1223,7 @@ localStrings.getLocalString("securitymechansimselector.runas_cannot_propagate_us
             return false;
         }
    
-        // ascontext should never be null - perhaps an exception should be raised.
-        // for now return false;
-        if (ascontext == null)
-            return false;
-            
+
         /*************************************************************************
          * Conformance Matrix:
          *
@@ -1301,9 +1291,7 @@ localStrings.getLocalString("securitymechansimselector.runas_cannot_propagate_us
             _logger.log(Level.SEVERE,"iiop.createcontextsec_exception",e);
             return false;
         }
-   
-        if (sascontext == null)  // this should never be null
-            return false;
+
             
         if  ( (ctx != null) && (ctx.identcls != null) &&  (ctx.subject != null))
             caller_propagated = true;

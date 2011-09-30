@@ -69,9 +69,7 @@ public class JAASAuthContextHelper extends AuthContextHelper {
     //may be more than one delegate for a given jaas config file
     private ReentrantReadWriteLock instanceReadWriteLock =
             new ReentrantReadWriteLock();
-    private Lock instanceReadLock = instanceReadWriteLock.readLock();
     private Lock instanceWriteLock = instanceReadWriteLock.writeLock();
-    private String loggerName;
     ExtendedConfigFile jaasConfig;
     private final String appContext;
     private AppConfigurationEntry[] entry;
@@ -81,7 +79,6 @@ public class JAASAuthContextHelper extends AuthContextHelper {
             ExtendedConfigFile jaasConfig, Map properties, String appContext)
             throws AuthException {
         super(loggerName, returnNullContexts);
-        this.loggerName = loggerName;
         this.jaasConfig = jaasConfig;
         this.appContext = appContext;
         initialize();

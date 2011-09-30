@@ -68,7 +68,7 @@ public abstract class SecuritySupport {
     public static final String keyStoreProp = "javax.net.ssl.keyStore";
     public static final String trustStoreProp = "javax.net.ssl.trustStore";
 
-    private static SecuritySupport defaultInstance = null;
+    private static volatile SecuritySupport defaultInstance = null;
 
     public static SecuritySupport getDefaultInstance() {
         if (defaultInstance == null) {

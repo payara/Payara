@@ -49,7 +49,9 @@ import sun.security.util.DerOutputStream;
 import com.sun.corba.ee.org.omg.GSSUP.GSSUPMechOID;
 import com.sun.corba.ee.org.omg.CSI.GSS_NT_Export_Name_OID;
 import com.sun.corba.ee.org.omg.CSI.GSS_NT_Scoped_Username_OID;
- 
+
+import java.lang.reflect.Array;
+import java.util.Arrays;
 import java.util.logging.*;
 import com.sun.logging.*;
 
@@ -532,7 +534,8 @@ public class GSSUtils
      * Currently only the GSSUP Mechanism is supported.
      */
     public static byte[] getMechanism() {
-        return mech;
+        byte[] mechCopy = Arrays.copyOf(mech, mech.length);
+        return mechCopy;
     }
 
 

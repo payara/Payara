@@ -107,9 +107,9 @@ public abstract class AuthConfigHelper {
 
     private Integer getHashCode(Map properties) {
         if (properties == null) {
-            return new Integer(0);
+            return  Integer.valueOf("0");
         }
-        return new Integer(properties.hashCode());
+        return Integer.valueOf(properties.hashCode());
     }
 
     private <M> M getContextFromMap(HashMap<String, HashMap<Integer, M>> contextMap,
@@ -173,13 +173,14 @@ public abstract class AuthConfigHelper {
     protected void logIfLevel(Level level, Throwable t, String... msgParts) {
         Logger logger = Logger.getLogger(loggerName);
         if (logger.isLoggable(level)) {
-            String msg = null;
+          StringBuffer msgB = new StringBuffer("");
             for (String m : msgParts) {
-                msg += m;
+                msgB.append(m);
             }
-            if (msg != null && t != null) {
+            String msg = msgB.toString();
+            if ( !msg.isEmpty() && t != null) {
                 logger.log(level, msg, t);
-            } else if (msg != null) {
+            } else if (!msg.isEmpty()) {
                 logger.log(level, msg);
             }
         }

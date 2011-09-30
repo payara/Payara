@@ -648,7 +648,7 @@ public abstract class BaseAuthConfigFactory extends AuthConfigFactory {
         RegistrationContext rc =
                 new RegistrationContextImpl(layer, appContext, description, true);
         String regisID = getRegistrationID(layer, appContext);
-        RegistrationContext prevRegisContext = id2RegisContextMap.get(regisID);
+        id2RegisContextMap.get(regisID);
         AuthConfigProvider prevProvider = id2ProviderMap.get(regisID);
         boolean wasRegistered = id2ProviderMap.containsKey(regisID);
         if (wasRegistered) {
