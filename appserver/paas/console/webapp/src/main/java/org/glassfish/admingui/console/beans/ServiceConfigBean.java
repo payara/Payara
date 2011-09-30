@@ -114,7 +114,7 @@ public class ServiceConfigBean {
         return loadBalancers;
     }
 
-    public void setLoadBalancers(List<String> javaEEInstances) {
+    public void setLoadBalancers(List<String> loadBalancers) {
         this.loadBalancers = loadBalancers;
     }
 
