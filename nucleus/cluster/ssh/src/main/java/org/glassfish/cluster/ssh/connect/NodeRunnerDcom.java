@@ -39,6 +39,9 @@
  */
 package org.glassfish.cluster.ssh.connect;
 
+import com.sun.enterprise.util.io.WindowsRemoteFile;
+import java.io.*;
+import java.net.*;
 import java.util.*;
 import java.util.logging.*;
 
@@ -51,11 +54,18 @@ import org.glassfish.api.admin.SSHCommandExecutionException;
 import com.sun.enterprise.config.serverbeans.Node;
 import com.sun.enterprise.util.StringUtils;
 import com.sun.enterprise.util.SystemPropertyConstants;
+import com.sun.enterprise.util.io.WindowsRemoteFileSystem;
+import org.glassfish.cluster.ssh.util.DcomInfo;
+import org.glassfish.cluster.ssh.util.DcomUtils;
+import org.glassfish.common.util.admin.AsadminInput;
 import static com.sun.enterprise.util.StringUtils.ok;
 
 public class NodeRunnerDcom {
     private final Logger logger;
     private Node node;
+    private WindowsRemoteFile authTokenFile;
+    private String authTokenFilePath;
+    private DcomInfo dcomInfo;
 
     public NodeRunnerDcom(Logger logger) {
         this.logger = logger;
@@ -70,14 +80,20 @@ public class NodeRunnerDcom {
             SSHCommandExecutionException, IllegalArgumentException,
             UnsupportedOperationException {
 
-        this.node = thisNode;
-        WindowsCredentials bonafides = validate();
-        List<String> fullcommand = new ArrayList<String>();
-        fullcommand.add(getNadminPath());
-        fullcommand.addAll(args);
-        String commandAsString = commandListToString(fullcommand);
-        WindowsRemoteScripter scripter = new WindowsRemoteScripter(bonafides);
+        String commandAsString = null;
         try {
+            this.node = thisNode;
+            dcomInfo = new DcomInfo(node);
+            WindowsCredentials bonafides = dcomInfo.getCredentials();
+            List<String> fullcommand = new ArrayList<String>();
+            fullcommand.add(dcomInfo.getNadminPath());
+
+            if(stdinLines != null && !stdinLines.isEmpty())
+                setupAuthTokenFile(fullcommand, stdinLines);
+
+            fullcommand.addAll(args);
+            commandAsString = commandListToString(fullcommand);
+            WindowsRemoteScripter scripter = new WindowsRemoteScripter(bonafides);
             String out = scripter.run(commandAsString);
             logger.info(Strings.get("remote.command.summary", commandAsString, out));
             return 0;
@@ -86,50 +102,9 @@ public class NodeRunnerDcom {
             throw new SSHCommandExecutionException(Strings.get(
                     "remote.command.error", ex.getMessage(), commandAsString), ex);
         }
-    }
-
-    /**
-     * Hide the ghastly messy configuration stuff in this method!
-     * @return a valid WindowsCredentials object
-     * @throws SSHCommandExecutionException
-     */
-    private WindowsCredentials validate() throws SSHCommandExecutionException {
-        if (node == null)
-            throw new IllegalArgumentException(Strings.get("internal.error", "Node is null"));
-
-        if (!isDcomNode(node))
-            throw new SSHCommandExecutionException(Strings.get("internal.error", "Node is not of type DCOM"));
-
-        SshConnector conn = node.getSshConnector();
-        if (conn == null)
-            throw new SSHCommandExecutionException(Strings.get("no.password"));
-
-        SshAuth auth = conn.getSshAuth();
-        if (auth == null)
-            throw new SSHCommandExecutionException(Strings.get("no.password"));
-
-        String password = auth.getPassword();
-        if (!ok(password))
-            throw new SSHCommandExecutionException(Strings.get("no.password"));
-
-        String host = node.getNodeHost();
-        if (!ok(host))
-            host = conn.getSshHost();
-        if (!ok(host))
-            throw new SSHCommandExecutionException(Strings.get("no.host"));
-
-        String user = auth.getUserName();
-
-        if (!ok(user))
-            user = System.getProperty("user.name");
-        if (!ok(user))
-            throw new SSHCommandExecutionException(Strings.get("no.username"));
-
-        String windowsDomain = node.getWindowsDomain();
-        if (!ok(windowsDomain))
-            windowsDomain = host;
-
-        return new WindowsCredentials(host, windowsDomain, user, password);
+        finally {
+            teardownAuthTokenFile();
+        }
     }
 
     private void trace(String s) {
@@ -147,23 +122,33 @@ public class NodeRunnerDcom {
         return fullCommand.toString();
     }
 
-    private static boolean isDcomNode(Node node) {
-        return "DCOM".equals(node.getType());
+    /*
+     * 1. creae a remote file
+     * 2. copy the token/auth stuff into it
+     * 3. add the correct args to the remote commandline
+     *    Put the file in the same directory that nadmin lives in (lib)
+     */
+    private void setupAuthTokenFile(List<String> cmd, List<String> stdin) throws WindowsException {
+        WindowsRemoteFileSystem wrfs = new WindowsRemoteFileSystem(dcomInfo.getCredentials());
+        authTokenFilePath = dcomInfo.getNadminParentPath() + "\\stdin";
+        authTokenFile = new WindowsRemoteFile(wrfs, authTokenFilePath);
+        authTokenFile.copyFrom(stdin);
+
+        // jira 17731 -- Asadmin can't handle Windows full paths (the ":" is the problem)
+        URI authTokenFileUri = new File(authTokenFilePath).toURI();
+
+        cmd.add(AsadminInput.CLI_INPUT_OPTION);
+        cmd.add(authTokenFileUri.toString());
     }
 
-    private String getNadminPath() throws SSHCommandExecutionException {
-        String path = node.getInstallDirUnixStyle();
-
-        if (!ok(path))
-            throw new SSHCommandExecutionException(Strings.get("no.lib.dir"));
-
-        if (!path.endsWith("/"))
-            path += "/";
-
-        path += SystemPropertyConstants.getComponentName();
-        path += "/lib/nadmin.bat";
-        path = path.replace('/', '\\');
-        path = StringUtils.quotePathIfNecessary(path);
-        return path;
+    private void teardownAuthTokenFile() {
+        if(authTokenFile != null)
+            try {
+            authTokenFile.delete();
+        }
+        catch (WindowsException ex) {
+            logger.warning(Strings.get("cant.delete", dcomInfo.getHost(), authTokenFilePath));
+        }
     }
+
 }

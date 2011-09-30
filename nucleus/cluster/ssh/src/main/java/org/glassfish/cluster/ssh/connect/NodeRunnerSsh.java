@@ -45,6 +45,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.logging.Logger;
 
+import org.glassfish.common.util.admin.AsadminInput;
 import org.jvnet.hk2.component.Habitat;
 import org.glassfish.api.admin.SSHCommandExecutionException;
 import com.sun.enterprise.config.serverbeans.Node;
@@ -89,6 +90,9 @@ public class NodeRunnerSsh  {
                                        List<String> stdinLines) throws
             SSHCommandExecutionException, IllegalArgumentException,
             UnsupportedOperationException {
+
+        args.add(0, AsadminInput.CLI_INPUT_OPTION);
+        args.add(1, AsadminInput.SYSTEM_IN_INDICATOR); // specified to read from System.in
 
         if (! isSshNode(node)) {
             throw new UnsupportedOperationException(

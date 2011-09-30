@@ -39,6 +39,7 @@
  */
 package com.sun.enterprise.v3.admin.cluster.dcom;
 
+import org.glassfish.cluster.ssh.util.DcomUtils;
 import com.sun.enterprise.v3.admin.cluster.DeleteNodeRemoteCommand;
 import java.util.List;
 import org.glassfish.api.ActionReport;
@@ -65,6 +66,6 @@ public class DeleteNodeDcom extends DeleteNodeRemoteCommand {
 
     @Override
     protected List<String> getPasswords() {
-        return DcomUtils.resolvePassword(remotepassword);
+        return DcomUtils.resolvePasswordToList(remotepassword);
     }
 }

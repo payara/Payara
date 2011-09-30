@@ -69,19 +69,19 @@ public class WindowsCredentials {
             throw new IllegalArgumentException("Bad argument.");
     }
 
-    String getHost() {
+    public final String getHost() {
         return host;
     }
 
-    String getDomain() {
+    public final String getDomain() {
         return domain;
     }
 
-    String getUser() {
+    public final String getUser() {
         return user;
     }
 
-    String getPassword() {
+    public final String getPassword() {
         return password;
     }
 }

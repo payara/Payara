@@ -70,6 +70,7 @@ import java.util.HashMap;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import org.glassfish.cluster.ssh.connect.NodeRunner;
+
 /**
  * Utility methods for operating on Nodes
  *
@@ -447,7 +448,7 @@ public class NodeUtils {
         String user = resolver.resolve(map.getOne(PARAM_REMOTEUSER));
         String password = map.getOne(PARAM_REMOTEPASSWORD);
         String domain = nodehost;
-         pingDcomConnection(nodehost, domain, user, password, getInstallRoot(installdir));
+        pingDcomConnection(nodehost, domain, user, password, getInstallRoot(installdir));
     }
 
     private void validateSSHConnection(ParameterMap map) throws

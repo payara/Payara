@@ -37,56 +37,42 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+package org.glassfish.cluster.ssh.util;
 
-package com.sun.enterprise.util.io;
-
+import com.sun.enterprise.config.serverbeans.Node;
+import com.sun.enterprise.config.serverbeans.SshAuth;
+import com.sun.enterprise.config.serverbeans.SshConnector;
+import com.sun.enterprise.universal.glassfish.TokenResolver;
 import com.sun.enterprise.universal.process.WindowsCredentials;
-import java.net.*;
-import jcifs.smb.NtlmPasswordAuthentication;
+import com.sun.enterprise.universal.process.WindowsException;
+import static com.sun.enterprise.util.StringUtils.ok;
+import java.util.*;
+import org.glassfish.internal.api.RelativePathResolver;
 
 /**
- * Wrap the implementation details for the way we get access to remote
- * Windows files.
- * Note: null args == NPE
+ * I hate to copy&paste identical code into more than one class.
+ * Hence this class!
  * @author Byron Nevins
  */
-public class WindowsRemoteFileSystem {
-    private final String host;
-    private final NtlmPasswordAuthentication authorization;
-
-    public WindowsRemoteFileSystem(WindowsCredentials cr) {
-        host = getIP(cr.getHost());
-        authorization = new NtlmPasswordAuthentication(host, cr.getUser(), cr.getPassword());
-    }
-    public WindowsRemoteFileSystem(String hostname, NtlmPasswordAuthentication auth) {
-        host = getIP(hostname);
-        authorization = auth;
+public final class DcomUtils {
+    private DcomUtils() {
+        // no instances allowed!
     }
 
-    public WindowsRemoteFileSystem(String hostname, String username, String password) {
-        host = getIP(hostname);
-        authorization = new NtlmPasswordAuthentication(host, username, password);
-    }
+    public static String resolvePassword(String raw) {
 
-    /**
-     * @return the host
-     */
-    public String getHost() {
-        return host;
-    }
-
-    /**
-     * @return the authorization
-     */
-    public NtlmPasswordAuthentication getAuthorization() {
-        return authorization;
-    }
-
-    private String getIP(String hostname) {
         try {
-            return InetAddress.getByName(hostname).getHostAddress();
-        } catch (Exception e) {
-            return hostname;
+            return RelativePathResolver.getRealPasswordFromAlias(raw);
         }
+        catch (Exception e) {
+            return raw;
+        }
+    }
+
+    public static List<String> resolvePasswordToList(String raw) {
+        List tokens = new ArrayList<String>(1);
+        String password = resolvePassword(raw);
+        tokens.add("AS_ADMIN_DCOMPASSWORD=" + password);
+        return tokens;
     }
 }

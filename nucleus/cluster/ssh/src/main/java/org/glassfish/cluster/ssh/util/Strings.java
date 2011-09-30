@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,55 +38,30 @@
  * holder.
  */
 
-package com.sun.enterprise.util.io;
+package org.glassfish.cluster.ssh.util;
 
-import com.sun.enterprise.universal.process.WindowsCredentials;
-import java.net.*;
-import jcifs.smb.NtlmPasswordAuthentication;
+import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 
 /**
- * Wrap the implementation details for the way we get access to remote
- * Windows files.
- * Note: null args == NPE
+ * Strings -- Get your Strings here.
+ * One file with Strings
+ * So one class for messing with them!
+ * Nothing in here is public protected.  Only for use by this one java package.
  * @author Byron Nevins
  */
-public class WindowsRemoteFileSystem {
-    private final String host;
-    private final NtlmPasswordAuthentication authorization;
 
-    public WindowsRemoteFileSystem(WindowsCredentials cr) {
-        host = getIP(cr.getHost());
-        authorization = new NtlmPasswordAuthentication(host, cr.getUser(), cr.getPassword());
-    }
-    public WindowsRemoteFileSystem(String hostname, NtlmPasswordAuthentication auth) {
-        host = getIP(hostname);
-        authorization = auth;
+final class Strings {
+    private Strings() {
+        // no instances allowed!
     }
 
-    public WindowsRemoteFileSystem(String hostname, String username, String password) {
-        host = getIP(hostname);
-        authorization = new NtlmPasswordAuthentication(host, username, password);
+    final static String get(String indexString) {
+        return strings.get(indexString);
     }
 
-    /**
-     * @return the host
-     */
-    public String getHost() {
-        return host;
+    final static String get(String indexString, Object... objects) {
+        return strings.get(indexString, objects);
     }
 
-    /**
-     * @return the authorization
-     */
-    public NtlmPasswordAuthentication getAuthorization() {
-        return authorization;
-    }
-
-    private String getIP(String hostname) {
-        try {
-            return InetAddress.getByName(hostname).getHostAddress();
-        } catch (Exception e) {
-            return hostname;
-        }
-    }
+    final private static LocalStringsImpl strings = new LocalStringsImpl(Strings.class);
 }

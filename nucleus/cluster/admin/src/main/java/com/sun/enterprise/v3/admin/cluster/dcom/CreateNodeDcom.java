@@ -39,6 +39,7 @@
  */
 package com.sun.enterprise.v3.admin.cluster.dcom;
 
+import org.glassfish.cluster.ssh.util.DcomUtils;
 import java.util.List;
 import java.util.ArrayList;
 import com.sun.enterprise.v3.admin.cluster.CreateRemoteNodeCommand;
@@ -49,7 +50,6 @@ import org.glassfish.internal.api.RelativePathResolver;
 import org.jvnet.hk2.annotations.*;
 import org.jvnet.hk2.component.PerLookup;
 import static com.sun.enterprise.util.StringUtils.ok;
-
 /**
  * Remote AdminCommand to create a DCOM node
  *
@@ -128,6 +128,6 @@ public class CreateNodeDcom extends CreateRemoteNodeCommand {
      */
     @Override
     protected List<String> getPasswords() {
-        return DcomUtils.resolvePassword(dcompassword);
+        return DcomUtils.resolvePasswordToList(dcompassword);
     }
 }
