@@ -1922,8 +1922,28 @@ public class VirtualServer extends StandardHost
                         wacl.setResources(old_wacl.getResources());
                         wacl.setDelegate(old_wacl.getDelegate());
 
+                        for (java.net.URL url : old_wacl.getURLs()) {
+                            if (url.getFile().endsWith("WEB-INF/classes")) {
+                                wacl.addRepository("WEB-INF/classes/", new File(url.getFile()));
+                            }
+                            break;
+                        }
                         java.net.URL[] urls = old_wacl.getURLs();
-                        wacl.addRepository("WEB-INF/classes/", new File(urls[0].getFile()));
+                        File base = new File(urls[0].getFile().substring(0, urls[0].getFile().indexOf("/WEB-INF")));
+
+                        File libDir = new File(base, "WEB-INF/lib");
+                        if (libDir.exists()) {
+                            int baseFileLen = base.getPath().length();
+                            for (File libFile : libDir.listFiles()) {
+                                if (libFile.isDirectory()) {
+                                    // support exploded jar file
+                                    wacl.addRepository("WEB-INF/lib/" + libFile.getName() + "/", libFile);
+                                } else {
+                                    wacl.addJar(libFile.getPath().substring(baseFileLen),
+                                            new java.util.jar.JarFile(libFile), libFile);
+                                }
+                            }
+                        }
 
                         wacl.start();
                         wmInfo.setAppClassLoader(wacl);
