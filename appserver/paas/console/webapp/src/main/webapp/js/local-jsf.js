@@ -1410,7 +1410,7 @@ if (!((jsf && jsf.specversion && jsf.specversion >= 20000 ) &&
                     }
 
                     parent.appendChild(el);
-                    el.style = "visibility: hidden";
+                    el.style.visibility = "hidden";
                 }
 
                 return el;
