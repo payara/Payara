@@ -45,6 +45,7 @@ import com.sun.enterprise.config.serverbeans.SshConnector;
 import com.sun.enterprise.universal.glassfish.TokenResolver;
 import com.sun.enterprise.universal.process.WindowsCredentials;
 import com.sun.enterprise.universal.process.WindowsException;
+import com.sun.enterprise.universal.process.WindowsRemoteAsadmin;
 import com.sun.enterprise.util.StringUtils;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import java.util.*;
@@ -52,6 +53,7 @@ import static com.sun.enterprise.util.StringUtils.ok;
 
 /**
  * Put this ugly painful intricate parsing in one place to avoid code-bloat...
+ * This class is guaranteed thread-safe and immutable
  * @author Byron Nevins
  */
 public final class DcomInfo {
@@ -61,6 +63,12 @@ public final class DcomInfo {
     private final String host;
     private final String user;
     private final String windowsDomain;
+    private final String remoteNodeRootDirectory;
+    // CONFUSING PAIN POINT.  The "installdir" means the parent directory of glassfish
+    // installroot means the glassfish dir.  E.g.
+    // installdir == d:/glassfish3  and installroot == d:/glassfish3/glassfish
+    //
+    private final String remoteInstallRoot;
     private final String nadminPath;
     private final String nadminParentPath;
 
@@ -121,19 +129,43 @@ public final class DcomInfo {
             notFinal += "/";
 
         notFinal += SystemPropertyConstants.getComponentName();
+        remoteInstallRoot = StringUtils.quotePathIfNecessary(notFinal);
         notFinal += "/lib";
         notFinal = StringUtils.quotePathIfNecessary(notFinal);
         notFinal = notFinal.replace('/', '\\');
         nadminParentPath = notFinal;
         nadminPath = notFinal + "\\nadmin.bat";
 
+        String notFinal2 = node.getNodeDirAbsolute();
+
+        if (notFinal2 == null) {
+            // no special nodedir -- use the defaults
+            notFinal2 = remoteInstallRoot;  // e.g. "d:/glassfish3/glassfish"
+            notFinal2 += "/nodes";
+        }
+        notFinal2 = notFinal2.replace('/', '\\');
+
+        if (!notFinal2.endsWith("\\"))
+            notFinal2 += '\\';
+
+        remoteNodeRootDirectory = notFinal2 + node.getName();
+
         credentials = new WindowsCredentials(getHost(), getWindowsDomain(),
                 getUser(), getPassword());
+    }
+
+    public String getRemoteNodeRootDirectory() {
+        return remoteNodeRootDirectory;
+    }
+
+    public String getRemoteInstallRoot() {
+        return remoteInstallRoot;
     }
 
     public String getNadminPath() {
         return nadminPath;
     }
+
     public String getNadminParentPath() {
         return nadminParentPath;
     }
@@ -141,20 +173,29 @@ public final class DcomInfo {
     public WindowsCredentials getCredentials() {
         return credentials;
     }
+
     public Node getNode() {
         return node;
     }
+
     public String getPassword() {
         return password;
     }
+
     public String getHost() {
         return host;
     }
+
     public String getUser() {
         return user;
     }
+
     public String getWindowsDomain() {
         return windowsDomain;
+    }
+
+    public WindowsRemoteAsadmin getAsadmin() {
+        return new WindowsRemoteAsadmin(remoteInstallRoot, credentials);
     }
 
     private static boolean isDcomNode(Node node) {

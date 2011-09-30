@@ -57,14 +57,14 @@ import org.jinterop.dcom.impls.automation.IJIDispatch;
  * was created
  * @author Byron Nevins
  */
-class WindowsRemoteAsadmin extends WindowsRemoteScripter {
+public class WindowsRemoteAsadmin extends WindowsRemoteScripter {
     private final String asadminRemotePath;
 
     public WindowsRemoteAsadmin(String remoteInstallRoot, WindowsCredentials bonafides) {
         super(bonafides);
-        remoteInstallRoot.replace('/', '\\');
+        remoteInstallRoot = remoteInstallRoot.replace('/', '\\');
 
-        if(!remoteInstallRoot.endsWith("\\"))
+        if (!remoteInstallRoot.endsWith("\\"))
             remoteInstallRoot += "\\";
 
         asadminRemotePath = StringUtils.quotePathIfNecessary(remoteInstallRoot + "lib\\nadmin.bat");
@@ -99,6 +99,6 @@ class WindowsRemoteAsadmin extends WindowsRemoteScripter {
         sb.append(' ');
         sb.append(cmd);
 
-           return super.run(sb.toString());
+        return super.run(sb.toString());
     }
 }

@@ -437,7 +437,7 @@ public class NodeUtils {
         // just too difficult to refactor now...
         if (type == RemoteType.SSH)
             validateSSHConnection(map);
-        else
+        else if (type == RemoteType.DCOM)
             validateDcomConnection(map);
     }
 

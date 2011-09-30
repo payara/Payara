@@ -39,6 +39,7 @@
  */
 package org.glassfish.cluster.ssh.connect;
 
+import com.sun.enterprise.universal.process.WindowsRemoteAsadmin;
 import com.sun.enterprise.util.io.WindowsRemoteFile;
 import java.io.*;
 import java.net.*;
@@ -80,27 +81,30 @@ public class NodeRunnerDcom {
             SSHCommandExecutionException, IllegalArgumentException,
             UnsupportedOperationException {
 
-        String commandAsString = null;
+        String humanreadable = null;
         try {
             this.node = thisNode;
             dcomInfo = new DcomInfo(node);
-            WindowsCredentials bonafides = dcomInfo.getCredentials();
             List<String> fullcommand = new ArrayList<String>();
-            fullcommand.add(dcomInfo.getNadminPath());
+            WindowsRemoteAsadmin asadmin = dcomInfo.getAsadmin();
 
-            if(stdinLines != null && !stdinLines.isEmpty())
+            if (stdinLines != null && !stdinLines.isEmpty())
                 setupAuthTokenFile(fullcommand, stdinLines);
 
             fullcommand.addAll(args);
-            commandAsString = commandListToString(fullcommand);
-            WindowsRemoteScripter scripter = new WindowsRemoteScripter(bonafides);
-            String out = scripter.run(commandAsString);
-            logger.info(Strings.get("remote.command.summary", commandAsString, out));
+            humanreadable = dcomInfo.getNadminPath() + " " + commandListToString(fullcommand);
+
+
+            // This is where the rubber meets the road...
+            String out = asadmin.run(fullcommand);
+
+
+            logger.info(Strings.get("remote.command.summary", humanreadable, out));
             return 0;
         }
         catch (WindowsException ex) {
             throw new SSHCommandExecutionException(Strings.get(
-                    "remote.command.error", ex.getMessage(), commandAsString), ex);
+                    "remote.command.error", ex.getMessage(), humanreadable), ex);
         }
         finally {
             teardownAuthTokenFile();
@@ -123,14 +127,17 @@ public class NodeRunnerDcom {
     }
 
     /*
-     * 1. creae a remote file
+     * BE CAREFUL -- Don't introduce "Distributed Concurrency Bugs"
+     * e.g. you have to make sure the filename is unique.
+     * 1. create a remote file
      * 2. copy the token/auth stuff into it
      * 3. add the correct args to the remote commandline
      *    Put the file in the same directory that nadmin lives in (lib)
      */
     private void setupAuthTokenFile(List<String> cmd, List<String> stdin) throws WindowsException {
         WindowsRemoteFileSystem wrfs = new WindowsRemoteFileSystem(dcomInfo.getCredentials());
-        authTokenFilePath = dcomInfo.getNadminParentPath() + "\\stdin";
+        authTokenFilePath = dcomInfo.getNadminParentPath() + "\\token_" + System.nanoTime() + new Random().nextInt(1000);
+        authTokenFilePath = createUniqueFilename(dcomInfo.getNadminParentPath());
         authTokenFile = new WindowsRemoteFile(wrfs, authTokenFilePath);
         authTokenFile.copyFrom(stdin);
 
@@ -142,13 +149,24 @@ public class NodeRunnerDcom {
     }
 
     private void teardownAuthTokenFile() {
-        if(authTokenFile != null)
+        if (authTokenFile != null)
             try {
-            authTokenFile.delete();
-        }
-        catch (WindowsException ex) {
-            logger.warning(Strings.get("cant.delete", dcomInfo.getHost(), authTokenFilePath));
-        }
+                authTokenFile.delete();
+            }
+            catch (WindowsException ex) {
+                logger.warning(Strings.get("cant.delete", dcomInfo.getHost(), authTokenFilePath));
+            }
     }
 
+    private String createUniqueFilename(String path) {
+        String random = "" + System.nanoTime();
+
+        // just use the last 16 numbers
+        if(random.length() > 16)
+            random = random.substring(random.length() - 16);
+
+        random += "" + new Random(System.currentTimeMillis()).nextInt(10000);
+
+        return path + "\\DELETE_ME_" + random;
+    }
 }

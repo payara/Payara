@@ -39,6 +39,7 @@
  */
 package com.sun.enterprise.util.io;
 
+import com.sun.enterprise.universal.process.WindowsCredentials;
 import com.sun.enterprise.universal.process.WindowsException;
 import java.io.*;
 import java.util.*;
@@ -67,6 +68,11 @@ public final class WindowsRemoteFile {
         }
     }
 
+    public WindowsRemoteFile(WindowsCredentials bonafides, String path)
+            throws WindowsException {
+        this(new WindowsRemoteFileSystem(bonafides), path);
+    }
+    
     public WindowsRemoteFile(WindowsRemoteFileSystem wrfs, String path)
             throws WindowsException {
         try {
