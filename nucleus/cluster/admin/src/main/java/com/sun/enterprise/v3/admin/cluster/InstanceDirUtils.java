@@ -40,7 +40,6 @@
 
 package com.sun.enterprise.v3.admin.cluster;
 
-import com.sun.enterprise.util.io.InstanceDirs;
 import com.sun.enterprise.config.serverbeans.Node;
 import org.glassfish.internal.api.ServerContext;
 import com.sun.enterprise.util.io.InstanceDirs;
@@ -50,12 +49,12 @@ import java.io.File;
 import java.io.IOException;
 
 
-public class InstanceDirUtils{
+final class InstanceDirUtils{
     Node node;
     ServerContext serverContext;
 
 
-    public InstanceDirUtils(Node node, ServerContext serverContext){
+    InstanceDirUtils(Node node, ServerContext serverContext){
         this.node = node;
         this.serverContext = serverContext;
     }
@@ -67,7 +66,7 @@ public class InstanceDirUtils{
      * @return File for the local file system location of the instance directory
      * @throws IOException
      */
-    protected File getLocalInstanceDir(String instance) throws IOException {
+    File getLocalInstanceDir(String instance) throws IOException {
         /*
          * Pass the node directory parent and the node directory name explicitly
          * or else InstanceDirs will not work as we want if there are multiple
@@ -85,7 +84,7 @@ public class InstanceDirUtils{
         return instanceDirs.getInstanceDir();
     }
 
-    protected File defaultLocalNodeDirFile() {
+    File defaultLocalNodeDirFile() {
         /*
          * The "nodes" directory we want to use is a child of
          * the install directory.
@@ -105,5 +104,4 @@ public class InstanceDirUtils{
                     : new File(installDir, "glassfish"));
         return new File(nodeParentDir, "nodes");
     }
-   
 }
