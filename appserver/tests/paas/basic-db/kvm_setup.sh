@@ -39,26 +39,27 @@
 #
 
 GF_HOME=${GF_HOME:-$S1AS_HOME}
+TEMPLATES_DIR=/space
 $GF_HOME/bin/asadmin start-domain --debug
-$GF_HOME/bin/asadmin add-libvirt-virtualization  kvm
-#$GF_HOME/bin/asadmin create-server-pool --virtualization kvm --subnet 192.168.1.102/250 --portName "br0" cloud
+$GF_HOME/bin/asadmin create-ims-config-libvirt kvm
+$GF_HOME/bin/asadmin stop-domain
+$GF_HOME/bin/asadmin start-domain --debug
 $GF_HOME/bin/asadmin create-server-pool --virtualization kvm --subnet 129.158.193.70/250 --portName "br0" cloud
 
-$GF_HOME/bin/asadmin create-template --virtualization kvm --files /space/glassfish.img,/space/glassfish.xml --indexes ServiceType=JavaEE,VirtualizationType=libvirt glassfish
+$GF_HOME/bin/asadmin create-template --virtualization kvm --files $TEMPLATES_DIR/glassfish.img,$TEMPLATES_DIR/glassfish.xml --indexes ServiceType=JavaEE,VirtualizationType=libvirt glassfish
 $GF_HOME/bin/asadmin create-template-user --virtualization kvm --userid 1000 --groupid 1000 --template glassfish cloud
 
-$GF_HOME/bin/asadmin create-template --virtualization kvm --files /space/oracledb.img,/space/oracledb.xml --indexes ServiceType=Database,VirtualizationType=libvirt oracledb
-$S1AS_HOME/bin/asadmin create-template-user --virtualization kvm --userid 1000 --groupid 1000 --template oracledb shalinikvm
+$GF_HOME/bin/asadmin create-template --virtualization kvm --files $TEMPLATES_DIR/glassfish.img,$TEMPLATES_DIR/glassfish.xml --indexes ServiceType=Database,VirtualizationType=libvirt javadb
+$S1AS_HOME/bin/asadmin create-template-user --virtualization kvm --userid 1000 --groupid 1000 --template javadb cloud
+
+#$GF_HOME/bin/asadmin create-template --virtualization kvm --files $TEMPLATES_DIR/MySQL.img,$TEMPLATES_DIR/MySQL.xml --indexes ServiceType=Database,VirtualizationType=libvirt MySQL
+#$S1AS_HOME/bin/asadmin create-template-user --virtualization kvm --userid 1000 --groupid 1000 --template MySQL mysqluser
+
+#$GF_HOME/bin/asadmin create-template --virtualization kvm --files $TEMPLATES_DIR/oracledb.img,$TEMPLATES_DIR/oracledb.xml --indexes ServiceType=Database,VirtualizationType=libvirt oracledb
+#$S1AS_HOME/bin/asadmin create-template-user --virtualization kvm --userid 1000 --groupid 1000 --template oracledb shalinikvm
+
+#$GF_HOME/bin/asadmin create-template --virtualization kvm --files $TEMPLATES_DIR/apache.img,$TEMPLATES_DIR/apache.xml --properties scripts-dir=/home/cloud/workspace/scripts:install-dir=/home/cloud/workspace/apache/install --indexes ServiceType=LB,VirtualizationType=libvirt apachemodjk
+#$S1AS_HOME/bin/asadmin create-template-user --virtualization kvm --userid 1000 --groupid 1000 --template apachemodjk cloud
 
 $GF_HOME/bin/asadmin create-machine --serverPool cloud --networkName localhost local
 $GF_HOME/bin/asadmin create-machine-user --serverPool cloud --machine local --userId 1000 --groupId 1000 shalini
-
-#$GF_HOME/bin/asadmin create-emulator --virt-type kvm --emulator-path /usr/bin/kvm --connection-string qemu:///system kvm
-#$GF_HOME/bin/asadmin add-virtualization --type libvirt --emulator kvm
-#$GF_HOME/bin/asadmin create-server-pool --subnet 192.168.1.102/250 --portName "br0" --virtName libvirt cloud
-#$GF_HOME/bin/asadmin create-server-pool --subnet 129.158.239.70/250 --portName "br0" --virtName libvirt cloud
-#$GF_HOME/bin/asadmin create-template --files /space/bhavani/Desktop/ubuntu.img,/space/bhavani/Desktop/ubuntu.xml --indexes ServiceType=JavaEE,VirtualizationType=libvirt ubuntu
-#$GF_HOME/bin/asadmin create-template-user --userid 1000 --groupid 1000 --template ubuntu cloud
-#$GF_HOME/bin/asadmin create-machine --serverPool cloud --networkName localhost local
-#$GF_HOME/bin/asadmin create-machine-user --serverPool cloud --machine local --userId 1000 --groupId 1000 bhavani
-#$GF_HOME/bin/asadmin stop-domain
