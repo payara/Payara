@@ -66,7 +66,7 @@ import org.jvnet.hk2.component.Singleton;
 @Scoped(Singleton.class)
 public class PluginService {
 
-    private static List<ConsolePluginMetadata> plugins;
+    private List<ConsolePluginMetadata> plugins;
     private static final Set<String> classNames = new HashSet<String>();
 
     @Inject
