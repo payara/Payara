@@ -62,7 +62,7 @@ public class WindowsException extends Exception {
         super(message);
     }
     public WindowsException(Throwable t) {
-        super(t.toString());
+        super(t.getMessage());
     }
 }
 

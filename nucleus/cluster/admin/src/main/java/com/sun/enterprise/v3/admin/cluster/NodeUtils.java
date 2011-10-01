@@ -404,7 +404,7 @@ public class NodeUtils {
      *
      * @throws CommandValidationException
      */
-    private void pingDcomConnection(String host, String domain, String username,
+    void pingDcomConnection(String host, String domain, String username,
             String password, String installRoot) throws CommandValidationException {
         try {
             installRoot = installRoot.replace('/', '\\');
