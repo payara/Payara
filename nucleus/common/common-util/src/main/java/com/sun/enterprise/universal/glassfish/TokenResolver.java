@@ -63,6 +63,14 @@ import com.sun.enterprise.util.SystemPropertyConstants;
  */
 public class TokenResolver {
 
+    /**
+     * Empty constructor means use System Properties
+     *
+     */
+    public TokenResolver() {
+        this(new HashMap<String, String>((Map) (System.getProperties())));
+    }
+
     public TokenResolver(Map<String, String> map) {
         props = map;
     }
@@ -122,7 +130,7 @@ public class TokenResolver {
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    
+
     /**
      * Replace $[variables} with a matching property in the map
      * @param s String to be token-replaced
@@ -132,7 +140,7 @@ public class TokenResolver {
     {
         if(s == null || s.length() <= 0)
             return s;
-        
+
         if (hasWindowsToken(s)) {
             s = windowsToUnixTokens(s);
         }
@@ -148,7 +156,7 @@ public class TokenResolver {
     }
 
     /**
-     * 
+     *
      * @param s A String that may contain %token%
      * @return the UNIX-ified format ${token}
      */
@@ -218,7 +226,7 @@ public class TokenResolver {
         token.token = s.substring(token.start, token.end + 1);
         token.name = s.substring(token.start + Token.TOKEN_START.length(), token.end);
 
-        // if the token exists, but it's value is null -- then set the value 
+        // if the token exists, but it's value is null -- then set the value
         // back to the token.
 
         token.value = props.get(token.name);
