@@ -116,8 +116,11 @@ public class BasicPaaSTest {
         System.out.println("\nlist-services command output [ " + result.getOutput() + "]");
 
         // 3. Access the app to make sure PaaS app is correctly provisioned.
-        get("http://localhost:28080/basic_paas_sample/BasicPaaSServlet",
+        String HTTP_PORT=(System.getProperty("http.port")!=null)?System.getProperty("http.port"):"28080";
+        
+            get("http://localhost:"+HTTP_PORT+"/basic_paas_sample/BasicPaaSServlet",
                 "Request headers from the request:");
+        
 
         // 4. Undeploy the PaaS application . TODO :: use cloud-undeploy??
         deployer.undeploy(appName);
