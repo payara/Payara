@@ -41,21 +41,26 @@
 package org.glassfish.deployment.admin;
 
 import com.sun.enterprise.admin.util.ClusterOperationUtil;
+import com.sun.enterprise.util.io.FileUtils;
 import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.config.serverbeans.Domain;
 import java.util.Collections;
 import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.FailurePolicy;
 import org.glassfish.api.admin.ParameterMap;
+import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.deployment.OpsParams;
 import org.glassfish.internal.deployment.Deployment;
 import org.glassfish.common.util.admin.ParameterMapExtractor;
 import org.jvnet.hk2.component.Habitat;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.io.File;
+import java.io.IOException;
 
 /**
  * Utility methods useful from deployment-related commands.
@@ -63,6 +68,8 @@ import java.net.UnknownHostException;
  * @author Tim Quinn
  */
 public class DeploymentCommandUtils {
+
+    final private static String COPY_IN_PLACE_ARCHIVE_PROP_NAME = "copy.inplace.archive";
 
     /**
      * Replicates an enable or disable command to all instances in the cluster
@@ -125,4 +132,65 @@ public class DeploymentCommandUtils {
         parameters.set("target", targetName);
         return targetName;
     }
+
+    public static File renameUploadedFileOrCopyInPlaceFile(
+            final File finalUploadDir,
+            final File fileParam,
+            final Logger logger,
+            ServerEnvironment env) throws IOException {
+        if (fileParam == null) {
+            return null;
+        }
+        /*
+         * If the fileParam resides within the applications directory then
+         * it has been uploaded.  In that case, rename it.
+         */
+        final File appsDir = env.getApplicationRepositoryPath();
+
+        /*
+         * The default answer is the in-place file, to handle the
+         * directory-deployment case or the in-place archive case if we ae
+         * not copying the in-place archive.
+         */
+        File result = fileParam;
+
+        if ( ! fileParam.isDirectory() && ! appsDir.toURI().relativize(fileParam.toURI()).isAbsolute()) {
+            /*
+             * The file lies within the apps directory, so it was
+             * uploaded.
+             */
+            result = new File(finalUploadDir, fileParam.getName());
+            FileUtils.renameFile(fileParam, result);
+            if ( ! result.setLastModified(fileParam.lastModified())) {
+                    logger.log(Level.FINE, "In renaming {0} to {1} could not setLastModified; continuing",
+                            new Object[] {fileParam.getAbsolutePath(),
+                                result.getAbsolutePath()
+                            });
+            }
+        } else {
+            final boolean copyInPlaceArchive = Boolean.valueOf(
+                    System.getProperty(COPY_IN_PLACE_ARCHIVE_PROP_NAME, "true"));
+            if ( ! fileParam.isDirectory() && copyInPlaceArchive) {
+                /*
+                 * The file was not uploaded and the in-place file is not a directory,
+                 * so copy the archive to the permanent location.
+                 */
+                final long startTime = System.currentTimeMillis();
+                result = new File(finalUploadDir, fileParam.getName());
+                FileUtils.copy(fileParam, result);
+                if ( ! result.setLastModified(fileParam.lastModified())) {
+                    logger.log(Level.FINE, "Could not set lastModified for {0}; continuing",
+                            result.getAbsolutePath());
+                }
+                if (logger.isLoggable(Level.FINE)) {
+                    logger.log(Level.FINE, "*** In-place archive copy of {0} took {1} ms",
+                            new Object[]{
+                                fileParam.getAbsolutePath(),
+                                System.currentTimeMillis() - startTime});
+                }
+            }
+        }
+        return result;
+    }
+
 }
