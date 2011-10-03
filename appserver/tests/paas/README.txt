@@ -9,5 +9,10 @@ Steps to run these automated tests:
 
    For example, run native_setup.sh to configure native IMS config. 
 
-3. GF_EMBEDDED_ENABLE_CLI=true mvn clean verify
+3. When the load balancer is used, specify the load balancer's port 50080'..eg., -DargLine="-Dhttp.port=50080" 
 
+   GF_EMBEDDED_ENABLE_CLI=true mvn clean verify surefire-report:report -DargLine="-Dhttp.port=50080"
+
+   Without lb-plugin just skip the argument part.Deafult port of 28080 will be used.
+
+   GF_EMBEDDED_ENABLE_CLI=true mvn clean verify surefire-report:report
