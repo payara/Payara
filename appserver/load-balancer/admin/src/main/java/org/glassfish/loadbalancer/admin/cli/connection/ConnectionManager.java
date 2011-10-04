@@ -64,7 +64,7 @@ public class ConnectionManager {
 
     public static final String HTTPS_PROTOCOL = "https";
     public static final String HTTP_PROTOCOL = "http";
-    public static final String SSL = "SSL";
+    public static final String TLS = "TLS";
 
     /** Creates a new instance of ConnectionManager */
     public ConnectionManager(String lbHost, String lbPort, String lbProxyHost,
@@ -160,7 +160,7 @@ public class ConnectionManager {
             };
 
             // Install the all-trusting trust manager
-            SSLContext sc = SSLContext.getInstance(SSL);
+            SSLContext sc = SSLContext.getInstance(TLS);
             Habitat habitat = Globals.getDefaultHabitat();
             SSLUtils sslUtils = habitat.getComponent(SSLUtils.class);
             sc.init(sslUtils.getKeyManagers(), trustAllCerts, new java.security.SecureRandom());
