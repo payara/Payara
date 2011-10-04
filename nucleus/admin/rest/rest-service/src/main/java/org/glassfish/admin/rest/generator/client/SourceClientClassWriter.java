@@ -249,7 +249,6 @@ public class SourceClientClassWriter extends ClientClassWriter {
     public String generateMethodBody(CommandModel cm, String httpMethod, String resourcePath, boolean includeOptional, boolean needsMultiPart) {
         StringBuilder sb = new StringBuilder();
         sb.append("        Map<String, Object> payload = new HashMap<String, Object>();\n");
-        Map<String, String> paramNames = new HashMap<String, String>();
         Collection<ParamModel> params = cm.getParameters();
         if ((params != null) && (!params.isEmpty())) {
             for (ParamModel model : params) {
