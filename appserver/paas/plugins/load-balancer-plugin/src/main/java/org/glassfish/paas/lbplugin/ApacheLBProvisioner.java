@@ -45,7 +45,10 @@ import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.config.serverbeans.SystemProperty;
 import com.sun.enterprise.util.OS;
 import com.sun.enterprise.util.net.NetUtils;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import org.glassfish.common.util.admin.AuthTokenManager;
@@ -369,6 +372,8 @@ public class ApacheLBProvisioner implements LBProvisioner{
 
         Process process;
         boolean killProcess = false;
+        private ApacheLoggerThread inputStreamLoggerThread;
+        private ApacheLoggerThread errorStreamLoggerThread;
 
         HttpdThread() {
         }
@@ -377,6 +382,12 @@ public class ApacheLBProvisioner implements LBProvisioner{
         public void run() {
             try {
                 process = Runtime.getRuntime().exec(apachectl);
+                //create thread to read process input and error stream and
+                //log it
+                inputStreamLoggerThread = new ApacheLoggerThread(process, false);
+                errorStreamLoggerThread = new ApacheLoggerThread(process, true);
+                inputStreamLoggerThread.start();
+                errorStreamLoggerThread.start();
                 process.waitFor();
             } catch (Exception ex) {
                 process = null;
@@ -395,6 +406,15 @@ public class ApacheLBProvisioner implements LBProvisioner{
                 } catch (InterruptedException ex) {
                     //ignore
                 }
+                if(errorStreamLoggerThread != null){
+                    errorStreamLoggerThread.stopThread();
+                }
+                if(inputStreamLoggerThread != null){
+                    inputStreamLoggerThread.stopThread();
+                }
+                errorStreamLoggerThread = null;
+                inputStreamLoggerThread = null;
+                process = null;
             } catch (Exception ioe) {
                 LBPluginLogger.getLogger().log(Level.SEVERE,
                         "Httpd process could not be killed ...", ioe);
@@ -402,4 +422,49 @@ public class ApacheLBProvisioner implements LBProvisioner{
         }
         
     }
+
+    class ApacheLoggerThread extends Thread{
+
+        private InputStream inputStream;
+        private boolean isError;
+        private boolean stopThread;
+
+        public ApacheLoggerThread(Process process, boolean isError) {
+            this.isError = isError;
+            if(isError){
+                inputStream = process.getErrorStream();
+            } else {
+                inputStream = process.getInputStream();
+            }
+        }
+
+        @Override
+        public void run() {
+            try {
+                BufferedReader reader = new BufferedReader(
+                        new InputStreamReader(inputStream));
+                String line = null;
+                while (!stopThread && (line = reader.readLine()) != null) {
+                    LBPluginLogger.getLogger().log(Level.FINE, "APACHE "
+                            + (isError ? "ERROR" : "") + "LOG : " + line);
+                }
+            } catch (IOException ex) {
+                LBPluginLogger.getLogger().log(Level.SEVERE,
+                        "Exception while collecting apache " +
+                        (isError ? "error" : "") + " logs", ex);
+            } finally {
+                inputStream = null;
+            }
+        }
+
+        private void stopThread() {
+            if(inputStream != null){
+                stopThread = true;
+                interrupt();
+            }
+        }
+
+    }
+
+
 }
