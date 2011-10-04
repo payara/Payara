@@ -537,11 +537,14 @@ public interface Server extends ConfigBeanProxy, Injectable, PropertyBag, Named,
                 }
 
                 /*
-                * We are only setting this when the discovery uri list
-                * is present, implying that we are not using multicast.
-                */
+                 * We are only setting this when the discovery uri list
+                 * is set to "generate." Otherwise the user must set this
+                 * properly to match the discovery uri list.
+                 */
                 if (ourCluster != null &&
-                    ourCluster.getProperty("GMS_DISCOVERY_URI_LIST") != null) {
+                    ourCluster.getProperty("GMS_DISCOVERY_URI_LIST") != null &&
+                    "generate".equals(
+                        ourCluster.getProperty("GMS_DISCOVERY_URI_LIST").getValue())) {
 
                     final String propName = "GMS_LISTENER_PORT-" +
                         ourCluster.getName();
