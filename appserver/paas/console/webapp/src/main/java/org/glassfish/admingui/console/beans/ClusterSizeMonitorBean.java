@@ -168,7 +168,6 @@ public class ClusterSizeMonitorBean {
         }
 
         private void getClusterSizeMonitoringStats() {
-            List<ClusterSizeStat> heapData = new ArrayList<ClusterSizeStat>();
             SortedMap<Long, Long> sortedMap = new TreeMap<Long, Long>();
             Map<String, Object> result = null;
             String clusterName = getEnvName();
