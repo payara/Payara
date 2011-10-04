@@ -87,7 +87,7 @@
     </build>
     <dependencies>
         <dependency>
-            <groupId>com.sun.corba</groupId>
+            <groupId>org.glassfish.corba</groupId>
             <artifactId>glassfish-corba-internal-api</artifactId>
         </dependency>
         <dependency>

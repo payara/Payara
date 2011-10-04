@@ -129,7 +129,7 @@
 
         <pfl.version>3.2.0-b001</pfl.version>
         <gmbal.version>3.2.0-b003</gmbal.version>
-        <glassfish-corba.version>3.2.0-b005</glassfish-corba.version>
+        <glassfish-corba.version>3.2.0-b006</glassfish-corba.version>
 
         <uc-pkg-client.version>1.122-54.2834</uc-pkg-client.version>
         <uc-pkg-bootstrap.version>1.122-54.2834</uc-pkg-bootstrap.version>
@@ -1140,22 +1140,22 @@
             </dependency>
 
             <dependency>
-                <groupId>com.sun.corba</groupId>
+                <groupId>org.glassfish.corba</groupId>
                 <artifactId>glassfish-corba-orb</artifactId>
                 <version>${glassfish-corba.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.sun.corba</groupId>
+                <groupId>org.glassfish.corba</groupId>
                 <artifactId>glassfish-corba-omgapi</artifactId>
                 <version>${glassfish-corba.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.sun.corba</groupId>
+                <groupId>org.glassfish.corba</groupId>
                 <artifactId>glassfish-corba-csiv2-idl</artifactId>
                 <version>${glassfish-corba.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.sun.corba</groupId>
+                <groupId>org.glassfish.corba</groupId>
                 <artifactId>glassfish-corba-internal-api</artifactId>
                 <version>${glassfish-corba.version}</version>
             </dependency>

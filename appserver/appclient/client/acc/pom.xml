@@ -312,7 +312,7 @@
             so I have just included it here.
         -->
         <dependency>
-            <groupId>com.sun.corba</groupId>
+            <groupId>org.glassfish.corba</groupId>
             <artifactId>glassfish-corba-orb</artifactId>
         </dependency>
 
