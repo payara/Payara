@@ -131,7 +131,7 @@ public class TemplateExecCommand {
         ActionReportResult results = new ActionReportResult(commandName, actionReport, option.getMetaData());
         results.getActionReport().getExtraProperties().putAll(option.getActionReport().getExtraProperties());
         results.setCommandDisplayName(commandDisplayName);
-        int status =HttpURLConnection.HTTP_OK; /*200 - ok*/
+        int status = HttpURLConnection.HTTP_OK; /*200 - ok*/
         if (exitCode == ActionReport.ExitCode.FAILURE) {
             status = HttpURLConnection.HTTP_INTERNAL_ERROR;
         }

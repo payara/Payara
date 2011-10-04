@@ -39,6 +39,11 @@
  */
 package org.glassfish.admin.rest.client;
 
+import com.sun.jersey.api.client.ClientResponse;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+
 /**
  *
  * @author jasonlee
@@ -46,24 +51,44 @@ package org.glassfish.admin.rest.client;
 public class RestResponse {
     private String message;
     private int status;
+    private Map <String, Object> extraProperties;
+    private List children;
+    private Map<String, String> properties;
+    
+    public RestResponse(ClientResponse response) {
+        Map<String, Object> responseMap = Util.processJsonMap(response.getEntity(String.class));
+        
+        status = response.getStatus();
+        message = (String)responseMap.get("message");
+        extraProperties = (Map) responseMap.get("extraProperties");
+        children = (List) responseMap.get("children");
+        Map respProps = (Map) responseMap.get("properties");
+        if (respProps != null) {
+            this.properties = respProps;
+        }
+    }
 
     public String getMessage() {
         return message;
-    }
-
-    public void setMessage(String message) {
-        this.message = message;
     }
 
     public int getStatus() {
         return status;
     }
 
-    public void setStatus(int status) {
-        this.status = status;
-    }
-
     public boolean isSuccess() {
         return (status >= 200) && (status <= 299);
+    }
+
+    public Map<String, Object> getExtraProperties() {
+        return Collections.unmodifiableMap(extraProperties);
+    }
+
+    public List getChildren() {
+        return children;
+    }
+
+    public Map<String, String> getProperties() {
+        return properties;
     }
 }

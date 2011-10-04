@@ -48,10 +48,10 @@ import com.sun.jersey.api.client.filter.HTTPBasicAuthFilter;
  * @author jasonlee
  */
 public class RestClient {
-    private String host;
-    private int port;
-    private Client client;
-    private boolean useSsl = false;
+    protected String host;
+    protected int port;
+    protected Client client;
+    protected boolean useSsl = false;
 
     public RestClient() {
         this("localhost", 4848, false, null, null);

@@ -305,14 +305,16 @@ public abstract class TemplateListOfResource {
 
             if ((resourceToCreate == null) || (resourceToCreate.equals(""))) {
                 String newResourceName = data.get("DEFAULT");
-                if (newResourceName.contains("/")) {
-                    newResourceName = Util.getName(newResourceName, '/');
-                } else {
-                    if (newResourceName.contains("\\")) {
-                        newResourceName = Util.getName(newResourceName, '\\');
+                if (newResourceName != null) {
+                    if (newResourceName.contains("/")) {
+                        newResourceName = Util.getName(newResourceName, '/');
+                    } else {
+                        if (newResourceName.contains("\\")) {
+                            newResourceName = Util.getName(newResourceName, '\\');
+                        }
                     }
+                    resourceToCreate = uriInfo.getAbsolutePath() + "/" + newResourceName;
                 }
-                resourceToCreate = uriInfo.getAbsolutePath() + "/" + newResourceName;
             } else {
                 resourceToCreate = uriInfo.getAbsolutePath() + "/" + resourceToCreate;
             }

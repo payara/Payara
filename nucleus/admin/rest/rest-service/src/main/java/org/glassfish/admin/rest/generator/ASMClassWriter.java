@@ -463,12 +463,8 @@ public class ASMClassWriter implements ClassWriter, Opcodes {
             }
 
             return generatedClassName;
-        } catch (PrivilegedActionException pEx) {
-            throw new RuntimeException(pEx);
-        } catch (IllegalAccessException illegalAccessException) {
-            throw new RuntimeException(illegalAccessException);
-        } catch (InvocationTargetException invtEx) {
-            throw new RuntimeException(invtEx);
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
         }
 
     }

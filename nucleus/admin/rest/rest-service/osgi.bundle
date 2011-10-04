@@ -41,6 +41,7 @@
 -exportcontents: \
                         org.glassfish.admin.rest
 DynamicImport-Package: \
+                        org.glassfish.admin.rest.client, \
                         com.sun.jersey.api.container, \
                         com.sun.jersey.api.core, \
                         com.sun.jersey.spi.inject, \

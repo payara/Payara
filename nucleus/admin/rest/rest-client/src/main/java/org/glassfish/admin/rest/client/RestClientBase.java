@@ -39,32 +39,35 @@
  */
 package org.glassfish.admin.rest.client;
 
+
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.core.util.MultivaluedMapImpl;
-import org.codehaus.jettison.json.JSONArray;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
-
+import com.sun.jersey.multipart.FormDataMultiPart;
+import com.sun.jersey.multipart.file.FileDataBodyPart;
+import java.io.File;
+import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
-import java.util.*;
+import org.codehaus.jettison.json.JSONObject;
 
 /**
  *
  * @author jasonlee
  */
 public abstract class RestClientBase {
-
     protected static final String RESPONSE_TYPE = MediaType.APPLICATION_JSON;
     protected Map<String, Object> entityValues = new HashMap<String, Object>();
     protected List<String> children;
     protected int status;
     protected String message;
     protected Client client;
+    protected RestClientBase parent;
+
     private boolean initialized = false;
-    private RestClientBase parent;
     private boolean isNew = false;
 
     protected RestClientBase(Client c, RestClientBase p) {
@@ -91,7 +94,10 @@ public abstract class RestClientBase {
     }
 
     public boolean save() {
-        ClientResponse response = client.resource(getRestUrl()).accept(RESPONSE_TYPE).post(ClientResponse.class, buildMultivaluedMap(entityValues));
+        ClientResponse response = client.resource(getRestUrl())
+                .accept(RESPONSE_TYPE)
+                .type(MediaType.MULTIPART_FORM_DATA_TYPE)
+                .post(ClientResponse.class, buildMultivalueMap(entityValues));
         boolean success = isSuccess(response);
 
         if (!success) {
@@ -105,7 +111,9 @@ public abstract class RestClientBase {
     }
 
     public boolean delete() {
-        ClientResponse response = client.resource(getRestUrl()).accept(RESPONSE_TYPE).delete(ClientResponse.class);
+        ClientResponse response = client.resource(getRestUrl())
+                .accept(RESPONSE_TYPE)
+                .delete(ClientResponse.class);
         boolean success = isSuccess(response);
 
         if (!success) {
@@ -116,16 +124,28 @@ public abstract class RestClientBase {
         return success;
     }
 
-    public RestResponse execute(Method method, String endpoint) {
-        return execute (method, endpoint, new HashMap<String, Object>());
+    public RestResponse execute(Method method, String endpoint, boolean needsMultiPart) {
+        return execute (method, endpoint, new HashMap<String, Object>(), needsMultiPart);
     }
 
     public RestResponse execute(Method method, String endPoint, Map<String, Object> payload) {
+        return execute(method, endPoint, payload, false);
+    }
+    
+    public RestResponse execute(Method method, String endPoint, Map<String, Object> payload, boolean needsMultiPart) {
         final WebResource request = client.resource(getRestUrl() + endPoint);
         ClientResponse clientResponse;
         switch (method) {
             case POST: {
-                clientResponse = request.accept(RESPONSE_TYPE).post(ClientResponse.class, buildMultivaluedMap(payload));
+                if (needsMultiPart) {
+                    clientResponse = request.accept(RESPONSE_TYPE)
+                            .type(MediaType.MULTIPART_FORM_DATA_TYPE)
+                            .post(ClientResponse.class, buildFormDataMultipart(payload));
+                } else {
+                    clientResponse = request.accept(RESPONSE_TYPE)
+                            .post(ClientResponse.class, buildMultivalueMap(payload));
+
+                }
                 break;
             }
             case DELETE: {
@@ -139,13 +159,7 @@ public abstract class RestClientBase {
             }
         }
 
-        Map<String, Object> responseMap = processJsonMap(clientResponse.getEntity(String.class));
-
-        RestResponse response = new RestResponse();
-        response.setStatus(clientResponse.getStatus());
-        response.setMessage((String)responseMap.get("message"));
-
-        return response;
+        return new RestResponse(clientResponse);
     }
 
     protected boolean isSuccess(ClientResponse response) {
@@ -164,7 +178,7 @@ public abstract class RestClientBase {
     protected synchronized void initialize() {
         if (!initialized) {
             ClientResponse clientResponse = client.resource(getRestUrl()).accept(RESPONSE_TYPE).get(ClientResponse.class);
-            Map<String, Object> responseMap = processJsonMap(clientResponse.getEntity(String.class));
+            Map<String, Object> responseMap = Util.processJsonMap(clientResponse.getEntity(String.class));
             status = clientResponse.getStatus();
 
             getEntityValues(responseMap);
@@ -252,13 +266,55 @@ public abstract class RestClientBase {
 
     protected void addQueryParams(Map<String, Object> payload, WebResource resource) {
         if ((payload != null) && !payload.isEmpty()) {
-            resource.queryParams(buildMultivaluedMap(payload));
+//            resource.queryParams(buildMultivalueMap(payload));
         }
 
 
     }
 
-    private MultivaluedMap buildMultivaluedMap(Map<String, Object> payload) {
+    protected FormDataMultiPart buildFormDataMultipart(Map<String, Object> payload) {
+        FormDataMultiPart formData = new FormDataMultiPart();
+        Logger logger = Logger.getLogger(RestClientBase.class.getName());
+        for (final Map.Entry<String, Object> entry : payload.entrySet()) {
+            final Object value = entry.getValue();
+            final String key = entry.getKey();
+            if (value instanceof Collection) {
+                for (Object obj : ((Collection) value)) {
+                    try {
+                        formData.field(key, obj, MediaType.TEXT_PLAIN_TYPE);
+                    } catch (ClassCastException ex) {
+                        if (logger.isLoggable(Level.FINEST)) {
+                            logger.log(Level.FINEST, "Unable to add key (\"{0}\") w/ value (\"{1}\").", 
+                                new Object[]{key, obj});
+                        }
+
+                        // Allow it to continue b/c this property most likely
+                        // should have been excluded for this request
+                    }
+                }
+            } else {
+                //formData.putSingle(key, (value != null) ? value.toString() : value);
+                try {
+                    if (value instanceof File) {
+                        formData.getBodyParts().add((new FileDataBodyPart(key, (File)value)));
+                    } else {
+                        formData.field(key, value, MediaType.TEXT_PLAIN_TYPE);
+                    }
+                } catch (ClassCastException ex) {
+                    if (logger.isLoggable(Level.FINEST)) {
+                        logger.log(Level.FINEST,
+                                "Unable to add key (\"{0}\") w/ value (\"{1}\")." ,
+                                new Object[]{key, value});
+                    }
+                    // Allow it to continue b/c this property most likely
+                    // should have been excluded for this request
+                }
+            }
+        }
+        return formData;
+    }
+
+    private MultivaluedMap buildMultivalueMap(Map<String, Object> payload) {
         MultivaluedMap formData = new MultivaluedMapImpl();
         for (final Map.Entry<String, Object> entry : payload.entrySet()) {
             Object value = entry.getValue();
@@ -270,59 +326,6 @@ public abstract class RestClientBase {
             formData.add(entry.getKey(), value);
         }
         return formData;
-    }
-
-    private Map<String, Object> processJsonMap(String json) {
-        Map<String, Object> map;
-        try {
-            map = processJsonObject(new JSONObject(json));
-        } catch (JSONException e) {
-            map = new HashMap();
-        }
-        return map;
-    }
-
-    private static Map processJsonObject(JSONObject jo) {
-        Map<String, Object> map = new HashMap<String, Object>();
-        try {
-            Iterator i = jo.keys();
-            while (i.hasNext()) {
-                String key = (String) i.next();
-                Object value = jo.get(key);
-                if (value instanceof JSONArray) {
-                    map.put(key, processJsonArray((JSONArray) value));
-                } else if (value instanceof JSONObject) {
-                    map.put(key, processJsonObject((JSONObject) value));
-                } else {
-                    map.put(key, value);
-                }
-            }
-        } catch (JSONException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-        }
-
-        return map;
-    }
-
-    private static List processJsonArray(JSONArray ja) {
-        List results = new ArrayList();
-
-        try {
-            for (int i = 0; i < ja.length(); i++) {
-                Object entry = ja.get(i);
-                if (entry instanceof JSONArray) {
-                    results.add(processJsonArray((JSONArray) entry));
-                } else if (entry instanceof JSONObject) {
-                    results.add(processJsonObject((JSONObject) entry));
-                } else {
-                    results.add(entry);
-                }
-            }
-        } catch (JSONException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-        }
-
-        return results;
     }
 
     public static enum Method { GET, PUT, POST, DELETE };

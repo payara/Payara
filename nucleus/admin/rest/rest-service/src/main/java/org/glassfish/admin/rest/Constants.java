@@ -65,4 +65,7 @@ public interface Constants {
     public static final String VAR_GRANDPARENT = "$grandparent";
     
     public static final String ENCODING = "UTF-8";
+    
+    public static final String CLIENT_PACKAGE = "org.glassfish.admin.rest.client";
+    public static final String CLIENT_PACKAGE_DIR = CLIENT_PACKAGE.replaceAll("\\.", System.getProperty("file.separator"));
 }

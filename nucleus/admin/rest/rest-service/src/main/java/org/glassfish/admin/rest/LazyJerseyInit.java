@@ -62,7 +62,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import org.glassfish.admin.rest.adapter.Reloader;
 import org.glassfish.admin.rest.generator.ASMResourcesGenerator;
-import org.glassfish.admin.rest.generator.client.ClientGeneratorBaseResource;
+import org.glassfish.admin.rest.generator.client.ClientGenerator;
 import org.glassfish.admin.rest.generator.ResourcesGenerator;
 import org.glassfish.admin.rest.provider.ActionReportResultHtmlProvider;
 import org.glassfish.admin.rest.provider.ActionReportResultJsonProvider;
@@ -249,7 +249,7 @@ public class LazyJerseyInit implements LazyJerseyInterface {
         // uncomment if you need to run the generator:
         r.add(GeneratorResource.class);
         r.add(StatusGenerator.class);
-        r.add(ClientGeneratorBaseResource.class);
+        r.add(ClientGenerator.class);
         //r.add(ActionReportResource.class);
 
         r.add(domainResourceClass);

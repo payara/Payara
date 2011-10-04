@@ -40,8 +40,8 @@
 package org.glassfish.admin.rest;
 
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.enterprise.v3.common.ActionReporter;
 import com.sun.jersey.api.client.Client;
+import java.io.File;
 import org.glassfish.admin.rest.provider.ProviderUtil;
 import javax.ws.rs.core.UriInfo;
 import java.io.UnsupportedEncodingException;
@@ -50,11 +50,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.ws.rs.core.PathSegment;
+import org.glassfish.admin.rest.generator.client.SourceClientClassWriter;
 import org.glassfish.admin.rest.utils.xml.RestActionReporter;
 import org.glassfish.api.ActionReport.MessagePart;
 import org.glassfish.api.admin.ParameterMap;
 import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.config.ConfigModel;
 
 /**
  * Utilities class. Extended by ResourceUtil and ProviderUtil utilities. Used by
@@ -63,6 +67,8 @@ import org.jvnet.hk2.component.Habitat;
  * @author Rajeshwar Patil
  */
 public class Util {
+    private static final String JAVA_IO_TMPDIR = "java.io.tmpdir";
+    
     public final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(Util.class);
     private static Client client;
 
@@ -344,4 +350,90 @@ public class Util {
 
         return values;
     }
+
+    /**
+     * @param model
+     * @return name of the key attribute for the given model.
+     */
+    public static String getKeyAttributeName(ConfigModel model) {
+        if (model == null) {
+            return null;
+        }
+        
+        String keyAttributeName = null;
+        if (model.key == null) {
+            // .contains()?
+            for (String s : model.getAttributeNames()) {//no key, by default use the name attr
+                if (s.equals("name")) {
+                    keyAttributeName = getBeanName(s);
+                }
+            }
+        } else {
+            keyAttributeName = getBeanName(model.key.substring(1, model.key.length()));
+        }
+        return keyAttributeName;
+    }
+
+    public static String getBeanName(String elementName) {
+        StringBuilder ret = new StringBuilder();
+        boolean nextisUpper = true;
+        for (int i = 0; i < elementName.length(); i++) {
+            if (nextisUpper == true) {
+                ret.append(elementName.substring(i, i + 1).toUpperCase(Locale.US));
+                nextisUpper = false;
+            } else {
+                if (elementName.charAt(i) == '-') {
+                    nextisUpper = true;
+                } else {
+                    nextisUpper = false;
+                    ret.append(elementName.substring(i, i + 1));
+                }
+            }
+        }
+        return ret.toString();
+    }
+    
+    public static File createTempDirectory() {
+        File baseTempDir = new File(System.getProperty(JAVA_IO_TMPDIR));
+        File tempDir = new File(baseTempDir, Long.toString(System.currentTimeMillis()));
+        tempDir.mkdirs();
+        tempDir.deleteOnExit();
+        
+        return tempDir;
+    }
+    
+    public static void deleteDirectory (final File dir) {
+
+        if (dir == null || !dir.exists()) {
+            return;
+        }
+        Logger logger = Logger.getLogger(SourceClientClassWriter.class.getName());
+
+        if (dir.isDirectory()) {
+            File[] f = dir.listFiles();
+            if (f.length == 0) {
+                if (!dir.delete()) {
+                    if (logger.isLoggable(Level.WARNING)) {
+                        logger.warning(String.format("Unable to delete directory %s.  Will attempt deletion again upon JVM exit.",
+                                dir.getAbsolutePath()));
+                    }
+                }
+            } else {
+                for (final File ff : f) {
+                    deleteDirectory(ff);
+                }
+            }
+        } else {
+            if (!dir.delete()) {
+                if (logger.isLoggable(Level.WARNING)) {
+                    logger.warning(String.format("Unable to delete file %s.  Will attempt deletion again upon JVM exit.",
+                                   dir.getAbsolutePath()));
+                }
+                dir.deleteOnExit();
+            }
+        }
+
+    }
+
+
 }
