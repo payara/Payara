@@ -56,7 +56,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.sun.enterprise</groupId>
+            <groupId>org.glassfish.hk2</groupId>
             <artifactId>hk2</artifactId>
             <version>${version.hk2}</version>
             <scope>provided</scope>
@@ -84,7 +84,7 @@
     <build>
         <plugins>
             <plugin>
-                <groupId>com.sun.enterprise</groupId>
+                <groupId>org.glassfish.hk2</groupId>
                 <artifactId>hk2-maven-plugin</artifactId>
                 <extensions>true</extensions>
                 <configuration>
