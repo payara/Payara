@@ -61,15 +61,15 @@ import org.jvnet.hk2.config.ConfigModel;
  *
  * @author jdlee
  */
-public class SourceClientClassWriter extends ClientClassWriter {
+public class JavaClientClassWriter implements ClientClassWriter {
     private String className;
     private BufferedWriter source;
 
-    public SourceClientClassWriter(final ConfigModel model, final String className, Class parent, File baseDirectory) {
+    public JavaClientClassWriter(final ConfigModel model, final String className, Class parent, File baseDirectory) {
         this.className = className;
 
 
-        File packageDir = new File(baseDirectory, Constants.CLIENT_PACKAGE_DIR);
+        File packageDir = new File(baseDirectory, Constants.CLIENT_JAVA_PACKAGE_DIR);
         packageDir.deleteOnExit();
         boolean success = packageDir.exists() || packageDir.mkdirs();
         if (!success) {
@@ -97,7 +97,7 @@ public class SourceClientClassWriter extends ClientClassWriter {
             boolean isDomain = className.equals("Domain");
 
             source.append("package ")
-                    .append(Constants.CLIENT_PACKAGE)
+                    .append(Constants.CLIENT_JAVA_PACKAGE)
                     .append(";\n")
                     .append("import java.util.HashMap;\n")
                     .append("import java.util.Map;\n")
@@ -146,7 +146,7 @@ public class SourceClientClassWriter extends ClientClassWriter {
                 source.append("    }\n");
             }
         } catch (IOException ex) {
-            Logger.getLogger(SourceClientClassWriter.class.getName()).
+            Logger.getLogger(JavaClientClassWriter.class.getName()).
                     log(Level.SEVERE, null, ex);
         }
     }
@@ -167,7 +167,7 @@ public class SourceClientClassWriter extends ClientClassWriter {
                     .append("        super(c,p);\n")
                     .append("    }\n");
         } catch (IOException ex) {
-            Logger.getLogger(SourceClientClassWriter.class.getName()).
+            Logger.getLogger(JavaClientClassWriter.class.getName()).
                     log(Level.SEVERE, null, ex);
         }
     }
@@ -181,7 +181,7 @@ public class SourceClientClassWriter extends ClientClassWriter {
                     .append(tagName)
                     .append("\";\n    }\n");
         } catch (IOException ex) {
-            Logger.getLogger(SourceClientClassWriter.class.getName()).
+            Logger.getLogger(JavaClientClassWriter.class.getName()).
                     log(Level.SEVERE, null, ex);
         }
     }
@@ -189,29 +189,10 @@ public class SourceClientClassWriter extends ClientClassWriter {
     @Override
     public void generateCommandMethod(String methodName, String httpMethod, String resourcePath, CommandModel cm) {
         try {
-            String parametersSignature = getMethodParameterList(cm, true, false);
-//            String withOptional = getMethodParameterList(cm, true, true);
+            String parametersSignature = Util.getMethodParameterList(cm, true, false);
             boolean needsMultiPart = parametersSignature.contains("java.io.File");
             
-            /*
-            source.append("\n    public RestResponse ")
-                    .append(methodName)
-                    .append("(")
-                    .append(parameters)
-                    .append(") {\n")
-                    .append(generateMethodBody(cm, httpMethod, resourcePath, false, needsMultiPart))
-                    .append("    }\n");
-            if (withOptional.length() > parameters.length()) {
-                source.append("\n    public RestResponse ")
-                        .append(methodName)
-                        .append("(")
-                        .append(withOptional)
-                        .append(") {\n")
-                        .append(generateMethodBody(cm, httpMethod, resourcePath, true, needsMultiPart))
-                        .append("    }\n");
-            }
-            */
-            String parameters = getMethodParameterList(cm, false, false);
+            String parameters = Util.getMethodParameterList(cm, false, false);
             source.append("\n    public RestResponse ")
                     .append(methodName)
                     .append("(")
@@ -240,7 +221,7 @@ public class SourceClientClassWriter extends ClientClassWriter {
                     .append(generateMethodBody(cm, httpMethod, resourcePath, false, needsMultiPart))
                     .append("    }\n");
         } catch (IOException ex) {
-            Logger.getLogger(SourceClientClassWriter.class.getName()).
+            Logger.getLogger(JavaClientClassWriter.class.getName()).
                     log(Level.SEVERE, null, ex);
         }
     }
@@ -341,7 +322,7 @@ public class SourceClientClassWriter extends ClientClassWriter {
                     .append(fieldName)
                     .append("\", value);\n    }\n\n");
         } catch (IOException ex) {
-            Logger.getLogger(SourceClientClassWriter.class.getName()).
+            Logger.getLogger(JavaClientClassWriter.class.getName()).
                     log(Level.SEVERE, null, ex);
         }
     }
@@ -349,9 +330,6 @@ public class SourceClientClassWriter extends ClientClassWriter {
     @Override
     public void createGetChildResource(ConfigModel model, String elementName, String childResourceClassName) {
         try {
-            System.out.println("Creating getter for child resource. Model = " + model.getTagName() +
-                    ", childResourcesClass = " + childResourceClassName);
-            
             final boolean hasKey = Util.getKeyAttributeName(model) != null;
             source.append("    public ")
                     .append(childResourceClassName)
@@ -375,7 +353,7 @@ public class SourceClientClassWriter extends ClientClassWriter {
             source.append("        return (child.status == 200) ? child : null;\n");
             source.append("    }\n");
         } catch (IOException ex) {
-            Logger.getLogger(SourceClientClassWriter.class.getName()).
+            Logger.getLogger(JavaClientClassWriter.class.getName()).
                     log(Level.SEVERE, null, ex);
         }
     }
@@ -395,7 +373,7 @@ public class SourceClientClassWriter extends ClientClassWriter {
                     .append("(client, this);\n")
                     .append("    }\n");
         } catch (IOException ex) {
-            Logger.getLogger(SourceClientClassWriter.class.getName()).
+            Logger.getLogger(JavaClientClassWriter.class.getName()).
                     log(Level.SEVERE, null, ex);
         }
 
@@ -414,7 +392,7 @@ public class SourceClientClassWriter extends ClientClassWriter {
                     .append("(client, this);\n")
                     .append("    }\n");
         } catch (IOException ex) {
-            Logger.getLogger(SourceClientClassWriter.class.getName()).
+            Logger.getLogger(JavaClientClassWriter.class.getName()).
                     log(Level.SEVERE, null, ex);
         }
     }

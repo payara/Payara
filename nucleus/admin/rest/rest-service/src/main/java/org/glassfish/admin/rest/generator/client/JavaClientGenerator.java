@@ -71,25 +71,16 @@ import java.util.Scanner;
  */
 public class JavaClientGenerator extends ClientGenerator {
     private File baseDirectory;
-    private Habitat habitat;
     private Map<String, URI> artifacts;
-    private Version version;
 
     public JavaClientGenerator(Habitat habitat) {
+        super(habitat);
         baseDirectory = Util.createTempDirectory();
-        this.habitat = habitat;
-        
-        version = habitat.getByType(Version.class);
     }
 
     @Override
     public ClientClassWriter getClassWriter(ConfigModel model, String className, Class parent) {
-        return new SourceClientClassWriter(model, className, parent, baseDirectory);
-    }
-
-    @Override
-    public Habitat getHabitat() {
-        return habitat;
+        return new JavaClientClassWriter(model, className, parent, baseDirectory);
     }
 
     @Override
@@ -149,7 +140,9 @@ public class JavaClientGenerator extends ClientGenerator {
                     log(Level.SEVERE, null, ex);
         } finally {
             try {
-                target.close();
+                if (target != null) {
+                    target.close();
+                }
             } catch (IOException ex) {
                 Logger.getLogger(JavaClientGenerator.class.getName()).
                         log(Level.SEVERE, null, ex);

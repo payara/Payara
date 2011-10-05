@@ -46,16 +46,14 @@ import org.glassfish.admin.rest.provider.ProviderUtil;
 import javax.ws.rs.core.UriInfo;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ws.rs.core.PathSegment;
-import org.glassfish.admin.rest.generator.client.SourceClientClassWriter;
 import org.glassfish.admin.rest.utils.xml.RestActionReporter;
 import org.glassfish.api.ActionReport.MessagePart;
+import org.glassfish.api.Param;
+import org.glassfish.api.admin.CommandModel;
 import org.glassfish.api.admin.ParameterMap;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.ConfigModel;
@@ -407,7 +405,7 @@ public class Util {
         if (dir == null || !dir.exists()) {
             return;
         }
-        Logger logger = Logger.getLogger(SourceClientClassWriter.class.getName());
+        Logger logger = Logger.getLogger(Util.class.getName());
 
         if (dir.isDirectory()) {
             File[] f = dir.listFiles();
@@ -435,5 +433,31 @@ public class Util {
 
     }
 
+    public static String getMethodParameterList(CommandModel cm, boolean withType, boolean includeOptional) {
+        StringBuilder sb = new StringBuilder();
+        Collection<CommandModel.ParamModel> params = cm.getParameters();
+        if ((params != null) && (!params.isEmpty())) {
+            String sep = "";
+            for (CommandModel.ParamModel model : params) {
+                Param param = model.getParam();
+                boolean include = true;
+                if (param.optional() && !includeOptional) {
+                    continue;
+                }
 
+                sb.append(sep);
+                if (withType) {
+                    String type = model.getType().getName();
+                    if (type.startsWith("java.lang")) {
+                        type = model.getType().getSimpleName();
+                    }
+                    sb.append(type);
+                }
+                sb.append(" _").append(Util.eleminateHypen(model.getName()));
+                sep = ", ";
+            }
+        }
+
+        return sb.toString();
+    }
 }

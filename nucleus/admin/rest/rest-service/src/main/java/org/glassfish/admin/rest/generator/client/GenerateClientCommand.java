@@ -66,6 +66,8 @@ import org.jvnet.hk2.component.PerLookup;
 import com.sun.enterprise.util.LocalStringManager;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -91,13 +93,29 @@ public class GenerateClientCommand implements AdminCommand {
     @Param
     private String outputDir;
     
+    @Param(shortName="lang", optional=true, defaultValue="java")
+    private String languages;
+    
     private final static LocalStringManager localStrings =
             new LocalStringManagerImpl(GenerateClientCommand.class);
 
     @Override
     public void execute(AdminCommandContext context) {
-        ClientGenerator gen = new JavaClientGenerator(habitat);
-        gen.generateClasses();
+        List<ClientGenerator> generators = new ArrayList<ClientGenerator>();
+        
+        for (String lang : languages.split(",")) {
+            ClientGenerator gen = null;
+            if ("java".equalsIgnoreCase(lang)) {
+                gen = new JavaClientGenerator(habitat);
+            } else if ("python".equalsIgnoreCase(lang)) {
+                gen = new PythonClientGenerator(habitat);
+            }
+            
+            if (gen != null) {
+                generators.add(gen);
+                gen.generateClasses();
+            }
+        }
 
         Logger logger = context.getLogger();
         try {
@@ -107,13 +125,15 @@ public class GenerateClientCommand implements AdminCommand {
              * file-xfer-root is used as a URI, so convert backslashes.
              */
             props.setProperty("file-xfer-root", outputDir.replace('\\', '/'));
-            for (Map.Entry<String, URI> entry : gen.getArtifact().entrySet()) {
-                final URI artifact = entry.getValue();
-                outboundPayload.attachFile("application/octet-stream", 
-                        new URI(entry.getKey()), "files", props, new File(artifact));
+            for (ClientGenerator gen : generators) {
+                for (Map.Entry<String, URI> entry : gen.getArtifact().entrySet()) {
+                    final URI artifact = entry.getValue();
+                    outboundPayload.attachFile("application/octet-stream", 
+                            new URI(entry.getKey()), "files", props, new File(artifact));
+                }
+                context.getActionReport().setMessage("To install the artifact to maven: " +
+                        "mvn install:install-file -Dfile=rest-client-4.0.jar -DpomFile=pom.xml -Dsources=rest-client-sources-4.0.jar");
             }
-            context.getActionReport().setMessage("To install the artifact to maven: " +
-                    "mvn install:install-file -Dfile=rest-client-4.0.jar -DpomFile=pom.xml -Dsources=rest-client-sources-4.0.jar");
         } catch (Exception e) {
             final String errorMsg = localStrings.getLocalString(
                     "download.errDownloading", "Error while downloading generated files");

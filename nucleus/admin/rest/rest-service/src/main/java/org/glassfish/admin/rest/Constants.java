@@ -66,6 +66,9 @@ public interface Constants {
     
     public static final String ENCODING = "UTF-8";
     
-    public static final String CLIENT_PACKAGE = "org.glassfish.admin.rest.client";
-    public static final String CLIENT_PACKAGE_DIR = CLIENT_PACKAGE.replaceAll("\\.", System.getProperty("file.separator"));
+    public static final String CLIENT_JAVA_PACKAGE = "org.glassfish.admin.rest.client";
+    public static final String CLIENT_JAVA_PACKAGE_DIR = CLIENT_JAVA_PACKAGE.replaceAll("\\.", System.getProperty("file.separator"));
+    
+    public static final String CLIENT_PYTHON_PACKAGE = "glassfih.rest";
+    public static final String CLIENT_PYTHON_PACKAGE_DIR = CLIENT_PYTHON_PACKAGE.replaceAll("\\.", System.getProperty("file.separator"));
 }

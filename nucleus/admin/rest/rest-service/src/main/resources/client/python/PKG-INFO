@@ -1,0 +1,11 @@
+Metadata-Version: 1.0
+Name: glassfish-rest-client
+Version: VERSION
+Summary: Python client for the RESTful GlassFish Administration interface
+Home-page: http://glassfish.org
+Author: Oracle
+Author-email: dev@glassfish.org
+License: CDDL+GPLv2 w/CPE
+Download-URL: http://glassfish.org
+Description: Python client for the RESTful GlassFish Administration interface
+Platform: UNKNOWN

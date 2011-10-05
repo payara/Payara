@@ -39,6 +39,7 @@
  */
 package org.glassfish.admin.rest.generator.client;
 
+import com.sun.appserv.server.util.Version;
 import com.sun.enterprise.config.serverbeans.Domain;
 import org.glassfish.admin.rest.ResourceUtil;
 import org.glassfish.api.admin.config.ApplicationName;
@@ -74,9 +75,14 @@ public abstract class ClientGenerator {
     private static final String BASE_CLASS = "org.glassfish.admin.rest.client.RestClientBase";
 
     protected Set<String> alreadyGenerated = new HashSet<String>();
+    protected Habitat habitat;
+    protected Version version;
+    
     private DomDocument document;
 
-    public ClientGenerator() {
+    public ClientGenerator(Habitat habitat) {
+        this.habitat = habitat;
+        version = habitat.getByType(Version.class);
     }
     
     public void generateClasses() {
@@ -92,7 +98,11 @@ public abstract class ClientGenerator {
     public abstract Map<String, URI> getArtifact();
 
     public abstract ClientClassWriter getClassWriter(ConfigModel model, String className, Class parent);
-    public abstract Habitat getHabitat();
+
+    public Habitat getHabitat() {
+        return habitat;
+    }
+
     
     public void generateSingle (ConfigModel model)  {
         String className = Util.getBeanName(model.getTagName());
@@ -289,6 +299,7 @@ public abstract class ClientGenerator {
         }
     }
 
+    /**
     protected void createDuckTypedMethod(StringBuilder sb, Method m) {
         String returnType = m.getReturnType().getSimpleName();
 
@@ -328,7 +339,7 @@ public abstract class ClientGenerator {
 
         }
     }
-
+    
     protected Boolean implementsInterface(Class<?> clazz, Class interf) {
         for (Class c : clazz.getInterfaces()) {
             if (c.equals(interf)) {
@@ -337,4 +348,5 @@ public abstract class ClientGenerator {
         }
         return false;
     }
+    */
 }
