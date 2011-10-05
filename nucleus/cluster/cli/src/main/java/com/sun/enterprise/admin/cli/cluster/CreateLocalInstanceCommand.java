@@ -36,7 +36,7 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
- */
+ */     
 
 package com.sun.enterprise.admin.cli.cluster;
 
@@ -113,7 +113,7 @@ public final class CreateLocalInstanceCommand extends CreateLocalInstanceFilesys
     private String RENDEZVOUS_DOTTED_NAME;
     private boolean _rendezvousOccurred;
     private String _node;
-    protected static final String DEFAULT_MASTER_PASSWORD = KeystoreManager.DEFAULT_MASTER_PASSWORD;
+    private static final String DEFAULT_MASTER_PASSWORD = KeystoreManager.DEFAULT_MASTER_PASSWORD;
     private ParamModelData masterPasswordOption;
     private static final String MASTER_PASSWORD_ALIAS="master-password";
 
@@ -242,7 +242,7 @@ public final class CreateLocalInstanceCommand extends CreateLocalInstanceFilesys
         masterPasswordOption.param._password = true;
         if (saveMasterPassword)
             useMasterPassword = true;
-        if (useMasterPassword)
+        if (useMasterPassword)  
             masterPassword = getPassword(masterPasswordOption,
                 DEFAULT_MASTER_PASSWORD, true);
         if (masterPassword == null)

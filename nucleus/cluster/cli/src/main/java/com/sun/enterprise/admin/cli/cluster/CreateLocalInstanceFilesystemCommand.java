@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -76,8 +76,8 @@ public class CreateLocalInstanceFilesystemCommand extends LocalInstanceCommand {
     String DASProtocol;
     boolean dasIsSecure;
 
-    private File agentConfigDir;
-    private File dasPropsFile;
+    private File agentConfigDir = null;
+    private File dasPropsFile = null;
     private Properties dasProperties;
     protected boolean setDasDefaultsOnly = false;
 
@@ -170,16 +170,22 @@ public class CreateLocalInstanceFilesystemCommand extends LocalInstanceCommand {
     }
 
     private void writeDasProperties() throws IOException {
-        dasPropsFile.createNewFile();
-        dasProperties = new Properties();
-        dasProperties.setProperty(K_DAS_HOST, DASHost);
-        dasProperties.setProperty(K_DAS_PORT, String.valueOf(DASPort));
-        dasProperties.setProperty(K_DAS_IS_SECURE, String.valueOf(dasIsSecure));
-        dasProperties.setProperty(K_DAS_PROTOCOL, DASProtocol);
-
-        FileOutputStream fos = new FileOutputStream(dasPropsFile);
-        dasProperties.store(fos, Strings.get("Instance.dasPropertyComment"));
-        fos.close();
+        if (dasPropsFile.createNewFile()) {
+            dasProperties = new Properties();
+            dasProperties.setProperty(K_DAS_HOST, DASHost);
+            dasProperties.setProperty(K_DAS_PORT, String.valueOf(DASPort));
+            dasProperties.setProperty(K_DAS_IS_SECURE, String.valueOf(dasIsSecure));
+            dasProperties.setProperty(K_DAS_PROTOCOL, DASProtocol);
+            FileOutputStream fos = null;
+            try {
+                fos = new FileOutputStream(dasPropsFile);
+                dasProperties.store(fos, Strings.get("Instance.dasPropertyComment"));
+            } finally {
+                if (fos != null) { 
+                    fos.close();
+                }
+            }
+        }
     }
 
    /**
@@ -196,7 +202,7 @@ public class CreateLocalInstanceFilesystemCommand extends LocalInstanceCommand {
         // See if hostname is known to us
         try {
             // Check if hostName is valid by looking up its address
-            InetAddress addr = InetAddress.getByName(DASHost);
+            InetAddress.getByName(DASHost);
         } catch (UnknownHostException e) {
             String thisHost = NetUtils.getHostName();
             String msg = Strings.get("Instance.DasHostUnknown",

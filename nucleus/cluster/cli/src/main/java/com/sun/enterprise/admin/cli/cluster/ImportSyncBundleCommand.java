@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -261,7 +261,9 @@ public class ImportSyncBundleCommand extends LocalInstanceCommand {
 
     private int createDirectories() throws CommandException {
         if (!agentConfigDir.isDirectory()) {
-            agentConfigDir.mkdirs();
+            if (!agentConfigDir.mkdirs()) {
+                throw new CommandException(Strings.get("import.sync.bundle.createDirectoryFailed", agentConfigDir.getPath()));
+            }
         }
         
         writeProperties();
@@ -283,7 +285,11 @@ public class ImportSyncBundleCommand extends LocalInstanceCommand {
         }
         backupInstanceDir();
         File targetDir = this.getServerDirs().getServerDir();
-        targetDir.mkdirs();
+        if (!targetDir.mkdirs()) {
+            restoreInstanceDir();
+            throw new CommandException(Strings.get("import.sync.bundle.createDirectoryFailed", targetDir.getPath()));
+            
+        }
         Perm perm = new Perm(targetDir, null, logger);
 
         try {
@@ -319,16 +325,22 @@ public class ImportSyncBundleCommand extends LocalInstanceCommand {
     }
 
     private void writeDasProperties() throws IOException {
-        dasPropsFile.createNewFile();
-        dasProperties = new Properties();
-        dasProperties.setProperty(K_DAS_HOST, DASHost);
-        dasProperties.setProperty(K_DAS_PORT, String.valueOf(DASPort));
-        dasProperties.setProperty(K_DAS_IS_SECURE, String.valueOf(dasIsSecure));
-        dasProperties.setProperty(K_DAS_PROTOCOL, DASProtocol);
-
-        FileOutputStream fos = new FileOutputStream(dasPropsFile);
-        dasProperties.store(fos, Strings.get("Instance.dasPropertyComment"));
-        fos.close();
+        if (dasPropsFile.createNewFile()) {
+            dasProperties = new Properties();
+            dasProperties.setProperty(K_DAS_HOST, DASHost);
+            dasProperties.setProperty(K_DAS_PORT, String.valueOf(DASPort));
+            dasProperties.setProperty(K_DAS_IS_SECURE, String.valueOf(dasIsSecure));
+            dasProperties.setProperty(K_DAS_PROTOCOL, DASProtocol);
+            FileOutputStream fos = null;
+            try {
+                fos = new FileOutputStream(dasPropsFile);
+                dasProperties.store(fos, Strings.get("Instance.dasPropertyComment"));
+            } finally {
+                if (fos != null) {
+                    fos.close();
+                }
+            }
+        }
     }
 
     private void backupInstanceDir() throws CommandException {
@@ -360,7 +372,9 @@ public class ImportSyncBundleCommand extends LocalInstanceCommand {
         File backup = getBackupDir();
         if (backup != null && backup.isDirectory()) {
             getServerDirs().getServerDir().delete();
-            backup.renameTo(getServerDirs().getServerDir());
+            if (!backup.renameTo(getServerDirs().getServerDir())) {
+                logger.warning(Strings.get("import.sync.bundle.restoreInstanceDirFailed", backup.getAbsolutePath(), getServerDirs().getServerDir().getAbsolutePath()));
+            }
         }
     }
 
