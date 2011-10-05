@@ -50,8 +50,7 @@ import java.io.Serializable;
  * @author  lwhite
  * @author Rajiv Mordani
  */
-public class ModifiedHASession extends BaseHASession 
-    implements HttpSession, HASession, Serializable {
+public class ModifiedHASession extends BaseHASession {
 
     private transient boolean dirtyFlag = false;
 

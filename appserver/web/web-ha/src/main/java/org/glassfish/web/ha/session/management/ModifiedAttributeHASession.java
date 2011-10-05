@@ -62,8 +62,7 @@ import java.util.logging.Logger;
  * @author  lwhite
  * @author Rajiv Mordani
  */
-public class ModifiedAttributeHASession extends BaseHASession
-    implements HttpSession, HASession, Serializable {
+public class ModifiedAttributeHASession extends BaseHASession {
     
     private static final Logger _logger = LogDomains.getLogger(ModifiedAttributeHASession.class,  LogDomains.WEB_LOGGER);
 
@@ -185,16 +184,14 @@ public class ModifiedAttributeHASession extends BaseHASession
      */      
     void resetAttributeState() {
         clearAttributeStates();
-        synchronized (attributes) {        
-            Enumeration attrNames = getAttributeNames(); 
-            while(attrNames.hasMoreElements()) {
-                String nextAttrName = (String) attrNames.nextElement();
-                SessionAttributeState nextAttrState =
-                    SessionAttributeState.createPersistentAttribute();
-                _attributeStates.put(nextAttrName, nextAttrState);
-            }
-            setDirty(false);
+        Enumeration attrNames = getAttributeNames();
+        while(attrNames.hasMoreElements()) {
+            String nextAttrName = (String) attrNames.nextElement();
+            SessionAttributeState nextAttrState =
+                SessionAttributeState.createPersistentAttribute();
+            _attributeStates.put(nextAttrName, nextAttrState);
         }
+        setDirty(false);
     }
     
     /**
@@ -204,42 +201,40 @@ public class ModifiedAttributeHASession extends BaseHASession
      * @param value
      */    
     public void setAttribute(String name, Object value) {
-        synchronized (attributes) {         
-            super.setAttribute(name, value);        
-            SessionAttributeState attributeState = getAttributeState(name);
-            if (_logger.isLoggable(Level.FINE)) {
-                _logger.fine("ModifiedAttributeHASession>>setAttribute name=" + name + " attributeState=" + attributeState);
-            }
-            if(value == null) {
-                if(attributeState != null) {
-                    if(attributeState.isPersistent()) {
-                        attributeState.setDeleted(true);
-                    } else {
-                        removeAttributeState(name);
-                    }
-                }
-            } else {
-                if(attributeState == null) {
-                    SessionAttributeState newAttrState = 
-                        new SessionAttributeState();
-                    //deliberately we do no make this newly added attribute dirty
-                    _attributeStates.put(name, newAttrState);
-                } else {
-                    //if marked for deletion, only un-delete it
-                    //do not change the dirti-ness
-                    if(attributeState.isDeleted()) {
-                        attributeState.setDeleted(false);
-                    } else {
-                        //only mark dirty if already persistent
-                        //else do nothing
-                        if(attributeState.isPersistent()) {
-                            attributeState.setDirty(true);
-                        }
-                    }
-                }
-            } 
-            setDirty(true);
+        super.setAttribute(name, value);
+        SessionAttributeState attributeState = getAttributeState(name);
+        if (_logger.isLoggable(Level.FINE)) {
+            _logger.fine("ModifiedAttributeHASession>>setAttribute name=" + name + " attributeState=" + attributeState);
         }
+        if(value == null) {
+            if(attributeState != null) {
+                if(attributeState.isPersistent()) {
+                    attributeState.setDeleted(true);
+                } else {
+                    removeAttributeState(name);
+                }
+            }
+        } else {
+            if(attributeState == null) {
+                SessionAttributeState newAttrState =
+                    new SessionAttributeState();
+                //deliberately we do no make this newly added attribute dirty
+                _attributeStates.put(name, newAttrState);
+            } else {
+                //if marked for deletion, only un-delete it
+                //do not change the dirti-ness
+                if(attributeState.isDeleted()) {
+                    attributeState.setDeleted(false);
+                } else {
+                    //only mark dirty if already persistent
+                    //else do nothing
+                    if(attributeState.isPersistent()) {
+                        attributeState.setDirty(true);
+                    }
+                }
+            }
+        }
+        setDirty(true);
     }  
     
     /**
@@ -249,18 +244,17 @@ public class ModifiedAttributeHASession extends BaseHASession
      */     
     public void removeAttribute(String name) {
 
-        synchronized (attributes) {         
-            super.removeAttribute(name);        
-            SessionAttributeState attributeState = getAttributeState(name);
-            if(attributeState != null) {
-                if(attributeState.isPersistent()) {                    
-                    attributeState.setDeleted(true);
-                } else {
-                    removeAttributeState(name);
-                }
+
+        super.removeAttribute(name);
+        SessionAttributeState attributeState = getAttributeState(name);
+        if(attributeState != null) {
+            if(attributeState.isPersistent()) {
+                attributeState.setDeleted(true);
+            } else {
+                removeAttributeState(name);
             }
-            setDirty(true);
-        }        
+        }
+        setDirty(true);
     }
 
     /**
@@ -278,7 +272,7 @@ public class ModifiedAttributeHASession extends BaseHASession
      * @param persistent
      */     
     void setAttributeStatePersistent(String attributeName, boolean persistent) {
-        synchronized (attributes) {
+
         SessionAttributeState attrState = (SessionAttributeState) _attributeStates.get(attributeName);
         if (attrState == null) {
                 attrState = new SessionAttributeState();
@@ -286,7 +280,6 @@ public class ModifiedAttributeHASession extends BaseHASession
                 _attributeStates.put(attributeName, attrState);
         } else {
                 attrState.setPersistent(persistent);
-        }
         }
     }
 
@@ -297,7 +290,7 @@ public class ModifiedAttributeHASession extends BaseHASession
      * @param dirty
      */     
     void setAttributeStateDirty(String attributeName, boolean dirty) {
-        synchronized (attributes) {
+
         SessionAttributeState attrState = (SessionAttributeState) _attributeStates.get(attributeName);
         if (attrState == null) {
                 attrState = new SessionAttributeState();
@@ -305,7 +298,6 @@ public class ModifiedAttributeHASession extends BaseHASession
                 _attributeStates.put(attributeName, attrState);
         } else {
                 attrState.setDirty(dirty);
-        }
         }
     }
 
@@ -334,8 +326,8 @@ public class ModifiedAttributeHASession extends BaseHASession
     
     /* Private Helper method to be used in HAAttributeStore only */ 
     Enumeration privateGetAttributeList() {
-	synchronized (attributes) {
-            return (new Enumerator(new ArrayList(attributes.keySet())));
-        }
+
+        return (new Enumerator(new ArrayList(attributes.keySet())));
+
     }
 }

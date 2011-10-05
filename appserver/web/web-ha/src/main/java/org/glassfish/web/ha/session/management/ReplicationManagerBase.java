@@ -193,10 +193,7 @@ public abstract class ReplicationManagerBase extends PersistentManagerBase {
             return;
         }
         Session removed = null;
-        // TBD: Call super.remove instead?
-        synchronized (sessions) {
-            removed = sessions.remove(session.getIdInternal());
-        }
+        removed = sessions.remove(session.getIdInternal());
         if (removed != null && logger.isLoggable(Level.FINE)){
             logger.fine("Remove from manager cache id=" + session.getId());
         }
