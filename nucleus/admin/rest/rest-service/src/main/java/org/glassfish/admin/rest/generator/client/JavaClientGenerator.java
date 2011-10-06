@@ -61,7 +61,7 @@ import org.glassfish.admin.rest.Util;
 import org.glassfish.loader.util.ASClassLoaderUtil;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.ConfigModel;
-import com.sun.appserv.server.util.Version;
+
 import java.io.FileWriter;
 import java.util.Scanner;
 
@@ -169,7 +169,7 @@ public class JavaClientGenerator extends ClientGenerator {
     
     private void addPom(String versionString)  {
         try {
-            String pom = new Scanner(getClass().getResourceAsStream("/client/pom.xml.template")).useDelimiter("\\Z").next();
+            String pom = new Scanner(getClass().getResourceAsStream("/client/pom.template.xml")).useDelimiter("\\Z").next();
             pom = pom.replace("${glassfish.version}", versionString);
             File out = File.createTempFile("pom", "xml");
             out.deleteOnExit();

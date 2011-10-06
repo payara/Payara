@@ -77,7 +77,7 @@ public class PythonClientGenerator extends ClientGenerator {
             zip = new ZipOutputStream(new FileOutputStream(zipFile));
             
             add(ZIP_GF_PACKAGE_DIR, "__init__.py", new ByteArrayInputStream("".getBytes()), zip);
-            add(ZIP_BASE_DIR, "PKG-INFO", new ByteArrayInputStream(getFileContents("PKG-INFO").getBytes()), zip);
+            //add(ZIP_BASE_DIR, "PKG-INFO", new ByteArrayInputStream(getFileContents("PKG-INFO").getBytes()), zip);
             add(ZIP_BASE_DIR, "setup.py", new ByteArrayInputStream(getFileContents("setup.py").getBytes()), zip);
             addFileFromClasspath(ZIP_REST_PACKAGE_DIR, "__init__.py", zip);
             addFileFromClasspath(ZIP_REST_PACKAGE_DIR, "connection.py", zip);
