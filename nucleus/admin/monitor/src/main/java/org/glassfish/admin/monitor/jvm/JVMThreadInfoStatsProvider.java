@@ -61,9 +61,7 @@ import org.glassfish.gmbal.ManagedObject;
 @Description( "JVM Thread Info Statistics" )
 public class JVMThreadInfoStatsProvider {
     
-    private ThreadMXBean threadBean = ManagementFactory.getThreadMXBean();
     private ThreadInfo threadInfo;
-    private static String newline = System.getProperty("line.separator");
     
     private CountStatisticImpl blockedCount = new CountStatisticImpl(
             "BlockedCount", StatisticImpl.UNIT_COUNT,

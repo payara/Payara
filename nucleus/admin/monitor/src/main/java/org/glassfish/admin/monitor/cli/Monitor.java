@@ -90,15 +90,16 @@ public class Monitor implements AdminCommand {
             return;
         }
         if (habitat.getAllByContract(MonitorContract.class).size() != 0) {
-            String validTypes = "";
+            StringBuffer buf = new StringBuffer();
             Iterator<MonitorContract> contractsIterator = habitat.
                     getAllByContract(MonitorContract.class).iterator();
             while (contractsIterator.hasNext()) {
-                validTypes += contractsIterator.next().getName();
+                buf.append(contractsIterator.next().getName());
                 if (contractsIterator.hasNext()) {
-                    validTypes += ", ";
+                    buf.append(", ");
                 }
             }
+            String validTypes = buf.toString();
             report.setMessage(localStrings.getLocalString("monitor.type.error",
                 "No type exists in habitat for the given monitor type {0}. " +
                 "Valid types are: {1}", type, validTypes));
