@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -630,9 +630,12 @@ public class SimplePolicyConfiguration implements PolicyConfiguration {
         pcwLock.lock();
         try {
             removePolicy();
-        } finally {            
-            pcwLock.unlock();
-            setState(DELETED_STATE);
+        } finally {
+            try {
+                setState(DELETED_STATE);
+            } finally {
+                pcwLock.unlock();
+            }
         }
 
     }
@@ -804,7 +807,6 @@ public class SimplePolicyConfiguration implements PolicyConfiguration {
 
         if (index < 0) {
             roleTable.add(rvalue);
-            roleTable.indexOf(rvalue);
         } else {
             rvalue = roleTable.get(index);
         }

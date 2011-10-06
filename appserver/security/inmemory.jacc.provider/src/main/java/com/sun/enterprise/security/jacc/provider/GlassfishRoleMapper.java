@@ -224,11 +224,11 @@ public class GlassfishRoleMapper implements JACCRoleMapper {
     }
     public BitSet getRolesOfPrincipals(String pcid, String[] roles, Principal[] principals)
             throws SecurityException, UnsupportedOperationException {
-        BitSet roleSet = new BitSet(roles.length);
         if ( principals.length == 0 ||
                 roles == null || roles.length == 0) {
             return null;
         }
+        BitSet roleSet = new BitSet(roles.length);
         SecurityRoleMapper srm = getInternalMapper(pcid);
         for (int i = 0; i < roles.length; i++) {
             roleSet.set(i, arePrincipalsInRole(srm, principals, roles[i]));
