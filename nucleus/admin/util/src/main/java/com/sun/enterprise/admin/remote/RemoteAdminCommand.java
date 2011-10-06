@@ -1305,9 +1305,8 @@ public class RemoteAdminCommand {
 
     /**
      * Search all the parameters that were actually specified to see
-     * if any of them are FILE or PASSWORD type parameters.  If so, check for the
+     * if any of them are FILE type parameters.  If so, check for the
      * "--upload" option.
-     * If we see any PASSWORD type parameters, doUpload has to be true.
      */
     private void initializeDoUpload() throws CommandException {
         boolean sawFile = false;
@@ -1316,7 +1315,6 @@ public class RemoteAdminCommand {
          * We don't upload directories, even when asked to upload.
          */
         boolean sawUploadableFile = false;
-        boolean sawPassword = false;
 
         for (Map.Entry<String, List<String>> param : options.entrySet()) {
             String paramName = param.getKey();
@@ -1328,9 +1326,6 @@ public class RemoteAdminCommand {
                 final File optionFile = new File(options.getOne(opt.getName()));
                 sawDirectory |= optionFile.isDirectory();
                 sawUploadableFile |= optionFile.isFile();
-            }
-            else if (opt != null && opt.getParam().password()) {
-                sawPassword = true;
             }
         }
 
@@ -1374,8 +1369,7 @@ public class RemoteAdminCommand {
             }
             options = noptions;
         }
-        if (sawPassword) doUpload = true;
-        
+
         logger.finer("doUpload set to " + doUpload);
     }
 
