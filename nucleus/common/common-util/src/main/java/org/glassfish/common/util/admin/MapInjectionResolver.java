@@ -53,6 +53,7 @@ import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.api.admin.CommandModel;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.jvnet.hk2.component.Inhabitant;
+import org.jvnet.hk2.component.MultiMap;
 
 
 /**
@@ -63,7 +64,7 @@ public class MapInjectionResolver extends InjectionResolver<Param> {
     private final CommandModel model;
     private final ParameterMap parameters;
 
-    private final Map<String,File> optionNameToUploadedFileMap;
+    private final MultiMap<String,File> optionNameToUploadedFileMap;
 
     public static final LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(MapInjectionResolver.class);
@@ -75,7 +76,7 @@ public class MapInjectionResolver extends InjectionResolver<Param> {
 
     public MapInjectionResolver(CommandModel model,
 					ParameterMap parameters,
-                                        final Map<String,File> optionNameToUploadedFileMap) {
+                                        final MultiMap<String,File> optionNameToUploadedFileMap) {
 	super(Param.class);
 	this.model = model;
 	this.parameters = parameters;
@@ -100,17 +101,15 @@ public class MapInjectionResolver extends InjectionResolver<Param> {
 	    List<String> value = parameters.get("DEFAULT");
 	    if (value != null && value.size() > 0) {
                 /*
-                 * If the operand is an uploaded file, replace the
-                 * client-provided value with the path to the uploaded file.
+                 * If the operands are uploaded files, replace the
+                 * client-provided values with the paths to the uploaded files.
+                 * XXX - assume the lists are in the same order.
                  */
-                for (int i = 0; i < value.size(); i++) {
-                    final String filePath = getUploadedFileParamValue(
-                            "DEFAULT",
-                            type, optionNameToUploadedFileMap);
-                    if (filePath != null) {
-                        value.set(i, filePath);
-                    }
-                }
+                final List<String> filePaths = getUploadedFileParamValues(
+                        "DEFAULT",
+                        type, optionNameToUploadedFileMap);
+                if (filePaths != null)
+                    value = filePaths;
 		// let's also copy this value to the cmd with a real name
 		parameters.set(paramName, value);
 		return (V) convertListToObject(target, type, value);
@@ -143,17 +142,49 @@ public class MapInjectionResolver extends InjectionResolver<Param> {
      * @param fieldName name of the field being injected
      * @param fieldType type of the field being injected
      * @param optionNameToFileMap map of field names to uploaded Files
-     * @return absolute path of the uploaded file for the field; null if no file uploaded for this field
+     * @return absolute path of the uploaded file for the field;
+     *          null if no file uploaded for this field
      */
     public static String getUploadedFileParamValue(final String fieldName,
                 final Class fieldType,
-                final Map<String,File> optionNameToFileMap) {
+                final MultiMap<String,File> optionNameToFileMap) {
         if (optionNameToFileMap == null) {
             return null;
         }
-        final File uploadedFile = optionNameToFileMap.get(fieldName);
+        final File uploadedFile = optionNameToFileMap.getOne(fieldName);
         if (uploadedFile != null && fieldType.isAssignableFrom(File.class)) {
             return uploadedFile.getAbsolutePath();
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Returns the paths to the uploaded files if the specified field is of type
+     * File[] and if the field name is the same as one of the option names that
+     * was associated with an uploaded File in the incoming command request.
+     *
+     * @param fieldName name of the field being injected
+     * @param fieldType type of the field being injected
+     * @param optionNameToFileMap map of field names to uploaded Files
+     * @return List of absolute paths of the uploaded files for the field;
+     *          null if no file uploaded for this field
+     */
+    public static List<String> getUploadedFileParamValues(
+                final String fieldName,
+                final Class fieldType,
+                final MultiMap<String,File> optionNameToFileMap) {
+        if (optionNameToFileMap == null) {
+            return null;
+        }
+        final List<File> uploadedFiles = optionNameToFileMap.get(fieldName);
+        if (uploadedFiles != null && uploadedFiles.size() > 0 &&
+                (fieldType.isAssignableFrom(File.class) ||
+                 fieldType.isAssignableFrom(File[].class))) {
+            final List<String> paths = new ArrayList(uploadedFiles.size());
+            for (File f : uploadedFiles)
+                paths.add(f.getAbsolutePath());
+            return paths;
         } else {
             return null;
         }
@@ -337,6 +368,8 @@ public class MapInjectionResolver extends InjectionResolver<Param> {
             // the default case, nothing to do
         } else if (type.isAssignableFrom(String[].class)) {
             paramValue = paramValList.toArray(new String[paramValList.size()]);
+        } else if (type.isAssignableFrom(File[].class)) {
+            paramValue = convertListToFiles(paramValList);
         } else if (type.isAssignableFrom(Properties.class)) {
             paramValue = convertListToProperties(paramValList);
         }
@@ -435,6 +468,19 @@ public class MapInjectionResolver extends InjectionResolver<Param> {
             }
         }
         return properties;
+    }
+
+    /**
+     * Convert a List of Strings to an array of File objects.
+     *
+     * @param filesList the List of Strings to convert
+     * @return File[] containing the elements in the list
+     */
+    private static File[] convertListToFiles(List<String> filesList) {
+        final File[] files = new File[filesList.size()];
+        for (int i = 0; i < filesList.size(); i++)
+            files[i] = new File(filesList.get(i));
+        return files;
     }
 
     /**

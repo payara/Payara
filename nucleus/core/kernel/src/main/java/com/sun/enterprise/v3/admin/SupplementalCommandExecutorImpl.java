@@ -92,7 +92,7 @@ public class SupplementalCommandExecutorImpl implements SupplementalCommandExecu
     private Map<String, List<Inhabitant<? extends Supplemental>>> supplementalCommandsMap = null;
 
     public ActionReport.ExitCode execute(String commandName, Supplemental.Timing time,
-                             AdminCommandContext context, ParameterMap parameters, Map<String, File> optionFileMap) {
+                             AdminCommandContext context, ParameterMap parameters, MultiMap<String, File> optionFileMap) {
         //TODO : Use the executor service to parallelize this
         ActionReport.ExitCode finalResult = ActionReport.ExitCode.SUCCESS;
         if(!getSupplementalCommandsList().isEmpty() && getSupplementalCommandsList().containsKey(commandName)) {
@@ -163,7 +163,7 @@ public class SupplementalCommandExecutorImpl implements SupplementalCommandExecu
         return supplementalCommandsMap;
     }
 
-    private InjectionResolver<Param> getInjector(AdminCommand command, ParameterMap parameters, Map<String, File> map) {
+    private InjectionResolver<Param> getInjector(AdminCommand command, ParameterMap parameters, MultiMap<String, File> map) {
         CommandModel model;
         try {
             CommandModelProvider c = CommandModelProvider.class.cast(command);

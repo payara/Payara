@@ -417,7 +417,8 @@ public class RemoteAdminCommand {
 
             // add operands
             for (String operand : operands) {
-                if (operandParam.getType() == File.class)
+                if (operandParam.getType() == File.class ||
+                        operandParam.getType() == File[].class)
                     addFileOption(uriString, "DEFAULT", operand);
                 else
                     addStringOption(uriString, "DEFAULT", operand);
@@ -1013,6 +1014,7 @@ public class RemoteAdminCommand {
         // relative URI to avoid possible conflicts with same-named files
         // in different directories
         if (uploadThisFile) {
+            logger.finer("Uploading file");
             try {
             outboundPayload.attachFile(FILE_PAYLOAD_MIME_TYPE,
                 URI.create(optionName + "/" + f.getName() + (f.isDirectory() ? "/" : "")),
@@ -1238,7 +1240,11 @@ public class RemoteAdminCommand {
                 boolean multiple = false;
                 if (max.equals("unlimited")) {
                     multiple = true;
-                    type = List.class;
+                    // XXX - should convert to array of whatever
+                    if (type == File.class)
+                        type = File[].class;
+                    else
+                        type = List.class;
                 }
                 ParamModelData pm = new ParamModelData(
                     getAttr(attributes, "name"), type, min == 0, null);
@@ -1330,8 +1336,10 @@ public class RemoteAdminCommand {
 
         // now check the operands for files
         ParamModel operandParam = getOperandModel();
-        if (operandParam != null && operandParam.getType() == File.class) {
-            sawFile = ! operands.isEmpty();
+        if (operandParam != null &&
+                (operandParam.getType() == File.class ||
+                 operandParam.getType() == File[].class)) {
+            sawFile |= !operands.isEmpty();
             for (String operandValue : operands) {
                 final File operandFile = new File(operandValue);
                 sawDirectory |= operandFile.isDirectory();
@@ -1340,6 +1348,7 @@ public class RemoteAdminCommand {
         }
 
         if (sawFile) {
+            logger.finer("Saw a file parameter");
             // found a FILE param, is doUpload set?
             String upString = getOption("upload");
             if (ok(upString))

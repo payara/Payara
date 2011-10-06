@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -44,6 +44,7 @@ import com.sun.hk2.component.InjectionResolver;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
 import org.jvnet.hk2.annotations.Contract;
+import org.jvnet.hk2.component.MultiMap;
 
 import java.io.File;
 import java.util.Map;
@@ -57,5 +58,5 @@ import java.util.Map;
 public interface SupplementalCommandExecutor {
 
     public ActionReport.ExitCode execute(String commandName, Supplemental.Timing time,
-                             AdminCommandContext context, ParameterMap parameters, Map<String, File> optionFileMap);
+                             AdminCommandContext context, ParameterMap parameters, MultiMap<String, File> optionFileMap);
 }

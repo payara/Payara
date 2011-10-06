@@ -616,10 +616,9 @@ public class CommandRunnerImpl implements CommandRunner {
         Class t = p.getType();
         if (t == Boolean.class || t == boolean.class) {
             return "BOOLEAN";
-        } else if (t == File.class) {
+        } else if (t == File.class || t == File[].class) {
             return "FILE";
-        } else if (t == Properties.class) // XXX - allow subclass?
-        {
+        } else if (t == Properties.class) { // XXX - allow subclass?
             return "PROPERTIES";
         } else if (p.getParam().password()) {
             return "PASSWORD";
@@ -1322,11 +1321,11 @@ public class CommandRunnerImpl implements CommandRunner {
 
         private final CommandModel model;
         private final CommandParameters parameters;
-        private final Map<String, File> optionNameToUploadedFileMap;
+        private final MultiMap<String, File> optionNameToUploadedFileMap;
 
         public DelegatedInjectionResolver(CommandModel model,
                 CommandParameters parameters,
-                final Map<String, File> optionNameToUploadedFileMap) {
+                final MultiMap<String, File> optionNameToUploadedFileMap) {
             super(Param.class);
             this.model = model;
             this.parameters = parameters;
@@ -1365,6 +1364,7 @@ public class CommandRunnerImpl implements CommandRunner {
                      * the actual absolute path of the uploaded and extracted
                      * file if, in fact, the file was uploaded.
                      */
+                    // XXX - doesn't handle multiple File operands
                     final String paramFileValue =
                             MapInjectionResolver.getUploadedFileParamValue(
                             targetField.getName(),
@@ -1449,7 +1449,7 @@ public class CommandRunnerImpl implements CommandRunner {
          * maps option names as sent with each uploaded file to the corresponding
          * extracted files
          */
-        private Map<String, File> optionNameToFileMap;
+        private MultiMap<String, File> optionNameToFileMap;
 
         /*
          * PFM needs to be a field so it is not gc-ed before the
@@ -1465,7 +1465,7 @@ public class CommandRunnerImpl implements CommandRunner {
             extractFiles(inboundPayload);
         }
 
-        private Map<String, File> optionNameToFileMap() {
+        private MultiMap<String, File> optionNameToFileMap() {
             return optionNameToFileMap;
         }
 
@@ -1475,9 +1475,10 @@ public class CommandRunnerImpl implements CommandRunner {
             }
         }
 
-        private Map<String, File> extractFiles(final Payload.Inbound inboundPayload) throws IOException, Exception {
+        private void extractFiles(final Payload.Inbound inboundPayload)
+                                throws Exception {
             if (inboundPayload == null) {
-                return Collections.EMPTY_MAP;
+                return;
             }
 
             final File uniqueSubdirUnderApplications = chooseTempDirParent();
@@ -1496,14 +1497,15 @@ public class CommandRunnerImpl implements CommandRunner {
              * Prepare the map of command options names to corresponding
              * uploaded files.
              */
-            optionNameToFileMap = new HashMap<String, File>();
+            optionNameToFileMap = new MultiMap<String, File>();
             for (Map.Entry<File, Properties> e : payloadFiles.entrySet()) {
                 final String optionName = e.getValue().getProperty("data-request-name");
                 if (optionName != null) {
-                    optionNameToFileMap.put(optionName, e.getKey());
+                    logger.finer("UploadedFilesManager: map " + optionName +
+                                    " to " + e.getKey());
+                    optionNameToFileMap.add(optionName, e.getKey());
                 }
             }
-            return optionNameToFileMap;
         }
 
         private File chooseTempDirParent() throws IOException {
