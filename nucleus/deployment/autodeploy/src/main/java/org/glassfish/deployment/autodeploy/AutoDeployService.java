@@ -109,8 +109,8 @@ public class AutoDeployService implements PostStartup, PostConstruct, PreDestroy
             );
         
  
-    /** Cannot find the resource bundle unless we want until postConstruct to create the logger. */
-    private Logger logger;
+    /** Cannot find the resource bundle unless we wait until postConstruct to create the logger. */
+    private Logger logger = null;
     
     private static final String DEFAULT_POLLING_INTERVAL_IN_SECONDS = "2";
     private static final String DEFAULT_AUTO_DEPLOY_ENABLED = "true";

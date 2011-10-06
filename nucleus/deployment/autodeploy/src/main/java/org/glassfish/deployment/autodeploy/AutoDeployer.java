@@ -694,12 +694,12 @@ public class AutoDeployer {
                 "");
         ;
 
-        protected final boolean status;
-        protected final ActionReport.ExitCode exitCode;
-        protected final String deploymentMessageKey;
-        protected final String undeploymentMessageKey;
-        protected final String deploymentDefaultMessage;
-        protected final String undeploymentDefaultMessage;
+        final boolean status;
+        final ActionReport.ExitCode exitCode;
+        final String deploymentMessageKey;
+        final String undeploymentMessageKey;
+        final String deploymentDefaultMessage;
+        final String undeploymentDefaultMessage;
 
         AutodeploymentStatus(
                 boolean status, 
