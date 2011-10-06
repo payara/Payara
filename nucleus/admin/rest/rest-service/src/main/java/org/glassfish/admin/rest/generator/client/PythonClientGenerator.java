@@ -46,6 +46,7 @@ import org.jvnet.hk2.config.ConfigModel;
 import java.io.*;
 import java.net.URI;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.logging.Level;
@@ -55,10 +56,13 @@ import java.util.zip.ZipOutputStream;
 
 public class PythonClientGenerator extends ClientGenerator {
     private File baseDirectory;
+    private static String MSG_INSTALL =
+            "To install the egg into your Python environment:  sudo easy_install " + ARTIFACT_NAME + "-VERSION-egg.zip";
 
     public PythonClientGenerator(Habitat habitat) {
         super(habitat);
         baseDirectory = Util.createTempDirectory();
+        messages.add(MSG_INSTALL.replace("VERSION", versionString));
     }
 
     @Override
@@ -71,7 +75,7 @@ public class PythonClientGenerator extends ClientGenerator {
             String ZIP_REST_PACKAGE_DIR = ZIP_GF_PACKAGE_DIR + "/rest";
 
             File zipDir = Util.createTempDirectory();
-            File zipFile = new File(zipDir, "glassfish-rest-client-stubs.zip");
+            File zipFile = new File(zipDir, ARTIFACT_NAME + "-" + versionString + "-egg.zip");
             zipFile.createNewFile();
             zipFile.deleteOnExit();
             zip = new ZipOutputStream(new FileOutputStream(zipFile));

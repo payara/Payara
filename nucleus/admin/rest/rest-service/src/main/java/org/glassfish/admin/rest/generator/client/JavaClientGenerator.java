@@ -72,10 +72,15 @@ import java.util.Scanner;
 public class JavaClientGenerator extends ClientGenerator {
     private File baseDirectory;
     private Map<String, URI> artifacts;
+    private static String MSG_INSTALL =
+            "To install the artifacts to maven: " +
+            "mvn install:install-file -DpomFile=pom.xml -Dfile=" + ARTIFACT_NAME + "-VERSION.jar -Dsources=" +
+                    ARTIFACT_NAME + "-VERSION-sources.jar";
 
     public JavaClientGenerator(Habitat habitat) {
         super(habitat);
         baseDirectory = Util.createTempDirectory();
+        messages.add(MSG_INSTALL.replace("VERSION", versionString));
     }
 
     @Override
@@ -87,10 +92,9 @@ public class JavaClientGenerator extends ClientGenerator {
     public synchronized Map<String, URI> getArtifact() {
         if (artifacts == null) {
             artifacts = new HashMap<String, URI>();
-            String versionString = version.getVersionNumber();
-            createJar("rest-client-sources-" + versionString + ".jar", ".java");
+            createJar(ARTIFACT_NAME + "-" + versionString + "-sources.jar", ".java");
             compileSources();
-            createJar("rest-client-" + versionString + ".jar", ".class");
+            createJar(ARTIFACT_NAME + "-" + versionString + ".jar", ".class");
             addPom(versionString);
 
             Util.deleteDirectory(baseDirectory);

@@ -131,8 +131,13 @@ public class GenerateClientCommand implements AdminCommand {
                     outboundPayload.attachFile("application/octet-stream", 
                             new URI(entry.getKey()), "files", props, new File(artifact));
                 }
-                context.getActionReport().setMessage("To install the artifact to maven: " +
-                        "mvn install:install-file -Dfile=rest-client-4.0.jar -DpomFile=pom.xml -Dsources=rest-client-sources-4.0.jar");
+                List<String> messages = gen.getMessages();
+                if (!messages.isEmpty()) {
+                    ActionReport ar = context.getActionReport();
+                    for (String msg : messages) {
+                        ar.addSubActionsReport().appendMessage(msg);
+                    }
+                }
             }
         } catch (Exception e) {
             final String errorMsg = localStrings.getLocalString(

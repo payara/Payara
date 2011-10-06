@@ -42,17 +42,6 @@ package org.glassfish.admin.rest.generator.client;
 import com.sun.appserv.server.util.Version;
 import com.sun.enterprise.config.serverbeans.Domain;
 import org.glassfish.admin.rest.ResourceUtil;
-import org.glassfish.api.admin.config.ApplicationName;
-import org.glassfish.api.admin.config.Named;
-import org.jvnet.hk2.component.Habitat;
-import org.jvnet.hk2.config.*;
-
-import java.lang.reflect.Method;
-import java.net.URI;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import org.glassfish.admin.rest.RestService;
 import org.glassfish.admin.rest.Util;
 import org.glassfish.admin.rest.client.RestClientBase;
@@ -64,6 +53,15 @@ import org.glassfish.api.Param;
 import org.glassfish.api.admin.CommandModel;
 import org.glassfish.api.admin.CommandModel.ParamModel;
 import org.glassfish.api.admin.CommandRunner;
+import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.config.Attribute;
+import org.jvnet.hk2.config.ConfigModel;
+import org.jvnet.hk2.config.Dom;
+import org.jvnet.hk2.config.DomDocument;
+
+import java.lang.reflect.Method;
+import java.net.URI;
+import java.util.*;
 
 /**
  *
@@ -77,14 +75,25 @@ public abstract class ClientGenerator {
     protected Set<String> alreadyGenerated = new HashSet<String>();
     protected Habitat habitat;
     protected Version version;
-    
+    protected List<String> messages = new ArrayList<String>();
+    protected String versionString;
+    protected static String ARTIFACT_NAME = "rest-client-wrapper";
+
     private DomDocument document;
 
     public ClientGenerator(Habitat habitat) {
         this.habitat = habitat;
         version = habitat.getByType(Version.class);
+        versionString = version.getVersionNumber();
     }
     
+    public abstract ClientClassWriter getClassWriter(ConfigModel model, String className, Class parent);
+    public abstract Map<String, URI> getArtifact();
+
+    public List<String> getMessages() {
+        return messages;
+    }
+
     public void generateClasses() {
         Domain entity = getHabitat().getComponent(Domain.class);
         Dom dom = Dom.unwrap(entity);
@@ -95,15 +104,10 @@ public abstract class ClientGenerator {
         generateSingle(rootModel);
     }
     
-    public abstract Map<String, URI> getArtifact();
-
-    public abstract ClientClassWriter getClassWriter(ConfigModel model, String className, Class parent);
-
     public Habitat getHabitat() {
         return habitat;
     }
 
-    
     public void generateSingle (ConfigModel model)  {
         String className = Util.getBeanName(model.getTagName());
 
@@ -133,7 +137,7 @@ public abstract class ClientGenerator {
         generateSingle(model);
     }
 
-    void generateGetPostCommandMethod(ClientClassWriter writer, String resourceName) {
+    protected void generateGetPostCommandMethod(ClientClassWriter writer, String resourceName) {
         String commandName = ResourcesGeneratorBase.configBeanToPOSTCommand.get("List"+resourceName);
         if (commandName != null) {
             final CommandModel cm = getCommandModel(commandName);
@@ -144,7 +148,7 @@ public abstract class ClientGenerator {
     }
 
     //    private void generateCommandMethods(String parentBeanName, ClassWriter parentWriter) {
-    private void generateCommandMethods(ClientClassWriter writer, String className) {
+    protected void generateCommandMethods(ClientClassWriter writer, String className) {
         List<CommandResourceMetaData> commandMetaData = CommandResourceMetaData.getMetaData(className);
         if (commandMetaData.size() > 0) {
             for (CommandResourceMetaData metaData : commandMetaData) {
@@ -192,7 +196,7 @@ public abstract class ClientGenerator {
         return  paramName;
     }
 
-    private CommandModel getCommandModel(String commandName) {
+    protected CommandModel getCommandModel(String commandName) {
         CommandRunner cr = getHabitat().getComponent(CommandRunner.class);
         return cr.getModel(commandName, RestService.logger);
     }
@@ -246,7 +250,7 @@ public abstract class ClientGenerator {
         return processed;
     }
 
-    private void generateCollectionLeafResource(ClientClassWriter writer, String xmlName) {
+    protected void generateCollectionLeafResource(ClientClassWriter writer, String xmlName) {
         String className = Util.getBeanName(xmlName);
         writer.generateCollectionLeafResourceGetter(className);
         ClientClassWriter childClass = getClassWriter(null, className, RestLeafCollection.class);
@@ -254,7 +258,7 @@ public abstract class ClientGenerator {
         childClass.done();
     }
 
-    private void generateLeafResource(ClientClassWriter writer, String xmlName) {
+    protected void generateLeafResource(ClientClassWriter writer, String xmlName) {
         String className = Util.getBeanName(xmlName);
 
         writer.generateRestLeafGetter(className);
@@ -263,7 +267,7 @@ public abstract class ClientGenerator {
         childClass.done();
     }
 
-    private void processNonLeafChildConfigModel(ClientClassWriter writer, ConfigModel childConfigModel, ConfigModel.Property childElement) {
+    protected void processNonLeafChildConfigModel(ClientClassWriter writer, ConfigModel childConfigModel, ConfigModel.Property childElement) {
         String childResourceClassName = ResourceUtil.getUnqualifiedTypeName(childConfigModel.targetTypeName);
         writer.createGetChildResource(childConfigModel, childResourceClassName, childResourceClassName);
         if (childElement.isCollection()) {
@@ -298,55 +302,4 @@ public abstract class ClientGenerator {
             generateSingle(childModel);
         }
     }
-
-    /**
-    protected void createDuckTypedMethod(StringBuilder sb, Method m) {
-        String returnType = m.getReturnType().getSimpleName();
-
-        try {
-            if (implementsInterface(m.getReturnType(), Named.class) || implementsInterface(m.getReturnType(), ApplicationName.class)) {
-                // ugly hack?
-                if (m.getParameterTypes().length > 1) {
-                    return;
-                }
-
-                List<ConfigModel> list = document.getAllModelsImplementing(m.getReturnType());
-
-                if (list != null) {
-                    for (ConfigModel el : list) {
-                        generateSingle(el);
-                    }
-                }
-
-                sb.append("    public ")
-                        .append(returnType)
-                        .append(" ")
-                        .append(m.getName())
-                        .append("(");
-                int count = 0;
-                for (Class<?> c : m.getParameterTypes()) {
-                    sb.append(c.getName())
-                            .append(" in")
-                            .append(++count);
-                }
-
-                sb.append(") {\n")
-                        .append("        return new ")
-                        .append(returnType)
-                        .append("(client, this, in1);\n    };\n");
-            }
-        } catch (Exception e) {
-
-        }
-    }
-    
-    protected Boolean implementsInterface(Class<?> clazz, Class interf) {
-        for (Class c : clazz.getInterfaces()) {
-            if (c.equals(interf)) {
-                return true;
-            }
-        }
-        return false;
-    }
-    */
 }
