@@ -71,13 +71,11 @@ public class ProcessingTimeMetricHolder
     private String instanceName;
     private static final String WEB_REQUEST_PROCESSINGTIME = "web.request.processingtime";
 
-    TabularMetricHolder<ProcessingTimeStat> table;
+    TabularMetricHolder<ProcessingTimeStat> table = null;
 
     MetricAttribute[] attributes;
-
-    Map processingTimeCountMap;
     
-    TreeNode rootNode;
+    TreeNode rootNode = null;
     
     @Inject
     Habitat habitat;
@@ -102,27 +100,29 @@ public class ProcessingTimeMetricHolder
     @Override
     public void gatherMetric() {
         //TreeNode activeSessionsNode = rootNode.getNode("applications.*.*.activesessionscurrent");
-        TreeNode activeSessionsNode = rootNode.getNode(WEB_REQUEST_PROCESSINGTIME);
+        if (rootNode != null) {
+            TreeNode activeSessionsNode = rootNode.getNode(WEB_REQUEST_PROCESSINGTIME);
 
-        if (activeSessionsNode != null) {
-            Object value = activeSessionsNode.getValue();
+            if (activeSessionsNode != null) {
+                Object value = activeSessionsNode.getValue();
 
-            if (value != null) {
-                if (value instanceof CountStatistic) {
-                    CountStatistic statisticObject = (CountStatistic) value;
-                    
-                    table.add(System.currentTimeMillis(), new ProcessingTimeStat(
-                            statisticObject.getLastSampleTime(),
-                            statisticObject.getDescription(),
-                            statisticObject.getUnit(),
-                            statisticObject.getName(),
-                            statisticObject.getStartTime(),
-                            statisticObject.getCount()));
+                if (value != null) {
+                    if (value instanceof CountStatistic) {
+                        CountStatistic statisticObject = (CountStatistic) value;
 
-                    Iterator<TabularMetricEntry<ProcessingTimeStat>> iter = table.iterator(10, TimeUnit.SECONDS);
-                    while (iter.hasNext()) {
-                        TabularMetricEntry<ProcessingTimeStat> tme = iter.next();
+                        table.add(System.currentTimeMillis(), new ProcessingTimeStat(
+                                statisticObject.getLastSampleTime(),
+                                statisticObject.getDescription(),
+                                statisticObject.getUnit(),
+                                statisticObject.getName(),
+                                statisticObject.getStartTime(),
+                                statisticObject.getCount()));
+
+                        //Iterator<TabularMetricEntry<ProcessingTimeStat>> iter = table.iterator(10, TimeUnit.SECONDS);
+                        //while (iter.hasNext()) {
+                        //    TabularMetricEntry<ProcessingTimeStat> tme = iter.next();
                         //System.out.println("ProcessingTimeMetricHolder Gathered metric: " + tme.getTimestamp() + " " + tme.getV());
+                        //}
                     }
                 }
             }

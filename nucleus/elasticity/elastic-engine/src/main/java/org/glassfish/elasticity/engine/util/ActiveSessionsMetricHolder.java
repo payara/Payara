@@ -70,13 +70,11 @@ public class ActiveSessionsMetricHolder
     private String instanceName;
     private static final String WEB_SESSION_ACTIVESESSIONSCURRENT = "web.session.activesessionscurrent";
 
-    TabularMetricHolder<ActiveSessionsStat> table;
+    TabularMetricHolder<ActiveSessionsStat> table = null;
 
     MetricAttribute[] attributes;
-
-    Map activeSessionCountMap;
     
-    TreeNode rootNode;
+    TreeNode rootNode = null;
     
     @Inject
     Habitat habitat;
@@ -98,29 +96,31 @@ public class ActiveSessionsMetricHolder
     @Override
     public void gatherMetric() {
         //TreeNode activeSessionsNode = rootNode.getNode("applications.*.*.activesessionscurrent");
-        TreeNode activeSessionsNode = rootNode.getNode(WEB_SESSION_ACTIVESESSIONSCURRENT);
+        if (rootNode != null) {
+            TreeNode activeSessionsNode = rootNode.getNode(WEB_SESSION_ACTIVESESSIONSCURRENT);
+            
+            if (activeSessionsNode != null) {
+                Object value = activeSessionsNode.getValue();
+                
+                if (value != null) {
+                    if (value instanceof RangeStatistic) {
+                        RangeStatistic statisticObject = (RangeStatistic) value;
+                        
+                        table.add(System.currentTimeMillis(), new ActiveSessionsStat(
+                                statisticObject.getHighWaterMark(),
+                                statisticObject.getLastSampleTime(),
+                                statisticObject.getDescription(),
+                                statisticObject.getUnit(),
+                                statisticObject.getName(),
+                                statisticObject.getStartTime(),
+                                statisticObject.getCurrent(),
+                                statisticObject.getLowWaterMark()));
 
-        if (activeSessionsNode != null) {
-            Object value = activeSessionsNode.getValue();
-
-            if (value != null) {
-                if (value instanceof RangeStatistic) {
-                    RangeStatistic statisticObject = (RangeStatistic) value;
-                    
-                    table.add(System.currentTimeMillis(), new ActiveSessionsStat(
-                            statisticObject.getHighWaterMark(),
-                            statisticObject.getLastSampleTime(),
-                            statisticObject.getDescription(),
-                            statisticObject.getUnit(),
-                            statisticObject.getName(),
-                            statisticObject.getStartTime(),
-                            statisticObject.getCurrent(),
-                            statisticObject.getLowWaterMark()));
-
-                    Iterator<TabularMetricEntry<ActiveSessionsStat>> iter = table.iterator(10, TimeUnit.SECONDS);
-                    while (iter.hasNext()) {
-                        TabularMetricEntry<ActiveSessionsStat> tme = iter.next();
+                        //Iterator<TabularMetricEntry<ActiveSessionsStat>> iter = table.iterator(10, TimeUnit.SECONDS);
+                        //while (iter.hasNext()) {
+                        //    TabularMetricEntry<ActiveSessionsStat> tme = iter.next();
                         //System.out.println("SessionCountMetricHolder Gathered metric: " + tme.getTimestamp() + " " + tme.getV());
+                        //}
                     }
                 }
             }
@@ -150,44 +150,6 @@ public class ActiveSessionsMetricHolder
     @Override
     public MetricNode[] getChildren() {
         return new MetricNode[0];  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    private class AppNameAttribute
-        implements MetricAttribute {
-        private String appName;
-        
-        public AppNameAttribute(String appName) {
-            this.appName = appName;
-        }
-
-        @Override
-        public String getName() {
-            return "applicationName";
-        }
-
-        @Override
-        public Object getValue() {
-            return appName;
-        }
-    }
-    
-    private class VirtualServerAttribute
-        implements MetricAttribute {
-        private String virtualServer;
-        
-        public VirtualServerAttribute(String virtualServer) {
-            this.virtualServer = virtualServer;
-        }
-
-        @Override
-        public String getName() {
-            return "virtualServer";
-        }
-
-        @Override
-        public Object getValue() {
-            return virtualServer;
-        }
     }
     
     private class InstanceAttribute
