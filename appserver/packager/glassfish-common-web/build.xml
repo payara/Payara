@@ -46,36 +46,35 @@
 
  <target name="create.package">
 	 <property name="package.name" value="glassfish-common-web"/> 
-         <property name="previous.package.name" value="glassfish-grizzly-full" />
-       
-       <antcall target="filter-module-artifacts"/>
+
         
-       <stage-module-jars/>
-       <stage-distribution-fragments/>
 
-       <!-- overriding nucleus-base content with appserver-base -->
-       <resolveArtifact artifactId="appserver-base" property="appserver-base.zip"/>
-       
-       <unzip src="${appserver-base.zip}" 
-              dest="target/stage/${install.dir.name}/glassfish"
-              overwrite="true"/>
+       <resolveArtifact property="glassfish-common-web-tmp.zip" groupID="org.glassfish.packager" artifactID="glassfish-common-web-tmp" type="zip" />
 
-       <mkdir dir="target/stage/${install.dir.name}/glassfish/modules/endorsed"/>
 
-       <move file="target/stage/${install.dir.name}/glassfish/modules/javax.annotation.jar" todir="target/stage/${install.dir.name}/glassfish/modules/endorsed" failonerror="false"/>          
+       <unzip src="${glassfish-common-web-tmp.zip}"
+           dest="target/stage">
+          <patternset>
+		  <exclude name="META-INF/**"/>
+	  </patternset>
+       </unzip> 
 
-       <mkdir dir="target/stage/${install.dir.name}/glassfish/modules/autostart"/>
+       <resolveArtifact property="embedded-fragment.zip" groupID="org.glassfish.extras" artifactID="glassfish-embedded-static-shell-frag" />
 
-       <move file="target/stage/${install.dir.name}/glassfish/modules/osgi-javaee-base.jar" todir="target/stage/${install.dir.name}/glassfish/modules/autostart" failonerror="false"/>
-<!-- disabling due to config bean changes of jdbc and connector resources -->
-<!--      <move file="target/stage/${install.dir.name}/glassfish/modules/osgi-ee-resources.jar" todir="target/stage/${install.dir.name}/glassfish/modules/autostart" failonerror="false"/>-->
-  
+
+       <unzip src="${embedded-fragment.zip}"
+           dest="target/stage/${install.dir.name}">
+          <patternset>
+		  <exclude name="META-INF/**"/>
+	  </patternset>
+       </unzip>  
+      
        <if test="${compression}">
 	       <antcall target="pack.compression" />
        </if>
 
-       <antcall target="create-zip-artifact"/>  
-       <antcall target="create-list-artifact"/>  
+       <antcall target="create-zip-artifact"/>		
+
 
    </target>
 </project>

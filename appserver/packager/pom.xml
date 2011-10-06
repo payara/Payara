@@ -87,14 +87,14 @@
 	<module>glassfish-grizzly</module>
         <module>glassfish-nucleus</module>
 	<module>glassfish-corba-base</module>
-	<module>glassfish-common-tmp</module>
+	<module>glassfish-common</module>
 	<module>shoal</module>
 	<module>glassfish-cluster</module>
 	<module>glassfish-javahelp</module>
 	<module>glassfish-registration</module>
 	<module>glassfish-management</module>
         <module>glassfish-grizzly-full</module>
-        <module>glassfish-common-web</module>
+        <module>glassfish-common-web-tmp</module>
         <module>glassfish-ha</module>
 	<module>glassfish-jca</module>
 	<module>glassfish-jpa</module>
@@ -120,7 +120,7 @@
 	<module>jersey</module>
 	<module>glassfish-jcdi</module>
 	<module>mq</module>
-	<module>glassfish-common</module>
+	<module>glassfish-common-web</module>
 	<module>glassfish-virtualization</module>
         <module>glassfish-paas-gui</module>
 	<module>glassfish-web-incorporation</module>

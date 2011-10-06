@@ -3,7 +3,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 2010-2011 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -41,30 +41,41 @@
 
 -->
 
-<project name="glassfish common tmp package creation" default="create.package" basedir=".">
-    <import file="${basedir}/../common-targets.xml"/>
+<project name="glassfish-common-web-tmp package creation" default="create.package" basedir=".">
+       <import file="${basedir}/../common-targets.xml"/>
 
  <target name="create.package">
-     <property name="package.name" value="glassfish-common-tmp"/> 
-     <property name="previous.package.name" value="glassfish-corba-base" />
-
+	 <property name="package.name" value="glassfish-common-web-tmp"/> 
+         <property name="previous.package.name" value="glassfish-grizzly-full" />
+       
        <antcall target="filter-module-artifacts"/>
-
+        
        <stage-module-jars/>
        <stage-distribution-fragments/>
-       
-       <!-- brute force cleanup at this point, need to look into extended ant
-           plugin and fix the issue at the source -->
-           
-       <delete file="target/stage/${install.dir.name}/glassfish/modules/activation.jar" failonerror="false" />
-     
 
+       <!-- overriding nucleus-base content with appserver-base -->
+       <resolveArtifact artifactId="appserver-base" property="appserver-base.zip"/>
+       
+       <unzip src="${appserver-base.zip}" 
+              dest="target/stage/${install.dir.name}/glassfish"
+              overwrite="true"/>
+
+       <mkdir dir="target/stage/${install.dir.name}/glassfish/modules/endorsed"/>
+
+       <move file="target/stage/${install.dir.name}/glassfish/modules/javax.annotation.jar" todir="target/stage/${install.dir.name}/glassfish/modules/endorsed" failonerror="false"/>          
+
+       <mkdir dir="target/stage/${install.dir.name}/glassfish/modules/autostart"/>
+
+       <move file="target/stage/${install.dir.name}/glassfish/modules/osgi-javaee-base.jar" todir="target/stage/${install.dir.name}/glassfish/modules/autostart" failonerror="false"/>
+<!-- disabling due to config bean changes of jdbc and connector resources -->
+<!--      <move file="target/stage/${install.dir.name}/glassfish/modules/osgi-ee-resources.jar" todir="target/stage/${install.dir.name}/glassfish/modules/autostart" failonerror="false"/>-->
+  
        <if test="${compression}">
 	       <antcall target="pack.compression" />
        </if>
 
-       <antcall target="create-zip-artifact"/>		
-       <antcall target="create-list-artifact"/>
+       <antcall target="create-zip-artifact"/>  
+       <antcall target="create-list-artifact"/>  
 
    </target>
 </project>

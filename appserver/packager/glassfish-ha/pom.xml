@@ -119,7 +119,7 @@
 
   	<dependency>        
            <groupId>org.glassfish.packager</groupId>
-           <artifactId>glassfish-common-web</artifactId>
+           <artifactId>glassfish-common-web-tmp</artifactId>
            <version>${project.version}</version>
            <classifier>artifacts</classifier>
 	   <type>properties</type>

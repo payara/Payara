@@ -151,7 +151,7 @@
         </dependency>
         <dependency>
             <groupId>org.glassfish.packager</groupId>
-            <artifactId>glassfish-common-tmp</artifactId>
+            <artifactId>glassfish-common</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
             <optional>true</optional>
@@ -277,7 +277,7 @@
         </dependency>
         <dependency>
             <groupId>org.glassfish.packager</groupId>
-            <artifactId>glassfish-common-web</artifactId>
+            <artifactId>glassfish-common-web-tmp</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
             <optional>true</optional>

@@ -114,7 +114,7 @@
 
   	<dependency>        
            <groupId>org.glassfish.packager</groupId>
-           <artifactId>glassfish-common-tmp</artifactId>
+           <artifactId>glassfish-common</artifactId>
            <version>${project.version}</version>
            <classifier>artifacts</classifier>
 	   <type>properties</type>

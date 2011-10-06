@@ -46,7 +46,7 @@
 
  <target name="create.package">
       <property name="package.name" value="shoal"/> 
-      <property name="previous.package.name" value="glassfish-common-tmp" />
+      <property name="previous.package.name" value="glassfish-common" />
         
        <antcall target="filter-module-artifacts"/>
 

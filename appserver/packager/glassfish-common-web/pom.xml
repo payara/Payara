@@ -67,208 +67,36 @@
                         <ant dir="." antfile="build.xml" target="create.package"/>
                     </tasks>
                 </configuration>               
-             </plugin>
-             <plugin>
-               <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>copy-dependencies</id>
-                        <goals>
-                            <goal>copy-dependencies</goal>
-                        </goals>
-                        <configuration>
-                            <outputDirectory>${project.build.directory}/artifacts</outputDirectory>
-                            <useSubDirectoryPerType>true</useSubDirectoryPerType>
-                            <overWriteReleases>false</overWriteReleases>
-                            <overWriteSnapshots>true</overWriteSnapshots>                            
-                            <includeScope>compile</includeScope>
-                            <includeScope>runtime</includeScope>
-                            <excludeArtifactIds>${packager.artifact.excludes}</excludeArtifactIds>
-                            <stripVersion>true</stripVersion>
-                        </configuration>
-                   </execution>                  
-               </executions>
-           </plugin>
+             </plugin>            
         </plugins>
     </build>
 
-
     <dependencies>
-        <!--
-          modules to be included in this bundle
-        -->       
         
        <dependency>
-            <groupId>org.glassfish.security</groupId>
-            <artifactId>security-all</artifactId>
+            <groupId>org.glassfish.packager</groupId>
+            <artifactId>glassfish-common-web-tmp</artifactId>
             <version>${project.version}</version>
-            <type>pom</type> 
+            <type>zip</type> 
         </dependency>
-        <dependency>
-            <groupId>com.sun.pkg</groupId>
-            <artifactId>pkg-client</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.common</groupId>
-            <artifactId>amx-javaee</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-           <groupId>org.glassfish.common</groupId>
-           <artifactId>annotation-framework</artifactId>
-           <version>${project.version}</version>
-       </dependency>
-        <dependency>
-           <groupId>org.glassfish.common</groupId>
-           <artifactId>container-common</artifactId>
-           <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.deployment</groupId>
-            <artifactId>deployment-client</artifactId>
-            <version>${project.version}</version>
-   	 </dependency>
-    	<dependency>
-            <groupId>org.glassfish.deployment</groupId>
-            <artifactId>deployment-javaee-core</artifactId>
-            <version>${project.version}</version>
-    	</dependency>
-        <dependency>
-            <groupId>org.glassfish.deployment</groupId>
-            <artifactId>dol</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.admin</groupId>
-            <artifactId>cli-optional</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.admin</groupId>
-            <artifactId>admin-core</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.ejb</groupId>
-            <artifactId>ejb-internal-api</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.connectors</groupId>
-            <artifactId>connectors-internal-api</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-             <groupId>org.glassfish.orb</groupId>
-             <artifactId>orb-connector</artifactId>
-             <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.extras</groupId>
-            <artifactId>osgi-container</artifactId>
-            <version>${project.version}</version>
-        </dependency>	
-        <dependency>
-    	    <groupId>org.glassfish</groupId>
-            <artifactId>paas.gfplugin</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-    	    <groupId>org.glassfish</groupId>
-            <artifactId>paas.javadbplugin</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-    	    <groupId>org.glassfish</groupId>
-            <artifactId>paas.lbplugin</artifactId>
-            <version>${project.version}</version>
-        </dependency>      
-        <!-- Shared OSGi support for Java EE -->
-       <dependency>
-            <groupId>org.glassfish.fighterfish</groupId>
-            <artifactId>osgi-javaee-base</artifactId>
-        </dependency>
-<!-- disabling due to config bean changes for jdbc and connector resources -->
-<!--       <dependency>
-            <groupId>org.glassfish.fighterfish</groupId>
-            <artifactId>osgi-ee-resources</artifactId>
-        </dependency>-->
-        <!-- HA API  -->
-        <dependency>
-            <groupId>org.glassfish.ha</groupId>
-            <artifactId>ha-api</artifactId>
-        </dependency>    
-        <dependency>
-           <groupId>org.glassfish.ha</groupId>
-           <artifactId>ha-file-store</artifactId>
-           <version>${project.version}</version>
-       </dependency>
-        <!-- TODO: move to glassfish-nucleus after nucleus distro build moves
-             to its own workspace -->
-        <dependency>
-           <groupId>org.glassfish.packager</groupId>
-           <artifactId>appserver-base</artifactId>
-           <version>${project.version}</version>
-           <type>zip</type>
-        </dependency>
-        <!-- TODO: move to glassfish-cluster after nucleus distro build moves
-             to its own workspace or create dedicated cluster package-->
-        <dependency>
-              <groupId>org.glassfish.loadbalancer</groupId>
-              <artifactId>load-balancer-admin</artifactId>
-              <version>${project.version}</version>
-        </dependency>
-        <!-- TODO: move back to shoal package after nucleus distro build moves
-             to its own workspace -->
-        <dependency>
-              <groupId>org.shoal</groupId>
-              <artifactId>shoal-cache</artifactId>
-          </dependency>
-        <!-- schema2beans - both CMP and LB admin now depend on it -->
-        <dependency>
-            <groupId>org.glassfish.external</groupId>
-            <artifactId>schema2beans-repackaged</artifactId>
-            <version>${project.version}</version>
-        </dependency>          
-        <!-- javaee.jar containing Manifest Classpath of JavaEE API jars -->
+        
+        <!-- embedded shell fragment -->
         <dependency>
            <groupId>org.glassfish.extras</groupId>
-           <artifactId>javaee-frag</artifactId>
+           <artifactId>glassfish-embedded-static-shell-frag</artifactId>
            <version>${project.version}</version>
            <type>distribution-fragment</type>
         </dependency>
-
-        <!-- appserv-rt.jar containing Manifest Classpath of gf-client.jar -->
-        <dependency>
-           <groupId>org.glassfish.extras</groupId>
-           <artifactId>appserv-rt-frag</artifactId>
-           <version>${project.version}</version>
-           <type>distribution-fragment</type>
-        </dependency>
-
-   	<!-- now, listing package dependencies so that their content
-             can be excluded during staging -->	
-      
-       <dependency>        
-           <groupId>org.glassfish.packager</groupId>
-           <artifactId>glassfish-grizzly-full</artifactId>
-           <version>${project.version}</version>
-	   <classifier>artifacts</classifier>
-	   <type>properties</type>
-           <scope>provided</scope>
-       </dependency> 
-     
     </dependencies>
 
-    <profiles>
+     <profiles>
         <profile>
             <!--
                 Activate this profile with "mvn -Drepo.url=<ips-repository> -Dpython=<python> -P ips"
              -->
             <id>ips</id>
 	    <activation>
-	       <activeByDefault>false</activeByDefault> 
+	       <activeByDefault>false</activeByDefault>  
 	    </activation>
 	    <build>
             <plugins>

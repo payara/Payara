@@ -68,31 +68,104 @@
                     </tasks>
                 </configuration>               
              </plugin>
+             <plugin>
+               <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy-dependencies</id>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/artifacts</outputDirectory>
+                            <useSubDirectoryPerType>true</useSubDirectoryPerType>
+                            <overWriteReleases>false</overWriteReleases>
+                            <overWriteSnapshots>true</overWriteSnapshots>                            
+                            <includeScope>compile</includeScope>
+                            <includeScope>runtime</includeScope>
+                            <excludeArtifactIds>${packager.artifact.excludes}</excludeArtifactIds>
+                            <stripVersion>true</stripVersion>
+                        </configuration>
+                   </execution>                  
+               </executions>
+           </plugin>
         </plugins>
     </build>
 
 
     <dependencies>
         <!--
-	modules to be included in this bundle - embedded shell static
-	fragment plus intermediate glassfish-common package
+          modules to be included in this bundle
         -->       
-     
-        <!-- embedded shell fragment -->
+
         <dependency>
-           <groupId>org.glassfish.extras</groupId>
-           <artifactId>glassfish-embedded-static-shell-frag</artifactId>
+           <groupId>org.glassfish.common</groupId>
+           <artifactId>glassfish-naming</artifactId>
+           <version>${project.version}</version>
+   	</dependency>
+    	<dependency>
+           <groupId>org.glassfish.deployment</groupId>
+           <artifactId>dtds</artifactId>
            <version>${project.version}</version>
            <type>distribution-fragment</type>
         </dependency>
+        <dependency>
+           <groupId>org.glassfish.deployment</groupId>
+           <artifactId>schemas</artifactId>
+           <version>${project.version}</version>
+           <type>distribution-fragment</type>
+       </dependency>
+        <dependency>
+    	    <groupId>org.glassfish.admin</groupId>
+            <artifactId>monitoring-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+ 
+        <dependency>
+            <groupId>org.glassfish</groupId>
+            <artifactId>paas.orchestrator</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <!-- moving stuff from killed glassfish-security package -->
+        <dependency>
+            <groupId>org.glassfish.security</groupId>
+            <artifactId>security</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+ 
+        <!-- gms-bootstrap module -->
+       <dependency>
+            <groupId>org.glassfish.cluster</groupId>
+            <artifactId>gms-bootstrap</artifactId>
+            <version>${project.version}</version>
+       </dependency>
+ 
+        <!-- mimepull - shared dependency of metro and jersey -->
+        <dependency>
+            <groupId>org.jvnet</groupId>
+            <artifactId>mimepull</artifactId>
+        </dependency>
+
+        
+    
+      	<!-- now, listing package dependencies so that their content
+             can be excluded during staging -->	
+	<!-- package level dependency -->
+
  	<dependency>        
            <groupId>org.glassfish.packager</groupId>
-           <artifactId>glassfish-common-tmp</artifactId>
+           <artifactId>glassfish-corba-base</artifactId>
            <version>${project.version}</version>
-           <type>zip</type>
-        </dependency>   
-
-    </dependencies>
+           <classifier>artifacts</classifier>
+	   <type>properties</type>
+           <scope>provided</scope>
+       </dependency> 
+  
+    </dependencies>    
+    
     <profiles>
         <profile>
             <!--

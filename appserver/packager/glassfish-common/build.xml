@@ -3,7 +3,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 2010 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 2010-2011 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -41,39 +41,30 @@
 
 -->
 
-<project name="glassfish common package creation" default="create.package" basedir=".">
+<project name="glassfish common tmp package creation" default="create.package" basedir=".">
     <import file="${basedir}/../common-targets.xml"/>
 
  <target name="create.package">
- <property name="package.name" value="glassfish-common"/> 
+     <property name="package.name" value="glassfish-common"/> 
+     <property name="previous.package.name" value="glassfish-corba-base" />
 
-        
+       <antcall target="filter-module-artifacts"/>
 
-       <resolveArtifact property="glassfish-common-tmp.zip" groupID="org.glassfish.packager" artifactID="glassfish-common-tmp" type="zip" />
+       <stage-module-jars/>
+       <stage-distribution-fragments/>
+       
+       <!-- brute force cleanup at this point, need to look into extended ant
+           plugin and fix the issue at the source -->
+           
+       <delete file="target/stage/${install.dir.name}/glassfish/modules/activation.jar" failonerror="false" />
+     
 
-
-       <unzip src="${glassfish-common-tmp.zip}"
-           dest="target/stage">
-          <patternset>
-		  <exclude name="META-INF/**"/>
-	  </patternset>
-       </unzip> 
-
-       <resolveArtifact property="embedded-fragment.zip" groupID="org.glassfish.extras" artifactID="glassfish-embedded-static-shell-frag" />
-
-
-       <unzip src="${embedded-fragment.zip}"
-           dest="target/stage/${install.dir.name}">
-          <patternset>
-		  <exclude name="META-INF/**"/>
-	  </patternset>
-       </unzip>  
-      
        <if test="${compression}">
 	       <antcall target="pack.compression" />
        </if>
 
        <antcall target="create-zip-artifact"/>		
+       <antcall target="create-list-artifact"/>
 
    </target>
 </project>
