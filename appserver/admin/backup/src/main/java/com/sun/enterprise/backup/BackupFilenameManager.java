@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -211,7 +211,7 @@ class BackupFilenameManager {
 
     public static void main(String[] args) {
         try {
-            File f = new File("c:/tmp/test");
+            File f = new File(args[0]);
             BackupFilenameManager mgr = new BackupFilenameManager(f, "foo");
             File fnew = mgr.next();
             System.out.println("Next backup file: " + fnew);

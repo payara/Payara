@@ -59,9 +59,8 @@ import com.sun.appserv.server.util.Version;
  */
 class Status {
 
-    String write(BackupRequest req) {
+    String write(BackupRequest request) {
         props = new Properties();
-        request = req;
         File backupFileDir = null;
         if (request.configOnly) {
             backupFileDir = new File(request.domainDir, Constants.CONFIG_DIR) ;
@@ -72,7 +71,7 @@ class Status {
 
         FileOutputStream out = null;
         try {
-            setProps();
+            setProps(request);
 
             out = new FileOutputStream(statusFile);
             props.store(out, Constants.PROPS_HEADER);
@@ -145,7 +144,7 @@ class Status {
     }
     
     void delete() {
-        if(!statusFile.delete()) {
+        if(statusFile != null && !statusFile.delete()) {
             // TBD warning message
             statusFile.deleteOnExit();
         }
@@ -228,7 +227,7 @@ class Status {
         props = null;
         ZipInputStream zis = null;
 
-        if(file.getName().toLowerCase().endsWith(".properties")) {
+        if(file.getName().toLowerCase(Locale.ENGLISH).endsWith(".properties")) {
             readPropertiesFile(file);
             // props is now set...
             return;
@@ -280,7 +279,7 @@ class Status {
 	}
     }
 
-    private void setProps() {
+    private void setProps(BackupRequest request) {
         props.setProperty(Constants.PROPS_USER_NAME,
                           System.getProperty(Constants.PROPS_USER_NAME));
         props.setProperty(Constants.PROPS_TIMESTAMP_MSEC,
@@ -354,9 +353,6 @@ class Status {
         return msg;
     }
     
-    private BackupRequest    request;
-    private File             statusFile;
+    private File             statusFile = null;
     private Properties       props;
 }
-
-
