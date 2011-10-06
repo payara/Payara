@@ -46,17 +46,21 @@ from restresponse import *
 from connection import *
 
 class RestClientBase:
-    def __init__(self, connection, parent):
+    def __init__(self, connection, parent, name = None):
         self.connection = connection
         self.parent = parent
         self.entityValues = { }
         self.children = {}
 
+        if name:
+            self.setName(name)
+            self.name = name
+
         try:
             restResponse = self.connection.get(self.getRestUrl())
             
             self.status = restResponse.getStatus()
-            self.entityValues = restResponse.getExtraProperies()['entity']
+            self.entityValues = restResponse.getEntityValues()
             self.children = restResponse.getChildren()
         except Exception as e:
             print e
@@ -78,19 +82,17 @@ class RestClientBase:
         return self.message
 
     def save(self):
-        response, content = self.connection.request(self.getRestUrl(), 'POST', urllib.urlencode(self.entityValues),
-        	headers={'Content-type': 'application/x-www-form-urlencoded'})
-        self.status = response['status']
-        self.isNew = False
+        response = self.connection.post(self.getRestUrl(), urllib.urlencode(self.entityValues), headers={'Content-type': 'application/x-www-form-urlencoded'})
+        self.status = response.getStatus()
 
     def delete(self):
-        response, content = self.connection.request(self.getRestUrl(), 'DELETE')
-        self.status = response['status']
+        response = self.connection.delete(self.getRestUrl())
+        self.status = response.getStatus()
 
     def execute(self, endPoint, method = "GET", payload = {}, needsMultiPart = False):
         if method == "POST":
             if needsMultiPart:
-                content_type, body =self.encode_multipart_formdata(payload)
+                content_type, body = self.encode_multipart_formdata(payload)
                 restResponse = self.connection.post(self.getRestUrl() + endPoint, body, headers={'Content-type': content_type})
             else:
                 restResponse = self.connection.post(self.getRestUrl() + endPoint, urllib.urlencode(payload), headers={'Content-type': 'application/x-www-form-urlencoded'})
@@ -126,7 +128,7 @@ class RestClientBase:
                 body.append('--' + BOUNDARY)
                 body.append('Content-Disposition: form-data; name="%s"' % key)
                 body.append('')
-                body.append(value)
+                body.append(str(value))
 
         body.append('--' + BOUNDARY + '--')
         body.append('')

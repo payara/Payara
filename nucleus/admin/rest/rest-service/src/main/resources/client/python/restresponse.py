@@ -40,12 +40,19 @@ import json
 
 class RestResponse:
     def __init__(self, response, content):
-        responseMap = json.loads(content)
-        self.extraProperties = responseMap['extraProperties'] if responseMap.has_key('extraProperties') else {}
-        self.children = self.extraProperties['childResources'] if self.extraProperties.has_key('childResources') else []
         self.status = int(response['status'])
-        self.message = responseMap["message"]
-        self.properties = responseMap['properties'] if responseMap.has_key('properties') else {}
+
+        if content != '':
+            responseMap = json.loads(content)
+            self.extraProperties = responseMap['extraProperties'] if responseMap.has_key('extraProperties') else {}
+            self.entity = self.extraProperties['entity'] if self.extraProperties.has_key('entity') else []
+            self.children = self.extraProperties['childResources'] if self.extraProperties.has_key('childResources') else []
+            self.message = responseMap["message"]
+            self.properties = responseMap['properties'] if responseMap.has_key('properties') else {}
+        else:
+            self.entity = {}
+            self.children = None
+            self.message = None if self.status != 404 else "Resource not found"
 
     def getStatus(self):
         return self.status
@@ -61,6 +68,9 @@ class RestResponse:
 
     def getProperties(self):
         return self.properties
+
+    def getEntityValues(self):
+        return self.entity
 
     def isSuccess(self):
         return 200 <= self.status <= 299

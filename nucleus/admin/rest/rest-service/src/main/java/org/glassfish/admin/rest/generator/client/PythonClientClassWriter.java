@@ -62,10 +62,13 @@ class PythonClientClassWriter implements ClientClassWriter {
     private StringBuilder source;
     private File packageDir;
     private static String TMPL_CTOR = "from restclientbase import *\n\nclass CLASS(RestClientBase):\n"+
-            "    def __init__(self, connection, parent):\n" +
-            "        RestClientBase.__init__(self, connection, parent)\n" +
+            "    def __init__(self, connection, parent, name = None):\n" +
+            "        self.name = name\n" +
+            "        RestClientBase.__init__(self, connection, parent, name)\n" +
             "        self.parent = parent\n" +
-            "        self.connection = connection\n";
+            "        self.connection = connection\n\n" +
+            "    def getRestUrl(self):\n" +
+            "        return self.getParent().getRestUrl() + self.getSegment() + (('/' + self.name) if self.name else '')\n";
     private String TMPL_GET_SEGMENT = "    def getSegment(self):\n" + 
             "        return '/SEGMENT'\n";
     private static String TMPL_COMMAND_METHOD = "\n    def COMMAND(self PARAMS, optional={}):\n" + 
@@ -83,6 +86,7 @@ class PythonClientClassWriter implements ClientClassWriter {
 
     public PythonClientClassWriter(ConfigModel model, String className, Class parent, File baseDirectory) {
         this.className = className;
+        final boolean hasKey = Util.getKeyAttributeName(model) != null;
 
         packageDir = baseDirectory;
         packageDir.deleteOnExit();
@@ -90,8 +94,7 @@ class PythonClientClassWriter implements ClientClassWriter {
         if (!success) {
             throw new RuntimeException("Unable to create output directory"); // i18n
         }
-        source = new StringBuilder();
-        source.append(TMPL_CTOR.replace("CLASS", className));
+        source = new StringBuilder(TMPL_CTOR.replace("CLASS", className));
     }
 
     @Override
@@ -146,10 +149,11 @@ class PythonClientClassWriter implements ClientClassWriter {
 
     @Override
     public void createGetChildResource(ConfigModel model, String elementName, String childResourceClassName) {
+        final boolean hasKey = Util.getKeyAttributeName(model) != null;
         String method = TMPL_GET_CHILD_RESOURCE.replace("CHILD", childResourceClassName)
                 .replace("IMPORT", childResourceClassName.toLowerCase(Locale.getDefault()))
                 .replace("ELEMENT", elementName);
-        if (Util.getKeyAttributeName(model) == null) {
+        if (!hasKey) {
             method = method.replace(", name", "");
         }
         source.append(method);
