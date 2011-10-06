@@ -77,7 +77,7 @@ public abstract class ClientGenerator {
     protected Version version;
     protected List<String> messages = new ArrayList<String>();
     protected String versionString;
-    protected static String ARTIFACT_NAME = "rest-client-wrapper";
+    protected static final String ARTIFACT_NAME = "rest-client-wrapper";
 
     private DomDocument document;
 
