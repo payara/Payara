@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -100,7 +100,6 @@ public class InstanceRegisterInstanceCommand extends InstanceRegisterInstanceCom
     @Override
     public void execute(AdminCommandContext ctxt) {
         final ActionReport report = ctxt.getActionReport();
-        final Logger logger = ctxt.getLogger();
 
         try {
             // create node if it doesn't exist
@@ -108,15 +107,16 @@ public class InstanceRegisterInstanceCommand extends InstanceRegisterInstanceCom
             if (n == null) {
                 ConfigSupport.apply(new SingleConfigCode<Nodes>() {
 
+                    @Override
                     public Object run(Nodes param) throws PropertyVetoException, TransactionFailure {
 
                         Node newNode = param.createChild(Node.class);
                         newNode.setName(node);
-                        if(installdir != null && installdir != "")
+                        if(installdir != null && !"".equals(installdir))
                             newNode.setInstallDir(installdir);
-                        if (nodedir != null && nodedir !="")
+                        if (nodedir != null && !"".equals(nodedir))
                              newNode.setNodeDir(nodedir);
-                        if (nodehost != null && nodehost !="")
+                        if (nodehost != null && !"".equals(nodehost))
                             newNode.setNodeHost(nodehost);
                         newNode.setType(type);
                         //comment out - not needed

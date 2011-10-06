@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -269,7 +269,10 @@ public class ExportSyncBundle implements AdminCommand {
             }
             
             if (f.getParentFile() != null && !f.getParentFile().exists()) {
-                f.getParentFile().mkdirs();
+                if (!f.getParentFile().mkdirs()) {
+                    setError(Strings.get("export.sync.bundle.createDirFailed", f.getParentFile().getPath()));
+                    return false;
+                }
             }
             syncBundleExport = SmartFile.sanitize(f);
         }
@@ -292,10 +295,10 @@ public class ExportSyncBundle implements AdminCommand {
     private ServerSynchronizer serverSynchronizer;
     @Inject
     private ServerEnvironment env;
-    private ActionReport report;
+    private ActionReport report = null;
     private File syncBundleExport;
-    private Logger logger;
-    private Payload.Outbound payload;
+    private Logger logger = null;
+    private Payload.Outbound payload = null;
     private Server instance;
     private Cluster cluster;
     private SyncRequest syncRequest = new SyncRequest();
