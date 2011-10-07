@@ -41,6 +41,8 @@ GF_HOME=${GF_HOME:-$S1AS_HOME}
 echo "Your GlassFish is at $GF_HOME"
 $GF_HOME/bin/asadmin start-domain --debug
 $GF_HOME/bin/asadmin create-ims-config-native
+cp /tmp/lb.zip $GF_HOME/config
+$GF_HOME/bin/asadmin create-template --indexes ServiceType=LB,VirtualizationType=Native LBNative
 $GF_HOME/bin/asadmin stop-domain
 #$GF_HOME/bin/asadmin add-virtualization --type Native
 #$GF_HOME/bin/asadmin create-server-pool --virtualization Native --subnet 192.168.1.102/250 --portName "br0" Native
