@@ -48,6 +48,8 @@ import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.ExecuteOn;
 import org.glassfish.api.admin.RuntimeType;
+import org.glassfish.api.admin.RestEndpoints;
+import org.glassfish.api.admin.RestEndpoint;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.config.support.CommandTarget;
 import org.jvnet.hk2.annotations.Service;
@@ -56,6 +58,7 @@ import org.jvnet.hk2.component.PerLookup;
 import org.jvnet.hk2.annotations.Inject;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.io.FileUtils;
+import com.sun.enterprise.config.serverbeans.Domain;
 
 import java.util.logging.Logger;
 import java.util.logging.Level;
@@ -66,6 +69,9 @@ import java.io.File;
 @Scoped(PerLookup.class)
 @CommandLock(CommandLock.LockType.NONE)
 @ExecuteOn(value={RuntimeType.DAS})
+@RestEndpoints({
+    @RestEndpoint(configBean=Domain.class, opType= RestEndpoint.OpType.POST, path="remove-library", description="Uninstall library")
+})
 public class RemoveLibraryCommand implements AdminCommand {
 
     @Param(primary=true, multiple=true)
