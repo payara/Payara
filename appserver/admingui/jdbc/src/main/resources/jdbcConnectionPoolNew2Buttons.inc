@@ -66,8 +66,10 @@
                     convertToFalse="#{pageSession.convertToFalseList}"
                     result => $attribute{resultEndPoint});
             if (#{pageSession.hasPropertyTable}){
-                removeEmptyProps(props="#{pageSession.tableList}" modifiedProps="#{pageSession.tableList}");
-                javaToJSON(obj="#{pageSession.tableList}" json="#{requestScope.tmpJSON}");
+                getUIComponent(clientId="$pageSession{propertyTableRowGroupId}", component=>$attribute{tableRowGroup});
+                getAllSingleMapRows(TableRowGroup="$attribute{tableRowGroup}",  Rows=>$attribute{newList});
+                removeEmptyProps(props="#{newList}" modifiedProps="#{newList}");
+                javaToJSON(obj="#{newList}" json="#{requestScope.tmpJSON}");
                 urlencode(value="#{wizardMap['name']}" encoding="UTF-8" result="#{pageSession.encodeName}");
                 gf.restRequest(endpoint="#{pageSession.parentUrl}/#{pageSession.childType}/#{pageSession.encodeName}/property.json"
                                method="POST"
