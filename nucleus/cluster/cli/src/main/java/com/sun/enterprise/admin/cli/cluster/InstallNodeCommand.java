@@ -152,8 +152,12 @@ public class InstallNodeCommand extends NativeRemoteCommandsBase {
 
         try {
             ArrayList<String> binDirFiles = new ArrayList<String>();
+			precopy();
             zipFile = createZipFileIfNeeded(binDirFiles);
             copyToHosts(zipFile, binDirFiles);
+        }
+        catch (CommandException e) {
+            throw e;
         }
         catch (Exception e) {
             throw new CommandException(e);
@@ -168,6 +172,29 @@ public class InstallNodeCommand extends NativeRemoteCommandsBase {
         }
 
         return SUCCESS;
+    }
+    /**
+     * bnevins: This is exclusively a "user-performance" enhancement.
+     * We are forcing the failure
+     * to happen before the very very slow zipfile creation.
+     * FAIL FAST principle
+     * This adds a bit of extra overhead to the command...
+     * @throws WindowsException
+     */
+    private void precopy() throws CommandException, WindowsException {
+        if (force || !dcomNode)
+            return;
+
+        // this is DCOM **and** force is false
+        // thus that directory better not exist!
+        for (String host : hosts) {
+            String remotePassword = getDCOMPassword(host);
+            WindowsRemoteFileSystem wrfs = new WindowsRemoteFileSystem(host, dcomuser, remotePassword);
+            WindowsRemoteFile remoteInstallDir = new WindowsRemoteFile(wrfs, installDir);
+
+            if (remoteInstallDir.exists())
+                throw new CommandException(Strings.get("install.dir.exists", installDir));
+        }
     }
 
     private void copyToHosts(File zipFile, ArrayList<String> binDirFiles)
