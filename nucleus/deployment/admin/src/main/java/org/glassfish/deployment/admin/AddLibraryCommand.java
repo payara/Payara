@@ -66,8 +66,8 @@ import java.io.File;
 @ExecuteOn(value={RuntimeType.DAS})
 public class AddLibraryCommand implements AdminCommand {
 
-    @Param(primary=true)
-    File libraryFile = null;
+    @Param(primary=true, multiple=true)
+    File[] files = null;
 
     @Param(optional=true, acceptableValues="common, ext, app")
     String type = "common";
@@ -93,8 +93,10 @@ public class AddLibraryCommand implements AdminCommand {
         // rename or copy the library file to the appropriate 
         // library directory
         try {
-            DeploymentCommandUtils.renameUploadedFileOrCopyInPlaceFile(
+            for (File libraryFile : files) {
+                DeploymentCommandUtils.renameUploadedFileOrCopyInPlaceFile(
                 libDir, libraryFile, logger, env);
+            }
         } catch (Exception e) {
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setMessage(e.getMessage());

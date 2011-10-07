@@ -68,8 +68,8 @@ import java.io.File;
 @ExecuteOn(value={RuntimeType.DAS})
 public class RemoveLibraryCommand implements AdminCommand {
 
-    @Param(primary=true)
-    String libraryName = null;
+    @Param(primary=true, multiple=true)
+    String[] names = null;
 
     @Param(optional=true, acceptableValues="common, ext, app")
     String type = "common";
@@ -93,11 +93,16 @@ public class RemoveLibraryCommand implements AdminCommand {
         }
 
         // delete the file from the appropriate library directory
-        File libraryFile = new File(libDir, libraryName);
-        if (libraryFile.exists()) {
-            FileUtils.deleteFile(libraryFile);
-        } else {
-            String msg = localStrings.getLocalString("lfnf","Library file not found", libraryFile.getAbsolutePath());
+        String msg = "";
+        for (String libraryName : names) {
+            File libraryFile = new File(libDir, libraryName);
+            if (libraryFile.exists()) {
+                FileUtils.deleteFile(libraryFile);
+            } else {
+                msg += localStrings.getLocalString("lfnf","Library file not found", libraryFile.getAbsolutePath());
+            }
+        }
+        if (msg.length() > 0) {
             logger.log(Level.WARNING, msg);
             report.setActionExitCode(ActionReport.ExitCode.WARNING);
             report.setMessage(msg);
