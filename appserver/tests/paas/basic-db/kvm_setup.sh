@@ -58,8 +58,8 @@ $S1AS_HOME/bin/asadmin create-template-user --virtualization kvm --userid 1000 -
 #$GF_HOME/bin/asadmin create-template --virtualization kvm --files $TEMPLATES_DIR/oracledb.img,$TEMPLATES_DIR/oracledb.xml --indexes ServiceType=Database,VirtualizationType=libvirt oracledb
 #$S1AS_HOME/bin/asadmin create-template-user --virtualization kvm --userid 1000 --groupid 1000 --template oracledb shalinikvm
 
-#$GF_HOME/bin/asadmin create-template --virtualization kvm --files $TEMPLATES_DIR/apache.img,$TEMPLATES_DIR/apache.xml --properties scripts-dir=/home/cloud/workspace/scripts:install-dir=/home/cloud/workspace/apache/install --indexes ServiceType=LB,VirtualizationType=libvirt apachemodjk
-#$S1AS_HOME/bin/asadmin create-template-user --virtualization kvm --userid 1000 --groupid 1000 --template apachemodjk cloud
+$GF_HOME/bin/asadmin create-template --virtualization kvm --files $TEMPLATES_DIR/apache.img,$TEMPLATES_DIR/apache.xml --indexes ServiceType=LB,VirtualizationType=libvirt apachemodjk
+$S1AS_HOME/bin/asadmin create-template-user --virtualization kvm --userid 1000 --groupid 1000 --template apachemodjk cloud
 
 $GF_HOME/bin/asadmin create-machine --serverPool cloud --networkName localhost local
 $GF_HOME/bin/asadmin create-machine-user --serverPool cloud --machine local --userId 1000 --groupId 1000 shalini

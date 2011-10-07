@@ -1,3 +1,5 @@
+This is a Basic PaaS application to test JavaDB database. The test displays some values from a system table in JavaDB database. 
+
 Steps to run this test:
 -----------------------
 
@@ -5,24 +7,47 @@ Steps to run this test:
 
   For example: export S1AS_HOME=/tmp/glassfish3/glassfish
 
-2. Copy all the jar files from main/appserver/paas and main/nucleus/paas to $S1AS_HOME/modules, something like this in unix:
+Set S1AS_HOME to /tmp/glassfish3/glassfish.
 
-  cd $WS_HOME/main/appserver/paas
-  cp `find . -type f -name "*.jar" | grep -v sources` $S1AS_HOME/modules/
-  cd $WS_HOME/main/nucleus/paas
-  cp `find . -type f -name "*.jar" | grep -v sources` $S1AS_HOME/modules/
+2. 
+
+(Only for Native mode) : 
+
+Download lb.zip for appropriate platform.
+
+    Windows - http://ejp-152x-232.india.sun.com/lb/windows/lb.zip
+    Mac OS [ 64 bit ] - http://ejp-152x-232.india.sun.com/lb/macos/lb.zip
+    Ubuntu [ 32 bit ] - http://ejp-152x-232.india.sun.com/lb/ubuntu/lb.zip
+    Ubuntu [ 64 bit ] - http://ejp-152x-232.india.sun.com/lb/ubuntu-64/lb.zip
+
+Copy downloaded lb.zip under /tmp. This will be copied to the $S1AS_HOME/config directory while doing (3).
+
+(Only for OVM mode) :
+
+Download and Copy http://ejp-152x-232.india.sun.com/paas.lbplugin-otd.jar to $S1AS_HOME/modules directory.
+Download and Copy $VALUE_ADD_WS/virtualization/ovm/target/ovm.jar to $S1AS_HOME/modules directory.
+Download and Copy $VALUE_ADD_WS/virtualization/ovmws/target/ovmws.jar to $S1AS_HOME/modules directory.
+
+Unzip $VALUE_ADD_WS/virtualization/ovm-files/target/ovm-files.zip under $S1AS_HOME/.. directory.
+
+Edit the $S1AS_HOME/config/ovm/linux/ips file to add the list of static IPs followed by the hostnames you wish to use. 
+Edit the $S1AS_HOME/config/ovm/linux/network file for the network configuration of CPAS.
 
 3. [Optional] Setup virtualization enviroment for your GlassFish installation. 
 
-   For example, modify kvm_setup.sh/native_setup.sh to suite your system details and run it.
+   For example, modify ovm_setup.sh/kvm_setup.sh/native_setup.sh to suite your system details and run it.
 
 This step is optional in which case the service(s) required for this PaaS app will be provisioned in non-virtualized environment.
 
-Restart domain after this step.
+4. Restart domain after this step. (Only for native mode)
 
-4. Compile this test : mvn clean compile war:war
+5. Compile this test : mvn clean compile war:war
 
-5. Deploy the war : asadmin deploy /tmp/basic_db_paas_sample.war
+6. Deploy the war : asadmin deploy /tmp/basic_db_paas_sample.war
+
+7. Access the application : http://<lb-ip>:50080/basic_db_paas_sample
+
+8. Undeploy the application : asadmin undeploy basic_db_paas_sample
  
-Note : Since the unprovisioning is not clean as of now, so in order to re-run the test it is recommendded to delete the GF installation and start fresh from step (1). Also make sure all ASMain processes are killed before you start.
+Note : Make sure all ASMain processes are killed before this test is re-run.
 
