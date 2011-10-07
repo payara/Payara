@@ -65,6 +65,68 @@ public class JavaClientClassWriter implements ClientClassWriter {
     private String className;
     private BufferedWriter source;
 
+    private static final String TMPL_CLASS_HEADER =
+            "package " + Constants.CLIENT_JAVA_PACKAGE +";\n" +
+            "import java.util.HashMap;\n" +
+            "import java.util.Map;\n" +
+            "import com.sun.jersey.api.client.Client;\n\n" +
+            "public class CLASSNAME extends RestClientBase {\n";
+    private static final String TMPL_CTOR_DOMAIN =
+            "    private RestClient parent;\n" +
+            "    public CLASSNAME (RestClient parent) {\n" +
+            "        super(parent.client, null);\n" +
+            "        this.parent = parent;\n" +
+            "    }\n\n";
+    private static final String TMPL_CTOR_OTHER_WITH_KEY = 
+            "    private String name;\n" +
+            "    protected CLASSNAME (Client c, RestClientBase p, String name) {\n" +
+            "        super(c, p);\n" +
+            "        this.name = name;\n" +
+            "    }\n\n";
+    private static final String TMPL_CTOR_OTHER_NO_KEY =
+            "    protected  CLASSNAME (Client c, RestClientBase p) {\n" +
+            "        super(c,p);\n" +
+            "    }\n\n";
+    private static final String TMPL_GET_REST_URL = // TODO: Test this code heavily
+            "    @Override\n" +
+            "    protected String getRestUrl() {\n" +
+            "        return super.getRestUrl()HASKEY;\n" +
+            "    }\n\n";
+    private static final String TMPL_CTOR_SIMPLE =
+            "package " + Constants.CLIENT_JAVA_PACKAGE +";\n" +
+            "import com.sun.jersey.api.client.Client;\n\n" +
+            "public class CLASSNAME extends PARENTCLASS {\n" +
+            "    protected  CLASSNAME (Client c, RestClientBase p) {\n" +
+            "        super(c,p);\n"+
+            "    }\n\n";
+    private static final String TMPL_GET_SEGMENT =
+            "    @Override protected String getSegment() {\n" +
+            "        return \"/TAGNAME\";\n" +
+            "    }\n\n";
+    private static final String TMPL_GETTERS_AND_SETTERS = 
+            "    public TYPE getMETHOD() {\n" +
+            "        return getValue(\"FIELDNAME\", TYPE.class);\n" +
+            "    }\n\n" +
+            "    public void setMETHOD(TYPE value) {\n" +
+            "        setValue(\"FIELDNAME\", value);\n" +
+            "    }\n\n";
+    private static final String TMPL_COLLECTION_LEAF_RESOURCE =
+            "    public CLASSNAME getCLASSNAME() {\n" +
+            "        return new CLASSNAME (client, this);\n" +
+            "    }\n\n";
+    private static final String TMPL_COMMAND =
+            "    public RestResponse METHODNAME(SIG1) {\n" +
+            "        return METHODNAME(PARAMS new HashMap<String, Object>());\n" +
+            "    }\n\n" +
+            "    public RestResponse METHODNAME(SIG2 Map<String, Object> additional) {\n" +
+            "METHODBODY" +
+            "    }\n\n";
+    private static final String TMPL_METHOD_BODY =
+            "        Map<String, Object> payload = new HashMap<String, Object>();\n" +
+            "PUTS" +
+            "        payload.putAll(additional);\n" +
+            "        return execute(Method.HTTPMETHOD, \"/RESOURCEPATH\", payload, NEEDSMULTIPART);\n";
+
     public JavaClientClassWriter(final ConfigModel model, final String className, Class parent, File baseDirectory) {
         this.className = className;
 
@@ -96,54 +158,24 @@ public class JavaClientClassWriter implements ClientClassWriter {
             boolean hasKey = (Util.getKeyAttributeName(model) != null);
             boolean isDomain = className.equals("Domain");
 
-            source.append("package ")
-                    .append(Constants.CLIENT_JAVA_PACKAGE)
-                    .append(";\n")
-                    .append("import java.util.HashMap;\n")
-                    .append("import java.util.Map;\n")
-                    .append("import com.sun.jersey.api.client.Client;\n")
-                    .append("\npublic class ")
-                    .append(className)
-                    .append(" extends RestClientBase {\n");
+            source.append(TMPL_CLASS_HEADER.replace("CLASSNAME", className));
 
-            // ctor
             if (isDomain) {
-                source.append("    private RestClient parent;\n")
-                        .append("    public ")
-                        .append(className)
-                        .append("(RestClient parent) {\n")
-                        .append("        super(parent.client, null);\n")
-                        .append("        this.parent = parent;\n    }\n");
-
+                source.append(TMPL_CTOR_DOMAIN.replace("CLASSNAME", className));
             } else {
                 if (hasKey) {
-                    source.append("    private String name;\n")
-                            .append("    protected ")
-                            .append(className)
-                            .append("(Client c, RestClientBase p, String name) {\n")
-                            .append("        super(c, p);\n")
-                            .append("        this.name = name;\n")
-                            .append("    }\n");
-
-
+                    source.append(TMPL_CTOR_OTHER_WITH_KEY.replace("CLASSNAME", className));
                 } else {
-                    source.append("    protected ")
-                            .append(className)
-                            .append("(Client c, RestClientBase p) {\n")
-                            .append("        super(c,p);\n")
-                            .append("    }\n");
-
+                    source.append(TMPL_CTOR_OTHER_NO_KEY.replace("CLASSNAME", className));
                 }
             }
 
             if (hasKey || isDomain) {
-                source.append("    @Override protected String getRestUrl() {\n");
-                if (hasKey) {
-                    source.append("        return super.getRestUrl() + (isNew() ? \"\" :  \"/\" + name);\n");
-                } else if (isDomain) {
-                    source.append("        return parent.getRestUrl() + getSegment();\n");
+                String method = TMPL_GET_REST_URL.replace("HASKEY", hasKey ? " + \"/\" + name" : "");
+                if (isDomain) {
+                    method = method.replace("super.getRestUrl()", "parent.getRestUrl() + getSegment()");
                 }
-                source.append("    }\n");
+                source.append(method);
             }
         } catch (IOException ex) {
             Logger.getLogger(JavaClientClassWriter.class.getName()).
@@ -154,18 +186,7 @@ public class JavaClientClassWriter implements ClientClassWriter {
     // TODO: The next two generated ctors are identical, other than the parent class
     protected final void generateSimpleCtor(String parentClassName) {
         try {
-            source.append("package org.glassfish.admin.rest.client;\n")
-                    .append("import com.sun.jersey.api.client.Client;\n")
-                    .append("\npublic class ")
-                    .append(className)
-                    .append(" extends ")
-                    .append(parentClassName)
-                    .append(" {\n")
-                    .append("    protected ")
-                    .append(className)
-                    .append("(Client c, RestClientBase p) {\n")
-                    .append("        super(c,p);\n")
-                    .append("    }\n");
+            source.append(TMPL_CTOR_SIMPLE.replace("CLASSNAME", className).replace("PARENTCLASS", parentClassName));
         } catch (IOException ex) {
             Logger.getLogger(JavaClientClassWriter.class.getName()).
                     log(Level.SEVERE, null, ex);
@@ -175,11 +196,7 @@ public class JavaClientClassWriter implements ClientClassWriter {
     @Override
     public void generateGetSegment(String tagName) {
         try {
-            source.append("\n")
-                    .append("    @Override protected String getSegment() {\n")
-                    .append("        return \"/")
-                    .append(tagName)
-                    .append("\";\n    }\n");
+            source.append(TMPL_GET_SEGMENT.replace("TAGNAME", tagName));
         } catch (IOException ex) {
             Logger.getLogger(JavaClientClassWriter.class.getName()).
                     log(Level.SEVERE, null, ex);
@@ -193,33 +210,14 @@ public class JavaClientClassWriter implements ClientClassWriter {
             boolean needsMultiPart = parametersSignature.contains("java.io.File");
             
             String parameters = Util.getMethodParameterList(cm, false, false);
-            source.append("\n    public RestResponse ")
-                    .append(methodName)
-                    .append("(")
-                    .append(parametersSignature)
-                    .append(") {\n")
-                    .append("        return ")
-                    .append(methodName)
-                    .append("(");
-            if (!parameters.isEmpty()) {
-                source.append(parameters)
-                    .append(", ");
-            }
-            
-            source.append("new HashMap<String, Object>());\n")
-                    .append("    }\n");
-            source.append("\n    public RestResponse ")
-                    .append(methodName)
-                    .append("(");
-            
-            if (!parametersSignature.isEmpty()) {
-                source.append(parametersSignature)
-                        .append(", ");
-            }
+            String method = TMPL_COMMAND
+                    .replace("METHODNAME", methodName)
+                    .replace("SIG1", parametersSignature)
+                    .replace("PARAMS", !parameters.isEmpty() ? (parameters + ",") : "")
+                    .replace("SIG2", !parametersSignature.isEmpty() ? (parametersSignature + ",") : "")
+                    .replace("METHODBODY", generateMethodBody(cm, httpMethod, resourcePath, false, needsMultiPart));
 
-            source.append("Map<String, Object> additional) {\n")
-                    .append(generateMethodBody(cm, httpMethod, resourcePath, false, needsMultiPart))
-                    .append("    }\n");
+            source.append(method);
         } catch (IOException ex) {
             Logger.getLogger(JavaClientClassWriter.class.getName()).
                     log(Level.SEVERE, null, ex);
@@ -229,7 +227,6 @@ public class JavaClientClassWriter implements ClientClassWriter {
     @Override
     public String generateMethodBody(CommandModel cm, String httpMethod, String resourcePath, boolean includeOptional, boolean needsMultiPart) {
         StringBuilder sb = new StringBuilder();
-        sb.append("        Map<String, Object> payload = new HashMap<String, Object>();\n");
         Collection<ParamModel> params = cm.getParameters();
         if ((params != null) && (!params.isEmpty())) {
             for (ParamModel model : params) {
@@ -239,88 +236,24 @@ public class JavaClientClassWriter implements ClientClassWriter {
                     continue;
                 }
                 String key = (!param.alias().isEmpty()) ? param.alias() : model.getName();
-                String paramName = Util.eleminateHypen(model.getName()); 
-                sb.append("        payload.put(\"")
-                        .append(key)
-                        .append("\", _")
-                        .append(paramName)
-                        .append(");\n");
+                String paramName = Util.eleminateHypen(model.getName());
+                String put = "        payload.put(\"" + key + "\", _" + paramName +");\n";
+                sb.append(put);
             }
         }
-        sb.append("        payload.putAll(additional);\n");
-        sb.append("        return execute(Method.")
-                .append(httpMethod.toUpperCase(Locale.US))
-                .append(", \"/")
-                .append(resourcePath)
-                .append("\"")
-                .append(", payload,")
-                .append(needsMultiPart)
-                .append(");\n");
-
-
-        return sb.toString();
-    }
-
-    public String generateMethodBody2(CommandModel cm, String httpMethod, String resourcePath, boolean includeOptional, boolean needsMultiPart) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("        Map<String, Object> payload = new HashMap<String, Object>();\n");
-        Map<String, String> paramNames = new HashMap<String, String>();
-        Collection<ParamModel> params = cm.getParameters();
-        if ((params != null) && (!params.isEmpty())) {
-            for (ParamModel model : params) {
-                Param param = model.getParam();
-                boolean include = true;
-                if (param.optional() && !includeOptional) {
-                    include = false;
-                }
-                if (!include) {
-                    continue;
-                }
-                paramNames.put((!param.alias().isEmpty()) ? param.alias() : model.
-                        getName(), model.getName());
-            }
-        }
-        for (Map.Entry<String, String> paramName : paramNames.entrySet()) {
-            sb.append("        payload.put(\"")
-                    .append(paramName.getKey())
-                    .append("\", _")
-                    .append(Util.eleminateHypen(paramName.getValue()))
-                    .append(");\n");
-        }
-        sb.append("        return execute(Method.")
-                .append(httpMethod.toUpperCase(Locale.US))
-                .append(", \"/")
-                .append(resourcePath)
-                .append("\"")
-                .append(", payload,")
-                .append(needsMultiPart)
-                .append(");\n");
-
-
-        return sb.toString();
+        return TMPL_METHOD_BODY.replace("PUTS", sb.toString())
+                .replace("HTTPMETHOD", httpMethod.toUpperCase(Locale.US))
+                .replace("RESOURCEPATH", resourcePath)
+                .replace("NEEDSMULTIPART", Boolean.toString(needsMultiPart));
     }
 
     @Override
     public void generateGettersAndSetters(String type, String methodName, String fieldName) {
         try {
-            // getter
-            source.append("    public ")
-                    .append(type)
-                    .append(" get")
-                    .append(methodName)
-                    .append("() {\n        return getValue(\"")
-                    .append(fieldName)
-                    .append("\",")
-                    .append(type)
-                    .append(".class);\n    }\n\n");
-
-            // setter
-            source.append("    public void set")
-                    .append(methodName).append("(")
-                    .append(type)
-                    .append(" value) {\n        setValue(\"")
-                    .append(fieldName)
-                    .append("\", value);\n    }\n\n");
+            source.append(TMPL_GETTERS_AND_SETTERS
+                .replace("METHOD", methodName)
+                .replace("TYPE", type)
+                .replace("FIELDNAME", fieldName));
         } catch (IOException ex) {
             Logger.getLogger(JavaClientClassWriter.class.getName()).
                     log(Level.SEVERE, null, ex);
@@ -330,67 +263,39 @@ public class JavaClientClassWriter implements ClientClassWriter {
     @Override
     public void createGetChildResource(ConfigModel model, String elementName, String childResourceClassName) {
         try {
+            final String TMPL_GET_CHILD_RESOURCE =
+                    "    public CHILDRESOURCE getELEMENTNAME(HASKEY1) {\n" +
+                    "        CHILDRESOURCE child = new CHILDRESOURCE(client, this HASKEY2);\n" +
+                    "        child.initialize();\n" +
+                    "        return (child.status == 200) ? child : null;\n" +
+                    "    }\n";
             final boolean hasKey = Util.getKeyAttributeName(model) != null;
-            source.append("    public ")
-                    .append(childResourceClassName)
-                    .append(" get")
-                    .append(elementName)
-                    .append("(");
-            if (hasKey) {
-                source.append("String name");
-            }
-            source.append(") {\n")
-                    .append("        ")
-                    .append(childResourceClassName)
-                    .append(" child = new ")
-                    .append(childResourceClassName)
-                    .append("(client, this");
-            if (hasKey) {
-                source.append(", name");
-            }
-            source.append(");\n");
-            source.append("        child.initialize();\n");
-            source.append("        return (child.status == 200) ? child : null;\n");
-            source.append("    }\n");
+            source.append(TMPL_GET_CHILD_RESOURCE
+                .replace("CHILDRESOURCE", childResourceClassName)
+                .replace("HASKEY1", hasKey ? "String name" : "")
+                .replace("HASKEY2", hasKey ? ", name" : "")
+                .replace("ELEMENTNAME", elementName));
         } catch (IOException ex) {
             Logger.getLogger(JavaClientClassWriter.class.getName()).
                     log(Level.SEVERE, null, ex);
         }
     }
 
-    // TODO: Merge generateCollectionLeafResourceGetter() and
-    // generateRestLeafGetter().  Must find a meaningful name first.
+    // TODO: Merge generateCollectionLeafResourceGetter() and generateRestLeafGetter().  Must find a meaningful name first.
     @Override
     public void generateCollectionLeafResourceGetter(String className) {
         try {
-            source.append("    public ")
-                    .append(className)
-                    .append(" get")
-                    .append(className)
-                    .append("() {\n")
-                    .append("        return new ")
-                    .append(className)
-                    .append("(client, this);\n")
-                    .append("    }\n");
+            source.append(TMPL_COLLECTION_LEAF_RESOURCE.replace("CLASSNAME", className));
         } catch (IOException ex) {
             Logger.getLogger(JavaClientClassWriter.class.getName()).
                     log(Level.SEVERE, null, ex);
         }
-
     }
 
     @Override
     public void generateRestLeafGetter(String className) {
         try {
-            source.append("    public ")
-                    .append(className)
-                    .append(" get")
-                    .append(className)
-                    .append("() {\n")
-                    .append("        return new ")
-                    .append(className)
-                    .append("(client, this);\n")
-                    .append("    }\n");
+            source.append(TMPL_COLLECTION_LEAF_RESOURCE.replace("CLASSNAME", className));
         } catch (IOException ex) {
             Logger.getLogger(JavaClientClassWriter.class.getName()).
                     log(Level.SEVERE, null, ex);
