@@ -75,7 +75,7 @@ public abstract class CreateRemoteNodeCommand implements AdminCommand {
     @Param(name = "name", primary = true)
     private String name;
     @Param(name = "nodehost")
-    private String nodehost;
+    protected String nodehost;
     @Param(name = "installdir", optional = true, defaultValue = NodeUtils.NODE_DEFAULT_INSTALLDIR)
     private String installdir;
     @Param(name = "nodedir", optional = true)
@@ -95,6 +95,8 @@ public abstract class CreateRemoteNodeCommand implements AdminCommand {
 
     protected abstract void populateBaseClass();
 
+    protected abstract void initialize();
+
     protected abstract void populateParameters(ParameterMap pmap);
 
     protected abstract void populateCommandArgs(List<String> args);
@@ -109,6 +111,7 @@ public abstract class CreateRemoteNodeCommand implements AdminCommand {
         ActionReport report = context.getActionReport();
         StringBuilder msg = new StringBuilder();
         logger = context.getLogger();
+        initialize();
         populateBaseClass();
         checkDefaults();
         ParameterMap map = new ParameterMap();

@@ -81,6 +81,11 @@ public class CreateNodeSshCommand extends CreateRemoteNodeCommand {
     }
 
     @Override
+    protected void initialize() {
+        // nothing to do...
+    }
+
+    @Override
     protected void validate() throws CommandValidationException {
         // nothing to do
     }

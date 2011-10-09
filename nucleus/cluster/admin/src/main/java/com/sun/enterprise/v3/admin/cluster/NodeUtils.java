@@ -94,7 +94,7 @@ public class NodeUtils {
     static final String PARAM_SSHKEYPASSPHRASE = "sshkeypassphrase";
     static final String PARAM_TYPE = "type";
     static final String PARAM_INSTALL = "install";
-    static final String PARAM_WINDOWS_DOMAIN = "windowsdomain";
+    public static final String PARAM_WINDOWS_DOMAIN = "windowsdomain";
     static final String LANDMARK_FILE = "glassfish/modules/admin-cli.jar";
     private static final String NL = System.getProperty("line.separator");
     private TokenResolver resolver = null;
@@ -651,6 +651,14 @@ public class NodeUtils {
     // DCOMFIX - installroot is probably the parent of the glassfish directory
     // DCOMFIX it would be nice to have the actual install-root of GF in the config
     private String getInstallRoot(String installDir) {
-        return installDir + "/glassfish";
+        // Imagine if you send in "C:\" as installDir.  THat is NOT the same as "C:" !
+        // that's why we need extra processing.
+        char[] chars = installDir.toCharArray();
+        char end = chars[chars.length - 1];
+
+        if (end != '/' && end != '\\')
+            return installDir + "/glassfish";
+        else
+            return installDir + "glassfish";
     }
 }

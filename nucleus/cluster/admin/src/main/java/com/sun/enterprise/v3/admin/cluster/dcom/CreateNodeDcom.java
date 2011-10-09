@@ -66,6 +66,15 @@ public class CreateNodeDcom extends CreateRemoteNodeCommand {
     private String dcomuser;
     @Param(name = "dcompassword", optional = true, password = true)
     private String dcompassword;
+    @Param(name = "windowsdomain", optional = true)
+    private String windowsdomain;
+
+    @Override
+    protected void initialize() {
+        // check windows domain
+        if(!ok(windowsdomain))
+            windowsdomain = nodehost;
+    }
 
     @Override
     public final void execute(AdminCommandContext context) {
@@ -111,6 +120,7 @@ public class CreateNodeDcom extends CreateRemoteNodeCommand {
 
     @Override
     protected final void populateParameters(ParameterMap pmap) {
+        pmap.add(NodeUtils.PARAM_WINDOWS_DOMAIN, windowsdomain);
     }
 
     @Override
