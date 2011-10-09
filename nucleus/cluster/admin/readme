@@ -81,19 +81,11 @@ bunch-o-nodes
       </ssh-connector>
     </node>
     <node node-host="localhost" name="localhost-domain1" type="CONFIG" install-dir="${com.sun.aas.productRoot}"></node>
-    <node node-host="wnevins-lnr" name="lnrnode" type="DCOM" install-dir="${com.sun.aas.productRoot}">
+
+    <node node-host="wnevins-lnr" name="lnr" windows-domain="wnevins-lnr" type="DCOM" install-dir="${com.sun.aas.productRoot}">
       <ssh-connector ssh-port="135">
         <ssh-auth password="Bolongo23Nasal"></ssh-auth>
       </ssh-connector>
     </node>
-    <node node-host="wnevins-lnr" name="lnr23" type="DCOM" install-dir="${com.sun.aas.productRoot}">
-      <ssh-connector ssh-port="135">
-        <ssh-auth password="Bolongo23Nasal"></ssh-auth>
-      </ssh-connector>
-    </node>
-    <node node-host="wnevins-lnr" name="foobar" windows-domain="TESTTESTTEST" type="DCOM" install-dir="${com.sun.aas.productRoot}">
-      <ssh-connector ssh-port="135">
-        <ssh-auth password="Bolongo23Nasal"></ssh-auth>
-      </ssh-connector>
-    </node>
+
   </nodes>
