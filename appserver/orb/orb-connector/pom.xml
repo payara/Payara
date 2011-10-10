@@ -55,6 +55,10 @@
     <packaging>hk2-jar</packaging>
     <name>GlassFish ORB connector implementation</name>
 
+    <properties>
+        <findbugs.exclude>${project.basedir}/exclude.xml</findbugs.exclude>
+    </properties>
+
     <developers>
         <developer>
             <id>mk111283</id>
