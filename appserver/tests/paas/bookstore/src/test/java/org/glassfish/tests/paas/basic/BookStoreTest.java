@@ -38,11 +38,12 @@
  * holder.
  */
 
-package org.glassfish.tests.paas.basic;
+package org.glassfish.tests.paas.bookstore;
 
 import junit.framework.Assert;
 import org.glassfish.embeddable.CommandResult;
 import org.glassfish.embeddable.CommandRunner;
+import org.glassfish.embeddable.Deployer;
 import org.glassfish.embeddable.GlassFish;
 import org.glassfish.embeddable.GlassFishProperties;
 import org.glassfish.embeddable.GlassFishRuntime;
@@ -69,91 +70,78 @@ import java.util.jar.JarFile;
 
 public class BookStoreTest {
 
-    @Test
-    public void test() throws Exception {
+	@Test
+	public void test() throws Exception {
 
-        // 1. Create the config file required for non-virtual deployment.
-        createCloudConfigFile();
+		// 1. Bootstrap GlassFish DAS in embedded mode.
+		GlassFishProperties glassFishProperties = new GlassFishProperties();
+		glassFishProperties.setInstanceRoot(System.getenv("S1AS_HOME")
+				+ "/domains/domain1");
+		glassFishProperties.setConfigFileReadOnly(false);
+		GlassFish glassfish = GlassFishRuntime.bootstrap().newGlassFish(
+				glassFishProperties);
+		PrintStream sysout = System.out;
+		glassfish.start();
+		System.setOut(sysout);
 
+		// 2. Deploy the PaaS-bookstore application.
+		File archive = new File(System.getProperty("basedir")
+				+ "/target/bookstore.war"); // TODO :: use mvn apis to get the
+											// archive location.
+		Assert.assertTrue(archive.exists());
 
-        // 2. Bootstrap GlassFish DAS in embedded mode.
-        GlassFishProperties glassFishProperties = new GlassFishProperties();
-        glassFishProperties.setInstanceRoot(System.getenv("S1AS_HOME") + "/domains/domain1");
-        glassFishProperties.setConfigFileReadOnly(false);
-        GlassFish glassfish = GlassFishRuntime.bootstrap().newGlassFish(glassFishProperties);
-        PrintStream sysout = System.out;
-        glassfish.start();
-        System.setOut(sysout);
+		Deployer deployer = glassfish.getDeployer();
+		String appName = deployer.deploy(archive);
 
-        // 3. Deploy the PaaS application.
-        File archive = new File(System.getProperty("basedir") +
-                "/target/basic_paas_sample.war"); // TODO :: use mvn apis to get the archive location.
-        Assert.assertTrue(archive.exists());
-        CommandRunner commandRunner = glassfish.getCommandRunner();
-        CommandResult result = commandRunner.run("cloud-deploy",
-                archive.getAbsolutePath());
-        System.err.println("Deployed basic_paas_sample, command result = ["
-                + result.getOutput() + "]");
-        Assert.assertNull(result.getFailureCause());
+		System.err.println("Deployed [" + appName + "]");
+		Assert.assertNotNull(appName);
 
-        // 4. Access the app to make sure PaaS app is correctly provisioned.
-        get("http://localhost:28080/basic_paas_sample/BasicPaaSServlet",
-                "Request headers from the request:");
+		CommandRunner commandRunner = glassfish.getCommandRunner();
+		CommandResult result = commandRunner.run("list-services");
+		System.out.println("\nlist-services command output [ "
+				+ result.getOutput() + "]");
 
-        // 5. Undeploy the PaaS application . TODO :: use cloud-undeploy??
-        result = commandRunner.run("undeploy", "basic_paas_sample");
-        System.err.println("Undeployed basic_paas_sample, command result = [" +
-                result.getOutput() + "]");
-        // TODO :: stop-cluster and unprovisioning should be done automatically
-        // by the orchestrator during undeploy. For now, we need to do it manually.
-        commandRunner.run("stop-cluster", "mycluster");
+		// 3. Access the app to make sure PaaS-bookstore app is correctly
+		// provisioned.
 
-        // 6. Stop the GlassFish DAS
-        glassfish.dispose();
+		String HTTP_PORT = (System.getProperty("http.port") != null) ? System
+				.getProperty("http.port") : "28080";
 
-    }
+		get("http://localhost:" + HTTP_PORT + "/bookstore/BookStoreServlet",
+				"Please wait while accessing the bookstore database.....");
 
-    private void createCloudConfigFile() throws Exception {
-        File configFile = new File(System.getenv("S1AS_HOME") + "/config/cloud-config.properties");
-        Properties configProps = new Properties();
-        configProps.setProperty("APPLICATION_SERVER_PROVIDER", "GLASSFISH");
-        configProps.setProperty("GF_PORT", "4848");
-        configProps.setProperty("GF_TARGET", "server");
-        configProps.setProperty("GF_INSTALL_DIR", System.getenv("S1AS_HOME") + File.separator + "..");
-        // TODO :: remove all AWS properties later.
-        configProps.setProperty("AWS_INSTANCE_USERNAME", System.getProperty("user.name"));
-        configProps.setProperty("AWS_KEYPAIR", System.getProperty("user.home") + File.separator + ".ssh" + File.separator + "id_rsa");
-        configProps.setProperty("AWS_LOCAL_KEYPAIR_LOCATION", System.getProperty("user.home") + File.separator + ".ssh" + File.separator + "id_rsa");
-        configProps.store(new FileOutputStream(configFile), null);
-    }
+		get("http://localhost:"
+				+ HTTP_PORT
+				+ "/bookstore/BookStoreServlet?title=Advanced+guide+for+developing+PaaS+components&authors=Shalini+M&price=100%24",
+				"Here are the list of books available in our store:");
 
-    private void get(String urlStr, String result) throws Exception {
-        URL url = new URL(urlStr);
-        URLConnection yc = url.openConnection();
-        System.out.println("\nURLConnection [" + yc + "] : ");
-        BufferedReader in = new BufferedReader(new InputStreamReader(
-                yc.getInputStream()));
-        String line = null;
-        boolean found = false;
-        while ((line = in.readLine()) != null) {
-            System.out.println(line);
-            if (line.indexOf(result) != -1) {
-                found = true;
-            }
-        }
-        Assert.assertTrue(found);
-        System.out.println("\n***** SUCCESS **** Found [" + result + "] in the response.*****\n");
-    }
+		get("http://localhost:" + HTTP_PORT + "/bookstore/BookStoreServlet",
+				"Advanced guide for developing PaaS components");
 
-    void printContents(URI jarURI) throws IOException {
-        JarFile jarfile = new JarFile(new File(jarURI));
-        System.out.println("\n\n[" + jarURI + "] contents : \n");
-        Enumeration<JarEntry> entries = jarfile.entries();
-        while (entries.hasMoreElements()) {
-            JarEntry entry = entries.nextElement();
-            System.out.println(entry.getSize() + "\t" + new Date(entry.getTime()) +
-                    "\t" + entry.getName());
-        }
-        System.out.println("");
-    }
+		// 4. Undeploy the Bookstore application .
+
+		deployer.undeploy(appName);
+		System.err.println("Undeployed [" + appName + "]");
+
+	}
+
+	private void get(String urlStr, String result) throws Exception {
+		URL url = new URL(urlStr);
+		URLConnection yc = url.openConnection();
+		System.out.println("\nURLConnection [" + yc + "] : ");
+		BufferedReader in = new BufferedReader(new InputStreamReader(
+				yc.getInputStream()));
+		String line = null;
+		boolean found = false;
+		while ((line = in.readLine()) != null) {
+			System.out.println(line);
+			if (line.indexOf(result) != -1) {
+				found = true;
+			}
+		}
+		Assert.assertTrue(found);
+		System.out.println("\n***** SUCCESS **** Found [" + result
+				+ "] in the response.*****\n");
+	}
+
 }
