@@ -77,8 +77,8 @@ public class SetupDcom implements AdminCommand {
     private String password;
     @Param(name = "host", optional = false, primary = true)
     private String host;
-    @Param(name = "domain", optional = true)
-    private String domain;
+    @Param(name = "windowsdomain", optional = true)
+    private String windowsdomain;
     @Param(name = "remotetestdir", optional = true, defaultValue = "C:\\")
     private String testdir;
     private TokenResolver resolver = new TokenResolver();
@@ -123,10 +123,10 @@ public class SetupDcom implements AdminCommand {
         if (testdir.endsWith("\\"))
             testdir = testdir.substring(0, testdir.length() - 1);
 
-        if (!ok(domain))
-            domain = host;
+        if (!ok(windowsdomain))
+            windowsdomain = host;
 
-        creds = new WindowsCredentials(host, domain, user, password);
+        creds = new WindowsCredentials(host, windowsdomain, user, password);
         wrfs = new WindowsRemoteFileSystem(creds);
         scriptFullPath = testdir + "\\" + SCRIPT_NAME;
     }
