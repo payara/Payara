@@ -49,17 +49,20 @@
 	
 	<unzip src="target/tmp/jersey-gfv3-core-project.zip"
            dest="target/stage/${install.dir.name}">
-       </unzip>
+        </unzip>
 
+        <move todir="target/stage/${install.dir.name}" failonerror="false">
+            <fileset dir="target/stage/${install.dir.name}/glassfish"/>
+        </move>
 
         <if test="${compression}">
 	       <antcall target="pack.compression" />
 	</if>
            		   
-	<zip file="target/jersey.zip" basedir="target/stage" excludes="**/jersey-core_proto.py, **/LICENSE.txt, **/third-party-license-readme.txt">
+	<zip file="target/nucleus-jersey.zip" basedir="target/stage" excludes="**/jersey-core_proto.py, **/LICENSE.txt, **/third-party-license-readme.txt">
        </zip>
 
-       <attachArtifact file="target/jersey.zip"/> 
+       <attachArtifact file="target/nucleus-jersey.zip"/> 
    </target>
 </project>
 
