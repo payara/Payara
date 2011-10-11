@@ -299,10 +299,14 @@ public final class POAProtocolMgr extends org.omg.CORBA.LocalObject
      */
     @Override
     public boolean isIdentical(Remote obj1, Remote obj2) {
-        org.omg.CORBA.Object corbaObj1 = (org.omg.CORBA.Object)obj1;
-        org.omg.CORBA.Object corbaObj2 = (org.omg.CORBA.Object)obj2;
+        if (obj1 instanceof org.omg.CORBA.Object && obj2 instanceof org.omg.CORBA.Object) { 
+            org.omg.CORBA.Object corbaObj1 = (org.omg.CORBA.Object)obj1;
+            org.omg.CORBA.Object corbaObj2 = (org.omg.CORBA.Object)obj2;
 
-        return corbaObj1._is_equivalent(corbaObj2);
+            return corbaObj1._is_equivalent(corbaObj2);
+        } else {
+            return false;  
+        }       
     }
 
     @Override
