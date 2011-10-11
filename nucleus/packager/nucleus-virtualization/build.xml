@@ -47,32 +47,37 @@
 	<target name="create.package">
 	<echo message="Staging files"/>
 
-	<!-- stage distribution fragment -->
+	<!-- stage distribution fragments -->
 
 	<resolveArtifact artifactId="libvirt-files" property="libvirt-files.zip"/>
        
 	<unzip src="${libvirt-files.zip}" dest="target/stage/${install.dir.name}">
-	</unzip>
+	</unzip>       
 
 	<resolveArtifact artifactId="native-files" property="native-files.zip"/>
        
 	<unzip src="${native-files.zip}" dest="target/stage/${install.dir.name}">
 	</unzip>
 
-	<delete dir="target/stage/${install.dir.name}/modules" includes="*.zip" />   
-	<delete dir="target/stage/${install.dir.name}/modules" includes="*.pom" />  
-	<delete dir="target/stage/${install.dir.name}/modules" includes="*.war" />  
+        <move todir="target/stage/${install.dir.name}" failonerror="false">
+            <fileset dir="target/stage/${install.dir.name}/glassfish"/>
+        </move>
 
 	<delete dir="target/stage/${install.dir.name}/META-INF" /> 
+
+        <delete dir="target/stage/${install.dir.name}/modules" includes="*.zip" />
+        <delete dir="target/stage/${install.dir.name}/modules" includes="*.pom" />
+        <delete dir="target/stage/${install.dir.name}/modules" includes="*.war" />
+
 
         <if test="${compression}">
 	       <antcall target="pack.compression" />
 	</if>
            		   
-       <zip file="target/glassfish-virtualization.zip" basedir="target/stage">
+       <zip file="target/nucleus-virtualization.zip" basedir="target/stage">
        </zip>
 
-      <attachArtifact file="target/glassfish-virtualization.zip"/> 
+      <attachArtifact file="target/nucleus-virtualization.zip"/> 
    </target>
 </project>
 
