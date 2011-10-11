@@ -37,11 +37,11 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
 package com.sun.enterprise.v3.admin.cluster;
 
 import com.sun.enterprise.v3.admin.cluster.NodeUtils.RemoteType;
 import org.glassfish.api.I18n;
+import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
 import org.jvnet.hk2.annotations.*;
 import org.jvnet.hk2.component.*;
@@ -55,7 +55,17 @@ import org.jvnet.hk2.component.*;
 @I18n("update.node.ssh")
 @Scoped(PerLookup.class)
 @ExecuteOn({RuntimeType.DAS})
-public class UpdateNodeSshCommand extends UpdateNodeRemoteCommand  {
+public class UpdateNodeSshCommand extends UpdateNodeRemoteCommand {
+    @Param(name = "sshport", optional = true)
+    private String sshportInSubClass;
+    @Param(name = "sshuser", optional = true)
+    private String sshuserInSubClass;
+    @Param(name = "sshkeyfile", optional = true)
+    private String sshkeyfileInSubClass;
+    @Param(name = "sshpassword", optional = true, password = true)
+    private String sshpasswordInSubClass;
+    @Param(name = "sshkeypassphrase", optional = true, password = true)
+    private String sshkeypassphraseInSubClass;
 
     @Override
     public void execute(AdminCommandContext context) {
@@ -63,7 +73,12 @@ public class UpdateNodeSshCommand extends UpdateNodeRemoteCommand  {
     }
 
     @Override
-    protected void populateParameters(ParameterMap pmap) {
+    protected void populateParameters() {
+        remotePort = sshportInSubClass;
+        remoteUser = sshuserInSubClass;
+        sshkeyfile = sshkeyfileInSubClass;
+        remotepassword = sshpasswordInSubClass;
+        sshkeypassphrase = sshkeypassphraseInSubClass;
     }
 
     @Override

@@ -108,6 +108,9 @@ public class UpdateNodeCommand implements AdminCommand {
     @Param(name = "sshkeypassphrase", optional = true, password=true)
      String sshkeypassphrase;
 
+    @Param(name = "windowsdomain", optional = true)
+     String windowsdomain;
+
     @Param(name = "type", optional=true)
      String type;
 
@@ -158,7 +161,7 @@ public class UpdateNodeCommand implements AdminCommand {
             report.setMessage(e.getMessage());
         }
 
-        
+
     }
 
 
@@ -172,6 +175,8 @@ public class UpdateNodeCommand implements AdminCommand {
                    Nodes nodes = ((Domain)param).getNodes();
                     Node node = nodes.getNode(nodeName);
                     Node writeableNode = t.enroll(node);
+                    if (windowsdomain != null)
+                        writeableNode.setWindowsDomain(windowsdomain);
                     if (nodedir != null)
                         writeableNode.setNodeDir(nodedir);
                     if (nodehost != null)
@@ -210,9 +215,9 @@ public class UpdateNodeCommand implements AdminCommand {
                             sshC.setSshAuth(sshA);
                         }
                         writeableNode.setSshConnector(sshC);
-                        
+
                     }
-                   
+
                 }
                 return Boolean.TRUE;
             }

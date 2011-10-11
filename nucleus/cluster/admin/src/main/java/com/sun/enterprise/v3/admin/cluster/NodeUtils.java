@@ -92,6 +92,7 @@ public class NodeUtils {
     static final String PARAM_SSHKEYFILE = "sshkeyfile";
     static final String PARAM_REMOTEPASSWORD = "sshpassword";
     static final String PARAM_SSHKEYPASSPHRASE = "sshkeypassphrase";
+    static final String PARAM_WINDOWSDOMAINNAME = "windowsdomain";
     static final String PARAM_TYPE = "type";
     static final String PARAM_INSTALL = "install";
     public static final String PARAM_WINDOWS_DOMAIN = "windowsdomain";

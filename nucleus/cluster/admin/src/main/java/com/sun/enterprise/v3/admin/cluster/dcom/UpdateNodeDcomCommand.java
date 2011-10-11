@@ -66,15 +66,16 @@ import java.util.logging.Logger;
 @Scoped(PerLookup.class)
 @ExecuteOn({RuntimeType.DAS})
 public class UpdateNodeDcomCommand extends UpdateNodeRemoteCommand  {
+    @Param(name = "dcomuser", optional = true)
+    private String dcomuser;
+    @Param(name = "dcompassword", optional = true, password = true)
+    private String dcompassword;
+    @Param(name = "windowsdomain", optional = true)
+    private String windowsdomainInSubClass;
 
     @Override
     public void execute(AdminCommandContext context) {
         executeInternal(context);
-    }
-
-    @Override
-    protected void populateParameters(ParameterMap pmap) {
-    // DCOMFIX -- domain name!!
     }
 
     @Override
@@ -85,5 +86,15 @@ public class UpdateNodeDcomCommand extends UpdateNodeRemoteCommand  {
     @Override
     protected String getDefaultPort() {
         return NodeUtils.NODE_DEFAULT_DCOM_PORT;
+    }
+
+    @Override
+    protected void populateParameters() {
+        remotePort = "135";
+        remoteUser = dcomuser;
+        sshkeyfile = null;
+        remotepassword = dcompassword;
+        sshkeypassphrase = null;
+        windowsdomain = windowsdomainInSubClass;
     }
 }

@@ -85,20 +85,14 @@ public abstract class UpdateNodeRemoteCommand implements AdminCommand  {
     @Param(name = "nodedir", optional=true)
     private String nodedir;
 
-    @Param(name = "sshport", optional=true)
-    private String sshport;
-
-    @Param(name = "sshuser", optional = true)
-    private String sshuser;
-
-    @Param(name = "sshkeyfile", optional = true)
-    private String sshkeyfile;
-
-    @Param(name = "sshpassword", optional = true, password=true)
-    private String sshpassword;
-
-    @Param(name = "sshkeypassphrase", optional = true, password=true)
-    private String sshkeypassphrase;
+    // these are the variables set as parameters in subclasses
+    // we can't set them as parameters in this class bacause of the names
+    protected String remotePort;
+    protected String remoteUser;
+    protected String sshkeyfile;
+    protected String remotepassword;
+    protected String sshkeypassphrase;
+    protected String windowsdomain;
 
     @Param(name =  "force", optional = true, defaultValue = "false")
     private boolean force;
@@ -106,7 +100,7 @@ public abstract class UpdateNodeRemoteCommand implements AdminCommand  {
     private static final String NL = System.getProperty("line.separator");
 
     private Logger logger = null;
-    protected abstract void populateParameters(ParameterMap pmap);
+    protected abstract void populateParameters();
     protected abstract NodeUtils.RemoteType getType();
     protected abstract String getDefaultPort();
 
@@ -134,6 +128,9 @@ public abstract class UpdateNodeRemoteCommand implements AdminCommand  {
             return;
         }
 
+        // Ah the problems caused by hard-coding ssh into parameter names!
+        populateParameters();
+
         // First create a map that holds the parameters and reflects what
         // the user passed on the command line.
         ParameterMap map = new ParameterMap();
@@ -141,11 +138,12 @@ public abstract class UpdateNodeRemoteCommand implements AdminCommand  {
         map.add(NodeUtils.PARAM_INSTALLDIR, installdir);
         map.add(NodeUtils.PARAM_NODEHOST, nodehost);
         map.add(NodeUtils.PARAM_NODEDIR, nodedir);
-        map.add(NodeUtils.PARAM_REMOTEPORT, sshport);
-        map.add(NodeUtils.PARAM_REMOTEUSER, sshuser);
+        map.add(NodeUtils.PARAM_REMOTEPORT, remotePort);
+        map.add(NodeUtils.PARAM_REMOTEUSER, remoteUser);
         map.add(NodeUtils.PARAM_SSHKEYFILE, sshkeyfile);
-        map.add(NodeUtils.PARAM_REMOTEPASSWORD, sshpassword);
+        map.add(NodeUtils.PARAM_REMOTEPASSWORD, remotepassword);
         map.add(NodeUtils.PARAM_SSHKEYPASSPHRASE, sshkeypassphrase);
+        map.add(NodeUtils.PARAM_WINDOWSDOMAINNAME, windowsdomain);
         map.add(NodeUtils.PARAM_TYPE, getType().toString());
 
         // Now init any parameters that weren't passed into the command
@@ -157,9 +155,6 @@ public abstract class UpdateNodeRemoteCommand implements AdminCommand  {
         // as of now
         setDefaults();
 
-        // call subclass for any overrides or specializations
-        populateParameters(map);
-
         // validateMap holds the union of what the user passed and what was
         // in the config so we have all the settings needed to validate what
         // the node will look like after we update it.
@@ -167,11 +162,12 @@ public abstract class UpdateNodeRemoteCommand implements AdminCommand  {
         validateMap.add(NodeUtils.PARAM_INSTALLDIR, installdir);
         validateMap.add(NodeUtils.PARAM_NODEHOST, nodehost);
         validateMap.add(NodeUtils.PARAM_NODEDIR, nodedir);
-        validateMap.add(NodeUtils.PARAM_REMOTEPORT, sshport);
-        validateMap.add(NodeUtils.PARAM_REMOTEUSER, sshuser);
+        validateMap.add(NodeUtils.PARAM_REMOTEPORT, remotePort);
+        validateMap.add(NodeUtils.PARAM_REMOTEUSER, remoteUser);
         validateMap.add(NodeUtils.PARAM_SSHKEYFILE, sshkeyfile);
-        validateMap.add(NodeUtils.PARAM_REMOTEPASSWORD, sshpassword);
+        validateMap.add(NodeUtils.PARAM_REMOTEPASSWORD, remotepassword);
         validateMap.add(NodeUtils.PARAM_SSHKEYPASSPHRASE, sshkeypassphrase);
+        validateMap.add(NodeUtils.PARAM_WINDOWSDOMAINNAME, windowsdomain);
         validateMap.add(NodeUtils.PARAM_TYPE, getType().toString());
 
         // Validate the settings
@@ -224,13 +220,21 @@ public abstract class UpdateNodeRemoteCommand implements AdminCommand  {
             nodedir = node.getNodeDir();
         }
 
+        if (windowsdomain == null) {
+            windowsdomain = node.getWindowsDomain();
+
+            if (windowsdomain == null) {
+                windowsdomain = node.getNodeHost();
+            }
+        }
+
         SshConnector sshc = node.getSshConnector();
         if (sshc == null) {
             return;
         }
 
-        if (sshport == null) {
-            sshport = sshc.getSshPort();
+        if (remotePort == null) {
+            remotePort = sshc.getSshPort();
         }
 
         SshAuth ssha = sshc.getSshAuth();
@@ -238,16 +242,16 @@ public abstract class UpdateNodeRemoteCommand implements AdminCommand  {
             return;
         }
 
-        if (sshuser == null) {
-            sshuser = ssha.getUserName();
+        if (remoteUser == null) {
+            remoteUser = ssha.getUserName();
         }
 
         if (sshkeyfile == null) {
             sshkeyfile = ssha.getKeyfile();
         }
 
-        if (sshpassword == null) {
-            sshpassword = ssha.getPassword();
+        if (remotepassword == null) {
+            remotepassword = ssha.getPassword();
         }
 
         if (sshkeypassphrase == null) {
@@ -256,11 +260,11 @@ public abstract class UpdateNodeRemoteCommand implements AdminCommand  {
     }
 
    private void setDefaults() {
-        if (!StringUtils.ok(sshport)) {
-            sshport = getDefaultPort();
+        if (!StringUtils.ok(remotePort)) {
+            remotePort = getDefaultPort();
         }
-        if (!StringUtils.ok(sshuser)) {
-            sshuser = NodeUtils.NODE_DEFAULT_REMOTE_USER;
+        if (!StringUtils.ok(remoteUser)) {
+            remoteUser = NodeUtils.NODE_DEFAULT_REMOTE_USER;
         }
         if (!StringUtils.ok(installdir)) {
             installdir = NodeUtils.NODE_DEFAULT_INSTALLDIR;
