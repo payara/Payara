@@ -75,16 +75,23 @@
     <properties>
         <install.dir.name>nucleus</install.dir.name>
         <findbugs.skip>true</findbugs.skip>
-        <packager.artifact.excludes>stax-api,stax,junit,jtype,tiger-types,servlet-api,jstl-api,el-api,jsp-api,org.osgi.core,org.osgi.compendium,concurrent,grizzly-utils,grizzly-framework,grizzly-rcm,grizzly-portunif,grizzly-http,grizzly-http-server,grizzly-config,grizzly-lzma,gmbal-api-only,javax.servlet</packager.artifact.excludes>
+        <packager.artifact.excludes>stax-api,stax,junit,jtype,tiger-types,servlet-api,jstl-api,el-api,jsp-api,org.osgi.core,org.osgi.compendium,concurrent,grizzly-utils,grizzly-framework,grizzly-rcm,grizzly-portunif,grizzly-http,grizzly-http-server,grizzly-config,grizzly-comet,grizzly-websockets,grizzly-http-servlet,grizzly-http-ajp,glassfish-grizzly-container,grizzly-lzma,gmbal-api-only,javax.servlet</packager.artifact.excludes>
     </properties>
 
     <modules>
+        <module>external</module>
 	<module>nucleus-base</module>
 	<module>nucleus-felix</module>
 	<module>nucleus-hk2</module>
 	<module>nucleus-grizzly</module>
 	<module>nucleus</module>
-	<module>external</module>
+	<module>nucleus-corba-base</module>
+	<module>nucleus-common</module>
+	<module>nucleus-shoal</module>
+	<module>nucleus-cluster</module>
+	<module>nucleus-management</module>
+	<module>nucleus-jersey</module>	
+        <module>nucleus-virtualization</module>	
     </modules>
 
     <build>

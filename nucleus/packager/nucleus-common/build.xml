@@ -56,7 +56,7 @@
        <!-- brute force cleanup at this point, need to look into extended ant
            plugin and fix the issue at the source -->
            
-       <delete file="target/stage/${install.dir.name}/glassfish/modules/activation.jar" failonerror="false" />
+       <delete file="target/stage/${install.dir.name}/modules/activation.jar" failonerror="false" />
      
 
        <if test="${compression}">
