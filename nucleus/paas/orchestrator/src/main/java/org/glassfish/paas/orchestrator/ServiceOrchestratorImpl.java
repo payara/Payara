@@ -810,7 +810,7 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator, Application
                 sb.append(" [DeploymentContext is null, command and origin not available]");
             }
             sb.append(" }");
-            logger.log(Level.INFO, sb.toString());
+            logger.log(Level.FINEST, sb.toString());
         }catch(Exception e){
             //ignore, this is debugging info.
         }
