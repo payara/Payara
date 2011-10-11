@@ -48,7 +48,6 @@ import org.glassfish.api.admin.*;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
-import org.glassfish.deployment.common.DeploymentUtils;
 import org.glassfish.paas.orchestrator.ServiceOrchestrator;
 import org.glassfish.paas.orchestrator.service.metadata.Property;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceCharacteristics;
@@ -109,8 +108,6 @@ public class GetServiceMetadata implements AdminCommand {
         ReadableArchive readableArchive = null;
         try {
             readableArchive = archiveFactory.openArchive(archive);
-            readableArchive.setExtraData(Boolean.class, 
-                    DeploymentUtils.isJavaEE(readableArchive, habitat));
             ServiceMetadata metadata = orchestrator.getServices(readableArchive);
             List<Map<String,Object>> serviceMetadataList = new ArrayList<Map<String, Object>>();
             for(ServiceDescription desc : metadata.getServiceDescriptions()){
