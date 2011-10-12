@@ -91,16 +91,18 @@ public class ServerRemoteAdminCommand extends RemoteAdminCommand {
     @Override
     protected synchronized HttpConnectorAddress getHttpConnectorAddress(String host, int port, boolean shouldUseSecure) {
         /*
+         * Always use secure communication to another server process.
          * Return a connector address that uses a cert to authenticate this
-         * process as a client only if a cert,
-         * rather than an admin username and password, is used for process-to-
-         * process authentication.
+         * process as a client only if a cert, rather than an admin username 
+         * and password, is used for process-to-process authentication.
          */
-        if (! SecureAdmin.Util.isUsingUsernamePasswordAuth(secureAdmin)) {
+        try {
+            final String certAlias = SecureAdmin.Util.isUsingUsernamePasswordAuth(secureAdmin) ?
+                    null : getCertAlias();
             return new HttpConnectorAddress(host, port,
-                sslUtils().getAdminSocketFactory(getCertAlias(), SSL_SOCKET_PROTOCOL));
-        } else {
-            return super.getHttpConnectorAddress(host, port, shouldUseSecure);
+                    sslUtils().getAdminSocketFactory(certAlias, SSL_SOCKET_PROTOCOL));
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
         }
     }
 
