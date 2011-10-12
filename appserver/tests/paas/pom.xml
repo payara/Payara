@@ -52,6 +52,7 @@
       <module>service_metadata/provision_using_specified_template</module>
       <module>basic-db</module>
       <module>bookstore</module>
+      <module>basic-db-initsql</module>
     </modules>
     <reporting>
     <plugins>
@@ -67,6 +68,7 @@
                 <reportsDirectory>${env.PAAS_TESTS_HOME}/service_metadata/provision_using_specified_template/target/surefire-reports</reportsDirectory>
 		<reportsDirectory>${env.PAAS_TESTS_HOME}/basic-db/target/surefire-reports</reportsDirectory>
 		<reportsDirectory>${env.PAAS_TESTS_HOME}/bookstore/target/surefire-reports</reportsDirectory>
+		<reportsDirectory>${env.PAAS_TESTS_HOME}/basic-db-initsql/target/surefire-reports</reportsDirectory>
           </reportsDirectories>
         </configuration>
       </plugin>
