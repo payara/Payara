@@ -214,6 +214,13 @@
         </dependency>
         <dependency>
             <groupId>org.glassfish.packager</groupId>
+            <artifactId>glassfish-grizzly-full</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.packager</groupId>
             <artifactId>glassfish-jca</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
