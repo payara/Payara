@@ -67,6 +67,8 @@
 
         <mkdir dir="target/stage/${install.dir.name}/domains" />
 
+        <mkdir dir="target/stage/${install.dir.name}/modules/endorsed" />
+
 	<chmod file="target/stage/${install.dir.name}/bin/*" perm="ugo+rx"/>
 	<chmod file="target/stage/${install.dir.name}/lib/nadmin" perm="ugo+rx"/>
 
