@@ -73,6 +73,7 @@
 
     <modules>
 	<module>atomic</module>
+        <module>nucleus</module>
     </modules>
 
      <build>

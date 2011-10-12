@@ -3,7 +3,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -49,10 +49,10 @@
         <version>4.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
-    <artifactId>atomic</artifactId>
-    <name>Glassfish Atomic Distribution</name>
+    <artifactId>nucleus-new</artifactId>
+    <name>Nucleus Distribution</name>
     <packaging>distribution-base-zip</packaging>
-    <description>This pom describes how to assemble the GlassFish Atomic (single server) Distribution</description>
+    <description>This pom describes how to assemble the Nucleus Distribution</description>
 
     <developers>
         <developer>
@@ -67,6 +67,8 @@
     </developers>
 
     <build>
+        <testSourceDirectory>src/test/java</testSourceDirectory>
+        <testOutputDirectory>target/test-classes/WEB-INF/classes</testOutputDirectory>
         <plugins>
             <!-- Get hold of all the required artifacts -->
             <plugin>
@@ -100,61 +102,72 @@
                     </tasks>
                 </configuration>
              </plugin>
-        <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-surefire-plugin</artifactId>
-            <executions>
-                <execution>
-                    <phase>test</phase>
-                </execution>
-            </executions>
-            <version>2.4.2</version>
-            <configuration>
-                <testSourceDirectory>src/test/java</testSourceDirectory>
-            </configuration>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>2.4.2</version>
+        <configuration>
+          <forkMode>always</forkMode>
+        </configuration>
       </plugin>            
         </plugins>
     </build>
 
-
     <dependencies>
         <!-- Artifacts to be included in the distribution -->
 
-        <!-- nucleus packages -->
-
+        <!-- atomic distribution -->
+        <dependency>
+            <groupId>org.glassfish.distributions</groupId>
+            <artifactId>atomic</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+        </dependency>
+ 
+	<!-- all other nucleus distribution packages -->
         <dependency>
             <groupId>org.glassfish.packager</groupId>
-            <artifactId>nucleus-felix</artifactId>
+            <artifactId>nucleus-common</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>
         <dependency>
             <groupId>org.glassfish.packager</groupId>
-            <artifactId>nucleus-hk2</artifactId>
+            <artifactId>nucleus-shoal</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>
         <dependency>
             <groupId>org.glassfish.packager</groupId>
-            <artifactId>nucleus-grizzly</artifactId>
+            <artifactId>nucleus-cluster</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>
         <dependency>
             <groupId>org.glassfish.packager</groupId>
-            <artifactId>nucleus</artifactId>
+            <artifactId>nucleus-virtualization</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+        </dependency>        
+        <dependency>
+            <groupId>org.glassfish.packager</groupId>
+            <artifactId>nucleus-jersey</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>
-
-        <!-- additional dependencies required to create default domain -->
         <dependency>
-            <groupId>org.glassfish.admin</groupId>
-            <artifactId>server-mgmt</artifactId>
+            <groupId>org.glassfish.packager</groupId>
+            <artifactId>nucleus-management</artifactId>
             <version>${project.version}</version>
-            <scope>provided</scope>
-            <type>jar</type>
+            <type>zip</type>
         </dependency>
-  
+       <dependency>
+            <groupId>org.glassfish.packager</groupId>
+            <artifactId>nucleus-corba-base</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+       </dependency>
+ 
     </dependencies>
 </project>
+
