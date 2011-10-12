@@ -61,6 +61,7 @@ import org.glassfish.api.deployment.archive.ArchiveHandler;
 import org.glassfish.api.deployment.DeployCommandParameters;
 import org.glassfish.api.ActionReport;
 import org.glassfish.deployment.common.DeploymentUtils;
+import org.glassfish.deployment.common.DeploymentProperties;
 import org.glassfish.internal.deployment.ApplicationInfoProvider;
 import org.glassfish.internal.deployment.Deployment;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
@@ -83,6 +84,7 @@ import com.sun.enterprise.v3.common.HTMLActionReporter;
 import com.sun.enterprise.deploy.shared.ArchiveFactory;
 import com.sun.enterprise.config.serverbeans.DasConfig;
 import com.sun.enterprise.config.serverbeans.Module;
+import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.io.FileUtils;
 
@@ -119,6 +121,9 @@ public class DolProvider implements ApplicationMetaDataProvider<Application>,
 
     @Inject
     Habitat habitat;
+
+    @Inject
+    Domain domain;
 
     @Inject
     DasConfig dasConfig;
@@ -439,7 +444,7 @@ public class DolProvider implements ApplicationMetaDataProvider<Application>,
     private void validateKeepStateOption(DeploymentContext context, DeployCommandParameters params, Application app) {
         if ((params.keepstate != null && params.keepstate) || 
             app.getKeepState()) {
-            if (!DeploymentUtils.isDASTarget(params.target)) {
+            if (!isDASTarget(context, params)) {
                 // for non-DAS target, and keepstate is set to true either 
                 // through deployment option or deployment descriptor
                 // explicitly set the deployment option to false
@@ -453,5 +458,20 @@ public class DolProvider implements ApplicationMetaDataProvider<Application>,
         }    
     }
 
-
+    private boolean isDASTarget(DeploymentContext context, DeployCommandParameters params) {
+        if (DeploymentUtils.isDASTarget(params.target)) {
+            return true;
+        } else if (DeploymentUtils.isDomainTarget(params.target)) {
+            List<String> targets = context.getTransientAppMetaData(DeploymentProperties.PREVIOUS_TARGETS, List.class);
+            if (targets == null) {
+                targets = domain.getAllReferencedTargetsForApplication(
+                    params.name);
+            }
+            if (targets.size() == 1 && 
+                DeploymentUtils.isDASTarget(targets.get(0))) {
+                return true;
+            }
+        }
+        return false;
+    }
 }
