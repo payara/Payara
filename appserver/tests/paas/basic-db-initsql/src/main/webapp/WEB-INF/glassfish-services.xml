@@ -56,7 +56,7 @@
     <characteristic name="service-type" value="Database"/>
   </characteristics>
   <configurations>
-    <configuration name="database.init.sql" value="/space/shalini/latest-v3/main/appserver/tests/paas/basic-db-initsql/initsql.sql"/>
+    <configuration name="database.init.sql" value="/tmp/initsql.sql"/>
   </configurations>
 </service-description>
 
