@@ -626,11 +626,6 @@ public interface Cluster extends ConfigBeanProxy, Injectable, PropertyBag, Named
                     instanceName));
             }
 
-            Property gmsListenerPort = instance.createChild(Property.class);
-            gmsListenerPort.setName("GMS_LISTENER_PORT");
-            gmsListenerPort.setValue(String.format("${GMS_LISTENER_PORT-%s}", instanceName));
-            instance.getProperty().add(gmsListenerPort);
-
             if (configRef==null) {
                 Config config = habitat.getComponent(Config.class, "default-config");
                 if (config==null) {
@@ -656,6 +651,19 @@ public interface Cluster extends ConfigBeanProxy, Injectable, PropertyBag, Named
                     throw new TransactionFailure(localStrings.getLocalString(
                             "noSuchConfig", "Configuration {0} does not exist.", configRef));
                 }
+            }
+
+            Property gmsListenerPort = instance.getProperty("GMS_LISTENER_PORT");
+            boolean needToAddGmsListenerPort = false;
+            if (gmsListenerPort == null) {
+                needToAddGmsListenerPort = true;
+                gmsListenerPort = instance.createChild(Property.class);
+                gmsListenerPort.setName("GMS_LISTENER_PORT");
+                gmsListenerPort.setValue(String.format("${GMS_LISTENER_PORT-%s}", instanceName));
+                // do not add gmsListenerPort until know whether it needs to be fixed or symbolic.
+                // for non-multicast with generate or list of ip addresses, port needs to be a fixed value
+                // all members of cluster. for non-multicast with list of uri, the GMS_LISTENER_PORT is
+                // set to symbolic system environment variable that is set different for each instance of cluster.
             }
 
             // handle generation of udp multicast and non-multicast mode for DAS managed cluster.
@@ -684,6 +692,10 @@ public interface Cluster extends ConfigBeanProxy, Injectable, PropertyBag, Named
                 if (instance.getGmsMulticastPort() == null) {
                     instance.setGmsMulticastPort(generateHeartbeatPort());
                 }
+
+                if (needToAddGmsListenerPort) {
+                    instance.getProperty().add(gmsListenerPort);
+                }
             } else {
 
                 final String GENERATE = "generate";
@@ -699,27 +711,50 @@ public interface Cluster extends ConfigBeanProxy, Injectable, PropertyBag, Named
                     instance.getProperty().add(discoveryUriListProp);
                 }
 
+                String TCPPORT = gmsListenerPort.getValue();
                 if (GENERATE.equals(discoveryUriListProp.getValue())) {
 
                     // TODO: implement UDP unicast.
 
                     // Only tcp mode is supported now.
                     // So either "udpunicast" or "tcp" for broadcast mode is treated the same.
-                    final String TCPPORT = "9090";
+                    if (TCPPORT == null || TCPPORT.trim().charAt(0) == '$') {
 
-                    // lookup server-config and set environment property value
-                    // GMS_LISTENER_PORT-clusterName to 9090.
+                        // generate a random port since user did not provide one.
+                        // better fix in future would be to walk existing clusters and pick an unused port.
+                        TCPPORT = Integer.toString(((int)(Math.random() * (9200 - 9090))) + 9090);
+
+                        // hardcode all instances to use same default port.
+                        // generate mode does not support multiple instances on one machine.
+                        gmsListenerPort.setValue(TCPPORT);
+                        if (needToAddGmsListenerPort) {
+                            instance.getProperty().add(gmsListenerPort);
+                        }
+                    }
+                } else {
+                     // lookup server-config and set environment property value
+                    // GMS_LISTENER_PORT-clusterName to fixed value.
                     Config config = habitat.getComponent(Config.class, "server-config");
                     if (config != null) {
-                        Config writeableConfig = t.enroll(config);
-                        SystemProperty gmsListenerPortSysProp = instance.createChild(SystemProperty.class);
-                        gmsListenerPortSysProp.setName(String.format("GMS_LISTENER_PORT-%s", instanceName));
-                        gmsListenerPortSysProp.setValue(TCPPORT);
-                        writeableConfig.getSystemProperty().add(gmsListenerPortSysProp);
+                        String propName = String.format("GMS_LISTENER_PORT-%s", instanceName);
+                        if (config.getProperty(propName) == null ) {
+                            Config writeableConfig = t.enroll(config);
+                            SystemProperty gmsListenerPortSysProp = instance.createChild(SystemProperty.class);
+                            gmsListenerPortSysProp.setName(propName);
+                            if (TCPPORT == null || TCPPORT.trim().charAt(0) == '$') {
+                                gmsListenerPortSysProp.setValue(Integer.toString(((int)(Math.random() * (9200 - 9090))) + 9090));
+                            } else {
+                                gmsListenerPortSysProp.setValue(TCPPORT);
+                            }
+                            writeableConfig.getSystemProperty().add(gmsListenerPortSysProp);
+                        }
+                    }
+                    if (needToAddGmsListenerPort) {
+                        instance.getProperty().add(gmsListenerPort);
                     }
                 }
             }
-            
+
             Resources resources = domain.getResources();
             for (Resource resource : resources.getResources()) {
                 if (resource.getObjectType().equals("system-all") || resource.getObjectType().equals("system-instance")) {

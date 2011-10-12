@@ -449,7 +449,9 @@ public class GMSAdapterImpl implements GMSAdapter, PostConstruct, CallBack {
             for (Property prop : props) {
                 String name = prop.getName().trim();
                 String value = prop.getValue().trim();
-                if (name == null || value == null) continue;
+                if (name == null || value == null) {
+                    continue;
+                }
                 if (logger.isLoggable(Level.CONFIG)) {
                     logger.log(Level.CONFIG,
                         "processing cluster property name=" + name +
@@ -501,15 +503,34 @@ public class GMSAdapterImpl implements GMSAdapter, PostConstruct, CallBack {
 
     /*
      * Get existing nodes based on cluster element in domain.
-     * Then check for DAS address in das.properties.
+     * Then check for DAS address in das.properties. When the
+     * list is set to 'generate' then the gms listener port
+     * must also be specified. So the same port is used for
+     * each cluster member.
      */
     private String generateDiscoveryUriList() {
-        final Level level = Level.FINE;
+        String clusterPort = null;
+
+        Property gmsPortProp = cluster.getProperty("GMS_LISTENER_PORT");
+        if (gmsPortProp == null ||
+            gmsPortProp.getValue() == null ||
+            gmsPortProp.getValue().trim().charAt(0) == '$') {
+
+            clusterPort = "9090";
+            logger.log(Level.WARNING, "gmsservice.listener.port.required",
+                new Object [] {cluster.getName(), clusterPort});
+        } else {
+            clusterPort = gmsPortProp.getValue();
+            if (logger.isLoggable(Level.FINE)) {
+                logger.log(Level.FINE, "will use gms listener port: " +
+                    clusterPort);
+            }
+        }
 
         // get cluster member server refs
         Set<String> instanceNames = new HashSet<String>();
-        if (logger.isLoggable(level)) {
-            logger.log(level, String.format(
+        if (logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINE, String.format(
                 "checking cluster.getServerRef() for '%s'",
                 cluster.getName()));
         }
@@ -521,8 +542,8 @@ public class GMSAdapterImpl implements GMSAdapter, PostConstruct, CallBack {
              * now. If we want to skip it, here's the place to
              * check.
              */
-            if (logger.isLoggable(level)) {
-                logger.log(level, String.format(
+            if (logger.isLoggable(Level.FINE)) {
+                logger.log(Level.FINE, String.format(
                     "adding server ref %s to set of instance names",
                     sRef.getRef()));
             }
@@ -531,23 +552,26 @@ public class GMSAdapterImpl implements GMSAdapter, PostConstruct, CallBack {
 
         StringBuilder sb = new StringBuilder();
         final String SEP = ",";
+        final String httpScheme = "http://"; // some day https
 
         // use server refs to find matching nodes
         for (String name : instanceNames) {
             Server server = servers.getServer(name);
             if (server != null) {
-                if (logger.isLoggable(level)) {
-                    logger.log(level, String.format("found server for name %s",
+                if (logger.isLoggable(Level.FINE)) {
+                    logger.log(Level.FINE, String.format(
+                        "found server for name %s",
                         name));
                 }
                 Node node = nodes.getNode(server.getNodeRef());
                 if (node != null) {
-                    if (logger.isLoggable(level)) {
-                        logger.log(level, String.format(
-                            "Adding host '%s' to discovery list",
-                            node.getNodeHost()));
+                    String host = httpScheme + node.getNodeHost() + ":" +
+                        clusterPort;
+                    if (logger.isLoggable(Level.FINE)) {
+                        logger.log(Level.FINE, String.format(
+                            "Adding host '%s' to discovery list", host));
                     }
-                    sb.append(node.getNodeHost()).append(SEP);
+                    sb.append(host).append(SEP);
                 }
             }
         }
@@ -557,15 +581,18 @@ public class GMSAdapterImpl implements GMSAdapter, PostConstruct, CallBack {
             try {
                 ServerDirs sDirs = new ServerDirs(env.getInstanceRoot());
                 File dasPropsFile = sDirs.getDasPropertiesFile();
-                if (logger.isLoggable(level)) {
-                    logger.log(level, String.format(
+                if (logger.isLoggable(Level.FINE)) {
+                    logger.log(Level.FINE, String.format(
                         "found das.props file at %s",
                         dasPropsFile.getAbsolutePath()));
                 }
                 Properties dasProps = getProperties(dasPropsFile);
-                String host = dasProps.getProperty("agent.das.host");
-                if (logger.isLoggable(level)) {
-                    logger.log(level, String.format(
+                String host = httpScheme +
+                    dasProps.getProperty("agent.das.host") +
+                    ":" +
+                    clusterPort;
+                if (logger.isLoggable(Level.FINE)) {
+                    logger.log(Level.FINE, String.format(
                         "adding '%s' from das.props file", host));
                 }
                 sb.append(host).append(SEP);
@@ -579,8 +606,9 @@ public class GMSAdapterImpl implements GMSAdapter, PostConstruct, CallBack {
         if (lastCommaIndex != -1) {
             sb.deleteCharAt(lastCommaIndex);
         }
-        if (logger.isLoggable(level)) {
-            logger.log(level, String.format("returning discovery list '%s'",
+        if (logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINE, String.format(
+                "returning discovery list '%s'",
                 sb.toString()));
         }
         return sb.toString();
@@ -771,7 +799,7 @@ public class GMSAdapterImpl implements GMSAdapter, PostConstruct, CallBack {
             logger.log(Level.INFO, "gmsservice.failurerecovery.start.notification", new Object[]{frsSignal.getComponentName(), frsSignal.getMemberToken()});
             try {
                 Thread.sleep(20 * 1000); // sleep 20 seconds. simulate wait time to allow instance to restart and do self recovery before another instance does it.
-            } catch (InterruptedException ie) {
+            } catch (InterruptedException ignored) {
             }
             logger.log(Level.INFO, "gmsservice.failurerecovery.completed.notification", new Object[]{frsSignal.getComponentName(), frsSignal.getMemberToken()});
         }
