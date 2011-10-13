@@ -160,7 +160,7 @@ public class CommandResourceMetaData {
     public String toString() {
         return "CommandResourceMetaData{" + "command=" + command + ", httpMethod=" + httpMethod
                 + ", resourcePath=" + resourcePath + ", displayName=" + displayName
-                + ", commandParams=" + String.valueOf(commandParams) + ", customClassName=" + customClassName + '}';
+                + ", commandParams=" + Arrays.asList(commandParams).toString() + ", customClassName=" + customClassName + '}';
     }
     // This data structure is for exceptional cases only. The preferred mapping approach is to
     // use @RestEndpoints/@RestEndpoint
