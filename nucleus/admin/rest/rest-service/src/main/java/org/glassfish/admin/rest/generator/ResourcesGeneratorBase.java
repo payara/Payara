@@ -346,8 +346,6 @@ public abstract class ResourcesGeneratorBase implements ResourcesGenerator {
 
         ClassWriter writer = getClassWriter(commandResourceClassName, baseClassName, null);
         
-        System.out.println("***** Processing " + commandResourceClassName);
-
         boolean isLinkedToParent = false;
         if (metaData.commandParams != null) {
             for (CommandResourceMetaData.ParameterMetaData parameterMetaData : metaData.commandParams) {
@@ -357,8 +355,8 @@ public abstract class ResourcesGeneratorBase implements ResourcesGenerator {
             }
         }
 
-        writer.createCommandResourceConstructor(commandResourceClassName, commandName, httpMethod, isLinkedToParent, metaData.commandParams, commandDisplayName, commandAction);
-
+        writer.createCommandResourceConstructor(commandResourceClassName, commandName, httpMethod, 
+            isLinkedToParent, metaData.commandParams, commandDisplayName, commandAction);
         writer.done();
     }
 
