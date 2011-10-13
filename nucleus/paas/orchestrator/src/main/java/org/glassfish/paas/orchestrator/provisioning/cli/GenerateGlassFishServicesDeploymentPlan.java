@@ -270,45 +270,4 @@ public class GenerateGlassFishServicesDeploymentPlan implements AdminCommand {
         }
         return metadata;
     }
-
-    private List<Map<String, Object>> getServiceMetadata() {
-        List<Map<String, Object>> serviceMetadata = new ArrayList<Map<String, Object>>();
-        {
-            Map<String, Object> serviceDescription = new TreeMap<String, Object>();
-            serviceDescription.put("init-type", "lazy");
-            serviceDescription.put("name", "my-service-1");
-            serviceDescription.put("service-type", "JavaEE");
-
-            Properties serviceCharacteristics = new Properties();
-            serviceCharacteristics.put("service-type", "JavaEE");
-            serviceCharacteristics.put("os-name", "Linux");
-
-            serviceDescription.put("characteristics", serviceCharacteristics);
-
-            Properties configuration = new Properties();
-            configuration.put("min.clustersize", "2");
-            configuration.put("max.clustersize", "4");
-
-            serviceDescription.put("configurations", configuration);
-
-            serviceMetadata.add(serviceDescription);
-        }
-        /*{
-        Map<String, Object> serviceDescription = new TreeMap<String, Object>();
-        serviceDescription.put("init-type", "lazy");
-        serviceDescription.put("name", "my-service-2");
-        serviceDescription.put("service-type", "JavaEE");
-
-        serviceDescription.put("template-id","my-template");
-
-        Properties configuration = new Properties();
-        configuration.put("min.clustersize","1");
-        configuration.put("max.clustersize","2");
-
-        serviceDescription.put("configurations", configuration);
-
-        serviceMetadata.add(serviceDescription);
-        }*/
-        return serviceMetadata;
-    }
 }
