@@ -3,41 +3,35 @@
  *
  * Copyright (c) 2008-2011 Oracle and/or its affiliates. All rights reserved.
  *
- * The contents of this file are subject to the terms of either the GNU
- * General Public License Version 2 only ("GPL") or the Common Development
- * and Distribution License("CDDL") (collectively, the "License").  You
- * may not use this file except in compliance with the License.  You can
- * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
- * language governing permissions and limitations under the License.
+ * The contents of this file are subject to the terms of either the GNU General
+ * Public License Version 2 only ("GPL") or the Common Development and
+ * Distribution License("CDDL") (collectively, the "License"). You may not use
+ * this file except in compliance with the License. You can obtain a copy of the
+ * License at https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html or
+ * packager/legal/LICENSE.txt. See the License for the specific language
+ * governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
  * file and include the License file at packager/legal/LICENSE.txt.
  *
- * GPL Classpath Exception:
- * Oracle designates this particular file as subject to the "Classpath"
- * exception as provided by Oracle in the GPL Version 2 section of the License
- * file that accompanied this code.
+ * GPL Classpath Exception: Oracle designates this particular file as subject to
+ * the "Classpath" exception as provided by Oracle in the GPL Version 2 section
+ * of the License file that accompanied this code.
  *
- * Modifications:
- * If applicable, add the following below the License Header, with the fields
- * enclosed by brackets [] replaced by your own identifying information:
- * "Portions Copyright [year] [name of copyright owner]"
+ * Modifications: If applicable, add the following below the License Header,
+ * with the fields enclosed by brackets [] replaced by your own identifying
+ * information: "Portions Copyright [year] [name of copyright owner]"
  *
- * Contributor(s):
- * If you wish your version of this file to be governed by only the CDDL or
- * only the GPL Version 2, indicate your decision by adding "[Contributor]
- * elects to include this software in this distribution under the [CDDL or GPL
- * Version 2] license."  If you don't indicate a single choice of license, a
- * recipient has the option to distribute your version of this file under
- * either the CDDL, the GPL Version 2 or to extend the choice of license to
- * its licensees as provided above.  However, if you add GPL Version 2 code
- * and therefore, elected the GPL Version 2 license, then the option applies
- * only if the new code is made subject to such option by the copyright
- * holder.
+ * Contributor(s): If you wish your version of this file to be governed by only
+ * the CDDL or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution under the
+ * [CDDL or GPL Version 2] license." If you don't indicate a single choice of
+ * license, a recipient has the option to distribute your version of this file
+ * under either the CDDL, the GPL Version 2 or to extend the choice of license to
+ * its licensees as provided above. However, if you add GPL Version 2 code and
+ * therefore, elected the GPL Version 2 license, then the option applies only if
+ * the new code is made subject to such option by the copyright holder.
  */
-
 package com.sun.enterprise.v3.admin.adapter;
 
 import com.sun.enterprise.config.serverbeans.*;
@@ -87,28 +81,24 @@ import java.util.logging.Logger;
 import org.glassfish.grizzly.http.Method;
 
 /**
- * An HK-2 Service that provides the functionality so that admin console access is handled properly.
- * The general contract of this adapter is as follows:
- * <ol>
+ * An HK-2 Service that provides the functionality so that admin console access
+ * is handled properly. The general contract of this adapter is as follows: <ol>
  * <li>This adapter is *always* installed as a Grizzly adapter for a particular
- * URL designated as admin URL in domain.xml. This translates to context-root
- * of admin console application. </li>
- * <li>When the control comes to the adapter for the first time, user is asked
- * to confirm if downloading the application is OK. In that case, the admin console
- * application is downloaded and expanded. While the download and installation
- * is happening, all the clients or browser refreshes get a status message.
- * No push from the server side is attempted (yet).
- * After the application is "installed", ApplicationLoaderService is contacted,
- * so that the application is loaded by the containers. This application is
- * available as a <code> system-application </code> and is persisted as
- * such in the domain.xml. </li>
- * <li>Even after this application is available, we don't load it on server
- * startup by default. It is always loaded <code> on demand </code>.
- * Hence, this adapter will always be available to find
- * out if application is loaded and load it in the container(s) if it is not.
- * If the application is already loaded, it simply exits.
- * </li>
- * </ol>
+ * URL designated as admin URL in domain.xml. This translates to context-root of
+ * admin console application. </li> <li>When the control comes to the adapter for
+ * the first time, user is asked to confirm if downloading the application is OK.
+ * In that case, the admin console application is downloaded and expanded. While
+ * the download and installation is happening, all the clients or browser
+ * refreshes get a status message. No push from the server side is attempted
+ * (yet). After the application is "installed", ApplicationLoaderService is
+ * contacted, so that the application is loaded by the containers. This
+ * application is available as a
+ * <code> system-application </code> and is persisted as such in the domain.xml.
+ * </li> <li>Even after this application is available, we don't load it on server
+ * startup by default. It is always loaded
+ * <code> on demand </code>. Hence, this adapter will always be available to
+ * find out if application is loaded and load it in the container(s) if it is
+ * not. If the application is already loaded, it simply exits. </li> </ol>
  *
  * @author &#2325;&#2375;&#2342;&#2366;&#2352; (km@dev.java.net)
  * @author Ken Paulsen (kenpaulsen@dev.java.net)
@@ -120,51 +110,37 @@ public final class AdminConsoleAdapter extends HttpHandler implements Adapter, P
 
     @Inject
     ServerEnvironmentImpl env;
-
-    @Inject(name=ServerEnvironment.DEFAULT_INSTANCE_NAME)
-    AdminService adminService; 
-
+    @Inject(name = ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    AdminService adminService;
     private String contextRoot;
     private File warFile;    // GF Admin Console War File Location
     private AdapterState stateMsg = AdapterState.UNINITIAZED;
     private boolean installing = false;
     private boolean isOK = false;  // FIXME: initialize this with previous user choice
-    private AdminConsoleConfigUpgrade adminConsoleConfigUpgrade=null;
-
+    private AdminConsoleConfigUpgrade adminConsoleConfigUpgrade = null;
     private final CountDownLatch latch = new CountDownLatch(1);
-    
     @Inject
     ApplicationRegistry appRegistry;
-
     @Inject
     Domain domain;
-
     @Inject
     Habitat habitat;
-
     @Inject
     Events events;
-
     @Inject(name = ServerEnvironment.DEFAULT_INSTANCE_NAME)
     Config serverConfig;
-
     @Inject
     Version version;
-    
     AdminEndpointDecider epd;
-
     private static final Logger logger = LogDomains.getLogger(AdminConsoleAdapter.class, LogDomains.CORE_LOGGER);
     private String statusHtml;
     private String initHtml;
-
     private boolean isRegistered = false;
     private ResourceBundle bundle;
-
     //don't change the following without changing the html pages
     private static final String MYURL_TOKEN = "%%%MYURL%%%";
     private static final String STATUS_TOKEN = "%%%STATUS%%%";
     private static final String REDIRECT_TOKEN = "%%%LOCATION%%%";
-
     private static final String RESOURCE_PACKAGE = "com/sun/enterprise/v3/admin/adapter";
     private static final String INSTALL_ROOT = "com.sun.aas.installRoot";
     static final String ADMIN_APP_NAME = ServerEnvironmentImpl.DEFAULT_ADMIN_CONSOLE_APP_NAME;
@@ -197,7 +173,7 @@ public final class AdminConsoleAdapter extends HttpHandler implements Adapter, P
      */
     @Override
     public void service(Request req, Response res) {
-    
+
         bundle = getResourceBundle(req.getLocale());
 
         Method method = req.getMethod();
@@ -213,8 +189,8 @@ public final class AdminConsoleAdapter extends HttpHandler implements Adapter, P
         }
 
         //This is needed to support the case where user update to 3.1 from previous release, and didn't run the upgrade tool.
-        if (adminConsoleConfigUpgrade == null){
-              adminConsoleConfigUpgrade=habitat.getComponent(AdminConsoleConfigUpgrade.class);
+        if (adminConsoleConfigUpgrade == null) {
+            adminConsoleConfigUpgrade = habitat.getComponent(AdminConsoleConfigUpgrade.class);
         }
 
         try {
@@ -245,14 +221,14 @@ public final class AdminConsoleAdapter extends HttpHandler implements Adapter, P
             return;
         }
         res.setContentType("text/html; charset=UTF-8");
-        
+
         // simple get request use via javascript to give back the console status (starting with :::)
         // as a simple string.
         // see usage in status.html
-        
+
 
         String serverVersion = Version.getFullVersion();
-        
+
         if ("/testifbackendisready.html".equals(req.getRequestURI())) {
 
             // Replace state token
@@ -265,14 +241,14 @@ public final class AdminConsoleAdapter extends HttpHandler implements Adapter, P
                 status = getStateMsg().toString();
             }
             String wkey = AdapterState.WELCOME_TO.getI18NKey();
-                        try {
+            try {
                 // Try to get a localized version of this key
-                serverVersion = bundle.getString(wkey)+" "+serverVersion+".";
+                serverVersion = bundle.getString(wkey) + " " + serverVersion + ".";
             } catch (MissingResourceException ex) {
                 // Use the non-localized String version of the status
-                serverVersion = AdapterState.WELCOME_TO.toString()+" "+serverVersion+".";
+                serverVersion = AdapterState.WELCOME_TO.toString() + " " + serverVersion + ".";
             }
-            status +="\n"+serverVersion;
+            status += "\n" + serverVersion;
             try {
                 OutputBuffer ob = getOutputBuffer(res);
 
@@ -299,37 +275,37 @@ public final class AdminConsoleAdapter extends HttpHandler implements Adapter, P
             if ("/favicon.ico".equals(req.getRequestURI())) {
                 return;
             }
-                if (!isRestStarted) {
-                    forceRestModuleLoad(req);
-                }
-	    synchronized(this) {
-		
+            if (!isRestStarted) {
+                forceRestModuleLoad(req);
+            }
+            synchronized (this) {
 
-		if (isInstalling()) {
-		    sendStatusPage(req, res);
-		} else {
+
+                if (isInstalling()) {
+                    sendStatusPage(req, res);
+                } else {
                     if (isApplicationLoaded()) {
-			// Double check here that it is not yet loaded (not
-			// likely, but possible)
-			handleLoadedState();
-		    }else {
-			try {
-			    // We have permission and now we should install
-			    // (or load) the application.
-			    setInstalling(true);
-			    startThread();  // Thread must set installing false
-			} catch (Exception ex) {
-			    // Ensure we haven't crashed with the installing
-			    // flag set to true (not likely).
-			    setInstalling(false);
-			    throw new RuntimeException(
-				    "Unable to install Admin Console!", ex);
-			}
-			sendStatusPage(req, res);
-		    }
-		}
-	    }
-	}
+                        // Double check here that it is not yet loaded (not
+                        // likely, but possible)
+                        handleLoadedState();
+                    } else {
+                        try {
+                            // We have permission and now we should install
+                            // (or load) the application.
+                            setInstalling(true);
+                            startThread();  // Thread must set installing false
+                        } catch (Exception ex) {
+                            // Ensure we haven't crashed with the installing
+                            // flag set to true (not likely).
+                            setInstalling(false);
+                            throw new RuntimeException(
+                                    "Unable to install Admin Console!", ex);
+                        }
+                        sendStatusPage(req, res);
+                    }
+                }
+            }
+        }
 
     }
 
@@ -348,29 +324,29 @@ public final class AdminConsoleAdapter extends HttpHandler implements Adapter, P
      * then close the stream and move on.
      */
     private void forceRestModuleLoad(final Request req) {
-        if (isRestBeingStarted==true){
+        if (isRestBeingStarted == true) {
             return;
         }
         isRestBeingStarted = true;
         Thread thread = new Thread() {
+
             @Override
             public void run() {
                 InputStream is = null;
                 try {
-                    NetworkListener nl = domain.getServerNamed("server").getConfig().getNetworkConfig()
-                            .getNetworkListener("admin-listener");
+                    NetworkListener nl = domain.getServerNamed("server").getConfig().getNetworkConfig().getNetworkListener("admin-listener");
                     SecureAdmin secureAdmin = habitat.getComponent(SecureAdmin.class);
-                    
+
                     URL url = new URL(
                             (SecureAdmin.Util.isEnabled(secureAdmin) ? "https" : "http"),
-                            nl.getAddress(), 
+                            nl.getAddress(),
                             Integer.parseInt(nl.getPort()),
                             "/management/domain");
                     URLConnection conn = url.openConnection();
                     is = conn.getInputStream();
                     isRestStarted = true;
                 } catch (Exception ex) {
-                   Logger.getLogger(AdminConsoleAdapter.class.getName()).log(Level.FINE, null, ex);
+                    Logger.getLogger(AdminConsoleAdapter.class.getName()).log(Level.FINE, null, ex);
                 } finally {
                     if (is != null) {
                         try {
@@ -407,7 +383,7 @@ public final class AdminConsoleAdapter extends HttpHandler implements Adapter, P
     }
 
     private void handleResourceRequest(Request req, Response res)
-    throws IOException {
+            throws IOException {
 
         String resourcePath = RESOURCE_PACKAGE + req.getRequestURI();
 
@@ -462,7 +438,6 @@ public final class AdminConsoleAdapter extends HttpHandler implements Adapter, P
         installing = flag;
     }
 
-
     /**
      * Checks whether this adapter has been registered as a network endpoint.
      */
@@ -479,7 +454,6 @@ public final class AdminConsoleAdapter extends HttpHandler implements Adapter, P
     public void setRegistered(boolean isRegistered) {
         this.isRegistered = isRegistered;
     }
-
 
     /**
      * <p> This method sets the current state.</p>
@@ -526,22 +500,22 @@ public final class AdminConsoleAdapter extends HttpHandler implements Adapter, P
     private void init() {
 
         Property locProp = adminService.getProperty(ServerTags.ADMIN_CONSOLE_DOWNLOAD_LOCATION);
-        if(locProp == null || locProp.getValue()==null || locProp.getValue().equals("")){
+        if (locProp == null || locProp.getValue() == null || locProp.getValue().equals("")) {
             String iRoot = System.getProperty(INSTALL_ROOT) + "/lib/install/applications/admingui.war";
             warFile = new File(iRoot.replace('/', File.separatorChar));
             writeAdminServiceProp(ServerTags.ADMIN_CONSOLE_DOWNLOAD_LOCATION, "${" + INSTALL_ROOT + "}/lib/install/applications/admingui.war");
-        }else{
+        } else {
             //For any non-absolute path, we start from the installation, ie glassfish3
             //eg, v3 prelude upgrade, where the location property was "glassfish/lib..."
             String locValue = locProp.getValue();
-            warFile = new File (locValue);
-            if (! warFile.isAbsolute()){
-                File tmp = new File (System.getProperty(INSTALL_ROOT), "..");
-                warFile = new File (tmp, locValue);
+            warFile = new File(locValue);
+            if (!warFile.isAbsolute()) {
+                File tmp = new File(System.getProperty(INSTALL_ROOT), "..");
+                warFile = new File(tmp, locValue);
             }
         }
 
-        if (logger.isLoggable(Level.FINE)){
+        if (logger.isLoggable(Level.FINE)) {
             logger.log(Level.FINE, "Admin Console download location: {0}", warFile.getAbsolutePath());
         }
 
@@ -559,7 +533,7 @@ public final class AdminConsoleAdapter extends HttpHandler implements Adapter, P
             isOK = true; // FIXME: I don't think this is good enough
             setStateMsg(AdapterState.APPLICATION_INSTALLED_BUT_NOT_LOADED);
         } else if (new File(warFile.getParentFile(), ADMIN_APP_NAME).exists() || warFile.exists()) {
-	    // The exploded dir, or the .war exists... mark as downloded
+            // The exploded dir, or the .war exists... mark as downloded
             if (logger.isLoggable(Level.FINE)) {
                 setStateMsg(AdapterState.DOWNLOADED);
             }
@@ -600,11 +574,11 @@ public final class AdminConsoleAdapter extends HttpHandler implements Adapter, P
         }
     }
 
-    
     /**
      *
      */
     enum InteractionResult {
+
         OK,
         CANCEL,
         FIRST_TIMER;
@@ -663,7 +637,6 @@ public final class AdminConsoleAdapter extends HttpHandler implements Adapter, P
     }
      *
      */
-
     private OutputBuffer getOutputBuffer(Response res) {
         res.setStatus(202);
         res.setContentType("text/html");
@@ -691,8 +664,8 @@ public final class AdminConsoleAdapter extends HttpHandler implements Adapter, P
                 status = getStateMsg().toString();
             }
             String locationUrl = req.getScheme()
-                                 + "://" + req.getServerName()
-                                 + ':' + req.getServerPort() + "/login.jsf";
+                    + "://" + req.getServerName()
+                    + ':' + req.getServerPort() + "/login.jsf";
             localHtml = localHtml.replace(REDIRECT_TOKEN, locationUrl);
             bytes = localHtml.replace(STATUS_TOKEN, status).getBytes("UTF-8");
             res.setContentLength(bytes.length);
@@ -792,15 +765,14 @@ public final class AdminConsoleAdapter extends HttpHandler implements Adapter, P
         return buf.toString();
     }
 
-
-
     public AdminService getAdminService() {
         return adminService;
     }
 
-    private void writeAdminServiceProp(final String propName, final String propValue){
-        try{
+    private void writeAdminServiceProp(final String propName, final String propValue) {
+        try {
             ConfigSupport.apply(new SingleConfigCode<AdminService>() {
+
                 @Override
                 public Object run(AdminService adminService) throws PropertyVetoException, TransactionFailure {
                     Property newProp = adminService.createChild(Property.class);
@@ -810,7 +782,7 @@ public final class AdminConsoleAdapter extends HttpHandler implements Adapter, P
                     return newProp;
                 }
             }, adminService);
-        }catch(Exception ex){
+        } catch (Exception ex) {
             logger.log(Level.WARNING, "console.adapter.propertyError", propName + ":" + propValue);
             //ex.printStackTrace();
         }
@@ -840,7 +812,6 @@ public final class AdminConsoleAdapter extends HttpHandler implements Adapter, P
     public List<String> getVirtualServers() {
         return epd.getGuiHosts();
     }
-
 //    enum HttpMethod {
 //        OPTIONS ("OPTIONS"),
 //        GET ("GET"),
@@ -870,12 +841,11 @@ public final class AdminConsoleAdapter extends HttpHandler implements Adapter, P
 //            return method;
 //        }
 //    }
-
     private Method[] allowedHttpMethods = {Method.GET, Method.POST, Method.HEAD,
-            Method.DELETE, Method.PUT};
+        Method.DELETE, Method.PUT};
 
     private boolean checkHttpMethodAllowed(Method method) {
-        for (Method hh: allowedHttpMethods) {
+        for (Method hh : allowedHttpMethods) {
             if (hh.equals(method)) {
                 return true;
             }
