@@ -119,9 +119,44 @@ import org.glassfish.web.loader.ResourceEntry;
 import org.glassfish.web.loader.WebappClassLoader;
 
 /**
- * The default resource-serving servlet for most web applications,
+ * <p>The default resource-serving servlet for most web applications,
  * used to serve static resources such as HTML pages and images.
- *
+ * </p>
+ * <p>
+ * This servlet is intended to be mapped to <em>/</em> e.g.:
+ * </p>
+ * <pre>
+ *   &lt;servlet-mapping&gt;
+ *       &lt;servlet-name&gt;default&lt;/servlet-name&gt;
+ *       &lt;url-pattern&gt;/&lt;/url-pattern&gt;
+ *   &lt;/servlet-mapping&gt;
+ * </pre>
+ * <p>It can be mapped to sub-paths, however in all cases resources are served
+ * from the web appplication resource root using the full path from the root
+ * of the web application context.
+ * <br/>e.g. given a web application structure:
+ *</p>
+ * <pre>
+ * /context
+ *   /images
+ *     tomcat2.jpg
+ *   /static
+ *     /images
+ *       tomcat.jpg
+ * </pre>
+ * <p>
+ * ... and a servlet mapping that maps only <code>/static/*</code> to the default servlet:
+ * </p>
+ * <pre>
+ *   &lt;servlet-mapping&gt;
+ *       &lt;servlet-name&gt;default&lt;/servlet-name&gt;
+ *       &lt;url-pattern&gt;/static/*&lt;/url-pattern&gt;
+ *   &lt;/servlet-mapping&gt;
+ * </pre>
+ * <p>
+ * Then a request to <code>/context/static/images/tomcat.jpg</code> will succeed
+ * while a request to <code>/context/images/tomcat2.jpg</code> will fail. 
+ * </p>
  * @author Craig R. McClanahan
  * @author Remy Maucherat
  * @version $Revision: 1.16 $ $Date: 2007/06/06 16:01:12 $
@@ -407,6 +442,11 @@ public class DefaultServlet
      * @param request The servlet request we are processing
      */
     protected String getRelativePath(HttpServletRequest request) {
+        // IMPORTANT: DefaultServlet can be mapped to '/' or '/path/*' but always
+        // serves resources from the web app root with context rooted paths.
+        // i.e. it can not be used to mount the web app root under a sub-path
+        // This method must construct a complete context rooted path, although
+        // subclasses can change this behaviour.
 
         // Are we being processed by a RequestDispatcher.include()?
         if (request.getAttribute(RequestDispatcher.INCLUDE_REQUEST_URI) != null) {
@@ -424,6 +464,8 @@ public class DefaultServlet
         String result = request.getPathInfo();
         if (result == null) {
             result = request.getServletPath();
+        } else {
+            result = request.getServletPath() + result;
         }
         if ((result == null) || (result.equals(""))) {
             result = "/";
