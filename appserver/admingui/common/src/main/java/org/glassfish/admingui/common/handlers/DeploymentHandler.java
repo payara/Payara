@@ -272,7 +272,7 @@ public class DeploymentHandler {
                  }
              }
              if (sb.length()> 0){
-                payload.put("properties", sb);
+                payload.put("properties", sb.toString());
              }
 
              payload.put("target", "domain");
