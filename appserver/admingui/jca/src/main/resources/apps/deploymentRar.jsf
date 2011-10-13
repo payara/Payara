@@ -78,11 +78,6 @@
         <sun:checkbox id="force" label=" " selected="#{pageSession.rar['force']}" selectedValue="true" />
 </sun:property>
 
-
-<sun:property id="preserveAppScopedResources" labelAlign="left" noWrap="#{false}" overlapLabel="#{false}" label="$resource{i18n.redeploy.preserveAppScopedResources}" helpText="$resource{i18n.redeploy.preserveAppScopedResourcesHelp}">
-        <sun:checkbox id="preserveAppScopedResources"  selected="#{pageSession.rar['PROPERTY-preserveAppScopedResources']}" selectedValue="true" />
-</sun:property>
-
 <sun:property id="descriptionProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.common.description}" helpText="$resource{i18n.deploy.descHelp}" >
 	<sun:textField id="description" columns="$int{40}" maxLength="#{sessionScope.fieldLengths['maxLength.common.description']}" text="#{pageSession.rar['description']}" />
 </sun:property>

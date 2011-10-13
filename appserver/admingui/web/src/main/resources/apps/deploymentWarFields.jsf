@@ -96,10 +96,6 @@
         <sun:checkbox id="keepState"  label=" "  selected="#{pageSession.war['keepState']}" selectedValue="true" />
 </sun:property>
 
-<sun:property id="preserveAppScopedResources" labelAlign="left" noWrap="#{false}" overlapLabel="#{false}" label="$resource{i18n.redeploy.preserveAppScopedResources}" helpText="$resource{i18n.redeploy.preserveAppScopedResourcesHelp}">
-        <sun:checkbox id="preserveAppScopedResources"  label=" "  selected="#{pageSession.war['PROPERTY-preserveAppScopedResources']}" selectedValue="true" />
-</sun:property>
-
 <sun:property id="librariesProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.common.Libraries}" helpText="$resource{i18n.deploy.libraryHelp}" >
 	<sun:textField id="library" columns="$int{40}" maxLength="#{sessionScope.fieldLengths['maxLength.common.Libraries']}" text="#{pageSession.war['libraries']}" />
 </sun:property>
