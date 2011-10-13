@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -55,10 +55,7 @@ import java.util.jar.JarFile;
 
 import com.sun.enterprise.config.serverbeans.Domain;
 import org.glassfish.api.Param;
-import org.glassfish.api.admin.AdminCommand;
-import org.glassfish.api.admin.AdminCommandContext;
-import org.glassfish.api.admin.ExecuteOn;
-import org.glassfish.api.admin.RuntimeType;
+import org.glassfish.api.admin.*;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.jvnet.hk2.annotations.Inject;
@@ -72,6 +69,12 @@ import org.objectweb.asm.ClassReader;
 @Scoped(PerLookup.class)
 @ExecuteOn(value={RuntimeType.DAS})
 @TargetType(value={CommandTarget.DOMAIN, CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER})
+@RestEndpoints({
+    @RestEndpoint(configBean=Domain.class,
+        opType=RestEndpoint.OpType.POST, // TODO: Should probably be GET
+        path="generate-domain-schema", 
+        description="generate-domain-schema")
+})
 public class GenerateDomainSchema implements AdminCommand {
     @Inject
     private Domain domain;

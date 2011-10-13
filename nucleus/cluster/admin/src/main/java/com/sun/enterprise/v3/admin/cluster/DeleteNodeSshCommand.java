@@ -42,25 +42,14 @@ package com.sun.enterprise.v3.admin.cluster;
 
 import java.util.List;
 import java.util.ArrayList;
-import java.util.logging.Logger;
-import java.util.logging.Level;
-import java.io.File;
 
-import com.sun.enterprise.util.StringUtils;
-import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.enterprise.config.serverbeans.*;
-import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
-import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
 import org.glassfish.api.admin.ExecuteOn;
-import org.glassfish.api.admin.CommandRunner.CommandInvocation;
-import org.glassfish.api.admin.ParameterMap;
 import org.jvnet.hk2.annotations.*;
 import org.jvnet.hk2.component.*;
 
-import com.sun.enterprise.universal.process.ProcessManager;
-import com.sun.enterprise.universal.process.ProcessManagerException;
 
 /**
  * Remote AdminCommand to create a config node.  This command is run only on DAS.
@@ -72,6 +61,12 @@ import com.sun.enterprise.universal.process.ProcessManagerException;
 @I18n("delete.node.ssh")
 @Scoped(PerLookup.class)
 @ExecuteOn({RuntimeType.DAS})
+@RestEndpoints({
+    @RestEndpoint(configBean=Nodes.class,
+        opType=RestEndpoint.OpType.DELETE, 
+        path="delete-node-ssh", 
+        description="Delete Node SSH")
+})
 public class DeleteNodeSshCommand extends DeleteNodeRemoteCommand {
     @Override
     public final void execute(AdminCommandContext context) {

@@ -40,8 +40,6 @@
 
 package com.sun.enterprise.v3.admin.cluster;
 
-import java.util.logging.Logger;
-import java.util.List;
 import java.util.Map;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
@@ -55,26 +53,20 @@ import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.component.PerLookup;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
-import org.jvnet.hk2.config.Transaction;
 import org.jvnet.hk2.config.TransactionFailure;
-import org.jvnet.hk2.config.types.Property;
 import java.beans.PropertyVetoException;
 
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.enterprise.config.serverbeans.ApplicationRef;
 import com.sun.enterprise.config.serverbeans.Cluster;
-import com.sun.enterprise.config.serverbeans.Clusters;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Node;
 import com.sun.enterprise.config.serverbeans.Nodes;
-import com.sun.enterprise.config.serverbeans.ResourceRef;
 import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.config.serverbeans.ServerRef;
 import com.sun.enterprise.config.serverbeans.Servers;
-import com.sun.enterprise.config.serverbeans.SshAuth;
-import com.sun.enterprise.config.serverbeans.SshConnector;
 import com.sun.enterprise.config.serverbeans.SystemProperty;
 import com.sun.enterprise.config.util.InstanceRegisterInstanceCommandParameters;
+import org.glassfish.api.admin.*;
 
 
 /**
@@ -84,6 +76,12 @@ import com.sun.enterprise.config.util.InstanceRegisterInstanceCommandParameters;
 @Service(name="_register-instance-at-instance")
 @Scoped(PerLookup.class)
 @ExecuteOn(value={RuntimeType.INSTANCE})
+@RestEndpoints({
+    @RestEndpoint(configBean=Domain.class,
+        opType=RestEndpoint.OpType.POST, 
+        path="_register-instance-at-instance", 
+        description="_register-instance-at-instance")
+})
 public class InstanceRegisterInstanceCommand extends InstanceRegisterInstanceCommandParameters implements AdminCommand {
 
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(InstanceRegisterInstanceCommand.class);

@@ -75,9 +75,9 @@ import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.config.serverbeans.Applications;
 import com.sun.enterprise.config.serverbeans.Application;
-import java.io.BufferedOutputStream;
+import com.sun.enterprise.config.serverbeans.Domain;
 import java.io.FileOutputStream;
-import java.io.OutputStream;
+import org.glassfish.api.admin.*;
 
 
 /**
@@ -88,6 +88,12 @@ import java.io.OutputStream;
 @Service(name="_deploy")
 @Scoped(PerLookup.class)
 @ExecuteOn(value={RuntimeType.INSTANCE})
+@RestEndpoints({
+    @RestEndpoint(configBean=Domain.class,
+        opType=RestEndpoint.OpType.POST, 
+        path="_deploy", 
+        description="_deploy")
+})
 public class InstanceDeployCommand extends InstanceDeployCommandParameters implements AdminCommand {
 
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(InstanceDeployCommand.class);

@@ -60,12 +60,7 @@ import java.util.List;
 import java.util.Properties;
 import org.glassfish.api.ActionReport.ExitCode;
 import org.glassfish.api.Param;
-import org.glassfish.api.admin.AdminCommand;
-import org.glassfish.api.admin.AdminCommandContext;
-import org.glassfish.api.admin.CommandLock;
-import org.glassfish.api.admin.ExecuteOn;
-import org.glassfish.api.admin.RuntimeType;
-import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.api.admin.*;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.jvnet.hk2.annotations.Inject;
@@ -85,7 +80,16 @@ import org.jvnet.hk2.config.types.Property;
 @CommandLock(CommandLock.LockType.NONE)
 @ExecuteOn({RuntimeType.DAS})
 @TargetType({CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE,
-CommandTarget.CLUSTER, CommandTarget.CONFIG,CommandTarget.CLUSTERED_INSTANCE})
+    CommandTarget.CLUSTER, CommandTarget.CONFIG,CommandTarget.CLUSTERED_INSTANCE})
+@RestEndpoints({
+    @RestEndpoint(configBean=AuthRealm.class,
+        opType=RestEndpoint.OpType.GET, 
+        path="list-group-names", 
+        description="List Group Names",
+        params={
+            @RestParam(name="realmName", value="$parent")
+        })
+})
 public class GetGroupNamesCommand implements AdminCommand {
     @Inject
     com.sun.enterprise.config.serverbeans.Domain domain;

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2008-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,8 +40,8 @@
 
 package com.sun.enterprise.v3.admin;
 
+import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.module.ModulesRegistry;
-import com.sun.enterprise.module.impl.ModulesRegistryImpl;
 import com.sun.enterprise.universal.collections.ManifestUtils;
 import com.sun.enterprise.v3.common.PropsFileActionReporter;
 import org.glassfish.api.ActionReport;
@@ -54,6 +54,8 @@ import org.jvnet.hk2.annotations.Inject;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
+import org.glassfish.api.admin.RestEndpoint;
+import org.glassfish.api.admin.RestEndpoints;
 import org.jvnet.hk2.component.PerLookup;
 
 /**
@@ -66,6 +68,12 @@ import org.jvnet.hk2.component.PerLookup;
  */
 @Scoped(PerLookup.class)
 @Service(name="_dump-hk2")
+@RestEndpoints({
+    @RestEndpoint(configBean=Domain.class,
+        opType=RestEndpoint.OpType.POST, 
+        path="_dump-hk2", 
+        description="_dump-hk2")
+})
 public class DumpHK2Command implements AdminCommand {
 
     @Inject

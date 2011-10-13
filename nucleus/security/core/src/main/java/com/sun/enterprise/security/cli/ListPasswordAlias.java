@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,6 +40,7 @@
 
 package com.sun.enterprise.security.cli;
 
+import com.sun.enterprise.config.serverbeans.Domain;
 import java.util.Enumeration;
 
 import org.glassfish.api.admin.AdminCommand;
@@ -52,10 +53,7 @@ import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.component.PerLookup;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.security.store.PasswordAdapter;
-import com.sun.enterprise.util.SystemPropertyConstants;
-import org.glassfish.api.Param;
-import org.glassfish.api.admin.ExecuteOn;
-import org.glassfish.api.admin.RuntimeType;
+import org.glassfish.api.admin.*;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.security.common.MasterPassword;
@@ -90,6 +88,12 @@ import org.jvnet.hk2.annotations.Inject;
 @I18n("list.password.alias")
 @ExecuteOn({RuntimeType.DAS})
 @TargetType({CommandTarget.DAS,CommandTarget.DOMAIN})
+@RestEndpoints({
+    @RestEndpoint(configBean=Domain.class,
+        opType=RestEndpoint.OpType.GET, 
+        path="list-password-aliases", 
+        description="list-password-aliases")
+})
 public class ListPasswordAlias implements AdminCommand {
 
     final private static LocalStringManagerImpl localStrings =

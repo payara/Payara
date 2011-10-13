@@ -47,16 +47,8 @@ import org.glassfish.resource.common.PoolInfo;
 import org.glassfish.api.Param;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
-import org.glassfish.api.admin.AdminCommandContext;
-import org.glassfish.api.admin.CommandRunner;
-import org.glassfish.api.admin.ParameterMap;
-import org.glassfish.api.admin.AdminCommand;
-import org.glassfish.api.admin.CommandLock;
-import org.glassfish.api.admin.ExecuteOn;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
-import org.glassfish.api.admin.ServerEnvironment;
-import org.glassfish.api.admin.RuntimeType;
 import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
@@ -65,6 +57,7 @@ import org.jvnet.hk2.annotations.Inject;
 
 import javax.resource.ResourceException;
 import java.util.Properties;
+import org.glassfish.api.admin.*;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.component.PerLookup;
@@ -75,7 +68,22 @@ import org.jvnet.hk2.component.PerLookup;
 @Scoped(PerLookup.class)
 @CommandLock(CommandLock.LockType.NONE)
 @I18n("jms-ping")
-
+@RestEndpoints({
+    @RestEndpoint(configBean=Cluster.class,
+        opType=RestEndpoint.OpType.GET, 
+        path="jms-ping", 
+        description="Ping JMS",
+        params={
+            @RestParam(name="id", value="$parent")
+        }),
+    @RestEndpoint(configBean=Server.class,
+        opType=RestEndpoint.OpType.GET, 
+        path="jms-ping", 
+        description="Ping JMS",
+        params={
+            @RestParam(name="id", value="$parent")
+        })
+})
 public class JMSPing implements AdminCommand {
     @Param(optional=true)
     String target = SystemPropertyConstants.DEFAULT_SERVER_INSTANCE_NAME;

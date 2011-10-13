@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -74,6 +74,12 @@ import java.util.logging.Logger;
 @Service(name = "_gms-announce-before-stop-cluster-command")
 @Supplemental(value = "stop-cluster", on = Supplemental.Timing.Before, ifFailure = FailurePolicy.Warn)
 @Scoped(PerLookup.class)
+@RestEndpoints({
+    @RestEndpoint(configBean=Domain.class,
+        opType=RestEndpoint.OpType.POST, 
+        path="_gms-announce-before-stop-cluster-command", 
+        description="_gms-announce-before-stop-cluster-command")
+})
 public class GMSAnnounceBeforeStopClusterCommand implements AdminCommand {
 
     private static final Logger logger = LogDomains.getLogger(

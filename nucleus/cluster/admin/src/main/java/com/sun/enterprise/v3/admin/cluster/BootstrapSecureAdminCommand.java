@@ -40,15 +40,11 @@
 
 package com.sun.enterprise.v3.admin.cluster;
 
+import com.sun.enterprise.config.serverbeans.Domain;
 import java.io.File;
 import java.io.IOException;
 import org.glassfish.api.ActionReport;
-import org.glassfish.api.admin.AdminCommand;
-import org.glassfish.api.admin.AdminCommandContext;
-import org.glassfish.api.admin.ExecuteOn;
-import org.glassfish.api.admin.Payload;
-import org.glassfish.api.admin.RuntimeType;
-import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.api.admin.*;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
@@ -64,6 +60,12 @@ import org.jvnet.hk2.component.PostConstruct;
 @Service(name="_bootstrap-secure-admin")
 @Scoped(PerLookup.class)
 @ExecuteOn(value={RuntimeType.DAS})
+@RestEndpoints({
+    @RestEndpoint(configBean=Domain.class,
+        opType=RestEndpoint.OpType.POST, 
+        path="_bootstrap-secure-admin", 
+        description="_bootstrap-secure-admin")
+})
 public class BootstrapSecureAdminCommand implements AdminCommand, PostConstruct {
 
     private final static String DOWNLOADED_FILE_MIME_TYPE = "application/octet-stream";

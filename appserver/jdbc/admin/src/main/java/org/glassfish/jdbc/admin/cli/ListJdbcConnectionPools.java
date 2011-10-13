@@ -41,6 +41,7 @@
 package org.glassfish.jdbc.admin.cli;
 
 import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.config.serverbeans.Resources;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
@@ -59,6 +60,8 @@ import org.jvnet.hk2.component.PerLookup;
 import org.glassfish.resources.config.JdbcConnectionPool;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import java.util.Collection;
+import org.glassfish.api.admin.RestEndpoint;
+import org.glassfish.api.admin.RestEndpoints;
 
 /**
  * List JDBC Connection Pools command
@@ -70,6 +73,12 @@ import java.util.Collection;
 @CommandLock(CommandLock.LockType.NONE)
 @ExecuteOn(value={RuntimeType.DAS})
 @I18n("list.jdbc.connection.pools")
+@RestEndpoints({
+    @RestEndpoint(configBean=Resources.class,
+        opType=RestEndpoint.OpType.GET, 
+        path="list-jdbc-connection-pools", 
+        description="List JDBC Connection Pools")
+})
 public class ListJdbcConnectionPools implements AdminCommand {
     
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ListJdbcConnectionPools.class);    

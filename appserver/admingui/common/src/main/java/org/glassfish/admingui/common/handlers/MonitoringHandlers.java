@@ -687,9 +687,9 @@ public class MonitoringHandlers {
     }
 
     public static Map<String, Object> getSubComponents(String appName, String moduleName) {
-        String endpoint = GuiUtil.getSessionValue("REST_URL") + "/applications/application/list-sub-components";
+        String endpoint = GuiUtil.getSessionValue("REST_URL") + "/applications/application/" + appName + "/list-sub-components";
         Map<String, Object> attrs = new HashMap<String, Object>();
-        attrs.put("appname", appName);
+        //attrs.put("appname", appName);
         attrs.put("modulename", moduleName);
 
         try {

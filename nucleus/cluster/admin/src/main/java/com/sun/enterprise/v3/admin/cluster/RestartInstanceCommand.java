@@ -44,11 +44,11 @@ import com.sun.enterprise.admin.remote.ServerRemoteAdminCommand;
 import com.sun.enterprise.admin.util.*;
 import com.sun.enterprise.admin.util.RemoteInstanceCommandHelper;
 import com.sun.enterprise.config.serverbeans.Config;
+import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.util.ObjectAnalyzer;
 import com.sun.enterprise.util.StringUtils;
 import java.util.Map;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.glassfish.api.*;
 import org.glassfish.api.admin.*;
@@ -65,6 +65,19 @@ import org.jvnet.hk2.component.PerLookup;
 @CommandLock(CommandLock.LockType.NONE) // don't prevent _synchronize-files
 @I18n("restart.instance.command")
 @ExecuteOn(RuntimeType.DAS)
+@RestEndpoints({
+    @RestEndpoint(configBean=Domain.class,
+        opType=RestEndpoint.OpType.POST, 
+        path="_restart-instance", 
+        description="_restart-instance"),
+    @RestEndpoint(configBean=Server.class,
+        opType=RestEndpoint.OpType.POST, 
+        path="restart-instance", 
+        description="restart-instance",
+        params={
+            @RestParam(name="id", value="$parent")
+        })
+})
 public class RestartInstanceCommand implements AdminCommand {
     @Override
     public void execute(AdminCommandContext context) {

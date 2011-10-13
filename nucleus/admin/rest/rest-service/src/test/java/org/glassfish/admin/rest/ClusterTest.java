@@ -80,7 +80,7 @@ public class ClusterTest extends RestTestBase {
         response = get(URL_CLUSTER + "/" + clusterName + "/list-lifecycle-modules");
         assertTrue(isSuccess(response));
 
-        response = post(URL_CLUSTER + "/" + clusterName + "/delete-cluster");
+        response = delete(URL_CLUSTER + "/" + clusterName); // + "/delete-cluster");
         assertTrue(isSuccess(response));
 
         response = get(URL_CLUSTER + "/" + clusterName);
@@ -148,7 +148,7 @@ public class ClusterTest extends RestTestBase {
         }
 
 
-        response = post(URL_CLUSTER + "/" + clusterName + "/delete-cluster");
+        response = delete(URL_CLUSTER + "/" + clusterName);// + "/delete-cluster");
         assertTrue(isSuccess(response));
 
         response = get(URL_CLUSTER + "/" + clusterName);

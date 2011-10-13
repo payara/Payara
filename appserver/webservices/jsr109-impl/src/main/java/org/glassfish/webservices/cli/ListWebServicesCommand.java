@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,6 +40,7 @@
 
 package org.glassfish.webservices.cli;
 
+import com.sun.enterprise.config.serverbeans.Application;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
@@ -58,6 +59,9 @@ import org.jvnet.hk2.component.PerLookup;
 
 import java.util.Map;
 import java.util.Properties;
+import org.glassfish.api.admin.RestEndpoint;
+import org.glassfish.api.admin.RestEndpoints;
+import org.glassfish.api.admin.RestParam;
 
 /**
  * CLI for listing all web services.
@@ -73,6 +77,15 @@ endpointname <endpointname>]]]
 @Scoped(PerLookup.class)
 @CommandLock(CommandLock.LockType.NONE)
 @ExecuteOn(RuntimeType.DAS)
+@RestEndpoints({
+    @RestEndpoint(configBean=Application.class,
+        opType=RestEndpoint.OpType.GET, 
+        path="list-webservices", 
+        description="list-webservices",
+        params={
+            @RestParam(name="appName", value="$parent")
+        })
+})
 public class ListWebServicesCommand implements AdminCommand {
     @Inject
     private Habitat habitat;

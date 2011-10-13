@@ -41,13 +41,11 @@
 package org.glassfish.connectors.admin.cli;
 
 import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.config.serverbeans.SecurityService;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
-import org.glassfish.api.admin.AdminCommand;
-import org.glassfish.api.admin.AdminCommandContext;
-import org.glassfish.api.admin.CommandLock;
 import org.glassfish.resources.config.PrincipalMap;
 import org.glassfish.resources.config.GroupMap;
 import org.glassfish.resources.config.WorkSecurityMap;
@@ -60,6 +58,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.glassfish.api.admin.*;
 
 /**
  * List Connector Work Security Maps
@@ -69,6 +68,12 @@ import java.util.logging.Logger;
 @Scoped(PerLookup.class)
 @CommandLock(CommandLock.LockType.NONE)
 @I18n("list.connector.work.security.maps")
+@RestEndpoints({
+    @RestEndpoint(configBean=SecurityService.class,
+        opType=RestEndpoint.OpType.GET, 
+        path="list-connector-work-security-maps", 
+        description="List Connector Work Security Maps")
+})
 public class ListConnectorWorkSecurityMaps implements AdminCommand {
 
     final private static LocalStringManagerImpl localStrings =

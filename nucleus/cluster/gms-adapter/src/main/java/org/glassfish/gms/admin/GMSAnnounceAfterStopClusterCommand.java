@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -42,19 +42,14 @@ package org.glassfish.gms.admin;
 
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.ee.cms.core.GMSConstants;
-import com.sun.enterprise.ee.cms.core.GroupManagementService;
 import com.sun.logging.LogDomains;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
-import org.glassfish.gms.bootstrap.GMSAdapterService;
-import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.PerLookup;
 
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -62,6 +57,12 @@ import java.util.logging.Logger;
 @Service(name = "_gms-announce-after-stop-cluster-command")
 @Supplemental(value = "stop-cluster", on = Supplemental.Timing.After, ifFailure = FailurePolicy.Warn)
 @Scoped(PerLookup.class)
+@RestEndpoints({
+    @RestEndpoint(configBean=Domain.class,
+        opType=RestEndpoint.OpType.POST, 
+        path="_gms-announce-after-stop-cluster-command", 
+        description="_gms-announce-after-stop-cluster-command")
+})
 public class GMSAnnounceAfterStopClusterCommand implements AdminCommand {
 
     private static final Logger logger = LogDomains.getLogger(

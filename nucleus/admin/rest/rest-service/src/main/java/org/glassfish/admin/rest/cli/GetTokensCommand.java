@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright (c) 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2011 Oracle and/or its affiliates. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,7 +39,10 @@
  */
 package org.glassfish.admin.rest.cli;
 
+import com.sun.enterprise.config.serverbeans.Cluster;
+import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.enterprise.v3.common.ActionReporter;
 import java.util.Map;
@@ -47,18 +50,15 @@ import java.util.Properties;
 import java.util.TreeMap;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
-import org.glassfish.api.admin.AdminCommand;
-import org.glassfish.api.admin.AdminCommandContext;
-import org.glassfish.api.admin.ExecuteOn;
-import org.glassfish.api.admin.RuntimeType;
+import org.glassfish.api.admin.*;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.PropertyResolver;
 import org.glassfish.config.support.TargetType;
+import org.glassfish.hk2.scopes.PerLookup;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
-import org.jvnet.hk2.component.PerLookup;
 
 /**
  *
@@ -68,6 +68,36 @@ import org.jvnet.hk2.component.PerLookup;
 @Scoped(PerLookup.class)
 @TargetType(value={CommandTarget.DAS,CommandTarget.DOMAIN, CommandTarget.CLUSTER, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTERED_INSTANCE })
 @ExecuteOn(RuntimeType.DAS)
+@RestEndpoints({
+    @RestEndpoint(configBean=Cluster.class,
+        opType=RestEndpoint.OpType.GET, 
+        path="resolve-tokens", 
+        description="Resolve Tokens",
+        params={
+            @RestParam(name="target", value="$parent")
+        }),
+    @RestEndpoint(configBean=Domain.class,
+        opType=RestEndpoint.OpType.GET, 
+        path="resolve-tokens", 
+        description="Resolve Tokens",
+        params={
+            @RestParam(name="target", value="$parent")
+        }),
+    @RestEndpoint(configBean=Server.class,
+        opType=RestEndpoint.OpType.GET, 
+        path="resolve-tokens", 
+        description="Resolve Tokens",
+        params={
+            @RestParam(name="target", value="$parent")
+        }),
+    @RestEndpoint(configBean=Config.class,
+        opType=RestEndpoint.OpType.GET, 
+        path="resolve-tokens", 
+        description="Resolve Tokens",
+        params={
+            @RestParam(name="target", value="$parent")
+        })
+})
 public class GetTokensCommand implements AdminCommand {
     @Inject
     private Domain domain;

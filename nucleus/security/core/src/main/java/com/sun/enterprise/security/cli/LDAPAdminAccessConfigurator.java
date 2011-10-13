@@ -41,13 +41,7 @@
 package com.sun.enterprise.security.cli;
 
 //import com.sun.enterprise.config.serverbeans.*;
-import com.sun.enterprise.config.serverbeans.AdminService;
-import com.sun.enterprise.config.serverbeans.AuthRealm;
-import com.sun.enterprise.config.serverbeans.Config;
-import com.sun.enterprise.config.serverbeans.ConfigBeansUtilities;
-import com.sun.enterprise.config.serverbeans.Configs;
-import com.sun.enterprise.config.serverbeans.SecurityService;
-import com.sun.enterprise.config.serverbeans.Server;
+import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.security.auth.realm.Realm;
 import com.sun.enterprise.security.auth.realm.ldap.LDAPRealm;
 import com.sun.enterprise.util.i18n.StringManager;
@@ -61,26 +55,21 @@ import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.internal.api.Target;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
 import org.jvnet.hk2.config.types.Property;
-import org.jvnet.hk2.component.PerLookup;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import java.beans.PropertyVetoException;
-import java.security.KeyStoreException;
 import java.util.List;
 import java.util.Properties;
 import java.util.logging.Logger;
 import javax.naming.AuthenticationNotSupportedException;
-import org.glassfish.api.admin.ExecuteOn;
-import org.glassfish.api.admin.RuntimeType;
+import org.glassfish.api.admin.*;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
-import org.glassfish.internal.api.RelativePathResolver;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.component.PerLookup;
 
@@ -93,6 +82,12 @@ import org.jvnet.hk2.component.PerLookup;
 @Scoped(PerLookup.class)
 @ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
 @TargetType({CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTER, CommandTarget.CONFIG})
+@RestEndpoints({
+    @RestEndpoint(configBean=Domain.class,
+        opType=RestEndpoint.OpType.POST, 
+        path="configure-ldap-for-admin", 
+        description="configure-ldap-for-admin")
+})
 public class LDAPAdminAccessConfigurator implements AdminCommand {
 
     @Param (name="basedn", shortName="b", optional=false)

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,9 +41,7 @@
 package com.sun.enterprise.v3.admin.cluster;
 
 import java.io.*;
-import java.util.*;
 import java.util.logging.Logger;
-import java.util.logging.Level;
 import javax.xml.bind.*;
 
 import com.sun.enterprise.admin.util.InstanceStateService;
@@ -58,10 +56,10 @@ import org.glassfish.api.Param;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.ActionReport.ExitCode;
 import com.sun.enterprise.config.serverbeans.Applications;
+import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Servers;
 import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.util.cluster.SyncRequest;
-import com.sun.enterprise.util.cluster.SyncRequest.ModTime;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 
 /**
@@ -75,6 +73,12 @@ import com.sun.enterprise.util.LocalStringManagerImpl;
 @Scoped(PerLookup.class)
 @CommandLock(CommandLock.LockType.EXCLUSIVE)
 @I18n("synchronize.command")
+@RestEndpoints({
+    @RestEndpoint(configBean=Domain.class,
+        opType=RestEndpoint.OpType.POST, 
+        path="_synchronize-files", 
+        description="_synchronize-files")
+})
 public class SynchronizeFiles implements AdminCommand {
 
     @Param(name = "file_list", primary = true)

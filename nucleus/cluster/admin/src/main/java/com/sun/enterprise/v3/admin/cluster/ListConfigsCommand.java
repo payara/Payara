@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -62,6 +62,7 @@ import org.jvnet.hk2.component.PerLookup;
 
 import java.util.List;
 import java.util.LinkedList;
+import org.glassfish.api.admin.*;
 
 /**
  *  This is a remote command that lists the configs.
@@ -75,7 +76,13 @@ import java.util.LinkedList;
 @CommandLock(CommandLock.LockType.NONE)
 @ExecuteOn({RuntimeType.DAS})
 @TargetType(value={CommandTarget.CLUSTER,
-CommandTarget.CONFIG, CommandTarget.DAS, CommandTarget.DOMAIN, CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTERED_INSTANCE})
+    CommandTarget.CONFIG, CommandTarget.DAS, CommandTarget.DOMAIN, CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTERED_INSTANCE})
+@RestEndpoints({
+    @RestEndpoint(configBean=Configs.class,
+        opType=RestEndpoint.OpType.GET, 
+        path="list-configs", 
+        description="list-configs")
+})
 public final class ListConfigsCommand implements AdminCommand {
 
     @Inject

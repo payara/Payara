@@ -39,6 +39,7 @@
  */
 package com.sun.enterprise.v3.admin.cluster;
 
+import com.sun.enterprise.config.serverbeans.Node;
 import com.sun.enterprise.v3.admin.cluster.NodeUtils.RemoteType;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
@@ -55,6 +56,15 @@ import org.jvnet.hk2.component.*;
 @I18n("update.node.ssh")
 @Scoped(PerLookup.class)
 @ExecuteOn({RuntimeType.DAS})
+@RestEndpoints({
+    @RestEndpoint(configBean=Node.class,
+        opType=RestEndpoint.OpType.POST, 
+        path="update-node-ssh", 
+        description="Update Node",
+        params={
+            @RestParam(name="id", value="$parent")
+        })
+})
 public class UpdateNodeSshCommand extends UpdateNodeRemoteCommand {
     @Param(name = "sshport", optional = true)
     private String sshportInSubClass;

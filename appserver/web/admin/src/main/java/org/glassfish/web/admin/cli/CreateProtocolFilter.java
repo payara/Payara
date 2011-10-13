@@ -75,6 +75,15 @@ import org.jvnet.hk2.config.TransactionFailure;
 @I18n("create.protocol.filter")
 @ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
 @TargetType({CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTER,CommandTarget.CONFIG})
+@RestEndpoints({
+    @RestEndpoint(configBean=Protocol.class,
+        opType=RestEndpoint.OpType.POST, 
+        path="create-protocol-filter", 
+        description="Create",
+        params={
+            @RestParam(name="protocol", value="$parent")
+        })
+})
 public class CreateProtocolFilter implements AdminCommand {
     final private static LocalStringManagerImpl localStrings =
         new LocalStringManagerImpl(CreateProtocolFilter.class);

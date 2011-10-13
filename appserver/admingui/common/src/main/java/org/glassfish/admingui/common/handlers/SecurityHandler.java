@@ -540,7 +540,9 @@ public class SecurityHandler {
     private static List skipRealmPropsList = new ArrayList();
     private static List realmClassList = new ArrayList();
     static {
-        String endpoint = GuiUtil.getSessionValue("REST_URL") + "/configs/config/server-config/security-service/auth-realm/list-predefined-authrealm-classnames";
+        String endpoint = GuiUtil.getSessionValue("REST_URL") 
+            + "/list-predefined-authrealm-classnames";
+            //+ "/configs/config/server-config/security-service/auth-realm/list-predefined-authrealm-classnames";
         Map<String, Object> responseMap = RestUtil.restRequest(endpoint, null, "GET", null, false);
         Map<String, Object> valueMap = (Map<String, Object>) responseMap.get("data");
         ArrayList<HashMap> classNames = (ArrayList<HashMap>) ((ArrayList<HashMap>) valueMap.get("children"));

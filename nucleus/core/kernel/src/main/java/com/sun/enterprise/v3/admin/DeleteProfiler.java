@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -66,6 +66,7 @@ import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
 
 import java.beans.PropertyVetoException;
+import org.glassfish.api.admin.*;
 
 /**
 * Delete JDBC Resource command
@@ -76,6 +77,12 @@ import java.beans.PropertyVetoException;
 @I18n("delete.profiler")
 @ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
 @TargetType({CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTER,CommandTarget.CONFIG})
+@RestEndpoints({
+    @RestEndpoint(configBean=Profiler.class,
+        opType=RestEndpoint.OpType.DELETE, 
+        path="delete-profiler", 
+        description="Delete Profiler")
+})
 public class DeleteProfiler implements AdminCommand {
 
    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(DeleteProfiler.class);

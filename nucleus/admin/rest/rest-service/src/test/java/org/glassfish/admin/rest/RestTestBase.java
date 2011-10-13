@@ -146,6 +146,22 @@ public class RestTestBase {
         return ((status == 200) || (status == 201));
     }
 
+    protected void checkStatusForSuccess(ClientResponse cr) {
+        int status = cr.getStatus();
+        if ((status < 200) || (status > 299)) {
+            String message = getErrorMessage(cr);
+            fail("Expected a status between 200 and 299 (inclusive).  Found " + status +
+                    ((message != null) ? ":  " + message : ""));
+        }
+    }
+
+    protected void checkStatusForFailure(ClientResponse cr) {
+        int status = cr.getStatus();
+        if ((status < 200) && (status > 299)) {
+            fail("Expected a status less than 200 or greater than 299 (inclusive).  Found " + status);
+        }
+    }
+
     protected ClientResponse get(String address) {
         return get(address, new HashMap<String, String>());
     }
@@ -280,22 +296,6 @@ public class RestTestBase {
             }
         }
         return formData;
-    }
-
-    protected void checkStatusForSuccess(ClientResponse cr) {
-        int status = cr.getStatus();
-        if ((status < 200) || (status > 299)) {
-            String message = getErrorMessage(cr);
-            fail("Expected a status between 200 and 299 (inclusive).  Found " + status +
-                    ((message != null) ? ":  " + message : ""));
-        }
-    }
-
-    protected void checkStatusForFailure(ClientResponse cr) {
-        int status = cr.getStatus();
-        if ((status < 200) && (status > 299)) {
-            fail("Expected a status less than 200 or greater than 299 (inclusive).  Found " + status);
-        }
     }
 
     protected String getErrorMessage(ClientResponse cr) {

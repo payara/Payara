@@ -62,6 +62,12 @@ import org.jvnet.hk2.component.PerLookup;
 @TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE})
 @Scoped(PerLookup.class)
 @I18n("rotate.log")
+@RestEndpoints({
+    @RestEndpoint(configBean=Domain.class,
+        opType=RestEndpoint.OpType.POST, 
+        path="rotate-log", 
+        description="Rotate Log")
+})
 public class RotateLog implements AdminCommand {
 
     @Inject

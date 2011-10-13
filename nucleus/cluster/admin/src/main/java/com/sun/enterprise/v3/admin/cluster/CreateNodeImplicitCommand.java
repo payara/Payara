@@ -40,9 +40,8 @@
 
 package com.sun.enterprise.v3.admin.cluster;
 
-import com.sun.enterprise.config.serverbeans.Node;
+import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Nodes;
-import com.sun.enterprise.util.StringUtils;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
@@ -50,7 +49,6 @@ import org.glassfish.api.admin.*;
 import org.glassfish.api.admin.CommandRunner.CommandInvocation;
 import org.jvnet.hk2.annotations.*;
 import org.jvnet.hk2.component.*;
-import java.util.logging.Logger;
 
 /**
  * Remote AdminCommand to create a config node.  This command is run only on DAS.
@@ -62,6 +60,12 @@ import java.util.logging.Logger;
 @I18n("create.node.implicit")
 @Scoped(PerLookup.class)
 @ExecuteOn({RuntimeType.DAS})
+@RestEndpoints({
+    @RestEndpoint(configBean=Domain.class,
+        opType=RestEndpoint.OpType.POST, 
+        path="_create-node-implicit", 
+        description="_create-node-implicit")
+})
 public class CreateNodeImplicitCommand implements AdminCommand {
 
     @Inject

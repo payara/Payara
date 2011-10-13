@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -43,6 +43,7 @@ package org.glassfish.admin.cli.resources;
 import com.sun.enterprise.config.serverbeans.Clusters;
 import com.sun.enterprise.config.serverbeans.ConfigBeansUtilities;
 import com.sun.enterprise.config.serverbeans.ResourceRef;
+import com.sun.enterprise.config.serverbeans.Resources;
 import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
@@ -54,6 +55,8 @@ import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.ExecuteOn;
+import org.glassfish.api.admin.RestEndpoint;
+import org.glassfish.api.admin.RestEndpoints;
 import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
@@ -72,6 +75,12 @@ import org.jvnet.hk2.component.PerLookup;
 @Scoped(PerLookup.class)
 @CommandLock(CommandLock.LockType.NONE)
 @I18n("list.resource.refs")
+@RestEndpoints({
+    @RestEndpoint(configBean=Resources.class,
+        opType=RestEndpoint.OpType.GET, 
+        path="list-resource-refs", 
+        description="list-resource-refs")
+})
 public class ListResourceRefs implements AdminCommand {
     
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ListResourceRefs.class);

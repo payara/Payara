@@ -148,14 +148,26 @@ public abstract class RestClientBase {
                 }
                 break;
             }
+            case PUT: {
+                if (needsMultiPart) {
+                    clientResponse = request.accept(RESPONSE_TYPE)
+                            .type(MediaType.MULTIPART_FORM_DATA_TYPE)
+                            .put(ClientResponse.class, buildFormDataMultipart(payload));
+                } else {
+                    clientResponse = request.accept(RESPONSE_TYPE)
+                            .put(ClientResponse.class, buildMultivalueMap(payload));
+
+                }
+                break;
+            }
             case DELETE: {
                 addQueryParams(payload, request);
-                clientResponse = request.accept(RESPONSE_TYPE).delete(ClientResponse.class);
+                clientResponse = request.queryParams(buildMultivalueMap(payload)).accept(RESPONSE_TYPE).delete(ClientResponse.class);
                 break;
             }
             default: {
                 addQueryParams(payload, request);
-                clientResponse = request.accept(RESPONSE_TYPE).get(ClientResponse.class);
+                clientResponse = request.queryParams(buildMultivalueMap(payload)).accept(RESPONSE_TYPE).get(ClientResponse.class);
             }
         }
 

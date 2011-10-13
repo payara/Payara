@@ -75,6 +75,15 @@ import com.sun.enterprise.config.serverbeans.Node;
 @CommandLock(CommandLock.LockType.NONE) // don't prevent _synchronize-files
 @Scoped(PerLookup.class)
 @I18n("start.instance.command")
+@RestEndpoints({
+    @RestEndpoint(configBean=Server.class,
+        opType=RestEndpoint.OpType.POST, 
+        path="start-instance", 
+        description="Start Instance",
+        params={
+            @RestParam(name="id", value="$parent")
+        })
+})
 public class StartInstanceCommand implements AdminCommand {
     @Inject
     Habitat habitat;

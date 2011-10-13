@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,6 +41,7 @@
 package org.glassfish.connectors.admin.cli.internal;
 
 import com.sun.appserv.connectors.internal.api.ConnectorRuntime;
+import com.sun.enterprise.config.serverbeans.Resources;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
@@ -53,6 +54,8 @@ import org.jvnet.hk2.component.PerLookup;
 
 import java.util.Map;
 import java.util.Properties;
+import org.glassfish.api.admin.RestEndpoint;
+import org.glassfish.api.admin.RestEndpoints;
 
 /**
  * @author Jagadish Ramu
@@ -60,6 +63,12 @@ import java.util.Properties;
 @Service(name = "_get-message-listener-config-property-types")
 @Scoped(PerLookup.class)
 @CommandLock(CommandLock.LockType.NONE)
+@RestEndpoints({
+    @RestEndpoint(configBean=Resources.class,
+        opType=RestEndpoint.OpType.GET, 
+        path="_get-message-listener-config-property-types", 
+        description="Get Message Listener Config Property Types")
+})
 public class GetMessageListenerConfigPropertyTypes implements AdminCommand {
     @Inject
     private ConnectorRuntime connectorRuntime;

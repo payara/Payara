@@ -1,5 +1,4 @@
 #!/bin/bash
-
 ## DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
 ## Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
@@ -38,6 +37,8 @@
 ## only if the new code is made subject to such option by the copyright
 ## holder.
 
+export ARTIFACT=paas-console
+
 if [ "$SERVER_DIR" == "" ] ; then
     echo "You must define SERVER_DIR (e.g., export SERVER_DIR=~/src/servers/glassfish3)"
     exit -1
@@ -64,7 +65,7 @@ do
 done;
 
 echo Stopping the server
-$SERVER_DIR/bin/asadmin undeploy paas-console
+$SERVER_DIR/bin/asadmin undeploy $ARTIFACT
 $SERVER_DIR/bin/asadmin stop-domain 
 
 echo Clearing the OSGi cache
@@ -74,7 +75,7 @@ echo Removing any existing demo plugins from $MODULE_DIR
 rm $MODULE_DIR/plugin*.jar 2>/dev/null
 
 echo Building....
-mvn $CLEAN install
+mvn $CLEAN -o install
 
 if [ "$?" -ne 0 ] ; then
     echo "**** Error: build failed"
@@ -98,6 +99,6 @@ echo Deploying the application
 if [ "$DEBUG" == "true" ] ; then
     read -p "Attach debugger if desired, then press Enter to deploy the web app"
 fi
-$SERVER_DIR/bin/asadmin deploy --force=true webapp/target/paas-console/
+$SERVER_DIR/bin/asadmin deploy --force=true webapp/target/$ARTIFACT/
 
 echo Done.

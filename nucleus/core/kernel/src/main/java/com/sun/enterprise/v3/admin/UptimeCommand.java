@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,6 +40,7 @@
 
 package com.sun.enterprise.v3.admin;
 
+import com.sun.enterprise.config.serverbeans.Domain;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
 import org.glassfish.api.Param;
@@ -53,6 +54,7 @@ import org.jvnet.hk2.annotations.*;
 import org.jvnet.hk2.component.PerLookup;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.universal.Duration;
+import org.glassfish.api.admin.*;
 
 /**
  * uptime command
@@ -63,6 +65,12 @@ import com.sun.enterprise.universal.Duration;
 @Scoped(PerLookup.class)
 @CommandLock(CommandLock.LockType.NONE)
 @I18n("uptime")
+@RestEndpoints({
+    @RestEndpoint(configBean=Domain.class,
+        opType=RestEndpoint.OpType.GET, 
+        path="uptime", 
+        description="Uptime")
+})
 public class UptimeCommand implements AdminCommand {
 
     @Inject

@@ -55,13 +55,10 @@ import org.glassfish.grizzly.config.dom.Ssl;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
-import org.glassfish.api.admin.AdminCommand;
-import org.glassfish.api.admin.AdminCommandContext;
-import org.glassfish.api.admin.ExecuteOn;
-import org.glassfish.api.admin.RuntimeType;
-import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.api.admin.*;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
+import org.glassfish.grizzly.config.dom.NetworkListener;
 import org.glassfish.internal.api.Target;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
@@ -89,6 +86,24 @@ import org.jvnet.hk2.config.TransactionFailure;
 @I18n("create.ssl")
 @ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
 @TargetType({CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTER,CommandTarget.CONFIG})
+@RestEndpoints({
+    @RestEndpoint(configBean=JmxConnector.class,
+        opType=RestEndpoint.OpType.POST, 
+        path="create-ssl", 
+        description="create-ssl",
+        params={
+            @RestParam(name="id", value="$parent"),
+            @RestParam(name="type", value="jmx-connector")
+        }),
+    @RestEndpoint(configBean=NetworkListener.class,
+        opType=RestEndpoint.OpType.POST, 
+        path="create-ssl", 
+        description="create-ssl",
+        params={
+            @RestParam(name="id", value="$parent"),
+            @RestParam(name="type", value="http-listener")
+        })
+})
 public class CreateSsl implements AdminCommand {
     final private static LocalStringManagerImpl localStrings =
         new LocalStringManagerImpl(CreateSsl.class);

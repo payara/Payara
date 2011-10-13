@@ -45,24 +45,22 @@ import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.CommandLock;
 import org.glassfish.api.Param;
-import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.admin.ExecuteOn;
 import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.config.support.CommandTarget;
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.enterprise.config.serverbeans.Application;
 import com.sun.enterprise.config.serverbeans.ApplicationRef;
+import com.sun.enterprise.config.serverbeans.Applications;
 import com.sun.enterprise.config.serverbeans.Domain;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
+import org.glassfish.api.admin.*;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.component.PerLookup;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.glassfish.deployment.common.DeploymentUtils;
 
 /**
@@ -74,6 +72,12 @@ import org.glassfish.deployment.common.DeploymentUtils;
 @Scoped(PerLookup.class)
 @CommandLock(CommandLock.LockType.NONE)
 @TargetType(value={CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER})
+@RestEndpoints({
+    @RestEndpoint(configBean=Applications.class,
+        opType=RestEndpoint.OpType.GET, 
+        path="list-applications-refs", 
+        description="list-applications-refs")
+})
 public class ListApplicationRefsCommand implements AdminCommand {
 
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ListApplicationRefsCommand.class);

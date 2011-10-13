@@ -65,9 +65,7 @@ import com.sun.enterprise.security.common.Util;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import java.beans.PropertyVetoException;
 import java.io.File;
-import org.glassfish.api.admin.ExecuteOn;
-import org.glassfish.api.admin.RuntimeType;
-import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.api.admin.*;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.jvnet.hk2.config.ConfigSupport;
@@ -90,6 +88,15 @@ import org.jvnet.hk2.config.types.Property;
 @I18n("delete.file.user")
 @ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
 @TargetType({CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTER, CommandTarget.CONFIG})
+@RestEndpoints({
+    @RestEndpoint(configBean=AuthRealm.class,
+        opType=RestEndpoint.OpType.DELETE, 
+        path="delete-user", 
+        description="Delete",
+        params={
+            @RestParam(name="authrealmname", value="$parent")
+        })
+})
 public class DeleteFileUser implements /*UndoableCommand*/ AdminCommand {
     
     final private static LocalStringManagerImpl localStrings = 

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2006-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,6 +40,7 @@
 
 package com.sun.enterprise.v3.admin;
 
+import com.sun.enterprise.config.serverbeans.Domain;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
@@ -54,6 +55,7 @@ import com.sun.enterprise.module.Module;
 import com.sun.enterprise.module.ModuleState;
 
 import java.net.URI;
+import org.glassfish.api.admin.*;
 
 /**
  * List the modules available to this instance and their status
@@ -62,6 +64,12 @@ import java.net.URI;
 @Scoped(Singleton.class)        // no per-execution state
 @CommandLock(CommandLock.LockType.NONE)
 @I18n("list.modules.command")
+@RestEndpoints({
+    @RestEndpoint(configBean=Domain.class,
+        opType=RestEndpoint.OpType.GET, 
+        path="list-modules", 
+        description="list-modules")
+})
 public class ListModulesCommand implements AdminCommand {
 
     @Inject

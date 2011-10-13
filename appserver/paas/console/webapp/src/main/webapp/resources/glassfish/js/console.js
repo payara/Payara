@@ -48,8 +48,7 @@ if (typeof Console == 'undefined') {
     Console = {
         escapeClientId : function(id) {
             return "#" + id.replace(/:/g,"\\:");
-        },
-
+        }
     };
 
     Console.Ajax = {

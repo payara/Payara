@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,16 +40,13 @@
 
 package com.sun.enterprise.security.cli;
 
+import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.security.store.PasswordAdapter;
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.enterprise.util.SystemPropertyConstants;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
-import org.glassfish.api.admin.AdminCommand;
-import org.glassfish.api.admin.AdminCommandContext;
-import org.glassfish.api.admin.ExecuteOn;
-import org.glassfish.api.admin.RuntimeType;
+import org.glassfish.api.admin.*;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.security.common.MasterPassword;
@@ -83,6 +80,12 @@ import org.jvnet.hk2.component.PerLookup;
 @I18n("delete.password.alias")
 @ExecuteOn({RuntimeType.DAS})
 @TargetType({CommandTarget.DAS,CommandTarget.DOMAIN})
+@RestEndpoints({
+    @RestEndpoint(configBean=Domain.class,
+        opType=RestEndpoint.OpType.POST, // TODO: Should be DELETE
+        path="delete-password-alias", 
+        description="delete-password-alias")
+})
 public class DeletePasswordAlias implements AdminCommand {
 
     final private static LocalStringManagerImpl localStrings =

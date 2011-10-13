@@ -64,6 +64,15 @@ import java.util.ArrayList;
 @I18n("delete.instance")
 @Scoped(PerLookup.class)
 @ExecuteOn({RuntimeType.DAS})
+@RestEndpoints({
+    @RestEndpoint(configBean=Server.class,
+        opType=RestEndpoint.OpType.DELETE, 
+        path="delete-instance", 
+        description="Delete Instance",
+        params={
+            @RestParam(name="id", value="$parent")
+        })
+})
 public class DeleteInstanceCommand implements AdminCommand {
 
     private static final String NL = System.getProperty("line.separator");

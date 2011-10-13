@@ -56,10 +56,17 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.glassfish.api.admin.*;
 
 @Service(name="_list-resources")
 @Scoped(PerLookup.class)
 @CommandLock(CommandLock.LockType.NONE)
+@RestEndpoints({
+    @RestEndpoint(configBean=Domain.class,
+        opType=RestEndpoint.OpType.GET, 
+        path="_list-resources", 
+        description="_list-resources")
+})
 public class ListResources implements AdminCommand {
 
     @Inject

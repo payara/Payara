@@ -40,10 +40,7 @@
 
 package com.sun.enterprise.v3.admin.cluster;
 
-import com.sun.enterprise.config.serverbeans.Cluster;
-import com.sun.enterprise.config.serverbeans.Clusters;
-import com.sun.enterprise.config.serverbeans.Server;
-import com.sun.enterprise.config.serverbeans.Servers;
+import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.universal.io.SmartFile;
 import com.sun.enterprise.util.cluster.SyncRequest;
 import java.io.*;
@@ -55,11 +52,7 @@ import org.glassfish.api.ActionReport;
 import org.glassfish.api.ActionReport.ExitCode;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
-import org.glassfish.api.admin.AdminCommand;
-import org.glassfish.api.admin.AdminCommandContext;
-import org.glassfish.api.admin.Payload;
-import org.glassfish.api.admin.RuntimeType;
-import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.api.admin.*;
 //import org.glassfish.config.support.CommandTarget;
 //import org.glassfish.config.support.TargetType;
 import org.jvnet.hk2.annotations.*;
@@ -90,6 +83,12 @@ import org.jvnet.hk2.component.PerLookup;
 @Scoped(PerLookup.class)
 //@TargetType(value={CommandTarget.CLUSTER, CommandTarget.STANDALONE_INSTANCE})
 @I18n("export-sync-bundle")
+@RestEndpoints({
+    @RestEndpoint(configBean=Domain.class,
+        opType=RestEndpoint.OpType.POST, 
+        path="export-sync-bundle", 
+        description="export-sync-bundle")
+})
 public class ExportSyncBundle implements AdminCommand {
 
     @Param(name="target", optional = false)

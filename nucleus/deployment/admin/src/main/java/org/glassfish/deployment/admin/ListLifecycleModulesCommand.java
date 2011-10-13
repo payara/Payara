@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2008-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -42,16 +42,13 @@ package org.glassfish.deployment.admin;
 
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.config.serverbeans.Application;
-import com.sun.enterprise.config.serverbeans.ServerTags;
+import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.config.serverbeans.Server;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
 import org.glassfish.api.I18n;
-import org.glassfish.api.admin.AdminCommand;
-import org.glassfish.api.admin.AdminCommandContext;
-import org.glassfish.api.admin.CommandLock;
-import org.glassfish.api.admin.ExecuteOn;
-import org.glassfish.api.admin.RuntimeType;
+import org.glassfish.api.admin.*;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.config.support.CommandTarget;
 import org.jvnet.hk2.annotations.Service;
@@ -59,9 +56,6 @@ import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.component.PerLookup;
 
-import java.util.logging.Logger;
-import java.util.logging.Level;
-import java.util.Properties;
 
 /**
  * List lifecycle modules.
@@ -73,6 +67,26 @@ import java.util.Properties;
 @CommandLock(CommandLock.LockType.NONE)
 @ExecuteOn(value={RuntimeType.DAS})
 @TargetType(value={CommandTarget.DOMAIN, CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER})
+@RestEndpoints({
+    @RestEndpoint(configBean=Cluster.class,
+        opType=RestEndpoint.OpType.GET, 
+        path="list-lifecycle-modules", 
+        description="List Lifecycle Modules",
+        params={
+            @RestParam(name="target", value="$parent")
+        }),
+    @RestEndpoint(configBean=Domain.class,
+        opType=RestEndpoint.OpType.GET, 
+        path="list-lifecycle-modules", 
+        description="List Lifecycle Modules"),
+    @RestEndpoint(configBean=Server.class,
+        opType=RestEndpoint.OpType.GET, 
+        path="list-lifecycle-modules", 
+        description="List Lifecycle Modules",
+        params={
+            @RestParam(name="target", value="$parent")
+        })
+})
 public class ListLifecycleModulesCommand implements AdminCommand  {
 
     @Param(primary=true, optional=true)

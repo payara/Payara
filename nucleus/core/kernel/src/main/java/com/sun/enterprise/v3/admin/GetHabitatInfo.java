@@ -39,6 +39,7 @@
  */
 package com.sun.enterprise.v3.admin;
 
+import com.sun.enterprise.config.serverbeans.Domain;
 import java.io.*;
 import java.util.*;
 import java.util.Iterator;
@@ -55,6 +56,8 @@ import org.glassfish.api.Param;
 import org.glassfish.api.ActionReport.ExitCode;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
+import org.glassfish.api.admin.RestEndpoint;
+import org.glassfish.api.admin.RestEndpoints;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.component.PerLookup;
@@ -68,6 +71,12 @@ import org.jvnet.hk2.component.PerLookup;
  */
 @Service(name = "_get-habitat-info")
 @Scoped(PerLookup.class)
+@RestEndpoints({
+    @RestEndpoint(configBean=Domain.class,
+        opType=RestEndpoint.OpType.GET, 
+        path="_get-habitat-info", 
+        description="_get-habitat-info")
+})
 public class GetHabitatInfo implements AdminCommand {
     @Inject
     Habitat habitat;

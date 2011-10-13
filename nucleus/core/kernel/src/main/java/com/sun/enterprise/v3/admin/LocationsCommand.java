@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2008-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,6 +40,7 @@
 
 package com.sun.enterprise.v3.admin;
 
+import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.universal.process.ProcessUtils;
 import org.glassfish.api.ActionReport.MessagePart;
 import org.glassfish.api.admin.AdminCommand;
@@ -56,6 +57,7 @@ import com.sun.enterprise.glassfish.bootstrap.StartupContextUtil;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
+import org.glassfish.api.admin.*;
 import org.glassfish.internal.config.UnprocessedConfigListener;
 
 /**
@@ -66,6 +68,12 @@ import org.glassfish.internal.config.UnprocessedConfigListener;
 @Scoped(Singleton.class)
 @CommandLock(CommandLock.LockType.NONE)
 @I18n("locations.command")
+@RestEndpoints({
+    @RestEndpoint(configBean=Domain.class,
+        opType=RestEndpoint.OpType.GET, 
+        path="location", 
+        description="Location")
+})
 public class LocationsCommand implements AdminCommand {
     
     @Inject

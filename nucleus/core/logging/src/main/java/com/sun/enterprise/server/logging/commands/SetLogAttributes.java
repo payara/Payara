@@ -82,6 +82,12 @@ import java.util.Properties;
 @Service(name = "set-log-attributes")
 @Scoped(PerLookup.class)
 @I18n("set.log.attributes")
+@RestEndpoints({
+    @RestEndpoint(configBean=Domain.class,
+        opType=RestEndpoint.OpType.POST, 
+        path="set-log-attributes", 
+        description="set-log-attributes")
+})
 public class SetLogAttributes implements AdminCommand {
 
     @Param(name = "name_value", primary = true, separator = ':')

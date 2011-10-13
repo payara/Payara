@@ -41,6 +41,7 @@
 package org.glassfish.deployment.admin;
 
 import com.sun.enterprise.admin.util.ClusterOperationUtil;
+import com.sun.enterprise.config.serverbeans.*;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.Param;
@@ -61,12 +62,6 @@ import org.glassfish.deployment.common.DeploymentUtils;
 import org.glassfish.deployment.common.DeploymentContextImpl;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.deploy.shared.ArchiveFactory;
-import com.sun.enterprise.config.serverbeans.Application;
-import com.sun.enterprise.config.serverbeans.Applications;
-import com.sun.enterprise.config.serverbeans.ApplicationRef;
-import com.sun.enterprise.config.serverbeans.Server;
-import com.sun.enterprise.config.serverbeans.Domain;
-import com.sun.enterprise.config.serverbeans.ServerTags;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.internal.deployment.Deployment;
@@ -89,8 +84,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
-import org.glassfish.api.admin.FailurePolicy;
-import org.glassfish.api.admin.ParameterMap;
+import org.glassfish.api.admin.*;
 import org.glassfish.deployment.common.ApplicationConfigInfo;
 import org.glassfish.deployment.common.DeploymentProperties;
 import org.glassfish.deployment.versioning.VersioningException;
@@ -108,6 +102,10 @@ import org.jvnet.hk2.component.Habitat;
 @ExecuteOn(value={RuntimeType.DAS})
 @Scoped(PerLookup.class)
 @TargetType(value={CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER})
+@RestEndpoints({
+    @RestEndpoint(configBean=Cluster.class,opType=RestEndpoint.OpType.POST, path="create-application-ref"),
+    @RestEndpoint(configBean=Server.class,opType=RestEndpoint.OpType.POST, path="create-application-ref")
+})
 public class CreateApplicationRefCommand implements AdminCommand {
 
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(CreateApplicationRefCommand.class);

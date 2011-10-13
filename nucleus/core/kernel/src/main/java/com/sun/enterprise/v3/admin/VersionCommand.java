@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2006-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -51,8 +51,10 @@ import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.component.PerLookup;
 import com.sun.appserv.server.util.Version;
+import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.api.Param;
+import org.glassfish.api.admin.*;
 
 /**
  * Return the version and build number
@@ -63,6 +65,12 @@ import org.glassfish.api.Param;
 @Scoped(PerLookup.class)
 @CommandLock(CommandLock.LockType.NONE)
 @I18n("version.command")
+@RestEndpoints({
+    @RestEndpoint(configBean=Domain.class,
+        opType=RestEndpoint.OpType.GET, 
+        path="version", 
+        description="version")
+})
 public class VersionCommand implements AdminCommand {
     
     @Param(optional=true, defaultValue="false", shortName = "v")

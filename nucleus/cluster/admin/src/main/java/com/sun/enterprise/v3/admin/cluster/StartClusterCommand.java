@@ -40,6 +40,7 @@
 
 package com.sun.enterprise.v3.admin.cluster;
 
+import com.sun.enterprise.config.serverbeans.Cluster;
 import java.util.logging.Logger;
 
 import org.glassfish.api.admin.*;
@@ -56,6 +57,15 @@ import com.sun.enterprise.config.serverbeans.Domain;
 @ExecuteOn(value={RuntimeType.DAS})
 @CommandLock(CommandLock.LockType.NONE) // don't prevent _synchronize-files
 @Scoped(PerLookup.class)
+@RestEndpoints({
+    @RestEndpoint(configBean=Cluster.class,
+        opType=RestEndpoint.OpType.POST, 
+        path="start-cluster", 
+        description="Start Cluster",
+        params={
+            @RestParam(name="id", value="$parent")
+        })
+})
 public class StartClusterCommand implements AdminCommand {
 
     @Inject

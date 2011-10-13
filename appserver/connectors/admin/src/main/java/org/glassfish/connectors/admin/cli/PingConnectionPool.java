@@ -49,6 +49,7 @@ import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
 import org.glassfish.resource.common.PoolInfo;
+import org.glassfish.resources.config.JdbcConnectionPool;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
@@ -63,6 +64,16 @@ import org.jvnet.hk2.component.PerLookup;
 @CommandLock(CommandLock.LockType.NONE)
 @ExecuteOn(value={RuntimeType.DAS})
 @I18n("ping.connection.pool")
+@RestEndpoints({
+    @RestEndpoint(configBean=JdbcConnectionPool.class,
+        opType=RestEndpoint.OpType.GET, 
+        path="ping", 
+        description="Ping"),
+    @RestEndpoint(configBean=Resources.class,
+        opType=RestEndpoint.OpType.GET, 
+        path="ping", 
+        description="Ping")
+})
 public class PingConnectionPool implements AdminCommand {
     
     final private static LocalStringManagerImpl localStrings = 

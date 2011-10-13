@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,6 +40,7 @@
 
 package org.glassfish.web.plugin.common;
 
+import com.sun.enterprise.config.serverbeans.Application;
 import com.sun.enterprise.config.serverbeans.Engine;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
@@ -47,6 +48,9 @@ import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommandContext;
+import org.glassfish.api.admin.RestEndpoint;
+import org.glassfish.api.admin.RestEndpoints;
+import org.glassfish.api.admin.RestParam;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
@@ -61,7 +65,17 @@ import org.jvnet.hk2.config.TransactionFailure;
  */
 @Service(name="set-web-env-entry")
 @I18n("setWebEnvEntry.command")
-@Scoped(PerLookup.class)public class SetWebEnvEntryCommand extends WebEnvEntryCommand {
+@Scoped(PerLookup.class)
+@RestEndpoints({
+    @RestEndpoint(configBean=Application.class,
+        opType=RestEndpoint.OpType.POST, 
+        path="set-web-env-entry", 
+        description="set-web-env-entry",
+        params={
+            @RestParam(name="id", value="$parent")
+        })
+})
+public class SetWebEnvEntryCommand extends WebEnvEntryCommand {
 
     @Param(name="name")
     private String name;

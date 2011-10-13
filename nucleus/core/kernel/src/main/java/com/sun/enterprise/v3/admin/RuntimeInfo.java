@@ -83,6 +83,12 @@ import static org.glassfish.api.ActionReport.ExitCode.SUCCESS;
 @CommandLock(CommandLock.LockType.NONE)
 @ExecuteOn({RuntimeType.INSTANCE})
 @TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTERED_INSTANCE})
+@RestEndpoints({
+    @RestEndpoint(configBean=Domain.class,
+        opType=RestEndpoint.OpType.GET, 
+        path="get-runtime-info", 
+        description="Get Runtime Info")
+})
 public class RuntimeInfo implements AdminCommand {
     public RuntimeInfo() {
     }

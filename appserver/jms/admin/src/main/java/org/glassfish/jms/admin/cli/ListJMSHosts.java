@@ -59,8 +59,8 @@ import org.glassfish.api.admin.ExecuteOn;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.api.admin.RuntimeType;
-import org.glassfish.api.admin.ServerEnvironment;
 import java.util.ArrayList;
+import org.glassfish.api.admin.*;
 
 /**
  * List JMS Hosts command
@@ -72,7 +72,12 @@ import java.util.ArrayList;
 @I18n("list.jms.hosts")
 @ExecuteOn({RuntimeType.DAS})
 @TargetType({CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTER,CommandTarget.CONFIG})
-
+@RestEndpoints({
+    @RestEndpoint(configBean=JmsService.class,
+        opType=RestEndpoint.OpType.GET, 
+        path="list-jms-hosts", 
+        description="list-jms-hosts")
+})
 public class ListJMSHosts implements AdminCommand {
         final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ListJMSHosts.class);
 

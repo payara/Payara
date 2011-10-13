@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,12 +40,12 @@
 
 package org.glassfish.web.plugin.common;
 
+import com.sun.enterprise.config.serverbeans.Application;
 import java.text.MessageFormat;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
-import org.glassfish.api.admin.AdminCommandContext;
-import org.glassfish.api.admin.CommandLock;
+import org.glassfish.api.admin.*;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
@@ -58,6 +58,15 @@ import org.jvnet.hk2.component.PerLookup;
 @I18n("listWebContextParam.command")
 @Scoped(PerLookup.class)
 @CommandLock(CommandLock.LockType.NONE)
+@RestEndpoints({
+    @RestEndpoint(configBean=Application.class,
+        opType=RestEndpoint.OpType.GET, 
+        path="list-web-context-param", 
+        description="list-web-context-param",
+        params={
+            @RestParam(name="name", value="$parent")
+        })
+})
 public class ListWebContextParamCommand extends WebModuleConfigCommand {
     @Param(name="name",optional=true)
     private String name;

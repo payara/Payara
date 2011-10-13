@@ -78,8 +78,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.glassfish.api.ActionReport.ExitCode;
-import org.glassfish.api.admin.ParameterMap;
-import org.glassfish.api.admin.Payload;
+import org.glassfish.api.admin.*;
 import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.Events;
 import org.glassfish.deployment.versioning.VersioningSyntaxException;
@@ -99,6 +98,15 @@ import org.jvnet.hk2.tracing.TracingUtilities;
 @Scoped(PerLookup.class)
 @ExecuteOn(value={RuntimeType.DAS})
 @TargetType(value={CommandTarget.DOMAIN, CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER})
+@RestEndpoints({
+    @RestEndpoint(configBean=Applications.class,opType=RestEndpoint.OpType.POST, path="deploy"),
+    @RestEndpoint(configBean=Cluster.class,opType=RestEndpoint.OpType.POST, path="deploy", params={
+        @RestParam(name="target", value="$parent")
+    }),
+    @RestEndpoint(configBean=Server.class,opType=RestEndpoint.OpType.POST, path="deploy", params={
+        @RestParam(name="target", value="$parent")
+    })
+})
 public class DeployCommand extends DeployCommandParameters implements AdminCommand, EventListener {
 
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(DeployCommand.class);

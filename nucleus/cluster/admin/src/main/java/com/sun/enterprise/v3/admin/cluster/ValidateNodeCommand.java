@@ -40,10 +40,7 @@
 
 package com.sun.enterprise.v3.admin.cluster;
 
-import com.sun.enterprise.config.serverbeans.Node;
-import com.sun.enterprise.config.serverbeans.Nodes;
-import com.sun.enterprise.config.serverbeans.SshConnector;
-import com.sun.enterprise.config.serverbeans.SshAuth;
+import com.sun.enterprise.config.serverbeans.*;
 
 import com.sun.enterprise.util.OS;
 import com.sun.enterprise.util.StringUtils;
@@ -81,6 +78,12 @@ import java.util.HashSet;
 @I18n("validate.node")
 @Scoped(PerLookup.class)
 @ExecuteOn({RuntimeType.DAS})
+@RestEndpoints({
+    @RestEndpoint(configBean=Domain.class,
+        opType=RestEndpoint.OpType.POST, 
+        path="_validate-node", 
+        description="_validate-node")
+})
 public class ValidateNodeCommand implements AdminCommand {
 
     @Inject

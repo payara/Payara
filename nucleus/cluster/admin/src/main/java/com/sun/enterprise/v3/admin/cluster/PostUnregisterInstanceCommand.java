@@ -41,19 +41,14 @@
 package com.sun.enterprise.v3.admin.cluster;
 
 import com.sun.enterprise.admin.util.ClusterOperationUtil;
+import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Server;
 import java.util.logging.Logger;
 import java.util.List;
 import java.util.ArrayList;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
-import org.glassfish.api.admin.AdminCommand;
-import org.glassfish.api.admin.AdminCommandContext;
-import org.glassfish.api.admin.ExecuteOn;
-import org.glassfish.api.admin.ParameterMap;
-import org.glassfish.api.admin.RuntimeType;
-import org.glassfish.api.admin.Supplemental;
-import org.glassfish.api.admin.FailurePolicy;
+import org.glassfish.api.admin.*;
 import org.glassfish.internal.api.Target;
 import org.glassfish.common.util.admin.ParameterMapExtractor;
 import org.jvnet.hk2.annotations.Inject;
@@ -71,7 +66,12 @@ import org.jvnet.hk2.component.PerLookup;
 @Supplemental(value="_unregister-instance", ifFailure=FailurePolicy.Warn)
 @Scoped(PerLookup.class)
 @ExecuteOn(value={RuntimeType.DAS})
-
+@RestEndpoints({
+    @RestEndpoint(configBean=Domain.class,
+        opType=RestEndpoint.OpType.POST, 
+        path="_post-unregister-instance", 
+        description="_post-unregister-instance")
+})
 public class PostUnregisterInstanceCommand implements AdminCommand {
     @Param(name = "node", optional = true)
     public String node;

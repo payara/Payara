@@ -62,6 +62,7 @@ import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.loadbalancer.config.LoadBalancer;
 import java.util.logging.Level;
 import org.glassfish.api.ActionReport;
+import org.glassfish.api.admin.*;
 import org.glassfish.internal.data.ApplicationRegistry;
 import org.glassfish.loadbalancer.admin.cli.helper.LbConfigHelper;
 import org.jvnet.hk2.config.types.Property;
@@ -74,6 +75,15 @@ import org.jvnet.hk2.config.types.Property;
 @Service(name = "apply-http-lb-changes")
 @Scoped(PerLookup.class)
 @I18n("apply.http.lb.changes")
+@RestEndpoints({
+    @RestEndpoint(configBean=LoadBalancer.class,
+        opType=RestEndpoint.OpType.POST, 
+        path="apply-http-lb-changes", 
+        description="apply-http-lb-changes",
+        params={
+            @RestParam(name="id", value="$parent")
+        })
+})
 public class ApplyHttpLbChanges implements AdminCommand {
 
     @Inject

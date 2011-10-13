@@ -45,19 +45,14 @@ import com.sun.enterprise.connectors.jms.config.JmsService;
 import org.glassfish.api.I18n;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
-import org.glassfish.api.admin.AdminCommand;
-import org.glassfish.api.admin.AdminCommandContext;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.util.SystemPropertyConstants;
-import org.glassfish.api.admin.ExecuteOn;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
-import org.glassfish.api.admin.RuntimeType;
-import org.glassfish.api.admin.ServerEnvironment;
 
-import java.util.ArrayList;
 import java.beans.PropertyVetoException;
+import org.glassfish.api.admin.*;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Inject;
@@ -75,7 +70,15 @@ import org.jvnet.hk2.config.TransactionFailure;
 @I18n("delete.jms.host")
 @ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
 @TargetType({CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTER,CommandTarget.CONFIG})
-
+@RestEndpoints({
+    @RestEndpoint(configBean=JmsHost.class,
+        opType=RestEndpoint.OpType.DELETE, 
+        path="delete-jms-host", 
+        description="Delete JMS Host",
+        params={
+            @RestParam(name="id", value="$parent")
+        })
+})
 public class DeleteJMSHost implements AdminCommand {
         final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(DeleteJMSHost.class);
 

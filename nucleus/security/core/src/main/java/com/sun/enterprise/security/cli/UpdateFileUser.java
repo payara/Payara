@@ -64,9 +64,7 @@ import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.security.auth.realm.RealmsManager;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import java.io.File;
-import org.glassfish.api.admin.ExecuteOn;
-import org.glassfish.api.admin.RuntimeType;
-import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.api.admin.*;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 
@@ -87,6 +85,15 @@ import org.glassfish.config.support.TargetType;
 @I18n("update.file.user")
 @ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
 @TargetType({CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTER, CommandTarget.CONFIG})
+@RestEndpoints({
+    @RestEndpoint(configBean=AuthRealm.class,
+        opType=RestEndpoint.OpType.POST, 
+        path="update-user", 
+        description="Update Users",
+        params={
+            @RestParam(name="authrealmname", value="$parent")
+        })
+})
 public class UpdateFileUser implements AdminCommand {
     
     final private static LocalStringManagerImpl localStrings = 

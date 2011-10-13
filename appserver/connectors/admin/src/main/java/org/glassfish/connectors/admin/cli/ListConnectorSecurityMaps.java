@@ -41,6 +41,7 @@
 package org.glassfish.connectors.admin.cli;
 
 import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.config.serverbeans.SecurityService;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import org.glassfish.api.ActionReport;
@@ -72,6 +73,12 @@ import java.util.logging.Logger;
 @CommandLock(CommandLock.LockType.NONE)
 @ExecuteOn(value={RuntimeType.DAS})
 @I18n("list.connector.security.maps")
+@RestEndpoints({
+    @RestEndpoint(configBean=SecurityService.class,
+        opType=RestEndpoint.OpType.GET, 
+        path="list-connector-security-maps", 
+        description="List Connector Security Maps")
+})
 public class ListConnectorSecurityMaps extends ConnectorSecurityMap implements AdminCommand {
 
     final private static LocalStringManagerImpl localStrings =

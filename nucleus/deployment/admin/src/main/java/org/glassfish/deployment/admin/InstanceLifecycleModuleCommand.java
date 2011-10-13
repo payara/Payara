@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -59,9 +59,11 @@ import org.jvnet.hk2.config.Transaction;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.config.serverbeans.Applications;
 import com.sun.enterprise.config.serverbeans.Application;
+import com.sun.enterprise.config.serverbeans.Domain;
 
 import java.util.logging.Logger;
 import java.util.Properties;
+import org.glassfish.api.admin.*;
 
 /**
  * The command to create application ref for lifecycle module on instance
@@ -69,6 +71,12 @@ import java.util.Properties;
 @Service(name="_lifecycle")
 @Scoped(PerLookup.class)
 @ExecuteOn(value={RuntimeType.INSTANCE})
+@RestEndpoints({
+    @RestEndpoint(configBean=Domain.class,
+        opType=RestEndpoint.OpType.POST, 
+        path="_lifecycle", 
+        description="_lifecycle")
+})
 public class InstanceLifecycleModuleCommand implements AdminCommand {
 
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(InstanceLifecycleModuleCommand.class);

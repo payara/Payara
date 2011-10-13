@@ -40,6 +40,7 @@
 
 package org.glassfish.flashlight.cli;
 
+import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import org.glassfish.api.admin.*;
 import org.glassfish.api.admin.AdminCommand;
@@ -66,6 +67,12 @@ import org.jvnet.hk2.component.PerLookup;
 @I18n("disable.monitoring")
 @ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
 @TargetType({CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTER,CommandTarget.CONFIG})
+@RestEndpoints({
+    @RestEndpoint(configBean=Domain.class,
+        opType=RestEndpoint.OpType.POST, 
+        path="disable-monitoring", 
+        description="disable-monitoring")
+})
 public class DisableMonitoring implements AdminCommand {
 
     // do NOT inject this.  We may need it for a different config tha ours.

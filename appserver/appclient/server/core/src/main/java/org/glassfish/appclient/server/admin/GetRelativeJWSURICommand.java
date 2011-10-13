@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright (c) 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2011 Oracle and/or its affiliates. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -47,14 +47,8 @@ import com.sun.enterprise.util.LocalStringManager;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
-import org.glassfish.api.admin.AdminCommand;
-import org.glassfish.api.admin.AdminCommandContext;
-import org.glassfish.api.admin.CommandLock;
-import org.glassfish.api.admin.ExecuteOn;
-import org.glassfish.api.admin.RuntimeType;
+import org.glassfish.api.admin.*;
 import org.glassfish.appclient.server.core.AppClientDeployer;
-import org.glassfish.appclient.server.core.AppClientServerApplication;
-import org.glassfish.appclient.server.core.jws.JWSAdapterManager;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
@@ -73,6 +67,15 @@ import org.jvnet.hk2.component.PerLookup;
 @Scoped(PerLookup.class)
 @CommandLock(CommandLock.LockType.NONE)
 @ExecuteOn(value={RuntimeType.DAS})
+@RestEndpoints({
+    @RestEndpoint(configBean=Application.class,
+        opType=RestEndpoint.OpType.GET, 
+        path="_get-relative-jws-uri", 
+        description="Get Relative JWS URI",
+        params={
+            @RestParam(name="appname", value="$parent")
+        })
+})
 public class GetRelativeJWSURICommand implements AdminCommand {
 
     private static final String APPNAME_OPTION = "appname";

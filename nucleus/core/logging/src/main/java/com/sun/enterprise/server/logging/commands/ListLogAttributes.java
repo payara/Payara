@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -60,6 +60,7 @@ import org.jvnet.hk2.component.PerLookup;
 
 import java.io.IOException;
 import java.util.*;
+import org.glassfish.api.admin.*;
 
 /**
  * Created by IntelliJ IDEA.
@@ -73,6 +74,12 @@ import java.util.*;
 @TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
 @Scoped(PerLookup.class)
 @I18n("list.log.attributes")
+@RestEndpoints({
+    @RestEndpoint(configBean=Domain.class,
+        opType=RestEndpoint.OpType.GET, 
+        path="list-log-attributes", 
+        description="list-log-attributes")
+})
 public class ListLogAttributes implements AdminCommand {
 
     @Inject

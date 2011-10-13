@@ -75,6 +75,15 @@ import org.jvnet.hk2.config.TransactionFailure;
 @I18n("create.protocol.finder")
 @ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
 @TargetType({CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTER,CommandTarget.CONFIG})
+@RestEndpoints({
+    @RestEndpoint(configBean=Protocol.class,
+        opType=RestEndpoint.OpType.POST, 
+        path="create-protocol-finder", 
+        description="Create",
+        params={
+            @RestParam(name="protocol", value="$parent")
+        })
+})
 public class CreateProtocolFinder implements AdminCommand {
     final private static LocalStringManagerImpl localStrings =
         new LocalStringManagerImpl(CreateProtocolFinder.class);

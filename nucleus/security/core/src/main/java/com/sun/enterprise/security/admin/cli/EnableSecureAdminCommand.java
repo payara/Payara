@@ -40,6 +40,7 @@
 
 package com.sun.enterprise.security.admin.cli;
 
+import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.SecureAdmin;
 import com.sun.enterprise.config.serverbeans.SecureAdminHelper;
 import com.sun.enterprise.config.serverbeans.SecureAdminPrincipal;
@@ -55,6 +56,8 @@ import java.util.UUID;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.ExecuteOn;
+import org.glassfish.api.admin.RestEndpoint;
+import org.glassfish.api.admin.RestEndpoints;
 import org.glassfish.api.admin.RuntimeType;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
@@ -105,6 +108,12 @@ import org.jvnet.hk2.component.PerLookup;
 @Scoped(PerLookup.class)
 @I18n("enable.secure.admin.command")
 @ExecuteOn({RuntimeType.DAS,RuntimeType.INSTANCE})
+@RestEndpoints({
+    @RestEndpoint(configBean=Domain.class,
+        opType=RestEndpoint.OpType.POST, 
+        path="enable-secure-admin", 
+        description="enable-secure-admin")
+})
 public class EnableSecureAdminCommand extends SecureAdminCommand {
 
     @Param(optional = true)

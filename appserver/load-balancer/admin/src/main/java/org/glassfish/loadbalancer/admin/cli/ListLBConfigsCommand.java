@@ -45,7 +45,6 @@ import java.util.List;
 
 import org.jvnet.hk2.annotations.*;
 import org.jvnet.hk2.component.*;
-import org.jvnet.hk2.config.*;
 import org.glassfish.api.Param;
 import org.glassfish.api.ActionReport;
 import com.sun.enterprise.util.LocalStringManagerImpl;
@@ -76,6 +75,12 @@ import org.glassfish.api.admin.*;
 @Scoped(PerLookup.class)
 @CommandLock(CommandLock.LockType.NONE)
 @org.glassfish.api.admin.ExecuteOn(RuntimeType.DAS)
+@RestEndpoints({
+    @RestEndpoint(configBean=LbConfigs.class,
+        opType=RestEndpoint.OpType.GET, 
+        path="list-http-lb-configs", 
+        description="list-http-lb-configs")
+})
 public final class ListLBConfigsCommand implements AdminCommand {
 
     @Param(primary=true, optional=true)

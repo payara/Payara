@@ -41,6 +41,7 @@ package org.glassfish.api.admin;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import org.jvnet.hk2.config.ConfigBeanProxy;
 
 /**
  *
@@ -63,8 +64,8 @@ public @interface RestEndpoint {
      *
      * @return the name of the target ConfigBean
      */
-    Class configBean();
+    Class<? extends ConfigBeanProxy> configBean();
     String path();
-    String description();
+    String description() default "";
     RestParam[] params() default {};
 }

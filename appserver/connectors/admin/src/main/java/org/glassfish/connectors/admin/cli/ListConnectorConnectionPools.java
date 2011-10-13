@@ -41,6 +41,7 @@
 package org.glassfish.connectors.admin.cli;
 
 import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.config.serverbeans.Resources;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import org.glassfish.api.ActionReport;
@@ -69,6 +70,12 @@ import java.util.logging.Logger;
 @CommandLock(CommandLock.LockType.NONE)
 @ExecuteOn(value={RuntimeType.DAS})
 @I18n("list.connector.connection.pools")
+@RestEndpoints({
+    @RestEndpoint(configBean=Resources.class,
+        opType=RestEndpoint.OpType.GET, 
+        path="list-connector-connection-pools", 
+        description="list-admin-objects")
+})
 public class ListConnectorConnectionPools implements AdminCommand {
     
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ListConnectorConnectionPools.class);    

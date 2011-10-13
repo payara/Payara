@@ -41,6 +41,7 @@
 package org.glassfish.connectors.admin.cli.internal;
 
 import com.sun.appserv.connectors.internal.api.ConnectorRuntime;
+import com.sun.enterprise.config.serverbeans.Resources;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
@@ -53,6 +54,9 @@ import org.jvnet.hk2.component.PerLookup;
 
 import java.util.Arrays;
 import java.util.Properties;
+import org.glassfish.api.admin.RestEndpoint;
+import org.glassfish.api.admin.RestEndpoints;
+import org.glassfish.api.admin.RestParam;
 
 
 /**
@@ -61,6 +65,15 @@ import java.util.Properties;
 @Service(name = "_get-admin-object-class-names")
 @Scoped(PerLookup.class)
 @CommandLock(CommandLock.LockType.NONE)
+@RestEndpoints({
+    @RestEndpoint(configBean=Resources.class,
+        opType=RestEndpoint.OpType.GET, 
+        path="_get-admin-object-class-names", 
+        description="Get Admin Object Class Names",
+        params={
+            @RestParam(name="id", value="$parent")
+        })
+})
 public class GetAdminObjectClassNames implements AdminCommand {
 
     @Inject

@@ -448,7 +448,12 @@ public class Util {
                 sb.append(sep);
                 if (withType) {
                     String type = model.getType().getName();
-                    if (type.startsWith("java.lang")) {
+                    if (model.getType().isArray()) {
+                        type = model.getType().getName()
+                                .substring(2);
+                        type = type.substring(0, type.length()-1) + "[]";
+                        
+                    } else if (type.startsWith("java.lang")) {
                         type = model.getType().getSimpleName();
                     }
                     sb.append(type);

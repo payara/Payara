@@ -79,6 +79,12 @@ import java.util.logging.Logger;
 @Service(name = "collect-log-files")
 @Scoped(PerLookup.class)
 @I18n("collect.log.files")
+@RestEndpoints({
+    @RestEndpoint(configBean=Domain.class,
+        opType=RestEndpoint.OpType.POST, 
+        path="collect-log-files", 
+        description="collect-log-files")
+})
 public class CollectLogFiles implements AdminCommand {
 
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(CollectLogFiles.class);

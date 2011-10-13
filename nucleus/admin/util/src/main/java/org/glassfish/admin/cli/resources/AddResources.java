@@ -59,10 +59,13 @@ import org.jvnet.hk2.component.PerLookup;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.config.serverbeans.Resources;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
+import org.glassfish.api.admin.RestEndpoint;
+import org.glassfish.api.admin.RestEndpoints;
 
 /**
  * Create add-resources Command
@@ -73,6 +76,12 @@ import java.util.Iterator;
 @Service(name="add-resources")
 @Scoped(PerLookup.class)
 @I18n("add.resources")
+@RestEndpoints({
+    @RestEndpoint(configBean=Resources.class,
+        opType=RestEndpoint.OpType.POST, 
+        path="add-resources", 
+        description="add-resources")
+})
 public class AddResources implements AdminCommand {
     
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(AddResources.class);    

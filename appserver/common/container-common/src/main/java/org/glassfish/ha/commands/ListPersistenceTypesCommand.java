@@ -39,6 +39,7 @@
  */
 package org.glassfish.ha.commands;
 
+import com.sun.enterprise.config.serverbeans.Domain;
 import java.util.*;
 
 import org.glassfish.api.ActionReport;
@@ -54,6 +55,7 @@ import org.jvnet.hk2.component.PerLookup;
 import javax.validation.constraints.Pattern;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.glassfish.api.admin.*;
 import org.glassfish.ha.store.spi.BackingStoreFactoryRegistry;
 
 /**
@@ -64,6 +66,12 @@ import org.glassfish.ha.store.spi.BackingStoreFactoryRegistry;
 @CommandLock(CommandLock.LockType.NONE)
 @I18n("list.persistence.types.command")
 @Scoped(PerLookup.class)
+@RestEndpoints({
+    @RestEndpoint(configBean=Domain.class,
+        opType=RestEndpoint.OpType.GET, 
+        path="list-persistence-types", 
+        description="list-persistence-types")
+})
 public class ListPersistenceTypesCommand implements AdminCommand {
 
     @Param(name="type", optional=false, primary=false)

@@ -87,6 +87,12 @@ import java.util.Properties;
 @CommandLock(CommandLock.LockType.NONE)
 @Scoped(PerLookup.class)
 @I18n("set.log.levels")
+@RestEndpoints({
+    @RestEndpoint(configBean=Domain.class,
+        opType=RestEndpoint.OpType.POST, 
+        path="set-log-levels", 
+        description="set-log-levels")
+})
 public class SetLogLevel implements AdminCommand {
 
     @Param(name = "name_value", primary = true, separator = ':')

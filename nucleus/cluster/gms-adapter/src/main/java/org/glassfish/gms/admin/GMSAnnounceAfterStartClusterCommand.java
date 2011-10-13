@@ -63,6 +63,12 @@ import java.util.logging.Logger;
 @Service(name = "_gms-announce-after-start-cluster-command")
 @Supplemental(value = "start-cluster", on = Supplemental.Timing.After, ifFailure = FailurePolicy.Warn)
 @Scoped(PerLookup.class)
+@RestEndpoints({
+    @RestEndpoint(configBean=Domain.class,
+        opType=RestEndpoint.OpType.POST, 
+        path="_gms-announce-after-start-cluster-command", 
+        description="_gms-announce-after-start-cluster-command")
+})
 public class GMSAnnounceAfterStartClusterCommand implements AdminCommand {
 
     private static final Logger logger = LogDomains.getLogger(

@@ -40,7 +40,6 @@
 
 package com.sun.enterprise.v3.admin.cluster;
 
-import com.sun.enterprise.config.serverbeans.Node;
 import com.sun.enterprise.config.serverbeans.Nodes;
 import org.glassfish.api.ActionReport;
 import com.sun.enterprise.universal.glassfish.TokenResolver;
@@ -51,7 +50,6 @@ import org.glassfish.api.admin.*;
 import org.glassfish.api.admin.CommandRunner.CommandInvocation;
 import org.jvnet.hk2.annotations.*;
 import org.jvnet.hk2.component.*;
-import java.util.logging.Logger;
 import java.util.Map;
 import java.util.HashMap;
 import com.sun.enterprise.util.net.NetUtils;
@@ -67,6 +65,12 @@ import java.io.File;
 @I18n("create.node.config")
 @Scoped(PerLookup.class)
 @ExecuteOn({RuntimeType.DAS})
+@RestEndpoints({
+    @RestEndpoint(configBean=Nodes.class,
+        opType=RestEndpoint.OpType.POST, 
+        path="create-node-config", 
+        description="Create Node Config")
+})
 public class CreateNodeConfigCommand implements AdminCommand {
 
 

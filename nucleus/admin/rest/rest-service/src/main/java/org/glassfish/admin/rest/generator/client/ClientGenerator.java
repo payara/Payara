@@ -132,7 +132,7 @@ public abstract class ClientGenerator {
 
         generateCommandMethods(writer, "List" + beanName);
 
-        generateGetPostCommandMethod(writer, beanName);
+//        generateGetPostCommandMethod(writer, beanName);
 
         generateSingle(model);
     }
@@ -211,9 +211,6 @@ public abstract class ClientGenerator {
 
             ConfigModel.Property childElement = model.getElement(elementName);
             
-            System.out.println("Processing element " + elementName + 
-                    " child element = " + childElement.xmlName);
-
             if (elementName.equals("*")) {
                 ConfigModel.Node node = (ConfigModel.Node) childElement;
                 ConfigModel childModel = node.getModel();
@@ -291,9 +288,6 @@ public abstract class ClientGenerator {
         ConfigModel childModel = node.getModel();
         String beanName = ResourceUtil.getUnqualifiedTypeName(childModel.targetTypeName);
         
-        System.out.println("Process non-lead child element. childModel = " +
-                childModel.getTagName() + ", beanName = " + beanName);
-
         writer.createGetChildResource(childModel, Util.upperCaseFirstLetter(Util.eleminateHypen(elementName)), beanName);
 
         if (childElement.isCollection()) {

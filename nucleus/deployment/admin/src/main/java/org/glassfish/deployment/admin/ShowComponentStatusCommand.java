@@ -41,12 +41,7 @@
 package org.glassfish.deployment.admin;
 
 import org.glassfish.api.ActionReport;
-import org.glassfish.api.admin.AdminCommand;
-import org.glassfish.api.admin.AdminCommandContext;
-import org.glassfish.api.admin.CommandLock;
 import org.glassfish.api.Param;
-import org.glassfish.api.admin.ExecuteOn;
-import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.deployment.common.DeploymentProperties;
@@ -61,6 +56,7 @@ import com.sun.enterprise.util.LocalStringManagerImpl;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Logger;
+import org.glassfish.api.admin.*;
 import org.glassfish.deployment.versioning.VersioningException;
 import org.glassfish.deployment.versioning.VersioningService;
 import org.jvnet.hk2.annotations.Scoped;
@@ -72,6 +68,15 @@ import org.jvnet.hk2.annotations.Inject;
 @CommandLock(CommandLock.LockType.NONE)
 @ExecuteOn(value={RuntimeType.DAS})
 @TargetType(value={CommandTarget.DOMAIN, CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE})
+@RestEndpoints({
+    @RestEndpoint(configBean=Application.class,
+        opType=RestEndpoint.OpType.GET, 
+        path="show-component-status", 
+        description="Show Component Status",
+        params={
+            @RestParam(name="id", value="$parent")
+        })
+})
 public class ShowComponentStatusCommand implements AdminCommand {
 
     @Param(primary=true)

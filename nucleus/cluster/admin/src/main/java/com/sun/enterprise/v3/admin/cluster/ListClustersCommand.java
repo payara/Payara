@@ -51,7 +51,6 @@ import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.CommandLock;
 import org.glassfish.api.admin.InstanceState;
-import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.admin.config.ReferenceContainer;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
@@ -67,6 +66,7 @@ import java.util.Map;
 import java.util.logging.Logger;
 import static com.sun.enterprise.v3.admin.cluster.Constants.*;
 import com.sun.enterprise.admin.util.RemoteInstanceCommandHelper;
+import org.glassfish.api.admin.*;
 
 /**
  *  This is a remote command that lists the clusters.
@@ -79,6 +79,12 @@ import com.sun.enterprise.admin.util.RemoteInstanceCommandHelper;
 @Scoped(PerLookup.class)
 @CommandLock(CommandLock.LockType.NONE)
 @I18n("list.clusters.command")
+@RestEndpoints({
+    @RestEndpoint(configBean=Clusters.class,
+        opType=RestEndpoint.OpType.GET, 
+        path="list-clusters", 
+        description="List Clusters")
+})
 public final class ListClustersCommand implements AdminCommand, PostConstruct {
 
     @Inject

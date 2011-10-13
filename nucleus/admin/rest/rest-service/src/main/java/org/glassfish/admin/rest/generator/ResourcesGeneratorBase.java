@@ -345,6 +345,8 @@ public abstract class ResourcesGeneratorBase implements ResourcesGenerator {
         }
 
         ClassWriter writer = getClassWriter(commandResourceClassName, baseClassName, null);
+        
+        System.out.println("***** Processing " + commandResourceClassName);
 
         boolean isLinkedToParent = false;
         if (metaData.commandParams != null) {

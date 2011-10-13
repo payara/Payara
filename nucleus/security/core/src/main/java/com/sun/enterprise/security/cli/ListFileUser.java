@@ -74,8 +74,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import org.glassfish.api.admin.RuntimeType;
-import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.api.admin.*;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 
@@ -94,7 +93,16 @@ import org.glassfish.config.support.TargetType;
 @I18n("list.file.user")
 @ExecuteOn({RuntimeType.DAS})
 @TargetType({CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTER,
-CommandTarget.CLUSTERED_INSTANCE,CommandTarget.CONFIG})
+    CommandTarget.CLUSTERED_INSTANCE,CommandTarget.CONFIG})
+@RestEndpoints({
+    @RestEndpoint(configBean=AuthRealm.class,
+        opType=RestEndpoint.OpType.GET, 
+        path="list-users", 
+        description="List Users",
+        params={
+            @RestParam(name="authrealmname", value="$parent")
+        })
+})
 public class ListFileUser implements AdminCommand {
     
     final private static LocalStringManagerImpl localStrings = 

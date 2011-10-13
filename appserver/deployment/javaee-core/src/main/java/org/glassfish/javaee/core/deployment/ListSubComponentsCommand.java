@@ -78,6 +78,15 @@ import org.glassfish.deployment.versioning.VersioningSyntaxException;
 @Scoped(PerLookup.class)
 @CommandLock(CommandLock.LockType.NONE)
 @ExecuteOn(value={RuntimeType.DAS})
+@RestEndpoints({
+    @RestEndpoint(configBean=Application.class,
+        opType=RestEndpoint.OpType.GET, 
+        path="list-sub-components", 
+        description="List subcomponents",
+        params={
+            @RestParam(name="appname", value="$parent")
+        })
+})
 public class ListSubComponentsCommand implements AdminCommand {
 
     @Param(primary=true)

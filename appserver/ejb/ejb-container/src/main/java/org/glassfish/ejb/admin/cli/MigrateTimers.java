@@ -55,11 +55,7 @@ import org.glassfish.ejb.api.DistributedEJBTimerService;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
-import org.glassfish.api.admin.AdminCommand;
-import org.glassfish.api.admin.AdminCommandContext;
-import org.glassfish.api.admin.FailurePolicy;
-import org.glassfish.api.admin.ParameterMap;
-import org.glassfish.api.admin.RuntimeType;
+import org.glassfish.api.admin.*;
 import org.glassfish.common.util.admin.ParameterMapExtractor;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
@@ -75,6 +71,12 @@ import org.jvnet.hk2.component.PerLookup;
 @I18n("migrate.timers")
 @org.glassfish.api.admin.ExecuteOn(value = {RuntimeType.INSTANCE}, ifNeverStarted = FailurePolicy.Error)
 @TargetType(value = {CommandTarget.DAS, CommandTarget.CLUSTERED_INSTANCE})
+@RestEndpoints({
+    @RestEndpoint(configBean=Cluster.class,
+        opType=RestEndpoint.OpType.POST, 
+        path="migrate-timers", 
+        description="Migrate Timers")
+})
 public class MigrateTimers implements AdminCommand {
 
     static StringManager localStrings = StringManager.getManager(MigrateTimers.class);

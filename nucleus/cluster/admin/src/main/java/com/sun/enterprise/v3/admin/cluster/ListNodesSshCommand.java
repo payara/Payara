@@ -52,11 +52,18 @@ import org.glassfish.api.admin.CommandLock;
 import org.jvnet.hk2.annotations.*;
 import org.jvnet.hk2.component.*;
 import java.util.logging.Logger;
+import org.glassfish.api.admin.*;
 
 @Service(name = "list-nodes-ssh")
 @Scoped(PerLookup.class)
 @CommandLock(CommandLock.LockType.NONE)
 @I18n("list.nodes.ssh.command")
+@RestEndpoints({
+    @RestEndpoint(configBean=Nodes.class,
+        opType=RestEndpoint.OpType.GET, 
+        path="list-nodes-ssh", 
+        description="list-nodes-ssh")
+})
 public class ListNodesSshCommand implements AdminCommand{
 
     @Inject

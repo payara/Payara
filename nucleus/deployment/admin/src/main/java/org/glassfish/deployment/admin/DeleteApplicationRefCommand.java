@@ -40,6 +40,7 @@
 
 package org.glassfish.deployment.admin;
 
+import com.sun.enterprise.config.serverbeans.*;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.Param;
@@ -55,11 +56,6 @@ import org.glassfish.config.support.TargetType;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.internal.data.ApplicationInfo;
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.enterprise.config.serverbeans.Application;
-import com.sun.enterprise.config.serverbeans.ApplicationRef;
-import com.sun.enterprise.config.serverbeans.Applications;
-import com.sun.enterprise.config.serverbeans.Server;
-import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.deploy.shared.ArchiveFactory;
 import com.sun.enterprise.util.io.FileUtils;
 import org.glassfish.api.ActionReport;
@@ -81,6 +77,7 @@ import java.io.File;
 import java.net.URI;
 import java.util.Iterator;
 import java.util.List;
+import org.glassfish.api.admin.*;
 import org.glassfish.deployment.versioning.VersioningException;
 import org.glassfish.deployment.versioning.VersioningService;
 
@@ -92,6 +89,10 @@ import org.glassfish.deployment.versioning.VersioningService;
 @ExecuteOn(value={RuntimeType.DAS, RuntimeType.INSTANCE})
 @Scoped(PerLookup.class)
 @TargetType(value={CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER})
+@RestEndpoints({
+    @RestEndpoint(configBean=Cluster.class,opType=RestEndpoint.OpType.DELETE, path="delete-application-ref"),
+    @RestEndpoint(configBean=Server.class,opType=RestEndpoint.OpType.DELETE, path="delete-application-ref")
+})
 public class DeleteApplicationRefCommand implements AdminCommand {
 
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(DeleteApplicationRefCommand.class);

@@ -40,9 +40,12 @@
 
 package com.sun.enterprise.security.admin.cli;
 
+import com.sun.enterprise.config.serverbeans.Domain;
 import java.util.Iterator;
 import org.glassfish.api.I18n;
 import org.glassfish.api.admin.ExecuteOn;
+import org.glassfish.api.admin.RestEndpoint;
+import org.glassfish.api.admin.RestEndpoints;
 import org.glassfish.api.admin.RuntimeType;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
@@ -69,6 +72,12 @@ asadmin -s delete-protocol pu-protocol
 @Scoped(PerLookup.class)
 @I18n("disable.secure.admin.command")
 @ExecuteOn({RuntimeType.DAS,RuntimeType.INSTANCE})
+@RestEndpoints({
+    @RestEndpoint(configBean=Domain.class,
+        opType=RestEndpoint.OpType.POST, 
+        path="disable-secure-admin", 
+        description="disable-secure-admin")
+})
 public class DisableSecureAdminCommand extends SecureAdminCommand {
 
     @Override

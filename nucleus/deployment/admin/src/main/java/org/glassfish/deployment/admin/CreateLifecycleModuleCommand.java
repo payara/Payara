@@ -40,18 +40,16 @@
 
 package org.glassfish.deployment.admin;
 
+import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.config.serverbeans.ServerTags;
 import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.config.serverbeans.Server;
 import org.glassfish.internal.deployment.Deployment;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
 import org.glassfish.api.I18n;
-import org.glassfish.api.admin.AdminCommand;
-import org.glassfish.api.admin.AdminCommandContext;
-import org.glassfish.api.admin.ExecuteOn;
-import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.api.deployment.DeployCommandParameters;
 import org.glassfish.deployment.common.DeploymentContextImpl;
 import org.glassfish.config.support.TargetType;
@@ -63,9 +61,9 @@ import org.jvnet.hk2.component.PerLookup;
 import org.jvnet.hk2.config.Transaction;
 
 import java.util.logging.Logger;
-import java.util.logging.Level;
 import java.util.Properties;
 import java.util.List;
+import org.glassfish.api.admin.*;
 
 /**
  * Create lifecycle modules.
@@ -76,6 +74,22 @@ import java.util.List;
 @ExecuteOn(value={RuntimeType.DAS, RuntimeType.INSTANCE})
 @Scoped(PerLookup.class)
 @TargetType(value={CommandTarget.DOMAIN, CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER})
+@RestEndpoints({
+    @RestEndpoint(configBean=Cluster.class,
+        opType=RestEndpoint.OpType.POST, 
+        path="create-lifecycle-module", 
+        description="Create Lifecycle Module",
+        params={
+            @RestParam(name="target", value="$parent")
+        }),
+    @RestEndpoint(configBean=Server.class,
+        opType=RestEndpoint.OpType.POST, 
+        path="create-lifecycle-module", 
+        description="Create Lifecycle Module",
+        params={
+            @RestParam(name="target", value="$parent")
+        })
+})
 public class CreateLifecycleModuleCommand implements AdminCommand {
 
     @Param(primary=true)

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -42,15 +42,9 @@ package org.glassfish.jms.admin.cli;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
 import org.glassfish.api.ActionReport;
-import org.glassfish.api.admin.AdminCommand;
-import org.glassfish.api.admin.AdminCommandContext;
-import org.glassfish.api.admin.ExecuteOn;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
-import org.glassfish.api.admin.RuntimeType;
-import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.internal.api.ServerContext;
-import org.glassfish.api.admin.RuntimeType;
 import java.util.*;
 import java.util.logging.Logger;
 
@@ -68,6 +62,7 @@ import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.component.PerLookup;
 
 import com.sun.logging.LogDomains;
+import org.glassfish.api.admin.*;
 
 /**
  * Create JMS Destination
@@ -78,6 +73,22 @@ import com.sun.logging.LogDomains;
 @I18n("create.jms.dest")
 @ExecuteOn({RuntimeType.DAS})
 @TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CONFIG})
+@RestEndpoints({
+    @RestEndpoint(configBean=Cluster.class,
+        opType=RestEndpoint.OpType.POST, 
+        path="create-jmsdest", 
+        description="Create JMS Destination",
+        params={
+            @RestParam(name="target", value="$parent")
+        }),
+    @RestEndpoint(configBean=Server.class,
+        opType=RestEndpoint.OpType.POST, 
+        path="create-jmsdest", 
+        description="Create JMS Destination",
+        params={
+            @RestParam(name="target", value="$parent")
+        })
+})
 public class CreateJMSDestination extends JMSDestination implements AdminCommand {
     static Logger logger = LogDomains.getLogger(CreateJMSDestination.class, LogDomains.ADMIN_LOGGER);
 

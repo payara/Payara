@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -56,9 +56,12 @@ import org.jvnet.hk2.component.PerLookup;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.admin.monitor.jndi.JndiNameLookupHelper;
+import com.sun.enterprise.config.serverbeans.Resources;
 
 import javax.naming.NamingException;
 import java.util.List;
+import org.glassfish.api.admin.RestEndpoint;
+import org.glassfish.api.admin.RestEndpoints;
 
 @Service(name = "list-jndi-entries")
 @Scoped(PerLookup.class)
@@ -68,6 +71,12 @@ import java.util.List;
 @TargetType(value={CommandTarget.DOMAIN, CommandTarget.DAS, 
                    CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER,
                    CommandTarget.CLUSTERED_INSTANCE})
+@RestEndpoints({
+    @RestEndpoint(configBean=Resources.class,
+        opType=RestEndpoint.OpType.GET, 
+        path="list-jndi-entries", 
+        description="list-jndi-entries")
+})
 public class ListJndiEntries implements AdminCommand {
 
    final private static LocalStringManagerImpl localStrings =

@@ -43,6 +43,7 @@ import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
 
 import com.sun.enterprise.config.serverbeans.Config;
+import com.sun.enterprise.config.serverbeans.Domain;
 
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Inject;
@@ -55,9 +56,7 @@ import org.jvnet.hk2.config.TransactionFailure;
 
 import java.beans.PropertyVetoException;
 import org.glassfish.admin.rest.RestConfig;
-import org.glassfish.api.admin.AdminCommand;
-import org.glassfish.api.admin.AdminCommandContext;
-import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.api.admin.*;
 
 /**
  * Remote asadmin command: set-rest-config
@@ -71,6 +70,14 @@ import org.glassfish.api.admin.ServerEnvironment;
  */
 @Service(name = "_set-rest-admin-config")
 @Scoped(PerLookup.class)
+@ExecuteOn(RuntimeType.DAS)
+@CommandLock(CommandLock.LockType.NONE)
+@RestEndpoints({
+    @RestEndpoint(configBean=Domain.class,
+        opType=RestEndpoint.OpType.POST, 
+        path="_set-rest-admin-config", 
+        description="_set-rest-admin-config")
+})
 public class SetRestConfig implements AdminCommand {
 
     @Inject(name = ServerEnvironment.DEFAULT_INSTANCE_NAME)

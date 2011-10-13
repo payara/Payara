@@ -75,6 +75,12 @@ import java.util.Map;
 @CommandLock(CommandLock.LockType.NONE)
 @Scoped(PerLookup.class)
 @I18n("delete.log.levels")
+@RestEndpoints({
+    @RestEndpoint(configBean=Domain.class,
+        opType=RestEndpoint.OpType.DELETE, 
+        path="delete-log-levels", 
+        description="delete-log-levels")
+})
 public class DeleteLogLevel implements AdminCommand {
     @Param(name = "logger_name", primary = true, separator = ':')
     String properties;

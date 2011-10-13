@@ -39,12 +39,8 @@
  */
 package com.sun.enterprise.v3.admin.cluster;
 
+import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.util.SystemPropertyConstants;
-import com.sun.enterprise.config.serverbeans.Node;
-import com.sun.enterprise.config.serverbeans.Nodes;
-import com.sun.enterprise.config.serverbeans.Server;
-import com.sun.enterprise.config.serverbeans.Servers;
-import com.sun.enterprise.config.serverbeans.ServerRef;
 import com.sun.enterprise.util.StringUtils;
 import com.sun.enterprise.util.ExceptionUtil;
 import java.io.IOException;
@@ -75,6 +71,12 @@ import java.util.logging.Logger;
 @I18n("create.instance")
 @Scoped(PerLookup.class)
 @ExecuteOn({RuntimeType.DAS})
+@RestEndpoints({
+    @RestEndpoint(configBean=Domain.class,
+        opType=RestEndpoint.OpType.POST, 
+        path="create-instance", 
+        description="Create Instance")
+})
 public class CreateInstanceCommand implements AdminCommand {
     private static final String NL = System.getProperty("line.separator");
     @Inject

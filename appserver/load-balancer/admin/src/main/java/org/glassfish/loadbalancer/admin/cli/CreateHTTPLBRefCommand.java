@@ -87,6 +87,15 @@ import org.glassfish.config.support.CommandTarget;
 @I18n("create.http.lb.ref")
 @TargetType(value={CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER})
 @org.glassfish.api.admin.ExecuteOn(RuntimeType.DAS)
+@RestEndpoints({
+    @RestEndpoint(configBean=LbConfig.class,
+        opType=RestEndpoint.OpType.POST, 
+        path="create-http-lb-ref", 
+        description="create-http-lb-ref",
+        params={
+            @RestParam(name="config", value="$parent")
+        })
+})
 public final class CreateHTTPLBRefCommand extends LBCommandsBase
         implements AdminCommand {
 

@@ -41,14 +41,8 @@
 package org.glassfish.jms.admin.cli;
 
 import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
-import org.glassfish.api.admin.AdminCommand;
-import org.glassfish.api.admin.AdminCommandContext;
-import org.glassfish.api.admin.CommandRunner;
-import org.glassfish.api.admin.ParameterMap;
-import org.glassfish.api.admin.ExecuteOn;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
-import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
 import org.glassfish.api.ActionReport;
@@ -62,6 +56,7 @@ import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 
 import java.util.*;
+import org.glassfish.api.admin.*;
 
 /**
  * Create JMS Resource Command
@@ -72,7 +67,12 @@ import java.util.*;
 @I18n("create.jms.resource")
 @ExecuteOn({RuntimeType.DAS})
 @TargetType({CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTER,CommandTarget.DOMAIN})
-
+@RestEndpoints({
+    @RestEndpoint(configBean=Resources.class,
+        opType=RestEndpoint.OpType.POST, 
+        path="create-jms-resource", 
+        description="create-jms-resource")
+})
 public class CreateJMSResource implements AdminCommand {
 
     @Param(name="resType")

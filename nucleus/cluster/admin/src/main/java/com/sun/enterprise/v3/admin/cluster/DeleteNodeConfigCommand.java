@@ -64,6 +64,12 @@ import java.util.logging.Logger;
 @I18n("delete.node.config")
 @Scoped(PerLookup.class)
 @ExecuteOn({RuntimeType.DAS})
+@RestEndpoints({
+    @RestEndpoint(configBean=Nodes.class,
+        opType=RestEndpoint.OpType.DELETE, 
+        path="delete-node-config", 
+        description="Delete Node Config")
+})
 public class DeleteNodeConfigCommand implements AdminCommand {
     @Inject
     Habitat habitat;

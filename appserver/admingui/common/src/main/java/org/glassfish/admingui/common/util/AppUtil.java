@@ -107,12 +107,12 @@ public class AppUtil {
         try{
             String encodedAppName = URLEncoder.encode(appName, "UTF-8");
             String encodedModuleName = URLEncoder.encode(moduleName, "UTF-8");
-            String prefix = GuiUtil.getSessionValue("REST_URL") + "/applications/application/";
+            String prefix = GuiUtil.getSessionValue("REST_URL") + "/applications/application/" + encodedAppName;
             if (snifferList.contains("webservices")){
                 Map wsAttrMap = new HashMap();
-                wsAttrMap.put("applicationname", encodedAppName);
+                //wsAttrMap.put("applicationname", encodedAppName);
                 wsAttrMap.put("modulename", encodedModuleName);
-                Map wsMap = RestUtil.restRequest(prefix+"list-webservices", wsAttrMap, "GET", null, false);
+                Map wsMap = RestUtil.restRequest(prefix+"/list-webservices", wsAttrMap, "GET", null, false);
                 Map extraProps = (Map)((Map)wsMap.get("data")).get("extraProperties");
                 if (extraProps != null){
                     wsAppMap = (Map) extraProps.get(appName);

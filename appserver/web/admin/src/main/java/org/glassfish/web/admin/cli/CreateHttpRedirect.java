@@ -40,8 +40,10 @@
 
 package org.glassfish.web.admin.cli;
 
+import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import org.glassfish.grizzly.config.dom.HttpRedirect;
@@ -50,11 +52,7 @@ import org.glassfish.grizzly.config.dom.Protocols;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
-import org.glassfish.api.admin.AdminCommand;
-import org.glassfish.api.admin.AdminCommandContext;
-import org.glassfish.api.admin.ExecuteOn;
-import org.glassfish.api.admin.RuntimeType;
-import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.api.admin.*;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.internal.api.Target;
@@ -88,6 +86,16 @@ import org.jvnet.hk2.config.TransactionFailure;
 @I18n("create.http.redirect")
 @ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
 @TargetType({CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTER,CommandTarget.CONFIG})
+@RestEndpoints({
+    @RestEndpoint(configBean=Cluster.class,
+        opType=RestEndpoint.OpType.POST, 
+        path="create-http-redirect", 
+        description="create-http-redirect"),
+    @RestEndpoint(configBean=Server.class,
+        opType=RestEndpoint.OpType.POST, 
+        path="create-http-redirect", 
+        description="create-http-redirect")
+})
 public class CreateHttpRedirect implements AdminCommand {
 
     final private static LocalStringManagerImpl localStrings =

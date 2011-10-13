@@ -40,6 +40,8 @@
 
 package org.glassfish.loadbalancer.admin.cli;
 
+import com.sun.enterprise.config.serverbeans.Cluster;
+import com.sun.enterprise.config.serverbeans.Server;
 import java.util.logging.Logger;
 import java.util.List;
 
@@ -67,6 +69,22 @@ import org.glassfish.config.support.CommandTarget;
 @Scoped(PerLookup.class)
 @TargetType(value={CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE})
 @org.glassfish.api.admin.ExecuteOn(RuntimeType.DAS)
+@RestEndpoints({
+    @RestEndpoint(configBean=Cluster.class,
+        opType=RestEndpoint.OpType.POST, 
+        path="disable-http-lb-server", 
+        description="disable-http-lb-server",
+        params={
+            @RestParam(name="id", value="$parent")
+        }),
+    @RestEndpoint(configBean=Server.class,
+        opType=RestEndpoint.OpType.POST, 
+        path="disable-http-lb-server", 
+        description="disable-http-lb-server",
+        params={
+            @RestParam(name="id", value="$parent")
+        })
+})
 public final class DisableHTTPLBServerCommand extends LBCommandsBase
                                               implements AdminCommand {
 

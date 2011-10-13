@@ -69,6 +69,7 @@ import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.component.PerLookup;
 import com.sun.logging.LogDomains;
+import org.glassfish.api.admin.*;
 
 /**
  * Create JMS Destination
@@ -80,7 +81,22 @@ import com.sun.logging.LogDomains;
 @I18n("list.jms.dests")
 @ExecuteOn({RuntimeType.DAS})
 @TargetType({CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTER,CommandTarget.CONFIG})
-
+@RestEndpoints({
+    @RestEndpoint(configBean=Cluster.class,
+        opType=RestEndpoint.OpType.GET, 
+        path="list-jmsdest", 
+        description="List JMS Destinations",
+        params={
+            @RestParam(name="id", value="$parent")
+        }),
+    @RestEndpoint(configBean=Server.class,
+        opType=RestEndpoint.OpType.GET, 
+        path="list-jmsdest", 
+        description="List JMS Destinations",
+        params={
+            @RestParam(name="id", value="$parent")
+        })
+})
 public class ListJMSDestinations extends JMSDestination implements AdminCommand {
 
         static Logger logger = LogDomains.getLogger(ListJMSDestinations.class,LogDomains.ADMIN_LOGGER);

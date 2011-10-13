@@ -66,6 +66,12 @@ import org.jvnet.hk2.config.types.Property;
 @Scoped(PerLookup.class)
 @CommandLock(CommandLock.LockType.NONE)
 @ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
+@RestEndpoints({
+    @RestEndpoint(configBean=Domain.class,
+        opType=RestEndpoint.OpType.GET, 
+        path="get", 
+        description="Get")
+})
 public class GetCommand extends V2DottedNameSupport implements AdminCommand {
     @Inject
     private MonitoringReporter mr;

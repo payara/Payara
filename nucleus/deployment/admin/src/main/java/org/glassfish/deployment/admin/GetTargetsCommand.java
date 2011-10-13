@@ -45,11 +45,7 @@ import java.util.List;
 import com.sun.enterprise.config.serverbeans.Domain;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
-import org.glassfish.api.admin.AdminCommand;
-import org.glassfish.api.admin.AdminCommandContext;
-import org.glassfish.api.admin.CommandLock;
-import org.glassfish.api.admin.ExecuteOn;
-import org.glassfish.api.admin.RuntimeType;
+import org.glassfish.api.admin.*;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
@@ -59,6 +55,12 @@ import org.jvnet.hk2.component.PerLookup;
 @ExecuteOn(value={RuntimeType.DAS})
 @Scoped(PerLookup.class)
 @CommandLock(CommandLock.LockType.NONE)
+@RestEndpoints({
+    @RestEndpoint(configBean=Domain.class,
+        opType=RestEndpoint.OpType.GET, 
+        path="_get-targets", 
+        description="_get-targets")
+})
 public class GetTargetsCommand implements AdminCommand {
 
     @Param(optional=true, primary=true)

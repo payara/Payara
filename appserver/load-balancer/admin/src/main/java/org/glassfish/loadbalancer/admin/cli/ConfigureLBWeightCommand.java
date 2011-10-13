@@ -68,6 +68,22 @@ import org.glassfish.api.admin.*;
 @Scoped(PerLookup.class)
 @I18n("configure.lb.weight")
 @org.glassfish.api.admin.ExecuteOn(RuntimeType.DAS)
+@RestEndpoints({
+    @RestEndpoint(configBean=Cluster.class,
+        opType=RestEndpoint.OpType.POST, 
+        path="configure-lb-weight", 
+        description="Configure LB Weight",
+        params={
+            @RestParam(name="target", value="$parent")
+        }),
+    @RestEndpoint(configBean=Server.class,
+        opType=RestEndpoint.OpType.POST, 
+        path="configure-lb-weight", 
+        description="Configure LB Weight",
+        params={
+            @RestParam(name="target", value="$parent")
+        })
+})
 public final class ConfigureLBWeightCommand extends LBCommandsBase
                                             implements AdminCommand {
 

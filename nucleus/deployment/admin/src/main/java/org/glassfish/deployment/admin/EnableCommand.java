@@ -75,6 +75,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.List;
 import java.util.Collections;
+import org.glassfish.api.admin.*;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.deployment.common.DeploymentUtils;
@@ -91,6 +92,15 @@ import org.glassfish.internal.deployment.ExtendedDeploymentContext.Phase;
 @ExecuteOn(value={RuntimeType.DAS, RuntimeType.INSTANCE})
 @Scoped(PerLookup.class)
 @TargetType(value={CommandTarget.DOMAIN, CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE})
+@RestEndpoints({
+    @RestEndpoint(configBean=Application.class,
+        opType=RestEndpoint.OpType.POST, 
+        path="enable", 
+        description="enable",
+        params={
+            @RestParam(name="id", value="$parent")
+        })
+})
 public class EnableCommand extends StateCommandParameters implements AdminCommand, DeploymentTargetResolver {
 
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(EnableCommand.class);

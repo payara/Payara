@@ -80,6 +80,11 @@ public class JavaClientGenerator extends ClientGenerator {
     public JavaClientGenerator(Habitat habitat) {
         super(habitat);
         baseDirectory = Util.createTempDirectory();
+        try {
+            System.out.println("Generating class in " + baseDirectory.getCanonicalPath());
+        } catch (IOException ex) {
+            Logger.getLogger(JavaClientGenerator.class.getName()).log(Level.SEVERE, null, ex);
+        }
         messages.add(MSG_INSTALL.replace("VERSION", versionString));
     }
 

@@ -41,6 +41,7 @@
 package org.glassfish.jdbc.admin.cli.internal;
 
 import com.sun.appserv.connectors.internal.api.ConnectorRuntime;
+import com.sun.enterprise.config.serverbeans.Resources;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
@@ -54,6 +55,8 @@ import org.jvnet.hk2.component.PerLookup;
 import java.util.ArrayList;
 import java.util.Properties;
 import java.util.Set;
+import org.glassfish.api.admin.RestEndpoint;
+import org.glassfish.api.admin.RestEndpoints;
 
 /**
  * @author Jagadish Ramu
@@ -61,6 +64,12 @@ import java.util.Set;
 @Service(name = "_get-validation-class-names")
 @Scoped(PerLookup.class)
 @CommandLock(CommandLock.LockType.NONE)
+@RestEndpoints({
+    @RestEndpoint(configBean=Resources.class,
+        opType=RestEndpoint.OpType.GET, 
+        path="_get-validation-class-names", 
+        description="Get Validation Class Names")
+})
 public class GetValidationClassNames implements AdminCommand {
 
     @Inject

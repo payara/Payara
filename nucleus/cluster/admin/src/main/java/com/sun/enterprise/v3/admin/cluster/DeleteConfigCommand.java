@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -44,7 +44,6 @@ package com.sun.enterprise.v3.admin.cluster;
 
 import java.beans.PropertyVetoException;
 import java.util.List;
-import java.util.logging.Level;
 
 import org.jvnet.hk2.annotations.*;
 import org.jvnet.hk2.component.*;
@@ -56,7 +55,6 @@ import org.glassfish.api.admin.*;
 import org.glassfish.api.admin.config.ReferenceContainer;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.config.serverbeans.*;
-import com.sun.enterprise.admin.util.RemoteInstanceCommandHelper;
 
 /**
  *  This is a remote command that deletes a destination config.
@@ -68,6 +66,15 @@ import com.sun.enterprise.admin.util.RemoteInstanceCommandHelper;
 @Service(name = "delete-config")
 @Scoped(PerLookup.class)
 @I18n("delete.config.command")
+@RestEndpoints({
+    @RestEndpoint(configBean=Config.class,
+        opType=RestEndpoint.OpType.POST, // TODO: Should be DELETE
+        path="delete-config", 
+        description="Delete Config",
+        params={
+            @RestParam(name="id", value="$parent")
+        })
+})
 public final class DeleteConfigCommand implements AdminCommand {
 
     @Param(primary=true)

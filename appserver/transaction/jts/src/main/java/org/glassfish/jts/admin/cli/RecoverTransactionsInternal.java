@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,7 +40,7 @@
 
 package org.glassfish.jts.admin.cli;
 
-import org.glassfish.api.I18n;
+import com.sun.enterprise.config.serverbeans.Domain;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
@@ -56,13 +56,19 @@ import org.jvnet.hk2.component.PerLookup;
 
 import com.sun.enterprise.transaction.api.ResourceRecoveryManager;
 
-import java.util.logging.Logger;
 import java.util.logging.Level;
+import org.glassfish.api.admin.*;
 
 @Service(name = "_recover-transactions-internal")
 @TargetType({CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTERED_INSTANCE})
 @ExecuteOn(RuntimeType.INSTANCE)
 @Scoped(PerLookup.class)
+@RestEndpoints({
+    @RestEndpoint(configBean=Domain.class,
+        opType=RestEndpoint.OpType.POST, 
+        path="_recover-transactions-internal", 
+        description="_recover-transactions-internal")
+})
 public class RecoverTransactionsInternal extends RecoverTransactionsBase implements AdminCommand {
 
     @Param(name="target", optional = false)

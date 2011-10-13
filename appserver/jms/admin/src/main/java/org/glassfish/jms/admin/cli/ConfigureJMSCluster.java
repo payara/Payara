@@ -77,7 +77,15 @@ import org.jvnet.hk2.config.TransactionFailure;
 @I18n("configure.jms.cluster")
 @ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
 //@TargetType({CommandTarget.CLUSTER})
-
+@RestEndpoints({
+    @RestEndpoint(configBean=Cluster.class,
+        opType=RestEndpoint.OpType.POST, 
+        path="configure-jms-cluster", 
+        description="configure-jms-cluster",
+        params={
+            @RestParam(name="id", value="$parent")
+        })
+})
 public class ConfigureJMSCluster implements AdminCommand {
     final private static String SUPPORTED_DB_VENDORS = "oracle|postgressql|mysql|derby|db2";
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ConfigureJMSCluster.class);

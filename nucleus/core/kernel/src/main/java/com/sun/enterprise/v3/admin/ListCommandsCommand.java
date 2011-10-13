@@ -40,16 +40,14 @@
 
 package com.sun.enterprise.v3.admin;
 
+import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.module.common_impl.Tokenizer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Iterator;
 
 import org.glassfish.api.ActionReport;
-import org.glassfish.api.admin.AdminCommand;
-import org.glassfish.api.admin.AdminCommandContext;
-import org.glassfish.api.admin.CommandLock;
+import org.glassfish.api.admin.*;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
@@ -67,6 +65,12 @@ import org.jvnet.hk2.component.Singleton;
 @Service(name="list-commands")
 @Scoped(Singleton.class)        // no per-execution state
 @CommandLock(CommandLock.LockType.NONE)
+@RestEndpoints({
+    @RestEndpoint(configBean=Domain.class,
+        opType=RestEndpoint.OpType.GET, 
+        path="list-commands", 
+        description="list-commands")
+})
 public class ListCommandsCommand implements AdminCommand {
 
     private static final String DEBUG_PAIR = "mode=debug";

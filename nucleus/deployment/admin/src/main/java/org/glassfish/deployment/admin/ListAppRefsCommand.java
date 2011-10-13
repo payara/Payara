@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2008-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -52,8 +52,6 @@ import com.sun.enterprise.config.serverbeans.Application;
 import com.sun.enterprise.config.serverbeans.Applications;
 import com.sun.enterprise.config.serverbeans.Engine;
 import com.sun.enterprise.config.serverbeans.Module;
-import com.sun.enterprise.config.serverbeans.ServerTags;
-import org.glassfish.api.admin.config.ApplicationName;
 import org.glassfish.api.admin.ExecuteOn;
 import org.glassfish.api.admin.RuntimeType;
 import com.sun.enterprise.util.LocalStringManagerImpl;
@@ -61,11 +59,18 @@ import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.component.PerLookup;
 import java.util.List;
+import org.glassfish.api.admin.*;
 
 @Service(name="_list-app-refs")
 @ExecuteOn(value={RuntimeType.DAS})
 @Scoped(PerLookup.class)
 @CommandLock(CommandLock.LockType.NONE)
+@RestEndpoints({
+    @RestEndpoint(configBean=Domain.class,
+        opType=RestEndpoint.OpType.GET, 
+        path="_list-app-refs", 
+        description="_list-app-refs")
+})
 public class ListAppRefsCommand implements AdminCommand {
 
     @Param(optional=true)

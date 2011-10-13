@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2008-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,11 +40,13 @@
 
 package org.glassfish.deployment.admin;
 
+import com.sun.enterprise.config.serverbeans.Applications;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.CommandLock;
 import org.glassfish.api.admin.ExecuteOn;
 import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.api.I18n;
+import org.glassfish.api.admin.*;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.config.support.CommandTarget;
 import org.jvnet.hk2.annotations.Service;
@@ -61,6 +63,12 @@ import org.jvnet.hk2.component.PerLookup;
 @CommandLock(CommandLock.LockType.NONE)
 @ExecuteOn(value={RuntimeType.DAS})
 @TargetType(value={CommandTarget.DOMAIN, CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER})
+@RestEndpoints({
+    @RestEndpoint(configBean=Applications.class,
+        opType=RestEndpoint.OpType.GET, 
+        path="list-applications", 
+        description="List Applications")
+})
 public class ListApplicationsCommand extends ListComponentsCommand {
 
     public void execute(AdminCommandContext context) {

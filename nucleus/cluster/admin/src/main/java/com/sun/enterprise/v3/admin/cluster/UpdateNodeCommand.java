@@ -70,6 +70,15 @@ import java.util.logging.Logger;
 @I18n("update.node")
 @Scoped(PerLookup.class)
 @ExecuteOn({RuntimeType.DAS})
+@RestEndpoints({
+    @RestEndpoint(configBean=Node.class,
+        opType=RestEndpoint.OpType.POST, 
+        path="_update-node", 
+        description="Update Node",
+        params={
+            @RestParam(name="name", value="$parent")
+        })
+})
 public class UpdateNodeCommand implements AdminCommand {
 
     @Inject

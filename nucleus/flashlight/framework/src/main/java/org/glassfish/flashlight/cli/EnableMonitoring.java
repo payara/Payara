@@ -39,6 +39,7 @@
  */
 package org.glassfish.flashlight.cli;
 
+import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.util.*;
 import org.glassfish.api.admin.*;
 import org.glassfish.api.admin.AdminCommand;
@@ -66,6 +67,12 @@ import com.sun.enterprise.config.serverbeans.MonitoringService;
 @I18n("enable.monitoring")
 @ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
 @TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CONFIG})
+@RestEndpoints({
+    @RestEndpoint(configBean=Domain.class,
+        opType=RestEndpoint.OpType.POST, 
+        path="enable-monitoring", 
+        description="enable-monitoring")
+})
 public class EnableMonitoring implements AdminCommand {
     // do NOT inject this.
     private MonitoringService ms;

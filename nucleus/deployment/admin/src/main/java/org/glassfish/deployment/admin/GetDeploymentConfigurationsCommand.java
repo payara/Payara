@@ -40,6 +40,7 @@
 
 package org.glassfish.deployment.admin;
 
+import com.sun.enterprise.config.serverbeans.Application;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.CommandLock;
@@ -65,6 +66,7 @@ import org.jvnet.hk2.component.PerLookup;
 
 import java.util.Map;
 import java.io.IOException;
+import org.glassfish.api.admin.*;
 
 /**
  * Get deployment configurations command
@@ -73,6 +75,10 @@ import java.io.IOException;
 @ExecuteOn(value={RuntimeType.DAS})
 @Scoped(PerLookup.class)
 @CommandLock(CommandLock.LockType.NONE)
+@RestEndpoints({
+    @RestEndpoint(configBean=Application.class,opType=RestEndpoint.OpType.GET, path="Get Deployment Configurations",
+        params={@RestParam(name="appname", value="$parent")})
+})
 public class GetDeploymentConfigurationsCommand implements AdminCommand {
 
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(GetDeploymentConfigurationsCommand.class);

@@ -63,10 +63,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 
-import org.glassfish.api.admin.ExecuteOn;
+import org.glassfish.api.admin.*;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
-import org.glassfish.api.admin.RuntimeType;
 import org.jvnet.hk2.component.Habitat;
 /**
  * List Connector Resources command
@@ -78,7 +77,12 @@ import org.jvnet.hk2.component.Habitat;
 @I18n("list.jms.resources")
 @ExecuteOn({RuntimeType.DAS})
 @TargetType({CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTER,CommandTarget.DOMAIN})
-
+@RestEndpoints({
+    @RestEndpoint(configBean=Resources.class,
+        opType=RestEndpoint.OpType.GET, 
+        path="list-jms-resources", 
+        description="list-jms-resources")
+})
 public class ListJMSResources implements AdminCommand {
 
     private static final String JMSRA = "jmsra";

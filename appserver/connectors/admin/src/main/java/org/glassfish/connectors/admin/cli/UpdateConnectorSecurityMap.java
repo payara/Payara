@@ -41,6 +41,7 @@
 package org.glassfish.connectors.admin.cli;
 
 import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.config.serverbeans.Resources;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import org.glassfish.api.ActionReport;
@@ -64,6 +65,8 @@ import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import org.glassfish.api.admin.RestEndpoint;
+import org.glassfish.api.admin.RestEndpoints;
 
 /**
  * Update Connector SecurityMap command
@@ -71,6 +74,12 @@ import java.util.List;
 @Service(name="update-connector-security-map")
 @Scoped(PerLookup.class)
 @I18n("update.connector.security.map")
+@RestEndpoints({
+    @RestEndpoint(configBean=Resources.class,
+        opType=RestEndpoint.OpType.POST, 
+        path="update-connector-security-map", 
+        description="update-connector-security-map")
+})
 public class UpdateConnectorSecurityMap extends ConnectorSecurityMap implements AdminCommand {
     
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(UpdateConnectorSecurityMap.class);

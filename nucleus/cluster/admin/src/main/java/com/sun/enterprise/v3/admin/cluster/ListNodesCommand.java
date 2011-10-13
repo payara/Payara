@@ -40,6 +40,7 @@
 
 package com.sun.enterprise.v3.admin.cluster;
 
+import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Servers;
 import com.sun.enterprise.config.serverbeans.Nodes;
 import org.glassfish.api.ActionReport;
@@ -52,11 +53,18 @@ import org.glassfish.api.admin.CommandLock;
 import org.jvnet.hk2.annotations.*;
 import org.jvnet.hk2.component.*;
 import java.util.logging.Logger;
+import org.glassfish.api.admin.*;
 
 @Service(name = "list-nodes")
 @Scoped(PerLookup.class)
 @CommandLock(CommandLock.LockType.NONE)
 @I18n("list.nodes.command")
+@RestEndpoints({
+    @RestEndpoint(configBean=Domain.class,
+        opType=RestEndpoint.OpType.GET, 
+        path="list-nodes", 
+        description="list-nodes")
+})
 public class ListNodesCommand implements AdminCommand{
 
     @Inject

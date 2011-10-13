@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -66,9 +66,7 @@ import com.sun.enterprise.config.serverbeans.SecurityService;
 import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.security.auth.realm.RealmsManager;
 import com.sun.enterprise.util.SystemPropertyConstants;
-import org.glassfish.api.admin.ExecuteOn;
-import org.glassfish.api.admin.RuntimeType;
-import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.api.admin.*;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 
@@ -89,6 +87,12 @@ import org.glassfish.config.support.TargetType;
 @ExecuteOn({RuntimeType.DAS})
 @TargetType({CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTER,
 CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
+@RestEndpoints({
+    @RestEndpoint(configBean=SecurityService.class,
+        opType=RestEndpoint.OpType.GET, 
+        path="list-file-groups", 
+        description="list-file-groups")
+})
 public class ListFileGroup implements AdminCommand {
 
     final private static LocalStringManagerImpl localStrings =

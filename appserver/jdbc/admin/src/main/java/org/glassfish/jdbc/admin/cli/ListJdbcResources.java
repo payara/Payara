@@ -70,6 +70,12 @@ import java.util.Collection;
 @Scoped(PerLookup.class)
 @CommandLock(CommandLock.LockType.NONE)
 @I18n("list.jdbc.resources")
+@RestEndpoints({
+    @RestEndpoint(configBean=Resources.class,
+        opType=RestEndpoint.OpType.GET, 
+        path="list-jdbc-resources", 
+        description="List JDBC Resources")
+})
 public class ListJdbcResources implements AdminCommand {
     
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ListJdbcResources.class);    

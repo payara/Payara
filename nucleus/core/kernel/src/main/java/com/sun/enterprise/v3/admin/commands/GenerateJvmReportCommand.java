@@ -40,22 +40,20 @@
 
 package com.sun.enterprise.v3.admin.commands;
 
+import com.sun.enterprise.config.serverbeans.Cluster;
+import com.sun.enterprise.config.serverbeans.JavaConfig;
+import com.sun.enterprise.config.serverbeans.Server;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.ActionReport.ExitCode;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
-import org.glassfish.api.admin.AdminCommand;
-import org.glassfish.api.admin.AdminCommandContext;
-import org.glassfish.api.admin.CommandLock;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
 
 import javax.management.MBeanServer;
 import java.lang.management.ManagementFactory;
-import org.glassfish.api.admin.ExecuteOn;
-import org.glassfish.api.admin.FailurePolicy;
-import org.glassfish.api.admin.RuntimeType;
+import org.glassfish.api.admin.*;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 
@@ -70,6 +68,29 @@ import org.glassfish.config.support.TargetType;
 @I18n("generate.jvm.report")
 @TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTERED_INSTANCE})
 @ExecuteOn(value = {RuntimeType.INSTANCE}, ifNeverStarted=FailurePolicy.Error)
+@RestEndpoints({
+    @RestEndpoint(configBean=Cluster.class,
+        opType=RestEndpoint.OpType.POST, 
+        path="generate-jvm-report", 
+        description="Generate Report",
+        params={
+            @RestParam(name="target", value="$parent")
+        }),
+    @RestEndpoint(configBean=Server.class,
+        opType=RestEndpoint.OpType.POST, 
+        path="generate-jvm-report", 
+        description="Generate Report",
+        params={
+            @RestParam(name="target", value="$parent")
+        }),
+    @RestEndpoint(configBean=JavaConfig.class,
+        opType=RestEndpoint.OpType.POST, 
+        path="generate-jvm-report", 
+        description="Generate Report",
+        params={
+            @RestParam(name="target", value="$grandparent")
+        })
+})
 public class GenerateJvmReportCommand implements AdminCommand {
     
     @Param(name="target", optional=true) 

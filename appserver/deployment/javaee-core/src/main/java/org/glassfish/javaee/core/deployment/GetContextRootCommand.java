@@ -40,14 +40,7 @@
 
 package org.glassfish.javaee.core.deployment;
 
-import org.glassfish.api.admin.AdminCommand;
-import org.glassfish.api.admin.AdminCommandContext;
-import org.glassfish.api.admin.CommandLock;
 import org.glassfish.api.Param;
-import org.glassfish.api.admin.ExecuteOn;
-import org.glassfish.api.admin.RuntimeType;
-import org.glassfish.config.support.TargetType;
-import org.glassfish.config.support.CommandTarget;
 import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.data.ApplicationRegistry;
 import com.sun.enterprise.util.LocalStringManagerImpl;
@@ -56,13 +49,12 @@ import com.sun.enterprise.deployment.BundleDescriptor;
 import org.glassfish.deployment.common.DeploymentProperties;
 import com.sun.enterprise.deployment.WebBundleDescriptor;
 import org.glassfish.api.ActionReport;
+import org.glassfish.api.admin.*;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.component.PerLookup;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Get context root command
@@ -71,6 +63,15 @@ import java.util.logging.Logger;
 @ExecuteOn(value={RuntimeType.DAS})
 @Scoped(PerLookup.class)
 @CommandLock(CommandLock.LockType.NONE)
+@RestEndpoints({
+    @RestEndpoint(configBean=com.sun.enterprise.config.serverbeans.Application.class,
+        opType=RestEndpoint.OpType.GET, 
+        path="get-context-root", 
+        description="Get Context Root",
+        params={
+            @RestParam(name="appname", value="$parent")
+        })
+})
 public class GetContextRootCommand implements AdminCommand {
 
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(GetContextRootCommand.class);

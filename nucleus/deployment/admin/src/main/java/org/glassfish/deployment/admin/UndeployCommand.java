@@ -42,6 +42,7 @@ package org.glassfish.deployment.admin;
 
 import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.util.LocalStringManagerImpl;
+import org.glassfish.api.admin.*;
 import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.deployment.Deployment;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
@@ -52,14 +53,6 @@ import org.glassfish.deployment.common.DeploymentUtils;
 import org.glassfish.deployment.common.DeploymentProperties;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
-import org.glassfish.api.admin.ExecuteOn;
-import org.glassfish.api.admin.RuntimeType;
-import org.glassfish.api.admin.AdminCommand;
-import org.glassfish.api.admin.AdminCommandContext;
-import org.glassfish.api.admin.ServerEnvironment;
-import org.glassfish.api.admin.CommandRunner;
-import org.glassfish.api.admin.ParameterMap;
-import org.glassfish.api.admin.FailurePolicy;
 import org.glassfish.api.event.Events;
 import org.glassfish.api.event.EventListener.Event;
 import org.glassfish.api.deployment.archive.ReadableArchive;
@@ -100,6 +93,9 @@ import org.glassfish.deployment.versioning.VersioningException;
 @Scoped(PerLookup.class)
 @ExecuteOn(value={RuntimeType.DAS, RuntimeType.INSTANCE})
 @TargetType(value={CommandTarget.DOMAIN, CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER})
+@RestEndpoints({
+        @RestEndpoint(configBean = Applications.class, opType = RestEndpoint.OpType.DELETE, path = "undeploy", description = "Undeploy an application")
+})
 public class UndeployCommand extends UndeployCommandParameters implements AdminCommand, DeploymentTargetResolver {
 
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(UndeployCommand.class);

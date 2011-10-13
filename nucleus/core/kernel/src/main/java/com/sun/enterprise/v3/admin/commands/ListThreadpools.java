@@ -46,7 +46,6 @@ import java.util.List;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.ThreadPools;
-import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
@@ -66,6 +65,7 @@ import org.jvnet.hk2.component.PerLookup;
 
 import org.glassfish.grizzly.config.dom.ThreadPool;
 import com.sun.enterprise.util.LocalStringManagerImpl;
+import org.glassfish.api.admin.*;
 
 /**
  * List Thread Pools command
@@ -76,6 +76,12 @@ import com.sun.enterprise.util.LocalStringManagerImpl;
 @I18n("list.threadpools")
 @TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CONFIG,
     CommandTarget.CLUSTERED_INSTANCE})
+@RestEndpoints({
+    @RestEndpoint(configBean=ThreadPools.class,
+        opType=RestEndpoint.OpType.GET, 
+        path="list-threadpools", 
+        description="list-threadpools")
+})
 public class ListThreadpools implements AdminCommand {
 
     @Inject(name = ServerEnvironment.DEFAULT_INSTANCE_NAME)

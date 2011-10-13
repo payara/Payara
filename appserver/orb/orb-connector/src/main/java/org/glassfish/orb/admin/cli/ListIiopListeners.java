@@ -61,8 +61,7 @@ import com.sun.enterprise.util.SystemPropertyConstants;
 
 import java.util.List;
 import org.glassfish.api.Param;
-import org.glassfish.api.admin.ExecuteOn;
-import org.glassfish.api.admin.RuntimeType;
+import org.glassfish.api.admin.*;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.internal.api.Target;
@@ -83,6 +82,12 @@ import org.jvnet.hk2.component.Habitat;
     CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE,
     CommandTarget.CLUSTERED_INSTANCE, CommandTarget.DOMAIN }
 )
+@RestEndpoints({
+    @RestEndpoint(configBean=IiopService.class,
+        opType=RestEndpoint.OpType.GET, 
+        path="list-iiop-listeners", 
+        description="list-iiop-listeners")
+})
 public class ListIiopListeners implements AdminCommand {
 
     final private static LocalStringManagerImpl localStrings =

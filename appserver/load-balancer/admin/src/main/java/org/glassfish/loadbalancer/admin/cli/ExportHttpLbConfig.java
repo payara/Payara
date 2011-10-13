@@ -70,9 +70,11 @@ import java.util.Set;
 import java.util.logging.Level;
 
 import org.glassfish.api.ActionReport;
+import org.glassfish.api.admin.*;
 import org.glassfish.internal.data.ApplicationRegistry;
 import org.glassfish.loadbalancer.admin.cli.reader.impl.LoadbalancerReaderImpl;
 import org.glassfish.loadbalancer.admin.cli.helper.LbConfigHelper;
+import org.glassfish.loadbalancer.config.LbConfig;
 
 /**
  * Export load-balancer xml
@@ -82,6 +84,19 @@ import org.glassfish.loadbalancer.admin.cli.helper.LbConfigHelper;
 @Service(name = "export-http-lb-config")
 @Scoped(PerLookup.class)
 @I18n("export.http.lb.config")
+@RestEndpoints({
+    @RestEndpoint(configBean=LbConfig.class,
+        opType=RestEndpoint.OpType.POST, // TODO: Should probable be GET 
+        path="export-http-lb-config", 
+        description="export-http-lb-config"),
+    @RestEndpoint(configBean=LoadBalancer.class,
+        opType=RestEndpoint.OpType.POST, // TODO: Should probable be GET 
+        path="export-http-lb-config", 
+        description="export-http-lb-config",
+        params={
+            @RestParam(name="lbname", value="$parent")
+        })
+})
 public class ExportHttpLbConfig implements AdminCommand {
 
     @Param(name = "lbtargets", separator = ',', optional = true)

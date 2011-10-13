@@ -51,6 +51,7 @@ import com.sun.enterprise.config.serverbeans.Applications;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.admin.util.ClusterOperationUtil;
+import com.sun.enterprise.config.serverbeans.*;
 import java.util.ArrayList;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
@@ -84,6 +85,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import org.glassfish.api.admin.*;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.deployment.common.DeploymentContextImpl;
 
@@ -99,6 +101,10 @@ import org.glassfish.deployment.versioning.VersioningUtils;
 @ExecuteOn(value={RuntimeType.DAS, RuntimeType.INSTANCE})
 @Scoped(PerLookup.class)
 @TargetType(value={CommandTarget.DOMAIN, CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE})
+@RestEndpoints({
+    @RestEndpoint(configBean=Application.class,opType=RestEndpoint.OpType.POST, path="disable", description="Disable",
+        params={@RestParam(name="id", value="$parent")})
+})
 public class DisableCommand extends UndeployCommandParameters implements AdminCommand, DeploymentTargetResolver {
 
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(DisableCommand.class);    

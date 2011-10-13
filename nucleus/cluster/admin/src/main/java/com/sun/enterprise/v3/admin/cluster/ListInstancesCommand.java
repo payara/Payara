@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -72,6 +72,19 @@ import com.sun.enterprise.admin.util.RemoteInstanceCommandHelper;
 @CommandLock(CommandLock.LockType.NONE)
 @I18n("list.instances.command")
 @Scoped(PerLookup.class)
+@RestEndpoints({
+    @RestEndpoint(configBean=Cluster.class,
+        opType=RestEndpoint.OpType.GET, 
+        path="list-instances", 
+        description="List Cluster Instances",
+        params={
+            @RestParam(name="id", value="$parent")
+        }),
+    @RestEndpoint(configBean=Domain.class,
+        opType=RestEndpoint.OpType.GET, 
+        path="list-instances", 
+        description="List Instances")
+})
 public class ListInstancesCommand implements AdminCommand {
 
     @Inject

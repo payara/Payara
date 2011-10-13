@@ -40,7 +40,6 @@
 
 package com.sun.enterprise.security.cli;
 
-import java.util.List;
 
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
@@ -61,9 +60,7 @@ import com.sun.enterprise.config.serverbeans.MessageSecurityConfig;
 import com.sun.enterprise.config.serverbeans.ProviderConfig;
 import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.util.SystemPropertyConstants;
-import org.glassfish.api.admin.ExecuteOn;
-import org.glassfish.api.admin.RuntimeType;
-import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.api.admin.*;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 /**
@@ -84,6 +81,12 @@ import org.glassfish.config.support.TargetType;
 @ExecuteOn({RuntimeType.DAS})
 @TargetType({CommandTarget.DAS,CommandTarget.CLUSTERED_INSTANCE,
 CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTER, CommandTarget.CONFIG})
+@RestEndpoints({
+    @RestEndpoint(configBean=SecurityService.class,
+        opType=RestEndpoint.OpType.GET, 
+        path="list-message-security-providers", 
+        description="list-message-security-providers")
+})
 public class ListMessageSecurityProvider implements AdminCommand {
     
     final private static LocalStringManagerImpl localStrings = 

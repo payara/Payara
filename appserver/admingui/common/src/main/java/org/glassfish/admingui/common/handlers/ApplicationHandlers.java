@@ -171,8 +171,8 @@ public class ApplicationHandlers {
                 oneRow.put("sniffers", snifferList.toString());
 
                 if (snifferList.contains("web")) {
-                    String endpoint =  GuiUtil.getSessionValue("REST_URL") + "/applications/application/get-context-root.xml?appname="
-                            + encodedAppName + "&modulename=" + encodedModuleName;
+                    String endpoint =  GuiUtil.getSessionValue("REST_URL") + "/applications/application/"+ encodedAppName +"/get-context-root.xml?" +
+                            "modulename=" + encodedModuleName;
                     Map map = (Map)RestUtil.restRequest(endpoint, null, "GET", null, false).get("data");
                     Map props = (Map)map.get("properties");
                     String contextRoot = (String) props.get("contextRoot");
@@ -209,10 +209,10 @@ public class ApplicationHandlers {
                 wsAppMap = AppUtil.getWsEndpointMap(appName, moduleName, snifferList);
             }
             Map attrMap = new HashMap();
-            attrMap.put("appName", encodedAppName);
+            //attrMap.put("appName", encodedAppName);
             attrMap.put("moduleName", encodedModuleName);
-            String prefix = GuiUtil.getSessionValue("REST_URL") + "/applications/application/";
-            Map subMap = RestUtil.restRequest(prefix + "list-sub-components", attrMap, "GET", null, false);
+            String prefix = GuiUtil.getSessionValue("REST_URL") + "/applications/application/" + encodedAppName;
+            Map subMap = RestUtil.restRequest(prefix + "/list-sub-components", attrMap, "GET", null, false);
             Map data = (Map)subMap.get("data");
             if(data != null){
                 Map<String, Object> props = (Map) data.get("properties");

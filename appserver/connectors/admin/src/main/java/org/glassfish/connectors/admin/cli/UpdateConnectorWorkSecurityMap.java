@@ -60,6 +60,7 @@ import org.jvnet.hk2.config.TransactionFailure;
 
 import java.beans.PropertyVetoException;
 import java.util.*;
+import org.glassfish.api.admin.*;
 
 /**
  * Update Connector Work Security Map command
@@ -67,6 +68,15 @@ import java.util.*;
 @Service(name = "update-connector-work-security-map")
 @Scoped(PerLookup.class)
 @I18n("update.connector.work.security.map")
+@RestEndpoints({
+    @RestEndpoint(configBean=WorkSecurityMap.class,
+        opType=RestEndpoint.OpType.POST, 
+        path="update-connector-work-security-map", 
+        description="Update",
+        params={
+            @RestParam(name="id", value="$parent")
+        })
+})
 public class UpdateConnectorWorkSecurityMap implements AdminCommand {
     final private static LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(UpdateConnectorSecurityMap.class);

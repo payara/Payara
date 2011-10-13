@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,24 +40,29 @@
 
 package com.sun.enterprise.v3.admin.cluster;
 
+import com.sun.enterprise.config.serverbeans.Cluster;
 import java.util.logging.Logger;
 import org.jvnet.hk2.annotations.*;
 import org.jvnet.hk2.component.*;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
-import org.glassfish.api.admin.AdminCommandContext;
-import org.glassfish.api.admin.CommandException;
-import org.glassfish.api.admin.AdminCommand;
-import org.glassfish.api.admin.ServerEnvironment;
-import org.glassfish.api.admin.CommandRunner;
-import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.ActionReport.ExitCode;
 import com.sun.enterprise.config.serverbeans.Domain;
+import org.glassfish.api.admin.*;
 
 @I18n("stop.cluster.command")
 @Service(name="stop-cluster")
 @Scoped(PerLookup.class)
+@RestEndpoints({
+    @RestEndpoint(configBean=Cluster.class,
+        opType=RestEndpoint.OpType.POST, 
+        path="stop-cluster", 
+        description="Stop Cluster",
+        params={
+            @RestParam(name="id", value="$parent")
+        })
+})
 public class StopClusterCommand implements AdminCommand {
 
     @Param(optional=false, primary=true)

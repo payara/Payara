@@ -1355,7 +1355,11 @@ if (!((jsf && jsf.specversion && jsf.specversion >= 20000 ) &&
                 var frame = document.getElementById(this.FRAME_ID);
                 if (!frame) {
                     if (isIE()) {
-                        raise ("create iframe for IE");
+                        frame = document.createElement("div");
+                        frame.innerHTML = '<iframe id="' + this.FRAME_ID + 
+                            '" name="' + this.FRAME_ID + 
+                            '" src="javascript:false;" type="content" collapsed1="true" style="width: 500px; height: 100px" style1="display: none"></iframe>';
+                        document.body.appendChild(frame);
                     } else {
                         frame = this.createElement(document.body, 'iframe', {
                             src: 'about:blank',
@@ -1373,6 +1377,7 @@ if (!((jsf && jsf.specversion && jsf.specversion >= 20000 ) &&
             };
 
             req.onload = function() {
+                alert('onload!');
                 var document = this.frame.contentWindow.document || this.frame.contentDocument || this.frame.document;
                 var body = document.body || document.documentElement ;
                 var request = {};
@@ -1397,15 +1402,17 @@ if (!((jsf && jsf.specversion && jsf.specversion >= 20000 ) &&
                 } else {
                     el = document.createElement(type);
 
-                    for (key in attrs) {
-                        if (key !== 'style') {
-                            el[key] = attrs[key];
+                    if (attrs) {
+                        for (key in attrs) {
+                            if (key !== 'style') {
+                                el[key] = attrs[key];
+                            }
                         }
-                    }
-                    
-                    if (attrs.style) {
-                        for (key in attrs.style) {
-                                el.style[key] = attrs.style[key];
+
+                        if (attrs.style) {
+                            for (key in attrs.style) {
+                                    el.style[key] = attrs.style[key];
+                            }
                         }
                     }
 
@@ -1455,12 +1462,38 @@ if (!((jsf && jsf.specversion && jsf.specversion >= 20000 ) &&
             }
 
             req.sendRequest = function(form, args) {
-                this.frame = this._createIframe();
+                this._createIframe();
+                this.frame = document.getElementById(this.FRAME_ID);
 
                 if (!isIE()) {
                     this.frame.onload = this.hitch(this, this.onload);
                 } else {
-                    this.frame.onload_IE = this.hitch(this, this.onload);
+                    this.frame.onload_IE = function() { alert ('grr');}
+                    this.frame.load = function() { alert('onload'); }; //this.onload;
+                    this.frame.onreadystatechange = this.hitch(this, function() {
+                        var frame = document.getElementById(this.FRAME_ID);
+                        function log(label, value) {
+                            try {
+                                console.log(label + ".body.innerHTML = " + value.body.innerHTML.substring(0, 50));
+                            } catch(err) { }
+                            try {
+                                console.log(label + ".documentElement.innerHTML = " + value.documentElement.innerHTML.substring(0, 50));
+                            } catch(err) { }
+                        }
+                        
+                        try { log ("frame.contentWindow.document", frame.contentWindow.document); } catch(err) { }
+                        try { log ("frame.contentDocument", frame.contentDocument); } catch(err) { }
+                        try { log ("frame.document", frame.document); } catch(err) { }
+
+                        try {
+                            if (frame.contentDocument.documentElement.innerHTML != '') {
+                                this.onload();
+                            }
+                        } catch (err) {
+                            
+                        }
+                    });
+//                    this.frame.onload_IE = this.hitch(this, this.onload);
                 }
 
                 var saveTarget = form.target;
@@ -1468,7 +1501,7 @@ if (!((jsf && jsf.specversion && jsf.specversion >= 20000 ) &&
 
                 try {
                     this.addAjaxParameters(form, args);
-                    form.target = this.frame.name;
+                    form.target = this.FRAME_ID;
                     form.method = "POST";
                     form.submit();
                 } finally {

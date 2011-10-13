@@ -49,15 +49,9 @@ import org.glassfish.internal.deployment.Deployment;
 import com.sun.enterprise.config.serverbeans.ApplicationRef;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.admin.util.ClusterOperationUtil;
+import com.sun.enterprise.config.serverbeans.Cluster;
+import com.sun.enterprise.config.serverbeans.Server;
 import org.glassfish.common.util.admin.ParameterMapExtractor;
-import org.glassfish.api.admin.AdminCommand;
-import org.glassfish.api.admin.AdminCommandContext;
-import org.glassfish.api.admin.CommandRunner;
-import org.glassfish.api.admin.RuntimeType;
-import org.glassfish.api.admin.ExecuteOn;
-import org.glassfish.api.admin.ServerEnvironment;
-import org.glassfish.api.admin.ParameterMap;
-import org.glassfish.api.admin.FailurePolicy;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.config.support.CommandTarget;
 import org.jvnet.hk2.annotations.Inject;
@@ -67,9 +61,9 @@ import org.jvnet.hk2.component.PerLookup;
 import org.jvnet.hk2.component.Habitat;
 
 import java.util.logging.Logger;
-import java.util.logging.Level;
 import java.util.Collections;
 import java.util.List;
+import org.glassfish.api.admin.*;
 
 /**
  * Delete lifecycle modules.
@@ -80,6 +74,22 @@ import java.util.List;
 @Scoped(PerLookup.class)
 @ExecuteOn(value={RuntimeType.DAS, RuntimeType.INSTANCE})
 @TargetType(value={CommandTarget.DOMAIN, CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER})
+@RestEndpoints({
+    @RestEndpoint(configBean=Cluster.class,
+        opType=RestEndpoint.OpType.DELETE, 
+        path="delete-lifecycle-module", 
+        description="Delete Lifecycle Module",
+        params={
+            @RestParam(name="target", value="$parent")
+        }),
+    @RestEndpoint(configBean=Server.class,
+        opType=RestEndpoint.OpType.DELETE, 
+        path="delete-lifecycle-module", 
+        description="Delete Lifecycle Module",
+        params={
+            @RestParam(name="target", value="$parent")
+        })
+})
 public class DeleteLifecycleModuleCommand implements AdminCommand {
 
     @Param(primary=true)

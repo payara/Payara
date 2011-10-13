@@ -51,6 +51,8 @@ import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
+import org.glassfish.api.admin.RestEndpoint;
+import org.glassfish.api.admin.RestEndpoints;
 import org.glassfish.resource.common.PoolInfo;
 import org.glassfish.resources.config.ConnectorConnectionPool;
 import org.glassfish.resources.config.JdbcConnectionPool;
@@ -63,6 +65,12 @@ import org.jvnet.hk2.component.PerLookup;
 @Service(name = "flush-connection-pool")
 @Scoped(PerLookup.class)
 @I18n("flush.connection.pool")
+@RestEndpoints({
+    @RestEndpoint(configBean=Resources.class,
+        opType=RestEndpoint.OpType.POST, 
+        path="flush-connection-pool", 
+        description="flush-connection-pool")
+})
 public class FlushConnectionPool implements AdminCommand {
     final private static LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(FlushConnectionPool.class);

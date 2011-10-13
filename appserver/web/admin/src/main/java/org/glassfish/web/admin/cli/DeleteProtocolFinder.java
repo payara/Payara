@@ -46,7 +46,6 @@ import java.util.List;
 import org.glassfish.internal.api.Target;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
-import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import org.glassfish.grizzly.config.dom.PortUnification;
@@ -56,10 +55,7 @@ import org.glassfish.grizzly.config.dom.Protocols;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
-import org.glassfish.api.admin.AdminCommand;
-import org.glassfish.api.admin.AdminCommandContext;
-import org.glassfish.api.admin.RuntimeType;
-import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.api.admin.*;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.jvnet.hk2.annotations.Inject;
@@ -78,6 +74,15 @@ import org.jvnet.hk2.config.TransactionFailure;
 @I18n("delete.protocol.finder")
 @org.glassfish.api.admin.ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
 @TargetType({CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTER,CommandTarget.CONFIG})
+@RestEndpoints({
+    @RestEndpoint(configBean=Protocol.class,
+        opType=RestEndpoint.OpType.DELETE, 
+        path="delete-protocol-finder", 
+        description="Delete",
+        params={
+            @RestParam(name="protocol", value="$parent")
+        })
+})
 public class DeleteProtocolFinder implements AdminCommand {
     final private static LocalStringManagerImpl localStrings =
         new LocalStringManagerImpl(DeleteProtocolFinder.class);

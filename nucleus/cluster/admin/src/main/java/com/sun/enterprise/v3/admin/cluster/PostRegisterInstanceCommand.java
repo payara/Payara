@@ -41,22 +41,15 @@
 package com.sun.enterprise.v3.admin.cluster;
 
 import com.sun.enterprise.admin.util.ClusterOperationUtil;
+import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.util.InstanceRegisterInstanceCommandParameters;
 import com.sun.enterprise.config.util.RegisterInstanceCommandParameters;
 import com.sun.enterprise.config.serverbeans.Server;
-import static com.sun.enterprise.config.util.RegisterInstanceCommandParameters.ParameterNames.*;
-import static com.sun.enterprise.config.util.InstanceRegisterInstanceCommandParameters.ParameterNames.*;
 import java.util.logging.Logger;
 import java.util.List;
 import java.util.ArrayList;
 import org.glassfish.api.ActionReport;
-import org.glassfish.api.admin.AdminCommand;
-import org.glassfish.api.admin.AdminCommandContext;
-import org.glassfish.api.admin.ExecuteOn;
-import org.glassfish.api.admin.ParameterMap;
-import org.glassfish.api.admin.RuntimeType;
-import org.glassfish.api.admin.Supplemental;
-import org.glassfish.api.admin.FailurePolicy;
+import org.glassfish.api.admin.*;
 import org.glassfish.internal.api.Target;
 import org.glassfish.common.util.admin.ParameterMapExtractor;
 import org.jvnet.hk2.annotations.Inject;
@@ -74,7 +67,12 @@ import org.jvnet.hk2.component.PerLookup;
 @Supplemental(value="_register-instance", ifFailure=FailurePolicy.Warn)
 @Scoped(PerLookup.class)
 @ExecuteOn(value={RuntimeType.DAS})
-
+@RestEndpoints({
+    @RestEndpoint(configBean=Domain.class,
+        opType=RestEndpoint.OpType.POST, 
+        path="_post-register-instance", 
+        description="_post-register-instance")
+})
 public class PostRegisterInstanceCommand extends RegisterInstanceCommandParameters implements AdminCommand {
 
     @Inject

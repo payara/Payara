@@ -40,6 +40,7 @@
 
 package org.glassfish.loadbalancer.admin.cli;
 
+import com.sun.enterprise.config.serverbeans.Cluster;
 import java.util.logging.Logger;
 import java.util.ArrayList;
 import java.util.List;
@@ -58,6 +59,7 @@ import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.ClusterRef;
 import com.sun.enterprise.config.serverbeans.ServerRef;
 import com.sun.enterprise.config.serverbeans.HealthChecker;
+import com.sun.enterprise.config.serverbeans.Server;
 import org.glassfish.loadbalancer.config.LbConfigs;
 import org.glassfish.loadbalancer.config.LbConfig;
 
@@ -74,6 +76,22 @@ import org.glassfish.config.support.CommandTarget;
 @Scoped(PerLookup.class)
 @TargetType(value={CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER})
 @org.glassfish.api.admin.ExecuteOn(RuntimeType.DAS)
+@RestEndpoints({
+    @RestEndpoint(configBean=Cluster.class,
+        opType=RestEndpoint.OpType.POST, 
+        path="create-http-health-checker", 
+        description="",
+        params={
+            @RestParam(name="target", value="$parent")
+        }),
+    @RestEndpoint(configBean=Server.class,
+        opType=RestEndpoint.OpType.POST, 
+        path="create-http-health-checker", 
+        description="",
+        params={
+            @RestParam(name="target", value="$parent")
+        })
+})
 public final class CreateHTTPHealthCheckerCommand implements AdminCommand {
 
     @Param(optional=true, defaultValue="10")

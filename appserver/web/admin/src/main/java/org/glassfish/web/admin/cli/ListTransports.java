@@ -45,7 +45,6 @@ import java.util.List;
 import org.glassfish.internal.api.Target;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
-import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import org.glassfish.grizzly.config.dom.Transport;
@@ -70,6 +69,12 @@ import org.jvnet.hk2.component.PerLookup;
 @I18n("list.transports")
 @ExecuteOn(RuntimeType.DAS)
 @TargetType({CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTER,CommandTarget.CONFIG})
+@RestEndpoints({
+    @RestEndpoint(configBean=Domain.class,
+        opType=RestEndpoint.OpType.GET, 
+        path="list-transports", 
+        description="list-transports")
+})
 public class ListTransports implements AdminCommand {
     final private static LocalStringManagerImpl localStrings
         = new LocalStringManagerImpl(ListTransports.class);

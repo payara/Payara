@@ -65,7 +65,7 @@ import org.jvnet.hk2.config.DomDocument;
 public class GeneratorResource {
 
     private static final String DEFAULT_OUTPUT_DIR = System.getProperty("user.home") +
-            "/src/glassfish/3.2/admin/rest/rest-service/src/generated/java/org/glassfish/admin/rest/resources/generated";
+            "tmp/glassfish";
     @Context
     protected Habitat habitat;
 

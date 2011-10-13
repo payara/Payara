@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,6 +40,7 @@
 
 package com.sun.enterprise.server.logging.commands;
 
+import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.server.logging.GFFileHandler;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.logging.LogDomains;
@@ -70,6 +71,12 @@ import java.util.logging.Logger;
 @Scoped(PerLookup.class)
 @CommandLock(CommandLock.LockType.NONE)
 @I18n("get.log.file")
+@RestEndpoints({
+    @RestEndpoint(configBean=Domain.class,
+        opType=RestEndpoint.OpType.GET, 
+        path="_get-log-file", 
+        description="_get-log-file")
+})
 public class InstanceGetLogFileCommand implements AdminCommand {
 
     private static final Logger logger =

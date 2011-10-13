@@ -42,7 +42,6 @@ package com.sun.enterprise.v3.admin.cluster;
 
 import com.sun.enterprise.admin.remote.ServerRemoteAdminCommand;
 import com.sun.enterprise.universal.process.WindowsException;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.io.File;
 import java.io.IOException;
@@ -70,7 +69,7 @@ import org.glassfish.internal.api.ServerContext;
 import com.sun.enterprise.util.SystemPropertyConstants;
 
 import com.sun.enterprise.util.io.WindowsRemoteFile;
-import com.sun.enterprise.util.io.WindowsRemoteFileSystem;
+import org.glassfish.api.admin.*;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
@@ -95,6 +94,15 @@ import org.glassfish.cluster.ssh.util.DcomInfo;
 @CommandLock(CommandLock.LockType.NONE) // allow stop-instance always
 @I18n("stop.instance.command")
 @ExecuteOn(RuntimeType.DAS)
+@RestEndpoints({
+    @RestEndpoint(configBean=Server.class,
+        opType=RestEndpoint.OpType.POST, 
+        path="stop-instance", 
+        description="Stop Instance",
+        params={
+            @RestParam(name="id", value="$parent")
+        })
+})
 public class StopInstanceCommand extends StopServer implements AdminCommand, PostConstruct {
 
     @Inject

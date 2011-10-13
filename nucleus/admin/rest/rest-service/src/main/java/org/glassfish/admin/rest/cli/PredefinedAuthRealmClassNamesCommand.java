@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -50,6 +50,7 @@ import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.api.admin.*;
 
 /**
  * returns the list of targets
@@ -59,6 +60,12 @@ import org.jvnet.hk2.component.PerLookup;
 @Service(name = "__list-predefined-authrealm-classnames")
 @Scoped(PerLookup.class)
 @CommandLock(CommandLock.LockType.NONE)
+@RestEndpoints({
+    @RestEndpoint(configBean=Domain.class,
+        opType=RestEndpoint.OpType.GET, 
+        path="list-predefined-authrealm-classnames", 
+        description="List Auth Realm Class Names")
+})
 public class PredefinedAuthRealmClassNamesCommand implements AdminCommand {
 
     @Inject
