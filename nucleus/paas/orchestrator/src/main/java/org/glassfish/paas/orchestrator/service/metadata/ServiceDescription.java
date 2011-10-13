@@ -127,7 +127,12 @@ public class ServiceDescription {
     }
 
     public void setTemplateOrCharacteristics(Object templateOrCharacteristics) {
-        this.templateOrCharacteristics = templateOrCharacteristics;
+        if(templateOrCharacteristics instanceof TemplateIdentifier ||
+                templateOrCharacteristics instanceof ServiceCharacteristics){
+            this.templateOrCharacteristics = templateOrCharacteristics;
+        }else{
+            throw new RuntimeException("Invalid type, neither TemplateIdentifier nor ServiceCharacteristics");
+        }
     }
 
     public TemplateIdentifier getTemplateIdentifier() {
