@@ -40,7 +40,6 @@
 
 package org.glassfish.jts.admin.cli;
 
-import com.sun.enterprise.config.serverbeans.Domain;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
@@ -57,18 +56,11 @@ import org.jvnet.hk2.component.PerLookup;
 import com.sun.enterprise.transaction.api.ResourceRecoveryManager;
 
 import java.util.logging.Level;
-import org.glassfish.api.admin.*;
 
 @Service(name = "_recover-transactions-internal")
 @TargetType({CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTERED_INSTANCE})
 @ExecuteOn(RuntimeType.INSTANCE)
 @Scoped(PerLookup.class)
-@RestEndpoints({
-    @RestEndpoint(configBean=Domain.class,
-        opType=RestEndpoint.OpType.POST, 
-        path="_recover-transactions-internal", 
-        description="_recover-transactions-internal")
-})
 public class RecoverTransactionsInternal extends RecoverTransactionsBase implements AdminCommand {
 
     @Param(name="target", optional = false)

@@ -59,7 +59,13 @@ import org.jvnet.hk2.component.PerLookup;
 
 import java.util.logging.Logger;
 import java.util.logging.Level;
-import org.glassfish.api.admin.*;
+import org.glassfish.api.admin.AdminCommand;
+import org.glassfish.api.admin.AdminCommandContext;
+import org.glassfish.api.admin.ExecuteOn;
+import org.glassfish.api.admin.RestEndpoint;
+import org.glassfish.api.admin.RestEndpoints;
+import org.glassfish.api.admin.RestParam;
+import org.glassfish.api.admin.RuntimeType;
 
 
 @Service(name = "unfreeze-transaction-service")

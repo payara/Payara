@@ -72,7 +72,7 @@ import org.glassfish.api.admin.RestParam;
     @RestEndpoint(configBean=Server.class,
         opType=RestEndpoint.OpType.POST, 
         path="recover-transactions", 
-        description="Recover",
+        description="Recover Transactions",
         params={
             @RestParam(name="id", value="$parent")
         })
