@@ -41,11 +41,16 @@ package org.glassfish.admin.rest;
 
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.jersey.api.client.Client;
+import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import org.glassfish.admin.rest.provider.ProviderUtil;
 import javax.ws.rs.core.UriInfo;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -66,11 +71,17 @@ import org.jvnet.hk2.config.ConfigModel;
  */
 public class Util {
     private static final String JAVA_IO_TMPDIR = "java.io.tmpdir";
-    
+
     public final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(Util.class);
     private static Client client;
+    private static Logger logger = Logger.getLogger(Util.class.getName());
+    private static SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss.SSS");
 
     private Util() {
+    }
+
+    public static void logTimingMessage(String msg) {
+        logger.log(Level.INFO, "{0}:  {1}", new Object[]{sdf.format(new Date()), msg});
     }
 
     /**
@@ -149,12 +160,6 @@ public class Util {
         // problems with resources named 'http'.
         int nameIndex = url.indexOf(name, url.indexOf(":") + 1);
         return getName(url.substring(0, nameIndex - 1), '/');
-    }
-
-    public static void main (String... args) {
-        String url = "http://localhost:4848/management/domain/configs/config/server-config/java-config/generate-jvm-report";
-        String gp = getGrandparentName(url);
-        System.out.println("gp = " + gp);
     }
 
     /**
@@ -272,15 +277,14 @@ public class Util {
         String methodName = upperCaseFirstLetter(elementName);
         return methodName = prefix + methodName;
     }
-    
+
     public static Client getJerseyClient() {
         if (client == null) {
             client = Client.create();
         }
-        
+
         return client;
     }
-
 
     /**
      * Apply changes passed in <code>data</code> using CLI "set".
@@ -357,7 +361,7 @@ public class Util {
         if (model == null) {
             return null;
         }
-        
+
         String keyAttributeName = null;
         if (model.key == null) {
             // .contains()?
@@ -390,22 +394,21 @@ public class Util {
         }
         return ret.toString();
     }
-    
+
     public static File createTempDirectory() {
         File baseTempDir = new File(System.getProperty(JAVA_IO_TMPDIR));
         File tempDir = new File(baseTempDir, Long.toString(System.currentTimeMillis()));
         tempDir.mkdirs();
         tempDir.deleteOnExit();
-        
+
         return tempDir;
     }
-    
+
     public static void deleteDirectory (final File dir) {
 
         if (dir == null || !dir.exists()) {
             return;
         }
-        Logger logger = Logger.getLogger(Util.class.getName());
 
         if (dir.isDirectory()) {
             File[] f = dir.listFiles();
@@ -452,7 +455,7 @@ public class Util {
                         type = model.getType().getName()
                                 .substring(2);
                         type = type.substring(0, type.length()-1) + "[]";
-                        
+
                     } else if (type.startsWith("java.lang")) {
                         type = model.getType().getSimpleName();
                     }
@@ -464,5 +467,40 @@ public class Util {
         }
 
         return sb.toString();
+    }
+
+    public static File saveFile(String fileName, String mimeType, InputStream fileStream) {
+        BufferedOutputStream out = null;
+        File f = null;
+        try {
+            if (fileName.contains(".")) {
+                //String prefix = fileName.substring(0, fileName.indexOf("."));
+                // String suffix = fileName.substring(fileName.indexOf("."), fileName.length());
+                //if (prefix.length() < 3) {
+                //    prefix = "glassfish" + prefix;
+                //}
+                f = new File(new File(System.getProperty("java.io.tmpdir")), fileName);
+            }
+
+
+            out = new BufferedOutputStream(new FileOutputStream(f));
+            byte[] buffer = new byte[32 * 1024];
+            int bytesRead = 0;
+            while ((bytesRead = fileStream.read(buffer)) != -1) {
+                out.write(buffer, 0, bytesRead);
+            }
+            return f;
+        } catch (IOException ex) {
+            Logger.getLogger(Util.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            try {
+                if (out != null) {
+                    out.close();
+                }
+            } catch (IOException ex) {
+                Logger.getLogger(Util.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        return null;
     }
 }

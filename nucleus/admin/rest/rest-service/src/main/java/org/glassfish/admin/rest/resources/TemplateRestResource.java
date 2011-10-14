@@ -298,37 +298,31 @@ public class TemplateRestResource {
 
             Set<String> ss = m1.keySet();
             for (String fieldName : ss) {
-                FormDataBodyPart n = formData.getField(fieldName);
-                Logger.getLogger(TemplateRestResource.class.getName()).log(Level.INFO, "fieldName={0}", fieldName);
+                for (FormDataBodyPart bodyPart : formData.getFields(fieldName)) {
 
+                    if (bodyPart.getContentDisposition().getFileName() != null) {//we have a file
+                        //save it and mark it as delete on exit.
+                        InputStream fileStream = bodyPart.getValueAs(InputStream.class);
+                        String mimeType = bodyPart.getMediaType().toString();
 
-                if (n.getContentDisposition().getFileName() != null) {//we have a file
-                    //save it and mark it as delete on exit.
-                    InputStream fileStream = n.getValueAs(InputStream.class);
-                    String mimeType = n.getMediaType().toString();
-
-                    //Use just the filename without complete path. File creation
-                    //in case of remote deployment failing because fo this.
-                    String fileName = n.getContentDisposition().getFileName();
-                    if (fileName.contains("/")) {
-                        fileName = Util.getName(fileName, '/');
-                    } else {
-                        if (fileName.contains("\\")) {
-                            fileName = Util.getName(fileName, '\\');
+                        //Use just the filename without complete path. File creation
+                        //in case of remote deployment failing because fo this.
+                        String fileName = bodyPart.getContentDisposition().getFileName();
+                        if (fileName.contains("/")) {
+                            fileName = Util.getName(fileName, '/');
+                        } else {
+                            if (fileName.contains("\\")) {
+                                fileName = Util.getName(fileName, '\\');
+                            }
                         }
-                    }
 
-                    File f = saveFile(fileName, mimeType, fileStream);
-                    f.deleteOnExit();
-                    //put only the local path of the file in the same field.
-                    data.put(fieldName, f.getAbsolutePath());
+                        File f = Util.saveFile(fileName, mimeType, fileStream);
+                        f.deleteOnExit();
+                        //put only the local path of the file in the same field.
+                        data.put(fieldName, f.getAbsolutePath());
 
-                } else {
-                    try {
-                        Logger.getLogger(TemplateRestResource.class.getName()).log(Level.INFO, "Values={0} === {1}", new Object[]{fieldName, n.getValue()});
-                        data.put(fieldName, n.getValue());
-                    } catch (Exception e) {
-                        e.printStackTrace();
+                    } else {
+                        data.put(fieldName, bodyPart.getValue());
                     }
                 }
             }
@@ -447,41 +441,6 @@ public class TemplateRestResource {
                  
         }
         return result;
-    }
-
-    private static File saveFile(String fileName, String mimeType, InputStream fileStream) {
-        BufferedOutputStream out = null;
-        File f = null;
-        try {
-            if (fileName.contains(".")) {
-                //String prefix = fileName.substring(0, fileName.indexOf("."));
-                // String suffix = fileName.substring(fileName.indexOf("."), fileName.length());
-                //if (prefix.length() < 3) {
-                //    prefix = "glassfish" + prefix;
-                //}
-                f = new File(new File(System.getProperty("java.io.tmpdir")), fileName);
-            }
-
-
-            out = new BufferedOutputStream(new FileOutputStream(f));
-            byte[] buffer = new byte[32 * 1024];
-            int bytesRead = 0;
-            while ((bytesRead = fileStream.read(buffer)) != -1) {
-                out.write(buffer, 0, bytesRead);
-            }
-            return f;
-        } catch (IOException ex) {
-            Logger.getLogger(TemplateRestResource.class.getName()).log(Level.SEVERE, null, ex);
-        } finally {
-            try {
-                if (out != null) {
-                    out.close();
-                }
-            } catch (IOException ex) {
-                Logger.getLogger(TemplateRestResource.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }
-        return null;
     }
 
     /**

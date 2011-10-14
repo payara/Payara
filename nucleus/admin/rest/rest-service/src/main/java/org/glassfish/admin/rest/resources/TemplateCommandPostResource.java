@@ -37,10 +37,18 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
 package org.glassfish.admin.rest.resources;
 
-
+import com.sun.jersey.multipart.FormDataBodyPart;
+import com.sun.jersey.multipart.FormDataMultiPart;
+import java.io.File;
+import java.io.InputStream;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.Consumes;
@@ -50,6 +58,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
 import org.glassfish.admin.rest.ResourceUtil;
 
+import org.glassfish.admin.rest.Util;
 import org.glassfish.admin.rest.results.ActionReportResult;
 import org.glassfish.api.admin.ParameterMap;
 
@@ -63,7 +72,7 @@ import org.glassfish.api.admin.ParameterMap;
 @Produces({"text/html;qs=2", MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 public class TemplateCommandPostResource extends TemplateExecCommand {
 
-    public TemplateCommandPostResource(String resourceName, String commandName, String commandMethod, String commandAction, String commandDisplayName,  boolean isLinkedToParent) {
+    public TemplateCommandPostResource(String resourceName, String commandName, String commandMethod, String commandAction, String commandDisplayName, boolean isLinkedToParent) {
         super(resourceName, commandName, commandMethod, commandAction, commandDisplayName, isLinkedToParent);
     }
 
@@ -81,6 +90,16 @@ public class TemplateCommandPostResource extends TemplateExecCommand {
         return super.executeCommand(data);
     }
 
+    @POST
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    public Response post(FormDataMultiPart formData) {
+        /* data passed to the generic command running
+         *
+         * */
+        return processPost(createDataBasedOnForm(formData));
+
+    }
+
     //Handle POST request without any entity(input).
     //Do not care what the Content-Type is.
     @POST
@@ -95,5 +114,52 @@ public class TemplateCommandPostResource extends TemplateExecCommand {
     @GET
     public ActionReportResult get() {
         return options();
+    }
+
+    private static ParameterMap createDataBasedOnForm(FormDataMultiPart formData) {
+        ParameterMap data = new ParameterMap();
+        try {
+            /* data passed to the generic command running
+             *
+             * */
+
+            Map<String, List<FormDataBodyPart>> m1 = formData.getFields();
+
+            Set<String> ss = m1.keySet();
+            for (String fieldName : ss) {
+                for (FormDataBodyPart bodyPart : formData.getFields(fieldName)) {
+
+                    if (bodyPart.getContentDisposition().getFileName() != null) {//we have a file
+                        //save it and mark it as delete on exit.
+                        InputStream fileStream = bodyPart.getValueAs(InputStream.class);
+                        String mimeType = bodyPart.getMediaType().toString();
+
+                        //Use just the filename without complete path. File creation
+                        //in case of remote deployment failing because fo this.
+                        String fileName = bodyPart.getContentDisposition().getFileName();
+                        if (fileName.contains("/")) {
+                            fileName = Util.getName(fileName, '/');
+                        } else {
+                            if (fileName.contains("\\")) {
+                                fileName = Util.getName(fileName, '\\');
+                            }
+                        }
+
+                        File f = Util.saveFile(fileName, mimeType, fileStream);
+                        f.deleteOnExit();
+                        //put only the local path of the file in the same field.
+                        data.add(fieldName, f.getAbsolutePath());
+                    } else {
+                        data.add(fieldName, bodyPart.getValue());
+                    }
+                }
+            }
+        } catch (Exception ex) {
+            Logger.getLogger(TemplateCommandPostResource.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            formData.cleanup();
+        }
+        return data;
+
     }
 }
