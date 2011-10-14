@@ -49,6 +49,7 @@ import org.glassfish.common.util.admin.AuthTokenManager;
 import org.glassfish.hk2.Factory;
 import org.glassfish.virtualization.config.Virtualizations;
 import org.glassfish.virtualization.os.Disk;
+import org.glassfish.virtualization.os.FileOperations;
 import org.glassfish.virtualization.runtime.VirtualMachineLifecycle;
 import org.glassfish.virtualization.spi.*;
 import org.glassfish.virtualization.util.RuntimeContext;
@@ -101,9 +102,9 @@ public class SupplementalStartInstance implements AdminCommand {
             context.getActionReport().setActionExitCode(ActionReport.ExitCode.SUCCESS);
             return;
         }
-        String groupName = instanceName.substring(0, instanceName.indexOf("_"));
-        String machineName = instanceName.substring(instanceName.indexOf("_")+1, instanceName.lastIndexOf("_"));
-        String vmName = instanceName.substring(instanceName.lastIndexOf("_")+1, instanceName.length()-"Instance".length());
+        final String groupName = instanceName.substring(0, instanceName.indexOf("_"));
+        final String machineName = instanceName.substring(instanceName.indexOf("_")+1, instanceName.lastIndexOf("_"));
+        final String vmName = instanceName.substring(instanceName.lastIndexOf("_")+1, instanceName.length()-"Instance".length());
 
         ServerPool group = groups.byName(groupName);
         try {
@@ -154,13 +155,19 @@ public class SupplementalStartInstance implements AdminCommand {
                     fileWriter.close();
                 }
 
-                File custISOFile = new File(machineDisks, vmName + "cust.iso");
+                final File custISOFile = new File(machineDisks, vmName + "cust.iso");
                 custDisk.createISOFromDirectory(custDir, custISOFile);
 
                 PhysicalServerPool physicalGroup = (PhysicalServerPool) group;
-                Machine machine = physicalGroup.byName(machineName);
-                machine.getFileOperations().delete(machine.getConfig().getDisksLocation() + "/" + vmName + "cust.iso");
-                machine.getFileOperations().copy(custISOFile, new File(machine.getConfig().getDisksLocation()));
+                final Machine machine = physicalGroup.byName(machineName);
+                machine.execute(new MachineOperations<Object>() {
+                    @Override
+                    public Object run(FileOperations fileOperations) throws IOException {
+                        fileOperations.delete(machine.getConfig().getDisksLocation() + "/" + vmName + "cust.iso");
+                        fileOperations.copy(custISOFile, new File(machine.getConfig().getDisksLocation()));
+                        return null;
+                    }
+                });
             }
 
             VirtualMachine vm = group.vmByName(vmName);

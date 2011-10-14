@@ -65,7 +65,6 @@ import org.glassfish.virtualization.config.Virtualizations;
 import org.glassfish.virtualization.os.Disk;
 import org.glassfish.virtualization.os.FileOperations;
 import org.glassfish.virtualization.spi.*;
-import org.glassfish.virtualization.spi.templates.TemplateRepositoryImpl;
 import org.glassfish.virtualization.util.Host;
 import org.glassfish.virtualization.util.RuntimeContext;
 import org.jvnet.hk2.annotations.Inject;
@@ -79,7 +78,7 @@ import org.jvnet.hk2.component.Habitat;
  */
 
 
-public abstract class AbstractMachine implements PostConstruct, Machine, FileOperations {
+public abstract class AbstractMachine implements PostConstruct, Machine {
 
     final protected MachineConfig config;
     final protected PhysicalServerPool serverPool;
@@ -135,8 +134,9 @@ public abstract class AbstractMachine implements PostConstruct, Machine, FileOpe
                     } catch (Exception e) {
                         RuntimeContext.logger.log(Level.SEVERE, e.getMessage(), e);
                     }
-                    installedTemplates.put(template.getConfig().getName(),
-                        new RemoteTemplate(AbstractMachine.this, template));
+                    RemoteTemplate remoteTemplate = new RemoteTemplate(AbstractMachine.this, template);
+                    installedTemplates.put(template.getConfig().getName(), remoteTemplate);
+                    TemplateCaching.register(remoteTemplate);
                 }
             });
         }
@@ -172,8 +172,8 @@ public abstract class AbstractMachine implements PostConstruct, Machine, FileOpe
     }
 
     @Override
-    public FileOperations getFileOperations() {
-        return this;
+    public <T> T execute(MachineOperations<T> operations) throws IOException {
+        return operations.run(getFileOperations());
     }
 
     @Override
@@ -218,54 +218,71 @@ public abstract class AbstractMachine implements PostConstruct, Machine, FileOpe
         return RuntimeContext.absolutize(source);
     }
 
-    @Override
-    public boolean mkdir(String destPath) throws IOException {
-        File target = absolutize(new File(destPath));
-        return !target.exists() && target.mkdirs();
+    private FileOperations getFileOperations() {
+        return new FileOperations() {
+            @Override
+            public boolean mkdir(String destPath) throws IOException {
+                File target = absolutize(new File(destPath));
+                return !target.exists() && target.mkdirs();
+            }
+
+            @Override
+            public boolean delete(String path) throws IOException {
+                File target = absolutize(new File(path));
+                if (target.exists()) {
+                    if (target.isDirectory()) {
+                        return FileUtils.whack(target);
+                    } else {
+                        return target.delete();
+                    }
+                }
+                return false;
+            }
+
+            @Override
+            public boolean mv(String source, String dest) throws IOException {
+                File sourceFile = absolutize(new File(source));
+                if (sourceFile.exists()) {
+                    return sourceFile.renameTo(absolutize(new File(dest)));
+                }
+                return false;
+            }
+
+            @Override
+            public long length(String path) throws IOException {
+                File sourceFile = absolutize(new File(path));
+                if (sourceFile.exists()) return sourceFile.length();
+                else throw new FileNotFoundException("Cannot find file " + path);
+            }
+
+            @Override
+            public List<String> ls(String path) throws IOException {
+                File sourceDirectory = absolutize(new File(path));
+                return Arrays.asList(sourceDirectory.list());
+            }
+
+            @Override
+            public void copy(File source, File destDir) throws IOException {
+                FileUtils.copy(absolutize(source), new File(absolutize(destDir), source.getName()));
+            }
+
+            @Override
+            public void localCopy(String source, String destDir) throws IOException {
+                copy(new File(source), new File(destDir));
+            }
+
+            @Override
+            public boolean exists(String path) throws IOException {
+                return (absolutize(new File(path))).exists();
+            }
+
+            @Override
+            public Date mod(String path) throws IOException {
+                return new Date(absolutize(new File(path)).lastModified());
+            }
+        };
     }
 
-    @Override
-    public boolean delete(String path) throws IOException {
-        File target = absolutize(new File(path));
-        return target.exists() && target.delete();
-
-    }
-
-    @Override
-    public boolean mv(String source, String dest) throws IOException {
-        File sourceFile = absolutize(new File(source));
-        if (sourceFile.exists()) {
-            return sourceFile.renameTo(absolutize(new File(dest)));
-        }
-        return false;
-    }
-
-    @Override
-    public long length(String path) throws IOException {
-        File sourceFile = absolutize(new File(path));
-        if (sourceFile.exists()) return sourceFile.length();
-        else throw new FileNotFoundException("Cannot find file " + path);
-    }
-
-    @Override
-    public void copy(File source, File destDir) throws IOException {
-        FileUtils.copy(absolutize(source), new File(absolutize(destDir), source.getName()));
-    }
-
-    @Override
-    public void localCopy(String source, String destDir) throws IOException {
-        copy(new File(source), new File(destDir));
-    }
-
-    @Override
-    public boolean exists(String path) throws IOException {
-        return (absolutize(new File(path))).exists();
-    }
-
-    @Override
-    public Date mod(String path) throws IOException {
-        return new Date(absolutize(new File(path)).lastModified());
-    }
 
     protected List<StorageVol> prepare(final TemplateInstance templateInstance, final String name, final VirtualCluster cluster)
 
@@ -274,13 +291,17 @@ public abstract class AbstractMachine implements PostConstruct, Machine, FileOpe
         final Template template = templateInstance.getConfig();
 
         // 1. copy the template to the destination machine.
-        mkdir(config.getDisksLocation());
+        execute(new MachineOperations<Object>() {
+            @Override
+            public Object run(FileOperations fileOperations) throws IOException {
+                fileOperations.mkdir(config.getDisksLocation());
+                fileOperations.delete(config.getDisksLocation() + "/" + name + "-cust.img");
+                fileOperations.delete(config.getDisksLocation() + "/" + name + ".img");
+                return null;
+            }
+        });
 
         final File sourceFile = templateInstance.getFileByExtension(".img");
-
-        delete(config.getDisksLocation() + "/" + name + "-cust.img");
-        delete(config.getDisksLocation() + "/" + name + ".img");
-
         final StoragePool pool = (getStoragePools().get("glassfishInstances")!=null?
                 getStoragePools().get("glassfishInstances"):
                     addStoragePool("glassfishInstances", 136112211968L));
@@ -297,17 +318,24 @@ public abstract class AbstractMachine implements PostConstruct, Machine, FileOpe
                         public StorageVol call() throws Exception {
                             VMTemplate vmTemplate = getVMTemplateFor(template);
                             vmTemplate.copyTo(target, diskLocation);
+                            for (StorageVol volume : pool.volumes()) {
+                                RuntimeContext.logger.info("Pool has volume + " + volume.getName());
+                            }
                             StorageVol volume = pool.byName(name);
                             if (volume!=null) {
+                                RuntimeContext.logger.warning("Volume " + name + " exists, deleting it now");
                                 volume.delete();
                             }
-                            if (pool.byName(name)!=null) {
-                                pool.byName(name).delete();
-                            }
                             volume = pool.allocate(name, vmTemplate.getSize());
-                            delete(diskLocation + "/" + name + ".img");
-                            mv(diskLocation+ "/" + sourceFile.getName(),
-                               diskLocation+ "/" + name + ".img");
+                            execute(new MachineOperations<Object>() {
+                                @Override
+                                public Object run(FileOperations fileOperations) throws IOException {
+                                    fileOperations.delete(diskLocation + "/" + name + ".img");
+                                    fileOperations.mv(  diskLocation+ "/" + sourceFile.getName(),
+                                                        diskLocation+ "/" + name + ".img");
+                                    return null;
+                                }
+                            });
                             return volume;
                         }
                     }

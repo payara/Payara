@@ -84,6 +84,13 @@ public interface Template extends ConfigBeanProxy, Named {
     @DuckTyped
     TemplateIndex byName(String name);
 
+    /**
+     * Returns the virtualization technology used by this template
+     * @return the {@link Virtualization} instance
+     */
+    @DuckTyped
+    Virtualization getVirtualization();
+
     public class Duck {
         public static TemplateIndex byName(Template self, String name) {
             for (TemplateIndex ti : self.getIndexes()) {
@@ -92,6 +99,10 @@ public interface Template extends ConfigBeanProxy, Named {
                 }
             }
             return null;
+        }
+
+        public static Virtualization getVirtualization(Template self) {
+            return Virtualization.class.cast(self.getParent());
         }
     }
 

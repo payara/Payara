@@ -70,7 +70,7 @@ public interface Machine {
 
     VirtUser getUser();
 
-    FileOperations getFileOperations();
+    <T> T execute(MachineOperations<T> operations) throws IOException;
 
     boolean isUp();
 

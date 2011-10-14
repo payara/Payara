@@ -128,6 +128,22 @@ public class TemplateRepositoryImpl implements TemplateRepository {
     }
 
     @Override
+    public boolean delete(Template config) {
+        String templateName = config.getName();
+        File templateLocation = new File(location, templateName);
+        for (TemplateInstance ti : templates) {
+            if (ti.getConfig().getName().equals(config.getName())) {
+                templates.remove(ti);
+                break;
+            }
+        }
+        if (templateLocation.exists()) {
+            return FileUtils.whack(templateLocation);
+        }
+        return true;
+    }
+
+    @Override
     public Collection<TemplateInstance> get(SearchCriteria criteria) {
         // first all the mandatory
         List<TemplateInstance> candidates = new ArrayList<TemplateInstance>(templates);

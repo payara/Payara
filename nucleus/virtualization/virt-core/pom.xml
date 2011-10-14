@@ -52,7 +52,7 @@
     </parent>
     <artifactId>virt-core</artifactId>
     <packaging>hk2-jar</packaging>
-    <name>Virtualization related features</name>
+    <name>Virtualization Core Classes</name>
     <dependencies>
         <dependency>
             <groupId>org.glassfish.admin</groupId>

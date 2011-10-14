@@ -75,7 +75,8 @@ public class RuntimeContext {
         File virtRoot = new File(instanceRoot, "virt");
         File cacheRoot = new File(virtRoot, "cache");
         if (!cacheRoot.exists() && !cacheRoot.mkdirs()) {
-            throw new IOException("Cannot create cache directory at " + cacheRoot.getAbsolutePath());
+            if (!cacheRoot.exists())
+                throw new IOException("Cannot create cache directory at " + cacheRoot.getAbsolutePath());
         }
         return cacheRoot;
     }

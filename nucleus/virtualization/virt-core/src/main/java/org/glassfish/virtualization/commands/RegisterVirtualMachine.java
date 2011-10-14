@@ -49,6 +49,7 @@ import org.glassfish.api.admin.AdminCommandLock;
 import org.glassfish.api.admin.CommandLock;
 import org.glassfish.virtualization.config.Template;
 import org.glassfish.virtualization.config.VirtualMachineConfig;
+import org.glassfish.virtualization.runtime.CustomizersSynchronization;
 import org.glassfish.virtualization.runtime.VirtualCluster;
 import org.glassfish.virtualization.runtime.VirtualClusters;
 import org.glassfish.virtualization.runtime.VirtualMachineLifecycle;
@@ -67,6 +68,7 @@ import org.jvnet.hk2.config.types.Property;
 
 import java.beans.PropertyVetoException;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
@@ -121,11 +123,8 @@ public class RegisterVirtualMachine implements AdminCommand {
     @Inject
     VirtualMachineLifecycle vmLifecycle;
 
-    final AdminCommandLock adminCommandLock;
-
-    public RegisterVirtualMachine(@Inject AdminCommandLock adminCommandLock) {
-        this.adminCommandLock = adminCommandLock;
-    }
+    @Inject
+    CustomizersSynchronization customizersSynchronization;
 
     @Override
     public void execute(AdminCommandContext context) {
@@ -175,16 +174,16 @@ public class RegisterVirtualMachine implements AdminCommand {
                 VirtualCluster virtualCluster = virtualClusters.byName(cluster);
                 TemplateCustomizer customizer = templateRepository.byName(template.getName()).getCustomizer();
                 if (customizer!=null) {
-                    adminCommandLock.dumpState(RuntimeContext.logger, Level.INFO);
-                    synchronized (adminCommandLock) {
-                        customizer.customize(virtualCluster, vm);
-                    }
-                    customizer.start(vm);
+                    RuntimeContext.logger.info("Virtual Machine " + virtualMachine + " customizer.customize called");
+                    customizersSynchronization.customize(customizer, virtualCluster, vm);
+                    RuntimeContext.logger.info("Virtual Machine " + virtualMachine + " customizer.start called");
+                    customizersSynchronization.start(customizer, vm);
                 }
                 CountDownLatch latch = vmLifecycle.getStartupLatch(vm.getName());
                 if (latch!=null) {
                     latch.countDown();
                 }
+                RuntimeContext.logger.info("Virtual Machine " + virtualMachine + " configured correctly");
             }
         } catch(VirtException e) {
             RuntimeContext.logger.log(Level.SEVERE, e.getMessage(),e);

@@ -117,7 +117,7 @@ class LocalVirtualMachine extends AbstractVirtualMachine {
                 if (vmc.getName().equals(getName())) {
                     TemplateInstance ti = pool.serverPoolFactory.getTemplateRepository() .byName(vmc.getTemplate().getName());
                     if (ti!=null) {
-                        ti.getCustomizer().start(this);
+                        ti.getCustomizer().start(this, false);
                     }
                     return;
                 }

@@ -110,6 +110,15 @@ public interface MachineConfig extends ConfigBeanProxy {
     @Param(optional = true)
     void setTemplatesLocation(String location);
 
+    /**
+     * Relative path location on the target machine where the cached virtual machines templates
+     * will be stored. The cache is used to quickly allocate virtual machine without requiring
+     * last minute copying of templates into disks
+     */
+    @Attribute(defaultValue = "virt/cache")
+    String getTemplateCacheLocation();
+    @Param(optional=true)
+    void setTemplateCacheLocation(String location);
 
     /**
      * Defines the user identify on the remote  machine that can be used to connect to the virtualization

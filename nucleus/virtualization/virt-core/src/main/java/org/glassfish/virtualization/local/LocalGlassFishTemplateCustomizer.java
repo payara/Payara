@@ -128,16 +128,6 @@ public class LocalGlassFishTemplateCustomizer implements TemplateCustomizer {
     }
 
     @Override
-    public void start(VirtualMachine virtualMachine) {
-        // done by the clustering infrastructure.
-    }
-
-    @Override
-    public void stop(VirtualMachine virtualMachine) {
-        // done by the clustering infrastructure
-    }
-
-    @Override
     public void clean(VirtualMachine virtualMachine) {
         // let's find our instance name.
         String instanceName = virtualMachine.getName();
@@ -147,5 +137,15 @@ public class LocalGlassFishTemplateCustomizer implements TemplateCustomizer {
             rtContext.executeAdminCommand(report, "stop-instance", instanceName, "_vmShutdown", "false");
             rtContext.executeAdminCommand(report, "delete-instance", instanceName);
         }
+    }
+
+    @Override
+    public void start(VirtualMachine virtualMachine, boolean firstStart) {
+        //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    @Override
+    public void stop(VirtualMachine virtualMachine) {
+        //To change body of implemented methods use File | Settings | File Templates.
     }
 }

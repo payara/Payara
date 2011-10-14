@@ -80,6 +80,17 @@ public class VirtualMachineLifecycle {
         return inStartup.remove(name);
     }
 
+    /**
+     * Returns the number of virtual machine in startup mode (between
+     * the virtual machine start and the register-virtual-machine or
+     * register-startup calls.
+     *
+     * @return the number of virtual machines in startup.
+     */
+    public int vmInStartup() {
+        return inStartup.values().size();
+    }
+
     public void start(VirtualMachine vm) throws VirtException {
         vm.start();
         // we do not call the customizer from here since we don't know the

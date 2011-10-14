@@ -46,6 +46,7 @@ import org.glassfish.virtualization.config.*;
 import org.glassfish.virtualization.libvirt.config.LibvirtVirtualization;
 import org.glassfish.virtualization.libvirt.jna.Connect;
 import org.glassfish.virtualization.libvirt.jna.Domain;
+import org.glassfish.virtualization.os.FileOperations;
 import org.glassfish.virtualization.runtime.*;
 import org.glassfish.virtualization.spi.*;
 import org.glassfish.virtualization.spi.VirtualMachine;
@@ -358,13 +359,39 @@ public class LibVirtLocalMachine extends AbstractMachine implements PostConstruc
         machineDisks = new File(machineDisks, getName());
 
         File custDirectory = prepareCustDirectory(name, cluster.getConfig(), template.getConfig());
-        File custFile = new File(machineDisks, name + "cust.iso");
+        final File custFile = new File(machineDisks, name + "cust.iso");
         prepareCustomization(custDirectory, custFile,  name);
 
         // copy the customization file over.
         final String diskLocation = config.getDisksLocation();
-        delete(diskLocation + "/" + custFile.getName());
-        copy(custFile, new File(diskLocation));
+        execute(new MachineOperations<Object>() {
+            @Override
+            public Object run(FileOperations fileOperations) throws IOException {
+                int maxTries=5;
+                while(maxTries>0) {
+                    try {
+                        RuntimeContext.logger.log(Level.INFO, "Transfer of customization disk started");
+                        fileOperations.copy(custFile, new File(diskLocation));
+                        RuntimeContext.logger.log(Level.INFO, "Transfer of customization disk finished");
+                        return null;
+                    } catch (IOException e) {
+                        RuntimeContext.logger.log(Level.SEVERE, "Cannot copy customization disk to target machine", e);
+                        maxTries--;
+                        if (maxTries==0) throw e;
+                        String remotePath = new File(diskLocation, custFile.getName()).getPath();
+                        RuntimeContext.logger.info("Deleting invalid copy at " + remotePath);
+                        try {
+                            fileOperations.delete(remotePath);
+                        } catch (IOException e1) {
+                            // ignore.
+                        }
+                        RuntimeContext.logger.log(Level.INFO, "Retrying copy...");
+                    }
+                }
+                throw new IOException("Dead code, file a bug");
+            }
+        });
+
 
         OsInterface os = services.forContract(OsInterface.class).get();
 
@@ -420,12 +447,14 @@ public class LibVirtLocalMachine extends AbstractMachine implements PostConstruc
         }
 
         // write out to a temporary file.
-        File destXml = new File(System.getProperty("java.io.tmpdir"),"foo.xml");
+        File destXml = new File(System.getProperty("java.io.tmpdir"), name + ".xml");
         writeConfig(xmlConfig, destXml);
+        RuntimeContext.logger.info("XML definition file for VM at " + destXml.getAbsolutePath());
 
         System.out.println("I would use " + uuid + " id with mac " + macAddress);
 
 
+        LibVirtVirtualMachine vm=null;
         try {
             Domain domain = connection().domainDefineXML(getConfig(xmlConfig));
             source.fireEvent(AllocationPhase.VM_SPAWN);
@@ -436,7 +465,7 @@ public class LibVirtLocalMachine extends AbstractMachine implements PostConstruc
                     serverPool.getConfig(),
                     cluster.getConfig());
 
-            final LibVirtVirtualMachine vm = new LibVirtVirtualMachine(vmConfig,
+            vm = new LibVirtVirtualMachine(vmConfig,
                     template.getConfig().getUser(), this, domain, volumes);
             domains.put(name, vm);
             cluster.add(vm);
@@ -449,8 +478,16 @@ public class LibVirtLocalMachine extends AbstractMachine implements PostConstruc
 
             return future;
         } catch(VirtException e) {
-            for (StorageVol volume : volumes) {
-                volume.delete();
+            try {
+                RuntimeContext.logger.log(Level.SEVERE, "Exception while allocating the virtual machine", e);
+                if (vm!=null) {
+                    vm.delete();
+                }
+                for (StorageVol volume : volumes) {
+                    volume.delete();
+                }
+            } catch (VirtException e1) {
+                RuntimeContext.logger.log(Level.SEVERE, "Exception while cleaning failed virtual machine creation", e1);
             }
             throw new VirtException(e);
         }

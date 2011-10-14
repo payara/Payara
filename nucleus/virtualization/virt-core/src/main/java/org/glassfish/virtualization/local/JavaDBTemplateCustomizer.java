@@ -63,15 +63,8 @@ import java.util.logging.Logger;
 @Service(name="Database")
 public class JavaDBTemplateCustomizer implements TemplateCustomizer {
 
-    @Inject
-    Services services;
-
     @Override
-    public void customize(VirtualCluster cluster, VirtualMachine virtualMachine) throws VirtException {
-    }
-
-    @Override
-    public void start(VirtualMachine virtualMachine) {
+    public void start(VirtualMachine virtualMachine, boolean firstStart) {
        // this line below needs to come from the template...
         String installDir = virtualMachine.getProperty(VirtualMachine.PropertyName.INSTALL_DIR);
         String[] args = {installDir + "/glassfish/bin/asadmin" , "start-database"};
@@ -100,6 +93,12 @@ public class JavaDBTemplateCustomizer implements TemplateCustomizer {
     }
 
     @Override
+    public void customize(VirtualCluster cluster, VirtualMachine virtualMachine) throws VirtException {
+        //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    @Override
     public void clean(VirtualMachine virtualMachine) {
+        //To change body of implemented methods use File | Settings | File Templates.
     }
 }

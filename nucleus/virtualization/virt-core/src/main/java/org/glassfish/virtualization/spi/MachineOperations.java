@@ -37,61 +37,19 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
 package org.glassfish.virtualization.spi;
 
-import org.glassfish.virtualization.config.Template;
-import org.jvnet.hk2.annotations.Contract;
+import org.glassfish.virtualization.os.FileOperations;
 
-import java.io.File;
-import java.util.Collection;
+import java.io.IOException;
 
 /**
- * Repository for virtualization templates
+ * Interface for executing some operations on a machine, using the
+ * passed FileOperations object.
  *
  * @author Jerome Dochez
  */
-@Contract
-public interface TemplateRepository {
+public interface MachineOperations<T> {
 
-    /**
-     * Installs a template in the repository
-     *
-     * @param config the template configuration as obtained from the user.
-     * @return true if installation was successful, false otherwise
-     */
-    boolean installs(Template config, Collection<File> files);
-
-    /**
-     * Deletes a template from the repository
-     *
-     * @param config the template configuration
-     * @return true if the template was properly un-installed
-     */
-    boolean delete(Template config);
-
-    /**
-     * Search the repository for all templates satisfying the passed
-     * {@link SearchCriteria}.
-     *
-     * @param criteria the search criteria for the requested templates
-     * @return list of templates satisfying the search criteria.
-     */
-    Collection<TemplateInstance> get(SearchCriteria criteria);
-
-    /**
-     * Returns all the templates registered in the repository.
-     *
-     * @return the repository content.
-     */
-    Collection<TemplateInstance>  all();
-
-    /**
-     * Lookup a template instance by its name
-     *
-     * @param name the template name
-     * @return the {@link TemplateInstance} if found otherwise null
-     */
-    TemplateInstance byName(String name);
-
+    public T run(FileOperations fileOperations) throws IOException;
 }

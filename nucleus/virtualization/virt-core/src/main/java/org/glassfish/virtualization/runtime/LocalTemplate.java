@@ -42,6 +42,7 @@ package org.glassfish.virtualization.runtime;
 import org.glassfish.virtualization.config.Template;
 import org.glassfish.virtualization.os.FileOperations;
 import org.glassfish.virtualization.spi.Machine;
+import org.glassfish.virtualization.spi.MachineOperations;
 import org.glassfish.virtualization.spi.TemplateInstance;
 import org.glassfish.virtualization.util.RuntimeContext;
 
@@ -54,6 +55,7 @@ import java.util.logging.Logger;
 
 /**
  * Defines a local template, installed on *this* machine.
+ *
  * @author Jerome Dochez
  */
 public class LocalTemplate extends VMTemplate {
@@ -63,51 +65,57 @@ public class LocalTemplate extends VMTemplate {
     }
 
     @Override
-    public synchronized void copyTo(Machine destination, String destDir) throws IOException {
+    public synchronized void copyTo(final Machine destination, final String destDir) throws IOException {
 
 
-        String destinationDirectory = destination.getConfig().getTemplatesLocation() + "/" + getDefinition().getName();
-        File sourceDirectory = templateInstance.getLocation();
-        FileOperations files = destination.getFileOperations();
-        if (!sourceDirectory.exists()) {
-            RuntimeContext.logger.severe("Cannot find template directory " + sourceDirectory.getAbsolutePath());
-            return;
-        }
-        for (File file : sourceDirectory.listFiles()) {
-            String destPath = destinationDirectory + "/" + file.getName();
+        final String destinationDirectory = destination.getConfig().getTemplatesLocation() + "/" + getDefinition().getName();
+        final File sourceDirectory = templateInstance.getLocation();
+        destination.execute(new MachineOperations<Void>() {
+            @Override
+            public Void run(FileOperations fileOperations) throws IOException {
+                if (!sourceDirectory.exists()) {
+                    RuntimeContext.logger.severe("Cannot find template directory " + sourceDirectory.getAbsolutePath());
+                    return null;
+                }
+                for (File file : sourceDirectory.listFiles()) {
+                    String destPath = destinationDirectory + "/" + file.getName();
 
-            try {
-                boolean needRefresh=false;
-                if (!files.exists(destPath)) {
-                    needRefresh = true;
-                } else {
-                    Date lastModification = files.mod(destPath);
-                    RuntimeContext.logger.info(file.getName() + " last modified on " + destination.getName() + " is " + lastModification.toString());
-                    Date sourceLastModification = new Date(file.lastModified());
-                    RuntimeContext.logger.info("while here, the last mod for " + file.getName() + " is " + sourceLastModification.toString());
-                    if (lastModification.compareTo(sourceLastModification)>0) {
-                        RuntimeContext.logger.info("There is no need to copy " + file.getName());
-                    } else {
-                        RuntimeContext.logger.info(file.getName() + " need to be updated ");
-                        needRefresh=true;
+                    try {
+                        boolean needRefresh = false;
+                        if (!fileOperations.exists(destPath)) {
+                            needRefresh = true;
+                        } else {
+                            Date lastModification = fileOperations.mod(destPath);
+                            RuntimeContext.logger.info(file.getName() + " last modified on " + destination.getName() + " is " + lastModification.toString());
+                            Date sourceLastModification = new Date(file.lastModified());
+                            RuntimeContext.logger.info("while here, the last mod for " + file.getName() + " is " + sourceLastModification.toString());
+                            if (lastModification.compareTo(sourceLastModification) > 0) {
+                                RuntimeContext.logger.info("There is no need to copy " + file.getName());
+                            } else {
+                                RuntimeContext.logger.info(file.getName() + " need to be updated ");
+                                needRefresh = true;
+                            }
+                        }
+                        if (needRefresh) {
+                            fileOperations.mkdir(destinationDirectory);
+                            if (fileOperations.exists(destPath)) {
+                                fileOperations.delete(destPath);
+                            }
+                            RuntimeContext.logger.info("Copying template " + getDefinition().getName() + " file "
+                                    + file.getName() + " on " + destination.getName());
+                            fileOperations.copy(file, new File(destinationDirectory));
+                            RuntimeContext.logger.info("Finished copying template " + getDefinition().getName() + " file "
+                                    + file.getName() + " on " + destination.getName());
+                        }
+                    } catch (IOException e) {
+                        RuntimeContext.logger.log(Level.SEVERE, "Cannot copy template on " + getDefinition().getName(), e);
+                        throw e;
                     }
                 }
-                if (needRefresh) {
-                    files.mkdir(destinationDirectory);
-                    if (files.exists(destPath)) {
-                        files.delete(destPath);
-                    }
-                    RuntimeContext.logger.info("Copying template " + getDefinition().getName() + " file "
-                            + file.getName() + " on " + destination.getName());
-                    files.copy(file, new File(destinationDirectory));
-                    RuntimeContext.logger.info("Finished copying template " + getDefinition().getName() + " file "
-                            + file.getName() + " on " + destination.getName());
-                }
-            } catch (IOException e) {
-                RuntimeContext.logger.log(Level.SEVERE, "Cannot copy template on " + getDefinition().getName(),e);
-                throw e;
+                return null;
             }
-        }
+        });
+
     }
 
     @Override

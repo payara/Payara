@@ -68,8 +68,10 @@ public interface TemplateCustomizer {
      * Starts the template instance services.
      * @param virtualMachine the virtual machine containing the instantiated
      * template.
+     * @param firstStart set to true if we are starting the virtual machine
+     * for the first time
      */
-    void start(VirtualMachine virtualMachine);
+    void start(VirtualMachine virtualMachine, boolean firstStart);
 
     /**
      * Stop the template instance services

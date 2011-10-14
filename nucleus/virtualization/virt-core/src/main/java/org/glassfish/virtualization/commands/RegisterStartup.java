@@ -126,7 +126,7 @@ public class RegisterStartup implements AdminCommand {
                 Template template = vmConfig.getTemplate();
                 TemplateCustomizer customizer = templateRepository.byName(template.getName()).getCustomizer();
                 if (customizer!=null) {
-                    customizer.start(vm);
+                    customizer.start(vm, false);
                 }
             }
         } catch(VirtException e) {

@@ -42,6 +42,7 @@ package org.glassfish.virtualization.os;
 import java.io.File;
 import java.io.IOException;
 import java.util.Date;
+import java.util.List;
 
 /**
  * Abstraction for local/remote file operations on a machine. Operations
@@ -78,7 +79,7 @@ public interface FileOperations {
     boolean mkdir(String destPath) throws IOException;
 
     /**
-     * deletes a file on the target machine
+     * deletes a file or a directory on the target machine
      * @param path  path to the file to delete
      * @return true of the file existed and was deleted successfully
      * @throws IOException if the operation failed
@@ -119,4 +120,11 @@ public interface FileOperations {
      * @throws IOException if the file is not found
      */
     long length(String path) throws IOException;
+
+    /**
+     * Returns a list of file names in the passed directory
+     * @param directory path
+     * @return the list of files in that directory
+     */
+    List<String> ls(String path) throws IOException;
 }

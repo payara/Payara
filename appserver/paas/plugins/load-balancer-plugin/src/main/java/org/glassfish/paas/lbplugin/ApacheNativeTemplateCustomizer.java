@@ -149,7 +149,7 @@ public class ApacheNativeTemplateCustomizer implements TemplateCustomizer {
     }
 
     @Override
-    public void start(VirtualMachine virtualMachine) {
+    public void start(VirtualMachine virtualMachine, boolean firstStart) {
     }
 
     @Override

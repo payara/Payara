@@ -115,7 +115,7 @@ public class TemplateInstanceImpl implements TemplateInstance {
                 return name.endsWith(extension);
             }
         });
-        if (fileNames.length==0) {
+        if (fileNames==null || fileNames.length==0) {
             throw new FileNotFoundException("Cannot find any file with " + extension + " extension");
         }
         return new File(getLocation(), fileNames[0]);

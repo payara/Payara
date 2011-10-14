@@ -37,61 +37,54 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package org.glassfish.paas.javadbplugin;
+package org.glassfish.virtualization.runtime;
 
-import com.sun.enterprise.config.serverbeans.Domain;
-import com.sun.enterprise.util.ExecException;
-import com.sun.enterprise.util.OS;
-import com.sun.enterprise.util.ProcessExecutor;
-import org.glassfish.api.ActionReport;
-import org.glassfish.internal.api.ServerContext;
-import org.glassfish.paas.orchestrator.config.Services;
-import org.glassfish.virtualization.runtime.VirtualCluster;
 import org.glassfish.virtualization.spi.TemplateCustomizer;
 import org.glassfish.virtualization.spi.VirtException;
 import org.glassfish.virtualization.spi.VirtualMachine;
 import org.glassfish.virtualization.util.RuntimeContext;
-import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
 
-import java.io.File;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.logging.Level;
 
 /**
- * @author Shalini M
+ * ensures that customizer's execution is synchronized.
+ *
+ * @author Jerome Dochez
  */
-@Service(name="Native-Database")
-public class DerbyNativeTemplateCustomizer implements TemplateCustomizer {
+@Service
+public class CustomizersSynchronization {
 
-    @Inject
-    private ServerContext serverContext;
+    private final ReentrantReadWriteLock customizeLock = new ReentrantReadWriteLock();
 
-    public void customize(VirtualCluster cluster, VirtualMachine virtualMachine) throws VirtException {
-        String[] startdbArgs = {serverContext.getInstallRoot().getAbsolutePath() +
-                File.separator + "bin" + File.separator + "asadmin" + (OS.isWindows() ? ".bat" : ""), "start-database"};
-        ProcessExecutor startDatabase = new ProcessExecutor(startdbArgs);
 
+    public void customize(TemplateCustomizer customizer, VirtualCluster cluster, VirtualMachine vm ) throws VirtException {
         try {
-            startDatabase.execute();
-        } catch (ExecException e) {
-            e.printStackTrace();
+            RuntimeContext.logger.log(Level.INFO, "Entering Customizer.customize called for " + vm.getName());
+            customizeLock.writeLock().lock();
+            RuntimeContext.logger.log(Level.INFO, "Customizer.customize started for " + vm.getName());
+            customizer.customize(cluster, vm);
+            RuntimeContext.logger.log(Level.INFO, "Customizer.customize done for " + vm.getName());
+        } finally {
+            customizeLock.writeLock().unlock();
         }
     }
 
-    public void start(VirtualMachine virtualMachine, boolean firstStart) {
-    }
-
-    public void stop(VirtualMachine virtualMachine) {
-    }
-
-    public void clean(VirtualMachine virtualMachine) {
-        String[] stopdbArgs = {serverContext.getInstallRoot().getAbsolutePath() +
-                File.separator + "bin" + File.separator + "asadmin" + (OS.isWindows() ? ".bat" : ""), "stop-database"};
-        ProcessExecutor stopDatabase = new ProcessExecutor(stopdbArgs);
-
+    public void start(TemplateCustomizer customizer, VirtualMachine vm ) throws VirtException {
         try {
-            stopDatabase.execute();
-        } catch (ExecException e) {
-            e.printStackTrace();
+            RuntimeContext.logger.log(Level.INFO, "Entering Customizer.start called for " + vm.getName());
+            customizeLock.readLock().lock();
+            RuntimeContext.logger.log(Level.INFO, "Customizer.start start for " + vm.getName());
+            customizer.start(vm, true);
+            RuntimeContext.logger.log(Level.INFO, "Customizer.start done for " + vm.getName());
+        } finally {
+            customizeLock.readLock().unlock();
         }
     }
+
 }
+

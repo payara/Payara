@@ -41,8 +41,14 @@ package org.glassfish.virtualization.libvirt;
 
 import org.glassfish.cluster.ssh.launcher.SSHLauncher;
 import org.glassfish.cluster.ssh.sftp.SFTPClient;
+import com.trilead.ssh2.SFTPv3FileAttributes;
+import com.trilead.ssh2.SFTPv3DirectoryEntry;
+
 import org.glassfish.hk2.inject.Injector;
 import org.glassfish.virtualization.config.*;
+import org.glassfish.virtualization.os.FileOperations;
+import org.glassfish.virtualization.spi.Machine;
+import org.glassfish.virtualization.spi.MachineOperations;
 import org.glassfish.virtualization.spi.PhysicalServerPool;
 
 import org.glassfish.virtualization.spi.VirtException;
@@ -52,7 +58,10 @@ import org.jvnet.hk2.annotations.Inject;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
+import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -61,13 +70,16 @@ import java.util.logging.Logger;
  *
  * @author Jerome Dochez
  */
-class LibVirtMachine extends LibVirtLocalMachine {
+final class LibVirtMachine extends LibVirtLocalMachine {
 
     // Sa far, IP addresses are static within a single run. we could support changing the IP address eventually.
     final String ipAddress;
 
     @Inject
     SSHLauncher sshLauncher;
+
+    SSHFileOperations sshFileOperations;
+    int references=0;
 
     public static LibVirtMachine from(Injector injector, LibVirtServerPool group, MachineConfig config, String ipAddress) {
         return injector.inject(new LibVirtMachine(group, config, ipAddress));
@@ -83,127 +95,19 @@ class LibVirtMachine extends LibVirtLocalMachine {
     }
 
     @Override
-    public synchronized boolean mkdir(String destPath) throws IOException {
-       getSSH();
+    public <T> T execute(MachineOperations<T> operations) throws IOException {
 
-        final SFTPClient sftpClient = sshLauncher.getSFTPClient();
-        if (!sftpClient.exists(config.getDisksLocation())) {
-            sftpClient.mkdirs(config.getDisksLocation(), 0755);
-            return true;
-        }
-        return false;
-    }
-
-    public synchronized boolean delete(String path) throws IOException {
-        getSSH();
-
-        final SFTPClient sftpClient = sshLauncher.getSFTPClient();
-
-        if (sftpClient.exists(path)) {
-            sftpClient.rm(path);
-            return true;
-        }
-        return false;
-    }
-
-    @Override
-    public synchronized boolean mv(String source, String dest) throws IOException {
-        getSSH();
-
-        final SFTPClient sftpClient = sshLauncher.getSFTPClient();
-        if (exists(dest)) {
-            delete(dest);
-        }
-        sftpClient.mv(source, dest);
-        return true;
-    }
-
-    public synchronized long length(String path) throws IOException {
-        getSSH();
-
-        final SFTPClient sftpClient = sshLauncher.getSFTPClient();
+        SSHFileOperations sshFileOperations;
         try {
-            return sftpClient.lstat(path).size;
-        } finally {
-            sftpClient.close();
-        }
-    }
-
-    @Override
-    public synchronized boolean exists(String path) throws IOException {
-        getSSH();
-
-        final SFTPClient sftpClient = sshLauncher.getSFTPClient();
-        try {
-            return sftpClient.exists(path);
-        } finally {
-            sftpClient.close();
-        }
-    }
-
-    public synchronized Date mod(String path) throws IOException {
-        getSSH();
-
-        final SFTPClient sftpClient = sshLauncher.getSFTPClient();
-        try {
-            long mTimeinSeconds = sftpClient._stat(path).mtime;
-            return new Date(mTimeinSeconds*1000); // in milliseconds.
-        } finally {
-            sftpClient.close();
-        }
-    }
-
-    @Override
-    public synchronized void copy(File source, File destination) throws IOException {
-
-        getSSH();
-
-        final SFTPClient sftpClient = sshLauncher.getSFTPClient();
-        try {
-            mkdirs(sftpClient, destination);
-
-            String destPath = destination + "/" + source.getName();
-            if (sftpClient.exists(destPath)) {
-                sftpClient.rm(destPath);
-            }
-        } finally {
-            sftpClient.close();
-        }
-        sshLauncher.getSCPClient().put(source.getAbsolutePath(), destination.getPath());
-    }
-
-    public synchronized void mkdirs(SFTPClient client, File path) throws IOException {
-        if (path.getParentFile()!=null) {
-            mkdirs(client, path.getParentFile());
-        }
-        if (!client.exists(path.getPath())) {
-            client.mkdirs(path.getPath(), 0755);
-        }
-    }
-
-    @Override
-    public synchronized void localCopy(String source, String destDir) throws IOException {
-        getSSH();
-
-        try {
-
-            SFTPClient client = sshLauncher.getSFTPClient();
-            try {
-                if (!client.exists(destDir)) {
-                    // not installed
-                    client.mkdirs(destDir, 0755);
-                }
-            } finally {
-                client.close();
-            }
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            RuntimeContext.logger.info("Remote cp file " + source + " on " + getName());
-            sshLauncher.runCommand("cp " + source + " " + destDir, baos);
+             sshFileOperations = connect();
         } catch (IOException e) {
-            RuntimeContext.logger.log(Level.SEVERE, "Cannot copy file on " + getName(),e);
+            RuntimeContext.logger.log(Level.SEVERE, "Cannot open connection to machine " + this, e);
             throw e;
-        } catch(InterruptedException e) {
-            throw new IOException(e);
+        }
+        try {
+            return operations.run(sshFileOperations);
+        } finally {
+            disconnect();
         }
     }
 
@@ -268,6 +172,21 @@ class LibVirtMachine extends LibVirtLocalMachine {
         return userHome.substring(0, userHome.length()-1);
     }
 
+    private synchronized SSHFileOperations connect() throws IOException {
+        if (sshFileOperations==null) {
+            sshFileOperations = new SSHFileOperations(this, sshLauncher);
+        }
+        references++;
+        return sshFileOperations;
+    }
+
+    private synchronized void disconnect() throws IOException {
+        references--;
+        if (references==0) {
+            sshFileOperations.close();
+            sshFileOperations=null;
+        }
+    }
 
     private SSHLauncher getSSH() {
         File home = new File(System.getProperty("user.home"));

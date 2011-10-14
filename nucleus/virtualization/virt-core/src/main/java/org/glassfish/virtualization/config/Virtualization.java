@@ -76,6 +76,25 @@ public interface Virtualization extends ConfigBeanProxy {
     void setType(String virtType);
 
     /**
+     * Number of template disks the cache should maintain. These disks will be used to
+     * create virtual machine avoiding last minute copy.
+     *
+     * @return template cache size
+     */
+    @Attribute(defaultValue = "5")
+    String getTemplateCacheSize();
+    void setTemplateCacheSize(String cache);
+
+    /**
+     * Refresh rate in seconds for the template caching facility
+     *
+     * @return the refresh rate of the cache in seconds
+     */
+    @Attribute(defaultValue = "120")
+    String getTemplateCacheRefreshRate();
+    void setTemplateCacheRefreshRate(String cache);
+
+    /**
      * Returns the list of registered templates for this virtualization infrastructure. Such template
      * are image files that can be duplicated to create virtual machines.
      *

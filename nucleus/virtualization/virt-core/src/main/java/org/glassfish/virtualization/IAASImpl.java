@@ -44,6 +44,7 @@ package org.glassfish.virtualization;
 import org.glassfish.api.Startup;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.hk2.Services;
+import org.glassfish.virtualization.config.Template;
 import org.glassfish.virtualization.config.Virtualization;
 import org.glassfish.virtualization.runtime.DefaultAllocationStrategy;
 import org.glassfish.virtualization.runtime.VirtualCluster;
@@ -57,6 +58,7 @@ import org.jvnet.hk2.config.*;
 
 import java.beans.PropertyChangeEvent;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -70,9 +72,9 @@ import java.util.logging.Logger;
 public class IAASImpl implements Startup, IAAS, ConfigListener {
 
     private final Services services;
-    private final Map<String, Virtualization> virtConfigs = new HashMap<String, Virtualization>();
-    private final Map<String, ServerPool> groups = new HashMap<String, ServerPool>();
-    private final Map<String, VirtualCluster> virtualClusterMap = new HashMap<String, VirtualCluster>();
+    private final Map<String, Virtualization> virtConfigs = new ConcurrentHashMap<String, Virtualization>();
+    private final Map<String, ServerPool> groups = new ConcurrentHashMap<String, ServerPool>();
+    private final Map<String, VirtualCluster> virtualClusterMap = new ConcurrentHashMap<String, VirtualCluster>();
 
     @Override
     public Lifecycle getLifecycle() {
@@ -109,6 +111,8 @@ public class IAASImpl implements Startup, IAAS, ConfigListener {
                     return null;
                 }
             });
+        } else {
+            Dom.unwrap(virtualizations).addListener(this);
         }
         if (virtualizations==null || env.isInstance() ) return;
 
@@ -120,6 +124,7 @@ public class IAASImpl implements Startup, IAAS, ConfigListener {
     private void processVirtualization(Virtualization virtualization) {
 
         if (virtConfigs.containsKey(virtualization.getName())) return;
+        virtConfigs.put(virtualization.getName(), virtualization);
         Dom.unwrap(virtualization).addListener(new VirtualizationListener(virtualization));
         for (ServerPoolConfig groupConfig : virtualization.getServerPools()) {
             try {
@@ -158,17 +163,29 @@ public class IAASImpl implements Startup, IAAS, ConfigListener {
                 serverPoolConfig.getVirtualization().getType());
         }
         ServerPool serverPool = spf.build(serverPoolConfig);
-        synchronized (this) {
-            groups.put(serverPoolConfig.getName(), serverPool);
-        }
+        groups.put(serverPoolConfig.getName(), serverPool);
         return serverPool;
     }
 
     @Override
     public UnprocessedChangeEvents changed(PropertyChangeEvent[] propertyChangeEvents) {
         Virtualizations virtualizations = services.forContract(Virtualizations.class).get();
+        Set<String> existingVirts = new HashSet<String>(virtConfigs.keySet());
         for (Virtualization virt : virtualizations.getVirtualizations()) {
             processVirtualization(virt);
+            existingVirts.remove(virt.getName());
+        }
+        TemplateRepository templateRepository = services.forContract(TemplateRepository.class).get();
+        for (String virtName : existingVirts) {
+            System.out.println("Deleted virtualization : " + virtName);
+            // this need to be improved by moving it to the Virtualization class.
+            for (ServerPoolConfig serverPool : virtConfigs.get(virtName).getServerPools()) {
+                groups.remove(serverPool.getName());
+            }
+            for (Template template : virtConfigs.get(virtName).getTemplates()) {
+                templateRepository.delete(template);
+            }
+            virtConfigs.remove(virtName);
         }
         return null;
     }

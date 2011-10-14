@@ -40,41 +40,82 @@
 
 package org.glassfish.virtualization.runtime;
 
-import org.glassfish.virtualization.config.Template;
+import org.glassfish.virtualization.os.FileOperations;
 import org.glassfish.virtualization.spi.Machine;
+import org.glassfish.virtualization.spi.MachineOperations;
 import org.glassfish.virtualization.spi.TemplateInstance;
+import org.glassfish.virtualization.util.RuntimeContext;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Date;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.logging.Level;
 
 /**
  * Defines a remote template, installed on a remote machine.
+ *
  * @author Jerome Dochez
  */
 public class RemoteTemplate extends VMTemplate {
     private final Machine machine;
+    private final ReentrantLock cacheLock = new ReentrantLock();
+    private final AtomicBoolean inUpdate = new AtomicBoolean(false);
 
     /**
      * Creates a new template instance for a remotely installed template
+     *
      * @param location the machine where the template is installed.
-     * @param config  the template characteristics
+     * @param config   the template characteristics
      */
     public RemoteTemplate(Machine location, TemplateInstance config) {
         super(config);
         this.machine = location;
     }
 
+    /**
+     * returns the machine on which this remote template is installed.
+     *
+     * @return the remote machine
+     */
+    Machine getMachine() {
+        return machine;
+    }
+
     @Override
-    public void copyTo(Machine destination, String destDir) throws IOException {
+    public void copyTo(final Machine destination, final String destDir) throws IOException {
 
-        destination.getFileOperations().localCopy(remotePath(), destDir);
+        destination.execute(new MachineOperations<Void>() {
+            @Override
+            public Void run(FileOperations fileOperations) throws IOException {
+                // try our cached copy first.
+                try {
+                    String electedCache = nextCached(fileOperations);
+                    if (electedCache != null) {
+                        String cachedFileName = electedCache + File.separator + fileName();
+                        String targetFileName = destDir + File.separator + fileName();
+                        fileOperations.mv(cachedFileName, targetFileName);
+                        fileOperations.delete(electedCache);
+                        if (fileOperations.exists(targetFileName))
+                            return null;
+                    }
+                } catch (IOException e) {
+                    RuntimeContext.logger.log(Level.WARNING, "Exception while getting a cached copy ", e);
+                }
 
+                // if an exception occurs or there was no cached copy available, use synchronous copy.
+                fileOperations.localCopy(remotePath(), destDir);
+                return null;
+            }
+        });
     }
 
     private String remotePath() {
         try {
             String fileName = templateInstance.getFileByExtension(".img").getName();
-            return machine.getConfig().getTemplatesLocation()+"/"+getDefinition().getName()+"/" + fileName;
+            return machine.getConfig().getTemplatesLocation() + "/" + getDefinition().getName() + "/" + fileName;
         } catch (FileNotFoundException e) {
             return null;
         }
@@ -82,6 +123,170 @@ public class RemoteTemplate extends VMTemplate {
 
     @Override
     public long getSize() throws IOException {
-        return machine.getFileOperations().length(remotePath());
+        return machine.execute(new MachineOperations<Long>() {
+            @Override
+            public Long run(FileOperations fileOperations) throws IOException {
+                return fileOperations.length(remotePath());
+            }
+        });
+    }
+
+    void cleanCache(final int cacheSize) throws IOException {
+        final String cacheLocation = machine.getConfig().getTemplateCacheLocation() + File.separator + getDefinition().getName();
+        machine.execute(new MachineOperations<Object>() {
+            @Override
+            public Object run(FileOperations fileOperations) throws IOException {
+                try {
+                    for (String fileName : fileOperations.ls(cacheLocation)) {
+                        try {
+                            Long fileNameAsNumber = Long.parseLong(fileName);
+                            if (fileNameAsNumber > cacheSize) {
+                                // we do need this file any more, it's either an attempted copy that never finished
+                                // or it's a leftover cached template from a cache reduction.
+                                fileOperations.delete(cacheLocation + File.separator + fileName);
+                            }
+                        } catch (NumberFormatException e) {
+                            RuntimeContext.logger.log(Level.WARNING, "Weird file name format in cache " + fileName);
+                        }
+
+                    }
+                } catch (IOException e) {
+                    RuntimeContext.logger.log(Level.SEVERE, "Exception while cleaning cache on " + machine, e);
+                }
+                return null;
+            }
+        });
+    }
+
+    void refreshCache(final int cacheSize) {
+        boolean alreadyInUpdate = inUpdate.compareAndSet(false, true);
+        try {
+            if (!alreadyInUpdate) {
+                RuntimeContext.logger.info("Cache on machine " + machine + " already in update");
+                return;
+            }
+            RuntimeContext.logger.fine("Cache on machine " + machine + " starting to update for " + templateInstance.getConfig().getName());
+            final String cacheLocation = machine.getConfig().getTemplateCacheLocation() + File.separator + getDefinition().getName();
+            try {
+                machine.execute(new MachineOperations<Void>() {
+                    @Override
+                    public Void run(FileOperations fileOps) throws IOException {
+                        // first we need to ensure that the cache is clean of any temporary file
+                        int inProgress=0;
+                        try {
+                            for (String fileName : fileOps.ls(cacheLocation)) {
+                                try {
+                                    Long fileNameAsNumber = Long.parseLong(fileName);
+                                    if (fileNameAsNumber > cacheSize) {
+                                        // This is a copy in process most likely
+                                        inProgress++;
+                                    }
+                                } catch (NumberFormatException e) {
+                                    RuntimeContext.logger.log(Level.WARNING, "Weird file name format in cache " + fileName);
+                                }
+
+                            }
+                        } catch (IOException e) {
+                            RuntimeContext.logger.log(Level.SEVERE, "Exception while cleaning cache on " + machine, e);
+                        }
+
+
+                        // now we ensure the cache is populated correctly.
+                        for (int i = 0; i < cacheSize; i++) {
+                            String templateCacheLocation = cacheLocation + File.separator + i;
+                            try {
+                                if (fileOps.exists(templateCacheLocation)) {
+                                    // we need to ensure that it is up to date.
+                                    String templateFileName = templateCacheLocation + File.separator + fileName();
+                                    if (fileOps.exists(templateFileName) && !isUpToDate(fileOps, remotePath(), templateFileName)) {
+                                        // it's old, get rid of it.
+                                        try {
+                                            cacheLock.lock();
+                                            fileOps.delete(templateCacheLocation);
+                                        } finally {
+                                            cacheLock.unlock();
+                                        }
+                                    }
+                                }
+                                // at this point, either it was not there, or was too old and got whacked
+                                // and therefore we need to copy, but if it is there, the copy is up to date
+                                // so we can return
+                                if (fileOps.exists(templateCacheLocation)) continue;
+
+                                // We decrease our inProgress number to check whether or not we must initiate a new cached copy
+                                if (inProgress>1) {
+                                    inProgress--;
+                                    continue;
+                                }
+
+                                // copy the file to a temporary location to avoid keeping the lock too long
+                                String tmpCacheLocation = cacheLocation + File.separator + String.valueOf(System.currentTimeMillis());
+                                fileOps.mkdir(tmpCacheLocation);
+                                fileOps.localCopy(remotePath(), tmpCacheLocation);
+
+                                // switch the temporary location to the final location.
+                                String finalCacheLocation = cacheLocation + File.separator + i;
+                                try {
+                                    cacheLock.lock();
+                                    // check that some other thread did not use this slot.
+                                    if (!fileOps.exists(finalCacheLocation)) {
+                                        fileOps.mv(tmpCacheLocation, finalCacheLocation);
+                                    }
+                                } finally {
+                                    cacheLock.unlock();
+                                }
+                            } catch (IOException e) {
+                                RuntimeContext.logger.log(Level.SEVERE,
+                                        "Cannot cache " + i + " th template " + templateInstance.getConfig().getName()
+                                                + " on " + machine, e);
+                            }
+                        }
+                        return null;
+                    }
+                });
+            } catch (IOException e) {
+                RuntimeContext.logger.log(Level.SEVERE, "Exception while setting up cache", e);
+            }
+        } finally {
+            inUpdate.set(false);
+        }
+        RuntimeContext.logger.fine("Cache on machine " + machine + " done with update for " + templateInstance.getConfig().getName());
+    }
+
+    private boolean isUpToDate(FileOperations fileOperations, String reference, String copy) throws IOException {
+
+        Date referenceModTime = fileOperations.mod(reference);
+        Date copyModTime = fileOperations.mod(copy);
+        return copyModTime.after(referenceModTime);
+    }
+
+    private String nextCached(FileOperations fileOperations) throws IOException {
+
+        int i = 0;
+        int cacheSize = new Integer(templateInstance.getConfig().getVirtualization().getTemplateCacheSize());
+        String cacheLocation = machine.getConfig().getTemplateCacheLocation() + File.separator + getDefinition().getName();
+        while (i < cacheSize) {
+            String aCacheLocation = cacheLocation + File.separator + i;
+            if (fileOperations.exists(aCacheLocation)) {
+                String electedCache = cacheLocation + File.separator + String.valueOf(System.currentTimeMillis());
+                try {
+                    cacheLock.lock();
+                    if (fileOperations.exists(aCacheLocation)) {
+                        fileOperations.mv(aCacheLocation, electedCache);
+                    } else {
+                        electedCache = null;
+                    }
+                } finally {
+                    cacheLock.unlock();
+                }
+                if (electedCache != null) return electedCache;
+            }
+            i++;
+        }
+        return null;
+    }
+
+    protected String fileName() throws FileNotFoundException {
+        return templateInstance.getFileByExtension(".img").getName();
     }
 }

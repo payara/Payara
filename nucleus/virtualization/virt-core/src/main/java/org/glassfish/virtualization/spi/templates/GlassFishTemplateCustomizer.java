@@ -72,8 +72,7 @@ public class GlassFishTemplateCustomizer implements TemplateCustomizer {
     @Override
     public void customize(VirtualCluster cluster, VirtualMachine virtualMachine) throws VirtException {
         ActionReport report = services.forContract(ActionReport.class).named("plain").get();
-        final String nodeName = virtualMachine.getServerPool().getName() + "_" +
-                virtualMachine.getMachine().getName() + "_" + virtualMachine.getName();
+        final String nodeName = getNodeName(virtualMachine);
         // create-node-ssh --nodehost $ip_address --installdir $GLASSFISH_HOME $node_name
         String installDir = virtualMachine.getProperty(VirtualMachine.PropertyName.INSTALL_DIR);
         rtContext.executeAdminCommand(report, "create-node-ssh", nodeName, "nodehost", virtualMachine.getAddress(),
@@ -85,23 +84,19 @@ public class GlassFishTemplateCustomizer implements TemplateCustomizer {
         rtContext.executeAdminCommand(report, "create-instance", nodeName + "Instance", "node", nodeName,
                 "cluster", cluster.getConfig().getName());
 
-        // finally starts the instance.
-        try {
-            rtContext.executeAdminCommand(report, "start-instance", nodeName + "Instance");
-        } catch (Exception e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+    }
+
+    @Override
+    public void start(VirtualMachine virtualMachine, boolean firstStart) {
+        ActionReport report = services.forContract(ActionReport.class).named("plain").get();
+        if (firstStart) {
+            // finally starts the instance.
+            try {
+                rtContext.executeAdminCommand(report, "start-instance", getNodeName(virtualMachine) + "Instance");
+            } catch (Exception e) {
+                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            }
         }
-
-    }
-
-    @Override
-    public void start(VirtualMachine virtualMachine) {
-        // done by the clustering infrastructure
-    }
-
-    @Override
-    public void stop(VirtualMachine virtualMachine) {
-        // done by the clustering infrastructure
     }
 
     @Override
@@ -125,5 +120,16 @@ public class GlassFishTemplateCustomizer implements TemplateCustomizer {
                 }
             }
         }
+    }
+
+    private String getNodeName(VirtualMachine virtualMachine) {
+        return  virtualMachine.getServerPool().getName() + "_" +
+                virtualMachine.getMachine().getName() + "_" + virtualMachine.getName();
+
+    }
+
+    @Override
+    public void stop(VirtualMachine virtualMachine) {
+        //To change body of implemented methods use File | Settings | File Templates.
     }
 }

@@ -43,11 +43,13 @@ package org.glassfish.virtualization.libvirt;
 import org.glassfish.virtualization.spi.Machine;
 import org.glassfish.virtualization.spi.StoragePool;
 import org.glassfish.virtualization.spi.VirtException;
+import org.glassfish.virtualization.util.RuntimeContext;
 
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
 
 /**
  * Representation of a storage pool in libvirt
@@ -96,7 +98,7 @@ class LibVirtStoragePool implements StoragePool {
     public LibVirtStorageVol byName(String name) throws VirtException {
         try {
            for (String volumeID : pool.listVolumes()) {
-               if (volumeID.equals(name)) {
+               if (volumeID.equals(name+".img")) {
                    return new LibVirtStorageVol(this, pool.storageVolLookupByName(volumeID));
                }
            }
