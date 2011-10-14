@@ -826,11 +826,11 @@ localStrings.getLocalString("securitymechansimselector.runas_cannot_propagate_us
             final Subject sub = s;
             ctx.subject = s;
             // determining if run-as has been used
-            Set privateCredSet = 
+            Set<PasswordCredential> privateCredSet = 
                 AccessController.doPrivileged(new PrivilegedAction<Set>() {
 
                 public Set run() {
-                    return sub.getPrivateCredentials();
+                    return sub.getPrivateCredentials(PasswordCredential.class);
                 }
             });
             if (privateCredSet.isEmpty()) { // this is runas case dont set
@@ -912,7 +912,7 @@ localStrings.getLocalString("securitymechansimselector.runas_cannot_propagate_us
 
         // Figure out the credential class
         final Subject sub = s;
-        Set credSet = 
+        Set<PasswordCredential> credSet = 
             AccessController.doPrivileged(new PrivilegedAction<Set>() {
                 public Set run() {
                     return sub.getPrivateCredentials(PasswordCredential.class);
@@ -925,8 +925,8 @@ localStrings.getLocalString("securitymechansimselector.runas_cannot_propagate_us
             PrivilegedAction<Subject>() {
                 public Subject run() {
                     Subject ss = new Subject();
-                    Iterator iter = cs.iterator();
-                    PasswordCredential pc = (PasswordCredential) iter.next();
+                    Iterator<PasswordCredential> iter = cs.iterator();
+                    PasswordCredential pc =  iter.next();
                     GSSUPName gssname = new GSSUPName(pc.getUser(), pc.getRealm());
                     ss.getPublicCredentials().add(gssname);
                     return ss;
@@ -936,12 +936,12 @@ localStrings.getLocalString("securitymechansimselector.runas_cannot_propagate_us
             return ctx;
         }
 
-        credSet = s.getPublicCredentials();
-        if(credSet.size() != 1) {
+        Set pubCredSet = s.getPublicCredentials();
+        if(pubCredSet.size() != 1) {
             _logger.log(Level.SEVERE,"iiop.principal_error");
             return null;
         } else {
-            Iterator credIter = credSet.iterator();
+            Iterator credIter = pubCredSet.iterator();
             if(credIter.hasNext()) {
                 Object o = credIter.next();
                 if(o instanceof GSSUPName) {
@@ -1064,7 +1064,7 @@ localStrings.getLocalString("securitymechansimselector.runas_cannot_propagate_us
         byte[] tgt_name = {} ;
 
         final Subject sub = subj;
-        final Set credset = 
+        final Set<PasswordCredential> credset = 
             AccessController.doPrivileged(new PrivilegedAction<Set>() {
                 public Set run() {
                     return sub.getPrivateCredentials(PasswordCredential.class);
@@ -1073,8 +1073,8 @@ localStrings.getLocalString("securitymechansimselector.runas_cannot_propagate_us
         if(credset.size() == 1) {
             tgt_name = AccessController.doPrivileged(new PrivilegedAction<byte[] >() {
                 public byte[] run() {
-                    Iterator iter = credset.iterator();
-                    PasswordCredential pc = (PasswordCredential) iter.next();
+                    Iterator<PasswordCredential> iter = credset.iterator();
+                    PasswordCredential pc =  iter.next();
                     return pc.getTargetName();
                 }
             });
