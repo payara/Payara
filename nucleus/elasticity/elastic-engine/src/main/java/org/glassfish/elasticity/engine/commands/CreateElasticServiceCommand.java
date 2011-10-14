@@ -164,29 +164,7 @@ public class CreateElasticServiceCommand implements AdminCommand  {
         ElasticService elasticService = elasticServices.getElasticService(name);
         elasticEngine.startElasticService(elasticService);
 
-        logger.log(Level.INFO, "Executed elasticEngine.startElasticService(" + elasticService.getName() + ")");
-
-        //create the  alert for memory demo
-        String expression = "any[avg(jvm_memory.heap.used)*100/jvm_memory.maxMemory]  >  50" ;
-
-        ci = cr.getCommandInvocation("create-alert", report);
-        map = new ParameterMap();
-        map.add("service", name);
-        map.add("schedule","10s");
-        map.add("expression", expression);
-        map.add("DEFAULT", "_high-memory-alert");
-        ci.parameters(map);
-        ci.execute();
-
-        //add alarm to the alert , only add alarm state
-        ci = cr.getCommandInvocation("add-alert-action",report);
-        map = new ParameterMap();
-        map.add("service", name);
-        map.add("actionref","scale-up-action");
-        map.add("state","alarm-state");
-        map.add("DEFAULT", "_high-memory-alert");
-        ci.parameters(map);
-        ci.execute();
+        logger.log(Level.FINE, "Executed elasticEngine.startElasticService(" + elasticService.getName() + ")");
 
     }
 
