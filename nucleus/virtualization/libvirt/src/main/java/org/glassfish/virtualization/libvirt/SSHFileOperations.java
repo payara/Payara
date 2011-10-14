@@ -71,7 +71,7 @@ final class SSHFileOperations implements FileOperations {
     final Machine machine;
     final ThreadLocal<ClientTuple> sftpClientThreadLocal = new ThreadLocal<ClientTuple>();
 
-    private final class ClientTuple {
+    private static final class ClientTuple {
         final SFTPClient sftpClient;
         final SCPClient  scpClient;
 
