@@ -42,7 +42,6 @@ package org.glassfish.virtualization.config;
 
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.DomainExtension;
-import com.sun.tools.internal.xjc.api.TypeAndAnnotation;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommandContext;
