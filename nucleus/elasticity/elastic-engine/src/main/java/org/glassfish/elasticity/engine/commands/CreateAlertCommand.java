@@ -108,7 +108,7 @@ public class CreateAlertCommand implements AdminCommand {
 
         if (elasticServices == null)   {
             //service doesn't exist
-            String msg = Strings.get("elasticity.not.enabled", servicename);
+            String msg = Strings.get("elasticity.not.found", servicename);
             logger.warning(msg);
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setMessage(msg);
