@@ -59,6 +59,23 @@
     <!--
         From Tim Quinn:
 
+        The only (supported) way that JWSAppClientContainerMain's main method  
+        is invoked is during a Java Web Start launch of a client, in which  
+        case the usage method in question would be invoked only if there was  
+        an error in how GF prepared the URL and/or the JNLP document.  A user  
+        could cause GF to add the equivalent of the -usage option to the JNLP  
+        but there's no good reason to do that and exiting in that case is fine  
+        as far as I'm concerned.
+    -->
+    <Match>
+        <Class name="org.glassfish.appclient.client.AppClientFacade"/>
+        <Method name="usage"/>
+        <Bug pattern="DM_EXIT"/>
+    </Match>
+
+    <!--
+        From Tim Quinn:
+
         This call to exit supports a seldom-used feature of the Java Web Start  
         support for app clients in which the caller can ask that the ACC exit  
         right away after returning from the client.  (Normally we'll wait  
