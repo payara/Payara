@@ -40,16 +40,17 @@
 package com.sun.enterprise.v3.admin.cluster;
 
 import com.sun.enterprise.universal.process.WindowsException;
-import com.sun.enterprise.universal.process.WindowsRemotePinger;
 import com.sun.enterprise.universal.glassfish.TokenResolver;
 import com.sun.enterprise.universal.process.WindowsCredentials;
 import com.sun.enterprise.universal.process.WindowsRemoteScripter;
 import com.sun.enterprise.util.io.WindowsRemoteFileSystem;
-import java.util.logging.Level;
+import java.io.IOException;
+import java.net.*;
 import java.util.logging.Logger;
 import org.glassfish.api.admin.CommandValidationException;
 import static com.sun.enterprise.util.StringUtils.ok;
 import com.sun.enterprise.util.io.WindowsRemoteFile;
+import java.net.InetAddress;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
@@ -57,24 +58,24 @@ import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.CommandLock;
 import org.glassfish.api.admin.ExecuteOn;
 import org.glassfish.api.admin.RuntimeType;
-import org.glassfish.cluster.ssh.util.DcomUtils;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.cluster.ssh.util.DcomUtils;
 
 /**
- * The name of this class matches "setup-ssh".  It does not setup but rather tests
+ * This command tests
  * to see if a remote Windows machine can be contacted from the server via DCOM.
  * @author Byron Nevins
  */
-@Service(name = "setup-dcom")
+@Service(name = "validate-windows")
 @Scoped(PerLookup.class)
 @CommandLock(CommandLock.LockType.NONE)
 @ExecuteOn({RuntimeType.DAS})
-public class SetupDcom implements AdminCommand {
-    @Param(name = "dcomuser", optional = true, defaultValue = NodeUtils.NODE_DEFAULT_REMOTE_USER)
+public class ValidateWindows implements AdminCommand {
+    @Param(name = "windowsuser", optional = true, defaultValue = NodeUtils.NODE_DEFAULT_REMOTE_USER)
     private String user;
-    @Param(name = "dcompassword", optional = false, password = true)
+    @Param(name = "windowspassword", optional = false, password = true)
     private String password;
     @Param(name = "host", optional = false, primary = true)
     private String host;
@@ -96,6 +97,9 @@ public class SetupDcom implements AdminCommand {
     @Override
     public final void execute(AdminCommandContext context) {
         init(context);
+
+        if (!testDcomPort())
+            return;
 
         if (!testDcomFileAccess())
             return;
@@ -126,6 +130,32 @@ public class SetupDcom implements AdminCommand {
         creds = new WindowsCredentials(host, windowsdomain, user, password);
         wrfs = new WindowsRemoteFileSystem(creds);
         scriptFullPath = testdir + "\\" + SCRIPT_NAME;
+    }
+
+    /**
+     * Make sure port 135 (the DCOM port) is alive on the remote host
+     * Fast preliminary test (4 seconds worst-case)
+     */
+    private boolean testDcomPort() {
+        try {
+            // only interested in Exception side-effect...
+            InetAddress.getByName(host);
+        }
+        catch (UnknownHostException e) {
+            setError(e, Strings.get("unknown.host", host));
+            return false;
+        }
+        try {
+            Socket socket = new Socket();
+            socket.connect(new InetSocketAddress(host, 135), 4000);
+            socket.close();
+        }
+        catch (IOException e) {
+            setError(e, Strings.get("dcom.no.connect.135", host));
+            return false;
+        }
+
+        return true;
     }
 
     /**
@@ -195,13 +225,13 @@ public class SetupDcom implements AdminCommand {
     }
 
     private String crunch(int numlines, String big) {
-        if(!ok(big))
+        if (!ok(big))
             return big;
         StringBuilder sb = new StringBuilder();
         String[] ss = big.split("\n");
 
         // numlines or fewer lines
-        for(int i = 0; i < numlines && i < ss.length; i++) {
+        for (int i = 0; i < numlines && i < ss.length; i++) {
             sb.append(ss[i]).append('\n');
         }
 
