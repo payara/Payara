@@ -45,20 +45,12 @@ import org.objectweb.asm.commons.GeneratorAdapter;
 import org.objectweb.asm.commons.Method;
 
 import java.lang.reflect.Constructor;
-
-
 import java.lang.reflect.Modifier;
-import java.lang.reflect.Proxy;
-
 import java.lang.reflect.ReflectPermission;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
-import java.net.URLClassLoader;
-import java.net.URL;
-import java.io.PrintWriter;
-import java.io.BufferedWriter;
 import java.io.Serializable;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
@@ -106,8 +98,6 @@ public class EjbOptionalIntfGenerator
                             }
                         }
                 );
-
-
             }
         }
 
@@ -137,20 +127,9 @@ public class EjbOptionalIntfGenerator
                 Type.getType(Object.class).getInternalName(), 
                 (new String[] {Type.getType(Serializable.class).getInternalName()}) );
 
-        Set<java.lang.reflect.Method> allMethods = new HashSet<java.lang.reflect.Method>();
-        for (Class clz = ejbClass; clz != Object.class; clz = clz.getSuperclass()) {
-            java.lang.reflect.Method[] beanMethods = clz.getDeclaredMethods();
-            for (java.lang.reflect.Method m : beanMethods) {
-                int mod = m.getModifiers();
-                if ((Modifier.isPublic(mod)) &&
-                        (! Modifier.isStatic(mod)) &&
-                        (! Modifier.isAbstract(mod)) &&
-                        (! Modifier.isFinal(mod)) ) {
-                    if( !hasSameSignatureAsExisting(m, allMethods)) {
-                        generateInterfaceMethod(tv, m);
-                        allMethods.add(m);
-                    }
-                }
+        for (java.lang.reflect.Method m : ejbClass.getMethods()) {
+            if (qualifiedAsBeanMethod(m)) {
+                generateInterfaceMethod(tv, m);
             }
         }
 
@@ -158,6 +137,20 @@ public class EjbOptionalIntfGenerator
 
         byte[] classData = cw.toByteArray();
         classMap.put(intfClassName, classData);
+    }
+    
+    /**
+     * Determines if a method from a bean class can be considered as a business
+     * method for EJB of no-interface view.
+     * @param m a public method
+     * @return true if m can be included as a bean business method.
+     */
+    private boolean qualifiedAsBeanMethod(java.lang.reflect.Method m) {
+        if (m.getDeclaringClass() == Object.class) {
+            return false;
+        }
+        int mod = m.getModifiers();
+        return !Modifier.isStatic(mod) && !Modifier.isFinal(mod);
     }
 
     private boolean hasSameSignatureAsExisting(java.lang.reflect.Method toMatch,
@@ -239,11 +232,16 @@ public class EjbOptionalIntfGenerator
 
         Set<java.lang.reflect.Method> allMethods = new HashSet<java.lang.reflect.Method>();
         
+        for (java.lang.reflect.Method m : superClass.getMethods()) {
+            if (qualifiedAsBeanMethod(m)) {
+                generateBeanMethod(tv, subClassName, m, delegateClass);
+            }
+        }
+        
         for (Class clz = superClass; clz != Object.class; clz = clz.getSuperclass()) {
             java.lang.reflect.Method[] beanMethods = clz.getDeclaredMethods();
             for (java.lang.reflect.Method mth : beanMethods) {
                 if( !hasSameSignatureAsExisting(mth, allMethods)) {
-
                     int modifiers = mth.getModifiers();
                     boolean isPublic = Modifier.isPublic(modifiers);
                     boolean isPrivate = Modifier.isPrivate(modifiers);
@@ -252,9 +250,7 @@ public class EjbOptionalIntfGenerator
 
                     boolean isStatic = Modifier.isStatic(modifiers);
 
-                    if (isPublic && !isStatic) {
-                        generateBeanMethod(tv, subClassName, mth, delegateClass);
-                    } else if( (isPackage || isProtected) && !isStatic ) {
+                    if( (isPackage || isProtected) && !isStatic ) {
                         generateNonAccessibleMethod(tv, mth);
                     }                    
                     allMethods.add(mth);
@@ -409,12 +405,6 @@ public class EjbOptionalIntfGenerator
         mg2.returnValue();
         mg2.endMethod();
     }
-
-       // Name that Java uses for constructor methods
-    private static final String CONSTRUCTOR_METHOD_NAME = "<init>" ;
-
-    // Name that Java uses for a classes static initializer method
-    private static final String STATIC_INITIALIZER_METHOD_NAME = "<clinit>" ;
 
      // A Method for the protected ClassLoader.defineClass method, which we access
     // using reflection.  This requires the supressAccessChecks permission.
