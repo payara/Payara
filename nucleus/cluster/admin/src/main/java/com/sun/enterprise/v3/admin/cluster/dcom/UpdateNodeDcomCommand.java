@@ -40,13 +40,12 @@
 package com.sun.enterprise.v3.admin.cluster.dcom;
 
 import com.sun.enterprise.v3.admin.cluster.*;
-
+import com.sun.enterprise.util.cluster.RemoteType;
 import com.sun.enterprise.util.StringUtils;
 import com.sun.enterprise.config.serverbeans.Node;
 import com.sun.enterprise.config.serverbeans.Nodes;
 import com.sun.enterprise.config.serverbeans.SshConnector;
 import com.sun.enterprise.config.serverbeans.SshAuth;
-import com.sun.enterprise.v3.admin.cluster.NodeUtils.RemoteType;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;

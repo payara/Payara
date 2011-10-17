@@ -39,6 +39,7 @@
  */
 package com.sun.enterprise.v3.admin.cluster.dcom;
 
+import com.sun.enterprise.util.cluster.RemoteType;
 import org.glassfish.cluster.ssh.util.DcomUtils;
 import java.util.List;
 import java.util.ArrayList;
@@ -88,8 +89,8 @@ public class CreateNodeDcom extends CreateRemoteNodeCommand {
     }
 
     @Override
-    protected NodeUtils.RemoteType getType() {
-        return NodeUtils.RemoteType.DCOM;
+    protected RemoteType getType() {
+        return RemoteType.DCOM;
     }
 
     /**

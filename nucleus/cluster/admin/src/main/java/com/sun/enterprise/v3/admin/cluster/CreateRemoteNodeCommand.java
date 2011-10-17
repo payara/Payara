@@ -39,6 +39,7 @@
  */
 package com.sun.enterprise.v3.admin.cluster;
 
+import com.sun.enterprise.util.cluster.RemoteType;
 import com.sun.enterprise.universal.process.ProcessManager;
 import com.sun.enterprise.universal.process.ProcessManagerException;
 import com.sun.enterprise.util.SystemPropertyConstants;
@@ -101,7 +102,7 @@ public abstract class CreateRemoteNodeCommand implements AdminCommand {
 
     protected abstract void populateCommandArgs(List<String> args);
 
-    protected abstract NodeUtils.RemoteType getType();
+    protected abstract RemoteType getType();
 
     protected abstract void validate() throws CommandValidationException;
 

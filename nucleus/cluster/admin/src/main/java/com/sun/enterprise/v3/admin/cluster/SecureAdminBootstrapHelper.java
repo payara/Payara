@@ -39,6 +39,7 @@
  */
 package com.sun.enterprise.v3.admin.cluster;
 
+import com.sun.enterprise.util.cluster.RemoteType;
 import com.sun.enterprise.config.serverbeans.Node;
 import com.sun.enterprise.universal.process.WindowsException;
 import com.sun.enterprise.util.io.FileUtils;
@@ -103,11 +104,11 @@ public abstract class SecureAdminBootstrapHelper {
             final Node node,
             final Logger logger) throws BootstrapException {
 
-        NodeUtils.RemoteType type = null;
+        RemoteType type = null;
 
         try {
             // this also handles the case where node is null
-            type = NodeUtils.RemoteType.valueOf(node.getType());
+            type = RemoteType.valueOf(node.getType());
         }
         catch (Exception e) {
             throw new IllegalArgumentException(

@@ -40,6 +40,7 @@
 
 package com.sun.enterprise.v3.admin.cluster;
 
+import com.sun.enterprise.util.cluster.RemoteType;
 import com.sun.enterprise.util.StringUtils;
 import com.sun.enterprise.config.serverbeans.Node;
 import com.sun.enterprise.config.serverbeans.Nodes;
@@ -101,7 +102,7 @@ public abstract class UpdateNodeRemoteCommand implements AdminCommand  {
 
     private Logger logger = null;
     protected abstract void populateParameters();
-    protected abstract NodeUtils.RemoteType getType();
+    protected abstract RemoteType getType();
     protected abstract String getDefaultPort();
 
     protected final void executeInternal(AdminCommandContext context) {

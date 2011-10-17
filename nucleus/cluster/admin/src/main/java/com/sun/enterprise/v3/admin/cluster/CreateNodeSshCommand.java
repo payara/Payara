@@ -39,6 +39,7 @@
  */
 package com.sun.enterprise.v3.admin.cluster;
 
+import com.sun.enterprise.util.cluster.RemoteType;
 import com.sun.enterprise.config.serverbeans.Nodes;
 import java.util.List;
 import java.util.ArrayList;
@@ -111,8 +112,8 @@ public class CreateNodeSshCommand extends CreateRemoteNodeCommand {
     }
 
     @Override
-    protected final NodeUtils.RemoteType getType() {
-        return NodeUtils.RemoteType.SSH;
+    protected final RemoteType getType() {
+        return RemoteType.SSH;
     }
 
     /**

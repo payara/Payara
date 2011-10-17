@@ -39,6 +39,7 @@
  */
 package com.sun.enterprise.v3.admin.cluster;
 
+import com.sun.enterprise.util.cluster.RemoteType;
 import com.sun.enterprise.universal.process.WindowsException;
 import java.util.logging.Level;
 import org.jvnet.hk2.component.Habitat;
@@ -102,10 +103,6 @@ public class NodeUtils {
     private Logger logger = null;
     private Habitat habitat = null;
     SSHLauncher sshL = null;
-
-    public enum RemoteType {
-        SSH, DCOM
-    };
 
     NodeUtils(Habitat habitat, Logger logger) {
         this.logger = logger;
