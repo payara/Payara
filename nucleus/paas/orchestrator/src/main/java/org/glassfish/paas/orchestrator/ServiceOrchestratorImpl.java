@@ -54,17 +54,13 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.glassfish.api.admin.AdminCommandLock;
-import org.glassfish.api.admin.ServerEnvironment;
-import org.glassfish.api.deployment.DeployCommandParameters;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.OpsParams;
-import org.glassfish.api.deployment.UndeployCommandParameters;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.deployment.common.DeploymentException;
 import org.glassfish.embeddable.CommandResult;
 import org.glassfish.embeddable.CommandRunner;
 import org.glassfish.hk2.scopes.Singleton;
-import org.glassfish.internal.deployment.ApplicationLifecycleInterceptor;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
 import org.glassfish.paas.orchestrator.provisioning.ServiceInfo;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceUtil;
@@ -74,8 +70,6 @@ import org.glassfish.paas.orchestrator.service.metadata.ServiceMetadata;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceReference;
 import org.glassfish.paas.orchestrator.service.spi.Plugin;
 import org.glassfish.paas.orchestrator.service.spi.ProvisionedService;
-import org.glassfish.virtualization.config.VirtualMachineConfig;
-import org.glassfish.virtualization.config.Virtualizations;
 import org.glassfish.virtualization.runtime.VirtualCluster;
 import org.glassfish.virtualization.runtime.VirtualClusters;
 import org.glassfish.virtualization.spi.AllocationStrategy;
@@ -83,21 +77,13 @@ import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.component.Habitat;
 
-import com.sun.enterprise.config.serverbeans.Cluster;
-import com.sun.enterprise.config.serverbeans.Domain;
 
 @org.jvnet.hk2.annotations.Service
 @Scoped(Singleton.class)
-public class ServiceOrchestratorImpl implements ServiceOrchestrator, ApplicationLifecycleInterceptor {
+public class ServiceOrchestratorImpl implements ServiceOrchestrator {
 
     @Inject
     protected Habitat habitat;
-
-    @Inject
-    private ServerEnvironment serverEnvironment;
-
-    @Inject
-    private Domain domain;
 
     @Inject
     private ServiceUtil serviceUtil;
@@ -677,146 +663,6 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator, Application
         }
     }
 
-    //NOTE : refer & update isValidDeploymentTarget if needed as we are dependent on the list of "Origins" used in this method.
-    public void before(final ExtendedDeploymentContext.Phase phase, final ExtendedDeploymentContext context) {
-
-        logEvent(true, phase, context);
-
-        if (isOrchestrationEnabled(context) && serverEnvironment.isDas()) {
-            AdminCommandLock.runWithSuspendedLock(new Runnable() {
-                public void run() {
-                    if (phase.equals(ExtendedDeploymentContext.Phase.PREPARE)) {
-                        ReadableArchive archive = context.getSource();
-                        OpsParams params = context.getCommandParameters(OpsParams.class);
-                        String appName = params.name();
-                        if (params.origin == OpsParams.Origin.deploy) {
-                            provisionServicesForApplication(appName, archive, context);
-                        } else if (params.origin == OpsParams.Origin.load) {
-                            if (params.command == OpsParams.Command.startup_server) {
-                                if (isValidApplication(appName)) {
-                                    Set<Plugin> installedPlugins = getPlugins();
-                                    ServiceMetadata appServiceMetadata =
-                                            serviceDependencyDiscovery(appName, archive, installedPlugins);
-                                    serviceMetadata.put(appName, appServiceMetadata);
-                                    Set<ProvisionedService> provisionedServiceSet =
-                                            retrieveProvisionedServices(installedPlugins, appServiceMetadata, context);
-                                    provisionedServices.put(appName, provisionedServiceSet);
-                                }
-                            } else {
-                                if (params.command == OpsParams.Command.enable) {
-                                    if (isValidApplication(appName)) {
-                                        Set<Plugin> installedPlugins = getPlugins();
-                                        ServiceMetadata appServiceMetadata =
-                                                serviceDependencyDiscovery(appName, archive, installedPlugins);
-                                        serviceMetadata.put(appName, appServiceMetadata);
-
-                                        Set<ProvisionedService> provisionedServiceSet =
-                                                startServices(installedPlugins, appServiceMetadata, context);
-                                        provisionedServices.put(appName, provisionedServiceSet);
-                                    }
-                                }
-                            }
-                        }
-                    } else if (phase.equals(ExtendedDeploymentContext.Phase.STOP)) {
-                        ReadableArchive archive = context.getSource();
-                        OpsParams params = context.getCommandParameters(OpsParams.class);
-                        String appName = params.name();
-                        if (params.origin == OpsParams.Origin.undeploy) {
-                            if (params.command == OpsParams.Command.disable) {
-                                prepareForUndeploy(appName, archive, context);
-                            }
-                        }
-                    }
-                }
-            });
-        }
-    }
-
-
-    private boolean isValidApplication(String appName) {
-        boolean isValid = true;
-        //TODO check whether the application uses any <services> and then invoke orchestrator.
-        //TODO this is needed as it is possible to deploy the application before enabling
-        //TODO virtualization (add-virtualization).
-
-        return isValid;
-    }
-
-    //NOTE : refer & update isValidDeploymentTarget if needed as we are dependent on the list of "Origins" used in this method.
-    public void after(final ExtendedDeploymentContext.Phase phase, final ExtendedDeploymentContext context) {
-
-        logEvent(false, phase, context);
-
-        if (isOrchestrationEnabled(context)) {
-            AdminCommandLock.runWithSuspendedLock(new Runnable() {
-                public void run() {
-                    if (phase.equals(ExtendedDeploymentContext.Phase.REPLICATION)) {
-                        if (serverEnvironment.isDas()) {
-                            OpsParams params = context.getCommandParameters(OpsParams.class);
-                            ReadableArchive archive = context.getSource();
-                            if (params.origin == OpsParams.Origin.deploy) {
-                                String appName = params.name();
-                                postDeploy(appName, archive, context);
-
-                            }
-                            //make sure that it is indeed undeploy and not disable.
-                            //params.origin is "undeploy" for both "undeploy" as well "disable" phase
-                            //hence using the actual command being used.
-                            if (params.origin == OpsParams.Origin.undeploy) {
-                                if (params.command == OpsParams.Command.undeploy) {
-                                    String appName = params.name();
-                                    postUndeploy(appName, context.getSource(), context);
-                                    serviceMetadata.remove(appName);
-                                    provisionedServices.remove(appName);
-                                }
-                            }
-                            //TODO as of today, we get only after-CLEAN-unload-disable event.
-                            //TODO we expect after-STOP-unload-disable, but since the target is not "DAS",
-                            //TODO DAS will not receive such event.
-                            String appName = params.name();
-                            if (params.origin == OpsParams.Origin.unload) {
-                                if (params.command == OpsParams.Command.disable) {
-                                    if (isValidApplication(appName)) {
-                                        Set<Plugin> installedPlugins = getPlugins();
-                                        ServiceMetadata appServiceMetadata = getServiceMetadata(appName);
-                                        stopServices(installedPlugins, appServiceMetadata, context);
-                                        serviceMetadata.remove(appName);
-                                        provisionedServices.remove(appName);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-        }
-    }
-
-    private void logEvent(boolean before, ExtendedDeploymentContext.Phase phase, ExtendedDeploymentContext context) {
-        try{
-            StringBuilder sb = new StringBuilder();
-            if(before){
-                sb.append("ServiceOrchestrator receiving event \n { [Before] ");
-            }else{
-                sb.append("ServiceOrchestrator receiving event \n { [After] ");
-            }
-
-            sb.append(" [Phase : "+phase.toString()+"]");
-            if(context != null){
-                OpsParams params = context.getCommandParameters(OpsParams.class);
-                sb.append(" [Command : "+params.command+"]");
-                sb.append(" [Origin : "+params.origin+"]");
-            }else{
-                sb.append(" [DeploymentContext is null, command and origin not available]");
-            }
-            sb.append(" }");
-            logger.log(Level.FINEST, sb.toString());
-        }catch(Exception e){
-            //ignore, this is debugging info.
-        }
-    }
-
-
     private Set<ProvisionedService> startServices(Set<Plugin> installedPlugins, ServiceMetadata appServiceMetadata,
                                                   DeploymentContext context) {
         Set<ProvisionedService> appPSs = new HashSet<ProvisionedService>();
@@ -848,73 +694,6 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator, Application
             }
         }
     }
-
-    private boolean isVirtualizationEnabled(){
-        boolean isVirtualEnvironment = false;
-        Virtualizations v = domain.getExtensionByType(Virtualizations.class);
-        if (v!=null && v.getVirtualizations().size()>0) {
-                isVirtualEnvironment = true;
-        }
-        return isVirtualEnvironment;
-    }
-
-    private boolean isOrchestrationEnabled(DeploymentContext dc){
-        return (isVirtualizationEnabled() && isValidDeploymentTarget(dc)) ||
-                Boolean.getBoolean("org.glassfish.paas.orchestrator.enabled");
-    }
-
-    private boolean isValidDeploymentTarget(DeploymentContext dc) {
-        if(dc == null){
-            return false;
-        }
-
-        String target = null;
-        OpsParams params = dc.getCommandParameters(OpsParams.class);
-        if(params.origin == OpsParams.Origin.deploy || params.origin == OpsParams.Origin.load){
-            DeployCommandParameters dcp = dc.getCommandParameters(DeployCommandParameters.class);
-            target = dcp.target;
-        }else  if(params.origin == OpsParams.Origin.undeploy || params.origin == OpsParams.Origin.unload){
-            UndeployCommandParameters dcp = dc.getCommandParameters(UndeployCommandParameters.class);
-            target = dcp.target;
-        }else{
-            return false;//we do not handle other "Origins" for now.
-        }
-
-        if(target == null){
-            return true; // if target is null, we assume that its PaaS styled deployment.
-        }
-
-        //hack. temporary fix.
-        if (target.equals("server")) {
-            if (params.origin == OpsParams.Origin.load && params.command == OpsParams.Command.startup_server) {
-                String appName = params.name();
-
-                List<String> targets =
-                        domain.getAllReferencedTargetsForApplication(appName);
-                if (targets.size() == 1) {
-                    target = targets.get(0);
-                    /*
-                    DeployCommandParameters dcp = dc.getCommandParameters(DeployCommandParameters.class);
-                    dcp.target = target;
-                    */
-                }
-            }
-        }
-
-        Cluster cluster = domain.getClusterNamed(target);
-        if(cluster != null){
-            List<VirtualMachineConfig> vmcList = cluster.getExtensionsByType(VirtualMachineConfig.class);
-            if(vmcList != null && vmcList.size()  > 0){
-                return true;
-            }else{
-                return false; //not a virtual cluster.
-            }
-        }else{
-            //target is not cluster or no such target exists.
-            return false;
-        }
-    }
-
 
     @Override
     public boolean scaleService(final String appName, final String svcName,
@@ -1013,5 +792,45 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator, Application
             }
         }
         return null;
+    }
+
+    public void undeploy(OpsParams params, ExtendedDeploymentContext context) {
+        String appName = params.name();
+        postUndeploy(appName, context.getSource(), context);
+        serviceMetadata.remove(appName);
+        provisionedServices.remove(appName);
+    }
+
+    public void disable(String appName, ExtendedDeploymentContext context) {
+        Set<Plugin> installedPlugins = getPlugins();
+        ServiceMetadata appServiceMetadata = getServiceMetadata(appName);
+        stopServices(installedPlugins, appServiceMetadata, context);
+        serviceMetadata.remove(appName);
+        provisionedServices.remove(appName);
+    }
+
+    public void startup(ReadableArchive archive, String appName, ExtendedDeploymentContext context) {
+        Set<Plugin> installedPlugins = getPlugins();
+        ServiceMetadata appServiceMetadata =
+                serviceDependencyDiscovery(appName, archive, installedPlugins);
+        serviceMetadata.put(appName, appServiceMetadata);
+        Set<ProvisionedService> provisionedServiceSet =
+                retrieveProvisionedServices(installedPlugins, appServiceMetadata, context);
+        provisionedServices.put(appName, provisionedServiceSet);
+    }
+
+    public void enable(ReadableArchive archive, String appName, ExtendedDeploymentContext context) {
+        Set<Plugin> installedPlugins = getPlugins();
+        ServiceMetadata appServiceMetadata =
+                serviceDependencyDiscovery(appName, archive, installedPlugins);
+        serviceMetadata.put(appName, appServiceMetadata);
+
+        Set<ProvisionedService> provisionedServiceSet =
+                startServices(installedPlugins, appServiceMetadata, context);
+        provisionedServices.put(appName, provisionedServiceSet);
+    }
+
+    public void deploy(ReadableArchive archive, String appName, ExtendedDeploymentContext context) {
+        provisionServicesForApplication(appName, archive, context);
     }
 }
