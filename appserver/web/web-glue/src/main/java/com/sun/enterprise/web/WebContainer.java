@@ -1212,6 +1212,8 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
         vs.setServerEnvironment(instance);
         vs.setDomain(domain);
         vs.setCommandRunner(runner);
+        vs.setHabitat(habitat);
+        vs.setClassLoaderHierarchy(clh);
 
         // Add Host to Engine
         engine.addChild(vs);

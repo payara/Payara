@@ -79,6 +79,11 @@ public class ContextFacade extends WebModule implements Context {
         this.classLoader = classLoader;
     }
 
+     /**
+     * The name of the deployed application
+     */
+    private String appName = null;
+
     private transient SecurityConfig config = null;
 
     /**
@@ -106,13 +111,21 @@ public class ContextFacade extends WebModule implements Context {
 
     // ------------------------------------------------------------- Properties
 
-    public File getDocRoot() {
-        return docRoot;
+    public String getAppName() {
+        return appName ;
+    }
+
+    public void setAppName(String name) {
+        appName = name;
     }
 
     @Override
     public String getContextRoot() {
         return contextRoot;
+    }
+
+    public File getDocRoot() {
+        return docRoot;
     }
 
     // ------------------------------------------------- ServletContext Methods

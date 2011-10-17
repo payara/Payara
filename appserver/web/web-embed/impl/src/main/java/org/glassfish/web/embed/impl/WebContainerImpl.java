@@ -673,7 +673,14 @@ public class WebContainerImpl implements WebContainer {
                 throw new ConfigException("Context with contextRoot "+
                         contextRoot+" is already registered");
             }
-            vs.addContext(context, contextRoot);
+
+            if (!org.glassfish.api.web.Constants.ADMIN_VS.equals(vs.getID())) {
+                vs.addContext(context, contextRoot);
+                if (log.isLoggable(Level.INFO)) {
+                    log.info("Added context with path " + contextRoot +
+                            " from virtual server " + vs.getID());
+                }
+            }
         }
 
     }
@@ -692,16 +699,17 @@ public class WebContainerImpl implements WebContainer {
 
         String contextRoot = context.getPath();
         for (VirtualServer vs : getVirtualServers()) {
-            if (vs.getContext(contextRoot)!=null) {
-                vs.removeContext(context);
-                if (log.isLoggable(Level.INFO)) {
-                    log.info("Removed context with path " + contextRoot +
-                            " from virtual server " + vs.getID());
+            if (!org.glassfish.api.web.Constants.ADMIN_VS.equals(vs.getID())) {
+                if (vs.getContext(contextRoot)!=null) {
+                    vs.removeContext(context);
+                    if (log.isLoggable(Level.INFO)) {
+                        log.info("Removed context with path " + contextRoot +
+                                " from virtual server " + vs.getID());
+                    }
+                } else {
+                    throw new GlassFishException("Context with context path " +
+                            context.getPath() + " does not exist on virtual server " + vs.getID());
                 }
-            } else {
-                throw new GlassFishException(new ConfigException(
-                    "Context with context path " + context.getContextPath() +
-                            " does not exist on virtual server " + vs.getID()));
             }
         }
 
@@ -1089,10 +1097,8 @@ public class WebContainerImpl implements WebContainer {
      * @param level
      */
     public void setLogLevel(Level level) {
-
         log.setLevel(level);
-
-    }   
+    }
 
 
 }
