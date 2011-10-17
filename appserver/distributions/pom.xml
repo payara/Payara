@@ -73,6 +73,7 @@
 
     <modules>
 	<module>nucleus</module>
+	<module>minnow</module>
 	<module>web</module>
 	<module>glassfish</module>
 <!-- disable appclient distribution build since we're not using it yet -->
