@@ -954,14 +954,17 @@ class BindingsIterator implements NamingEnumeration {
         this.names = names;
     }
 
+    @Override
     public boolean hasMoreElements() {
         return names.hasNext();
     }
 
+    @Override
     public boolean hasMore() throws NamingException {
         return hasMoreElements();
     }
 
+    @Override
     public Object nextElement() {
         if (names.hasNext()) {
             try {
@@ -974,12 +977,13 @@ class BindingsIterator implements NamingEnumeration {
             return null;
     }
 
+    @Override
     public Object next() throws NamingException {
         return nextElement();
     }
 
-    // New API for JNDI 1.2
-    public void close() throws NamingException {
-        throw new OperationNotSupportedException("close() not implemented");
+    @Override
+    public void close() {
+        //no-op since no steps needed to free up resources
     }
 }
