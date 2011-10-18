@@ -3,39 +3,34 @@
  *
  * Copyright (c) 2009-2011 Oracle and/or its affiliates. All rights reserved.
  *
- * The contents of this file are subject to the terms of either the GNU
- * General Public License Version 2 only ("GPL") or the Common Development
- * and Distribution License("CDDL") (collectively, the "License").  You
- * may not use this file except in compliance with the License.  You can
- * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
- * language governing permissions and limitations under the License.
+ * The contents of this file are subject to the terms of either the GNU General
+ * Public License Version 2 only ("GPL") or the Common Development and
+ * Distribution License("CDDL") (collectively, the "License"). You may not use
+ * this file except in compliance with the License. You can obtain a copy of the
+ * License at https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html or
+ * packager/legal/LICENSE.txt. See the License for the specific language
+ * governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
  * file and include the License file at packager/legal/LICENSE.txt.
  *
- * GPL Classpath Exception:
- * Oracle designates this particular file as subject to the "Classpath"
- * exception as provided by Oracle in the GPL Version 2 section of the License
- * file that accompanied this code.
+ * GPL Classpath Exception: Oracle designates this particular file as subject to
+ * the "Classpath" exception as provided by Oracle in the GPL Version 2 section
+ * of the License file that accompanied this code.
  *
- * Modifications:
- * If applicable, add the following below the License Header, with the fields
- * enclosed by brackets [] replaced by your own identifying information:
- * "Portions Copyright [year] [name of copyright owner]"
+ * Modifications: If applicable, add the following below the License Header,
+ * with the fields enclosed by brackets [] replaced by your own identifying
+ * information: "Portions Copyright [year] [name of copyright owner]"
  *
- * Contributor(s):
- * If you wish your version of this file to be governed by only the CDDL or
- * only the GPL Version 2, indicate your decision by adding "[Contributor]
- * elects to include this software in this distribution under the [CDDL or GPL
- * Version 2] license."  If you don't indicate a single choice of license, a
- * recipient has the option to distribute your version of this file under
- * either the CDDL, the GPL Version 2 or to extend the choice of license to
- * its licensees as provided above.  However, if you add GPL Version 2 code
- * and therefore, elected the GPL Version 2 license, then the option applies
- * only if the new code is made subject to such option by the copyright
- * holder.
+ * Contributor(s): If you wish your version of this file to be governed by only
+ * the CDDL or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution under the
+ * [CDDL or GPL Version 2] license." If you don't indicate a single choice of
+ * license, a recipient has the option to distribute your version of this file
+ * under either the CDDL, the GPL Version 2 or to extend the choice of license to
+ * its licensees as provided above. However, if you add GPL Version 2 code and
+ * therefore, elected the GPL Version 2 license, then the option applies only if
+ * the new code is made subject to such option by the copyright holder.
  */
 package org.glassfish.admin.rest.resources;
 
@@ -73,15 +68,13 @@ import static org.glassfish.admin.rest.Util.eleminateHypen;
 @Produces({"text/html;qs=2", MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, MediaType.APPLICATION_FORM_URLENCODED})
 @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, MediaType.APPLICATION_FORM_URLENCODED})
 public class TemplateRestResource {
+
     @Context
     protected HttpHeaders requestHeaders;
-
     @Context
     protected UriInfo uriInfo;
-
     @Context
     protected ResourceContext resourceContext;
-
     @Context
     protected Habitat habitat;
     protected Dom entity;  //may be null when not created yet...
@@ -91,6 +84,7 @@ public class TemplateRestResource {
     protected String childID; // id of the current child if part of a list, might be null
     public final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(TemplateRestResource.class);
     final private static List<String> attributesToSkip = new ArrayList<String>() {
+
         {
             add("parent");
             add("name");
@@ -140,7 +134,7 @@ public class TemplateRestResource {
             //just update it.
             data = ResourceUtil.translateCamelCasedNamesToXMLNames(data);
             RestActionReporter ar = Util.applyChanges(data, uriInfo, habitat);
-            if(ar.getActionExitCode() != ActionReport.ExitCode.SUCCESS) {
+            if (ar.getActionExitCode() != ActionReport.ExitCode.SUCCESS) {
                 //TODO better error handling.
                 return Response.status(400).entity(ResourceUtil.getActionReportResult(ar, "Could not apply changes" + ar.getMessage(), requestHeaders, uriInfo)).build();
             }
@@ -216,19 +210,19 @@ public class TemplateRestResource {
                 if (exitCode != ActionReport.ExitCode.FAILURE) {
                     String successMessage = localStrings.getLocalString("rest.resource.delete.message",
                             "\"{0}\" deleted successfully.", new Object[]{uriInfo.getAbsolutePath()});
-                    return Response.ok(ResourceUtil.getActionReportResult(actionReport,  
+                    return Response.ok(ResourceUtil.getActionReportResult(actionReport,
                             successMessage, requestHeaders, uriInfo)).build(); //200 - ok
                 }
 
                 String errorMessage = actionReport.getMessage();
 
-                return Response.status(400).entity(ResourceUtil.getActionReportResult(actionReport, 
+                return Response.status(400).entity(ResourceUtil.getActionReportResult(actionReport,
                         errorMessage, requestHeaders, uriInfo)).build(); //400 - bad request
             }
 
             String message = localStrings.getLocalString("rest.resource.delete.forbidden",
                     "DELETE on \"{0}\" is forbidden.", new Object[]{uriInfo.getAbsolutePath()});
-            return Response.status(400).entity(ResourceUtil.getActionReportResult(new RestActionReporter(), 
+            return Response.status(400).entity(ResourceUtil.getActionReportResult(new RestActionReporter(),
                     message, requestHeaders, uriInfo)).build(); //403 - forbidden
         } catch (Exception e) {
             throw new WebApplicationException(e, Response.Status.INTERNAL_SERVER_ERROR);
@@ -266,7 +260,7 @@ public class TemplateRestResource {
 
     public void setParentAndTagName(Dom parent, String tagName) {
 
-        if (parent==null){ //prevent https://glassfish.dev.java.net/issues/show_bug.cgi?id=14125
+        if (parent == null) { //prevent https://glassfish.dev.java.net/issues/show_bug.cgi?id=14125
             throw new WebApplicationException(Response.Status.NOT_FOUND);
         }
         this.parent = parent;
@@ -290,9 +284,11 @@ public class TemplateRestResource {
     public static HashMap<String, String> createDataBasedOnForm(FormDataMultiPart formData) {
         HashMap<String, String> data = new HashMap<String, String>();
         try {
-            /* data passed to the generic command running
+            /*
+             * data passed to the generic command running
              *
-             * */
+             *
+             */
 
             Map<String, List<FormDataBodyPart>> m1 = formData.getFields();
 
@@ -338,7 +334,7 @@ public class TemplateRestResource {
     /* this method is called by the ASM generated code
      *  change very carefully
      */
-        public void setBeanByKey(List<Dom> parentList, String id, String tag) {
+    public void setBeanByKey(List<Dom> parentList, String id, String tag) {
         this.tagName = tag;
 
         childID = id;
@@ -375,10 +371,10 @@ public class TemplateRestResource {
         RestActionReporter ar = new RestActionReporter();
         ar.setExtraProperties(new Properties());
         ConfigBean entity = (ConfigBean) getEntity();
-        if (childID!=null){
-             ar.setActionDescription(childID);
-           
-        }else if (childModel != null) {
+        if (childID != null) {
+            ar.setActionDescription(childID);
+
+        } else if (childModel != null) {
             ar.setActionDescription(childModel.getTagName());
         }
         if (showEntityValues) {
@@ -417,11 +413,11 @@ public class TemplateRestResource {
             return null;
         }
         String result =
-         ResourceUtil.getCommand(RestRedirect.OpType.DELETE, getEntity().model);
-        
-        if ((result==null)&&(entity.parent()!=null)){
+                ResourceUtil.getCommand(RestRedirect.OpType.DELETE, getEntity().model);
+
+        if ((result == null) && (entity.parent() != null)) {
             //trying @Delete annotation that as a generic CRUD delete command, possibly...
-           Class<? extends ConfigBeanProxy> cbp = null;
+            Class<? extends ConfigBeanProxy> cbp = null;
             try {
                 cbp = (Class<? extends ConfigBeanProxy>) entity.parent().model.classLoaderHolder.get().loadClass(entity.parent().model.targetTypeName);
             } catch (ClassNotFoundException e) {
@@ -438,7 +434,7 @@ public class TemplateRestResource {
             if (del != null) {
                 return del.value();
             }
-                 
+
         }
         return result;
     }
@@ -460,13 +456,12 @@ public class TemplateRestResource {
     }
 
     // This has to be smarter, since we are encoding / in resource names now
-
     private void addDefaultParameter(HashMap<String, String> data) {
         String defaultParameterValue = getEntity().getKey();
-        if (defaultParameterValue==null){// no primary key
+        if (defaultParameterValue == null) {// no primary key
             //we take the parent key.
             // see for example delete-ssl that that the parent key name as ssl does not have a key
-            defaultParameterValue= parent.getKey();
+            defaultParameterValue = parent.getKey();
         }
         data.put("DEFAULT", defaultParameterValue);
     }
@@ -485,7 +480,6 @@ public class TemplateRestResource {
     }
 
     //******************************************************************************************************************
-
     private Map<String, String> getAttributes(Dom entity) {
         Map<String, String> result = new TreeMap<String, String>();
         Set<String> attributeNames = entity.model.getAttributeNames();
