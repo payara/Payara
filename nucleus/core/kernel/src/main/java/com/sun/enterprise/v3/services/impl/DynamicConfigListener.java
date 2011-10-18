@@ -105,31 +105,33 @@ public class DynamicConfigListener implements ConfigListener {
                         logger.log(Level.FINE, "NetworkConfig changed {0} {1} {2}",
                                 new Object[]{type, tClass, t});
                     }
-                    if (tClass == NetworkListener.class) {
+                    if (tClass == NetworkListener.class && t instanceof NetworkListener) {
                         return processNetworkListener(type, (NetworkListener) t, events);
-                    } else if (tClass == Http.class) {
+                    } else if (tClass == Http.class && t instanceof Http) {
                         return processProtocol(type, (Protocol) t.getParent(), events);
-                    } else if (tClass == FileCache.class) {
+                    } else if (tClass == FileCache.class && t instanceof FileCache) {
                         return processProtocol(type, (Protocol) t.getParent().getParent(), null);
-                    } else if (tClass == Ssl.class) {
+                    } else if (tClass == Ssl.class && t instanceof Ssl) {
                         return processProtocol(type, (Protocol) t.getParent(), null);
-                    } else if (tClass == Protocol.class) {
+                    } else if (tClass == Protocol.class && t instanceof Protocol) {
                         return processProtocol(type, (Protocol) t, null);
-                    } else if (tClass == ThreadPool.class) {
+                    } else if (tClass == ThreadPool.class && t instanceof ThreadPool) {
                         NotProcessed notProcessed = null;
                         for (NetworkListener listener : ((ThreadPool) t).findNetworkListeners()) {
                             notProcessed = processNetworkListener(type, listener, null);
                         }
                         return notProcessed;
-                    } else if (tClass == Transport.class) {
+                    } else if (tClass == Transport.class && t instanceof Transport) {
                         NotProcessed notProcessed = null;
                         for (NetworkListener listener : ((Transport) t).findNetworkListeners()) {
                             notProcessed = processNetworkListener(type, listener, null);
                         }
                         return notProcessed;
-                    } else if (tClass == VirtualServer.class && !grizzlyService.hasMapperUpdateListener()) {
+                    } else if (tClass == VirtualServer.class 
+                                    && t instanceof VirtualServer 
+                                    && !grizzlyService.hasMapperUpdateListener()) {
                         return processVirtualServer(type, (VirtualServer) t);
-                    } else if (tClass == SystemProperty.class) {
+                    } else if (tClass == SystemProperty.class && t instanceof SystemProperty) {
                         NetworkConfig networkConfig = config.getNetworkConfig();
                         if ((networkConfig != null) && ((SystemProperty)t).getName().endsWith("LISTENER_PORT")) {
                             for (NetworkListener listener : networkConfig.getNetworkListeners().getNetworkListener()) {
