@@ -48,5 +48,5 @@ import org.jvnet.hk2.component.PerLookup;
  */
 @Service(name = "install-node-windows")
 @Scoped(PerLookup.class)
-public class InstallNodeWindowsCommand extends InstallNodeSshCommand {
+public class InstallNodeWindowsCommand extends InstallNodeBaseCommand {
 }
