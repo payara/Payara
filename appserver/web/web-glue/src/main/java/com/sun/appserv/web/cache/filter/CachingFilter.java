@@ -53,11 +53,15 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class CachingFilter implements Filter, CacheManagerListener {
+
+    private static final String PROCESSING_SET =
+        "com.sun.appserv.web.cache.filter.CachingFilter.PROCESSING_SET";
 
     // this servlet filter name
     String filterName;
@@ -173,7 +177,7 @@ public class CachingFilter implements Filter, CacheManagerListener {
                          *  if there are more than one thread tries to fill/refresh
                          *  same cache entry, then all but the first thread will block.
                          */
-                        waitForRefresh = cache.waitRefresh(index);
+                        waitForRefresh = waitForRefresh(request, key, index);
                     }
                 } while (waitForRefresh);
             } else {
@@ -348,6 +352,31 @@ public class CachingFilter implements Filter, CacheManagerListener {
                            throws IOException {
         ServletOutputStream out = response.getOutputStream();
         out.write(entry.bytes);
+    }
+
+    /**
+     * Call cache.waitRefresh only when the cache processing is not started.
+     * See IT 17377.
+     */
+    private boolean waitForRefresh(HttpServletRequest req, String key, int index) {
+        Object obj = req.getAttribute(PROCESSING_SET);
+        HashSet<String> processingSet = null;
+        if (obj == null) {
+            processingSet = new HashSet<String>();
+            req.setAttribute(PROCESSING_SET, processingSet);
+        } else if (obj instanceof HashSet) {
+            @SuppressWarnings("unchecked")
+            final HashSet<String> set = (HashSet<String>)obj;
+            processingSet = set;
+        } else {
+            throw new IllegalStateException();
+        }
+
+        if (processingSet.add(key)) {
+            return cache.waitRefresh(index);
+        } else {
+            return false;
+        }
     }
 
     /**
