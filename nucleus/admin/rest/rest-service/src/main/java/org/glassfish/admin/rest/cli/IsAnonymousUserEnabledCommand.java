@@ -61,7 +61,9 @@ import org.jvnet.hk2.component.PerLookup;
 @Service(name = "__anonymous-user-enabled")
 @Scoped(PerLookup.class)
 @RestEndpoints({
-    @RestEndpoint(configBean=Domain.class,opType=RestEndpoint.OpType.GET, path="__anonymous-user-enabled")
+    @RestEndpoint(configBean=Domain.class,
+        opType=RestEndpoint.OpType.GET, 
+        path="anonymous-user-enabled")
 })
 public class IsAnonymousUserEnabledCommand implements AdminCommand {
     @Inject
