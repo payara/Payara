@@ -37,7 +37,6 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
 package com.sun.enterprise.admin.cli.cluster;
 
 import com.sun.enterprise.universal.io.SmartFile;
@@ -80,6 +79,7 @@ import java.util.List;
  * @author Rajiv Mordani
  * @author Byron Nevins
  */
+
 @Service(name = "install-node-ssh")
 @Scoped(PerLookup.class)
 public class InstallNodeSshCommand extends NativeRemoteCommandsBase {
@@ -112,6 +112,7 @@ public class InstallNodeSshCommand extends NativeRemoteCommandsBase {
         // one implies the other
         if(ok(windowsDomain))
             dcomNode = true;
+
 
         installDir = resolver.resolve(installDir);
         if (!force) {
@@ -158,7 +159,7 @@ public class InstallNodeSshCommand extends NativeRemoteCommandsBase {
 
         try {
             ArrayList<String> binDirFiles = new ArrayList<String>();
-			precopy();
+            precopy();
             zipFile = createZipFileIfNeeded(binDirFiles);
             copyToHosts(zipFile, binDirFiles);
         }
@@ -179,6 +180,7 @@ public class InstallNodeSshCommand extends NativeRemoteCommandsBase {
 
         return SUCCESS;
     }
+
     /**
      * bnevins: This is exclusively a "user-performance" enhancement.
      * We are forcing the failure
@@ -368,14 +370,16 @@ public class InstallNodeSshCommand extends NativeRemoteCommandsBase {
                 throw new IOException(ioe);
             }
 
-            logger.info("Fixing file permissions for nadmin file under " + host + ":" + installDir + "/lib");
-            try {
-                sftpClient.chmod((installDir + "/" + SystemPropertyConstants.getComponentName() + "/lib/nadmin"), 0755);
-                logger.finer("Fixed file permission for nadmin under " + host + ":" + installDir + "/" + SystemPropertyConstants.getComponentName() + "/lib/nadmin");
-            }
-            catch (IOException ioe) {
-                logger.info(Strings.get("fix.permissions.failed", host, installDir));
-                throw new IOException(ioe);
+            if (Constants.v4) {
+                logger.info("Fixing file permissions for nadmin file under " + host + ":" + installDir + "/lib");
+                try {
+                    sftpClient.chmod((installDir + "/" + SystemPropertyConstants.getComponentName() + "/lib/nadmin"), 0755);
+                    logger.finer("Fixed file permission for nadmin under " + host + ":" + installDir + "/" + SystemPropertyConstants.getComponentName() + "/lib/nadmin");
+                }
+                catch (IOException ioe) {
+                    logger.info(Strings.get("fix.permissions.failed", host, installDir));
+                    throw new IOException(ioe);
+                }
             }
         }
     }
@@ -464,7 +468,8 @@ public class InstallNodeSshCommand extends NativeRemoteCommandsBase {
         boolean res = false;
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
         try {
-            String cmd = "'" + installDir + "/" + SystemPropertyConstants.getComponentName() + "/lib/nadmin' version --local --terse";
+            String asadmin = Constants.v4 ? "/lib/nadmin' version --local --terse" : "/bin/asadmin' version --local --terse";
+            String cmd = "'" + installDir + "/" + SystemPropertyConstants.getComponentName() + asadmin;
             int status = sshLauncher.runCommand(cmd, outStream);
             if (status == 0) {
                 logger.finer(host + ":'" + cmd + "'" + " returned [" + outStream.toString() + "]");
