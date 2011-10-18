@@ -531,7 +531,7 @@ public interface Server extends ConfigBeanProxy, Injectable, PropertyBag, Named,
                     }
                 }
 
-                if (!clusterExists) {
+                if (ourCluster == null) {
                     throw new TransactionFailure(localStrings.getLocalString(
                             "noSuchCluster", "Cluster {0} does not exist.", clusterName));
                 }
