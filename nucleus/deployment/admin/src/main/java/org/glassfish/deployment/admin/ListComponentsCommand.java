@@ -48,6 +48,9 @@ import org.glassfish.api.admin.ExecuteOn;
 import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.api.admin.CommandRunner;
+import org.glassfish.api.admin.RestEndpoint;
+import org.glassfish.api.admin.RestEndpoints;
+import org.glassfish.api.admin.RestParam;
 import org.glassfish.api.Param;
 import org.glassfish.api.I18n;
 import org.glassfish.api.container.Sniffer;
@@ -62,7 +65,6 @@ import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.component.PerLookup;
 
 import java.util.*;
-import org.glassfish.api.admin.*;
 
 /**
  * list-components command

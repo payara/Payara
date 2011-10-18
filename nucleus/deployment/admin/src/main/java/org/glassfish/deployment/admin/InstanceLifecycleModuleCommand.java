@@ -63,7 +63,8 @@ import com.sun.enterprise.config.serverbeans.Domain;
 
 import java.util.logging.Logger;
 import java.util.Properties;
-import org.glassfish.api.admin.*;
+import org.glassfish.api.admin.RestEndpoint;
+import org.glassfish.api.admin.RestEndpoints;
 
 /**
  * The command to create application ref for lifecycle module on instance

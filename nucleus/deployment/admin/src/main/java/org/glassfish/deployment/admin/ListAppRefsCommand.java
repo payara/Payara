@@ -59,7 +59,8 @@ import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.component.PerLookup;
 import java.util.List;
-import org.glassfish.api.admin.*;
+import org.glassfish.api.admin.RestEndpoint;
+import org.glassfish.api.admin.RestEndpoints;
 
 @Service(name="_list-app-refs")
 @ExecuteOn(value={RuntimeType.DAS})

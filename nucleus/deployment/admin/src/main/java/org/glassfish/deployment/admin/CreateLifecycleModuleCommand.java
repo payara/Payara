@@ -63,7 +63,13 @@ import org.jvnet.hk2.config.Transaction;
 import java.util.logging.Logger;
 import java.util.Properties;
 import java.util.List;
-import org.glassfish.api.admin.*;
+import org.glassfish.api.admin.AdminCommand;
+import org.glassfish.api.admin.AdminCommandContext;
+import org.glassfish.api.admin.ExecuteOn;
+import org.glassfish.api.admin.RestEndpoint;
+import org.glassfish.api.admin.RestEndpoints;
+import org.glassfish.api.admin.RestParam;
+import org.glassfish.api.admin.RuntimeType;
 
 /**
  * Create lifecycle modules.

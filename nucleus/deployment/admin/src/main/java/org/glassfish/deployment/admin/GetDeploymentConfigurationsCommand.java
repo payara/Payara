@@ -49,8 +49,6 @@ import org.glassfish.api.admin.ExecuteOn;
 import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.api.container.Sniffer;
 import org.glassfish.api.deployment.archive.ReadableArchive;
-import org.glassfish.config.support.TargetType;
-import org.glassfish.config.support.CommandTarget;
 import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.data.ApplicationRegistry;
 import org.glassfish.internal.data.ModuleInfo;
@@ -58,7 +56,6 @@ import org.glassfish.internal.data.EngineRef;
 import org.glassfish.deployment.common.DeploymentProperties;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.api.ActionReport;
-import org.glassfish.api.I18n;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
@@ -66,7 +63,9 @@ import org.jvnet.hk2.component.PerLookup;
 
 import java.util.Map;
 import java.io.IOException;
-import org.glassfish.api.admin.*;
+import org.glassfish.api.admin.RestEndpoint;
+import org.glassfish.api.admin.RestEndpoints;
+import org.glassfish.api.admin.RestParam;
 
 /**
  * Get deployment configurations command
