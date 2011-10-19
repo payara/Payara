@@ -45,8 +45,6 @@ import com.trilead.ssh2.SCPClient;
 import java.io.*;
 import java.io.ByteArrayOutputStream;
 import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.CommandException;
 import org.glassfish.cluster.ssh.launcher.SSHLauncher;
@@ -70,6 +68,8 @@ public class InstallNodeSshCommand extends InstallNodeBaseCommand {
     String sshkeyfile;
     @Inject
     private SSHLauncher sshLauncher;
+    //storing password to prevent prompting twice
+    private Map<String, char[]> sshPasswords = new HashMap<String, char[]>();
 
     @Override
     String getRawRemoteUser() {
@@ -135,6 +135,7 @@ public class InstallNodeSshCommand extends InstallNodeBaseCommand {
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
 
         for (String host : hosts) {
+            promptPass = false;
             sshLauncher.init(getRemoteUser(), host, getRemotePort(), sshpassword, getSshKeyFile(), sshkeypassphrase, logger);
 
             if (getSshKeyFile() != null && !sshLauncher.checkConnection()) {
@@ -206,7 +207,6 @@ public class InstallNodeSshCommand extends InstallNodeBaseCommand {
             }
 
             try {
-//                String zipFileName = getArchiveName();
                 logger.info("Removing " + host + ":" + sshInstallDir + "/" + getArchiveName());
                 sftpClient.rm(sshInstallDir + "/" + getArchiveName());
                 logger.finer("Removed " + host + ":" + sshInstallDir + "/" + getArchiveName());
@@ -289,5 +289,40 @@ public class InstallNodeSshCommand extends InstallNodeBaseCommand {
 
     @Override
     final void precopy() throws CommandException {
+        for (String host : hosts) {
+            createZip = true;
+            promptPass = false;
+            sshLauncher.init(getRemoteUser(), host, getRemotePort(), sshpassword, getSshKeyFile(), sshkeypassphrase, logger);
+
+            if (getSshKeyFile() != null && !sshLauncher.checkConnection()) {
+                //key auth failed, so use password auth
+                promptPass = true;
+            }
+
+            if (promptPass) {
+                String sshpass = getSSHPassword(host);
+                sshPasswords.put(host, sshpass.toCharArray());
+                //re-initialize
+                sshLauncher.init(getRemoteUser(), host, getRemotePort(), sshpass, getSshKeyFile(), sshkeypassphrase, logger);
+            }
+
+            String sshInstallDir = getInstallDir().replaceAll("\\\\", "/");
+
+            try {
+                SFTPClient sftpClient = sshLauncher.getSFTPClient();
+                if (sftpClient.exists(sshInstallDir) && checkIfAlreadyInstalled(host, sshInstallDir)){
+                    createZip = false;
+                } else {
+                    //no point in continuing if we know we have to create zip for at least one host
+                    break;
+                }
+            }
+            catch (IOException ex) {
+                throw new CommandException(ex);
+            }
+            catch (InterruptedException ex) {
+                throw new CommandException(ex);
+            }
+        }
     }
 }

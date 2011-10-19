@@ -97,6 +97,7 @@ abstract class NativeRemoteCommandsBase extends CLICommand {
     TokenResolver resolver = null;
     private String remoteUser;
     private int remotePort;
+    boolean createZip = true;
 
     NativeRemoteCommandsBase() {
         // Create a resolver that can replace system properties in strings
