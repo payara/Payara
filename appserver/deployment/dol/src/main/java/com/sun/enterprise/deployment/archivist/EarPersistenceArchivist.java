@@ -78,6 +78,9 @@ public class EarPersistenceArchivist extends PersistenceArchivist {
 
         Map<String, ReadableArchive> probablePersitenceArchives = new HashMap<String,  ReadableArchive>();
         try {
+            if (! (descriptor instanceof Application)) {
+                return null;
+            }
             final Application app = Application.class.cast(descriptor);
 
             // TODO: need to compute includeRoot, not hard-code it, in the next invocation. The flag should be set to true if operating in v2 compatibility mode false otherwise.

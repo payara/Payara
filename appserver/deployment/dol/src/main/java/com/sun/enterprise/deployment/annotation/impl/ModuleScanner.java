@@ -248,9 +248,6 @@ public abstract class ModuleScanner<T> extends JavaEEScanner implements Scanner<
         JarInputStream jis = null;
         try {
             final InputStream jarInputStream = jarURI.toURL().openStream();
-            if (jarInputStream == null) {
-                return;
-            }
             jis = new JarInputStream(jarInputStream);
             JarEntry je;
             while ((je = jis.getNextJarEntry()) != null) {

@@ -60,8 +60,7 @@ import java.util.List;
  * @author Rama Pulavarthi
  */
 @Service
-public class WLWebServicesDescriptorNode extends AbstractBundleNode
-        implements RootXMLNode {
+public class WLWebServicesDescriptorNode extends AbstractBundleNode {
 
     public WLWebServicesDescriptorNode(WebServicesDescriptor descriptor) {
         this();

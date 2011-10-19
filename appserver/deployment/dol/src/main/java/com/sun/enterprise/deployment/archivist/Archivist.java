@@ -361,11 +361,6 @@ public abstract class Archivist<T extends RootDeploymentDescriptor> {
      *
      * @return the initialized descriptor
      */
-    private T readDeploymentDescriptors(ReadableArchive archive)
-            throws IOException, SAXParseException {
-        return readDeploymentDescriptors(archive, archive, null);
-    }
-
     private T readDeploymentDescriptors(ReadableArchive descriptorArchive,
             ReadableArchive contentArchive,
             Application app) throws IOException, SAXParseException {
