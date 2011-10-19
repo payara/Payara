@@ -64,7 +64,6 @@ import javax.naming.NameParser;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.NotContextException;
-import javax.naming.OperationNotSupportedException;
 import javax.naming.Reference;
 import javax.naming.Referenceable;
 import org.omg.CORBA.ORBPackage.InvalidName;
@@ -451,6 +450,7 @@ public class SerialContext implements Context {
      * @return the resolved object.
      * @throws NamingException if there is a naming exception.
      */
+    @Override
     public Object lookup(String name) throws NamingException {
         return lookup( name, 0 ) ;
     }
@@ -501,8 +501,8 @@ public class SerialContext implements Context {
                 }
                 return o;
             } else {
-                SerialContextProvider provider = getProvider() ;
-                Object obj = provider.lookup(name);
+                SerialContextProvider prvdr = getProvider() ;
+                Object obj = prvdr.lookup(name);
                 if (obj instanceof NamingObjectProxy) {
                     return ((NamingObjectProxy) obj).create(this);
                 }
@@ -799,12 +799,12 @@ public class SerialContext implements Context {
      * @throws NamingException if there is a naming exception.
      */
     @Override
-    public NamingEnumeration list(String name) throws NamingException {
+    public NamingEnumeration<NameClassPair> list(String name) throws NamingException {
         if (name.isEmpty()) {
             // listing this context
             try {
                 Hashtable bindings = getProvider().list(myName);
-                return new RepNames(bindings);
+                return new RepNames<NameClassPair>(bindings);
             } catch (RemoteException ex) {
                 throw new CommunicationException(ex.toString());
             }
@@ -831,7 +831,7 @@ public class SerialContext implements Context {
      * @throws NamingException if there is a naming exception.
      */
     @Override
-    public NamingEnumeration list(Name name) throws NamingException {
+    public NamingEnumeration<NameClassPair> list(Name name) throws NamingException {
         // Flat namespace; no federation; just call string version
         return list(name.toString());
     }
@@ -844,12 +844,12 @@ public class SerialContext implements Context {
      * @throws NamingException if there is a naming exception.
      */
     @Override
-    public NamingEnumeration listBindings(String name) throws NamingException {
+    public NamingEnumeration<Binding> listBindings(String name) throws NamingException {
         if (name.isEmpty()) {
             // listing this context
             try {
                 Hashtable bindings = getProvider().list(myName);
-                return new RepBindings(bindings);
+                return new RepBindings<Binding>(bindings);
             } catch (RemoteException ex) {
                 CommunicationException ce = new CommunicationException(ex
                         .toString());
@@ -879,7 +879,7 @@ public class SerialContext implements Context {
      * @throws NamingException if there is a naming exception.
      */
     @Override
-    public NamingEnumeration listBindings(Name name) throws NamingException {
+    public NamingEnumeration<Binding> listBindings(Name name) throws NamingException {
         // Flat namespace; no federation; just call string version
         return listBindings(name.toString());
     }
@@ -1098,7 +1098,7 @@ public class SerialContext implements Context {
     }
 
     // Class for enumerating name/class pairs
-    static class RepNames implements NamingEnumeration {
+    static class RepNames<T> implements NamingEnumeration<T> {
         Hashtable bindings;
 
         Enumeration names;
@@ -1119,30 +1119,29 @@ public class SerialContext implements Context {
         }
 
         @Override
-        public Object nextElement() {
+        public T nextElement() {
             if (names.hasMoreElements()) {
                 String name = (String) names.nextElement();
                 String className = bindings.get(name).getClass().getName();
-                return new NameClassPair(name, className);
+                return (T) (new NameClassPair(name, className));
             } else {
                 return null;
             }
         }
 
         @Override
-        public Object next() throws NamingException {
+        public T next() throws NamingException {
             return nextElement();
         }
 
-        // New API for JNDI 1.2
         @Override
-        public void close() throws NamingException {
-            throw new OperationNotSupportedException("close() not implemented");
+        public void close() {
+            //no-op since no steps needed to free up resources
         }
     }
 
     // Class for enumerating bindings
-    static class RepBindings implements NamingEnumeration {
+    static class RepBindings<T> implements NamingEnumeration<T> {
         Enumeration names;
 
         Hashtable bindings;
@@ -1163,24 +1162,23 @@ public class SerialContext implements Context {
         }
 
         @Override
-        public Object nextElement() {
+        public T nextElement() {
             if (hasMoreElements()) {
                 String name = (String) names.nextElement();
-                return new Binding(name, bindings.get(name));
+                return (T) (new Binding(name, bindings.get(name)));
             } else {
                 return null;
             }
         }
 
         @Override
-        public Object next() throws NamingException {
+        public T next() throws NamingException {
             return nextElement();
         }
 
-        // New API for JNDI 1.2
         @Override
-        public void close() throws NamingException {
-            throw new OperationNotSupportedException("close() not implemented");
+        public void close() {
+            //no-op since no steps needed to free up resources
         }
     }
 

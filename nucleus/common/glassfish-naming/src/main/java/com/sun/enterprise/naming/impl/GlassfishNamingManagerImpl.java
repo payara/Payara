@@ -797,14 +797,14 @@ public final class  GlassfishNamingManagerImpl
     }
 
 
-    public NamingEnumeration list(String name) throws NamingException {
+    public NamingEnumeration<NameClassPair> list(String name) throws NamingException {
         ArrayList list = listNames(name);
-        return new NamePairsEnum(this, list.iterator());
+        return new BindingsIterator<NameClassPair>(this, list.iterator(), true);
     }
 
-    public NamingEnumeration listBindings(String name) throws NamingException {
+    public NamingEnumeration<Binding> listBindings(String name) throws NamingException {
         ArrayList list = listNames(name);
-        return new BindingsIterator(this, list.iterator());
+        return new BindingsIterator<Binding>(this, list.iterator(), false);
     }
 
     private ArrayList listNames(String name) throws NamingException {
@@ -941,49 +941,54 @@ public final class  GlassfishNamingManagerImpl
                     + ", treatComponentAsModule = " + treatComponentAsModule; }
     }
 
-}
+    private static class BindingsIterator<T> implements NamingEnumeration<T> {
+        private GlassfishNamingManagerImpl nm;
+        private Iterator names;
+        private boolean producesNamesOnly;
 
-// Class for enumerating bindings
-class BindingsIterator implements NamingEnumeration {
-    GlassfishNamingManagerImpl nm;
+        BindingsIterator(GlassfishNamingManagerImpl nm, Iterator names, boolean producesNamesOnly) {
+            this.nm = nm;
+            this.names = names;
+            this.producesNamesOnly = producesNamesOnly;
+        }
 
-    Iterator names;
+        @Override
+        public boolean hasMoreElements() {
+            return names.hasNext();
+        }
 
-    BindingsIterator(GlassfishNamingManagerImpl nm, Iterator names) {
-        this.nm = nm;
-        this.names = names;
-    }
+        @Override
+        public boolean hasMore() throws NamingException {
+            return hasMoreElements();
+        }
 
-    @Override
-    public boolean hasMoreElements() {
-        return names.hasNext();
-    }
-
-    @Override
-    public boolean hasMore() throws NamingException {
-        return hasMoreElements();
-    }
-
-    @Override
-    public Object nextElement() {
-        if (names.hasNext()) {
-            try {
-                String name = (String) names.next();
-                return new Binding(name, nm.lookup(name));
-            } catch (Exception ex) {
-                throw new RuntimeException("Exception during lookup: " + ex);
+        @Override
+        public T nextElement() {
+            if (names.hasNext()) {
+                try {
+                    String name = (String) names.next();
+                    Object obj = nm.lookup(name);
+                    return producesNamesOnly ?
+                            (T) (new NameClassPair(name, getClass().getName())) :
+                            (T) (new Binding(name, obj));
+                } catch (RuntimeException ex) {
+                    throw ex;
+                } catch (Exception ex) {
+                    throw new RuntimeException(ex);
+                }
+            } else {
+                return null;
             }
-        } else
-            return null;
-    }
+        }
 
-    @Override
-    public Object next() throws NamingException {
-        return nextElement();
-    }
+        @Override
+        public T next() throws NamingException {
+            return nextElement();
+        }
 
-    @Override
-    public void close() {
-        //no-op since no steps needed to free up resources
+        @Override
+        public void close() {
+            //no-op since no steps needed to free up resources
+        }
     }
 }

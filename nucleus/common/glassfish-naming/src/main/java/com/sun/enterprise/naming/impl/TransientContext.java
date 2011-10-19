@@ -531,7 +531,7 @@ public class TransientContext implements Context, Serializable {
      * @throws NamingException if there is a naming exception
      */
     @Override
-    public NamingEnumeration list(Name name) throws NamingException {
+    public NamingEnumeration<NameClassPair> list(Name name) throws NamingException {
         return list(name.toString());
     }
 
@@ -541,14 +541,14 @@ public class TransientContext implements Context, Serializable {
      * @throws NamingException if there is a naming exception
      */
     @Override
-    public NamingEnumeration list(String name) throws NamingException {
+    public NamingEnumeration<NameClassPair> list(String name) throws NamingException {
         lock.readLock().lock() ;
         try {
             if (debug) {
                 print(bindings);
             }
             if (name.equals("")) {
-                return new RepNames(new Hashtable(bindings));
+                return new RepNames<NameClassPair>(new Hashtable(bindings));
             }
 
             Object target = lookup(name);
@@ -567,11 +567,11 @@ public class TransientContext implements Context, Serializable {
      * @throws NamingException if there is a naming exception
      */
     @Override
-    public NamingEnumeration listBindings(String name) throws NamingException {
+    public NamingEnumeration<Binding> listBindings(String name) throws NamingException {
         lock.readLock().lock() ;
         try {
             if (name.equals("")) {
-                return new RepBindings(new Hashtable(bindings));
+                return new RepBindings<Binding>(new Hashtable(bindings));
             }
 
             Object target = lookup(name);
@@ -590,7 +590,7 @@ public class TransientContext implements Context, Serializable {
      * @throws NamingException if there is a naming exception
      */
     @Override
-    public NamingEnumeration listBindings(Name name) throws NamingException {
+    public NamingEnumeration<Binding> listBindings(Name name) throws NamingException {
         return listBindings(name.toString());
     }
 
@@ -753,7 +753,7 @@ public class TransientContext implements Context, Serializable {
     }
 
     // Class for enumerating name/class pairs
-    static class RepNames implements NamingEnumeration {
+    static class RepNames<T> implements NamingEnumeration<T> {
         private Map<String,String> nameToClassName =
             new HashMap<String,String>() ;
         private Iterator<String> iter ;
@@ -784,30 +784,29 @@ public class TransientContext implements Context, Serializable {
         }
 
         @Override
-        public Object nextElement() {
+        public T nextElement() {
             if (iter.hasNext()) {
                 String name = iter.next();
                 String className = nameToClassName.get(name) ;
-                return new NameClassPair(name, className);
+                return (T) (new NameClassPair(name, className));
             } else {
                 return null;
             }
         }
 
         @Override
-        public Object next() throws NamingException {
+        public T next() throws NamingException {
             return nextElement();
         }
 
-        // New API for JNDI 1.2
         @Override
-        public void close() throws NamingException {
-            throw new OperationNotSupportedException("close() not implemented");
+        public void close() {
+            //no-op since no steps needed to free up resources
         }
     }
 
     // Class for enumerating bmesindings
-    static class RepBindings implements NamingEnumeration {
+    static class RepBindings<T> implements NamingEnumeration<T> {
         Enumeration names;
         Hashtable bindings;
 
@@ -827,25 +826,23 @@ public class TransientContext implements Context, Serializable {
         }
 
         @Override
-        public Object nextElement() {
+        public T nextElement() {
             if (hasMoreElements()) {
                 String name = (String) names.nextElement();
-                return new Binding(name, bindings.get(name));
+                return (T) (new Binding(name, bindings.get(name)));
             } else {
                 return null;
             }
         }
 
         @Override
-        public Object next() throws NamingException {
+        public T next() throws NamingException {
             return nextElement();
         }
 
-        // New API for JNDI 1.2
         @Override
-        public void close() throws NamingException {
-            throw new
-                    OperationNotSupportedException("close() not implemented");
+        public void close() {
+            //no-op since no steps needed to free up resources
         }
     }
 }

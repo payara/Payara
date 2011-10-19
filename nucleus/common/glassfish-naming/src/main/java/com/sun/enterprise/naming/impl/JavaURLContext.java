@@ -41,7 +41,6 @@
 package com.sun.enterprise.naming.impl;
 
 import com.sun.enterprise.naming.util.LogFacade;
-import com.sun.enterprise.naming.impl.GlassfishNamingManagerImpl;
 
 import javax.naming.*;
 import java.util.Hashtable;
@@ -60,12 +59,9 @@ import org.glassfish.api.admin.ProcessEnvironment.ProcessType;
  * of the component that is invoking the method and then looks up the
  * object in that component's local namespace.
  */
-
 public final class JavaURLContext implements Context, Cloneable {
 
-    static Logger _logger = LogFacade.getLogger();
-
-    private static final boolean debug = false;
+    static final Logger _logger = LogFacade.getLogger();
 
     private static GlassfishNamingManagerImpl namingManager;
 
@@ -139,6 +135,7 @@ public final class JavaURLContext implements Context, Cloneable {
      * @return the object that is being looked up.
      * @throws NamingException if there is a naming exception.
      */
+    @Override
     public Object lookup(String name) throws NamingException {
         if (_logger.isLoggable(Level.FINE))
             _logger.log(Level.FINE, "In javaURLContext.lookup, name = " + name
@@ -250,6 +247,7 @@ public final class JavaURLContext implements Context, Cloneable {
      * @return the object that is being looked up.
      * @throws NamingException if there is a naming exception.
      */
+    @Override
     public Object lookup(Name name) throws NamingException {
         // Flat namespace; no federation; just call string version
         return lookup(name.toString());
@@ -261,6 +259,7 @@ public final class JavaURLContext implements Context, Cloneable {
      *
      * @throws NamingException if there is a naming exception.
      */
+    @Override
     public void bind(String name, Object obj) throws NamingException {
         throw new NamingException("java:comp namespace cannot be modified");
     }
@@ -271,6 +270,7 @@ public final class JavaURLContext implements Context, Cloneable {
      *
      * @throws NamingException if there is a naming exception.
      */
+    @Override
     public void bind(Name name, Object obj) throws NamingException {
         throw new NamingException("java:comp namespace cannot be modified");
     }
@@ -281,6 +281,7 @@ public final class JavaURLContext implements Context, Cloneable {
      *
      * @throws NamingException if there is a naming exception.
      */
+    @Override
     public void rebind(String name, Object obj) throws NamingException {
         throw new NamingException("java:comp namespace cannot be modified");
     }
@@ -291,6 +292,7 @@ public final class JavaURLContext implements Context, Cloneable {
      *
      * @throws NamingException if there is a naming exception.
      */
+    @Override
     public void rebind(Name name, Object obj) throws NamingException {
         throw new NamingException("java:comp namespace cannot be modified");
     }
@@ -300,6 +302,7 @@ public final class JavaURLContext implements Context, Cloneable {
      *
      * @throws NamingException if there is a naming exception.
      */
+    @Override
     public void unbind(String name) throws NamingException {
         throw new NamingException("java:comp namespace cannot be modified");
     }
@@ -309,6 +312,7 @@ public final class JavaURLContext implements Context, Cloneable {
      *
      * @throws NamingException if there is a naming exception.
      */
+    @Override
     public void unbind(Name name) throws NamingException {
         throw new NamingException("java:comp namespace cannot be modified");
     }
@@ -317,6 +321,7 @@ public final class JavaURLContext implements Context, Cloneable {
      * The rename operation is not supported by this context. It throws
      * an OperationNotSupportedException.
      */
+    @Override
     public void rename(String oldname, String newname) throws NamingException {
         throw new NamingException("java:comp namespace cannot be modified");
     }
@@ -325,6 +330,7 @@ public final class JavaURLContext implements Context, Cloneable {
      * The rename operation is not supported by this context. It throws
      * an OperationNotSupportedException.
      */
+    @Override
     public void rename(Name oldname, Name newname)
             throws NamingException {
         throw new NamingException("java:comp namespace cannot be modified");
@@ -334,6 +340,7 @@ public final class JavaURLContext implements Context, Cloneable {
      * The destroySubcontext operation is not supported by this context.
      * It throws an OperationNotSupportedException.
      */
+    @Override
     public void destroySubcontext(String name) throws NamingException {
         throw new NamingException("java:comp namespace cannot be modified");
     }
@@ -342,14 +349,17 @@ public final class JavaURLContext implements Context, Cloneable {
      * The destroySubcontext operation is not supported by this context.
      * It throws an OperationNotSupportedException.
      */
+    @Override
     public void destroySubcontext(Name name) throws NamingException {
         throw new NamingException("java:comp namespace cannot be modified");
     }
 
+    @Override
     public Context createSubcontext(String name) throws NamingException {
         throw new NamingException("java:comp namespace cannot be modified");
     }
 
+    @Override
     public Context createSubcontext(Name name) throws NamingException {
         throw new NamingException("java:comp namespace cannot be modified");
     }
@@ -362,7 +372,8 @@ public final class JavaURLContext implements Context, Cloneable {
      * @return an enumeration of the contents of the context.
      * @throws NamingException if there is a naming exception.
      */
-    public NamingEnumeration list(String name)
+    @Override
+    public NamingEnumeration<NameClassPair> list(String name)
             throws NamingException {
         if (name.equals("")) {
             // listing this context
@@ -386,7 +397,8 @@ public final class JavaURLContext implements Context, Cloneable {
      * @return an enumeration of the contents of the context.
      * @throws NamingException if there is a naming exception.
      */
-    public NamingEnumeration list(Name name)
+    @Override
+    public NamingEnumeration<NameClassPair> list(Name name)
             throws NamingException {
         // Flat namespace; no federation; just call string version
         return list(name.toString());
@@ -399,7 +411,8 @@ public final class JavaURLContext implements Context, Cloneable {
      * @return an enumeration of the bindings of the context.
      * @throws NamingException if there is a naming exception.
      */
-    public NamingEnumeration listBindings(String name)
+    @Override
+    public NamingEnumeration<Binding> listBindings(String name)
             throws NamingException {
         if (name.equals("")) {
             // listing this context
@@ -423,7 +436,8 @@ public final class JavaURLContext implements Context, Cloneable {
      * @return an enumeration of the bindings of the context.
      * @throws NamingException if there is a naming exception.
      */
-    public NamingEnumeration listBindings(Name name)
+    @Override
+    public NamingEnumeration<Binding> listBindings(Name name)
             throws NamingException {
         // Flat namespace; no federation; just call string version
         return listBindings(name.toString());
@@ -433,6 +447,7 @@ public final class JavaURLContext implements Context, Cloneable {
      * This context does not treat links specially. A lookup operation is
      * performed.
      */
+    @Override
     public Object lookupLink(String name) throws NamingException {
         // This flat context does not treat links specially
         return lookup(name);
@@ -442,6 +457,7 @@ public final class JavaURLContext implements Context, Cloneable {
      * This context does not treat links specially. A lookup operation is
      * performed.
      */
+    @Override
     public Object lookupLink(Name name) throws NamingException {
         // Flat namespace; no federation; just call string version
         return lookupLink(name.toString());
@@ -453,6 +469,7 @@ public final class JavaURLContext implements Context, Cloneable {
      * @return the NameParser instance.
      * @throws NamingException if there is an exception.
      */
+    @Override
     public NameParser getNameParser(String name)
             throws NamingException {
         if (namingManager == null)
@@ -466,11 +483,13 @@ public final class JavaURLContext implements Context, Cloneable {
      * @return the NameParser instance.
      * @throws NamingException if there is an exception.
      */
+    @Override
     public NameParser getNameParser(Name name) throws NamingException {
         // Flat namespace; no federation; just call string version
         return getNameParser(name.toString());
     }
 
+    @Override
     public String composeName(String name, String prefix)
             throws NamingException {
         Name result = composeName(new CompositeName(name),
@@ -478,6 +497,7 @@ public final class JavaURLContext implements Context, Cloneable {
         return result.toString();
     }
 
+    @Override
     public Name composeName(Name name, Name prefix)
             throws NamingException {
         Name result = (Name) (prefix.clone());
@@ -488,6 +508,7 @@ public final class JavaURLContext implements Context, Cloneable {
     /**
      * Add a property to the environment.
      */
+    @Override
     public Object addToEnvironment(String propName, Object propVal)
             throws NamingException {
         if (myEnv == null) {
@@ -499,6 +520,7 @@ public final class JavaURLContext implements Context, Cloneable {
     /**
      * Remove a property from the environment.
      */
+    @Override
     public Object removeFromEnvironment(String propName)
             throws NamingException {
         if (myEnv == null) {
@@ -510,6 +532,7 @@ public final class JavaURLContext implements Context, Cloneable {
     /**
      * Get the context's environment.
      */
+    @Override
     public Hashtable getEnvironment() throws NamingException {
         if (myEnv == null) {
             // Must return non-null
@@ -521,6 +544,7 @@ public final class JavaURLContext implements Context, Cloneable {
     /**
      * New JNDI 1.2 operation.
      */
+    @Override
     public void close() throws NamingException {
         myEnv = null;
     }
@@ -530,6 +554,7 @@ public final class JavaURLContext implements Context, Cloneable {
      * can be passed as an argument to (new InitialContext()).lookup()
      * to reproduce this context.
      */
+    @Override
     public String getNameInNamespace() throws NamingException {
         return myName;
     }
