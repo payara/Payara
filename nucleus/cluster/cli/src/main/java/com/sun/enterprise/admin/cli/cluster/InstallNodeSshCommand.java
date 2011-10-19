@@ -39,6 +39,9 @@
  */
 package com.sun.enterprise.admin.cli.cluster;
 
+import org.glassfish.api.Param;
+import org.glassfish.api.admin.CommandException;
+import org.glassfish.cluster.ssh.util.SSHUtil;
 import org.jvnet.hk2.annotations.*;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
@@ -49,4 +52,49 @@ import org.jvnet.hk2.component.PerLookup;
 @Service(name = "install-node-ssh")
 @Scoped(PerLookup.class)
 public class InstallNodeSshCommand extends InstallNodeBaseCommand {
+    @Param(name = "sshuser", optional = true, defaultValue = "${user.name}")
+    private String user;
+    @Param(optional = true, defaultValue = "22", name = "sshport")
+    int port;
+    @Param(optional = true)
+    String sshkeyfile;
+
+    @Override
+    String getRawRemoteUser() {
+        return user;
+    }
+
+    @Override
+    int getRawRemotePort() {
+        return port;
+    }
+
+    @Override
+    String getSshKeyFile() {
+        return sshkeyfile;
+    }
+
+    @Override
+    protected void validate() throws CommandException {
+        super.validate();
+        if (sshkeyfile == null) {
+            //if user hasn't specified a key file check if key exists in
+            //default location
+            String existingKey = SSHUtil.getExistingKeyFile();
+            if (existingKey == null) {
+                promptPass = true;
+            }
+            else {
+                sshkeyfile = existingKey;
+            }
+        }
+        else {
+            validateKey(sshkeyfile);
+        }
+
+        //we need the key passphrase if key is encrypted
+        if (sshkeyfile != null && isEncryptedKey()) {
+            sshkeypassphrase = getSSHPassphrase(true);
+        }
+    }
 }

@@ -39,6 +39,7 @@
  */
 package com.sun.enterprise.admin.cli.cluster;
 
+import org.glassfish.api.Param;
 import org.jvnet.hk2.annotations.*;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
@@ -49,4 +50,21 @@ import org.jvnet.hk2.component.PerLookup;
 @Service(name = "install-node-windows")
 @Scoped(PerLookup.class)
 public class InstallNodeWindowsCommand extends InstallNodeBaseCommand {
+    @Param(name = "windowsuser", optional = true, defaultValue = "${user.name}")
+    private String user;
+
+    @Override
+    final String getRawRemoteUser() {
+        return user;
+    }
+
+    @Override
+    int getRawRemotePort() {
+        return 135; // DCOM port
+    }
+
+    @Override
+    String getSshKeyFile() {
+        return null;  // null -- not an empty string!
+    }
 }

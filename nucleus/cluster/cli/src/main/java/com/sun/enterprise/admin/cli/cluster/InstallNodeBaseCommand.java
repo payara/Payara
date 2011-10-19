@@ -82,7 +82,7 @@ import java.util.List;
 
 @Service
 @Scoped(PerLookup.class)
-public class InstallNodeBaseCommand extends NativeRemoteCommandsBase {
+abstract class InstallNodeBaseCommand extends NativeRemoteCommandsBase {
     @Param(name = "archive", optional = true)
     private String archive;
     @Param(name = "installdir", optional = true, defaultValue = "${com.sun.aas.productRoot}")
@@ -103,10 +103,11 @@ public class InstallNodeBaseCommand extends NativeRemoteCommandsBase {
     private SSHLauncher sshLauncher;
     private String archiveName;
     private boolean delete = true;
-    private String dcomuser;
+    //private String dcomuser;
 
     @Override
     protected void validate() throws CommandException {
+        super.validate();
         Globals.setDefaultHabitat(habitat);
 
         // one implies the other
@@ -121,35 +122,6 @@ public class InstallNodeBaseCommand extends NativeRemoteCommandsBase {
                     throw new CommandException(Strings.get("node.already.configured", host, installDir));
                 }
             }
-        }
-
-        dcomuser = sshuser = resolver.resolve(sshuser);
-
-        if (isSSH()) {
-            if (sshkeyfile == null) {
-                //if user hasn't specified a key file check if key exists in
-                //default location
-                String existingKey = SSHUtil.getExistingKeyFile();
-                if (existingKey == null) {
-                    promptPass = true;
-                }
-                else {
-                    sshkeyfile = existingKey;
-                }
-            }
-            else {
-                validateKey(sshkeyfile);
-            }
-
-            //we need the key passphrase if key is encrypted
-            if (sshkeyfile != null && isEncryptedKey()) {
-                sshkeypassphrase = getSSHPassphrase(true);
-            }
-        }
-        else {
-            // just to be safe!
-            sshkeypassphrase = null;
-            sshkeyfile = null;
         }
     }
 
@@ -197,7 +169,7 @@ public class InstallNodeBaseCommand extends NativeRemoteCommandsBase {
         // thus that directory better not exist!
         for (String host : hosts) {
             String remotePassword = getDCOMPassword(host);
-            WindowsRemoteFileSystem wrfs = new WindowsRemoteFileSystem(host, dcomuser, remotePassword);
+            WindowsRemoteFileSystem wrfs = new WindowsRemoteFileSystem(host, getRemoteUser(), remotePassword);
             WindowsRemoteFile remoteInstallDir = new WindowsRemoteFile(wrfs, installDir);
 
             if (remoteInstallDir.exists())
@@ -220,7 +192,7 @@ public class InstallNodeBaseCommand extends NativeRemoteCommandsBase {
 
         for (String host : hosts) {
             String remotePassword = getDCOMPassword(host);
-            WindowsRemoteFileSystem wrfs = new WindowsRemoteFileSystem(host, dcomuser, remotePassword);
+            WindowsRemoteFileSystem wrfs = new WindowsRemoteFileSystem(host, getRemoteUser(), remotePassword);
             WindowsRemoteFile remoteInstallDir = new WindowsRemoteFile(wrfs, installDir);
             remoteInstallDir.mkdirs(force);
             WindowsRemoteFile remoteZip = new WindowsRemoteFile(remoteInstallDir, zipFileName);
@@ -250,7 +222,7 @@ public class InstallNodeBaseCommand extends NativeRemoteCommandsBase {
         if (!ok(domain))
             domain = host;
 
-        WindowsCredentials bonafides = new WindowsCredentials(host, domain, sshuser, remotePassword);
+        WindowsCredentials bonafides = new WindowsCredentials(host, domain, getRemoteUser(), remotePassword);
         WindowsRemoteScripter scripter = new WindowsRemoteScripter(bonafides);
         String out = scripter.run(unpackScript);
 
@@ -265,9 +237,9 @@ public class InstallNodeBaseCommand extends NativeRemoteCommandsBase {
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
 
         for (String host : hosts) {
-            sshLauncher.init(sshuser, host, sshport, sshpassword, sshkeyfile, sshkeypassphrase, logger);
+            sshLauncher.init(getRemoteUser(), host, getRemotePort(), sshpassword, getSshKeyFile(), sshkeypassphrase, logger);
 
-            if (sshkeyfile != null && !sshLauncher.checkConnection()) {
+            if (getSshKeyFile() != null && !sshLauncher.checkConnection()) {
                 //key auth failed, so use password auth
                 promptPass = true;
             }
@@ -275,7 +247,7 @@ public class InstallNodeBaseCommand extends NativeRemoteCommandsBase {
             if (promptPass) {
                 sshpassword = getSSHPassword(host);
                 //re-initialize
-                sshLauncher.init(sshuser, host, sshport, sshpassword, sshkeyfile, sshkeypassphrase, logger);
+                sshLauncher.init(getRemoteUser(), host, getRemotePort(), sshpassword, getSshKeyFile(), sshkeypassphrase, logger);
             }
 
             installDir = installDir.replaceAll("\\\\", "/");

@@ -63,6 +63,12 @@ import java.util.List;
 @Service(name = "uninstall-node")
 @Scoped(PerLookup.class)
 public class UninstallNodeCommand extends NativeRemoteCommandsBase {
+    @Param(name = "sshuser", optional = true, defaultValue = "${user.name}")
+    private String user;
+    @Param(optional = true, defaultValue = "22", name = "sshport")
+    int port;
+    @Param(optional = true)
+    String sshkeyfile;
     @Param(name = "installdir", optional = true, defaultValue = "${com.sun.aas.productRoot}")
     private String installDir;
     @Param(optional = true, defaultValue = "false")
@@ -76,6 +82,7 @@ public class UninstallNodeCommand extends NativeRemoteCommandsBase {
 
     @Override
     protected void validate() throws CommandException {
+        super.validate();
         Globals.setDefaultHabitat(habitat);
         installDir = resolver.resolve(installDir);
         if (!force) {
@@ -85,7 +92,6 @@ public class UninstallNodeCommand extends NativeRemoteCommandsBase {
                 }
             }
         }
-        sshuser = resolver.resolve(sshuser);
         if ("DCOM".equals(type)) {
         }
         else if (sshkeyfile == null) {
@@ -140,7 +146,7 @@ public class UninstallNodeCommand extends NativeRemoteCommandsBase {
         List<String> files = getListOfInstallFiles(installDir);
 
         for (String host : hosts) {
-            sshLauncher.init(sshuser, host, sshport, sshpassword, sshkeyfile, sshkeypassphrase, logger);
+            sshLauncher.init(getRemoteUser(), host, getRemotePort(), sshpassword, sshkeyfile, sshkeypassphrase, logger);
 
             if (sshkeyfile != null && !sshLauncher.checkConnection()) {
                 //key auth failed, so use password auth
@@ -150,7 +156,7 @@ public class UninstallNodeCommand extends NativeRemoteCommandsBase {
             if (promptPass) {
                 sshpassword = getSSHPassword(host);
                 //re-initialize
-                sshLauncher.init(sshuser, host, sshport, sshpassword, sshkeyfile, sshkeypassphrase, logger);
+                sshLauncher.init(getRemoteUser(), host, getRemotePort(), sshpassword, sshkeyfile, sshkeypassphrase, logger);
             }
 
             SFTPClient sftpClient = sshLauncher.getSFTPClient();
@@ -170,7 +176,7 @@ public class UninstallNodeCommand extends NativeRemoteCommandsBase {
     private void deleteFromHostsDcom() throws WindowsException, IOException, CommandException {
         for (String host : hosts) {
             String pw = getDCOMPassword(host);
-            WindowsRemoteFileSystem wrfs = new WindowsRemoteFileSystem(host, sshuser, pw);
+            WindowsRemoteFileSystem wrfs = new WindowsRemoteFileSystem(host, getRemoteUser(), pw);
             WindowsRemoteFile remoteInstallDir = new WindowsRemoteFile(wrfs, installDir);
 
             if (!remoteInstallDir.exists()) {
@@ -178,10 +184,25 @@ public class UninstallNodeCommand extends NativeRemoteCommandsBase {
             }
             remoteInstallDir.delete();
 
-           // make sure it's gone now...
+            // make sure it's gone now...
             if (remoteInstallDir.exists()) {
                 throw new IOException(Strings.get("remote.install.dir.cant.delete", installDir));
             }
         }
+    }
+
+    @Override
+    String getRawRemoteUser() {
+        return user;
+    }
+
+    @Override
+    int getRawRemotePort() {
+        return port;
+    }
+
+    @Override
+    String getSshKeyFile() {
+        return sshkeyfile;
     }
 }

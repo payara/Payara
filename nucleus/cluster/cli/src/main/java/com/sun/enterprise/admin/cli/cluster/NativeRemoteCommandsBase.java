@@ -86,26 +86,39 @@ import com.sun.enterprise.util.OS;
  *  Byron Nevins Aug 2011.  SSH was hard-coded in.  Now we
  *  want to use jcifs (SAMBA) for Windows.
  */
-
 abstract class NativeRemoteCommandsBase extends CLICommand {
-    @Param(optional = true, defaultValue = "${user.name}", alias = "dcomuser")
-    String sshuser;
-    @Param(optional = true, defaultValue = "22", alias = "dcomport")
-    int sshport;
-    @Param(optional = true)
-    String sshkeyfile;
+    //@Param(optional = true)
+    //String sshkeyfile;
     @Param(optional = false, primary = true, multiple = true)
     String[] hosts;
     String sshpassword;
     String sshkeypassphrase = null;
     boolean promptPass = false;
     TokenResolver resolver = null;
+    private String remoteUser;
+    private int remotePort;
 
     NativeRemoteCommandsBase() {
         // Create a resolver that can replace system properties in strings
-        Map<String, String> systemPropsMap =
-                new HashMap<String, String>((Map) (System.getProperties()));
-        resolver = new TokenResolver(systemPropsMap);
+        resolver = new TokenResolver();
+    }
+
+    // all of this rigamarole is to get the right names for parameters in front
+    // of user eyeballs
+    abstract String getRawRemoteUser();
+    abstract int getRawRemotePort();
+    abstract String getSshKeyFile();
+
+    @Override
+    protected void validate() throws CommandException {
+        remoteUser = resolver.resolve(getRawRemoteUser());
+    }
+
+    final String getRemoteUser() {
+        return remoteUser;
+    }
+    final int getRemotePort() {
+        return remotePort;
     }
 
     /**
@@ -137,7 +150,7 @@ abstract class NativeRemoteCommandsBase extends CLICommand {
         //get password from user if not found in password file
         if (password == null) {
             if (programOpts.isInteractive()) {
-                password = readPassword(Strings.get("SSHPasswordPrompt", sshuser, node));
+                password = readPassword(Strings.get("SSHPasswordPrompt", getRemoteUser(), node));
             }
             else {
                 throw new CommandException(Strings.get("SSHPasswordNotFound"));
@@ -163,7 +176,7 @@ abstract class NativeRemoteCommandsBase extends CLICommand {
         if (passphrase == null) {
             if (programOpts.isInteractive()) {
                 //i18n
-                passphrase = readPassword(Strings.get("SSHPassphrasePrompt", sshkeyfile));
+                passphrase = readPassword(Strings.get("SSHPassphrasePrompt", getSshKeyFile()));
             }
             else {
                 passphrase = ""; //empty passphrase
@@ -203,10 +216,10 @@ abstract class NativeRemoteCommandsBase extends CLICommand {
     boolean isEncryptedKey() throws CommandException {
         boolean res = false;
         try {
-            res = SSHUtil.isEncryptedKey(sshkeyfile);
+            res = SSHUtil.isEncryptedKey(getSshKeyFile());
         }
         catch (IOException ioe) {
-            throw new CommandException(Strings.get("ErrorParsingKey", sshkeyfile, ioe.getMessage()));
+            throw new CommandException(Strings.get("ErrorParsingKey", getSshKeyFile(), ioe.getMessage()));
         }
         return res;
     }
@@ -401,7 +414,7 @@ abstract class NativeRemoteCommandsBase extends CLICommand {
                     SSHLauncher sshL = new SSHLauncher();
                     if (host != null) {
                         sshpassword = expandedPassword;
-                        sshL.init(sshuser, host, sshport, sshpassword, null, null, logger);
+                        sshL.init(getRemoteUser(), host, getRemotePort(), sshpassword, null, null, logger);
                         connStatus = sshL.checkPasswordAuth();
                         if (!connStatus) {
                             logger.warning(Strings.get("PasswordAuthFailure", f.getName()));
@@ -410,7 +423,7 @@ abstract class NativeRemoteCommandsBase extends CLICommand {
                     else {
                         sshkeypassphrase = expandedPassword;
                         if (verifyConn) {
-                            sshL.init(sshuser, hosts[0], sshport, sshpassword, sshkeyfile, sshkeypassphrase, logger);
+                            sshL.init(getRemoteUser(), hosts[0], getRemotePort(), sshpassword, getSshKeyFile(), sshkeypassphrase, logger);
                             connStatus = sshL.checkConnection();
                             if (!connStatus) {
                                 logger.warning(Strings.get("PasswordAuthFailure", f.getName()));

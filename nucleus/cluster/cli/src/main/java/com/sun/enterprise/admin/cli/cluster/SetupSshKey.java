@@ -65,6 +65,12 @@ import com.sun.enterprise.util.io.FileUtils;
 @ExecuteOn({RuntimeType.DAS})
 public final class SetupSshKey extends NativeRemoteCommandsBase {
     private static final String NL = System.getProperty("line.separator");
+    @Param(name = "sshuser", optional = true, defaultValue = "${user.name}")
+    private String user;
+    @Param(optional = true, defaultValue = "22", name = "sshport")
+    int port;
+    @Param(optional = true)
+    String sshkeyfile;
     @Param(optional = true)
     private String sshpublickeyfile;
     @Param(optional = true, defaultValue = "false")
@@ -73,10 +79,6 @@ public final class SetupSshKey extends NativeRemoteCommandsBase {
     private Habitat habitat;
 
     public SetupSshKey() {
-        // Create a resolver that can replace system properties in strings
-        Map<String, String> systemPropsMap =
-                new HashMap<String, String>((Map) (System.getProperties()));
-        resolver = new TokenResolver(systemPropsMap);
     }
 
     /**
@@ -84,9 +86,8 @@ public final class SetupSshKey extends NativeRemoteCommandsBase {
     @Override
     protected void validate()
             throws CommandException {
+        super.validate();
         Globals.setDefaultHabitat(habitat);
-
-        sshuser = resolver.resolve(sshuser);
 
         if (sshkeyfile == null) {
             //if user hasn't specified a key file and there is no key file at default
@@ -132,12 +133,12 @@ public final class SetupSshKey extends NativeRemoteCommandsBase {
         String previousPassword = null;
         boolean status = false;
         for (String node : hosts) {
-            sshL.init(sshuser, node, sshport, sshpassword, sshkeyfile, sshkeypassphrase, logger);
+            sshL.init(getRemoteUser(), node, getRemotePort(), sshpassword, sshkeyfile, sshkeypassphrase, logger);
             if (generatekey || promptPass) {
                 //prompt for password iff required
                 if (sshkeyfile != null || SSHUtil.getExistingKeyFile() != null) {
                     if (sshL.checkConnection()) {
-                        logger.info(Strings.get("SSHAlreadySetup", sshuser, node));
+                        logger.info(Strings.get("SSHAlreadySetup", getRemoteUser(), node));
                         continue;
                     }
                 }
@@ -213,7 +214,7 @@ public final class SetupSshKey extends NativeRemoteCommandsBase {
         if (cons != null) {
             String val = null;
             do {
-                cons.printf("%s", Strings.get("GenerateKeyPairPrompt", sshuser, Arrays.toString(hosts)));
+                cons.printf("%s", Strings.get("GenerateKeyPairPrompt", getRemoteUser(), Arrays.toString(hosts)));
                 val = cons.readLine();
                 if (val != null && (val.equalsIgnoreCase("yes") || val.equalsIgnoreCase("y"))) {
                     if (logger.isLoggable(Level.FINER)) {
@@ -228,5 +229,20 @@ public final class SetupSshKey extends NativeRemoteCommandsBase {
             while (val != null && !isValidAnswer(val));
         }
         return false;
+    }
+
+    @Override
+    final String getRawRemoteUser() {
+        return user;
+    }
+
+    @Override
+    int getRawRemotePort() {
+        return port;
+    }
+
+    @Override
+    String getSshKeyFile() {
+        return sshkeyfile;
     }
 }
