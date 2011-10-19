@@ -221,6 +221,7 @@ public class LoggingHandlers {
         levels.add("FINE");
         levels.add("FINER");
         levels.add("FINEST");
+        levels.add("ALL");
     }
 }
         
