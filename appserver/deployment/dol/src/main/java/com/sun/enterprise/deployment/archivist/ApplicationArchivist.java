@@ -578,9 +578,10 @@ public class ApplicationArchivist extends Archivist<Application>
                 annotationProcessingRequested);
 
             ReadableArchive embeddedArchive = appArchive.getSubArchive(aModule.getArchiveUri());
-            if (embeddedArchive!=null) {
-                embeddedArchive.setParentArchive(appArchive);
+            if (embeddedArchive == null) {
+                throw new IllegalArgumentException(localStrings.getLocalString("enterprise.deployment.nosuchmodule", "Could not find sub module [{0}] as defined in application.xml", new Object[]{aModule.getArchiveUri()}));
             }
+            embeddedArchive.setParentArchive(appArchive);
             if (aModule.getAlternateDescriptor()!=null) {
                 // the module use alternate deployement descriptor, ignore the
                 // DDs in the archive.
