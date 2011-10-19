@@ -48,9 +48,11 @@ import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.universal.glassfish.TokenResolver;
 import com.sun.enterprise.util.StringUtils;
 import java.beans.PropertyVetoException;
+import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.sun.enterprise.util.net.NetUtils;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
@@ -137,7 +139,26 @@ public class UpdateNodeCommand implements AdminCommand {
             report.setMessage(msg);
             return;
         }
+        //validate installdir if passed and running on localhost
+        if (StringUtils.ok(nodehost)){
+            if (NetUtils.isThisHostLocal(nodehost) && StringUtils.ok(installdir)){
+                TokenResolver resolver = null;
 
+                // Create a resolver that can replace system properties in strings
+                Map<String, String> systemPropsMap =
+                        new HashMap<String, String>((Map)(System.getProperties()));
+                resolver = new TokenResolver(systemPropsMap);
+                String resolvedInstallDir = resolver.resolve(installdir);
+                File actualInstallDir = new File( resolvedInstallDir+"/" + NodeUtils.LANDMARK_FILE);
+
+
+                if (!actualInstallDir.exists()){
+                    report.setMessage(Strings.get("invalid.installdir",installdir));
+                    report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                    return;
+                }
+            }
+        }
         // If the node is in use then we can't change certain attributes
         // like the install directory or node directory.
         if (node.nodeInUse()) {
@@ -160,6 +181,7 @@ public class UpdateNodeCommand implements AdminCommand {
                 report.setMessage(msg);
                 return;
             }
+
         }
 
         try {
