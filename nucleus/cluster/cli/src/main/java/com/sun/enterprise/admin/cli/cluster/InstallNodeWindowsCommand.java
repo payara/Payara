@@ -39,7 +39,20 @@
  */
 package com.sun.enterprise.admin.cli.cluster;
 
+import com.sun.enterprise.universal.io.SmartFile;
+import com.sun.enterprise.universal.process.WindowsCredentials;
+import com.sun.enterprise.universal.process.WindowsException;
+import com.sun.enterprise.universal.process.WindowsRemoteScripter;
+import com.sun.enterprise.util.io.WindowsRemoteFile;
+import com.sun.enterprise.util.io.WindowsRemoteFileCopyProgress;
+import com.sun.enterprise.util.io.WindowsRemoteFileSystem;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.glassfish.api.Param;
+import org.glassfish.api.admin.CommandException;
 import org.jvnet.hk2.annotations.*;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
@@ -52,6 +65,8 @@ import org.jvnet.hk2.component.PerLookup;
 public class InstallNodeWindowsCommand extends InstallNodeBaseCommand {
     @Param(name = "windowsuser", optional = true, defaultValue = "${user.name}")
     private String user;
+    @Param(name = "windowsdomain", shortName = "w", optional = true, defaultValue = "")
+    private String windowsDomain;
 
     @Override
     final String getRawRemoteUser() {
@@ -66,5 +81,102 @@ public class InstallNodeWindowsCommand extends InstallNodeBaseCommand {
     @Override
     String getSshKeyFile() {
         return null;  // null -- not an empty string!
+    }
+
+    @Override
+    void copyToHosts(File zipFile, ArrayList<String> binDirFiles) throws CommandException {
+        try {
+            copyToHostsInternal(zipFile, binDirFiles, getInstallDir());
+        }
+        catch (CommandException ex) {
+            throw ex;
+        }
+        catch (WindowsException ex) {
+            throw new CommandException(ex);
+        }
+    }
+
+    /**
+     * bnevins: This is exclusively a "user-performance" enhancement.
+     * We are forcing the failure
+     * to happen before the very very slow zipfile creation.
+     * FAIL FAST principle
+     * This adds a bit of extra overhead to the command...
+     * @throws WindowsException
+     */
+    @Override
+    final void precopy() throws CommandException {
+        if (getForce())
+            return;
+
+        try {
+            for (String host : hosts) {
+                String remotePassword = getDCOMPassword(host);
+                WindowsRemoteFileSystem wrfs = new WindowsRemoteFileSystem(host, getRemoteUser(), remotePassword);
+                WindowsRemoteFile remoteInstallDir = new WindowsRemoteFile(wrfs, getInstallDir());
+
+                if (remoteInstallDir.exists())
+                    throw new CommandException(Strings.get("install.dir.exists", getInstallDir()));
+            }
+        }
+        catch (WindowsException ex) {
+            throw new CommandException(ex);
+        }
+    }
+
+    private void copyToHostsInternal(File zipFile, ArrayList<String> binDirFiles, String windowsInstallDir)
+            throws CommandException, WindowsException {
+        final String zipFileName = "glassfish_install.zip";
+        final String unpackScriptName = "unpack.bat";
+
+        for (String host : hosts) {
+            String remotePassword = getDCOMPassword(host);
+            WindowsRemoteFileSystem wrfs = new WindowsRemoteFileSystem(host, getRemoteUser(), remotePassword);
+            WindowsRemoteFile remoteInstallDir = new WindowsRemoteFile(wrfs, windowsInstallDir);
+            remoteInstallDir.mkdirs(getForce());
+            WindowsRemoteFile remoteZip = new WindowsRemoteFile(remoteInstallDir, zipFileName);
+            WindowsRemoteFile unpackScript = new WindowsRemoteFile(remoteInstallDir, unpackScriptName);
+            //createUnpackScript
+            System.out.printf("Copying %d bytes", zipFile.length());
+            remoteZip.copyFrom(zipFile, new WindowsRemoteFileCopyProgress() {
+                @Override
+                public void callback(long numcopied, long numtotal) {
+                    //final int percent = (int)((double)numcopied / (double)numtotal * 100.0);
+                    System.out.print(".");
+                }
+            });
+            System.out.println("");
+            String fullZipFileName = SmartFile.sanitize(windowsInstallDir + "/" + zipFileName);
+            String fullUnpackScriptPath = SmartFile.sanitize(windowsInstallDir + "/" + unpackScriptName);
+            unpackScript.copyFrom(makeScriptString(windowsInstallDir, zipFileName));
+            logger.fine("WROTE FILE TO REMOTE SYSTEM: " + fullZipFileName + " and " + fullUnpackScriptPath);
+            unpackOnHosts(host, remotePassword, fullUnpackScriptPath.replace('/', '\\'));
+        }
+    }
+
+    private String makeScriptString(String windowsInstallDir, String zipFileName) {
+        // first line is drive designator to make sure we are on the right drive.  E.g. "C:"
+        StringBuilder scriptString = new StringBuilder(windowsInstallDir.substring(0, 2));
+        scriptString.append("\r\n").append("cd \"").append(windowsInstallDir).append("\"\r\n").
+                append("jar xvf ").append(zipFileName).append("\r\n");
+
+        return scriptString.toString();
+    }
+
+    private void unpackOnHosts(String host, String remotePassword,
+            String unpackScript) throws WindowsException, CommandException {
+        String domain = windowsDomain;
+
+        if (!ok(domain))
+            domain = host;
+
+        WindowsCredentials bonafides = new WindowsCredentials(host, domain, getRemoteUser(), remotePassword);
+        WindowsRemoteScripter scripter = new WindowsRemoteScripter(bonafides);
+        String out = scripter.run(unpackScript);
+
+        if (out == null || out.length() < 50)
+            throw new CommandException(Strings.get("dcom.error.unpacking", unpackScript, out));
+
+        logger.fine("Output from Windows Unpacker:\n" + out);
     }
 }
