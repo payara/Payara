@@ -56,8 +56,7 @@ import javax.servlet.http.HttpServletResponse;
         initParams={ @WebInitParam(name="n1", value="v1"), @WebInitParam(name="n2", value="v2") },
         loadOnStartup=-1 )
 public class TestServlet extends HttpServlet {
-    //private static String className = "org.glassfish.tests.embedded.web.EmbeddedClassLoaderTest";
-    private static String className = "A";
+    private static String className = "org.glassfish.tests.embedded.web.EmbeddedClassLoaderTest";
 
     public TestServlet() {
         System.out.println("Servlet TestServlet initialized");

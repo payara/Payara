@@ -328,28 +328,7 @@ public class WebContainerImpl implements WebContainer {
             if (sslConfig.getHandshakeTimeout() > 0) {
                 newSsl.setSSLInactivityTimeout(sslConfig.getHandshakeTimeout());
             }
-                /*PECoyoteConnector connector =
-                        (PECoyoteConnector) embedded.findConnector(listenerName);
-                if (sslConfig.getKeyStore() != null) {
-                    connector.setKeystoreFile(sslConfig.getKeyStore());
-                if (sslConfig.getKeyPassword() != null) {
-                    connector.setKeystorePass(sslConfig.getKeyPassword());
-                }
-                if (sslConfig.getTrustStore() != null) {
-                    connector.setTruststore(sslConfig.getTrustStore());
-                }
-                // ssl protocol variants
-                Set<SslType> algorithms = sslConfig.getAlgorithms();
-                StringBuilder sslProtocolsBuf = new StringBuilder();
-                for (SslType sslType : algorithms) {
-                    sslProtocolsBuf.append(sslType);
-                }
-                if (sslProtocolsBuf.length() == 0) {
-                    log.warning("All SSL protocol variants disabled for network-listener " +
-                            listenerName + " ,using SSL implementation specific defaults");
-                } else {
-                    connector.setSslProtocols(sslProtocolsBuf.toString());
-                } */
+
         } else {
             log.severe("HttpsListener required for https protocol");
         }
