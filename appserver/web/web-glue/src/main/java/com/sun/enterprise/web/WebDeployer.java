@@ -131,9 +131,7 @@ public class WebDeployer extends JavaEEDeployer<WebContainer, WebApplication>{
                 contextRoot = params.previousContextRoot;
             }
             if(contextRoot==null)
-                contextRoot = wbd.getModuleDescriptor().getModuleName();
-            if(contextRoot==null)
-                contextRoot = dc.getSource().getName();
+                contextRoot = dc.getOriginalSource().getName();
 
             if (!contextRoot.startsWith("/")) {
                 contextRoot = "/" + contextRoot;
