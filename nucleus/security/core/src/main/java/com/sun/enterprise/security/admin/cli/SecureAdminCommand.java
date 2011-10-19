@@ -899,7 +899,7 @@ public abstract class SecureAdminCommand implements AdminCommand {
         }
     }
     
-    public class SecureAdminCommandException extends RuntimeException {
+    public static class SecureAdminCommandException extends RuntimeException {
         
         public SecureAdminCommandException(String message) {
             super(message);
