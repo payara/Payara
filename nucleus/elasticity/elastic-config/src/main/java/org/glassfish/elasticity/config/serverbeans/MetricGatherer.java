@@ -99,6 +99,15 @@ public interface MetricGatherer extends ConfigBeanProxy {
     @Attribute(defaultValue = "2")
     public int getRetainData();
 
+    /*
+     *  sets how long the data will be retain in the system. in hours
+     * @param value retain data
+     * @throws PropertyVetoException if a listener vetoes the change
+     */
+    @Param(name="auto-start", defaultValue = "false")
+    public void setAutoStart(boolean value) throws PropertyVetoException;
 
+    @Attribute(defaultValue = "false")
+    public int getAutoStart();
 
 }

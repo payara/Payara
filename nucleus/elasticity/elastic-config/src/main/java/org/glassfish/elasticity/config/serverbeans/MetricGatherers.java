@@ -78,13 +78,13 @@ public interface MetricGatherers extends ConfigBeanProxy    {
    */
 
   @DuckTyped
-  public MetricGatherer  getMetricGatherer(String type);
+  public MetricGatherer  getMetricGatherer(String name);
 
 
   class Duck {
-      public static MetricGatherer getMetricGatherer(MetricGatherers instance, String type) {
+      public static MetricGatherer getMetricGatherer(MetricGatherers instance, String name) {
           for (MetricGatherer mg : instance.getMetricGatherer()) {
-              if (mg.getName().equals(type)) {
+              if (mg.getName().equals(name)) {
                   return mg;
               }
           }
