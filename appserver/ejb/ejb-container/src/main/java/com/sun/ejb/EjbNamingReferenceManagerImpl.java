@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -55,11 +55,8 @@ import javax.naming.Context;
 import com.sun.enterprise.util.Utility;
 
 import org.omg.CORBA.ORB;
-import java.util.Properties;
 
 import javax.naming.NamingException;
-import javax.naming.InitialContext;
-import java.util.logging.Level;
 
 /**
  * @author Mahesh Kannan
@@ -70,7 +67,6 @@ public class EjbNamingReferenceManagerImpl
     implements EjbNamingReferenceManager {
 
     private static final String CORBANAME = "corbaname:";
-    private static final String IIOPURL = "iiop://";
 
     @Inject
     InvocationManager invMgr;
@@ -82,6 +78,7 @@ public class EjbNamingReferenceManagerImpl
     // server environment.
     private volatile EjbContainerUtil ejbContainerUtil;
 
+    @Override
     public Object resolveEjbReference(EjbReferenceDescriptor ejbRefDesc, Context context)
         throws NamingException {
 
@@ -96,12 +93,28 @@ public class EjbNamingReferenceManagerImpl
                 jndiObj = context.lookup(ejbRefDesc.getLookupName());
                 resolved = true;
             }
-        } else if( !ejbRefDesc.hasJndiName() && ejbRefDesc.hasLookupName() ) {
+        } else if (!ejbRefDesc.hasJndiName() && ejbRefDesc.hasLookupName()) {
             // For a remote reference, only do a context lookup if there is no
             // jndi name. 
-            jndiObj = context.lookup(ejbRefDesc.getLookupName());
+            // The thread context class loader usually is the EAR class loader,
+            // which is able to load business interfaces.  But if the lookup request
+            // originated from appclient, and the ejb-ref is under java:app/env,
+            // and it also has a lookup-name, then we need to set the EAR class
+            // loader to the thread.  Issue 17376.
+            try {
+                jndiObj = context.lookup(ejbRefDesc.getLookupName());
+            } catch (NamingException e) {
+                ClassLoader oldLoader = null;
+                try {
+                    oldLoader = Utility.setContextClassLoader(
+                            ejbRefDesc.getReferringBundleDescriptor().getClassLoader());
+                    jndiObj = context.lookup(ejbRefDesc.getLookupName());
+                } finally {
+                    Utility.setContextClassLoader(oldLoader);
+                }
+            }
             resolved = true;
-        } else if( ejbRefDesc.hasJndiName() &&
+        } else if( ejbRefDesc.hasJndiName() &&     
                    ejbRefDesc.getJndiName().startsWith("java:app/") &&
                    !ejbRefDesc.getJndiName().startsWith("java:app/env/")) {
 
