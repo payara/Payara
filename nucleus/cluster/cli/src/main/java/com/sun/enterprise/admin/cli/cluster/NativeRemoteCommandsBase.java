@@ -43,8 +43,6 @@ import com.sun.enterprise.util.io.FileUtils;
 import java.io.*;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Map;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
@@ -78,7 +76,6 @@ import org.jvnet.hk2.component.Habitat;
 import org.glassfish.security.common.MasterPassword;
 
 import com.sun.enterprise.security.store.PasswordAdapter;
-import com.sun.enterprise.util.OS;
 
 /**
  *  Base class for SSH provisioning commands.

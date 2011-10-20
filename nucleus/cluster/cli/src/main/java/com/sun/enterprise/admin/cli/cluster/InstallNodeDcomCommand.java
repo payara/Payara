@@ -60,12 +60,12 @@ import org.jvnet.hk2.component.PerLookup;
 /**
  * @author Byron Nevins
  */
-@Service(name = "install-node-windows")
+@Service(name = "install-node-dcom")
 @Scoped(PerLookup.class)
-public class InstallNodeWindowsCommand extends InstallNodeBaseCommand {
-    @Param(name = "windowsuser", optional = true, defaultValue = "${user.name}")
+public class InstallNodeDcomCommand extends InstallNodeBaseCommand {
+    @Param(name = "windowsuser", shortName = "w", optional = true, defaultValue = "${user.name}")
     private String user;
-    @Param(name = "windowsdomain", shortName = "w", optional = true, defaultValue = "")
+    @Param(name = "windowsdomain", shortName = "d", optional = true, defaultValue = "")
     private String windowsDomain;
 
     @Override
