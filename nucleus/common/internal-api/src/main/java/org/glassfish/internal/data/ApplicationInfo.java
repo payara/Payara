@@ -71,6 +71,13 @@ import com.sun.enterprise.config.serverbeans.Engine;
 public class ApplicationInfo extends ModuleInfo {
 
     final private Collection<ModuleInfo> modules = new ArrayList<ModuleInfo>();
+
+    // The reversed modules contain the same elements as modules but just in 
+    // reversed order, they are used when stopping/unloading the application.
+    // The modules should be stopped/unloaded in the reverse order of what 
+    // they were originally loaded/started.
+    final private LinkedList<ModuleInfo> reversedModules = new LinkedList<ModuleInfo>();
+
     final private ReadableArchive source;
     final private Map<String, Object> transientAppMetaData = new HashMap<String, Object>();
 
@@ -318,7 +325,7 @@ public class ApplicationInfo extends ModuleInfo {
             Thread.currentThread().setContextClassLoader(appClassLoader);
             context.setClassLoader(appClassLoader);
             super.stop(context, logger);
-            for (ModuleInfo module : getModuleInfos()) {
+            for (ModuleInfo module : reversedModules) {
                 module.stop(getSubContext(module, context), logger);
             }
             if (events!=null) {
@@ -342,7 +349,7 @@ public class ApplicationInfo extends ModuleInfo {
             Thread.currentThread().setContextClassLoader(appClassLoader);
             context.setClassLoader(appClassLoader);
             super.unload(context);
-            for (ModuleInfo module : getModuleInfos()) {
+            for (ModuleInfo module : reversedModules) {
                 module.unload(getSubContext(module, context));
             }
             isLoaded = false;
@@ -385,7 +392,7 @@ public class ApplicationInfo extends ModuleInfo {
 
         boolean isSuccess = super.suspend(logger);
 
-        for (ModuleInfo module : modules) {
+        for (ModuleInfo module : reversedModules) {
             if (!module.suspend(logger)) {
                 isSuccess = false;
             }
@@ -421,7 +428,7 @@ public class ApplicationInfo extends ModuleInfo {
         }
 
         super.clean(context);
-        for (ModuleInfo info : modules) {
+        for (ModuleInfo info : reversedModules) {
             info.clean(getSubContext(info,context));
             info = null;
         }
@@ -459,6 +466,7 @@ public class ApplicationInfo extends ModuleInfo {
 
     public void addModule(ModuleInfo info) {
         modules.add(info);
+        reversedModules.addFirst(info);
     }
 
     public boolean isLoaded() {
