@@ -40,7 +40,7 @@
 
 package org.glassfish.virtualization.runtime;
 
-import org.glassfish.virtualization.os.FileOperations;
+import org.glassfish.virtualization.spi.FileOperations;
 import org.glassfish.virtualization.spi.Machine;
 import org.glassfish.virtualization.spi.MachineOperations;
 import org.glassfish.virtualization.spi.TemplateInstance;

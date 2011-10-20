@@ -38,7 +38,7 @@
  * holder.
  */
 
-package org.glassfish.virtualization.spi.templates;
+package org.glassfish.virtualization.runtime;
 
 import com.sun.enterprise.util.io.FileUtils;
 import com.sun.logging.LogDomains;
@@ -47,9 +47,6 @@ import org.glassfish.virtualization.config.ServerPoolConfig;
 import org.glassfish.virtualization.config.Template;
 import org.glassfish.virtualization.config.Virtualization;
 import org.glassfish.virtualization.config.Virtualizations;
-import org.glassfish.virtualization.runtime.LocalTemplate;
-import org.glassfish.virtualization.runtime.RemoteTemplate;
-import org.glassfish.virtualization.runtime.VMTemplate;
 import org.glassfish.virtualization.spi.*;
 import org.glassfish.virtualization.util.RuntimeContext;
 import org.jvnet.hk2.annotations.Inject;

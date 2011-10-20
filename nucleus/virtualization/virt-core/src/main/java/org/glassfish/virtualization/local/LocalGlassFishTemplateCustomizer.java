@@ -40,17 +40,18 @@
 
 package org.glassfish.virtualization.local;
 
-import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.util.ExecException;
 import com.sun.enterprise.util.OS;
 import com.sun.enterprise.util.ProcessExecutor;
 import org.glassfish.api.ActionReport;
+import org.glassfish.gms.bootstrap.GMSAdapter;
+import org.glassfish.gms.bootstrap.GMSAdapterService;
+import org.glassfish.gms.bootstrap.HealthHistory;
 import org.glassfish.hk2.Services;
 import org.glassfish.internal.api.ServerContext;
-import org.glassfish.virtualization.config.Template;
-import org.glassfish.virtualization.runtime.VirtualCluster;
+import org.glassfish.virtualization.spi.VirtualCluster;
 import org.glassfish.virtualization.spi.*;
 import org.glassfish.virtualization.util.RuntimeContext;
 import org.jvnet.hk2.annotations.Inject;
@@ -82,6 +83,9 @@ public class LocalGlassFishTemplateCustomizer implements TemplateCustomizer {
 
     @Inject
     Services services;
+
+    @Inject
+    GMSAdapterService gmsAdapterService;
 
     @Override
     public void customize(final VirtualCluster cluster, final VirtualMachine virtualMachine) throws VirtException {
@@ -125,6 +129,15 @@ public class LocalGlassFishTemplateCustomizer implements TemplateCustomizer {
                 }
             }
         }
+    }
+
+    public boolean isActive(VirtualCluster virtualCluster, VirtualMachine virtualMachine) throws VirtException {
+        if (virtualMachine.getInfo().getState().equals(Machine.State.READY)) {
+            GMSAdapter adapter = gmsAdapterService.getGMSAdapterByName(virtualCluster.getConfig().getName());
+            HealthHistory.InstanceHealth instanceHealth = adapter.getHealthHistory().getHealthByInstance(virtualMachine.getName());
+            return instanceHealth.state.equals(HealthHistory.STATE.RUNNING);
+        }
+        return false;
     }
 
     @Override

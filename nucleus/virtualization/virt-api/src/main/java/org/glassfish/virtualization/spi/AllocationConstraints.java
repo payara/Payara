@@ -39,8 +39,6 @@
  */
 package org.glassfish.virtualization.spi;
 
-import org.glassfish.virtualization.runtime.VirtualCluster;
-
 import java.util.*;
 
 /**

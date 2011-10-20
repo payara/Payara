@@ -37,57 +37,32 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package org.glassfish.virtualization.util;
 
-import org.glassfish.virtualization.config.Template;
-import org.glassfish.virtualization.config.TemplateIndex;
-import org.glassfish.virtualization.spi.TemplateCondition;
-import org.jvnet.hk2.config.ConfigSupport;
-import org.jvnet.hk2.config.SingleConfigCode;
-import org.jvnet.hk2.config.TransactionFailure;
+package org.glassfish.virtualization.spi;
 
-import java.beans.PropertyVetoException;
+import java.util.concurrent.ExecutorService;
 
 /**
- * Simple key-value template condition
+ * Definition of events source which supports registration of listeners.
+ *
  * @author Jerome Dochez
+ * @param <T> the enumeration of events types that this event source can send.
  */
-public class KeyValueType extends TemplateCondition {
+public interface EventSource<T extends Enum> {
+    /**
+     * add a listener to this event source.
+     *
+     * @param listener the listener to notify of events
+     * @param executorService the executor service to use for the notification
+     * of the above listener. If null, the notification thread calling the
+     * {@link EventSource#fireEvent(Enum)} will be used.
+     */
+    void addListener(Listener<T> listener, ExecutorService executorService);
 
-    String key;
-    String value;
-
-    public KeyValueType() {
-        // default no-op constructor.
-    }
-
-    public KeyValueType(String key, String value) {
-        this.key = key;
-        this.value = value;
-    }
-
-    @Override
-    public void load(TemplateIndex persistence) {
-        key = persistence.getType();
-        value = persistence.getValue();
-    }
-
-    @Override
-    public TemplateIndex persist(Template parent) throws TransactionFailure {
-        return (TemplateIndex) ConfigSupport.apply(new SingleConfigCode<Template>() {
-            @Override
-            public Object run(Template template) throws PropertyVetoException, TransactionFailure {
-                TemplateIndex persistence = template.createChild(TemplateIndex.class);
-                persistence.setType(key);
-                persistence.setValue(value);
-                return persistence;
-            }
-        }, parent);    }
-
-    @Override
-    public boolean satisfies(TemplateCondition otherCondition) {
-        return (otherCondition instanceof KeyValueType) &&
-            (key.equals(((KeyValueType) otherCondition).key) &&
-                (value.equals(((KeyValueType) otherCondition).value)));
-    }
+    /**
+     * fires an event to all the registered listeners.
+     *
+     * @param event the event to fire
+     */
+    void fireEvent(T event);
 }

@@ -39,18 +39,14 @@
  */
 package org.glassfish.paas.javadbplugin;
 
-import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.util.ExecException;
 import com.sun.enterprise.util.OS;
 import com.sun.enterprise.util.ProcessExecutor;
-import org.glassfish.api.ActionReport;
 import org.glassfish.internal.api.ServerContext;
-import org.glassfish.paas.orchestrator.config.Services;
-import org.glassfish.virtualization.runtime.VirtualCluster;
+import org.glassfish.virtualization.spi.VirtualCluster;
 import org.glassfish.virtualization.spi.TemplateCustomizer;
 import org.glassfish.virtualization.spi.VirtException;
 import org.glassfish.virtualization.spi.VirtualMachine;
-import org.glassfish.virtualization.util.RuntimeContext;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
 

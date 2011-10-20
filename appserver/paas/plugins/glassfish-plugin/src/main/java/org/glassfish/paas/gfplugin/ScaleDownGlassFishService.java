@@ -42,16 +42,13 @@ package org.glassfish.paas.gfplugin;
 
 import com.sun.enterprise.config.serverbeans.Domain;
 import org.glassfish.embeddable.GlassFish;
-import org.glassfish.paas.gfplugin.GlassFishProvisionedService;
-import org.glassfish.paas.gfplugin.GlassFishProvisioner;
-import org.glassfish.paas.gfplugin.ScaleUpGlassFishService;
 import org.glassfish.paas.gfplugin.cli.GlassFishServiceUtil;
 import org.glassfish.paas.orchestrator.provisioning.ProvisionerUtil;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceType;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceUtil;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceDescription;
 import org.glassfish.paas.orchestrator.service.spi.ProvisionedService;
-import org.glassfish.virtualization.runtime.VirtualCluster;
+import org.glassfish.virtualization.spi.VirtualCluster;
 import org.glassfish.virtualization.runtime.VirtualClusters;
 import org.glassfish.virtualization.runtime.VirtualMachineLifecycle;
 import org.glassfish.virtualization.spi.IAAS;

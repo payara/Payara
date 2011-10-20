@@ -45,9 +45,8 @@ import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
-import org.glassfish.virtualization.config.Template;
 import org.glassfish.virtualization.config.VirtualMachineConfig;
-import org.glassfish.virtualization.runtime.VirtualCluster;
+import org.glassfish.virtualization.spi.VirtualCluster;
 import org.glassfish.virtualization.runtime.VirtualClusters;
 import org.glassfish.virtualization.runtime.VirtualMachineLifecycle;
 import org.glassfish.virtualization.spi.*;
@@ -117,7 +116,7 @@ public class DeleteVirtualCluster implements AdminCommand {
 
 
             Map<String, VirtualMachine> vms = new HashMap<String, VirtualMachine>();
-            for (VirtualMachine vm : virtualCluster.getVms()) {
+            for (VirtualMachine vm : virtualCluster.getVMs()) {
                 vms.put(vm.getName(), vm);
             }
 

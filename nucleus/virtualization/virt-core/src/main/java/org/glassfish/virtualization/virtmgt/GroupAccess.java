@@ -39,9 +39,9 @@
  */
 package org.glassfish.virtualization.virtmgt;
 
-import org.glassfish.virtualization.runtime.VirtualCluster;
+import org.glassfish.virtualization.spi.VirtualCluster;
 import org.glassfish.virtualization.spi.*;
-import org.glassfish.virtualization.util.EventSource;
+import org.glassfish.virtualization.spi.EventSource;
 
 /**
  * Access to a configured serverPool master

@@ -39,19 +39,16 @@
  */
 package org.glassfish.virtualization.runtime;
 
-import org.glassfish.virtualization.config.Template;
-import org.glassfish.virtualization.os.FileOperations;
+import org.glassfish.virtualization.spi.FileOperations;
 import org.glassfish.virtualization.spi.Machine;
 import org.glassfish.virtualization.spi.MachineOperations;
 import org.glassfish.virtualization.spi.TemplateInstance;
 import org.glassfish.virtualization.util.RuntimeContext;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Date;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Defines a local template, installed on *this* machine.

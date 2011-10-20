@@ -37,19 +37,57 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+
 package org.glassfish.virtualization.spi;
 
-import org.glassfish.virtualization.os.FileOperations;
-
-import java.io.IOException;
+import org.glassfish.virtualization.config.Template;
+import org.glassfish.virtualization.config.TemplateIndex;
+import org.jvnet.hk2.annotations.Contract;
+import org.jvnet.hk2.config.*;
 
 /**
- * Interface for executing some operations on a machine, using the
- * passed FileOperations object.
+ * Represents a template condition (that can be used in a search criteria for a template).
  *
  * @author Jerome Dochez
  */
-public interface MachineOperations<T> {
+@Contract
+public abstract class TemplateCondition {
 
-    public T run(FileOperations fileOperations) throws IOException;
+    /**
+     * Returns a template condition from its persisted state.
+     * @param persistence the persisted state
+     * @return template condition
+     */
+    public static TemplateCondition from(TemplateIndex persistence) {
+        TemplateCondition condition = Dom.unwrap(persistence).getHabitat().
+                getComponent(TemplateCondition.class, persistence.getType());
+        if (condition==null) {
+            condition = new KeyValueType();
+        }
+        condition.load(persistence);
+        return condition;
+    }
+
+    /**
+     * loads its state from a persisted state.
+     *
+     * @param persistence the persisted state.
+     */
+    abstract public void load(TemplateIndex persistence);
+
+    /**
+     * Persists its state to a template persistence state.
+     * @param parent the parent template configuration
+     * @return the persisted state to be added to the parent's
+     * {@link org.glassfish.virtualization.config.Template#getIndexes()}
+     * @throws TransactionFailure if the condition cannot be persisted successfully.
+     */
+    abstract public TemplateIndex persist(Template parent) throws TransactionFailure;
+
+    /**
+     * Returns true if  this condition satisfies another condition
+     * @param otherCondition the other condition to test against.
+     * @return true of this condition satisfies the other condition.
+     */
+    abstract public boolean satisfies(TemplateCondition otherCondition);
 }

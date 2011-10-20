@@ -40,14 +40,11 @@
 package org.glassfish.virtualization.libvirt;
 
 import org.glassfish.cluster.ssh.launcher.SSHLauncher;
-import org.glassfish.cluster.ssh.sftp.SFTPClient;
 import com.trilead.ssh2.SFTPv3FileAttributes;
 import com.trilead.ssh2.SFTPv3DirectoryEntry;
 
 import org.glassfish.hk2.inject.Injector;
 import org.glassfish.virtualization.config.*;
-import org.glassfish.virtualization.os.FileOperations;
-import org.glassfish.virtualization.spi.Machine;
 import org.glassfish.virtualization.spi.MachineOperations;
 import org.glassfish.virtualization.spi.PhysicalServerPool;
 
@@ -58,10 +55,6 @@ import org.jvnet.hk2.annotations.Inject;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 

@@ -41,9 +41,9 @@
 package org.glassfish.virtualization.virtmgt.impl;
 
 import org.glassfish.hk2.inject.Injector;
-import org.glassfish.virtualization.runtime.VirtualCluster;
+import org.glassfish.virtualization.spi.VirtualCluster;
 import org.glassfish.virtualization.spi.*;
-import org.glassfish.virtualization.util.EventSource;
+import org.glassfish.virtualization.spi.EventSource;
 import org.glassfish.virtualization.virtmgt.GroupAccess;
 
 /**
