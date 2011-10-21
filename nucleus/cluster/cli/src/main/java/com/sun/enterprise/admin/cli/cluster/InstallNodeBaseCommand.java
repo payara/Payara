@@ -39,12 +39,9 @@
  */
 package com.sun.enterprise.admin.cli.cluster;
 
-import com.sun.enterprise.universal.process.WindowsException;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.enterprise.util.io.FileListerRelative;
 import com.sun.enterprise.util.io.FileUtils;
-import com.sun.enterprise.util.io.WindowsRemoteFile;
-import com.sun.enterprise.util.io.WindowsRemoteFileSystem;
 import com.sun.enterprise.util.zip.ZipFileException;
 import com.sun.enterprise.util.zip.ZipWriter;
 import java.io.*;
@@ -83,8 +80,6 @@ abstract class InstallNodeBaseCommand extends NativeRemoteCommandsBase {
     private boolean save;
     @Param(name = "force", optional = true, defaultValue = "false")
     private boolean force;
-    //@Param(name = "dcom", shortName = "d", optional = true, defaultValue = "false")
-    //private boolean dcomNode;
     @Inject
     private Habitat habitat;
     private String archiveName;

@@ -84,8 +84,6 @@ import com.sun.enterprise.security.store.PasswordAdapter;
  *  want to use jcifs (SAMBA) for Windows.
  */
 abstract class NativeRemoteCommandsBase extends CLICommand {
-    //@Param(optional = true)
-    //String sshkeyfile;
     @Param(optional = false, primary = true, multiple = true)
     String[] hosts;
     String sshpassword;
