@@ -118,8 +118,8 @@ public class WebDeployer extends JavaEEDeployer<WebContainer, WebApplication>{
             // 1. User specified value through DeployCommand
             // 2. Context root value specified through sun-web.xml
             // 3. Context root from last deployment if applicable
-            // 4. The default context root which is the module name
-            // 5. archive name
+            // 4. The default context root which is the archive name 
+            //    minus extension
             DeployCommandParameters params = dc.getCommandParameters(DeployCommandParameters.class);
             String contextRoot = params.contextroot;
             if(contextRoot==null) {
