@@ -70,7 +70,7 @@ import java.io.File;
 @CommandLock(CommandLock.LockType.NONE)
 @ExecuteOn(value={RuntimeType.DAS})
 @RestEndpoints({
-    @RestEndpoint(configBean=Domain.class, opType= RestEndpoint.OpType.POST, path="remove-library", description="Uninstall library")
+    @RestEndpoint(configBean=Domain.class, opType= RestEndpoint.OpType.DELETE, path="remove-library", description="Uninstall library")
 })
 public class RemoveLibraryCommand implements AdminCommand {
 
