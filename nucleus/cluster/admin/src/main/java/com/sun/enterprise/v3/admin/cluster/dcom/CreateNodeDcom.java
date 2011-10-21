@@ -65,7 +65,7 @@ public class CreateNodeDcom extends CreateRemoteNodeCommand {
     //private String dcomport;
     @Param(name = "dcomuser", optional = true, defaultValue = NodeUtils.NODE_DEFAULT_REMOTE_USER)
     private String dcomuser;
-    @Param(name = "dcompassword", optional = true, password = true)
+    @Param(name = "dcompassword", optional = false, password = true)
     private String dcompassword;
     @Param(name = "windowsdomain", optional = true)
     private String windowsdomain;
