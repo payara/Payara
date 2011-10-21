@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2008-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,12 +41,18 @@
 package com.sun.enterprise.deployment.deploy.shared;
 
 import java.net.URI;
+import java.net.URL;
+import java.net.URISyntaxException;
 
 /**
  * Utility logic.
  * 
  */
 public class Util {
+
+    private static final String SPACE = " ";  
+
+    private static final String ENCODED_SPACE = "%20";  
 
    /**
     * Returns the name portion of the specified URI.  This is defined as the 
@@ -72,5 +78,28 @@ public class Util {
             name = path.substring(startOfName);
         }
         return name;
+    }
+
+   /**
+    * Returns URI for the specified URL.  This method will take care of 
+    * the space in URL.
+    * 
+    * @param url the URL to convert to URI
+    * @return the URI
+    */
+    public static URI toURI(URL url) throws URISyntaxException { 
+        return new URI(url.toString().replaceAll(SPACE, ENCODED_SPACE));
+    }
+
+   /**
+    * Constructs a new URI by parsing the given string and then resolving it
+    * against the base URI.  This method will take care of the space in String.
+    *
+    * @param baseUri the base URI to resolve against
+    * @param uriString the String to construct URI and resolve 
+    * @return the resulting URI
+    */
+    public static URI resolve(URI baseUri, String uriString) {
+        return baseUri.resolve(uriString.replaceAll(SPACE, ENCODED_SPACE));
     }
 }

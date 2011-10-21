@@ -62,6 +62,7 @@ import org.glassfish.internal.deployment.Deployment;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
 import org.glassfish.internal.deployment.SnifferManager;
 import org.glassfish.deployment.common.DeploymentUtils;
+import com.sun.enterprise.deployment.deploy.shared.Util;
 import org.glassfish.deployment.versioning.VersioningUtils;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Inject;
@@ -273,7 +274,7 @@ public class InstanceDeployCommand extends InstanceDeployCommandParameters imple
         final ZipFile zipFile = new ZipFile(generatedContentParam);
         for (Enumeration<? extends ZipEntry> entries = zipFile.entries(); entries.hasMoreElements();) {
             final ZipEntry zipEntry = entries.nextElement();
-            final URI outputFileURI = baseURI.resolve(zipEntry.getName());
+            final URI outputFileURI = Util.resolve(baseURI, zipEntry.getName());
             final File outputFile = new File(outputFileURI);
             if (zipEntry.isDirectory()) {
                 outputFile.mkdirs();

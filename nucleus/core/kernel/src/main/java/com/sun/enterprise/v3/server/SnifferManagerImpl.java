@@ -51,6 +51,7 @@ import org.glassfish.api.container.SecondarySniffer;
 import org.glassfish.internal.deployment.SnifferManager;
 import org.glassfish.internal.deployment.ApplicationInfoProvider;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
+import com.sun.enterprise.deployment.deploy.shared.Util;
 import org.glassfish.deployment.common.DeploymentUtils;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 
@@ -279,7 +280,7 @@ public class SnifferManagerImpl implements SnifferManager {
                     // library jars
                     List<URL> moduleLibraries = DeploymentUtils.getModuleLibraryJars(context);
                     for (URL url : moduleLibraries) {
-                        uris.add(url.toURI());
+                        uris.add(Util.toURI(url));
                     }
                 } else {
                     // non-standalone case, we need to look at other libraries too
@@ -287,7 +288,7 @@ public class SnifferManagerImpl implements SnifferManager {
                     if (appInfoProvider != null) {
                         List<URL> libraryJars = appInfoProvider.getLibraryJars(context);
                         for (URL url : libraryJars) {
-                            uris.add(url.toURI());
+                            uris.add(Util.toURI(url));
                         }
                     }
                 }
