@@ -55,7 +55,6 @@
     <packaging>pom</packaging>
     <name>GlassFish Virtualization modules</name>  
     <modules>
-    	<module>virt-api</module>
         <module>virt-core</module>
         <module>libvirt</module>
         <module>libvirt-files</module>

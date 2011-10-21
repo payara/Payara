@@ -40,13 +40,22 @@
 
 package org.glassfish.virtualization.local;
 
-import org.glassfish.virtualization.spi.VirtualCluster;
-import org.glassfish.virtualization.spi.*;
+import com.sun.enterprise.util.ExecException;
+import com.sun.enterprise.util.ProcessExecutor;
+import org.glassfish.api.ActionReport;
+import org.glassfish.hk2.Services;
+import org.glassfish.virtualization.config.Template;
+import org.glassfish.virtualization.runtime.VirtualCluster;
+import org.glassfish.virtualization.spi.TemplateCustomizer;
+import org.glassfish.virtualization.spi.VirtException;
+import org.glassfish.virtualization.spi.VirtualMachine;
 import org.glassfish.virtualization.util.RuntimeContext;
+import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
 
 import java.io.IOException;
-import java.net.Socket;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Very simplistic database customizer that does not handle port, etc...
@@ -81,23 +90,6 @@ public class JavaDBTemplateCustomizer implements TemplateCustomizer {
         } catch (InterruptedException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
-    }
-
-    public boolean isActive(VirtualCluster virtualCluster, VirtualMachine virtualMachine) throws VirtException {
-        if (virtualMachine.getInfo().getState().equals(Machine.State.READY)) {
-            try {
-                Socket socket=null;
-                try {
-                    socket = new Socket(virtualMachine.getAddress(), 1527);
-                } finally {
-                    if (socket!=null)
-                        socket.close();
-                }
-            } catch (IOException e) {
-                return false;
-            }
-        }
-        return false;
     }
 
     @Override

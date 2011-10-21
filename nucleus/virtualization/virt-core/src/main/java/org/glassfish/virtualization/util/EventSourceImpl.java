@@ -40,7 +40,6 @@
 
 package org.glassfish.virtualization.util;
 
-import org.glassfish.virtualization.spi.EventSource;
 import org.glassfish.virtualization.spi.Listener;
 
 import java.util.ArrayList;
@@ -48,7 +47,7 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 
 /**
- * Default implementation of the {@link org.glassfish.virtualization.spi.EventSource} interface
+ * Default implementation of the {@link EventSource} interface
  *
  * @author Jerome Dochez
  */

@@ -38,23 +38,20 @@
  * holder.
  */
 
-package org.glassfish.virtualization.runtime;
+package org.glassfish.virtualization.spi.templates;
 
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Node;
 import com.sun.enterprise.config.serverbeans.Server;
 import org.glassfish.api.ActionReport;
-import org.glassfish.gms.bootstrap.GMSAdapter;
-import org.glassfish.gms.bootstrap.GMSAdapterService;
-import org.glassfish.gms.bootstrap.HealthHistory;
 import org.glassfish.hk2.Services;
-import org.glassfish.virtualization.spi.VirtualCluster;
-import org.glassfish.virtualization.spi.Machine;
+import org.glassfish.virtualization.runtime.VirtualCluster;
 import org.glassfish.virtualization.spi.TemplateCustomizer;
 import org.glassfish.virtualization.spi.VirtException;
 import org.glassfish.virtualization.spi.VirtualMachine;
 import org.glassfish.virtualization.util.RuntimeContext;
 import org.jvnet.hk2.annotations.Inject;
+import org.jvnet.hk2.annotations.Service;
 
 /**
  * Customization of the GlassFish template.
@@ -72,16 +69,13 @@ public class GlassFishTemplateCustomizer implements TemplateCustomizer {
     @Inject
     RuntimeContext rtContext;
 
-    @Inject
-    GMSAdapterService gmsAdapterService;
-
     @Override
     public void customize(VirtualCluster cluster, VirtualMachine virtualMachine) throws VirtException {
         ActionReport report = services.forContract(ActionReport.class).named("plain").get();
         final String nodeName = getNodeName(virtualMachine);
         // create-node-ssh --nodehost $ip_address --installdir $GLASSFISH_HOME $node_name
         String installDir = virtualMachine.getProperty(VirtualMachine.PropertyName.INSTALL_DIR);
-        rtContext.executeAdminCommand(report, "create-node-ssh", nodeName, "nodehost", virtualMachine.getAddress().getHostAddress(),
+        rtContext.executeAdminCommand(report, "create-node-ssh", nodeName, "nodehost", virtualMachine.getAddress(),
                 "sshUser", virtualMachine.getUser().getName(), "installdir", installDir);
 
         if (report.hasFailures()) {
@@ -90,16 +84,6 @@ public class GlassFishTemplateCustomizer implements TemplateCustomizer {
         rtContext.executeAdminCommand(report, "create-instance", nodeName + "Instance", "node", nodeName,
                 "cluster", cluster.getConfig().getName());
 
-    }
-
-    public boolean isActive(VirtualCluster virtualCluster, VirtualMachine virtualMachine) throws VirtException {
-        if (virtualMachine.getInfo().getState().equals(Machine.State.READY)) {
-            GMSAdapter adapter = gmsAdapterService.getGMSAdapterByName(virtualCluster.getConfig().getName());
-            String nodeName = getNodeName(virtualMachine);
-            HealthHistory.InstanceHealth instanceHealth = adapter.getHealthHistory().getHealthByInstance(nodeName+"Instance");
-            return instanceHealth.state.equals(HealthHistory.STATE.RUNNING);
-        }
-        return false;
     }
 
     @Override

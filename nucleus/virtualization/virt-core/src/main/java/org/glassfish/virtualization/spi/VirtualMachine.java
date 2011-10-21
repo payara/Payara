@@ -44,7 +44,6 @@ import org.glassfish.virtualization.config.VirtUser;
 import org.glassfish.virtualization.config.VirtualMachineConfig;
 
 import java.io.IOException;
-import java.net.InetAddress;
 
 /**
  * Defines a Virtual machine
@@ -65,14 +64,14 @@ public interface VirtualMachine {
      *
      * @return the machine's IP address
      */
-    InetAddress getAddress();
+    String getAddress();
 
     /**
      * Sets the IO address of the machine, usually performed by a back end
      * operation.
      * @param address the new IP address
      */
-    void setAddress(InetAddress address);
+    void setAddress(String address);
 
     /**
      * Starts the virtual machine

@@ -38,11 +38,13 @@
  * holder.
  */
 
-package org.glassfish.virtualization.spi;
+package org.glassfish.virtualization.runtime;
 
 import com.sun.enterprise.config.serverbeans.Cluster;
 import org.glassfish.virtualization.config.ServerPoolConfig;
 import org.glassfish.virtualization.config.VirtualMachineConfig;
+import org.glassfish.virtualization.spi.*;
+import org.glassfish.virtualization.util.RuntimeContext;
 import org.jvnet.hk2.config.*;
 
 import java.beans.PropertyVetoException;
@@ -99,7 +101,7 @@ public class VirtualCluster {
                     if (vmConfig!=null) {
                         wCluster.getExtensions().remove(vmConfig);
                     } else {
-                        throw new TransactionFailure("Cannot find virtual machine configuration under cluster");
+                        RuntimeContext.logger.log(Level.WARNING, "Cannot find virtual machine configuration under cluster");
                     }
                     return null;
                 }
@@ -125,7 +127,7 @@ public class VirtualCluster {
         return null;
     }
 
-    public synchronized List<VirtualMachine> getVMs() {
+    public synchronized List<VirtualMachine> getVms() {
         return Collections.unmodifiableList(vms);
     }
 

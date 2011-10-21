@@ -53,9 +53,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
-import java.net.UnknownHostException;
 import java.util.Enumeration;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 
 /**
@@ -83,42 +81,32 @@ class LocalVirtualMachine extends AbstractVirtualMachine {
     }
 
     @Override
-    public InetAddress getAddress() {
+    public String getAddress() {
         // we need to return our ip address.
         Enumeration<NetworkInterface> interfaces = null;
         try {
             interfaces = NetworkInterface.getNetworkInterfaces();
         } catch (SocketException e) {
             RuntimeContext.logger.log(Level.SEVERE, "Cannot get list of network interfaces",e);
-            try {
-                return InetAddress.getByAddress(new byte[] {127, 0, 0, 1});
-            } catch (UnknownHostException e1) {
-                RuntimeContext.logger.log(Level.SEVERE, "Cannot create loop back address");
-                return null;
-            }
+            return "127.0.0.1";
         }
         while (interfaces.hasMoreElements()) {
             NetworkInterface networkInterface = interfaces.nextElement();
             // we need a way to customize this through configuration
             Enumeration<InetAddress> addresses = networkInterface.getInetAddresses();
             while (addresses.hasMoreElements()) {
-                InetAddress inetAddress = addresses.nextElement();
-                String address = inetAddress.getHostAddress();
+                String address = addresses.nextElement().getHostAddress();
                 if (address.contains(".")) {
-                    return inetAddress;
+                    return address;
                 }
             }
         }
-        try {
-            return InetAddress.getByAddress(new byte[]{127, 0, 0, 1});
-        } catch (UnknownHostException e1) {
-            RuntimeContext.logger.log(Level.SEVERE, "Cannot create loop back address");
-            return null;
-        }
+        return "127.0.0.1";
+
     }
 
     @Override
-    public void setAddress(InetAddress address) {
+    public void setAddress(String address) {
         // ignore/
     }
 
@@ -160,42 +148,7 @@ class LocalVirtualMachine extends AbstractVirtualMachine {
 
     @Override
     public VirtualMachineInfo getInfo() {
-        return new VirtualMachineInfo() {
-            @Override
-            public long maxMemory() throws VirtException {
-                return 0;  //To change body of implemented methods use File | Settings | File Templates.
-            }
-
-            @Override
-            public long memory() throws VirtException {
-                return 0;  //To change body of implemented methods use File | Settings | File Templates.
-            }
-
-            @Override
-            public long cpuTime() throws VirtException {
-                return 0;  //To change body of implemented methods use File | Settings | File Templates.
-            }
-
-            @Override
-            public Machine.State getState() throws VirtException {
-                return Machine.State.READY;
-            }
-
-            @Override
-            public void registerMemoryListener(MemoryListener ml, long delay, TimeUnit unit) {
-                //To change body of implemented methods use File | Settings | File Templates.
-            }
-
-            @Override
-            public void unregisterMemoryListener(MemoryListener ml) {
-                //To change body of implemented methods use File | Settings | File Templates.
-            }
-
-            @Override
-            public int nbVirtCpu() throws VirtException {
-                return 0;  //To change body of implemented methods use File | Settings | File Templates.
-            }
-        };
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
     @Override

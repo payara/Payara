@@ -55,11 +55,6 @@
     <name>Virtualization Core Classes</name>
     <dependencies>
         <dependency>
-            <groupId>org.glassfish.virtualization</groupId>
-            <artifactId>virt-api</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
             <groupId>org.glassfish.admin</groupId>
             <artifactId>config-api</artifactId>
             <version>${project.version}</version>
@@ -82,11 +77,6 @@
         <dependency>
             <groupId>org.glassfish.cluster</groupId>
             <artifactId>cluster-ssh</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.cluster</groupId>
-            <artifactId>gms-bootstrap</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>

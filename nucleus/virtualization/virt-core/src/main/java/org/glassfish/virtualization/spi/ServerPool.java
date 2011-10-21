@@ -37,56 +37,62 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+
 package org.glassfish.virtualization.spi;
 
-import org.glassfish.virtualization.config.Template;
-import org.glassfish.virtualization.config.TemplateIndex;
-import org.jvnet.hk2.config.ConfigSupport;
-import org.jvnet.hk2.config.SingleConfigCode;
-import org.jvnet.hk2.config.TransactionFailure;
+import org.glassfish.virtualization.config.ServerPoolConfig;
+import org.glassfish.virtualization.runtime.VirtualCluster;
+import org.glassfish.virtualization.util.EventSource;
 
-import java.beans.PropertyVetoException;
+import java.io.IOException;
+import java.util.Collection;
 
 /**
- * Simple key-value template condition
+ * Abstract a set of servers than can be used to provide {@link VirtualMachine}
+ *
  * @author Jerome Dochez
  */
-public class KeyValueType extends TemplateCondition {
+public interface ServerPool {
 
-    String key;
-    String value;
+    /**
+     * Returns the configuration for this server pool.
+     *
+     * @return  the server pool's configuration.
+     */
+    ServerPoolConfig getConfig();
 
-    public KeyValueType() {
-        // default no-op constructor.
-    }
+    /**
+     * Returns this pool's name.
+     * @return  this pool's name
+     */
+    String getName();
 
-    public KeyValueType(String key, String value) {
-        this.key = key;
-        this.value = value;
-    }
+    /**
+     * Returns all allocated virtual machine in this server pool
+     * @return the list of allocated virtual machines
+     */
+    Collection<VirtualMachine> getVMs() throws VirtException;
 
-    @Override
-    public void load(TemplateIndex persistence) {
-        key = persistence.getType();
-        value = persistence.getValue();
-    }
+    /**
+     * Returns an allocated virtual machine in this server pool using its name.
+     * @param name virtual machine name
+     * @return virtual machine instance if found or null otherwise.
+     * @throws VirtException if the vm cannot be obtained
+     */
+    VirtualMachine vmByName(String name) throws VirtException;
 
-    @Override
-    public TemplateIndex persist(Template parent) throws TransactionFailure {
-        return (TemplateIndex) ConfigSupport.apply(new SingleConfigCode<Template>() {
-            @Override
-            public Object run(Template template) throws PropertyVetoException, TransactionFailure {
-                TemplateIndex persistence = template.createChild(TemplateIndex.class);
-                persistence.setType(key);
-                persistence.setValue(value);
-                return persistence;
-            }
-        }, parent);    }
+    /**
+     * Allocates number of virtual machines on any machine belonging to this server pool, each virtual machine
+     * should be based on the provided template.
+     * @param template  template for the virtual machines
+     * @param cluster the virtual cluster in which  the virtual machine must be added
+     * using the {@link VirtualCluster#add(TemplateInstance, VirtualMachine)}  method
+     * @return Listenable future for the VirtualMachine instance
+     * @throws VirtException when the virtual machine creation failed.
+     */
+    PhasedFuture<AllocationPhase, VirtualMachine> allocate(
+            TemplateInstance template, VirtualCluster cluster, EventSource<AllocationPhase> source)
+            throws VirtException;
 
-    @Override
-    public boolean satisfies(TemplateCondition otherCondition) {
-        return (otherCondition instanceof KeyValueType) &&
-            (key.equals(((KeyValueType) otherCondition).key) &&
-                (value.equals(((KeyValueType) otherCondition).value)));
-    }
+    void install(TemplateInstance template) throws IOException;
 }

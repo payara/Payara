@@ -44,7 +44,6 @@ import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.config.serverbeans.Domain;
 import org.glassfish.virtualization.spi.IAAS;
 import org.glassfish.virtualization.spi.VirtException;
-import org.glassfish.virtualization.spi.VirtualCluster;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
 
@@ -89,10 +88,6 @@ public class VirtualClusters {
             }
         }
         return clusterMap.get(clusterName);
-    }
-
-    public Iterable<VirtualCluster> getClusters() {
-        return clusterMap.values();
     }
 
 }

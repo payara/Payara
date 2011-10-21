@@ -39,13 +39,14 @@
  */
 package org.glassfish.paas.lbplugin.cli;
 
+import java.util.Collection;
 import java.util.logging.Level;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.paas.lbplugin.LBServiceUtil;
 import org.glassfish.paas.lbplugin.logger.LBPluginLogger;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceType;
-import org.glassfish.virtualization.spi.VirtualCluster;
+import org.glassfish.virtualization.runtime.VirtualCluster;
 import org.glassfish.virtualization.runtime.VirtualClusters;
 import org.glassfish.virtualization.spi.VirtException;
 import org.glassfish.virtualization.spi.VirtualMachine;

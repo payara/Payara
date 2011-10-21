@@ -51,7 +51,7 @@ import org.glassfish.hk2.Services;
 import org.glassfish.virtualization.config.TemplateIndex;
 import org.glassfish.virtualization.config.VirtualMachineConfig;
 import org.glassfish.virtualization.config.Virtualizations;
-import org.glassfish.virtualization.spi.VirtualCluster;
+import org.glassfish.virtualization.runtime.VirtualCluster;
 import org.glassfish.virtualization.runtime.VirtualClusters;
 import org.glassfish.virtualization.runtime.VirtualMachineLifecycle;
 import org.glassfish.virtualization.spi.VirtException;

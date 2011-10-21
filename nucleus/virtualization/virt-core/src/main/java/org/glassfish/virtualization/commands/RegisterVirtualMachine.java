@@ -45,31 +45,34 @@ import com.sun.enterprise.config.serverbeans.Domain;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
+import org.glassfish.api.admin.AdminCommandLock;
 import org.glassfish.api.admin.CommandLock;
 import org.glassfish.virtualization.config.Template;
 import org.glassfish.virtualization.config.VirtualMachineConfig;
 import org.glassfish.virtualization.runtime.CustomizersSynchronization;
-import org.glassfish.virtualization.spi.VirtualCluster;
+import org.glassfish.virtualization.runtime.VirtualCluster;
 import org.glassfish.virtualization.runtime.VirtualClusters;
 import org.glassfish.virtualization.runtime.VirtualMachineLifecycle;
 import org.glassfish.virtualization.spi.*;
 import org.glassfish.virtualization.util.RuntimeContext;
+import org.hibernate.validator.util.privilegedactions.LoadClass;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
+import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
 import org.jvnet.hk2.config.types.Property;
 
 import java.beans.PropertyVetoException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Registers a new virtual machine to this serverPool master.
@@ -137,14 +140,7 @@ public class RegisterVirtualMachine implements AdminCommand {
         try {
             VirtualMachine vm = targetGroup.vmByName(virtualMachine);
             if (vm!=null) {
-                try {
-                    vm.setAddress(InetAddress.getByName(address));
-                } catch (UnknownHostException e) {
-                    RuntimeContext.logger.log(Level.SEVERE,
-                            "Unknown host exception while setting the virtual machine address", e);
-                    vm.delete();
-                    return;
-                }
+                vm.setAddress(address);
                 vm.setProperty(VirtualMachine.PropertyName.INSTALL_DIR, installDir);
                 Cluster clusterConfig = domain.getClusterNamed(cluster);
                 if (clusterConfig==null) {
@@ -193,5 +189,7 @@ public class RegisterVirtualMachine implements AdminCommand {
             RuntimeContext.logger.log(Level.SEVERE, e.getMessage(),e);
             context.getActionReport().failure(RuntimeContext.logger, e.getMessage());
         }
+
+
     }
 }

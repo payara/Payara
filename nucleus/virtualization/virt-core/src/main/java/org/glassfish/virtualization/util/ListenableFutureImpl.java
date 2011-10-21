@@ -40,7 +40,6 @@
 
 package org.glassfish.virtualization.util;
 
-import org.glassfish.virtualization.spi.EventSource;
 import org.glassfish.virtualization.spi.PhasedFuture;
 import org.glassfish.virtualization.spi.Listener;
 

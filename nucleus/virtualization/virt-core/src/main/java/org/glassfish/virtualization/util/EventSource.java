@@ -38,59 +38,33 @@
  * holder.
  */
 
-package org.glassfish.virtualization.spi;
+package org.glassfish.virtualization.util;
 
-import org.glassfish.virtualization.config.ServerPoolConfig;
+import org.glassfish.virtualization.spi.Listener;
 
-import java.io.IOException;
-import java.util.Collection;
+import java.util.concurrent.ExecutorService;
 
 /**
- * Abstract a set of servers than can be used to provide {@link VirtualMachine}
+ * Definition of events source which supports registration of listeners.
  *
  * @author Jerome Dochez
+ * @param <T> the enumeration of events types that this event source can send.
  */
-public interface ServerPool {
-
+public interface EventSource<T extends Enum> {
     /**
-     * Returns the configuration for this server pool.
+     * add a listener to this event source.
      *
-     * @return  the server pool's configuration.
+     * @param listener the listener to notify of events
+     * @param executorService the executor service to use for the notification
+     * of the above listener. If null, the notification thread calling the
+     * {@link EventSource#fireEvent(Enum)} will be used.
      */
-    ServerPoolConfig getConfig();
+    void addListener(Listener<T> listener, ExecutorService executorService);
 
     /**
-     * Returns this pool's name.
-     * @return  this pool's name
+     * fires an event to all the registered listeners.
+     *
+     * @param event the event to fire
      */
-    String getName();
-
-    /**
-     * Returns all allocated virtual machine in this server pool
-     * @return the list of allocated virtual machines
-     */
-    Collection<VirtualMachine> getVMs() throws VirtException;
-
-    /**
-     * Returns an allocated virtual machine in this server pool using its name.
-     * @param name virtual machine name
-     * @return virtual machine instance if found or null otherwise.
-     * @throws VirtException if the vm cannot be obtained
-     */
-    VirtualMachine vmByName(String name) throws VirtException;
-
-    /**
-     * Allocates number of virtual machines on any machine belonging to this server pool, each virtual machine
-     * should be based on the provided template.
-     * @param template  template for the virtual machines
-     * @param cluster the virtual cluster in which  the virtual machine must be added
-     * using the {@link VirtualCluster#add(TemplateInstance, VirtualMachine)}  method
-     * @return Listenable future for the VirtualMachine instance
-     * @throws VirtException when the virtual machine creation failed.
-     */
-    PhasedFuture<AllocationPhase, VirtualMachine> allocate(
-            TemplateInstance template, VirtualCluster cluster, EventSource<AllocationPhase> source)
-            throws VirtException;
-
-    void install(TemplateInstance template) throws IOException;
+    void fireEvent(T event);
 }

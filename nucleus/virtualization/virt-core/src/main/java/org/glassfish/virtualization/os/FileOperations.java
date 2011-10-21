@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package org.glassfish.virtualization.spi;
+package org.glassfish.virtualization.os;
 
 import java.io.File;
 import java.io.IOException;

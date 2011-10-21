@@ -1,6 +1,7 @@
 package org.glassfish.virtualization.commands;
 
 import com.sun.enterprise.config.serverbeans.Cluster;
+import com.sun.enterprise.config.serverbeans.Domain;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
@@ -11,7 +12,7 @@ import org.glassfish.hk2.Services;
 import org.glassfish.virtualization.config.TemplateIndex;
 import org.glassfish.virtualization.config.VirtualMachineConfig;
 import org.glassfish.virtualization.config.Virtualizations;
-import org.glassfish.virtualization.spi.VirtualCluster;
+import org.glassfish.virtualization.runtime.VirtualCluster;
 import org.glassfish.virtualization.runtime.VirtualClusters;
 import org.glassfish.virtualization.runtime.VirtualMachineLifecycle;
 import org.glassfish.virtualization.spi.VirtException;

@@ -87,7 +87,7 @@
         </dependency>
         <dependency>
             <groupId>org.glassfish.virtualization</groupId>
-            <artifactId>virt-api</artifactId>
+            <artifactId>virt-core</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>

@@ -38,16 +38,20 @@
  * holder.
  */
 
-package org.glassfish.virtualization.runtime;
+package org.glassfish.virtualization.spi.templates;
 
 import org.glassfish.hk2.Services;
+import org.glassfish.hk2.inject.Injector;
 import org.glassfish.virtualization.config.Template;
 import org.glassfish.virtualization.config.TemplateIndex;
+import org.glassfish.virtualization.config.Virtualization;
 import org.glassfish.virtualization.config.Virtualizations;
 import org.glassfish.virtualization.spi.TemplateCondition;
 import org.glassfish.virtualization.spi.TemplateCustomizer;
 import org.glassfish.virtualization.spi.TemplateInstance;
+import org.jvnet.hk2.annotations.Inject;
 
+import java.beans.Customizer;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FilenameFilter;

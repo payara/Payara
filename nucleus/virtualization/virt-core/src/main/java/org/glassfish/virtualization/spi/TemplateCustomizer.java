@@ -41,6 +41,8 @@
 package org.glassfish.virtualization.spi;
 
 import org.glassfish.virtualization.config.Template;
+import org.glassfish.virtualization.runtime.VirtualCluster;
+import org.glassfish.virtualization.util.VirtualizationType;
 import org.jvnet.hk2.annotations.Contract;
 
 /**

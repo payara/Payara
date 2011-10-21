@@ -42,7 +42,7 @@ package org.glassfish.paas.lbplugin;
 import com.sun.enterprise.util.OS;
 import java.io.BufferedOutputStream;
 import org.glassfish.internal.api.ServerContext;
-import org.glassfish.virtualization.spi.VirtualCluster;
+import org.glassfish.virtualization.runtime.VirtualCluster;
 import org.glassfish.virtualization.spi.TemplateCustomizer;
 import org.glassfish.virtualization.spi.VirtException;
 import org.glassfish.virtualization.spi.VirtualMachine;

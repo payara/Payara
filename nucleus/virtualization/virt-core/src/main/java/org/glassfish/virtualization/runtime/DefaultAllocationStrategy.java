@@ -41,7 +41,7 @@
 package org.glassfish.virtualization.runtime;
 
 import org.glassfish.virtualization.spi.*;
-import org.glassfish.virtualization.spi.EventSource;
+import org.glassfish.virtualization.util.EventSource;
 import org.glassfish.virtualization.util.EventSourceImpl;
 import org.glassfish.virtualization.util.RuntimeContext;
 

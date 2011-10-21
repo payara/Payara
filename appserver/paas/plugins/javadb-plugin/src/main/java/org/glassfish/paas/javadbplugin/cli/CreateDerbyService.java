@@ -46,6 +46,7 @@ import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.CommandLock;
 import org.glassfish.paas.javadbplugin.DerbyProvisioner;
+import org.glassfish.paas.orchestrator.provisioning.ApplicationServerProvisioner;
 import org.glassfish.paas.orchestrator.provisioning.DatabaseProvisioner;
 import org.glassfish.paas.orchestrator.provisioning.ServiceInfo;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceType;
@@ -57,7 +58,7 @@ import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
-import org.glassfish.virtualization.spi.VirtualCluster;
+import org.glassfish.virtualization.runtime.VirtualCluster;
 import org.glassfish.virtualization.runtime.VirtualClusters;
 import org.glassfish.virtualization.spi.PhasedFuture;
 import org.glassfish.virtualization.spi.AllocationConstraints;
@@ -199,7 +200,7 @@ public class CreateDerbyService implements AdminCommand, Runnable {
                 }
                 ServiceInfo entry = new ServiceInfo();
                 entry.setInstanceId(vm.getName());
-                entry.setIpAddress(vm.getAddress().getHostAddress());
+                entry.setIpAddress(vm.getAddress());
                 entry.setState(ServiceInfo.State.Running.toString());
                 entry.setServiceName(serviceName);
                 entry.setAppName(appName);

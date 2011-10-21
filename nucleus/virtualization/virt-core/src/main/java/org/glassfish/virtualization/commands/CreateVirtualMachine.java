@@ -48,7 +48,7 @@ import org.glassfish.virtualization.config.Template;
 import org.glassfish.virtualization.config.Virtualizations;
 import org.glassfish.virtualization.runtime.VirtualClusters;
 import org.glassfish.virtualization.spi.*;
-import org.glassfish.virtualization.runtime.TemplateInstanceImpl;
+import org.glassfish.virtualization.spi.templates.TemplateInstanceImpl;
 import org.glassfish.virtualization.util.EventSourceImpl;
 import org.glassfish.virtualization.util.RuntimeContext;
 import org.jvnet.hk2.annotations.Inject;
