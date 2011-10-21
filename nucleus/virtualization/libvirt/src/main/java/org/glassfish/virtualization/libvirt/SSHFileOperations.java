@@ -41,7 +41,7 @@ package org.glassfish.virtualization.libvirt;
 
 import org.glassfish.cluster.ssh.launcher.SSHLauncher;
 import org.glassfish.cluster.ssh.sftp.SFTPClient;
-import org.glassfish.virtualization.os.FileOperations;
+import org.glassfish.virtualization.spi.FileOperations;
 import org.glassfish.virtualization.spi.Machine;
 import org.glassfish.virtualization.util.RuntimeContext;
 
@@ -56,7 +56,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Vector;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 

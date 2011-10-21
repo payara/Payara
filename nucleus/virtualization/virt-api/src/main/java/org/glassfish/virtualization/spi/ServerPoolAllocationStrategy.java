@@ -37,55 +37,28 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package org.glassfish.virtualization.os;
-
-import org.jvnet.hk2.annotations.Contract;
-
-import java.io.File;
-import java.io.IOException;
+package org.glassfish.virtualization.spi;
 
 /**
- * Interface to create and manipulate a virtual disk
+ * Represents a strategy for allocating virtual machines within a pool of servers.
  * @author Jerome Dochez
  */
-@Contract
-public interface Disk {
+public interface ServerPoolAllocationStrategy {
 
     /**
-     * Creates a virtual disk
-     * @param path path to the virtual disk file
-     * @param size size of the virtual disk
-     * @param mountPoint directory where the virtual disk should be mounted
-     * @return 0 if success, not 0 if failure (passed by the underlying native
-     * mechanism
-     * @throws IOException when the disk cannot be created.
+     * Returns the {@link ServerPool} instance this strategy is serving.
+     * @return the target server pool instance.
      */
-    public int create(File path, int size, File mountPoint) throws IOException;
+    PhysicalServerPool getServerPool();
 
     /**
-     * Mount an existing virtual disk
-     * @param path path to the virtual disk file
-     * @param mountPoint directory to use to mount the virtual disk
-     * @return 0 if success, not 0 if failure as returned by the native
-     * mechanism
-     * @throws IOException if the virtual disk cannot be mounted
+     * Allocates a virtual machine using the passed allocation characteristics
+     * @param constraints the requested virtual machine allocation characteristics
+     * @param source a facility to register events listeners for allocation phases.
+     * @return the {@link PhasedFuture} instance giving access to the {@link VirtualMachine}
+     * @throws VirtException if the allocation is not successful.
      */
-    public int mount(File path, File mountPoint) throws IOException;
-
-    /**
-     * Un-mount this virtual disk instance
-     * @throws IOException if the disk cannot be un-mounted
-     */
-    public int umount() throws IOException;
-    
-        /**
-     * create an ISO File with the content of a directory
-     * @param sourceDirectory path to the directory content to put in the iso file
-     * @param outputISOFile location of the created iso file. (It will be delete first if present)
-     * @return 0 if success, not 0 if failure as returned by the native
-     * mechanism
-     * @throws IOException if the ISO file cannot be created
-     */
-    public int createISOFromDirectory(File sourceDirectory, File outputISOFile) throws IOException;
-
+    PhasedFuture<AllocationPhase, VirtualMachine> allocate(AllocationConstraints constraints,
+                                                           EventSource<AllocationPhase> source)
+            throws VirtException;
 }

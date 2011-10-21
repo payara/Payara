@@ -51,6 +51,7 @@ import org.glassfish.virtualization.util.RuntimeContext;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.logging.Level;
@@ -67,7 +68,7 @@ public class LibVirtVirtualMachine extends AbstractVirtualMachine {
     final private Domain domain;
     final private List<StorageVol> storageVols;
     final private String name;
-    private String address;
+    private InetAddress address;
 
     protected LibVirtVirtualMachine(VirtualMachineConfig config, VirtUser user, Machine owner, Domain domain, List<StorageVol> storageVols)
             throws VirtException {
@@ -78,11 +79,11 @@ public class LibVirtVirtualMachine extends AbstractVirtualMachine {
         this.storageVols = new ArrayList<StorageVol>(storageVols);
     }
 
-    public void setAddress(String address) {
+    public void setAddress(InetAddress address) {
         this.address = address;
     }
 
-    public String getAddress() {
+    public InetAddress getAddress() {
         return address;
     }
 
@@ -220,7 +221,7 @@ public class LibVirtVirtualMachine extends AbstractVirtualMachine {
         SSHLauncher sshLauncher = new SSHLauncher();
         File home = new File(System.getProperty("user.home"));
         String keyFile = new File(home,".ssh/id_dsa").getAbsolutePath();
-        sshLauncher.init(getUser().getName(), address, 22, null, keyFile, null, Logger.getAnonymousLogger());
+        sshLauncher.init(getUser().getName(), address.getHostAddress(), 22, null, keyFile, null, Logger.getAnonymousLogger());
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         StringBuilder stringBuilder = new StringBuilder();
         for (String arg : args) {

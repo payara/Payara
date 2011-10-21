@@ -41,18 +41,12 @@
 package org.glassfish.virtualization.local;
 
 import com.sun.enterprise.config.serverbeans.Cluster;
-import com.sun.enterprise.config.serverbeans.Domain;
-import org.glassfish.hk2.scopes.PerLookup;
-import org.glassfish.internal.api.ServerContext;
 import org.glassfish.virtualization.config.ServerPoolConfig;
 import org.glassfish.virtualization.config.VirtualMachineConfig;
-import org.glassfish.virtualization.runtime.VirtualCluster;
+import org.glassfish.virtualization.spi.VirtualCluster;
 import org.glassfish.virtualization.spi.*;
-import org.glassfish.virtualization.util.EventSource;
+import org.glassfish.virtualization.spi.EventSource;
 import org.glassfish.virtualization.util.ListenableFutureImpl;
-import org.jvnet.hk2.annotations.Inject;
-import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.annotations.Service;
 
 import java.io.IOException;
 import java.util.*;

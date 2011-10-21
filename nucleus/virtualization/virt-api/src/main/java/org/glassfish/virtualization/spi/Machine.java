@@ -42,9 +42,8 @@ package org.glassfish.virtualization.spi;
 
 import org.glassfish.virtualization.config.MachineConfig;
 import org.glassfish.virtualization.config.VirtUser;
-import org.glassfish.virtualization.os.FileOperations;
-import org.glassfish.virtualization.runtime.VirtualCluster;
-import org.glassfish.virtualization.util.EventSource;
+import org.glassfish.virtualization.spi.VirtualCluster;
+import org.glassfish.virtualization.spi.EventSource;
 
 import java.io.IOException;
 import java.util.Collection;

@@ -40,13 +40,13 @@
 
 package org.glassfish.virtualization.config;
 
+import com.sun.logging.LogDomains;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.config.Named;
 import org.glassfish.config.support.Create;
 import org.glassfish.config.support.CrudResolver;
-import org.glassfish.virtualization.util.RuntimeContext;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.*;
@@ -54,6 +54,7 @@ import org.jvnet.hk2.config.types.Property;
 
 import java.util.List;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Configuration of a template, for now only its name. Will need to be refined.
@@ -122,7 +123,7 @@ public interface Template extends ConfigBeanProxy, Named {
         public <T extends ConfigBeanProxy> T resolve(AdminCommandContext context, Class<T> type) {
             Virtualization virt = virts.byName(virtualization);
             if (virt==null) {
-                RuntimeContext.logger.log(Level.SEVERE, "Cannot find a virtualization setting named " + virtualization);
+                Logger.getLogger(LogDomains.CONFIG_LOGGER).log(Level.SEVERE, "Cannot find a virtualization setting named " + virtualization);
                 return null;
             }
             Template thisTemplate = virt.templateByName(template);

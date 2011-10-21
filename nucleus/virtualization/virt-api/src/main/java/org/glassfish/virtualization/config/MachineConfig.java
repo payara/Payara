@@ -44,14 +44,9 @@ import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.config.support.Create;
-import org.glassfish.config.support.CreationDecorator;
 import org.glassfish.config.support.CrudResolver;
-import org.glassfish.virtualization.spi.Machine;
-import org.glassfish.virtualization.spi.ServerPool;
-import org.glassfish.virtualization.util.RuntimeContext;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.*;
 
 import java.beans.PropertyVetoException;

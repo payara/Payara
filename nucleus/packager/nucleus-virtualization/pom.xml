@@ -105,6 +105,11 @@
         </dependency> 
         <dependency>
             <groupId>org.glassfish.virtualization</groupId>
+            <artifactId>virt-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>                
+        <dependency>
+            <groupId>org.glassfish.virtualization</groupId>
             <artifactId>virt-core</artifactId>
             <version>${project.version}</version>
         </dependency>

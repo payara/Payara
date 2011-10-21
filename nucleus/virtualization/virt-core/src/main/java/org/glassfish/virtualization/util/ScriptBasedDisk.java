@@ -42,7 +42,7 @@ package org.glassfish.virtualization.util;
 
 import org.glassfish.internal.api.ServerContext;
 import org.glassfish.virtualization.ShellExecutor;
-import org.glassfish.virtualization.os.Disk;
+import org.glassfish.virtualization.spi.Disk;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;

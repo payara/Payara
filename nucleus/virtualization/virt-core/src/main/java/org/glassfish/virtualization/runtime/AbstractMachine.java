@@ -62,8 +62,8 @@ import org.glassfish.virtualization.config.MachineConfig;
 import org.glassfish.virtualization.config.Template;
 import org.glassfish.virtualization.config.VirtUser;
 import org.glassfish.virtualization.config.Virtualizations;
-import org.glassfish.virtualization.os.Disk;
-import org.glassfish.virtualization.os.FileOperations;
+import org.glassfish.virtualization.spi.Disk;
+import org.glassfish.virtualization.spi.FileOperations;
 import org.glassfish.virtualization.spi.*;
 import org.glassfish.virtualization.util.Host;
 import org.glassfish.virtualization.util.RuntimeContext;
@@ -258,7 +258,11 @@ public abstract class AbstractMachine implements PostConstruct, Machine {
             @Override
             public List<String> ls(String path) throws IOException {
                 File sourceDirectory = absolutize(new File(path));
-                return Arrays.asList(sourceDirectory.list());
+                if (sourceDirectory.exists()) {
+                    String[] list = sourceDirectory.list();
+                    if (list!=null) return Arrays.asList(list);
+                }
+                return new ArrayList<String>();
             }
 
             @Override

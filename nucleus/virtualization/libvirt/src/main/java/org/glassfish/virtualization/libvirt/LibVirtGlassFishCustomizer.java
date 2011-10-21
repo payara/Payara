@@ -39,7 +39,7 @@
  */
 package org.glassfish.virtualization.libvirt;
 
-import org.glassfish.virtualization.spi.templates.GlassFishTemplateCustomizer;
+import org.glassfish.virtualization.runtime.GlassFishTemplateCustomizer;
 import org.jvnet.hk2.annotations.Service;
 
 /**

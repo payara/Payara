@@ -41,13 +41,12 @@
 package org.glassfish.virtualization;
 
 
-import org.glassfish.api.Startup;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.hk2.Services;
 import org.glassfish.virtualization.config.Template;
 import org.glassfish.virtualization.config.Virtualization;
 import org.glassfish.virtualization.runtime.DefaultAllocationStrategy;
-import org.glassfish.virtualization.runtime.VirtualCluster;
+import org.glassfish.virtualization.spi.VirtualCluster;
 import org.glassfish.virtualization.spi.*;
 import org.glassfish.virtualization.config.ServerPoolConfig;
 import org.glassfish.virtualization.config.Virtualizations;
@@ -60,7 +59,6 @@ import java.beans.PropertyChangeEvent;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 
 /**
@@ -69,17 +67,12 @@ import java.util.logging.Logger;
  *
  */
 @Service
-public class IAASImpl implements Startup, IAAS, ConfigListener {
+public class IAASImpl implements IAAS, ConfigListener {
 
     private final Services services;
     private final Map<String, Virtualization> virtConfigs = new ConcurrentHashMap<String, Virtualization>();
     private final Map<String, ServerPool> groups = new ConcurrentHashMap<String, ServerPool>();
     private final Map<String, VirtualCluster> virtualClusterMap = new ConcurrentHashMap<String, VirtualCluster>();
-
-    @Override
-    public Lifecycle getLifecycle() {
-        return Lifecycle.SERVER;
-    }
 
     @Override
     public Iterator<ServerPool> iterator() {

@@ -49,7 +49,6 @@ import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.CommandLock;
 import org.glassfish.virtualization.config.Template;
 import org.glassfish.virtualization.config.VirtualMachineConfig;
-import org.glassfish.virtualization.runtime.VirtualCluster;
 import org.glassfish.virtualization.runtime.VirtualClusters;
 import org.glassfish.virtualization.runtime.VirtualMachineLifecycle;
 import org.glassfish.virtualization.spi.*;
@@ -60,6 +59,8 @@ import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
 import org.jvnet.hk2.config.types.Property;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.concurrent.CountDownLatch;
 import java.util.logging.Level;
 
@@ -117,7 +118,14 @@ public class RegisterStartup implements AdminCommand {
                 if (latch!=null) {
                     latch.countDown();
                 }
-                vm.setAddress(address);
+                try {
+                    vm.setAddress(InetAddress.getByName(address));
+                } catch (UnknownHostException e) {
+                    RuntimeContext.logger.log(Level.SEVERE,
+                            "Unknown host exception while setting the virtual machine address", e);
+                    vm.delete();
+                    return;
+                }
                 Cluster clusterConfig = domain.getClusterNamed(cluster);
                 VirtualMachineConfig vmConfig = clusterConfig.getExtensionsByTypeAndName(VirtualMachineConfig.class, vm.getName());
                 for (Property property : vmConfig.getProperty()) {
