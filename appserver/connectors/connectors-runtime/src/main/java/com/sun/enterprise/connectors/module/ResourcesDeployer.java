@@ -776,19 +776,23 @@ public class ResourcesDeployer extends JavaEEDeployer<ResourcesContainer, Resour
                     /*|| (deployParams.origin == OpsParams.Origin.create_application_ref && env.isInstance())*/) {
                 Properties properties = deployParams.properties;
                 if(properties != null){
-                    //handle if "preserveAppScopedResources" property is set (during deploy --force=true)
-                    //TODO ASR need to check whether the call is "force=true" or re-deploy
+                    //handle if "preserveAppScopedResources" property is set (during deploy --force=true or redeploy)
                     String preserve = properties.getProperty(DeploymentProperties.PRESERVE_APP_SCOPED_RESOURCES);
-                    if(preserve != null && Boolean.valueOf(preserve)){
-                        String appName = getAppNameFromDeployCmdParams(dc);
-                        Map<String, Resources> allResources = resourceConfigurations.remove(appName);
-                        Application oldApp = preservedApps.remove(appName);
-                        if(allResources != null && oldApp != null){
-                            Application application = dc.getTransientAppMetaData(Application.APPLICATION, Application.class);
-                            validatePreservedResources(allResources, oldApp, application);
-                            retainResourceConfig(dc, allResources);
+                    if (preserve != null && Boolean.valueOf(preserve)) {
+                        Boolean redeploy = false;
+                        redeploy = deployParams.force;
+
+                        if (redeploy) {
+                            String appName = getAppNameFromDeployCmdParams(dc);
+                            Map<String, Resources> allResources = resourceConfigurations.remove(appName);
+                            Application oldApp = preservedApps.remove(appName);
+                            if (allResources != null && oldApp != null) {
+                                Application application = dc.getTransientAppMetaData(Application.APPLICATION, Application.class);
+                                validatePreservedResources(allResources, oldApp, application);
+                                retainResourceConfig(dc, allResources);
+                            }
+                           return;
                         }
-                        return ;
                     }
                 }
                 Application app = dc.getTransientAppMetaData(Application.APPLICATION, Application.class);
