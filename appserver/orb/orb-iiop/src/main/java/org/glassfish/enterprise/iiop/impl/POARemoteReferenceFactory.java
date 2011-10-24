@@ -269,10 +269,8 @@ public final class POARemoteReferenceFactory extends org.omg.CORBA.LocalObject
 	    // Servant caching for local RMI-IIOP invocation performance
             policies.add(ServantCachingPolicy.getPolicy());
 
-            /**  TODO
 	    // OTS Policy
-	    policies.add(new OTSPolicy());
-            */
+	    policies.add(new OTSPolicyImpl());
 
 	    if (logger.isLoggable(Level.FINE)) {
 	        logger.log(Level.FINE, ".createReferenceFactory: {0} {1}: {2}",
