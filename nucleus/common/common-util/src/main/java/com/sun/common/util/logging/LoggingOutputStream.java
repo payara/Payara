@@ -43,6 +43,8 @@ package com.sun.common.util.logging;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.Formatter;
+import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
@@ -177,6 +179,14 @@ public class LoggingOutputStream extends ByteArrayOutputStream {
             sTO = new StackTraceObjects((Throwable) x);
             perThreadStObjects.set(sTO);
             super.println(sTO.toString());
+        }
+
+        public PrintStream printf(String str, Object... args) {
+            StringBuilder sb = new StringBuilder();
+            Formatter formatter = new Formatter(sb, Locale.getDefault());
+            formatter.format(str,args);
+            print(sb.toString());
+            return  null;
         }
 
         public void println(String str) {
