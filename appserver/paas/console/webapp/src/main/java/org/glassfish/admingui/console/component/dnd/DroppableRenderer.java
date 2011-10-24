@@ -64,98 +64,106 @@ public class DroppableRenderer extends Renderer {
         final ExternalContext externalContext = context.getExternalContext();
         HttpServletRequest request = (HttpServletRequest) externalContext.getRequest();
         Map<String, String> params = externalContext.getRequestParameterMap();
-        Droppable droppable = (Droppable) component;
-        String datasourceId = droppable.getDatasource();
+        if (component instanceof Droppable) {
+            Droppable droppable = (Droppable) component;
+            String datasourceId = droppable.getDatasource();
 
-        if(params.containsKey("dnd")) {
-            String dragId = params.get("dragId");
-            String dropId = params.get("dropId");
-            DragDropEvent event = null;
+            if(params.containsKey("dnd")) {
+                String dragId = params.get("dragId");
+                String dropId = params.get("dropId");
+                DragDropEvent event = null;
 
-            if(datasourceId != null) {
-                CoreTable datasource = findDatasource(context, droppable, datasourceId);
-                String[] idTokens = dragId.split(String.valueOf(UINamingContainer.getSeparatorChar(context)));
-                int rowIndex = Integer.parseInt(idTokens[idTokens.length - 2]);
-                datasource.setRowIndex(rowIndex);
-                Object data = datasource.getRowData();
-                datasource.setRowIndex(-1);
+                if(datasourceId != null) {
+                    CoreTable datasource = findDatasource(context, droppable, datasourceId);
+                    String[] idTokens = dragId.split(String.valueOf(UINamingContainer.getSeparatorChar(context)));
+                    int rowIndex = Integer.parseInt(idTokens[idTokens.length - 2]);
+                    datasource.setRowIndex(rowIndex);
+                    Object data = datasource.getRowData();
+                    datasource.setRowIndex(-1);
 
-                event = new DragDropEvent(droppable, dragId, dropId, data);
+                    event = new DragDropEvent(droppable, dragId, dropId, data);
 
+                }
+                else {
+                    event = new DragDropEvent(droppable, dragId, dropId);
+                }
+
+
+                droppable.queueEvent(event);
             }
-            else {
-                event = new DragDropEvent(droppable, dragId, dropId);
-            }
-
-
-            droppable.queueEvent(event);
+        } else {
+            throw new FacesException("Cannot cast component \"" + component.getClass().getName() + "\" to Droppable.");
         }
     }
 
     @Override
     public void encodeEnd(FacesContext context, UIComponent component) throws IOException {
         ResponseWriter writer = context.getResponseWriter();
-        Droppable droppable = (Droppable) component;
-        String target = findTarget(context, droppable).getClientId(context);
-        String clientId = droppable.getClientId(context);
-        String onDropUpdate = droppable.getOnDropUpdate();
+        if (component instanceof Droppable) {
+            Droppable droppable = (Droppable) component;
+            String target = findTarget(context, droppable).getClientId(context);
+            String clientId = droppable.getClientId(context);
+            String onDropUpdate = droppable.getOnDropUpdate();
 
-        writer.startElement("script", droppable);
-        writer.writeAttribute("type", "text/javascript", null);
+            writer.startElement("script", droppable);
+            writer.writeAttribute("type", "text/javascript", null);
 
-        writer.write("$(Console.escapeClientId('" + target + "'))");
-        writer.write(".droppable({\n");
+            writer.write("$(Console.escapeClientId('" + target + "'))");
+            writer.write(".droppable({\n");
 
-        if(droppable.isDisabled()) {
-            writer.write("disabled:true,\n");
-        }
-
-        if(droppable.getHoverStyleClass() != null) {
-            writer.write("hoverClass:'" + droppable.getHoverStyleClass() + "',\n");
-        }
-
-        if(droppable.getActiveStyleClass() != null) {
-            writer.write("activeClass:'" + droppable.getActiveStyleClass() + "',\n");
-        }
-
-        if(droppable.getAccept() != null) {
-            writer.write("accept:'" + droppable.getAccept() + "',\n");
-        }
-
-        if(droppable.getScope() != null) {
-            writer.write("scope:'" + droppable.getScope() + "',\n");
-        }
-
-        if(droppable.getTolerance() != null) {
-            writer.write("tolerance:'" + droppable.getTolerance() + "',\n");
-        }
-
-        if(droppable.getDropListener() != null && onDropUpdate != null) {
-            UIComponent form = findParentForm(context, droppable);
-            if (form == null) {
-                throw new FacesException("Droppable: '" + clientId + "' must be inside a form");
+            if(droppable.isDisabled()) {
+                writer.write("disabled:true,\n");
             }
 
-            writer.write("drop: function(event, ui) {\n");
-            if(droppable.getOnDrop() != null) {
-                writer.write(droppable.getOnDrop() + ".call(event, ui);\n");
-            } else {
-                writer.write("ui.draggable.fadeOut('fast');\n");
+            if(droppable.getHoverStyleClass() != null) {
+                writer.write("hoverClass:'" + droppable.getHoverStyleClass() + "',\n");
             }
 
-            writer.write("jsf.ajax.request('" + target + "', event, {\n");
-            writer.write("execute:'" + clientId + "',\n");
-            writer.write("render:'@form',\n");
-            writer.write("dnd: '" + clientId + "',\n");
-            writer.write("dragId: ui.draggable.attr('id'),\n");
-            writer.write("dropId: '" + target + "'\n");
+            if(droppable.getActiveStyleClass() != null) {
+                writer.write("activeClass:'" + droppable.getActiveStyleClass() + "',\n");
+            }
+
+            if(droppable.getAccept() != null) {
+                writer.write("accept:'" + droppable.getAccept() + "',\n");
+            }
+
+            if(droppable.getScope() != null) {
+                writer.write("scope:'" + droppable.getScope() + "',\n");
+            }
+
+            if(droppable.getTolerance() != null) {
+                writer.write("tolerance:'" + droppable.getTolerance() + "',\n");
+            }
+
+            if(droppable.getDropListener() != null && onDropUpdate != null) {
+                UIComponent form = findParentForm(context, droppable);
+                if (form == null) {
+                    throw new FacesException("Droppable: '" + clientId + "' must be inside a form");
+                }
+
+                writer.write("drop: function(event, ui) {\n");
+                if(droppable.getOnDrop() != null) {
+                    writer.write(droppable.getOnDrop() + ".call(event, ui);\n");
+                } else {
+                    writer.write("ui.draggable.fadeOut('fast');\n");
+                }
+
+                writer.write("jsf.ajax.request('" + target + "', event, {\n");
+                writer.write("execute:'" + clientId + "',\n");
+                writer.write("render:'@form',\n");
+                writer.write("dnd: '" + clientId + "',\n");
+                writer.write("dragId: ui.draggable.attr('id'),\n");
+                writer.write("dropId: '" + target + "'\n");
+                writer.write("});\n");
+                writer.write("}\n");
+            }
+
             writer.write("});\n");
-            writer.write("}\n");
+
+            writer.endElement("script");
+        } else {
+            throw new FacesException("Cannot cast component \"" + component.getClass().getName() + "\" to Droppable.");
         }
-
-        writer.write("});\n");
-
-        writer.endElement("script");
     }
 
     protected UIComponent findTarget(FacesContext facesContext, Droppable droppable) {
