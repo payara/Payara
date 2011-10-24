@@ -244,7 +244,7 @@ public class LBPlugin implements Plugin {
     }
 
     public ProvisionedService getProvisionedService(ServiceDescription serviceDescription, ServiceInfo serviceInfo) {
-        ServiceInfo entry = lbServiceUtil.retrieveCloudEntry(serviceDescription.getAppName(), serviceDescription.getAppName(), ServiceType.LOAD_BALANCER);
+        ServiceInfo entry = lbServiceUtil.retrieveCloudEntry(serviceDescription.getName(), serviceDescription.getAppName(), ServiceType.LOAD_BALANCER);
         GlassFishLBProvisionedService ps = new GlassFishLBProvisionedService(serviceDescription, new Properties());
         ps.setStatus(lbServiceUtil.getServiceStatus(entry));
         return ps;
