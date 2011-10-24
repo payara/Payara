@@ -111,20 +111,7 @@
             <artifactId>glassfish-osgi-console-plugin</artifactId>
             <version>${project.version}</version>
         </dependency>
-    
-    
-    	<!-- now, listing package dependencies so that their content
-             can be excluded during staging -->	
- 
-        <dependency>        
-           <groupId>org.glassfish.packager</groupId>
-           <artifactId>glassfish-osgi-http</artifactId>
-           <version>${project.version}</version>
-           <classifier>artifacts</classifier>
-	   <type>properties</type>
-           <scope>provided</scope>
-       </dependency>
-        
+           
     </dependencies>
 
     <profiles>
