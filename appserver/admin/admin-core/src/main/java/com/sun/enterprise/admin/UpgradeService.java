@@ -206,10 +206,4 @@ public class UpgradeService implements ConfigurationUpgrade, PostConstruct {
             throw new RuntimeException("Error upgrading application", ex);
         }
     }
-
-
-    private String getLocationAsURIString(String location) {
-        File appFile = new File(location);
-        return appFile.toURI().toString();
-    }
 }

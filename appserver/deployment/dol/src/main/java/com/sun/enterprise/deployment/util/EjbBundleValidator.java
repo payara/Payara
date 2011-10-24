@@ -381,10 +381,12 @@ public class EjbBundleValidator extends ComponentValidator implements EjbBundleV
         // If this is a message bean, it can be a message destination
         // referencer as well.
         if (ejb.getType().equals(EjbMessageBeanDescriptor.TYPE)) {
-            MessageDestinationReferencer msgDestReferencer =
+            if (ejb instanceof MessageDestinationReferencer) {
+                MessageDestinationReferencer msgDestReferencer =
                     (MessageDestinationReferencer) ejb;
-            if (msgDestReferencer.getMessageDestinationLinkName() != null) {
-                accept(msgDestReferencer);
+                if (msgDestReferencer.getMessageDestinationLinkName() != null) {
+                    accept(msgDestReferencer);
+                }
             }
         }
 

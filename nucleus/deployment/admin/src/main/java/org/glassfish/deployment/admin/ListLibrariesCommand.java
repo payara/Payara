@@ -85,7 +85,6 @@ public class ListLibrariesCommand implements AdminCommand {
     public void execute(AdminCommandContext context) {
         
         final ActionReport report = context.getActionReport();
-        final Logger logger = context.getLogger();
 
         File libDir = env.getLibPath();
 

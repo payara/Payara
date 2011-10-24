@@ -99,19 +99,19 @@ public class RemoveLibraryCommand implements AdminCommand {
         }
 
         // delete the file from the appropriate library directory
-        String msg = "";
+        StringBuffer msg = new StringBuffer();
         for (String libraryName : names) {
             File libraryFile = new File(libDir, libraryName);
             if (libraryFile.exists()) {
                 FileUtils.deleteFile(libraryFile);
             } else {
-                msg += localStrings.getLocalString("lfnf","Library file not found", libraryFile.getAbsolutePath());
+                msg.append(localStrings.getLocalString("lfnf","Library file not found", libraryFile.getAbsolutePath()));
             }
         }
         if (msg.length() > 0) {
-            logger.log(Level.WARNING, msg);
+            logger.log(Level.WARNING, msg.toString());
             report.setActionExitCode(ActionReport.ExitCode.WARNING);
-            report.setMessage(msg);
+            report.setMessage(msg.toString());
         }
     }
 }
