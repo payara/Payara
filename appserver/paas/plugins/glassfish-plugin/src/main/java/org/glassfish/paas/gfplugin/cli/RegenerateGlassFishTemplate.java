@@ -57,10 +57,8 @@ import org.glassfish.paas.orchestrator.provisioning.ApplicationServerProvisioner
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceType;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceUtil;
 import org.glassfish.paas.orchestrator.provisioning.iaas.CloudProvisioner;
-import org.glassfish.virtualization.runtime.VirtualCluster;
 import org.glassfish.virtualization.runtime.VirtualClusters;
 import org.glassfish.virtualization.spi.*;
-import org.glassfish.virtualization.spi.PhasedFuture;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
@@ -74,13 +72,15 @@ import java.util.Properties;
 import java.util.Set;
 
 /**
- * @author ishanvishnoi@java.net
+ * @author ishan.vishnoi@java.net
  */
 @Service(name = "regenerate-glassfish-template")
 @Scoped(PerLookup.class)
 @CommandLock(CommandLock.LockType.NONE)
 public class RegenerateGlassFishTemplate implements AdminCommand, Runnable {
 
+    @Param(name = "targetdir", optional = false)
+    private String targetdir;
     @Param(name = "glassfishlocation", optional = false)
     private String gflocation;
     @Param(name = "waitforcompletion", optional = true, defaultValue = "true")
@@ -101,7 +101,6 @@ public class RegenerateGlassFishTemplate implements AdminCommand, Runnable {
     private TemplateRepository templateRepository;
     @Inject(optional = true) // made it optional for non-virtual scenario to work
     IAAS iaas;
-    // TODO :: remove dependency on VirtualCluster(s).
     @Inject(optional = true) // // made it optional for non-virtual scenario to work
     VirtualClusters virtualClusters;
 
@@ -183,10 +182,10 @@ public class RegenerateGlassFishTemplate implements AdminCommand, Runnable {
 
                 if (gflocation.contains("http")) {
                     URL gf = new URL(gflocation);
-                    FileOutputStream fout = new FileOutputStream("/home/ishan/temp/glassfish3/glassfish" + "/domains/domain1/docroot/glassfish.zip");
+                    FileOutputStream fout = new FileOutputStream(System.getenv("S1AS_HOME") + "/domains/domain1/docroot/glassfish.zip");
                     FileUtils.copy(gf.openStream(), fout, Integer.MAX_VALUE);
                 } else {
-                    FileUtils.copy(gflocation, "/home/ishan/temp/glassfish3/glassfish" + "/domains/domain1/docroot/glassfish.zip");
+                    FileUtils.copy(gflocation, System.getenv("S1AS_HOME") + "/domains/domain1/docroot/glassfish.zip");
                 }
 
                 for (PhasedFuture<AllocationPhase, VirtualMachine> future : futures) {
@@ -205,9 +204,9 @@ public class RegenerateGlassFishTemplate implements AdminCommand, Runnable {
                     String rm5 = vm.executeOn(new String[]{"rm /home/cloud/glassfish.zip*"});
 
                     vm.stop();
-                    FileUtils.copy("/home/ishan/virt/disks/glassfish1.img", "/home/ishan/glassfish.img");
-                    FileUtils.whack(new File("/home/ishan/virt/templates"));
-                    FileUtils.whack(new File("/home/ishan/virt/disks"));
+                    FileUtils.copy(System.getenv("HOME") + "/virt/disks/glassfish1.img", targetdir);
+                    FileUtils.whack(new File(System.getenv("HOME") + "/virt/templates"));
+                    FileUtils.whack(new File(System.getenv("HOME") + "/virt/disks"));
 
                     vm.delete();                   
                 }
@@ -218,3 +217,4 @@ public class RegenerateGlassFishTemplate implements AdminCommand, Runnable {
         }
     }
 }
+
