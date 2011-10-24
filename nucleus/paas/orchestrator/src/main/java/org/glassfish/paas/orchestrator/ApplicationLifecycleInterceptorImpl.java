@@ -237,23 +237,6 @@ public class ApplicationLifecycleInterceptorImpl implements ApplicationLifecycle
             return true; // if target is null, we assume that its PaaS styled deployment.
         }
 
-        //hack. temporary fix.
-        if (target.equals("server")) {
-            if (params.origin == OpsParams.Origin.load && params.command == OpsParams.Command.startup_server) {
-                String appName = params.name();
-
-                List<String> targets =
-                        domain.getAllReferencedTargetsForApplication(appName);
-                if (targets.size() == 1) {
-                    target = targets.get(0);
-                    /*
-                    DeployCommandParameters dcp = dc.getCommandParameters(DeployCommandParameters.class);
-                    dcp.target = target;
-                    */
-                }
-            }
-        }
-
         Cluster cluster = domain.getClusterNamed(target);
         if(cluster != null){
             List<VirtualMachineConfig> vmcList = cluster.getExtensionsByType(VirtualMachineConfig.class);
