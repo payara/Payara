@@ -89,6 +89,7 @@
                     <app>target/getRequestURI.war</app>
                     <port>8080</port>
                     <name>test</name>
+                    <contextRoot>test</contextRoot>
                     <serverID>embedded</serverID>
                 </configuration>
                 <executions>
