@@ -228,6 +228,12 @@
         </dependency>
         <dependency>
             <groupId>org.glassfish.packager</groupId>
+            <artifactId>glassfish-osgi</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.packager</groupId>
             <artifactId>glassfish-jcdi</artifactId>
             <version>${project.version}</version>
             <type>zip</type>

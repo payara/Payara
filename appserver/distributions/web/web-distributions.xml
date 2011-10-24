@@ -138,6 +138,10 @@
         <property name="image.dir" value="${image.dir}"/>
     </ant>
     <ant antfile="../distributions.xml" target="install-package">
+        <property name="package.name" value="glassfish-osgi"/>
+        <property name="image.dir" value="${image.dir}"/>
+    </ant>
+    <ant antfile="../distributions.xml" target="install-package">
         <property name="package.name" value="glassfish-jcdi"/>
         <property name="image.dir" value="${image.dir}"/>
     </ant>
