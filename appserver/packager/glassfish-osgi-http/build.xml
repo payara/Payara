@@ -45,22 +45,16 @@
     <import file="${basedir}/../common-targets.xml"/>
 
    <target name="create.package">
-	   <property name="package.name" value="glassfish-osgi-http"/>
-           <property name="previous.package.name" value="glassfish-web" />
-        
-       <antcall target="filter-module-artifacts"/> 
-
- 
-       <stage-module-autostart-jars/>
-       <stage-distribution-fragments />
-
-
+	
        <if test="${compression}">
 	       <antcall target="pack.compression" />
        </if>
+       
+       <zip file="target/glassfish-osgi-http.zip" basedir="target/stage">
+       </zip>
 
-       <antcall target="create-zip-artifact"/>	
-       <antcall target="create-list-artifact"/>  
+      <attachArtifact file="target/glassfish-osgi-http.zip"/>
+
    </target>
 </project>
 

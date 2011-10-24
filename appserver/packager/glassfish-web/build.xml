@@ -54,13 +54,6 @@
        <stage-module-jars/>
        <stage-distribution-fragments/>
 
-       <!-- BEGIN: move osgi-web-container and its dependencies to autostart -->
-       <mkdir dir="target/stage/${install.dir.name}/glassfish/modules/autostart"/>
-
-       <move file="target/stage/${install.dir.name}/glassfish/modules/osgi-web-container.jar" todir="target/stage/${install.dir.name}/glassfish/modules/autostart" failonerror="false"/>
-       <move file="target/stage/${install.dir.name}/glassfish/modules/org.apache.felix.eventadmin.jar" todir="target/stage/${install.dir.name}/glassfish/modules/autostart" failonerror="false"/>
-       <!-- END: move osgi-web-container and its dependencies to autostart -->
-
        <if test="${compression}">
 	       <antcall target="pack.compression" />
        </if>

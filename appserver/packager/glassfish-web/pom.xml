@@ -102,17 +102,7 @@
             <artifactId>webtier-all</artifactId>
 	    <version>${project.version}</version>
 	    <type>pom</type>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.fighterfish</groupId>
-            <artifactId>osgi-web-container</artifactId>
-        </dependency>
-        <dependency>
-            <!-- Add the dependency here so that packager bundles this as well. 
-                 This is needed by osgi-web-container to function correctly -->
-            <groupId>org.apache.felix</groupId>
-            <artifactId>org.apache.felix.eventadmin</artifactId>
-        </dependency>
+        </dependency>        
     	<dependency>
             <groupId>org.glassfish.admingui</groupId>
             <artifactId>console-web-plugin</artifactId>

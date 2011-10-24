@@ -103,10 +103,7 @@
             <artifactId>jta</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <dependency>
-            <groupId>org.glassfish.fighterfish</groupId>
-            <artifactId>osgi-jta</artifactId>
-        </dependency>
+        
     	<!-- now, listing package dependencies so that their content
              can be excluded during staging -->	
 

@@ -113,10 +113,6 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.fighterfish</groupId>
-            <artifactId>osgi-ejb-container</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.glassfish.admingui</groupId>
             <artifactId>console-ejb-lite-plugin</artifactId>
             <version>${project.version}</version>

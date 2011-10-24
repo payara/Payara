@@ -78,16 +78,15 @@
                             <goal>copy-dependencies</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory>${project.build.directory}/artifacts</outputDirectory>
-                            <useSubDirectoryPerType>true</useSubDirectoryPerType>
+                            <outputDirectory>${project.build.directory}/stage/${install.dir.name}/glassfish/modules/autostart</outputDirectory>
                             <overWriteReleases>false</overWriteReleases>
-                            <overWriteSnapshots>true</overWriteSnapshots>                            
+                            <overWriteSnapshots>true</overWriteSnapshots>
+                            <excludeTransitive>true</excludeTransitive>
                             <includeScope>compile</includeScope>
                             <includeScope>runtime</includeScope>
-                            <excludeArtifactIds>${packager.artifact.excludes}</excludeArtifactIds>
                             <stripVersion>true</stripVersion>
                         </configuration>
-                   </execution>                  
+                   </execution>
                </executions>
            </plugin>
         </plugins>
@@ -102,19 +101,6 @@
             <groupId>org.glassfish.fighterfish</groupId>
             <artifactId>osgi-http</artifactId>
         </dependency>
-    
-
-    	<!-- now, listing package dependencies so that their content
-             can be excluded during staging -->	
- 
-        <dependency>        
-           <groupId>org.glassfish.packager</groupId>
-           <artifactId>glassfish-web</artifactId>
-           <version>${project.version}</version>
-           <classifier>artifacts</classifier>
-	   <type>properties</type>
-           <scope>provided</scope>
-       </dependency>      
     </dependencies>
 
     <profiles>

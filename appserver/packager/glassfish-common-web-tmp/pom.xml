@@ -184,16 +184,7 @@
             <artifactId>paas.lbplugin</artifactId>
             <version>${project.version}</version>
         </dependency>      
-        <!-- Shared OSGi support for Java EE -->
-       <dependency>
-            <groupId>org.glassfish.fighterfish</groupId>
-            <artifactId>osgi-javaee-base</artifactId>
-        </dependency>
-<!-- disabling due to config bean changes for jdbc and connector resources -->
-<!--       <dependency>
-            <groupId>org.glassfish.fighterfish</groupId>
-            <artifactId>osgi-ee-resources</artifactId>
-        </dependency>-->
+       
         <!-- HA API  -->
         <dependency>
             <groupId>org.glassfish.ha</groupId>

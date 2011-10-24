@@ -108,11 +108,7 @@
            <groupId>org.glassfish.jdbc</groupId>
            <artifactId>jdbc-admin</artifactId>
            <version>${project.version}</version>
-        </dependency>
-        <dependency>        
-           <groupId>org.glassfish.fighterfish</groupId>
-           <artifactId>osgi-jdbc</artifactId>
-        </dependency>
+        </dependency>      
         <dependency>
             <groupId>org.glassfish.admingui</groupId>
 	    <artifactId>console-jdbc-plugin</artifactId>
@@ -128,7 +124,7 @@
  
        <dependency>        
            <groupId>org.glassfish.packager</groupId>
-           <artifactId>glassfish-osgi-gui</artifactId>
+           <artifactId>glassfish-web</artifactId>
            <version>${project.version}</version>
 	   <classifier>artifacts</classifier>
 	   <type>properties</type>

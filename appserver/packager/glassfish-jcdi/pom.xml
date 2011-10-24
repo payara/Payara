@@ -111,11 +111,7 @@
             <groupId>org.glassfish.web</groupId>
             <artifactId>weld-integration-fragment</artifactId>
             <version>${project.version}</version>
-        </dependency> 
-        <dependency>
-            <groupId>org.glassfish.fighterfish</groupId>
-            <artifactId>osgi-cdi</artifactId>
-        </dependency> 
+        </dependency>         
     </dependencies>
 
     <profiles>
