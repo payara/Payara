@@ -49,6 +49,8 @@
         <if test="${compression}">
 	       <antcall target="pack.compression" />
 	</if>
+
+        <move file="target/stage/${install.dir.name}/glassfish/modules/autostart/osgi-jpa-extension.jar" todir="target/stage/${install.dir.name}/glassfish/modules" failonerror="false"/>
            		   
        <zip file="target/glassfish-osgi.zip" basedir="target/stage">
        </zip>
