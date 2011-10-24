@@ -68,18 +68,50 @@
             </plugin>
         </plugins>
     </build>
-    <dependencies>
-        <dependency>
-            <groupId>org.glassfish.extras</groupId>
-            <artifactId>glassfish-embedded-all</artifactId>
-            <version>4.0-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.3.1</version>
-        </dependency>
-    </dependencies>
+    <profiles>
+        <profile>
+            <id>run-with-uber-jar</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>org.glassfish.extras</groupId>
+                    <artifactId>glassfish-embedded-all</artifactId>
+                    <version>4.0-SNAPSHOT</version>
+                </dependency>
+                <dependency>
+                    <groupId>junit</groupId>
+                    <artifactId>junit</artifactId>
+                    <version>4.3.1</version>
+                </dependency>
+            </dependencies>
+        </profile>
+        <profile>
+            <id>run-with-shell-jar</id>
+            <activation>
+                <property>
+                    <name>build</name>
+                    <value>static-shell</value>
+                </property>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>junit</groupId>
+                    <artifactId>junit</artifactId>
+                    <version>4.3.1</version>
+                </dependency>
+                <dependency>
+                    <groupId>org.glassfish.extras</groupId>
+                    <artifactId>glassfish-embedded-static-shell</artifactId>
+                    <version>${project.version}</version>
+                    <scope>system</scope>
+                    <systemPath>${env.S1AS_HOME}/lib/embedded/glassfish-embedded-static-shell.jar
+                    </systemPath>
+                </dependency>
+            </dependencies>
+        </profile>
+    </profiles>
 
     <repositories>
         <repository>
