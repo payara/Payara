@@ -204,9 +204,9 @@ public class RegenerateGlassFishTemplate implements AdminCommand, Runnable {
                     String rm5 = vm.executeOn(new String[]{"rm /home/cloud/glassfish.zip*"});
 
                     vm.stop();
-                    FileUtils.copy(System.getenv("HOME") + "/virt/disks/glassfish1.img", targetdir);
-                    FileUtils.whack(new File(System.getenv("HOME") + "/virt/templates"));
-                    FileUtils.whack(new File(System.getenv("HOME") + "/virt/disks"));
+                    FileUtils.copy(System.getenv("HOME") + "/virt/disks/glassfish1.img", targetdir + "/glassfish.img");
+                    //FileUtils.whack(new File(System.getenv("HOME") + "/virt/templates"));
+                    //FileUtils.whack(new File(System.getenv("HOME") + "/virt/disks"));
 
                     vm.delete();                   
                 }
