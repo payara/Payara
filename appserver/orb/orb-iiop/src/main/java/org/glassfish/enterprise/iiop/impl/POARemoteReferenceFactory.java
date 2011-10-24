@@ -184,6 +184,7 @@ public final class POARemoteReferenceFactory extends org.omg.CORBA.LocalObject
         return CSIv2_POLICY_TYPE;
     }
 
+    /*
     private String getRepositoryId(Class c) throws Exception {
 
         // Using PresentationManager to get repository ID will always work,
@@ -199,6 +200,7 @@ public final class POARemoteReferenceFactory extends org.omg.CORBA.LocalObject
         // Repository id is always 1st element in array.
         return typeIds[0];
     }
+     */
 
     @Override
     public void setRepositoryIds(Class homeIntf, Class remoteIntf)

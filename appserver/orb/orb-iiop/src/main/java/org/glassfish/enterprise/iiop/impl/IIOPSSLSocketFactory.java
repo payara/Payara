@@ -372,7 +372,7 @@ public class IIOPSSLSocketFactory  implements ORBSocketFactory
                 new Object[] { null }));
         }
         int port = inetSocketAddress.getPort();
-        Integer iport = new Integer(port);
+        Integer iport = Integer.valueOf(port);
         SSLInfo sslInfo = (SSLInfo)portToSSLInfo.get(iport);
         if (sslInfo == null) {
             throw new IOException(getFormatMessage(

@@ -184,9 +184,9 @@ public class IORAddrAnyInterceptor extends org.omg.CORBA.LocalObject
 	return (short)value ;
     }
     
+    /*
     private void addAddressComponents(org.omg.PortableInterceptor.IORInfo iorInfo, 
                     ArrayList allInetAddress, int port) {
-        /*
         try {
             for (int i = 0; i < allInetAddress.size(); i++) {
                 String address = ((InetAddress)allInetAddress.get(i)).getHostAddress();
@@ -204,7 +204,7 @@ public class IORAddrAnyInterceptor extends org.omg.CORBA.LocalObject
         } catch (Exception e) {
             _logger.log(Level.WARNING,"Exception in " + baseMsg, e);
         }
-        */
     }
+    */
     
 }
