@@ -67,7 +67,7 @@ public class GlassFishORBFactoryImpl
     @Inject
     private IIOPUtils iiopUtils;
 
-    private GlassFishORBManager gfORBManager;
+    private GlassFishORBManager gfORBManager = null;
 
     @Override
     public void postConstruct() {
