@@ -78,7 +78,7 @@
                 <dependency>
                     <groupId>org.glassfish.extras</groupId>
                     <artifactId>glassfish-embedded-all</artifactId>
-                    <version>4.0-SNAPSHOT</version>
+                    <version>${project.version}</version>
                 </dependency>
                 <dependency>
                     <groupId>junit</groupId>

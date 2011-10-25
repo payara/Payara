@@ -49,6 +49,11 @@
     <version>4.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>GlassFish Embedded Tests</name>  
+
+    <properties>
+        <project.version>4.0-SNAPSHOT</project.version>
+    </properties>
+
     <modules>
     	<module>basic</module>
     	<module>cdi_basic</module>
