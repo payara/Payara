@@ -45,15 +45,17 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
-    <groupId>org.glassfish.tests</groupId>
+    <parent>
+        <groupId>org.glassfish.tests.embedded</groupId>
+        <artifactId>web</artifactId>
+        <version>4.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+    <groupId>org.glassfish.tests.embedded</groupId>
     <artifactId>web-api-embedded-test</artifactId>
     <packaging>war</packaging>
     <version>4.0-SNAPSHOT</version>
     <name>Test for glassfish-embedded-web</name>
-
-    <properties>
-        <project.version>4.0-SNAPSHOT</project.version>
-    </properties>
 
     <dependencies>
         <dependency>
@@ -62,7 +64,7 @@
             <version>${servlet-api.version}</version>
             <scope>provided</scope>
         </dependency>
-        <dependency>
+         <dependency>
             <groupId>org.glassfish.web</groupId>
             <artifactId>web-embed-api</artifactId>
             <version>${project.version}</version>
