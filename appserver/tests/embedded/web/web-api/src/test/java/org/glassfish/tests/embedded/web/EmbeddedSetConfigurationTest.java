@@ -80,7 +80,7 @@ public class EmbeddedSetConfigurationTest {
         embedded.setLogLevel(Level.INFO);
         WebContainerConfig config = new WebContainerConfig();
         config.setListings(true);
-        root = new File(System.getProperty("buildDir"));
+        root = new File("target/classes");
         config.setDocRootDir(root);
         config.setPort(8080);
         config.setHostNames("localhost");

@@ -84,9 +84,7 @@ public class EmbeddedCreateContextTest {
         listener.setId("embedded-listener-1");
         embedded.addWebListener(listener);
 
-        String p = System.getProperty("buildDir");
-        System.out.println("Root is " + p);
-        File docRoot = new File(p);
+        File docRoot = new File("target/classes");
         Context context = (Context) embedded.createContext(docRoot, contextRoot, null);
 
         URL servlet = new URL("http://localhost:8080/"+contextRoot+"/hello");

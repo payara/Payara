@@ -103,7 +103,7 @@ public class EmbeddedWebAPITest {
         for (WebListener listener : embedded.getWebListeners())
             System.out.println("Web listener "+listener.getId()+" "+listener.getPort());
 
-        File f = new File(System.getProperty("buildDir"));
+        File f = new File("target/classes");
         String virtualServerId = "embedded-server";
         VirtualServer vs = (VirtualServer)
                 embedded.createVirtualServer(virtualServerId, f);

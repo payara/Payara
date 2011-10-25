@@ -67,12 +67,12 @@ public class EmbeddedClassLoaderTest {
 
         glassfish = GlassFishRuntime.bootstrap().newGlassFish();
         glassfish.start();
-        root = new File(System.getProperty("buildDir"));
+        root = new File("target/classes");
 
         wc = glassfish.getService(WebContainer.class);
         wc.setLogLevel(Level.INFO);
         WebContainerConfig config = new WebContainerConfig();
-        root = new File(System.getProperty("buildDir"));
+        root = new File("target/classes");
         config.setDocRootDir(root);
         config.setListings(true);
         config.setPort(8080);
@@ -101,7 +101,7 @@ public class EmbeddedClassLoaderTest {
 
         Thread.currentThread().setContextClassLoader(classLoader);
 
-        File path = new File(System.getProperty("targetDir")+"/embedded-webapi-tests.war");
+        File path = new File("target/embedded-webapi-tests.war");
 
         Context context = wc.createContext(path, classLoader);
         wc.addContext(context, contextRoot);

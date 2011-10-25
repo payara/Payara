@@ -84,7 +84,7 @@ public class EmbeddedVirtualServerHostNameTest {
     public void test() throws Exception {
 
         String virtualServerId = "example";
-        File root =  new File(System.getProperty("buildDir"));
+        File root = new File("target/classes");
         VirtualServer virtualServer = embedded.createVirtualServer(virtualServerId, root);
 
         VirtualServerConfig config = new VirtualServerConfig();

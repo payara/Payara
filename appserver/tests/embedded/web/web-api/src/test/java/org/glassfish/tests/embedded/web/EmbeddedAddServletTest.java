@@ -81,7 +81,7 @@ public class EmbeddedAddServletTest {
         embedded.setLogLevel(Level.INFO);
         WebContainerConfig config = new WebContainerConfig();
         config.setListings(true);
-        root = new File(System.getProperty("buildDir"));
+        root = new File("target/classes");
         config.setDocRootDir(root);
         config.setPort(8080);
         System.out.println("Added Web with base directory "+root.getAbsolutePath());

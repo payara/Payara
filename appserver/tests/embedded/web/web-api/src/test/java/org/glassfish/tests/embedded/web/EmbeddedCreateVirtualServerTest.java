@@ -96,7 +96,7 @@ public class EmbeddedCreateVirtualServerTest {
         WebListener[] webListeners = new HttpListener[1];
         webListeners[0] = testListener;
         
-        File f = new File(System.getProperty("buildDir"));
+        File f = new File("target/classes");
         String virtualServerId = "embedded-server";
         VirtualServer virtualServer = (VirtualServer)
                 embedded.createVirtualServer(virtualServerId, f, webListeners);         
@@ -114,9 +114,7 @@ public class EmbeddedCreateVirtualServerTest {
         VirtualServer vs = embedded.getVirtualServer(virtualServerId);
         Assert.assertEquals(virtualServerId,vs.getID());
 
-        String p = System.getProperty("buildDir");
-        System.out.println("Root is " + p);
-        File docRoot = new File(p);
+        File docRoot = new File("target/classes");
         Context context = (Context) embedded.createContext(docRoot);
         vs.addContext(context, contextRoot);
 

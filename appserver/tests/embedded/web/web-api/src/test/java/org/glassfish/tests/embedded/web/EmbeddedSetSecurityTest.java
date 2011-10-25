@@ -79,7 +79,7 @@ public class EmbeddedSetSecurityTest {
         System.out.println("Starting Web "+embedded);
         embedded.setLogLevel(Level.INFO);
         WebContainerConfig config = new WebContainerConfig();
-        root = new File(System.getProperty("buildDir"));
+        root = new File("target/classes");
         //root = new File("/tests/security");
         config.setDocRootDir(root);
         config.setListings(true);

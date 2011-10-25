@@ -78,7 +78,7 @@ public class EmbeddedWebTest {
         embedded = glassfish.getService(WebContainer.class);
         System.out.println("================ EmbeddedWeb Test");
         System.out.println("Starting Web "+embedded);
-        root = new File(System.getProperty("buildDir"));
+        root = new File("target/classes");
         configure();
         
     }

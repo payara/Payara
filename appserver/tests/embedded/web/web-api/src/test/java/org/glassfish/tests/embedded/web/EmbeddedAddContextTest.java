@@ -77,7 +77,7 @@ public class EmbeddedAddContextTest {
         System.out.println("Starting Web "+embedded);
         embedded.setLogLevel(Level.INFO);
         WebContainerConfig config = new WebContainerConfig();
-        root = new File(System.getProperty("buildDir"));
+        root = new File("target/classes");
         config.setDocRootDir(root);
         config.setListings(true);
         config.setPort(8080);
