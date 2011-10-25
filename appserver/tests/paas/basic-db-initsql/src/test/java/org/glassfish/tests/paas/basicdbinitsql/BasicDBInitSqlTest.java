@@ -93,28 +93,37 @@ public class BasicDBInitSqlTest {
 																// location.
 		Assert.assertTrue(archive.exists());
 
-		Deployer deployer = glassfish.getDeployer();
-		String appName = deployer.deploy(archive);
+		Deployer deployer = null;
+		String appName = null;
+		try {
+			deployer = glassfish.getDeployer();
+			appName = deployer.deploy(archive);
 
-		System.err.println("Deployed [" + appName + "]");
-		Assert.assertNotNull(appName);
+			System.err.println("Deployed [" + appName + "]");
+			Assert.assertNotNull(appName);
 
-		CommandRunner commandRunner = glassfish.getCommandRunner();
-		CommandResult result = commandRunner.run("list-services");
-		System.out.println("\nlist-services command output [ "
-				+ result.getOutput() + "]");
+			CommandRunner commandRunner = glassfish.getCommandRunner();
+			CommandResult result = commandRunner.run("list-services");
+			System.out.println("\nlist-services command output [ "
+					+ result.getOutput() + "]");
 
-		// 3. Access the app to make sure PaaS app is correctly provisioned.
-		String HTTP_PORT = (System.getProperty("http.port") != null) ? System
-				.getProperty("http.port") : "28080";
+			// 3. Access the app to make sure PaaS app is correctly provisioned.
+			String HTTP_PORT = (System.getProperty("http.port") != null) ? System
+					.getProperty("http.port") : "28080";
 
-		get("http://localhost:" + HTTP_PORT
-				+ "/basic_db_initsql_paas_sample/BasicDBInitSqlServlet",
-				"Customer ID");
+			get("http://localhost:" + HTTP_PORT
+					+ "/basic_db_initsql_paas_sample/BasicDBInitSqlServlet",
+					"Customer ID");
 
-		// 4. Undeploy the PaaS application .
-		deployer.undeploy(appName);
-		System.err.println("Undeployed [" + appName + "]");
+			// 4. Undeploy the PaaS application .
+		} finally {
+			if (appName != null) {
+				deployer.undeploy(appName);
+				System.out.println("Destroying the resources created");
+				System.err.println("Undeployed [" + appName + "]");
+			}
+		}
+
 	}
 
 	private void get(String urlStr, String result) throws Exception {
