@@ -90,38 +90,45 @@ public class BookStoreTest {
 											// archive location.
 		Assert.assertTrue(archive.exists());
 
-		Deployer deployer = glassfish.getDeployer();
-		String appName = deployer.deploy(archive);
+		Deployer deployer = null;
+		String appName = null;
+		try {
+			deployer = glassfish.getDeployer();
+			appName = deployer.deploy(archive);
 
-		System.err.println("Deployed [" + appName + "]");
-		Assert.assertNotNull(appName);
+			System.err.println("Deployed [" + appName + "]");
+			Assert.assertNotNull(appName);
 
-		CommandRunner commandRunner = glassfish.getCommandRunner();
-		CommandResult result = commandRunner.run("list-services");
-		System.out.println("\nlist-services command output [ "
-				+ result.getOutput() + "]");
+			CommandRunner commandRunner = glassfish.getCommandRunner();
+			CommandResult result = commandRunner.run("list-services");
+			System.out.println("\nlist-services command output [ "
+					+ result.getOutput() + "]");
 
-		// 3. Access the app to make sure PaaS-bookstore app is correctly
-		// provisioned.
+			// 3. Access the app to make sure PaaS-bookstore app is correctly
+			// provisioned.
 
-		String HTTP_PORT = (System.getProperty("http.port") != null) ? System
-				.getProperty("http.port") : "28080";
+			String HTTP_PORT = (System.getProperty("http.port") != null) ? System
+					.getProperty("http.port") : "28080";
 
-		get("http://localhost:" + HTTP_PORT + "/bookstore/BookStoreServlet",
-				"Please wait while accessing the bookstore database.....");
+			get("http://localhost:" + HTTP_PORT + "/bookstore/BookStoreServlet",
+					"Please wait while accessing the bookstore database.....");
 
-		get("http://localhost:"
-				+ HTTP_PORT
-				+ "/bookstore/BookStoreServlet?title=Advanced+guide+for+developing+PaaS+components&authors=Shalini+M&price=100%24",
-				"Here are the list of books available in our store:");
+			get("http://localhost:"
+					+ HTTP_PORT
+					+ "/bookstore/BookStoreServlet?title=Advanced+guide+for+developing+PaaS+components&authors=Shalini+M&price=100%24",
+					"Here are the list of books available in our store:");
 
-		get("http://localhost:" + HTTP_PORT + "/bookstore/BookStoreServlet",
-				"Advanced guide for developing PaaS components");
+			get("http://localhost:" + HTTP_PORT + "/bookstore/BookStoreServlet",
+					"Advanced guide for developing PaaS components");
 
-		// 4. Undeploy the Bookstore application .
+			// 4. Undeploy the Bookstore application .
 
-		deployer.undeploy(appName);
-		System.err.println("Undeployed [" + appName + "]");
+		} finally {
+			if (appName != null) {
+				deployer.undeploy(appName);
+				System.err.println("Undeployed [" + appName + "]");
+			}
+		}
 
 	}
 
