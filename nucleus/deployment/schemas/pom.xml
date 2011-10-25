@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.glassfish.deployment</groupId>
+        <artifactId>nucleus-deployment</artifactId>
+        <version>4.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>        
+    </parent>
+    <artifactId>nucleus-schemas</artifactId>
+    <packaging>distribution-fragment</packaging>
+    <name>Set of schemas for Nucleus</name>
+    
+	<build>
+        <plugins>	 		
+            <plugin>
+                <groupId>org.glassfish.build</groupId>
+                <artifactId>maven-glassfishbuild-plugin</artifactId>
+                <extensions>true</extensions>
+            </plugin>
+        </plugins>
+        <extensions>
+            <extension>
+                <groupId>org.glassfish.build</groupId>
+                <artifactId>maven-glassfishbuild-extension</artifactId>
+                <version>${glassfishbuild.version}</version>
+            </extension>
+        </extensions>
+    </build>
+    <developers>
+        <developer>
+            <id>hzhang_jn</id>
+            <name>Hong Zhang</name>
+            <url>http://blogs.sun.com/misty</url>
+            <organization>Oracle, Inc.</organization>
+            <roles>
+                <role>lead</role>
+                <role>developer</role>
+            </roles>
+        </developer>
+        <developer>
+            <id>tjquinn</id>
+            <name>Tim Quinn</name>
+            <url>http://blogs.sun.com/quinn</url>
+            <organization>Oracle, Inc.</organization>
+            <roles>
+                <role>developer</role>
+            </roles>
+        </developer>
+    </developers>
+</project>
