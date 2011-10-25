@@ -62,79 +62,93 @@ import java.net.URLConnection;
 
 public class BasicPaaSTest {
 
-    @Test
-    public void test() throws Exception {
+	@Test
+	public void test() throws Exception {
 
-        // Bootstrap GlassFish DAS in embedded mode.
-        GlassFish glassfish = bootstrap();
+		// Bootstrap GlassFish DAS in embedded mode.
+		GlassFish glassfish = bootstrap();
 
-        // Deploy the PaaS app and verify it.
-        runTests(glassfish);
+		// Deploy the PaaS app and verify it.
+		runTests(glassfish);
 
-        // Re-deploy the PaaS app and verify it.
-        String testScenarios = System.getProperty("test.scenarios");
-        if (testScenarios == null || "all".contains(testScenarios.toLowerCase())) {
-            runTests(glassfish);
-        }
+		// Re-deploy the PaaS app and verify it.
+		String testScenarios = System.getProperty("test.scenarios");
+		if (testScenarios == null
+				|| "all".contains(testScenarios.toLowerCase())) {
+			runTests(glassfish);
+		}
 
-        // 5. Stop the GlassFish DAS
-        glassfish.dispose();
-    }
+		// 5. Stop the GlassFish DAS
+		glassfish.dispose();
+	}
 
-    private void get(String urlStr, String result) throws Exception {
-        URL url = new URL(urlStr);
-        URLConnection yc = url.openConnection();
-        System.out.println("\nURLConnection [" + yc + "] : ");
-        BufferedReader in = new BufferedReader(new InputStreamReader(
-                yc.getInputStream()));
-        String line = null;
-        boolean found = false;
-        while ((line = in.readLine()) != null) {
-            System.out.println(line);
-            if (line.indexOf(result) != -1) {
-                found = true;
-            }
-        }
-        Assert.assertTrue(found);
-        System.out.println("\n***** SUCCESS **** Found [" + result + "] in the response.*****\n");
-    }
+	private void get(String urlStr, String result) throws Exception {
+		URL url = new URL(urlStr);
+		URLConnection yc = url.openConnection();
+		System.out.println("\nURLConnection [" + yc + "] : ");
+		BufferedReader in = new BufferedReader(new InputStreamReader(
+				yc.getInputStream()));
+		String line = null;
+		boolean found = false;
+		while ((line = in.readLine()) != null) {
+			System.out.println(line);
+			if (line.indexOf(result) != -1) {
+				found = true;
+			}
+		}
+		Assert.assertTrue(found);
+		System.out.println("\n***** SUCCESS **** Found [" + result
+				+ "] in the response.*****\n");
+	}
 
-    private void runTests(GlassFish glassfish) throws Exception {
-        // 2. Deploy the PaaS application.
-        File archive = new File(System.getProperty("basedir") +
-                "/target/basic_paas_sample.war"); // TODO :: use mvn apis to get the archive location.
-        Assert.assertTrue(archive.exists());
+	private void runTests(GlassFish glassfish) throws Exception {
+		// 2. Deploy the PaaS application.
+		File archive = new File(System.getProperty("basedir")
+				+ "/target/basic_paas_sample.war"); // TODO :: use mvn apis to
+													// get the archive location.
+		Assert.assertTrue(archive.exists());
+		Deployer deployer = null;
+		String appName = null;
+		try {
+			deployer = glassfish.getDeployer();
+			appName = deployer.deploy(archive);
 
-        Deployer deployer = glassfish.getDeployer();
-        String appName = deployer.deploy(archive);
+			System.err.println("Deployed [" + appName + "]");
+			Assert.assertNotNull(appName);
 
-        System.err.println("Deployed [" + appName + "]");
-        Assert.assertNotNull(appName);
+			CommandRunner commandRunner = glassfish.getCommandRunner();
+			CommandResult result = commandRunner.run("list-services");
+			System.out.println("\nlist-services command output [ "
+					+ result.getOutput() + "]");
 
-        CommandRunner commandRunner = glassfish.getCommandRunner();
-        CommandResult result = commandRunner.run("list-services");
-        System.out.println("\nlist-services command output [ " + result.getOutput() + "]");
+			// 3. Access the app to make sure PaaS app is correctly provisioned.
+			String HTTP_PORT = (System.getProperty("http.port") != null) ? System
+					.getProperty("http.port") : "28080";
 
-        // 3. Access the app to make sure PaaS app is correctly provisioned.
-        String HTTP_PORT=(System.getProperty("http.port")!=null)?System.getProperty("http.port"):"28080";
-        
-            get("http://localhost:"+HTTP_PORT+"/basic_paas_sample/BasicPaaSServlet",
-                "Request headers from the request:");
-        
+			get("http://localhost:" + HTTP_PORT
+					+ "/basic_paas_sample/BasicPaaSServlet",
+					"Request headers from the request:");
 
-        // 4. Undeploy the PaaS application . TODO :: use cloud-undeploy??
-        deployer.undeploy(appName);
-        System.err.println("Undeployed [" + appName + "]");
-    }
+			// 4. Undeploy the PaaS application . TODO :: use cloud-undeploy??
+		} finally {
+			if (appName != null) {
+				deployer.undeploy(appName);
+				System.err.println("Undeployed [" + appName + "]");
+			}
+		}
 
-    private GlassFish bootstrap() throws Exception {
-        GlassFishProperties glassFishProperties = new GlassFishProperties();
-        glassFishProperties.setInstanceRoot(System.getenv("S1AS_HOME") + "/domains/domain1");
-        glassFishProperties.setConfigFileReadOnly(false);
-        GlassFish glassfish = GlassFishRuntime.bootstrap().newGlassFish(glassFishProperties);
-        PrintStream sysout = System.out;
-        glassfish.start();
-        System.setOut(sysout);
-        return glassfish;
-    }
+	}
+
+	private GlassFish bootstrap() throws Exception {
+		GlassFishProperties glassFishProperties = new GlassFishProperties();
+		glassFishProperties.setInstanceRoot(System.getenv("S1AS_HOME")
+				+ "/domains/domain1");
+		glassFishProperties.setConfigFileReadOnly(false);
+		GlassFish glassfish = GlassFishRuntime.bootstrap().newGlassFish(
+				glassFishProperties);
+		PrintStream sysout = System.out;
+		glassfish.start();
+		System.setOut(sysout);
+		return glassfish;
+	}
 }
