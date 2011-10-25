@@ -3,50 +3,52 @@
  *
  * Copyright (c) 2010-2011 Oracle and/or its affiliates. All rights reserved.
  *
- * The contents of this file are subject to the terms of either the GNU 
- * General Public License Version 2 only ("GPL") or the Common Development
- * and Distribution License("CDDL") (collectively, the "License").  You 
- * may not use this file except in compliance with the License.  You can 
- * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
- * language governing permissions and limitations under the License.
+ * The contents of this file are subject to the terms of either the GNU General
+ * Public License Version 2 only ("GPL") or the Common Development and
+ * Distribution License("CDDL") (collectively, the "License"). You may not use
+ * this file except in compliance with the License. You can obtain a copy of the
+ * License at https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html or
+ * packager/legal/LICENSE.txt. See the License for the specific language
+ * governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
  * file and include the License file at packager/legal/LICENSE.txt.
  *
- * GPL Classpath Exception:
- * Oracle designates this particular file as subject to the "Classpath"
- * exception as provided by Oracle in the GPL Version 2 section of the License
- * file that accompanied this code.
+ * GPL Classpath Exception: Oracle designates this particular file as subject to
+ * the "Classpath" exception as provided by Oracle in the GPL Version 2 section
+ * of the License file that accompanied this code.
  *
- * Modifications:
- * If applicable, add the following below the License Header, with the fields
- * enclosed by brackets [] replaced by your own identifying information:
- * "Portions Copyright [year] [name of copyright owner]"
+ * Modifications: If applicable, add the following below the License Header,
+ * with the fields enclosed by brackets [] replaced by your own identifying
+ * information: "Portions Copyright [year] [name of copyright owner]"
  *
- * Contributor(s):
- * If you wish your version of this file to be governed by only the CDDL or
- * only the GPL Version 2, indicate your decision by adding "[Contributor]
- * elects to include this software in this distribution under the [CDDL or GPL 
- * Version 2] license."  If you don't indicate a single choice of license, a
- * recipient has the option to distribute your version of this file under
- * either the CDDL, the GPL Version 2 or to extend the choice of license to
- * its licensees as provided above.  However, if you add GPL Version 2 code
- * and therefore, elected the GPL Version 2 license, then the option applies
- * only if the new code is made subject to such option by the copyright
- * holder.
+ * Contributor(s): If you wish your version of this file to be governed by only
+ * the CDDL or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution under the
+ * [CDDL or GPL Version 2] license." If you don't indicate a single choice of
+ * license, a recipient has the option to distribute your version of this file
+ * under either the CDDL, the GPL Version 2 or to extend the choice of license to
+ * its licensees as provided above. However, if you add GPL Version 2 code and
+ * therefore, elected the GPL Version 2 license, then the option applies only if
+ * the new code is made subject to such option by the copyright holder.
  */
 package org.glassfish.admin.rest.generator;
 
+import java.lang.reflect.Method;
 import java.util.*;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.RestEndpoint;
 import org.glassfish.api.admin.RestEndpoints;
 import org.glassfish.api.admin.RestParam;
+import org.glassfish.config.support.Create;
+import org.glassfish.config.support.Creates;
+import org.glassfish.config.support.Delete;
+import org.glassfish.config.support.Deletes;
 import org.glassfish.internal.api.Globals;
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.Inhabitant;
+import org.jvnet.hk2.config.ConfigBeanProxy;
 
 /**
  * @author Mitesh Meswani
@@ -62,7 +64,6 @@ public class CommandResourceMetaData {
     private static final Map<String, List<CommandResourceMetaData>> restRedirects = new HashMap<String, List<CommandResourceMetaData>>();
 
     public static class ParameterMetaData {
-
         String name;
         String value;
     }
@@ -117,7 +118,11 @@ public class CommandResourceMetaData {
     public static List<CommandResourceMetaData> getRestRedirectPointToBean(String beanName) {
         synchronized (restRedirects) {
             if (restRedirects.isEmpty()) {
-                Iterator<Inhabitant<?>> iter = Globals.getDefaultHabitat().getInhabitantsByContract(AdminCommand.class.getName()).iterator();
+                final Habitat habitat = Globals.getDefaultHabitat();
+
+                processConfigBeans(habitat);
+
+                Iterator<Inhabitant<?>> iter = habitat.getInhabitantsByContract(AdminCommand.class.getName()).iterator();
                 while (iter.hasNext()) {
                     Inhabitant<?> inhab = iter.next();
                     final Class<? extends AdminCommand> clazz = (Class<? extends AdminCommand>) inhab.type();
@@ -144,13 +149,7 @@ public class CommandResourceMetaData {
                                     currentParam.value = param.value();
                                     index++;
                                 }
-
-                                List<CommandResourceMetaData> commandList = restRedirects.get(configBean);
-                                if (commandList == null) {
-                                    commandList = new ArrayList<CommandResourceMetaData>();
-                                    restRedirects.put(configBean, commandList);
-                                }
-                                commandList.add(metaData);
+                                addCommandMetaData(configBean, metaData);
                             }
                         }
                     }
@@ -161,12 +160,68 @@ public class CommandResourceMetaData {
         return restRedirects.get(beanName);
     }
 
-    @Override
-    public String toString() {
-        return "CommandResourceMetaData{" + "command=" + command + ", httpMethod=" + httpMethod
-                + ", resourcePath=" + resourcePath + ", displayName=" + displayName
-                + ", commandParams=" + Arrays.asList(commandParams).toString() + ", customClassName=" + customClassName + '}';
+    private static void processConfigBeans(Habitat habitat) {
+        Iterator<String> types = habitat.getAllTypes();
+        String t;
+        while (types.hasNext()) {
+            t = types.next();
+            if (t != null) {
+                try {
+                    Class tclass = Class.forName(t);
+                    if (tclass != null && ConfigBeanProxy.class.isAssignableFrom(tclass)) {
+                        String beanName = tclass.getSimpleName();
+                        for (Method m : tclass.getMethods()) {
+                            if (m.isAnnotationPresent(Create.class)) {
+                                addCreateMethod(beanName, m, m.getAnnotation(Create.class));
+                            } else if (m.isAnnotationPresent(Delete.class)) {
+                                addDeleteMethod(beanName, m, m.getAnnotation(Delete.class));
+                            } else if (m.isAnnotationPresent(Creates.class)) {
+                                Creates creates = m.getAnnotation(Creates.class);
+                                for (Create c : creates.value()) {
+                                    addCreateMethod(beanName, m, c);
+                                }
+                            } else if (m.isAnnotationPresent(Deletes.class)) {
+                                Deletes deletes = m.getAnnotation(Deletes.class);
+                                for (Delete d : deletes.value()) {
+                                    addDeleteMethod(beanName, m, d);
+                                }
+                            }
+                        }
+                    }
+                } catch (ClassNotFoundException cnfe) {
+                    continue;
+                }
+            }
+        }
     }
+
+    private static void addCreateMethod(String beanName, Method m, Create create) {
+        CommandResourceMetaData metaData = new CommandResourceMetaData();
+        metaData.command = create.value();
+        metaData.httpMethod = "POST";
+        metaData.resourcePath = create.value();
+        metaData.displayName = create.value();
+        addCommandMetaData(beanName, metaData);
+    }
+
+    private static void addDeleteMethod(String beanName, Method m, Delete delete) {
+        CommandResourceMetaData metaData = new CommandResourceMetaData();
+        metaData.command = delete.value();
+        metaData.httpMethod = "DELETE";
+        metaData.resourcePath = delete.value();
+        metaData.displayName = delete.value();
+        addCommandMetaData(beanName, metaData);
+    }
+
+    private static void addCommandMetaData(String beanName, CommandResourceMetaData cmd) {
+        List<CommandResourceMetaData> commandList = restRedirects.get(beanName);
+        if (commandList == null) {
+            commandList = new ArrayList<CommandResourceMetaData>();
+            restRedirects.put(beanName, commandList);
+        }
+        commandList.add(cmd);
+    }
+
     // This data structure is for exceptional cases only. The preferred mapping approach is to
     // use @RestEndpoints/@RestEndpoint
     private static String configBeansToCommandResourcesMap[][] = {
