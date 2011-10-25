@@ -54,7 +54,7 @@ import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
-import org.glassfish.virtualization.runtime.VirtualCluster;
+import org.glassfish.virtualization.spi.VirtualCluster;
 import org.glassfish.virtualization.runtime.VirtualClusters;
 import org.glassfish.virtualization.spi.*;
 import org.glassfish.virtualization.spi.PhasedFuture;
@@ -185,7 +185,7 @@ public class CreateMySQLDbService implements AdminCommand, Runnable {
                 // add app-scoped-service config for each vm instance as well.
                 ServiceInfo entry = new ServiceInfo();
                 entry.setInstanceId(vm.getName());
-                entry.setIpAddress(vm.getAddress());
+                entry.setIpAddress(vm.getAddress().getHostAddress());
                 entry.setState(ServiceInfo.State.Running.toString());
                 entry.setServiceName(serviceName);
                 entry.setAppName(appName);

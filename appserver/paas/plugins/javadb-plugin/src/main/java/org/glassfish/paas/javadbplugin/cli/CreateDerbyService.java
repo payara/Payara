@@ -193,7 +193,7 @@ public class CreateDerbyService implements AdminCommand, Runnable {
                     DerbyProvisioner derbyProvisioner = new DerbyProvisioner();
                     Properties serviceProperties = new Properties();
                     serviceProperties.putAll(derbyProvisioner.getDefaultConnectionProperties()); // TODO :: use user supplied database info.
-                    serviceProperties.put("serverName", vm.getAddress());
+                    serviceProperties.put("serverName", vm.getAddress().getHostAddress());
                     serviceProperties.put("port", "1527"); // TODO :: grab the actual port.
                     derbyProvisioner.executeInitSql(serviceProperties, initSqlFile);
                 }
