@@ -647,6 +647,9 @@ public class WebContainerImpl implements WebContainer {
     public void addContext(Context context, String contextRoot)
             throws ConfigException, GlassFishException {
 
+        if (contextRoot==null) {
+            throw new ConfigException("Context root cannot be NULL");
+        }
         for (VirtualServer vs : getVirtualServers()) {
             if (vs.getContext(contextRoot)!=null) {
                 throw new ConfigException("Context with contextRoot "+
