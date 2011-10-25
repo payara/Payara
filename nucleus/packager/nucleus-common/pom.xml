@@ -106,13 +106,13 @@
    	</dependency>
     	<dependency>
            <groupId>org.glassfish.deployment</groupId>
-           <artifactId>dtds</artifactId>
+           <artifactId>nucleus-dtds</artifactId>
            <version>${project.version}</version>
            <type>distribution-fragment</type>
         </dependency>
         <dependency>
            <groupId>org.glassfish.deployment</groupId>
-           <artifactId>schemas</artifactId>
+           <artifactId>nucleus-schemas</artifactId>
            <version>${project.version}</version>
            <type>distribution-fragment</type>
        </dependency>

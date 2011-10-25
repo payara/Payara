@@ -58,5 +58,7 @@
         <module>common</module>
         <module>admin</module>
         <module>autodeploy</module>
+        <module>dtds</module>
+        <module>schemas</module>
     </modules>
 </project>
