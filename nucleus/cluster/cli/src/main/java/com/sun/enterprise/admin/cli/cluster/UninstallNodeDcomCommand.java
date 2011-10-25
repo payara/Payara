@@ -37,13 +37,68 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
 package com.sun.enterprise.admin.cli.cluster;
+
+import com.sun.enterprise.util.io.WindowsRemoteFile;
+import com.sun.enterprise.util.io.WindowsRemoteFileSystem;
+import org.glassfish.api.Param;
+import org.glassfish.api.admin.CommandException;
+import org.jvnet.hk2.annotations.Scoped;
+import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.component.PerLookup;
 
 /**
  *
  * @author Byron Nevins
  */
-public class UninstallNodeDcomCommand {
+@Service(name = "uninstall-node-dcom")
+@Scoped(PerLookup.class)
+public class UninstallNodeDcomCommand extends UninstallNodeBaseCommand {
+    @Param(name = "windowsuser", shortName = "w", optional = true, defaultValue = "${user.name}")
+    private String user;
+    @Param(name = "windowsdomain", shortName = "d", optional = true, defaultValue = "")
+    private String windowsDomain;
 
+    @Override
+    final String getRawRemoteUser() {
+        return user;
+    }
+
+    @Override
+    final int getRawRemotePort() {
+        return 135; // DCOM port
+    }
+
+    @Override
+    final String getSshKeyFile() {
+        return null;  // null -- not an empty string!
+    }
+
+    @Override
+    final void deleteFromHosts() throws CommandException {
+        for (String host : hosts) {
+            try {
+                String pw = getDCOMPassword(host);
+                WindowsRemoteFileSystem wrfs = new WindowsRemoteFileSystem(host, getRemoteUser(), pw);
+                WindowsRemoteFile remoteInstallDir = new WindowsRemoteFile(wrfs, getInstallDir());
+
+                if (!remoteInstallDir.exists()) {
+                    throw new CommandException(
+                            Strings.get("remote.install.dir.already.gone", getInstallDir()));
+                }
+                remoteInstallDir.delete();
+
+                // make sure it's gone now...
+                if (remoteInstallDir.exists()) {
+                    throw new CommandException(Strings.get("remote.install.dir.cant.delete", getInstallDir()));
+                }
+            }
+            catch (CommandException ce) {
+                throw ce;
+            }
+            catch (Exception e) {
+                throw new CommandException(e);
+            }
+        }
+    }
 }

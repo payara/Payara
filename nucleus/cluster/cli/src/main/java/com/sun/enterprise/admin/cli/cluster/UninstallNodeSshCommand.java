@@ -39,10 +39,115 @@
  */
 package com.sun.enterprise.admin.cli.cluster;
 
+import java.io.IOException;
+import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.glassfish.api.Param;
+import org.glassfish.api.admin.CommandException;
+import org.glassfish.cluster.ssh.launcher.SSHLauncher;
+import org.glassfish.cluster.ssh.sftp.SFTPClient;
+import org.glassfish.cluster.ssh.util.SSHUtil;
+import org.glassfish.internal.api.Globals;
+import org.jvnet.hk2.annotations.Inject;
+import org.jvnet.hk2.annotations.Scoped;
+import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.component.PerLookup;
+
 /**
  *
  * @author Byron Nevins
  */
-public class UninstallNodeSshCommand {
+@Service(name = "uninstall-node-ssh")
+@Scoped(PerLookup.class)
+public class UninstallNodeSshCommand extends UninstallNodeBaseCommand {
+    @Param(name = "sshuser", optional = true, defaultValue = "${user.name}")
+    private String user;
+    @Param(optional = true, defaultValue = "22", name = "sshport")
+    private int port;
+    @Param(optional = true)
+    private String sshkeyfile;
+    @Inject
+    private SSHLauncher sshLauncher;
+    //storing password to prevent prompting twice
+    private Map<String, char[]> sshPasswords = new HashMap<String, char[]>();
 
+    @Override
+    String getRawRemoteUser() {
+        return user;
+    }
+
+    @Override
+    int getRawRemotePort() {
+        return port;
+    }
+
+    @Override
+    String getSshKeyFile() {
+        return sshkeyfile;
+    }
+
+    @Override
+    protected void validate() throws CommandException {
+        super.validate();
+        if (sshkeyfile == null) {
+            //if user hasn't specified a key file check if key exists in
+            //default location
+            String existingKey = SSHUtil.getExistingKeyFile();
+            if (existingKey == null) {
+                promptPass = true;
+            }
+            else {
+                sshkeyfile = existingKey;
+            }
+        }
+        else {
+            validateKey(sshkeyfile);
+        }
+
+        //we need the key passphrase if key is encrypted
+        if (sshkeyfile != null && isEncryptedKey()) {
+            sshkeypassphrase = getSSHPassphrase(true);
+        }
+    }
+
+    @Override
+    void deleteFromHosts() throws CommandException {
+        try {
+            List<String> files = getListOfInstallFiles(getInstallDir());
+
+            for (String host : hosts) {
+                sshLauncher.init(getRemoteUser(), host, getRemotePort(), sshpassword, sshkeyfile, sshkeypassphrase, logger);
+
+                if (sshkeyfile != null && !sshLauncher.checkConnection()) {
+                    //key auth failed, so use password auth
+                    promptPass = true;
+                }
+
+                if (promptPass) {
+                    sshpassword = getSSHPassword(host);
+                    //re-initialize
+                    sshLauncher.init(getRemoteUser(), host, getRemotePort(), sshpassword, sshkeyfile, sshkeypassphrase, logger);
+                }
+
+                SFTPClient sftpClient = sshLauncher.getSFTPClient();
+
+                if (!sftpClient.exists(getInstallDir())) {
+                    throw new IOException(getInstallDir() + " Directory does not exist");
+                }
+
+                deleteRemoteFiles(sftpClient, files, getInstallDir(), getForce());
+
+                if (sftpClient.ls(getInstallDir()).isEmpty()) {
+                    sftpClient.rmdir(getInstallDir());
+                }
+            }
+        }
+        catch (CommandException ce) {
+            throw ce;
+        }
+        catch (Exception ex) {
+            throw new CommandException(ex);
+        }
+    }
 }

@@ -39,10 +39,57 @@
  */
 package com.sun.enterprise.admin.cli.cluster;
 
+import org.glassfish.api.Param;
+import org.glassfish.api.admin.CommandException;
+import org.jvnet.hk2.annotations.Inject;
+import org.jvnet.hk2.annotations.Scoped;
+import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.component.PerLookup;
+import org.jvnet.hk2.component.Habitat;
+import org.glassfish.internal.api.Globals;
+
 /**
  *
+ * @author Rajiv Mordani
  * @author Byron Nevins
  */
-public class UninstallNodeBaseCommand {
+@Service
+@Scoped(PerLookup.class)
+abstract class UninstallNodeBaseCommand extends NativeRemoteCommandsBase {
+    @Param(name = "installdir", optional = true, defaultValue = "${com.sun.aas.productRoot}")
+    private String installDir;
+    @Param(optional = true, defaultValue = "false")
+    private boolean force;
+    @Inject
+    private Habitat habitat;
 
+    abstract void deleteFromHosts() throws CommandException;
+
+    @Override
+    protected void validate() throws CommandException {
+        super.validate();
+        Globals.setDefaultHabitat(habitat);
+        installDir = resolver.resolve(installDir);
+        if (!force) {
+            for (String host : hosts) {
+                if (checkIfNodeExistsForHost(host, installDir)) {
+                    throw new CommandException(Strings.get("call.delete.node.ssh", host));
+                }
+            }
+        }
+    }
+
+    @Override
+    protected final int executeCommand() throws CommandException {
+        deleteFromHosts();
+        return SUCCESS;
+    }
+
+    final String getInstallDir() {
+        return installDir;
+    }
+
+    final boolean getForce() {
+        return force;
+    }
 }
