@@ -91,35 +91,41 @@ public class BasicDBPaaSTest {
 														// location.
 		Assert.assertTrue(archive.exists());
 
-		Deployer deployer = glassfish.getDeployer();
-		String appName = deployer.deploy(archive);
+		Deployer deployer = null;
+		String appName = null;
+		try {
 
-		System.err.println("Deployed [" + appName + "]");
-		Assert.assertNotNull(appName);
+			deployer = glassfish.getDeployer();
+			appName = deployer.deploy(archive);
 
-		CommandRunner commandRunner = glassfish.getCommandRunner();
-		CommandResult result = commandRunner.run("list-services");
-		System.out.println("\nlist-services command output [ "
-				+ result.getOutput() + "]");
+			System.err.println("Deployed [" + appName + "]");
+			Assert.assertNotNull(appName);
 
-		// 3. Access the app to make sure PaaS app is correctly provisioned.
+			CommandRunner commandRunner = glassfish.getCommandRunner();
+			CommandResult result = commandRunner.run("list-services");
+			System.out.println("\nlist-services command output [ "
+					+ result.getOutput() + "]");
 
-		String HTTP_PORT = (System.getProperty("http.port") != null) ? System
-				.getProperty("http.port") : "28080";
+			// 3. Access the app to make sure PaaS app is correctly provisioned.
 
-		/**
-		 * Look for a table entry by name SYSFILES in the output to ensure DB is
-		 * provisioned
-		 * 
-		 */
-		get("http://localhost:" + HTTP_PORT
-				+ "/basic_db_paas_sample/BasicDBPaaSServlet", "SYSFILES");
+			String HTTP_PORT = (System.getProperty("http.port") != null) ? System
+					.getProperty("http.port") : "28080";
 
-		// 4. Undeploy the PaaS-DB application using undeploy.
+			/**
+			 * Look for a table entry by name SYSFILES in the output to ensure
+			 * DB is provisioned
+			 * 
+			 */
+			get("http://localhost:" + HTTP_PORT
+					+ "/basic_db_paas_sample/BasicDBPaaSServlet", "SYSFILES");
 
-		deployer.undeploy(appName);
-		System.err.println("Undeployed [" + appName + "]");
-
+			// 4. Undeploy the PaaS-DB application using undeploy.
+		} finally {
+			if (appName != null) {
+				deployer.undeploy(appName);
+				System.err.println("Undeployed [" + appName + "]");
+			}
+		}
 	}
 
 	private void get(String urlStr, String result) throws Exception {
