@@ -134,19 +134,25 @@ public class InstallNodeSshCommand extends InstallNodeBaseCommand {
 
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
 
+        boolean prompt = promptPass;
         for (String host : hosts) {
-            promptPass = false;
             sshLauncher.init(getRemoteUser(), host, getRemotePort(), sshpassword, getSshKeyFile(), sshkeypassphrase, logger);
 
             if (getSshKeyFile() != null && !sshLauncher.checkConnection()) {
                 //key auth failed, so use password auth
-                promptPass = true;
+                prompt = true;
             }
 
-            if (promptPass) {
-                sshpassword = getSSHPassword(host);
+            if (prompt) {
+                String sshpass = null;
+                if (sshPasswords.containsKey(host))
+                    sshpass = String.valueOf(sshPasswords.get(host));
+                else
+                    sshpass = getSSHPassword(host);
+
                 //re-initialize
-                sshLauncher.init(getRemoteUser(), host, getRemotePort(), sshpassword, getSshKeyFile(), sshkeypassphrase, logger);
+                sshLauncher.init(getRemoteUser(), host, getRemotePort(), sshpass, getSshKeyFile(), sshkeypassphrase, logger);
+                prompt = false;
             }
 
             String sshInstallDir = getInstallDir().replace('\\', '/');
@@ -277,7 +283,7 @@ public class InstallNodeSshCommand extends InstallNodeBaseCommand {
                 res = true;
             }
             else {
-                logger.finer(host + ":'" + cmd + "'" + " fa iled [" + outStream.toString() + "]");
+                logger.finer(host + ":'" + cmd + "'" + " failed [" + outStream.toString() + "]");
             }
         }
         catch (IOException ex) {
@@ -289,21 +295,22 @@ public class InstallNodeSshCommand extends InstallNodeBaseCommand {
 
     @Override
     final void precopy() throws CommandException {
+        boolean prompt = promptPass;
         for (String host : hosts) {
             createZip = true;
-            promptPass = false;
             sshLauncher.init(getRemoteUser(), host, getRemotePort(), sshpassword, getSshKeyFile(), sshkeypassphrase, logger);
 
             if (getSshKeyFile() != null && !sshLauncher.checkConnection()) {
                 //key auth failed, so use password auth
-                promptPass = true;
+                prompt = true;
             }
 
-            if (promptPass) {
+            if (prompt) {
                 String sshpass = getSSHPassword(host);
                 sshPasswords.put(host, sshpass.toCharArray());
                 //re-initialize
                 sshLauncher.init(getRemoteUser(), host, getRemotePort(), sshpass, getSshKeyFile(), sshkeypassphrase, logger);
+                prompt = false;
             }
 
             String sshInstallDir = getInstallDir().replaceAll("\\\\", "/");
