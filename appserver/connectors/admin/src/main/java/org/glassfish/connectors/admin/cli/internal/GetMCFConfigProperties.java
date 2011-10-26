@@ -65,8 +65,8 @@ import org.glassfish.api.admin.RestEndpoints;
 @CommandLock(CommandLock.LockType.NONE)
 @RestEndpoints({
     @RestEndpoint(configBean=Resources.class,
-        opType=RestEndpoint.OpType.GET, 
-        path="_get-mcf-config-properties", 
+        opType=RestEndpoint.OpType.GET,
+        path="get-mcf-config-properties",
         description="Get MCF Config Properties")
 })
 public class GetMCFConfigProperties implements AdminCommand {

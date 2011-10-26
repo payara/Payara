@@ -65,8 +65,8 @@ import org.glassfish.api.admin.RestEndpoints;
 @CommandLock(CommandLock.LockType.NONE)
 @RestEndpoints({
     @RestEndpoint(configBean=Resources.class,
-        opType=RestEndpoint.OpType.GET, 
-        path="_get-resource-adapter-config-properties", 
+        opType=RestEndpoint.OpType.GET,
+        path="get-resource-adapter-config-properties",
         description="Get Resource Adapter Config Properties")
 })
 public class GetResourceAdapterConfigProperties implements AdminCommand {

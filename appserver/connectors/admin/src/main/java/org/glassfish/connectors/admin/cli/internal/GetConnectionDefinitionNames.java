@@ -65,8 +65,8 @@ import org.glassfish.api.admin.RestEndpoints;
 @CommandLock(CommandLock.LockType.NONE)
 @RestEndpoints({
     @RestEndpoint(configBean=Resources.class,
-        opType=RestEndpoint.OpType.GET, 
-        path="_get-connection-definition-names", 
+        opType=RestEndpoint.OpType.GET,
+        path="get-connection-definition-names",
         description="Get Connection Definition Names")
 })
 public class GetConnectionDefinitionNames implements AdminCommand {

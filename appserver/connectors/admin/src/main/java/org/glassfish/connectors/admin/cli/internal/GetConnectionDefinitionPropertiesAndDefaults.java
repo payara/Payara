@@ -65,8 +65,8 @@ import org.glassfish.api.admin.RestEndpoints;
 @CommandLock(CommandLock.LockType.NONE)
 @RestEndpoints({
     @RestEndpoint(configBean=Resources.class,
-        opType=RestEndpoint.OpType.GET, 
-        path="_get-connection-definition-properties-and-defaults", 
+        opType=RestEndpoint.OpType.GET,
+        path="get-connection-definition-properties-and-defaults",
         description="Get Connection Definition Properties and Defaults")
 })
 public class GetConnectionDefinitionPropertiesAndDefaults implements AdminCommand {

@@ -65,8 +65,8 @@ import org.glassfish.api.admin.RestEndpoints;
 @CommandLock(CommandLock.LockType.NONE)
 @RestEndpoints({
     @RestEndpoint(configBean=Resources.class,
-        opType=RestEndpoint.OpType.GET, 
-        path="_get-message-listener-config-properties", 
+        opType=RestEndpoint.OpType.GET,
+        path="get-message-listener-config-properties",
         description="Get Message Listener Config Properties")
 })
 public class GetMessageListenerConfigProperties implements AdminCommand {

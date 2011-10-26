@@ -65,8 +65,8 @@ import org.glassfish.api.admin.RestEndpoints;
 @CommandLock(CommandLock.LockType.NONE)
 @RestEndpoints({
     @RestEndpoint(configBean=Resources.class,
-        opType=RestEndpoint.OpType.GET, 
-        path="_get-admin-object-interface-names", 
+        opType=RestEndpoint.OpType.GET,
+        path="get-admin-object-interface-names",
         description="Get Admin Object Interface Names")
 })
 public class GetAdminObjectInterfaceNames implements AdminCommand {

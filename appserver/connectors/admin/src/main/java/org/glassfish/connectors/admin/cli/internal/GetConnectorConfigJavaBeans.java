@@ -66,8 +66,8 @@ import org.glassfish.api.admin.RestEndpoints;
 @CommandLock(CommandLock.LockType.NONE)
 @RestEndpoints({
     @RestEndpoint(configBean=Resources.class,
-        opType=RestEndpoint.OpType.GET, 
-        path="_get-connector-config-java-beans", 
+        opType=RestEndpoint.OpType.GET,
+        path="get-connector-config-java-beans",
         description="Get Connection Config Java Beans")
 })
 public class GetConnectorConfigJavaBeans implements AdminCommand {

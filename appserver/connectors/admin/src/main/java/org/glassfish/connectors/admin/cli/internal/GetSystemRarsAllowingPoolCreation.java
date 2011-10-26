@@ -65,8 +65,8 @@ import org.glassfish.api.admin.RestEndpoints;
 @CommandLock(CommandLock.LockType.NONE)
 @RestEndpoints({
     @RestEndpoint(configBean=Resources.class,
-        opType=RestEndpoint.OpType.GET, 
-        path="_get-system-rars-allowing-pool-creation", 
+        opType=RestEndpoint.OpType.GET,
+        path="get-system-rars-allowing-pool-creation",
         description="Get System RARs Allowing Pool Creation")
 })
 public class GetSystemRarsAllowingPoolCreation implements AdminCommand {

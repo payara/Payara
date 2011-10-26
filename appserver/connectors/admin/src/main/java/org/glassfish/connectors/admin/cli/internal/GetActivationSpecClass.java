@@ -63,8 +63,8 @@ import org.jvnet.hk2.component.PerLookup;
 @CommandLock(CommandLock.LockType.NONE)
 @RestEndpoints({
     @RestEndpoint(configBean=Resources.class,
-        opType=RestEndpoint.OpType.GET, 
-        path="_get-activation-spec-class", 
+        opType=RestEndpoint.OpType.GET,
+        path="get-activation-spec-class",
         description="Get Activation Spec Class")
 })
 public class GetActivationSpecClass implements AdminCommand {

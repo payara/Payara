@@ -67,8 +67,8 @@ import org.glassfish.api.admin.RestParam;
 @CommandLock(CommandLock.LockType.NONE)
 @RestEndpoints({
     @RestEndpoint(configBean=Resources.class,
-        opType=RestEndpoint.OpType.GET, 
-        path="_get-admin-object-class-names", 
+        opType=RestEndpoint.OpType.GET,
+        path="get-admin-object-class-names",
         description="Get Admin Object Class Names",
         params={
             @RestParam(name="id", value="$parent")

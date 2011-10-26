@@ -64,8 +64,8 @@ import org.glassfish.api.admin.RestEndpoints;
 @CommandLock(CommandLock.LockType.NONE)
 @RestEndpoints({
     @RestEndpoint(configBean=Resources.class,
-        opType=RestEndpoint.OpType.GET, 
-        path="_get-built-in-custom-resources", 
+        opType=RestEndpoint.OpType.GET,
+        path="get-built-in-custom-resources",
         description="Get Built-in Custom Resources")
 })
 public class GetBuiltInCustomResources implements AdminCommand {
