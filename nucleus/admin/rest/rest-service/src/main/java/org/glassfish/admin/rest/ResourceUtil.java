@@ -107,8 +107,9 @@ import static org.glassfish.admin.rest.provider.ProviderUtil.getElementLink;
  * @author Rajeshwar Patil
  */
 public class ResourceUtil {
-    private final static String QUERY_PARAMETERS = "queryParameters";
-    private final static String MESSAGE_PARAMETERS = "messageParameters";
+    private static final String DAS_LOOK_FOR_CERT_PROPERTY_NAME = "org.glassfish.admin.DASCheckAdminCert";
+    private static final String QUERY_PARAMETERS = "queryParameters";
+    private static final String MESSAGE_PARAMETERS = "messageParameters";
     private static RestConfig restConfig = null;
 
     //TODO this is copied from org.jvnet.hk2.config.Dom. If we are not able to encapsulate the conversion in Dom, need to make sure that the method convertName is refactored into smaller methods such that trimming of prefixes stops. We will need a promotion of HK2 for this.
@@ -215,20 +216,20 @@ public class ResourceUtil {
         addCommandLog(ar, commandName, parameters);
         return ar;
     }
-    
+
     public static void addCommandLog(RestActionReporter ar, String commandName, ParameterMap parameters) {
         List<String> logs = (List<String>)ar.getExtraProperties().get("commandLog");
         if (logs == null) {
             logs = new ArrayList<String>();
             ar.getExtraProperties().put("commandLog", logs);
         }
-        
+
         logs.add(commandName + getParameterList(parameters));
     }
 
     public static String getParameterList(ParameterMap parameters) {
         StringBuilder sb = new StringBuilder();
-        
+
         for (Map.Entry<String, List<String>> entry : parameters.entrySet()) {
             String paramName = entry.getKey();
             for (String param : entry.getValue()) {
@@ -238,10 +239,10 @@ public class ResourceUtil {
                         .append(param);
             }
         }
-        
+
         return sb.toString();
     }
-    
+
     /**
      * Executes the specified __asadmin command.
      *
@@ -341,26 +342,26 @@ public class ResourceUtil {
             }
         }
     }
-    
+
     public static void resolveParamValues(Map<String, String> commandParams, UriInfo uriInfo) {
         List<PathSegment> pathSegments = uriInfo.getPathSegments();
         Map<String, String> processParams = new HashMap<String, String>();
         processParams.putAll(commandParams);
-        
+
         for (Map.Entry<String,String> entry : commandParams.entrySet()) {
             String value = entry.getValue();
             if (value.equals(Constants.VAR_PARENT)) {
                 processParams.put(entry.getKey(), pathSegments.get(pathSegments.size()-2).getPath());
             } else if (value.startsWith(Constants.VAR_GRANDPARENT)) {
-                int number = 
-                        (value.equals(Constants.VAR_GRANDPARENT)) ? 
+                int number =
+                        (value.equals(Constants.VAR_GRANDPARENT)) ?
                         1 : // no number given
                         Integer.parseInt(value.substring(Constants.VAR_GRANDPARENT.length()));
-                
+
                 processParams.put(entry.getKey(), pathSegments.get(pathSegments.size()-(number + 2)).getPath());
             }
         }
-        
+
         commandParams.clear();
         commandParams.putAll(processParams);
     }
@@ -1082,15 +1083,6 @@ public class ResourceUtil {
         return false;
     }
 
-    /**
-     * Authenticate the given req against admin realm.
-     * @return Access as granted by authenticator
-     */
-    public static  AdminAccessController.Access authenticateViaAdminRealm(Habitat habitat, Request req) throws LoginException, IOException {
-        return authenticateViaAdminRealm(habitat, req, req.getRemoteHost());
-    }
-
-    private static final String DAS_LOOK_FOR_CERT_PROPERTY_NAME = "org.glassfish.admin.DASCheckAdminCert";
     /**
      * Authenticate the given req as originated from given remoteHost against admin realm.
      * @return Access as granted by authenticator
