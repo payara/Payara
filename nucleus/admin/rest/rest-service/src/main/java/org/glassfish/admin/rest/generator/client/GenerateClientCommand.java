@@ -40,7 +40,13 @@
 package org.glassfish.admin.rest.generator.client;
 
 import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.util.LocalStringManager;
+import com.sun.enterprise.util.LocalStringManagerImpl;
+import java.io.File;
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -63,12 +69,6 @@ import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.PerLookup;
-import com.sun.enterprise.util.LocalStringManager;
-import com.sun.enterprise.util.LocalStringManagerImpl;
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 
 /**
  *
@@ -84,25 +84,28 @@ import java.util.Map;
     CommandTarget.CONFIG,
     CommandTarget.CLUSTERED_INSTANCE})
 @RestEndpoints({
-    @RestEndpoint(configBean = Domain.class, opType = OpType.GET, path = "client", description = "Generate REST client")
+    @RestEndpoint(configBean=Domain.class,
+        opType=OpType.GET,
+        path="client",
+        description="Generate REST client")
 })
 public class GenerateClientCommand implements AdminCommand {
     @Inject
     Habitat habitat;
-    
+
     @Param
     private String outputDir;
-    
+
     @Param(shortName="lang", optional=true, defaultValue="java")
     private String languages;
-    
+
     private final static LocalStringManager localStrings =
             new LocalStringManagerImpl(GenerateClientCommand.class);
 
     @Override
     public void execute(AdminCommandContext context) {
         List<ClientGenerator> generators = new ArrayList<ClientGenerator>();
-        
+
         for (String lang : languages.split(",")) {
             ClientGenerator gen = null;
             if ("java".equalsIgnoreCase(lang)) {
@@ -110,7 +113,7 @@ public class GenerateClientCommand implements AdminCommand {
             } else if ("python".equalsIgnoreCase(lang)) {
                 gen = new PythonClientGenerator(habitat);
             }
-            
+
             if (gen != null) {
                 generators.add(gen);
                 gen.generateClasses();
@@ -128,7 +131,7 @@ public class GenerateClientCommand implements AdminCommand {
             for (ClientGenerator gen : generators) {
                 for (Map.Entry<String, URI> entry : gen.getArtifact().entrySet()) {
                     final URI artifact = entry.getValue();
-                    outboundPayload.attachFile("application/octet-stream", 
+                    outboundPayload.attachFile("application/octet-stream",
                             new URI(entry.getKey()), "files", props, new File(artifact));
                 }
                 List<String> messages = gen.getMessages();

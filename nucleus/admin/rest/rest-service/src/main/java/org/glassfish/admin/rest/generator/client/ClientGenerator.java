@@ -84,9 +84,9 @@ public abstract class ClientGenerator {
     public ClientGenerator(Habitat habitat) {
         this.habitat = habitat;
         version = habitat.getByType(Version.class);
-        versionString = version.getVersionNumber();
+        versionString = Version.getVersionNumber();
     }
-    
+
     public abstract ClientClassWriter getClassWriter(ConfigModel model, String className, Class parent);
     public abstract Map<String, URI> getArtifact();
 
@@ -103,7 +103,7 @@ public abstract class ClientGenerator {
 
         generateSingle(rootModel);
     }
-    
+
     public Habitat getHabitat() {
         return habitat;
     }
@@ -114,9 +114,9 @@ public abstract class ClientGenerator {
         if (alreadyGenerated(className)) {
             return;
         }
-        
+
         ClientClassWriter writer = getClassWriter(model, className, RestClientBase.class);
-        
+
         writer.generateGetSegment(model.getTagName());
 
         generateCommandMethods(writer, className);
@@ -183,7 +183,7 @@ public abstract class ClientGenerator {
                     continue;
                 }
                 processed.add(fieldName);
-                
+
                 writer.generateGettersAndSetters(type, methodName, fieldName);
             }
         }
@@ -210,7 +210,7 @@ public abstract class ClientGenerator {
             processed.add(elementName);
 
             ConfigModel.Property childElement = model.getElement(elementName);
-            
+
             if (elementName.equals("*")) {
                 ConfigModel.Node node = (ConfigModel.Node) childElement;
                 ConfigModel childModel = node.getModel();
@@ -287,7 +287,7 @@ public abstract class ClientGenerator {
         ConfigModel.Node node = (ConfigModel.Node) childElement;
         ConfigModel childModel = node.getModel();
         String beanName = ResourceUtil.getUnqualifiedTypeName(childModel.targetTypeName);
-        
+
         writer.createGetChildResource(childModel, Util.upperCaseFirstLetter(Util.eleminateHypen(elementName)), beanName);
 
         if (childElement.isCollection()) {
