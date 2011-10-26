@@ -57,7 +57,7 @@
             gf.onlyDASExist(onlyDAS="#{pageSession.onlyDASExist}");
             createMap(result="#{requestScope.attrsMap}");
             mapPut(map="#{requestScope.attrsMap}"  key="target" value="domain");
-            gf.restRequest( endpoint="#{sessionScope.REST_URL}/applications/application/list-components.json" , attrs="#{requestScope.attrsMap}" method="GET"  result="#{requestScope.result}");
+            gf.restRequest( endpoint="#{sessionScope.REST_URL}/list-components" , attrs="#{requestScope.attrsMap}" method="GET"  result="#{requestScope.result}");
             gf.getDeployedAppsInfo(appPropsMap="#{requestScope.result.data.properties}" filterValue="#{pageSession.filterValue}", filters=>$attribute{filters} result=>$attribute{listOfRows} );
             setPageSessionAttribute(key="tableTitle" value="$resource{i18n.deployTable.applications}");
             setPageSessionAttribute(key="editLink" value="/common/applications/applicationEdit.jsf");
