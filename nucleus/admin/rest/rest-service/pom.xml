@@ -61,7 +61,6 @@
             <groupId>org.glassfish.admin</groupId>
             <artifactId>rest-client</artifactId>
             <version>${project.version}</version>
-            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.glassfish.common</groupId>
