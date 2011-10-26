@@ -225,7 +225,7 @@ public abstract class RestAdapter extends HttpHandler implements Adapter, PostCo
         if (!authenticated) {
             authenticated = authenticateViaRestToken(req);
             if (!authenticated) {
-                access = ResourceUtil.authenticateViaAdminRealm(habitat, req);
+                access = ResourceUtil.authenticateViaAdminRealm(habitat, req, req.getRemoteHost());
             }
         }
         return access;
