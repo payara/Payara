@@ -52,16 +52,23 @@ import org.glassfish.api.admin.ExecuteOn;
 import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.config.support.CommandTarget;
+import org.glassfish.internal.config.UnprocessedConfigListener;
+import org.jvnet.hk2.config.UnprocessedChangeEvent;
+import org.jvnet.hk2.config.UnprocessedChangeEvents;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.component.PerLookup;
 import org.jvnet.hk2.annotations.Inject;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.v3.server.DomainXmlPersistence;
 
 import java.util.logging.Logger;
+import java.util.logging.Level;
 import java.util.List;
+import java.util.ArrayList;
 import java.io.File;
+import java.beans.PropertyChangeEvent;
 
 @Service(name="add-library")
 @Scoped(PerLookup.class)
@@ -81,6 +88,12 @@ public class AddLibraryCommand implements AdminCommand {
     @Inject
     ServerEnvironment env;
 
+    @Inject 
+    DomainXmlPersistence dxp;
+
+    @Inject 
+    UnprocessedConfigListener ucl; 
+
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(AddLibraryCommand.class);    
 
     public void execute(AdminCommandContext context) {
@@ -99,10 +112,42 @@ public class AddLibraryCommand implements AdminCommand {
         // rename or copy the library file to the appropriate 
         // library directory
         try {
+            List<UnprocessedChangeEvent> unprocessed = 
+                new ArrayList<UnprocessedChangeEvent>();
+
+            StringBuffer msg = new StringBuffer();
+
             for (File libraryFile : files) {
-                DeploymentCommandUtils.renameUploadedFileOrCopyInPlaceFile(
-                libDir, libraryFile, logger, env);
+                if (libraryFile.exists()) {
+                    DeploymentCommandUtils.renameUploadedFileOrCopyInPlaceFile(
+                        libDir, libraryFile, logger, env);
+                    PropertyChangeEvent pe = new PropertyChangeEvent(libDir, 
+                        "add-library", null, libraryFile);
+                    UnprocessedChangeEvent uce = new UnprocessedChangeEvent(
+                        pe, "add-library");
+                    unprocessed.add(uce);
+                } else {
+                    msg.append(localStrings.getLocalString("lfnf","Library file not found", libraryFile.getAbsolutePath()));
+                }
             }
+            if (msg.length() > 0) {
+                logger.log(Level.WARNING, msg.toString());
+                report.setActionExitCode(ActionReport.ExitCode.WARNING);
+                report.setMessage(msg.toString());
+            }
+
+            // set the restart required flag
+            UnprocessedChangeEvents uces = new UnprocessedChangeEvents(
+                unprocessed);
+            List<UnprocessedChangeEvents> ucesList = 
+                new ArrayList<UnprocessedChangeEvents>();
+            ucesList.add(uces);
+            ucl.unprocessedTransactedEvents(ucesList); 
+
+            // touch the domain.xml so instances restart will synch 
+            // over the libraries.
+            dxp.touch();
+
         } catch (Exception e) {
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setMessage(e.getMessage());

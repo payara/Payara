@@ -215,6 +215,15 @@ public class DomainXmlPersistence implements ConfigurationPersistence, Configura
         saved(destination);
     }
 
+    /**
+     * Update the modified time of the persisted domain.xml so that 
+     * instances will detect it as changed.
+     * This is for triggering instance synchronization to occur.
+     */
+    public void touch() throws IOException {
+        getDestination().setLastModified(System.currentTimeMillis());
+    } 
+
     protected void saved(File destination) {
         logger.fine("Configuration saved at " + destination);
     }
