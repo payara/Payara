@@ -73,7 +73,7 @@ public class ClusterHandler {
     /** Creates a new instance of InstanceHandler */
     public ClusterHandler() {
     }
-    
+
     /**
      * This method takes in a list of instances with status, which is the output of list-instances
      * and count the # of instance that is running and non running.
@@ -117,10 +117,10 @@ public class ClusterHandler {
             handlerCtx.setOutputValue("disableEjb", (notRunning > 0) ? false :true);  //refer to bug#6342445
             handlerCtx.setOutputValue("disableStart", (notRunning > 0) ? false :true);
             handlerCtx.setOutputValue("disableStop", ( (running+requireRestart) > 0) ? false :true);
-            handlerCtx.setOutputValue( "numRunning" , (running > 0) ? 
+            handlerCtx.setOutputValue( "numRunning" , (running > 0) ?
                 GuiUtil.getMessage(CLUSTER_RESOURCE_NAME, "cluster.number.instance.running", new String[]{""+running, GuiUtil.getCommonMessage("status.image.RUNNING")} ) : "");
 
-            handlerCtx.setOutputValue( "numNotRunning" , (notRunning > 0) ? 
+            handlerCtx.setOutputValue( "numNotRunning" , (notRunning > 0) ?
                 GuiUtil.getMessage(CLUSTER_RESOURCE_NAME, "cluster.number.instance.notRunning", new String[]{""+notRunning , GuiUtil.getCommonMessage("status.image.NOT_RUNNING")}) : "");
 
             handlerCtx.setOutputValue( "numRequireRestart" , (requireRestart > 0) ?
@@ -179,6 +179,8 @@ public class ClusterHandler {
 
         for (Map oneRow : rows) {
             String clusterName = (String) oneRow.get("name");
+            String endpoint = prefix + clusterName + "/" + action;
+            String method = "post";
             if (action.equals("delete-cluster")){
                 //need to delete the clustered instance first
                 Map clusterInstanceMap = (Map)handlerCtx.getInputValue("extraInfo");
@@ -190,11 +192,12 @@ public class ClusterHandler {
                         return;
                     }
                 }
+                endpoint = prefix + clusterName;
+                method = "delete";
             }
             try{
-                String endpoint = prefix + clusterName + "/" + action;
                 GuiUtil.getLogger().info(endpoint);
-                RestUtil.restRequest( endpoint, null, "post" ,null, false);
+                RestUtil.restRequest( endpoint, null, method, null, false);
             }catch (Exception ex){
                 GuiUtil.prepareAlert("error", GuiUtil.getMessage("msg.Error"), ex.getMessage());
                 return;
