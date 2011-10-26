@@ -1,6 +1,8 @@
 copyright/src/main/resources/copyright-exclude
 appserver/deployment/schemas/
 appserver/deployment/dtds/
+nucleus/deployment/schemas/
+nucleus/deployment/dtds/
 appserver/connectors/descriptors/src/main/resources/glassfish/lib/dtds/
 appserver/connectors/descriptors/src/main/resources/glassfish/lib/schemas/
 /yui/
