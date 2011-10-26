@@ -68,11 +68,11 @@ import org.glassfish.cluster.ssh.util.DcomUtils;
  * to see if a remote Windows machine can be contacted from the server via DCOM.
  * @author Byron Nevins
  */
-@Service(name = "validate-windows")
+@Service(name = "validate-dcom")
 @Scoped(PerLookup.class)
 @CommandLock(CommandLock.LockType.NONE)
 @ExecuteOn({RuntimeType.DAS})
-public class ValidateWindows implements AdminCommand {
+public class ValidateDcom implements AdminCommand {
     @Param(name = "windowsuser", optional = true, defaultValue = NodeUtils.NODE_DEFAULT_REMOTE_USER)
     private String user;
     @Param(name = "windowspassword", optional = false, password = true)
