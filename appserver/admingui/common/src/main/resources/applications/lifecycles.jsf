@@ -54,9 +54,7 @@
 <!define name="content">
     <event>
         <!beforeCreate
-            createMap(result="#{requestScope.attrsMap}");
-            mapPut(map="#{requestScope.attrsMap}"  key="target" value="domain");
-            gf.restRequest(endpoint="#{sessionScope.REST_URL}/applications/application/list-lifecycle-modules.json"  attrs="#{requestScope.attrsMap}" method="get" result="#{requestScope.resp}");
+            gf.restRequest(endpoint="#{sessionScope.REST_URL}/list-lifecycle-modules" method="get" result="#{requestScope.resp}");
             gf.getLifecyclesInfo(children="#{requestScope.resp.data.children}", result=>$attribute{listOfRows} );
             gf.onlyDASExist(onlyDAS="#{pageSession.onlyDASExist}");
             setPageSessionAttribute(key="tableTitle" value="$resource{i18n.deployTable.lifeCycle}");

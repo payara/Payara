@@ -74,9 +74,7 @@
 	childExpanded="false"
 	childURL="/common/applications/lifecycleEdit.jsf?appName=#{$this{valueBinding}.text}">
     <ui:event type="beforeCreate">
-        createMap(result="#{requestScope.attrsMap}");
-        mapPut(map="#{requestScope.attrsMap}"  key="target" value="domain");
-	gf.restRequest(endpoint="#{sessionScope.REST_URL}/applications/application/list-lifecycle-modules.json"  attrs="#{requestScope.attrsMap}" method="get" result="#{requestScope.resp}");
+	gf.restRequest(endpoint="#{sessionScope.REST_URL}/list-lifecycle-modules" method="get" result="#{requestScope.resp}");
 	setAttribute(key="children" value="#{requestScope.resp.data.children}");
     </ui:event>
 </dynamicTreeNode>
