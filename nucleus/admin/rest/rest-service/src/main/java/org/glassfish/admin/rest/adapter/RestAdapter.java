@@ -283,10 +283,15 @@ public abstract class RestAdapter extends HttpHandler implements Adapter, PostCo
         if (event.is(EventTypes.SERVER_READY)) {
             latch.countDown();
             logger.fine("Ready to receive REST resource requests");
+
+            try {
+                exposeContext();
+            } catch (EndpointRegistrationException ex) {
+                Logger.getLogger(RestAdapter.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
         //the count-down does not start if any other event is received
     }
-
 
     /**
      * Checks whether this adapter has been registered as a network endpoint.
