@@ -96,8 +96,8 @@ public class EmbeddedAddHttpsListenerTest {
         listener.setId("https-listener-2");
         listener.setProtocol("https");
 
-        String keyStorePath = root + "/keystore.jks";
-        String trustStorePath = root + "/cacerts.jks";
+        String keyStorePath = root.getAbsolutePath() + "/keystore.jks";
+        String trustStorePath = root.getAbsolutePath() + "/cacerts.jks";
         String keyPassword = "changeit";
         SslConfig sslConfig = new SslConfig(keyStorePath, trustStorePath);
         sslConfig.setKeyPassword(keyPassword.toCharArray());
