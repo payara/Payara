@@ -81,7 +81,7 @@ public class EmbeddedClassLoaderTest {
     }
 
     private static void loadA(ClassLoader cl) {
-        String className = "org.glassfish.tests.embedded.web.EmbeddedClassLoaderTest";
+        String className = "TestCacaoList";
         try {
             System.out.println("---> Loading " + className + " with " + cl);
             cl.loadClass(className);
@@ -95,7 +95,7 @@ public class EmbeddedClassLoaderTest {
     @Test
     public void test() throws Exception {
         URL[] urls = new URL[1];
-        urls[0] = root.toURI().toURL();
+        urls[0] = (new File("src/main/resources/toto.jar")).toURI().toURL();
         URLClassLoader classLoader = new URLClassLoader(urls, EmbeddedClassLoaderTest.class.getClassLoader());
         loadA(classLoader);
 
@@ -106,8 +106,7 @@ public class EmbeddedClassLoaderTest {
         Context context = wc.createContext(path, classLoader);
         wc.addContext(context, contextRoot);
 
-        /*
-        URL servlet = new URL("http://localhost:8080/"+contextRoot+"/myurl");
+        URL servlet = new URL("http://localhost:8080/test/testgf");
         URLConnection yc = servlet.openConnection();
         BufferedReader in = new BufferedReader(
                                 new InputStreamReader(
@@ -118,7 +117,7 @@ public class EmbeddedClassLoaderTest {
         while ((inputLine = in.readLine()) != null){
             sb.append(inputLine);
         }
-        in.close();   */
+        in.close();
 
         wc.removeContext(context);
     } 

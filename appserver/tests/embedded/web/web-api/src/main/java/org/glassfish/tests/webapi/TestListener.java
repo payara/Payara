@@ -40,57 +40,42 @@
 
 package org.glassfish.tests.webapi;
 
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletException;
+import javax.servlet.ServletContextEvent;
+import javax.servlet.ServletContextListener;
 
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import java.io.IOException;
-import java.io.PrintWriter;
-
-public class TestServlet extends HttpServlet 
+public final class TestListener implements ServletContextListener
 {
-    public String msg_listener = null;
+    static public String msg = "Context not YET initialized";
 
-    public TestServlet()
+    public void contextInitialized(ServletContextEvent event)
     {
-        super();
-    }
+        /* This method is called prior to the servlet context being
+        initialized (when the Web application is deployed).
+        You can initialize servlet context related data here.
+         */
+        
+        System.out.println("TestListener : contextInitialized called");
 
-    public void init(ServletConfig config) throws ServletException
-    {
-        super.init(config);
-
-        msg_listener = TestListener.msg;
-    }
-
-    protected void doGet(HttpServletRequest httpServletRequest,
-                         HttpServletResponse httpServletResponse) 
-              throws ServletException, IOException 
-    {
-        System.out.println("Servlet TestServlet doGet called");
-
-        String msg_servlet = null;
         try {
+            System.out.println("TestListener : Trying to load TestCacaoList");
+            
             Class c = Class.forName("TestCacaoList");
-            msg_servlet = "Class TestCacaoList loaded successfully from servlet";
-            System.out.println(msg_servlet);
+
+            msg = "Class TestCacaoList loaded successfully from listener";
+            System.out.println(msg);
 
         } catch (Exception ex) {
-            msg_servlet = "Exception while loading class TestCacaoList from servlet : " + ex.toString();
-            System.out.println(msg_servlet);
+            msg = "Exception while loading class TestCacaoList from listener : " + ex.toString();
+            System.out.println(msg);
         }
 
-        PrintWriter out = httpServletResponse.getWriter();
-        out.println("CACAO Glash Fish Test Servlet with logs !!");
-        out.println("Context Init Msg = " + msg_listener);
-        out.println("Servlet Msg = " + msg_servlet);
-        out.flush();
-        out.close();
+        System.out.println("TestListener : contextInitialized DONE");
+    }
 
-        System.out.println("Servlet TestServlet doGet DONE");
+    public void contextDestroyed(ServletContextEvent event)
+    {
+        /* This method is invoked when the Servlet Context
+        (the Web application) is undeployed
+         */
     }
 }
-
