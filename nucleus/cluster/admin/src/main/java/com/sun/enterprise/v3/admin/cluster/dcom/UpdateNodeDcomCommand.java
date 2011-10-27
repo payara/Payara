@@ -39,8 +39,9 @@
  */
 package com.sun.enterprise.v3.admin.cluster.dcom;
 
-import com.sun.enterprise.v3.admin.cluster.*;
 import com.sun.enterprise.util.cluster.RemoteType;
+import com.sun.enterprise.v3.admin.cluster.*;
+
 import com.sun.enterprise.util.StringUtils;
 import com.sun.enterprise.config.serverbeans.Node;
 import com.sun.enterprise.config.serverbeans.Nodes;
@@ -65,11 +66,11 @@ import java.util.logging.Logger;
 @Scoped(PerLookup.class)
 @ExecuteOn({RuntimeType.DAS})
 public class UpdateNodeDcomCommand extends UpdateNodeRemoteCommand  {
-    @Param(name = "dcomuser", optional = true)
-    private String dcomuser;
-    @Param(name = "dcompassword", optional = true, password = true)
-    private String dcompassword;
-    @Param(name = "windowsdomain", optional = true)
+    @Param(name = "windowsuser", shortName = "w", optional = true, defaultValue = "${user.name}")
+    private String windowsuser;
+    @Param(name = "windowspassword", optional = true, password = true)
+    private String windowspassword;
+    @Param(name = "windowsdomain", shortName = "d", optional = true, defaultValue = "")
     private String windowsdomainInSubClass;
 
     @Override
@@ -90,9 +91,9 @@ public class UpdateNodeDcomCommand extends UpdateNodeRemoteCommand  {
     @Override
     protected void populateParameters() {
         remotePort = "135";
-        remoteUser = dcomuser;
+        remoteUser = windowsuser;
         sshkeyfile = null;
-        remotepassword = dcompassword;
+        remotepassword = windowspassword;
         sshkeypassphrase = null;
         windowsdomain = windowsdomainInSubClass;
     }

@@ -111,7 +111,7 @@ public class InstallNodeDcomCommand extends InstallNodeBaseCommand {
 
         try {
             for (String host : hosts) {
-                String remotePassword = getDCOMPassword(host);
+                String remotePassword = getWindowsPassword(host);
                 WindowsRemoteFileSystem wrfs = new WindowsRemoteFileSystem(host, getRemoteUser(), remotePassword);
                 WindowsRemoteFile remoteInstallDir = new WindowsRemoteFile(wrfs, getInstallDir());
 
@@ -130,7 +130,7 @@ public class InstallNodeDcomCommand extends InstallNodeBaseCommand {
         final String unpackScriptName = "unpack.bat";
 
         for (String host : hosts) {
-            String remotePassword = getDCOMPassword(host);
+            String remotePassword = getWindowsPassword(host);
             WindowsRemoteFileSystem wrfs = new WindowsRemoteFileSystem(host, getRemoteUser(), remotePassword);
             WindowsRemoteFile remoteInstallDir = new WindowsRemoteFile(wrfs, windowsInstallDir);
             remoteInstallDir.mkdirs(getForce());

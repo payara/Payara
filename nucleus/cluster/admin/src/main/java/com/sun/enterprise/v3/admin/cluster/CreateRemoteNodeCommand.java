@@ -108,6 +108,8 @@ public abstract class CreateRemoteNodeCommand implements AdminCommand {
 
     protected abstract List<String> getPasswords();
 
+    protected abstract String getInstallNodeCommandName();
+
     public final void executeInternal(AdminCommandContext context) {
         ActionReport report = context.getActionReport();
         StringBuilder msg = new StringBuilder();
@@ -192,9 +194,7 @@ public abstract class CreateRemoteNodeCommand implements AdminCommand {
     private boolean installNode(AdminCommandContext ctx) throws CommandValidationException {
         boolean res = false;
         ArrayList<String> command = new ArrayList<String>();
-
-        command.add("install-node");
-
+        command.add(getInstallNodeCommandName());
         command.add("--installdir");
         command.add(installdir);
 

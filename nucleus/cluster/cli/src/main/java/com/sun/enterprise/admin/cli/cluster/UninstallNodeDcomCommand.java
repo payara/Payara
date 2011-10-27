@@ -78,7 +78,7 @@ public class UninstallNodeDcomCommand extends UninstallNodeBaseCommand {
     final void deleteFromHosts() throws CommandException {
         for (String host : hosts) {
             try {
-                String pw = getDCOMPassword(host);
+                String pw = getWindowsPassword(host);
                 WindowsRemoteFileSystem wrfs = new WindowsRemoteFileSystem(host, getRemoteUser(), pw);
                 WindowsRemoteFile remoteInstallDir = new WindowsRemoteFile(wrfs, getInstallDir());
 

@@ -73,13 +73,13 @@ import org.glassfish.cluster.ssh.util.DcomUtils;
 @CommandLock(CommandLock.LockType.NONE)
 @ExecuteOn({RuntimeType.DAS})
 public class ValidateDcom implements AdminCommand {
-    @Param(name = "windowsuser", optional = true, defaultValue = NodeUtils.NODE_DEFAULT_REMOTE_USER)
+    @Param(name = "windowsuser", shortName = "w", optional = true, defaultValue = "${user.name}")
     private String user;
     @Param(name = "windowspassword", optional = false, password = true)
     private String password;
     @Param(name = "host", optional = false, primary = true)
     private String host;
-    @Param(name = "windowsdomain", optional = true)
+    @Param(name = "windowsdomain", shortName = "d", optional = true)
     private String windowsdomain;
     @Param(name = "remotetestdir", optional = true, defaultValue = "C:\\")
     private String testdir;

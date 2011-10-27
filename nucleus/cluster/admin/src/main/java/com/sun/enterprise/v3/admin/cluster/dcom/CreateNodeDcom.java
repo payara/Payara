@@ -42,12 +42,10 @@ package com.sun.enterprise.v3.admin.cluster.dcom;
 import com.sun.enterprise.util.cluster.RemoteType;
 import org.glassfish.cluster.ssh.util.DcomUtils;
 import java.util.List;
-import java.util.ArrayList;
 import com.sun.enterprise.v3.admin.cluster.CreateRemoteNodeCommand;
 import com.sun.enterprise.v3.admin.cluster.NodeUtils;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
-import org.glassfish.internal.api.RelativePathResolver;
 import org.jvnet.hk2.annotations.*;
 import org.jvnet.hk2.component.PerLookup;
 import static com.sun.enterprise.util.StringUtils.ok;
@@ -61,13 +59,11 @@ import static com.sun.enterprise.util.StringUtils.ok;
 @CommandLock(CommandLock.LockType.NONE)
 @ExecuteOn({RuntimeType.DAS})
 public class CreateNodeDcom extends CreateRemoteNodeCommand {
-    //@Param(name = "dcomport", optional = true, defaultValue = "135")
-    //private String dcomport;
-    @Param(name = "dcomuser", optional = true, defaultValue = NodeUtils.NODE_DEFAULT_REMOTE_USER)
-    private String dcomuser;
-    @Param(name = "dcompassword", optional = false, password = true)
-    private String dcompassword;
-    @Param(name = "windowsdomain", optional = true)
+    @Param(name = "windowsuser", shortName = "w", optional = true, defaultValue = NodeUtils.NODE_DEFAULT_REMOTE_USER)
+    private String windowsuser;
+    @Param(name = "windowspassword", optional = false, password = true)
+    private String windowspassword;
+    @Param(name = "windowsdomain", shortName = "d", optional = true)
     private String windowsdomain;
 
     @Override
@@ -84,7 +80,7 @@ public class CreateNodeDcom extends CreateRemoteNodeCommand {
 
     @Override
     protected void validate() throws CommandValidationException {
-        if (!ok(dcompassword))
+        if (!ok(windowspassword))
             throw new CommandValidationException(Strings.get("update.node.dcom.no.password"));
     }
 
@@ -115,8 +111,8 @@ public class CreateNodeDcom extends CreateRemoteNodeCommand {
     @Override
     final protected void populateBaseClass() {
         remotePort = "135";
-        remoteUser = dcomuser;
-        remotePassword = dcompassword;
+        remoteUser = windowsuser;
+        remotePassword = windowspassword;
     }
 
     @Override
@@ -126,11 +122,10 @@ public class CreateNodeDcom extends CreateRemoteNodeCommand {
 
     @Override
     protected final void populateCommandArgs(List<String> args) {
-        args.add("--dcom=true");
-        args.add("--dcomuser");
+        args.add("--windowsuser");
         args.add(remoteUser);
-        //args.add("--dcomport");
-        //args.add(remotePort);
+        args.add("--windowsdomain");
+        args.add(windowsdomain);
     }
 
     /**
@@ -139,6 +134,11 @@ public class CreateNodeDcom extends CreateRemoteNodeCommand {
      */
     @Override
     protected List<String> getPasswords() {
-        return DcomUtils.resolvePasswordToList(dcompassword);
+        return DcomUtils.resolvePasswordToList(windowspassword);
+    }
+
+    @Override
+    protected String getInstallNodeCommandName() {
+        return "install-node-dcom";
     }
 }

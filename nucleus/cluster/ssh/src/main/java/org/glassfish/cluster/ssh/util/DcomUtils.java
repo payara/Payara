@@ -72,7 +72,7 @@ public final class DcomUtils {
     public static List<String> resolvePasswordToList(String raw) {
         List tokens = new ArrayList<String>(1);
         String password = resolvePassword(raw);
-        tokens.add("AS_ADMIN_DCOMPASSWORD=" + password);
+        tokens.add("AS_ADMIN_WINDOWSPASSWORD=" + password);
         return tokens;
     }
 }
