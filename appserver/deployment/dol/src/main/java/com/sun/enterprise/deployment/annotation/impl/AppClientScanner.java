@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -79,17 +79,7 @@ public class AppClientScanner extends ModuleScanner<ApplicationClientDescriptor>
 
     @Override
     public void process(ReadableArchive archive, ApplicationClientDescriptor bundleDesc, ClassLoader classLoader, Parser parser) throws IOException {
-        /*
-         * This essentially duplicates
-         */
-        if (parser!=null) {
-            classParser = parser;
-        } else {
-            ParsingContext.Builder builder = new ParsingContext.Builder();
-            builder.logger(logger);
-            ParsingContext pc = builder.build();
-            classParser = new Parser(pc);
-        }
+        setParser(parser);
         doProcess(archive, bundleDesc, classLoader);
         completeProcess(bundleDesc, archive);
         calculateResults();

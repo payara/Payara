@@ -55,7 +55,6 @@ import org.glassfish.apf.impl.AnnotationUtils;
 import org.glassfish.apf.impl.JavaEEScanner;
 import org.glassfish.hk2.classmodel.reflect.*;
 import org.jvnet.hk2.annotations.Inject;
-import org.jvnet.hk2.component.PostConstruct;
 import org.glassfish.deployment.common.DeploymentUtils;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 
@@ -71,7 +70,7 @@ import java.util.jar.JarEntry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.net.URL;
-import java.util.jar.JarInputStream;
+import java.util.concurrent.*;
 
 
 /**
@@ -79,22 +78,22 @@ import java.util.jar.JarInputStream;
  *
  * @author Shing Wai Chan
  */
-public abstract class ModuleScanner<T> extends JavaEEScanner implements Scanner<T>, PostConstruct {
+public abstract class ModuleScanner<T> extends JavaEEScanner implements Scanner<T> {
 
     private static final int DEFAULT_ENTRY_BUFFER_SIZE = 8192;
 
     @Inject
     DefaultAnnotationScanner defaultScanner;
-    
+
     protected File archiveFile = null;
     protected ClassLoader classLoader = null;
-    protected ClassFile classFile = null;
     protected Parser classParser = null;
 
     private Set<URI> scannedURI = new HashSet<URI>();
 
-    private boolean processAllClasses = Boolean.getBoolean("com.sun.enterprise.deployment.annotation.processAllClasses");
+    private boolean needScanAnnotation = false;
 
+    private static ExecutorService executorService = null;
     
     private Set<String> entries = new HashSet<String>();
 
@@ -104,14 +103,7 @@ public abstract class ModuleScanner<T> extends JavaEEScanner implements Scanner<
     public void process(ReadableArchive archiveFile,
             T bundleDesc, ClassLoader classLoader, Parser parser) throws IOException {
         File file = new File(archiveFile.getURI());
-        if (parser!=null) {
-            classParser = parser;
-        } else {
-            ParsingContext.Builder builder = new ParsingContext.Builder();
-            builder.logger(logger);
-            ParsingContext pc = builder.build();
-            classParser = new Parser(pc);
-        }
+        setParser(parser);
         process(file, bundleDesc, classLoader);
         completeProcess(bundleDesc, archiveFile);
         calculateResults();
@@ -187,14 +179,6 @@ public abstract class ModuleScanner<T> extends JavaEEScanner implements Scanner<
     }
 
     /**
-     * The component has been injected with any dependency and
-     * will be placed into commission by the subsystem.
-     */
-    public void postConstruct() {
-        classFile = new ClassFile(new ConstantPoolInfo(defaultScanner));
-    }
-
-    /**
      * This add extra className to be scanned.
      * @param className
      */
@@ -217,21 +201,7 @@ public abstract class ModuleScanner<T> extends JavaEEScanner implements Scanner<
                 return;
             }
             scannedURI.add(jarFile.toURI());
-            if (processAllClasses) {
-                JarFile jf=null;
-                try {
-                    jf = new JarFile(jarFile);
-                Enumeration<JarEntry> entriesEnum = jf.entries();
-                while(entriesEnum.hasMoreElements()) {
-                    JarEntry je = entriesEnum.nextElement();
-                    if (je.getName().endsWith(".class")) {
-                        addEntry(je);
-                    }
-                }
-                } finally {
-                    if (jf!=null) jf.close();
-                }
-            } else {
+            if (needScanAnnotation) {
                 classParser.parse(jarFile, null);
             }
         } catch (ZipException ze) {
@@ -243,66 +213,8 @@ public abstract class ModuleScanner<T> extends JavaEEScanner implements Scanner<
      * This add all classes in given jarFile to be scanned.
      * @param jarURI
      */
-    protected void addScanURI(final URI jarURI) {
-        scannedURI.add(jarURI);
-        JarInputStream jis = null;
-        try {
-            final InputStream jarInputStream = jarURI.toURL().openStream();
-            jis = new JarInputStream(jarInputStream);
-            JarEntry je;
-            while ((je = jis.getNextJarEntry()) != null) {
-                if (je.getName().endsWith(".class")) {
-                    if (processAllClasses) {
-                        addEntry(je);
-                    } else {
-                        // check if it contains top level annotations...
-                        final ByteArrayOutputStream baos =
-                                new ByteArrayOutputStream();
-
-                        int bytesRead;
-                        /*
-                         * The JarEntry might not be able to report its expanded
-                         * size (such as during a Java Web Start launch).  So
-                         * read the entry using a loop.
-                         */
-                        final byte[] buffer = new byte[
-                                je.getSize() > -1 ?
-                                    (int) je.getSize() :
-                                    DEFAULT_ENTRY_BUFFER_SIZE];
-                        while ((bytesRead = jis.read(buffer)) != -1) {
-                            baos.write(buffer, 0, bytesRead);
-                        }
-                        if (classFile.containsAnnotation(baos.toByteArray())) {
-                            addEntry(je);
-                        }
-                    }
-                }
-            }
-        } catch (Exception ex) {
-            logger.log(Level.WARNING, ex.getMessage() +  ": file path: " + jarURI.toASCIIString(), ex);
-        } finally {
-            if (jis != null) {
-                try {
-                    jis.close();
-                } catch (Exception ex) {
-                    logger.log(Level.WARNING, jarURI.toASCIIString(), ex);
-                }
-            }
-        }
-    }
-
-    private void addEntry(JarEntry je) {
-        String className = je.getName().replace('/', '.');
-        className = className.substring(0, className.length()-6);
-        entries.add(className);                                
-    }
-    
-    private void addEntry(File top, File f) {
-        String fileName = f.getPath();
-        fileName = fileName.substring(top.getPath().length()+1);
-        String className = fileName.replace(File.separatorChar, '.');
-        className = className.substring(0, className.length()-6);
-        entries.add(className);        
+    protected void addScanURI(final URI jarURI) throws IOException {
+        addScanJar(new File(jarURI));
     }
 
     /**
@@ -311,28 +223,11 @@ public abstract class ModuleScanner<T> extends JavaEEScanner implements Scanner<
      */
     protected void addScanDirectory(File directory) throws IOException {
         scannedURI.add(directory.toURI());
-        if (processAllClasses) {
-            initScanDirectory(directory, directory);
-        } else {
+        if (needScanAnnotation) {
             classParser.parse(directory, null);
         }
     } 
     
-    private void initScanDirectory(File top, File directory) throws IOException {
-
-        File[] files = directory.listFiles();
-        for (File file : files) {
-            if (file.isFile()) {
-                String fileName = file.getPath();
-                if (fileName.endsWith(".class")) {
-                    addEntry(top, file);
-                }
-            } else {
-                initScanDirectory(top, file);
-            }
-        }
-    }
-
     public ClassLoader getClassLoader() {
         return classLoader;
     }
@@ -385,5 +280,36 @@ public abstract class ModuleScanner<T> extends JavaEEScanner implements Scanner<
     @Override
     public Types getTypes() {
         return classParser.getContext().getTypes();
+    }
+
+    protected synchronized ExecutorService getExecutorService() {
+        if (executorService != null) {
+            return executorService;
+        }
+        Runtime runtime = Runtime.getRuntime();
+       int nrOfProcessors = runtime.availableProcessors();
+        executorService = Executors.newFixedThreadPool(nrOfProcessors, new ThreadFactory() {
+            @Override
+            public Thread newThread(Runnable r) {
+                Thread t = new Thread(r);
+                t.setName("dol-jar-scanner");
+                t.setDaemon(true);
+                t.setContextClassLoader(getClass().getClassLoader());
+                return t;
+            }
+        });
+        return executorService;
+    }
+
+    protected void setParser(Parser parser) {
+        if (parser == null) {
+            // if the passed in parser is null, it means no annotation scanning
+            // has been done yet, we need to construct a new parser
+            // and do the annotation scanning here
+            ParsingContext pc = new ParsingContext.Builder().logger(logger).executorService(getExecutorService()).build();
+            parser = new Parser(pc);
+            needScanAnnotation = true;
+        }
+        classParser = parser;
     }
 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -102,13 +102,7 @@ public class WarScanner extends ModuleScanner<WebBundleDescriptor> {
 
         this.archiveFile =  new File(readableArchive.getURI()); 
         this.classLoader = classLoader;
-        if (parser == null) {
-            ParsingContext.Builder builder = new ParsingContext.Builder();
-            builder.logger(logger);
-            ParsingContext pc = builder.build();
-            parser = new Parser(pc);
-        }
-        this.classParser = parser;
+        setParser(parser);
 
         if (AnnotationUtils.getLogger().isLoggable(Level.FINE)) {
             AnnotationUtils.getLogger().fine("archiveFile is " + archiveFile);

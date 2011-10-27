@@ -2273,6 +2273,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
             public Thread newThread(Runnable r) {
                 Thread t = new Thread(r);
                 t.setName("deployment-jar-scanner");
+                t.setContextClassLoader(getClass().getClassLoader());
                 t.setDaemon(true);
                 return t;
             }
