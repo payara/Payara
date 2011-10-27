@@ -101,7 +101,7 @@ public class EmbeddedClassLoaderTest {
 
         Thread.currentThread().setContextClassLoader(classLoader);
 
-        File path = new File("target/embedded-webapi-tests.war");
+        File path = new File("src/main/resources/embedded-webapi-tests.war");
 
         Context context = wc.createContext(path, classLoader);
         wc.addContext(context, contextRoot);
@@ -117,6 +117,12 @@ public class EmbeddedClassLoaderTest {
         while ((inputLine = in.readLine()) != null){
             sb.append(inputLine);
         }
+
+        boolean success = sb.toString().contains("Class TestCacaoList loaded successfully from listener");
+        if (success) {
+            success = sb.toString().contains("Class TestCacaoList loaded successfully from servlet");
+        }
+        Assert.assertTrue(success);
         in.close();
 
         wc.removeContext(context);
