@@ -474,7 +474,7 @@ public class WebContainerImpl implements WebContainer {
                             throws PropertyVetoException, TransactionFailure {
                         avs.setId(webConfig.getVirtualServerId());
                         if (webConfig.getDocRootDir() != null) {
-                            avs.setDocroot(webConfig.getDocRootDir().getPath());
+                            avs.setDocroot(webConfig.getDocRootDir().getAbsolutePath());
                         }
                         avs.setHosts(webConfig.getHostNames());
                         avs.setNetworkListeners(webConfig.getListenerName());
@@ -589,7 +589,7 @@ public class WebContainerImpl implements WebContainer {
 
         if (log.isLoggable(Level.INFO)) {
             log.info("Creating context '" + docRoot.getName() + "' with docBase '" +
-                    docRoot.getPath() + "'");
+                    docRoot.getAbsolutePath() + "'");
         }
 
         return new ContextFacade(docRoot, null, classLoader);
@@ -945,7 +945,7 @@ public class WebContainerImpl implements WebContainer {
 
         String docRoot = null;
         if (virtualServer.getDocRoot() != null) {
-            docRoot = virtualServer.getDocRoot().getPath();
+            docRoot = virtualServer.getDocRoot().getAbsolutePath();
         }
 
         String hostName = null;
@@ -976,7 +976,7 @@ public class WebContainerImpl implements WebContainer {
                 }
             }, httpService);
         } catch (Exception ex) {
-            ex.printStackTrace();
+            throw new GlassFishException(ex);
         }
 
         if ((webListeners != null) && (!webListeners.isEmpty())) {
