@@ -49,10 +49,8 @@ import com.sun.enterprise.util.StringUtils;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.enterprise.config.serverbeans.*;
 import org.glassfish.api.ActionReport;
-import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
-import org.glassfish.api.admin.ExecuteOn;
 import org.glassfish.api.admin.CommandRunner.CommandInvocation;
 import org.glassfish.api.admin.ParameterMap;
 import org.jvnet.hk2.annotations.*;
@@ -89,6 +87,8 @@ public abstract class DeleteNodeRemoteCommand implements AdminCommand {
     protected Logger logger = null;
 
     protected abstract List<String> getPasswords();
+
+    protected abstract String getUninstallCommandName();
 
     protected final void executeInternal(AdminCommandContext context) {
         ActionReport report = context.getActionReport();
@@ -165,14 +165,9 @@ public abstract class DeleteNodeRemoteCommand implements AdminCommand {
 
         ArrayList<String> command = new ArrayList<String>();
 
-        command.add("uninstall-node");
+        command.add(getUninstallCommandName());
 
         String type = node.getType();
-
-        if(type != null && !type.isEmpty()) {
-            command.add("--type");
-            command.add(type);
-        }
 
         command.add("--installdir");
         command.add(map.getOne(NodeUtils.PARAM_INSTALLDIR));

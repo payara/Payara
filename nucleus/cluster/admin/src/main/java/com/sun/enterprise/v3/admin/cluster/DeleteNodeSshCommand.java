@@ -40,8 +40,7 @@
 
 package com.sun.enterprise.v3.admin.cluster;
 
-import java.util.List;
-import java.util.ArrayList;
+import java.util.*;
 
 import com.sun.enterprise.config.serverbeans.*;
 import org.glassfish.api.I18n;
@@ -86,5 +85,10 @@ public class DeleteNodeSshCommand extends DeleteNodeRemoteCommand {
             list.add("AS_ADMIN_SSHKEYPASSPHRASE=" + nodeUtils.sshL.expandPasswordAlias(sshkeypassphrase));
         }
         return list;
+    }
+
+    @Override
+    protected String getUninstallCommandName() {
+        return "uninstall-node-ssh";
     }
 }
