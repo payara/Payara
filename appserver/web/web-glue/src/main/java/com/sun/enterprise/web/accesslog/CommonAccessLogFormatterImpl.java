@@ -200,7 +200,11 @@ public class CommonAccessLogFormatterImpl extends AccessLogFormatter {
         cb.put("\"");
         cb.put(hreq.getMethod());
         cb.put(SPACE);
-        cb.put(hreq.getRequestURI());
+        String uri = hreq.getRequestURI();
+        if (uri == null) {
+            uri = "NULL-HTTP-URI";
+        }
+        cb.put(uri);
         if (hreq.getQueryString() != null) {
             cb.put('?');
             cb.put(hreq.getQueryString());
