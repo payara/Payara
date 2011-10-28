@@ -110,10 +110,8 @@ abstract class InstallNodeBaseCommand extends NativeRemoteCommandsBase {
         try {
             ArrayList<String> binDirFiles = new ArrayList<String>();
             precopy();
-            if (createZip) {
-                zipFile = createZipFileIfNeeded(binDirFiles);
-                copyToHosts(zipFile, binDirFiles);
-            }
+            zipFile = createZipFileIfNeeded(binDirFiles);
+            copyToHosts(zipFile, binDirFiles);
         }
         catch (CommandException e) {
             throw e;

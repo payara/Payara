@@ -169,9 +169,6 @@ public class InstallNodeSshCommand extends InstallNodeBaseCommand {
                 throw new IOException(ioe);
             }
 
-            if (checkIfAlreadyInstalled(host, sshInstallDir))
-                continue;
-
             //delete the sshInstallDir contents if non-empty
             try {
                 //get list of file in DAS sshInstallDir
@@ -295,9 +292,11 @@ public class InstallNodeSshCommand extends InstallNodeBaseCommand {
 
     @Override
     final void precopy() throws CommandException {
+        if (getForce())
+            return;
+
         boolean prompt = promptPass;
         for (String host : hosts) {
-            createZip = true;
             sshLauncher.init(getRemoteUser(), host, getRemotePort(), sshpassword, getSshKeyFile(), sshkeypassphrase, logger);
 
             if (getSshKeyFile() != null && !sshLauncher.checkConnection()) {
@@ -318,10 +317,7 @@ public class InstallNodeSshCommand extends InstallNodeBaseCommand {
             try {
                 SFTPClient sftpClient = sshLauncher.getSFTPClient();
                 if (sftpClient.exists(sshInstallDir) && checkIfAlreadyInstalled(host, sshInstallDir)){
-                    createZip = false;
-                } else {
-                    //no point in continuing if we know we have to create zip for at least one host
-                    break;
+                    throw new CommandException(Strings.get("install.dir.exists", sshInstallDir));
                 }
             }
             catch (IOException ex) {
