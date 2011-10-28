@@ -42,6 +42,7 @@ package com.sun.enterprise.admin.cli.cluster;
 import com.sun.enterprise.util.io.FileUtils;
 import java.io.*;
 import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -59,6 +60,8 @@ import org.glassfish.cluster.ssh.sftp.SFTPClient;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Nodes;
 import com.sun.enterprise.config.serverbeans.Node;
+import com.sun.enterprise.module.ModulesRegistry;
+import com.sun.enterprise.module.single.StaticModulesRegistry;
 
 import com.sun.enterprise.universal.glassfish.TokenResolver;
 import com.sun.enterprise.util.io.DomainDirs;
@@ -313,8 +316,23 @@ abstract class NativeRemoteCommandsBase extends CLICommand {
                 DomainDirs dir = new DomainDirs(file);
                 File domainXMLFile = dir.getServerDirs().getDomainXml();
                 logger.finer("Domain XML file = " + domainXMLFile);
+                // this block of code (static domain.xml parsing) is copied from verify-domain-xml
                 try {
-                    Habitat habitat = Globals.getStaticHabitat();
+                    // get the list of JAR files from the modules directory
+                    ArrayList<URL> urls = new ArrayList<URL>();
+                    File idir = new File(System.getProperty(SystemPropertyConstants.INSTALL_ROOT_PROPERTY));
+                    File mdir = new File(idir, "modules");
+                    for (File f : mdir.listFiles()) {
+                        if (f.toString().endsWith(".jar")) {
+                            urls.add(f.toURI().toURL());
+                        }
+                    }
+
+                    URL[] urlsA = urls.toArray(new URL[0]);          
+                    ClassLoader cl = new URLClassLoader(urlsA, Globals.class.getClassLoader());
+                    ModulesRegistry registry = new StaticModulesRegistry(cl);
+                    Habitat habitat = registry.createHabitat("default");
+
                     ConfigParser parser = new ConfigParser(habitat);
                     URL domainURL = domainXMLFile.toURI().toURL();
                     DomDocument doc = parser.parse(domainURL);
@@ -341,8 +359,6 @@ abstract class NativeRemoteCommandsBase extends CLICommand {
                 }
 
             }
-
-
         }
         catch (IOException ioe) {
             if (logger.isLoggable(Level.FINE)) {
