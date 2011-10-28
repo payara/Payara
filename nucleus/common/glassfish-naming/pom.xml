@@ -57,6 +57,15 @@
 
     <developers>
         <developer>
+            <id>cf126330</id>
+            <name>Cheng Fang</name>
+            <organization>Oracle, Inc.</organization>
+            <roles>
+                <role>lead</role>
+                <role>developer</role>
+            </roles>
+        </developer>
+        <developer>
             <id>maheshk</id>
             <name>Mahesh Kannan</name>
             <organization>Oracle, Inc.</organization>
