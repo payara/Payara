@@ -1,18 +1,17 @@
 package org.glassfish.elasticity.engine.commands;
 
-import com.sun.enterprise.config.serverbeans.Domain;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.elasticity.config.serverbeans.*;
-import org.glassfish.elasticity.engine.container.ElasticServiceManager;
-import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.component.PerLookup;
 import org.jvnet.hk2.config.*;
+import com.sun.enterprise.config.serverbeans.Domain;
 
 import java.beans.PropertyVetoException;
 import java.util.logging.Logger;
@@ -20,30 +19,27 @@ import java.util.logging.Logger;
 /**
  * Created by IntelliJ IDEA.
  * User: cmott
- * Date: 10/19/11
+ * Date: 10/24/11
  */
-@Service(name="install-metric-gatherer")
-@I18n("install.metric.gatherers")
+@Service(name="create-log-action")
+@I18n("creaet.log.action")
 @Scoped(PerLookup.class)
-public class InstallMetricGathererCommand implements AdminCommand{
+public class CreateLogActionCommand implements AdminCommand {
+    @Inject
+    ElasticServices elasticServices;
 
-   @Inject
-   Domain domain;
+    @Inject
+    Domain domain;
 
-   @Inject
-   ElasticServices elasticServices;
+    @Param(name="service")
+    String servicename;
 
-  @Param(name="name", primary = true)
-   String name;
+    @Param(name="name", primary = true)
+    String name;
 
-  @Param(name="service")
-  String servicename;
+    @Param(name="level", optional = true)
+    String level;
 
-    @Param(name="collection-rate", optional = true)
-    int collectionRate;
-
-    @Param(name="auto-start", defaultValue = "false", optional = true)
-    boolean autoStart;
 
     @Override
     public void execute(AdminCommandContext context) {
@@ -51,7 +47,7 @@ public class InstallMetricGathererCommand implements AdminCommand{
         Logger logger= context.logger;
 
         if (elasticServices == null)   {
-            //service doesn't exist
+            // elastic service doesn't exist
             String msg = Strings.get("elasticity.not.found", servicename);
             logger.warning(msg);
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
@@ -68,20 +64,17 @@ public class InstallMetricGathererCommand implements AdminCommand{
             report.setMessage(msg);
             return;
         }
-        //  if  metric gatherer exists then just start it
-        if (elasticService.getMetricGatherers().getMetricGatherer(name) == null) {
-             try {
-                 createMetricGathererElement(name);
-            } catch(TransactionFailure e) {
-                logger.warning("failed.to.create.metric.gatherer " + name);
-                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-                report.setMessage(e.getMessage());
-             }
-         }
-        //start the metric gatherer
-    }
 
-        public void createMetricGathererElement(final String alertName) throws TransactionFailure {
+        // find the metrics gatherer and then add it - should be an hk2 service(?)
+        try {
+            createLogActionElement(name);
+        } catch(TransactionFailure e) {
+            logger.warning("failed.to.create.log.action " + name);
+            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            report.setMessage(e.getMessage());
+        }
+    }
+        public void createLogActionElement(final String alertName) throws TransactionFailure {
         ConfigSupport.apply(new SingleConfigCode() {
             @Override
             public Object run(ConfigBeanProxy param) throws PropertyVetoException, TransactionFailure {
@@ -91,22 +84,19 @@ public class InstallMetricGathererCommand implements AdminCommand{
                     ElasticService elasticService = elasticServices.getElasticService(servicename);
                     if (elasticService != null) {
                         ElasticService writeableService = t.enroll(elasticService);
-                        MetricGatherers writeableMGs = elasticService.getMetricGatherers();
-                        if (writeableMGs == null)
-                            writeableMGs = writeableService.createChild(MetricGatherers.class);
+                        Actions writeableAction = elasticService.getActions();
+                        if (writeableAction == null)
+                            writeableAction = writeableService.createChild(Actions.class);
                         else
-                            writeableMGs = t.enroll(writeableMGs);
+                            writeableAction = t.enroll(writeableAction);
 
-                        MetricGatherer writeableGatherer = writeableMGs.createChild(MetricGatherer.class);
+                        LogAction writeableLog = writeableAction.createChild(LogAction.class);
                         if (name != null)
-                            writeableGatherer.setName(name);
-                        if (autoStart)
-                            writeableGatherer.setAutoStart(autoStart);
-                        if (collectionRate > 0)
-                            writeableGatherer.setCollectionRate(collectionRate);
+                            writeableLog.setName(name);
+                        if (level != null)
+                            writeableLog.setLogLevel(level);
 
-                        writeableMGs.getMetricGatherer().add(writeableGatherer);
-                        writeableService.setMetricGatherers(writeableMGs);
+                        writeableAction.getLogAction().add(writeableLog);
                     }
                 }
                 return Boolean.TRUE;

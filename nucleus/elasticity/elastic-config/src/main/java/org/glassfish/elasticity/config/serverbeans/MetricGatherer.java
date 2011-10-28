@@ -52,6 +52,7 @@ import org.jvnet.hk2.config.Configured;
 import java.beans.PropertyVetoException;
 
 import javax.validation.Payload;
+import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 
 import static org.glassfish.config.support.Constants.NAME_SERVER_REGEX;
@@ -67,14 +68,15 @@ import static org.glassfish.config.support.Constants.NAME_SERVER_REGEX;
 public interface MetricGatherer extends ConfigBeanProxy {
 
     /**
-     * Sets the metric type
-     * @param value type
+     * Sets the metric name
+     * @param value name
      * @throws PropertyVetoException if a listener vetoes the change
      */
     @Param(name="name", primary = true)
     public void setName(String value) throws PropertyVetoException;
 
     @Attribute
+    @NotNull
     public String getName();
 
     /*

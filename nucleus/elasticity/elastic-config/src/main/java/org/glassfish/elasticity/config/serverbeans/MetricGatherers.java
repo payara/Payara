@@ -61,13 +61,13 @@ import java.util.List;
 @Configured
 public interface MetricGatherers extends ConfigBeanProxy    {
     /**
-   * Return the list of currently configured alert. Alerts can
+   * Return the list of currently configured metric gatherers. Metric Gatherers can
    * be added or removed by using the returned {@link java.util.List}
    * instance
    *
    * @return the list of configured {@link Alerts}
    */
-  @Element
+  @Element("*")
   public List<MetricGatherer> getMetricGatherer();
 
   /**

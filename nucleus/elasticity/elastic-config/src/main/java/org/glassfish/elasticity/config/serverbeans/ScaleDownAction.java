@@ -16,16 +16,16 @@ import java.beans.PropertyVetoException;
  * Date: 9/21/11
  */
 @Configured
-public interface ScaleDownAction extends ConfigBeanProxy {
+public interface ScaleDownAction extends ActionConfig {
     /**
-   * Sets the action name
-   * @param value action name
+   * Sets the service name where the scale up action will be executed.  If null then the current service is assumed
+   * @param value service name
    * @throws PropertyVetoException if a listener vetoes the change
    */
-  @Param(name="name", primary = true, defaultValue = "scale-down-action")
-  public void setName(String value) throws PropertyVetoException;
+  @Param(name="service-name")
+  public void setServiceName(String value) throws PropertyVetoException;
 
-  @Attribute (defaultValue = "scale-down-action")
-  public String getName();
+  @Attribute
+  public String getServiceName();
 
 }

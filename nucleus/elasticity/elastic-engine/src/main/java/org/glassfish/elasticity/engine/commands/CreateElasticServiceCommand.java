@@ -184,24 +184,19 @@ public class CreateElasticServiceCommand implements AdminCommand  {
                         if (max != -1)
                          writeableService.setMax(max);
                         writeableService.setEnabled(enabled);
+                        MetricGatherers mg = writeableService.createChild(MetricGatherers.class);
+                        writeableService.setMetricGatherers(mg);
 
-                        MetricGatherers mgs = writeableService.createChild(MetricGatherers.class);
-                        MetricGatherer mg  =  mgs.createChild(MetricGatherer.class);
-                        mg.setName( "memory");
-                        mgs.getMetricGatherer().add(mg);
-                        writeableService.setMetricGatherers(mgs);
-
-             // create the scale up action element
-
+                        // create the scale up action element
                         Actions actionsS = writeableService.createChild(Actions.class);
                         ScaleUpAction scaleUpAction = actionsS.createChild(ScaleUpAction.class);
                         scaleUpAction.setName("scale-up-action");
+                        scaleUpAction.setType("scale-up");
                         actionsS.setScaleUpAction(scaleUpAction);
                         writeableService.setActions(actionsS);
 
                         Alerts alerts = writeableService.createChild(Alerts.class);
                         writeableService.setAlerts(alerts);
-                        //commit the transaction and create the scale down action or create a command to do it
                     }
                 }
                 return Boolean.TRUE;

@@ -41,15 +41,10 @@ package org.glassfish.elasticity.config.serverbeans;
 
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
-import org.glassfish.api.admin.config.Named;
-import org.glassfish.api.admin.config.ReferenceContainer;
-import org.glassfish.config.support.Create;
-import org.glassfish.config.support.TypeResolver;
-import org.jvnet.hk2.component.Injectable;
 import org.jvnet.hk2.config.Attribute;
-import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.Configured;
 import org.glassfish.config.support.*;
+import org.jvnet.hk2.config.DuckTyped;
 
 import java.beans.PropertyVetoException;
 
@@ -61,18 +56,7 @@ import static org.glassfish.config.support.Constants.NAME_SERVER_REGEX;
  * Date: 8/26/11
  */
 @Configured
-public interface LogAction extends ConfigBeanProxy {
-      /**
-     * Sets the action name
-     * @param value action name
-     * @throws PropertyVetoException if a listener vetoes the change
-     */
-    @Param(name="name", primary = true)
-    //@Create(value="create-log-action", decorator=Decorator.class, resolver = ElasticServices.ESResolver.class,   i18n=@I18n("_create.log.action.command"))
-    public void setName(String value) throws PropertyVetoException;
-
-    @Attribute(defaultValue="log-action")
-    public String getName();
+public interface LogAction extends ActionConfig {
 
     @Param(name="log-level", optional = true, defaultValue = "INFO")
     public void setLogLevel(String value) throws PropertyVetoException;
@@ -80,30 +64,24 @@ public interface LogAction extends ConfigBeanProxy {
     @Attribute(defaultValue = "INFO")
     String getLogLevel();
 
-//    @Service
-//    class Decorator implements CreationDecorator<Actions> {
-        /**
-          * Decorates the newly CRUD created elastic configuration instance.
-          * tasks :
-          *      - create the LogAction subelement
-          *
-          * @param context administration command context
-          * @param instance newly created configuration element
-          * @throws TransactionFailure
-          * @throws PropertyVetoException
-          */
-/*
-        @Param(name="name")
-        String name;
+      /**
+   * Return the action with the given name, or null if no such action exists.
+   *
+   * @param   name    the name of the action
+   * @return          the Action object, or null if no such action
+   */
 
-         @Override
-         public void decorate(AdminCommandContext context, final Actions instance) throws TransactionFailure, PropertyVetoException {
+    @DuckTyped
+    public LogAction getLogAction(String name);
 
-              Actions actionL = instance.createChild(LogAction.class);
-             actionL.setName(name);
-             instance.setActions(actionsL);
-         }
-
-    }   */
-
+    class Duck {
+      public static LogAction getLogAction(Actions instance, String name) {
+          for (LogAction action : instance.getLogAction()) {
+              if (action.getName().equals(name)) {
+                  return action;
+              }
+          }
+          return null;
+       }
+    }
 }
