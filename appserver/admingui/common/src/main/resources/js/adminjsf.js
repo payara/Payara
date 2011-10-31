@@ -1184,8 +1184,9 @@ function guiValidate(reqMsg, reqInt, reqPort) {
         }
 
         if (styleClass.match("intAllowMinusOne")) {
-            if (component.value =='' || component.value == '-1')
-                return true;
+            if (component.value =='' || component.value == '-1'){
+                continue;
+            }
             if (! checkForIntValue(component.value)) {
                 component.select();
                 component.focus();
@@ -1195,8 +1196,12 @@ function guiValidate(reqMsg, reqInt, reqPort) {
 
         if (styleClass.match("intAllowMinus")) {
             var num = 0;
-            if (component.value =='')  return true;
-            if ((num + component.value) <=0) return true;
+            if (component.value =='') {
+                continue;
+            }
+            if ((num + component.value) <=0) {
+                continue;
+            }
             if (! checkForIntValue(component.value)) {
                 component.select();
                 component.focus();
