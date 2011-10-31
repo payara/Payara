@@ -105,6 +105,9 @@ public class CreateDerbyService implements AdminCommand, Runnable {
     private ProvisionerUtil provisionerUtil;
 
     @Inject
+    private DerbyProvisioner derbyProvisioner;
+
+    @Inject
     private DatabaseServiceUtil dbServiceUtil;
 
     @Param(name="appname", optional=true)
@@ -190,7 +193,6 @@ public class CreateDerbyService implements AdminCommand, Runnable {
                 //dbProvisioner.startDatabase(vm.getAddress());
                 String initSqlFile = serviceConfigurations.getProperty("database.init.sql");
                 if (initSqlFile != null && initSqlFile.trim().length() > 0) {
-                    DerbyProvisioner derbyProvisioner = new DerbyProvisioner();
                     Properties serviceProperties = new Properties();
                     serviceProperties.putAll(derbyProvisioner.getDefaultConnectionProperties()); // TODO :: use user supplied database info.
                     serviceProperties.put("serverName", vm.getAddress().getHostAddress());

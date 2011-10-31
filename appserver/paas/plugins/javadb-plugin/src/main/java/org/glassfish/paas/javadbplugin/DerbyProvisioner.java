@@ -43,6 +43,7 @@ package org.glassfish.paas.javadbplugin;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.SQLExec;
 import org.apache.tools.ant.types.Path;
+import org.glassfish.internal.api.ClassLoaderHierarchy;
 import org.glassfish.paas.orchestrator.provisioning.DatabaseProvisioner;
 import org.glassfish.paas.orchestrator.provisioning.util.RemoteCommandExecutor;
 import org.jvnet.hk2.annotations.Inject;
@@ -62,6 +63,9 @@ public class DerbyProvisioner implements DatabaseProvisioner {
 
     @Inject
     private RemoteCommandExecutor remoteCommandExecutor;
+
+    @Inject
+    private ClassLoaderHierarchy clh;
 
     private String glassFishInstallDir;
     private String userName;
@@ -146,9 +150,7 @@ public class DerbyProvisioner implements DatabaseProvisioner {
             task.setPassword(dbProps.getProperty(DatabaseProvisioner.PASSWORD));
             task.setSrc(new File(sqlFile));
             task.setOnerror(error);
-            String derbyClient = new File(System.getProperty("com.sun.aas.installRoot")).getParent() +
-                    File.separator + "javadb" + File.separator + "lib" + File.separator + "derbyclient.jar";
-            Path path = new Path(project, derbyClient);
+            Path path = new Path(project, clh.getCommonClassPath());
             path.addJavaRuntime();
             task.setClasspath(path);
             task.setProject(project);
