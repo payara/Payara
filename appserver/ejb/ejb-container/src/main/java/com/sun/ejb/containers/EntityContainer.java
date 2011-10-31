@@ -1125,8 +1125,8 @@ public class EntityContainer
                 // not to cause it to be loaded if it's not used.
                 EJBTimerService ejbTimerService =
                         ejbContainerUtilImpl.getEJBTimerService();
-                if( ejbTimerService != null ) {
-                    ejbTimerService.cancelEntityBeanTimers(getContainerId(),
+                if( ejbTimerService != null && ejbTimerService instanceof PersistenceEJBTimerService) {
+                    ((PersistenceEJBTimerService)ejbTimerService).cancelEntityBeanTimers(getContainerId(),
                                                        primaryKey);
                 } 
             } 

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -54,6 +54,8 @@ import javax.ejb.*;
 import javax.servlet.http.*;
 
 import com.sun.ejb.containers.TimerLocal;
+import com.sun.ejb.containers.EjbContainerUtilImpl;
+import com.sun.ejb.containers.EJBTimerService;
 
 /**
  *
@@ -83,9 +85,11 @@ public class TimerWelcomeServlet extends HttpServlet {
             out.println("<h3>Welcome to Timer Application</h3>");
             out.println("<br>");
 
-            // Report timers
+            // Persistent timers
             Set persistenttimers = timer.findActiveTimersOwnedByThisServer();
-            Set nonpersistenttimers = timer.findActiveNonPersistentTimersOwnedByThisServer();
+            // Non-persistent timers get directly from the service
+            EJBTimerService ejbTimerService = EjbContainerUtilImpl.getInstance().getEJBTimerService();
+            Set nonpersistenttimers = ejbTimerService.getNonPersistentActiveTimerIdsByThisServer();
             int persistentsize = persistenttimers.size();
             int nonpersistentsize = nonpersistenttimers.size();
 

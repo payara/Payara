@@ -86,7 +86,6 @@ import com.sun.enterprise.deployment.MethodDescriptor;
 import com.sun.enterprise.deployment.ScheduledTimerDescriptor;
 import com.sun.appserv.connectors.internal.api.ConnectorRuntime;
 
-import javax.transaction.TransactionManager;
 import javax.transaction.Transaction;
 import javax.transaction.Synchronization;
 import javax.transaction.Status;
@@ -106,12 +105,13 @@ import org.glassfish.ejb.config.EjbTimerService;
 public class EJBTimerService 
         /**implements com.sun.ejb.spi.distributed.DistributedEJBTimerService **/ {
 
-    private EjbContainerUtil ejbContainerUtil = EjbContainerUtilImpl.getInstance();
+    EjbContainerUtil ejbContainerUtil = EjbContainerUtilImpl.getInstance();
 
     private long nextTimerIdMillis_ = 0;
     private long nextTimerIdCounter_ = 0;
     private String domainName_;
-    private boolean isDas;
+
+    boolean isDas;
 
     // @@@ Double-check that the individual server id, domain name, 
     // and cluster name cannot contain the TIMER_ID_SEP 
@@ -121,12 +121,11 @@ public class EJBTimerService
     private static final String TIMER_ID_SEP = "@@";
 
     // Owner id of the server instance in which we are currently running.
-    private String ownerIdOfThisServer_;        
+    String ownerIdOfThisServer_;        
 
     // A cache of timer info for all timers *owned* by this server instance. 
-    private TimerCache timerCache_;
+    TimerCache timerCache_;
 
-    private TimerLocal timerLocal_;
     private boolean shutdown_;
 
     // Total number of ejb components initialized as timed objects between the
@@ -136,7 +135,7 @@ public class EJBTimerService
     // It is NOT intended to be a consistent count of the current number of 
     // timed objects, so there is no need to decrement the number when a 
     // container is undeployed.
-    private long totalTimedObjectsInitialized_ = 0;
+    long totalTimedObjectsInitialized_ = 0;
 
     private static final Logger logger =
         LogDomains.getLogger(EJBTimerService.class, LogDomains.EJB_LOGGER);
@@ -146,7 +145,7 @@ public class EJBTimerService
     private static final int MAX_REDELIVERIES = 1;
     private static final long REDELIVERY_INTERVAL = 5000;
 
-    private String appID;
+    String appID;
 
     // minimum amount of time between either a timer creation and its first 
     // expiration or between subsequent timer expirations.  
@@ -164,46 +163,21 @@ public class EJBTimerService
     private static final String TIMER_SERVICE_DOWNTIME_FORMAT =
         "yyyy/MM/dd HH:mm:ss";
 
-    // This boolean value would be set in PE to be a default value of false.
-    // In case of EE the default value would be true. When set to true the 
-    // timer service would have maximim consistency with performance degration.
-    private boolean performDBReadBeforeTimeout = false;
-    
-    private static final String strDBReadBeforeTimeout = "com.sun.ejb.timer.ReadDBBeforeTimeout";
-    private boolean foundSysPropDBReadBeforeTimeout = false;
-
     private Agent agent = ejbContainerUtil.getCallFlowAgent();
-
-    private DataSource timerDataSource = null;
-
-    // Determines what needs to be done on connection failure
-    private static final String ON_CONECTION_FAILURE = "operation-on-connection-failure";
-    private static final String OP_REDELIVER = "redeliver";
-    private static final String OP_STOP = "stop";
-
-    // Possible values "redeliver" and "stop"
-    private String operationOnConnectionFailure = null;
 
     // Allow to reschedule a failed timer for the next delivery
     private static final String RESCHEDULE_FAILED_TIMER = "reschedule-failed-timer";
     private boolean rescheduleFailedTimer = false;
 
-    public EJBTimerService(String appID, TimerLocal timerLocal) throws Exception {
-        timerLocal_ = timerLocal;
+    public EJBTimerService() throws Exception {
         timerCache_     = new TimerCache();
         shutdown_       = false;
-        this.appID = appID;
-
-        // Verify that the DataSource ref is correct and store it to check if connections can be aquired if
-        // the timeout fails
-        lookupTimerResource();
 
         ServerEnvironmentImpl env = ejbContainerUtil.getServerEnvironment();
 
         // Compose owner id for all timers created with this 
         // server instance.  
         ownerIdOfThisServer_ = env.getInstanceName();
-
         domainName_ = env.getDomainName();
         isDas = env.isDas() || env.isEmbedded();
 
@@ -241,18 +215,6 @@ public class EJBTimerService
                     redeliveryInterval_ = val;
                 }
 
-                // If the system property com.sun.ejb.timer.ReadDBBeforeTimeout
-                // is defined by the user use that the value of the flag
-                // performDBReadBeforeTimeout 
-                foundSysPropDBReadBeforeTimeout = 
-                    getDBReadBeforeTimeoutProperty();
-
-                // The default value for ReadDBBeforeTimeout in case of PE 
-                // is false. For SE/EE the correct default would set when the 
-                // EJBLifecyleImpl gets created as part of the EE lifecycle module
-                setPerformDBReadBeforeTimeout( false );
-
-                operationOnConnectionFailure = ejbt.getPropertyValue(ON_CONECTION_FAILURE);
                 rescheduleFailedTimer = Boolean.valueOf(ejbt.getPropertyValue(RESCHEDULE_FAILED_TIMER));
 
                 // Load confing listener
@@ -265,9 +227,9 @@ public class EJBTimerService
         }
 
         logger.log(Level.FINE, "EJB Timer Service properties : " +
-                   "min delivery interval = " + minimumDeliveryInterval_ +
+                   "min delivery interval = " + getMinimumDeliveryInterval() +
                    "\nmax redeliveries = " + maxRedeliveries_ +
-                   "\nredelivery interval = " + redeliveryInterval_);
+                   "\nredelivery interval = " + getRedeliveryInterval());
     }
 
     synchronized void timedObjectCount() {
@@ -289,443 +251,39 @@ public class EJBTimerService
      */
 
     /**
+     * Provide a count of timers owned by each server
+     */
+    public String[] listTimers( String[] serverIds ) {
+        String[] result = new String[serverIds.length];
+        for (int i=0; i<serverIds.length; i++) {
+            result[i] = "0";
+        }
+        return result;
+    }
+
+
+    /**
+     * Take ownership of another server's timers.
+     */
+    public int migrateTimers(String fromOwnerId) {
+     throw new IllegalStateException("Non-persistent timers cannot be migrated");
+    }
+
+    /**
      * Create EJBException using the exception that is passed in
      */
-    private EJBException createEJBException( Exception ex ) {
+    EJBException createEJBException( Exception ex ) {
         EJBException ejbEx = new EJBException();
         ejbEx.initCause(ex);
         return ejbEx;
     }
 
     /**
-     * Provide a count of timers owned by each server
-     */
-    public String[] listTimers( String[] serverIds ) {
-        String[] totalTimers = null;
-        try {
-           totalTimers = timerLocal_.countTimersOwnedByServerIds(serverIds);
-        } catch( Exception ex ) {
-            logger.log( Level.SEVERE, "Exception in listTimers() : " , ex );
-
-            //Propogate any exceptions caught
-            EJBException ejbEx = createEJBException( ex );
-            throw ejbEx;
-        }
-        return totalTimers;
-    }
-
-    /**
-     * Take ownership of another server's timers.  
-     */
-    public int migrateTimers(String fromOwnerId) {
-
-        String ownerIdOfThisServer = getOwnerIdOfThisServer();
-
-        if( fromOwnerId.equals(ownerIdOfThisServer) ) {
-            /// Error. The server from which timers are being
-            // migrated should never be up and running OR receive this
-            // notification.
-            logger.log(Level.WARNING, "Attempt to migrate timers from " +
-                        "an active server instance " + ownerIdOfThisServer);
-            throw new IllegalStateException("Attempt to migrate timers from " +
-                                            " an active server instance " + 
-                                            ownerIdOfThisServer);
-        }
-
-        logger.log(Level.INFO, "Beginning timer migration process from " +
-                   "owner " + fromOwnerId + " to " + ownerIdOfThisServer);
-
-        TransactionManager tm = ejbContainerUtil.getTransactionManager();
-
-        Set toRestore = null;
-	int totalTimersMigrated = 0;
-
-        try {
-                              
-            tm.begin();
-
-            toRestore = timerLocal_.findTimersOwnedBy(fromOwnerId);
-            totalTimersMigrated = timerLocal_.migrateTimers(fromOwnerId, ownerIdOfThisServer);
-
-            tm.commit();
-
-        } catch(Exception e) {
-            // Don't attempt to restore any timers since an error has
-            // occurred.  This could be the expected result in the case that
-            // multiple server instances attempted the migration at the same
-            // time.  
-            logger.log(Level.FINE, "timer migration error", e);
-
-            try {
-                tm.rollback();
-            } catch(Exception re) {
-                logger.log(Level.FINE, "timer migration rollback error", re);
-            }
-
-            //Propagate the exception caught 
-            EJBException ejbEx = createEJBException( e );
-            throw ejbEx;
-        }
-
-// XXX if( totalTimersMigrated  == toRestore.size() ) { XXX ???
-        if( totalTimersMigrated > 0 ) {
-
-            boolean success = false;
-            try {
-                
-                logger.log(Level.INFO, "Timer migration phase 1 complete. " +
-                           "Changed ownership of " + toRestore.size() + 
-                           " timers.  Now reactivating timers...");
-
-                _notifyContainers(toRestore);
-
-                tm.begin();
-                _restoreTimers(toRestore);    
-                success = true;
-                
-            } catch(Exception e) {
-
-                logger.log(Level.FINE, "timer restoration error", e);
-
-                //Propogate any exceptions caught as part of the transaction 
-                EJBException ejbEx = createEJBException( e );
-                throw ejbEx;
-
-            } finally {
-                // We're not modifying any state in this tx so no harm in
-                // always committing.
-                try {
-                    tm.commit();
-                } catch(Exception re) {
-                    logger.log(Level.FINE, "timer migration error", re);   
-
-                    if( success ) {
-                        //Propogate any exceptions caught when trying to commit
-                        //the transaction
-                        EJBException ejbEx = createEJBException( re );
-                        throw ejbEx;
-                    }
-                }
-            }
-        } else {
-            logger.log(Level.INFO, fromOwnerId + " has 0 timers in need " +
-                       "of migration");                    
-        }
-
-        return totalTimersMigrated;
-
-    } //migrateTimers()
-
-    public void setPerformDBReadBeforeTimeout( boolean defaultDBReadValue ) {
-
-        // If the system property com.sun.ejb.timer.ReadDBBeforeTimeout
-        // has been defined by the user then use that value else use the default
-        if ( !foundSysPropDBReadBeforeTimeout ) {
-            performDBReadBeforeTimeout = defaultDBReadValue;
-
-            if( logger.isLoggable(Level.FINE) ) {
-                logger.log(Level.FINE, "EJB Timer Service property : " +
-                           "\nread DB before timeout delivery = " +  
-                           performDBReadBeforeTimeout);
-            }
-
-        }
-    }
-
-    /**
-     * Check to see if the user has defined a System property to specify if 
-     * we need to check the timer table in the database and confirm that the 
-     * timer is valid before delivering the ejbTimeout() for that timer.
-     * 
-     * In case of PE - the default value is false
-     * and for SE/EE - the default value is true
-     * 
-     * But in all cases (PE/SE/EE) the user can set the System property 
-     * "READ_DB_BEFORE_EJBTIMEOUT" to change the behaviour
-     */
-    private boolean getDBReadBeforeTimeoutProperty() {
-
-        boolean result = false;
-        try{
-            String str=System.getProperty( strDBReadBeforeTimeout );
-            if( null != str) {
-                performDBReadBeforeTimeout = Boolean.valueOf(str).booleanValue();
-
-                if( logger.isLoggable(Level.FINE) ) {
-                    logger.log(Level.FINE, "EJB Timer Service property : " +
-                               "\nread DB before timeout delivery = " +  
-                               performDBReadBeforeTimeout);
-                }
-
-                result = true;
-            }
-        } catch(Exception e) {
-            logger.log(Level.INFO,
-                "ContainerFactoryImpl.getDebugMonitoringDetails(), " +
-                " Exception when trying to " + 
-                "get the System property - ", e);
-        }
-        return result;
-    }
-
-    /**
      * Called at server startup *after* user apps have been re-activated
-     * to restart any active EJB timers.  
+     * to restart any active EJB timers. No-op for non-persitent timers
      */
     public boolean restoreEJBTimers() {
-        boolean rc = false;
-        try {
-            if( totalTimedObjectsInitialized_ > 0 ) {
-                restoreTimers();
-                rc = true;
-            } else {
-                int s = (timerLocal_.findActiveTimersOwnedByThisServer()).size();
-                if (s > 0) {
-                    logger.log(Level.INFO, "[" + s + "] EJB Timers owned by this server will be restored when timeout beans are loaded");
-                } else {
-                    logger.log(Level.INFO, "There are no EJB Timers owned by this server");
-                }
-                rc = true;
-            }
-        } catch (Exception ex) {
-            // Problem accessing timer service so disable it.
-            ejbContainerUtil.setEJBTimerService(null);
-
-            logger.log(Level.WARNING, "ejb.timer_service_init_error", ex);
-
-        }
-        return rc;
-    }
-
-    private void restoreTimers() throws Exception {
-
-        // Optimization.  Skip timer restoration if there aren't any
-        // applications with timed objects deployed.  
-        if( totalTimedObjectsInitialized_ == 0 ) {
-            return;
-        }
-
-        TransactionManager tm = ejbContainerUtil.getTransactionManager();
-        try {
-            // create a tx in which to do database access for all timers 
-            // needing restoration.  This gives us better performance that 
-            // doing individual transactions per timer.            
-            tm.begin();
-
-            // This operation can take a while, since in some configurations
-            // this will be the first time the connection to the database
-            // is initialized.  In addition, there's an initialization 
-            // cost to generating the SQL for the underlying
-            // jpql queries the first time any TimerBean query is called.
-            _restoreTimers(timerLocal_.findActiveTimersOwnedByThisServer());
-
-        } finally {
-            // try to commit regardless of success or failure. 
-            try {
-                tm.commit();
-            } catch(Exception e) {
-                logger.log(Level.WARNING, "ejb.timer_service_init_error", e);
-            }
-        }
-    }
-
-    /**
-     * The portion of timer migration that notifies containers about 
-     * automatic timers being migrated to this instance
-     */
-    private void _notifyContainers(Set<TimerState> timers) {
-        for(TimerState timer: timers) {
-            TimerSchedule ts = timer.getTimerSchedule();
-            if (ts != null && ts.isAutomatic()) {
-                long containerId = timer.getContainerId();
-                BaseContainer container = getContainer(containerId);
-                if( container != null ) {
-                    TimerPrimaryKey timerId = getPrimaryKey(timer);
-                    container.addSchedule(timerId, ts);
-                }
-            }
-        }
-    }
-
-    /**
-     * The portion of timer restoration that deals with registering the
-     * JDK timer tasks and checking for missed expirations.
-     * @return the Set of restored timers
-     */
-    private Set<TimerState> _restoreTimers(Set<TimerState> timersEligibleForRestoration) {
-                      
-        // Do timer restoration in two passes.  The first pass updates
-        // the timer cache with each timer.  The second pass schedules
-        // the JDK timer tasks.  
-        
-        Map timersToRestore = new HashMap();
-        Set timerIdsToRemove = new HashSet();
-        Set<TimerState> result = new HashSet<TimerState>();
-
-        for(TimerState timer: timersEligibleForRestoration) {
-
-            TimerPrimaryKey timerId = getPrimaryKey(timer);
-            if (getTimerState(timerId) != null) {
-                // Already restored. Add it to the result but do nothing else.
-                logger.log(Level.FINE, "@@@ Timer already restored: " + timer);
-                result.add(timer);
-                continue;
-            }
-
-            long containerId = timer.getContainerId();
-
-            // Timer might refer to an obsolete container.
-            BaseContainer container = getContainer(containerId);
-            if( container != null ) {
-                
-                // Update applicationId if it is null (from previous version)
-                long appid = timer.getApplicationId();
-                if (appid == 0) {
-                    timer.setApplicationId(container.getApplicationId());
-                }
-                //  End update
-
-                Date initialExpiration = timer.getInitialExpiration();
-               
-                // Create an instance of RuntimeTimerState. 
-
-                // Only access timedObjectPrimaryKey if timed object is
-                // an entity bean.  That allows us to lazily load the underlying
-                // blob for stateless session and message-driven bean timers.
-                Object timedObjectPrimaryKey = null;
-                if( container.containerType == BaseContainer.ContainerType.ENTITY) {
-                    timedObjectPrimaryKey = timer.getTimedObjectPrimaryKey();
-                }
-
-                RuntimeTimerState timerState = new RuntimeTimerState
-                    (timerId, initialExpiration,
-                     timer.getIntervalDuration(), container, 
-                     timedObjectPrimaryKey, 
-                     timer.getTimerSchedule(),
-                     // Don't need to store the info ref for persistent timer
-                     null, true);                   
-
-                timerCache_.addTimer(timerId, timerState);
-                
-                // If a single-action timer is still in the database it never
-                // successfully delivered, so always reschedule a timer task 
-                // for it.  For periodic timers, we use the last known
-                // expiration time to decide whether we need to fire one
-                // ejbTimeout to make up for any missed ones.
-                Date expirationTime = initialExpiration;
-                Date now = new Date();
-
-                if( timerState.isPeriodic() ) {
-                    // lastExpiration time, or null if we either aren't
-                    // tracking last expiration or an expiration hasn't
-                    // occurred yet for this timer.
-                    Date lastExpiration = timer.getLastExpiration();
-                    TimerSchedule ts = timer.getTimerSchedule();
-
-                    // @@@ need to handle case where last expiration time
-                    // is not stored in database.  This will be the case
-                    // when we add configuration for update-db-on-delivery.
-                    // However, for now assume we do update the db on each
-                    // ejbTimeout.  Therefore, if (lastExpirationTime == null),
-                    // it means the timer didn't successfully complete any
-                    // timer expirations.                  
-                                                     
-                    if( (lastExpiration == null) &&
-                        now.after(initialExpiration) ) {
-                        
-                        if (!timerState.isExpired()) {
-                            // This timer didn't even expire one time.
-                            logger.log(Level.INFO, 
-                                   "Rescheduling missed expiration for " +
-                                   "periodic timer " +
-                                   timerState + ". Timer expirations should " +
-                                   " have been delivered starting at " +
-                                   initialExpiration);
-                        }
-
-                        // keep expiration time at initialExpiration.  That
-                        // will force an ejbTimeout almost immediately. After
-                        // that the timer will return to fixed rate expiration.
-                                                
-                    } else if ( (lastExpiration != null) &&
-                            ((ts != null && ts.getNextTimeout(lastExpiration).getTimeInMillis() 
-                                   < now.getTime()) 
-                            || ((ts == null) && now.getTime() - lastExpiration.getTime()
-                                   > timer.getIntervalDuration()) ) ) {
-
-                        // Schedule-based timer is periodic
-                        
-                        logger.log(Level.INFO, 
-                                   "Rescheduling missed expiration for " +
-                                   "periodic timer " +
-                                   timerState + ".  Last timer expiration " +
-                                   "occurred at " + lastExpiration);
-                        
-                        // Timer expired at least once and at least one
-                        // missed expiration has occurred.
-
-                        // keep expiration time at initialExpiration.  That
-                        // will force an ejbTimeout almost immediately. After
-                        // that the timer will return to fixed rate expiration.
-                        
-                    } else {
-
-                        // In this case, at least one expiration has occurred
-                        // but that was less than one period ago so there were
-                        // no missed expirations.                     
-                        expirationTime = 
-                            calcNextFixedRateExpiration(timerState);
-                    }
-                    
-                } else {  // single-action timer
-
-                    if( now.after(initialExpiration) ) {
-                        logger.log(Level.INFO, 
-                                   "Rescheduling missed expiration for " +
-                                   "single-action timer " +
-                                   timerState + ". Timer expiration should " +
-                                   " have been delivered at " +
-                                   initialExpiration);
-                    }
-                }
-
-                if (expirationTime == null) {
-                    // Schedule-based timer will never expire again - remove it.
-                    logger.log(Level.INFO,
-                            "Removing schedule-based timer " + timerState +
-                                   " that will never expire again");
-                    timerIdsToRemove.add(timerId);
-                } else {
-                    timersToRestore.put(timerState, expirationTime);
-                    result.add(timer);
-                }
-
-            } else {
-                // Timed object's container no longer exists - remember its id.
-                logger.log(Level.FINE,
-                        "Skipping timer " + timerId +
-                               " for container that is not up: " + containerId);
-            }
-        } // End -- for each active timer
-
-        if (timerIdsToRemove.size() > 0) {
-            timerLocal_.remove(timerIdsToRemove);
-        }
-
-        for(Iterator entries = timersToRestore.entrySet().iterator(); 
-            entries.hasNext(); ) {
-            Map.Entry next  = (Map.Entry) entries.next();
-            RuntimeTimerState nextTimer = (RuntimeTimerState) next.getKey();
-            TimerPrimaryKey timerId    = nextTimer.getTimerId();
-            Date expiration = (Date) next.getValue();
-            scheduleTask(timerId, expiration);
-            logger.log(Level.FINE,  
-                       "EJBTimerService.restoreTimers(), scheduling timer " + 
-                       nextTimer);
-        }
-
-        logger.log(Level.FINE, "DONE EJBTimerService.restoreTimers()");
-        return result;
+        return true;
     }
 
     void shutdown() {
@@ -734,38 +292,32 @@ public class EJBTimerService
     }
 
     /**
-     * Cancel all timers associated with a particular entity bean 
-     * identity.  This is typically called when an entity bean is 
-     * removed.  Note that this action falls under the normal EJB 
-     * Timer removal semantics, which means it can be rolled back 
-     * if the transaction rolls back.
+     * Destroy all timers associated with a particular ejb container
+     * This is typically called when an ejb is undeployed.  It expunges
+     * all timers whose timed object matches the given container.  In
+     * the case of an entity bean container, all timers associated with
+     * any of that container's entity bean identities will be destroyed.
+     * This action *can not* be rolled back.
      */
-    void cancelEntityBeanTimers(long containerId, Object primaryKey) {
-        try {
-
-            // Get *all* timers for this entity bean identity.  This includes
-            // even timers *not* owned by this server instance, but that 
-            // are associated with the same entity bean and primary key.
-            Collection<TimerState> timers = getTimers(containerId, primaryKey);
-            if( logger.isLoggable(Level.FINE) ) {
-                if( timers.isEmpty() ) {
-                    logger.log(Level.FINE, "0 cancelEntityBeanTimers for " +
-                               containerId + ", " + primaryKey);
-                }
-            }
-// XXX check if we need a FinderException XXX
-            // Called by EntityContainer.removeBean and will be 
-            // called with the proper Tx context
-
-            // Non-persistent timers are not supported for entity beans
-            timerLocal_.cancelTimers(timers);
-        } catch(Exception e) {
-            logger.log(Level.WARNING, "ejb.cancel_entity_timers",
-                       new Object[] { String.valueOf(containerId), primaryKey });
-            logger.log(Level.WARNING, "", e);
-        }
+    public void destroyTimers(long containerId) {
+        _destroyTimers(containerId, false);
     }
 
+    /**
+     * Destroy all timers associated with a particular application.
+     * This is called when an application is undeployed.  It expunges
+     * all timers whose timed object matches the given application.  In
+     * the case of an entity bean container, all timers associated with
+     * any of that container's entity bean identities will be destroyed.
+     * This action *can not* be rolled back.
+     */
+    public void destroyAllTimers(long applicationId) {
+        _destroyTimers(applicationId, true);
+    }
+
+    void _destroyTimers(long id, boolean all) {
+        // do nothing
+    }
     /**
      * Remove from the cache and stop all timers associated with a particular ejb container
      * and known to this server instance.
@@ -775,11 +327,10 @@ public class EJBTimerService
      * of the associated timer from the database is done as the last step of undeployment.
      */
     void stopTimers(long containerId) {
-        Set<TimerPrimaryKey> timerIds = null;
+        stopTimers(timerCache_.getNonPersistentTimerIdsForContainer(containerId));
+    }
 
-        timerIds = timerLocal_.findTimerIdsByContainer(containerId);
-        timerIds.addAll(timerCache_.getNonPersistentTimerIdsForContainer(containerId));
-
+    void stopTimers(Set<TimerPrimaryKey> timerIds) {
         for(TimerPrimaryKey nextTimerId: timerIds) {
             RuntimeTimerState nextTimerState = null;
             try {
@@ -803,61 +354,6 @@ public class EJBTimerService
                 }
             }
         }
-    }
-
-    /**
-     * Destroy all timers associated with a particular ejb container
-     * This is typically called when an ejb is undeployed.  It expunges
-     * all timers whose timed object matches the given container.  In
-     * the case of an entity bean container, all timers associated with
-     * any of that container's entity bean identities will be destroyed.
-     * This action *can not* be rolled back.  
-     */
-    public void destroyTimers(long containerId) {
-        _destroyTimers(containerId, false);
-    }
-
-    /**
-     * Destroy all timers associated with a particular application.
-     * This is called when an application is undeployed.  It expunges
-     * all timers whose timed object matches the given application.  In
-     * the case of an entity bean container, all timers associated with
-     * any of that container's entity bean identities will be destroyed.
-     * This action *can not* be rolled back.  
-     */
-    public void destroyAllTimers(long applicationId) {
-        _destroyTimers(applicationId, true);
-    }
-
-    private void _destroyTimers(long id, boolean all) {
-        Set<TimerPrimaryKey> timerIds = null;
-
-        int count = ((all)? timerLocal_.countTimersByApplication(id) : 
-                timerLocal_.countTimersByContainer(id));
-
-        if (count == 0) {
-            if( logger.isLoggable(Level.INFO) ) {
-                logger.log(Level.INFO, "No timers to be deleted for id: " + id);
-            }
-            return;
-        }
-
-        try {
-            
-            // Remove *all* timers for this ejb or this app. When an app is being undeployed
-            // it will be called only once for all server instances.
-            int deleted = ((all)? timerLocal_.deleteTimersByApplication(id) : 
-                    timerLocal_.deleteTimersByContainer(id));
-            if( logger.isLoggable(Level.INFO) ) {
-                logger.log(Level.INFO, "[" + deleted + "] timers deleted for id: " + id);
-            }
-        } catch(Exception ex) {
-            logger.log(Level.WARNING, "ejb.destroy_timers_error",
-                       new Object[] { String.valueOf(id) });
-            logger.log(Level.WARNING, "", ex);
-        }
-
-        return;
     }
 
     void rescheduleTask(TimerPrimaryKey timerId, Date expiration) {
@@ -1010,7 +506,7 @@ public class EJBTimerService
 
     }
 
-    private Date calcNextFixedRateExpiration(RuntimeTimerState timerState) {
+    Date calcNextFixedRateExpiration(RuntimeTimerState timerState) {
 
         if( !timerState.isPeriodic() ) {
             throw new IllegalStateException("Timer " + timerState + " is " +
@@ -1028,7 +524,7 @@ public class EJBTimerService
         return calcNextFixedRateExpiration(initialExpiration, intervalDuration);
     }
     
-    private Date calcNextFixedRateExpiration(Date initialExpiration,
+    Date calcNextFixedRateExpiration(Date initialExpiration,
                                              long intervalDuration) {       
 
         Date now = new Date();
@@ -1061,14 +557,8 @@ public class EJBTimerService
      * so that if expunge is called multiple times for the same timer id,
      * the second, third, fourth, etc. calls will not cause exceptions.
      */
-    private void expungeTimer(TimerPrimaryKey timerId, 
+    void expungeTimer(TimerPrimaryKey timerId, 
                               boolean removeTimerBean) {
-        // First remove timer bean.  Don't update cache until
-        // afterwards, since accessing of timer bean might require
-        // access to timer state(e.g. timer application classloader)
-        if( removeTimerBean ) {
-            removeTimerBean(timerId);
-        }
         timerCache_.removeTimer(timerId);
     }
 
@@ -1199,16 +689,9 @@ public class EJBTimerService
             }
 
             try {
-                if (timerConfig.isPersistent()) {
-                    timerLocal_.createTimer(timerId.getTimerId(), containerId, 
-                                       applicationId, server_name, timedObjectPrimaryKey, 
-                                       initialExpiration, intervalDuration, 
-                                       schedule, timerConfig);
-                } else {
-                    addTimerSynchronization(null, 
-                            timerId.getTimerId(), initialExpiration,
-                            containerId, ownerIdOfThisServer_, false);
-                }
+                _createTimer(timerId, containerId, applicationId, timedObjectPrimaryKey, 
+                                   server_name, initialExpiration, intervalDuration, 
+                                   schedule, timerConfig);
             } catch(Exception e) {
                 logger.log(Level.SEVERE, "ejb.create_timer_failure",
                            new Object[] { String.valueOf(containerId), 
@@ -1231,15 +714,29 @@ public class EJBTimerService
     }
 
     /**
-     * Recover pre-existing timers associated with the Container identified 
-     * by the containerId, and create automatic timers defined by the @Schedule
-     * annotation on the EJB bean.
+     * @param primaryKey can be null if timed object is not an entity bean.
+     */
+    void _createTimer(TimerPrimaryKey timerId, long containerId, long applicationId, 
+                                Object timedObjectPrimaryKey, String server_name,
+                                Date initialExpiration, long intervalDuration,
+                                TimerSchedule schedule, TimerConfig timerConfig) 
+                                throws Exception {
+
+        if (!timerConfig.isPersistent()) {
+            // TODO
+            throw new CreateException("Persistent timers are not supported in this setup");
+        } else {
+            addTimerSynchronization(null, timerId.getTimerId(), initialExpiration,
+                    containerId, ownerIdOfThisServer_, false);
+        }
+    }
+
+
+    /**
+     * Create automatic non-persistent timers defined by the @Schedule 
+     * annotation on the EJB bean. Recover part is a no-op in thise case.
      * 
-     * If it is called from deploy on a non-clustered instance, both
-     * persistent and non-persistent timers will be created.
-     * Otherwise only non-persistent timers are created by this method.
-     *
-     * @return a Map of both, restored and created timers, where the key is TimerPrimaryKey 
+     * @return a Map of created timers, where the key is TimerPrimaryKey 
      * and the value is the Method to be executed by the container when the timer with
      * this PK times out.
      */
@@ -1249,43 +746,14 @@ public class EJBTimerService
             boolean deploy) {
 
         Map<TimerPrimaryKey, Method> result = new HashMap<TimerPrimaryKey, Method>();
-
-        TransactionManager tm = ejbContainerUtil.getTransactionManager();
         try {
-            tm.begin();
-
-            Set<TimerState> timers = _restoreTimers(
-                    (Set<TimerState>)timerLocal_.findActiveTimersOwnedByThisServerByContainer(containerId));
-
-            if (timers.size() > 0) {
-                logger.log(Level.FINE, "Found " + timers.size() + 
-                        " persistent timers for containerId: " + containerId);
-            }
-
-            boolean schedulesExist = (schedules.size() > 0);
-            for (TimerState timer : timers) {
-                TimerSchedule ts = timer.getTimerSchedule();
-                if (ts != null && ts.isAutomatic() && schedulesExist) {
-                    for (Map.Entry<Method, List<ScheduledTimerDescriptor>> entry : schedules.entrySet()) {
-                        Method m = entry.getKey();
-                        if (m.getName().equals(ts.getTimerMethodName()) &&
-                                m.getParameterTypes().length == ts.getMethodParamCount()) {
-                            result.put(new TimerPrimaryKey(timer.getTimerId()), m);
-                            if( logger.isLoggable(Level.FINE) ) {
-                                logger.log(Level.FINE, "@@@ FOUND existing schedule: " + 
-                                        ts.getScheduleAsString() + " FOR method: " + m);
-                            }
-                        }
-                    }
-                }
-            }
-
             createSchedules(containerId, applicationId, schedules, result, ownerIdOfThisServer_, true, (deploy && isDas));
 
-            tm.commit();
-
+        } catch(EJBException e) {
+            throw e;
         } catch(Exception e) {
-            recoverAndCreateSchedulesError(e, tm);
+            EJBException ejbEx = createEJBException( e );
+            throw ejbEx;
         }
 
         return result;
@@ -1301,33 +769,27 @@ public class EJBTimerService
      */
     public void createSchedules(long containerId, long applicationId,
             Map<MethodDescriptor, List<ScheduledTimerDescriptor>> methodDescriptorSchedules, String server_name) {
-        TransactionManager tm = ejbContainerUtil.getTransactionManager();
         try {
-            tm.begin();
-            int count = timerLocal_.countTimersByContainer(containerId);
-
-            if (count == 0) {
-                // No timers owned by this EJB
-                createSchedules(containerId, applicationId, methodDescriptorSchedules, null, server_name, false, true);
-            }
-
-            tm.commit();
-
+            createSchedules(containerId, applicationId, methodDescriptorSchedules, null, server_name, false, true);
+        } catch(EJBException e) {
+            throw e;
         } catch(Exception e) {
-            recoverAndCreateSchedulesError(e, tm);
+            EJBException ejbEx = createEJBException( e );
+            throw ejbEx;
         }
     }
 
     /**
      * Create automatic timers defined by the @Schedule annotation on the EJB bean.
      * 
+     * XXX???
      * If this method is called on a deploy in a clustered deployment, only persistent schedule
      * based timers will be created. And no timers will be scheduled.
      * If it is called from deploy on a non-clustered instance, both
      * persistent and non-persistent timers will be created.
      * Otherwise only non-persistent timers are created by this method.
      */
-    private void createSchedules(long containerId, long applicationId,
+    void createSchedules(long containerId, long applicationId,
             Map<?, List<ScheduledTimerDescriptor>> schedules,
             Map<TimerPrimaryKey, Method> result,
             String server_name, boolean startTimers, boolean deploy) throws Exception {
@@ -1372,107 +834,16 @@ public class EJBTimerService
     }
 
     /**
-     * Common code for exception processing in recoverAndCreateSchedules
-     */
-    private void recoverAndCreateSchedulesError(Exception e, TransactionManager tm) {
-        logger.log(Level.WARNING, "Timer restore or schedule creation error", e);
-
-        try {
-            tm.rollback();
-        } catch(Exception re) {
-            logger.log(Level.FINE, "Timer restore or schedule creation rollback error", re);
-        }
-
-        //Propagate the exception caught as an EJBException
-        EJBException ejbEx = createEJBException( e );
-        throw ejbEx;
-    }
-
-    /**
-     * Use database query to retrieve all active timers.  Results must
-     * be transactionally consistent. E.g.,  a client calling
-     * getTimers within a transaction where a timer has been
-     * created but not committed "sees" the timer but a client
-     * in a different transaction doesn't. 
-     *
-     * @param primaryKey can be null if not entity bean
-     *
-     * @return Collection of TimerState objects.
-     */
-    private Collection<TimerState> getTimers(long containerId, 
-                                 Object timedObjectPrimaryKey) {
-
-        // The results should include all timers for the given ejb
-        // and/or primary key, including timers owned by other server instances.
-
-        // @@@ Might want to consider cases where we can use 
-        // timer cache to avoid some database access in PE/SE, or
-        // even in EE with the appropriate consistency tradeoff.
-        
-        Collection<TimerState> activeTimers = 
-            timerLocal_.findActiveTimersByContainer(containerId); 
-        
-        Collection<TimerState> timersForTimedObject = activeTimers;
-
-        if( timedObjectPrimaryKey != null ) { 
-                                  
-            // Database query itself can't do equality check on primary
-            // key of timed object so perform check ourselves.
-           
-            timersForTimedObject = new HashSet();
-            
-            for(TimerState timer : activeTimers) {
-                Object nextTimedObjectPrimaryKey = 
-                    timer.getTimedObjectPrimaryKey();
-                if( nextTimedObjectPrimaryKey.equals(timedObjectPrimaryKey) ) {
-                    timersForTimedObject.add(timer);
-                }
-            }
-        }
-
-        return timersForTimedObject;
-    }
-
-    /**
-     * Use database query to retrieve persistrent timer ids of all active 
-     * timers.  Results must be transactionally consistent. E.g.,  
-     * a client calling getTimerIds within a transaction where a 
-     * timer has been created but not committed "sees" the timer 
-     * but a client in a different transaction doesn't. Called by
-     * EJBTimerServiceWrapper when caller calls getTimers.
+     * Called by EJBTimerServiceWrapper when caller calls getTimers.
      * 
+     * @param containerId the id of the EJB which owns the timers
      * @param primaryKey can be null if not entity bean
      * @return Collection of Timer Ids.
      */
     Collection<TimerPrimaryKey> getTimerIds(long containerId, Object timedObjectPrimaryKey) {
 
-        // The results should include all timers for the given ejb
-        // and/or primary key, including timers owned by other server instances.
-
-        // @@@ Might want to consider cases where we can use 
-        // timer cache to avoid some database access in PE/SE, or
-        // even in EE with the appropriate consistency tradeoff.              
-        
         Collection<TimerPrimaryKey> timerIdsForTimedObject = 
                 new HashSet<TimerPrimaryKey>();
-
-        if( timedObjectPrimaryKey == null ) {
-
-            timerIdsForTimedObject =
-                timerLocal_.findActiveTimerIdsByContainer(containerId);
-
-        } else {
-                                  
-            // Database query itself can't do equality check on primary
-            // key of timed object so perform check ourselves.
-           
-            Collection<TimerState> timersForTimedObject = getTimers(containerId, 
-                                                        timedObjectPrimaryKey);
-
-            for(TimerState timer : timersForTimedObject) {
-                timerIdsForTimedObject.add(getPrimaryKey(timer));
-            }
-        }
 
         // Add active non-persistent timer ids
         timerIdsForTimedObject.addAll(
@@ -1490,7 +861,7 @@ public class EJBTimerService
         return (container != null) ? container.getClassLoader() : null;
     }
 
-    private RuntimeTimerState getTimerState(TimerPrimaryKey timerId) {
+    RuntimeTimerState getTimerState(TimerPrimaryKey timerId) {
         return timerCache_.getTimerState(timerId);
     }
 
@@ -1499,8 +870,8 @@ public class EJBTimerService
     }
 
     // Returns a Set of active non-persistent timer ids for this server
-    Set<TimerPrimaryKey> getActiveTimerIdsByThisServer() {
-        return timerCache_.getActiveTimerIdsByThisServer();
+    public Set<TimerPrimaryKey> getNonPersistentActiveTimerIdsByThisServer() {
+        return timerCache_.getNonPersistentActiveTimerIdsByThisServer();
     }
 
     //
@@ -1509,29 +880,24 @@ public class EJBTimerService
 
     void cancelTimer(TimerPrimaryKey timerId) 
             throws FinderException, Exception {
+        cancelNonPersistentTimer(timerId);
+    }
 
-        // Check non-persistent timers first
+    boolean cancelNonPersistentTimer(TimerPrimaryKey timerId) 
+            throws FinderException, Exception {
+
         RuntimeTimerState rt = getNonPersistentTimerState(timerId);
         if (rt != null) {
             if( rt.isCancelled()) {
                 // already cancelled or removed
-                return;
+                return true;
             }
 
             cancelTimerSynchronization(null, timerId,
                 rt.getContainerId(), ownerIdOfThisServer_, false);
-        } else {
-
-            // @@@ We can't assume this server instance owns the timer
-            // so always ask the database.  Investigate possible use of
-            // timer cache for optimization.
-
-            // Look up timer bean from database.  Throws FinderException if
-            // timer no longer exists, which is converted by the caller into a
-            // NoSuchObjectLocalException.
-            timerLocal_.cancel(timerId);            
         }
         
+        return (rt != null);
     }
 
     /**
@@ -1552,31 +918,22 @@ public class EJBTimerService
         TimerSchedule ts = null;
 
         // Check non-persistent timers first
+        Date nextTimeout = null;
         RuntimeTimerState rt = getNonPersistentTimer(timerId);
         if (rt != null) {
             initialExpiration = rt.getInitialExpiration();
             intervalDuration = rt.getIntervalDuration();
             ts = rt.getTimerSchedule();
-        } else {
 
-            // @@@ We can't assume this server instance owns the persistent timer
-            // so always ask the database.  Investigate possible use of
-            // timer cache for optimization.
-
-            TimerState timer = getPersistentTimer(timerId);
-            initialExpiration = timer.getInitialExpiration();
-            intervalDuration = timer.getIntervalDuration();
-            ts = timer.getTimerSchedule();
-        }
-
-        Date nextTimeout = initialExpiration;
-        if (ts != null) {
-            nextTimeout = getNextScheduledTimeout(ts);
-            // The caller is responsible to return 0 or -1 for the time remaining....
+            nextTimeout = initialExpiration;
+            if (ts != null) {
+                nextTimeout = getNextScheduledTimeout(ts);
+                // The caller is responsible to return 0 or -1 for the time remaining....
             
-        } else if (intervalDuration > 0) {
-            nextTimeout = calcNextFixedRateExpiration(initialExpiration, 
+            } else if (intervalDuration > 0) {
+                nextTimeout = calcNextFixedRateExpiration(initialExpiration, 
                                intervalDuration);
+            }
         }
 
         return nextTimeout;
@@ -1584,18 +941,13 @@ public class EJBTimerService
 
     Serializable getInfo(TimerPrimaryKey timerId) throws FinderException {
         
-        // Check non-persistent timers first
+        // Check non-persistent timers only
         RuntimeTimerState rt = getNonPersistentTimer(timerId);
         if (rt != null) {
             return rt.getInfo();
         }
 
-        // @@@ We can't assume this server instance owns the persistent timer
-        // so always ask the database.  Investigate possible use of
-        // timer cache for optimization.
-
-        TimerState timer = getPersistentTimer(timerId);
-        return timer.getInfo();
+        return null;
     }
 
     ScheduleExpression getScheduleExpression(TimerPrimaryKey timerId) throws FinderException {
@@ -1612,48 +964,33 @@ public class EJBTimerService
 
     boolean isPersistent(TimerPrimaryKey timerId) throws FinderException {
         
-        // Check non-persistent timers first
+        // Check non-persistent timers only
         RuntimeTimerState rt = getNonPersistentTimer(timerId);
         if (rt != null) {
             // Found and active
             return false;
         }
 
-        // @@@ We can't assume this server instance owns the persistent timer
-        // so always ask the database.  Investigate possible use of
-        // timer cache for optimization.
-
-        getPersistentTimer(timerId);
-        // If we reached here, it means the timer is persistent
+        // XXX?
         return true;
     }
     
     boolean timerExists(TimerPrimaryKey timerId) {
         boolean exists = false;
 
-        // Check non-persistent timers first
+        // Check non-persistent timers only
         RuntimeTimerState rt = getNonPersistentTimerState(timerId);
         if (rt != null) {
             exists = rt.isActive();
         }
 
-        // @@@ We can't assume this server instance owns the persistent timer
-        // so always ask the database.  Investigate possible use of
-        // timer cache for optimization.
-        
-        TimerState timer = timerLocal_.findTimer(timerId);
-        if (timer != null) {
-            // Make sure timer hasn't been cancelled within the current tx.
-            exists = timer.isActive();
-        } 
-        
         return exists;
     }
 
     /**
      * Called by #getScheduleExpression and #isCalendarTimer
      */
-    private TimerSchedule getTimerSchedule(TimerPrimaryKey timerId) throws FinderException {
+    TimerSchedule getTimerSchedule(TimerPrimaryKey timerId) throws FinderException {
 
         // Check non-persistent timers first
         TimerSchedule ts = null;
@@ -1661,38 +998,9 @@ public class EJBTimerService
         RuntimeTimerState rt = getNonPersistentTimer(timerId);
         if (rt != null) {
             ts = rt.getTimerSchedule();
-        } else {
-
-            // @@@ We can't assume this server instance owns the persistent timer
-            // so always ask the database.  Investigate possible use of
-            // timer cache for optimization.
-
-            TimerState timer = getPersistentTimer(timerId);
-            ts = timer.getTimerSchedule();
         }
 
         return ts;
-    }
-
-    private void removeTimerBean(TimerPrimaryKey timerId) {
-        try {
-            timerLocal_.remove(timerId);
-        } catch(Throwable t) {
-            logger.log(Level.WARNING, "ejb.remove_timer_failure",
-                       new Object[] { timerId });
-            logger.log(Level.WARNING, "", t);
-        }
-    }
-
-    private TimerState getPersistentTimer(TimerPrimaryKey timerId) 
-            throws FinderException {
-        TimerState timer = timerLocal_.findTimer(timerId);
-        if( timer == null || timer.isCancelled() ) {
-            // The timer has been cancelled within this tx.
-            throw new FinderException("timer " + timerId + " does not exist");
-        }
-
-        return timer;
     }
 
     private RuntimeTimerState getNonPersistentTimer(TimerPrimaryKey timerId) 
@@ -1709,7 +1017,7 @@ public class EJBTimerService
         return rt;
     }
 
-    private BaseContainer getContainer(long containerId) {
+    BaseContainer getContainer(long containerId) {
         return ejbContainerUtil.getContainer(containerId);
     }
 
@@ -1772,29 +1080,14 @@ public class EJBTimerService
                     
             agent.requestStart(RequestType.TIMER_EJB);
             container.onEnteringContainer();
-            // Need to address the case that another server instance 
-            // cancelled this timer.  For maximum consistency, we will need 
-            // to do a database read before each delivery.  This can have 
-            // significant performance implications, so investigate possible 
-            // reduced consistency tradeoffs.  
-            if( timerState.isPersistent() && performDBReadBeforeTimeout) {
 
-                if( logger.isLoggable(Level.FINE) ) {
-                    logger.log(Level.FINE, "For Timer :" + timerId + 
-                    ": check the database to ensure that the timer is still " +
-                    " valid, before delivering the ejbTimeout call" );
-                }
-
-                if( ! checkForTimerValidity(timerId) ) {
-                    // The timer for which a ejbTimeout is about to be delivered
-                    // is not present in the database. This could happen in the 
-                    // SE/EE case as other server instances (other than the owner)
-                    // could call a cancel on the timer - deleting the timer from 
-                    // the database.
-                    // Also it is possible that the timer is now owned by some other
-                    // server instance
-                    return;
-                } 
+            // Need to address the case that another server instance
+            // cancelled this timer.  For maximum consistency, we will need
+            // to do a database read before each delivery.  This can have
+            // significant performance implications, so investigate possible
+            // reduced consistency tradeoffs.
+            if (isCancelledByAnotherInstance(timerState)) {
+                return;
             }
 
             ///
@@ -1865,15 +1158,14 @@ public class EJBTimerService
                     cancelTimer(timerId);
                 } else if( redeliver ) {
                     int numDeliv = timerState.getNumFailedDeliveries() + 1;
-                    if( timerState.getNumFailedDeliveries() <
-                            getMaxRedeliveries() || redeliverOnFailedConnection()) {
+                    if( redeliverTimeout(timerState) ) {
                         Date redeliveryTimeout = new Date
                             (now.getTime() + getRedeliveryInterval());
                         if( logger.isLoggable(Level.FINE) ) {
                             logger.log(Level.FINE,"Redelivering " + timerState);
                         }
                         rescheduleTask(timerId, redeliveryTimeout);
-                    } else if (stopOnFailedConnection()) {
+                    } else if (stopOnFailure()) {
                         // stop Timer Service
                         shutdown();
                     } else if (rescheduleFailedTimer) {
@@ -1921,6 +1213,25 @@ public class EJBTimerService
     }
 
     /**
+     * For a non-persistent timer, it's not possible to be cancelled by another 
+     * server instance
+     */
+    boolean isCancelledByAnotherInstance(RuntimeTimerState timerState) {
+        return false;
+    }
+
+    /** 
+     * @return true if this timer should be redelivered
+     */
+     boolean redeliverTimeout(RuntimeTimerState timerState) {
+         return ( timerState.getNumFailedDeliveries() < getMaxRedeliveries() );
+     }
+
+    boolean stopOnFailure() {
+        return false;
+    }
+
+    /**
      *  Called from BaseContainer during callEJBTimeout after bean.ejbTimeout
      *  but before postInvoke.  NOTE that this method is called whether or not
      *  the ejbTimeout method is configured for container-managed transactions.
@@ -1958,31 +1269,12 @@ public class EJBTimerService
                 } else {
                     
                     try {
-                        TimerState timer = null;
-                        if (timerState.isPersistent()) {
-                            timer = getValidTimerFromDB( timerId );
-                            if( null == timer ) {
-                                return false;
-                            }
+                        if (!isValidTimerForThisServer(timerId, timerState)) {
+                            return false;
                         }
 
                         if( timerState.isPeriodic() ) {
-                            Date now = new Date();
-                            if (timerState.isPersistent()) {
-                                timer.setLastExpiration(now);   
-                            }
-                            
-                            // Since timer was successfully delivered, update
-                            // last delivery time in database if that option is
-                            // enabled. 
-                            // @@@ add configuration for update-db-on-delivery
-                            if( logger.isLoggable(Level.FINE) ) {
-                                logger.log(Level.FINE, 
-                                           "Setting last expiration " +
-                                           " for periodic timer " + timerState +
-                                           " to " + now);
-                            }                            
-
+                            resetLastExpiration(timerId, timerState);
                         } else {
                                                         
                             if( logger.isLoggable(Level.FINE) ) {
@@ -2010,84 +1302,21 @@ public class EJBTimerService
         return success;
     }
 
-    /**
-     * This method is called to check if the timer is still valid.
-     * In the SE/EE case the timer might be cancelled by any other 
-     * server instance (other than the owner server instance)
-     * that is part of the same cluster. Until we have a messaging 
-     * system in place we would have to do a database query to
-     * check if the timer is still valid.
-     * Also check that the timer is owned by the current server instance
-     *
-     *  @return false if the timer record is not found in the database, 
-     *          true  if the timer is still valid.
+    /** 
+     * Non-persistent timers are always valid because to be
+     * executed on this server instance.
      */
-    private boolean checkForTimerValidity(TimerPrimaryKey timerId) {
-
-        boolean result = true;
-
-        TimerState timer = getValidTimerFromDB( timerId );
-        if( null == timer) {
-            result = false;
-        }
-
-        return result;
+    boolean isValidTimerForThisServer(TimerPrimaryKey timerId,
+                                          RuntimeTimerState timerState) {
+        return true;
     }
 
-    private TimerState getValidTimerFromDB(TimerPrimaryKey timerId) {
-
-        boolean result       = true;
-        TimerState timer = timerLocal_.findTimer(timerId); 
-
-        try {
-            if (timer != null) {
-                // There is a possibility that the same timer might be 
-                // migrated across to a different server. Hence check 
-                // that the ownerId of the timer record is the same as
-                // the current server 
-                if( ! ( timer.getOwnerId().equals(
-                        ownerIdOfThisServer_) ) ) {
-                    logger.log(Level.WARNING, 
-                            "The timer (" + timerId + ") is not owned by " +
-                            "server (" + ownerIdOfThisServer_ + ") that " + 
-                            "initiated the ejbTimeout. This timer is now " +
-                            "owned by (" + timer.getOwnerId() + "). \n" +
-                            "Hence delete the timer from " + 
-                            ownerIdOfThisServer_ + "'s cache.");
-
-                    result = false;
-                } 
-
-            } else {
-                // The timer does not exist in the database 
-                if( logger.isLoggable(Level.FINE) ) {
-                    logger.log(Level.FINE, "Timer :" + timerId + 
-                            ": has been cancelled by another server instance. " + 
-                            "Expunging the timer from " + ownerIdOfThisServer_ + 
-                            "'s cache.");
-                }
-
-                result = false;
-            }
-
-        } finally {
-            if( !result ) {
-                // The timer is either not present in the database or it is now
-                // owned by some other server instance, hence remove the cache 
-                //entry for the timer from the current server 
-                expungeTimer(timerId, false);
-                timer = null;
-            } else {
-                if( logger.isLoggable(Level.FINE) ) {
-                    logger.log(Level.FINE, 
-                        "The Timer :" + timerId + 
-                        ": is a valid timer for the server (" +
-                        ownerIdOfThisServer_ + ")");
-                }
-            }
-        } 
-
-        return timer;
+    /** 
+     * Nothing special to do for non-persistent timers 
+     */
+    void resetLastExpiration(TimerPrimaryKey timerId,
+                                          RuntimeTimerState timerState) {
+        // Do nothing
     }
 
     /**
@@ -2154,7 +1383,7 @@ public class EJBTimerService
         return minimumDeliveryInterval_;
     }
 
-    private long getMaxRedeliveries() {
+    long getMaxRedeliveries() {
         return maxRedeliveries_;
     }
 
@@ -2162,13 +1391,8 @@ public class EJBTimerService
         return redeliveryInterval_;
     }
 
-    private TimerPrimaryKey getPrimaryKey(TimerState timer) {
+    TimerPrimaryKey getPrimaryKey(TimerState timer) {
         return new TimerPrimaryKey(timer.getTimerId());
-    }
-
-    // Used by TimerBean.testTimer
-    TimerLocal getTimerLocal() {
-        return timerLocal_;
     }
 
     void addTimerSynchronization(EJBContextImpl context_, String timerId, 
@@ -2278,7 +1502,7 @@ public class EJBTimerService
      * Returns next schedule-based timeout or null if such schedule will
      * not expire again.
      */
-    private Date getNextScheduledTimeout(TimerSchedule ts) {
+    Date getNextScheduledTimeout(TimerSchedule ts) {
         Calendar next = ts.getNextTimeout();
         if( ts.isValid(next) ) {
             return next.getTime();
@@ -2287,7 +1511,7 @@ public class EJBTimerService
         }
     }
 
-    private ContainerSynchronization getContainerSynch(EJBContextImpl context_, 
+    ContainerSynchronization getContainerSynch(EJBContextImpl context_, 
             String timerId, boolean persistent) throws Exception {
 
         Transaction transaction = null;
@@ -2323,52 +1547,6 @@ public class EJBTimerService
         }
 
         return ejbContainerUtil.getContainerSync(transaction);
-    }
-
-    private boolean redeliverOnFailedConnection() {
-        return operationOnConnectionFailure != null && operationOnConnectionFailure.equalsIgnoreCase(OP_REDELIVER) && 
-            failedConnection();
-    }
-
-    private boolean stopOnFailedConnection() {
-        return operationOnConnectionFailure != null && operationOnConnectionFailure.equalsIgnoreCase(OP_STOP) && 
-            failedConnection();
-    }
-
-    private boolean failedConnection() {
-        boolean failed = false;
-        Connection c = null;
-        try {
-            if (timerDataSource == null) {
-                lookupTimerResource();
-            }
-            c = timerDataSource.getConnection();
-            failed = !c.isValid(0);
-        } catch (Exception e) {
-            failed = true;
-        } finally {
-            try {
-                if (c != null) {
-                    c.close();
-                }
-            } catch (Exception e) {}
-        }
-
-        if (failed) {
-            logger.log(Level.WARNING, "Cannot acquire a connection from the database used by the EJB Timer Service");
-        } else {
-            if( logger.isLoggable(Level.FINE) ) {
-                logger.log(Level.FINE, "Connection ok");
-            }
-        }
-
-        return failed;
-    }
-
-    private void lookupTimerResource() throws Exception {
-        String resource_name = ejbContainerUtil.getTimerResource();
-        ConnectorRuntime connectorRuntime = ejbContainerUtil.getDefaultHabitat().getByContract(ConnectorRuntime.class);
-        timerDataSource = DataSource.class.cast(connectorRuntime.lookupNonTxResource(resource_name, false));
     }
 
     static String txStatusToString(int txStatus) {
@@ -2423,7 +1601,7 @@ public class EJBTimerService
     //
     // Note : this class supports concurrent access.
     //
-    private static class TimerCache {
+    static class TimerCache {
 
         // Maps timer id to timer state.
         private Map timers_;
@@ -2596,7 +1774,7 @@ public class EJBTimerService
         }
 
         // Returns a Set of active non-persistent timer ids for this server
-        public synchronized Set<TimerPrimaryKey> getActiveTimerIdsByThisServer() {
+        public synchronized Set<TimerPrimaryKey> getNonPersistentActiveTimerIdsByThisServer() {
             Set<TimerPrimaryKey> result = new HashSet<TimerPrimaryKey>();
             for (Map.Entry<TimerPrimaryKey, RuntimeTimerState> entry : nonpersistentTimers_.entrySet()) {
                 TimerPrimaryKey key = entry.getKey();

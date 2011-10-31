@@ -108,7 +108,7 @@ public class TimerBeanContainer
             String appID = application.getRegistrationName();
 
             // Create EJB Timer service. 
-            ejbTimerService = new EJBTimerService(appID, timerLocal);
+            ejbTimerService = new PersistenceEJBTimerService(appID, timerLocal);
             ejbContainerUtil.setEJBTimerService(ejbTimerService);
 
         } catch (Exception ex) {

@@ -275,8 +275,8 @@ public class EjbContainerUtilImpl
 
     public  void setEJBTimerServiceDBReadBeforeTimeout(boolean value) {
         _doDBReadBeforeTimeout = value;
-        if (_ejbTimerService != null) {
-            _ejbTimerService.setPerformDBReadBeforeTimeout(value);
+        if (_ejbTimerService != null && _ejbTimerService instanceof PersistenceEJBTimerService) {
+            ((PersistenceEJBTimerService)_ejbTimerService).setPerformDBReadBeforeTimeout(value);
         }
     }
 
@@ -286,27 +286,37 @@ public class EjbContainerUtilImpl
 
     public  EJBTimerService getEJBTimerService(String target, boolean force) {
         if (!_ejbTimerServiceVerified) {
-            deployEJBTimerService(target);
-
-            // Do postprocessing if everything is OK
-            if (_ejbTimerService != null) {
-                // load DistributedEJBTimerService 
-                habitat.getByContract(DistributedEJBTimerService.class);
-                if (_ejbTimersCleanup) {
-                    _ejbTimerService.destroyAllTimers(0L);
-                } else if (target == null) {
-                    // target is null when accessed from the BaseContainer on load, i.e. where timers are running
-                    _logger.log(Level.INFO, "Setting DBReadBeforeTimeout to " + _doDBReadBeforeTimeout);
-                    _ejbTimerService.setPerformDBReadBeforeTimeout(_doDBReadBeforeTimeout);
-                    _logger.log(Level.INFO, "==> Restoring Timers ... " );
-                    if (_ejbTimerService.restoreEJBTimers()) {
-                        _logger.log(Level.INFO, "<== ... Timers Restored.");
+            if (isEJBLite()) {
+                if (_ejbTimerService == null) {
+                    try {
+                        _ejbTimerService = new EJBTimerService();
+                    } catch (Exception e) {
+                        _logger.log (Level.WARNING, "Cannot start EJBTimerService: ", e);
                     }
                 }
-            } else if (!force) {
-                // If it was a request with force == false, and we failed to load the service,
-                // do not mark it as verified
-                _ejbTimerServiceVerified = false;
+            } else {
+                deployEJBTimerService(target);
+
+                // Do postprocessing if everything is OK
+                if (_ejbTimerService != null) {
+                    // load DistributedEJBTimerService 
+                    habitat.getByContract(DistributedEJBTimerService.class);
+                    if (_ejbTimersCleanup) {
+                        _ejbTimerService.destroyAllTimers(0L);
+                    } else if (target == null) {
+                        // target is null when accessed from the BaseContainer on load, i.e. where timers are running
+                        _logger.log(Level.INFO, "Setting DBReadBeforeTimeout to " + _doDBReadBeforeTimeout);
+                        ((PersistenceEJBTimerService)_ejbTimerService).setPerformDBReadBeforeTimeout(_doDBReadBeforeTimeout);
+                        _logger.log(Level.INFO, "==> Restoring Timers ... " );
+                        if (_ejbTimerService.restoreEJBTimers()) {
+                            _logger.log(Level.INFO, "<== ... Timers Restored.");
+                        }
+                    }
+                } else if (!force) {
+                    // If it was a request with force == false, and we failed to load the service,
+                    // do not mark it as verified
+                    _ejbTimerServiceVerified = false;
+                }
             }
         }
         return _ejbTimerService;

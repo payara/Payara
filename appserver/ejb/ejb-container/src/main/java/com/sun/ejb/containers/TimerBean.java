@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -694,7 +694,7 @@ public class TimerBean implements TimerLocal {
                                    long intervalDuration, 
                                    Serializable info) throws CreateException {
         
-        TimerLocal timerLocal = getEJBTimerService().getTimerLocal();
+        TimerLocal timerLocal = ((PersistenceEJBTimerService)getEJBTimerService()).getTimerLocal();
 
         EjbDescriptor ejbDesc = ((EJBContextImpl) context).getContainer().getEjbDescriptor();
         long containerId = ejbDesc.getUniqueId();
@@ -721,12 +721,6 @@ public class TimerBean implements TimerLocal {
     // XXX Called by TimerState via a static call
     public static BaseContainer getContainer(long containerId) {
         return EjbContainerUtilImpl.getInstance().getContainer(containerId);
-    }
-
-    // Called by TimerWelcomeServlet
-    public Set findActiveNonPersistentTimersOwnedByThisServer() {
-        EJBTimerService ejbTimerService = getEJBTimerService();
-        return ejbTimerService.getActiveTimerIdsByThisServer();
     }
 
     /**
