@@ -3,41 +3,35 @@
  *
  * Copyright (c) 2009-2011 Oracle and/or its affiliates. All rights reserved.
  *
- * The contents of this file are subject to the terms of either the GNU
- * General Public License Version 2 only ("GPL") or the Common Development
- * and Distribution License("CDDL") (collectively, the "License").  You
- * may not use this file except in compliance with the License.  You can
- * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
- * language governing permissions and limitations under the License.
+ * The contents of this file are subject to the terms of either the GNU General
+ * Public License Version 2 only ("GPL") or the Common Development and
+ * Distribution License("CDDL") (collectively, the "License"). You may not use
+ * this file except in compliance with the License. You can obtain a copy of the
+ * License at https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html or
+ * packager/legal/LICENSE.txt. See the License for the specific language
+ * governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
  * file and include the License file at packager/legal/LICENSE.txt.
  *
- * GPL Classpath Exception:
- * Oracle designates this particular file as subject to the "Classpath"
- * exception as provided by Oracle in the GPL Version 2 section of the License
- * file that accompanied this code.
+ * GPL Classpath Exception: Oracle designates this particular file as subject to
+ * the "Classpath" exception as provided by Oracle in the GPL Version 2 section
+ * of the License file that accompanied this code.
  *
- * Modifications:
- * If applicable, add the following below the License Header, with the fields
- * enclosed by brackets [] replaced by your own identifying information:
- * "Portions Copyright [year] [name of copyright owner]"
+ * Modifications: If applicable, add the following below the License Header,
+ * with the fields enclosed by brackets [] replaced by your own identifying
+ * information: "Portions Copyright [year] [name of copyright owner]"
  *
- * Contributor(s):
- * If you wish your version of this file to be governed by only the CDDL or
- * only the GPL Version 2, indicate your decision by adding "[Contributor]
- * elects to include this software in this distribution under the [CDDL or GPL
- * Version 2] license."  If you don't indicate a single choice of license, a
- * recipient has the option to distribute your version of this file under
- * either the CDDL, the GPL Version 2 or to extend the choice of license to
- * its licensees as provided above.  However, if you add GPL Version 2 code
- * and therefore, elected the GPL Version 2 license, then the option applies
- * only if the new code is made subject to such option by the copyright
- * holder.
+ * Contributor(s): If you wish your version of this file to be governed by only
+ * the CDDL or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution under the
+ * [CDDL or GPL Version 2] license." If you don't indicate a single choice of
+ * license, a recipient has the option to distribute your version of this file
+ * under either the CDDL, the GPL Version 2 or to extend the choice of license to
+ * its licensees as provided above. However, if you add GPL Version 2 code and
+ * therefore, elected the GPL Version 2 license, then the option applies only if
+ * the new code is made subject to such option by the copyright holder.
  */
-
 package org.glassfish.admin.rest.adapter;
 
 import com.sun.enterprise.config.serverbeans.AdminService;
@@ -69,13 +63,15 @@ import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.PostConstruct;
 
 import java.net.HttpURLConnection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 import org.glassfish.admin.rest.Constants;
@@ -96,46 +92,45 @@ import java.util.logging.Level;
 
 /**
  * Adapter for REST interface
+ *
  * @author Rajeshwar Patil, Ludovic Champenois
  */
 public abstract class RestAdapter extends HttpHandler implements Adapter, PostConstruct, EventListener {
-
     public final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(RestAdapter.class);
-
-    @Inject(name=ServerEnvironment.DEFAULT_INSTANCE_NAME)
-    volatile AdminService as;
-
-    @Inject
-    Events events;
+    @Inject(name = ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    protected volatile AdminService as;
 
     @Inject
-    Habitat habitat;
-
-    @Inject(name=ServerEnvironment.DEFAULT_INSTANCE_NAME)
-    Config config;
-
-    CountDownLatch latch = new CountDownLatch(1);
+    protected Events events;
 
     @Inject
-    ServerContext sc;
+    protected Habitat habitat;
+
+    @Inject(name = ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    protected Config config;
+
+    protected CountDownLatch latch = new CountDownLatch(1);
 
     @Inject
-    ServerEnvironment serverEnvironment;
+    protected ServerContext sc;
 
     @Inject
-    SessionManager sessionManager;
+    protected ServerEnvironment serverEnvironment;
 
-    private volatile LazyJerseyInterface lazyJerseyInterface =null;
+    @Inject
+    protected SessionManager sessionManager;
 
+    private FutureTask<Boolean> exposeContextFuture;
+    private volatile LazyJerseyInterface lazyJerseyInterface = null;
     private static final Logger logger = LogDomains.getLogger(RestAdapter.class, LogDomains.ADMIN_LOGGER);
 
     protected RestAdapter() {
         setAllowEncodedSlash(true);
     }
 
-
     @Override
     public void postConstruct() {
+        System.out.println("postConstruct");
         epd = new AdminEndpointDecider(config, logger);
         events.register(this);
     }
@@ -145,6 +140,8 @@ public abstract class RestAdapter extends HttpHandler implements Adapter, PostCo
         return this;
     }
 
+    public abstract String getContextRoot();
+
     @Override
     public void service(Request req, Response res) {
         LogHelper.getDefaultLogger().finer("Rest adapter !");
@@ -153,8 +150,8 @@ public abstract class RestAdapter extends HttpHandler implements Adapter, PostCo
         try {
             res.setCharacterEncoding(Constants.ENCODING);
             if (latch.await(20L, TimeUnit.SECONDS)) {
-                if(serverEnvironment.isInstance()) {
-                    if(!Method.GET.equals(req.getMethod())) {
+                if (serverEnvironment.isInstance()) {
+                    if (!Method.GET.equals(req.getMethod())) {
                         String msg = localStrings.getLocalString("rest.resource.only.GET.on.instance", "Only GET requests are allowed on an instance that is not DAS.");
                         reportError(req, res, HttpURLConnection.HTTP_FORBIDDEN, msg);
                         return;
@@ -165,9 +162,10 @@ public abstract class RestAdapter extends HttpHandler implements Adapter, PostCo
                 if (access == AdminAccessController.Access.FULL) {
                     //Use double checked locking to lazily initialize adapter
                     if (adapter == null) {
-                        synchronized(HttpHandler.class) {
-                            if(adapter == null) {
-                                exposeContext();  //Initializes adapter
+                        synchronized (HttpHandler.class) {
+                            if (adapter == null) {
+                                exposeContextFuture.get();
+//                                exposeContext();  //Initializes adapter
                             }
                         }
                     }
@@ -178,7 +176,7 @@ public abstract class RestAdapter extends HttpHandler implements Adapter, PostCo
 
                     String msg;
                     int status;
-                    if(access == AdminAccessController.Access.NONE) {
+                    if (access == AdminAccessController.Access.NONE) {
                         status = HttpURLConnection.HTTP_UNAUTHORIZED;
                         msg = localStrings.getLocalString("rest.adapter.auth.userpassword", "Invalid user name or password");
                         res.setHeader("WWW-Authenticate", "BASIC");
@@ -193,13 +191,13 @@ public abstract class RestAdapter extends HttpHandler implements Adapter, PostCo
                 String msg = localStrings.getLocalString("rest.adapter.server.wait", "Server cannot process this command at this time, please wait");
                 reportError(req, res, HttpURLConnection.HTTP_UNAVAILABLE, msg);
             }
-        } catch(InterruptedException e) {
-                String msg = localStrings.getLocalString("rest.adapter.server.wait", "Server cannot process this command at this time, please wait");
-                reportError(req, res, HttpURLConnection.HTTP_UNAVAILABLE, msg); //service unavailable
-        } catch(IOException e) {
-                String msg = localStrings.getLocalString("rest.adapter.server.ioexception", "REST: IO Exception "+e.getLocalizedMessage());
-                reportError(req, res, HttpURLConnection.HTTP_UNAVAILABLE, msg); //service unavailable
-        } catch(LoginException e) {
+        } catch (InterruptedException e) {
+            String msg = localStrings.getLocalString("rest.adapter.server.wait", "Server cannot process this command at this time, please wait");
+            reportError(req, res, HttpURLConnection.HTTP_UNAVAILABLE, msg); //service unavailable
+        } catch (IOException e) {
+            String msg = localStrings.getLocalString("rest.adapter.server.ioexception", "REST: IO Exception " + e.getLocalizedMessage());
+            reportError(req, res, HttpURLConnection.HTTP_UNAVAILABLE, msg); //service unavailable
+        } catch (LoginException e) {
             String msg = localStrings.getLocalString("rest.adapter.auth.error", "Error authenticating");
             reportError(req, res, HttpURLConnection.HTTP_UNAUTHORIZED, msg); //authentication error
         } catch (Exception e) {
@@ -243,8 +241,8 @@ public abstract class RestAdapter extends HttpHandler implements Adapter, PostCo
             }
         }
 
-        if(restToken != null) {
-            authenticated  = sessionManager.authenticate(restToken, req);
+        if (restToken != null) {
+            authenticated = sessionManager.authenticate(restToken, req);
         }
         return authenticated;
     }
@@ -276,19 +274,28 @@ public abstract class RestAdapter extends HttpHandler implements Adapter, PostCo
 //    public void afterService(Request req, Response res) throws Exception {
 //
 //    }
-
-
     @Override
     public void event(@RestrictTo(EventTypes.SERVER_READY_NAME) Event event) {
+//        System.out.println("event("+event.)");
         if (event.is(EventTypes.SERVER_READY)) {
             latch.countDown();
             logger.fine("Ready to receive REST resource requests");
 
-            try {
-                exposeContext();
-            } catch (EndpointRegistrationException ex) {
-                Logger.getLogger(RestAdapter.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            ExecutorService executor = Executors.newSingleThreadExecutor();
+            exposeContextFuture = new FutureTask<Boolean>(new Callable<Boolean>() {
+                @Override
+                public Boolean call() {
+                    try {
+                        System.out.println("Starting exposeContext");
+                        exposeContext();
+                        System.out.println("Ending exposeContext");
+                    } catch (EndpointRegistrationException ex) {
+                        Logger.getLogger(RestAdapter.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                    return true;
+                }
+            });
+            executor.execute(exposeContextFuture);
         }
         //the count-down does not start if any other event is received
     }
@@ -301,7 +308,6 @@ public abstract class RestAdapter extends HttpHandler implements Adapter, PostCo
         return isRegistered;
     }
 
-
     /**
      * Marks this adapter as having been registered or unregistered as a
      * network endpoint
@@ -311,25 +317,20 @@ public abstract class RestAdapter extends HttpHandler implements Adapter, PostCo
         this.isRegistered = isRegistered;
     }
 
-
     @Override
     public int getListenPort() {
         return epd.getListenPort();
     }
-
 
     @Override
     public InetAddress getListenAddress() {
         return epd.getListenAddress();
     }
 
-
     @Override
     public List<String> getVirtualServers() {
         return epd.getAsadminHosts();
     }
-
-
 
     protected abstract Set<Class<?>> getResourcesConfig();
 
@@ -342,8 +343,8 @@ public abstract class RestAdapter extends HttpHandler implements Adapter, PostCo
         acceptableTypes.add("json");
 
         // first we look at the command extension (ie list-applications.[json | html | mf]
-        if (requestURI.indexOf('.')!=-1) {
-            type = requestURI.substring(requestURI.indexOf('.')+1);
+        if (requestURI.indexOf('.') != -1) {
+            type = requestURI.substring(requestURI.indexOf('.') + 1);
         } else {
             String userAgent = req.getHeader("User-Agent");
             if (userAgent != null) {
@@ -354,8 +355,8 @@ public abstract class RestAdapter extends HttpHandler implements Adapter, PostCo
                     }
                     StringTokenizer st = new StringTokenizer(accept, ",");
                     while (st.hasMoreElements()) {
-                        String scheme=st.nextToken();
-                        scheme = scheme.substring(scheme.indexOf('/')+1);
+                        String scheme = st.nextToken();
+                        scheme = scheme.substring(scheme.indexOf('/') + 1);
                         if (acceptableTypes.contains(scheme)) {
                             type = scheme;
                             break;
@@ -393,7 +394,7 @@ public abstract class RestAdapter extends HttpHandler implements Adapter, PostCo
         }
         synchronized (HttpHandler.class) {
             if (lazyJerseyInterface == null) {
-               try {
+                try {
                     Class<?> lazyInitClass = Class.forName("org.glassfish.admin.rest.LazyJerseyInit");
                     lazyJerseyInterface = (LazyJerseyInterface) lazyInitClass.newInstance();
                 } catch (Exception ex) {
@@ -418,7 +419,6 @@ public abstract class RestAdapter extends HttpHandler implements Adapter, PostCo
             logger.log(Level.INFO, "rest.rest_interface_initialized", context);
         }
     }
-
 
     private void reportError(Request req, Response res, int statusCode, String msg) {
         try {
@@ -448,7 +448,6 @@ public abstract class RestAdapter extends HttpHandler implements Adapter, PostCo
             throw new RuntimeException(e);
         }
     }
-
     private volatile HttpHandler adapter = null;
     private boolean isRegistered = false;
     private AdminEndpointDecider epd = null;
