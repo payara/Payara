@@ -668,6 +668,9 @@ public class WebServiceEndpoint extends Descriptor
     }
 
     public String getEndpointAddressUri() {
+        if (implementedByEjbComponent() && !hasEndpointAddressUri()) {
+            setEndpointAddressUri("/" + getWebService().getName() + "/" + getEndpointName());
+        }
         return endpointAddressUri;
     }
 
@@ -731,15 +734,8 @@ public class WebServiceEndpoint extends Descriptor
                                 endpointAddressUri : ("/" + endpointAddressUri));
             }
         } else {
-            if( hasEndpointAddressUri() ) {
-                uri = endpointAddressUri.startsWith("/") ?
-                        endpointAddressUri : ("/" + endpointAddressUri);
-            } else {
-                // we need to define a standard endpoint address
-                uri = "/" + getWebService().getName() + "/" +
-                        getEndpointName();
-                setEndpointAddressUri(uri);
-            }
+            //If implemented by EJB Component, it will have a default standard endpointAddressUri
+            return getEndpointAddressUri();
         }
         return uri;
     }

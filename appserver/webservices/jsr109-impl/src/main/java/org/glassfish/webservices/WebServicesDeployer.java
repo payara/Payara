@@ -216,7 +216,7 @@ public class WebServicesDeployer extends JavaEEDeployer<WebServicesContainer,Web
             // unknown module type with @WebService, just ignore...
             return;
         }
-       
+
 
         wsdlDir = new File(wsdlDir, bundle.getWsdlDir().replaceAll("/", "\\"+File.separator));
 
@@ -556,18 +556,28 @@ public class WebServicesDeployer extends JavaEEDeployer<WebServicesContainer,Web
 
     }
 
+    /**
+     * Processes all the web services in the module and prepares for deployment.
+     * The tasks include composing the endpoint publish url and generating WSDL in to the application repository
+     * directory.
+     *
+     * In JAX-WS, WSDL files are generated dynamically, hence skips the wsdl generation step unless explicitly requested
+     * for WSDL file publishing via DD.
+     *
+     * @param app
+     * @param dc
+     * @throws Exception
+     */
     private void doWebServicesDeployment(Application app, DeploymentContext dc)
         throws Exception{
 
-        WebBundleDescriptor webBundleDesc =
-            dc.getModuleMetaData(WebBundleDescriptor.class);
-
         Collection<WebService> webServices = new HashSet<WebService>();
-        WebServicesDescriptor wsDesc =
-            dc.getModuleMetaData(WebServicesDescriptor.class);
+
+        // when there are multiple sub modules in ear, we only want to handle the ones local to this deployment context
+
+        //First get the web services associated with module bundle descriptor.
+        WebServicesDescriptor wsDesc = dc.getModuleMetaData(WebServicesDescriptor.class);
         if (wsDesc != null && wsDesc.getWebServices().size() > 0) {
-            // when there are multiple submodules in ear, we only
-            // want to handle the ones local to this deployment context
             if (logger.isLoggable(Level.FINE)) {
                 logger.fine("In doWebServicesDeployment: using local web " +
                     "services. There are " +
@@ -576,13 +586,18 @@ public class WebServicesDeployer extends JavaEEDeployer<WebServicesContainer,Web
                     getWebServiceDescriptors(app).size());
             }
             webServices.addAll(wsDesc.getWebServices());
-        } else {
-            if (logger.isLoggable(Level.FINE)) {
-                logger.fine("In doWebServicesDeployment: using app web " +
-                    " services, local ws descriptor is null. Total numer: " +
-                    getWebServiceDescriptors(app).size());
+        }
+        //Now get the web services associated with extension descriptors,ex: EJB WS in war.
+        WebBundleDescriptor webBundleDesc = dc.getModuleMetaData(WebBundleDescriptor.class);
+        if (webBundleDesc != null) {
+            Collection<EjbBundleDescriptor> ejbBundleDescriptors = webBundleDesc.getExtensionsDescriptors(EjbBundleDescriptor.class);
+            for (EjbBundleDescriptor ejbBundleDescriptor : ejbBundleDescriptors) {
+                Collection wsInExtnDesc = ejbBundleDescriptor.getWebServices().getWebServices();
+                webServices.addAll(wsInExtnDesc);
+                if (logger.isLoggable(Level.FINE)) {
+                    logger.fine("In doWebServicesDeployment: using web services via extension" + wsInExtnDesc);
+                }
             }
-            webServices.addAll(getWebServiceDescriptors(app));
         }
 
         // swap the deployment descriptors context-root with the one
@@ -634,15 +649,20 @@ public class WebServicesDeployer extends JavaEEDeployer<WebServicesContainer,Web
                 wsUtil.generateFinalWsdl(url, next, wsUtil.getWebServerInfoForDAS(), genWsdlFile);
             }
         }
-        // Swap the application written servlet implementation class for
-        // one provided by the container.  The original class is stored
-        // as runtime information since it will be used as the servant at
-        // dispatch time.
+        //Swap the servlet class name with a real servlet processing the SOAP requests.
         if (webBundleDesc != null) {
             doWebServiceDeployment(webBundleDesc);
         }
     }
 
+    /**
+     * Prepares the servlet based web services specified in web.xml for deployment.
+     *
+     * Swap the application written servlet implementation class for
+     * one provided by the container.  The original class is stored
+     * as runtime information since it will be used as the servant at
+     * dispatch time.
+     */
     private void doWebServiceDeployment(WebBundleDescriptor webBunDesc)
         throws DeploymentException, MalformedURLException {
 
@@ -801,7 +821,7 @@ public class WebServicesDeployer extends JavaEEDeployer<WebServicesContainer,Web
                 return publishedFiles;
             }
 
-            
+
             File sourceDir = dc.getScratchDir("xml");
 
             File parent;
@@ -898,5 +918,5 @@ public class WebServicesDeployer extends JavaEEDeployer<WebServicesContainer,Web
 
 }
 
-   
+
 
