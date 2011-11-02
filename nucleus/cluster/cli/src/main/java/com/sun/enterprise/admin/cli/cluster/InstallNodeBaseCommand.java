@@ -39,6 +39,7 @@
  */
 package com.sun.enterprise.admin.cli.cluster;
 
+import com.sun.enterprise.universal.io.SmartFile;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.enterprise.util.io.FileListerRelative;
 import com.sun.enterprise.util.io.FileUtils;
@@ -101,6 +102,9 @@ abstract class InstallNodeBaseCommand extends NativeRemoteCommandsBase {
                 }
             }
         }
+        if(ok(archive)) {
+            archive = SmartFile.sanitize(archive);
+        }
     }
 
     @Override
@@ -152,12 +156,12 @@ abstract class InstallNodeBaseCommand extends NativeRemoteCommandsBase {
         File glassFishZipFile = null;
 
         if (archive != null) {
-            archive = archive.replaceAll("\\\\", "/");
+            archive = archive.replace('\\', '/');
             archiveName = archive.substring(archive.lastIndexOf("/") + 1, archive.length());
             zipFileLocation = new File(archive.substring(0, archive.lastIndexOf("/")));
             glassFishZipFile = new File(archive);
             if (glassFishZipFile.exists() && !create) {
-                logger.finer("Found " + glassFishZipFile.getCanonicalPath());
+                logger.finer("Found " + archive);
                 delete = false;
                 return glassFishZipFile;
             }
