@@ -484,12 +484,16 @@ public class GFFileHandler extends StreamHandler implements PostConstruct, PreDe
     //   (b) keeps track of how many bytes have been written
 
     private final class MeteredStream extends OutputStream {
+
+        private volatile boolean isOpen = false;
+
         OutputStream out;
         long written;
 
         MeteredStream(OutputStream out, long written) {
             this.out = out;
             this.written = written;
+            isOpen = true;
         }
 
         public void write(int b) throws IOException {
@@ -512,7 +516,12 @@ public class GFFileHandler extends StreamHandler implements PostConstruct, PreDe
         }
 
         public void close() throws IOException {
-            out.close();
+            if(isOpen) {
+                isOpen = false;
+                flush();
+                out.close();
+            }
+
         }
     }
 
@@ -606,6 +615,8 @@ public class GFFileHandler extends StreamHandler implements PostConstruct, PreDe
                                     new FieldPosition(0));
                             File rotatedFile = new File(renamedFileName.toString());
                             boolean renameSuccess = oldFile.renameTo(rotatedFile);
+                            FileOutputStream oldFileFO = new FileOutputStream(oldFile);
+                            oldFileFO.close();
                             if (!renameSuccess) {
                                 // If we don't succeed with file rename which
                                 // most likely can happen on Windows because
