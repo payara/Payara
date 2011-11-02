@@ -60,19 +60,13 @@ import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.container.Adapter;
 import org.glassfish.api.container.EndpointRegistrationException;
-import org.glassfish.api.event.EventListener;
-import org.glassfish.api.event.EventTypes;
-import org.glassfish.api.event.Events;
-import org.glassfish.api.event.RestrictTo;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.PostConstruct;
 
 import java.net.HttpURLConnection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.concurrent.CountDownLatch;
@@ -93,20 +87,18 @@ import org.glassfish.grizzly.http.server.Response;
 import org.glassfish.internal.api.AdminAccessController;
 import org.glassfish.internal.api.ServerContext;
 import java.util.logging.Level;
+import org.glassfish.internal.api.PostStartup;
 
 /**
  * Adapter for REST interface
  * @author Rajeshwar Patil, Ludovic Champenois
  */
-public abstract class RestAdapter extends HttpHandler implements Adapter, PostConstruct, EventListener {
+public abstract class RestAdapter extends HttpHandler implements Adapter, PostStartup, PostConstruct {
 
     public final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(RestAdapter.class);
 
     @Inject(name=ServerEnvironment.DEFAULT_INSTANCE_NAME)
     volatile AdminService as;
-
-    @Inject
-    Events events;
 
     @Inject
     Habitat habitat;
@@ -125,19 +117,28 @@ public abstract class RestAdapter extends HttpHandler implements Adapter, PostCo
     @Inject
     SessionManager sessionManager;
 
+    protected abstract Set<Class<?>> getResourcesConfig();
     private volatile LazyJerseyInterface lazyJerseyInterface =null;
-
     private static final Logger logger = LogDomains.getLogger(RestAdapter.class, LogDomains.ADMIN_LOGGER);
+    private volatile HttpHandler adapter = null;
+    private boolean isRegistered = false;
+    private AdminEndpointDecider epd = null;
 
     protected RestAdapter() {
         setAllowEncodedSlash(true);
     }
 
-
     @Override
     public void postConstruct() {
         epd = new AdminEndpointDecider(config, logger);
-        events.register(this);
+        //        events.register(this);
+        try {
+            initializeContext();
+        } catch (EndpointRegistrationException ex) {
+            Logger.getLogger(RestAdapter.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        latch.countDown();
     }
 
     @Override
@@ -163,19 +164,10 @@ public abstract class RestAdapter extends HttpHandler implements Adapter, PostCo
 
                 AdminAccessController.Access access = authenticate(req);
                 if (access == AdminAccessController.Access.FULL) {
-                    //Use double checked locking to lazily initialize adapter
-                    if (adapter == null) {
-                        synchronized(HttpHandler.class) {
-                            if(adapter == null) {
-                                exposeContext();  //Initializes adapter
-                            }
-                        }
-                    }
+                    initializeContext();
                     //delegate to adapter managed by Jersey.
                     adapter.service(req, res);
-
                 } else { // Access != FULL
-
                     String msg;
                     int status;
                     if(access == AdminAccessController.Access.NONE) {
@@ -208,6 +200,17 @@ public abstract class RestAdapter extends HttpHandler implements Adapter, PostCo
             e.printStackTrace(printWriter);
             String msg = localStrings.getLocalString("rest.adapter.server.exception", "REST:  Exception " + result.toString());
             reportError(req, res, HttpURLConnection.HTTP_UNAVAILABLE, msg); //service unavailable
+        }
+    }
+    
+    private void initializeContext() throws EndpointRegistrationException {
+        //Use double checked locking to lazily initialize adapter
+        if (adapter == null) {
+            synchronized (HttpHandler.class) {
+                if (adapter == null) {
+                    exposeContext();  //Initializes adapter
+                }
+            }
         }
     }
 
@@ -269,31 +272,6 @@ public abstract class RestAdapter extends HttpHandler implements Adapter, PostCo
     }
 
     /**
-     * Finish the response and recycle the request/response tokens. Base on
-     * the connection header, the underlying socket transport will be closed
-     */
-//    @Override
-//    public void afterService(Request req, Response res) throws Exception {
-//
-//    }
-
-
-    @Override
-    public void event(@RestrictTo(EventTypes.SERVER_READY_NAME) Event event) {
-        if (event.is(EventTypes.SERVER_READY)) {
-            latch.countDown();
-            logger.fine("Ready to receive REST resource requests");
-
-            try {
-                exposeContext();
-            } catch (EndpointRegistrationException ex) {
-                Logger.getLogger(RestAdapter.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }
-        //the count-down does not start if any other event is received
-    }
-
-    /**
      * Checks whether this adapter has been registered as a network endpoint.
      */
     @Override
@@ -328,10 +306,6 @@ public abstract class RestAdapter extends HttpHandler implements Adapter, PostCo
     public List<String> getVirtualServers() {
         return epd.getAsadminHosts();
     }
-
-
-
-    protected abstract Set<Class<?>> getResourcesConfig();
 
     private String getAcceptedMimeType(Request req) {
         String type = null;
@@ -368,25 +342,11 @@ public abstract class RestAdapter extends HttpHandler implements Adapter, PostCo
         return type;
     }
 
-//    private ActionReport getClientActionReport(Request req) {
-//        ActionReport report=null;
-//        String requestURI = req.getRequestURI();
-//        String acceptedMimeType = getAcceptedMimeType(req);
-//        report = habitat.getComponent(ActionReport.class, acceptedMimeType);
-//
-//        if (report==null) {
-//            // get the default one.
-//            report = habitat.getComponent(ActionReport.class, "html");
-//        }
-//        report.setActionDescription("REST");
-//        return report;
-//    }
-
     /*
      * dynamically load the class that contains all references to Jersey APIs
      * so that Jersey is not loaded when the RestAdapter is loaded at boot time
      * gain a few 100millis at GlassFish startyp time
-+     */
+     */
     protected LazyJerseyInterface getLazyJersey() {
         if (lazyJerseyInterface != null) {
             return lazyJerseyInterface;
@@ -406,8 +366,7 @@ public abstract class RestAdapter extends HttpHandler implements Adapter, PostCo
 
     }
 
-    private void exposeContext()
-            throws EndpointRegistrationException {
+    private void exposeContext() throws EndpointRegistrationException {
         String context = getContextRoot();
         logger.log(Level.FINE, "Exposing rest resource context root: {0}", context);
         if ((context != null) && (!"".equals(context))) {
@@ -418,7 +377,6 @@ public abstract class RestAdapter extends HttpHandler implements Adapter, PostCo
             logger.log(Level.INFO, "rest.rest_interface_initialized", context);
         }
     }
-
 
     private void reportError(Request req, Response res, int statusCode, String msg) {
         try {
@@ -448,8 +406,4 @@ public abstract class RestAdapter extends HttpHandler implements Adapter, PostCo
             throw new RuntimeException(e);
         }
     }
-
-    private volatile HttpHandler adapter = null;
-    private boolean isRegistered = false;
-    private AdminEndpointDecider epd = null;
 }

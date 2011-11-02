@@ -45,10 +45,10 @@ import com.sun.enterprise.util.SystemPropertyConstants;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.security.PrivilegedActionException;
 import java.security.ProtectionDomain;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.glassfish.admin.rest.ResourceUtil;
@@ -66,7 +66,9 @@ public class ASMClassWriter implements ClassWriter, Opcodes {
 
     private org.objectweb.asm.ClassWriter cw = new org.objectweb.asm.ClassWriter(0);
     private String className;
-    Habitat habitat;
+    private Habitat habitat;
+
+    private Map<String, String> generatedMethods = new HashMap<String, String>();
   //  private String baseClassName;
   //  private String resourcePath;
 
@@ -328,7 +330,14 @@ public class ASMClassWriter implements ClassWriter, Opcodes {
         }else {
             childClass = GENERATED_PATH + childResourceClassName;
         }
-        MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, "get" + childResourceClassName, "()L"+ childClass + ";", null, null);
+
+        String methodName = "get" + childResourceClassName;
+        if (childClass.equals(generatedMethods.get(methodName))) {
+            return;
+        }
+
+        generatedMethods.put(methodName, childClass);
+        MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, methodName, "()L"+ childClass + ";", null, null);
 
         AnnotationVisitor av0 = mv.visitAnnotation("Ljavax/ws/rs/Path;", true);
         av0.visit("value", path + "/");
@@ -354,7 +363,6 @@ public class ASMClassWriter implements ClassWriter, Opcodes {
 
     @Override
     public void createGetChildResourceForListResources(String keyAttributeName, String childResourceClassName) {
-
         MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, "get" + childResourceClassName , "(Ljava/lang/String;)L" + GENERATED_PATH + childResourceClassName + ";", null, null);
 
         AnnotationVisitor av0 = mv.visitAnnotation("Ljavax/ws/rs/Path;", true);
@@ -383,7 +391,7 @@ public class ASMClassWriter implements ClassWriter, Opcodes {
         mv.visitVarInsn(ALOAD, 2);
         mv.visitInsn(ARETURN);
         mv.visitMaxs(4, 3);
-        mv.visitEnd();    
+        mv.visitEnd();
     }
 
     @Override
@@ -426,7 +434,6 @@ public class ASMClassWriter implements ClassWriter, Opcodes {
         generatedClassName =  generatedClassName + className;
 
         byte[] byteContent = getByteClass();
-      //  debug(generatedClassName,byteContent);
         ProtectionDomain pd = similarClass.getProtectionDomain();
 
         java.lang.reflect.Method jm = null;
@@ -452,6 +459,7 @@ public class ASMClassWriter implements ClassWriter, Opcodes {
                         }
                     });
 
+            Logger.getLogger(ASMClassWriter.class.getName()).log(Level.FINE, "Loading bytecode for {0}", generatedClassName);
             clM.invoke(similarClass.getClassLoader()
                     /*Thread.currentThread().getContextClassLoader()*/, generatedClassName, byteContent, 0,
                      byteContent.length, pd);
@@ -493,14 +501,13 @@ public class ASMClassWriter implements ClassWriter, Opcodes {
 
             String fileName = rootPath + clsName + ".class";
 
-
             File file = new File(fileName);
             if (file.getParentFile().mkdirs()) {
                 fos = new FileOutputStream(file);
                 fos.write(classData);
                 fos.flush();
             } else {
-                Logger.getLogger(ASMClassWriter.class.getName()).log(Level.INFO, null, 
+                Logger.getLogger(ASMClassWriter.class.getName()).log(Level.INFO, null,
                         "Unable to make directories");
             }
         } catch (Exception ex) {
