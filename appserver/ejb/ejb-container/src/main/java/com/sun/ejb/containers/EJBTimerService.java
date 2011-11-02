@@ -722,7 +722,7 @@ public class EJBTimerService
                                 TimerSchedule schedule, TimerConfig timerConfig) 
                                 throws Exception {
 
-        if (!timerConfig.isPersistent()) {
+        if (timerConfig.isPersistent()) {
             // TODO
             throw new CreateException("Persistent timers are not supported in this setup");
         } else {
