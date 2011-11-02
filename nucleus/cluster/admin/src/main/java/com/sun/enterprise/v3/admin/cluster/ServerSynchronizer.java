@@ -570,9 +570,9 @@ public final class ServerSynchronizer implements PostConstruct {
      * Get the mod times for the entries in dir and add them to the
      * SyncRequest, using names relative to baseDir.  If level is
      * RECURSIVE, check subdirectories and only include times for files,
-     * not directories.
+     * and empty directories.
      */
-    private void getFileNames(File dir, File baseDir, List<String> skip,
+    private int getFileNames(File dir, File baseDir, List<String> skip,
                                 List<String> names, SyncLevel level) {
         if (level == SyncLevel.TOP) {
             String name = baseDir.toURI().relativize(dir.toURI()).getPath();
@@ -580,8 +580,9 @@ public final class ServerSynchronizer implements PostConstruct {
             if (name.endsWith("/"))
                 name = name.substring(0, name.length() - 1);
             names.add(name);
-            return;     // nothing else
+            return 1;     // nothing else
         }
+        int cnt = 0;
         for (String file : dir.list()) {
             File f = new File(dir, file);
             String name = baseDir.toURI().relativize(f.toURI()).getPath();
@@ -591,11 +592,16 @@ public final class ServerSynchronizer implements PostConstruct {
             if (skip != null && skip.contains(name))
                 continue;
             if (f.isDirectory() && level == SyncLevel.RECURSIVE) {
-                getFileNames(f, baseDir, skip, names, level);
+                if (getFileNames(f, baseDir, skip, names, level) == 0) {
+                    names.add(name);
+                    cnt++;
+                }
             } else {
                 names.add(name);
+                cnt++;
             }
         }
+        return cnt;
     }
 
     /**
