@@ -939,14 +939,10 @@ public class PersistenceEJBTimerService extends EJBTimerService
 
     Date getNextTimeout(TimerPrimaryKey timerId) throws FinderException {
 
-        Date initialExpiration = null;
-        long intervalDuration = 0;
-        TimerSchedule ts = null;
-
         // Check non-persistent timers first
-        Date nextTimeout = super.getNextTimeout(timerId);
-        if (nextTimeout != null) {
-            return nextTimeout;
+        RuntimeTimerState rt = getNonPersistentTimer(timerId);
+        if (rt != null) {
+            return _getNextTimeout(rt);
         }
 
         // It's a persistent timer
@@ -956,10 +952,11 @@ public class PersistenceEJBTimerService extends EJBTimerService
         // timer cache for optimization.
 
         TimerState timer = getPersistentTimer(timerId);
-        initialExpiration = timer.getInitialExpiration();
-        intervalDuration = timer.getIntervalDuration();
-        ts = timer.getTimerSchedule();
+        Date initialExpiration = timer.getInitialExpiration();
+        long intervalDuration = timer.getIntervalDuration();
+        TimerSchedule ts = timer.getTimerSchedule();
 
+        Date nextTimeout = null;
         if (ts != null) {
             nextTimeout = getNextScheduledTimeout(ts);
             // The caller is responsible to return 0 or -1 for the time remaining....

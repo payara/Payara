@@ -913,27 +913,31 @@ public class EJBTimerService
      */
     Date getNextTimeout(TimerPrimaryKey timerId) throws FinderException {
 
-        Date initialExpiration = null;
-        long intervalDuration = 0;
-        TimerSchedule ts = null;
-
-        // Check non-persistent timers first
-        Date nextTimeout = null;
         RuntimeTimerState rt = getNonPersistentTimer(timerId);
         if (rt != null) {
-            initialExpiration = rt.getInitialExpiration();
-            intervalDuration = rt.getIntervalDuration();
-            ts = rt.getTimerSchedule();
+            return _getNextTimeout(rt);
+        }
 
-            nextTimeout = initialExpiration;
-            if (ts != null) {
-                nextTimeout = getNextScheduledTimeout(ts);
-                // The caller is responsible to return 0 or -1 for the time remaining....
+        throw new FinderException("Timer does not exist");
+    }
+
+    /**
+     * Non-persistent part of the implementation of the getNextTimeout() call
+     */
+    Date _getNextTimeout(RuntimeTimerState rt) {
+
+        Date initialExpiration = rt.getInitialExpiration();
+        long intervalDuration = rt.getIntervalDuration();
+        TimerSchedule ts = rt.getTimerSchedule();
+
+        Date nextTimeout = initialExpiration;
+        if (ts != null) {
+            nextTimeout = getNextScheduledTimeout(ts);
+            // The caller is responsible to return 0 or -1 for the time remaining....
             
-            } else if (intervalDuration > 0) {
-                nextTimeout = calcNextFixedRateExpiration(initialExpiration, 
-                               intervalDuration);
-            }
+        } else if (intervalDuration > 0) {
+            nextTimeout = calcNextFixedRateExpiration(initialExpiration, 
+                           intervalDuration);
         }
 
         return nextTimeout;
@@ -1003,7 +1007,7 @@ public class EJBTimerService
         return ts;
     }
 
-    private RuntimeTimerState getNonPersistentTimer(TimerPrimaryKey timerId) 
+    RuntimeTimerState getNonPersistentTimer(TimerPrimaryKey timerId) 
             throws FinderException {
         RuntimeTimerState rt = getNonPersistentTimerState(timerId);
         if (rt != null) {
