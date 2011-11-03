@@ -108,6 +108,21 @@
                 />
             </event>
         </sun:commonTasksGroup>
+
+        <sun:commonTasksGroup id="administration" title="$resource{i18n.commonTasks.group.Administration}" >
+            <sun:commonTask
+                text="$resource{i18n.commonTasks.task.adminPassword}"
+                toolTip="$resource{i18n.commonTasks.task.adminPassword}"
+                onClick="return admingui.woodstock.commonTaskHandler('treeForm:tree:applications:applications','#{request.contextPath}/common/appServer/serverInstAdminPassword.jsf');">
+            </sun:commonTask>
+            <event>
+                <!beforeCreate
+                    setSessionAttribute(key="gf_application_list_page" value="/common/appServer/serverInstAdminPassword.jsf");
+                    setSessionAttribute(key="gf_application_cancel_page" value="/common/commonTask.jsf");
+                />
+            </event>
+        </sun:commonTasksGroup>
+
           <sun:commonTasksGroup id="monitoring"  title="$resource{i18n.commonTasks.group.Monitoring}" />
 
 #include "/common/commonTaskDoc.inc"
