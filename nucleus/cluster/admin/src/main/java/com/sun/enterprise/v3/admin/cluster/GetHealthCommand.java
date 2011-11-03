@@ -166,15 +166,20 @@ public class GetHealthCommand implements AdminCommand {
         }
 
         // order by instance name and output
+        ActionReport.MessagePart top = report.getTopMessagePart();
         SortedSet<String> names = new TreeSet<String>(history.getInstances());
         for(String name : names) {
             HealthHistory.InstanceHealth ih = history.getHealthByInstance(name);
             if (HealthHistory.NOTIME == ih.time) {
                 result.append(Strings.get("get.health.instance.state",
                     name, ih.state));
+                top.addProperty(name, ih.state.toString());
             } else {
-                result.append(Strings.get("get.health.instance.state.since",
-                    name, ih.state, new Date(ih.time).toString()));
+                String status = Strings.get("get.health.instance.state.since",
+                    name, ih.state, new Date(ih.time).toString());
+                result.append(status);
+                top.addProperty(name, status.substring(name.length(),
+                    status.length() - 1).trim());
             }
             result.append("\n");
         }
