@@ -87,13 +87,14 @@ import org.glassfish.grizzly.http.server.Response;
 import org.glassfish.internal.api.AdminAccessController;
 import org.glassfish.internal.api.ServerContext;
 import java.util.logging.Level;
-import org.glassfish.internal.api.PostStartup;
+import org.glassfish.internal.api.PostStartupRunLevel;
 
 /**
  * Adapter for REST interface
  * @author Rajeshwar Patil, Ludovic Champenois
  */
-public abstract class RestAdapter extends HttpHandler implements Adapter, PostStartup, PostConstruct {
+@PostStartupRunLevel
+public abstract class RestAdapter extends HttpHandler implements Adapter, PostConstruct {
 
     public final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(RestAdapter.class);
 
@@ -132,11 +133,12 @@ public abstract class RestAdapter extends HttpHandler implements Adapter, PostSt
     public void postConstruct() {
         epd = new AdminEndpointDecider(config, logger);
         //        events.register(this);
-        try {
-            initializeContext();
-        } catch (EndpointRegistrationException ex) {
-            Logger.getLogger(RestAdapter.class.getName()).log(Level.SEVERE, null, ex);
-        }
+//        try {
+//            System.out.println("postConstruct()");
+//            initializeContext();
+//        } catch (EndpointRegistrationException ex) {
+//            Logger.getLogger(RestAdapter.class.getName()).log(Level.SEVERE, null, ex);
+//        }
 
         latch.countDown();
     }
