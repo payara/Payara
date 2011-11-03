@@ -183,7 +183,14 @@
     	    <groupId>org.glassfish</groupId>
             <artifactId>paas.lbplugin</artifactId>
             <version>${project.version}</version>
-        </dependency>      
+        </dependency>    
+        <!-- adding ant back to this package since paas.javadbplugin
+             introduced dependency on it -->
+        <dependency>
+            <groupId>org.glassfish.external</groupId>
+            <artifactId>ant</artifactId>
+            <version>${project.version}</version>
+        </dependency>  
        
         <!-- HA API  -->
         <dependency>

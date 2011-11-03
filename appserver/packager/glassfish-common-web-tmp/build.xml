@@ -62,14 +62,15 @@
 
        <mkdir dir="target/stage/${install.dir.name}/glassfish/modules/endorsed"/>
 
-       <move file="target/stage/${install.dir.name}/glassfish/modules/javax.annotation.jar" todir="target/stage/${install.dir.name}/glassfish/modules/endorsed" failonerror="false"/>          
+       <move file="target/stage/${install.dir.name}/glassfish/modules/javax.annotation.jar" todir="target/stage/${install.dir.name}/glassfish/modules/endorsed" failonerror="false"/>   
+
+       <!-- brute force cleanup at this point, need to look into extended ant
+           plugin and fix the issue at the source -->
+           
+       <delete file="target/stage/${install.dir.name}/glassfish/modules/activation.jar" failonerror="false" />       
 
        <mkdir dir="target/stage/${install.dir.name}/glassfish/modules/autostart"/>
 
-       <move file="target/stage/${install.dir.name}/glassfish/modules/osgi-javaee-base.jar" todir="target/stage/${install.dir.name}/glassfish/modules/autostart" failonerror="false"/>
-<!-- disabling due to config bean changes of jdbc and connector resources -->
-<!--      <move file="target/stage/${install.dir.name}/glassfish/modules/osgi-ee-resources.jar" todir="target/stage/${install.dir.name}/glassfish/modules/autostart" failonerror="false"/>-->
-  
        <if test="${compression}">
 	       <antcall target="pack.compression" />
        </if>
