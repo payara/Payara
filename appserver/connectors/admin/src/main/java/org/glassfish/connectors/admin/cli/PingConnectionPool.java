@@ -68,10 +68,13 @@ import org.jvnet.hk2.component.PerLookup;
     @RestEndpoint(configBean=JdbcConnectionPool.class,
         opType=RestEndpoint.OpType.GET, 
         path="ping", 
-        description="Ping"),
+        description="Ping",
+        params={
+            @RestParam(name="id", value="$parent")
+        }),
     @RestEndpoint(configBean=Resources.class,
         opType=RestEndpoint.OpType.GET, 
-        path="ping", 
+        path="ping-connection-pool", 
         description="Ping")
 })
 public class PingConnectionPool implements AdminCommand {
