@@ -98,19 +98,24 @@ public class ValidateDcom implements AdminCommand {
     public final void execute(AdminCommandContext context) {
         init(context);
 
-        if (!testDcomPort())
-            return;
+        try {
+            // try/finally is least messy way of making sure partial success news
+            // is delivered back to caller
+            if (!testDcomPort())
+                return;
 
-        if (!testDcomFileAccess())
-            return;
+            if (!testDcomFileAccess())
+                return;
 
-        if (!testDcomFileWrite())
-            return;
+            if (!testDcomFileWrite())
+                return;
 
-        if (!testRemoteScript())
-            return;
-
-        report.setMessage(out.toString());
+            if (!testRemoteScript())
+                return;
+        }
+        finally {
+            report.setMessage(out.toString());
+        }
     }
 
     private void init(AdminCommandContext context) {
@@ -139,7 +144,8 @@ public class ValidateDcom implements AdminCommand {
     private boolean testDcomPort() {
         try {
             // only interested in Exception side-effect...
-            InetAddress.getByName(host);
+            InetAddress ia = InetAddress.getByName(host);
+            out.append(Strings.get("validate.dcom.getbyname", ia)).append('\n');
         }
         catch (UnknownHostException e) {
             setError(e, Strings.get("unknown.host", host));
@@ -149,12 +155,12 @@ public class ValidateDcom implements AdminCommand {
             Socket socket = new Socket();
             socket.connect(new InetSocketAddress(host, 135), 4000);
             socket.close();
+            out.append(Strings.get("validate.dcom.connect")).append('\n');
         }
         catch (IOException e) {
             setError(e, Strings.get("dcom.no.connect.135", host));
             return false;
         }
-
         return true;
     }
 
@@ -189,12 +195,12 @@ public class ValidateDcom implements AdminCommand {
         try {
             script = new WindowsRemoteFile(wrf, SCRIPT_NAME);
             script.copyFrom("dir " + testdir + "\\\n");
+            out.append(Strings.get("dcom.write.ok", SCRIPT_NAME, testdir, host)).append('\n');
         }
         catch (WindowsException ex) {
             setError(ex, Strings.get("dcom.no.write", SCRIPT_NAME, testdir, host));
             return false;
         }
-        out.append(Strings.get("dcom.write.ok", SCRIPT_NAME, testdir, host)).append('\n');
         return true;
     }
 
@@ -221,7 +227,7 @@ public class ValidateDcom implements AdminCommand {
 
     private void setError(String msg) {
         report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-        report.setMessage(msg);
+        out.append(msg).append('\n');
     }
 
     private String crunch(int numlines, String big) {
