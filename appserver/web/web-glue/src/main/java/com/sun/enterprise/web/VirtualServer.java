@@ -2001,10 +2001,6 @@ public class VirtualServer extends StandardHost
                 _logger.log(Level.SEVERE, "Application "+params.name+" not found");
             }
 
-            // Enable the app using the modified web.xml
-            // We can't use Deployment.enable since it doesn't take DeploymentContext with custom class loader
-            deployment.updateAppEnabledAttributeInDomainXML(params.name, params.target, true);
-
             ReadableArchive source = appInfo.getSource();
             UndeployCommandParameters undeployParams = new UndeployCommandParameters(params.name);
             undeployParams.origin = UndeployCommandParameters.Origin.undeploy;
@@ -2026,6 +2022,10 @@ public class VirtualServer extends StandardHost
             }
 
             deployment.deploy(deploymentContext);
+
+            // Enable the app using the modified web.xml
+            // We can't use Deployment.enable since it doesn't take DeploymentContext with custom class loader
+            deployment.updateAppEnabledAttributeInDomainXML(params.name, params.target, true);
 
             if (_logger.isLoggable(Level.FINE)) {
                 _logger.log(Level.FINE, "Virtual server "+getName()+" enabled context "+params.name());
