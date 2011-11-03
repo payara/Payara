@@ -127,6 +127,9 @@ public class LBPlugin implements Plugin {
     public ServiceDescription getDefaultServiceDescription(String appName, ServiceReference svcRef) {
         if (Constants.LB.equals(svcRef.getServiceRefType())) {
             TemplateInstance template = getLBTemplate();
+            if(template == null){
+                throw new RuntimeException("No LB template exists.");
+            }
             // create default service description.
             String defaultServiceName = getDefaultServiceName(appName);
             TemplateIdentifier identifier = new TemplateIdentifier();
@@ -156,7 +159,7 @@ public class LBPlugin implements Plugin {
                 return ti;
             }
         }
-        throw new RuntimeException("No LB template exists");
+        return null;
     }
 
     private List<Property> getDefaultServiceProperties(TemplateInstance template) {
@@ -368,6 +371,11 @@ public class LBPlugin implements Plugin {
                     WebBundleDescriptor.class).size() > 0);
             if(isWebApp) {
                 TemplateInstance template = getLBTemplate();
+                if(template == null){
+                    LBPluginLogger.getLogger().log(Level.SEVERE,
+                            "No LB template exists, so LB service cannot be provisioned.");
+                    return defs;
+                }
                 //List<Property> properties = getDefaultServiceProperties(template);
                 List<Property> configurations = getDefaultServiceConfigurations(template);
                 TemplateIdentifier identifier = new TemplateIdentifier();
