@@ -108,8 +108,11 @@ public class MapInjectionResolver extends InjectionResolver<Param> {
                 final List<String> filePaths = getUploadedFileParamValues(
                         "DEFAULT",
                         type, optionNameToUploadedFileMap);
-                if (filePaths != null)
+                if (filePaths != null) {
                     value = filePaths;
+                    // replace the file name operands with the uploaded files
+                    parameters.set("DEFAULT", value); 
+                }
 		// let's also copy this value to the cmd with a real name
 		parameters.set(paramName, value);
 		return (V) convertListToObject(target, type, value);
@@ -125,6 +128,7 @@ public class MapInjectionResolver extends InjectionResolver<Param> {
                 paramName, type, optionNameToUploadedFileMap);
         if (fileParamValueStr != null) {
             paramValueStr = fileParamValueStr;
+            parameters.set(paramName, paramValueStr);
         }
 	checkAgainstAcceptableValues(target, paramValueStr);
 	if (paramValueStr != null) {
@@ -551,7 +555,7 @@ public class MapInjectionResolver extends InjectionResolver<Param> {
     }
 
     /**
-     * Check if the value string is one of the strings in the list od
+     * Check if the value string is one of the strings in the list of
      * acceptable values in the @Param annotation on the target.
      *
      * @param target the target field

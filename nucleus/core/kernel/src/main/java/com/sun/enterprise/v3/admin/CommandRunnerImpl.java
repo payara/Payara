@@ -836,398 +836,399 @@ public class CommandRunnerImpl implements CommandRunner {
             logger.fine(adminStrings.getLocalString("dynamicreconfiguration.diagnostics.devmode",
                     "The GlassFish environment does not have any clusters or instances present; Replication is turned off"));
         }
-
         try {
-            /*
-             * Extract any uploaded files and build a map from parameter names
-             * to the corresponding extracted, uploaded file.
-             */
-            ufm = new UploadedFilesManager(inv.report, logger,
-                    inv.inboundPayload());
-
-            if (inv.typedParams() != null) {
-                logger.fine(adminStrings.getLocalString("dynamicreconfiguration.diagnostics.delegatedcommand",
-                        "This command is a delegated command. Dynamic reconfiguration will be bypassed"));
-                InjectionResolver<Param> injectionTarget =
-                        new DelegatedInjectionResolver(model, inv.typedParams(),
-                        ufm.optionNameToFileMap());
-                if (injectParameters(model, command, injectionTarget, context).equals(ActionReport.ExitCode.SUCCESS)) {
-                    inv.setReport(doCommand(model, command, context));
-                }
-                return;
-            }
-
-            parameters = inv.parameters();
-            if (parameters == null) {
-                // no parameters, pass an empty collection
-                parameters = new ParameterMap();
-            }
-
-            if (isSet(parameters, "help") || isSet(parameters, "Xhelp")) {
-                BufferedReader in = getManPage(model.getCommandName(), model);
-                String manPage = encodeManPage(in);
-
-                if (manPage != null && isSet(parameters, "help")) {
-                    inv.report().getTopMessagePart().addProperty("MANPAGE", manPage);
-                } else {
-                    report.getTopMessagePart().addProperty(
-                            AdminCommandResponse.GENERATED_HELP, "true");
-                    getHelp(command, report);
-                }
-                return;
-            }
-
             try {
-                if (!skipValidation(command)) {
-                    validateParameters(model, parameters);
-                }
-            } catch (ComponentException e) {
-                // If the cause is UnacceptableValueException -- we want the message
-                // from it.  It is wrapped with a less useful Exception.
+                /*
+                 * Extract any uploaded files and build a map from parameter names
+                 * to the corresponding extracted, uploaded file.
+                 */
+                ufm = new UploadedFilesManager(inv.report, logger,
+                        inv.inboundPayload());
 
-                Exception exception = e;
-                Throwable cause = e.getCause();
-                if (cause != null
-                        && (cause instanceof UnacceptableValueException)) {
-                    // throw away the wrapper.
-                    exception = (Exception) cause;
+                if (inv.typedParams() != null) {
+                    logger.fine(adminStrings.getLocalString("dynamicreconfiguration.diagnostics.delegatedcommand",
+                            "This command is a delegated command. Dynamic reconfiguration will be bypassed"));
+                    InjectionResolver<Param> injectionTarget =
+                            new DelegatedInjectionResolver(model, inv.typedParams(),
+                            ufm.optionNameToFileMap());
+                    if (injectParameters(model, command, injectionTarget, context).equals(ActionReport.ExitCode.SUCCESS)) {
+                        inv.setReport(doCommand(model, command, context));
+                    }
+                    return;
                 }
-                logger.severe(exception.getMessage());
+
+                parameters = inv.parameters();
+                if (parameters == null) {
+                    // no parameters, pass an empty collection
+                    parameters = new ParameterMap();
+                }
+
+                if (isSet(parameters, "help") || isSet(parameters, "Xhelp")) {
+                    BufferedReader in = getManPage(model.getCommandName(), model);
+                    String manPage = encodeManPage(in);
+
+                    if (manPage != null && isSet(parameters, "help")) {
+                        inv.report().getTopMessagePart().addProperty("MANPAGE", manPage);
+                    } else {
+                        report.getTopMessagePart().addProperty(
+                                AdminCommandResponse.GENERATED_HELP, "true");
+                        getHelp(command, report);
+                    }
+                    return;
+                }
+
+                try {
+                    if (!skipValidation(command)) {
+                        validateParameters(model, parameters);
+                    }
+                } catch (ComponentException e) {
+                    // If the cause is UnacceptableValueException -- we want the message
+                    // from it.  It is wrapped with a less useful Exception.
+
+                    Exception exception = e;
+                    Throwable cause = e.getCause();
+                    if (cause != null
+                            && (cause instanceof UnacceptableValueException)) {
+                        // throw away the wrapper.
+                        exception = (Exception) cause;
+                    }
+                    logger.severe(exception.getMessage());
+                    report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                    report.setMessage(exception.getMessage());
+                    report.setFailureCause(exception);
+                    ActionReport.MessagePart childPart =
+                            report.getTopMessagePart().addChild();
+                    childPart.setMessage(getUsageText(command, model));
+                    return;
+                }
+
+                // initialize the injector and inject
+                InjectionResolver<Param> injectionMgr =
+                        new MapInjectionResolver(model, parameters,
+                        ufm.optionNameToFileMap());
+                if (!injectParameters(model, command, injectionMgr, context).equals(ActionReport.ExitCode.SUCCESS)) {
+                    return;
+                }
+
+                logger.fine(adminStrings.getLocalString("dynamicreconfiguration.diagnostics.injectiondone",
+                        "Parameter mapping, validation, injection completed successfully; Starting paramater injection"));
+
+                // Read cluster annotation attributes
+                org.glassfish.api.admin.ExecuteOn clAnnotation = model.getClusteringAttributes();
+                if (clAnnotation == null) {
+                    runtimeTypes.add(RuntimeType.DAS);
+                    runtimeTypes.add(RuntimeType.INSTANCE);
+                    fp = FailurePolicy.Error;
+                } else {
+                    if (clAnnotation.value().length == 0) {
+                        runtimeTypes.add(RuntimeType.DAS);
+                        runtimeTypes.add(RuntimeType.INSTANCE);
+                    } else {
+                        for (RuntimeType t : clAnnotation.value()) {
+                            runtimeTypes.add(t);
+                        }
+                    }
+                    if (clAnnotation.ifFailure() == null) {
+                        fp = FailurePolicy.Error;
+                    } else {
+                        fp = clAnnotation.ifFailure();
+                    }
+                }
+
+                String targetName = parameters.getOne("target");
+                if (targetName == null || model.getModelFor("target").getParam().obsolete()) {
+                    if (command instanceof DeploymentTargetResolver) {
+                        targetName = ((DeploymentTargetResolver) command).getTarget(parameters);
+                    } else {
+                        targetName = "server";
+                    }
+                }
+
+                logger.fine(adminStrings.getLocalString("dynamicreconfiguration.diagnostics.target",
+                        "@ExecuteOn parsing and default settings done; Current target is {0}", targetName));
+
+                if (serverEnv.isDas()) {
+
+                    // Check if the command allows this target type; first read the annotation
+                    //TODO : See is @TargetType can also be moved to the CommandModel
+                    TargetType tgtTypeAnnotation = command.getClass().getAnnotation(TargetType.class);
+                    if (tgtTypeAnnotation != null) {
+                        for (CommandTarget c : tgtTypeAnnotation.value()) {
+                            targetTypesAllowed.add(c);
+                        }
+                    };
+                    //If not @TargetType, default it
+                    if (targetTypesAllowed.size() == 0) {
+                        targetTypesAllowed.add(CommandTarget.DAS);
+                        targetTypesAllowed.add(CommandTarget.STANDALONE_INSTANCE);
+                        targetTypesAllowed.add(CommandTarget.CLUSTER);
+                        targetTypesAllowed.add(CommandTarget.CONFIG);
+                    }
+
+                    // If the target is "server" and the command is not marked for DAS,
+                    // add DAS to RuntimeTypes; This is important because those class of CLIs that
+                    // do not always have to be run on DAS followed by applicable instances
+                    // will have @ExecuteOn(RuntimeType.INSTANCE) and they have to be run on DAS
+                    // ONLY if the target is "server"
+                    if (CommandTarget.DAS.isValid(habitat, targetName)
+                            && !runtimeTypes.contains(RuntimeType.DAS)) {
+                        runtimeTypes.add(RuntimeType.DAS);
+                    }
+
+                    logger.fine(adminStrings.getLocalString("dynamicreconfiguration.diagnostics.runtimeTypes",
+                            "RuntimeTypes are: {0}", runtimeTypes.toString()));
+                    logger.fine(adminStrings.getLocalString("dynamicreconfiguration,diagnostics.targetTypes",
+                            "TargetTypes are: {0}", targetTypesAllowed.toString()));
+
+                    // Check if the target is valid
+                    //Is there a server or a cluster or a config with given name ?
+                    if ((!CommandTarget.DOMAIN.isValid(habitat, targetName))
+                            && (domain.getServerNamed(targetName) == null)
+                            && (domain.getClusterNamed(targetName) == null)
+                            && (domain.getConfigNamed(targetName) == null)) {
+                        report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                        report.setMessage(adminStrings.getLocalString("commandrunner.executor.invalidtarget",
+                                "Unable to find a valid target with name {0}", targetName));
+                        return;
+                    }
+                    //Does this command allow this target type
+                    boolean isTargetValidType = false;
+                    Iterator<CommandTarget> it = targetTypesAllowed.iterator();
+                    while (it.hasNext()) {
+                        if (it.next().isValid(habitat, targetName)) {
+                            isTargetValidType = true;
+                            break;
+                        }
+                    }
+                    if (!isTargetValidType) {
+                        StringBuilder validTypes = new StringBuilder();
+                        it = targetTypesAllowed.iterator();
+                        while (it.hasNext()) {
+                            validTypes.append(it.next().getDescription() + ", ");
+                        }
+                        report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                        report.setMessage(adminStrings.getLocalString("commandrunner.executor.invalidtargettype",
+                                "Target {0} is not a supported type. Command {1} supports these types of targets only : {2}",
+                                targetName, model.getCommandName(), validTypes.toString()));
+                        return;
+                    }
+                    //If target is a clustered instance and the allowed types does not allow operations on clustered
+                    //instance, return error
+                    if ((CommandTarget.CLUSTERED_INSTANCE.isValid(habitat, targetName))
+                            && (!targetTypesAllowed.contains(CommandTarget.CLUSTERED_INSTANCE))) {
+                        Cluster c = domain.getClusterForInstance(targetName);
+                        report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                        report.setMessage(adminStrings.getLocalString("commandrunner.executor.instanceopnotallowed",
+                                "The {0} command is not allowed on instance {1} because it is part of cluster {2}",
+                                model.getCommandName(), targetName, c.getName()));
+                        return;
+                    }
+                    logger.fine(adminStrings.getLocalString("dynamicreconfiguration.diagnostics.replicationvalidationdone",
+                            "All @ExecuteOn attribute and type validation completed successfully. Starting replication stages"));
+                }
+
+
+                /**
+                 * We're finally ready to actually execute the command instance.
+                 * Acquire the appropriate lock.
+                 */
+                Lock lock = null;
+                boolean lockTimedOut = false;
+                try {
+                    // XXX: The owner of the lock should not be hardcoded.  The
+                    //      value is not used yet. 
+                    lock = adminLock.getLock(command, "asadmin");
+
+                    // If command is undoable, then invoke prepare method
+                    if (command instanceof UndoableCommand) {
+                        UndoableCommand uCmd = (UndoableCommand) command;
+                        logger.fine(adminStrings.getLocalString("dynamicreconfiguration.diagnostics.prepareunodable",
+                                "Command execution stage 1 : Calling prepare for undoable command {0}", inv.name()));
+                        if (!uCmd.prepare(context, parameters).equals(ActionReport.ExitCode.SUCCESS)) {
+                            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                            report.setMessage(adminStrings.getLocalString("commandrunner.executor.errorinprepare",
+                                    "The command {0} cannot be completed because the preparation for the command failed "
+                                    + "indicating potential issues : {1}", model.getCommandName(), report.getMessage()));
+                            return;
+                        }
+                    }
+
+                    ClusterOperationUtil.clearInstanceList();
+
+                    // Run Supplemental commands that have to run before this command on this instance type
+                    logger.fine(adminStrings.getLocalString("dynamicreconfiguration.diagnostics.presupplemental",
+                            "Command execution stage 2 : Call pre supplemental commands for {0}", inv.name()));
+                    preSupplementalReturn = supplementalExecutor.execute(model.getCommandName(),
+                            Supplemental.Timing.Before, context, parameters, ufm.optionNameToFileMap());
+                    if (preSupplementalReturn.equals(ActionReport.ExitCode.FAILURE)) {
+                        report.setActionExitCode(preSupplementalReturn);
+                        report.setMessage(adminStrings.getLocalString("commandrunner.executor.supplementalcmdfailed",
+                                "A supplemental command failed; cannot proceed further"));
+                        return;
+                    }
+                    //Run main command if it is applicable for this instance type
+                    if ((runtimeTypes.contains(RuntimeType.ALL))
+                            || (serverEnv.isDas() && (CommandTarget.DOMAIN.isValid(habitat, targetName)
+                            || runtimeTypes.contains(RuntimeType.DAS)))
+                            || (serverEnv.isInstance() && runtimeTypes.contains(RuntimeType.INSTANCE))) {
+                        logger.fine(adminStrings.getLocalString("dynamicreconfiguration.diagnostics.maincommand",
+                                "Command execution stage 3 : Calling main command implementation for {0}", inv.name()));
+                        report = doCommand(model, command, context);
+                        inv.setReport(report);
+                    }
+
+                    if (!FailurePolicy.applyFailurePolicy(fp,
+                            report.getActionExitCode()).equals(ActionReport.ExitCode.FAILURE)) {
+                        //Run Supplemental commands that have to be run after this command on this instance type
+                        logger.fine(adminStrings.getLocalString("dynamicreconfiguration.diagnostics.postsupplemental",
+                                "Command execution stage 4 : Call post supplemental commands for {0}", inv.name()));
+                        postSupplementalReturn = supplementalExecutor.execute(model.getCommandName(),
+                                Supplemental.Timing.After, context, parameters, ufm.optionNameToFileMap());
+                        if (postSupplementalReturn.equals(ActionReport.ExitCode.FAILURE)) {
+                            report.setActionExitCode(postSupplementalReturn);
+                            report.setMessage(adminStrings.getLocalString("commandrunner.executor.supplementalcmdfailed",
+                                    "A supplemental command failed; cannot proceed further"));
+                            return;
+                        }
+                    }
+                } catch (AdminCommandLockTimeoutException ex) {
+                    lockTimedOut = true;
+                    String lockTime = formatSuspendDate(ex.getTimeOfAcquisition());
+                    String logMsg = "Command: " + model.getCommandName()
+                            + " failed to acquire a command lock.  REASON: time out "
+                            + "(current lock acquired on " + lockTime + ")";
+                    logger.warning(logMsg);
+                    String msg = adminStrings.getLocalString("lock.timeout",
+                            "Command timed out.  Unable to acquire a lock to access "
+                            + "the domain.  Another command acquired exclusive access "
+                            + "to the domain on {0}.  Retry the command at a later "
+                            + "time.", lockTime);
+                    report.setMessage(msg);
+                    report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                } catch (AdminCommandLockException ex) {
+                    lockTimedOut = true;
+                    String lockTime = formatSuspendDate(ex.getTimeOfAcquisition());
+                    String lockMsg = ex.getMessage();
+                    String logMsg;
+
+                    logMsg = "Command: " + model.getCommandName()
+                            + " was blocked.  The domain was suspended by a "
+                            + "user on:" + lockTime;
+
+                    if (lockMsg != null && lockMsg != "") {
+                        logMsg += " Reason: " + lockMsg;
+                    }
+
+                    logger.warning(logMsg);
+                    String msg = adminStrings.getLocalString("lock.notacquired",
+                            "The command was blocked.  The domain was suspended by "
+                            + "a user on {0}.", lockTime);
+
+                    if (lockMsg != null && lockMsg != "") {
+                        msg += " "
+                                + adminStrings.getLocalString("lock.reason", "Reason:")
+                                + " " + lockMsg;
+                    }
+
+                    report.setMessage(msg);
+                    report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                } finally {
+                    // command is done, release the lock
+                    if (lock != null && lockTimedOut == false) {
+                        lock.unlock();
+                    }
+                }
+
+            } catch (Exception ex) {
+                logger.log(Level.SEVERE, "", ex);
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-                report.setMessage(exception.getMessage());
-                report.setFailureCause(exception);
+                report.setMessage(ex.getMessage());
+                report.setFailureCause(ex);
                 ActionReport.MessagePart childPart =
                         report.getTopMessagePart().addChild();
                 childPart.setMessage(getUsageText(command, model));
                 return;
             }
+            /*
+             * Command execution completed; If this is DAS and the command succeeded,
+             * time to replicate; At this point we will get the appropriate ClusterExecutor
+             * and give it complete control; We will let the executor take care all considerations
+             * (like FailurePolicy settings etc)
+             * and just give the final execution results which we will set as is in the Final
+             * Action report returned to the caller.
+             */
 
-            // initialize the injector and inject
-            InjectionResolver<Param> injectionMgr =
-                    new MapInjectionResolver(model, parameters,
-                    ufm.optionNameToFileMap());
-            if (!injectParameters(model, command, injectionMgr, context).equals(ActionReport.ExitCode.SUCCESS)) {
+            if (processEnv.getProcessType().isEmbedded()) {
                 return;
             }
-
-            logger.fine(adminStrings.getLocalString("dynamicreconfiguration.diagnostics.injectiondone",
-                    "Parameter mapping, validation, injection completed successfully; Starting paramater injection"));
-
-            // Read cluster annotation attributes
-            org.glassfish.api.admin.ExecuteOn clAnnotation = model.getClusteringAttributes();
-            if (clAnnotation == null) {
-                runtimeTypes.add(RuntimeType.DAS);
-                runtimeTypes.add(RuntimeType.INSTANCE);
-                fp = FailurePolicy.Error;
-            } else {
-                if (clAnnotation.value().length == 0) {
-                    runtimeTypes.add(RuntimeType.DAS);
-                    runtimeTypes.add(RuntimeType.INSTANCE);
-                } else {
-                    for (RuntimeType t : clAnnotation.value()) {
-                        runtimeTypes.add(t);
+            if (preSupplementalReturn == ActionReport.ExitCode.WARNING
+                    || postSupplementalReturn == ActionReport.ExitCode.WARNING) {
+                report.setActionExitCode(ActionReport.ExitCode.WARNING);
+            }
+            if (doReplication
+                    && (!FailurePolicy.applyFailurePolicy(fp, report.getActionExitCode()).equals(ActionReport.ExitCode.FAILURE))
+                    && (serverEnv.isDas())
+                    && (runtimeTypes.contains(RuntimeType.INSTANCE) || runtimeTypes.contains(RuntimeType.ALL))) {
+                logger.fine(adminStrings.getLocalString("dynamicreconfiguration.diagnostics.startreplication",
+                        "Command execution stages completed on DAS; Starting replication on remote instances"));
+                ClusterExecutor executor = null;
+                // This try-catch block is a fix for 13838
+                try {
+                    if (model.getClusteringAttributes() != null && model.getClusteringAttributes().executor() != null) {
+                        executor = habitat.getComponent(model.getClusteringAttributes().executor());
+                    } else {
+                        executor = habitat.getComponent(ClusterExecutor.class, "GlassFishClusterExecutor");
                     }
+                } catch (UnsatisfiedDependencyException usdepex) {
+                    String err = adminStrings.getLocalString("commandrunner.clusterexecutor.notinitialized",
+                            "Unable to get an instance of ClusterExecutor; Cannot dynamically reconfigure instances");
+                    logger.warning(err);
                 }
-                if (clAnnotation.ifFailure() == null) {
-                    fp = FailurePolicy.Error;
-                } else {
-                    fp = clAnnotation.ifFailure();
+                if (executor != null) {
+                    report.setActionExitCode(executor.execute(model.getCommandName(), command, context, parameters));
+                    if (report.getActionExitCode().equals(ActionReport.ExitCode.FAILURE)) {
+                        report.setMessage(adminStrings.getLocalString("commandrunner.executor.errorwhilereplication",
+                                "An error occurred during replication"));
+                    } else {
+                        if (!FailurePolicy.applyFailurePolicy(fp,
+                                report.getActionExitCode()).equals(ActionReport.ExitCode.FAILURE)) {
+                            logger.fine(adminStrings.getLocalString("dynamicreconfiguration.diagnostics.afterreplsupplemental",
+                                    "Command execution stage 5 : Call post-replication supplemental commands for {0}", inv.name()));
+                            afterReplicationSupplementalReturn = supplementalExecutor.execute(model.getCommandName(),
+                                    Supplemental.Timing.AfterReplication, context, parameters, ufm.optionNameToFileMap());
+                            if (afterReplicationSupplementalReturn.equals(ActionReport.ExitCode.FAILURE)) {
+                                report.setActionExitCode(afterReplicationSupplementalReturn);
+                                report.setMessage(adminStrings.getLocalString("commandrunner.executor.supplementalcmdfailed",
+                                        "A supplemental command failed; cannot proceed further"));
+                                return;
+                            }
+                        }
+                    }
                 }
             }
-
-            String targetName = parameters.getOne("target");
-            if (targetName == null || model.getModelFor("target").getParam().obsolete()) {
-                if (command instanceof DeploymentTargetResolver) {
-                    targetName = ((DeploymentTargetResolver)command).getTarget(parameters);
-                } else {
-                    targetName = "server";
-                }
-            }
-
-            logger.fine(adminStrings.getLocalString("dynamicreconfiguration.diagnostics.target",
-                    "@ExecuteOn parsing and default settings done; Current target is {0}", targetName));
-
-            if (serverEnv.isDas()) {
-
-                // Check if the command allows this target type; first read the annotation
-                //TODO : See is @TargetType can also be moved to the CommandModel
-                TargetType tgtTypeAnnotation = command.getClass().getAnnotation(TargetType.class);
-                if (tgtTypeAnnotation != null) {
-                    for (CommandTarget c : tgtTypeAnnotation.value()) {
-                        targetTypesAllowed.add(c);
-                    }
-                };
-                //If not @TargetType, default it
-                if (targetTypesAllowed.size() == 0) {
-                    targetTypesAllowed.add(CommandTarget.DAS);
-                    targetTypesAllowed.add(CommandTarget.STANDALONE_INSTANCE);
-                    targetTypesAllowed.add(CommandTarget.CLUSTER);
-                    targetTypesAllowed.add(CommandTarget.CONFIG);
-                }
-
-                // If the target is "server" and the command is not marked for DAS,
-                // add DAS to RuntimeTypes; This is important because those class of CLIs that
-                // do not always have to be run on DAS followed by applicable instances
-                // will have @ExecuteOn(RuntimeType.INSTANCE) and they have to be run on DAS
-                // ONLY if the target is "server"
-                if (CommandTarget.DAS.isValid(habitat, targetName)
-                        && !runtimeTypes.contains(RuntimeType.DAS)) {
-                    runtimeTypes.add(RuntimeType.DAS);
-                }
-
-                logger.fine(adminStrings.getLocalString("dynamicreconfiguration.diagnostics.runtimeTypes",
-                        "RuntimeTypes are: {0}", runtimeTypes.toString()));
-                logger.fine(adminStrings.getLocalString("dynamicreconfiguration,diagnostics.targetTypes",
-                        "TargetTypes are: {0}", targetTypesAllowed.toString()));
-
-                // Check if the target is valid
-                //Is there a server or a cluster or a config with given name ?
-                if ((!CommandTarget.DOMAIN.isValid(habitat, targetName))
-                        && (domain.getServerNamed(targetName) == null)
-                        && (domain.getClusterNamed(targetName) == null)
-                        && (domain.getConfigNamed(targetName) == null)) {
-                    report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-                    report.setMessage(adminStrings.getLocalString("commandrunner.executor.invalidtarget",
-                            "Unable to find a valid target with name {0}", targetName));
-                    return;
-                }
-                //Does this command allow this target type
-                boolean isTargetValidType = false;
-                Iterator<CommandTarget> it = targetTypesAllowed.iterator();
-                while (it.hasNext()) {
-                    if (it.next().isValid(habitat, targetName)) {
-                        isTargetValidType = true;
-                        break;
-                    }
-                }
-                if (!isTargetValidType) {
-                    StringBuilder validTypes = new StringBuilder();
-                    it = targetTypesAllowed.iterator();
-                    while (it.hasNext()) {
-                        validTypes.append(it.next().getDescription() + ", ");
-                    }
-                    report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-                    report.setMessage(adminStrings.getLocalString("commandrunner.executor.invalidtargettype",
-                            "Target {0} is not a supported type. Command {1} supports these types of targets only : {2}",
-                            targetName, model.getCommandName(), validTypes.toString()));
-                    return;
-                }
-                //If target is a clustered instance and the allowed types does not allow operations on clustered
-                //instance, return error
-                if ((CommandTarget.CLUSTERED_INSTANCE.isValid(habitat, targetName))
-                        && (!targetTypesAllowed.contains(CommandTarget.CLUSTERED_INSTANCE))) {
-                    Cluster c = domain.getClusterForInstance(targetName);
-                    report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-                    report.setMessage(adminStrings.getLocalString("commandrunner.executor.instanceopnotallowed",
-                            "The {0} command is not allowed on instance {1} because it is part of cluster {2}",
-                            model.getCommandName(), targetName, c.getName()));
-                    return;
-                }
-                logger.fine(adminStrings.getLocalString("dynamicreconfiguration.diagnostics.replicationvalidationdone",
-                        "All @ExecuteOn attribute and type validation completed successfully. Starting replication stages"));
-            }
-
-
-            /**
-             * We're finally ready to actually execute the command instance.
-             * Acquire the appropriate lock.
-             */
-            Lock lock = null;
-            boolean lockTimedOut = false;
-            try {
-                // XXX: The owner of the lock should not be hardcoded.  The
-                //      value is not used yet. 
-                lock = adminLock.getLock(command, "asadmin");
-
-                // If command is undoable, then invoke prepare method
+            if (report.getActionExitCode().equals(ActionReport.ExitCode.FAILURE)) {
+                // If command is undoable, then invoke undo method method
                 if (command instanceof UndoableCommand) {
                     UndoableCommand uCmd = (UndoableCommand) command;
-                    logger.fine(adminStrings.getLocalString("dynamicreconfiguration.diagnostics.prepareunodable",
-                            "Command execution stage 1 : Calling prepare for undoable command {0}", inv.name()));
-                    if (!uCmd.prepare(context, parameters).equals(ActionReport.ExitCode.SUCCESS)) {
-                        report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-                        report.setMessage(adminStrings.getLocalString("commandrunner.executor.errorinprepare",
-                                "The command {0} cannot be completed because the preparation for the command failed "
-                                + "indicating potential issues : {1}", model.getCommandName(), report.getMessage()));
-                        return;
-                    }
+                    logger.fine(adminStrings.getLocalString("dynamicreconfiguration.diagnostics.undo",
+                            "Command execution failed; calling undo() for command {0}", inv.name()));
+                    uCmd.undo(context, parameters, ClusterOperationUtil.getCompletedInstances());
                 }
-
-                ClusterOperationUtil.clearInstanceList();
-
-                // Run Supplemental commands that have to run before this command on this instance type
-                logger.fine(adminStrings.getLocalString("dynamicreconfiguration.diagnostics.presupplemental",
-                        "Command execution stage 2 : Call pre supplemental commands for {0}", inv.name()));
-                preSupplementalReturn = supplementalExecutor.execute(model.getCommandName(),
-                        Supplemental.Timing.Before, context, parameters, ufm.optionNameToFileMap());
-                if (preSupplementalReturn.equals(ActionReport.ExitCode.FAILURE)) {
-                    report.setActionExitCode(preSupplementalReturn);
-                    report.setMessage(adminStrings.getLocalString("commandrunner.executor.supplementalcmdfailed",
-                            "A supplemental command failed; cannot proceed further"));
-                    return;
+            } else {
+                //TODO : Is there a better way of doing this ? Got to look into it
+                if ("_register-instance".equals(model.getCommandName())) {
+                    state.addServerToStateService(parameters.getOne("DEFAULT"));
                 }
-                //Run main command if it is applicable for this instance type
-                if ((runtimeTypes.contains(RuntimeType.ALL)) || 
-                    (serverEnv.isDas() && (CommandTarget.DOMAIN.isValid(habitat, targetName) || 
-                                           runtimeTypes.contains(RuntimeType.DAS))) || 
-                    (serverEnv.isInstance() && runtimeTypes.contains(RuntimeType.INSTANCE))) {
-                    logger.fine(adminStrings.getLocalString("dynamicreconfiguration.diagnostics.maincommand",
-                            "Command execution stage 3 : Calling main command implementation for {0}", inv.name()));
-                    report = doCommand(model, command, context);
-                    inv.setReport(report);
-                }
-
-                if (!FailurePolicy.applyFailurePolicy(fp,
-                        report.getActionExitCode()).equals(ActionReport.ExitCode.FAILURE)) {
-                    //Run Supplemental commands that have to be run after this command on this instance type
-                    logger.fine(adminStrings.getLocalString("dynamicreconfiguration.diagnostics.postsupplemental",
-                            "Command execution stage 4 : Call post supplemental commands for {0}", inv.name()));
-                    postSupplementalReturn = supplementalExecutor.execute(model.getCommandName(),
-                            Supplemental.Timing.After, context, parameters, ufm.optionNameToFileMap());
-                    if (postSupplementalReturn.equals(ActionReport.ExitCode.FAILURE)) {
-                        report.setActionExitCode(postSupplementalReturn);
-                        report.setMessage(adminStrings.getLocalString("commandrunner.executor.supplementalcmdfailed",
-                                "A supplemental command failed; cannot proceed further"));
-                        return;
-                    }
-                }
-            } catch (AdminCommandLockTimeoutException ex) {
-                lockTimedOut = true;
-                String lockTime = formatSuspendDate(ex.getTimeOfAcquisition());
-                String logMsg = "Command: " + model.getCommandName()
-                        + " failed to acquire a command lock.  REASON: time out "
-                        + "(current lock acquired on " + lockTime + ")";
-                logger.warning(logMsg);
-                String msg = adminStrings.getLocalString("lock.timeout",
-                        "Command timed out.  Unable to acquire a lock to access "
-                        + "the domain.  Another command acquired exclusive access "
-                        + "to the domain on {0}.  Retry the command at a later "
-                        + "time.", lockTime);
-                report.setMessage(msg);
-                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            } catch (AdminCommandLockException ex) {
-                lockTimedOut = true;
-                String lockTime = formatSuspendDate(ex.getTimeOfAcquisition());
-                String lockMsg = ex.getMessage();
-                String logMsg;
-
-                logMsg = "Command: " + model.getCommandName()
-                        + " was blocked.  The domain was suspended by a "
-                        + "user on:" + lockTime;
-
-                if (lockMsg != null && lockMsg != "") {
-                    logMsg += " Reason: " + lockMsg;
-                }
-
-                logger.warning(logMsg);
-                String msg = adminStrings.getLocalString("lock.notacquired",
-                        "The command was blocked.  The domain was suspended by "
-                        + "a user on {0}.", lockTime);
-
-                if (lockMsg != null && lockMsg != "") {
-                    msg += " "
-                            + adminStrings.getLocalString("lock.reason", "Reason:")
-                            + " " + lockMsg;
-                }
-
-                report.setMessage(msg);
-                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            } finally {
-                // command is done, release the lock
-                if (lock != null && lockTimedOut == false) {
-                    lock.unlock();
+                if ("_unregister-instance".equals(model.getCommandName())) {
+                    state.removeInstanceFromStateService(parameters.getOne("DEFAULT"));
                 }
             }
-
-        } catch (Exception ex) {
-            logger.log(Level.SEVERE, "", ex);
-            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            report.setMessage(ex.getMessage());
-            report.setFailureCause(ex);
-            ActionReport.MessagePart childPart =
-                    report.getTopMessagePart().addChild();
-            childPart.setMessage(getUsageText(command, model));
-            return;
         } finally {
             if (ufm != null) {
                 ufm.close();
             }
         }
 
-        /*
-         * Command execution completed; If this is DAS and the command succeeded,
-         * time to replicate; At this point we will get the appropriate ClusterExecutor
-         * and give it complete control; We will let the executor take care all considerations
-         * (like FailurePolicy settings etc)
-         * and just give the final execution results which we will set as is in the Final
-         * Action report returned to the caller.
-         */
-
-        if (processEnv.getProcessType().isEmbedded()) {
-            return;
-        }
-        if (preSupplementalReturn == ActionReport.ExitCode.WARNING
-                || postSupplementalReturn == ActionReport.ExitCode.WARNING) {
-            report.setActionExitCode(ActionReport.ExitCode.WARNING);
-        }
-        if (doReplication
-                && (!FailurePolicy.applyFailurePolicy(fp, report.getActionExitCode()).equals(ActionReport.ExitCode.FAILURE))
-                && (serverEnv.isDas())
-                && (runtimeTypes.contains(RuntimeType.INSTANCE) || runtimeTypes.contains(RuntimeType.ALL))) {
-            logger.fine(adminStrings.getLocalString("dynamicreconfiguration.diagnostics.startreplication",
-                    "Command execution stages completed on DAS; Starting replication on remote instances"));
-            ClusterExecutor executor = null;
-            // This try-catch block is a fix for 13838
-            try {
-                if (model.getClusteringAttributes() != null && model.getClusteringAttributes().executor() != null) {
-                    executor = habitat.getComponent(model.getClusteringAttributes().executor());
-                } else {
-                    executor = habitat.getComponent(ClusterExecutor.class, "GlassFishClusterExecutor");
-                }
-            } catch (UnsatisfiedDependencyException usdepex) {
-                String err = adminStrings.getLocalString("commandrunner.clusterexecutor.notinitialized",
-                        "Unable to get an instance of ClusterExecutor; Cannot dynamically reconfigure instances");
-                logger.warning(err);
-            }
-            if (executor != null) {
-                report.setActionExitCode(executor.execute(model.getCommandName(), command, context, parameters));
-                if (report.getActionExitCode().equals(ActionReport.ExitCode.FAILURE)) {
-                    report.setMessage(adminStrings.getLocalString("commandrunner.executor.errorwhilereplication",
-                            "An error occurred during replication"));
-                } else {
-                    if (!FailurePolicy.applyFailurePolicy(fp,
-                        report.getActionExitCode()).equals(ActionReport.ExitCode.FAILURE)) {
-                        logger.fine(adminStrings.getLocalString("dynamicreconfiguration.diagnostics.afterreplsupplemental",
-                                "Command execution stage 5 : Call post-replication supplemental commands for {0}", inv.name()));
-                        afterReplicationSupplementalReturn = supplementalExecutor.execute(model.getCommandName(),
-                                Supplemental.Timing.AfterReplication, context, parameters, ufm.optionNameToFileMap());
-                        if (afterReplicationSupplementalReturn.equals(ActionReport.ExitCode.FAILURE)) {
-                            report.setActionExitCode(afterReplicationSupplementalReturn);
-                            report.setMessage(adminStrings.getLocalString("commandrunner.executor.supplementalcmdfailed",
-                                    "A supplemental command failed; cannot proceed further"));
-                            return;
-                        }
-                    }
-                }
-            }
-        }
-        if (report.getActionExitCode().equals(ActionReport.ExitCode.FAILURE)) {
-            // If command is undoable, then invoke undo method method
-            if (command instanceof UndoableCommand) {
-                UndoableCommand uCmd = (UndoableCommand) command;
-                logger.fine(adminStrings.getLocalString("dynamicreconfiguration.diagnostics.undo",
-                        "Command execution failed; calling undo() for command {0}", inv.name()));
-                uCmd.undo(context, parameters, ClusterOperationUtil.getCompletedInstances());
-            }
-        } else {
-            //TODO : Is there a better way of doing this ? Got to look into it
-            if ("_register-instance".equals(model.getCommandName())) {
-                state.addServerToStateService(parameters.getOne("DEFAULT"));
-            }
-            if ("_unregister-instance".equals(model.getCommandName())) {
-                state.removeInstanceFromStateService(parameters.getOne("DEFAULT"));
-            }
-        }
     }
 
     /*
@@ -1476,7 +1477,7 @@ public class CommandRunnerImpl implements CommandRunner {
         }
 
         private void extractFiles(final Payload.Inbound inboundPayload)
-                                throws Exception {
+                throws Exception {
             if (inboundPayload == null) {
                 return;
             }
@@ -1501,8 +1502,8 @@ public class CommandRunnerImpl implements CommandRunner {
             for (Map.Entry<File, Properties> e : payloadFiles.entrySet()) {
                 final String optionName = e.getValue().getProperty("data-request-name");
                 if (optionName != null) {
-                    logger.finer("UploadedFilesManager: map " + optionName +
-                                    " to " + e.getKey());
+                    logger.finer("UploadedFilesManager: map " + optionName
+                            + " to " + e.getKey());
                     optionNameToFileMap.add(optionName, e.getKey());
                 }
             }
