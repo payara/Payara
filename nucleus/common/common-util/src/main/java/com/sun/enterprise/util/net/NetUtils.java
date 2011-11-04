@@ -193,7 +193,7 @@ public class NetUtils {
     }
 
     /**
-     * Painfully thorough error-handling.  Some would say over-engineered but I 
+     * Painfully thorough error-handling.  Some would say over-engineered but I
      * plan on never looking at this code again!
      * @param host1
      * @param host2
@@ -208,7 +208,7 @@ public class NetUtils {
                 return true; // edge case ==> both are null or empty
 
             if (!StringUtils.ok(host1) || !StringUtils.ok(host2))
-                return false; // just one of them is null or empty 
+                return false; // just one of them is null or empty
 
             InetAddress[] adds1 = InetAddress.getAllByName(host1);
             InetAddress[] adds2 = InetAddress.getAllByName(host2);
@@ -445,7 +445,7 @@ public class NetUtils {
     }
 
     /**
-     * Get the next free port (incrementing by 1) 
+     * Get the next free port (incrementing by 1)
      * @param hostName The host name on which the port is to be obtained
      * @param port The port number
      * @return The next incremental port number or 0 if a port cannot be found.
@@ -514,35 +514,30 @@ public class NetUtils {
     }
 
     /**
-     * There are 5 possibilities when you want to setup a server socket on a port:
+     * There are 4 possibilities when you want to setup a server socket on a port:
      * 1. The port is already in use
      * 2. The user does not have permission to open up shop on that port
      *    An example of (2) is a non-root user on UNIX trying to use port 80
      * 3. The port number is not in the legal range
-     * 4. Unknown
-     * 5. OK -- you can use it!
+     * 4. OK -- you can use it!
      *
      * @param portNumber
-     * @return one of the 5 possibilities for this port
+     * @return one of the 4 possibilities for this port
      */
     public static PortAvailability checkPort(int portNumber) {
         if (!isPortValid(portNumber))
             return PortAvailability.illegalNumber;
 
-        boolean client = isPortFreeClient(null, portNumber);
-        boolean server = isPortFreeServer(portNumber);
-
-        if (server && client)
+        // if we can setup a server socket on that port then it must be free.
+        if(isPortFreeServer(portNumber))
             return PortAvailability.OK;
 
-        if (server && !client)
-            // impossible -- or at least I can not make this happen in a test case
-            return PortAvailability.unknown;
-
-        if (!server && !client)
-            return PortAvailability.inUse;
-        else // !server && client
+        if(isPortFreeClient(null, portNumber)) {
+            // can not setup a server socket and can not connect as a client
+            // that means we don't have permission...
             return PortAvailability.noPermission;
+        }
+        return PortAvailability.inUse;
     }
 
     public static boolean isPortFree(int portNumber) {
