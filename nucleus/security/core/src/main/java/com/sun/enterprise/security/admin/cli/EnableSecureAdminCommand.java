@@ -43,6 +43,7 @@ package com.sun.enterprise.security.admin.cli;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.SecureAdmin;
 import com.sun.enterprise.config.serverbeans.SecureAdminHelper;
+import com.sun.enterprise.config.serverbeans.SecureAdminHelper.SecureAdminCommandException;
 import com.sun.enterprise.config.serverbeans.SecureAdminPrincipal;
 import com.sun.enterprise.security.ssl.SSLUtils;
 import java.io.IOException;
@@ -63,6 +64,7 @@ import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
+import org.jvnet.hk2.config.TransactionFailure;
 
 /**
  * Records that secure admin is to be used and adjusts each admin listener
@@ -130,6 +132,32 @@ public class EnableSecureAdminCommand extends SecureAdminCommand {
 
     private KeyStore keystore = null;
 
+    @Override
+    public void run() throws TransactionFailure, SecureAdminCommandException {
+        try {
+            ensureNoAdminUsersWithEmptyPassword();
+        } catch (SecureAdminCommandException ex) {
+            throw ex;
+        } catch (Exception ex) {
+            throw new TransactionFailure((ex.getMessage() != null ? ex.getMessage() : ""));
+        }
+            super.run();
+    }
+
+    private void ensureNoAdminUsersWithEmptyPassword() throws SecureAdminCommandException {
+        boolean isAdminUserWithoutPassword;
+        try {
+            isAdminUserWithoutPassword = secureAdminHelper.isAnyAdminUserWithoutPassword();
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
+        if (isAdminUserWithoutPassword) {
+            throw new SecureAdminCommandException(Strings.get("adminsWithEmptyPW"));
+        }
+        
+    }
+
+    
     @Override
     Iterator<Work<TopLevelContext>> secureAdminSteps() {
         return stepsIterator(secureAdminSteps);

@@ -55,6 +55,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.util.Enumeration;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.security.common.MasterPassword;
 import org.jvnet.hk2.annotations.Inject;
@@ -71,7 +72,7 @@ import org.jvnet.hk2.component.PerLookup;
 @Scoped(PerLookup.class)
 public class SecureAdminHelperImpl implements SecureAdminHelper {
 
-    
+    private static final char[] emptyPassword = new char[0];
     private final static String DOMAIN_ADMIN_GROUP_NAME = "asadmin";
     
 
@@ -136,32 +137,37 @@ public class SecureAdminHelperImpl implements SecureAdminHelper {
     }
     
     private void validateUser(final String username) throws BadRealmException, NoSuchRealmException {
-        final AuthRealm ar = as.getAssociatedAuthRealm();
-        if (FileRealm.class.getName().equals(ar.getClassname())) {
-            String adminKeyFilePath = ar.getPropertyValue("file");
-            FileRealm fr = new FileRealm(adminKeyFilePath);
-            try {
-                FileRealmUser fru = (FileRealmUser)fr.getUser(username);
-                for (String group : fru.getGroups()) {
-                    if (group.equals(DOMAIN_ADMIN_GROUP_NAME)) {
-                        return;
-                    }
+        final FileRealm fr = adminRealm();
+        try {
+            FileRealmUser fru = (FileRealmUser)fr.getUser(username);
+            for (String group : fru.getGroups()) {
+                if (isInAdminGroup(fru)) {
+                    return;
                 }
-                /*
-                 * The user is valid but is not in the admin group.
-                 */
-                throw new RuntimeException(Strings.get("notAdminUser", username));
-            } catch (NoSuchUserException ex) {
-                /*
-                 * The user is not valid, but use the same error as if the user
-                 * IS present but is not an admin user.  This provides a would-be
-                 * intruder a little less information by not distinguishing 
-                 * between a valid user that's not an admin user and an
-                 * invalid user.
-                 */
-                throw new RuntimeException(Strings.get("notAdminUser", username));
+            }
+            /*
+             * The user is valid but is not in the admin group.
+             */
+            throw new RuntimeException(Strings.get("notAdminUser", username));
+        } catch (NoSuchUserException ex) {
+            /*
+             * The user is not valid, but use the same error as if the user
+             * IS present but is not an admin user.  This provides a would-be
+             * intruder a little less information by not distinguishing 
+             * between a valid user that's not an admin user and an
+             * invalid user.
+             */
+            throw new RuntimeException(Strings.get("notAdminUser", username));
+        }
+    }
+    
+    private boolean isInAdminGroup(final FileRealmUser user) {
+        for (String group : user.getGroups()) {
+            if (group.equals(DOMAIN_ADMIN_GROUP_NAME)) {
+                return true;
             }
         }
+        return false;
     }
     
     private void validatePasswordAlias(final String passwordAlias) 
@@ -171,5 +177,54 @@ public class SecureAdminHelperImpl implements SecureAdminHelper {
         if ( ! masterPasswordHelper.getMasterPasswordAdapter().aliasExists(passwordAlias)) {
             throw new RuntimeException(Strings.get("noAlias", passwordAlias));
         }
+    }
+    private FileRealm adminRealm() throws BadRealmException, NoSuchRealmException {
+        final AuthRealm ar = as.getAssociatedAuthRealm();
+        if (FileRealm.class.getName().equals(ar.getClassname())) {
+            String adminKeyFilePath = ar.getPropertyValue("file");
+            FileRealm fr = new FileRealm(adminKeyFilePath);
+            return fr;
+        }
+        return null;
+    }
+    
+    /**
+     * Returns whether at least one admin user has an empty password.
+     * 
+     * @return true if at least one admin user has an empty password; false otherwise 
+     * @throws BadRealmException
+     * @throws NoSuchRealmException
+     * @throws NoSuchUserException 
+     */
+    @Override
+    public boolean isAnyAdminUserWithoutPassword() throws Exception {
+        final FileRealm adminRealm = adminRealm();
+        for (final Enumeration<String> e = adminRealm.getUserNames(); e.hasMoreElements(); ) {
+            final String username = e.nextElement();
+            final FileRealmUser fru;
+            try {
+                fru = (FileRealmUser) adminRealm.getUser(username);
+                
+                /*
+                 * Try to authenticate this user with an empty password.  If it 
+                 * works we can stop.
+                 */
+                final String[] groupNames = adminRealm.authenticate(username, emptyPassword);
+                if (groupNames != null) {
+                    for (String groupName : groupNames) {
+                        if (DOMAIN_ADMIN_GROUP_NAME.equals(groupName)) {
+                            return true;
+                        }
+                    }
+                }
+                    
+            } catch (NoSuchUserException ex) {
+                /*
+                 * This is odd.  The realm reported a username from getUserNames
+                 * which it now claims it does not know about.  Continue on.
+                 */
+            }
+        }
+        return false;
     }
 }

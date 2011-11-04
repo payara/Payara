@@ -46,6 +46,7 @@ import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.MessageSecurityConfig;
 import com.sun.enterprise.config.serverbeans.ProviderConfig;
 import com.sun.enterprise.config.serverbeans.SecureAdmin;
+import com.sun.enterprise.config.serverbeans.SecureAdminHelper.SecureAdminCommandException;
 import com.sun.enterprise.config.serverbeans.SecurityService;
 import org.glassfish.grizzly.config.dom.FileCache;
 import org.glassfish.grizzly.config.dom.Http;
@@ -830,7 +831,7 @@ public abstract class SecureAdminCommand implements AdminCommand {
      * 
      * @throws TransactionFailure
      */
-    public void run() throws TransactionFailure {
+    public void run() throws TransactionFailure, SecureAdminCommandException {
         ConfigSupport.apply(new SingleConfigCode<Domain>() {
             @Override
             public Object run(Domain domain_w) throws PropertyVetoException, TransactionFailure {
@@ -888,7 +889,7 @@ public abstract class SecureAdminCommand implements AdminCommand {
         } catch (TransactionFailure ex) {
             report.failure(context.getLogger(), Strings.get(transactionErrorMessageKey()), ex);
         } catch (SecureAdminCommandException ex) {
-            report.failure(context.getLogger(), ex.getLocalizedMessage(), ex);
+            report.failure(context.getLogger(), ex.getLocalizedMessage());
         }
     }
     
@@ -903,15 +904,8 @@ public abstract class SecureAdminCommand implements AdminCommand {
             logger.log(Level.SEVERE, Strings.get(transactionErrorMessageKey()), ex);
             throw ex;
         } catch (SecureAdminCommandException ex) {
-            logger.log(Level.SEVERE, ex.getLocalizedMessage(), ex);
+            logger.log(Level.SEVERE, ex.getLocalizedMessage());
             throw ex;
-        }
-    }
-    
-    public static class SecureAdminCommandException extends RuntimeException {
-        
-        public SecureAdminCommandException(String message) {
-            super(message);
         }
     }
 }
