@@ -42,6 +42,7 @@ package com.sun.enterprise.admin.remote;
 
 import com.sun.enterprise.admin.util.AuthenticationInfo;
 import com.sun.enterprise.admin.util.HttpConnectorAddress;
+import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.SecureAdmin;
 import com.sun.enterprise.config.serverbeans.SecureAdminInternalUser;
 import com.sun.enterprise.security.ssl.SSLUtils;
@@ -83,7 +84,8 @@ public class ServerRemoteAdminCommand extends RemoteAdminCommand {
 
     private synchronized void completeInit(final Habitat habitat) {
         this.habitat = habitat;
-        secureAdmin = habitat.getComponent(SecureAdmin.class);
+        final Domain domain = habitat.getComponent(Domain.class);
+        secureAdmin = domain.getSecureAdmin();
         serverEnv = habitat.getComponent(ServerEnvironment.class);
         setInteractive(false);
     }
