@@ -81,6 +81,7 @@
     />
     
  </event>
+"    <script type="text/javascript">admingui.nav.selectTreeNodeById(admingui.nav.TREE_ID+":standaloneTreeNode");</script>
             <sun:form id="propertyForm">
 #include "/cluster/standalone/standaloneInstanceTabs.inc"
 

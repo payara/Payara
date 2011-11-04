@@ -70,6 +70,7 @@
         setPageSessionAttribute(key="parentUrl" value="#{sessionScope.REST_URL}/servers");
         setPageSessionAttribute(key="childType" value="server");
         createMap(result="#{requestScope.listInstanceAttrMap}");
+        setPageSessionAttribute(key="clusterInstancesPage" value="#{true}" )
         mapPut(map="#{requestScope.listInstanceAttrMap}" key="whichtarget" value="#{pageSession.encodedClusterName}")
         gfr.getInstancesStatus();
         gf.getMapKeys(Map="#{pageSession.instanceStatusMap}" Keys="#{pageSession.instancesName}");
@@ -77,7 +78,7 @@
         />
     
     </event>
-"    <script type="text/javascript">admingui.nav.selectTreeNodeById(admingui.nav.TREE_ID+":instances");</script>
+"    <script type="text/javascript">admingui.nav.selectTreeNodeById(admingui.nav.TREE_ID+":clusterTreeNode");</script>
 <sun:form id="propertyForm">
 
 #include "/cluster/cluster/clusterTabs.inc"

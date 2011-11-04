@@ -81,6 +81,7 @@
         <!insert name="extraButton3">
         </insert>
 
-
+        <!insert name="extraDropDown">
+        </insert>
      </sun:panelGroup>
  </facet>

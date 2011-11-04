@@ -498,6 +498,31 @@ public class ClusterHandler {
         handlerCtx.setOutputValue("out",  out);
     }
 
+    @Handler(id = "gf.changeClusterStatus",
+        input = {
+            @HandlerInput(name = "selectedRows", type = List.class, required = true),
+            @HandlerInput(name = "clusterName", type = String.class, required = true),
+            @HandlerInput(name = "Enabled", type = String.class, required = true),
+            @HandlerInput(name = "forLB", type = Boolean.class, required = true)})
+    public static void changeClusterStatus(HandlerContext handlerCtx) {
+       String Enabled = (String) handlerCtx.getInputValue("Enabled");
+        String clusterName = (String) handlerCtx.getInputValue("clusterName");
+        List<Map>  selectedRows = (List) handlerCtx.getInputValue("selectedRows");
+        boolean forLB = (Boolean) handlerCtx.getInputValue("forLB");
+        for(Map oneRow : selectedRows){
+            Map attrs = new HashMap();
+            String name = (String) oneRow.get("name");
+            String endpoint = GuiUtil.getSessionValue("REST_URL") + "/clusters/cluster/" + clusterName + "/server-ref/" + name;
+            if(forLB){
+                attrs.put("lbEnabled", Enabled);
+                RestUtil.restRequest(endpoint, attrs, "post", handlerCtx, false);
+            }else{
+                attrs.put("enabled", Enabled);
+                RestUtil.restRequest(endpoint, attrs, "post", handlerCtx, false);
+            }
+        }
+     }
+
     public static final String CLUSTER_RESOURCE_NAME = "org.glassfish.cluster.admingui.Strings";
 
     //The following is defined in v3/cluster/admin/src/main/java/..../cluster/Constants.java
