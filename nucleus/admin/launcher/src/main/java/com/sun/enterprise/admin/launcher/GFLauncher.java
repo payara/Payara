@@ -830,7 +830,7 @@ public abstract class GFLauncher {
             sb.append(s);
         }
         if (!isFakeLaunch()) {
-            GFLauncherLogger.info("commandline", sb.toString());
+            GFLauncherLogger.fine("commandline", sb.toString());
         }
     }
 
