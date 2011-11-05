@@ -43,9 +43,11 @@ import com.sun.enterprise.universal.process.WindowsException;
 import com.sun.enterprise.universal.glassfish.TokenResolver;
 import com.sun.enterprise.universal.process.WindowsCredentials;
 import com.sun.enterprise.universal.process.WindowsRemoteScripter;
+import com.sun.enterprise.universal.process.WindowsWmi;
 import com.sun.enterprise.util.io.WindowsRemoteFileSystem;
 import java.io.IOException;
 import java.net.*;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.glassfish.api.admin.CommandValidationException;
 import static com.sun.enterprise.util.StringUtils.ok;
@@ -108,6 +110,9 @@ public class ValidateDcom implements AdminCommand {
                 return;
 
             if (!testDcomFileWrite())
+                return;
+
+            if (!testWMI())
                 return;
 
             if (!testRemoteScript())
@@ -201,6 +206,34 @@ public class ValidateDcom implements AdminCommand {
             setError(ex, Strings.get("dcom.no.write", SCRIPT_NAME, testdir, host));
             return false;
         }
+        return true;
+    }
+
+    private boolean testWMI() {
+        int count = -1;
+        try {
+            WindowsWmi ww = new WindowsWmi(creds);
+            count = ww.getCount();
+
+            String[] info = ww.getInfo();
+            out.append(Strings.get("dcom.wmi.procinfolegend"));
+            for(String s : info) {
+                // e.g. '\tCommandLine = "xxxxx"'
+                String[] lines = s.split("[\t\n\r]");
+                for(String line : lines) {
+                    if(line.startsWith("CommandLine")){
+                        out.append("    ").append(line).append('\n');
+                        break;
+                    }
+                }
+                //out.append(s);
+            }
+        }
+        catch (WindowsException ex) {
+            setError(ex, Strings.get("dcom.no.wmi", host));
+            return false;
+        }
+        out.append(Strings.get("dcom.wmi.ok", host, count)).append('\n');
         return true;
     }
 
