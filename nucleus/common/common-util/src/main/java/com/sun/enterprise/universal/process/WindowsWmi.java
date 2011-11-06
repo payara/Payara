@@ -130,8 +130,6 @@ public class WindowsWmi {
 
     private void setCount() throws WindowsException {
         try {
-            System.gc();
-
             JIVariant[] results = dispatch.callMethodA("ConnectServer", crazyLongMicrosoftArgs);
             IJIDispatch wbemServices_dispatch = (IJIDispatch) JIObjectFactory.narrowObject((results[0]).getObjectAsComObject());
             JIVariant[] results2 = wbemServices_dispatch.callMethodA("InstancesOf", new Object[]{new JIString("Win32_Process"), new Integer(0), JIVariant.OPTIONAL_PARAM()});
