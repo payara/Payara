@@ -85,6 +85,8 @@ public class ValidateDcom implements AdminCommand {
     private String windowsdomain;
     @Param(name = "remotetestdir", optional = true, defaultValue = "C:\\")
     private String testdir;
+    @Param(optional = true, shortName = "v", defaultValue = "false")
+    private boolean verbose;
     private TokenResolver resolver = new TokenResolver();
     private ActionReport report;
     private Logger logger;
@@ -214,19 +216,19 @@ public class ValidateDcom implements AdminCommand {
         try {
             WindowsWmi ww = new WindowsWmi(creds);
             count = ww.getCount();
-
-            String[] info = ww.getInfo();
-            out.append(Strings.get("dcom.wmi.procinfolegend"));
-            for(String s : info) {
-                // e.g. '\tCommandLine = "xxxxx"'
-                String[] lines = s.split("[\t\n\r]");
-                for(String line : lines) {
-                    if(line.startsWith("CommandLine")){
-                        out.append("    ").append(line).append('\n');
-                        break;
+            if (verbose) {
+                String[] info = ww.getInfo();
+                out.append(Strings.get("dcom.wmi.procinfolegend"));
+                for (String s : info) {
+                    // e.g. '\tCommandLine = "xxxxx"'
+                    String[] lines = s.split("[\t\n\r]");
+                    for (String line : lines) {
+                        if (line.startsWith("CommandLine")) {
+                            out.append("    ").append(line).append('\n');
+                            break;
+                        }
                     }
                 }
-                //out.append(s);
             }
         }
         catch (WindowsException ex) {
