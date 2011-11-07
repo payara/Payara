@@ -109,7 +109,7 @@ public abstract class ResourcesGeneratorBase implements ResourcesGenerator {
                 ConfigModel childModel = node.getModel();
                 List<ConfigModel> subChildConfigModels = ResourceUtil.getRealChildConfigModels(childModel, domDocument);
                 for (ConfigModel subChildConfigModel : subChildConfigModels) {
-                    if (ResourceUtil.isOnlyATag(subChildConfigModel) || subChildConfigModel.getAttributeNames().isEmpty() || hasSingletonAnnotation(subChildConfigModel)) {
+                    if (ResourceUtil.isOnlyATag(childModel) || ResourceUtil.isOnlyATag(subChildConfigModel) || subChildConfigModel.getAttributeNames().isEmpty() || hasSingletonAnnotation(subChildConfigModel)) {
                         String childResourceClassName = getClassName(ResourceUtil.getUnqualifiedTypeName(subChildConfigModel.targetTypeName));
                         String childPath = subChildConfigModel.getTagName();
                         classWriter.createGetChildResource(childPath, childResourceClassName);
@@ -436,7 +436,7 @@ public abstract class ResourcesGeneratorBase implements ResourcesGenerator {
 
     private boolean hasSingletonAnnotation(ConfigModel model) {
         
-         Class<? extends ConfigBeanProxy> cbp = null;
+        Class<? extends ConfigBeanProxy> cbp = null;
         try {
             cbp = (Class<? extends ConfigBeanProxy>) model.classLoaderHolder.get().loadClass(model.targetTypeName);
             if (cbp != null) {

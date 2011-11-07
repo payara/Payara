@@ -39,9 +39,9 @@
  */
 package org.glassfish.admin.rest;
 
-import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.jersey.api.container.ContainerFactory;
+import com.sun.jersey.api.container.filter.CsrfProtectionFilter;
 import com.sun.jersey.api.core.ResourceConfig;
 import org.glassfish.admin.rest.resources.StatusGenerator;
 import org.glassfish.admin.rest.resources.custom.ManagementProxyResource;
@@ -49,7 +49,6 @@ import org.glassfish.admin.rest.results.ActionReportResult;
 import org.glassfish.admin.rest.utils.xml.RestActionReporter;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.container.EndpointRegistrationException;
-import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.container.filter.LoggingFilter;
 import com.sun.jersey.api.core.DefaultResourceConfig;
 import com.sun.jersey.spi.inject.SingletonTypeInjectableProvider;
@@ -111,6 +110,8 @@ public class LazyJerseyInit implements LazyJerseyInterface {
         rc.getMediaTypeMappings().put("json", MediaType.APPLICATION_JSON_TYPE);
         rc.getMediaTypeMappings().put("html", MediaType.TEXT_HTML_TYPE);
         rc.getMediaTypeMappings().put("js", new MediaType("application", "x-javascript"));
+        
+        rc.getContainerRequestFilters().add(CsrfProtectionFilter.class);
 
         RestConfig restConf = ResourceUtil.getRestConfig(habitat);
         if (restConf != null) {

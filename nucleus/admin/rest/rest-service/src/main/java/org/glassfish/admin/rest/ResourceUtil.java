@@ -960,8 +960,8 @@ public class ResourceUtil {
      * @return name of the key attribute for the given model.
      */
     private static String getKey(Dom model) {
-        String key = null;
-        if (model.getKey() == null) {
+        String key = model.getKey();
+        if (key == null) {
             for (String s : model.getAttributeNames()) {//no key, by default use the name attr
                 if (s.equals("name")) {
                     key = model.attribute(s) ;
@@ -975,11 +975,10 @@ public class ResourceUtil {
                 } else {
                     //TODO carried forward from old generator. Should never reach here. But we do for ConfigExtension and WebModuleConfig
                     key = "ThisIsAModelBug:NoKeyAttr"; //no attr choice fo a key!!! Error!!!
+                    key="";
                 }
 
             }
-        } else {
-            key = model.getKey();
         }
         return key;
     }
