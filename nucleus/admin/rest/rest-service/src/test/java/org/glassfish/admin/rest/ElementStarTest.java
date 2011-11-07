@@ -120,6 +120,6 @@ public class ElementStarTest extends RestTestBase {
 
         response = get ("/domain/lb-configs/lb-config/" + lbName + "/server-ref");
         Map<String, String> children = this.getChildResources(response);
-        assertEquals(1, children.size());
+        assertTrue(!children.isEmpty());
     }
 }

@@ -62,7 +62,7 @@ public class TokenAuthenticationTest extends RestTestBase {
 
     @Test
     public void testTokenCreateAndDelete() {
-        deleteUserAuthTestUser(); // just in case
+        deleteUserAuthTestUser(null); // just in case
         //Verify a session token got created
         String token = getSessionToken();
 
@@ -83,10 +83,11 @@ public class TokenAuthenticationTest extends RestTestBase {
             put("groups", TEST_GROUP);
             put("AS_ADMIN_USERPASSWORD", AUTH_PASSWORD);
         }};
+        String token = null;
 
         try {
             // Delete the test user if it exists
-            deleteUserAuthTestUser();
+            deleteUserAuthTestUser(token);
 
             // Verify that we can get unauthenticated access to the server
             ClientResponse response = get("/domain");
@@ -102,7 +103,7 @@ public class TokenAuthenticationTest extends RestTestBase {
 
             // Authenticate, get the token, then "clear" the authentication
             authenticate();
-            String token = getSessionToken();
+            token = getSessionToken();
             resetClient();
 
             // Build this request manually so we can pass the cookie
@@ -114,7 +115,7 @@ public class TokenAuthenticationTest extends RestTestBase {
             assertFalse(isSuccess(response));
         } finally {
             // Clean up after ourselves
-            deleteUserAuthTestUser();
+            deleteUserAuthTestUser(token);
         }
     }
 
@@ -126,13 +127,21 @@ public class TokenAuthenticationTest extends RestTestBase {
         return (String)extraProperties.get("token");
     }
 
-    private void deleteUserAuthTestUser() {
-        ClientResponse response = delete(URL_DELETE_USER, new HashMap<String, String>() {{ put("id", AUTH_USER_NAME); }});
-        if (response.getStatus() == 401) {
-            authenticate();
-            response = delete(URL_DELETE_USER, new HashMap<String, String>() {{ put("id", AUTH_USER_NAME); }});
+    private void deleteUserAuthTestUser(String token) {
+        if (token != null) {
+            final String address = getAddress(URL_DELETE_USER);
+            ClientResponse response = client.resource(address).queryParam("id", AUTH_USER_NAME)
+                    .cookie(new Cookie(GF_REST_TOKEN_COOKIE_NAME, token)).delete(ClientResponse.class);            
             assertTrue(isSuccess(response));
             resetClient();
+        } else {
+            ClientResponse response = delete(URL_DELETE_USER, new HashMap<String, String>() {{ put("id", AUTH_USER_NAME); }});
+            if (response.getStatus() == 401) {
+                authenticate();
+                response = delete(URL_DELETE_USER, new HashMap<String, String>() {{ put("id", AUTH_USER_NAME); }});
+                assertTrue(isSuccess(response));
+                resetClient();
+            }
         }
     }
 }

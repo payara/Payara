@@ -47,17 +47,21 @@ import com.sun.jersey.api.client.filter.HTTPBasicAuthFilter;
 import com.sun.jersey.core.util.MultivaluedMapImpl;
 import com.sun.jersey.multipart.FormDataMultiPart;
 import com.sun.jersey.multipart.file.FileDataBodyPart;
-import java.io.ByteArrayInputStream;
-import java.io.File;
+import java.io.*;
 
 import java.math.BigInteger;
+import java.net.URL;
+import java.net.URLConnection;
 import java.security.SecureRandom;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import org.glassfish.admin.rest.clientutils.MarshallingUtils;
+import org.junit.AfterClass;
 import org.junit.Before;
 import static org.junit.Assert.*;
 
@@ -75,6 +79,8 @@ public class RestTestBase {
     protected static String adminHost;
     protected static String adminPort;
     protected static String instancePort;
+    
+    private static String currentTestClass = "";
 
     @BeforeClass
     public static void initialize() {
@@ -82,6 +88,28 @@ public class RestTestBase {
         instancePort = getParameter("instance.port", "8080");
         adminHost  = getParameter("instance.host", "localhost");
         baseUrl =  "http://" + adminHost + ':'  + adminPort + '/';
+        
+        final RestTestBase rtb = new RestTestBase();
+        rtb.client = Client.create();
+        rtb.get("/domain/rotate-log");
+    }
+
+    @AfterClass
+    public static void captureLog() {
+        try {
+
+            if (!currentTestClass.isEmpty()) {
+                RestTestBase rtb = new RestTestBase();
+                rtb.client = Client.create();
+                ClientResponse cr = rtb.client.resource(rtb.getAddress("/domain/view-log")).get(ClientResponse.class);
+
+                PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter("target/surefire-reports/" + currentTestClass + "-server.log")));
+                out.write(cr.getEntity(String.class));
+                out.close();
+            }
+        } catch (Exception ex) {
+            Logger.getLogger(RestTestBase.class.getName()).log(Level.INFO, null, ex);
+        }
     }
 
     protected static String getBaseUrl() {
@@ -98,6 +126,7 @@ public class RestTestBase {
             client = Client.create();
             client.addFilter(new CsrfProtectionFilter());
         }
+        currentTestClass = this.getClass().getName();
     }
 
     protected String getAddress(String address) {
