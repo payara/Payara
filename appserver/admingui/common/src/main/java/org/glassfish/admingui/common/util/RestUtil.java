@@ -48,8 +48,6 @@ package org.glassfish.admingui.common.util;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-import javax.security.auth.message.AuthException;
-import javax.servlet.RequestDispatcher;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
@@ -82,6 +80,7 @@ import javax.net.ssl.SSLSession;
 import com.sun.enterprise.security.SecurityServicesUtil;
 import com.sun.enterprise.config.serverbeans.SecureAdmin;
 import com.sun.enterprise.security.ssl.SSLUtils;
+import com.sun.jersey.api.client.filter.CsrfProtectionFilter;
 import com.sun.jersey.client.urlconnection.HTTPSProperties;
 import org.jvnet.hk2.component.Habitat;
 
@@ -283,7 +282,6 @@ public class RestUtil {
         return valueMap;
     }
 
-
     private static String getMessage(Map aMap){
         String message = "";
         if (aMap != null){
@@ -397,7 +395,6 @@ public class RestUtil {
         }
         return null;
     }
-
 
     public static boolean hasWarning(Map responseMap){
         if (responseMap.get("data") != null){
@@ -781,7 +778,7 @@ public class RestUtil {
     //******************************************************************************************************************
     // Jersey client methods
     //******************************************************************************************************************
-     public static void initialize(Client client){
+    public static void initialize(Client client){
         if (client == null){
             client = JERSEY_CLIENT;
         }
@@ -791,6 +788,7 @@ public class RestUtil {
             HTTPSProperties httpsProperties = new HTTPSProperties(new BasicHostnameVerifier(),
                 habitat.getComponent(SSLUtils.class).getAdminSSLContext(SecureAdmin.Util.DASAlias(secureAdmin), null ));
             client.getProperties().put(HTTPSProperties.PROPERTY_HTTPS_PROPERTIES, httpsProperties);
+            client.addFilter(new CsrfProtectionFilter());
         }catch(Exception ex){
             GuiUtil.getLogger().warning("RestUtil.initialize() failed");
             if (GuiUtil.getLogger().isLoggable(Level.FINE)){
