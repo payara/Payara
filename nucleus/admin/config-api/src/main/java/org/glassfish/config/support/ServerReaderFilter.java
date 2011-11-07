@@ -42,6 +42,7 @@ package org.glassfish.config.support;
 
 import java.io.*;
 import java.net.*;
+import java.nio.charset.Charset;
 import java.util.*;
 import java.util.logging.*;
 import javax.xml.stream.*;
@@ -58,7 +59,7 @@ abstract class ServerReaderFilter extends XMLStreamReaderFilter {
             domainXml = theDomainXml;
             xif = theXif;
             stream = domainXml.openStream();
-            setParent(xif.createXMLStreamReader(domainXml.toExternalForm(), stream));
+            setParent(xif.createXMLStreamReader(stream, Charset.defaultCharset().toString()));
         }
         catch(IOException e) {
             throw new XMLStreamException(e);
