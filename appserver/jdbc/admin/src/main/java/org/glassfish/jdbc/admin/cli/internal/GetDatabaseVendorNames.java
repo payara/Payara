@@ -66,7 +66,7 @@ import org.glassfish.api.admin.RestEndpoints;
 @RestEndpoints({
     @RestEndpoint(configBean=Resources.class,
         opType=RestEndpoint.OpType.GET, 
-        path="_get-database-vendor-names", 
+        path="get-database-vendor-names", 
         description="Get Database Vendor Names")
 })
 public class GetDatabaseVendorNames implements AdminCommand {
