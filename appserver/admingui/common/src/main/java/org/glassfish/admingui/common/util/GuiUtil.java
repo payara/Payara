@@ -173,7 +173,7 @@ public class GuiUtil {
         sessionMap.put("supportCluster", Boolean.FALSE);
         Map version = RestUtil.restRequest(sessionMap.get("REST_URL")+"/version", null, "GET" ,null, false);
         sessionMap.put("appServerVersion", ((Map)version.get("data")).get("message"));
-        Map locations = RestUtil.restRequest(sessionMap.get("REST_URL")+"/location", null, "GET" ,null, false);
+        Map locations = RestUtil.restRequest(sessionMap.get("REST_URL")+"/locations", null, "GET" ,null, false);
         final String installDir = (String)((Map) ((Map) locations.get("data")).get("properties")).get("Base-Root");
         sessionMap.put("baseRootDir", installDir);
         sessionMap.put("topDir", (new File (installDir)).getParent());
