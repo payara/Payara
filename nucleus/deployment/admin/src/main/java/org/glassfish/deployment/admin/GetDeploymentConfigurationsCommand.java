@@ -75,7 +75,10 @@ import org.glassfish.api.admin.RestParam;
 @Scoped(PerLookup.class)
 @CommandLock(CommandLock.LockType.NONE)
 @RestEndpoints({
-    @RestEndpoint(configBean=Application.class,opType=RestEndpoint.OpType.GET, path="Get Deployment Configurations",
+    @RestEndpoint(configBean=Application.class,
+        opType=RestEndpoint.OpType.GET, 
+        path="_get-deployment-configurations",
+        description="Get Deployment Configurations",
         params={@RestParam(name="appname", value="$parent")})
 })
 public class GetDeploymentConfigurationsCommand implements AdminCommand {
