@@ -76,7 +76,7 @@ import org.glassfish.deployment.common.DeploymentUtils;
 @RestEndpoints({
     @RestEndpoint(configBean=Applications.class,
         opType=RestEndpoint.OpType.GET, 
-        path="list-applications-refs", 
+        path="list-application-refs", 
         description="list-applications-refs")
 })
 public class ListApplicationRefsCommand implements AdminCommand {
