@@ -40,6 +40,8 @@
 
 package org.glassfish.web.plugin.common;
 
+import org.glassfish.web.config.serverbeans.EnvEntry;
+import org.glassfish.web.config.serverbeans.WebModuleConfig;
 import com.sun.enterprise.config.serverbeans.Application;
 import java.text.MessageFormat;
 import org.glassfish.api.ActionReport;

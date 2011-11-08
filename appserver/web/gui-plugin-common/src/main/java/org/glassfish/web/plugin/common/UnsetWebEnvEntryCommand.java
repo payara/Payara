@@ -40,6 +40,7 @@
 
 package org.glassfish.web.plugin.common;
 
+import org.glassfish.web.config.serverbeans.WebModuleConfig;
 import com.sun.enterprise.config.serverbeans.Application;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;

@@ -45,10 +45,10 @@ import com.sun.enterprise.config.serverbeans.Applications;
 import com.sun.enterprise.config.serverbeans.Engine;
 import com.sun.enterprise.config.serverbeans.Module;
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import java.util.List;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
+import org.glassfish.web.config.serverbeans.WebModuleConfig;
 import org.jvnet.hk2.annotations.Inject;
 
 /**

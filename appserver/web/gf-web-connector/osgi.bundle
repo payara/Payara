@@ -38,4 +38,7 @@
 # holder.
 #
 
--exportcontents: org.glassfish.web.sniffer; version=${project.osgi.version}
+-exportcontents: org.glassfish.web.sniffer; \
+		 org.glassfish.web.config.serverbeans; \
+                 org.glassfish.web.plugin.common; \
+		 version=${project.osgi.version}

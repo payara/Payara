@@ -64,7 +64,7 @@
                         com.sun.enterprise.web.util; \
                         com.sun.web.server; \
                         org.glassfish.web; \
-                        org.glassfish.web.config.serverbeans; \
+                        
                         version=${project.osgi.version}
 
 Import-Package: \

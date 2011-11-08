@@ -42,11 +42,8 @@ package com.sun.enterprise.web;
 
 import com.sun.enterprise.deployment.EnvironmentProperty;
 import com.sun.enterprise.deployment.WebBundleDescriptor;
-import com.sun.enterprise.deployment.runtime.web.SessionConfig;
 import com.sun.enterprise.deployment.runtime.web.SessionManager;
-import com.sun.enterprise.deployment.runtime.web.SessionProperties;
 import com.sun.enterprise.deployment.runtime.web.SunWebApp;
-import com.sun.enterprise.deployment.runtime.web.WebProperty;
 import com.sun.enterprise.deployment.web.ContextParameter;
 import com.sun.enterprise.deployment.web.EnvironmentEntry;
 import com.sun.enterprise.util.Result;
@@ -60,8 +57,8 @@ import org.glassfish.api.deployment.UndeployCommandParameters;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
 import org.glassfish.deployment.common.ApplicationConfigInfo;
 import org.glassfish.deployment.common.DeploymentProperties;
-import org.glassfish.web.plugin.common.ContextParam;
-import org.glassfish.web.plugin.common.EnvEntry;
+import org.glassfish.web.config.serverbeans.ContextParam;
+import org.glassfish.web.config.serverbeans.EnvEntry;
 
 import java.lang.reflect.Method;
 import java.text.MessageFormat;
@@ -79,7 +76,7 @@ public class WebApplication implements ApplicationContainer<WebBundleDescriptor>
     private final WebContainer container;
     private final WebModuleConfig wmInfo;
     private Set<WebModule> webModules = new HashSet<WebModule>();
-    private final org.glassfish.web.plugin.common.WebModuleConfig appConfigCustomizations;
+    private final org.glassfish.web.config.serverbeans.WebModuleConfig appConfigCustomizations;
 
     public WebApplication(WebContainer container, WebModuleConfig config, 
             final ApplicationConfigInfo appConfigInfo) {
@@ -261,7 +258,7 @@ public class WebApplication implements ApplicationContainer<WebBundleDescriptor>
      * @param appConfigInfo
      * @return
      */
-    private org.glassfish.web.plugin.common.WebModuleConfig extractCustomizations(
+    private org.glassfish.web.config.serverbeans.WebModuleConfig extractCustomizations(
             final ApplicationConfigInfo appConfigInfo) {
         return appConfigInfo.get(trimmedModuleName(wmInfo.getName()), "web");
     }

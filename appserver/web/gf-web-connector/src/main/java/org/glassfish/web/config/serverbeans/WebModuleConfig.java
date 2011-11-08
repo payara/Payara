@@ -38,7 +38,7 @@
  * holder.
  */
 
-package org.glassfish.web.plugin.common;
+package org.glassfish.web.config.serverbeans;
 
 import com.sun.enterprise.config.serverbeans.ApplicationConfig;
 import com.sun.enterprise.config.serverbeans.Engine;
@@ -91,7 +91,7 @@ public interface WebModuleConfig extends ConfigBeanProxy, ApplicationConfig, Inj
 
     @DuckTyped public List<ContextParam> contextParamsMatching(final String nameOrNull);
 
-    class Duck {
+    public class Duck {
 
         public static EnvEntry getEnvEntry(final WebModuleConfig instance,
                 final String name) {
@@ -183,7 +183,7 @@ public interface WebModuleConfig extends ConfigBeanProxy, ApplicationConfig, Inj
 
         }
 
-        static WebModuleConfig webModuleConfig(final Engine engine) {
+        public static WebModuleConfig webModuleConfig(final Engine engine) {
             return (WebModuleConfig) engine.getApplicationConfig();
         }
     }

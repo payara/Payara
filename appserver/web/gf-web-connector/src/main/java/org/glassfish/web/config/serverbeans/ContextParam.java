@@ -38,7 +38,7 @@
  * holder.
  */
 
-package org.glassfish.web.plugin.common;
+package org.glassfish.web.config.serverbeans;
 
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.ConfigBeanProxy;

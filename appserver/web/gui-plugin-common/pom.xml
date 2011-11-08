@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <!--
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
@@ -116,6 +115,11 @@
         <dependency>
             <groupId>org.glassfish.admin</groupId>
             <artifactId>config-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.web</groupId>
+            <artifactId>gf-web-connector</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>
