@@ -110,7 +110,7 @@ public class ClusterReaderImpl implements ClusterReader {
     @Override
     public HealthCheckerReader getHealthChecker() throws LbReaderException {
 
-        if (_cluster == null) {
+        if (_clusterRef == null) {
             return HealthCheckerReaderImpl.getDefaultHealthChecker();
         }
 
