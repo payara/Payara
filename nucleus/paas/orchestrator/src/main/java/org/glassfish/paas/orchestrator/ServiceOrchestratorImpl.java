@@ -47,9 +47,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -57,19 +54,25 @@ import org.glassfish.api.admin.AdminCommandLock;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.OpsParams;
 import org.glassfish.api.deployment.archive.ReadableArchive;
-import org.glassfish.deployment.common.DeploymentException;
 import org.glassfish.embeddable.CommandResult;
 import org.glassfish.embeddable.CommandRunner;
 import org.glassfish.hk2.scopes.Singleton;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
-import org.glassfish.paas.orchestrator.provisioning.ServiceInfo;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceUtil;
-import org.glassfish.paas.orchestrator.service.ServiceType;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceDescription;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceMetadata;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceReference;
 import org.glassfish.paas.orchestrator.service.spi.Plugin;
 import org.glassfish.paas.orchestrator.service.spi.ProvisionedService;
+import org.glassfish.paas.orchestrator.state.*;
+import org.glassfish.paas.orchestrator.state.DeployState;
+import org.glassfish.paas.orchestrator.state.PostDeployAssociationState;
+import org.glassfish.paas.orchestrator.state.PostUndeployDissociationState;
+import org.glassfish.paas.orchestrator.state.PreDeployAssociationState;
+import org.glassfish.paas.orchestrator.state.PreUndeployDissociationState;
+import org.glassfish.paas.orchestrator.state.ProvisioningState;
+import org.glassfish.paas.orchestrator.state.ServiceDependencyDiscoveryState;
+import org.glassfish.paas.orchestrator.state.UndeployState;
 import org.glassfish.virtualization.spi.VirtualCluster;
 import org.glassfish.virtualization.runtime.VirtualClusters;
 import org.glassfish.virtualization.spi.AllocationStrategy;
@@ -97,6 +100,15 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
     private Map<String, ServiceMetadata> serviceMetadata = new HashMap<String, ServiceMetadata>();
     private Map<String, Set<ProvisionedService>> provisionedServices = new HashMap<String, Set<ProvisionedService>>();
 
+    private static final Class [] PRE_DEPLOY_PHASE_STATES = {ServiceDependencyDiscoveryState.class, ProvisioningState.class,
+            PreDeployAssociationState.class, DeployState.class};
+    private static final Class [] POST_DEPLOY_PHASE_STATES = {PostDeployAssociationState.class};
+    private static final Class [] PRE_UNDEPLOY_PHASE_STATES = {PreUndeployDissociationState.class, UndeployState.class};
+    private static final Class [] POST_UNDEPLOY_PHASE_STATES = {PostUndeployDissociationState.class, UnprovisioningState.class};
+    private static final Class [] ENABLE_PHASE_STATES = {ServiceDependencyDiscoveryState.class, EnableState.class};
+    private static final Class [] DISABLE_PHASE_STATES = {DisableState.class};
+    private static final Class [] SERVER_STARTUP_PHASE_STATES = {ServiceDependencyDiscoveryState.class, ServerStartupState.class};
+
     private static Logger logger = Logger.getLogger(ServiceOrchestratorImpl.class.getName());
 
     public Set<Plugin> getPlugins() {
@@ -119,55 +131,6 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
                 serviceTypes.put(serviceType, plugin);
             }
         }
-    }
-
-
-    /**
-     * Discover the dependencies of the application and provision the various 
-     * Services that are needed by the application.
-     * 
-     * @param appName Application Name
-     * @param archive Application Archive
-     * @param dc DeploymentContext associated with the current deployment operation
-     */
-    private void provisionServicesForApplication(String appName, ReadableArchive archive, DeploymentContext dc) {
-        logger.entering(getClass().getName(), "provisionServicesForApplication");
-        //Get all plugins installed in this runtime
-        Set<Plugin> installedPlugins = getPlugins();
-
-        //1. Perform service dependency discovery
-        ServiceMetadata appServiceMetadata = serviceDependencyDiscovery(appName, archive, installedPlugins);
-
-        //2. Provision dependent services
-        Set<ProvisionedService> appProvisionedSvcs = provisionServices(installedPlugins, appServiceMetadata, dc);
-        logger.log(Level.FINE, "Provisioned Services for Application " + appName + " : " + appProvisionedSvcs);
-        serviceMetadata.put(appName, appServiceMetadata);
-        provisionedServices.put(appName, appProvisionedSvcs);
-
-        //3. Associate provisioned services with each other
-        associateProvisionedServices(installedPlugins, appServiceMetadata,
-                appProvisionedSvcs, true /*before deployment*/, dc);
-        logger.exiting(getClass().getName(), "provisionServicesForApplication");
-    }
-
-    public void postDeploy(String appName, ReadableArchive archive, DeploymentContext dc) {
-        logger.entering(getClass().getName(), "postDeploy");
-        //4b. post-deployment association
-
-        Set<Plugin> installedPlugins = getPlugins();
-        ServiceMetadata appServiceMetadata = getServiceMetadata(appName);
-        Set<ProvisionedService> appProvisionedSvcs = getProvisionedServices(appName);
-        associateProvisionedServices(installedPlugins, appServiceMetadata,
-                appProvisionedSvcs, false /*after deployment*/, dc);
-
-        //TODO should we remove them, or book keep it till its stopped/undeployed ?
-        //serviceMetadata.remove(appName);
-        //provisionedServices.remove(appName);
-        logger.exiting(getClass().getName(), "postDeploy");
-    }
-
-    private Set<ProvisionedService> getProvisionedServices(String appName) {
-        return provisionedServices.get(appName);
     }
 
 
@@ -201,217 +164,78 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
         */
     }
 
-    public void prepareForUndeploy(String appName, ReadableArchive archive, DeploymentContext dc) {
-        logger.entering(getClass().getName(), "prepareForUndeploy");
-        //Get all plugins installed in this runtime
-        Set<Plugin> installedPlugins = getPlugins();
-
-        ServiceMetadata appServiceMetadata = getServiceMetadata(appName);
-        if(appServiceMetadata == null){
-            appServiceMetadata =
-                    serviceDependencyDiscovery(appName, archive, installedPlugins);
-            serviceMetadata.put(appName, appServiceMetadata);
-        }
-
-        Set<ProvisionedService> appProvisionedServices = getProvisionedServices(appName);
-        if(appProvisionedServices == null){
-            appProvisionedServices =
-                    retrieveProvisionedServices(installedPlugins, appServiceMetadata, dc);
-            provisionedServices.put(appName, appProvisionedServices);
-        }
-
-        dissociateProvisionedServices(installedPlugins, appServiceMetadata, appProvisionedServices, true, dc);
+    public Set<ProvisionedService> getProvisionedServices(String appName) {
+        return provisionedServices.get(appName);
     }
 
-    private ServiceMetadata getServiceMetadata(String appName) {
+    public ServiceMetadata getServiceMetadata(String appName) {
         return serviceMetadata.get(appName);
     }
 
-    public void postUndeploy(String appName, ReadableArchive archive, DeploymentContext dc) {
+    private void orchestrateTask(Class[] tasks, String appName, DeploymentContext dc) {
+        for(Class clz : tasks){
+            PaaSDeploymentState state = habitat.getByType(clz.getName());
+            PaaSDeploymentContext pc = new PaaSDeploymentContext(appName, dc, this);
+            state.handle(pc);
+        }
+    }
+
+    /**
+     * Discover the dependencies of the application and provision the various
+     * Services that are needed by the application.
+     *
+     * @param appName Application Name
+     * @param dc DeploymentContext associated with the current deployment operation
+     */
+    private void provisionServicesForApplication(String appName, DeploymentContext dc) {
+        logger.entering(getClass().getName(), "provisionServicesForApplication");
+        orchestrateTask(PRE_DEPLOY_PHASE_STATES, appName, dc);
+        logger.exiting(getClass().getName(), "provisionServicesForApplication");
+    }
+
+    public void postDeploy(String appName, DeploymentContext dc) {
+        logger.entering(getClass().getName(), "postDeploy");
+        orchestrateTask(POST_DEPLOY_PHASE_STATES, appName, dc);
+        logger.exiting(getClass().getName(), "postDeploy");
+    }
+
+    public void startup(String appName, DeploymentContext dc) {
+        logger.entering(getClass().getName(), "server-startup");
+        orchestrateTask(SERVER_STARTUP_PHASE_STATES, appName, dc);
+        logger.exiting(getClass().getName(), "server-startup");
+    }
+
+    public void enable(String appName, DeploymentContext dc) {
+        logger.entering(getClass().getName(), "enable");
+        orchestrateTask(ENABLE_PHASE_STATES, appName, dc);
+        logger.exiting(getClass().getName(), "enable");
+    }
+
+    public void disable(String appName, ExtendedDeploymentContext dc) {
+        logger.entering(getClass().getName(), "disable");
+        orchestrateTask(DISABLE_PHASE_STATES, appName, dc);
+        logger.exiting(getClass().getName(), "disable");
+    }
+
+    public void preUndeploy(String appName, DeploymentContext dc) {
+        logger.entering(getClass().getName(), "preUndeploy");
+        orchestrateTask(PRE_UNDEPLOY_PHASE_STATES, appName, dc);
+        logger.exiting(getClass().getName(), "preUndeploy");
+    }
+
+    public void postUndeploy(String appName, DeploymentContext dc) {
         logger.entering(getClass().getName(), "postUndeploy");
-        //4b. post-undeploy disassociation
-
-        Set<Plugin> installedPlugins = getPlugins();
-        ServiceMetadata appServiceMetadata = getServiceMetadata(appName);
-        Set<ProvisionedService> appProvisionedSvcs = getProvisionedServices(appName);
-        dissociateProvisionedServices(installedPlugins, appServiceMetadata,
-                appProvisionedSvcs, false /*after undeployment*/, dc);
-
-        unprovisionServices(installedPlugins, appServiceMetadata, dc);
-
+        orchestrateTask(POST_UNDEPLOY_PHASE_STATES, appName, dc);
         logger.exiting(getClass().getName(), "postUndeploy");
     }
 
     public ServiceMetadata getServices(ReadableArchive archive){
-        return serviceDependencyDiscovery(archive.getName(), archive, getPlugins());
+        ServiceDependencyDiscoveryState state = habitat.getByType(ServiceDependencyDiscoveryState.class);
+        PaaSDeploymentContext pc = new PaaSDeploymentContext(archive.getName(), null, this);
+        return state.getServiceDependencyMetadata(pc, getPlugins(), archive.getName(), archive);
     }
 
-
-    private ServiceMetadata serviceDependencyDiscovery(String appName, ReadableArchive archive, Set<Plugin> installedPlugins) {
-        logger.entering(getClass().getName(), "serviceDependencyDiscovery");
-        //1. SERVICE DISCOVERY
-        //parse glassfish-services.xml to get all declared SRs and SDs
-        //Get the first ServicesXMLParser implementation
-
-        ServicesXMLParser parser = habitat.getAllByContract(
-                ServicesXMLParser.class).iterator().next();
-
-        //1.1 discover all Service References and Descriptions already declared for this application
-        ServiceMetadata appServiceMetadata = parser.discoverDeclaredServices(appName, archive);
-
-        //if no meta-data is found, create empty ServiceMetadata
-        if (appServiceMetadata == null) {
-            appServiceMetadata = new ServiceMetadata();
-            appServiceMetadata.setAppName(appName);
-        }
-
-        logger.log(Level.INFO, "Discovered declared service metadata via glassfish-services.xml = " + appServiceMetadata);
-
-        //1.2 Get implicit service-descriptions (for instance a war is deployed, and it has not
-        //specified a javaee service-description in its orchestration.xml, the PaaS runtime
-        //through the GlassFish plugin that a default javaee service-description
-        //is implied
-        for (Plugin svcPlugin : installedPlugins) {
-            if (svcPlugin.handles(archive)) {
-                //If a ServiceDescription has not been declared explicitly in
-                //the application for the plugin's type, ask the plugin (since it 
-                //supports this type of archive) if it has any implicit 
-                //service-description for this application
-                if (!serviceDescriptionExistsForType(appServiceMetadata, svcPlugin.getServiceType())) {
-                    Set<ServiceDescription> implicitServiceDescs = svcPlugin.getImplicitServiceDescriptions(archive, appName);
-                    for (ServiceDescription sd : implicitServiceDescs) {
-                        System.out.println("Implicit ServiceDescription:" + sd);
-                        appServiceMetadata.addServiceDescription(sd);
-                    }
-                }
-            }
-        }
-        logger.log(Level.INFO, "After adding implicit ServiceDescriptions = " + appServiceMetadata);
-
-
-        //1.2 Get implicit ServiceReferences
-        for (Plugin svcPlugin : installedPlugins) {
-            if (svcPlugin.handles(archive)) {
-                Set<ServiceReference> implicitServiceRefs = svcPlugin.getServiceReferences(appName, archive);
-                for (ServiceReference sr : implicitServiceRefs) {
-                    System.out.println("ServiceReference:" + sr);
-                    appServiceMetadata.addServiceReference(sr);
-                }
-            }
-        }
-        logger.log(Level.INFO, "After adding ServiceReferences = " + appServiceMetadata);
-        Map<String, Plugin> existingSDs = new HashMap<String, Plugin>();
-        //1.3 Ensure all service references have a related service description
-        Set<ServiceDescription> appSDs = appServiceMetadata.getServiceDescriptions();
-        Set<ServiceReference> appSRs = appServiceMetadata.getServiceReferences();
-        for (ServiceReference sr : appSRs) {
-            String targetSD = sr.getTarget();
-            String svcRefType = sr.getServiceRefType();
-            boolean serviceDescriptionExists = false;
-            for (ServiceDescription sd : appSDs) {
-                //XXX: For now we assume all SRs are satisfied by app-scoped SDs
-                //In the future this has to be modified to search in global SDs
-                //as well
-                if (sd.getName().equals(targetSD)) {
-                    serviceDescriptionExists = true;
-                }
-            }
-            if (!serviceDescriptionExists) {
-                //create a default SD for this service ref and add to application's
-                //service metadata
-                for (Plugin svcPlugin : installedPlugins) {
-                    if (svcPlugin.isReferenceTypeSupported(svcRefType)) {
-                        ServiceDescription defSD = svcPlugin.getDefaultServiceDescription(appName, sr);
-                        if(existingSDs.containsKey(defSD.getName())){
-                            Plugin plugin = existingSDs.get(defSD.getName());
-                            if(svcPlugin.getClass().equals(plugin.getClass()) && svcPlugin.getServiceType().equals(plugin.getServiceType())){
-                                //service description provided by same plugin, avoid adding the service-description.
-                                continue;
-                            }else{
-                                existingSDs.put(defSD.getName(), svcPlugin);
-                            }
-                        }else{
-                            existingSDs.put(defSD.getName(), svcPlugin);
-                        }
-                        addServiceDescriptionWithoutDuplicate(appServiceMetadata, defSD);
-                        continue; //ignore the rest of the plugins
-                    }
-                }
-            }
-        }
-
-        assertMetadataComplete(appSDs, appSRs);
-        logger.log(Level.INFO, "Final Service Metadata = " + appServiceMetadata);
-        return appServiceMetadata;
-    }
-
-    private void addServiceDescriptionWithoutDuplicate(ServiceMetadata appServiceMetadata, ServiceDescription defSD) {
-        Set<ServiceDescription> serviceDescriptions = appServiceMetadata.getServiceDescriptions();
-        for(ServiceDescription sd : serviceDescriptions){
-            if(sd.getName().equals(defSD.getName())){
-                if(sd.getServiceType().equals(defSD.getServiceType())){
-                    return; //duplicate. We may also have to check whether its provided by same plugin
-                    //or implement equals in service-description so as to make it easier for comparisons.
-                }
-            }
-        }
-        appServiceMetadata.addServiceDescription(defSD);
-    }
-
-    private void deployArchive(ReadableArchive cloudArchive,
-                               Set<Plugin> installedPlugins) {
-        for (Plugin<?> svcPlugin : installedPlugins) {
-            logger.log(Level.INFO, "Deploying Application Archive " + " through " + svcPlugin);
-            svcPlugin.deploy(cloudArchive);
-        }
-    }
-
-    private void dissociateProvisionedServices(Set<Plugin> installedPlugins,
-                                               ServiceMetadata appServiceMetadata,
-                                               Set<ProvisionedService> appProvisionedSvcs, boolean beforeUndeploy,
-                                               DeploymentContext context) {
-        logger.entering(getClass().getName(), "dissociateProvisionedServices=" + beforeUndeploy);
-        for (ProvisionedService serviceProvider : appProvisionedSvcs) {
-            for (Plugin<?> svcPlugin : installedPlugins) {
-                //Dissociate the provisioned service only with plugins that handle other service types.
-                //TODO why is this check done ?
-                if (!serviceProvider.getServiceType().equals(svcPlugin.getServiceType())) {
-                    Set<ServiceReference> appSRs = appServiceMetadata.getServiceReferences();
-                    for (ServiceReference serviceRef : appSRs) {
-                        logger.log(Level.INFO, "Dissociating ProvisionedService " + serviceProvider + " for ServiceReference " + serviceRef + " through " + svcPlugin);
-                        Collection<ProvisionedService> serviceConsumers = getServicesProvisionedByPlugin(svcPlugin, appProvisionedSvcs);
-                        for (ProvisionedService serviceConsumer : serviceConsumers) {
-                            svcPlugin.dissociateServices(serviceConsumer, serviceRef, serviceProvider, beforeUndeploy, context);
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    private void associateProvisionedServices(Set<Plugin> installedPlugins,
-                                              ServiceMetadata appServiceMetadata,
-                                              Set<ProvisionedService> appProvisionedSvcs,
-                                              boolean preDeployment, DeploymentContext context) {
-        logger.entering(getClass().getName(), "associateProvisionedServices-beforeDeployment=" + preDeployment);
-        for (ProvisionedService serviceProducer : appProvisionedSvcs) {
-            for (Plugin<?> svcPlugin : installedPlugins) {
-                //associate the provisioned service only with plugins that handle other service types.
-                if (!serviceProducer.getServiceType().equals(svcPlugin.getServiceType())) {
-                    Set<ServiceReference> appSRs = appServiceMetadata.getServiceReferences();
-                    for (ServiceReference serviceRef : appSRs) {
-                        logger.log(Level.INFO, "Associating ProvisionedService " + serviceProducer + " for ServiceReference " + serviceRef + " through " + svcPlugin);
-                        Collection<ProvisionedService> serviceConsumers = getServicesProvisionedByPlugin(svcPlugin, appProvisionedSvcs);
-                        for(ProvisionedService serviceConsumer : serviceConsumers){
-                            svcPlugin.associateServices(serviceConsumer, serviceRef, serviceProducer, preDeployment, context);
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    private Collection<ProvisionedService> getServicesProvisionedByPlugin(Plugin plugin,
+    public Collection<ProvisionedService> getServicesProvisionedByPlugin(Plugin plugin,
                                                                           Set<ProvisionedService> allProvisionedServices){
         List<ProvisionedService> provisionedServices = new ArrayList<ProvisionedService>();
         for(ProvisionedService ps : allProvisionedServices){
@@ -422,48 +246,8 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
         return provisionedServices;
     }
 
-    private void unprovisionServices(final Set<Plugin> installedPlugins, ServiceMetadata appServiceMetadata,
-                                     final DeploymentContext dc) {
-        Set<ServiceDescription> appSDs = appServiceMetadata.getServiceDescriptions();
-        List<Future> unprovisioningFutures = new ArrayList<Future>();
-        String virtualClusterName = getVirtualClusterName(appServiceMetadata);
-
-        for (final ServiceDescription sd : appSDs) {
-            sd.setVirtualClusterName(virtualClusterName);
-            Future future = ServiceUtil.getThreadPool().submit(new Runnable() {
-                public void run() {
-                    Plugin<?> chosenPlugin = getPluginForServiceType(installedPlugins, sd.getServiceType());
-                    logger.log(Level.INFO, "Unprovisioning Service for " + sd + " through " + chosenPlugin);
-                    chosenPlugin.unprovisionService(sd, dc);
-                }
-            });
-            unprovisioningFutures.add(future);
-        }
-
-        boolean failed = false;
-        for(Future future : unprovisioningFutures){
-            try {
-                future.get();
-            } catch (InterruptedException e) {
-                failed = true;
-                e.printStackTrace();
-            } catch (ExecutionException e) {
-                failed = true;
-                e.printStackTrace();
-            }
-        }
-        if(failed){
-            //TODO need a better mechanism ?
-            throw new RuntimeException("Failure while unprovisioning services, refer server.log for more details");
-        }
-
-        // Clean up the glassfish cluster, virtual cluster config, etc..
-        // TODO :: assuming app-scoped virtual cluster. fix it when supporting shared/external service.
-        removeVirtualCluster(virtualClusterName);
-    }
-
     // Name of the JavaEE service will be the name of the virtual cluster.
-    private String getVirtualClusterName(ServiceMetadata appServiceMetadata) {
+    public String getVirtualClusterName(ServiceMetadata appServiceMetadata) {
         Set<ServiceDescription> appSDs = appServiceMetadata.getServiceDescriptions();
         String virtualClusterName = null;
         for(ServiceDescription sd : appSDs) {
@@ -478,98 +262,8 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
         return virtualClusterName;
     }
 
-    private Set<ProvisionedService> provisionServices(final Set<Plugin> installedPlugins,
-                                                      ServiceMetadata appServiceMetadata, final DeploymentContext dc) {
-        logger.entering(getClass().getName(), "provisionServices");
-        final Set<ProvisionedService> appPSs = new HashSet<ProvisionedService>();
 
-        // create one virtual cluster per deployment unit.
-        String virtualClusterName = getVirtualClusterName(appServiceMetadata);
-        CommandResult result = commandRunner.run("create-cluster", virtualClusterName);
-        logger.info("Command create-cluster [" + virtualClusterName + "] executed. " +
-                "Command Output [" + result.getOutput() + "]");
-        if (result.getExitStatus().equals(CommandResult.ExitStatus.FAILURE)) {
-            throw new RuntimeException("Failure while provisioning services, " +
-                    "Unable to create cluster [" + virtualClusterName + "]");
-        }
-        
-        Set<ServiceDescription> appSDs = appServiceMetadata.getServiceDescriptions();
-        boolean failed = false;
-        Exception rootCause = null;
-        if (Boolean.getBoolean("org.glassfish.paas.orchestrator.parallel-provisioning")) {
-            List<Future<ProvisionedService>> provisioningFutures = new ArrayList<Future<ProvisionedService>>();
-            for (final ServiceDescription sd : appSDs) {
-                sd.setVirtualClusterName(virtualClusterName);
-                Future<ProvisionedService> future = ServiceUtil.getThreadPool().submit(new Callable<ProvisionedService>() {
-                    public ProvisionedService call() {
-                        Plugin<?> chosenPlugin = getPluginForServiceType(installedPlugins, sd.getServiceType());
-                        logger.log(Level.INFO, "Started Provisioning Service in parallel for " + sd + " through " + chosenPlugin);
-                        return chosenPlugin.provisionService(sd, dc);
-                    }
-                });
-                provisioningFutures.add(future);
-            }
-
-
-            for (Future<ProvisionedService> future : provisioningFutures) {
-                try {
-                    ProvisionedService ps = future.get();
-                    appPSs.add(ps);
-                    logger.log(Level.INFO, "Completed Provisioning Service in parallel " + ps);
-                } catch (Exception e) {
-                    failed = true;
-                    logger.log(Level.WARNING, "Failure while provisioning service", e);
-                    if (rootCause == null) {
-                        rootCause = e; //we are caching only the first failure and logging all failures
-                    }
-                }
-            }
-        } else {
-
-            for (final ServiceDescription sd : appSDs) {
-                try {
-                    sd.setVirtualClusterName(virtualClusterName);
-                    Plugin<?> chosenPlugin = getPluginForServiceType(installedPlugins, sd.getServiceType());
-                    logger.log(Level.INFO, "Started Provisioning Service serially for " + sd + " through " + chosenPlugin);
-                    ProvisionedService ps = chosenPlugin.provisionService(sd, dc);
-                    appPSs.add(ps);
-                    logger.log(Level.INFO, "Completed Provisioning Service serially " + ps);
-                } catch (Exception e) {
-                    failed = true;
-                    logger.log(Level.WARNING, "Failure while provisioning service", e);
-                    rootCause = e;
-                    break; //since we are provisioning serially, we can abort
-                }
-            }
-        }
-        if(failed){
-            for(ProvisionedService ps : appPSs){
-                try{
-                    ServiceDescription sd = ps.getServiceDescription();
-                    Plugin<?> chosenPlugin = getPluginForServiceType(installedPlugins, sd.getServiceType());
-                    logger.log(Level.INFO, "Rolling back provisioned-service for " + sd + " through " + chosenPlugin );
-                    chosenPlugin.unprovisionService(sd, dc); //TODO we could do unprovisioning in parallel.
-                    logger.log(Level.INFO, "Rolled back provisioned-service for " + sd + " through " + chosenPlugin );
-                }catch(Exception e){
-                    logger.log(Level.FINEST, "Failure while rolling back provisioned service " + ps, e);
-                }
-            }
-
-            // Clean up the glassfish cluster, virtual cluster config, etc..
-            // TODO :: assuming app-scoped virtual cluster. fix it when supporting shared/external service.
-            removeVirtualCluster(virtualClusterName);
-
-            //XXX (Siva): Failure handling. Exception design.
-            DeploymentException re = new DeploymentException("Failure while provisioning services");
-            if(rootCause != null){
-                re.initCause(rootCause);
-            }
-            throw re;
-        }
-        return appPSs;
-    }
-
-    private void removeVirtualCluster(String virtualClusterName) {
+    public void removeVirtualCluster(String virtualClusterName) {
         try {
             VirtualCluster virtualCluster = virtualClusters.byName(virtualClusterName);
             if (virtualCluster != null) {
@@ -599,38 +293,7 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
         }
     }
     
-    private Set<ProvisionedService> retrieveProvisionedServices(final Set<Plugin> installedPlugins,
-                                                      ServiceMetadata appServiceMetadata, final DeploymentContext dc) {
-        logger.entering(getClass().getName(), "retrieveProvisionedServices");
-        final Set<ProvisionedService> appPSs = new HashSet<ProvisionedService>();
-        String appName = getAppName(dc);
-        String virtualClusterName = getVirtualClusterName(appServiceMetadata);
-        System.out.println("Retrieve PS for app=" + appName + " virtualCluster=" + virtualClusterName);
-        Set<ServiceDescription> appSDs = appServiceMetadata.getServiceDescriptions();
-        for (final ServiceDescription sd : appSDs) {
-                //Temporary workaround to set virtual-cluster in all ProvisionedServices
-                sd.setVirtualClusterName(virtualClusterName);
-                
-                Plugin<?> chosenPlugin = getPluginForServiceType(installedPlugins, sd.getServiceType());
-                logger.log(Level.INFO, "Retrieving provisioned Service for " + sd + " through " + chosenPlugin);
-                ServiceInfo serviceInfo = serviceUtil.retrieveCloudEntry(sd.getName(), appName, null );
-                if(serviceInfo != null){
-                    ProvisionedService ps = chosenPlugin.getProvisionedService(sd, serviceInfo);
-                    appPSs.add(ps);
-                }else{
-                    logger.warning("unable to retrieve service-info for service : " + sd.getName() + " of application : " + appName);
-                }
-        }
-        return appPSs;
-    }
-
-    private String getAppName(DeploymentContext dc) {
-        OpsParams params = dc.getCommandParameters(OpsParams.class);
-        return params.name();
-    }
-
-
-    private Plugin<?> getPluginForServiceType(Set<Plugin> installedPlugins, String serviceType) {
+    public Plugin<?> getPluginForServiceType(Set<Plugin> installedPlugins, String serviceType) {
         //XXX: for now assume that there is one plugin per servicetype
         //and choose the first plugin that handles this service type.
         //in the future, need to handle conflicts
@@ -640,66 +303,11 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
         return null;
     }
 
-    private boolean serviceDescriptionExistsForType(
-            ServiceMetadata appServiceMetadata, ServiceType svcType) {
-        for (ServiceDescription sd : appServiceMetadata.getServiceDescriptions()) {
-            if (sd.getServiceType().equalsIgnoreCase(svcType.toString())) return true;
-        }
-        return false;
-    }
-
-    private void assertMetadataComplete(Set<ServiceDescription> appSDs,
-                                        Set<ServiceReference> appSRs) {
-        //Assert that all SRs have their corresponding SDs
-        for (ServiceReference sr : appSRs) {
-            String targetSD = sr.getTarget();
-            boolean serviceDescriptionExists = false;
-            for (ServiceDescription sd : appSDs) {
-                if (sd.getName().equals(targetSD)) {
-                    serviceDescriptionExists = true;
-                }
-            }
-            assert serviceDescriptionExists;
-        }
-    }
-
-    private Set<ProvisionedService> startServices(Set<Plugin> installedPlugins, ServiceMetadata appServiceMetadata,
-                                                  DeploymentContext context) {
-        Set<ProvisionedService> appPSs = new HashSet<ProvisionedService>();
-        String appName = getAppName(context);
-        for(ServiceDescription sd : appServiceMetadata.getServiceDescriptions()){
-            Plugin<?> chosenPlugin = getPluginForServiceType(installedPlugins, sd.getServiceType());
-            logger.log(Level.INFO, "Retrieving provisioned Service for " + sd + " through " + chosenPlugin);
-            ServiceInfo serviceInfo = serviceUtil.retrieveCloudEntry(sd.getName(), appName, null );
-            if(serviceInfo != null){
-                ProvisionedService ps = chosenPlugin.startService(sd, serviceInfo);
-                appPSs.add(ps);
-            }else{
-                logger.warning("unable to retrieve service-info for service : " + sd.getName() + " of application : " + appName);
-            }
-        }
-        return appPSs;
-    }
-
-    private void stopServices(Set<Plugin> installedPlugins, ServiceMetadata appServiceMetadata,
-                                                  DeploymentContext context) {
-        String appName = getAppName(context);
-        for(ServiceDescription sd : appServiceMetadata.getServiceDescriptions()){
-            Plugin<?> chosenPlugin = getPluginForServiceType(installedPlugins, sd.getServiceType());
-            ServiceInfo serviceInfo = serviceUtil.retrieveCloudEntry(sd.getName(), appName, null );
-            if(serviceInfo != null){
-                chosenPlugin.stopService(sd, serviceInfo);
-            }else{
-                logger.warning("unable to retrieve service-info for service : " + sd.getName() + " of application : " + appName);
-            }
-        }
-    }
-
     @Override
     public boolean scaleService(final String appName, final String svcName,
             final int scaleCount, final AllocationStrategy allocStrategy) {
-        System.out.println("Scaling Service " + svcName + " for Application " 
-                                + appName + " by " + scaleCount + " instances");
+        logger.log(Level.INFO, "Scaling Service " + svcName + " for Apprelication "
+                + appName + " by " + scaleCount + " instances");
         
         
         AdminCommandLock.runWithSuspendedLock(new Runnable() {
@@ -713,7 +321,7 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
             
             String tmpAppName = null;
             for (String app: provisionedServices.keySet()){
-                System.out.println("Checking app for Service " + svcName);
+                logger.log(Level.INFO, "Checking app for Service " + svcName);
                 Set<ProvisionedService> appsServices = provisionedServices.get(app);
                 for(ProvisionedService p: appsServices){
                     if (p.getName().equals(svcName)) {
@@ -723,7 +331,7 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
             }
             if (tmpAppName != null) {
                 effectiveAppName = tmpAppName; //reset
-                System.out.println("Setting application name as appName");
+                logger.log(Level.INFO, "Setting application name as appName");
             }
             //Hack ends here.
     
@@ -783,9 +391,7 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
      */
     @Override
     public ServiceDescription getServiceDescription (String appName, String service) {
-        
-        ServiceMetadata appServiceMetadata = this.getServiceMetadata(appName);
-        
+        ServiceMetadata appServiceMetadata = getServiceMetadata(appName);
         for(ServiceDescription desc : appServiceMetadata.getServiceDescriptions()){
             if (desc.getName().equals(service)){
                 return desc;
@@ -796,41 +402,26 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
 
     public void undeploy(OpsParams params, ExtendedDeploymentContext context) {
         String appName = params.name();
-        postUndeploy(appName, context.getSource(), context);
-        serviceMetadata.remove(appName);
-        provisionedServices.remove(appName);
+        postUndeploy(appName, context);
     }
 
-    public void disable(String appName, ExtendedDeploymentContext context) {
-        Set<Plugin> installedPlugins = getPlugins();
-        ServiceMetadata appServiceMetadata = getServiceMetadata(appName);
-        stopServices(installedPlugins, appServiceMetadata, context);
-        serviceMetadata.remove(appName);
-        provisionedServices.remove(appName);
-    }
-
-    public void startup(ReadableArchive archive, String appName, ExtendedDeploymentContext context) {
-        Set<Plugin> installedPlugins = getPlugins();
-        ServiceMetadata appServiceMetadata =
-                serviceDependencyDiscovery(appName, archive, installedPlugins);
+    public void addServiceMetadata(String appName, ServiceMetadata appServiceMetadata) {
         serviceMetadata.put(appName, appServiceMetadata);
-        Set<ProvisionedService> provisionedServiceSet =
-                retrieveProvisionedServices(installedPlugins, appServiceMetadata, context);
+    }
+
+    public void addProvisionedServices(String appName, Set<ProvisionedService> provisionedServiceSet) {
         provisionedServices.put(appName, provisionedServiceSet);
     }
 
-    public void enable(ReadableArchive archive, String appName, ExtendedDeploymentContext context) {
-        Set<Plugin> installedPlugins = getPlugins();
-        ServiceMetadata appServiceMetadata =
-                serviceDependencyDiscovery(appName, archive, installedPlugins);
-        serviceMetadata.put(appName, appServiceMetadata);
-
-        Set<ProvisionedService> provisionedServiceSet =
-                startServices(installedPlugins, appServiceMetadata, context);
-        provisionedServices.put(appName, provisionedServiceSet);
+    public ServiceMetadata removeServiceMetadata(String appName) {
+        return serviceMetadata.remove(appName);
     }
 
-    public void deploy(ReadableArchive archive, String appName, ExtendedDeploymentContext context) {
-        provisionServicesForApplication(appName, archive, context);
+    public Set<ProvisionedService> removeProvisionedServices(String appName) {
+        return provisionedServices.remove(appName);
+    }
+
+    public void preDeploy(String appName, ExtendedDeploymentContext context) {
+        provisionServicesForApplication(appName, context);
     }
 }

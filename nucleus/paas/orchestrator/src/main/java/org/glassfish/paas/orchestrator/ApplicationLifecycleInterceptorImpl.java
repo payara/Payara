@@ -86,9 +86,8 @@ public class ApplicationLifecycleInterceptorImpl implements ApplicationLifecycle
     //NOTE : refer & update isValidDeploymentTarget if needed as we are dependent on the list of "Origins" used in this method.
     public void before(final ExtendedDeploymentContext.Phase phase, final ExtendedDeploymentContext context) {
 
-        logEvent(true, phase, context);
-
-        if (isOrchestrationEnabled(context) && serverEnvironment.isDas()) {
+        if (isOrchestrationEnabled(context)) {
+            logEvent(true, phase, context);
             AdminCommandLock.runWithSuspendedLock(new Runnable() {
                 public void run() {
                     if (phase.equals(ExtendedDeploymentContext.Phase.PREPARE)) {
@@ -96,27 +95,26 @@ public class ApplicationLifecycleInterceptorImpl implements ApplicationLifecycle
                         OpsParams params = context.getCommandParameters(OpsParams.class);
                         String appName = params.name();
                         if (params.origin == OpsParams.Origin.deploy) {
-                            serviceOrchestratorImpl.deploy(archive, appName, context);
+                            serviceOrchestratorImpl.preDeploy(appName, context);
                         } else if (params.origin == OpsParams.Origin.load) {
                             if (params.command == OpsParams.Command.startup_server) {
                                 if (isValidApplication(appName)) {
-                                    serviceOrchestratorImpl.startup(archive, appName, context);
+                                    serviceOrchestratorImpl.startup(appName, context);
                                 }
                             } else {
                                 if (params.command == OpsParams.Command.enable) {
                                     if (isValidApplication(appName)) {
-                                        serviceOrchestratorImpl.enable(archive, appName, context);
+                                        serviceOrchestratorImpl.enable(appName, context);
                                     }
                                 }
                             }
                         }
                     } else if (phase.equals(ExtendedDeploymentContext.Phase.STOP)) {
-                        ReadableArchive archive = context.getSource();
                         OpsParams params = context.getCommandParameters(OpsParams.class);
                         String appName = params.name();
                         if (params.origin == OpsParams.Origin.undeploy) {
                             if (params.command == OpsParams.Command.disable) {
-                                serviceOrchestratorImpl.prepareForUndeploy(appName, archive, context);
+                                serviceOrchestratorImpl.preUndeploy(appName, context);
                             }
                         }
                     }
@@ -128,37 +126,33 @@ public class ApplicationLifecycleInterceptorImpl implements ApplicationLifecycle
     //NOTE : refer & update isValidDeploymentTarget if needed as we are dependent on the list of "Origins" used in this method.
     public void after(final ExtendedDeploymentContext.Phase phase, final ExtendedDeploymentContext context) {
 
-        logEvent(false, phase, context);
-
         if (isOrchestrationEnabled(context)) {
+            logEvent(false, phase, context);
             AdminCommandLock.runWithSuspendedLock(new Runnable() {
                 public void run() {
                     if (phase.equals(ExtendedDeploymentContext.Phase.REPLICATION)) {
-                        if (serverEnvironment.isDas()) {
-                            OpsParams params = context.getCommandParameters(OpsParams.class);
-                            ReadableArchive archive = context.getSource();
-                            if (params.origin == OpsParams.Origin.deploy) {
-                                String appName = params.name();
-                                serviceOrchestratorImpl.postDeploy(appName, archive, context);
-
-                            }
-                            //make sure that it is indeed undeploy and not disable.
-                            //params.origin is "undeploy" for both "undeploy" as well "disable" phase
-                            //hence using the actual command being used.
-                            if (params.origin == OpsParams.Origin.undeploy) {
-                                if (params.command == OpsParams.Command.undeploy) {
-                                    serviceOrchestratorImpl.undeploy(params, context);
-                                }
-                            }
-                            //TODO as of today, we get only after-CLEAN-unload-disable event.
-                            //TODO we expect after-STOP-unload-disable, but since the target is not "DAS",
-                            //TODO DAS will not receive such event.
+                        OpsParams params = context.getCommandParameters(OpsParams.class);
+                        ReadableArchive archive = context.getSource();
+                        if (params.origin == OpsParams.Origin.deploy) {
                             String appName = params.name();
-                            if (params.origin == OpsParams.Origin.unload) {
-                                if (params.command == OpsParams.Command.disable) {
-                                    if (isValidApplication(appName)) {
-                                        serviceOrchestratorImpl.disable(appName, context);
-                                    }
+                            serviceOrchestratorImpl.postDeploy(appName, context);
+                        }
+                        //make sure that it is indeed undeploy and not disable.
+                        //params.origin is "undeploy" for both "undeploy" as well "disable" phase
+                        //hence using the actual command issued to confirm.
+                        if (params.origin == OpsParams.Origin.undeploy) {
+                            if (params.command == OpsParams.Command.undeploy) {
+                                serviceOrchestratorImpl.undeploy(params, context);
+                            }
+                        }
+                        //TODO as of today, we get only after-CLEAN-unload-disable event.
+                        //TODO we expect after-STOP-unload-disable, but since the target is not "DAS",
+                        //TODO DAS will not receive such event.
+                        String appName = params.name();
+                        if (params.origin == OpsParams.Origin.unload) {
+                            if (params.command == OpsParams.Command.disable) {
+                                if (isValidApplication(appName)) {
+                                    serviceOrchestratorImpl.disable(appName, context);
                                 }
                             }
                         }
@@ -202,7 +196,7 @@ public class ApplicationLifecycleInterceptorImpl implements ApplicationLifecycle
     }
 
     private boolean isOrchestrationEnabled(DeploymentContext dc){
-        return (isVirtualizationEnabled() && isValidDeploymentTarget(dc)) ||
+        return (serverEnvironment.isDas() && isVirtualizationEnabled() && isValidDeploymentTarget(dc)) ||
                 Boolean.getBoolean("org.glassfish.paas.orchestrator.enabled");
     }
 
