@@ -62,6 +62,4 @@ public interface NamingUtils {
 
     public Object makeCopyOfObject(Object obj);
 
-    public OutputStream getMailLogOutputStream();
-
 }

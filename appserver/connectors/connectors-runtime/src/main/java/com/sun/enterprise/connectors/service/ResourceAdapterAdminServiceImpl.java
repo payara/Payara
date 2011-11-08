@@ -52,7 +52,7 @@ import com.sun.enterprise.connectors.util.ResourcesUtil;
 import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.ConnectorDescriptor;
 import org.glassfish.deployment.common.ModuleDescriptor;
-import org.glassfish.resources.config.ResourceAdapterConfig;
+import org.glassfish.connectors.config.ResourceAdapterConfig;
 
 import javax.naming.NamingException;
 import javax.resource.ResourceException;

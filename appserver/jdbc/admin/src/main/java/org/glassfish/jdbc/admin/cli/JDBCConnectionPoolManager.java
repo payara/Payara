@@ -48,17 +48,18 @@ import java.util.Map;
 
 import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
 import com.sun.enterprise.config.serverbeans.*;
-import org.glassfish.resources.config.*;
+import org.glassfish.connectors.config.JdbcConnectionPool;
 import org.glassfish.api.I18n;
+import org.glassfish.resources.admin.cli.ResourceManager;
+import org.glassfish.resources.api.ResourceStatus;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
 import org.jvnet.hk2.config.types.Property;
-import static org.glassfish.resource.common.ResourceConstants.*;
-import org.glassfish.resource.common.ResourceStatus;
+import static org.glassfish.resources.admin.cli.ResourceConstants.*;
+
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import org.glassfish.admin.cli.resources.ResourceManager;
 
 import javax.resource.ResourceException;
 

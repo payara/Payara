@@ -40,15 +40,10 @@
 
 package org.glassfish.jdbc.config;
 
-import org.glassfish.resources.config.JdbcConnectionPool;
+import org.glassfish.connectors.config.JdbcConnectionPool;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.jvnet.hk2.config.DomDocument;
-import org.jvnet.hk2.component.Habitat;
-import org.glassfish.config.support.GlassFishDocument;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
 
 import static org.junit.Assert.*;
 
@@ -59,7 +54,7 @@ import static org.junit.Assert.*;
 
 public class JdbcConnectionPoolDefaultsTest extends ConfigApiTest{
 
-    org.glassfish.resources.config.JdbcConnectionPool onlyOnePool = null;
+    JdbcConnectionPool onlyOnePool = null;
     
     public JdbcConnectionPoolDefaultsTest() {
     }

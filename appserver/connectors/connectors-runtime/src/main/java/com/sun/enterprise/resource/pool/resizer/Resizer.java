@@ -40,15 +40,15 @@
 
 package com.sun.enterprise.resource.pool.resizer;
 
-import org.glassfish.resource.common.PoolInfo;
-import com.sun.enterprise.resource.ResourceHandle;
 import com.sun.enterprise.resource.ResourceState;
+import com.sun.enterprise.resource.ResourceHandle;
 import com.sun.enterprise.resource.pool.PoolProperties;
 import com.sun.appserv.connectors.internal.api.PoolingException;
 import com.sun.enterprise.resource.allocator.ResourceAllocator;
 import com.sun.enterprise.resource.pool.ResourceHandler;
 import com.sun.enterprise.resource.pool.datastructure.DataStructure;
 import com.sun.logging.LogDomains;
+import org.glassfish.resources.api.PoolInfo;
 
 import javax.resource.ResourceException;
 import javax.resource.spi.ManagedConnection;

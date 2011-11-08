@@ -40,11 +40,11 @@
 
 package com.sun.appserv.connectors.internal.api;
 
+import org.glassfish.connectors.config.*;
 import org.glassfish.deployment.common.ModuleDescriptor;
 import org.glassfish.deployment.common.Descriptor;
 import org.glassfish.deployment.common.RootDeploymentDescriptor;
 import com.sun.enterprise.config.serverbeans.Resource;
-import org.glassfish.resources.config.*;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.component.Habitat;

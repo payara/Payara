@@ -45,13 +45,13 @@ import com.sun.appserv.connectors.internal.api.ConnectorRuntimeException;
 import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
 import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import org.glassfish.admin.cli.resources.ResourceManager;
-import org.glassfish.admin.cli.resources.ResourceUtil;
 import org.glassfish.api.I18n;
 import org.glassfish.api.admin.ServerEnvironment;
-import org.glassfish.resource.common.ResourceStatus;
-import org.glassfish.resources.BindableResourcesHelper;
-import org.glassfish.resources.config.AdminObjectResource;
+import org.glassfish.connectors.config.AdminObjectResource;
+import org.glassfish.resources.admin.cli.ResourceManager;
+import org.glassfish.resources.admin.cli.ResourceUtil;
+import org.glassfish.resources.api.ResourceStatus;
+import org.glassfish.resources.util.BindableResourcesHelper;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
@@ -70,7 +70,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static com.sun.appserv.connectors.internal.api.ConnectorConstants.EMBEDDEDRAR_NAME_DELIMITER;
-import static org.glassfish.resource.common.ResourceConstants.*;
+import static org.glassfish.resources.admin.cli.ResourceConstants.*;
 
 /**
  *

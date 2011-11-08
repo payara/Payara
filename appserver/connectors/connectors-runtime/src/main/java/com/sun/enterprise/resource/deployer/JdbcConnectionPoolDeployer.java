@@ -43,16 +43,16 @@ package com.sun.enterprise.resource.deployer;
 import com.sun.appserv.connectors.internal.api.ConnectorConstants;
 import com.sun.appserv.connectors.internal.api.ConnectorRuntimeException;
 import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
-import com.sun.enterprise.config.serverbeans.BindableResource;
-import com.sun.enterprise.config.serverbeans.Domain;
-import com.sun.enterprise.config.serverbeans.Resources;
-import org.glassfish.resource.common.PoolInfo;
-import org.glassfish.resources.config.JdbcConnectionPool;
+import com.sun.enterprise.config.serverbeans.*;
+import org.glassfish.connectors.config.JdbcConnectionPool;
+import org.glassfish.resources.api.PoolInfo;
+import org.glassfish.resources.api.ResourceConflictException;
+import org.glassfish.resources.api.ResourceDeployer;
 import com.sun.enterprise.connectors.ConnectorRegistry;
 import com.sun.enterprise.resource.DynamicallyReconfigurableResource;
 import com.sun.enterprise.resource.pool.ResourcePool;
 import com.sun.enterprise.resource.pool.waitqueue.PoolWaitQueue;
-import org.glassfish.resource.common.ResourceInfo;
+import org.glassfish.resources.api.ResourceInfo;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Inject;
@@ -65,7 +65,6 @@ import com.sun.enterprise.connectors.util.ResourcesUtil;
 import com.sun.enterprise.deployment.ConnectionDefDescriptor;
 import com.sun.enterprise.deployment.ConnectorDescriptor;
 import com.sun.enterprise.deployment.ConnectorConfigProperty;
-import com.sun.appserv.connectors.internal.spi.ResourceDeployer;
 import com.sun.enterprise.util.i18n.StringManager;
 import com.sun.logging.LogDomains;
 import org.jvnet.hk2.config.types.Property;
@@ -148,6 +147,17 @@ public class JdbcConnectionPoolDeployer implements ResourceDeployer {
         actualDeployResource(resource, poolInfo);
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    public boolean canDeploy(boolean postApplicationDeployment, Collection<Resource> allResources, Resource resource){
+        if(handles(resource)){
+            if(!postApplicationDeployment){
+                return true;
+            }
+        }
+        return false;
+    }
 
     /**
      * Deploy the resource into the server's runtime naming context
@@ -955,6 +965,15 @@ public class JdbcConnectionPoolDeployer implements ResourceDeployer {
      */
 	public synchronized void disableResource(Object resource) throws Exception {
         throw new UnsupportedOperationException(msg);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void validatePreservedResource(Application oldApp, Application newApp, Resource resource,
+                                  Resources allResources)
+    throws ResourceConflictException {
+        //do nothing.
     }
 
     private void debug(String message){

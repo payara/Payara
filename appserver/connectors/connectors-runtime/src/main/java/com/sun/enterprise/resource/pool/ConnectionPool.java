@@ -40,14 +40,13 @@
 
 package com.sun.enterprise.resource.pool;
 
-import org.glassfish.resource.common.PoolInfo;
+import com.sun.enterprise.resource.ResourceState;
 import com.sun.appserv.connectors.internal.spi.BadConnectionEventListener;
 import com.sun.enterprise.connectors.ConnectorConnectionPool;
 import com.sun.enterprise.connectors.ConnectorRuntime;
 import com.sun.enterprise.connectors.service.ConnectorAdminServiceUtils;
 import com.sun.enterprise.resource.ResourceHandle;
 import com.sun.enterprise.resource.ResourceSpec;
-import com.sun.enterprise.resource.ResourceState;
 import com.sun.enterprise.resource.listener.PoolLifeCycleListener;
 import com.sun.enterprise.resource.allocator.ResourceAllocator;
 import com.sun.enterprise.resource.pool.datastructure.DataStructure;
@@ -59,6 +58,7 @@ import com.sun.enterprise.util.i18n.StringManager;
 import com.sun.enterprise.transaction.api.JavaEETransaction;
 import com.sun.logging.LogDomains;
 import com.sun.appserv.connectors.internal.api.PoolingException;
+import org.glassfish.resources.api.PoolInfo;
 
 import javax.naming.NamingException;
 import javax.resource.ResourceException;

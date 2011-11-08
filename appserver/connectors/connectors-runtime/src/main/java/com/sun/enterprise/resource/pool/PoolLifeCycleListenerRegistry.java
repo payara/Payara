@@ -40,9 +40,9 @@
 
 package com.sun.enterprise.resource.pool;
 
-import org.glassfish.resource.common.PoolInfo;
 import com.sun.enterprise.connectors.ConnectorRuntime;
 import com.sun.enterprise.resource.listener.PoolLifeCycleListener;
+import org.glassfish.resources.api.PoolInfo;
 
 import java.util.ArrayList;
 import java.util.List;

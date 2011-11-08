@@ -40,8 +40,7 @@
 
 -exportcontents: com.sun.appserv.connectors.internal.api; \
     		 org.glassfish.resources; \
-    		 org.glassfish.resources.config; \
-    		 org.glassfish.resources.config.validators; \
-             org.glassfish.resources.custom.factory; \
+    		 org.glassfish.connectors.config; \
+    		 org.glassfish.connectors.config.validators; \
              org.glassfish.api.jdbc.validation; \
              com.sun.appserv.connectors.internal.spi; version=${project.osgi.version}

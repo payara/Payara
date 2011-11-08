@@ -40,20 +40,16 @@
 
 package org.glassfish.jdbc.config;
 
-import org.glassfish.resources.config.JdbcConnectionPool;
+import org.glassfish.connectors.config.JdbcConnectionPool;
+
 import java.beans.PropertyVetoException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.jvnet.hk2.config.DomDocument;
-import org.jvnet.hk2.component.Habitat;
-import org.glassfish.config.support.GlassFishDocument;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
 
 
 import javax.validation.ConstraintViolationException;
@@ -64,7 +60,7 @@ import javax.validation.ConstraintViolationException;
  */
 public class JdbcConnectionPoolValidationTest extends ConfigApiTest {
 
-    private org.glassfish.resources.config.JdbcConnectionPool pool = null;
+    private JdbcConnectionPool pool = null;
     private static final String NAME = "test"; //same as the one in JdbcConnectionPoolValidation.xml
 
     public JdbcConnectionPoolValidationTest() {

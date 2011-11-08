@@ -40,13 +40,13 @@
 
 package com.sun.enterprise.resource.pool.resizer;
 
-import org.glassfish.resource.common.PoolInfo;
+import com.sun.enterprise.resource.ResourceState;
 import com.sun.enterprise.resource.AssocWithThreadResourceHandle;
 import com.sun.enterprise.resource.ResourceHandle;
-import com.sun.enterprise.resource.ResourceState;
 import com.sun.enterprise.resource.pool.PoolProperties;
 import com.sun.enterprise.resource.pool.ResourceHandler;
 import com.sun.enterprise.resource.pool.datastructure.DataStructure;
+import org.glassfish.resources.api.PoolInfo;
 
 import java.util.HashSet;
 import java.util.Set;

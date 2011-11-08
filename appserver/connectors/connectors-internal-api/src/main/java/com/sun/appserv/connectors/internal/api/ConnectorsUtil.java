@@ -59,13 +59,15 @@ import java.net.URISyntaxException;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.api.admin.*;
+import org.glassfish.connectors.config.*;
 import org.glassfish.deployment.common.InstalledLibrariesResolver;
 import org.glassfish.loader.util.ASClassLoaderUtil;
-import org.glassfish.resource.common.GenericResourceInfo;
-import org.glassfish.resource.common.PoolInfo;
-import org.glassfish.resource.common.ResourceInfo;
 import com.sun.enterprise.config.serverbeans.Resource;
-import org.glassfish.resources.config.*;
+import org.glassfish.resources.api.GenericResourceInfo;
+import org.glassfish.resources.api.PoolInfo;
+import org.glassfish.resources.api.ResourceConstants;
+import org.glassfish.resources.api.ResourceInfo;
+import org.glassfish.resources.util.ResourceUtil;
 import org.jvnet.hk2.config.types.Property;
 import org.jvnet.hk2.config.types.PropertyBag;
 import static com.sun.enterprise.util.SystemPropertyConstants.SLASH;
@@ -242,19 +244,6 @@ public class ConnectorsUtil {
         return name;
     }
 
-    public static boolean isValidEventType(Object instance) {
-        return (instance instanceof JdbcConnectionPool ||
-                instance instanceof JdbcResource ||
-                instance instanceof ConnectorConnectionPool ||
-                instance instanceof ConnectorResource ||
-                instance instanceof MailResource ||
-                instance instanceof ExternalJndiResource ||
-                instance instanceof CustomResource ||
-                instance instanceof AdminObjectResource ||
-                instance instanceof WorkSecurityMap ||
-                instance instanceof ResourceAdapterConfig) ;
-    }
-
     public static ResourcePool getConnectionPoolConfig(PoolInfo poolInfo, Resources allResources){
         ResourcePool pool = null;
         for(Resource configuredResource : allResources.getResources()){
@@ -428,51 +417,6 @@ public class ConnectorsUtil {
         return enabled;
     }
 
-    public static String getResourceType(Resource resource) throws ConnectorRuntimeException{
-        if(resource instanceof JdbcResource){
-            return ConnectorConstants.RES_TYPE_JDBC;
-        } else if(resource instanceof JdbcConnectionPool){
-            return ConnectorConstants.RES_TYPE_JCP;
-        } else if (resource instanceof ConnectorResource){
-            return ConnectorConstants.RES_TYPE_CR;
-        } else if (resource instanceof ConnectorConnectionPool){
-            return ConnectorConstants.RES_TYPE_CCP;
-        } else if (resource instanceof MailResource){
-            return ConnectorConstants.RES_TYPE_MAIL;
-        } else if( resource instanceof ExternalJndiResource){
-            return ConnectorConstants.RES_TYPE_EXTERNAL_JNDI;
-        } else if (resource instanceof CustomResource){
-            return ConnectorConstants.RES_TYPE_CUSTOM;
-        } else if (resource instanceof AdminObjectResource){
-            return ConnectorConstants.RES_TYPE_AOR;
-        } else if (resource instanceof ResourceAdapterConfig){
-            return ConnectorConstants.RES_TYPE_RAC;
-        } else if (resource instanceof WorkSecurityMap){
-            return ConnectorConstants.RES_TYPE_CWSM;
-        } else {
-            throw new ConnectorRuntimeException("Unknown resource type [ "+resource+" ]");
-        }
-    }
-
-    /**
-     * load and create an object instance
-     * @param className class to load
-     * @return instance of the class 
-     */
-    public static Object loadObject(String className) {
-        Object obj = null;
-        Class c;
-
-        try {
-            c = Thread.currentThread().getContextClassLoader().loadClass(className);
-            obj = c.newInstance();
-        } catch (Exception ex) {
-            _logger.log(Level.SEVERE, "classloader.load_class_fail", className);
-            _logger.log(Level.SEVERE, "classloader.load_class_fail_excp", ex.getMessage());
-        }
-        return obj;
-    }
-
     /**
      * Prepares the name/value pairs for ActivationSpec. <p>
      * Rule: <p>
@@ -522,30 +466,6 @@ public class ConnectorsUtil {
 
     public static boolean parseBoolean(String enabled) {
         return Boolean.parseBoolean(enabled);
-    }
-
-    /**
-     * given a resource config bean, returns the resource name / jndi-name
-     * @param resource
-     * @return resource name / jndi-name
-     */
-    public static ResourceInfo getGenericResourceInfo(Resource resource){
-        ResourceInfo resourceInfo = null;
-        String resourceName = null;
-        if(resource instanceof BindableResource){
-            resourceName = ((BindableResource)resource).getJndiName();
-        }else if (resource instanceof ResourcePool){
-            resourceName = ((ResourcePool)resource).getName();
-        }else if (resource instanceof ResourceAdapterConfig){
-            resourceName = ((ResourceAdapterConfig)resource).getName();
-        }else if (resource instanceof WorkSecurityMap){
-            //TODO toString duckType for WorkSecurityMap config bean ?
-            WorkSecurityMap wsm = (WorkSecurityMap)resource;
-            resourceName = ("resource-adapter name : " + wsm.getResourceAdapterName()
-                    + " : security map name : " +  wsm.getName());
-        }
-        resourceInfo = getGenericResourceInfo(resource, resourceName);
-        return resourceInfo;
     }
 
     /**
@@ -925,45 +845,12 @@ public class ConnectorsUtil {
             }
         }
     }
-    public static ResourceInfo getGenericResourceInfo(Resource resource, String resourceName){
-        if(resource.getParent() != null && resource.getParent().getParent() instanceof Application){
-            Application application = (Application)resource.getParent().getParent();
-            return new ResourceInfo(resourceName, application.getName());
-        }else if(resource.getParent() != null && resource.getParent().getParent() instanceof Module){
-            Module module = (Module)resource.getParent().getParent();
-            Application application = (Application)module.getParent();
-            return new ResourceInfo(resourceName, application.getName(), module.getName());
-        }else{
-            return new ResourceInfo(resourceName);
-        }
-    }
-
     public static PoolInfo getPoolInfo(ResourcePool resource){
-
-        if(resource.getParent() != null && resource.getParent().getParent() instanceof Application){
-            Application application = (Application)resource.getParent().getParent();
-            return new PoolInfo(resource.getName(), application.getName());
-        }else if(resource.getParent() != null && resource.getParent().getParent() instanceof Module){
-            Module module = (Module)resource.getParent().getParent();
-            Application application = (Application)module.getParent();
-            return new PoolInfo(resource.getName(), application.getName(), module.getName());
-        }else{
-            return new PoolInfo(resource.getName());
-        }
+        return ResourceUtil.getPoolInfo(resource);
     }
 
     public static ResourceInfo getResourceInfo(BindableResource resource){
-
-        if(resource.getParent() != null && resource.getParent().getParent() instanceof Application){
-            Application application = (Application)resource.getParent().getParent();
-            return new ResourceInfo(resource.getJndiName(), application.getName());
-        }else if(resource.getParent() != null && resource.getParent().getParent() instanceof Module){
-            Module module = (Module)resource.getParent().getParent();
-            Application application = (Application)module.getParent();
-            return new ResourceInfo(resource.getJndiName(), application.getName(), module.getName());
-        }else{
-            return new ResourceInfo(resource.getJndiName());
-        }
+        return ResourceUtil.getResourceInfo(resource);
     }
 
 
@@ -980,15 +867,12 @@ public class ConnectorsUtil {
         return poolInfo.getApplicationName();
     }
 
-    //TODO ASR : instead of explicit APIs, getScope() can return "none" or "app" or "module" enum value ?
     public static boolean isApplicationScopedResource(GenericResourceInfo resourceInfo){
-        return resourceInfo != null && resourceInfo.getApplicationName() != null &&
-                resourceInfo.getName() != null && resourceInfo.getName().startsWith(ConnectorConstants.JAVA_APP_SCOPE_PREFIX);
+        return ResourceUtil.isApplicationScopedResource(resourceInfo);
     }
 
     public static boolean isModuleScopedResource(GenericResourceInfo resourceInfo){
-        return resourceInfo != null && resourceInfo.getApplicationName() != null && resourceInfo.getModuleName() != null &&
-                resourceInfo.getName() != null && resourceInfo.getName().startsWith(ConnectorConstants.JAVA_MODULE_SCOPE_PREFIX);
+        return ResourceUtil.isModuleScopedResource(resourceInfo);
     }
 
     public static String escapeResourceNameForMonitoring(String name){
@@ -1013,14 +897,8 @@ public class ConnectorsUtil {
         return subTreeRoot;
     }
 
-    //TODO ASR : checking for .jar / .rar / .war / .ear ?
     public static String getActualModuleName(String moduleName){
-        if(moduleName != null){
-            if(moduleName.endsWith(".jar") /*|| moduleName.endsWith(".war") */|| moduleName.endsWith(".rar")){
-                moduleName = moduleName.substring(0,moduleName.length()-4);
-            }
-        }
-        return moduleName;
+        return ResourceUtil.getActualModuleName(moduleName);
     }
 
     public static String getModuleName(EjbMessageBeanDescriptor descriptor) {
@@ -1057,57 +935,96 @@ public class ConnectorsUtil {
     }
 
     public static <T> Resource getResourceByName(Resources resources, Class<T> type, String name) {
-        Resource foundRes = null;
-        Collection<T> typedResources;
-        boolean bindableResource = BindableResource.class.isAssignableFrom(type);
-        boolean poolResource = ResourcePool.class.isAssignableFrom(type);
-
-        boolean workSecurityMap = WorkSecurityMap.class.isAssignableFrom(type);
-        boolean rac = ResourceAdapterConfig.class.isAssignableFrom(type);
-
-
-        Class c;
-        if (bindableResource) {
-            c = BindableResource.class;
-        } else if (poolResource) {
-            c = ResourcePool.class;
-        } else if (workSecurityMap) {
-            c = WorkSecurityMap.class;
-        } else if (rac) {
-            c = ResourceAdapterConfig.class;
-        } else {
-            //do not handle any other resource type
-            return null;
-        }
-        typedResources = resources.getResources(c);
-
-        Iterator itr = typedResources.iterator();
-        while (itr.hasNext()) {
-            String resourceName = null;
-            Resource res = (Resource) itr.next();
-            if (bindableResource) {
-                resourceName = ((BindableResource) res).getJndiName();
-            } else if (poolResource) {
-                resourceName = ((ResourcePool) res).getName();
-            } else if (rac) {
-                resourceName = ((ResourceAdapterConfig) res).getResourceAdapterName();
-            } else if (workSecurityMap) {
-                resourceName = ((WorkSecurityMap) res).getName();
-            }
-            if (name.equals(resourceName)) {
-                foundRes = res;
-                break;
-            }
-        }
-        // make sure that the "type" provided and the matched resource are compatible.
-        // eg: its possible that the requested resource is "ConnectorResource",
-        // and matching resource is "JdbcResource" as we filter based on
-        // the generic type (in this case BindableResource) and not on exact type.
-        if (type != null && foundRes != null && type.isAssignableFrom(foundRes.getClass())) {
-            return foundRes;
-        } else {
-            return null;
-        }
+        return resources.getResourceByName(type, name);
     }
 
+    //TODO what if the module being deployed is a RAR and has gf-resources.xml ?
+    //TODO can the RAR define its own resources ? eg: connector-resource, pool, a-o-r ?
+    public static ResourceConstants.TriState
+    isEmbeddedRarResource(Resource configBeanResource,
+                                          Collection<Resource> configBeanResources) {
+        ConnectorConstants.TriState result = ConnectorConstants.TriState.FALSE;
+        if(configBeanResource instanceof ConnectorResource){
+            String poolName = ((ConnectorResource)configBeanResource).getPoolName();
+            ConnectorConnectionPool pool = getPool(configBeanResources, poolName);
+            if(pool != null){
+                if(pool.getResourceAdapterName().contains(ConnectorConstants.EMBEDDEDRAR_NAME_DELIMITER)){
+                    result = ConnectorConstants.TriState.TRUE;
+                }
+            }else{
+                result = ConnectorConstants.TriState.UNKNOWN;
+            }
+        }else if(configBeanResource instanceof AdminObjectResource){
+            AdminObjectResource aor = (AdminObjectResource)configBeanResource;
+            if(aor.getResAdapter().contains(ConnectorConstants.EMBEDDEDRAR_NAME_DELIMITER)){
+                result = ConnectorConstants.TriState.TRUE;
+            }
+        }else if (configBeanResource instanceof ConnectorConnectionPool){
+            ConnectorConnectionPool ccp = (ConnectorConnectionPool)configBeanResource;
+            if(ccp.getResourceAdapterName().contains(ConnectorConstants.EMBEDDEDRAR_NAME_DELIMITER)){
+                result = ConnectorConstants.TriState.TRUE;
+            }
+        }else if (configBeanResource instanceof WorkSecurityMap){
+            WorkSecurityMap wsm = (WorkSecurityMap)configBeanResource;
+            if(wsm.getResourceAdapterName().contains(ConnectorConstants.EMBEDDEDRAR_NAME_DELIMITER)){
+                result = ConnectorConstants.TriState.TRUE;
+            }
+        }/*else if (configBeanResource instanceof ResourceAdapterConfig){
+            ResourceAdapterConfig rac = (ResourceAdapterConfig)configBeanResource;
+            result = rac.getResourceAdapterName().contains(ConnectorConstants.EMBEDDEDRAR_NAME_DELIMITER);
+        }*/
+        return result;
+    }
+
+    public static ConnectorConnectionPool getPool(
+            Collection<Resource> configBeanResources, String poolName) {
+        ConnectorConnectionPool result = null;
+        for(Resource res : configBeanResources){
+            if(res instanceof ConnectorConnectionPool){
+                if(((ConnectorConnectionPool)res).getName().equals(poolName)){
+                    result = (ConnectorConnectionPool)res;
+                    break;
+                }
+            }
+        }
+        return result;
+    }
+
+    public static boolean isRARResource(Resource resource){
+        return resource instanceof ConnectorResource ||
+                resource instanceof AdminObjectResource ||
+                resource instanceof ConnectorConnectionPool ||
+                resource instanceof ResourceAdapterConfig ||
+                resource instanceof WorkSecurityMap;
+    }
+
+    public static String getRarNameOfResource(Resource resource, Resources resources){
+        String rarName = null;
+        if(isRARResource(resource)){
+            if(resource instanceof ConnectorResource){
+                String poolName = ((ConnectorResource)resource).getPoolName();
+                for(Resource res : resources.getResources()){
+                    if(res instanceof ConnectorConnectionPool){
+                        ConnectorConnectionPool ccp = ((ConnectorConnectionPool)res);
+                        if(ccp.getName().equals(poolName)){
+                            return ccp.getResourceAdapterName();
+                        }
+                    }
+                }
+            }else if (resource instanceof ConnectorConnectionPool){
+                ConnectorConnectionPool ccp = ((ConnectorConnectionPool)resource);
+                return ccp.getResourceAdapterName();
+            }else if (resource instanceof AdminObjectResource){
+                AdminObjectResource aor = (AdminObjectResource)resource;
+                return aor.getResAdapter();
+            }else if (resource instanceof ResourceAdapterConfig){
+                ResourceAdapterConfig rac = (ResourceAdapterConfig)resource;
+                return rac.getResourceAdapterName();
+            }else if (resource instanceof WorkSecurityMap){
+                WorkSecurityMap wsm = (WorkSecurityMap)resource;
+                return wsm.getResourceAdapterName();
+            }
+        }
+        return rarName;
+    }
 }

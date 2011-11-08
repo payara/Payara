@@ -103,7 +103,7 @@ public class ListCustomResourcesTest extends ConfigApiTest {
      */
     @Test
     public void testExecuteSuccessListOriginal() {
-        ListCustomResources listCommand = habitat.getComponent(ListCustomResources.class);
+        org.glassfish.resources.admin.cli.ListCustomResources listCommand = habitat.getComponent(org.glassfish.resources.admin.cli.ListCustomResources.class);
         cr.getCommandInvocation("list-custom-resources", context.getActionReport()).parameters(parameters).execute(listCommand);
         List<MessagePart> list = context.getActionReport().getTopMessagePart().getChildren();
         if (origNum == 0) {
@@ -123,7 +123,7 @@ public class ListCustomResourcesTest extends ConfigApiTest {
     @Test
     public void testExecuteSuccessListResource1() {
 
-        CreateCustomResource createCommand = habitat.getComponent(CreateCustomResource.class);
+        org.glassfish.resources.admin.cli.CreateCustomResource createCommand = habitat.getComponent(org.glassfish.resources.admin.cli.CreateCustomResource.class);
         assertTrue(createCommand != null);
         parameters.set("restype", "topic");
         parameters.set("factoryclass", "javax.naming.spi.ObjectFactory");
@@ -132,7 +132,7 @@ public class ListCustomResourcesTest extends ConfigApiTest {
         assertEquals(ActionReport.ExitCode.SUCCESS, context.getActionReport().getActionExitCode());
 
         parameters = new ParameterMap();
-        ListCustomResources listCommand = habitat.getComponent(ListCustomResources.class);
+        org.glassfish.resources.admin.cli.ListCustomResources listCommand = habitat.getComponent(org.glassfish.resources.admin.cli.ListCustomResources.class);
         cr.getCommandInvocation("list-custom-resources", context.getActionReport()).parameters(parameters).execute(listCommand);
 
         List<MessagePart> list = context.getActionReport().getTopMessagePart().getChildren();
@@ -153,14 +153,14 @@ public class ListCustomResourcesTest extends ConfigApiTest {
     @Test
     public void testExecuteSuccessListNoResource1() {
 
-        DeleteCustomResource deleteCommand = habitat.getComponent(DeleteCustomResource.class);
+        org.glassfish.resources.admin.cli.DeleteCustomResource deleteCommand = habitat.getComponent(org.glassfish.resources.admin.cli.DeleteCustomResource.class);
         assertTrue(deleteCommand != null);
         parameters.set("jndi_name", "custom_resource1");
         cr.getCommandInvocation("delete-custom-resource", context.getActionReport()).parameters(parameters).execute(deleteCommand);
         assertEquals(ActionReport.ExitCode.SUCCESS, context.getActionReport().getActionExitCode());
 
         parameters = new ParameterMap();
-        ListCustomResources listCommand = habitat.getComponent(ListCustomResources.class);
+        org.glassfish.resources.admin.cli.ListCustomResources listCommand = habitat.getComponent(org.glassfish.resources.admin.cli.ListCustomResources.class);
         cr.getCommandInvocation("list-custom-resources", context.getActionReport()).parameters(parameters).execute(listCommand);
 
         List<MessagePart> list = context.getActionReport().getTopMessagePart().getChildren();

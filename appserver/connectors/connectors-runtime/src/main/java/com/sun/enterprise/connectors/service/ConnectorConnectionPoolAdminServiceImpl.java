@@ -53,12 +53,10 @@ import javax.security.auth.Subject;
 
 import com.sun.appserv.connectors.internal.api.ConnectorRuntimeException;
 import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
-import org.glassfish.resource.common.PoolInfo;
 import com.sun.appserv.connectors.internal.api.PoolingException;
-import org.glassfish.resource.common.ResourceInfo;
-import org.glassfish.resources.config.JdbcResource;
+import org.glassfish.connectors.config.JdbcResource;
 import com.sun.enterprise.config.serverbeans.ResourcePool;
-import org.glassfish.resources.config.SecurityMap;
+import org.glassfish.connectors.config.SecurityMap;
 import com.sun.enterprise.connectors.ActiveResourceAdapter;
 import com.sun.enterprise.connectors.*;
 import com.sun.enterprise.connectors.authentication.ConnectorSecurityMap;
@@ -73,6 +71,9 @@ import com.sun.enterprise.resource.pool.PoolManager;
 import org.glassfish.internal.api.RelativePathResolver;
 import com.sun.enterprise.util.i18n.StringManager;
 import javax.resource.spi.ConnectionRequestInfo;
+
+import org.glassfish.resources.api.PoolInfo;
+import org.glassfish.resources.api.ResourceInfo;
 import org.jvnet.hk2.config.types.Property;
 
 

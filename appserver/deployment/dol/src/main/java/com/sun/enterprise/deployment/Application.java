@@ -51,7 +51,6 @@ import com.sun.enterprise.deployment.types.*;
 import com.sun.enterprise.deployment.util.*;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.deployment.common.*;
-import org.glassfish.resource.common.Resource;
 import org.glassfish.security.common.Role;
 import org.jvnet.hk2.component.Habitat;
 
@@ -190,7 +189,7 @@ public class Application extends BundleDescriptor
 
     private boolean loadedFromApplicationXml = true;
 
-    private List<Resource> resourceList = null;
+    //private List<Resource> resourceList = null;
 
     private final Habitat habitat;
 
@@ -1573,14 +1572,16 @@ public class Application extends BundleDescriptor
         return loadedFromApplicationXml;
     }
 
+/*
     // getter and setter of in-memory object of sun-configuration.xml
     public void setResourceList(List<Resource> rList) {
         resourceList = rList;
     }
 
-    public List<Resource> getResourceList() {
+    public List<org.glassfish.resources.api.Resource> getResourceList() {
         return resourceList;
     }
+*/
 
     //resource-adapters referred by application via :
     //resource-ref, resource-env-ref, ra-mid

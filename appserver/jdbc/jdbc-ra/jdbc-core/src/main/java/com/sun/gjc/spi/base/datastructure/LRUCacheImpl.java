@@ -43,7 +43,7 @@ package com.sun.gjc.spi.base.datastructure;
 import com.sun.gjc.spi.base.*;
 import com.sun.logging.LogDomains;
 import com.sun.gjc.monitoring.StatementCacheProbeProvider;
-import org.glassfish.resource.common.PoolInfo;
+import org.glassfish.resources.api.PoolInfo;
 
 import java.util.*;
 import java.util.logging.Logger;

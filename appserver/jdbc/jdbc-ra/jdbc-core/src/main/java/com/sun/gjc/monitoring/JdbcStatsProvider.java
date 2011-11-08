@@ -53,7 +53,7 @@ import org.glassfish.gmbal.Description;
 import org.glassfish.gmbal.ManagedAttribute;
 import com.sun.gjc.util.SQLTrace;
 import com.sun.gjc.util.SQLTraceCache;
-import org.glassfish.resource.common.PoolInfo;
+import org.glassfish.resources.api.PoolInfo;
 
 /**
  * Provides the monitoring data for JDBC RA module

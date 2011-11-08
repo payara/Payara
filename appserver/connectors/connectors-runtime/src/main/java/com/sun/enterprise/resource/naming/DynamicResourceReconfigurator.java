@@ -41,13 +41,13 @@
 package com.sun.enterprise.resource.naming;
 
 import com.sun.appserv.connectors.internal.api.ConnectorConstants;
-import com.sun.appserv.connectors.internal.api.ResourceNamingService;
 import com.sun.appserv.connectors.internal.spi.BadConnectionEventListener;
 import com.sun.enterprise.connectors.ConnectorRegistry;
 import com.sun.enterprise.connectors.ConnectorRuntime;
 import com.sun.enterprise.resource.DynamicallyReconfigurableResource;
 import com.sun.logging.LogDomains;
-import org.glassfish.resource.common.ResourceInfo;
+import org.glassfish.resources.api.ResourceInfo;
+import org.glassfish.resources.naming.ResourceNamingService;
 
 import javax.resource.ResourceException;
 import javax.resource.spi.RetryableUnavailableException;

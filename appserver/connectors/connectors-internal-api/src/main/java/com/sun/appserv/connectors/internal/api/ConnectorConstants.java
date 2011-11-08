@@ -40,6 +40,8 @@
 
 package com.sun.appserv.connectors.internal.api;
 
+import org.glassfish.resources.api.ResourceConstants;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.Arrays;
@@ -52,27 +54,12 @@ import java.util.Arrays;
  * This will enable tracking all the constants easily.
  */
 
-public interface ConnectorConstants {
+public interface ConnectorConstants extends ResourceConstants {
 
     /**
      * Represents the connector container module name / type
      */
     public static final String CONNECTOR_MODULE = "connector";
-
-    /**
-     * Represents the glassfish-resources.xml handling module name / type for .ear
-     */
-    public static final String GF_RESOURCES_MODULE_EAR = "resources_ear";
-
-    /**
-     * Represents the glassfish-resources.xml handling module name / type for standalone application
-     */
-    public static final String GF_RESOURCES_MODULE = "resources";
-
-    /**
-     * Represents the location where glassfish-resources.xml will be present in an archive
-     */
-    public static final String GF_RESOURCES_LOCATION ="META-INF/glassfish-resources.xml";
 
      /**
      *  JAXR  system resource adapter name.
@@ -218,11 +205,6 @@ public interface ConnectorConstants {
 
 
     /**
-     *  Reserved sub-context where datasource-definition objets (resource and pool) are bound with generated names.
-     */
-    public static String DATASOURCE_DEFINITION_JNDINAME_PREFIX="__datasource_definition/";
-
-    /**
      *  Reserved sub-context where pool objets are bound with generated names.
      */
     public static String POOLS_JNDINAME_PREFIX=RESERVE_PREFIX+"/pools/";
@@ -236,13 +218,6 @@ public interface ConnectorConstants {
     public static String CAUTION_MESSAGE="Please add the following permissions to the " +
             "server.policy file and restart the appserver.";
     
-    /**
-     * Token used for generating the name to refer to the embedded rars.
-     * It will be AppName+EMBEDDEDRAR_NAME_DELIMITER+embeddedRarName.
-     */
-
-    public static String EMBEDDEDRAR_NAME_DELIMITER="#";
-
     /**
      * Property name for distinguishing the transaction exceptions 
      * propagation capability.
@@ -357,60 +332,7 @@ public interface ConnectorConstants {
 
     public static final String INSTALL_ROOT = "com.sun.aas.installRoot";
 
-    /**
-     * Constant to denote external jndi resource type.
-     */
-    public static final String RES_TYPE_EXTERNAL_JNDI = "external-jndi";
 
-    public static final String RES_TYPE_JDBC = "jdbc";
-
-    /**
-     * Constant to denote jdbc connection pool resource type.
-     */
-    public static final String RES_TYPE_JCP = "jcp";
-
-    /**
-     * Constant to denote connector connection pool  resource type.
-     */
-    public static final String RES_TYPE_CCP = "ccp";
-
-    /**
-     * Constant to denote connector resource type.
-     */
-    public static final String RES_TYPE_CR = "cr";
-
-    /**
-     * Constant to denote custom resource type.
-     */
-    public static final String RES_TYPE_CUSTOM = "custom";
-
-    /**
-     * Constant to denote admin object resource type.
-     */
-    public static final String RES_TYPE_AOR = "aor";
-
-    /**
-     * Constant to denote resource adapter config type.
-     */
-    public static final String RES_TYPE_RAC = "rac";
-
-    /**
-     * Constant to denote connector-work-security-map type.
-     */
-    public static final String RES_TYPE_CWSM = "cwsm";
-
-    /**
-     * Constant to denote mail resource type.
-     */
-    public static final String RES_TYPE_MAIL = "mail";
-
-    public static final String JMS_QUEUE = "javax.jms.Queue";
-    public static final String JMS_TOPIC = "javax.jms.Topic";
-    public static final String JMS_QUEUE_CONNECTION_FACTORY = "javax.jms.QueueConnectionFactory";
-    public static final String JMS_TOPIC_CONNECTION_FACTORY = "javax.jms.TopicConnectionFactory";
-    public static final String JMS_MESSAGE_LISTENER = "javax.jms.MessageListener";
-    /** resource type residing in an external JNDI repository */
-    public static final String EXT_JNDI_RES_TYPE = "external-jndi-resource";
 
     // name by which connector's implemenation of message-bean-client-factory service is available.
     // MDB-Container can use this constant to get connector's implementation of the factory
@@ -441,25 +363,10 @@ public interface ConnectorConstants {
     //flag to indiate additional RARs required for an application, apart from the ones referred via app's DD
     public static final String REQUIRED_RARS_FOR_APP_PREFIX="required-rars-for-";
 
-    public static final String JAVA_APP_SCOPE_PREFIX = "java:app/";
-    public static final String JAVA_COMP_SCOPE_PREFIX = "java:comp/";
-    public static final String JAVA_MODULE_SCOPE_PREFIX = "java:module/";
-    public static final String JAVA_GLOBAL_SCOPE_PREFIX = "java:global/";
-
-    public final static String CONNECTOR_RESOURCES = "CONNECTOR";
-    public final static String NON_CONNECTOR_RESOURCES = "NON-CONNECTOR";
-
-    public final static String APP_META_DATA_RESOURCES = "app-level-resources-config";
-    public final static String APP_SCOPED_RESOURCES_MAP = "app-scoped-resources-map";
-
-
     //flag to indicate that the call to lookup is a proxy's call so that actual object can be returned
     public static final String DYNAMIC_RECONFIGURATION_PROXY_CALL = "com.sun.enterprise.resource.reconfig.proxyCall";
 
     //flag to enable dynamic-reconfiguration feature for connection pool
     public static final String DYNAMIC_RECONFIGURATION_FLAG = "dynamic-reconfiguration-wait-timeout-in-seconds";
 
-    public static enum TriState {
-        TRUE, FALSE, UNKNOWN
-    }
 }

@@ -40,11 +40,11 @@
 
 package com.sun.enterprise.resource.pool;
 
-import org.glassfish.resource.common.PoolInfo;
 import com.sun.enterprise.connectors.ConnectorRuntime;
 import com.sun.enterprise.resource.ResourceHandle;
 import com.sun.enterprise.util.i18n.StringManager;
 import com.sun.logging.LogDomains;
+import org.glassfish.resources.api.PoolInfo;
 
 import java.util.*;
 import java.util.logging.Level;

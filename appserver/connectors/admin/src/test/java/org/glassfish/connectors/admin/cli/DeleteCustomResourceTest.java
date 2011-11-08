@@ -121,7 +121,7 @@ public class DeleteCustomResourceTest extends ConfigApiTest {
      */
     @Test
     public void testExecuteSuccessDefaultTarget() {
-        CreateCustomResource createCommand = habitat.getComponent(CreateCustomResource.class);
+        org.glassfish.resources.admin.cli.CreateCustomResource createCommand = habitat.getComponent(org.glassfish.resources.admin.cli.CreateCustomResource.class);
         assertTrue(createCommand != null);
         parameters.set("restype", "topic");
         parameters.set("factoryclass", "javax.naming.spi.ObjectFactory");
@@ -130,7 +130,7 @@ public class DeleteCustomResourceTest extends ConfigApiTest {
         assertEquals(ActionReport.ExitCode.SUCCESS, context.getActionReport().getActionExitCode());
 
         parameters = new ParameterMap();
-        DeleteCustomResource deleteCommand = habitat.getComponent(DeleteCustomResource.class);
+        org.glassfish.resources.admin.cli.DeleteCustomResource deleteCommand = habitat.getComponent(org.glassfish.resources.admin.cli.DeleteCustomResource.class);
         assertTrue(deleteCommand != null);
         parameters.set("jndi_name", "sample_custom_resource");
         cr.getCommandInvocation("delete-custom-resource", context.getActionReport()).parameters(parameters).execute(deleteCommand);
@@ -170,7 +170,7 @@ public class DeleteCustomResourceTest extends ConfigApiTest {
      */
     @Test
     public void testExecuteFailDoesNotExist() {
-        DeleteCustomResource deleteCommand = habitat.getComponent(DeleteCustomResource.class);
+        org.glassfish.resources.admin.cli.DeleteCustomResource deleteCommand = habitat.getComponent(org.glassfish.resources.admin.cli.DeleteCustomResource.class);
         assertTrue(deleteCommand != null);
         parameters.set("jndi_name", "doesnotexist");
         cr.getCommandInvocation("delete-custom-resource", context.getActionReport()).parameters(parameters).execute(deleteCommand);

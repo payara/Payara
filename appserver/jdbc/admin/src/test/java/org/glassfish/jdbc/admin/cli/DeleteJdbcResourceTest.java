@@ -49,7 +49,7 @@ import com.sun.logging.LogDomains;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.CommandRunner;
 import org.glassfish.api.admin.ParameterMap;
-import org.glassfish.resources.config.JdbcResource;
+import org.glassfish.connectors.config.JdbcResource;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;

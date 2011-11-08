@@ -53,8 +53,8 @@ import org.glassfish.api.admin.ExecuteOn;
 import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
-import org.glassfish.resource.common.ResourceConstants;
-import org.glassfish.resource.common.ResourceStatus;
+import org.glassfish.resources.admin.cli.ResourceConstants;
+import org.glassfish.resources.api.ResourceStatus;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
@@ -67,8 +67,8 @@ import java.util.logging.Logger;
 
 import static org.glassfish.connectors.admin.cli.CLIConstants.CR.*;
 import static org.glassfish.connectors.admin.cli.CLIConstants.*;
-import static org.glassfish.resource.common.ResourceConstants.JNDI_NAME;
-import static org.glassfish.resource.common.ResourceConstants.POOL_NAME;
+import static org.glassfish.resources.admin.cli.ResourceConstants.JNDI_NAME;
+import static org.glassfish.resources.admin.cli.ResourceConstants.POOL_NAME;
 
 
 /**

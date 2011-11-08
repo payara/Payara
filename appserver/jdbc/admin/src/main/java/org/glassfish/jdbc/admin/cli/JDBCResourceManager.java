@@ -43,16 +43,17 @@ package org.glassfish.jdbc.admin.cli;
 import java.beans.PropertyVetoException;
 import java.util.*;
 
-import static org.glassfish.resource.common.ResourceConstants.*;
+import static org.glassfish.resources.admin.cli.ResourceConstants.*;
 
 import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
 import com.sun.enterprise.config.serverbeans.*;
-import org.glassfish.admin.cli.resources.ResourceUtil;
 import org.glassfish.api.admin.ServerEnvironment;
-import org.glassfish.resource.common.ResourceStatus;
 import org.glassfish.api.I18n;
-import org.glassfish.resources.BindableResourcesHelper;
-import org.glassfish.resources.config.JdbcResource;
+import org.glassfish.connectors.config.JdbcResource;
+import org.glassfish.resources.admin.cli.ResourceManager;
+import org.glassfish.resources.admin.cli.ResourceUtil;
+import org.glassfish.resources.api.ResourceStatus;
+import org.glassfish.resources.util.BindableResourcesHelper;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigSupport;
@@ -61,7 +62,6 @@ import org.jvnet.hk2.config.TransactionFailure;
 import org.jvnet.hk2.config.types.Property;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.jvnet.hk2.config.ConfiguredBy;
-import org.glassfish.admin.cli.resources.ResourceManager;
 
 import javax.resource.ResourceException;
 

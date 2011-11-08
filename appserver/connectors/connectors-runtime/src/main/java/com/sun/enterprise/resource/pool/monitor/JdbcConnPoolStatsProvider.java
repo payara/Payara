@@ -40,7 +40,6 @@
 
 package com.sun.enterprise.resource.pool.monitor;
 
-import org.glassfish.resource.common.PoolInfo;
 import com.sun.enterprise.connectors.ConnectorRuntime;
 import com.sun.enterprise.resource.pool.PoolLifeCycleListenerRegistry;
 import com.sun.enterprise.resource.pool.PoolStatus;
@@ -58,6 +57,7 @@ import org.glassfish.gmbal.AMXMetadata;
 import org.glassfish.gmbal.Description;
 import org.glassfish.gmbal.ManagedAttribute;
 import org.glassfish.gmbal.ManagedObject;
+import org.glassfish.resources.api.PoolInfo;
 
 /**
  * StatsProvider object for Jdbc pool monitoring.

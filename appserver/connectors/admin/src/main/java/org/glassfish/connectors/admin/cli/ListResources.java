@@ -46,7 +46,11 @@ import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.CommandLock;
-import org.glassfish.resources.config.*;
+import org.glassfish.connectors.config.ConnectorConnectionPool;
+import org.glassfish.connectors.config.JdbcConnectionPool;
+import org.glassfish.connectors.config.ResourceAdapterConfig;
+import org.glassfish.connectors.config.WorkSecurityMap;
+import org.glassfish.resources.util.BindableResourcesHelper;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
@@ -77,6 +81,9 @@ public class ListResources implements AdminCommand {
 
     @Param(optional = true, name="modulename")
     private String moduleName;
+
+    @Inject
+    BindableResourcesHelper bindableResourcesHelper;
 
     /**
      * Executes the command with the command parameters passed as Properties
@@ -129,19 +136,8 @@ public class ListResources implements AdminCommand {
             if (r instanceof BindableResource) {
                 String name = ((BindableResource) r).getJndiName();
                 String type = "";
-                if (r instanceof JdbcResource) {
-                    type = "<JdbcResource>";
-                } else if (r instanceof ConnectorResource) {
-                    type = "<ConnectorResource>";
-                } else if (r instanceof ExternalJndiResource) {
-                    type = "<ExternalJndiResource>";
-                } else if (r instanceof CustomResource) {
-                    type = "<CustomResource>";
-                } else if (r instanceof AdminObjectResource) {
-                    type = "<AdminObjectResource>";
-                } else if (r instanceof MailResource) {
-                    type = "<MailResource>";
-                }
+                String resourceName = bindableResourcesHelper.getResourceTypeName((BindableResource)(r));
+                type = "<" + resourceName + ">";
 
                 List<String> typedResources = getResourcesByType(list, type);
                 typedResources.add(name);

@@ -43,9 +43,11 @@ package com.sun.enterprise.config.serverbeans;
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.Configured;
+import org.jvnet.hk2.config.DuckTyped;
 
 import javax.validation.constraints.Pattern;
 import java.beans.PropertyVetoException;
+import java.util.List;
 
 /**
  * Tag interface for all types of resource.
@@ -80,4 +82,13 @@ public interface Resource extends ConfigBeanProxy {
      * of the listeners.
      */
     void setObjectType(String value) throws PropertyVetoException;
+
+    @DuckTyped
+    String getIdentity();
+
+    class Duck {
+        public static String getIdentity(Resource resource){
+            return null;
+        }
+    }
 }

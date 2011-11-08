@@ -40,8 +40,8 @@
 
 package com.sun.enterprise.resource.pool;
 
-import org.glassfish.resource.common.PoolInfo;
 import com.sun.enterprise.resource.ResourceSpec;
+import org.glassfish.resources.api.PoolInfo;
 
 import java.util.concurrent.ConcurrentHashMap;
 

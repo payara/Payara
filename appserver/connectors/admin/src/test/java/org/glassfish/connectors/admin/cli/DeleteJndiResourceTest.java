@@ -128,12 +128,12 @@ public class DeleteJndiResourceTest extends ConfigApiTest {
         parameters.set("jndilookupname", "sample_jndi");
         parameters.set("factoryclass", "javax.naming.spi.ObjectFactory");
         parameters.set("jndi_name", "sample_jndi_resource");
-        CreateJndiResource createCommand = habitat.getComponent(CreateJndiResource.class);
+        org.glassfish.resources.admin.cli.CreateJndiResource createCommand = habitat.getComponent(org.glassfish.resources.admin.cli.CreateJndiResource.class);
         cr.getCommandInvocation("create-jndi-resource", context.getActionReport()).parameters(parameters).execute(createCommand);
         assertEquals(ActionReport.ExitCode.SUCCESS, context.getActionReport().getActionExitCode());
         parameters = new ParameterMap();
         parameters.set("jndi_name", "sample_jndi_resource");
-        DeleteJndiResource deleteCommand = habitat.getComponent(DeleteJndiResource.class);
+        org.glassfish.resources.admin.cli.DeleteJndiResource deleteCommand = habitat.getComponent(org.glassfish.resources.admin.cli.DeleteJndiResource.class);
         cr.getCommandInvocation("delete-jndi-resource", context.getActionReport()).parameters(parameters).execute(deleteCommand);
         assertEquals(ActionReport.ExitCode.SUCCESS, context.getActionReport().getActionExitCode());
         boolean isDeleted = true;
@@ -171,7 +171,7 @@ public class DeleteJndiResourceTest extends ConfigApiTest {
     @Test
     public void testExecuteFailDoesNotExist() {
         parameters.set("jndi_name", "doesnotexist");
-        DeleteJndiResource deleteCommand = habitat.getComponent(DeleteJndiResource.class);
+        org.glassfish.resources.admin.cli.DeleteJndiResource deleteCommand = habitat.getComponent(org.glassfish.resources.admin.cli.DeleteJndiResource.class);
         cr.getCommandInvocation("delete-jndi-resource", context.getActionReport()).parameters(parameters).execute(deleteCommand);
         assertEquals(ActionReport.ExitCode.FAILURE, context.getActionReport().getActionExitCode());
         logger.fine("msg: " + context.getActionReport().getMessage());

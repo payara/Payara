@@ -41,13 +41,13 @@
 package com.sun.enterprise.connectors.service;
 
 import com.sun.appserv.connectors.internal.api.ConnectorConstants;
-import org.glassfish.resource.common.GenericResourceInfo;
-import org.glassfish.resource.common.PoolInfo;
 import com.sun.enterprise.connectors.ConnectorConnectionPool;
 import com.sun.enterprise.connectors.ConnectorDescriptorInfo;
 import com.sun.enterprise.connectors.ConnectorRuntime;
 import com.sun.enterprise.deployment.ResourcePrincipal;
 import com.sun.enterprise.deployment.ConnectorConfigProperty;
+import org.glassfish.resources.api.GenericResourceInfo;
+import org.glassfish.resources.api.PoolInfo;
 
 import javax.naming.Context;
 import javax.naming.NamingException;

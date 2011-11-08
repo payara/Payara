@@ -41,7 +41,7 @@
 package com.sun.enterprise.connectors.service;
 
 import com.sun.appserv.connectors.internal.api.*;
-import org.glassfish.resources.config.JdbcResource;
+import org.glassfish.connectors.config.JdbcResource;
 import com.sun.enterprise.connectors.ConnectorConnectionPool;
 import com.sun.enterprise.connectors.ConnectorDescriptorInfo;
 import com.sun.enterprise.connectors.ConnectorRuntime;
@@ -49,9 +49,9 @@ import com.sun.enterprise.connectors.naming.ConnectorResourceNamingEventNotifier
 import com.sun.appserv.connectors.internal.spi.ConnectorNamingEvent;
 import com.sun.enterprise.connectors.naming.ConnectorNamingEventNotifier;
 import com.sun.enterprise.connectors.util.ResourcesUtil;
-import com.sun.enterprise.resource.naming.SerializableObjectRefAddr;
-import org.glassfish.resource.common.PoolInfo;
-import org.glassfish.resource.common.ResourceInfo;
+import org.glassfish.resources.api.PoolInfo;
+import org.glassfish.resources.api.ResourceInfo;
+import org.glassfish.resources.naming.*;
 
 import javax.naming.*;
 import javax.sql.DataSource;

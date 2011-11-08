@@ -143,7 +143,7 @@ public class CreateJndiResourceTest extends ConfigApiTest {
         parameters.set("restype", "queue");
         parameters.set("factoryclass", "sampleClass");
         parameters.set("jndi_name", "sample_jndi_resource");
-        CreateJndiResource command = habitat.getComponent(CreateJndiResource.class);
+        org.glassfish.resources.admin.cli.CreateJndiResource command = habitat.getComponent(org.glassfish.resources.admin.cli.CreateJndiResource.class);
         cr.getCommandInvocation("create-jndi-resource", context.getActionReport()).parameters(parameters).execute(command);
 
         assertEquals(ActionReport.ExitCode.SUCCESS, context.getActionReport().getActionExitCode());
@@ -193,7 +193,7 @@ public class CreateJndiResourceTest extends ConfigApiTest {
         parameters.set("restype", "queue");
         parameters.set("factoryclass", "sampleClass");
         parameters.set("jndi_name", "dupRes");
-        CreateJndiResource command1 = habitat.getComponent(CreateJndiResource.class);
+        org.glassfish.resources.admin.cli.CreateJndiResource command1 = habitat.getComponent(org.glassfish.resources.admin.cli.CreateJndiResource.class);
         cr.getCommandInvocation("create-jndi-resource", context.getActionReport()).parameters(parameters).execute(command1);
         assertEquals(ActionReport.ExitCode.SUCCESS, context.getActionReport().getActionExitCode());
         boolean isCreated = false;
@@ -209,7 +209,7 @@ public class CreateJndiResourceTest extends ConfigApiTest {
         }
         assertTrue(isCreated);
 
-        CreateJndiResource command2 = habitat.getComponent(CreateJndiResource.class);
+        org.glassfish.resources.admin.cli.CreateJndiResource command2 = habitat.getComponent(org.glassfish.resources.admin.cli.CreateJndiResource.class);
         cr.getCommandInvocation("create-jndi-resource", context.getActionReport()).parameters(parameters).execute(command2);
         assertEquals(ActionReport.ExitCode.FAILURE, context.getActionReport().getActionExitCode());
         int numDupRes = 0;
@@ -239,7 +239,7 @@ public class CreateJndiResourceTest extends ConfigApiTest {
         parameters.set("enabled", "false");
         parameters.set("description", "External JNDI Resource");
         parameters.set("jndi_name", "sample_jndi_resource");
-        CreateJndiResource command = habitat.getComponent(CreateJndiResource.class);
+        org.glassfish.resources.admin.cli.CreateJndiResource command = habitat.getComponent(org.glassfish.resources.admin.cli.CreateJndiResource.class);
         cr.getCommandInvocation("create-jndi-resource", context.getActionReport()).parameters(parameters).execute(command);
         assertEquals(ActionReport.ExitCode.SUCCESS, context.getActionReport().getActionExitCode());
         boolean isCreated = false;
@@ -280,7 +280,7 @@ public class CreateJndiResourceTest extends ConfigApiTest {
         parameters.set("factoryclass", "sampleClass");
         parameters.set("jndilookupname", "sample_jndi");
         parameters.set("jndi_name", "sample_jndi_resource");
-        CreateJndiResource command = habitat.getComponent(CreateJndiResource.class);
+        org.glassfish.resources.admin.cli.CreateJndiResource command = habitat.getComponent(org.glassfish.resources.admin.cli.CreateJndiResource.class);
         cr.getCommandInvocation("create-jndi-resource", context.getActionReport()).parameters(parameters).execute(command);
         assertEquals(ActionReport.ExitCode.FAILURE, context.getActionReport().getActionExitCode());
     }
@@ -295,7 +295,7 @@ public class CreateJndiResourceTest extends ConfigApiTest {
         parameters.set("factoryclass", "sampleClass");
         parameters.set("restype", "queue");
         parameters.set("jndi_name", "sample_jndi_resource");
-        CreateJndiResource command = habitat.getComponent(CreateJndiResource.class);
+        org.glassfish.resources.admin.cli.CreateJndiResource command = habitat.getComponent(org.glassfish.resources.admin.cli.CreateJndiResource.class);
         cr.getCommandInvocation("create-jndi-resource", context.getActionReport()).parameters(parameters).execute(command);
         assertEquals(ActionReport.ExitCode.FAILURE, context.getActionReport().getActionExitCode());
     }

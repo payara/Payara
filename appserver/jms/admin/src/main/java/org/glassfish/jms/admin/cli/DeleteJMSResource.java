@@ -42,7 +42,7 @@ package org.glassfish.jms.admin.cli;
 
 import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
 import com.sun.enterprise.config.serverbeans.*;
-import org.glassfish.resources.config.*;
+import org.glassfish.connectors.config.ConnectorResource;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
 import org.glassfish.api.ActionReport;

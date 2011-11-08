@@ -72,7 +72,7 @@ public class CreateCustomResourceTest extends ConfigApiTest {
     Habitat habitat = Utils.instance.getHabitat(this);
     private ParameterMap parameters;
     private Resources resources = null;
-    private CreateCustomResource command = null;
+    private org.glassfish.resources.admin.cli.CreateCustomResource command = null;
     private AdminCommandContext context = null;
     private CommandRunner cr = null;
 
@@ -89,7 +89,7 @@ public class CreateCustomResourceTest extends ConfigApiTest {
         parameters = new ParameterMap();
         resources = habitat.getComponent(Domain.class).getResources();
         assertTrue(resources != null);
-        command = habitat.getComponent(CreateCustomResource.class);
+        command = habitat.getComponent(org.glassfish.resources.admin.cli.CreateCustomResource.class);
         assertTrue(command != null);
         context = new AdminCommandContext(
                 LogDomains.getLogger(CreateCustomResourceTest.class, LogDomains.ADMIN_LOGGER),
@@ -207,7 +207,7 @@ public class CreateCustomResourceTest extends ConfigApiTest {
         assertTrue(isCreated);
 
         //Try to create a duplicate resource dupRes. Get a new instance of the command.
-        CreateCustomResource command2 = habitat.getComponent(CreateCustomResource.class);
+        org.glassfish.resources.admin.cli.CreateCustomResource command2 = habitat.getComponent(org.glassfish.resources.admin.cli.CreateCustomResource.class);
         cr.getCommandInvocation("create-custom-resource", context.getActionReport()).parameters(parameters).execute(command2);
 
         // Check the exit code is FAILURE

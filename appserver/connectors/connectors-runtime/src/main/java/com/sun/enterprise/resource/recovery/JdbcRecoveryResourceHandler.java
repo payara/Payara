@@ -41,7 +41,6 @@
 package com.sun.enterprise.resource.recovery;
 
 import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
-import org.glassfish.resource.common.PoolInfo;
 import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.transaction.config.TransactionService;
 import com.sun.enterprise.deployment.ResourcePrincipal;
@@ -50,9 +49,10 @@ import com.sun.enterprise.transaction.spi.RecoveryResourceHandler;
 import com.sun.logging.LogDomains;
 import com.sun.appserv.connectors.internal.api.ConnectorRuntime;
 import com.sun.enterprise.connectors.util.ResourcesUtil;
-import org.glassfish.resource.common.ResourceInfo;
-import org.glassfish.resources.config.JdbcConnectionPool;
-import org.glassfish.resources.config.JdbcResource;
+import org.glassfish.connectors.config.JdbcConnectionPool;
+import org.glassfish.connectors.config.JdbcResource;
+import org.glassfish.resources.api.PoolInfo;
+import org.glassfish.resources.api.ResourceInfo;
 import org.jvnet.hk2.config.types.Property;
 
 import javax.naming.InitialContext;

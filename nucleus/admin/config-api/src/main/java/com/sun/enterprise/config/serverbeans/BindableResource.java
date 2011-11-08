@@ -42,6 +42,7 @@ package com.sun.enterprise.config.serverbeans;
 
 import com.sun.enterprise.config.serverbeans.customvalidators.ResourceNameConstraint;
 import org.jvnet.hk2.config.Attribute;
+import org.jvnet.hk2.config.DuckTyped;
 
 import java.beans.PropertyVetoException;
 import javax.validation.Payload;
@@ -86,4 +87,14 @@ public interface BindableResource extends Resource, Payload {
      *              {@link String }
      */
     void setEnabled(String value) throws PropertyVetoException;
+
+    @DuckTyped
+    String getIdentity();
+
+    class Duck {
+        public static String getIdentity(BindableResource resource){
+            return resource.getJndiName();
+        }
+    }
+
 }

@@ -61,9 +61,5 @@
                         com.sun.enterprise.deployment.xml; \
                         com.sun.enterprise.repository; version=${project.osgi.version}
 
-# currently Application uses List<Resource> type, and bnd tool doesn't
-# generate Import-Package entry for Resource class. Remove this once
-# bnd tool is fixed.
 Import-Package: \
-                        org.glassfish.resource.common, \
                         *

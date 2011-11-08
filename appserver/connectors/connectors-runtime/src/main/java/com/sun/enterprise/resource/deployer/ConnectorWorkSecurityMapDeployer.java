@@ -40,15 +40,15 @@
 
 package com.sun.enterprise.resource.deployer;
 
-import org.glassfish.resources.config.WorkSecurityMap;
+import org.glassfish.connectors.config.WorkSecurityMap;
+import org.glassfish.resources.api.ResourceDeployer;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.component.Singleton;
-import com.sun.appserv.connectors.internal.spi.ResourceDeployer;
 
 @Service
 @Scoped(Singleton.class)
-public class ConnectorWorkSecurityMapDeployer implements ResourceDeployer {
+public class ConnectorWorkSecurityMapDeployer  extends AbstractConnectorResourceDeployer implements ResourceDeployer {
 
     public synchronized void deployResource(Object resource, String applicationName, String moduleName)
             throws Exception {

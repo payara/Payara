@@ -46,13 +46,13 @@ import com.sun.enterprise.config.serverbeans.Resource;
 import com.sun.enterprise.config.serverbeans.Resources;
 import com.sun.enterprise.config.serverbeans.ServerTags;
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import org.glassfish.admin.cli.resources.ResourceManager;
-import org.glassfish.admin.cli.resources.ResourceUtil;
 import org.glassfish.api.I18n;
-import org.glassfish.resource.common.ResourceStatus;
-import org.glassfish.resources.BindableResourcesHelper;
-import org.glassfish.resources.config.ConnectorConnectionPool;
-import org.glassfish.resources.config.ConnectorResource;
+import org.glassfish.connectors.config.ConnectorResource;
+import org.glassfish.connectors.config.ConnectorConnectionPool;
+import org.glassfish.resources.admin.cli.ResourceManager;
+import org.glassfish.resources.admin.cli.ResourceUtil;
+import org.glassfish.resources.api.ResourceStatus;
+import org.glassfish.resources.util.BindableResourcesHelper;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
@@ -69,7 +69,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
-import static org.glassfish.resource.common.ResourceConstants.*;
+import static org.glassfish.resources.admin.cli.ResourceConstants.*;
 
 /**
  * @author Jennifer Chou, Jagadish Ramu

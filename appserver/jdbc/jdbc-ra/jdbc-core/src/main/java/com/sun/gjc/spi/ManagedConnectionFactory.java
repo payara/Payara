@@ -73,10 +73,9 @@ import javax.resource.spi.ConfigProperty;
 import javax.resource.spi.ResourceAdapterAssociation;
 import org.glassfish.api.jdbc.ConnectionValidation;
 import org.glassfish.api.jdbc.SQLTraceListener;
-import org.glassfish.api.monitoring.ContainerMonitoring;
 import org.glassfish.external.probe.provider.PluginPoint;
 import org.glassfish.external.probe.provider.StatsProviderManager;
-import org.glassfish.resource.common.PoolInfo;
+import org.glassfish.resources.api.PoolInfo;
 
 /**
  * <code>ManagedConnectionFactory</code> implementation for Generic JDBC Connector.
@@ -1268,7 +1267,7 @@ public abstract class ManagedConnectionFactory implements javax.resource.spi.Man
     }
 
     protected PoolInfo getPoolInfo(){
-        return new PoolInfo(getPoolName(), getApplicationName(), getModuleName());    
+        return new PoolInfo(getPoolName(), getApplicationName(), getModuleName());
     }
 
     protected ManagedConnection constructManagedConnection(PooledConnection pc,

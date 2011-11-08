@@ -41,15 +41,15 @@
 package com.sun.enterprise.resource.deployer;
 
 
-import com.sun.appserv.connectors.internal.api.ConnectorRuntimeException;
-import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
-import org.glassfish.resource.common.PoolInfo;
+import com.sun.appserv.connectors.internal.api.*;
+import org.glassfish.connectors.config.SecurityMap;
+import org.glassfish.resources.api.PoolInfo;
+import org.glassfish.resources.api.ResourceDeployer;
 import org.jvnet.hk2.config.types.Property;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.component.Singleton;
-import org.glassfish.resources.config.SecurityMap;
 import com.sun.enterprise.connectors.ConnectorDescriptorInfo;
 import com.sun.enterprise.connectors.ConnectorRuntime;
 import com.sun.enterprise.connectors.ConnectorConnectionPool;
@@ -58,7 +58,6 @@ import com.sun.enterprise.connectors.util.SecurityMapUtils;
 import com.sun.enterprise.deployment.ConnectionDefDescriptor;
 import com.sun.enterprise.deployment.ConnectorDescriptor;
 import com.sun.enterprise.deployment.ConnectorConfigProperty;
-import com.sun.appserv.connectors.internal.spi.ResourceDeployer;
 import com.sun.enterprise.util.i18n.StringManager;
 import com.sun.logging.LogDomains;
 
@@ -72,7 +71,7 @@ import java.util.logging.Logger;
 
 @Service
 @Scoped(Singleton.class)
-public class ConnectorConnectionPoolDeployer extends GlobalResourceDeployer
+public class ConnectorConnectionPoolDeployer extends AbstractConnectorResourceDeployer
         implements ResourceDeployer {
 
     @Inject
@@ -96,9 +95,9 @@ public class ConnectorConnectionPoolDeployer extends GlobalResourceDeployer
             _logger.fine("ConnectorConnectionPoolDeployer : deployResource ");
         }
 
-        final org.glassfish.resources.config.ConnectorConnectionPool
+        final org.glassfish.connectors.config.ConnectorConnectionPool
                 domainCcp =
-                (org.glassfish.resources.config.ConnectorConnectionPool) resource;
+                (org.glassfish.connectors.config.ConnectorConnectionPool) resource;
 
         // If the user is trying to modify the default pool,
         // redirect call to redeployResource
@@ -150,8 +149,8 @@ public class ConnectorConnectionPoolDeployer extends GlobalResourceDeployer
      * {@inheritDoc}
      */
     public void deployResource(Object resource) throws Exception {
-        org.glassfish.resources.config.ConnectorConnectionPool ccp =
-                (org.glassfish.resources.config.ConnectorConnectionPool)resource;
+        org.glassfish.connectors.config.ConnectorConnectionPool ccp =
+                (org.glassfish.connectors.config.ConnectorConnectionPool)resource;
         PoolInfo poolInfo = ConnectorsUtil.getPoolInfo(ccp);
         deployResource(resource, poolInfo.getApplicationName(), poolInfo.getModuleName());
     }
@@ -163,9 +162,9 @@ public class ConnectorConnectionPoolDeployer extends GlobalResourceDeployer
         if(_logger.isLoggable(Level.FINE)) {
             _logger.fine("ConnectorConnectionPoolDeployer : undeployResource : ");
         }
-        final org.glassfish.resources.config.ConnectorConnectionPool
+        final org.glassfish.connectors.config.ConnectorConnectionPool
                 domainCcp =
-                (org.glassfish.resources.config.ConnectorConnectionPool) resource;
+                (org.glassfish.connectors.config.ConnectorConnectionPool) resource;
         PoolInfo poolInfo = new PoolInfo(domainCcp.getName(), applicationName, moduleName);
         actualUndeployResource(domainCcp, poolInfo);
     }
@@ -178,15 +177,15 @@ public class ConnectorConnectionPoolDeployer extends GlobalResourceDeployer
         if(_logger.isLoggable(Level.FINE)) {
             _logger.fine("ConnectorConnectionPoolDeployer : undeployResource : ");
         }
-        final org.glassfish.resources.config.ConnectorConnectionPool
+        final org.glassfish.connectors.config.ConnectorConnectionPool
                 domainCcp =
-                (org.glassfish.resources.config.ConnectorConnectionPool) resource;
+                (org.glassfish.connectors.config.ConnectorConnectionPool) resource;
         PoolInfo poolInfo = ConnectorsUtil.getPoolInfo(domainCcp);
 
         actualUndeployResource(domainCcp, poolInfo);
     }
 
-    private void actualUndeployResource(org.glassfish.resources.config.ConnectorConnectionPool domainCcp,
+    private void actualUndeployResource(org.glassfish.connectors.config.ConnectorConnectionPool domainCcp,
                                         PoolInfo poolInfo) throws ConnectorRuntimeException {
         if(_logger.isLoggable(Level.FINE)) {
             _logger.log(Level.FINE, "Calling backend to delete ConnectorConnectionPool", domainCcp);
@@ -212,9 +211,9 @@ public class ConnectorConnectionPoolDeployer extends GlobalResourceDeployer
             throws Exception {
         //Connector connection pool reconfiguration or
         //change in security maps 
-        org.glassfish.resources.config.ConnectorConnectionPool
+        org.glassfish.connectors.config.ConnectorConnectionPool
                 domainCcp =
-                (org.glassfish.resources.config.ConnectorConnectionPool) resource;
+                (org.glassfish.connectors.config.ConnectorConnectionPool) resource;
         List<SecurityMap> securityMaps = domainCcp.getSecurityMap();
 
         //Since 8.1 PE/SE/EE, only if pool has already been deployed in this 
@@ -264,7 +263,7 @@ public class ConnectorConnectionPoolDeployer extends GlobalResourceDeployer
      * {@inheritDoc}
      */
     public boolean handles(Object resource){
-        return resource instanceof org.glassfish.resources.config.ConnectorConnectionPool;
+        return resource instanceof org.glassfish.connectors.config.ConnectorConnectionPool;
     }
 
     /**
@@ -296,7 +295,7 @@ public class ConnectorConnectionPoolDeployer extends GlobalResourceDeployer
     }
 
     private ConnectorConnectionPool getConnectorConnectionPool(
-            org.glassfish.resources.config.ConnectorConnectionPool domainCcp, PoolInfo poolInfo)
+            org.glassfish.connectors.config.ConnectorConnectionPool domainCcp, PoolInfo poolInfo)
             throws Exception {
         ConnectorConnectionPool ccp ;
         ccp = new ConnectorConnectionPool(poolInfo);
@@ -516,7 +515,7 @@ public class ConnectorConnectionPoolDeployer extends GlobalResourceDeployer
      * easy in case of a reconfig
      */
     public void convertElementPropertyToPoolProperty(ConnectorConnectionPool ccp,
-                                                     org.glassfish.resources.config.ConnectorConnectionPool domainCcp) {
+                                                     org.glassfish.connectors.config.ConnectorConnectionPool domainCcp) {
         List<Property> elemProps = domainCcp.getProperty();
         if (elemProps == null) {
             return;
@@ -585,7 +584,7 @@ public class ConnectorConnectionPoolDeployer extends GlobalResourceDeployer
     }
 
     private boolean isAuthCredentialsDefinedInPool(
-            org.glassfish.resources.config.ConnectorConnectionPool domainCcp) {
+            org.glassfish.connectors.config.ConnectorConnectionPool domainCcp) {
         List<Property> elemProps = domainCcp.getProperty();
         if (elemProps == null) {
             return false;

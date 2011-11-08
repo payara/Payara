@@ -41,8 +41,6 @@
 package com.sun.enterprise.resource.naming;
 
 import com.sun.enterprise.config.serverbeans.Resources;
-import org.glassfish.resource.common.PoolInfo;
-import com.sun.appserv.connectors.internal.spi.ResourceDeployer;
 import com.sun.enterprise.config.serverbeans.ResourcePool;
 import com.sun.enterprise.connectors.ConnectorRegistry;
 import com.sun.enterprise.connectors.ConnectorRuntime;
@@ -67,7 +65,9 @@ import java.util.logging.Logger;
 import java.util.Hashtable;
 
 import org.glassfish.api.naming.GlassfishNamingManager;
-import org.glassfish.resource.common.ResourceInfo;
+import org.glassfish.resources.api.PoolInfo;
+import org.glassfish.resources.api.ResourceDeployer;
+import org.glassfish.resources.api.ResourceInfo;
 
 /**
  * An object factory to handle creation of Connection Factories

@@ -115,6 +115,21 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
+            <groupId>org.glassfish.resources</groupId>
+            <artifactId>resources-runtime</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.resources</groupId>
+            <artifactId>javamail-connector</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.resources</groupId>
+            <artifactId>javamail-runtime</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.glassfish.connectors</groupId>
             <artifactId>connectors-runtime</artifactId>
             <version>${project.version}</version>

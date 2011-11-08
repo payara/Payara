@@ -40,7 +40,6 @@
 
 package com.sun.enterprise.transaction.api;
 
-import org.glassfish.resource.common.PoolInfo;
 import org.jvnet.hk2.annotations.Contract;
 
 import javax.persistence.EntityManager;

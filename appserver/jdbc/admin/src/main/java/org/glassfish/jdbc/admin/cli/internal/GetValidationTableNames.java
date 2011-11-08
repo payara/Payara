@@ -42,12 +42,12 @@ package org.glassfish.jdbc.admin.cli.internal;
 
 import com.sun.appserv.connectors.internal.api.ConnectorRuntime;
 import com.sun.enterprise.config.serverbeans.Resources;
-import org.glassfish.resource.common.PoolInfo;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.CommandLock;
+import org.glassfish.resources.api.PoolInfo;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;

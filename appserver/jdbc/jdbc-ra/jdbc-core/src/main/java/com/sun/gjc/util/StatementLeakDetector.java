@@ -43,7 +43,7 @@ package com.sun.gjc.util;
 import com.sun.enterprise.util.i18n.StringManager;
 import com.sun.gjc.monitoring.StatementLeakProbeProvider;
 import com.sun.logging.LogDomains;
-import org.glassfish.resource.common.PoolInfo;
+import org.glassfish.resources.api.PoolInfo;
 
 import java.sql.SQLException;
 import java.sql.Statement;

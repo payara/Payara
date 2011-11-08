@@ -79,14 +79,14 @@ import java.nio.channels.SocketChannel;
 import javax.resource.spi.*;
 import org.glassfish.api.admin.ServerEnvironment;
 
+import org.glassfish.connectors.config.AdminObjectResource;
 import org.glassfish.internal.api.ServerContext;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.grizzly.LazyServiceInitializer;
 import org.glassfish.api.naming.GlassfishNamingManager;
-import org.glassfish.resources.config.AdminObjectResource;
-import org.glassfish.resources.config.ConnectorConnectionPool;
-import org.glassfish.resources.config.ConnectorResource;
-import org.glassfish.resources.config.ResourceAdapterConfig;
+import org.glassfish.connectors.config.ConnectorConnectionPool;
+import org.glassfish.connectors.config.ConnectorResource;
+import org.glassfish.connectors.config.ResourceAdapterConfig;
 import org.glassfish.server.ServerEnvironmentImpl;
 
 import org.jvnet.hk2.annotations.Service;

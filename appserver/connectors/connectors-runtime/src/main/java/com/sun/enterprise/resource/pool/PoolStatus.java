@@ -40,7 +40,7 @@
 
 package com.sun.enterprise.resource.pool;
 
-import org.glassfish.resource.common.PoolInfo;
+import org.glassfish.resources.api.PoolInfo;
 
 /**
  * Reflects the current status of the Connection Pool. This class is used to 

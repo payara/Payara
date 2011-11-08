@@ -78,13 +78,13 @@ public interface Resources extends ConfigBeanProxy, Injectable  {
      * Objects of the following type(s) are allowed in the list
      * {@link org.glassfish.resources.config.CustomResource }
      * {@link org.glassfish.resources.config.ExternalJndiResource }
-     * {@link org.glassfish.resources.config.JdbcResource }                                       �
+     * {@link org.glassfish.connectors.config.JdbcResource }                                       �
      * {@link org.glassfish.resources.config.MailResource }
-     * {@link org.glassfish.resources.config.AdminObjectResource }
-     * {@link org.glassfish.resources.config.ConnectorResource }
-     * {@link org.glassfish.resources.config.ResourceAdapterConfig }
-     * {@link org.glassfish.resources.config.JdbcConnectionPool }
-     * {@link org.glassfish.resources.config.ConnectorConnectionPool }
+     * {@link org.glassfish.connectors.config.AdminObjectResource }
+     * {@link org.glassfish.connectors.config.ConnectorResource }
+     * {@link org.glassfish.connectors.config.ResourceAdapterConfig }
+     * {@link org.glassfish.connectors.config.JdbcConnectionPool }
+     * {@link org.glassfish.connectors.config.ConnectorConnectionPool }
      */
     @Element("*")
     public List<Resource> getResources();
@@ -92,10 +92,8 @@ public interface Resources extends ConfigBeanProxy, Injectable  {
     @DuckTyped
     public <T> Collection<T> getResources(Class<T> type);
 
-/*
     @DuckTyped
     public <T> Resource getResourceByName(Class<T> type, String name);
-*/
 
 /*
     @DuckTyped
@@ -112,6 +110,28 @@ public interface Resources extends ConfigBeanProxy, Injectable  {
                 }
             }
             return filteredResources;
+        }
+
+        public static <T> Resource getResourceByName(Resources resources, Class<T> type, String name) {
+            Resource foundRes = null;
+            Iterator itr = resources.getResources(type).iterator();
+            while (itr.hasNext()) {
+                Resource res = (Resource)(itr.next());
+                String resourceName = res.getIdentity();
+                if (name.equals(resourceName)) {
+                    foundRes = res;
+                    break;
+                }
+            }
+            // make sure that the "type" provided and the matched resource are compatible.
+            // eg: its possible that the requested resource is "ConnectorResource",
+            // and matching resource is "JdbcResource" as we filter based on
+            // the generic type (in this case BindableResource) and not on exact type.
+            if (type != null && foundRes != null && type.isAssignableFrom(foundRes.getClass())) {
+                return foundRes;
+            } else {
+                return null;
+            }
         }
     }
 }

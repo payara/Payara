@@ -41,7 +41,6 @@
 package com.sun.enterprise.resource.pool;
 
 import com.sun.appserv.connectors.internal.api.ConnectorConstants.PoolType;
-import org.glassfish.resource.common.PoolInfo;
 import com.sun.appserv.connectors.internal.api.PoolingException;
 import com.sun.appserv.connectors.internal.api.ConnectorRuntime;
 import com.sun.appserv.connectors.internal.spi.MCFLifecycleListener;
@@ -56,6 +55,7 @@ import com.sun.enterprise.resource.rm.*;
 import com.sun.enterprise.transaction.api.JavaEETransaction;
 import com.sun.enterprise.transaction.api.JavaEETransactionManager;
 import com.sun.logging.LogDomains;
+import org.glassfish.resources.api.PoolInfo;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.component.Habitat;

@@ -42,6 +42,7 @@ package org.glassfish.javaee.services;
 
 import org.glassfish.api.naming.NamingObjectProxy;
 import org.glassfish.internal.api.Globals;
+import org.glassfish.resources.api.ResourceDeployer;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Inject;
@@ -52,7 +53,6 @@ import javax.naming.Context;
 import javax.naming.NamingException;
 
 import com.sun.enterprise.deployment.DataSourceDefinitionDescriptor;
-import com.sun.appserv.connectors.internal.spi.ResourceDeployer;
 import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
 
 import java.io.Serializable;
@@ -60,7 +60,7 @@ import java.util.Collection;
 
 /**
  * This resource proxy will not bind the actual object upon first lookup unlike
- * com.sun.appserv.connectors.internal.api.ResourceProxy. <br><br>
+ * org.glassfish.resources.api.ResourceProxy. <br><br>
  * It holds the information required to get the actual object upon requests.<br>
  *
  * This is used for @DataSourceDefinition<br>

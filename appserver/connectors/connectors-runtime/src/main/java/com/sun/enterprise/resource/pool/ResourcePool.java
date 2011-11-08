@@ -41,7 +41,6 @@
 package com.sun.enterprise.resource.pool;
 
 
-import org.glassfish.resource.common.PoolInfo;
 import com.sun.enterprise.connectors.ConnectorConnectionPool;
 import com.sun.enterprise.resource.ResourceHandle;
 import com.sun.enterprise.resource.ResourceSpec;
@@ -49,6 +48,7 @@ import com.sun.enterprise.resource.listener.PoolLifeCycleListener;
 import com.sun.enterprise.resource.allocator.ResourceAllocator;
 import com.sun.appserv.connectors.internal.api.PoolingException;
 import com.sun.enterprise.resource.pool.waitqueue.PoolWaitQueue;
+import org.glassfish.resources.api.PoolInfo;
 
 import javax.resource.spi.RetryableUnavailableException;
 import javax.transaction.Transaction;

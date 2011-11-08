@@ -43,10 +43,11 @@ package com.sun.enterprise.connectors.util;
 import com.sun.appserv.connectors.internal.api.ConnectorConstants;
 import com.sun.appserv.connectors.internal.api.ConnectorRuntimeException;
 import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
-import com.sun.enterprise.connectors.module.ResourcesDeployer;
-import org.glassfish.resource.common.PoolInfo;
 import com.sun.enterprise.config.serverbeans.*;
-import org.glassfish.resources.config.*;
+import org.glassfish.connectors.config.*;
+import org.glassfish.resources.api.PoolInfo;
+import org.glassfish.resources.api.ResourceInfo;
+import org.glassfish.resources.api.ResourcesRegistry;
 import com.sun.enterprise.connectors.DeferredResourceConfig;
 import com.sun.enterprise.connectors.ConnectorRuntime;
 import org.glassfish.internal.api.ServerContext;
@@ -56,7 +57,6 @@ import com.sun.enterprise.deployment.ConnectorDescriptor;
 import com.sun.enterprise.deployment.archivist.ApplicationArchivist;
 import com.sun.enterprise.deploy.shared.FileArchive;
 import com.sun.logging.LogDomains;
-import org.glassfish.resource.common.ResourceInfo;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 
 import java.util.ArrayList;
@@ -284,8 +284,7 @@ public class ResourcesUtil {
         DeferredResourceConfig resConfig = null;
         //TODO V3 there should not be res-type related check, refactor deferred-ra-config
         //TODO V3 (not to hold specific resource types)
-        if (ConnectorConstants.RES_TYPE_JDBC.equalsIgnoreCase(resType) ||
-                ConnectorConstants.RES_TYPE_JCP.equalsIgnoreCase(resType)) {
+        if (resource instanceof JdbcResource || pool instanceof JdbcConnectionPool) {
 
             JdbcConnectionPool jdbcPool = (JdbcConnectionPool) pool;
             JdbcResource jdbcResource = (JdbcResource) resource;
@@ -297,8 +296,7 @@ public class ResourcesUtil {
             Resource[] resourcesToload = new Resource[]{jdbcPool, jdbcResource};
             resConfig.setResourcesToLoad(resourcesToload);
 
-        } else if (ConnectorConstants.RES_TYPE_CR.equalsIgnoreCase(resType) ||
-                ConnectorConstants.RES_TYPE_CCP.equalsIgnoreCase(resType)) {
+        } else if (resource instanceof ConnectorResource || pool instanceof ConnectorConnectionPool) {
             ConnectorConnectionPool connPool = (ConnectorConnectionPool) pool;
             ConnectorResource connResource = (ConnectorResource) resource;
             resourceAdapterName = connPool.getResourceAdapterName();
@@ -310,7 +308,7 @@ public class ResourcesUtil {
             resConfig.setResourcesToLoad(resourcesToload);
 
         } else {
-            throw new ConnectorRuntimeException("unsupported resource type : " + resType);
+            throw new ConnectorRuntimeException("unsupported resource type : " + resource);
         }
         return resConfig;
     }
@@ -711,14 +709,7 @@ public class ResourcesUtil {
 
         boolean refEnabled = isResourceReferenceEnabled(resourceInfo);
 
-        if((br instanceof JdbcResource) ||
-                (br instanceof MailResource) ||
-                (br instanceof ExternalJndiResource) ||
-                (br instanceof CustomResource)) {
-            if(resourceEnabled && refEnabled){
-                enabled = true;
-            }
-        } else if(br instanceof ConnectorResource) {
+        if(br instanceof ConnectorResource) {
             ConnectorResource cr = (ConnectorResource) br;
             String poolName = cr.getPoolName();
             ConnectorConnectionPool ccp = (ConnectorConnectionPool)
@@ -1065,41 +1056,11 @@ public class ResourcesUtil {
     }
 
     public boolean isRARResource(Resource resource){
-        return resource instanceof ConnectorResource ||
-                resource instanceof AdminObjectResource ||
-                resource instanceof ConnectorConnectionPool ||
-                resource instanceof ResourceAdapterConfig ||
-                resource instanceof WorkSecurityMap;
+        return ConnectorsUtil.isRARResource(resource);
     }
 
     public String getRarNameOfResource(Resource resource, Resources resources){
-        String rarName = null;
-        if(isRARResource(resource)){
-            if(resource instanceof ConnectorResource){
-                String poolName = ((ConnectorResource)resource).getPoolName();
-                for(Resource res : resources.getResources()){
-                    if(res instanceof ConnectorConnectionPool){
-                        ConnectorConnectionPool ccp = ((ConnectorConnectionPool)res);
-                        if(ccp.getName().equals(poolName)){
-                            return ccp.getResourceAdapterName();
-                        }
-                    }
-                }
-            }else if (resource instanceof ConnectorConnectionPool){
-                ConnectorConnectionPool ccp = ((ConnectorConnectionPool)resource);
-                return ccp.getResourceAdapterName();
-            }else if (resource instanceof AdminObjectResource){
-                AdminObjectResource aor = (AdminObjectResource)resource;
-                return aor.getResAdapter();
-            }else if (resource instanceof ResourceAdapterConfig){
-                ResourceAdapterConfig rac = (ResourceAdapterConfig)resource;
-                return rac.getResourceAdapterName();
-            }else if (resource instanceof WorkSecurityMap){
-                WorkSecurityMap wsm = (WorkSecurityMap)resource;
-                return wsm.getResourceAdapterName();
-            }
-        }
-        return rarName;
+        return ConnectorsUtil.getRarNameOfResource(resource, resources);
     }
 
 
@@ -1129,7 +1090,7 @@ public class ResourcesUtil {
                     moduleName = appName;
                 }
 
-                resources = ResourcesDeployer.getResources(appName, moduleName);
+                resources = ResourcesRegistry.getResources(appName, moduleName);
                 if (resources != null) {
                     resource = ConnectorsUtil.getResourceByName( resources, resourceType, jndiName);
                 }

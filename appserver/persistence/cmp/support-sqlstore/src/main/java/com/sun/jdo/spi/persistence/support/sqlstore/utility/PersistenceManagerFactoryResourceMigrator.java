@@ -42,8 +42,8 @@ package com.sun.jdo.spi.persistence.support.sqlstore.utility;
 
 import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
 import com.sun.enterprise.config.serverbeans.Resources;
-import org.glassfish.resources.config.JdbcResource;
-import org.glassfish.resources.config.PersistenceManagerFactoryResource;
+import org.glassfish.connectors.config.PersistenceManagerFactoryResource;
+import org.glassfish.connectors.config.JdbcResource;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.component.PostConstruct;

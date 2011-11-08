@@ -43,18 +43,13 @@ package org.glassfish.jdbc.config;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Resource;
 import com.sun.enterprise.config.serverbeans.Resources;
+import org.glassfish.connectors.config.JdbcResource;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.jvnet.hk2.config.TransactionFailure;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.component.Habitat;
-import org.glassfish.resources.config.JdbcResource;
-
-import org.jvnet.hk2.config.DomDocument;
-import org.glassfish.config.support.GlassFishDocument;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
 
 
 import java.beans.PropertyVetoException;
@@ -106,7 +101,7 @@ public class ConcurrentModificationsTest extends ConfigApiTest{
                 // now let's check that my readonly copy does not see it...
                 boolean shouldNot = false;
                 for (Resource resource : resources.getResources()) {
-                    if (resource instanceof org.glassfish.resources.config.JdbcResource) {
+                    if (resource instanceof JdbcResource) {
                         JdbcResource jdbc = (JdbcResource) resource;
                         if (jdbc.getJndiName().equals("foo")) {
                             shouldNot = true;

@@ -51,7 +51,7 @@ import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.RuntimeType;
-import org.glassfish.resources.config.ResourceAdapterConfig;
+import org.glassfish.connectors.config.ResourceAdapterConfig;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;

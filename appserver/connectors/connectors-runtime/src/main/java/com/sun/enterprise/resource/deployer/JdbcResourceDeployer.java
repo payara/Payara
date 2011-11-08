@@ -41,22 +41,26 @@
 package com.sun.enterprise.resource.deployer;
 
 import com.sun.appserv.connectors.internal.api.ConnectorConstants;
+import com.sun.enterprise.config.serverbeans.Application;
+import com.sun.enterprise.config.serverbeans.Resource;
 import com.sun.enterprise.config.serverbeans.Resources;
-import org.glassfish.resource.common.PoolInfo;
-import org.glassfish.resource.common.ResourceInfo;
 import com.sun.enterprise.connectors.ConnectorRegistry;
 import com.sun.enterprise.connectors.ConnectorRuntime;
 import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
-import com.sun.appserv.connectors.internal.spi.ResourceDeployer;
-import org.glassfish.resources.config.JdbcConnectionPool;
+import org.glassfish.connectors.config.JdbcConnectionPool;
+import org.glassfish.connectors.config.JdbcResource;
+import org.glassfish.resources.api.PoolInfo;
+import org.glassfish.resources.api.ResourceConflictException;
+import org.glassfish.resources.api.ResourceDeployer;
+import org.glassfish.resources.api.ResourceInfo;
 import com.sun.enterprise.util.i18n.StringManager;
 import com.sun.enterprise.connectors.util.ResourcesUtil;
 import com.sun.logging.LogDomains;
 
+import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.glassfish.resources.config.JdbcResource;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Inject;
@@ -125,6 +129,18 @@ public class JdbcResourceDeployer implements ResourceDeployer {
         JdbcResource jdbcRes = (JdbcResource) resource;
         ResourceInfo resourceInfo = ConnectorsUtil.getResourceInfo(jdbcRes);
         deployResource(jdbcRes, resourceInfo.getApplicationName(), resourceInfo.getModuleName());
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public boolean canDeploy(boolean postApplicationDeployment, Collection<Resource> allResources, Resource resource){
+        if(handles(resource)){
+            if(!postApplicationDeployment){
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -253,5 +269,14 @@ public class JdbcResourceDeployer implements ResourceDeployer {
                 throw ce;
             }
         }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void validatePreservedResource(Application oldApp, Application newApp, Resource resource,
+                                  Resources allResources)
+    throws ResourceConflictException {
+        //do nothing.
     }
 }

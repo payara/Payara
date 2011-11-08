@@ -40,8 +40,8 @@
 
 package com.sun.enterprise.connectors.util;
 
-import org.glassfish.resources.config.BackendPrincipal;
-import org.glassfish.resources.config.SecurityMap;
+import org.glassfish.connectors.config.BackendPrincipal;
+import org.glassfish.connectors.config.SecurityMap;
 import com.sun.enterprise.connectors.authentication.ConnectorSecurityMap;
 import com.sun.enterprise.connectors.authentication.EisBackendPrincipal;
 import com.sun.enterprise.connectors.authentication.RuntimeSecurityMap;

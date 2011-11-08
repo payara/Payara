@@ -43,6 +43,8 @@ package com.sun.enterprise.config.serverbeans;
 import com.sun.enterprise.config.serverbeans.Resource;
 import com.sun.enterprise.config.serverbeans.customvalidators.ResourceNameConstraint;
 import org.jvnet.hk2.config.Attribute;
+import org.jvnet.hk2.config.DuckTyped;
+
 import static org.glassfish.config.support.Constants.NAME_APP_REGEX;
 
 import java.beans.PropertyVetoException;
@@ -71,4 +73,14 @@ public interface ResourcePool extends Resource, Payload {
      *              {@link String }
      */
     public void setName(String value) throws PropertyVetoException;
+
+    @DuckTyped
+    String getIdentity();
+
+    class Duck {
+        public static String getIdentity(ResourcePool resource){
+            return resource.getName();
+        }
+    }
+
 }

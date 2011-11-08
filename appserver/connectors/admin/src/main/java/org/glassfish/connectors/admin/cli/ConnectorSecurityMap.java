@@ -42,8 +42,8 @@ package org.glassfish.connectors.admin.cli;
 
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.api.I18n;
-import org.glassfish.resources.config.ConnectorConnectionPool;
-import org.glassfish.resources.config.SecurityMap;
+import org.glassfish.connectors.config.ConnectorConnectionPool;
+import org.glassfish.connectors.config.SecurityMap;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.component.PerLookup;
 

@@ -40,7 +40,7 @@
 
 package com.sun.enterprise.resource.listener;
 
-import org.glassfish.resource.common.PoolInfo;
+import org.glassfish.resources.api.PoolInfo;
 
 /**
  * Pool Life cycle listener that can be implemented by listeners for getting

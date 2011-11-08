@@ -54,8 +54,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.Set;
 
-import org.glassfish.resource.common.PoolInfo;
-import org.glassfish.resource.common.ResourceInfo;
+import org.glassfish.resources.api.PoolInfo;
+import org.glassfish.resources.api.ResourceInfo;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.component.PerLookup;

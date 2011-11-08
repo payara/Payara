@@ -43,7 +43,7 @@ package org.glassfish.connectors.admin.cli;
 import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
 import com.sun.enterprise.config.serverbeans.Resource;
 import com.sun.enterprise.config.serverbeans.Resources;
-import org.glassfish.resources.config.WorkSecurityMap;
+import org.glassfish.connectors.config.WorkSecurityMap;
 
 import java.util.List;
 

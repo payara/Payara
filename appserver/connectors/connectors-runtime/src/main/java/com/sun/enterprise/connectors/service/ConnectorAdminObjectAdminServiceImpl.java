@@ -40,8 +40,6 @@
 
 package com.sun.enterprise.connectors.service;
 
-import com.sun.appserv.connectors.internal.api.ResourceNamingService;
-import org.glassfish.resource.common.ResourceInfo;
 import com.sun.enterprise.connectors.ActiveOutboundResourceAdapter;
 import com.sun.enterprise.connectors.ActiveResourceAdapter;
 
@@ -50,6 +48,8 @@ import java.util.logging.*;
 import javax.naming.*;
 
 import com.sun.appserv.connectors.internal.api.ConnectorRuntimeException;
+import org.glassfish.resources.api.ResourceInfo;
+import org.glassfish.resources.naming.ResourceNamingService;
 
 /**
  * AdminObject administration service. It performs the functionality of

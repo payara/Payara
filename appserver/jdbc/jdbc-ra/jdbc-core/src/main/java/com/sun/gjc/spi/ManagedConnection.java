@@ -69,7 +69,7 @@ import com.sun.gjc.spi.base.datastructure.Cache;
 import com.sun.gjc.spi.base.datastructure.CacheFactory;
 import com.sun.gjc.util.SQLTraceDelegator;
 import com.sun.gjc.util.StatementLeakDetector;
-import org.glassfish.resource.common.PoolInfo;
+import org.glassfish.resources.api.PoolInfo;
 
 /**
  * <code>ManagedConnection</code> implementation for Generic JDBC Connector.

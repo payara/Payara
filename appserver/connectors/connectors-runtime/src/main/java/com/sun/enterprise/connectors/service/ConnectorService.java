@@ -44,7 +44,6 @@ import com.sun.appserv.connectors.internal.api.ConnectorConstants;
 import com.sun.appserv.connectors.internal.api.ConnectorRuntimeException;
 import com.sun.enterprise.config.serverbeans.Resource;
 import com.sun.enterprise.config.serverbeans.ResourcePool;
-import org.glassfish.resource.common.PoolInfo;
 import com.sun.enterprise.connectors.ConnectorRegistry;
 import com.sun.enterprise.connectors.DeferredResourceConfig;
 import com.sun.enterprise.connectors.util.ConnectorDDTransformUtils;
@@ -56,6 +55,7 @@ import com.sun.enterprise.deployment.*;
 import com.sun.enterprise.resource.pool.PoolManager;
 import com.sun.enterprise.util.io.FileUtils;
 import com.sun.logging.LogDomains;
+import org.glassfish.resources.api.PoolInfo;
 
 import java.security.AccessController;
 import java.security.PrivilegedAction;
@@ -321,7 +321,7 @@ public class ConnectorService implements ConnectorConstants {
             ResourcePool pool = _runtime.getConnectionPoolConfig(poolInfo);
             //DeferredResourceConfig defResConfig = resutil.getDeferredPoolConfig(poolName);
             DeferredResourceConfig defResConfig =
-                    getResourcesUtil().getDeferredResourceConfig(null, pool, ConnectorsUtil.getResourceType(pool), null);
+                    getResourcesUtil().getDeferredResourceConfig(null, pool, null, null);
             status = loadResourcesAndItsRar(defResConfig);
         } catch (ConnectorRuntimeException cre) {
             Object params[] = new Object[]{poolInfo, cre};

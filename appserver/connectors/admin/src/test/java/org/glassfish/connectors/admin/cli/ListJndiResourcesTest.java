@@ -103,7 +103,7 @@ public class ListJndiResourcesTest extends ConfigApiTest {
      */
     @Test
     public void testExecuteSuccessListOriginal() {
-        ListJndiResources listCommand = habitat.getComponent(ListJndiResources.class);
+        org.glassfish.resources.admin.cli.ListJndiResources listCommand = habitat.getComponent(org.glassfish.resources.admin.cli.ListJndiResources.class);
         cr.getCommandInvocation("list-jndi-resources", context.getActionReport()).parameters(parameters).execute(listCommand);
         List<ActionReport.MessagePart> list = context.getActionReport().getTopMessagePart().getChildren();
         if (origNum == 0) {
@@ -126,11 +126,11 @@ public class ListJndiResourcesTest extends ConfigApiTest {
         parameters.set("jndilookupname", "sample_jndi");
         parameters.set("factoryclass", "javax.naming.spi.ObjectFactory");
         parameters.set("jndi_name", "resource");
-        CreateJndiResource createCommand = habitat.getComponent(CreateJndiResource.class);
+        org.glassfish.resources.admin.cli.CreateJndiResource createCommand = habitat.getComponent(org.glassfish.resources.admin.cli.CreateJndiResource.class);
         cr.getCommandInvocation("create-jndi-resource", context.getActionReport()).parameters(parameters).execute(createCommand);
         assertEquals(ActionReport.ExitCode.SUCCESS, context.getActionReport().getActionExitCode());
         parameters = new ParameterMap();
-        ListJndiResources listCommand = habitat.getComponent(ListJndiResources.class);
+        org.glassfish.resources.admin.cli.ListJndiResources listCommand = habitat.getComponent(org.glassfish.resources.admin.cli.ListJndiResources.class);
         cr.getCommandInvocation("list-jndi-resources", context.getActionReport()).parameters(parameters).execute(listCommand);
         List<ActionReport.MessagePart> list = context.getActionReport().getTopMessagePart().getChildren();
         assertEquals(origNum + 1, list.size());
@@ -150,11 +150,11 @@ public class ListJndiResourcesTest extends ConfigApiTest {
     @Test
     public void testExecuteSuccessListNoResource() {
         parameters.set("jndi_name", "resource");
-        DeleteJndiResource deleteCommand = habitat.getComponent(DeleteJndiResource.class);
+        org.glassfish.resources.admin.cli.DeleteJndiResource deleteCommand = habitat.getComponent(org.glassfish.resources.admin.cli.DeleteJndiResource.class);
         cr.getCommandInvocation("delete-jndi-resource", context.getActionReport()).parameters(parameters).execute(deleteCommand);
         assertEquals(ActionReport.ExitCode.SUCCESS, context.getActionReport().getActionExitCode());
         parameters = new ParameterMap();
-        ListJndiResources listCommand = habitat.getComponent(ListJndiResources.class);
+        org.glassfish.resources.admin.cli.ListJndiResources listCommand = habitat.getComponent(org.glassfish.resources.admin.cli.ListJndiResources.class);
         cr.getCommandInvocation("list-jndi-resources", context.getActionReport()).parameters(parameters).execute(listCommand);
         List<ActionReport.MessagePart> list = context.getActionReport().getTopMessagePart().getChildren();
         if ((origNum - 1) == 0) {

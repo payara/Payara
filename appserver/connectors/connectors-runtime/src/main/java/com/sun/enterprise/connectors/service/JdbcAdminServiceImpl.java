@@ -43,9 +43,9 @@ package com.sun.enterprise.connectors.service;
 import com.sun.appserv.connectors.internal.api.ConnectorConstants;
 import com.sun.enterprise.connectors.ConnectorRuntime;
 import com.sun.enterprise.connectors.util.DriverLoader;
-import org.glassfish.resource.common.PoolInfo;
 import com.sun.enterprise.connectors.ConnectorConnectionPool;
 import com.sun.enterprise.connectors.util.ConnectionPoolObjectsUtils;
+import org.glassfish.resources.api.PoolInfo;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;

@@ -123,6 +123,7 @@
                 <module>transaction</module>
                 <module>web</module>
                 <module>ejb</module>
+                <module>resources</module>
                 <module>connectors</module>
                 <module>load-balancer</module> 
                 <module>jms</module>
@@ -189,6 +190,7 @@
                 <module>transaction</module>
                 <module>web</module>
                 <module>ejb</module>
+                <module>resources</module>
                 <module>connectors</module>
                 <module>load-balancer</module> 
                 <module>jdbc</module>
@@ -241,6 +243,7 @@
                 <module>transaction</module>
                 <module>web</module>
                 <module>ejb</module>
+                <module>resources</module>
                 <module>connectors</module>
                 <module>load-balancer</module> 
                 <module>jms</module>
@@ -287,6 +290,7 @@
                 <module>transaction</module>
                 <module>web</module>
                 <module>ejb</module>
+                <module>resources</module>
                 <module>connectors</module>
                 <module>load-balancer</module> 
                 <module>jms</module>

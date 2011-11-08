@@ -84,7 +84,7 @@ public interface ResourceRef extends ConfigBeanProxy, Injectable  {
     void setEnabled(String value) throws PropertyVetoException;
 
     /**
-     * References the name attribute of a resources, such as an {@link org.glassfish.resources.config.JdbcResource} or {@link org.glassfish.resources.config.JdbcConnectionPool}.
+     * References the name attribute of a resources, such as an {@link org.glassfish.connectors.config.JdbcResource} or {@link org.glassfish.connectors.config.JdbcConnectionPool}.
      *
      * @return possible object is
      *         {@link String }

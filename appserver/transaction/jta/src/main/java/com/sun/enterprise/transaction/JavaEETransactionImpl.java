@@ -48,7 +48,6 @@ import javax.transaction.xa.*;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityManager;
 
-import org.glassfish.resource.common.PoolInfo;
 import com.sun.enterprise.util.Utility;
 import com.sun.enterprise.util.i18n.StringManager;
 

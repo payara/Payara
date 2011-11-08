@@ -59,8 +59,8 @@ import com.sun.enterprise.resource.pool.PoolManager;
 import com.sun.enterprise.util.i18n.StringManager;
 import com.sun.enterprise.security.SecurityContext;
 import com.sun.logging.LogDomains;
-import org.glassfish.resource.common.PoolInfo;
-import org.glassfish.resource.common.ResourceInfo;
+import org.glassfish.resources.api.PoolInfo;
+import org.glassfish.resources.api.ResourceInfo;
 
 import javax.resource.ResourceException;
 import javax.resource.spi.*;

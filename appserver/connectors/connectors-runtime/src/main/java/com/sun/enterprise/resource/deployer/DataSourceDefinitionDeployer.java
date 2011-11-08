@@ -41,17 +41,20 @@
 package com.sun.enterprise.resource.deployer;
 
 import com.sun.appserv.connectors.internal.api.ConnectorConstants;
-import com.sun.appserv.connectors.internal.api.ResourceNamingService;
-import com.sun.appserv.connectors.internal.spi.ResourceDeployer;
 import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
+import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.deployment.*;
-import org.glassfish.resources.config.JdbcConnectionPool;
+import com.sun.enterprise.deployment.Application;
+import org.glassfish.connectors.config.JdbcConnectionPool;
+import org.glassfish.connectors.config.JdbcResource;
+import org.glassfish.resources.api.ResourceConflictException;
+import org.glassfish.resources.api.ResourceDeployer;
 import com.sun.logging.LogDomains;
 import org.glassfish.deployment.common.Descriptor;
 import org.glassfish.deployment.common.RootDeploymentDescriptor;
 import org.glassfish.javaee.services.DataSourceDefinitionProxy;
-import org.glassfish.resource.common.ResourceInfo;
-import org.glassfish.resources.config.JdbcResource;
+import org.glassfish.resources.api.ResourceInfo;
+import org.glassfish.resources.naming.ResourceNamingService;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.config.ConfigBeanProxy;
@@ -101,6 +104,29 @@ public class DataSourceDefinitionDeployer implements ResourceDeployer {
         JdbcResource jdbcResource = new MyJdbcResource(poolName, resourceName);
         getDeployer(jdbcResource, deployers).deployResource(jdbcResource);
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    public boolean canDeploy(boolean postApplicationDeployment, Collection<Resource> allResources, Resource resource){
+        if(handles(resource)){
+            if(!postApplicationDeployment){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void validatePreservedResource(com.sun.enterprise.config.serverbeans.Application oldApp,
+                                          com.sun.enterprise.config.serverbeans.Application newApp, Resource resource,
+                                  Resources allResources)
+    throws ResourceConflictException {
+        //do nothing.
+    }
+
 
     private ResourceDeployer getDeployer(Object resource, Collection<ResourceDeployer> deployers) {
         ResourceDeployer resourceDeployer = null;
@@ -407,6 +433,10 @@ public class DataSourceDefinitionDeployer implements ResourceDeployer {
         public void setObjectType(String value) throws PropertyVetoException {
         }
 
+        public String getIdentity() {
+            return jndiName;
+        }
+
         public String getEnabled() {
             return String.valueOf(true);
         }
@@ -505,6 +535,10 @@ public class DataSourceDefinitionDeployer implements ResourceDeployer {
         @Override
         public void setObjectType(String value) throws PropertyVetoException {
             //To change body of implemented methods use File | Settings | File Templates.
+        }
+
+        public String getIdentity() {
+            return name;
         }
 
         public String getSteadyPoolSize() {

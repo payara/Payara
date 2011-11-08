@@ -40,10 +40,14 @@
 
 package com.sun.enterprise.resource.deployer;
 
-import org.glassfish.resources.config.ResourceAdapterConfig;
+import com.sun.enterprise.config.serverbeans.Application;
+import com.sun.enterprise.config.serverbeans.Resource;
+import com.sun.enterprise.config.serverbeans.Resources;
+import org.glassfish.connectors.config.ResourceAdapterConfig;
+import org.glassfish.resources.api.ResourceConflictException;
+import org.glassfish.resources.api.ResourceDeployer;
 import com.sun.enterprise.connectors.ConnectorRuntime;
 import com.sun.logging.LogDomains;
-import com.sun.appserv.connectors.internal.spi.ResourceDeployer;
 
 import java.util.logging.*;
 
@@ -57,7 +61,7 @@ import org.jvnet.hk2.component.Singleton;
 
 @Service
 @Scoped(Singleton.class)
-public class ResourceAdapterConfigDeployer implements ResourceDeployer {
+public class ResourceAdapterConfigDeployer extends AbstractConnectorResourceDeployer implements ResourceDeployer {
 
     private static Logger _logger = LogDomains.getLogger(ResourceAdapterConfigDeployer.class, LogDomains.RSR_LOGGER);
 

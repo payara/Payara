@@ -41,8 +41,8 @@
 package com.sun.enterprise.connectors;
 
 import com.sun.enterprise.config.serverbeans.Resource;
-import org.glassfish.resources.config.*;
-import org.glassfish.resources.config.ConnectorConnectionPool;
+import org.glassfish.connectors.config.*;
+import org.glassfish.connectors.config.ConnectorConnectionPool;
 
 public class DeferredResourceConfig {
 

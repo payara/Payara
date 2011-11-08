@@ -42,7 +42,6 @@ package com.sun.enterprise.connectors.util;
 
 import com.sun.appserv.connectors.internal.api.ConnectorConstants;
 import com.sun.appserv.connectors.internal.api.ConnectorRuntimeException;
-import org.glassfish.resource.common.PoolInfo;
 import com.sun.appserv.connectors.spi.TransactionSupport;
 import com.sun.enterprise.connectors.ConnectorConnectionPool;
 import com.sun.enterprise.connectors.ConnectorRuntime;
@@ -66,6 +65,7 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.glassfish.resources.api.PoolInfo;
 import org.jvnet.hk2.config.types.Property;
 
 
@@ -343,7 +343,7 @@ public final class ConnectionPoolObjectsUtils {
         return tempSubject;
     }
 
-    public static boolean isPoolSystemPool(org.glassfish.resources.config.ConnectorConnectionPool
+    public static boolean isPoolSystemPool(org.glassfish.connectors.config.ConnectorConnectionPool
             domainCcp) {
         String poolName = domainCcp.getName();
         return isPoolSystemPool(poolName);

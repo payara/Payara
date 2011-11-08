@@ -40,14 +40,14 @@
 
 package com.sun.enterprise.connectors;
 
-import org.glassfish.resource.common.PoolInfo;
-import org.glassfish.resources.config.ResourceAdapterConfig;
+import org.glassfish.connectors.config.ResourceAdapterConfig;
 import com.sun.enterprise.deployment.ConnectorDescriptor;
 import com.sun.enterprise.connectors.authentication.RuntimeSecurityMap;
 import com.sun.enterprise.connectors.module.ConnectorApplication;
 import com.sun.enterprise.resource.DynamicallyReconfigurableResource;
 import com.sun.logging.LogDomains;
-import org.glassfish.resource.common.ResourceInfo;
+import org.glassfish.resources.api.PoolInfo;
+import org.glassfish.resources.api.ResourceInfo;
 
 import javax.resource.spi.ManagedConnectionFactory;
 import javax.validation.Validator;

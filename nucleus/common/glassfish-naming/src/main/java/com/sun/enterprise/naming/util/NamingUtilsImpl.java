@@ -43,6 +43,7 @@ package com.sun.enterprise.naming.util;
 import com.sun.enterprise.naming.spi.NamingObjectFactory;
 import com.sun.enterprise.naming.spi.NamingUtils;
 import static com.sun.enterprise.naming.util.ObjectInputOutputStreamFactoryFactory.*;
+
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Singleton;
@@ -51,7 +52,6 @@ import java.io.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.security.PrivilegedExceptionAction;
 import javax.naming.Context;
 
@@ -130,9 +130,5 @@ public class NamingUtilsImpl
             // XXX no copy ?
             return obj;
         }
-    }
-
-    public OutputStream getMailLogOutputStream() {
-        return new MailLogOutputStream();
     }
 }

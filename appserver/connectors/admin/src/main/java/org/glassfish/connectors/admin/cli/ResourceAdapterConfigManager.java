@@ -50,10 +50,10 @@ import com.sun.enterprise.config.serverbeans.Resource;
 import com.sun.enterprise.config.serverbeans.Resources;
 import com.sun.enterprise.config.serverbeans.ServerTags;
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import org.glassfish.admin.cli.resources.ResourceManager;
 import org.glassfish.api.I18n;
-import org.glassfish.resource.common.ResourceStatus;
-import org.glassfish.resources.config.ResourceAdapterConfig;
+import org.glassfish.connectors.config.ResourceAdapterConfig;
+import org.glassfish.resources.admin.cli.ResourceManager;
+import org.glassfish.resources.api.ResourceStatus;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
@@ -70,8 +70,8 @@ import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static org.glassfish.resource.common.ResourceConstants.RESOURCE_ADAPTER_CONFIG_NAME;
-import static org.glassfish.resource.common.ResourceConstants.THREAD_POOL_IDS;
+import static org.glassfish.resources.admin.cli.ResourceConstants.RESOURCE_ADAPTER_CONFIG_NAME;
+import static org.glassfish.resources.admin.cli.ResourceConstants.THREAD_POOL_IDS;
 
 
 /**

@@ -51,8 +51,8 @@ import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.ExecuteOn;
 import org.glassfish.api.admin.RuntimeType;
-import org.glassfish.resource.common.ResourceStatus;
-import org.glassfish.resources.config.ResourceAdapterConfig;
+import org.glassfish.connectors.config.ResourceAdapterConfig;
+import org.glassfish.resources.api.ResourceStatus;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
@@ -65,8 +65,8 @@ import java.util.logging.Logger;
 
 import static org.glassfish.connectors.admin.cli.CLIConstants.*;
 import static org.glassfish.connectors.admin.cli.CLIConstants.RAC.*;
-import static org.glassfish.resource.common.ResourceConstants.RESOURCE_ADAPTER_CONFIG_NAME;
-import static org.glassfish.resource.common.ResourceConstants.THREAD_POOL_IDS;
+import static org.glassfish.resources.admin.cli.ResourceConstants.RESOURCE_ADAPTER_CONFIG_NAME;
+import static org.glassfish.resources.admin.cli.ResourceConstants.THREAD_POOL_IDS;
 
 /**
  * Create RA Config Command

@@ -71,7 +71,6 @@
                         org.glassfish.admin.payload; \
                         org.glassfish.common.util.admin; \
                         org.glassfish.quality; \
-                        org.glassfish.resource.common; \
                         org.glassfish.security.common; \
                         com.sun.logging.enterprise.system.core; \
                         org.glassfish.server; version=${project.osgi.version}

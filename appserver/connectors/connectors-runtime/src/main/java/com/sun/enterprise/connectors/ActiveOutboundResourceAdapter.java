@@ -41,13 +41,13 @@
 package com.sun.enterprise.connectors;
 
 import com.sun.appserv.connectors.internal.api.*;
-import org.glassfish.resource.common.ResourceInfo;
+import org.glassfish.connectors.config.ResourceAdapterConfig;
+import org.glassfish.resources.api.ResourceInfo;
 import org.jvnet.hk2.config.types.Property;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.component.PerLookup;
-import org.glassfish.resources.config.ResourceAdapterConfig;
 import com.sun.enterprise.connectors.util.ConnectorDDTransformUtils;
 import com.sun.enterprise.connectors.util.SetMethodAction;
 import com.sun.enterprise.connectors.util.ConnectorJavaBeanValidator;

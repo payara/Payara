@@ -91,7 +91,7 @@
          <dependency>
             <groupId>org.glassfish.transaction</groupId>
             <artifactId>transaction-internal-api</artifactId>
-            <version>${project.parent.version}</version>
+            <version>${project.version}</version>
         </dependency>
          <dependency>
             <groupId>org.glassfish.admin</groupId>
@@ -112,7 +112,12 @@
         <dependency>
             <groupId>org.glassfish.deployment</groupId>
             <artifactId>dol</artifactId>
-            <version>${project.parent.version}</version>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.resources</groupId>
+            <artifactId>resources-connector</artifactId>
+            <version>${project.version}</version>
         </dependency>
     </dependencies>
 </project>

@@ -42,9 +42,9 @@ package com.sun.enterprise.connectors.service;
 
 import java.util.*;
 
-import org.glassfish.resource.common.PoolInfo;
 import com.sun.enterprise.connectors.authentication.*;
 import com.sun.enterprise.deployment.*;
+import org.glassfish.resources.api.PoolInfo;
 
 /**
  * This is Security administration service. Performs funtionality of

@@ -43,7 +43,6 @@ package org.glassfish.jms.admin.cli;
 import com.sun.enterprise.connectors.jms.config.JmsHost;
 import com.sun.enterprise.connectors.jms.config.JmsService;
 import com.sun.enterprise.connectors.jms.util.JmsRaUtil;
-import org.glassfish.resource.common.PoolInfo;
 import org.glassfish.api.Param;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
@@ -53,6 +52,7 @@ import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.appserv.connectors.internal.api.ConnectorRuntime;
+import org.glassfish.resources.api.PoolInfo;
 import org.jvnet.hk2.annotations.Inject;
 
 import javax.resource.ResourceException;

@@ -40,20 +40,18 @@
 
 package com.sun.enterprise.resource.deployer;
 
-import com.sun.appserv.connectors.internal.api.ConnectorConstants;
-import com.sun.appserv.connectors.internal.api.ConnectorRuntimeException;
-import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
+import com.sun.appserv.connectors.internal.api.*;
 import com.sun.enterprise.connectors.util.ResourcesUtil;
-import org.glassfish.resource.common.ResourceInfo;
-import org.glassfish.resources.config.AdminObjectResource;
+import org.glassfish.connectors.config.AdminObjectResource;
 import com.sun.enterprise.connectors.ConnectorRuntime;
 import com.sun.logging.LogDomains;
-import com.sun.appserv.connectors.internal.spi.ResourceDeployer;
 
 import java.util.Properties;
 import java.util.List;
 import java.util.logging.*;
 
+import org.glassfish.resources.api.ResourceDeployer;
+import org.glassfish.resources.api.ResourceInfo;
 import org.jvnet.hk2.config.types.Property;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
@@ -66,7 +64,7 @@ import org.jvnet.hk2.component.Singleton;
 
 @Service
 @Scoped(Singleton.class)
-public class AdminObjectResourceDeployer extends GlobalResourceDeployer
+public class AdminObjectResourceDeployer extends AbstractConnectorResourceDeployer
         implements ResourceDeployer {
 
     @Inject

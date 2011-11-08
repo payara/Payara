@@ -42,10 +42,10 @@ package com.sun.enterprise.resource.pool;
 
 
 import com.sun.appserv.connectors.internal.api.ConnectorConstants.PoolType;
-import org.glassfish.resource.common.PoolInfo;
 import com.sun.appserv.connectors.internal.api.PoolingException;
 import com.sun.logging.LogDomains;
 import com.sun.enterprise.connectors.ConnectorRuntime;
+import org.glassfish.resources.api.PoolInfo;
 
 
 import java.util.Hashtable;

@@ -40,12 +40,10 @@
 
 package com.sun.enterprise.resource;
 
-import javax.resource.ResourceException;
 import javax.transaction.xa.*;
 import javax.resource.spi.*;
 import javax.transaction.SystemException;
 
-import org.glassfish.resource.common.PoolInfo;
 import com.sun.enterprise.transaction.api.JavaEETransactionManager;
 import com.sun.enterprise.transaction.api.JavaEETransaction;
 import com.sun.enterprise.transaction.api.TransactionConstants;
@@ -63,6 +61,7 @@ import java.util.Set;
 import java.util.Map;
 
 import com.sun.logging.LogDomains;
+import org.glassfish.resources.api.PoolInfo;
 
 /**
  * @author Tony Ng, Jagadish Ramu

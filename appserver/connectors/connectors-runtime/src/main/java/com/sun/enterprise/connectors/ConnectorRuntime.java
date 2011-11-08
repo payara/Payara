@@ -40,10 +40,7 @@
 
 package com.sun.enterprise.connectors;
 
-import com.sun.appserv.connectors.internal.api.ResourceNamingService;
 import com.sun.enterprise.config.serverbeans.Application;
-import org.glassfish.resources.ResourceManager;
-import com.sun.enterprise.connectors.module.ResourcesDeployer;
 import com.sun.enterprise.connectors.util.*;
 
 import java.io.IOException;
@@ -80,6 +77,9 @@ import com.sun.enterprise.deployment.JndiNameEnvironment;
 import com.sun.enterprise.deployment.archivist.ApplicationArchivist;
 import com.sun.enterprise.deployment.archivist.ArchivistFactory;
 import com.sun.enterprise.connectors.deployment.util.ConnectorArchivist;
+import org.glassfish.connectors.config.ResourceAdapterConfig;
+import org.glassfish.connectors.config.SecurityMap;
+import org.glassfish.connectors.config.WorkSecurityMap;
 import org.glassfish.deployment.common.SecurityRoleMapperFactory;
 import org.glassfish.deployment.common.XModuleType;
 import com.sun.enterprise.resource.deployer.DataSourceDefinitionDeployer;
@@ -90,11 +90,12 @@ import com.sun.enterprise.security.jmac.callback.ContainerCallbackHandler;
 import com.sun.enterprise.security.SecurityServicesUtil;
 import com.sun.enterprise.transaction.api.JavaEETransactionManager;
 import org.glassfish.admin.monitor.MonitoringBootstrap;
-import org.glassfish.resource.common.PoolInfo;
-import org.glassfish.resource.common.ResourceInfo;
-import org.glassfish.resources.config.ResourceAdapterConfig;
-import org.glassfish.resources.config.SecurityMap;
-import org.glassfish.resources.config.WorkSecurityMap;
+import org.glassfish.resources.api.PoolInfo;
+import org.glassfish.resources.api.ResourceDeployer;
+import org.glassfish.resources.api.ResourceInfo;
+import org.glassfish.resources.api.ResourcesRegistry;
+import org.glassfish.resources.listener.ResourceManager;
+import org.glassfish.resources.naming.ResourceNamingService;
 import org.jvnet.hk2.config.types.Property;
 import org.glassfish.api.admin.*;
 import com.sun.logging.LogDomains;
@@ -928,6 +929,11 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
      * {@inheritDoc}
      */
     public void cleanUpResourcesAndShutdownAllActiveRAs(){
+        Domain domain = habitat.getComponent(Domain.class);
+        if(domain != null){
+            Collection<Resource> resources = ConnectorsUtil.getAllSystemRAResourcesAndPools(domain.getResources());
+            habitat.getComponent(ResourceManager.class).undeployResources(resources);
+        }
         poolManager.killFreeConnectionsInPools();
         resourceAdapterAdmService.stopAllActiveResourceAdapters();
     }
@@ -1076,7 +1082,7 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
             if(pool == null && (ConnectorsUtil.isApplicationScopedResource(poolInfo) ||
                     ConnectorsUtil.isModuleScopedResource(poolInfo))){
                 //it is possible that the application scoped resources is being deployed
-                Resources asc = ResourcesDeployer.getResources(poolInfo.getApplicationName(), poolInfo.getModuleName());
+                Resources asc = ResourcesRegistry.getResources(poolInfo.getApplicationName(), poolInfo.getModuleName());
                 pool = ConnectorsUtil.getConnectionPoolConfig(poolInfo, asc);
             }
             if(pool == null){
@@ -1407,7 +1413,7 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
      */
     public long getShutdownTimeout() {
         return ConnectorsUtil.getShutdownTimeout(
-                habitat.getComponent(org.glassfish.resources.config.ConnectorService.class,
+                habitat.getComponent(org.glassfish.connectors.config.ConnectorService.class,
                     ServerEnvironment.DEFAULT_INSTANCE_NAME));
     }
 

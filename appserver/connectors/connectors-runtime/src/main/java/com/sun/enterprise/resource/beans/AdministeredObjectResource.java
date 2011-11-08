@@ -42,16 +42,16 @@ package com.sun.enterprise.resource.beans;
 
 import com.sun.enterprise.deployment.AdminObject;
 import com.sun.enterprise.deployment.ConnectorConfigProperty ;
-import com.sun.enterprise.resource.naming.SerializableObjectRefAddr;
-import com.sun.appserv.connectors.internal.api.JavaEEResourceBase;
 import com.sun.enterprise.connectors.util.SetMethodAction;
 import com.sun.enterprise.connectors.ConnectorRegistry;
 import com.sun.enterprise.connectors.ConnectorRuntime;
 import com.sun.appserv.connectors.internal.api.PoolingException;
 import com.sun.appserv.connectors.internal.api.ConnectorConstants;
-import com.sun.appserv.connectors.internal.api.JavaEEResource;
 import com.sun.logging.LogDomains;
-import org.glassfish.resource.common.ResourceInfo;
+import org.glassfish.resources.api.JavaEEResource;
+import org.glassfish.resources.api.JavaEEResourceBase;
+import org.glassfish.resources.api.ResourceInfo;
+import org.glassfish.resources.naming.SerializableObjectRefAddr;
 
 import java.security.AccessController;
 import java.security.PrivilegedAction;
