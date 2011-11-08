@@ -104,6 +104,12 @@
                 <groupId>org.osgi</groupId>
                 <artifactId>org.osgi.enterprise</artifactId>
                 <version>${version.osgi}</version>
+								<exclusions>
+									<exclusion>
+										<groupId>org.apache.felix</groupId>
+										<artifactId>javax.servlet</artifactId>
+									</exclusion>
+								</exclusions>
                 <scope>provided</scope>
             </dependency>
             <dependency>

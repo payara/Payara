@@ -141,7 +141,7 @@
         <dependency>
             <groupId>com.sun.woodstock.dependlibs</groupId>
             <artifactId>dataprovider</artifactId>
-            <scope>optional</scope>
+            <optional>true</optional>
         </dependency>
     </dependencies>
 </project>
