@@ -76,6 +76,7 @@ class LogDBHelper {
                  "select distinct servername from txn_log_table where instancename = ? ");
     static final String createTableStatement = 
                  "create table txn_log_table (localtid varchar(20), servername varchar(150), instancename varchar(150), gtrid blob)";
+    static final boolean useNonTxConnectionForAddRecord = Boolean.getBoolean("com.sun.jts.dblogging.use.nontx.connection.for.add");
     static Logger _logger = LogDomains.getLogger(LogDBHelper.class, LogDomains.TRANSACTION_LOGGER);
     static LogDBHelper _instance = new LogDBHelper();
 
@@ -117,7 +118,10 @@ class LogDBHelper {
             Connection conn = null;
             PreparedStatement prepStmt1 = null;    
             try {
-                conn = ds.getConnection();
+                if (useNonTxConnectionForAddRecord)
+		    conn = (Connection)(getNonTxConnectionMethod.invoke(ds, null)); 
+                else 
+                    conn = ds.getConnection();
                 prepStmt1 = conn.prepareStatement(insertStatement);
                 prepStmt1.setString(1,Long.toString(localTID));
                 prepStmt1.setString(2,Configuration.getServerName());
