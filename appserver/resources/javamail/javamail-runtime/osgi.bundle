@@ -38,4 +38,5 @@
 # holder.
 #
 
--exportcontents: !*
+-exportcontents: \
+                 org.glassfish.resources.javamail.naming; version=${project.osgi.version}
