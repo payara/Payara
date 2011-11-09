@@ -216,6 +216,11 @@ public interface JavaEETransactionManager extends TransactionManager {
      */
     public void initRecovery(boolean force);
 
+    /**
+     * Perform shutdown cleanup.
+     */
+    public void shutdown();
+
     public void begin(int timeout)
         throws NotSupportedException, SystemException;
 

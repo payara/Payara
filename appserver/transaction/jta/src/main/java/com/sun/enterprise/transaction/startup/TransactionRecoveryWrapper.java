@@ -71,6 +71,8 @@ public class TransactionRecoveryWrapper implements Startup, PostConstruct {
 
     private static Logger _logger = LogDomains.getLogger(TransactionRecoveryWrapper.class, LogDomains.JTA_LOGGER);
 
+    private JavaEETransactionManager tm = null;
+
     @Override
     public void postConstruct() {
         EventListener glassfishEventListener = new EventListener() {
@@ -91,14 +93,21 @@ public class TransactionRecoveryWrapper implements Startup, PostConstruct {
     public void onReady() {
         _logger.fine("TM RECOVERY WRAPPER - ON READY STARTED");
 
-        JavaEETransactionManager tm = habitat.getByContract(JavaEETransactionManager.class);
+        tm = habitat.getByContract(JavaEETransactionManager.class);
         tm.initRecovery(false);
 
         _logger.fine("TM RECOVERY WRAPPER - ON READY FINISHED");
     }
 
     public void onShutdown() {
-        // Later
+        // Cleanup
+        _logger.fine("ON TM SHUTDOWN STARTED");
+        if (tm == null) {
+            tm = habitat.getByContract(JavaEETransactionManager.class);
+        }
+        tm.shutdown();
+        _logger.fine("ON TM SHUTDOWN FINISHED");
+
     }
 
     public Startup.Lifecycle getLifecycle() {
