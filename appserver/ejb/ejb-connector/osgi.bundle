@@ -38,7 +38,7 @@
 # holder.
 #
 
--exportcontents: org.glassfish.ejb; version=${project.osgi.version}
+-exportcontents: org.glassfish.ejb; org.glassfish.ejb.config; version=${project.osgi.version}
 
 # See issue #10545 to know why we have explicitly added org.glassfish.apf.context
 # in Import-Package

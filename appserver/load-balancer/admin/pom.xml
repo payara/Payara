@@ -178,7 +178,7 @@
         </dependency>
         <dependency>
             <groupId>org.glassfish.loadbalancer</groupId>
-            <artifactId>load-balancer-internal-api</artifactId>
+            <artifactId>gf-load-balancer-connector</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

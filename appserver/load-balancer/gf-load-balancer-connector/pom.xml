@@ -49,7 +49,7 @@
         <version>4.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
-    <artifactId>load-balancer-internal-api</artifactId>
+    <artifactId>gf-load-balancer-connector</artifactId>
     <packaging>hk2-jar</packaging>
     <name>Load Balancer Internal API</name>
     <developers>

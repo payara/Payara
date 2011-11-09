@@ -56,5 +56,6 @@
     <modules>
         <module>jms-core</module>
         <module>admin</module>
+        <module>gf-jms-connector</module>
   </modules>
 </project>

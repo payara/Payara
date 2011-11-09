@@ -55,6 +55,6 @@
     <name>GlassFish Load-Balancer Plugin related modules</name>
     <modules>
         <module>admin</module>
-        <module>internal-api</module>
+        <module>gf-load-balancer-connector</module>
   </modules>
 </project>

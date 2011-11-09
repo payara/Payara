@@ -40,6 +40,5 @@
 
 -exportcontents: \
 			com.sun.enterprise.connectors.jms.inflow;\
-			com.sun.enterprise.connectors.jms.config;\
 			com.sun.enterprise.connectors.jms.system;\
 			com.sun.enterprise.connectors.jms.util; version=${project.osgi.version}
