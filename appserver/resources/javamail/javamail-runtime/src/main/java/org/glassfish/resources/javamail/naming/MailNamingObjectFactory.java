@@ -38,10 +38,12 @@
  * holder.
  */
 
-package org.glassfish.resources.javamail;
+package org.glassfish.resources.javamail.naming;
 
 import com.sun.enterprise.deployment.MailConfiguration;
 import com.sun.logging.LogDomains;
+import org.glassfish.resources.javamail.MailLogOutputStream;
+import org.glassfish.resources.javamail.MailSessionAuthenticator;
 
 import javax.naming.Context;
 import javax.naming.Name;

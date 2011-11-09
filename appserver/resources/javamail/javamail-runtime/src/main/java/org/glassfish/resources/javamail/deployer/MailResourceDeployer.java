@@ -56,6 +56,7 @@ import com.sun.enterprise.repository.ResourceProperty;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.resources.api.*;
 import org.glassfish.resources.javamail.config.MailResource;
+import org.glassfish.resources.javamail.naming.MailNamingObjectFactory;
 import org.glassfish.resources.naming.*;
 import org.glassfish.resources.util.*;
 import org.jvnet.hk2.config.types.Property;
@@ -278,7 +279,7 @@ public class MailResourceDeployer extends GlobalResourceDeployer
             MailConfiguration config = new MailConfiguration(mailResource);
 
             javax.naming.Reference ref = new javax.naming.Reference(javax.mail.Session.class.getName(),
-                    org.glassfish.resources.javamail.MailNamingObjectFactory.class.getName(),null);
+                    MailNamingObjectFactory.class.getName(),null);
             SerializableObjectRefAddr serializableRefAddr = new SerializableObjectRefAddr("jndiName", config);
             ref.add(serializableRefAddr);
 
