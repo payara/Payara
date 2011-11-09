@@ -59,7 +59,6 @@ import javax.rmi.PortableRemoteObject;
 import java.util.Properties;
 import java.util.List;
 import java.util.ArrayList;
-
 import org.glassfish.api.admin.ServerEnvironment;
 
 @Service
@@ -78,35 +77,27 @@ public class MbeanService implements Startup {
     @Inject
     private static ServerEnvironment env;
 
-    static MbeanService mbeanService;
-
-    public MbeanService() {
-        mbeanService = this;
-    }
-
     @Override
     public Lifecycle getLifecycle() {
         return Startup.Lifecycle.SERVER;
     }
 
     public static MbeanService getInstance() {
-        if (habitat == null)
+        if(habitat == null)
             return null;
-        if (mbeanService != null)
-            return mbeanService;
         return habitat.getComponent(MbeanService.class);
     }
 
     public String getHost(String instance) throws InstanceNotFoundException {
         Server s = domain.getServerNamed(instance);
-        if (s == null)
+        if(s == null)
             throw new InstanceNotFoundException();
         return s.getAdminHost();
     }
 
     public String getJMXPort(String instance) throws InstanceNotFoundException {
         Server s = domain.getServerNamed(instance);
-        if (s == null)
+        if(s == null)
             throw new InstanceNotFoundException();
         return new PropertyResolver(domain, instance).getPropertyValue("JMX_SYSTEM_CONNECTOR_PORT");
     }
@@ -119,7 +110,7 @@ public class MbeanService implements Startup {
         Server s = null;
         try {
             s = domain.getServerNamed(name);
-        } catch (Throwable t) {
+        } catch(Throwable t) {
             return false;
         }
         return (s == null) ? false : true;
@@ -135,7 +126,7 @@ public class MbeanService implements Startup {
 
     private List<String> convertList(List<Server> servers) {
         List<String> serverStrings = new ArrayList<String>();
-        for (Server svr : servers)
+        for(Server svr : servers)
             serverStrings.add(svr.getName());
         return serverStrings;
     }
@@ -146,15 +137,14 @@ public class MbeanService implements Startup {
 
     /**
      * Returns if the SystemJMXConnector is secure or not
-     *
      * @param instance
      * @return
      */
     public boolean isSecureJMX(String instance) {
         String isSecure = "false";
-        if (domain.getServerNamed(instance) != null) {
+        if(domain.getServerNamed(instance) != null ) {
             if (domain.getServerNamed(instance).getConfig().getAdminService().getSystemJmxConnector() != null) {
-                isSecure = domain.getServerNamed(instance).getConfig().getAdminService().getSystemJmxConnector().getSecurityEnabled();
+                isSecure= domain.getServerNamed(instance).getConfig().getAdminService().getSystemJmxConnector().getSecurityEnabled();
             }
         }
         return Boolean.parseBoolean(isSecure);
