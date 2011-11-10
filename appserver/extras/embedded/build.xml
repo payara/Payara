@@ -99,6 +99,7 @@
 	  <fileset dir="${modulesdir}" includes="console-**-help.jar"/>
 	  <fileset dir="${modulesdir}" includes="console-**-plugin.jar"/>
 	</delete>
+	<delete file="${modulesdir}/autostart/osgi-cdi.jar" failonerror="false"/>
      </target>
 
 
