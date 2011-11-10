@@ -54,6 +54,7 @@ import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.component.PerLookup;
 
 import com.sun.enterprise.transaction.api.ResourceRecoveryManager;
+import com.sun.jts.CosTransactions.Configuration;
 
 import java.util.logging.Level;
 
@@ -76,7 +77,13 @@ public class RecoverTransactionsInternal extends RecoverTransactionsBase impleme
             _logger.info("==> internal target: " + destinationServer + " ... server: " + serverToRecover);
         }
 
-        String error = validate(destinationServer, false);
+        if (Configuration.isDBLoggingEnabled()) {
+            // This is important: need to pass instance name to the recovery
+            // process via log dir
+            transactionLogDir = serverToRecover;
+        }
+
+        String error = validate(destinationServer, true);
         if (error != null) {
             report.setMessage(error);
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);

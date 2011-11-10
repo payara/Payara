@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -69,7 +69,7 @@ public class RecoverTransactionsBase {
     @Param(name = "server_name", primary = true)
     String serverToRecover;
 
-    String validate(String destinationServer, boolean isDAS) { 
+    String validate(String destinationServer, boolean validateAllParams) { 
         if (_logger.isLoggable(Level.INFO)) {
             _logger.info("==> validating target: " + destinationServer + " ... server: " + serverToRecover);
         }
@@ -99,8 +99,8 @@ public class RecoverTransactionsBase {
             return localStrings.getString("recover.transactions.destinationServerIsNotAlive",
                     destinationServer);
 
-        } else if (transactionLogDir == null) {
-            return localStrings.getString("recover.transactions.logDirNotSpecifiedForDelegatedRecovery");
+        } else if (validateAllParams && transactionLogDir == null) {
+             return localStrings.getString("recover.transactions.logDirNotSpecifiedForDelegatedRecovery");
         }
 
         return null;

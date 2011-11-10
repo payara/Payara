@@ -92,7 +92,7 @@ public class RecoverTransactions extends RecoverTransactionsBase implements Admi
             _logger.info("==> original target: " + destinationServer + " ... server: " + serverToRecover);
         }
 
-        String error = validate(destinationServer, true);
+        String error = validate(destinationServer, false);
         if (error != null) {
             _logger.log(Level.WARNING, localStrings.getString("recover.transactions.failed") + " " + error);
             report.setMessage(error);
