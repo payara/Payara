@@ -280,6 +280,10 @@ public class AppServerStartup implements ModuleStartup {
                     logger.log(Level.SEVERE,
                             localStrings.getLocalString("startupservicefailure",
                                     "Startup service failed to start {0} due to {1} ", i.typeName(), e.getMessage()));
+                    events.send(new Event(EventTypes.SERVER_SHUTDOWN));
+                    shutdown();
+                    return;
+
                 }
                 if (logger.isLoggable(level)) {
                     servicesTiming.put(i.type(), (System.currentTimeMillis() - start));

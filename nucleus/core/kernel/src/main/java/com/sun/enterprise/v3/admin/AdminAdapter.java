@@ -150,6 +150,9 @@ public abstract class AdminAdapter extends StaticHttpHandler implements Adapter,
 
     @Inject(name=ServerEnvironment.DEFAULT_INSTANCE_NAME)
     private volatile Server server;
+    
+    @Inject(optional=true)
+    AdminAccessController authenticator;
    
     final Class<? extends Privacy> privacyClass;
 
@@ -259,7 +262,6 @@ public abstract class AdminAdapter extends StaticHttpHandler implements Adapter,
         String[] up = getUserPassword(req);
         String user = up[0];
         String password = up.length > 1 ? up[1] : "";
-        AdminAccessController authenticator = habitat.getByContract(AdminAccessController.class);
         if (authenticator != null) {
             /*
              * If an admin request includes a large payload and secure admin is

@@ -117,6 +117,7 @@ public final class FileRealm extends IASRealm
     private static final String SSHA_256_TAG = "{SSHA256}";
     private static final String algoSHA = "SHA";
     private static final String algoSHA256 = "SHA-256";
+    private static final String resetKey = "RESET";
 
     //private boolean constructed = false;
     
@@ -423,8 +424,12 @@ public final class FileRealm extends IASRealm
         FileRealmUser ud = userTable.get(user);
         if (ud == null) {
             if (_logger.isLoggable(Level.FINE)) {
-                _logger.fine("No such user: [" + user + "]");
+                _logger.log(Level.FINE, "No such user: [{0}]", user);
             }
+            return null;
+        }
+        if (resetKey.equals(ud.getAlgo())) {
+            _logger.log(Level.FINE, "File authentication failed for user [{0}]: password must be reset", user);
             return null;
         }
 
@@ -435,14 +440,13 @@ public final class FileRealm extends IASRealm
             ok = SSHA.verify(ud.getSalt(), ud.getHash(), Utility.convertCharArrayToByteArray(password, Charset.defaultCharset().displayName()), ud.getAlgo());
 
         } catch (Exception e) {
-            _logger.fine("File authentication failed: "+e.toString());
+            _logger.log(Level.FINE, "File authentication failed for user [{0}]: {1}", 
+                    new Object[] {user, e.toString()});
             return null;
         }
 
         if (!ok) {
-            if (_logger.isLoggable(Level.FINE)) {
-                _logger.fine("File authentication failed for: ["+user+"]");
-            }
+            _logger.log(Level.FINE, "File authentication failed for: [{0}]", user);
             return null;
         }
         
@@ -451,7 +455,19 @@ public final class FileRealm extends IASRealm
         return groups;
     }
 
-    
+    /*
+     * Test whether their is a user in the FileRealm that has a password that 
+     * has been set, i.e., something other than the resetKey.
+     */
+    public boolean hasAuthenticatableUser() 
+    {
+        for (FileRealmUser ud : userTable.values()) {
+            if (!resetKey.equals(ud.getAlgo())) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     //---------------------------------------------------------------------
     // File realm maintenance methods for admin.
@@ -639,7 +655,7 @@ public final class FileRealm extends IASRealm
         FileRealmUser ud = createNewUser(name, password, groupList);
         userTable.put(name, ud);
     }
-
+      
 
     /**
      * Remove user from file realm. User must exist.
@@ -944,10 +960,12 @@ public final class FileRealm extends IASRealm
 
         sb.append(name);
         sb.append(FIELD_SEP);
-
-        String ssha = SSHA.encode(ud.getSalt(), ud.getHash(), algo);
-
-        sb.append(ssha);
+        if (resetKey.equals(algo)) {
+            sb.append(resetKey);
+        } else {
+            String ssha = SSHA.encode(ud.getSalt(), ud.getHash(), algo);
+            sb.append(ssha);
+        }
         sb.append(FIELD_SEP);
 
         String[] groups = ud.getGroups();
@@ -997,21 +1015,27 @@ public final class FileRealm extends IASRealm
             groupList = st.nextToken();
         }
 
-        if(encodedLine.contains(SSHA_TAG)) {
-            algo = algoSHA;
-        }
-        
-        int resultLength = 32;
-        if (algoSHA.equals(algo)) {
-            resultLength = 20;
-        }
-
-        byte[] hash = new byte[resultLength];
-        byte[] salt = SSHA.decode(pwdInfo, hash, algo);
-
         FileRealmUser ud = new FileRealmUser(user);
-        ud.setHash(hash);
-        ud.setSalt(salt);
+        if (resetKey.equals(pwdInfo)) {
+            ud.setAlgo(resetKey);
+        } else {
+
+            if(encodedLine.contains(SSHA_TAG)) {
+                algo = algoSHA;
+            }
+
+            int resultLength = 32;
+            if (algoSHA.equals(algo)) {
+                resultLength = 20;
+            }
+
+            byte[] hash = new byte[resultLength];
+            byte[] salt = SSHA.decode(pwdInfo, hash, algo);
+
+            ud.setHash(hash);
+            ud.setSalt(salt);
+            ud.setAlgo(algo);
+        }
         
         Vector membership = new Vector();
 
@@ -1027,7 +1051,7 @@ public final class FileRealm extends IASRealm
             }
         }
         ud.setGroups(membership);
-        ud.setAlgo(algo);
+        
         return ud;
     }
 

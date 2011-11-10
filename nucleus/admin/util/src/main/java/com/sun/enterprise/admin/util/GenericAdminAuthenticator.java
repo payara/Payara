@@ -56,6 +56,7 @@ import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.config.serverbeans.SecurityService;
 import com.sun.enterprise.config.serverbeans.AuthRealm;
 import com.sun.enterprise.config.serverbeans.AdminService;
+import com.sun.enterprise.security.auth.realm.BadRealmException;
 import com.sun.enterprise.security.ssl.SSLUtils;
 import com.sun.enterprise.util.net.NetUtils;
 import java.io.UnsupportedEncodingException;
@@ -147,6 +148,28 @@ public class GenericAdminAuthenticator implements AdminAccessController, JMXAuth
     @Override
     public void postConstruct() {
         secureAdmin = domain.getSecureAdmin();
+        
+        // Ensure that the admin password is set as required
+        if (as.usesFileRealm()) {
+            try {
+                AuthRealm ar = as.getAssociatedAuthRealm();
+                if (FileRealm.class.getName().equals(ar.getClassname())) {
+                    String adminKeyFilePath = ar.getPropertyValue("file");
+                    FileRealm fr = new FileRealm(adminKeyFilePath);
+                    if (!fr.hasAuthenticatableUser()) {
+                        String emsg = lsm.getLocalString("secure.admin.empty.password",
+                            "The server requires a valid admin password to be set before it can start. Please set a password using the change-admin-password command.");
+                        logger.log(Level.SEVERE, emsg);
+                        throw new IllegalStateException(emsg);
+                    }
+                }
+            } catch (Exception ex) {
+                logger.log(Level.SEVERE, ex.getMessage());
+                throw new RuntimeException(ex);
+            }
+
+        }
+        
     }
 
 
