@@ -40,12 +40,19 @@
 
 package org.glassfish.paas.mysqldbplugin;
 
+import org.glassfish.internal.api.ClassLoaderHierarchy;
 import org.glassfish.paas.orchestrator.provisioning.DatabaseProvisioner;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
 
 import java.io.File;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.apache.tools.ant.Project;
+import org.apache.tools.ant.taskdefs.SQLExec;
+import org.apache.tools.ant.types.Path;
+import org.apache.tools.ant.taskdefs.SQLExec.OnError;
 
 /**
  * @author Shalini M
@@ -53,6 +60,13 @@ import java.util.Properties;
 @Service
 public class MySQLDbProvisioner implements DatabaseProvisioner {
 
+    @Inject
+    private ClassLoaderHierarchy clh;
+
+    private static final String MYSQL_USERNAME = "root";
+    private static final String MYSQL_PASSWORD = "mysql";
+
+    private static Logger logger = Logger.getLogger(MySQLDbProvisioner.class.getName());
 
     public boolean handles(Properties metaData) {
         return true;
@@ -77,10 +91,41 @@ public class MySQLDbProvisioner implements DatabaseProvisioner {
 
     public Properties getDefaultConnectionProperties() {
         Properties properties = new Properties();
-        properties.put(DatabaseProvisioner.USER, "root");
-        properties.put(DatabaseProvisioner.PASSWORD, "mysql");
+        properties.put(DatabaseProvisioner.USER, MYSQL_USERNAME);
+        properties.put(DatabaseProvisioner.PASSWORD, MYSQL_PASSWORD);
+        properties.put(DatabaseProvisioner.DATABASENAME, "foo");
         properties.put(DatabaseProvisioner.RESOURCE_TYPE, "javax.sql.XADataSource");
         properties.put(DatabaseProvisioner.CLASSNAME, "com.mysql.jdbc.jdbc2.optional.MysqlXADataSource");
+        properties.put("CreateDatabaseIfNotExist", "true");
         return properties;
+    }
+
+    public void executeInitSql(Properties dbProps, String sqlFile) {
+        try {
+            System.out.println("executing init-sql : " + sqlFile);
+            Project project = new Project();
+            project.init();
+            SQLExec task = new SQLExec();
+            SQLExec.OnError error = new SQLExec.OnError();
+            error.setValue("continue");
+            task.setDriver("com.mysql.jdbc.Driver");
+            String url = "jdbc:mysql://" + dbProps.getProperty("serverName") +
+                    ":" + dbProps.getProperty("port") + "/" +
+                    dbProps.getProperty(DatabaseProvisioner.DATABASENAME);
+            task.setUrl(url);
+            task.setUserid(dbProps.getProperty(DatabaseProvisioner.USER));
+            task.setPassword(dbProps.getProperty(DatabaseProvisioner.PASSWORD));
+            task.setSrc(new File(sqlFile));
+            task.setOnerror(error);
+            Path path = new Path(project, clh.getCommonClassPath());
+            path.addJavaRuntime();
+            task.setClasspath(path);
+            task.setProject(project);
+            task.setAutocommit(true);
+            task.execute();
+            System.out.println("Completed executing init-sql : " + sqlFile);
+        } catch(Exception ex) {
+            logger.log(Level.WARNING, "Init SQL execution [ "+sqlFile+" ] failed with exception : " + ex);
+        }
     }
 }

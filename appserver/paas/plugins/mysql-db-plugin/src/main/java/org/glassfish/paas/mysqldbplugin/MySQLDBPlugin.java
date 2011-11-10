@@ -85,11 +85,13 @@ public class MySQLDBPlugin implements Plugin<RDBMSServiceType> {
     @Inject
     private ServiceUtil serviceUtil;
 
+    public static final String INIT_SQL_PROPERTY="database.init.sql";
+
     private static final String DATASOURCE = "javax.sql.DataSource";
 
     public static final String RDBMS_ServiceType = "Database";
 
-    private static Logger logger = Logger.getLogger(org.glassfish.paas.mysqldbplugin.MySQLDBPlugin.class.getName());
+    private static Logger logger = Logger.getLogger(MySQLDBPlugin.class.getName());
 
     public RDBMSServiceType getServiceType() {
         return new RDBMSServiceType();
@@ -104,7 +106,7 @@ public class MySQLDBPlugin implements Plugin<RDBMSServiceType> {
         return DATASOURCE.equalsIgnoreCase(referenceType);
     }
 
-    public Set<ServiceReference> getServiceReferences(String appName, ReadableArchive cloudArchive) {	    
+    public Set<ServiceReference> getServiceReferences(String appName, ReadableArchive cloudArchive) {
         //DB plugin does not scan anything for prototype
         return new HashSet<ServiceReference>();
     }
@@ -120,8 +122,13 @@ public class MySQLDBPlugin implements Plugin<RDBMSServiceType> {
             List<Property> properties = new ArrayList<Property>();
             properties.add(new Property("service-type", RDBMS_ServiceType));
             properties.add(new Property("os-name", System.getProperty("os.name"))); // default OS will be same as that of what Orchestrator is running on.
+
+            String initSqlFile = "";
+            List<Property> configurations = new ArrayList<Property>();
+            configurations.add(new Property(INIT_SQL_PROPERTY, initSqlFile));
+
             ServiceDescription sd = new ServiceDescription(defaultServiceName, appName,
-                    "lazy", new ServiceCharacteristics(properties), null);
+                    "lazy", new ServiceCharacteristics(properties), configurations);
 
             // Fill the required details in service reference.
             Properties defaultConnPoolProperties = dbProvisioner.getDefaultConnectionProperties();
@@ -135,13 +142,17 @@ public class MySQLDBPlugin implements Plugin<RDBMSServiceType> {
     }
 
     private String formatArgument(List<Property> properties) {
+        return formatArgument(properties, ":");
+    }
+
+    private String formatArgument(List<Property> properties, String delimiter) {
         StringBuilder sb = new StringBuilder();
         if (properties != null) {
             for (Property p : properties) {
-                sb.append(p.getName() + "=" + p.getValue() + ":");
+                sb.append(p.getName() + "=" + "'" + p.getValue() +"'" + delimiter);
             }
         }
-        // remove the last ':'
+        // remove the last occurrence of delimiter
         if (sb.length() > 0) {
             sb.deleteCharAt(sb.length() - 1);
         }
@@ -149,14 +160,17 @@ public class MySQLDBPlugin implements Plugin<RDBMSServiceType> {
     }
 
     public ProvisionedService provisionService(ServiceDescription serviceDescription, DeploymentContext dc) {
+
         String serviceName = serviceDescription.getName();
-        String serviceConfigurations = formatArgument(serviceDescription.getConfigurations());
+        String serviceConfigurations = formatArgument(serviceDescription.getConfigurations(), ";");
         String appNameParam = "";
         if (serviceDescription.getAppName() != null) {
             appNameParam = "--appname=" + serviceDescription.getAppName();
         }
         logger.entering(getClass().getName(), "provisionService");
 
+        ArrayList<String> params;
+        String[] parameters;
 
         CommandResult result = null;
         // either template identifier or service characteristics are specified, not both.
@@ -180,8 +194,22 @@ public class MySQLDBPlugin implements Plugin<RDBMSServiceType> {
             System.out.println("_create-mysql-db-service [" + serviceName + "] failed");
         }
 
+        ServiceInfo entry = serviceUtil.retrieveCloudEntry(serviceName,
+                serviceDescription.getAppName(), ServiceType.DATABASE);
+        if (entry == null) {
+            throw new RuntimeException("unable to get DB service : " + serviceName);
+        }
+
+        params = new ArrayList<String>();
+        if(serviceDescription.getAppName() != null){
+            params.add("--appname="+serviceDescription.getAppName());
+        }
+        params.add("servicename="+serviceName);
+        parameters = new String[params.size()];
+        parameters = params.toArray(parameters);
+
         Properties serviceProperties = new Properties();
-        String ipAddress = serviceUtil.getIPAddress(serviceName, serviceDescription.getAppName(), ServiceType.DATABASE);
+        String ipAddress = entry.getIpAddress();
         serviceProperties.put("host", ipAddress);
         //TODO: Fix URL later for hardcodings
         serviceProperties.put("URL", "jdbc\\:mysql\\://" + ipAddress + "\\:3306/foo");
@@ -201,7 +229,7 @@ public class MySQLDBPlugin implements Plugin<RDBMSServiceType> {
     public ProvisionedService getProvisionedService(ServiceDescription serviceDescription, ServiceInfo serviceInfo){
         String serviceName = serviceDescription.getName();
         Properties serviceProperties = new Properties();
-        String ipAddress = serviceUtil.getIPAddress(serviceName, serviceDescription.getAppName(), ServiceType.DATABASE);
+        String ipAddress = serviceInfo.getIpAddress();
         serviceProperties.put("host", ipAddress);
         //TODO: Fix URL later for hardcodings
         serviceProperties.put("URL", "jdbc\\:mysql\\://" + ipAddress + "\\:3306/foo");
@@ -212,8 +240,16 @@ public class MySQLDBPlugin implements Plugin<RDBMSServiceType> {
 
     public ProvisionedService startService(ServiceDescription serviceDescription, ServiceInfo serviceInfo) {
         String serviceName = serviceDescription.getName();
+        logger.entering(getClass().getName(), "startService");
+
+        ServiceInfo entry = serviceUtil.retrieveCloudEntry(serviceName,
+                serviceDescription.getAppName(), ServiceType.DATABASE);
+        if (entry == null) {
+            throw new RuntimeException("unable to get DB service : " + serviceName);
+        }
+
         Properties serviceProperties = new Properties();
-        String ipAddress = serviceUtil.getIPAddress(serviceName, serviceDescription.getAppName(), ServiceType.DATABASE);
+        String ipAddress = entry.getIpAddress();
         serviceProperties.put("host", ipAddress);
         //TODO: Fix URL later for hardcodings
         serviceProperties.put("URL", "jdbc\\:mysql\\://" + ipAddress + "\\:3306/foo");

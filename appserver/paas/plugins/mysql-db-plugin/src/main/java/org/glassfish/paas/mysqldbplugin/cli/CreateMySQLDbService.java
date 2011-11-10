@@ -45,6 +45,7 @@ import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.CommandLock;
+import org.glassfish.paas.mysqldbplugin.MySQLDbProvisioner;
 import org.glassfish.paas.orchestrator.provisioning.ApplicationServerProvisioner;
 import org.glassfish.paas.orchestrator.provisioning.ProvisionerUtil;
 import org.glassfish.paas.orchestrator.provisioning.ServiceInfo;
@@ -111,6 +112,8 @@ public class CreateMySQLDbService implements AdminCommand, Runnable {
     @Inject(optional = true) // // made it optional for non-virtual scenario to work
     VirtualClusters virtualClusters;
 
+    @Inject
+    private MySQLDbProvisioner mysqlDbProvisioner;
 
     public void execute(AdminCommandContext context) {
 	System.out.println("_create-mysql-db-service called");
@@ -177,19 +180,30 @@ public class CreateMySQLDbService implements AdminCommand, Runnable {
 
         if (matchingTemplate != null) {
             try {
-		VirtualCluster vCluster = virtualClusters.byName(virtualClusterName);
+                VirtualCluster vCluster = virtualClusters.byName(virtualClusterName);
                 PhasedFuture<AllocationPhase, VirtualMachine> future =
                         iaas.allocate(new AllocationConstraints(matchingTemplate, vCluster), null);
 
                 VirtualMachine vm = future.get();
+
+                // TODO :: create user specified database.
+                
                 // add app-scoped-service config for each vm instance as well.
+                String initSqlFile = serviceConfigurations.getProperty("database.init.sql");
+                if (initSqlFile != null && initSqlFile.trim().length() > 0) {
+                    Properties serviceProperties = new Properties();
+                    serviceProperties.putAll(mysqlDbProvisioner.getDefaultConnectionProperties()); // TODO :: use user supplied database info.
+                    serviceProperties.put("serverName", vm.getAddress().getHostAddress());
+                    serviceProperties.put("port", "3306"); // TODO :: grab the actual port.
+                    mysqlDbProvisioner.executeInitSql(serviceProperties, initSqlFile);
+                }
                 ServiceInfo entry = new ServiceInfo();
                 entry.setInstanceId(vm.getName());
                 entry.setIpAddress(vm.getAddress().getHostAddress());
                 entry.setState(ServiceInfo.State.Running.toString());
                 entry.setServiceName(serviceName);
                 entry.setAppName(appName);
-                entry.setServerType("database");
+                entry.setServerType(ServiceType.DATABASE.toString());
 
                 serviceUtil.registerCloudEntry(entry);
             } catch (Throwable ex) {
