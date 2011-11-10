@@ -366,7 +366,7 @@
 
      <dependency>
          <groupId>org.glassfish.persistence</groupId>
-         <artifactId>jpa-connector</artifactId>
+         <artifactId>jpa-container</artifactId>
          <version>${project.version}</version>
      </dependency>
 

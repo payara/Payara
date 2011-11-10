@@ -57,7 +57,8 @@
     <modules>
         <module>common</module>
         <module>oracle-jdbc-driver-packages</module>
-        <module>jpa-connector</module>
+        <module>gf-jpa-connector</module>
+        <module>jpa-container</module>
         <module>eclipselink-wrapper</module>
         <module>cmp</module>
     </modules>

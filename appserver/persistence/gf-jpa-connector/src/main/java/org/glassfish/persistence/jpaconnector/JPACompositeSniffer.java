@@ -38,7 +38,7 @@
  * holder.
  */
 
-package org.glassfish.persistence.jpa;
+package org.glassfish.persistence.jpaconnector;
 
 
 import com.sun.enterprise.deployment.BundleDescriptor;

@@ -50,9 +50,9 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>jpa-connector</artifactId>
+    <artifactId>jpa-container</artifactId>
     <packaging>hk2-jar</packaging>
-    <name>JPA connector for glassfish</name>
+    <name>JPA container for glassfish</name>
     
     <developers>
         <developer>
