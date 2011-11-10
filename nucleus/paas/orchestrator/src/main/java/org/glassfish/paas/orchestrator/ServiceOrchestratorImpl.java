@@ -110,13 +110,17 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
     private static final Class [] SERVER_STARTUP_PHASE_STATES = {ServiceDependencyDiscoveryState.class, ServerStartupState.class};
 
     private static Logger logger = Logger.getLogger(ServiceOrchestratorImpl.class.getName());
+    Set<Plugin> pluginsSet = null;
 
     public Set<Plugin> getPlugins() {
-        Set<Plugin> plugins = new HashSet<Plugin>();
-        plugins.addAll(habitat.getAllByContract(Plugin.class));
-        logger.log(Level.INFO, "Discovered plugins:" + plugins);
-        checkForDuplicatePlugins(plugins);
-        return plugins;
+        if(pluginsSet == null){
+            Set<Plugin> plugins = new HashSet<Plugin>();
+            plugins.addAll(habitat.getAllByContract(Plugin.class));
+            logger.log(Level.INFO, "Discovered plugins:" + plugins);
+            checkForDuplicatePlugins(plugins);
+            pluginsSet = plugins;
+        }
+        return pluginsSet;
     }
 
     private void checkForDuplicatePlugins(Set<Plugin> plugins) {
