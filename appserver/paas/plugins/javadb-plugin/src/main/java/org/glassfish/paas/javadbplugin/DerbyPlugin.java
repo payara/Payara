@@ -128,11 +128,13 @@ public static final String RDBMS_ServiceType = "Database";
             ServiceDescription sd = new ServiceDescription(defaultServiceName, appName,
                     "lazy", new ServiceCharacteristics(properties), configurations);
 
+/*
             // Fill the required details in service reference.
             Properties defaultConnPoolProperties = dbProvisioner.getDefaultConnectionProperties();
             defaultConnPoolProperties.setProperty("serviceName", defaultServiceName);
             svcRef.setProperties(defaultConnPoolProperties);
-            
+*/
+
             return sd;
         } else {
             return null;
@@ -219,6 +221,12 @@ public static final String RDBMS_ServiceType = "Database";
         String ipAddress = entry.getIpAddress();
         serviceProperties.put("host", ipAddress);
         serviceProperties.put("port", "1527"); // TODO :: grab the actual port.
+
+        DatabaseProvisioner dbProvisioner = new DerbyProvisioner();
+        Properties defaultConnPoolProperties = dbProvisioner.getDefaultConnectionProperties();
+        if(defaultConnPoolProperties != null){
+            serviceProperties.putAll(defaultConnPoolProperties);
+        }
 
         DerbyProvisionedService dps = new DerbyProvisionedService(serviceDescription, serviceProperties);
         dps.setStatus(ServiceStatus.STARTED);

@@ -130,10 +130,12 @@ public class MySQLDBPlugin implements Plugin<RDBMSServiceType> {
             ServiceDescription sd = new ServiceDescription(defaultServiceName, appName,
                     "lazy", new ServiceCharacteristics(properties), configurations);
 
+/*
             // Fill the required details in service reference.
             Properties defaultConnPoolProperties = dbProvisioner.getDefaultConnectionProperties();
             defaultConnPoolProperties.setProperty("serviceName", defaultServiceName);
             svcRef.setProperties(defaultConnPoolProperties);
+*/
 
             return sd;
         } else {
@@ -213,6 +215,12 @@ public class MySQLDBPlugin implements Plugin<RDBMSServiceType> {
         serviceProperties.put("host", ipAddress);
         //TODO: Fix URL later for hardcodings
         serviceProperties.put("URL", "jdbc\\:mysql\\://" + ipAddress + "\\:3306/foo");
+
+        DatabaseProvisioner dbProvisioner = new MySQLDbProvisioner();
+        Properties defaultConnPoolProperties = dbProvisioner.getDefaultConnectionProperties();
+        if(defaultConnPoolProperties != null){
+            serviceProperties.putAll(defaultConnPoolProperties);
+        }
 
         return new MySQLDbProvisionedService(serviceDescription, serviceProperties, ServiceStatus.STARTED);
     }

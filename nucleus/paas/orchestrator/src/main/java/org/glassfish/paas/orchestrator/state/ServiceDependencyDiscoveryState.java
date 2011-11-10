@@ -52,9 +52,7 @@ import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -90,6 +88,7 @@ public class ServiceDependencyDiscoveryState implements PaaSDeploymentState {
 
     public ServiceMetadata getServiceDependencyMetadata(PaaSDeploymentContext context, Set<Plugin> installedPlugins,
                                                          String appName, ReadableArchive archive) {
+        final ServiceOrchestratorImpl orchestrator = context.getOrchestrator();
         try {
             //1. SERVICE DISCOVERY
             //parse glassfish-services.xml to get all declared SRs and SDs
@@ -157,6 +156,23 @@ public class ServiceDependencyDiscoveryState implements PaaSDeploymentState {
                         serviceDescriptionExists = true;
                     }
                 }
+
+                Set<ServiceDescription> matchingSDs = new HashSet<ServiceDescription>();
+                if(!serviceDescriptionExists){
+                    for(ServiceDescription sd : appSDs){
+                        Plugin plugin = orchestrator.getPluginForServiceType(orchestrator.getPlugins(), sd.getServiceType());
+                        if(plugin != null){
+                            if(plugin.isReferenceTypeSupported(sr.getServiceRefType())){
+                                matchingSDs.add(sd);
+                            }
+                        }
+                    }
+                    if(matchingSDs.size() == 1){
+                        //we found exactly one matching service-description.
+                        serviceDescriptionExists = true;
+                    }
+                }
+
                 if (!serviceDescriptionExists) {
                     //create a default SD for this service ref and add to application's
                     //service metadata

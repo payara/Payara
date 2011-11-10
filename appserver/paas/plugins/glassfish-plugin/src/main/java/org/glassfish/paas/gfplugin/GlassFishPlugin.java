@@ -131,9 +131,9 @@ public class GlassFishPlugin implements Plugin<JavaEEServiceType> {
     }
 
     public boolean isReferenceTypeSupported(String referenceType) {
-        /*if(referenceType.equals(JAVAEE_SERVICE_TYPE)){
+        if(referenceType.equals(JAVAEE_SERVICE_TYPE)){
             return true;
-        }*/
+        }
         //GlassFish plugin would not be able to support any other reference types
         return false;
     }
@@ -153,7 +153,7 @@ public class GlassFishPlugin implements Plugin<JavaEEServiceType> {
     }
 
     public ServiceDescription getDefaultServiceDescription(String appName, ServiceReference svcRef) {
-        return null;
+        return generateDefaultServiceDescription(appName);
     }
 
     public boolean unprovisionService(ServiceDescription serviceDescription, DeploymentContext dc) {
@@ -367,14 +367,19 @@ public class GlassFishPlugin implements Plugin<JavaEEServiceType> {
             ServiceDescription serviceDescription = serviceProvider.getServiceDescription();
 //                        (SimpleServiceDefinition) derbyProvisionedService.getServiceDefinition();
             Properties dbProperties = new Properties();
-            dbProperties.putAll(svcRef.getProperties());
-            String serverName = serviceProvider.getServiceProperties().getProperty("host");
-            String url = serviceProvider.getServiceProperties().getProperty("URL");
-            if(serverName != null) {
-                dbProperties.setProperty("serverName", serverName);
+            if(svcRef.getProperties() != null){
+                dbProperties.putAll(svcRef.getProperties());
             }
-            if(url != null) {
-                dbProperties.setProperty("URL", url);
+            if(serviceProvider.getServiceProperties() != null){
+                dbProperties.putAll(serviceProvider.getServiceProperties());
+                String serverName = serviceProvider.getServiceProperties().getProperty("host");
+                String url = serviceProvider.getServiceProperties().getProperty("URL");
+                if(serverName != null) {
+                    dbProperties.setProperty("serverName", serverName);
+                }
+                if(url != null) {
+                    dbProperties.setProperty("URL", url);
+                }
             }
 //                serviceDescription.getProperties();
 
@@ -541,23 +546,26 @@ public class GlassFishPlugin implements Plugin<JavaEEServiceType> {
         HashSet<ServiceDescription> defs = new HashSet<ServiceDescription>();
 
         if (DeploymentUtils.isJavaEE(readableArchive, habitat)) {
-            List<Property> characteristics = new ArrayList<Property>();
-            characteristics.add(new Property("service-type", JAVAEE_SERVICE_TYPE));
-//            characteristics.add(new Property("service-vendor", "GlassFish"));
-//            characteristics.add(new Property("service-product-name", "GlassFish"));
-
-            List<Property> configurations = new ArrayList<Property>();
-            configurations.add(new Property(MIN_CLUSTER_PROPERTY_NAME, "2"));
-            configurations.add(new Property(MAX_CLUSTER_PROPERTY_NAME, "4"));
-
-            //we append -service in the service-name so that cluster-name and app-name
-            //are not same. If they are same, delete-virtual-cluster gets initiated and fails.
-            ServiceDescription sd = new ServiceDescription(
-                    readableArchive.getName(), appName, "lazy",
-                    new ServiceCharacteristics(characteristics), configurations);
+            ServiceDescription sd = generateDefaultServiceDescription(appName);
             defs.add(sd);
         }
         return defs;
+    }
+
+    private ServiceDescription generateDefaultServiceDescription(String appName) {
+
+        List<Property> characteristics = new ArrayList<Property>();
+        characteristics.add(new Property("service-type", JAVAEE_SERVICE_TYPE));
+//            characteristics.add(new Property("service-vendor", "GlassFish"));
+//            characteristics.add(new Property("service-product-name", "GlassFish"));
+
+        List<Property> configurations = new ArrayList<Property>();
+        configurations.add(new Property(MIN_CLUSTER_PROPERTY_NAME, "2"));
+        configurations.add(new Property(MAX_CLUSTER_PROPERTY_NAME, "4"));
+
+        return new ServiceDescription(
+                "gf-service-"+appName, appName, "lazy",
+                new ServiceCharacteristics(characteristics), configurations);
     }
 
     @Override
