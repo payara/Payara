@@ -45,6 +45,7 @@ import com.sun.enterprise.universal.process.WindowsCredentials;
 import com.sun.enterprise.universal.process.WindowsRemoteScripter;
 import com.sun.enterprise.universal.process.WindowsWmi;
 import com.sun.enterprise.util.io.WindowsRemoteFileSystem;
+import java.io.*;
 import java.io.IOException;
 import java.net.*;
 import java.util.logging.Level;
@@ -158,17 +159,12 @@ public class ValidateDcom implements AdminCommand {
             setError(e, Strings.get("unknown.host", host));
             return false;
         }
-        try {
-            Socket socket = new Socket();
-            socket.connect(new InetSocketAddress(host, 135), 4000);
-            socket.close();
-            out.append(Strings.get("validate.dcom.connect")).append('\n');
-        }
-        catch (IOException e) {
-            setError(e, Strings.get("dcom.no.connect.135", host));
-            return false;
-        }
-        return true;
+
+        boolean b135 = testPort(135, "DCOM Port");
+        boolean b139 = testPort(139, "NetBIOS Session Service");
+        boolean b445 = testPort(445, "Windows Shares");
+
+        return b135 && b139 && b445;
     }
 
     /**
@@ -258,6 +254,12 @@ public class ValidateDcom implements AdminCommand {
     private void setError(Exception e, String msg) {
         //report.setFailureCause(e);
         setError(msg + " : " + e.getMessage());
+        if(verbose) {
+            Throwable t = e;
+            do {
+                dumpStack(t);
+            } while((t = t.getCause()) != null);
+        }
     }
 
     private void setError(String msg) {
@@ -277,5 +279,28 @@ public class ValidateDcom implements AdminCommand {
         }
 
         return sb.toString();
+    }
+
+    private void dumpStack(Throwable t) {
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw, true);
+        t.printStackTrace(pw);
+        pw.close();
+        out.append(sw.toString());
+    }
+
+    private boolean testPort(int port, String description) {
+        try {
+            Socket socket = new Socket();
+            socket.connect(new InetSocketAddress(host, port), 4000);
+            socket.close();
+            out.append(Strings.get("validate.dcom.connect",
+                    description, port, host)).append('\n');
+            return true;
+        }
+        catch (IOException e) {
+            setError(e, Strings.get("validate.dcom.no.connect", description, port, host));
+            return false;
+        }
     }
 }
