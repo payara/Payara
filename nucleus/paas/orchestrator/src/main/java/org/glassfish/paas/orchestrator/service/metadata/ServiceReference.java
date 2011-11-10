@@ -70,7 +70,7 @@ public class ServiceReference {
     // Since the service can be referenced by a resource, we need to hold the resource properties.
     // Eg., If service is referenced from jdbc-connection-pool, this will hold all the pool properties.
     // TODO :: instead of storing resource properties, we can directly have a reference to the resource itself.
-    private Properties properties;
+    private Properties properties = new Properties();
 
     public ServiceReference() {}
     

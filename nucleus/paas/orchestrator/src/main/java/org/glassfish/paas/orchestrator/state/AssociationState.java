@@ -88,7 +88,7 @@ public abstract class AssociationState implements PaaSDeploymentState {
                             } catch (Exception e) {
                                 //TODO need to dissociate the previously associated services.
                                 //TODO which needs book keeping info on previously associated services.
-
+                                e.printStackTrace();
                                 context.setAction(PaaSDeploymentContext.Action.ROLLBACK);
                                 return;
                             }
