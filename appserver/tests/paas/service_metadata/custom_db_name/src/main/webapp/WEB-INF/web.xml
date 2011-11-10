@@ -39,40 +39,29 @@
   ~ holder.
   -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-    <groupId>org.glassfish.tests</groupId>
-    <artifactId>paas</artifactId>
-    <version>4.0-SNAPSHOT</version>
-    <name>PaaS samples</name>
-    <packaging>pom</packaging>
-    <modules>
-      <module>basic</module>
-      <module>service_metadata</module>
-      <module>basic-db</module>
-      <module>bookstore</module>
-      <module>basic-db-initsql</module>
-    </modules>
-    <reporting>
-    <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-surefire-report-plugin</artifactId>
-        <version>2.9</version>
-        <configuration>
-           <outputDirectory>${env.PAAS_TESTS_HOME}/reports</outputDirectory>
-           <outputName>PaasTestReport</outputName>
-          <reportsDirectories>
-                <reportsDirectory>${env.PAAS_TESTS_HOME}/basic/target/surefire-reports</reportsDirectory>
-                <reportsDirectory>${env.PAAS_TESTS_HOME}/service_metadata/provision_using_specified_template/target/surefire-reports</reportsDirectory>
-                <reportsDirectory>${env.PAAS_TESTS_HOME}/service_metadata/custom_db_name/target/surefire-reports</reportsDirectory>
-		<reportsDirectory>${env.PAAS_TESTS_HOME}/basic-db/target/surefire-reports</reportsDirectory>
-		<reportsDirectory>${env.PAAS_TESTS_HOME}/bookstore/target/surefire-reports</reportsDirectory>
-		<reportsDirectory>${env.PAAS_TESTS_HOME}/basic-db-initsql/target/surefire-reports</reportsDirectory>
-          </reportsDirectories>
-        </configuration>
-      </plugin>
-    </plugins>
-  </reporting>
-</project>
+<web-app version="2.5" 
+  xmlns="http://java.sun.com/xml/ns/javaee" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+  xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd">
+    <servlet>
+        <servlet-name>CustomDBNameServlet</servlet-name>
+        <servlet-class>org.glassfish.tests.paas.customdbname.CustomDBNameServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>CustomDBNameServlet</servlet-name>
+        <url-pattern>/CustomDBNameServlet</url-pattern>
+    </servlet-mapping>
+    <session-config>
+        <session-timeout>
+            30
+        </session-timeout>
+    </session-config>
+    <resource-ref>
+        <res-ref-name>jdbc/__custom_db_name_paas_sample</res-ref-name>
+        <res-type>javax.sql.DataSource</res-type>
+<!--
+        <res-auth>Container</res-auth>
+        <res-sharing-scope>Shareable</res-sharing-scope>
+-->
+    </resource-ref>
+ </web-app>

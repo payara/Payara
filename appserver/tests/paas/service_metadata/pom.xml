@@ -42,37 +42,13 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>org.glassfish.tests</groupId>
-    <artifactId>paas</artifactId>
+    <groupId>org.glassfish.tests.paas</groupId>
+    <artifactId>service_metadata</artifactId>
     <version>4.0-SNAPSHOT</version>
-    <name>PaaS samples</name>
+    <name>Service Metadata PaaS samples</name>
     <packaging>pom</packaging>
     <modules>
-      <module>basic</module>
-      <module>service_metadata</module>
-      <module>basic-db</module>
-      <module>bookstore</module>
-      <module>basic-db-initsql</module>
+      <module>provision_using_specified_template</module>
+      <module>custom_db_name</module>
     </modules>
-    <reporting>
-    <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-surefire-report-plugin</artifactId>
-        <version>2.9</version>
-        <configuration>
-           <outputDirectory>${env.PAAS_TESTS_HOME}/reports</outputDirectory>
-           <outputName>PaasTestReport</outputName>
-          <reportsDirectories>
-                <reportsDirectory>${env.PAAS_TESTS_HOME}/basic/target/surefire-reports</reportsDirectory>
-                <reportsDirectory>${env.PAAS_TESTS_HOME}/service_metadata/provision_using_specified_template/target/surefire-reports</reportsDirectory>
-                <reportsDirectory>${env.PAAS_TESTS_HOME}/service_metadata/custom_db_name/target/surefire-reports</reportsDirectory>
-		<reportsDirectory>${env.PAAS_TESTS_HOME}/basic-db/target/surefire-reports</reportsDirectory>
-		<reportsDirectory>${env.PAAS_TESTS_HOME}/bookstore/target/surefire-reports</reportsDirectory>
-		<reportsDirectory>${env.PAAS_TESTS_HOME}/basic-db-initsql/target/surefire-reports</reportsDirectory>
-          </reportsDirectories>
-        </configuration>
-      </plugin>
-    </plugins>
-  </reporting>
 </project>
