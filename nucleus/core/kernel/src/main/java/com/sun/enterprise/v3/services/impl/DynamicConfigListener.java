@@ -161,9 +161,15 @@ public class DynamicConfigListener implements ConfigListener {
                     if (isAdminListener && ports[ports.length - 1] == -1) {
                         return null;
                     }
+                    
                     final Future future = grizzlyService.createNetworkProxy(listener);
-                    future.get(RECONFIG_LOCK_TIMEOUT_SEC, TimeUnit.SECONDS);
-                    grizzlyService.registerNetworkProxy();
+                    if (future != null) {
+                        future.get(RECONFIG_LOCK_TIMEOUT_SEC, TimeUnit.SECONDS);
+                        grizzlyService.registerNetworkProxy();
+                    } else {
+                        logger.log(Level.FINE, "Skipping proxy registration for the listener {0}",
+                                listener.getName());
+                    }
                 } else if (type == Changed.TYPE.REMOVE) {
                     if (!isAdminListener) {
                         grizzlyService.removeNetworkProxy(listener);
