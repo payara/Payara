@@ -86,8 +86,11 @@ public class DerbyPlugin implements Plugin<RDBMSServiceType> {
 
     public static final String INIT_SQL_PROPERTY="database.init.sql";
 
+    public static final String DATABASE_NAME = "database.name";
+
     private static final String DATASOURCE = "javax.sql.DataSource";
-public static final String RDBMS_ServiceType = "Database";
+
+    public static final String RDBMS_ServiceType = "Database";
 
     private static Logger logger = Logger.getLogger(DerbyPlugin.class.getName());
 
@@ -119,11 +122,8 @@ public static final String RDBMS_ServiceType = "Database";
             String defaultServiceName = dbProvisioner.getDefaultServiceName();
             List<Property> properties = new ArrayList<Property>();
             properties.add(new Property("service-type", RDBMS_ServiceType));
-            properties.add(new Property("os-name", System.getProperty("os.name"))); // default OS will be same as that of what Orchestrator is running on.
 
-            String initSqlFile = "";
             List<Property> configurations = new ArrayList<Property>();
-            configurations.add(new Property(INIT_SQL_PROPERTY, initSqlFile));
 
             ServiceDescription sd = new ServiceDescription(defaultServiceName, appName,
                     "lazy", new ServiceCharacteristics(properties), configurations);
@@ -164,9 +164,6 @@ public static final String RDBMS_ServiceType = "Database";
         String serviceName = serviceDescription.getName();
         logger.entering(getClass().getName(), "provisionService");
 
-        ArrayList<String> params;
-        String[] parameters;
-
         CommandResult result = commandRunner.run("_list-derby-services");
         if (!result.getOutput().contains(serviceName)) {
             //create-derby-service
@@ -204,41 +201,19 @@ public static final String RDBMS_ServiceType = "Database";
             throw new RuntimeException("unable to get DB service : " + serviceName);
         }
 
-        params = new ArrayList<String>();
-        if(serviceDescription.getAppName() != null){
-            params.add("--appname="+serviceDescription.getAppName());
-        }
-        params.add("servicename="+serviceName);
-        parameters = new String[params.size()];
-        parameters = params.toArray(parameters);
+        String databaseName = serviceDescription.getConfiguration("database.name");
 
-        /*result = commandRunner.run("_start-derby-service", parameters);
-        if (result.getExitStatus().equals(CommandResult.ExitStatus.FAILURE)) {
-            System.out.println("_start-derby-service [" + serviceName + "] failed");
-        }*/
-
-        Properties serviceProperties = new Properties();
-        String ipAddress = entry.getIpAddress();
-        serviceProperties.put("host", ipAddress);
-        serviceProperties.put("port", "1527"); // TODO :: grab the actual port.
-
-        DatabaseProvisioner dbProvisioner = new DerbyProvisioner();
-        Properties defaultConnPoolProperties = dbProvisioner.getDefaultConnectionProperties();
-        if(defaultConnPoolProperties != null){
-            serviceProperties.putAll(defaultConnPoolProperties);
-        }
-
-        DerbyProvisionedService dps = new DerbyProvisionedService(serviceDescription, serviceProperties);
+        DerbyProvisionedService dps = new DerbyProvisionedService(serviceDescription,
+                getServiceProperties(entry, databaseName));
         dps.setStatus(ServiceStatus.STARTED);
         return dps;
     }
 
     public ProvisionedService getProvisionedService(ServiceDescription serviceDescription, ServiceInfo serviceInfo){
-        Properties serviceProperties = new Properties();
-        String ipAddress = serviceInfo.getIpAddress();
-        serviceProperties.put("host", ipAddress);
-        serviceProperties.put("port", "1527"); // TODO :: grab the actual port.
-        DerbyProvisionedService dps = new DerbyProvisionedService(serviceDescription, serviceProperties);
+        String databaseName = serviceInfo.getProperty(DatabaseProvisioner.DATABASENAME);
+
+        DerbyProvisionedService dps = new DerbyProvisionedService(serviceDescription,
+                        getServiceProperties(serviceInfo, databaseName));
         dps.setStatus(dbServiceUtil.getServiceStatus(serviceInfo));
         return dps;
     }
@@ -281,12 +256,10 @@ public static final String RDBMS_ServiceType = "Database";
             throw new RuntimeException("unable to get DB service : " + serviceName);
         }
 
-        Properties serviceProperties = new Properties();
-        String ipAddress = entry.getIpAddress();
-        serviceProperties.put("host", ipAddress);
-        serviceProperties.put("port", "1527"); // TODO :: grab the actual port.
+        String databaseName = entry.getProperty(DatabaseProvisioner.DATABASENAME);
 
-        DerbyProvisionedService dps = new DerbyProvisionedService(serviceDescription, serviceProperties);
+        DerbyProvisionedService dps = new DerbyProvisionedService(serviceDescription,
+                        getServiceProperties(entry, databaseName));
         dps.setStatus(ServiceStatus.STARTED);
         return dps;
     }
@@ -372,4 +345,17 @@ public static final String RDBMS_ServiceType = "Database";
         return true;
     }
 
+    private Properties getServiceProperties(ServiceInfo entry, String databaseName) {
+        DatabaseProvisioner dbProvisioner = new DerbyProvisioner();
+        Properties defaultConnPoolProperties = dbProvisioner.getDefaultConnectionProperties();
+        Properties serviceProperties = new Properties();
+        String ipAddress = entry.getIpAddress();
+        serviceProperties.putAll(defaultConnPoolProperties);
+        serviceProperties.put("host", ipAddress);
+        serviceProperties.put("port", "1527"); // TODO :: grab the actual port.
+	if(databaseName != null && databaseName.trim().length() > 0) {
+            serviceProperties.put(DatabaseProvisioner.DATABASENAME, databaseName);
+	}
+        return serviceProperties;
+    }
 }

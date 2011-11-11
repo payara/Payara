@@ -48,7 +48,7 @@ import org.glassfish.paas.orchestrator.provisioning.DatabaseProvisioner;
 import org.glassfish.paas.orchestrator.provisioning.util.RemoteCommandExecutor;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
-import org.apache.tools.ant.taskdefs.SQLExec.OnError;
+
 import java.io.File;
 import java.util.Properties;
 import java.util.logging.Level;
@@ -70,6 +70,7 @@ public class DerbyProvisioner implements DatabaseProvisioner {
     private String glassFishInstallDir;
     private String userName;
     private String keyPairLocation;
+    private String derbyDatabaseName = "sample-db";
 
     public static final String DERBY_LOCAL_KEYPAIR_LOCATION = "DERBY_LOCAL_KEYPAIR_LOCATION";
 
@@ -125,7 +126,7 @@ public class DerbyProvisioner implements DatabaseProvisioner {
         Properties properties = new Properties();
         properties.put(DatabaseProvisioner.USER, DERBY_USERNAME);
         properties.put(DatabaseProvisioner.PASSWORD, DERBY_PASSWORD);
-        properties.put(DatabaseProvisioner.DATABASENAME, "sample-db");
+        properties.put(DatabaseProvisioner.DATABASENAME, derbyDatabaseName);
         properties.put("CONNECTIONATTRIBUTES", ";create\\=true");
 //        properties.put(DatabaseProvisioner.PORTNUMBER, "1527");
         properties.put(DatabaseProvisioner.RESOURCE_TYPE, "javax.sql.XADataSource");
@@ -133,9 +134,15 @@ public class DerbyProvisioner implements DatabaseProvisioner {
         return properties;
     }
 
-    public void executeInitSql(Properties dbProps, String sqlFile) {
-        try {
-            System.out.println("executing init-sql : " + sqlFile);
+    public void setDatabaseName(String databaseName) {
+        derbyDatabaseName = databaseName;
+    }
+
+    public String getDatabaseName() {
+        return derbyDatabaseName;
+    }
+
+    private void executeTask(Properties dbProps, String sqlFile) {
             Project project = new Project();
             project.init();
             SQLExec task = new SQLExec();
@@ -148,7 +155,11 @@ public class DerbyProvisioner implements DatabaseProvisioner {
             task.setUrl(url);
             task.setUserid(dbProps.getProperty(DatabaseProvisioner.USER));
             task.setPassword(dbProps.getProperty(DatabaseProvisioner.PASSWORD));
-            task.setSrc(new File(sqlFile));
+            if(sqlFile == null) {
+                task.addText("VALUES(1)");
+            } else {
+                task.setSrc(new File(sqlFile));
+            }
             task.setOnerror(error);
             Path path = new Path(project, clh.getCommonClassPath());
             path.addJavaRuntime();
@@ -156,9 +167,25 @@ public class DerbyProvisioner implements DatabaseProvisioner {
             task.setProject(project);
             task.setAutocommit(true);
             task.execute();
+    }
+
+    public void createDatabase(Properties dbProps) {
+        try {
+            System.out.println("Creating Database");
+            executeTask(dbProps, null);
+            System.out.println("Created database");
+        } catch(Exception ex) {
+            logger.log(Level.WARNING, "Database creation failed with exception : " + ex);
+        }
+    }
+
+    public void executeInitSql(Properties dbProps, String sqlFile) {
+        try {
+            System.out.println("executing init-sql : " + sqlFile);
+            executeTask(dbProps, sqlFile);
             System.out.println("Completed executing init-sql : " + sqlFile);
         } catch(Exception ex) {
-            logger.log(Level.WARNING, "Init SQL execution [ "+sqlFile+" ] failed with exception : " + ex);
+            logger.log(Level.WARNING, "Init SQL execution [ " + sqlFile + " ] failed with exception : " + ex);
         }
     }
 }

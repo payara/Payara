@@ -189,23 +189,25 @@ public class CreateDerbyService implements AdminCommand, Runnable {
                 // TODO :: create user specified database.
                 
                 // add app-scoped-service config for each vm instance as well.
-                //DatabaseProvisioner dbProvisioner = new DerbyProvisioner();//provisionerUtil.getDatabaseProvisioner();
-                //dbProvisioner.startDatabase(vm.getAddress());
+                //Get database name from application
+                String databaseName = serviceConfigurations.getProperty("database.name");
+                String ipAddress = vm.getAddress().getHostAddress();
+                if(databaseName != null && databaseName.trim().length() > 0) {
+                    derbyProvisioner.setDatabaseName(databaseName);
+                    derbyProvisioner.createDatabase(getServiceProperties(ipAddress));
+                }
                 String initSqlFile = serviceConfigurations.getProperty("database.init.sql");
                 if (initSqlFile != null && initSqlFile.trim().length() > 0) {
-                    Properties serviceProperties = new Properties();
-                    serviceProperties.putAll(derbyProvisioner.getDefaultConnectionProperties()); // TODO :: use user supplied database info.
-                    serviceProperties.put("serverName", vm.getAddress().getHostAddress());
-                    serviceProperties.put("port", "1527"); // TODO :: grab the actual port.
-                    derbyProvisioner.executeInitSql(serviceProperties, initSqlFile);
+                    derbyProvisioner.executeInitSql(getServiceProperties(ipAddress), initSqlFile);
                 }
                 ServiceInfo entry = new ServiceInfo();
                 entry.setInstanceId(vm.getName());
-                entry.setIpAddress(vm.getAddress().getHostAddress());
+                entry.setIpAddress(ipAddress);
                 entry.setState(ServiceInfo.State.Running.toString());
                 entry.setServiceName(serviceName);
                 entry.setAppName(appName);
                 entry.setServerType(ServiceType.DATABASE.toString());
+                entry.setProperty(DatabaseProvisioner.DATABASENAME, derbyProvisioner.getDatabaseName());
 
                 dbServiceUtil.registerDBInfo(entry);
             } catch (Throwable ex) {
@@ -230,5 +232,13 @@ public class CreateDerbyService implements AdminCommand, Runnable {
             entry.setServerType(ServiceType.DATABASE.toString());
             dbServiceUtil.registerDBInfo(entry);
         }
+    }
+
+    private Properties getServiceProperties(String ipAddress) {
+        Properties serviceProperties = new Properties();
+        serviceProperties.putAll(derbyProvisioner.getDefaultConnectionProperties()); // TODO :: use user supplied database info.
+        serviceProperties.put("serverName", ipAddress);
+        serviceProperties.put("port", "1527"); // TODO :: grab the actual port.
+        return serviceProperties;
     }
 }
