@@ -40,6 +40,8 @@
 
 package org.glassfish.kernel;
 
+import org.glassfish.api.event.EventTypes;
+import org.glassfish.api.event.Events;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.component.PostConstruct;
@@ -49,6 +51,7 @@ import java.io.File;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -62,12 +65,15 @@ public class FileMonitoringImpl implements FileMonitoring, PostConstruct {
 
     @Inject
     ScheduledExecutorService scheduledExecutor;
+
+    @Inject
+    Events events;
             
     final Map<File, List<FileChangeListener>> listeners = new HashMap<File, List<FileChangeListener>>();
     final Map<File, Long> monitored = new HashMap<File, Long>();
 
     public void postConstruct() {
-        scheduledExecutor.scheduleWithFixedDelay(new Runnable() {
+        final ScheduledFuture<?> future = scheduledExecutor.scheduleWithFixedDelay(new Runnable() {
             public void run() {
                 if (monitored.isEmpty()) {
                     return;
@@ -90,7 +96,15 @@ public class FileMonitoringImpl implements FileMonitoring, PostConstruct {
 
             }
         }, 0, 500, TimeUnit.MILLISECONDS);
-
+        events.register(new org.glassfish.api.event.EventListener() {
+            @Override
+            public void event(Event event) {
+                if (event.is(EventTypes.PREPARE_SHUTDOWN)) {
+                    System.out.println("FileMonitoring shutdown");
+                    future.cancel(false);
+                }
+            }
+        });
     }
 
     public synchronized void monitors(File file, FileChangeListener listener) {
