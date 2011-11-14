@@ -886,6 +886,7 @@ public abstract class SecureAdminCommand implements AdminCommand {
         try {
             report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
             run();
+            report.setMessage(Strings.get("restartReq"));
         } catch (TransactionFailure ex) {
             report.failure(context.getLogger(), Strings.get(transactionErrorMessageKey()), ex);
         } catch (SecureAdminCommandException ex) {

@@ -57,6 +57,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Iterator;
 import java.util.Properties;
 import java.util.UUID;
+import org.glassfish.grizzly.config.dom.NetworkConfig;
 import org.glassfish.grizzly.config.dom.Protocol;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
@@ -238,7 +239,17 @@ public class SecureAdminUpgradeHelper {
         /*
          * See if this config is already set up for secure admin.
          */
-        Protocol secAdminProtocol = c.getNetworkConfig().getProtocols().findProtocol(SecureAdminCommand.SEC_ADMIN_LISTENER_PROTOCOL_NAME);
+        final NetworkConfig nc = c.getNetworkConfig();
+        if (nc == null) {
+            /*
+             * If there is no network config for this configuration then it is
+             * probably a test configuration of some sort.  In any case, there
+             * is no lower-level network protocols to verify so declare this
+             * config to be OK.
+             */
+            return true;
+        }
+        Protocol secAdminProtocol = nc.getProtocols().findProtocol(SecureAdminCommand.SEC_ADMIN_LISTENER_PROTOCOL_NAME);
         if (secAdminProtocol != null) {
             return true;
         }
