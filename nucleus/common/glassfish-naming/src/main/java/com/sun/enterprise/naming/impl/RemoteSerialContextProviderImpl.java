@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,25 +41,22 @@
 package com.sun.enterprise.naming.impl;
 
 
-import java.rmi.*;
-import javax.naming.*;
-
-
-import org.omg.CORBA.ORB;
-import org.glassfish.api.naming.NamingObjectProxy;
-
-import java.util.logging.*;
-import java.util.Hashtable;
-
 import com.sun.enterprise.util.Utility;
-
+import java.rmi.Remote;
+import java.rmi.RemoteException;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+import javax.naming.*;
+import org.glassfish.api.naming.NamingObjectProxy;
+import org.omg.CORBA.ORB;
 
 /**
  * This class is the implementation of the Remote SerialContextProvider
  *
  * @author Sheetal Vartak
  */
-
 public class RemoteSerialContextProviderImpl 
     extends SerialContextProviderImpl {
 
@@ -74,23 +71,41 @@ public class RemoteSerialContextProviderImpl
 	    super(rootContext);
 
         this.orb = orb;
-
-
+    }
+    
+    @Override
+    public Hashtable list() throws RemoteException {
+        try {
+            return list("");
+        } catch (NamingException ex) {
+            throw new RemoteException(ex.getMessage(), ex);
+        }
     }
 
+    @Override
+    public Hashtable list(String name) throws NamingException, RemoteException {
+        Hashtable ne = super.list(name);
+        Set<Map.Entry> entrySet = ne.entrySet();
+        for(Iterator<Map.Entry> it = entrySet.iterator(); it.hasNext();) {
+            Object val = it.next().getValue();
+            // Issue 17219 skip non-serializable values for remote client.
+            if(!(val instanceof java.io.Serializable) || val instanceof Context) {
+                it.remove();  
+            }
+        }
+        return ne;
+    }
 
    /**
      * Create the remote object and publish it in the CosNaming name service.
      */
     static public Remote initSerialContextProvider(ORB orb, TransientContext rootContext)
 	    throws RemoteException {
-       
        return new RemoteSerialContextProviderImpl(orb, rootContext);
-
     }
         
+    @Override
     public Object lookup(String name) throws NamingException, RemoteException {
-
         Object obj = super.lookup(name);
 
         // If CORBA object, resolve here in server to prevent a
