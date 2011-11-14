@@ -258,6 +258,9 @@ public class ZipFile
 	/***********************************************************************
 	/******************************** Private ******************************
 	/***********************************************************************/
+    /* Apparently this method is never called. Don't know the history
+     * about this method so commenting it out as opposed to removing it
+     * for now.
 	private static ArrayList<String> doExplode(ZipFile zf) throws ZipFileException
         {
             ArrayList<String> finalList = new ArrayList<String>(50);
@@ -300,6 +303,7 @@ public class ZipFile
             }
             return finalList;
         }
+        */
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	
