@@ -52,7 +52,7 @@
 
 <service>
   <id>%%%NAME%%%</id>
-  <name>%%%ENTITY_NAME%%% GlassFish Server</name>
+  <name>%%%DISPLAY_NAME%%%</name>
   <description>GlassFish Server</description>
   <executable>%%%AS_ADMIN_PATH%%%</executable>
   <logpath>%%%LOCATION%%%/%%%ENTITY_NAME%%%/bin</logpath>

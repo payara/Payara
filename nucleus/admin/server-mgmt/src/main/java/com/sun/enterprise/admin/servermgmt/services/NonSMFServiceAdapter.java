@@ -57,7 +57,7 @@ import java.util.Map;
  * Meantime I'm adding new functionality (August 2010, bnevins) for instances.  I'm
  * moving implementations of the new interface methods to "ServiceAdapter" which ALL
  * services extend.
- * 
+ *
  * @author bnevins
  */
 public abstract class NonSMFServiceAdapter extends ServiceAdapter {
@@ -79,6 +79,24 @@ public abstract class NonSMFServiceAdapter extends ServiceAdapter {
     @Override
     public final String getServiceProperties() {
         return flattenedServicePropertes;
+    }
+
+    /*
+     * @author Byron Nevins
+     * 11/14/11
+     * The --serviceproperties option was being completely ignored!
+     * The existing structure is brittle, hard to understand, and has wired-in
+     * the implementation details to the interface.  I.e. there are tons of problems
+     * maintaining the code.
+     * What I'm doing here is taking the map with all of the built-in values and
+     * overlaying it with name-value pairs that the user specified.
+     * I discovered the original problem by trying to change the display name, "ENTITY_NAME"
+     * at the command line as a serviceproperty.  It was completely ignored!!
+     */
+    final Map<String, String> getFinalTokenMap() {
+        Map<String, String> map = getTokenMap();
+        map.putAll(tokensAndValues());
+        return map;
     }
 
     @Override

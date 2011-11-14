@@ -55,6 +55,7 @@ class Constants {
     static final String SERVICE_TYPE_TN = "TYPE";
     static final String CFG_LOCATION_TN = "LOCATION";
     static final String ENTITY_NAME_TN = "ENTITY_NAME";
+    static final String DISPLAY_NAME_TN = "DISPLAY_NAME";
     static final String FQSN_TN = "FQSN";
     static final String AS_ADMIN_USER_TN = "AS_ADMIN_USER";
     static final String AS_ADMIN_PASSWORD_TN = "AS_ADMIN_PASSWORD";

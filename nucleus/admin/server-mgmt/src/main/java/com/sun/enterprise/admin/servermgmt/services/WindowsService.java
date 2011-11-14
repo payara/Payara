@@ -79,7 +79,8 @@ public class WindowsService extends NonSMFServiceAdapter {
             trace("Copied from " + sourceWin32Exe + " to " + targetWin32Exe);
             getTokenMap().put(CREDENTIALS_START_TN, getAsadminCredentials("startargument"));
             getTokenMap().put(CREDENTIALS_STOP_TN, getAsadminCredentials("stopargument"));
-            ServicesUtils.tokenReplaceTemplateAtDestination(getTokenMap(), getTemplateFile().getPath(), targetXml.getPath());
+            ServicesUtils.tokenReplaceTemplateAtDestination(getFinalTokenMap(),
+                    getTemplateFile().getPath(), targetXml.getPath());
             trace("Target XML file written: " + targetXml);
             trace("**********   Object Dump  **********\n" + this.toString());
 
@@ -137,7 +138,7 @@ public class WindowsService extends NonSMFServiceAdapter {
             return Strings.get("dryrun");
 
         return Strings.get("WindowsServiceCreated", info.serviceName,
-                getServerDirs().getServerName() + " GlassFish Server",
+                getTokenMap().get(Constants.DISPLAY_NAME_TN),
                 getServerDirs().getServerDir(), targetXml, targetWin32Exe);
     }
 
@@ -188,6 +189,7 @@ public class WindowsService extends NonSMFServiceAdapter {
     @Override
     public final void initializeInternal() {
         try {
+            getTokenMap().put(DISPLAY_NAME_TN, info.serverDirs.getServerName() + " GlassFish Server");
             setTemplateFile(TEMPLATE_FILE_NAME);
             setSourceWin32Exe();
             targetDir = new File(getServerDirs().getServerDir(), TARGET_DIR);
