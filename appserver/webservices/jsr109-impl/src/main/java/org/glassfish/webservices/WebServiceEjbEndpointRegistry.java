@@ -96,7 +96,6 @@ public class WebServiceEjbEndpointRegistry implements WSEjbEndpointRegistry {
     public void registerEndpoint(WebServiceEndpoint webserviceEndpoint,
                                   EjbEndpointFacade ejbContainer,
                                   Object servant, Class tieClass)  {
-        String ctxtRoot = null;
         String uri = null;
         EjbRuntimeEndpointInfo endpoint = createEjbEndpointInfo(webserviceEndpoint, ejbContainer,servant,tieClass);
         synchronized(webServiceEjbEndpoints) {
@@ -110,7 +109,6 @@ public class WebServiceEjbEndpointRegistry implements WSEjbEndpointRegistry {
                 }
                 webServiceEjbEndpoints.put(uri, endpoint);
                 regenerateEjbContextRoots();
-                ctxtRoot = getContextRootForUri(uri);
                 if(adapterListMap.get(uri) == null) {
                     ServletAdapterList list = new ServletAdapterList();
                     adapterListMap.put(uri, list);

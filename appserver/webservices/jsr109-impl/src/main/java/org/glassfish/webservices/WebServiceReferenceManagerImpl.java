@@ -165,7 +165,9 @@ public class WebServiceReferenceManagerImpl implements WebServiceReferenceManage
                                         f = targetClass.getDeclaredField(fName);
                                     } catch(java.lang.NoSuchFieldException nsfe) {}// ignoring exception
                                 }
-                                serviceType = f.getType();
+                                if(f != null) {
+                                    serviceType = f.getType();
+                                }
                             }
                             if (target.isMethodInjectable()) {
                                 Method m = target.getMethod();
@@ -176,7 +178,7 @@ public class WebServiceReferenceManagerImpl implements WebServiceReferenceManage
                                         m = targetClass.getDeclaredMethod(mName);
                                     } catch(java.lang.NoSuchMethodException nsfe) {}// ignoring exception
                                 }
-                                if (m.getParameterTypes().length==1) {
+                                if (m != null && m.getParameterTypes().length==1) {
                                     serviceType = m.getParameterTypes()[0];
                                 }
                             }

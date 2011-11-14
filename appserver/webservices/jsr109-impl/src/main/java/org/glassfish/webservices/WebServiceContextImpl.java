@@ -66,7 +66,7 @@ public final class WebServiceContextImpl implements WSWebServiceContext {
 
     private WSWebServiceContext jaxwsContextDelegate;
 
-    private final String JAXWS_SERVLET = "org.glassfish.webservices.JAXWSServlet";
+    private static final String JAXWS_SERVLET = "org.glassfish.webservices.JAXWSServlet";
 
     private String servletName;
 

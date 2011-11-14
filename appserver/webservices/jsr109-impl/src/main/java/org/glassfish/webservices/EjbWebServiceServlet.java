@@ -73,7 +73,7 @@ import org.glassfish.ejb.spi.WSEjbEndpointRegistry;
  */
 public class EjbWebServiceServlet extends HttpServlet {
 
-    private  Logger logger = LogDomains.getLogger(this.getClass(),LogDomains.WEBSERVICES_LOGGER);
+    private  static Logger logger = LogDomains.getLogger(EjbWebServiceServlet.class,LogDomains.WEBSERVICES_LOGGER);
 
 
     private SecurityService secServ;

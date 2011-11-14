@@ -370,7 +370,7 @@ public class ServiceInvocationHandler implements InvocationHandler {
 
             Method getPorts = serviceClass.getDeclaredMethod
                     ("getPorts", noParams);
-            serviceMethodTypes.put(getPorts, new Integer(GET_PORTS));
+            serviceMethodTypes.put(getPorts, Integer.valueOf(GET_PORTS));
 
             Method getServiceName = serviceClass.getDeclaredMethod
                     ("getServiceName", noParams);
@@ -409,7 +409,7 @@ public class ServiceInvocationHandler implements InvocationHandler {
         // This case shouldn't happen since if service-ref has generated
         // service and no WSDL it won't get past deployment, but it's here
         // for completeness.
-        noWsdlIllegalMethods.add(new Integer(GENERATED_SERVICE_METHOD));
+        noWsdlIllegalMethods.add(Integer.valueOf(GENERATED_SERVICE_METHOD));
     }
 
     private void checkUnsupportedMethods(int methodType)

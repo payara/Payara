@@ -80,6 +80,8 @@ import javax.servlet.SingleThreadModel;
 import java.io.*;
 import java.net.*;
 import java.nio.channels.FileChannel;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.logging.Level;
@@ -157,9 +159,16 @@ public class WebServicesDeployer extends JavaEEDeployer<WebServicesContainer,Web
             BundleDescriptor bundle = DOLUtils.getCurrentBundleForContext(dc);
 
             String moduleCP = getModuleClassPath(dc);
-            List<URL> moduleCPUrls = ASClassLoaderUtil.getURLsFromClasspath(moduleCP, File.pathSeparator, null);
-            ClassLoader oldCl = Thread.currentThread().getContextClassLoader();
-            URLClassLoader newCl = new URLClassLoader(ASClassLoaderUtil.convertURLListToArray(moduleCPUrls), oldCl);
+            final List<URL> moduleCPUrls = ASClassLoaderUtil.getURLsFromClasspath(moduleCP, File.pathSeparator, null);
+            final ClassLoader oldCl = Thread.currentThread().getContextClassLoader();
+            URLClassLoader newCl = AccessController.doPrivileged(new PrivilegedAction<URLClassLoader>() {
+                @Override
+                public URLClassLoader run() {
+                    return new URLClassLoader(ASClassLoaderUtil.convertURLListToArray(moduleCPUrls), oldCl);
+                }
+            });
+
+
             Thread.currentThread().setContextClassLoader(newCl);
             WebServicesDescriptor wsDesc = bundle.getWebServices();
             for (WebService ws : wsDesc.getWebServices()) {
@@ -434,13 +443,16 @@ public class WebServicesDeployer extends JavaEEDeployer<WebServicesContainer,Web
                     break;
                 }
             }
+            os.flush();
         } finally {
-            if(is != null) {
-                is.close();
-            }
-            if(os != null) {
-                os.flush();
-                os.close();
+            try {
+                if (is != null) {
+                    is.close();
+                }
+            } finally {
+                if (os != null) {
+                    os.close();
+                }
             }
         }
     }

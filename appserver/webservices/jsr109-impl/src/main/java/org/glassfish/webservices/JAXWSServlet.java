@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -101,18 +101,64 @@ public class JAXWSServlet extends HttpServlet {
     private static Logger logger = LogDomains.getLogger(JAXWSServlet.class, LogDomains.WEBSERVICES_LOGGER);
     private WebServiceEndpoint endpoint;
     private String contextRoot;
-    private WebServiceEngineImpl wsEngine_;
+    private transient WebServiceEngineImpl wsEngine_;
     private boolean wsdlExposed = true;
     private String urlPattern;
 
     public void init(ServletConfig servletConfig) throws ServletException {
+        String servletName = "unknown";
+
         try {
             super.init(servletConfig);
             wsEngine_ = WebServiceEngineImpl.getInstance();
             // Register endpoints here
-            doInit(servletConfig);
-        } catch (Throwable e) {
-            throw new ServletException(e);
+
+
+            WebServiceContractImpl wscImpl = WebServiceContractImpl.getInstance();
+            ComponentEnvManager compEnvManager = wscImpl.getComponentEnvManager();
+            JndiNameEnvironment jndiNameEnv = compEnvManager.getCurrentJndiNameEnvironment();
+            WebBundleDescriptor webBundle = null;
+            if (jndiNameEnv != null && jndiNameEnv instanceof WebBundleDescriptor) {
+                webBundle = ((WebBundleDescriptor) jndiNameEnv);
+            } else {
+                throw new WebServiceException("Cannot intialize the JAXWSServlet for " + jndiNameEnv);
+            }
+
+
+            servletName = servletConfig.getServletName();
+            contextRoot = webBundle.getContextRoot();
+            WebComponentDescriptor webComponent =
+                    webBundle.getWebComponentByCanonicalName(servletName);
+
+            if (webComponent != null) {
+                WebServicesDescriptor webServices = webBundle.getWebServices();
+                Collection<WebServiceEndpoint> endpoints =
+                        webServices.getEndpointsImplementedBy(webComponent);
+                // Only 1 endpoint per servlet is supported, even though
+                // data structure implies otherwise.
+                endpoint = endpoints.iterator().next();
+            } else {
+                throw new ServletException(servletName + " not found");
+            }
+            // need to invoke the endpoint lifecylcle
+            if (!(HTTPBinding.HTTP_BINDING.equals(endpoint.getProtocolBinding()))) {
+                // Doing this so that restful service are not monitored
+                wsEngine_.createHandler(endpoint);
+            }
+            if (endpoint.getWsdlExposed() != null) {
+                wsdlExposed = Boolean.parseBoolean(endpoint.getWsdlExposed());
+            }
+            // For web components, this will be relative to the web app
+            // context root.  Make sure there is a leading slash.
+            String uri = endpoint.getEndpointAddressUri();
+            urlPattern = uri.startsWith("/") ? uri : "/" + uri;
+
+        } catch (Throwable t) {
+            logger.log(Level.WARNING, "Servlet web service endpoint '" +
+                    servletName + "' failure", t);
+            ServletException se = new ServletException();
+            se.initCause(t);
+            throw se;
         }
     }
 
@@ -215,59 +261,6 @@ public class JAXWSServlet extends HttpServlet {
             throw se;
         }
     }
-
-    private void doInit(ServletConfig servletConfig) throws ServletException {
-        String servletName = "unknown";
-
-        try {
-            WebServiceContractImpl wscImpl = WebServiceContractImpl.getInstance();
-            ComponentEnvManager compEnvManager = wscImpl.getComponentEnvManager();
-            JndiNameEnvironment jndiNameEnv = compEnvManager.getCurrentJndiNameEnvironment();
-            WebBundleDescriptor webBundle = null;
-            if (jndiNameEnv != null && jndiNameEnv instanceof WebBundleDescriptor) {
-                webBundle = ((WebBundleDescriptor) jndiNameEnv);
-            } else {
-                throw new WebServiceException("Cannot intialize the JAXWSServlet for " + jndiNameEnv);
-            }
-
-
-            servletName = servletConfig.getServletName();
-            contextRoot = webBundle.getContextRoot();
-            WebComponentDescriptor webComponent =
-                    webBundle.getWebComponentByCanonicalName(servletName);
-
-            if (webComponent != null) {
-                WebServicesDescriptor webServices = webBundle.getWebServices();
-                Collection<WebServiceEndpoint> endpoints =
-                        webServices.getEndpointsImplementedBy(webComponent);
-                // Only 1 endpoint per servlet is supported, even though
-                // data structure implies otherwise. 
-                endpoint = endpoints.iterator().next();
-            } else {
-                throw new ServletException(servletName + " not found");
-            }
-            // need to invoke the endpoint lifecylcle
-            if (!(HTTPBinding.HTTP_BINDING.equals(endpoint.getProtocolBinding()))) {
-                // Doing this so that restful service are not monitored
-                wsEngine_.createHandler(endpoint);
-            }
-            if (endpoint.getWsdlExposed() != null) {
-                wsdlExposed = Boolean.parseBoolean(endpoint.getWsdlExposed());
-            }
-            // For web components, this will be relative to the web app
-            // context root.  Make sure there is a leading slash.
-            String uri = endpoint.getEndpointAddressUri();
-            urlPattern = uri.startsWith("/") ? uri : "/" + uri;
-
-        } catch (Throwable t) {
-            logger.log(Level.WARNING, "Servlet web service endpoint '" +
-                    servletName + "' failure", t);
-            ServletException se = new ServletException();
-            se.initCause(t);
-            throw se;
-        }
-    }
-
 
     private Adapter getEndpointFor(HttpServletRequest request) {
         String path = request.getRequestURI().substring(request.getContextPath().length());
