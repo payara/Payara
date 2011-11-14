@@ -1579,11 +1579,6 @@ public class WebappClassLoader
             repositoryURLs = new URL[0];
         }
 
-        for (int j = 0; j < repositoryURLs.length; j++) {
-            System.out.println("AMY ::repositoryURLs[" + j + "]=  " + repositoryURLs[j]);
-        }
-
-
         return repositoryURLs;
 
     }
