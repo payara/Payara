@@ -244,7 +244,7 @@ public abstract class DeleteNodeRemoteCommand implements AdminCommand {
 
         ProcessManager pm = new ProcessManager(fullcommand);
         if (!pass.isEmpty())
-            pm.setStdinLines(getPasswords());
+            pm.setStdinLines(pass);
 
         if (logger.isLoggable(Level.INFO)) {
             logger.info("Running command on DAS: " + commandListToString(fullcommand));

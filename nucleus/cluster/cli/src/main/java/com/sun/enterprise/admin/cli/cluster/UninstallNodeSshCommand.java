@@ -69,8 +69,6 @@ public class UninstallNodeSshCommand extends UninstallNodeBaseCommand {
     private String sshkeyfile;
     @Inject
     private SSHLauncher sshLauncher;
-    //storing password to prevent prompting twice
-    private Map<String, char[]> sshPasswords = new HashMap<String, char[]>();
 
     @Override
     String getRawRemoteUser() {

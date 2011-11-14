@@ -41,8 +41,6 @@ package com.sun.enterprise.admin.cli.cluster;
 
 import java.io.*;
 import java.util.Arrays;
-import java.util.Map;
-import java.util.HashMap;
 import java.util.logging.Level;
 
 import org.jvnet.hk2.annotations.*;
@@ -53,7 +51,6 @@ import org.glassfish.internal.api.Globals;
 import org.glassfish.cluster.ssh.launcher.SSHLauncher;
 import org.glassfish.cluster.ssh.util.SSHUtil;
 
-import com.sun.enterprise.universal.glassfish.TokenResolver;
 import com.sun.enterprise.util.io.FileUtils;
 
 /**

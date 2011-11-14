@@ -213,7 +213,7 @@ abstract class InstallNodeBaseCommand extends NativeRemoteCommandsBase {
 
         ZipWriter writer = new ZipWriter(FileUtils.safeGetCanonicalPath(glassFishZipFile), installRoot.toString(), filesToZip);
         writer.safeWrite();
-        logger.info("Created installation zip " + glassFishZipFile.getCanonicalPath());
+        logger.info("Created installation zip " + FileUtils.safeGetCanonicalPath(glassFishZipFile));
 
         return glassFishZipFile;
     }
