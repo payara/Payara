@@ -66,6 +66,8 @@ public class MySQLDbProvisioner implements DatabaseProvisioner {
     private static final String MYSQL_USERNAME = "root";
     private static final String MYSQL_PASSWORD = "mysql";
 
+    private String mysqlDatabaseName = "foo";
+
     private static Logger logger = Logger.getLogger(MySQLDbProvisioner.class.getName());
 
     public boolean handles(Properties metaData) {
@@ -93,16 +95,22 @@ public class MySQLDbProvisioner implements DatabaseProvisioner {
         Properties properties = new Properties();
         properties.put(DatabaseProvisioner.USER, MYSQL_USERNAME);
         properties.put(DatabaseProvisioner.PASSWORD, MYSQL_PASSWORD);
-        properties.put(DatabaseProvisioner.DATABASENAME, "foo");
+        properties.put(DatabaseProvisioner.DATABASENAME, mysqlDatabaseName);
         properties.put(DatabaseProvisioner.RESOURCE_TYPE, "javax.sql.XADataSource");
         properties.put(DatabaseProvisioner.CLASSNAME, "com.mysql.jdbc.jdbc2.optional.MysqlXADataSource");
-        properties.put("CreateDatabaseIfNotExist", "true");
+        properties.put("createDatabaseIfNotExist", "true");
         return properties;
     }
 
-    public void executeInitSql(Properties dbProps, String sqlFile) {
-        try {
-            System.out.println("executing init-sql : " + sqlFile);
+    public void setDatabaseName(String databaseName) {
+        mysqlDatabaseName = databaseName;
+    }
+
+    public String getDatabaseName() {
+        return mysqlDatabaseName;
+    }
+
+    private void executeTask(Properties dbProps, String sqlFile) {
             Project project = new Project();
             project.init();
             SQLExec task = new SQLExec();
@@ -111,11 +119,16 @@ public class MySQLDbProvisioner implements DatabaseProvisioner {
             task.setDriver("com.mysql.jdbc.Driver");
             String url = "jdbc:mysql://" + dbProps.getProperty("serverName") +
                     ":" + dbProps.getProperty("port") + "/" +
-                    dbProps.getProperty(DatabaseProvisioner.DATABASENAME);
+                    dbProps.getProperty(DatabaseProvisioner.DATABASENAME) +
+                    "?createDatabaseIfNotExist=true";
             task.setUrl(url);
             task.setUserid(dbProps.getProperty(DatabaseProvisioner.USER));
             task.setPassword(dbProps.getProperty(DatabaseProvisioner.PASSWORD));
-            task.setSrc(new File(sqlFile));
+            if(sqlFile == null) {
+                task.addText("SELECT '1'");
+            } else {
+                task.setSrc(new File(sqlFile));
+            }
             task.setOnerror(error);
             Path path = new Path(project, clh.getCommonClassPath());
             path.addJavaRuntime();
@@ -123,9 +136,25 @@ public class MySQLDbProvisioner implements DatabaseProvisioner {
             task.setProject(project);
             task.setAutocommit(true);
             task.execute();
+    }
+
+    public void createDatabase(Properties dbProps) {
+        try {
+            System.out.println("Creating Database");
+            executeTask(dbProps, null);
+            System.out.println("Created database");
+        } catch(Exception ex) {
+            logger.log(Level.WARNING, "Database creation failed with exception : " + ex);
+        }
+    }
+
+    public void executeInitSql(Properties dbProps, String sqlFile) {
+        try {
+            System.out.println("executing init-sql : " + sqlFile);
+            executeTask(dbProps, sqlFile);
             System.out.println("Completed executing init-sql : " + sqlFile);
         } catch(Exception ex) {
-            logger.log(Level.WARNING, "Init SQL execution [ "+sqlFile+" ] failed with exception : " + ex);
+            logger.log(Level.WARNING, "Init SQL execution [ " + sqlFile + " ] failed with exception : " + ex);
         }
     }
 }

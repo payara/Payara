@@ -87,6 +87,8 @@ public class MySQLDBPlugin implements Plugin<RDBMSServiceType> {
 
     public static final String INIT_SQL_PROPERTY="database.init.sql";
 
+    public static final String DATABASE_NAME = "database.name";
+
     private static final String DATASOURCE = "javax.sql.DataSource";
 
     public static final String RDBMS_ServiceType = "Database";
@@ -121,11 +123,8 @@ public class MySQLDBPlugin implements Plugin<RDBMSServiceType> {
             String defaultServiceName = dbProvisioner.getDefaultServiceName();
             List<Property> properties = new ArrayList<Property>();
             properties.add(new Property("service-type", RDBMS_ServiceType));
-            properties.add(new Property("os-name", System.getProperty("os.name"))); // default OS will be same as that of what Orchestrator is running on.
 
-            String initSqlFile = "";
             List<Property> configurations = new ArrayList<Property>();
-            configurations.add(new Property(INIT_SQL_PROPERTY, initSqlFile));
 
             ServiceDescription sd = new ServiceDescription(defaultServiceName, appName,
                     "lazy", new ServiceCharacteristics(properties), configurations);
@@ -202,27 +201,11 @@ public class MySQLDBPlugin implements Plugin<RDBMSServiceType> {
             throw new RuntimeException("unable to get DB service : " + serviceName);
         }
 
-        params = new ArrayList<String>();
-        if(serviceDescription.getAppName() != null){
-            params.add("--appname="+serviceDescription.getAppName());
-        }
-        params.add("servicename="+serviceName);
-        parameters = new String[params.size()];
-        parameters = params.toArray(parameters);
+        String databaseName = entry.getProperty(DatabaseProvisioner.DATABASENAME);//serviceDescription.getConfiguration("database.name");
 
-        Properties serviceProperties = new Properties();
-        String ipAddress = entry.getIpAddress();
-        serviceProperties.put("host", ipAddress);
-        //TODO: Fix URL later for hardcodings
-        serviceProperties.put("URL", "jdbc\\:mysql\\://" + ipAddress + "\\:3306/foo");
 
-        DatabaseProvisioner dbProvisioner = new MySQLDbProvisioner();
-        Properties defaultConnPoolProperties = dbProvisioner.getDefaultConnectionProperties();
-        if(defaultConnPoolProperties != null){
-            serviceProperties.putAll(defaultConnPoolProperties);
-        }
-
-        return new MySQLDbProvisionedService(serviceDescription, serviceProperties, ServiceStatus.STARTED);
+        return new MySQLDbProvisionedService(serviceDescription,
+                getServiceProperties(entry, databaseName), ServiceStatus.STARTED);
     }
 
     public void associateServices(ProvisionedService serviceConsumer, ServiceReference svcRef,
@@ -235,14 +218,10 @@ public class MySQLDBPlugin implements Plugin<RDBMSServiceType> {
     }
 
     public ProvisionedService getProvisionedService(ServiceDescription serviceDescription, ServiceInfo serviceInfo){
-        String serviceName = serviceDescription.getName();
-        Properties serviceProperties = new Properties();
-        String ipAddress = serviceInfo.getIpAddress();
-        serviceProperties.put("host", ipAddress);
-        //TODO: Fix URL later for hardcodings
-        serviceProperties.put("URL", "jdbc\\:mysql\\://" + ipAddress + "\\:3306/foo");
+        String databaseName = serviceInfo.getProperty(DatabaseProvisioner.DATABASENAME);
 
-        return new MySQLDbProvisionedService(serviceDescription, serviceProperties,
+        return new MySQLDbProvisionedService(serviceDescription,
+                getServiceProperties(serviceInfo, databaseName),
                 serviceUtil.getServiceStatus(serviceInfo));
     }
 
@@ -256,13 +235,8 @@ public class MySQLDBPlugin implements Plugin<RDBMSServiceType> {
             throw new RuntimeException("unable to get DB service : " + serviceName);
         }
 
-        Properties serviceProperties = new Properties();
-        String ipAddress = entry.getIpAddress();
-        serviceProperties.put("host", ipAddress);
-        //TODO: Fix URL later for hardcodings
-        serviceProperties.put("URL", "jdbc\\:mysql\\://" + ipAddress + "\\:3306/foo");
-
-        return new MySQLDbProvisionedService(serviceDescription, serviceProperties,
+        String databaseName = entry.getProperty(DatabaseProvisioner.DATABASENAME);
+        return new MySQLDbProvisionedService(serviceDescription, getServiceProperties(entry, databaseName),
                 serviceUtil.getServiceStatus(serviceInfo));
     }
 
@@ -326,7 +300,21 @@ public class MySQLDBPlugin implements Plugin<RDBMSServiceType> {
     public boolean reassociateServices(ProvisionedService svcConsumer, 
             ProvisionedService oldSvcProvider, ProvisionedService newSvcProvider, 
             ServiceOrchestrator.ReconfigAction reason) {
-	//TODO : reassociate services after scaling
-	return true;
+        // TODO :: reassociate services after scaling.
+        return true;
+    }
+
+    private Properties getServiceProperties(ServiceInfo entry, String databaseName) {
+        DatabaseProvisioner dbProvisioner = new MySQLDbProvisioner();
+        Properties defaultConnPoolProperties = dbProvisioner.getDefaultConnectionProperties();
+        Properties serviceProperties = new Properties();
+        String ipAddress = entry.getIpAddress();
+        serviceProperties.putAll(defaultConnPoolProperties);
+        serviceProperties.put("host", ipAddress);
+        serviceProperties.put("URL", "jdbc\\:mysql\\://" + ipAddress + "\\:3306/" + databaseName); // TODO :: grab the actual port.
+        if(databaseName != null && databaseName.trim().length() > 0) {
+            serviceProperties.put(DatabaseProvisioner.DATABASENAME, databaseName);
+        }
+        return serviceProperties;
     }
 }
