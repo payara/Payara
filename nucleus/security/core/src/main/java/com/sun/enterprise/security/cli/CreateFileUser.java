@@ -40,6 +40,7 @@
 
 package com.sun.enterprise.security.cli;
 
+import com.sun.enterprise.config.serverbeans.AdminService;
 import java.util.List;
 import java.util.ArrayList;
 
@@ -57,6 +58,7 @@ import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.config.serverbeans.AuthRealm;
 import com.sun.enterprise.config.serverbeans.Configs;
 import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.config.serverbeans.SecureAdmin;
 import com.sun.enterprise.security.auth.realm.file.FileRealm;
 import com.sun.enterprise.security.auth.realm.Realm;
 import com.sun.enterprise.config.serverbeans.SecurityService;
@@ -136,6 +138,11 @@ public class CreateFileUser implements /*UndoableCommand*/ AdminCommand {
 
     @Inject
     private ServerEnvironment se;
+    
+    @Inject
+    private AdminService adminService;
+    
+    private SecureAdmin secureAdmin = null;
 
     /**
      * Executes the command with the command parameters passed as Properties
@@ -243,6 +250,17 @@ public class CreateFileUser implements /*UndoableCommand*/ AdminCommand {
             return;
         }
         
+        //Issue 17525 Fix - Check for null passwords for admin-realm if secureadmin is enabled
+        secureAdmin = domain.getSecureAdmin();
+        if ((SecureAdmin.Util.isEnabled(secureAdmin))
+                && (authRealmName.equals(adminService.getAuthRealmName()))) {
+            if ((password == null) || (password.isEmpty())) {
+                report.setMessage(localStrings.getLocalString(
+                        "null_empty_password","The admin user password is null or empty"));
+                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                return;
+            }           
+        }
         // now adding user
         try {
             //even though create-file-user is not an update to the security-service

@@ -40,6 +40,7 @@
 
 package com.sun.enterprise.security.cli;
 
+import com.sun.enterprise.config.serverbeans.AdminService;
 import java.util.List;
 
 import org.glassfish.api.admin.AdminCommand;
@@ -57,6 +58,7 @@ import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.config.serverbeans.AuthRealm;
 import com.sun.enterprise.config.serverbeans.Configs;
 import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.config.serverbeans.SecureAdmin;
 import com.sun.enterprise.security.auth.realm.file.FileRealm;
 import com.sun.enterprise.security.auth.realm.NoSuchRealmException;
 import com.sun.enterprise.config.serverbeans.SecurityService;
@@ -126,8 +128,14 @@ public class UpdateFileUser implements AdminCommand {
 
     @Inject
     private Domain domain;
+    
     @Inject
     private RealmsManager realmsManager;
+    
+    @Inject
+    private AdminService adminService;
+    
+    private SecureAdmin secureAdmin = null;
 
     /**
      * Executes the command with the command parameters passed as Properties
@@ -231,6 +239,19 @@ public class UpdateFileUser implements AdminCommand {
               + "in --passwordfile option", userName));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             return;
+        }
+        //Issue 17525 Fix - Check for null passwords for admin-realm if secureadmin is enabled
+        if (password != null) {
+            secureAdmin = domain.getSecureAdmin();
+            if ((SecureAdmin.Util.isEnabled(secureAdmin))
+                    && (adminService.getAuthRealmName().equals(authRealmName))) {
+                if ((password.isEmpty())) {
+                    report.setMessage(localStrings.getLocalString(
+                            "null_empty_password", "The admin user password is empty"));
+                    report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                    return;
+                }
+            }
         }
 
         //even though update-file-user is not an update to the security-service
