@@ -46,7 +46,7 @@ conf = imp.load_source("pkg_conf", "../pkg_conf.py")
 
 pkg = {
     "name"          : "jersey",
-    "version"       : "1.10,0-1.12",
+    "version"       : "1.11,0-0.2",
     "attributes"    : { "pkg.summary" : "Jersey Core, RESTful Web services for GlassFish",
                         "pkg.description" : 
 "Jersey core runtime libraries including some 3rd party dependencies. \
