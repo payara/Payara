@@ -39,31 +39,69 @@
  */
 package com.sun.enterprise.v3.server;
 
-import org.glassfish.internal.api.Init;
-import org.glassfish.internal.api.InitRunLevel;
+
+import com.sun.enterprise.util.Result;
+import org.glassfish.api.FutureProvider;
+import org.glassfish.api.Startup;
+import org.glassfish.api.StartupRunLevel;
 import org.jvnet.hk2.annotations.Priority;
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.component.Inhabitant;
 import org.jvnet.hk2.component.RunLevelService;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.Future;
+
+
 /**
- * Provides a bridge from {@link Init} to the {@link RunLevelService} based
- * approach.
+ * Provides a bridge from {@link Startup} to the {@link RunLevelService} based approach.
+ * Also implements {@link FutureProvider} to provide a list of {@link Future futures} for
+ * startup service inhabitant activation.
  * 
  * @author Jeff Trent
+ * @author Tom Beerbower
  */
 @SuppressWarnings("deprecation")
-@InitRunLevel
-@Priority(2) // we want to be one of the first ones to run
+@Priority(2) // run early
+@StartupRunLevel
 @Service
-public class InitRunLevelBridge extends RunLevelBridge {
+public class StartupRunLevelBridge extends RunLevelBridge implements FutureProvider<Result<Thread>>{
+
+    // ----- data members ----------------------------------------------------
+    /**
+     * List of futures obtained from services that implement {@link FutureProvider}.
+     */
+    private final ArrayList<Future<Result<Thread>>> futures = new ArrayList<Future<Result<Thread>>>();
+
 
     // ----- Constructors ----------------------------------------------------
 
-    public InitRunLevelBridge() {
-        super(Init.class);
+    public StartupRunLevelBridge() {
+        super(Startup.class);
     }
 
-    public InitRunLevelBridge(Class bridgeClass, Class additionalShutdownClass) {
-        super(bridgeClass, additionalShutdownClass);
+    public StartupRunLevelBridge(Class additionalShutdownClass) {
+        super(Startup.class, additionalShutdownClass);
+    }
+
+
+    // ----- RunLevelBridge overrides ----------------------------------------
+
+    @Override
+    protected void activate(Inhabitant<?> i) {
+        Object service = i.get();
+
+        if (service instanceof FutureProvider) {
+            futures.addAll(((FutureProvider) service).getFutures());
+        }
+    }
+
+
+    // ----- FutureProvider --------------------------------------------------
+
+    @Override
+    public List<Future<Result<Thread>>> getFutures() {
+        return futures;
     }
 }

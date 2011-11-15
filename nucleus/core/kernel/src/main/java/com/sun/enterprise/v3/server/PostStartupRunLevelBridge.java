@@ -39,31 +39,34 @@
  */
 package com.sun.enterprise.v3.server;
 
-import org.glassfish.internal.api.Init;
-import org.glassfish.internal.api.InitRunLevel;
+
+import org.glassfish.internal.api.PostStartup;
+import org.glassfish.internal.api.PostStartupRunLevel;
 import org.jvnet.hk2.annotations.Priority;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.RunLevelService;
 
+
 /**
- * Provides a bridge from {@link Init} to the {@link RunLevelService} based
- * approach.
+ * Provides a bridge from {@link PostStartup}
+ * to the {@link RunLevelService} based approach.
  * 
  * @author Jeff Trent
+ * @author Tom Beerbower
  */
 @SuppressWarnings("deprecation")
-@InitRunLevel
-@Priority(2) // we want to be one of the first ones to run
+@PostStartupRunLevel
+@Priority(2) // run early
 @Service
-public class InitRunLevelBridge extends RunLevelBridge {
+public class PostStartupRunLevelBridge extends RunLevelBridge {
 
     // ----- Constructors ----------------------------------------------------
 
-    public InitRunLevelBridge() {
-        super(Init.class);
+    public PostStartupRunLevelBridge() {
+        super(PostStartup.class);
     }
 
-    public InitRunLevelBridge(Class bridgeClass, Class additionalShutdownClass) {
-        super(bridgeClass, additionalShutdownClass);
+    public PostStartupRunLevelBridge(Class additionalShutdownClass) {
+        super(PostStartup.class, additionalShutdownClass);
     }
 }

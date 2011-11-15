@@ -40,23 +40,33 @@
 
 package com.sun.enterprise.v3.server;
 
-import com.sun.enterprise.v3.common.DoNothingActionReporter;
-import java.util.*;
-import java.util.concurrent.*;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.sun.enterprise.module.*;
+import com.sun.appserv.server.util.Version;
+import com.sun.enterprise.module.Module;
+import com.sun.enterprise.module.ModuleState;
+import com.sun.enterprise.module.ModulesRegistry;
 import com.sun.enterprise.module.bootstrap.ModuleStartup;
 import com.sun.enterprise.module.bootstrap.StartupContext;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.Result;
+import com.sun.enterprise.v3.common.DoNothingActionReporter;
 import com.sun.hk2.component.ExistingSingletonInhabitant;
 import com.sun.logging.LogDomains;
-import com.sun.appserv.server.util.Version;
 import org.glassfish.api.Async;
 import org.glassfish.api.FutureProvider;
-import org.glassfish.api.Startup;
+import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.CommandRunner;
 import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.api.admin.ProcessEnvironment;
@@ -66,17 +76,18 @@ import org.glassfish.api.event.EventTypes;
 import org.glassfish.api.event.Events;
 import org.glassfish.hk2.RunLevelDefaultScope;
 import org.glassfish.internal.api.InitRunLevel;
-import org.glassfish.internal.api.PostStartup;
 import org.glassfish.internal.api.PostStartupRunLevel;
 import org.glassfish.server.ServerEnvironmentImpl;
-import org.jvnet.hk2.annotations.*;
-import org.jvnet.hk2.component.ComponentException;
+import org.jvnet.hk2.annotations.Inject;
+import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.Inhabitant;
+import org.jvnet.hk2.component.InhabitantActivator;
 import org.jvnet.hk2.component.RunLevelListener;
 import org.jvnet.hk2.component.RunLevelService;
 import org.jvnet.hk2.component.RunLevelState;
 import org.jvnet.hk2.component.ServiceContext;
+
 
 /**
  * Main class for Glassfish v3 startup
@@ -93,6 +104,7 @@ public class AppServerStartup implements ModuleStartup {
     StartupContext context;
 
     final static Logger logger = LogDomains.getLogger(AppServerStartup.class, LogDomains.CORE_LOGGER);
+
     final static Level level = Level.FINE;
 
     @Inject
@@ -127,18 +139,20 @@ public class AppServerStartup implements ModuleStartup {
     @Inject
     RunLevelService<?> rls;
 
-    private RLListener rlsListener;
-    
-    boolean shutdownRequested;
-    
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ApplicationLifecycle.class);
-    
+    private long platformInitTime;
+
+    private String platform = System.getProperty("GlassFish_Platform");
+
+    private final Map<Class, Long> servicesTiming = new HashMap<Class, Long>();
+
+    private final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ApplicationLifecycle.class);
 
     /**
      * A keep alive thread that keeps the server JVM from going down
      * as long as GlassFish kernel is up.
      */
     private Thread serverThread;
+
 
     public synchronized void start() {
         ClassLoader origCL = Thread.currentThread().getContextClassLoader();
@@ -190,7 +204,7 @@ public class AppServerStartup implements ModuleStartup {
         serverThread.setDaemon(false);
         serverThread.start();
 
-        // wait until we have spwaned a non-daemon thread
+        // wait until we have spawned a non-daemon thread
         try {
             latch.await();
         } catch (InterruptedException e) {
@@ -200,20 +214,21 @@ public class AppServerStartup implements ModuleStartup {
 
     public void run() {
         
-        String platform = System.getProperty("GlassFish_Platform");
-        if (platform==null) {
-            platform = "Embedded";
-        }
         if (context==null) {
             System.err.println("Startup context not provided, cannot continue");
             return;
         }
-        final long platformInitTime = System.currentTimeMillis();
+
+        if (platform==null) {
+            platform = "Embedded";
+        }
+
+        platformInitTime = System.currentTimeMillis();
+
         if (logger.isLoggable(level)) {
             logger.log(level, "Startup class : {0}", getClass().getName());
         }
 
-        
         // prepare the global variables
         habitat.addComponent(this);
         habitat.addComponent(systemRegistry);
@@ -234,137 +249,12 @@ public class AppServerStartup implements ModuleStartup {
                     new ProcessEnvironment(ProcessEnvironment.ProcessType.Server)));
         }
 
-        Map<Class, Long> servicesTiming = new HashMap<Class, Long>();
-
-        // prepare for listening to the results of the RunLevelService
-        synchronized (this) {
-            if (null == rlsListener) {
-                rlsListener = new RLListener();
-            }
-            rlsListener.register();
-        }
-
-        // start-up through the init level
-        shutdownRequested = false;
-        rls.proceedTo(InitRunLevel.VAL);
-        if (shutdownRequested) {
-            shutdown();
-            return;
-        }
-
-        // run the startup services
-        final Collection<Inhabitant<? extends Startup>> startups = habitat.getInhabitants(Startup.class);
-        PriorityQueue<Inhabitant<? extends Startup>> startupSvcs;
-        startupSvcs = new PriorityQueue<Inhabitant<? extends Startup>>(startups.size(), RunLevelBridge.getInhabitantComparator());
-        startupSvcs.addAll(startups);
-
-        ArrayList<Future<Result<Thread>>> futures = new ArrayList<Future<Result<Thread>>>();
-        while (!startupSvcs.isEmpty()) {
-            final Inhabitant<? extends Startup> i=startupSvcs.poll();
-            if (i.type().getAnnotation(Async.class)==null) {
-                long start = System.currentTimeMillis();
-                try {
-                    if (logger.isLoggable(level)) {
-                        logger.log(level, "Running Startup services " + i.type());
-                    }
-                    Startup startup = i.get();
-                    if (logger.isLoggable(level)) {
-                        logger.log(level, "Startup services finished" + startup);
-                    }
-                    // the synchronous service was started successfully, let's check that it's not in fact a FutureProvider
-                    if (startup instanceof FutureProvider) {
-                        futures.addAll(((FutureProvider) startup).getFutures());
-                    }
-                } catch(RuntimeException e) {
-                    logger.log(level, e.getMessage(), e);
-                    logger.log(Level.SEVERE,
-                            localStrings.getLocalString("startupservicefailure",
-                                    "Startup service failed to start {0} due to {1} ", i.typeName(), e.getMessage()));
-                    events.send(new Event(EventTypes.SERVER_SHUTDOWN));
-                    shutdown();
-                    return;
-
-                }
-                if (logger.isLoggable(level)) {
-                    servicesTiming.put(i.type(), (System.currentTimeMillis() - start));
-                }
+        // activate the run level services
+        if (proceedTo(InitRunLevel.VAL, new InitInhabitantActivator())) {
+            if (proceedTo(StartupRunLevel.VAL, new StartupInhabitantActivator())) {
+                proceedTo(PostStartupRunLevel.VAL, new PostStartupInhabitantActivator());
             }
         }
-
-        // the new way
-        rls.proceedTo(PostStartupRunLevel.VAL);
-        if (shutdownRequested) {
-            shutdown();
-            return;
-        }
-
-        env.setStatus(ServerEnvironment.Status.starting);        
-        events.send(new Event(EventTypes.SERVER_STARTUP), false);
-
-        // finally let's calculate our starting times
-        logger.info(localStrings.getLocalString("startup_end_message",
-                "{0} ({1}) startup time : {2} ({3}ms), startup services({4}ms), total({5}ms)",
-                version.getVersion(), version.getBuildVersion(), platform,
-                (platformInitTime - context.getCreationTime()),
-                (System.currentTimeMillis() - platformInitTime),
-                System.currentTimeMillis() - context.getCreationTime()));
-
-        printModuleStatus(systemRegistry, level);
-
-        try {
-			// it will only be set when called from AsadminMain and the env. variable AS_DEBUG is set to true
-            long realstart = Long.parseLong(System.getProperty("WALL_CLOCK_START"));
-            logger.info("TOTAL TIME INCLUDING CLI: "  + (System.currentTimeMillis() - realstart));
-        }
-        catch(Exception e) {
-        }
-
-        if (logger.isLoggable(level)) {
-            for (Map.Entry<Class, Long> service : servicesTiming.entrySet()) {
-                logger.log(level, "Service : " + service.getKey() + " took " + service.getValue() + " ms");
-            }
-        }
-
-        // all the synchronous and asynchronous services have started correctly, time to check
-        // if a severe error happened that should trigger shutdown.
-        if (shutdownRequested) {
-            shutdown();
-            return;
-        }   else {
-            for (Future<Result<Thread>> future : futures) {
-                try {
-                    try {
-                        // wait for 3 seconds for an eventual status, otherwise ignore
-                        if (future.get(3, TimeUnit.SECONDS).isFailure()) {
-                            final Throwable t = future.get().exception();
-                            logger.log(Level.SEVERE,
-                                    localStrings.getLocalString("startupfatalstartup",
-                                            "Shutting down v3 due to startup exception : ",
-                                            t.getMessage()));
-                            logger.log(level, future.get().exception().getMessage(), t);
-                            events.send(new Event(EventTypes.SERVER_SHUTDOWN));
-                            shutdown();
-                            return;
-                        }
-                    } catch(TimeoutException e) {
-                        logger.warning(localStrings.getLocalString("startupwaittimeout",
-                                "Timed out, ignoring some startup service status"));
-                    }
-                } catch(Throwable t) {
-                    logger.log(Level.SEVERE, t.getMessage(), t);    
-                }
-            }
-        }
-
-        env.setStatus(ServerEnvironment.Status.started);
-        events.send(new Event(EventTypes.SERVER_READY), false);
-        pidWriter.writePidFile();
-
-        // now run the post Startup service
-        for (Inhabitant<? extends PostStartup> postStartup : habitat.getInhabitants(PostStartup.class)) {
-            postStartup.get();
-        }
-        printModuleStatus(systemRegistry, level);
     }
 
     public static void printModuleStatus(ModulesRegistry registry, Level level) {
@@ -425,61 +315,17 @@ public class AppServerStartup implements ModuleStartup {
         env.setStatus(ServerEnvironment.Status.stopping);
         events.send(new Event(EventTypes.PREPARE_SHUTDOWN), false);
 
-        // TODO: old way, replace with RunLevelService
-        try {
+        // deactivate the run level services
+        proceedTo(InitRunLevel.VAL, new AppServerInhabitantActivator());
 
-            // Startup and PostStartup are merged acoording to their priority level and released
-            Collection<Inhabitant<? extends Startup>> startups = habitat.getInhabitants(Startup.class);
-            Collection<Inhabitant<? extends PostStartup>> postStartups = habitat.getInhabitants(PostStartup.class);
+        // first send the shutdown event synchronously
+        env.setStatus(ServerEnvironment.Status.stopped);
+        events.send(new Event(EventTypes.SERVER_SHUTDOWN), false);
 
-            PriorityQueue<Inhabitant<?>> mergedStartup = new PriorityQueue<Inhabitant<?>>(
-                    startups.size()+postStartups.size(), RunLevelBridge.getInhabitantComparator());
-            mergedStartup.addAll(postStartups);
-            mergedStartup.addAll(startups);
-
-            // run startup services in reversed order.
-            List<Inhabitant<?>> services = new ArrayList<Inhabitant<?>>();
-            while (!mergedStartup.isEmpty()) {
-                services.add(mergedStartup.poll());
-            }
-            Collections.reverse(services);
-
-            for (Inhabitant<?> svc : services) {
-                if (svc.isActive()) {
-                    try {
-                        if (logger.isLoggable(level)) {
-                            logger.log(level, "Releasing services {0}", svc.type());
-                        }
-                        svc.release();
-                    } catch(Throwable e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-
-            // the new way
-            rls.proceedTo(InitRunLevel.VAL);
-
-
-            // first send the shutdown event synchronously
-            env.setStatus(ServerEnvironment.Status.stopped);
-            events.send(new Event(EventTypes.SERVER_SHUTDOWN), false);
-
-        } catch(ComponentException e) {
-            // do nothing.
-        }
-
-        
-        // the new way
         rls.proceedTo(0);
-        if (null != rlsListener) {
-            rlsListener.unregister();
-            rlsListener = null;
-        }
-        
-        logger.info(localStrings.getLocalString("shutdownfinished","Shutdown procedure finished"));            
 
-        
+        logger.info(localStrings.getLocalString("shutdownfinished","Shutdown procedure finished"));
+
         // notify the server thread that we are done, so that it can come out.
         if (serverThread!=null) {
             synchronized (serverThread) {
@@ -493,63 +339,298 @@ public class AppServerStartup implements ModuleStartup {
         }
     }
 
+    /**
+     * Proceed to the given run level using the given {@link AppServerInhabitantActivator}.
+     *
+     * @param runLevel   the run level to proceed to
+     * @param activator  an {@link AppServerInhabitantActivator activator} used to
+     *                   activate/deactivate the services
+     * @return false if an error occurred that required server shutdown; true otherwise
+     */
+    private boolean proceedTo(int runLevel, AppServerInhabitantActivator activator) {
+
+        // set up the run level listener
+        habitat.addIndex(new ExistingSingletonInhabitant<RunLevelListener>(activator),
+                RunLevelListener.class.getName(), null);
+        try {
+            // set up the activator
+            habitat.addIndex(new ExistingSingletonInhabitant<InhabitantActivator>(activator),
+                    InhabitantActivator.class.getName(), null);
+            try {
+                rls.proceedTo(runLevel);
+            } catch (Exception e) {
+                logger.log(Level.SEVERE, "Shutdown required", e);
+                shutdown();
+                return false;
+            } finally {
+                habitat.removeIndex(InhabitantActivator.class.getName(), null);
+            }
+        } finally {
+            habitat.removeIndex(RunLevelListener.class.getName(), null);
+        }
+        return !activator.isShutdown();
+    }
+
+
+    // ----- AppServerInhabitantActivator inner class ------------------------
 
     /**
-     * Receives notifications during startup and shutdown.
-     * 
-     * If there are any problems (i.e., exceptions) during startup we set a flag that the app server should shutdown.
-     * 
-     * We register the listener only during the lifetime of the app server because Hk2 by default seeks out all applicable
-     * RunLevelListener types and instantiates them to receive notifications.  This, however, messes up ACC because it
-     * changes the habitat before we are called.  We need to not get callbacks too early in another words.
+     * Implementation of {@link InhabitantActivator} used to activate/deactivate the application server
+     * run level services.  Also implements {@link RunLevelListener} to receive notifications during
+     * startup and shutdown.  If there are any problems (i.e., exceptions) during startup we set a
+     * flag that the app server should shutdown.
      */
-    private class RLListener implements RunLevelListener {
-        private Inhabitant<RunLevelListener> self;
-        
-        private synchronized void register() {
-            if (null == self) {
-                logger.log(level, "registering runlevel listener");
-                // TODO: replace with Hk2 v2
-                self = new ExistingSingletonInhabitant(RunLevelListener.class, this);
-                habitat.add(self);
-                habitat.addIndex(self, RunLevelListener.class.getName(), null);
-            }
-        }
-        
-        private synchronized void unregister() {
-            if (null != self) {
-                logger.log(level, "unregistering runlevel listener");
-                boolean removed = habitat.remove(self);
-                assert(removed);
-                removed = habitat.removeIndex(RunLevelListener.class.getName(), self);
-                assert(removed);
-                self = null;
-            }
-        }
-        
+    private class AppServerInhabitantActivator
+            implements InhabitantActivator, RunLevelListener {
+
+        // ----- data members --------------------------------------------
+
+        /**
+         * Indicates whether or not a problem occurred that required a shutdown.
+         */
+        protected boolean shutdown;
+
+
+        // ----- InhabitantActivator -------------------------------------
+
         @Override
-        public void onCancelled(RunLevelState<?> state, ServiceContext ctx, int previousProceedTo, boolean isInterrupt) {
-            if (RunLevelDefaultScope.class.getName().equals(state.getScopeName())) {
-                logger.log(Level.INFO, "shutdown requested");
-                shutdownRequested = true;
+        public void activate(Inhabitant<?> inhabitant) {
+            inhabitant.get();
+        }
+
+        @Override
+        public void deactivate(Inhabitant<?> inhabitant) {
+            if (inhabitant.isActive()) {
+                try {
+                    if (logger.isLoggable(level)) {
+                        logger.log(level, "Releasing services {0}", inhabitant.type());
+                    }
+                    inhabitant.release();
+                } catch(Throwable e) {
+                    e.printStackTrace();
+                }
             }
         }
 
         @Override
-        public void onError(RunLevelState<?> state, ServiceContext ctx, Throwable t, boolean willContinue) {
+        public void awaitCompletion() throws ExecutionException, InterruptedException, TimeoutException {
+        }
+
+        @Override
+        public void awaitCompletion(long timeout, TimeUnit unit)
+                throws ExecutionException, InterruptedException, TimeoutException {
+            awaitCompletion();
+        }
+
+
+        // ----- RunLevelListener ----------------------------------------
+
+        @Override
+        public void onCancelled(RunLevelState<?> state, ServiceContext ctx,
+                                int previousProceedTo, boolean isInterrupt) {
+            if (RunLevelDefaultScope.class.getName().equals(state.getScopeName())) {
+                logger.log(Level.INFO, "shutdown requested");
+                forceShutdown();
+            }
+        }
+
+        @Override
+        public void onError(RunLevelState<?> state, ServiceContext ctx,
+                            Throwable t, boolean willContinue) {
             if (RunLevelDefaultScope.class.getName().equals(state.getScopeName())) {
                 logger.log(Level.INFO, "shutdown requested", t);
-                shutdownRequested = true;
+                forceShutdown();
             }
         }
 
         @Override
         public void onProgress(RunLevelState<?> state) {
-            // don't care that much about state changes
             if (RunLevelDefaultScope.class.getName().equals(state.getScopeName())) {
                 logger.log(level, "progress event: {0}", state);
             }
         }
+
+
+        // ----- accessors -----------------------------------------------
+
+        /**
+         * Determine whether or not a problem occurred that required a shutdown.
+         *
+         * @return true if a problem occurred that required a shutdown; false otherwise
+         */
+        public boolean isShutdown() {
+            return shutdown;
+        }
+
+
+        // ----- helper methods ------------------------------------------
+
+        /**
+         * Force a shutdown of this {@link AppServerStartup} instance.
+         */
+        protected void forceShutdown() {
+            shutdown = true;
+            shutdown();
+        }
     }
-    
+
+
+    // ----- InitInhabitantActivator inner class -----------------------------
+
+    /**
+     * Inhabitant activator for the init services.
+     */
+    private class InitInhabitantActivator extends AppServerInhabitantActivator {
+
+        @Override
+        public void activate(Inhabitant<?> inhabitant) {
+            long start = System.currentTimeMillis();
+
+            inhabitant.get();
+
+            if (logger.isLoggable(level)) {
+                Class<?> type = inhabitant.type();
+
+                long finish = System.currentTimeMillis();
+                logger.log(level, type + " Init done in " +
+                        (finish - context.getCreationTime()) + " ms");
+                servicesTiming.put(type, (finish - start));
+            }
+        }
+    }
+
+
+    // ----- StartupInhabitantActivator inner class --------------------------
+
+    /**
+     * Inhabitant activator for the startup services.
+     */
+    private class StartupInhabitantActivator extends AppServerInhabitantActivator {
+
+        /**
+         * List of {@link Future futures} for {@link AppServerInhabitantActivator#awaitCompletion}.
+         */
+        private ArrayList<Future<Result<Thread>>> futures = new ArrayList<Future<Result<Thread>>>();
+
+        @Override
+        public void activate(Inhabitant<?> inhabitant) {
+            Class<?> type = inhabitant.type();
+
+            if (type.getAnnotation(Async.class)==null) {
+                long start = System.currentTimeMillis();
+                try {
+                    if (logger.isLoggable(level)) {
+                        logger.log(level, "Running Startup services " + type);
+                    }
+
+                    Object startup = inhabitant.get();
+
+                    if (logger.isLoggable(level)) {
+                        logger.log(level, "Startup services finished" + startup);
+                    }
+                    // the synchronous service was started successfully,
+                    // let's check that it's not in fact a FutureProvider
+                    if (startup instanceof FutureProvider) {
+                        futures.addAll(((FutureProvider) startup).getFutures());
+                    }
+                } catch(RuntimeException e) {
+                    logger.log(level, e.getMessage(), e);
+                    logger.log(Level.SEVERE, localStrings.getLocalString("startupservicefailure",
+                            "Startup service failed to start {0} due to {1} ",
+                            inhabitant.typeName(), e.getMessage()));
+                    events.send(new Event(EventTypes.SERVER_SHUTDOWN));
+                    forceShutdown();
+                    return;
+                }
+                if (logger.isLoggable(level)) {
+                    servicesTiming.put(type, (System.currentTimeMillis() - start));
+                }
+            }
+        }
+
+        @Override
+        public void awaitCompletion() throws ExecutionException, InterruptedException, TimeoutException {
+            awaitCompletion(3, TimeUnit.SECONDS);
+        }
+
+        @Override
+        public void awaitCompletion(long timeout, TimeUnit unit)
+                throws ExecutionException, InterruptedException, TimeoutException {
+
+            if (isShutdown()) {
+                return;
+            }
+
+            env.setStatus(ServerEnvironment.Status.starting);
+            events.send(new Event(EventTypes.SERVER_STARTUP), false);
+
+            // finally let's calculate our starting times
+            logger.info(localStrings.getLocalString("startup_end_message",
+                    "{0} ({1}) startup time : {2} ({3}ms), startup services({4}ms), total({5}ms)",
+                    Version.getVersion(), Version.getBuildVersion(), platform,
+                    (platformInitTime - context.getCreationTime()),
+                    (System.currentTimeMillis() - platformInitTime),
+                    System.currentTimeMillis() - context.getCreationTime()));
+
+            printModuleStatus(systemRegistry, level);
+
+            try {
+                // it will only be set when called from AsadminMain and the env. variable AS_DEBUG is set to true
+                long realstart = Long.parseLong(System.getProperty("WALL_CLOCK_START"));
+                logger.info("TOTAL TIME INCLUDING CLI: "  + (System.currentTimeMillis() - realstart));
+            }
+            catch(Exception e) {
+                // do nothing.
+            }
+
+            if (logger.isLoggable(level)) {
+                for (Map.Entry<Class, Long> service : servicesTiming.entrySet()) {
+                    logger.log(level, "Service : " + service.getKey() + " took " + service.getValue() + " ms");
+                }
+            }
+
+            for (Future<Result<Thread>> future : futures) {
+                try {
+                    try {
+                        // wait for an eventual status, otherwise ignore
+                        if (future.get(timeout, unit).isFailure()) {
+                            final Throwable t = future.get().exception();
+                            logger.log(Level.SEVERE,localStrings.getLocalString("startupfatalstartup",
+                                    "Shutting down v3 due to startup exception : ",t.getMessage()));
+                            logger.log(level, future.get().exception().getMessage(), t);
+                            events.send(new Event(EventTypes.SERVER_SHUTDOWN));
+                            forceShutdown();
+                            return;
+                        }
+                    } catch(TimeoutException e) {
+                        logger.warning(localStrings.getLocalString("startupwaittimeout",
+                                "Timed out, ignoring some startup service status"));
+                    }
+                } catch(Throwable t) {
+                    logger.log(Level.SEVERE, t.getMessage(), t);
+                }
+            }
+
+            env.setStatus(ServerEnvironment.Status.started);
+            events.send(new Event(EventTypes.SERVER_READY), false);
+            pidWriter.writePidFile();
+        }
+    }
+
+
+    // ----- PostStartupInhabitantActivator inner class ----------------------
+
+    /**
+     * Inhabitant activator for the post startup services.
+     */
+    private class PostStartupInhabitantActivator extends AppServerInhabitantActivator {
+
+        @Override
+        public void awaitCompletion() throws ExecutionException, InterruptedException, TimeoutException {
+
+            if (!isShutdown()) {
+                printModuleStatus(systemRegistry, level);
+            }
+        }
+    }
 }

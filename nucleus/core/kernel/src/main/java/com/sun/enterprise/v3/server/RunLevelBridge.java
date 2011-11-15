@@ -54,27 +54,36 @@ import org.jvnet.hk2.annotations.Priority;
 import org.jvnet.hk2.annotations.RunLevel;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.Inhabitant;
+import org.jvnet.hk2.component.InhabitantActivator;
 
 /**
- * Abstract based for all run level bridges.
+ * Abstract base for all run level bridges.
  * 
  * @author Jeff Trent
+ * @author Tom Beerbower
  */
 @SuppressWarnings("rawtypes")
-/* public */abstract class RunLevelBridge implements PostConstruct, PreDestroy {
+abstract class RunLevelBridge implements PostConstruct, PreDestroy {
 
-//    private final static Logger logger = AppServerStartup.logger;
     private final static Logger logger = Logger.getLogger(RunLevelBridge.class.getName());
+
     private final static Level level = AppServerStartup.level;
 
     @Inject
     private Habitat habitat;
 
-    // the legacy type we are bridging to
+    /**
+     * The legacy type we are bridging to.
+     */
     private final Class bridgeClass;
-    
-    // optionally the class to stop during shutdown as well
+
+    /**
+     * The class to stop during shutdown as well (optional).
+     */
     private final Class additionalShutdownClass;
+
+
+    // ----- Constructors ----------------------------------------------------
 
     RunLevelBridge(Class bridgeClass) {
         this.bridgeClass = bridgeClass;
@@ -85,7 +94,10 @@ import org.jvnet.hk2.component.Inhabitant;
         this.bridgeClass = bridgeClass;
         this.additionalShutdownClass = additionalShutdownClass;
     }
-    
+
+
+    // ----- PostConstruct ---------------------------------------------------
+
     @SuppressWarnings("unchecked")
     @Override
     public void postConstruct() {
@@ -95,7 +107,11 @@ import org.jvnet.hk2.component.Inhabitant;
                 long start = System.currentTimeMillis();
                 logger.log(level, "starting {0}", i);
                 try {
-                    i.get();
+                    activate(i);
+                } catch (RuntimeException e) {
+                    logger.log(Level.SEVERE, "problem starting {0}: {1}", new Object[] {i, e.getMessage()});
+                    logger.log(level, "nested error", e);
+                    throw e;
                 } catch (Exception e) {
                     logger.log(Level.SEVERE, "problem starting {0}: {1}", new Object[] {i, e.getMessage()});
                     logger.log(level, "nested error", e);
@@ -107,6 +123,9 @@ import org.jvnet.hk2.component.Inhabitant;
             }
         }
     }
+
+
+    // ----- PreDestroy ------------------------------------------------------
 
     @SuppressWarnings("unchecked")
     @Override
@@ -130,7 +149,7 @@ import org.jvnet.hk2.component.Inhabitant;
             if (qualifies(false, i)) {
                 logger.log(level, "releasing {0}", i);
                 try {
-                    i.release();
+                    deactivate(i);
                 } catch (Exception e) {
                     logger.log(Level.SEVERE, "problem releasing {0}: {1}", new Object[] {i, e.getMessage()});
                     logger.log(level, "nested error", e);
@@ -139,8 +158,31 @@ import org.jvnet.hk2.component.Inhabitant;
         }
     }
 
+
+    // ----- helper methods --------------------------------------------------
+
     /**
-     * we only want to handle the cases that are NOT using the new RunLevel-based mechanism
+     * Activate the given inhabitant.
+     *
+     * @param i  the inhabitant
+     */
+    protected void activate(Inhabitant<?> i) {
+        i.get();
+    }
+
+    /**
+     * Deactivate the given inhabitant.
+     *
+     * @param i  the inhabitant
+     */
+    protected void deactivate(Inhabitant<?> i) {
+        i.release();
+    }
+
+    /**
+     * Determine if the given {@link Inhabitant} is using the new {@link RunLevel}-based mechanism.
+     *
+     * @return true if the given inhabitant is annotated with a run level annotation
      */
     protected boolean qualifies(boolean startup, Inhabitant<?> i) {
         RunLevel rl = i.type().getAnnotation(RunLevel.class);
@@ -155,19 +197,29 @@ import org.jvnet.hk2.component.Inhabitant;
     }
 
     /**
-     * Sorts the collection, reusing the same collection ig provided as a List type.
+     * Get a sorted {@link List} from the the given {@link Collection}, reusing the same
+     * {@link Collection} if provided as a {@link List} type.
+     *
+     * @return the sorted list
      */
     @SuppressWarnings("unchecked")
     protected List<Inhabitant<?>> sort(Collection<Inhabitant<?>> coll) {
-        List<Inhabitant<?>> sorted = (List.class.isInstance(coll)) ? List.class.cast(coll) : new ArrayList<Inhabitant<?>>(coll);
+        List<Inhabitant<?>> sorted = (List.class.isInstance(coll)) ?
+                List.class.cast(coll) : new ArrayList<Inhabitant<?>>(coll);
+
         if (sorted.size() > 1) {
             logger.log(level, "sorting {0},{1}", new Object[] {bridgeClass, additionalShutdownClass});
             Collections.sort(sorted, getInhabitantComparator());
         }
         return sorted;
     }
-    
-    static Comparator<Inhabitant<?>> getInhabitantComparator() {
+
+    /**
+     * Get a comparator based on {@link Inhabitant} priority.
+     *
+     * @return a comparator
+     */
+    private static Comparator<Inhabitant<?>> getInhabitantComparator() {
         return new Comparator<Inhabitant<?>>() {
             public int compare(Inhabitant<?> o1, Inhabitant<?> o2) {
                 int o1level = (o1.type().getAnnotation(Priority.class)!=null?
@@ -182,5 +234,4 @@ import org.jvnet.hk2.component.Inhabitant;
             }
         };
     }
-    
 }
