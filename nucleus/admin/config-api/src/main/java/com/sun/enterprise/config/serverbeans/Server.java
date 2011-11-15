@@ -541,8 +541,7 @@ public interface Server extends ConfigBeanProxy, Injectable, PropertyBag, Named,
                  * is set to "generate." Otherwise the user must set this
                  * properly to match the discovery uri list.
                  */
-                if (ourCluster != null &&
-                    ourCluster.getProperty("GMS_DISCOVERY_URI_LIST") != null &&
+                if (ourCluster.getProperty("GMS_DISCOVERY_URI_LIST") != null &&
                     "generate".equals(
                         ourCluster.getProperty("GMS_DISCOVERY_URI_LIST").getValue())) {
 
