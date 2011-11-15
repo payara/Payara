@@ -1489,30 +1489,25 @@ public class WsUtil {
             }
         }
 
-        for(NetworkListener listener : networkListeners) {
-            String host = listener.getAddress();
-            if(listener.getAddress().equals("0.0.0.0"))
-                try {
-                    host = InetAddress.getLocalHost().getHostName();
-                } catch (UnknownHostException e) {
-                    host="localhost"; //fallback
-                }
-            else {
-            // TODO - resolve to hostname; it should be optional and turned off
-            // by default
-            // try {
-            //     host = InetAddress.getByName(listener.getAddress()).getHostName();
-            // } catch (UnknownHostException ex) {
-            //     // silently ignore
-            // }
+        //Fix for issue 13107490
+        if ((networkListeners!=null)  && (! networkListeners.isEmpty()))  {
+            for(NetworkListener listener : networkListeners) {
+                String host = listener.getAddress();
+                if(listener.getAddress().equals("0.0.0.0"))
+                    try {
+                        host = InetAddress.getLocalHost().getHostName();
+                    } catch (UnknownHostException e) {
+                        host="localhost"; //fallback
+                    }
+
+                if(listener.findHttpProtocol().getSecurityEnabled().equals("false"))
+                    wsi.setHttpVS(new VirtualServerInfo("http", host, Integer.parseInt(listener.getPort())));
+                else if(listener.findHttpProtocol().getSecurityEnabled().equals("true"))
+                    wsi.setHttpsVS(new VirtualServerInfo("https", host, Integer.parseInt(listener.getPort())));
             }
-
-            if(listener.findHttpProtocol().getSecurityEnabled().equals("false"))
-                wsi.setHttpVS(new VirtualServerInfo("http", host, Integer.parseInt(listener.getPort())));
-            else if(listener.findHttpProtocol().getSecurityEnabled().equals("true"))
-                wsi.setHttpsVS(new VirtualServerInfo("https", host, Integer.parseInt(listener.getPort())));
+        } else {
+            wsi.setHttpVS(new VirtualServerInfo("http", "localhost", 0));
         }
-
         return wsi;
     }
 

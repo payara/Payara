@@ -738,11 +738,9 @@ public class WebServicesDeployer extends JavaEEDeployer<WebServicesContainer,Web
             URL rootURL = wsi.getWebServerRootURL(nextEndpoint.isSecure());
             String contextRoot = webBunDesc.getContextRoot();
             URL actualAddress = nextEndpoint.composeEndpointAddress(rootURL, contextRoot);
-            //Ommitting the part of generating the wsdl for now
-            //I think we need that to set the endpointAddressURL of WebServiceEndpoint
-            logger.info(format(rb.getString("enterprise.deployment.endpoint.registration"),
+            if (wsi.getHttpVS() != null && wsi.getHttpVS().getPort()!=0)
+               logger.info(format(rb.getString("enterprise.deployment.endpoint.registration"),
             nextEndpoint.getEndpointName(), actualAddress.toString() ));
-
         }
     }
 

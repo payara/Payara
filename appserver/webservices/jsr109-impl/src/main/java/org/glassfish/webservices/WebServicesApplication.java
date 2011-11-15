@@ -40,8 +40,11 @@
 
 package org.glassfish.webservices;
 
+import java.net.URL;
 import java.text.MessageFormat;
 import java.util.ResourceBundle;
+
+import com.sun.enterprise.deployment.util.WebServerInfo;
 import org.glassfish.api.deployment.ApplicationContainer;
 import org.glassfish.api.deployment.ApplicationContext;
 import org.glassfish.api.deployment.DeploymentContext;
@@ -106,19 +109,22 @@ public class WebServicesApplication implements ApplicationContainer {
         cl = startupContext.getClassLoader();
 
         try {
-            app = deploymentCtx.getModuleMetaData(Application.class);
+           app = deploymentCtx.getModuleMetaData(Application.class);
 
             Iterator<EjbEndpoint> iter = ejbendpoints.iterator();
             EjbEndpoint ejbendpoint = null;
             while(iter.hasNext()) {
                 ejbendpoint = iter.next();
                 String contextRoot = ejbendpoint.contextRoot;
-
+                WebServerInfo wsi = new WsUtil().getWebServerInfoForDAS();
+                URL rootURL = wsi.getWebServerRootURL(ejbendpoint.isSecure);
                 dispatcher.registerEndpoint(contextRoot, httpHandler, this);
-                logger.info(format(rb.getString("enterprise.deployment.ejbendpoint.registration"),
+                //Fix for issue 13107490 and 17648
+                if (wsi.getHttpVS() != null && wsi.getHttpVS().getPort()!=0)
+                    logger.info(format(rb.getString("enterprise.deployment.ejbendpoint.registration"),
                         app.getAppName(),
 
-                        new WsUtil().getWebServerInfoForDAS().getWebServerRootURL(ejbendpoint.isSecure).toString() + contextRoot)
+                         rootURL + contextRoot)
                 );
             }
 
