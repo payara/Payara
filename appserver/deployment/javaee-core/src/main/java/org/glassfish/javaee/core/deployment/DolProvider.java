@@ -312,6 +312,8 @@ public class DolProvider implements ApplicationMetaDataProvider<Application>,
                 }
                 File tmpDir = new File(path);
                 tmpDir.deleteOnExit();
+
+                tmpDir.mkdirs();
                 expandedArchive = (FileArchive)archiveFactory.createArchive(tmpDir);
                 archiveHandler.expand(archive, expandedArchive, context);
                 context.setSource(expandedArchive);
