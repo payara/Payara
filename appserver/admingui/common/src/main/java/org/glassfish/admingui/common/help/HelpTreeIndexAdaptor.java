@@ -53,8 +53,8 @@ import java.util.Map;
 import java.io.Serializable;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
-import org.glassfish.admingui.plugin.Index;
-import org.glassfish.admingui.plugin.IndexItem;
+import org.glassfish.admingui.connector.Index;
+import org.glassfish.admingui.connector.IndexItem;
 
 
 /**

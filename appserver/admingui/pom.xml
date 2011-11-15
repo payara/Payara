@@ -108,6 +108,7 @@
         <module>cluster</module>
         <module>community-theme</module>
         <module>web</module>
+	<module>gf-admingui-connector</module>
         <module>jts</module>
         <module>jdbc</module>
         <module>jca</module>
@@ -169,5 +170,6 @@
             <artifactId>javax.servlet-api</artifactId>
             <scope>provided</scope>
         </dependency>
+        
     </dependencies>
 </project>

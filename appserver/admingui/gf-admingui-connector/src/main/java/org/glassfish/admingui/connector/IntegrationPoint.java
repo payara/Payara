@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,7 +38,7 @@
  * holder.
  */
 
-package org.glassfish.admingui.plugin;
+package org.glassfish.admingui.connector;
 
 import org.glassfish.api.admingui.ConsoleProvider;
 
@@ -206,7 +206,7 @@ public class IntegrationPoint implements Serializable, Cloneable {
      *	    <code>IntegrationPoint</code> with the {@link ConsoleConfig}
      *	    which specified it.</p>
      */
-    void setConsoleConfigId(String id) {
+    public void setConsoleConfigId(String id) {
 	this.configId = id;
     }
 

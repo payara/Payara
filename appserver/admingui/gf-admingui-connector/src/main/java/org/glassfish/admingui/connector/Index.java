@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,7 +38,7 @@
  * holder.
  */
 
-package org.glassfish.admingui.plugin;
+package org.glassfish.admingui.connector;
 
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.Configured;
@@ -53,9 +53,8 @@ import java.util.List;
  *
  *  @author Ken Paulsen	(ken.paulsen@sun.com)
  */
-@Configured(name="indexitem")
-public class IndexItem {
-
+@Configured(name="index")
+public class Index {
     /**
      *	<p> Accessor for child {@link TOCItem}s.</p>
      */
@@ -67,84 +66,26 @@ public class IndexItem {
      *	<p> {@link IntegrationPoint}s setter.</p>
      */
     @Element("indexitem")
-    void setIndexItems(List<IndexItem> indexItems) {
+    public void setIndexItems(List<IndexItem> indexItems) {
 	this.indexItems = indexItems;
     }
 
     /**
      *
      */
-    public String getTarget() {
-	return this.target;
+    public String getVersion() {
+	return this.version;
     }
 
     /**
      *
      */
     @Attribute(required=true)
-    void setTarget(String target) {
-	this.target = target;
+    public void setVersion(String version) {
+	this.version = version;
     }
 
 
-    /**
-     *
-     */
-    public String getText() {
-	return this.text;
-    }
-
-    /**
-     *
-     */
-    @Attribute(required=true)
-    void setText(String text) {
-	this.text = text;
-    }
-
-    public String getHtmlFileForTarget() {
-        return htmlFileForTarget;
-    }
-
-    public void setHtmlFileForTarget(String htmlFileForTarget) {
-        this.htmlFileForTarget = htmlFileForTarget;
-    }
-
-
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final IndexItem other = (IndexItem) obj;
-        if ((this.target == null) ? (other.target != null) : !this.target.equals(other.target)) {
-            return false;
-        }
-        if ((this.text == null) ? (other.text != null) : !this.text.equals(other.text)) {
-            return false;
-        }
-        return true;
-    }
-
-    @Override
-    public int hashCode() {
-        int hash = 3;
-        hash = 89 * hash + (this.target != null ? this.target.hashCode() : 0);
-        hash = 89 * hash + (this.text != null ? this.text.hashCode() : 0);
-        return hash;
-    }
-
-    @Override
-    public String toString() {
-        return getText() + " " + getTarget();
-    }
-
-    private String htmlFileForTarget;
-    private String target;
-    private String text;
+    private String version;
     private List<IndexItem> indexItems;
-
 }

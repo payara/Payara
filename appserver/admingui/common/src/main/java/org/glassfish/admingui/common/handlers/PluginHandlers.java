@@ -71,7 +71,7 @@ import javax.servlet.ServletContext;
 import org.glassfish.admingui.common.factories.NavigationNodeFactory;
 import org.glassfish.admingui.common.util.GuiUtil;
 import org.glassfish.admingui.plugin.ConsolePluginService;
-import org.glassfish.admingui.plugin.IntegrationPoint;
+import org.glassfish.admingui.connector.IntegrationPoint;
 import org.glassfish.admingui.plugin.IntegrationPointComparator;
 
 import org.jvnet.hk2.component.Habitat;

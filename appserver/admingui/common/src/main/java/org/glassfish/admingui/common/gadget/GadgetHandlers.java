@@ -61,9 +61,11 @@ import java.util.StringTokenizer;
 
 import org.glassfish.admingui.common.util.GuiUtil;
 import org.glassfish.admingui.common.util.JSONUtil;
+import org.glassfish.admingui.connector.GadgetModule;
 
 import org.jvnet.hk2.config.ConfigParser;
 import org.jvnet.hk2.config.DomDocument;
+
 
 
 /**

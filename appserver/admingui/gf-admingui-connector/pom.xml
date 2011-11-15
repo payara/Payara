@@ -50,8 +50,8 @@
         <version>4.0-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
-    <groupId>org.glassfish.admingui</groupId>
-    <artifactId>console-plugin-service</artifactId>
+    <groupId>org.glassfish.admingui.connector</groupId>
+    <artifactId>gf-admingui-connector</artifactId>
     <packaging>hk2-jar</packaging>
     <name>Admin Console Integration</name>
     <description>GlassFish V3 Admin Console Integration</description>
@@ -70,10 +70,6 @@
             <artifactId>glassfish-api</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <dependency>
-            <groupId>org.glassfish.admingui.connector</groupId>
-            <artifactId>gf-admingui-connector</artifactId>
-            <version>${project.version}</version>
-        </dependency>
+        
     </dependencies>
 </project>

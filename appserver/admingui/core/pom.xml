@@ -203,6 +203,12 @@
             <version>${project.version}</version>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>org.glassfish.admingui.connector</groupId>
+            <artifactId>gf-admingui-connector</artifactId>
+            <version>${project.version}</version>
+            <scope>provided</scope>
+        </dependency>
 
 
     </dependencies>

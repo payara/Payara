@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,7 +38,7 @@
  * holder.
  */
 
-package org.glassfish.admingui.plugin;
+package org.glassfish.admingui.connector;
 
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.Configured;
@@ -51,64 +51,100 @@ import java.util.List;
  *  <p>	This class is configured via XML (i.e. a console-config.xml file).
  *  	This is done via the HK2 <code>ConfigParser</code>.</p>
  *
- *  <p>	Each module that wishes to provide an integration with the GlassFish
- *	admin console should provide a <code>console-config.xml</code> file
- *	which provides all the {@link IntegrationPoint} information for the
- *	module.  Here is an example of what that file might look like:</p>
- *
- *  <p><code><pre>
- *	<?xml version="1.0" encoding="UTF-8"?>
- *
- *	<console-config id="uniqueId">
- *	    <integration-point id="someId" type="tree" priority="840"
- *		    parentId="rootNode" content="/myTreeNode.jsf" />
- *	    <integration-point id="anotherId" type="webApplicationTab"
- *		    priority="22" parentId="appTab" content="/myTab.jsf" />
- *	    <integration-point id="fooId" type="tree" priority="400"
- *		    parentId="appNode" content="/fooNode.jsf" />
- *	</console-config>
- *
- *  </pre></code></p>
- *
- *  <p>	Normally a <code>console-config.xml</code> file should exist at
- *	"<code>META-INF/admingui/console-config.xml</code>" inside your module
- *	jar file.</p>
- *
  *  @author Ken Paulsen	(ken.paulsen@sun.com)
  */
-@Configured
-public class ConsoleConfig {
+@Configured(name="indexitem")
+public class IndexItem {
+
     /**
-     *	<p> Accessor for the known Admin Console
-     *	    {@link IntegrationPoint}s.<?p>
+     *	<p> Accessor for child {@link TOCItem}s.</p>
      */
-    public List<IntegrationPoint> getIntegrationPoints() {
-	return this.integrationPoints;
+    public List<IndexItem> getIndexItems() {
+	return this.indexItems;
     }
 
     /**
      *	<p> {@link IntegrationPoint}s setter.</p>
      */
-    @Element("integration-point")
-    void setIntegrationPoints(List<IntegrationPoint> integrationPoints) {
-	this.integrationPoints = integrationPoints;
+    @Element("indexitem")
+    public void setIndexItems(List<IndexItem> indexItems) {
+	this.indexItems = indexItems;
     }
 
     /**
-     *	<p> A unique identifier for the ConsoleConfig instance.</p>
+     *
      */
-    public String getId() {
-	return this.id;
+    public String getTarget() {
+	return this.target;
     }
 
     /**
-     *	<p> Setter for the id.</p>
+     *
      */
     @Attribute(required=true)
-    void setId(String id) {
-	this.id = id;
+    void setTarget(String target) {
+	this.target = target;
     }
 
-    private String id;
-    private List<IntegrationPoint> integrationPoints;
+
+    /**
+     *
+     */
+    public String getText() {
+	return this.text;
+    }
+
+    /**
+     *
+     */
+    @Attribute(required=true)
+    void setText(String text) {
+	this.text = text;
+    }
+
+    public String getHtmlFileForTarget() {
+        return htmlFileForTarget;
+    }
+
+    public void setHtmlFileForTarget(String htmlFileForTarget) {
+        this.htmlFileForTarget = htmlFileForTarget;
+    }
+
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final IndexItem other = (IndexItem) obj;
+        if ((this.target == null) ? (other.target != null) : !this.target.equals(other.target)) {
+            return false;
+        }
+        if ((this.text == null) ? (other.text != null) : !this.text.equals(other.text)) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 3;
+        hash = 89 * hash + (this.target != null ? this.target.hashCode() : 0);
+        hash = 89 * hash + (this.text != null ? this.text.hashCode() : 0);
+        return hash;
+    }
+
+    @Override
+    public String toString() {
+        return getText() + " " + getTarget();
+    }
+
+    private String htmlFileForTarget;
+    private String target;
+    private String text;
+    private List<IndexItem> indexItems;
+
 }

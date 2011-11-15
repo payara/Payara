@@ -54,8 +54,8 @@ import java.io.Serializable;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 
-import org.glassfish.admingui.plugin.TOC;
-import org.glassfish.admingui.plugin.TOCItem;
+import org.glassfish.admingui.connector.TOC;
+import org.glassfish.admingui.connector.TOCItem;
 
 
 /**

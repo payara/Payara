@@ -53,7 +53,7 @@ import java.util.Properties;
 import javax.faces.context.FacesContext;
 import org.glassfish.admingui.common.handlers.PluginHandlers;
 import org.glassfish.admingui.common.plugin.ConsoleClassLoader;
-import org.glassfish.admingui.plugin.IntegrationPoint;
+import org.glassfish.admingui.connector.IntegrationPoint;
 import org.glassfish.admingui.theme.AdminguiThemeContext;
 
 /**
