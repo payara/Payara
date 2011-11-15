@@ -50,6 +50,7 @@ import java.io.PrintWriter;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.DatabaseMetaData;
 import java.util.Enumeration;
 import javax.annotation.Resource;
 
@@ -109,6 +110,15 @@ public final class CustomDBNameServlet extends HttpServlet {
             Statement stmt = null;
             try {
                 stmt = ds.getConnection().createStatement();
+
+		DatabaseMetaData dbMetadata = stmt.getConnection().getMetaData();
+		String dbUrl = dbMetadata.getURL();
+		writer.println("DB URL : " + dbUrl + "\n");
+		if(dbUrl.indexOf("foobar") == -1) {
+		  throw new Exception("Custom Database [foobar] is not created while provisioning.");
+		}
+		
+
                 ResultSet rs = stmt.executeQuery("SELECT c_id, c_name from customer");
                 writer.println("<table border=\"1\" width=\"100%\">");
                 writer.println("<tr>");
