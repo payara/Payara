@@ -185,6 +185,11 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             return;
         }
+        if (!path.canRead()) {
+            report.setMessage(localStrings.getLocalString("fnr","File {0} does not have read permission", path.getAbsolutePath()));
+            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            return;
+        }
 
         if (snifferManager.hasNoSniffers()) {
             String msg = localStrings.getLocalString("nocontainer", "No container services registered, done...");
