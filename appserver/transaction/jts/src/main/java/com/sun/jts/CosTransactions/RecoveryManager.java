@@ -443,22 +443,7 @@ public class RecoveryManager {
 
         boolean result = false;
 
-        String manualRecovery =
-            Configuration.getPropertyValue(Configuration.MANUAL_RECOVERY);
-
-        // if ManualRecovery property is not set, or the logdir does not exist
-        // do not attempt XA recovery.
-        String logdir = Configuration.getPropertyValue(Configuration.LOG_DIRECTORY);
-	if(_logger.isLoggable(Level.FINE)) {
-            _logger.fine("========== logdir ========== to recover ========= " + logdir);
-            if (logdir != null)
-                _logger.fine("========== logdir ========== exists ========= " + (new File(logdir)).exists());
-        }
-
-        if (manualRecovery == null  ||
-                !(manualRecovery.equalsIgnoreCase("true"/*#Frozen*/)) ||
-                logdir == null || !(new File(logdir)).exists()) {
-
+        if (skipRecoveryOnStartup()) {
             _logger.fine("========== no recovery ==========");
             // Quickly release all locks
 
@@ -1159,11 +1144,9 @@ public class RecoveryManager {
 
     static void dbXARecovery() {
         Enumeration xaResources = RecoveryManager.uniqueRMSet;
-        String manualRecovery =
-            Configuration.getPropertyValue(Configuration.MANUAL_RECOVERY);
-        // if ManualRecovery property is not set, do not attempt XA recovery.
-        if (manualRecovery == null  ||
-                !(manualRecovery.equalsIgnoreCase("true"/*#Frozen*/))) {
+
+        if (skipRecoveryOnStartup()) {
+            _logger.fine("========== no recovery ==========");
             try {
             resyncComplete(false, false);
             } catch (Throwable ex) { }
@@ -1485,7 +1468,9 @@ public class RecoveryManager {
     }
 
     public static Boolean isIncompleteTxRecoveryRequired() {
-	    if (inCompleteTxMap.isEmpty()) {
+        String logdir = Configuration.getPropertyValue(Configuration.LOG_DIRECTORY);
+	    if (inCompleteTxMap.isEmpty() ||
+                    logdir == null || !(new File(logdir)).exists()) {
                 return Boolean.FALSE;
 	    }
             else {
@@ -1701,6 +1686,26 @@ public class RecoveryManager {
     }
 
     /**
+     * return true recovery on startup should be skipped
+     */
+    private static boolean skipRecoveryOnStartup() {
+        // if ManualRecovery property is not set, or the logdir does not exist
+        // do not attempt XA recovery.
+        String logdir = Configuration.getPropertyValue(Configuration.LOG_DIRECTORY);
+        if(_logger.isLoggable(Level.FINE)) {
+            _logger.fine("========== logdir ========== to recover ========= " + logdir);
+            if (logdir != null)
+                _logger.fine("========== logdir ========== exists ========= " + (new File(logdir)).exists());
+        }
+
+        String manualRecovery =
+            Configuration.getPropertyValue(Configuration.MANUAL_RECOVERY);
+
+        return (manualRecovery == null  || !(manualRecovery.equalsIgnoreCase("true"/*#Frozen*/)) ||
+                logdir == null || !(new File(logdir)).exists());
+     }
+
+    /**
      * Start resync thread
      */
     public static void startResyncThread() {
@@ -1871,8 +1876,7 @@ class ResyncThread extends Thread  {
 	}
         try {
             if (Configuration.isDBLoggingEnabled()) {
-                // DB recovery on startup fails to lookup the logging resource - GLASSFISH-16505
-                // RecoveryManager.dbXARecovery();
+                RecoveryManager.dbXARecovery();
             } else {
                 if (RecoveryManager.recover()) {
                     RecoveryManager.resync();

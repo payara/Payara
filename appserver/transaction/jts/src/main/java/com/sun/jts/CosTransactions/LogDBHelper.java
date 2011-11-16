@@ -302,6 +302,7 @@ class LogDBHelper {
                 conn = (Connection)(getNonTxConnectionMethod.invoke(ds, null));
                 stmt1 = conn.createStatement();
                 stmt1.execute(createTableStatement);
+                _logger.fine("=== table created ===");
             } catch (Exception ex) {
                 _logger.log(Level.INFO,"jts.exception_in_db_log_resource_create");
                 _logger.log(Level.FINE,ex.getMessage(), ex);

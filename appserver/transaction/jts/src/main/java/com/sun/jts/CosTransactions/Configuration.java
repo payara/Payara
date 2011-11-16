@@ -753,7 +753,7 @@ public class Configuration extends Object {
        disableFileLogging = true;
    }
  
-   static boolean isFileLoggingDisabled() {
+   public static boolean isFileLoggingDisabled() {
        return disableFileLogging;
    }
 

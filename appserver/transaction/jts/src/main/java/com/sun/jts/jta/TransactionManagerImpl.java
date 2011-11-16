@@ -191,10 +191,12 @@ public class TransactionManagerImpl implements TransactionManager {
             } else {
                 DefaultTransactionService dts = new DefaultTransactionService();
                 Properties p = TransactionServiceProperties.getJTSProperties(Globals.getDefaultHabitat(), false);
-                String logdir = p.getProperty(Configuration.LOG_DIRECTORY);
-                _logger.fine("======= logdir ======= " + logdir);
-                if (logdir != null) {
-                    (new File(logdir)).mkdirs();
+                if (!Configuration.isFileLoggingDisabled()) {
+                    String logdir = p.getProperty(Configuration.LOG_DIRECTORY);
+                    _logger.fine("======= logdir ======= " + logdir);
+                    if (logdir != null) {
+                        (new File(logdir)).mkdirs();
+                    }
                 }
 
                 dts.identify_ORB(null, null, p);
