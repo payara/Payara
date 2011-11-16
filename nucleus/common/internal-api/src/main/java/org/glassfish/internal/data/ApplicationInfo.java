@@ -356,32 +356,6 @@ public class ApplicationInfo extends ModuleInfo {
             if (events!=null) {
                 events.send(new Event<ApplicationInfo>(Deployment.APPLICATION_UNLOADED, this), false);
             }
-
-            // clean up the app level classloader
-            try {
-                PreDestroy.class.cast(appClassLoader).preDestroy();
-            } catch (Exception e) {
-                // ignore, the class loader does not need to be
-                // explicitely stopped or already stopped
-            }
-            appClassLoader = null;
-
-            // clean the module class loaders if they are not already 
-            // been cleaned
-            for (ModuleInfo module : getModuleInfos()) {
-                if (module.getClassLoaders() != null) {
-                    for (ClassLoader cloader : module.getClassLoaders()) {
-                        try {
-                            PreDestroy.class.cast(cloader).preDestroy();
-                        } catch (Exception e) {
-                            // ignore, the class loader does not need to be 
-                            // explicitely stopped or already stopped
-                        }
-                    }
-                    module.cleanClassLoaders();
-                }
-            }
-
         } finally {
             Thread.currentThread().setContextClassLoader(currentClassLoader);
             context.setClassLoader(null);
@@ -414,9 +388,13 @@ public class ApplicationInfo extends ModuleInfo {
     }
 
     public void clean(ExtendedDeploymentContext context) throws Exception {
+        super.clean(context);
+        for (ModuleInfo info : reversedModules) {
+            info.clean(getSubContext(info,context));
+            info = null;
+        }
 
-        // clean the app level classloader if it's not already
-        // cleaned
+        // clean up the app level classloader
         if (appClassLoader != null) {
             try {
                 PreDestroy.class.cast(appClassLoader).preDestroy();
@@ -427,11 +405,22 @@ public class ApplicationInfo extends ModuleInfo {
             appClassLoader = null;
         }
 
-        super.clean(context);
-        for (ModuleInfo info : reversedModules) {
-            info.clean(getSubContext(info,context));
-            info = null;
+        // clean the module class loaders if they are not already 
+        // been cleaned
+        for (ModuleInfo module : getModuleInfos()) {
+            if (module.getClassLoaders() != null) {
+                for (ClassLoader cloader : module.getClassLoaders()) {
+                    try {
+                        PreDestroy.class.cast(cloader).preDestroy();
+                    } catch (Exception e) {
+                        // ignore, the class loader does not need to be 
+                        // explicitely stopped or already stopped
+                    }
+                }
+                module.cleanClassLoaders();
+            }
         }
+
         if (events!=null) {
             events.send(new EventListener.Event<DeploymentContext>(Deployment.APPLICATION_CLEANED, context), false);
         }
