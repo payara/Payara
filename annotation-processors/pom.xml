@@ -54,7 +54,7 @@
 
     <groupId>org.glassfish.main</groupId>
     <artifactId>source-annotation-processor</artifactId>
-    <version>4.0-SNAPSHOT</version>
+    <version>1.0-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>GlassFish Source Annotation Processors</name>
     <description>Annotation processors which handles source level annotations</description>
