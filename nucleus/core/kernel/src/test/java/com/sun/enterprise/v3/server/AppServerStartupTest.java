@@ -294,7 +294,6 @@ public class AppServerStartupTest {
      * services are constructed at the proper run levels.  Also ensure that the failed
      * {@link java.util.concurrent.Future} causes a shutdown.
      */
-    @Ignore
     @Test
     public void testRunLevelServicesWithFuturesException() {
 
