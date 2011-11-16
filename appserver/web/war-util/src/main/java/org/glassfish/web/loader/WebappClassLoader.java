@@ -1562,18 +1562,18 @@ public class WebappClassLoader
 
         try {
 
-            URL[] urls = new URL[length];
+            ArrayList<URL> urls = new ArrayList<URL>();
             for (i = 0; i < length; i++) {
                 if (i < filesLength) {
-                    urls[i] = getURL(files[i]);
+                    urls.add(i, getURL(files[i]));
                 } else if (i < filesLength + jarFilesLength) {
-                    urls[i] = getURL(jarRealFiles[i - filesLength]);
+                    urls.add(i, getURL(jarRealFiles[i - filesLength]));
                 } else {
-                    urls[i] = external[i - filesLength - jarFilesLength];
+                    urls.add(i, external[i - filesLength - jarFilesLength]);
                 }
             }
 
-            repositoryURLs = urls;
+            repositoryURLs = removeDuplicate(urls);
 
         } catch (MalformedURLException e) {
             repositoryURLs = new URL[0];
@@ -1583,6 +1583,13 @@ public class WebappClassLoader
 
     }
 
+    @SuppressWarnings("unchecked")
+    private URL[] removeDuplicate(ArrayList<URL> urls) {
+        HashSet h = new HashSet(urls);
+        urls.clear();
+        urls.addAll(h);
+        return urls.toArray(new URL[urls.size()]);
+    }
 
     // ------------------------------------------------------ Lifecycle Methods
 
