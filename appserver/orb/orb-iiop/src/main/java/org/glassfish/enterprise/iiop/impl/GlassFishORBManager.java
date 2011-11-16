@@ -639,6 +639,7 @@ public final class GlassFishORBManager {
                 return DEFAULT_ORB_INIT_HOST;
             }
         } else {
+	    props.setProperty(ORBConstants.SERVER_HOST_PROPERTY, orbInitialHost);
             return orbInitialHost;
         }
     }
