@@ -61,6 +61,8 @@
             && guiValidate('#{reqMsg}','#{reqInt}','#{reqPort}')) {submitAndDisable(this, '$resource{i18n.button.Processing}');}; return false;" >
        <!command
             updateJdbcConnectionPoolWizardStep2();
+            setAttribute(key="pingValue" value="#{wizardMap['ping']}");
+            mapPut(map="#{wizardMap}" key="ping" value="false");
             gf.createEntity(endpoint="#{pageSession.parentUrl}/#{pageSession.childType}",
                     attrs="#{wizardMap}"
                     convertToFalse="#{pageSession.convertToFalseList}"
@@ -76,7 +78,7 @@
                                data="#{requestScope.tmpJSON}"
                                result="#{requestScope.restResponse}");
             }
-            if ("#{wizardMap['ping']}") {
+            if ("#{pingValue}") {
                 urlencode(value="#{wizardMap['name']}" encoding="UTF-8" result="#{pageSession.encodedName}");
                 gf.createAttributeMap(keys={"id"} values={"$pageSession{encodedName}"} map="#{requestScope.attrMap}");
                 gf.restRequest(endpoint="#{sessionScope.REST_URL}/resources/ping-connection-pool.json"
@@ -95,7 +97,7 @@
                 setSessionAttribute(key="wizardPoolProperties" value="#{null}")
                 gf.redirect(page="#{parentPage}?alertType=${alertType}&alertSummary=${alertSummary}&alertDetail=${alertDetail}");
             }
-            if ("!#{wizardMap['ping']}") {
+            if ("!#{pingValue}") {
                 setSessionAttribute(key="wizardMap" value="#{null}")
                 setSessionAttribute(key="wizardPoolExtra" value="#{null}")
                 setSessionAttribute(key="wizardPoolProperties" value="#{null}")

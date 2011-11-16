@@ -57,6 +57,8 @@
                     onClick="if (guiValidate('#{reqMsg}','#{reqInt}','#{reqPort}')) {submitAndDisable(this, '$resource{i18n.button.Processing}');}; return false;" >
                 <!command
                     updateConnectorConnectionPoolWizardStep2();
+                    setAttribute(key="pingValue" value="#{sessionScope.wizardMap['ping']}");
+                    mapPut(map="#{sessionScope.wizardMap}" key="ping" value="false");
                     gf.createEntity(endpoint="#{pageSession.parentUrl}/#{pageSession.childType}"
                         attrs="#{sessionScope.wizardMap}"
                         convertToFalse="#{pageSession.convertToFalseList}"
@@ -72,7 +74,7 @@
                                        data="#{requestScope.tmpJSON}"
                                        result="#{requestScope.restResponse}");                        
                     }
-                    if ("#{sessionScope.wizardMap['ping']}") {
+                    if ("#{pingValue}") {
                         urlencode(value="#{sessionScope.wizardMap['name']}" encoding="UTF-8" result="#{pageSession.encodeName}");
                         gf.createAttributeMap(keys={"id"} values={"$pageSession{encodeName}"} map="#{requestScope.attrMap}");
                         gf.restRequest(endpoint="#{sessionScope.REST_URL}/resources/ping-connection-pool"
