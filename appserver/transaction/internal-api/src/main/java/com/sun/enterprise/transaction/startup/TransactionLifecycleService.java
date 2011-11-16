@@ -48,6 +48,7 @@ import org.glassfish.api.Startup;
 import org.glassfish.api.event.EventTypes;
 import org.glassfish.api.event.Events;
 import org.glassfish.api.event.EventListener;
+import com.sun.enterprise.transaction.config.TransactionService;
 import com.sun.enterprise.transaction.api.JavaEETransactionManager;
 import com.sun.logging.LogDomains;
 
@@ -61,7 +62,7 @@ import org.jvnet.hk2.component.PostConstruct;
  * are applications deployed since the actual service has ORB dependency.
  */
 @Service
-public class TransactionRecoveryWrapper implements Startup, PostConstruct {
+public class TransactionLifecycleService implements Startup, PostConstruct {
 
     @Inject
     Habitat habitat;
@@ -69,7 +70,7 @@ public class TransactionRecoveryWrapper implements Startup, PostConstruct {
     @Inject
     Events events;
 
-    private static Logger _logger = LogDomains.getLogger(TransactionRecoveryWrapper.class, LogDomains.JTA_LOGGER);
+    private static Logger _logger = LogDomains.getLogger(TransactionLifecycleService.class, LogDomains.JTA_LOGGER);
 
     private JavaEETransactionManager tm = null;
 
@@ -79,10 +80,10 @@ public class TransactionRecoveryWrapper implements Startup, PostConstruct {
             @Override
             public void event(Event event) {
                 if (event.is(EventTypes.SERVER_READY)) {
-                    _logger.fine("TM RECOVERY WRAPPER - ON READY");
+                    _logger.fine("TM LIFECYCLE SERVICE - ON READY");
                     onReady();
                 } else if (event.is(EventTypes.PREPARE_SHUTDOWN)) {  
-                    _logger.fine("TM RECOVERY WRAPPER - ON SHUTDOWN");
+                    _logger.fine("TM LIFECYCLE SERVICE - ON SHUTDOWN");
                     onShutdown();
                 }
             }
@@ -91,12 +92,20 @@ public class TransactionRecoveryWrapper implements Startup, PostConstruct {
     }
 
     public void onReady() {
-        _logger.fine("TM RECOVERY WRAPPER - ON READY STARTED");
+        _logger.fine("ON TM READY STARTED");
 
-        tm = habitat.getByContract(JavaEETransactionManager.class);
-        tm.initRecovery(false);
+        TransactionService txnService = habitat.getComponent(TransactionService.class);
+        if (txnService != null) {
+            boolean isAutomaticRecovery = Boolean.valueOf(txnService.getAutomaticRecovery());
+            if (isAutomaticRecovery) {
+                _logger.fine("ON TM RECOVERY START");
+                tm = habitat.getByContract(JavaEETransactionManager.class);
+                tm.initRecovery(false);
+                _logger.fine("ON TM RECOVERY END");
+            }
+        }
 
-        _logger.fine("TM RECOVERY WRAPPER - ON READY FINISHED");
+        _logger.fine("ON TM READY FINISHED");
     }
 
     public void onShutdown() {

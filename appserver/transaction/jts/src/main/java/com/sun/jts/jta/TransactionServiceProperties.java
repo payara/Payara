@@ -265,7 +265,7 @@ public class TransactionServiceProperties {
                             _logger.log(Level.FINE,"JTS Server id " + jtsServerId);
                         }
 
-                        (new File(logdir)).mkdirs();
+                        //(new File(logdir)).mkdirs();
                         jtsProperties.put(Configuration.LOG_DIRECTORY, logdir);
                     }
                     jtsProperties.put(Configuration.COMMIT_RETRY, txnService.getRetryTimeoutInSeconds());

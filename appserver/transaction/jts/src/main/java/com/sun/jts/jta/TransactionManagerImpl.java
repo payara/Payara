@@ -42,6 +42,7 @@ package com.sun.jts.jta;
 
 import java.util.*;
 import javax.transaction.*;
+import java.io.File;
 import org.omg.CosTransactions.*;
 import org.omg.CORBA.*;
 import org.omg.CORBA.ORBPackage.InvalidName;
@@ -190,6 +191,12 @@ public class TransactionManagerImpl implements TransactionManager {
             } else {
                 DefaultTransactionService dts = new DefaultTransactionService();
                 Properties p = TransactionServiceProperties.getJTSProperties(Globals.getDefaultHabitat(), false);
+                String logdir = p.getProperty(Configuration.LOG_DIRECTORY);
+                _logger.fine("======= logdir ======= " + logdir);
+                if (logdir != null) {
+                    (new File(logdir)).mkdirs();
+                }
+
                 dts.identify_ORB(null, null, p);
                 current = dts.get_current();
             }

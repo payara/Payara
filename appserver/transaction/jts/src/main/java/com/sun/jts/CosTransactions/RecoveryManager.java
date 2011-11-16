@@ -446,10 +446,20 @@ public class RecoveryManager {
         String manualRecovery =
             Configuration.getPropertyValue(Configuration.MANUAL_RECOVERY);
 
-        // if ManualRecovery property is not set, do not attempt XA recovery.
-        if (manualRecovery == null  ||
-                !(manualRecovery.equalsIgnoreCase("true"/*#Frozen*/))) {
+        // if ManualRecovery property is not set, or the logdir does not exist
+        // do not attempt XA recovery.
+        String logdir = Configuration.getPropertyValue(Configuration.LOG_DIRECTORY);
+	if(_logger.isLoggable(Level.FINE)) {
+            _logger.fine("========== logdir ========== to recover ========= " + logdir);
+            if (logdir != null)
+                _logger.fine("========== logdir ========== exists ========= " + (new File(logdir)).exists());
+        }
 
+        if (manualRecovery == null  ||
+                !(manualRecovery.equalsIgnoreCase("true"/*#Frozen*/)) ||
+                logdir == null || !(new File(logdir)).exists()) {
+
+            _logger.fine("========== no recovery ==========");
             // Quickly release all locks
 
             // Post the recovery in progress event so that requests
