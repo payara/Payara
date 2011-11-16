@@ -77,6 +77,9 @@ import org.glassfish.api.admin.config.PropertiesDesc;
 
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Min;
+import javax.validation.constraints.Pattern;
+import static org.glassfish.config.support.Constants.*;
+import javax.validation.Payload;
 
 /**
  *
@@ -89,7 +92,7 @@ import javax.validation.constraints.Min;
 
 @Configured
 @RefConstraint(message="{ref.invalid}", payload= RefValidator.class)
-public interface LbConfig extends ConfigBeanProxy, Injectable, PropertyBag {
+public interface LbConfig extends ConfigBeanProxy, Injectable, PropertyBag, Payload {
 
     String LAST_APPLIED_PROPERTY = "last-applied";
     String LAST_EXPORTED_PROPERTY = "last-exported";
@@ -103,6 +106,7 @@ public interface LbConfig extends ConfigBeanProxy, Injectable, PropertyBag {
      *         {@link String }
      */
     @Attribute(key=true)
+    @Pattern(regexp=NAME_REGEX, message="{lbconfig.invalid.name}", payload=LbConfig.class)
     @NotNull
     String getName();
 

@@ -72,6 +72,17 @@
         </developer>
     </developers>
 
+    <build>
+        <resources>
+            <resource>
+                <directory>src/main/java</directory>
+                <includes>
+                    <include>**/*.properties</include>
+                </includes>
+            </resource>
+        </resources>
+    </build>
+
     <dependencies>
 	<!-- Dependencies on other modules/jars -->
         <dependency>
