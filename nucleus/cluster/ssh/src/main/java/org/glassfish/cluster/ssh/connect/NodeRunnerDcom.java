@@ -141,11 +141,8 @@ public class NodeRunnerDcom {
         authTokenFile = new WindowsRemoteFile(wrfs, authTokenFilePath);
         authTokenFile.copyFrom(stdin);
 
-        // jira 17731 -- Asadmin can't handle Windows full paths (the ":" is the problem)
-        URI authTokenFileUri = new File(authTokenFilePath).toURI();
-
         cmd.add(AsadminInput.CLI_INPUT_OPTION);
-        cmd.add(authTokenFileUri.toString());
+        cmd.add(authTokenFilePath);
     }
 
     private void teardownAuthTokenFile() {

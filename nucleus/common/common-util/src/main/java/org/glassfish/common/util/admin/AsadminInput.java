@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright (c) 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2011 Oracle and/or its affiliates. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -43,11 +43,10 @@ package org.glassfish.common.util.admin;
 import com.sun.enterprise.util.LocalStringManager;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import java.io.BufferedReader;
-import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.text.MessageFormat;
 import java.util.HashMap;
@@ -108,25 +107,15 @@ public class AsadminInput {
 
     /**
      * Returns an asadmin reader for reading from the specified URI.
-     * @param inputURI either a valid URI, a valid file path, or the dash indicating to read from system.in
+     * @param inputPath a valid file path or the dash indicating to read from system.in
      * @return
      * @throws IOException
-     * @throws URISyntaxException
      */
-    public static InputReader reader(final String inputURI) throws IOException, URISyntaxException {
-        if (inputURI.equals(SYSTEM_IN_INDICATOR)) {
+    public static InputReader reader(final String inputPath) throws URISyntaxException, IOException {
+        if (inputPath.equals(SYSTEM_IN_INDICATOR)) {
             return reader(System.in);
         }
-        final URI uri;
-        if ( inputURI.indexOf(':') == -1) {
-            /*
-             * Treat the input URI as a file path.
-             */
-            uri = new File(".").toURI().resolve(inputURI);
-        } else {
-            uri = new URI(inputURI);
-        }
-        return reader(uri.toURL().openStream());
+        return reader(new FileInputStream(inputPath));
     }
 
     /**
