@@ -62,6 +62,7 @@ import org.glassfish.internal.api.PostStartup;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.jvnet.hk2.annotations.Inject;
@@ -236,8 +237,7 @@ public class AppServerStartupTest {
      * service that should cause a failure during startup.  Make sure that the init and
      * startup run level services are constructed at the proper run levels.
      */
-    // TODO : I don't see a failure locally.  Why does this fail the build?
-    //@Test
+    @Test
     public void testRunLevelServicesWithException() {
 
         // set an exception to be thrown from TestStartupService.postConstruct()
@@ -280,8 +280,8 @@ public class AppServerStartupTest {
      * services are constructed at the proper run levels.  Also ensure that the failed
      * {@link java.util.concurrent.Future} causes a shutdown.
      */
-    // TODO : I don't see a failure locally.  Why does this fail the build?
-    //@Test
+    @Ignore
+    @Test
     public void testRunLevelServicesWithFuturesException() {
 
         // create the list of Futures returned from TestStartupService
