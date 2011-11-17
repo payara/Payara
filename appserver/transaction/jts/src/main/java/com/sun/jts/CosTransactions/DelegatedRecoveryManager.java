@@ -204,6 +204,10 @@ public class DelegatedRecoveryManager {
             String serverName = null;
             if (Configuration.isDBLoggingEnabled()) {
                 serverName = LogDBHelper.getInstance().getServerNameForInstanceName(logPath);
+                if (serverName == null) {
+                    // No XA transaction had been logged on that instance
+                    return true;
+                }
             } else {
                 File recoveryFile = new File(logPath,LogControl.RECOVERY_STRING_FILE_NAME);
                 RandomAccessFile raf = new RandomAccessFile(recoveryFile,"r");

@@ -77,9 +77,9 @@ public class RecoverTransactionsInternal extends RecoverTransactionsBase impleme
             _logger.info("==> internal target: " + destinationServer + " ... server: " + serverToRecover);
         }
 
-        if (Configuration.isDBLoggingEnabled()) {
+        if (Configuration.isDBLoggingEnabled() && !serverToRecover.equals(destinationServer)) {
             // This is important: need to pass instance name to the recovery
-            // process via log dir
+            // process via log dir for delegated recovery
             transactionLogDir = serverToRecover;
         }
 
