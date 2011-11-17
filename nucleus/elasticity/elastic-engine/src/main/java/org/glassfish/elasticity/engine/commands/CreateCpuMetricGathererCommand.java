@@ -22,10 +22,10 @@ import java.util.logging.Logger;
  * User: cmott
  * Date: 10/19/11
  */
-@Service(name="install-metric-gatherer")
-@I18n("install.metric.gatherers")
+@Service(name="create-cpu-metric-gatherer")
+@I18n("create.cpu.metric.gatherers")
 @Scoped(PerLookup.class)
-public class InstallMetricGathererCommand implements AdminCommand{
+public class CreateCpuMetricGathererCommand implements AdminCommand{
 
    @Inject
    Domain domain;
@@ -41,6 +41,9 @@ public class InstallMetricGathererCommand implements AdminCommand{
 
     @Param(name="collection-rate", optional = true)
     int collectionRate;
+
+    @Param(name="retain-data", optional = true)
+    int retainData;
 
     @Param(name="auto-start", defaultValue = "false", optional = true)
     boolean autoStart;
@@ -77,8 +80,7 @@ public class InstallMetricGathererCommand implements AdminCommand{
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                 report.setMessage(e.getMessage());
              }
-         }
-        //start the metric gatherer
+         } //if already exists then it's an error
     }
 
         public void createMetricGathererElement(final String alertName) throws TransactionFailure {

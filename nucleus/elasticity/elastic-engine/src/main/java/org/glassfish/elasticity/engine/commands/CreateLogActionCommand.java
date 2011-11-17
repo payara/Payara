@@ -95,6 +95,7 @@ public class CreateLogActionCommand implements AdminCommand {
                             writeableLog.setName(name);
                         if (level != null)
                             writeableLog.setLogLevel(level);
+                        writeableLog.setType("log");
 
                         writeableAction.getLogAction().add(writeableLog);
                     }

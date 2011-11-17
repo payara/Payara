@@ -39,6 +39,7 @@
  */
 package org.glassfish.elasticity.engine.commands;
 
+import com.sun.jdi.VirtualMachine;
 import org.glassfish.elasticity.config.serverbeans.*;
 import com.sun.enterprise.universal.glassfish.TokenResolver;
 import com.sun.enterprise.util.StringUtils;
@@ -56,6 +57,8 @@ import org.jvnet.hk2.annotations.*;
 import org.jvnet.hk2.component.*;
 import org.jvnet.hk2.config.*;
 import java.util.logging.Logger;
+//import org.glassfish.virtualization.libvirt.*;
+//import org.glassfish.virtualization.spi.*;
 
 /**
  * Created by IntelliJ IDEA.
@@ -79,8 +82,8 @@ public class testElasticity implements AdminCommand {
         ActionReport report = context.getActionReport();
         Logger logger= context.logger;
 
-        ElasticService elasticService= elasticServices.getElasticService(servicename);
-        if (elasticService == null) {
+        ElasticService es= elasticServices.getElasticService(servicename);
+        if (es == null) {
             //node doesn't exist
             String msg = Strings.get("noSuchService", servicename);
             logger.warning(msg);
@@ -89,7 +92,6 @@ public class testElasticity implements AdminCommand {
             return;
         }
 
-        ElasticService es = elasticServices.getElasticService(servicename);
         System.out.println("enabled "+es.getEnabled());
         System.out.println("service min "+es.getMin());
         System.out.println("service max "+es.getMax());
@@ -103,16 +105,27 @@ public class testElasticity implements AdminCommand {
         }
 
         MetricGatherers mgs = es.getMetricGatherers();
+        if (mgs != null ){
         for (MetricGatherer mg: mgs.getMetricGatherer()){
             System.out.println("metric gatherer type "+ mg.getName());
             System.out.println("metric gatherer rate "+ mg.getCollectionRate());
         }
+        }
 
         Actions ac = es.getActions();
+        if (ac != null){
         for (LogAction la: ac.getLogAction())  {
             System.out.println("name "+ la.getName());
             System.out.println("log-level "+ la.getLogLevel());
         }
+        }
+/*        LibVirtVirtualMachine lvvm = new LibVirtVirtualMachine() ;
+        VirtualMachineInfo vmi =  lvvm.getInfo();
+        try {
+            System.out.println("cpu "+ vmi.cpuTime());
+        } catch ( org.glassfish.virtualization.spi.VirtException ex)     {
+            System.out.print("exception getting cpu numbers");
+        }                                        */
 
         System.out.println("done");
 

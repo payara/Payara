@@ -41,6 +41,7 @@
 package org.glassfish.elasticity.engine.util;
 
 import org.glassfish.elasticity.api.MetricGatherer;
+import org.glassfish.elasticity.group.GroupMemberEventListener;
 import org.glassfish.elasticity.metric.MetricAttribute;
 import org.glassfish.elasticity.metric.MetricNode;
 import org.glassfish.elasticity.util.TabularMetricHolder;
@@ -48,13 +49,10 @@ import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PostConstruct;
 import org.jvnet.hk2.annotations.Inject;
 
+import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.List;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.HashSet;
 import java.util.concurrent.TimeUnit;
 
 import com.sun.logging.LogDomains;
@@ -74,6 +72,8 @@ public class ClusterSizeMetricHolder
 
     static final String _NAME = "cluster_instance_size";
 
+    private AtomicInteger currentSize = new AtomicInteger(0);
+
     public long max = 0;
 
     Map<String,InstanceCountMetricNode> clusterMap = 
@@ -87,11 +87,16 @@ public class ClusterSizeMetricHolder
 
     @Override
     public void postConstruct() {
+        this.attributes = new MetricAttribute[] {new CurrentSizeAttribute()};
     }
 
     @Override
     public String getSchedule() {
         return "10s";
+    }
+
+    public int getCurrentSize() {
+        return currentSize.get();
     }
 
     @Override
@@ -135,6 +140,7 @@ public class ClusterSizeMetricHolder
                 clusterSizeStat.add(System.currentTimeMillis(), new ClusterInstanceCountStat(0));
             } else {
                 clusterSizeStat.add(System.currentTimeMillis(), new ClusterInstanceCountStat(servers.size()));
+                currentSize.set(servers.size());
             }
         }
     }
@@ -181,7 +187,7 @@ public class ClusterSizeMetricHolder
 
     @Override
     public MetricAttribute[] getAttributes() {
-        return new MetricAttribute[0];
+        return attributes;
     }
 
     @Override
@@ -191,6 +197,20 @@ public class ClusterSizeMetricHolder
             return new MetricNode[0]; 
 
         return clusterMap.values().toArray(new MetricNode[0]);
+    }
+
+    private class CurrentSizeAttribute
+            implements MetricAttribute {
+
+        @Override
+        public String getName() {
+            return "currentSize";
+        }
+
+        @Override
+        public Integer getValue() {
+            return currentSize.get();
+        }
     }
 
     private class InstanceCountMetricNode implements MetricNode {
@@ -243,4 +263,9 @@ public class ClusterSizeMetricHolder
             return "instance count =" + size + ";";
         }
     }
+
+    public int getSize() {
+        return currentSize.get();
+    }
+
 }
