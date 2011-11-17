@@ -68,6 +68,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -228,19 +229,48 @@ public class MySQLDBPlugin implements Plugin<RDBMSServiceType> {
     public ProvisionedService startService(ServiceDescription serviceDescription, ServiceInfo serviceInfo) {
         String serviceName = serviceDescription.getName();
         logger.entering(getClass().getName(), "startService");
+        ArrayList params = new ArrayList<String>();
 
-        ServiceInfo entry = serviceUtil.retrieveCloudEntry(serviceName,
-                serviceDescription.getAppName(), ServiceType.DATABASE);
-        if (entry == null) {
-            throw new RuntimeException("unable to get DB service : " + serviceName);
+        if (serviceDescription.getAppName() != null) {
+            params.add("--appname");
+            params.add(serviceDescription.getAppName());
+        }
+        params.add("--startvm=true");
+        params.add("--virtualcluster");
+        params.add(serviceDescription.getVirtualClusterName());
+        params.add(serviceName);
+        String[] parameters = new String[params.size()];
+        parameters = (String[]) params.toArray(parameters);
+
+        CommandResult result = commandRunner.run("_start-mysql-db-service", parameters);
+        if (result.getExitStatus().equals(CommandResult.ExitStatus.FAILURE)) {
+            logger.log(Level.WARNING, "Start MySQL DB Service [" + serviceName + "] failed");
         }
 
-        String databaseName = entry.getProperty(DatabaseProvisioner.DATABASENAME);
-        return new MySQLDbProvisionedService(serviceDescription, getServiceProperties(entry, databaseName),
-                serviceUtil.getServiceStatus(serviceInfo));
+        return new MySQLDbProvisionedService(serviceDescription, new Properties(), ServiceStatus.STARTED);
     }
 
     public boolean stopService(ServiceDescription serviceDescription, ServiceInfo serviceInfo) {
+        logger.entering(getClass().getName(), "stopService");
+        String serviceName = serviceDescription.getName();
+        ArrayList params = new ArrayList<String>();
+
+        if (serviceDescription.getAppName() != null) {
+            params.add("--appname");
+            params.add(serviceDescription.getAppName());
+        }
+        params.add("--stopvm=true");
+        params.add("--virtualcluster");
+        params.add(serviceDescription.getVirtualClusterName());
+        params.add(serviceName);
+        String[] parameters = new String[params.size()];
+        parameters = (String[]) params.toArray(parameters);
+
+        CommandResult result = commandRunner.run("_stop-mysql-db-service", parameters);
+        if (result.getExitStatus().equals(CommandResult.ExitStatus.FAILURE)) {
+            logger.log(Level.WARNING, "Stop MySQL DB Service [" + serviceName + "] failed");
+        }
+
         return true;
     }
 

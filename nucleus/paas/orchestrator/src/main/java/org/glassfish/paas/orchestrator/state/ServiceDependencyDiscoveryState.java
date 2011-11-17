@@ -197,6 +197,13 @@ public class ServiceDependencyDiscoveryState implements PaaSDeploymentState {
                 }
             }
             assertMetadataComplete(appSDs, appSRs);
+
+            //set virtual-cluster name
+            String virtualClusterName = orchestrator.getVirtualClusterName(appServiceMetadata);
+            for(ServiceDescription sd : appServiceMetadata.getServiceDescriptions()){
+                sd.setVirtualClusterName(virtualClusterName);
+            }
+
             logger.log(Level.INFO, "Final Service Metadata = " + appServiceMetadata);
             context.setAction(PaaSDeploymentContext.Action.PROCEED);
             return appServiceMetadata;
