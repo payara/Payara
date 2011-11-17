@@ -51,7 +51,6 @@ import javax.ejb.EJB;
 import javax.ejb.EJBHome;
 import javax.ejb.EJBLocalHome;
 import javax.ejb.Local;
-import javax.ejb.Remote;
 
 import com.sun.enterprise.deployment.EjbEntityDescriptor;
 import com.sun.enterprise.deployment.EjbReferenceDescriptor;
@@ -158,17 +157,20 @@ public class EJBHandler extends AbstractResourceHandler {
             
         } else if( ElementType.TYPE.equals(ainfo.getElementType()) ) {
             // name() and beanInterface() are required for TYPE-level @EJB
+            // if either of them not set, fail fast.  See issue 17284
             if (ejbAn.name().equals("") ||
                     ejbAn.beanInterface() == Object.class ) {
                 Class c = (Class) ainfo.getAnnotatedElement();
-                log(Level.SEVERE, ainfo,
-                    localStrings.getLocalString(
+                AnnotationProcessorException fatalException =
+                    new AnnotationProcessorException(localStrings.getLocalString(
                     "enterprise.deployment.annotation.handlers.invalidtypelevelejb",
                     "Invalid TYPE-level @EJB with name() = [{0}] and " +
                     "beanInterface = [{1}] in {2}.  Each TYPE-level @EJB " +
                     "must specify both name() and beanInterface().",
-                    new Object[] { ejbAn.name(), ejbAn.beanInterface(), c }));
-                return getDefaultFailedResult();
+                    new Object[] { ejbAn.name(), ejbAn.beanInterface(), c }),
+                    ainfo);
+                fatalException.setFatal(true);
+                throw fatalException;
             }
         } else {
             // can't happen
