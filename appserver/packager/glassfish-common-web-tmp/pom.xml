@@ -245,6 +245,14 @@
            <version>${project.version}</version>
            <type>distribution-fragment</type>
         </dependency>
+        <!-- TODO: move out of this package when PaaS DB plugin removes the
+             runtime dependency -->
+        <dependency>
+            <groupId>org.glassfish.external</groupId>
+            <artifactId>ant</artifactId>
+            <version>${project.version}</version>
+       </dependency>  
+ 
 
    	<!-- now, listing package dependencies so that their content
              can be excluded during staging -->	
