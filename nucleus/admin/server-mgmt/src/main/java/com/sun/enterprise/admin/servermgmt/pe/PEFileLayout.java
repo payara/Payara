@@ -622,17 +622,14 @@ public class PEFileLayout
 
     
     public static final String ACC_XML_TEMPLATE = "glassfish-acc.xml";
-    public static final String ACC_XML_TEMPLATE_OLD = "sun-acc.xml";
     
     public Map<File,File> getAppClientContainerTemplateAndXml() {
         final Map<File,File> result = new HashMap<File,File>();
         result.put(new File(getTemplatesDir(), ACC_XML_TEMPLATE), new File(getConfigRoot(), ACC_XML));
-        result.put(new File(getTemplatesDir(), ACC_XML_TEMPLATE_OLD), new File(getConfigRoot(), ACC_XML_OLD));
         return result;
     }
     
     public static final String ACC_XML = "glassfish-acc.xml";
-    public static final String ACC_XML_OLD = "sun-acc.xml";
     
     public static final String SESSION_STORE = "session-store";
     public File getSessionStore()
