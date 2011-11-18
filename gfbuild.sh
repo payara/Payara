@@ -105,7 +105,7 @@ do
 done
 shift `expr $OPTIND - 1`
 
-MAVEN_OPTS=-Xmx512m
+MAVEN_OPTS=${MAVEN_OPTS:='-Xmx512m -Xms256m -XX:MaxPermSize=512m'} 
 if [ "$maven_repo" != "" ]; then
     if [ -d "$maven_repo" ]; then
         echo "$maven_repo exists.  Continue with build."
