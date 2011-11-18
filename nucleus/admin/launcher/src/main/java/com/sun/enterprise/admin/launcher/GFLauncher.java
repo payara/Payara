@@ -156,8 +156,15 @@ public abstract class GFLauncher {
         setupProfilerAndJvmOptions(parser);
         setupUpgradeSecurity();
         
-        // TODO replace this with call to MiniXmlParser once that change is checked in.
-        adminFileRealmKeyFile = new File(getInfo().getConfigDir(), "admin-keyfile").getAbsolutePath();
+        Map<String,String> realmprops = parser.getAdminRealmProperties();
+        if (realmprops != null) {
+            String classname = realmprops.get("classname");
+            String keyfile = realmprops.get("file");
+            if ("com.sun.enterprise.security.auth.realm.file.FileRealm".equals(classname) &&
+                    keyfile != null) {
+                adminFileRealmKeyFile = keyfile;
+            }     
+        }
         
         renameOsgiCache();
         setupMonitoring(parser);
@@ -649,6 +656,8 @@ public abstract class GFLauncher {
         resolver.resolve(debugOptions);
         //resolver.resolve(sysPropsFromXml);
         logFilename = resolver.resolve(logFilename);
+        adminFileRealmKeyFile = resolver.resolve(adminFileRealmKeyFile);
+        
         // TODO ?? Resolve sysPropsFromXml ???
     }
 
