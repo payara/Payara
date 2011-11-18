@@ -138,7 +138,7 @@
         }
         if (!#{requestScope.isTableNames}) {
             if (#{pageSession.valueMap.validationTableName}) {
-                if ("!(#{pageSession.valueMap.validationTableName}=#{emptyStr})") {
+                if ("!(#{pageSession.valueMap.validationTableName}='')") {
                     setPageSessionAttribute(key="tableTextValue" value="#{pageSession.valueMap.validationTableName}");
                     setPageSessionAttribute(key="myTableOption" value="text");
                 }
@@ -149,7 +149,7 @@
         }
         if (!#{requestScope.isClassNames}) {
             if (#{pageSession.valueMap.validationClassname}) {
-                if ("!(#{pageSession.valueMap.validationClassName}=#{emptyStr})") {
+                if ("!(#{pageSession.valueMap.validationClassName}='')") {
                     setPageSessionAttribute(key="validCNTextValue" value="#{pageSession.valueMap.validationClassname}");
                     setPageSessionAttribute(key="myValidCNOption" value="text");
                 }
