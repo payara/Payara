@@ -40,6 +40,8 @@
 
 package org.glassfish.admin.rest.adapter;
 
+
+
 import com.sun.enterprise.config.serverbeans.AdminService;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.module.common_impl.LogHelper;
@@ -49,45 +51,43 @@ import com.sun.logging.LogDomains;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.net.InetAddress;
-import javax.security.auth.login.LoginException;
-
-import org.glassfish.admin.rest.LazyJerseyInterface;
-import org.glassfish.admin.rest.ResourceUtil;
-import org.glassfish.admin.rest.RestService;
-import org.glassfish.admin.rest.SessionManager;
-import org.glassfish.api.ActionReport;
-import org.glassfish.api.admin.ServerEnvironment;
-import org.glassfish.api.container.Adapter;
-import org.glassfish.api.container.EndpointRegistrationException;
-import org.jvnet.hk2.annotations.Inject;
-import org.jvnet.hk2.component.Habitat;
-import org.jvnet.hk2.component.PostConstruct;
-
 import java.net.HttpURLConnection;
+import java.net.InetAddress;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.security.auth.login.LoginException;
 import org.glassfish.admin.rest.Constants;
+import org.glassfish.admin.rest.LazyJerseyInterface;
+import org.glassfish.admin.rest.ResourceUtil;
+import org.glassfish.admin.rest.RestService;
+import org.glassfish.admin.rest.SessionManager;
 import org.glassfish.admin.rest.provider.ActionReportResultHtmlProvider;
 import org.glassfish.admin.rest.provider.ActionReportResultJsonProvider;
 import org.glassfish.admin.rest.provider.ActionReportResultXmlProvider;
 import org.glassfish.admin.rest.provider.BaseProvider;
 import org.glassfish.admin.rest.results.ActionReportResult;
 import org.glassfish.admin.rest.utils.xml.RestActionReporter;
+import org.glassfish.api.ActionReport;
+import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.api.container.Adapter;
+import org.glassfish.api.container.EndpointRegistrationException;
 import org.glassfish.grizzly.http.Cookie;
 import org.glassfish.grizzly.http.Method;
 import org.glassfish.grizzly.http.server.HttpHandler;
 import org.glassfish.grizzly.http.server.Request;
 import org.glassfish.grizzly.http.server.Response;
 import org.glassfish.internal.api.AdminAccessController;
-import org.glassfish.internal.api.ServerContext;
-import java.util.logging.Level;
 import org.glassfish.internal.api.PostStartup;
+import org.glassfish.internal.api.ServerContext;
+import org.jvnet.hk2.annotations.Inject;
+import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.PostConstruct;
 
 /**
  * Adapter for REST interface
@@ -132,12 +132,13 @@ public abstract class RestAdapter extends HttpHandler implements Adapter, PostSt
     public void postConstruct() {
         epd = new AdminEndpointDecider(config, logger);
         //        events.register(this);
-//        try {
-//            System.out.println("postConstruct()");
-//            initializeContext();
-//        } catch (EndpointRegistrationException ex) {
-//            Logger.getLogger(RestAdapter.class.getName()).log(Level.SEVERE, null, ex);
-//        }
+        /*
+        try {
+            exposeContext();
+        } catch (EndpointRegistrationException ex) {
+            Logger.getLogger(RestAdapter.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        */
 
         latch.countDown();
     }
@@ -165,7 +166,7 @@ public abstract class RestAdapter extends HttpHandler implements Adapter, PostSt
 
                 AdminAccessController.Access access = authenticate(req);
                 if (access == AdminAccessController.Access.FULL) {
-                    initializeContext();
+                    exposeContext();
                     //delegate to adapter managed by Jersey.
                     adapter.service(req, res);
                 } else { // Access != FULL
@@ -204,17 +205,6 @@ public abstract class RestAdapter extends HttpHandler implements Adapter, PostSt
         }
     }
     
-    private void initializeContext() throws EndpointRegistrationException {
-        //Use double checked locking to lazily initialize adapter
-        if (adapter == null) {
-            synchronized (HttpHandler.class) {
-                if (adapter == null) {
-                    exposeContext();  //Initializes adapter
-                }
-            }
-        }
-    }
-
     /**
      * Authenticate given request
      * @return Access as determined by authentication process.
@@ -368,14 +358,19 @@ public abstract class RestAdapter extends HttpHandler implements Adapter, PostSt
     }
 
     private void exposeContext() throws EndpointRegistrationException {
-        String context = getContextRoot();
-        logger.log(Level.FINE, "Exposing rest resource context root: {0}", context);
-        if ((context != null) && (!"".equals(context))) {
-            Set<Class<?>> classes = getResourcesConfig();
-            adapter = lazyJerseyInterface.exposeContext(classes, sc, habitat);
-//            ((HttpHandler) adapter).setResourcesContextPath(context);
-
-            logger.log(Level.INFO, "rest.rest_interface_initialized", context);
+        //Use double checked locking to lazily initialize adapter
+        if (adapter == null) {
+            synchronized (HttpHandler.class) {
+                if (adapter == null) {
+                    String context = getContextRoot();
+                    logger.log(Level.FINE, "Exposing rest resource context root: {0}", context);
+                    if ((context != null) && (!"".equals(context))) {
+                        Set<Class<?>> classes = getResourcesConfig();
+                        adapter = lazyJerseyInterface.exposeContext(classes, sc, habitat);
+                        logger.log(Level.INFO, "rest.rest_interface_initialized", context);
+                    }
+                }
+            }
         }
     }
 

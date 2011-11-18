@@ -41,12 +41,11 @@
 package org.glassfish.admin.rest;
 
 import com.sun.jersey.api.client.ClientResponse;
-import org.glassfish.admin.rest.clientutils.MarshallingUtils;
-import org.junit.Test;
-
 import java.util.Map;
-
-import static org.junit.Assert.*;
+import org.glassfish.admin.rest.client.utils.MarshallingUtils;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import org.junit.Test;
 
 /**
  *

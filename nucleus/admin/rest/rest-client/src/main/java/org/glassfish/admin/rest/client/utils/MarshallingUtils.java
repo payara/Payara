@@ -38,7 +38,7 @@
  * holder.
  */
 
-package org.glassfish.admin.rest.clientutils;
+package org.glassfish.admin.rest.client.utils;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -156,6 +156,7 @@ public class MarshallingUtils {
     public static String getJsonForProperties(final Map<String, String> properties) {
         return getJsonForProperties(new ArrayList<Map<String, String>>() {{ add(properties); }} );
     }
+
     public static String getJsonForProperties(List<Map<String, String>> properties) {
         JSONArray list = new JSONArray();
 
@@ -214,6 +215,7 @@ public class MarshallingUtils {
         return map;
     }
 
+    /**************************************************************************/
     private static Map processJsonMap(String json) {
         Map map;
         try {

@@ -39,13 +39,15 @@
  */
 package org.glassfish.admin.rest;
 
-import java.util.List;
-import org.glassfish.admin.rest.clientutils.MarshallingUtils;
 import com.sun.jersey.api.client.ClientResponse;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import org.glassfish.admin.rest.client.utils.MarshallingUtils;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import org.junit.Test;
-import static org.junit.Assert.*;
 
 /**
  *

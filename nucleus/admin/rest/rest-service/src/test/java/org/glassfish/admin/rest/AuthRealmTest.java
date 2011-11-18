@@ -40,11 +40,11 @@
 
 package org.glassfish.admin.rest;
 
-import org.glassfish.admin.rest.clientutils.MarshallingUtils;
 import java.util.List;
 import com.sun.jersey.api.client.ClientResponse;
 import java.util.HashMap;
 import java.util.Map;
+import org.glassfish.admin.rest.client.utils.MarshallingUtils;
 import org.junit.Test;
 import static org.junit.Assert.*;
 

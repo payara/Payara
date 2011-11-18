@@ -40,15 +40,16 @@
 
 package org.glassfish.admin.rest;
 
+
+
+import com.sun.jersey.api.client.ClientResponse;
 import java.util.HashMap;
 import java.util.Map;
-import com.sun.jersey.api.client.ClientResponse;
 import javax.ws.rs.core.Cookie;
-
-import org.glassfish.admin.rest.clientutils.MarshallingUtils;
+import org.glassfish.admin.rest.client.utils.MarshallingUtils;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import org.junit.Test;
-
-import static org.junit.Assert.*;
 
 /**
  * @author Mitesh Meswani

@@ -40,13 +40,14 @@
 
 package org.glassfish.admin.rest;
 
-import java.util.List;
-import java.util.HashMap;
 import com.sun.jersey.api.client.ClientResponse;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import org.glassfish.admin.rest.clientutils.MarshallingUtils;
+import org.glassfish.admin.rest.client.utils.MarshallingUtils;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import org.junit.Test;
-import static org.junit.Assert.*;
 
 /**
  *

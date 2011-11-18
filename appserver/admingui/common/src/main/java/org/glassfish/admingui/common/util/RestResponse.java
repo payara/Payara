@@ -41,7 +41,6 @@
 package org.glassfish.admingui.common.util;
 
 import com.sun.jersey.api.client.ClientResponse;
-import org.glassfish.admin.rest.clientutils.MarshallingUtils;
 import org.w3c.dom.*;
 
 import javax.xml.stream.XMLInputFactory;
@@ -54,7 +53,6 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;

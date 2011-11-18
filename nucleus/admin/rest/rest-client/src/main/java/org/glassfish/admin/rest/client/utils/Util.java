@@ -37,13 +37,15 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package org.glassfish.admin.rest.client;
+package org.glassfish.admin.rest.client.utils;
 
+import com.sun.logging.LogDomains;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -80,7 +82,8 @@ public class Util {
                 }
             }
         } catch (JSONException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            LogDomains.getLogger(Util.class, LogDomains.ADMIN_LOGGER)
+                    .log(Level.INFO, "rest.json_parsing_exception", e.getLocalizedMessage());
         }
 
         return map;
@@ -101,7 +104,8 @@ public class Util {
                 }
             }
         } catch (JSONException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            LogDomains.getLogger(Util.class, LogDomains.ADMIN_LOGGER)
+                    .log(Level.INFO, "rest.json_parsing_exception", e.getLocalizedMessage());
         }
 
         return results;

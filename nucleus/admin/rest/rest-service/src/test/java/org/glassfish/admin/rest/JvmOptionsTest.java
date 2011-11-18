@@ -40,19 +40,18 @@
 
 package org.glassfish.admin.rest;
 
-import org.junit.After;
-import org.junit.Before;
+import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.core.util.MultivaluedMapImpl;
-import javax.ws.rs.core.MultivaluedMap;
 import java.util.HashMap;
-
-import org.glassfish.admin.rest.clientutils.MarshallingUtils;
-
 import java.util.List;
 import java.util.Map;
-import com.sun.jersey.api.client.ClientResponse;
+import javax.ws.rs.core.MultivaluedMap;
+import org.glassfish.admin.rest.client.utils.MarshallingUtils;
+import org.junit.After;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import org.junit.Before;
 import org.junit.Test;
-import static org.junit.Assert.*;
 
 /**
  *

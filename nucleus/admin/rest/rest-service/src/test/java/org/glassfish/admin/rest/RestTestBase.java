@@ -47,24 +47,28 @@ import com.sun.jersey.api.client.filter.HTTPBasicAuthFilter;
 import com.sun.jersey.core.util.MultivaluedMapImpl;
 import com.sun.jersey.multipart.FormDataMultiPart;
 import com.sun.jersey.multipart.file.FileDataBodyPart;
-import java.io.*;
-
+import java.io.BufferedWriter;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.PrintWriter;
 import java.math.BigInteger;
-import java.net.URL;
-import java.net.URLConnection;
 import java.security.SecureRandom;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import org.glassfish.admin.rest.clientutils.MarshallingUtils;
+import org.glassfish.admin.rest.client.utils.MarshallingUtils;
 import org.junit.AfterClass;
+import static org.junit.Assert.fail;
 import org.junit.Before;
-import static org.junit.Assert.*;
-
 import org.junit.BeforeClass;
 import org.w3c.dom.Document;
 

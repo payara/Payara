@@ -40,6 +40,7 @@
 
 package org.glassfish.admin.rest.utils;
 
+
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.SecureAdmin;
 import com.sun.enterprise.config.serverbeans.Server;
@@ -48,9 +49,11 @@ import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.client.urlconnection.HTTPSProperties;
-import org.glassfish.admin.rest.clientutils.MarshallingUtils;
-import org.jvnet.hk2.component.Habitat;
-
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URL;
+import java.util.Map;
+import java.util.Properties;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLSession;
 import javax.ws.rs.WebApplicationException;
@@ -58,11 +61,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URL;
-import java.util.Map;
-import java.util.Properties;
+import org.glassfish.admin.rest.client.utils.MarshallingUtils;
+import org.jvnet.hk2.component.Habitat;
 
 /**
  * @author Mitesh Meswani

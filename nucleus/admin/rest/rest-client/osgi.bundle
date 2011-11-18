@@ -39,7 +39,7 @@
 #
 
 -exportcontents: \
-                        org.glassfish.admin.rest.client
+                        org.glassfish.admin.rest.client, org.glassfish.admin.rest.client.utils
 DynamicImport-Package: \
                         com.sun.jersey.api.container, \
                         com.sun.jersey.api.core, \

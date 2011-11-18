@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,21 +40,9 @@
 
 package org.glassfish.admin.rest;
 
-import org.junit.Ignore;
-import org.glassfish.api.ActionReport.MessagePart;
-import org.glassfish.api.ActionReport;
-import java.math.BigDecimal;
-import java.util.HashMap;
-import java.util.ArrayList;
-import java.util.Properties;
-import com.sun.enterprise.v3.common.JsonActionReporter;
-import org.glassfish.admin.rest.provider.ActionReportResultJsonProvider;
-import org.glassfish.admin.rest.results.ActionReportResult;
-import org.glassfish.admin.rest.results.OptionsResult;
-import org.glassfish.api.ActionReport.ExitCode;
 import com.sun.jersey.api.client.ClientResponse;
+import static org.junit.Assert.assertTrue;
 import org.junit.Test;
-import static org.junit.Assert.*;
 
 /**
  *

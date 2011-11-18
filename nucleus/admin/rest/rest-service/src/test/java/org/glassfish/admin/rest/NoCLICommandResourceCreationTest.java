@@ -41,15 +41,12 @@
 package org.glassfish.admin.rest;
 
 import com.sun.jersey.api.client.ClientResponse;
-import org.junit.Test;
-
 import java.util.HashMap;
 import java.util.Map;
-import org.glassfish.admin.rest.clientutils.MarshallingUtils;
-
 import javax.ws.rs.core.MediaType;
-
+import org.glassfish.admin.rest.client.utils.MarshallingUtils;
 import static org.junit.Assert.assertTrue;
+import org.junit.Test;
 
 /**
  * @author Mitesh Meswani

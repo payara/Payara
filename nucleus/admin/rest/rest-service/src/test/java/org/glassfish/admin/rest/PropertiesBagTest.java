@@ -40,17 +40,20 @@
 
 package org.glassfish.admin.rest;
 
+import com.sun.jersey.api.client.ClientResponse;
 import java.util.ArrayList;
-import org.glassfish.admin.rest.clientutils.MarshallingUtils;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import com.sun.jersey.api.client.ClientResponse;
-import org.junit.Test;
-
 import javax.ws.rs.core.MediaType;
-
-import static org.junit.Assert.*;
+import org.glassfish.admin.rest.client.utils.MarshallingUtils;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import org.junit.Test;
 
 /**
  *
