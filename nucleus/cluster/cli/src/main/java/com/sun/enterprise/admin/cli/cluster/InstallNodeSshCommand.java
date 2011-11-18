@@ -42,6 +42,7 @@ package com.sun.enterprise.admin.cli.cluster;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.enterprise.util.io.FileUtils;
 import com.trilead.ssh2.SCPClient;
+import com.trilead.ssh2.SFTPv3DirectoryEntry;
 import java.io.*;
 import java.io.ByteArrayOutputStream;
 import java.util.*;
@@ -219,24 +220,20 @@ public class InstallNodeSshCommand extends InstallNodeBaseCommand {
                 throw new IOException(ioe);
             }
 
-
-            logger.info("Fixing file permissions of all files under " + host + ":" + sshInstallDir + "/bin");
+            // unjarring doesn't retain file permissions, hence executables need
+            // to be fixed with proper permissions
+            logger.info("Fixing file permissions of all bin files under " + host + ":" + sshInstallDir); 
             try {
                 if (binDirFiles.isEmpty()) {
                     //binDirFiles can be empty if the archive isn't a fresh one
-                    String cmd = "cd '" + sshInstallDir + "/" + SystemPropertyConstants.getComponentName() + "/bin'; chmod 0755 *";
-                    int status = sshLauncher.runCommand(cmd, outStream);
-                    if (status != 0) {
-                        logger.info(Strings.get("jar.failed", host, outStream.toString()));
-                        throw new CommandException("Remote command output: " + outStream.toString());
-                    }
+                    searchAndFixBinDirectoryFiles(sshInstallDir, sftpClient);
                 }
                 else {
                     for (String binDirFile : binDirFiles) {
                         sftpClient.chmod((sshInstallDir + "/" + binDirFile), 0755);
                     }
                 }
-                logger.finer("Fixed file permissions of all files under " + host + ":" + sshInstallDir + "/bin");
+                logger.finer("Fixed file permissions of all bin files under " + host + ":" + sshInstallDir);
             }
             catch (IOException ioe) {
                 logger.info(Strings.get("fix.permissions.failed", host, sshInstallDir));
@@ -244,7 +241,8 @@ public class InstallNodeSshCommand extends InstallNodeBaseCommand {
             }
 
             if (Constants.v4) {
-                logger.info("Fixing file permissions for nadmin file under " + host + ":" + sshInstallDir + "/lib");
+                logger.info("Fixing file permissions for nadmin file under " + host + ":"
+                            + sshInstallDir + "/" + SystemPropertyConstants.getComponentName() + "/lib");
                 try {
                     sftpClient.chmod((sshInstallDir + "/" + SystemPropertyConstants.getComponentName() + "/lib/nadmin"), 0755);
                     logger.finer("Fixed file permission for nadmin under " + host + ":" + sshInstallDir + "/" + SystemPropertyConstants.getComponentName() + "/lib/nadmin");
@@ -256,7 +254,47 @@ public class InstallNodeSshCommand extends InstallNodeBaseCommand {
             }
         }
     }
+    
+    /**
+     * Recursively list install dir and identify "bin" directory. Change permissions
+     * of files under "bin" directory.
+     * @param installDir GlassFish install root
+     * @param sftpClient ftp client handle
+     * @throws IOException 
+     */
+    private void searchAndFixBinDirectoryFiles(String installDir, SFTPClient sftpClient) throws IOException {
+        for (SFTPv3DirectoryEntry directoryEntry : (List<SFTPv3DirectoryEntry>) sftpClient.ls(installDir)) {
+            if (directoryEntry.filename.equals(".") || directoryEntry.filename.equals(".."))
+                continue;
+            else if (directoryEntry.attributes.isDirectory()) {
+                String subDir = installDir + "/" + directoryEntry.filename;
+                if (directoryEntry.filename.equals("bin")) {
+                    fixAllFiles(subDir, sftpClient);
+                } else {
+                    searchAndFixBinDirectoryFiles(subDir, sftpClient);
+                }   
+            }
+        }
+    }
 
+    /**
+     * Set permissions of all files under specified directory. Note that this 
+     * doesn't check the file type before changing the permissions.
+     * @param binDir directory where file permissions need to be fixed
+     * @param sftpClient ftp client handle
+     * @throws IOException 
+     */
+    private void fixAllFiles(String binDir, SFTPClient sftpClient) throws IOException {
+        for (SFTPv3DirectoryEntry directoryEntry : (List<SFTPv3DirectoryEntry>) sftpClient.ls(binDir)) {
+            if (directoryEntry.filename.equals(".") || directoryEntry.filename.equals(".."))
+                continue;
+            else {
+                String fName = binDir + "/" + directoryEntry.filename;
+                sftpClient.chmod(fName, 0755);
+            }
+        }
+    }
+    
     /**
      * Determines if GlassFish is installed on remote host at specified location.
      * Uses SSH launcher to execute 'asadmin version'

@@ -201,7 +201,7 @@ abstract class InstallNodeBaseCommand extends NativeRemoteCommandsBase {
             if (fileName.contains("domains") || fileName.contains("nodes")) {
                 iter.remove();
             }
-            else if (fileName.startsWith("bin") || fileName.startsWith(SystemPropertyConstants.getComponentName() + "/bin")) {
+            else if (isFileWithinBinDirectory(fileName)) {
                 binDirFiles.add(fileName);
             }
         }
@@ -216,6 +216,20 @@ abstract class InstallNodeBaseCommand extends NativeRemoteCommandsBase {
         logger.info("Created installation zip " + FileUtils.safeGetCanonicalPath(glassFishZipFile));
 
         return glassFishZipFile;
+    }
+
+    /**
+     * Determines if a file is under "bin" directory
+     * @param file path to the file
+     * @return true if file is under "bin" dir, false otherwise
+     */
+    private static boolean isFileWithinBinDirectory(String file) {
+        boolean ret = false;
+        File f = new File(file);
+        String s = f.getParentFile().getName();
+        if (s.equals("bin"))
+            ret = true;
+        return ret;
     }
 
     public static String toString(InputStream ins) throws IOException {
