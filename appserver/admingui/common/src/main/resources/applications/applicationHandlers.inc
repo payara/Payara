@@ -103,9 +103,9 @@
     gfr.listAppScopedResources();
     //Modules list of an application
     createMap(result="#{pageSession.argsMap}");
-    mapPut(map="#{pageSession.argsMap}" key="id" value="#{pageSession.encodedAppName}");
-    mapPut(map="#{pageSession.argsMap}" key="resources" value="true");
-    gf.restRequest(endpoint="#{sessionScope.REST_URL}/applications/application/list-sub-components"
+    //mapPut(map="#{pageSession.argsMap}" key="id" value="#{pageSession.encodedAppName}");
+    //mapPut(map="#{pageSession.argsMap}" key="resources" value="true");
+    gf.restRequest(endpoint="#{sessionScope.REST_URL}/applications/application/#{pageSession.encodedAppName}/list-sub-components"
                    attrs="#{pageSession.argsMap}"
                    method="get"
                    result="#{requestScope.result}");

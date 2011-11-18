@@ -84,7 +84,7 @@ import org.glassfish.deployment.versioning.VersioningSyntaxException;
         path="list-sub-components", 
         description="List subcomponents",
         params={
-            @RestParam(name="id", value="$parent")
+            @RestParam(name="modulename", value="$parent")
         })
 })
 public class ListSubComponentsCommand implements AdminCommand {

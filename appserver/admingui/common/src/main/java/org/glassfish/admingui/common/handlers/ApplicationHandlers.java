@@ -209,8 +209,8 @@ public class ApplicationHandlers {
                 wsAppMap = AppUtil.getWsEndpointMap(appName, moduleName, snifferList);
             }
             Map attrMap = new HashMap();
-            //attrMap.put("appName", encodedAppName);
-            attrMap.put("moduleName", encodedModuleName);
+            attrMap.put("appname", encodedAppName);
+            attrMap.put("id", encodedModuleName);
             String prefix = GuiUtil.getSessionValue("REST_URL") + "/applications/application/" + encodedAppName;
             Map subMap = RestUtil.restRequest(prefix + "/list-sub-components", attrMap, "GET", null, false);
             Map data = (Map)subMap.get("data");

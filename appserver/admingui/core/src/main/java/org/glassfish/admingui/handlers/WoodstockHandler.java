@@ -414,7 +414,7 @@ public class WoodstockHandler {
                 ArrayList moduleList = new ArrayList();
                 String appName = (String) al.next();
                 //Add the application name link in the dropdown if there are any app scoped resources.
-                if (RestUtil.doesProxyExist(monitorURL+"/applications/"+appName+"/resources")) {
+                if (MonitoringHandlers.doesMonitoringDataExist(monitorURL+"/applications/"+appName+"/resources")) {
                     moduleList.add(appName);
                 }
                 Set<String> modules = new HashSet<String>();
@@ -425,7 +425,9 @@ public class WoodstockHandler {
                 }
                 for (String moduleName : modules) {
                     if (MonitoringHandlers.doesAppProxyExist(appName, moduleName)) {
-                        moduleList.add(moduleName);
+                        if (!moduleList.contains(moduleName)) {
+                            moduleList.add(moduleName);
+                        }
                     }
                 }                
                if (moduleList.isEmpty()) {
@@ -555,6 +557,10 @@ public class WoodstockHandler {
     private static List getWebComponentMenuOptions(String appname, String modulename, List vsList, String monitorURL, HandlerContext handlerCtx) {
         String endpoint = monitorURL + "/applications/" + appname;
         List menuList = new ArrayList();
+
+        if (modulename != null && !modulename.trim().equals("") && !appname.equals(modulename)) {
+            endpoint += "/" + modulename;
+        }
 
         if (vsList != null) {
             ListIterator vl = vsList.listIterator();

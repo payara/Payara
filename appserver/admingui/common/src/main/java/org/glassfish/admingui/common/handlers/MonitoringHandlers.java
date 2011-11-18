@@ -54,6 +54,7 @@ import java.util.Map;
 import java.util.ArrayList;
 import java.text.DateFormat;
 import java.text.NumberFormat;
+import java.util.Arrays;
 import java.util.Locale;
 import java.util.Date;
 import java.util.ListIterator;
@@ -491,7 +492,7 @@ public class MonitoringHandlers {
             if (compVal != null && !(compVal.equals(""))) {
                 String[] compStrs = compVal.split("/");
                 if (vsList.contains(compStrs[0])) {
-                    if (moduleProps.containsKey(compStrs[1]) && moduleProps.get(compStrs[1]).equals("Servlet")) {
+                    if (moduleProps != null && moduleProps.containsKey(compStrs[1]) && moduleProps.get(compStrs[1]).equals("Servlet")) {
                         monitorEndpoint = monitorEndpoint + "/" + URLEncoder.encode(compStrs[0], "UTF-8") + "/" + URLEncoder.encode(compStrs[1], "UTF-8");
 
                         if (RestUtil.doesProxyExist(monitorEndpoint)) {
@@ -532,7 +533,13 @@ public class MonitoringHandlers {
         String statType = "";
 
         if (comp != null && !(comp.trim().equals(""))) {
-            String[] compStrs = comp.split("/");
+            List<String> compStrs = new ArrayList<String>();
+            if (comp.startsWith("resources/")) {
+                compStrs.add("resources");
+                compStrs.add(comp.substring(10));
+            } else {
+                compStrs = Arrays.asList(comp.split("/"));
+            }
             try {
                 statUrl = statUrl.append(monitorURL).append("/applications/").append(app);
                 for (String str : compStrs) {
@@ -546,12 +553,12 @@ public class MonitoringHandlers {
             }
 
             if (RestUtil.doesProxyExist(statUrl.toString())) {
-                if (compStrs.length == 1) {
-                    statType = (String) moduleProps.get(compStrs[0]);
-                } else if (compStrs[0].equals("resources")) {
+                if (compStrs.size() == 1) {
+                    statType = (String) moduleProps.get(compStrs.get(0));
+                } else if (compStrs.get(0).equals("resources")) {
                     statType="AppScopedResource";
                 } else {
-                    statType = modifyStatType(compStrs[1]);
+                    statType = modifyStatType(compStrs.get(1));
                 }
             }
         }else{
@@ -689,8 +696,8 @@ public class MonitoringHandlers {
     public static Map<String, Object> getSubComponents(String appName, String moduleName) {
         String endpoint = GuiUtil.getSessionValue("REST_URL") + "/applications/application/" + appName + "/list-sub-components";
         Map<String, Object> attrs = new HashMap<String, Object>();
-        //attrs.put("appname", appName);
-        attrs.put("modulename", moduleName);
+        attrs.put("appname", appName);
+        attrs.put("id", moduleName);
 
         try {
             Map<String, Object> responseMap = RestUtil.restRequest(endpoint, attrs, "GET", null, false);
