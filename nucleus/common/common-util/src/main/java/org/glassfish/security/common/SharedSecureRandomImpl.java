@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,11 +38,32 @@
  * holder.
  */
 
-package org.glassfish.internal.api;
+package org.glassfish.security.common;
 
-import org.glassfish.security.common.SharedSecureRandomImpl;
+import java.security.SecureRandom;
 
 /**
  * An utility class that supplies an Initialized SecureRandom.
  */
-public final class SharedSecureRandom extends SharedSecureRandomImpl {}
+public class SharedSecureRandomImpl {
+
+    //the generator has a large period (in Sun's standard implementation, based on the 160-bit SHA1 hash function, the period is 2^160);
+    private static final SecureRandom secureRandom = new SecureRandom();
+
+    static {
+        //always call java.security.SecureRandom.nextBytes(byte[])
+        //immediately after creating a new instance of the PRNG.
+        //This will force the PRNG to seed itself securely
+        byte[] key = new byte[20];
+        secureRandom.nextBytes(key);
+    }
+
+    /**
+     * Can a single  java.security.SecureRandom instance be shared  safely by multiple threads ?.
+     * Yes.  As far as I know.  nextBytes and setSeed are sync'd.
+     */
+    public static SecureRandom get() {
+        return secureRandom;
+    }
+
+}

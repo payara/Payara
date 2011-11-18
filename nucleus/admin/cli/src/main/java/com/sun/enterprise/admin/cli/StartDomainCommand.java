@@ -48,15 +48,16 @@ import org.jvnet.hk2.annotations.*;
 import org.jvnet.hk2.component.*;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
-import com.sun.enterprise.util.net.NetUtils;
 import static com.sun.enterprise.admin.cli.CLIConstants.*;
 import com.sun.enterprise.admin.launcher.GFLauncher;
 import com.sun.enterprise.admin.launcher.GFLauncherException;
 import com.sun.enterprise.admin.launcher.GFLauncherFactory;
 import com.sun.enterprise.admin.launcher.GFLauncherInfo;
+import com.sun.enterprise.admin.util.CommandModelData.ParamModelData;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 import com.sun.enterprise.universal.process.ProcessStreamDrainer;
 import com.sun.enterprise.universal.xml.MiniXmlParserException;
+import org.glassfish.security.common.FileRealmHelper;
 
 /**
  * The start-domain command.
@@ -87,6 +88,7 @@ public class StartDomainCommand extends LocalDomainCommand implements StartServe
             new LocalStringsImpl(StartDomainCommand.class);
     // the name of the master password option
     private StartServerHelper helper;
+    private static final String newpwName = Environment.AS_ADMIN_ENV_PREFIX + "NEWPASSWORD";
 
     @Override
     public List<String> getLauncherArgs() {
@@ -141,6 +143,8 @@ public class StartDomainCommand extends LocalDomainCommand implements StartServe
                 return SUCCESS;
             }
 
+            doAdminPasswordCheck();
+            
             // launch returns very quickly if verbose is not set
             // if verbose is set then it returns after the domain dies
             launcher.launch();
@@ -232,7 +236,7 @@ public class StartDomainCommand extends LocalDomainCommand implements StartServe
             args.add(getDomainName());  // the operand
 
         if (logger.isLoggable(Level.FINER))
-            logger.finer("Respawn args: " + args.toString());
+            logger.log(Level.FINER, "Respawn args: {0}", args.toString());
         String[] a = new String[args.size()];
         args.toArray(a);
         return a;
@@ -296,5 +300,40 @@ public class StartDomainCommand extends LocalDomainCommand implements StartServe
         // need a new launcher to start the domain for real
         createLauncher();
         // continue with normal start...
+    }
+    
+    /*
+     * Check to make sure that at least one admin user is able to login.
+     * If none is found, then prompt for an admin password.
+     * 
+     * NOTE: this depends on launcher.setup having already been called.
+     */
+    private void doAdminPasswordCheck() throws CommandException {
+        String arfile = launcher.getAdminRealmKeyFile();
+        if (arfile != null) {  
+            try {
+                FileRealmHelper ar = new FileRealmHelper(arfile);
+                if (!ar.hasAuthenticatableUser()) {
+                    // Prompt for the password for the first user and set it
+                    Set<String> names = ar.getUserNames();
+                    if (names == null || names.isEmpty()) {
+                        throw new CommandException("no admin users");
+                    }
+                    String auser = names.iterator().next();
+                    ParamModelData npwo = new ParamModelData(newpwName, String.class, false, null);
+                    npwo.description = strings.get("new.adminpw", auser);
+                    npwo.param._password = true;
+                    logger.info(strings.get("new.adminpw.prompt"));
+                    String npw = super.getPassword(npwo, null, true);
+                    if (npw == null) {
+                        throw new CommandException(strings.get("no.console"));
+                    }
+                    ar.updateUser(auser, auser, npw.toCharArray(), null);
+                    ar.persist();
+                }
+            } catch (IOException ioe) {
+                throw new CommandException(ioe);
+            }
+        }
     }
 }

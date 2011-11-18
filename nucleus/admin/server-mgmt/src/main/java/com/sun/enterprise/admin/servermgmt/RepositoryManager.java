@@ -54,7 +54,6 @@ import com.sun.enterprise.util.io.FileUtils;
 import com.sun.enterprise.admin.servermgmt.pe.PEFileLayout;
 import com.sun.enterprise.admin.servermgmt.pe.PEDomainsManager;
 import com.sun.enterprise.util.i18n.StringManager;
-
 import com.sun.enterprise.admin.util.AdminConstants;
 import com.sun.enterprise.security.store.PasswordAdapter;
 
@@ -62,8 +61,6 @@ import com.sun.enterprise.security.store.PasswordAdapter;
 //import com.sun.enterprise.util.system.GFSystem;
 import java.io.*;
 
-import java.nio.charset.Charset;
-import java.security.SecureRandom;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.Statement;
@@ -81,7 +78,7 @@ import com.sun.enterprise.util.zip.ZipFile;
 //import javax.jms.JMSException;
 
 import com.sun.enterprise.util.SystemPropertyConstants;
-import org.glassfish.internal.api.SharedSecureRandom;
+import org.glassfish.security.common.FileRealmHelper;
 //import com.sun.enterprise.util.ExecException;
 
 /**
@@ -628,98 +625,13 @@ public class RepositoryManager extends MasterPasswordFileManager {
         IOException
     {
         final String keyFilePath = keyFile.getAbsolutePath();
-/*        final FileRealm fileRealm = new FileRealm(keyFilePath);
+        final FileRealmHelper fileRealm = new FileRealmHelper(keyFilePath);
         final String[] group = 
             new String[]{AdminConstants.DOMAIN_ADMIN_GROUP_NAME};
-        fileRealm.addUser(user, password, group);
-        fileRealm.writeKeyFile(keyFilePath);
-*/
-        writeKeyFile(user, password, keyFilePath);
-        appendKeyFileComment(keyFilePath);
+        fileRealm.addUser(user, password.toCharArray(), group);
+        fileRealm.persist();
     }
 
-
-    private static final String FIELD_SEP=";";
-    private static final String GROUP_SEP=",";
-    private static final String algoSHA256 = "SHA-256";
-    // Number of bytes of salt for SSHA
-    private static final int SALT_SIZE=8;
-
-    /**
-     * Write keyfile data out to disk. The file generation is sychronized
-     * within this class only, caller is responsible for any other
-     * file locking or revision management as deemed necessary.
-     *
-     * @param filename The name of the output file to create.
-     * @throws IOException If write fails.
-     *
-     */
-    public void writeKeyFile(String user, String password, String filename)
-         throws IOException
-    {
-            FileOutputStream out = null;
-            try {
-                out = new FileOutputStream(filename);
-
-                String entry = encodeUser(user, password);
-                out.write(entry.getBytes());
-            } catch (Exception e) {
-//                String msg = sm.getString("filerealm.badwrite", e.toString());
-                throw new IOException(e);
-            } finally {
-                if (out != null) {
-                    out.close();
-                }
-            }
-    }
-
-    private static String encodeUser(String name, String pwd)  throws IOException
-    {
-        //Copy the password to another reference before storing it to the
-        //instance field.
-        byte[] pwdBytes = null;
-
-        try {
-            pwdBytes = Utility.convertCharArrayToByteArray(pwd.toCharArray(), Charset.defaultCharset().displayName());
-        } catch(Exception ex) {
-            throw new IOException(ex);
-        }
-
-        SecureRandom rng= SharedSecureRandom.get();
-        byte[] salt=new byte[SALT_SIZE];
-        rng.nextBytes(salt);
-
-        byte[] hash = SSHA.compute(salt, pwdBytes, algoSHA256);
-
-        StringBuilder sb = new StringBuilder();
-
-        sb.append(name);
-        sb.append(FIELD_SEP);
-
-        String ssha = SSHA.encode(salt, hash, algoSHA256);
-
-        sb.append(ssha);
-        sb.append(FIELD_SEP);
-
-        String[] groups = new String[]{AdminConstants.DOMAIN_ADMIN_GROUP_NAME};
-        for (int grp = 0; grp < groups.length; grp++) {
-            if (grp > 0) {
-                sb.append(GROUP_SEP);
-            }
-            sb.append(groups[grp]);
-        }
-        sb.append("\n");
-        return sb.toString();
-    }
-
-
-    
-    private void appendKeyFileComment(String fileName)
-    {        
-        final String commentLine = NEW_LINE + _strMgr.getString("adminUserComment");
-        FileUtils.appendText(fileName, commentLine);
-    }
-   
     /**
      * Create the default server.policy file.
      */

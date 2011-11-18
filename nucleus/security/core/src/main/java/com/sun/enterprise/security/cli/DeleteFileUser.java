@@ -61,7 +61,6 @@ import com.sun.enterprise.security.auth.realm.NoSuchUserException;
 import com.sun.enterprise.config.serverbeans.SecurityService;
 import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.security.auth.realm.RealmsManager;
-import com.sun.enterprise.security.common.Util;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import java.beans.PropertyVetoException;
 import java.io.File;
@@ -223,12 +222,7 @@ public class DeleteFileUser implements /*UndoableCommand*/ AdminCommand {
                         realmsManager.createRealms(config);
                         final FileRealm fr = (FileRealm) realmsManager.getFromLoadedRealms(config.getName(),authRealmName);
                         fr.removeUser(userName);
-                        //fr.writeKeyFile(keyFile);
-                        if (Util.isEmbeddedServer()) {
-                            fr.writeKeyFile(Util.writeConfigFileToTempDir(kFile).getAbsolutePath());
-                        } else {
-                            fr.writeKeyFile(kFile);
-                        }
+                        fr.persist();
                         CreateFileUser.refreshRealm(config.getName(),authRealmName);
                         report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
                     } catch (NoSuchUserException e) {

@@ -65,7 +65,6 @@ import com.sun.enterprise.config.serverbeans.SecurityService;
 import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.security.auth.realm.BadRealmException;
 import com.sun.enterprise.security.auth.realm.RealmsManager;
-import com.sun.enterprise.security.common.Util;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import java.beans.PropertyVetoException;
 import java.io.File;
@@ -288,13 +287,7 @@ public class CreateFileUser implements /*UndoableCommand*/ AdminCommand {
                                 throw new BadRealmException(br);
                             }
                         }
-                        if (Util.isEmbeddedServer()) {
-                            fr.writeKeyFile(Util.writeConfigFileToTempDir(kf).getAbsolutePath());
-                        } else {
-                            fr.writeKeyFile(kf);
-                        }
-                        //Since this is done prior to adding the user, it is redundant here.
-                       //refreshRealm(authRealmName);
+                        fr.persist();
                         report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
                     } catch (Exception e) {
                         String localalizedErrorMsg = (e.getLocalizedMessage() == null)?"":e.getLocalizedMessage();

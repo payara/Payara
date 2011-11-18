@@ -155,6 +155,10 @@ public abstract class GFLauncher {
         javaConfig = new JavaConfig(parser.getJavaConfig());
         setupProfilerAndJvmOptions(parser);
         setupUpgradeSecurity();
+        
+        // TODO replace this with call to MiniXmlParser once that change is checked in.
+        adminFileRealmKeyFile = new File(getInfo().getConfigDir(), "admin-keyfile").getAbsolutePath();
+        
         renameOsgiCache();
         setupMonitoring(parser);
         sysPropsFromXml = parser.getSystemProperties();
@@ -184,6 +188,15 @@ public abstract class GFLauncher {
         setupCalledByClients = true;
     }
 
+    /**
+     * Returns the admin realm key file for the server, if the admin realm is a FileRealm.
+     * Otherwise return null. This value can be used to create a FileRealm for
+     * the server.
+     */
+    public String getAdminRealmKeyFile() {  
+        return adminFileRealmKeyFile;
+    }
+    
     /**
      * Returns the exit value of the process.  This only makes sense when we ran
      * in verbose mode and waited for the process to exit in the wait() method.
@@ -919,6 +932,7 @@ public abstract class GFLauncher {
     private Map<String, String> sysPropsFromXml;
     private String javaExe;
     private String classpath;
+    private String adminFileRealmKeyFile;
     private List<String> debugOptions;
     private long startTime;
     private String logFilename;

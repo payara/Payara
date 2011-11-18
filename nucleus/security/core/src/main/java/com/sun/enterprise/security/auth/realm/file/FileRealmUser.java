@@ -42,10 +42,10 @@ package com.sun.enterprise.security.auth.realm.file;
 
 import java.util.*;
 
-import org.glassfish.security.common.PrincipalImpl;
 import com.sun.enterprise.security.auth.realm.NoSuchRealmException;
 import com.sun.enterprise.security.auth.realm.Realm;
 import com.sun.enterprise.security.auth.realm.User;
+import org.glassfish.security.common.FileRealmHelper;
 
 
 /**
@@ -53,92 +53,24 @@ import com.sun.enterprise.security.auth.realm.User;
  *
  *
  */
-public class FileRealmUser extends PrincipalImpl implements User
-{
-    private static final String GROUP_KEY = "Groups"; // not needed
-    private String[] groups;
-    private String realm;
-    private Hashtable attributes; 
-
-    private byte[] salt;
-    private byte[] hash;
-    private String algo;
-    
+public class FileRealmUser implements User
+{    
+    FileRealmHelper.User user;
+    Hashtable attributes = new Hashtable();
+    String realm;
     /**
      * Constructor.
      *
      */
-    public FileRealmUser(String name)
+    public FileRealmUser(FileRealmHelper.User user, String realm)
     {
-        super(name);
-        attributes = new Hashtable(1);       // not really needed
-    }
-
-
-    /**
-     * Constructor.
-     *
-     * @param name User name.
-     * @param groups Group memerships.
-     * @param realm Realm.
-     * @param salt SSHA salt.
-     * @param hash SSHA password hash.
-     *
-     */
-    public FileRealmUser(String name, String[] groups, String realm,
-                         byte[] salt, byte[] hash, String algo)
-    {
-        super(name);
-        this.groups = groups;
+        this.user = user;
         this.realm = realm;
-        this.hash = hash;
-        this.salt = salt;
-        this.algo = algo;
-        
-        attributes = new Hashtable(1);       // not really needed
-        attributes.put(GROUP_KEY, groups);
     }
-
-
-    /**
-     * Returns salt value.
-     *
-     */
-    public byte[] getSalt()
-    {
-        return salt;
+    
+    public String[] getGroups() {
+        return user.getGroups();
     }
-
-
-    /**
-     * Set salt value.
-     *
-     */
-    public void setSalt(byte[] salt)
-    {
-        this.salt = salt;
-    }
-
-
-    /**
-     * Get hash value.
-     *
-     */
-    public byte[] getHash()
-    {
-        return hash;
-    }
-
-
-    /**
-     * Set hash value.
-     *
-     */
-    public void setHash(byte[] hash)
-    {
-        this.hash = hash;
-    }
-
     
     /**
      * Returns the realm with which this user is associated
@@ -148,87 +80,35 @@ public class FileRealmUser extends PrincipalImpl implements User
      *            no longer exist
      *
      */
+    @Override
     public Realm getRealm() throws NoSuchRealmException
     {
 	return Realm.getInstance(realm);
     }
 
-
-    /**
-     * Return the names of the groups this user belongs to.
-     *
-     * @return String[] List of group memberships.
-     *
-     */
-    public String[] getGroups()
-    {
-	return groups;
-    }
-
-
-    /**
-     * Set group membership.
-     *
-     */
-    public void setGroups(Vector grp)
-    {
-        String[] g = new String[grp.size()];
-        grp.toArray(g);
-        this.groups = g;
-        attributes.put(GROUP_KEY, groups);
-    }
-
-    
-    /**
-     * Set group membership.
-     *
-     */
-    public void setGroups(String[] grp)
-    {
-        this.groups = grp;
-    }
-
-    
     /**
      * Return the requested attribute for the user.
      * <P>Not really needed.
      *
      * @param key string identifies the attribute.
      */
+    @Override
     public Object getAttribute (String key)
     {
         return attributes.get(key);
     }
 
-    
     /**
      * Return the names of the supported attributes for this user.
      * <P>Not really needed.
      */
+    @Override
     public Enumeration getAttributeNames () {
 	return attributes.keys();
     }
 
-    /**
-     * @return the algo
-     */
-    public String getAlgo() {
-        return algo;
-    }
-
-    /**
-     * @param algo the algo to set
-     */
-    public void setAlgo(String algo) {
-        this.algo = algo;
-    }
-
-    //Just to document the fact the subclass equals invokes the superclass equals
     @Override
-    public boolean equals(Object o) {
-         return super.equals(o);
-     }
-
-
-    
+    public String getName() {
+        return user.getName();
+    }
 }

@@ -221,7 +221,7 @@ public class ChangeAdminPassword implements AdminCommand {
                 groups[i] = (String) en.nextElement();
             }
             fr.updateUser(userName,userName, newpassword.toCharArray(), groups);
-            fr.writeKeyFile(keyFile);
+            fr.persist();
             report.setActionExitCode(ActionReport.ExitCode.SUCCESS);            
         } catch (Exception e) {
             report.setMessage(

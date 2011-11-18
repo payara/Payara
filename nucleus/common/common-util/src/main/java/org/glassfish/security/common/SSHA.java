@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,17 +38,15 @@
  * holder.
  */
 
-package com.sun.enterprise.security.util;
+package org.glassfish.security.common;
 
 import java.io.*;
 import java.util.*;
 import java.security.*;
-import java.security.spec.*;
 
 import com.sun.enterprise.util.i18n.StringManager;
 import com.sun.enterprise.universal.GFBase64Decoder;
 import com.sun.enterprise.universal.GFBase64Encoder;
-import org.glassfish.internal.api.SharedSecureRandom;
 
 /**
  * Util class for salted SHA processing.
@@ -79,11 +77,11 @@ public class SSHA
      * @param salt Salt bytes.
      * @param password Password bytes.
      * @return Byte array of length 20 bytes containing hash result.
-     * @throws IASSecurityExeption Thrown if there is an error.
+     * @throws IllegalArgumentException Thrown if there is an error.
      *
      */
     public static byte[] compute(byte[] salt, byte[] password, String algo)
-        throws IASSecurityException
+        throws IllegalArgumentException
     {
         
         byte[] buff = new byte[password.length + salt.length];
@@ -101,7 +99,7 @@ public class SSHA
         try {
             md = MessageDigest.getInstance(algo);
         } catch (Exception e) {
-            throw new IASSecurityException(e);
+            throw new IllegalArgumentException(e);
         }
 
         assert (md != null);
@@ -242,11 +240,11 @@ public class SSHA
      * @param encoded Encoded SSHA value (e.g. output of computeAndEncode())
      * @param password Password bytes of the password to verify.
      * @returns True if given password matches encoded SSHA.
-     * @throws IASSecurityExeption Thrown if there is an error.
+     * @throws IllegalArgumentException Thrown if there is an error.
      *
      */
     public static boolean verify(String encoded, byte[] password)
-        throws IASSecurityException
+        throws IllegalArgumentException
     {
         byte[] hash = new byte[20];
         String algo = algoSHA256;
@@ -268,11 +266,11 @@ public class SSHA
      * @param hash Hash result to compare against.
      * @param password Password bytes of the password to verify.
      * @returns True if given password matches encoded SSHA.
-     * @throws IASSecurityExeption Thrown if there is an error.
+     * @throws IllegalArgumentException Thrown if there is an error.
      *
      */
     public static boolean verify(byte[] salt, byte[] hash, byte[] password, String algo)
-        throws IASSecurityException
+        throws IllegalArgumentException
     {
         byte[] newHash = compute(salt, password, algo);
         return Arrays.equals(hash, newHash);
@@ -289,11 +287,11 @@ public class SSHA
      *      not used and will be overwritten.
      * @returns Byte array containing the salt obtained from the encoded SSHA
      *      string.
-     * @throws IASSecurityExeption Thrown if there is an error.
+     * @throws IllegalArgumentException Thrown if there is an error.
      *
      */
     public static byte[] decode(String encoded, byte[] hashResult, String algo)
-        throws IASSecurityException
+        throws IllegalArgumentException
     {
          boolean isSHA = false;
 
@@ -310,7 +308,7 @@ public class SSHA
 
         if (!encoded.startsWith(SSHA_TAG) && !encoded.startsWith(SSHA_256_TAG)) {
             String msg = sm.getString("ssha.badformat", encoded);
-            throw new IASSecurityException(msg);
+            throw new IllegalArgumentException(msg);
         }
 
         String ssha = encoded.substring(SSHA_256_TAG.length());
@@ -324,7 +322,7 @@ public class SSHA
         try {
             result = decoder.decodeBuffer(ssha);
         } catch (IOException e) {
-            throw new IASSecurityException(e);
+            throw new IllegalArgumentException(e);
         }
 
         int resultLength = 32;
