@@ -43,9 +43,13 @@ import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.util.io.FileUtils;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
+import java.net.SocketException;
 import java.net.URL;
+import java.util.concurrent.ExecutionException;
+import java.util.logging.Level;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
@@ -70,6 +74,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+import java.util.logging.Logger;
 
 /**
  * @author ishan.vishnoi@java.net
@@ -79,28 +84,44 @@ import java.util.Set;
 @CommandLock(CommandLock.LockType.NONE)
 public class RegenerateGlassFishTemplate implements AdminCommand, Runnable {
 
+    @Param(name = "networkinterface", optional = false)
+    private String networkInterface;
+    
     @Param(name = "targetdir", optional = false)
     private String targetdir;
+    
     @Param(name = "glassfishlocation", optional = false)
     private String gflocation;
+    
     @Param(name = "waitforcompletion", optional = true, defaultValue = "true")
     private boolean waitforcompletion;
+    
     @Param(name = "servicename", primary = true)
     private String serviceName;
+    
     @Param(name = "virtualcluster", optional = true)
     private String virtualClusterName;
+    
     @Param(name = "templateid", optional = true)
     private String templateId;
+    
     @Param(name = "servicecharacteristics", optional = true, separator = ':')
     public Properties serviceCharacteristics;
+    
     public Properties serviceConfigurations;
+    
     private String clusterName;
-    private String instanceName;
+    
+    private String instanceName;    
+    
+    private static final Logger logger = Logger.getLogger(RegenerateGlassFishTemplate.class.getName());
 
     @Inject(optional = true) // made it optional for non-virtual scenario to work
     private TemplateRepository templateRepository;
+    
     @Inject(optional = true) // made it optional for non-virtual scenario to work
     IAAS iaas;
+    
     @Inject(optional = true) // // made it optional for non-virtual scenario to work
     VirtualClusters virtualClusters;
 
@@ -161,7 +182,6 @@ public class RegenerateGlassFishTemplate implements AdminCommand, Runnable {
 
         if (matchingTemplate != null) {
             try {
-
                 VirtualCluster vCluster = virtualClusters.byName(virtualClusterName);
                 int min = 1;
                 List<PhasedFuture<AllocationPhase, VirtualMachine>> futures =
@@ -173,47 +193,61 @@ public class RegenerateGlassFishTemplate implements AdminCommand, Runnable {
                     futures.add(future);
                 }
 
-                NetworkInterface ni = NetworkInterface.getByName("br0");
+                NetworkInterface ni = NetworkInterface.getByName(networkInterface);
                 Enumeration<InetAddress> e = ni.getInetAddresses();
                 String ipaddress = "";
                 while (e.hasMoreElements()) {
                     ipaddress = e.nextElement().toString();
                 }
 
-                if (gflocation.contains("http")) {
-                    URL gf = new URL(gflocation);
-                    FileOutputStream fout = new FileOutputStream(System.getenv("S1AS_HOME") + "/domains/domain1/docroot/glassfish.zip");
-                    FileUtils.copy(gf.openStream(), fout, Integer.MAX_VALUE);
-                } else {
-                    FileUtils.copy(gflocation, System.getenv("S1AS_HOME") + "/domains/domain1/docroot/glassfish.zip");
-                }
-
                 for (PhasedFuture<AllocationPhase, VirtualMachine> future : futures) {
                     VirtualMachine vm = future.get();
-                    String echo = vm.executeOn(new String[]{"echo \"cloud\" > /home/cloud/p "});
-                    String rm = vm.executeOn(new String[]{"rm /home/cloud/glassfish.zip*"});
-                    String wget = vm.executeOn(new String[]{"wget http:/" + ipaddress + ":8080/glassfish.zip"});
-                    String stopGF = vm.executeOn(new String[]{"/opt/glassfishvm/glassfish3/glassfish/bin/asadmin",
+                    String commandOutput = vm.executeOn(new String[]{"echo \"cloud\" > /home/cloud/p "});
+                    logger.log(Level.INFO, "Output of command echo" + commandOutput);
+                    commandOutput = vm.executeOn(new String[]{"rm /home/cloud/glassfish.zip*"});
+                    logger.log(Level.INFO, "Output of command rm" + commandOutput);
+                    if (gflocation.contains("http")) {
+                        commandOutput = vm.executeOn(new String[]{"wget " + gflocation});
+                        logger.log(Level.INFO, "Output of command wget" + commandOutput);
+                    } else {
+                        FileUtils.copy(gflocation, System.getenv("S1AS_HOME") + "/domains/domain1/docroot/glassfish.zip");
+                        commandOutput = vm.executeOn(new String[]{"wget http:/" + ipaddress + ":8080/glassfish.zip"});
+                        logger.log(Level.INFO, "Output of command wget" + commandOutput);
+                    }
+                    commandOutput = vm.executeOn(new String[]{"/opt/glassfishvm/glassfish3/glassfish/bin/asadmin",
                                 "stop-local-instance"});
-                    String rm1 = vm.executeOn(new String[]{"rm -rf /opt/glassfishvm/glassfish3"});
-                    String unzip = vm.executeOn(new String[]{"unzip -d /opt/glassfishvm/ glassfish.zip"});
-                    String rm2 = vm.executeOn(new String[]{"sudo -S rm /etc/opt/glassfishvm/configured_ip < /home/cloud/p"});
-                    String umount = vm.executeOn(new String[]{"sudo -S umount /etc/opt/glassfishvm/cust < /home/cloud/p"});
-                    String rm3 = vm.executeOn(new String[]{"sudo -S rm -rf /etc/opt/glassfishvm/cust < /home/cloud/p"});
-                    String rm4 = vm.executeOn(new String[]{"rm /home/cloud/p"});
-                    String rm5 = vm.executeOn(new String[]{"rm /home/cloud/glassfish.zip*"});
+                    logger.log(Level.INFO, "Output of command stop instance" + commandOutput);
+                    commandOutput = vm.executeOn(new String[]{"rm -rf /opt/glassfishvm/glassfish3"});
+                    logger.log(Level.INFO, "Output of command rm" + commandOutput);
+                    commandOutput = vm.executeOn(new String[]{"unzip -d /opt/glassfishvm/ glassfish.zip"});
+                    logger.log(Level.INFO, "Output of command unzip" + commandOutput);
+                    commandOutput = vm.executeOn(new String[]{"sudo -S rm /etc/opt/glassfishvm/configured_ip < /home/cloud/p"});
+                    logger.log(Level.INFO, "Output of command umount" + commandOutput);
+                    commandOutput = vm.executeOn(new String[]{"sudo -S umount /etc/opt/glassfishvm/cust < /home/cloud/p"});
+                    logger.log(Level.INFO, "Output of command rm" + commandOutput);
+                    commandOutput = vm.executeOn(new String[]{"sudo -S rm -rf /etc/opt/glassfishvm/cust < /home/cloud/p"});
+                    logger.log(Level.INFO, "Output of command echo" + commandOutput);
+                    commandOutput = vm.executeOn(new String[]{"rm /home/cloud/p"});
+                    logger.log(Level.INFO, "Output of command rm" + commandOutput);
+                    commandOutput = vm.executeOn(new String[]{"rm /home/cloud/glassfish.zip*"});
+                    logger.log(Level.INFO, "Output of command rm" + commandOutput);
 
                     vm.stop();
                     FileUtils.copy(System.getenv("HOME") + "/virt/disks/glassfish1.img", targetdir + "/glassfish.img");
-                    //FileUtils.whack(new File(System.getenv("HOME") + "/virt/templates"));
-                    //FileUtils.whack(new File(System.getenv("HOME") + "/virt/disks"));
 
                     vm.delete();                   
                 }
-            } catch (Throwable ex) {
-                throw new RuntimeException(ex);
-            }
+            
             return;
+            } catch (IOException ex) {
+                Logger.getLogger(RegenerateGlassFishTemplate.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (InterruptedException ex) {
+                Logger.getLogger(RegenerateGlassFishTemplate.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (ExecutionException ex) {
+                Logger.getLogger(RegenerateGlassFishTemplate.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (VirtException ex) {
+                Logger.getLogger(RegenerateGlassFishTemplate.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
     }
 }
