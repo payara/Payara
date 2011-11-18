@@ -67,7 +67,7 @@ import org.glassfish.api.admin.RestEndpoints;
 @RestEndpoints({
     @RestEndpoint(configBean=Resources.class,
         opType=RestEndpoint.OpType.GET, 
-        path="_get-validation-class-names", 
+        path="get-validation-class-names", 
         description="Get Validation Class Names")
 })
 public class GetValidationClassNames implements AdminCommand {

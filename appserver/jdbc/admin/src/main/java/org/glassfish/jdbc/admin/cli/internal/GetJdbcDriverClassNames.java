@@ -65,7 +65,7 @@ import org.glassfish.api.admin.RestEndpoints;
 @RestEndpoints({
     @RestEndpoint(configBean=Resources.class,
         opType=RestEndpoint.OpType.GET, 
-        path="_get-jdbc-driver-class-names", 
+        path="get-jdbc-driver-class-names", 
         description="Get JDBC Driver Class Names")
 })
 public class GetJdbcDriverClassNames implements AdminCommand {
