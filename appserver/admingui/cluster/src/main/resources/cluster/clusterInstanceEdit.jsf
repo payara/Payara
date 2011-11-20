@@ -70,6 +70,9 @@
         if ("#{pageSession.status}=REQUIRES_RESTART"){
             setAttribute(key="isRestartRequired" value="#{true}");
         }
+        gf.restRequest( endpoint="#{sessionScope.REST_URL}/clusters/cluster/#{pageSession.encodedClusterName}/get-health" , method="GET"   result="#{pageSession.health}");
+        mapGet(Map="#{pageSession.health.data.properties}" Key="#{pageSession.encodedInstanceName}" Value="#{pageSession.healthInfo}");
+
     />
     </event>
     <sun:form id="propertyForm">
@@ -165,7 +168,7 @@
             </sun:property>
 
             <sun:property id="statusProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.common.status}">
-                <sun:staticText id="status" text="#{pageSession.statusString}" />
+                <sun:staticText id="status" text="#{pageSession.statusImage} #{pageSession.healthInfo}" />
             </sun:property>
 
         <sun:property id="jvmProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.inst.JVMLabel}">
