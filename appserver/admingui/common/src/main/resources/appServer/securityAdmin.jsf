@@ -51,9 +51,7 @@
     <event>
     <!beforeCreate
         setPageSessionAttribute(key="parentPage" value="/common/appServer/serverInstGeneralPe.jsf");
-        createMap(result="#{pageSession.valueMap}");
-        mapPut(map="#{pageSession.valueMap}"  key="adminalias" value="s1as");
-        mapPut(map="#{pageSession.valueMap}"  key="instancealias" value="glassfish-instance");
+        gf.getDefaultValues(endpoint="#{sessionScope.REST_URL}/enable-secure-admin", valueMap="#{pageSession.valueMap}");
         setPageSessionAttribute(key="disableSecurityAdmin" value="#{false}");
         setPageSessionAttribute(key="enableSecurityAdmin" value="#{false}");
         if ("#{sessionScope.secureAdminEnabled}"){
