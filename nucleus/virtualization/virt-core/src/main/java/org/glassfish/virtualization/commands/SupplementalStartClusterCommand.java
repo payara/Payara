@@ -118,10 +118,12 @@ public class SupplementalStartClusterCommand implements AdminCommand {
      * @return true if we should start this virtual machine
      */
     private boolean handleVM(VirtualMachineConfig vmConfig) {
+        /*
         for (TemplateIndex ti : vmConfig.getTemplate().getIndexes()) {
             if (ti.getType().equals("ServiceType") && ti.getValue().equals("JavaEE")) return false;
         }
         return true;
-
+        */
+        return false; // Let the individual service plugins handle vm lifecycle
     }
 }

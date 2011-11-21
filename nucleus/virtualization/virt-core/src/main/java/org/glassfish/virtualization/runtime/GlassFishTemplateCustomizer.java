@@ -126,9 +126,7 @@ public class GlassFishTemplateCustomizer implements TemplateCustomizer {
         if (server!=null) {
             String nodeName = server.getNodeRef();
             ActionReport report = services.forContract(ActionReport.class).named("plain").get();
-            rtContext.executeAdminCommand(report, "stop-instance", instanceName, "_vmShutdown", "false");
             rtContext.executeAdminCommand(report, "delete-instance", instanceName);
-
             Node node = domain.getNodeNamed(nodeName);
             if (node!=null) {
                 if (node.getType().equals("SSH")) {
@@ -146,6 +144,13 @@ public class GlassFishTemplateCustomizer implements TemplateCustomizer {
 
     @Override
     public void stop(VirtualMachine virtualMachine) {
-        //To change body of implemented methods use File | Settings | File Templates.
+        String vmName = virtualMachine.getName();
+        String instanceName = virtualMachine.getServerPool().getName() + "_" +
+                virtualMachine.getMachine().getName() + "_" + vmName + "Instance";
+        Server instance = domain.getServerNamed(instanceName);
+        if (instance != null) {
+            ActionReport report = services.forContract(ActionReport.class).named("plain").get();
+            rtContext.executeAdminCommand(report, "stop-instance", instanceName, "_vmShutdown", "false");
+        }
     }
 }

@@ -96,15 +96,10 @@ public class LocalGlassFishTemplateCustomizer implements TemplateCustomizer {
                 File.separator + "lib" + File.separator + "nadmin" + (OS.isWindows()? ".bat" : "") , "create-local-instance",
                 "--cluster", cluster.getConfig().getName(),
                  virtualMachine.getName()};
-        String[] startArgs = {serverContext.getInstallRoot().getAbsolutePath() +
-                File.separator + "lib" + File.separator + "nadmin" +  (OS.isWindows()? ".bat" : "") , "start-local-instance",
-                 virtualMachine.getName()};
         ProcessExecutor createInstance = new ProcessExecutor(createArgs);
-        ProcessExecutor startInstance = new ProcessExecutor(startArgs);
 
         try {
             createInstance.execute();
-            startInstance.execute();
         } catch (ExecException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
@@ -147,18 +142,30 @@ public class LocalGlassFishTemplateCustomizer implements TemplateCustomizer {
         Server instance = domain.getServerNamed(instanceName);
         if (instance != null) {
             ActionReport report = services.forContract(ActionReport.class).named("plain").get();
-            rtContext.executeAdminCommand(report, "stop-instance", instanceName, "_vmShutdown", "false");
             rtContext.executeAdminCommand(report, "delete-instance", instanceName);
         }
     }
 
     @Override
     public void start(VirtualMachine virtualMachine, boolean firstStart) {
-        //To change body of implemented methods use File | Settings | File Templates.
+        String[] startArgs = {serverContext.getInstallRoot().getAbsolutePath() +
+                File.separator + "lib" + File.separator + "nadmin" +  (OS.isWindows()? ".bat" : "") , "start-local-instance",
+                 virtualMachine.getName()};
+        ProcessExecutor startInstance = new ProcessExecutor(startArgs);
+        try {
+            startInstance.execute();
+        } catch (ExecException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
     }
 
     @Override
     public void stop(VirtualMachine virtualMachine) {
-        //To change body of implemented methods use File | Settings | File Templates.
+        String instanceName = virtualMachine.getName();
+        Server instance = domain.getServerNamed(instanceName);
+        if (instance != null) {
+            ActionReport report = services.forContract(ActionReport.class).named("plain").get();
+            rtContext.executeAdminCommand(report, "stop-instance", instanceName, "_vmShutdown", "false");
+        }
     }
 }
