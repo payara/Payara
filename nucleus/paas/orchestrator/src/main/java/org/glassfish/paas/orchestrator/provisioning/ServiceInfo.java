@@ -55,10 +55,6 @@ public class ServiceInfo {
 
     private String serviceName;
 
-    private String ipAddress;
-
-    private String instanceId;
-
     private String serverType;
 
     private String state;
@@ -95,19 +91,19 @@ public class ServiceInfo {
     }
 
     public String getIpAddress() {
-        return ipAddress;
+        return properties.get("ip-address");
     }
 
     public void setIpAddress(String ipAddress) {
-        this.ipAddress = ipAddress;
+        properties.put("ip-address", ipAddress);
     }
 
     public String getInstanceId() {
-        return instanceId;
+        return properties.get("vm-id");
     }
 
     public void setInstanceId(String instanceId) {
-        this.instanceId = instanceId;
+        properties.put("vm-id", instanceId);
     }
 
     public String getServerType() {

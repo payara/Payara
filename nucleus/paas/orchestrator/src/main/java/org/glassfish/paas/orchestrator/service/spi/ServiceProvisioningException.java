@@ -38,48 +38,32 @@
  * holder.
  */
 
-package org.glassfish.paas.orchestrator.service.metadata;
-
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlTransient;
-import java.util.List;
+package org.glassfish.paas.orchestrator.service.spi;
 
 /**
+ * <code>ServiceProvisioningException</code> exception is thrown by the
+ * provisioning engine when any of the provisioning or unprovisioning
+ * activity fails.
+ *
  * @author bhavanishankar@java.net
  */
+// TODO :: make this a checked exception while changing all the methods of Plugin to throw this exception.
+public class ServiceProvisioningException extends RuntimeException {
 
-public class ServiceCharacteristics {
-
-    private List<Property> serviceCharacteristics;
-
-    public ServiceCharacteristics() {
-        // default constructor required for JAXB
+    public ServiceProvisioningException() {
+        super();
     }
 
-    public ServiceCharacteristics(List<Property> characteristics) {
-        setServiceCharacteristics(characteristics);
-    }
-    
-    @XmlElement(name="characteristic")
-    public List<Property> getServiceCharacteristics() {
-        return serviceCharacteristics;
+    public ServiceProvisioningException(String message) {
+        super(message);
     }
 
-    public void setServiceCharacteristics(List<Property> serviceCharacteristics) {
-        this.serviceCharacteristics = serviceCharacteristics;
+    public ServiceProvisioningException(String message, Throwable cause) {
+        super(message, cause);
     }
 
-    public String getCharacteristic(String name) {
-        for (Property p : serviceCharacteristics) {
-            if (p.getName().equals(name)) {
-                return p.getValue();
-            }
-        }
-        return null;
+    public ServiceProvisioningException(Throwable cause) {
+        super(cause);
     }
-    
-    @Override
-    public String toString() {
-        return "[characteristics = \n" + serviceCharacteristics + "]";
-    }
+
 }

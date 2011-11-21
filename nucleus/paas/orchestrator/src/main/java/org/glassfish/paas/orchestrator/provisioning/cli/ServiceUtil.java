@@ -120,6 +120,34 @@ public class ServiceUtil implements PostConstruct {
         }
     }
 
+    // set a general property for application-scoped-service config element.
+    public void removeProperty(String serviceName, String appName,
+                            final String propName) {
+        Service matchingService = getService(serviceName, appName);
+        if(matchingService != null){
+            try {
+                if (ConfigSupport.apply(new SingleConfigCode<Service>() {
+                    public Object run(Service serviceConfig) throws PropertyVetoException, TransactionFailure {
+                        Property property = serviceConfig.getProperty(propName);
+                        if (property != null) {
+                            serviceConfig.getProperty().remove(property);
+                        }
+                        return serviceConfig;
+                    }
+                }, matchingService) == null) {
+                    String msg = "Unable to remove property ["+propName+"] of service ["+serviceName+"]";
+                    System.out.println(msg);
+                    throw new RuntimeException(msg);
+                }
+            } catch (TransactionFailure transactionFailure) {
+                transactionFailure.printStackTrace();
+                throw new RuntimeException(transactionFailure.getMessage(), transactionFailure);
+            }
+        } else{
+            throw new RuntimeException("Invalid service, no such service ["+serviceName+"] found");
+        }
+    }
+
     public void updateVMID(String serviceName, String appName, final String instanceID, ServiceType type) {
         updateVMIDThroughConfig(serviceName, appName, instanceID);
     }
@@ -435,13 +463,14 @@ public class ServiceUtil implements PostConstruct {
                     ApplicationScopedService service = servicesConfig.createChild(ApplicationScopedService.class);
 
                     service.setServiceName(entry.getServiceName());
-                    service.setType(entry.getServerType().toLowerCase());
+                    service.setType(entry.getServerType());
 
                     if (entry.getAppName() != null) {
                         service.setApplicationName(entry.getAppName());
                     }
                     service.setState(entry.getState());
 
+/*
                     {
                         Property prop = service.createChild(Property.class);
                         prop.setName("vm-id");
@@ -456,6 +485,7 @@ public class ServiceUtil implements PostConstruct {
                         prop.setValue(entry.getIpAddress());
                         service.getProperty().add(prop);
                     }
+*/
 
                     Map<String, String> properties = entry.getProperties();
                     if(properties != null){
