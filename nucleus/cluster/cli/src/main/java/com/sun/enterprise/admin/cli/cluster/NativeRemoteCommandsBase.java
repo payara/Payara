@@ -283,7 +283,7 @@ abstract class NativeRemoteCommandsBase extends CLICommand {
      * @return true if empty, false otherwise
      * @throws IOException
      */
-    private boolean isRemoteDirectoryEmpty(SFTPClient sftp, String file) throws IOException {
+    boolean isRemoteDirectoryEmpty(SFTPClient sftp, String file) throws IOException {
         List<SFTPv3DirectoryEntry> l = (List<SFTPv3DirectoryEntry>) sftp.ls(file);
         if (l.size() > 2)
             return false;

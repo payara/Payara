@@ -133,7 +133,7 @@ public class UninstallNodeSshCommand extends UninstallNodeBaseCommand {
 
                 deleteRemoteFiles(sftpClient, files, getInstallDir(), getForce());
 
-                if (sftpClient.ls(getInstallDir()).isEmpty()) {
+                if (isRemoteDirectoryEmpty(sftpClient, getInstallDir())) {
                     sftpClient.rmdir(getInstallDir());
                 }
             }
