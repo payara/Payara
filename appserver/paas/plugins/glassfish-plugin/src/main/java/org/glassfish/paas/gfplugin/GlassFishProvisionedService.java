@@ -40,13 +40,10 @@
 
 package org.glassfish.paas.gfplugin;
 
-import org.glassfish.paas.orchestrator.service.JavaEEServiceType;
-import org.glassfish.paas.orchestrator.service.ServiceStatus;
-import org.glassfish.paas.orchestrator.service.ServiceType;
-import org.glassfish.paas.orchestrator.service.metadata.ServiceDescription;
-import org.glassfish.paas.orchestrator.service.spi.ProvisionedService;
 import org.glassfish.embeddable.GlassFish;
-import org.glassfish.embeddable.GlassFishException;
+import org.glassfish.paas.orchestrator.service.ServiceStatus;
+import org.glassfish.paas.orchestrator.service.metadata.ServiceDescription;
+import org.glassfish.paas.spe.common.BasicProvisionedService;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -56,54 +53,24 @@ import java.util.Properties;
  * @author bhavanishankar@java.net
  */
 
-public class GlassFishProvisionedService implements ProvisionedService {
+public class GlassFishProvisionedService extends BasicProvisionedService {
 
-    private ServiceDescription serviceDesription; // serviceDescription.getName() is like domain.cluster
-    private Properties serviceProperties; // contains host, port, domainName.
+    // TODO :: should contain DAS information and Cluster information.
+    
     private GlassFish provisionedGlassFish;
 
     public GlassFishProvisionedService(ServiceDescription serviceDesription,
                                        Properties serviceProperties,
+                                       ServiceStatus status,
                                        GlassFish provisionedGlassFish) {
-        this.serviceDesription = serviceDesription;
-        this.serviceProperties = serviceProperties;
+        super(serviceDesription, serviceProperties, status);
         this.provisionedGlassFish = provisionedGlassFish;
     }
 
-    public ServiceType getServiceType() {
-        return new JavaEEServiceType();
-    }
-
-    public ServiceDescription getServiceDescription() {
-        return serviceDesription;
-    }
-
-    public String getName(){
-        return serviceDesription.getName();
-    }
-
-    public Properties getProperties() {
-        //TODO return the co-ordinates (eg: hostname, port, etc.,)
-        return new Properties();
-    }
-
+    @Override
     public ServiceStatus getStatus() {
-        ServiceStatus status = ServiceStatus.UNKNOWN;
-        try {
-            status = provisionedGlassFish != null ?
-                    statusMapping.get(provisionedGlassFish.getStatus()) : status;
-        } catch (GlassFishException e) {
-            e.printStackTrace();
-        }
-        return status;
-    }
-
-    public Properties getServiceProperties() {
-        return serviceProperties;
-    }
-
-    public void setServiceDesription(ServiceDescription definition) {
-        this.serviceDesription = definition;
+        // TODO :: make sure the cluster is running.
+        return ServiceStatus.RUNNING;
     }
 
     public GlassFish getProvisionedGlassFish() {
@@ -113,7 +80,6 @@ public class GlassFishProvisionedService implements ProvisionedService {
     public void setProvisionedGlassFish(GlassFish glassFish) {
         this.provisionedGlassFish = glassFish;
     }
-
 
     // Map GlassFish status to Service status.
     private static Map<GlassFish.Status, ServiceStatus> statusMapping = new HashMap();
@@ -125,6 +91,5 @@ public class GlassFishProvisionedService implements ProvisionedService {
         statusMapping.put(GlassFish.Status.STOPPED, ServiceStatus.STOPPED);
         statusMapping.put(GlassFish.Status.INIT, ServiceStatus.STOPPED);
         statusMapping.put(GlassFish.Status.DISPOSED, ServiceStatus.UNKNOWN);
-    }
-
+     }
 }

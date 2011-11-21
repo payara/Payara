@@ -54,6 +54,7 @@
     <packaging>pom</packaging>
     <name>GlassFish Service Plugins Modules</name>
     <modules>
+        <module>spe-base</module>
         <module>glassfish-plugin</module>
         <module>javadb-plugin</module>
         <module>load-balancer-plugin</module>
