@@ -42,7 +42,6 @@ package com.sun.enterprise.admin.cli.optional;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
 import org.jvnet.hk2.annotations.*;
 import org.jvnet.hk2.component.*;
 import org.glassfish.api.Param;
@@ -51,6 +50,8 @@ import com.sun.enterprise.admin.cli.*;
 import com.sun.enterprise.universal.glassfish.GFLauncherUtils;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 import com.sun.enterprise.util.OS;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 
 /**
@@ -70,6 +71,9 @@ public final class StartDatabaseCommand extends DatabaseCommand {
 
     @Param(name = "dbhome", optional = true)
     private String dbHome;
+    
+    @Param(name = "jvmoptions", optional = true, separator=' ')
+    private String[] jvmoptions;
 
     private static final LocalStringsImpl strings =
             new LocalStringsImpl(StartDatabaseCommand.class);
@@ -79,55 +83,25 @@ public final class StartDatabaseCommand extends DatabaseCommand {
      *  Note that when using Darwin (Mac), the property,
      *  "-Dderby.storage.fileSyncTransactionLog=True" is defined.
      */
-    public String[] startDatabaseCmd() throws Exception {
-        //if (dbUser == null && dbPassword == null) {
-            if (OS.isDarwin()) {
-                return new String[]{
-                            sJavaHome + File.separator + "bin" + File.separator + "java",
-                            "-Djava.library.path=" + sInstallRoot + File.separator + "lib",
-                            "-Dderby.storage.fileSyncTransactionLog=True",
-                            "-cp",
-                            sClasspath + File.pathSeparator + sDatabaseClasspath,
-                            "com.sun.enterprise.admin.cli.optional.DerbyControl",
-                            "start",
-                            dbHost, dbPort, "true", dbHome
-                        };
-            } else {
-                return new String[]{
-                            sJavaHome + File.separator + "bin" + File.separator + "java",
-                            "-Djava.library.path=" + sInstallRoot + File.separator + "lib",
-                            "-cp",
-                            sClasspath + File.pathSeparator + sDatabaseClasspath,
-                            "com.sun.enterprise.admin.cli.optional.DerbyControl",
-                            "start",
-                            dbHost, dbPort, "true", dbHome
-                        };
-            }
-
-        /*} else {
-            if (OS.isDarwin()) {
-                return new String[]{
-                            sJavaHome + File.separator + "bin" + File.separator + "java",
-                            "-Djava.library.path=" + sInstallRoot + File.separator + "lib",
-                            "-Dderby.storage.fileSyncTransactionLog=True",
-                            "-cp",
-                            sClasspath + File.pathSeparator + sDatabaseClasspath,
-                            "com.sun.enterprise.admin.cli.optional.DerbyControl",
-                            "start",
-                            dbHost, dbPort, "true", dbHome, dbUser, dbPassword
-                        };
-            } else {
-                return new String[]{
-                            sJavaHome + File.separator + "bin" + File.separator + "java",
-                            "-Djava.library.path=" + sInstallRoot + File.separator + "lib",
-                            "-cp",
-                            sClasspath + File.pathSeparator + sDatabaseClasspath,
-                            "com.sun.enterprise.admin.cli.optional.DerbyControl",
-                            "start",
-                            dbHost, dbPort, "true", dbHome, dbUser, dbPassword
-                        };
-            }
-        }*/
+    public String[] startDatabaseCmd() {
+        ArrayList<String> cmd = new ArrayList<String>();
+        cmd.add(sJavaHome + File.separator + "bin" + File.separator + "java");
+        cmd.add("-Djava.library.path=" + sInstallRoot + File.separator + "lib");
+        if (OS.isDarwin()) {
+            cmd.add("-Dderby.storage.fileSyncTransactionLog=True");
+        }
+        cmd.add("-cp");
+        cmd.add(sClasspath + File.pathSeparator + sDatabaseClasspath);
+        if (jvmoptions != null) {
+            cmd.addAll(Arrays.asList(jvmoptions));
+        }
+        cmd.add("com.sun.enterprise.admin.cli.optional.DerbyControl");
+        cmd.add("start");
+        cmd.add(dbHost);
+        cmd.add(dbPort);
+        cmd.add("true");
+        cmd.add(dbHome);
+        return cmd.toArray(new String[cmd.size()]);  
     }
 
 
