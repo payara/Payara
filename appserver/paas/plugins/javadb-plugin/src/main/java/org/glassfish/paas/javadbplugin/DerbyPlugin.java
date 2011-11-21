@@ -68,6 +68,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -241,13 +242,16 @@ public class DerbyPlugin implements Plugin<RDBMSServiceType> {
             if(serviceDescription.getAppName() != null){
                 params.add("--appname="+serviceDescription.getAppName());
             }
+            params.add("--startvm=true");
+            params.add("--virtualcluster");
+            params.add(serviceDescription.getVirtualClusterName());
             params.add(serviceName);
             parameters = new String[params.size()];
             parameters = params.toArray(parameters);
 
             result = commandRunner.run("_start-derby-service", parameters);
             if (result.getExitStatus().equals(CommandResult.ExitStatus.FAILURE)) {
-                System.out.println("_start-derby-service [" + serviceName + "] failed");
+                logger.log(Level.WARNING, "_start-derby-service [" + serviceName + "] failed");
             }
         }
 
@@ -265,13 +269,23 @@ public class DerbyPlugin implements Plugin<RDBMSServiceType> {
     }
 
     public boolean stopService(ServiceDescription serviceDescription, ServiceInfo serviceInfo) {
-        String appNameParam="";
-        if(serviceDescription.getAppName() != null){
-            appNameParam="--appname="+serviceDescription.getAppName();
+        String serviceName = serviceDescription.getName();
+        ArrayList params = new ArrayList<String>();
+        logger.entering(getClass().getName(), "stopService");
+
+        if (serviceDescription.getAppName() != null) {
+            params.add("--appname");
+            params.add(serviceDescription.getAppName());
         }
-        CommandResult result = commandRunner.run("_stop-derby-service",
-                appNameParam, serviceDescription.getName());
-        System.out.println("_stop-derby-service command output [" + result.getOutput() + "]");
+        params.add("--stopvm=true");
+        params.add("--virtualcluster");
+        params.add(serviceDescription.getVirtualClusterName());
+        params.add(serviceName);
+        String[] parameters = new String[params.size()];
+        parameters = (String[]) params.toArray(parameters);
+
+        CommandResult result = commandRunner.run("_stop-derby-service", parameters);
+        logger.log(Level.INFO, "_stop-derby-service command output [" + result.getOutput() + "]");
         if (result.getExitStatus() == CommandResult.ExitStatus.SUCCESS) {
             return true;
         } else {

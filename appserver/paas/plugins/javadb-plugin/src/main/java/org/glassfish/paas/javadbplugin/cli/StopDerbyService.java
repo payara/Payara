@@ -45,26 +45,35 @@ import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
-import org.glassfish.paas.orchestrator.provisioning.ApplicationServerProvisioner;
-import org.glassfish.paas.orchestrator.provisioning.ProvisionerUtil;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceType;
-import org.glassfish.paas.orchestrator.provisioning.iaas.CloudProvisioner;
 import org.glassfish.paas.orchestrator.provisioning.ServiceInfo;
-import org.glassfish.paas.orchestrator.provisioning.ServiceInfo.State;
+import org.glassfish.virtualization.runtime.VirtualClusters;
+import org.glassfish.virtualization.runtime.VirtualMachineLifecycle;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.virtualization.spi.VirtException;
+import org.glassfish.virtualization.spi.VirtualMachine;
+import org.glassfish.virtualization.spi.VirtualCluster;
+import org.glassfish.paas.javadbplugin.DerbyProvisioner;
 
-import java.util.ArrayList;
-import java.util.Collection;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import static org.glassfish.paas.orchestrator.provisioning.ServiceInfo.State.NotRunning;
+import static org.glassfish.paas.orchestrator.provisioning.cli.ServiceType.DATABASE;
 
 /**
  * @author Jagadish Ramu
+ * @author Shalini M
  */
 @Service(name = "_stop-derby-service")
 @Scoped(PerLookup.class)
 public class StopDerbyService implements AdminCommand {
+
+    @Param(name = "stopvm", optional = true)
+    boolean stopVM;
 
     @Param(name = "servicename", primary = true, optional = false)
     private String serviceName;
@@ -72,47 +81,83 @@ public class StopDerbyService implements AdminCommand {
     @Param(name="appname", optional=true)
     private String appName;
 
+    @Param(name = "virtualcluster", optional = true)
+    private String virtualClusterName;
+
     @Inject
-    private ProvisionerUtil provisionerUtil;
+    private DerbyProvisioner derbyProvisioner;
 
     @Inject
     private DatabaseServiceUtil dbServiceUtil;
 
+    @Inject(optional = true)
+    VirtualClusters virtualClusters;
+
+    @Inject(optional = true)
+    VirtualMachineLifecycle vmLifecycle;
+
+    VirtualCluster virtualCluster;
+    VirtualMachine virtualMachine;
+    private static Logger logger = Logger.getLogger(StopDerbyService.class.getName());
+
     public void execute(AdminCommandContext context) {
 
+        logger.entering(getClass().getName(), "execute");
         final ActionReport report = context.getActionReport();
 
-/*
-            IaaS Specific Code
-            ApplicationServerProvisioner provisioner = provisionerUtil.getAppServerProvisioner("localhost");
-            provisioner.stopInstance(entry.getIpAddress(), entry.getInstanceId());
-*/
-
-
         if (dbServiceUtil.isValidService(serviceName, appName, ServiceType.DATABASE)) {
-            ServiceInfo entry = dbServiceUtil.retrieveCloudEntry(serviceName, appName, ServiceType.DATABASE);
-            String ipAddress = entry.getIpAddress();
-            String status = entry.getState();
-            if (status == null || status.equalsIgnoreCase(State.Stop_in_progress.toString())
-                    || status.equalsIgnoreCase(State.NotRunning.toString())) {
-                report.setMessage("Invalid db-service [" + serviceName + "] state [" + status + "]");
-                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-                return;
+
+            synchronized (StopDerbyService.class) {
+                ServiceInfo entry = dbServiceUtil.retrieveCloudEntry(serviceName, appName, ServiceType.DATABASE);
+                String ipAddress = entry.getIpAddress();
+                String status = entry.getState();
+
+                //derbyProvisioner.stopDatabase(ipAddress);
+                try {
+                    if(status == null || status.equalsIgnoreCase(ServiceInfo.State.NotRunning.toString())) {
+                        report.setMessage("Derby db service [" + serviceName + "] already stopped");
+                        report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                        logger.log(Level.WARNING, "Stop Derby database service failed : " +
+                                "Derby database service already stopped");
+                        return;
+                    }
+                    retrieveVirtualMachine();
+                    if(stopVM) {
+                        if(virtualMachine != null) {
+                            vmLifecycle.stop(virtualMachine);
+                        }
+                    }
+                    report.setMessage("derby db service [" + serviceName + "] stopped");
+                    report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
+                    dbServiceUtil.updateState(serviceName, appName, NotRunning.toString(), DATABASE);
+                    logger.log(Level.INFO, "Derby database service stopped successfully");
+                } catch (Exception ex) {
+                    logger.log(Level.WARNING, "Exception  while stopping derby db service : " + ex);
+                    report.setMessage("Derby DB service [" + serviceName + "] stop failed");
+                    report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                }
             }
-
-            dbServiceUtil.updateState(serviceName, appName,
-                    State.Stop_in_progress.toString(), ServiceType.DATABASE);
-
-            provisionerUtil.getDatabaseProvisioner().stopDatabase(ipAddress);
-
-            dbServiceUtil.updateState(serviceName, appName,
-                    State.NotRunning.toString(), ServiceType.DATABASE);
-            report.setMessage("db-service [" + serviceName + "] stopped");
-            report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
-
         } else {
             report.setMessage("Invalid db-service name [" + serviceName + "]");
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            logger.log(Level.WARNING, "Invalid Derby database service name : " + serviceName);
+        }
+    }
+
+    private void retrieveVirtualMachine() throws VirtException {
+        if (virtualClusters != null && serviceName != null && virtualClusterName != null) {
+            virtualCluster = virtualClusters.byName(virtualClusterName);
+            String vmId = dbServiceUtil.getInstanceID(serviceName, appName, DATABASE);
+            if (vmId != null) {
+                logger.log(Level.INFO, "Found Derby DB VM with id : " + vmId);
+                virtualMachine = virtualCluster.vmByName(vmId);
+                // TODO :: IMS should give differnt way to get hold of VM using the vmId
+                return;
+            }
+            logger.log(Level.WARNING, "Unable to find VirtualMachine for Derby db with vmId : " + vmId);
+        } else {
+            logger.log(Level.WARNING, "Unable to find VirtualMachine for Derby db as " +
+                    "virtualClusters or serviceName is null");
         }
     }
 }

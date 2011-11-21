@@ -74,9 +74,27 @@ public class DerbyNativeTemplateCustomizer implements TemplateCustomizer {
     }
 
     public void start(VirtualMachine virtualMachine, boolean firstStart) {
+        String[] startdbArgs = {serverContext.getInstallRoot().getAbsolutePath() +
+                File.separator + "bin" + File.separator + "asadmin" + (OS.isWindows() ? ".bat" : ""), "start-database"};
+        ProcessExecutor startDatabase = new ProcessExecutor(startdbArgs);
+
+        try {
+            startDatabase.execute();
+        } catch (ExecException e) {
+            e.printStackTrace();
+        }
     }
 
     public void stop(VirtualMachine virtualMachine) {
+        String[] stopdbArgs = {serverContext.getInstallRoot().getAbsolutePath() +
+                File.separator + "bin" + File.separator + "asadmin" + (OS.isWindows() ? ".bat" : ""), "stop-database"};
+        ProcessExecutor stopDatabase = new ProcessExecutor(stopdbArgs);
+
+        try {
+            stopDatabase.execute();
+        } catch (ExecException e) {
+            e.printStackTrace();
+        }
     }
 
     public void clean(VirtualMachine virtualMachine) {
