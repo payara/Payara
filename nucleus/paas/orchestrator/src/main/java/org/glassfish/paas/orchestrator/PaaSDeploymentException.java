@@ -40,19 +40,24 @@
 
 package org.glassfish.paas.orchestrator;
 
-import org.jvnet.hk2.annotations.Contract;
-
 /**
  * @author Jagadish Ramu
  */
-@Contract
-public interface PaaSDeploymentState {
 
-    public void beforeExecution(PaaSDeploymentContext context) throws PaaSDeploymentException ;
+public class PaaSDeploymentException extends Exception {
 
-    public void handle(PaaSDeploymentContext context) throws PaaSDeploymentException;
+    public PaaSDeploymentException(){
+    }
 
-    public void afterExecution(PaaSDeploymentContext context) throws PaaSDeploymentException ;
+    public PaaSDeploymentException(String message){
+        super(message);
+    }
 
-    public Class getRollbackState();
+    public PaaSDeploymentException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
+    public PaaSDeploymentException(Throwable cause) {
+        super(cause);
+    }
 }

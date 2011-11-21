@@ -40,22 +40,48 @@
 
 package org.glassfish.paas.orchestrator.state;
 
+import org.glassfish.api.ActionReport;
+import org.glassfish.api.admin.CommandRunner;
+import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.paas.orchestrator.PaaSDeploymentContext;
+import org.glassfish.paas.orchestrator.PaaSDeploymentException;
 import org.glassfish.paas.orchestrator.PaaSDeploymentState;
+import org.glassfish.paas.orchestrator.ServiceOrchestratorImpl;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
+
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * @author Jagadish Ramu
  */
 @Service
-public class UndeployState implements PaaSDeploymentState {
+public class UndeployState extends AbstractPaaSDeploymentState {
 
     @Inject
     private Habitat habitat;
 
-    public void handle(PaaSDeploymentContext context) {
-        context.setAction(PaaSDeploymentContext.Action.PROCEED);
+    @Inject
+    private CommandRunner commandRunner;
+
+    private static Logger logger = Logger.getLogger(ServiceOrchestratorImpl.class.getName());
+
+    public void handle(PaaSDeploymentContext context) throws PaaSDeploymentException {
+        String appName = context.getAppName();
+
+        ParameterMap parameterMap = new ParameterMap();
+        parameterMap.add("DEFAULT", appName);
+        parameterMap.add("properties", ServiceOrchestratorImpl.ORCHESTRATOR_UNDEPLOY_CALL +"=true");
+        ActionReport report =  habitat.getComponent(ActionReport.class);
+        CommandRunner.CommandInvocation invocation = commandRunner.getCommandInvocation("undeploy", report);
+        invocation.parameters(parameterMap).execute();
+        logger.log(Level.INFO, "Undeploying application ["+appName+"], status : " + report.getMessage());
+    }
+
+    public Class<PaaSDeploymentState> getRollbackState() {
+        return null;
     }
 }

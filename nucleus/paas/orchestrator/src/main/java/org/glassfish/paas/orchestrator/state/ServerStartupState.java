@@ -41,6 +41,7 @@
 package org.glassfish.paas.orchestrator.state;
 
 import org.glassfish.paas.orchestrator.PaaSDeploymentContext;
+import org.glassfish.paas.orchestrator.PaaSDeploymentException;
 import org.glassfish.paas.orchestrator.PaaSDeploymentState;
 import org.glassfish.paas.orchestrator.ServiceOrchestratorImpl;
 import org.glassfish.paas.orchestrator.provisioning.ServiceInfo;
@@ -61,14 +62,14 @@ import java.util.logging.Logger;
  * @author Jagadish Ramu
  */
 @Service
-public class ServerStartupState implements PaaSDeploymentState {
+public class ServerStartupState extends AbstractPaaSDeploymentState {
 
     @Inject
     private ServiceUtil serviceUtil;
 
     private static Logger logger = Logger.getLogger(ServiceOrchestratorImpl.class.getName());
 
-    public void handle(PaaSDeploymentContext context) {
+    public void handle(PaaSDeploymentContext context) throws PaaSDeploymentException {
         retrieveProvisionedServices(context);
     }
 
@@ -85,7 +86,7 @@ public class ServerStartupState implements PaaSDeploymentState {
         Set<ServiceDescription> appSDs = appServiceMetadata.getServiceDescriptions();
         for (final ServiceDescription sd : appSDs) {
                 //Temporary workaround to set virtual-cluster in all ProvisionedServices
-                sd.setVirtualClusterName(virtualClusterName);
+                //sd.setVirtualClusterName(virtualClusterName);
 
                 Plugin<?> chosenPlugin = orchestrator.getPluginForServiceType(installedPlugins, sd.getServiceType());
                 logger.log(Level.INFO, "Retrieving provisioned Service for " + sd + " through " + chosenPlugin);
@@ -101,4 +102,7 @@ public class ServerStartupState implements PaaSDeploymentState {
         return appPSs;
     }
 
+    public Class<PaaSDeploymentState> getRollbackState() {
+        return null;
+    }
 }

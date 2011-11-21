@@ -38,57 +38,35 @@
  * holder.
  */
 
+
 package org.glassfish.paas.orchestrator.state;
 
 import org.glassfish.paas.orchestrator.PaaSDeploymentContext;
 import org.glassfish.paas.orchestrator.PaaSDeploymentException;
-import org.glassfish.paas.orchestrator.ServiceOrchestratorImpl;
-import org.glassfish.paas.orchestrator.provisioning.ServiceInfo;
-import org.glassfish.paas.orchestrator.provisioning.cli.ServiceUtil;
-import org.glassfish.paas.orchestrator.service.metadata.ServiceDescription;
-import org.glassfish.paas.orchestrator.service.metadata.ServiceMetadata;
-import org.glassfish.paas.orchestrator.service.spi.Plugin;
-import org.jvnet.hk2.annotations.Inject;
-import org.jvnet.hk2.annotations.Service;
-
-import java.util.Set;
-import java.util.logging.Logger;
+import org.glassfish.paas.orchestrator.PaaSDeploymentState;
+import org.glassfish.paas.orchestrator.provisioning.util.FailureInducer;
 
 /**
  * @author Jagadish Ramu
  */
-@Service
-public class DisableState extends AbstractPaaSDeploymentState {
+public abstract class AbstractPaaSDeploymentState implements PaaSDeploymentState {
 
-    @Inject
-    private ServiceUtil serviceUtil;
-
-    private static Logger logger = Logger.getLogger(ServiceOrchestratorImpl.class.getName());
-
-    public void handle(PaaSDeploymentContext context) throws PaaSDeploymentException {
-        stopServices(context);
+    public void beforeExecution(PaaSDeploymentContext context) throws PaaSDeploymentException {
+        detectAndFail(true);
     }
 
-    private void stopServices(PaaSDeploymentContext context) {
-        final ServiceOrchestratorImpl orchestrator = context.getOrchestrator();
-        final Set<Plugin> installedPlugins = orchestrator.getPlugins();
-        String appName = context.getAppName();
-        final ServiceMetadata appServiceMetadata = orchestrator.getServiceMetadata(appName);
+    public void afterExecution(PaaSDeploymentContext context) throws PaaSDeploymentException {
+        detectAndFail(false);
+    }
 
-        for(ServiceDescription sd : appServiceMetadata.getServiceDescriptions()){
-            Plugin<?> chosenPlugin = orchestrator.getPluginForServiceType(installedPlugins, sd.getServiceType());
-            ServiceInfo serviceInfo = serviceUtil.retrieveCloudEntry(sd.getName(), appName, null );
-            if(serviceInfo != null){
-                chosenPlugin.stopService(sd, serviceInfo);
-            }else{
-                logger.warning("unable to retrieve service-info for service : " + sd.getName() + " of application : " + appName);
-            }
+    private void detectAndFail(boolean beforeExecution) throws PaaSDeploymentException {
+        String executionState = "beforeExecution";
+        if(!beforeExecution){
+            executionState = "afterExecution";
         }
-        orchestrator.removeProvisionedServices(appName);
-        orchestrator.removeServiceMetadata(appName);
-    }
-
-    public Class getRollbackState() {
-        return null;
+        if(FailureInducer.getFailureState() != null && this.getClass().equals(FailureInducer.getFailureState())){
+            throw new PaaSDeploymentException("Failure Inducer induced exception on state " +
+                    "[ "+this.getClass().getSimpleName()+" ], " + executionState);
+        }
     }
 }

@@ -43,13 +43,13 @@ package org.glassfish.paas.orchestrator;
 import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.config.serverbeans.Domain;
 import org.glassfish.api.admin.AdminCommandLock;
+import org.glassfish.api.admin.CommandRunner;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.deployment.DeployCommandParameters;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.OpsParams;
 import org.glassfish.api.deployment.UndeployCommandParameters;
 import org.glassfish.api.deployment.archive.ReadableArchive;
-import org.glassfish.embeddable.CommandRunner;
 import org.glassfish.internal.deployment.ApplicationLifecycleInterceptor;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceUtil;
@@ -57,6 +57,7 @@ import org.glassfish.virtualization.config.VirtualMachineConfig;
 import org.glassfish.virtualization.config.Virtualizations;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.component.Habitat;
 
 import java.util.List;
 import java.util.logging.Level;
@@ -73,6 +74,9 @@ public class ApplicationLifecycleInterceptorImpl implements ApplicationLifecycle
 
     @Inject
     private CommandRunner commandRunner;
+
+    @Inject
+    private Habitat habitat;
 
     @Inject
     private ServiceOrchestratorImpl serviceOrchestratorImpl;
@@ -132,12 +136,11 @@ public class ApplicationLifecycleInterceptorImpl implements ApplicationLifecycle
                 public void run() {
                     if (phase.equals(ExtendedDeploymentContext.Phase.REPLICATION)) {
                         OpsParams params = context.getCommandParameters(OpsParams.class);
-                        ReadableArchive archive = context.getSource();
                         if (params.origin == OpsParams.Origin.deploy) {
                             String appName = params.name();
                             serviceOrchestratorImpl.postDeploy(appName, context);
                         }
-                        //make sure that it is indeed undeploy and not disable.
+                        //make sure it is indeed undeploy and not disable.
                         //params.origin is "undeploy" for both "undeploy" as well "disable" phase
                         //hence using the actual command issued to confirm.
                         if (params.origin == OpsParams.Origin.undeploy) {
@@ -172,26 +175,29 @@ public class ApplicationLifecycleInterceptorImpl implements ApplicationLifecycle
     }
 
     private void logEvent(boolean before, ExtendedDeploymentContext.Phase phase, ExtendedDeploymentContext context) {
-        try{
-            StringBuilder sb = new StringBuilder();
-            if(before){
-                sb.append("ServiceOrchestrator receiving event \n { [Before] ");
-            }else{
-                sb.append("ServiceOrchestrator receiving event \n { [After] ");
-            }
+        Level logLevel = Level.FINEST;
+        if(logger.isLoggable(logLevel)){
+            try{
+                StringBuilder sb = new StringBuilder();
+                if(before){
+                    sb.append("ServiceOrchestrator receiving event \n { [Before] ");
+                }else{
+                    sb.append("ServiceOrchestrator receiving event \n { [After] ");
+                }
 
-            sb.append(" [Phase : "+phase.toString()+"]");
-            if(context != null){
-                OpsParams params = context.getCommandParameters(OpsParams.class);
-                sb.append(" [Command : "+params.command+"]");
-                sb.append(" [Origin : "+params.origin+"]");
-            }else{
-                sb.append(" [DeploymentContext is null, command and origin not available]");
+                sb.append(" [Phase : "+phase.toString()+"]");
+                if(context != null){
+                    OpsParams params = context.getCommandParameters(OpsParams.class);
+                    sb.append(" [Command : "+params.command+"]");
+                    sb.append(" [Origin : "+params.origin+"]");
+                }else{
+                    sb.append(" [DeploymentContext is null, command and origin not available]");
+                }
+                sb.append(" }");
+                logger.log(logLevel, sb.toString());
+            }catch(Exception e){
+                //ignore, this is debugging info.
             }
-            sb.append(" }");
-            logger.log(Level.FINEST, sb.toString());
-        }catch(Exception e){
-            //ignore, this is debugging info.
         }
     }
 

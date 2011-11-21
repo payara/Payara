@@ -41,7 +41,7 @@
 package org.glassfish.paas.orchestrator.state;
 
 import org.glassfish.paas.orchestrator.PaaSDeploymentContext;
-import org.glassfish.paas.orchestrator.PaaSDeploymentState;
+import org.glassfish.paas.orchestrator.PaaSDeploymentException;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
@@ -50,12 +50,16 @@ import org.jvnet.hk2.component.Habitat;
  * @author Jagadish Ramu
  */
 @Service
-public class DeployState implements PaaSDeploymentState {
+public class DeployState extends AbstractPaaSDeploymentState {
 
     @Inject
     private Habitat habitat;
 
-    public void handle(PaaSDeploymentContext context) {
+    public void handle(PaaSDeploymentContext context) throws PaaSDeploymentException {
         context.setAction(PaaSDeploymentContext.Action.PROCEED);
+    }
+
+    public Class getRollbackState() {
+        return UndeployState.class;
     }
 }

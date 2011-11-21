@@ -43,26 +43,26 @@ package org.glassfish.paas.orchestrator.state;
 
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.paas.orchestrator.PaaSDeploymentContext;
-import org.glassfish.paas.orchestrator.PaaSDeploymentState;
+import org.glassfish.paas.orchestrator.PaaSDeploymentException;
 import org.glassfish.paas.orchestrator.ServiceOrchestratorImpl;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceMetadata;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceReference;
 import org.glassfish.paas.orchestrator.service.spi.Plugin;
 import org.glassfish.paas.orchestrator.service.spi.ProvisionedService;
 
-import java.util.Collection;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
  * @author Jagadish Ramu
  */
-public abstract class AssociationState implements PaaSDeploymentState {
+public abstract class AssociationState extends AbstractPaaSDeploymentState {
 
     private static Logger logger = Logger.getLogger(ServiceOrchestratorImpl.class.getName());
 
-    protected void associateProvisionedServices(PaaSDeploymentContext context, boolean preDeployment) {
+    protected void associateProvisionedServices(PaaSDeploymentContext context, boolean preDeployment)
+            throws PaaSDeploymentException {
         logger.entering(getClass().getName(), "associateProvisionedServices-beforeDeployment=" + preDeployment);
         final ServiceOrchestratorImpl orchestrator = context.getOrchestrator();
         final Set<Plugin> installedPlugins = orchestrator.getPlugins();
@@ -72,31 +72,88 @@ public abstract class AssociationState implements PaaSDeploymentState {
         final Set<ProvisionedService> appProvisionedSvcs = orchestrator.getProvisionedServices(appName);
 
 
-        for (ProvisionedService serviceProducer : appProvisionedSvcs) {
-            for (Plugin<?> svcPlugin : installedPlugins) {
-                //associate the provisioned service only with plugins that handle other service types.
-                if (!serviceProducer.getServiceType().equals(svcPlugin.getServiceType())) {
-                    Set<ServiceReference> appSRs = appServiceMetadata.getServiceReferences();
-                    for (ServiceReference serviceRef : appSRs) {
-                        logger.log(Level.INFO, "Associating ProvisionedService " + serviceProducer
-                                + " for ServiceReference " + serviceRef + " through " + svcPlugin);
-                        Collection<ProvisionedService> serviceConsumers =
-                                orchestrator.getServicesProvisionedByPlugin(svcPlugin, appProvisionedSvcs);
-                        for (ProvisionedService serviceConsumer : serviceConsumers) {
-                            try {
-                                svcPlugin.associateServices(serviceConsumer, serviceRef, serviceProducer, preDeployment, dc);
-                            } catch (Exception e) {
-                                //TODO need to dissociate the previously associated services.
-                                //TODO which needs book keeping info on previously associated services.
-                                e.printStackTrace();
-                                context.setAction(PaaSDeploymentContext.Action.ROLLBACK);
-                                return;
+        List<AssociatedServiceRecord> associatedServicesList = new ArrayList<AssociatedServiceRecord>();
+        try{
+            for (ProvisionedService serviceProducer : appProvisionedSvcs) {
+                for (Plugin<?> svcPlugin : installedPlugins) {
+                    //associate the provisioned service only with plugins that handle other service types.
+                    if (!serviceProducer.getServiceType().equals(svcPlugin.getServiceType())) {
+                        Set<ServiceReference> appSRs = appServiceMetadata.getServiceReferences();
+                        for (ServiceReference serviceRef : appSRs) {
+                            logger.log(Level.INFO, "Associating ProvisionedService " + serviceProducer
+                                    + " for ServiceReference " + serviceRef + " through " + svcPlugin);
+                            Collection<ProvisionedService> serviceConsumers =
+                                    orchestrator.getServicesProvisionedByPlugin(svcPlugin, appProvisionedSvcs);
+                            for (ProvisionedService serviceConsumer : serviceConsumers) {
+                                try {
+                                    svcPlugin.associateServices(serviceConsumer, serviceRef, serviceProducer, preDeployment, dc);
+                                    associatedServicesList.add(
+                                            new AssociatedServiceRecord(serviceProducer, serviceConsumer, serviceRef, svcPlugin));
+                                } catch (Exception e) {
+                                    logger.log(Level.WARNING, "Failure while associating " + serviceConsumer.getName()
+                                            + " and " + serviceProducer.getName() + " " +
+                                            "via service-reference " + serviceRef, e);
+                                    rollback(associatedServicesList, context, preDeployment);
+                                    throw new PaaSDeploymentException(e);
+                                }
                             }
                         }
                     }
                 }
             }
+        }finally{
+            associatedServicesList.clear();
         }
         context.setAction(PaaSDeploymentContext.Action.PROCEED);
+    }
+
+    private void rollback(List<AssociatedServiceRecord> associatedServices, PaaSDeploymentContext context,
+                          boolean preDeployment) {
+        for(AssociatedServiceRecord asr : associatedServices){
+            ProvisionedService serviceProvider = asr.getProvider();
+            ProvisionedService serviceConsumer = asr.getConsumer();
+            ServiceReference serviceRef = asr.getServiceReference();
+            Plugin plugin = asr.getPlugin();
+            try{
+                plugin.dissociateServices(serviceConsumer, serviceRef, serviceProvider, preDeployment,
+                        context.getDeploymentContext());
+            }catch(Exception e){
+                logger.log(Level.WARNING, "Failure while dissociating " + serviceConsumer.getName()
+                        + " and " + serviceProvider.getName() + " " +
+                        "via service-reference " + serviceRef, e);
+
+            }
+        }
+    }
+
+    class AssociatedServiceRecord {
+        private ProvisionedService provider;
+        private ProvisionedService consumer;
+        private ServiceReference serviceRef;
+        private Plugin plugin;
+
+        public AssociatedServiceRecord(ProvisionedService serviceProvider, ProvisionedService serviceConsumer,
+                                       ServiceReference serviceRef, Plugin plugin){
+            this.provider = serviceProvider;
+            this.consumer = serviceConsumer;
+            this.serviceRef = serviceRef;
+            this.plugin = plugin;
+        }
+
+        public ProvisionedService getProvider(){
+            return provider;
+        }
+
+        public ProvisionedService getConsumer(){
+            return consumer;
+        }
+
+        public ServiceReference getServiceReference(){
+            return serviceRef;
+        }
+
+        public Plugin getPlugin(){
+            return plugin;
+        }
     }
 }

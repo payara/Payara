@@ -40,20 +40,16 @@
 
 package org.glassfish.paas.orchestrator;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.glassfish.api.admin.AdminCommandLock;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.OpsParams;
+import org.glassfish.api.deployment.UndeployCommandParameters;
 import org.glassfish.api.deployment.archive.ReadableArchive;
+import org.glassfish.deployment.common.DeploymentException;
 import org.glassfish.embeddable.CommandResult;
 import org.glassfish.embeddable.CommandRunner;
 import org.glassfish.hk2.scopes.Singleton;
@@ -65,20 +61,13 @@ import org.glassfish.paas.orchestrator.service.metadata.ServiceReference;
 import org.glassfish.paas.orchestrator.service.spi.Plugin;
 import org.glassfish.paas.orchestrator.service.spi.ProvisionedService;
 import org.glassfish.paas.orchestrator.state.*;
-import org.glassfish.paas.orchestrator.state.DeployState;
-import org.glassfish.paas.orchestrator.state.PostDeployAssociationState;
-import org.glassfish.paas.orchestrator.state.PostUndeployDissociationState;
-import org.glassfish.paas.orchestrator.state.PreDeployAssociationState;
-import org.glassfish.paas.orchestrator.state.PreUndeployDissociationState;
-import org.glassfish.paas.orchestrator.state.ProvisioningState;
-import org.glassfish.paas.orchestrator.state.ServiceDependencyDiscoveryState;
-import org.glassfish.paas.orchestrator.state.UndeployState;
 import org.glassfish.virtualization.spi.VirtualCluster;
 import org.glassfish.virtualization.runtime.VirtualClusters;
 import org.glassfish.virtualization.spi.AllocationStrategy;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.PostConstruct;
 
 
 @org.jvnet.hk2.annotations.Service
@@ -94,23 +83,44 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
     @Inject
     private CommandRunner commandRunner;
 
-    @Inject(optional = true) // injection optional for non-virtual scenario to work
+    @Inject
     private VirtualClusters virtualClusters;
 
     private Map<String, ServiceMetadata> serviceMetadata = new HashMap<String, ServiceMetadata>();
     private Map<String, Set<ProvisionedService>> provisionedServices = new HashMap<String, Set<ProvisionedService>>();
 
     private static final Class [] PRE_DEPLOY_PHASE_STATES = {ServiceDependencyDiscoveryState.class, ProvisioningState.class,
-            PreDeployAssociationState.class, DeployState.class};
-    private static final Class [] POST_DEPLOY_PHASE_STATES = {PostDeployAssociationState.class};
-    private static final Class [] PRE_UNDEPLOY_PHASE_STATES = {PreUndeployDissociationState.class, UndeployState.class};
+            PreDeployAssociationState.class};
+    private static final Class [] POST_DEPLOY_PHASE_STATES = {PostDeployAssociationState.class, DeploymentCompletionState.class};
+    private static final Class [] PRE_UNDEPLOY_PHASE_STATES = {PreUndeployDissociationState.class};
     private static final Class [] POST_UNDEPLOY_PHASE_STATES = {PostUndeployDissociationState.class, UnprovisioningState.class};
     private static final Class [] ENABLE_PHASE_STATES = {ServiceDependencyDiscoveryState.class, EnableState.class};
     private static final Class [] DISABLE_PHASE_STATES = {DisableState.class};
     private static final Class [] SERVER_STARTUP_PHASE_STATES = {ServiceDependencyDiscoveryState.class, ServerStartupState.class};
+    private static final List<Class> DEPLOYMENT_STATES = new ArrayList<Class>();
 
     private static Logger logger = Logger.getLogger(ServiceOrchestratorImpl.class.getName());
-    Set<Plugin> pluginsSet = null;
+    private Set<Plugin> pluginsSet = null;
+
+    public static final String ORCHESTRATOR_UNDEPLOY_CALL = "orchestrator.undeploy.call";
+
+    static{
+        composeDeploymentStates();
+    }
+
+    private static void composeDeploymentStates() {
+        Collections.addAll(DEPLOYMENT_STATES, PRE_DEPLOY_PHASE_STATES);
+        DEPLOYMENT_STATES.add(DeployState.class);
+        Collections.addAll(DEPLOYMENT_STATES, POST_DEPLOY_PHASE_STATES);
+    }
+
+    public static Collection<Class> getAllStates(){
+        //TODO for now, returning only deployment states as
+        //TODO we will have support of atomicity only during deployment.
+        Set<Class> allStates = new HashSet<Class>();
+        allStates.addAll(DEPLOYMENT_STATES);
+        return Collections.unmodifiableSet(allStates);
+    }
 
     public Set<Plugin> getPlugins() {
         if(pluginsSet == null){
@@ -176,11 +186,59 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
         return serviceMetadata.get(appName);
     }
 
-    private void orchestrateTask(Class[] tasks, String appName, DeploymentContext dc) {
+    private void orchestrateTask(Class[] tasks, String appName, DeploymentContext dc, boolean deployment) {
         for(Class clz : tasks){
             PaaSDeploymentState state = habitat.getByType(clz.getName());
             PaaSDeploymentContext pc = new PaaSDeploymentContext(appName, dc, this);
-            state.handle(pc);
+            try{
+                state.beforeExecution(pc);
+                state.handle(pc);
+                state.afterExecution(pc);
+            }catch(PaaSDeploymentException e){
+                handleFailure(appName, tasks, deployment, state, pc, e);
+            }catch(Exception e){
+                handleFailure(appName, tasks, deployment, state, pc, e);
+            }
+        }
+    }
+
+    private void handleFailure(String appName, Class[] tasks, boolean deployment, PaaSDeploymentState state, PaaSDeploymentContext pc,
+                               Exception e) {
+        logger.log(Level.WARNING, "Failure while handling [ " + state.getClass().getSimpleName() + " ] : ", e);
+        if(deployment){
+            rollbackDeployment(pc, state, DEPLOYMENT_STATES);
+            throw new DeploymentException("Failure while deploying application [ "+appName+" ], rolled back all operations. Refer root cause", e);
+        }else{
+            throw new DeploymentException("Failure while undeploying application [ "+appName+" ]. Refer root cause", e);
+        }
+
+    }
+
+    private void rollbackDeployment(PaaSDeploymentContext context, PaaSDeploymentState failedState, List<Class> tasksList) {
+        int index = tasksList.indexOf(failedState.getClass());
+        if(index == -1){
+            logger.log(Level.WARNING, "No such task [ "+failedState.getClass()+" ] found to initiate RollBack");
+            return;
+        }
+        List<Class> tmpTasksList = new ArrayList<Class>();
+        tmpTasksList.addAll(tasksList);
+        List<Class> rollbackTasksList = tmpTasksList.subList(0, index);
+        Collections.reverse(rollbackTasksList);
+        for(Class clz : rollbackTasksList){
+            PaaSDeploymentState state = habitat.getByType(clz.getName());
+            Class rollbackClz = state.getRollbackState();
+            if(rollbackClz != null){
+                PaaSDeploymentState rollbackState = habitat.getByType(rollbackClz.getName());
+                try{
+                    rollbackState.handle(context);
+                }catch(Exception e){
+                    // we cannot handle failures while rolling back.
+                    // continue rolling back.
+                    logger.log(Level.WARNING,
+                            "Failure while rolling back [Application : "+context.getAppName()+"], " +
+                                    "[State : "+rollbackState.getClass().getSimpleName()+"]", e);
+                }
+            }
         }
     }
 
@@ -193,44 +251,60 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
      */
     private void provisionServicesForApplication(String appName, DeploymentContext dc) {
         logger.entering(getClass().getName(), "provisionServicesForApplication");
-        orchestrateTask(PRE_DEPLOY_PHASE_STATES, appName, dc);
+        orchestrateTask(PRE_DEPLOY_PHASE_STATES, appName, dc, true);
         logger.exiting(getClass().getName(), "provisionServicesForApplication");
     }
 
     public void postDeploy(String appName, DeploymentContext dc) {
         logger.entering(getClass().getName(), "postDeploy");
-        orchestrateTask(POST_DEPLOY_PHASE_STATES, appName, dc);
+        orchestrateTask(POST_DEPLOY_PHASE_STATES, appName, dc, true);
         logger.exiting(getClass().getName(), "postDeploy");
     }
 
     public void startup(String appName, DeploymentContext dc) {
         logger.entering(getClass().getName(), "server-startup");
-        orchestrateTask(SERVER_STARTUP_PHASE_STATES, appName, dc);
+        orchestrateTask(SERVER_STARTUP_PHASE_STATES, appName, dc, false);
         logger.exiting(getClass().getName(), "server-startup");
     }
 
     public void enable(String appName, DeploymentContext dc) {
         logger.entering(getClass().getName(), "enable");
-        orchestrateTask(ENABLE_PHASE_STATES, appName, dc);
+        orchestrateTask(ENABLE_PHASE_STATES, appName, dc, false);
         logger.exiting(getClass().getName(), "enable");
     }
 
     public void disable(String appName, ExtendedDeploymentContext dc) {
         logger.entering(getClass().getName(), "disable");
-        orchestrateTask(DISABLE_PHASE_STATES, appName, dc);
+        orchestrateTask(DISABLE_PHASE_STATES, appName, dc, false);
         logger.exiting(getClass().getName(), "disable");
     }
 
     public void preUndeploy(String appName, DeploymentContext dc) {
         logger.entering(getClass().getName(), "preUndeploy");
-        orchestrateTask(PRE_UNDEPLOY_PHASE_STATES, appName, dc);
+        if(!isOrchestratorInitiatedUndeploy(dc.getCommandParameters(OpsParams.class))){
+            orchestrateTask(PRE_UNDEPLOY_PHASE_STATES, appName, dc, false);
+        }
         logger.exiting(getClass().getName(), "preUndeploy");
     }
 
     public void postUndeploy(String appName, DeploymentContext dc) {
         logger.entering(getClass().getName(), "postUndeploy");
-        orchestrateTask(POST_UNDEPLOY_PHASE_STATES, appName, dc);
+        if(!isOrchestratorInitiatedUndeploy(dc.getCommandParameters(OpsParams.class))){
+            orchestrateTask(POST_UNDEPLOY_PHASE_STATES, appName, dc, false);
+        }
         logger.exiting(getClass().getName(), "postUndeploy");
+    }
+
+    private boolean isOrchestratorInitiatedUndeploy(OpsParams params) {
+        if(params instanceof UndeployCommandParameters){
+            UndeployCommandParameters ucp = (UndeployCommandParameters)params;
+            if(ucp.properties != null){
+                if(Boolean.valueOf(ucp.properties.getProperty(ServiceOrchestratorImpl.ORCHESTRATOR_UNDEPLOY_CALL, "false"))){
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     public ServiceMetadata getServices(ReadableArchive archive){

@@ -41,7 +41,6 @@
 package org.glassfish.paas.orchestrator.state;
 
 import org.glassfish.api.deployment.DeploymentContext;
-import org.glassfish.deployment.common.DeploymentException;
 import org.glassfish.embeddable.CommandResult;
 import org.glassfish.embeddable.CommandRunner;
 import org.glassfish.paas.orchestrator.*;
@@ -67,7 +66,7 @@ import java.util.logging.Logger;
  * @author Jagadish Ramu
  */
 @Service
-public class ProvisioningState implements PaaSDeploymentState {
+public class ProvisioningState extends AbstractPaaSDeploymentState {
 
     private static Logger logger = Logger.getLogger(ServiceOrchestratorImpl.class.getName());
 
@@ -77,11 +76,21 @@ public class ProvisioningState implements PaaSDeploymentState {
     @Inject
     private Habitat habitat;
 
-    public void handle(PaaSDeploymentContext context) {
-        provisionServices(context);
+    public void handle(PaaSDeploymentContext context) throws PaaSDeploymentException {
+        try{
+            provisionServices(context);
+        }catch(Exception e){
+            if(! (e instanceof  PaaSDeploymentState)){
+                throw new PaaSDeploymentException(e);
+            }
+        }
     }
 
-    private Set<ProvisionedService> provisionServices(PaaSDeploymentContext context) {
+    public Class getRollbackState() {
+        return UnprovisioningState.class;
+    }
+
+    private Set<ProvisionedService> provisionServices(PaaSDeploymentContext context) throws PaaSDeploymentException {
         //TODO refactor such that rollback is done in a different state.
         //TODO add exception handling for the entire task
         //TODO pass the exception via the PaaSDeploymentContext ?
@@ -110,7 +119,7 @@ public class ProvisioningState implements PaaSDeploymentState {
         if (Boolean.getBoolean("org.glassfish.paas.orchestrator.parallel-provisioning")) {
             List<Future<ProvisionedService>> provisioningFutures = new ArrayList<Future<ProvisionedService>>();
             for (final ServiceDescription sd : appSDs) {
-                sd.setVirtualClusterName(virtualClusterName);
+                //sd.setVirtualClusterName(virtualClusterName);
                 Future<ProvisionedService> future = ServiceUtil.getThreadPool().submit(new Callable<ProvisionedService>() {
                     public ProvisionedService call() {
                         Plugin<?> chosenPlugin = orchestrator.getPluginForServiceType(installedPlugins, sd.getServiceType());
@@ -139,7 +148,7 @@ public class ProvisioningState implements PaaSDeploymentState {
 
             for (final ServiceDescription sd : appSDs) {
                 try {
-                    sd.setVirtualClusterName(virtualClusterName);
+                    //sd.setVirtualClusterName(virtualClusterName);
                     Plugin<?> chosenPlugin = orchestrator.getPluginForServiceType(installedPlugins, sd.getServiceType());
                     logger.log(Level.INFO, "Started Provisioning Service serially for " + sd + " through " + chosenPlugin);
                     ProvisionedService ps = chosenPlugin.provisionService(sd, dc);
@@ -153,10 +162,11 @@ public class ProvisioningState implements PaaSDeploymentState {
                 }
             }
         }
-        context.getOrchestrator().addProvisionedServices(context.getAppName(), appPSs);
-        context.setAction(PaaSDeploymentContext.Action.PROCEED);
-
-        if(failed){
+        if(!failed){
+            context.getOrchestrator().addProvisionedServices(context.getAppName(), appPSs);
+            context.setAction(PaaSDeploymentContext.Action.PROCEED);
+            return appPSs;
+        }else{
             for(ProvisionedService ps : appPSs){
                 try{
                     ServiceDescription sd = ps.getServiceDescription();
@@ -174,13 +184,16 @@ public class ProvisioningState implements PaaSDeploymentState {
             orchestrator.removeVirtualCluster(virtualClusterName);
 
             //XXX (Siva): Failure handling. Exception design.
-            DeploymentException re = new DeploymentException("Failure while provisioning services");
+            PaaSDeploymentException re = new PaaSDeploymentException("Failure while provisioning services");
             if(rootCause != null){
                 re.initCause(rootCause);
             }
             context.setAction(PaaSDeploymentContext.Action.ROLLBACK);
+
+            orchestrator.removeProvisionedServices(appName);
+            orchestrator.removeServiceMetadata(appName);
+
             throw re;
         }
-        return appPSs;
     }
 }

@@ -55,8 +55,18 @@ public class PreDeployAssociationState extends AssociationState {
     private Habitat habitat;
 
 
-    public void handle(PaaSDeploymentContext context) {
+    /**
+     * {@inheritDoc}
+     */
+    public void handle(PaaSDeploymentContext context) throws PaaSDeploymentException {
         boolean preDeployment = true;
         associateProvisionedServices(context, preDeployment);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public Class getRollbackState() {
+        return PostUndeployDissociationState.class;
     }
 }

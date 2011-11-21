@@ -42,50 +42,18 @@ package org.glassfish.paas.orchestrator.state;
 
 import org.glassfish.paas.orchestrator.PaaSDeploymentContext;
 import org.glassfish.paas.orchestrator.PaaSDeploymentException;
-import org.glassfish.paas.orchestrator.ServiceOrchestratorImpl;
-import org.glassfish.paas.orchestrator.provisioning.ServiceInfo;
-import org.glassfish.paas.orchestrator.provisioning.cli.ServiceUtil;
-import org.glassfish.paas.orchestrator.service.metadata.ServiceDescription;
-import org.glassfish.paas.orchestrator.service.metadata.ServiceMetadata;
-import org.glassfish.paas.orchestrator.service.spi.Plugin;
-import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
 
-import java.util.Set;
-import java.util.logging.Logger;
-
 /**
+ * Note : This is purely a state used for testing purposes
+ * ie., to check whether rollback of all of its previous states can be done.
+ *
  * @author Jagadish Ramu
  */
 @Service
-public class DisableState extends AbstractPaaSDeploymentState {
-
-    @Inject
-    private ServiceUtil serviceUtil;
-
-    private static Logger logger = Logger.getLogger(ServiceOrchestratorImpl.class.getName());
-
+public class DeploymentCompletionState extends AbstractPaaSDeploymentState {
     public void handle(PaaSDeploymentContext context) throws PaaSDeploymentException {
-        stopServices(context);
-    }
-
-    private void stopServices(PaaSDeploymentContext context) {
-        final ServiceOrchestratorImpl orchestrator = context.getOrchestrator();
-        final Set<Plugin> installedPlugins = orchestrator.getPlugins();
-        String appName = context.getAppName();
-        final ServiceMetadata appServiceMetadata = orchestrator.getServiceMetadata(appName);
-
-        for(ServiceDescription sd : appServiceMetadata.getServiceDescriptions()){
-            Plugin<?> chosenPlugin = orchestrator.getPluginForServiceType(installedPlugins, sd.getServiceType());
-            ServiceInfo serviceInfo = serviceUtil.retrieveCloudEntry(sd.getName(), appName, null );
-            if(serviceInfo != null){
-                chosenPlugin.stopService(sd, serviceInfo);
-            }else{
-                logger.warning("unable to retrieve service-info for service : " + sd.getName() + " of application : " + appName);
-            }
-        }
-        orchestrator.removeProvisionedServices(appName);
-        orchestrator.removeServiceMetadata(appName);
+        //no-op
     }
 
     public Class getRollbackState() {

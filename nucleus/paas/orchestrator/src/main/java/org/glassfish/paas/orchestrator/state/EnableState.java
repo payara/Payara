@@ -41,7 +41,7 @@
 package org.glassfish.paas.orchestrator.state;
 
 import org.glassfish.paas.orchestrator.PaaSDeploymentContext;
-import org.glassfish.paas.orchestrator.PaaSDeploymentState;
+import org.glassfish.paas.orchestrator.PaaSDeploymentException;
 import org.glassfish.paas.orchestrator.ServiceOrchestratorImpl;
 import org.glassfish.paas.orchestrator.provisioning.ServiceInfo;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceUtil;
@@ -61,15 +61,19 @@ import java.util.logging.Logger;
  * @author Jagadish Ramu
  */
 @Service
-public class EnableState implements PaaSDeploymentState {
+public class EnableState extends AbstractPaaSDeploymentState {
 
     @Inject
     private ServiceUtil serviceUtil;
 
     private static Logger logger = Logger.getLogger(ServiceOrchestratorImpl.class.getName());
 
-    public void handle(PaaSDeploymentContext context) {
+    public void handle(PaaSDeploymentContext context) throws PaaSDeploymentException {
         startServices(context);
+    }
+
+    public Class getRollbackState() {
+        return null;
     }
 
     private Set<ProvisionedService> startServices(PaaSDeploymentContext context) {

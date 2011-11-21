@@ -42,7 +42,6 @@ package org.glassfish.paas.orchestrator.state;
 
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.paas.orchestrator.PaaSDeploymentContext;
-import org.glassfish.paas.orchestrator.PaaSDeploymentState;
 import org.glassfish.paas.orchestrator.ServiceOrchestratorImpl;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceMetadata;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceReference;
@@ -57,7 +56,7 @@ import java.util.logging.Logger;
 /**
  * @author Jagadish Ramu
  */
-public abstract class DissociationState implements PaaSDeploymentState {
+public abstract class DissociationState extends AbstractPaaSDeploymentState {
     static Logger logger = Logger.getLogger(ServiceOrchestratorImpl.class.getName());
 
     protected void dissociateProvisionedServices(PaaSDeploymentContext context, boolean beforeUndeploy) {

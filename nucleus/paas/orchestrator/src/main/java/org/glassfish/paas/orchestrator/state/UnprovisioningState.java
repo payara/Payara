@@ -42,6 +42,7 @@ package org.glassfish.paas.orchestrator.state;
 
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.paas.orchestrator.PaaSDeploymentContext;
+import org.glassfish.paas.orchestrator.PaaSDeploymentException;
 import org.glassfish.paas.orchestrator.PaaSDeploymentState;
 import org.glassfish.paas.orchestrator.ServiceOrchestratorImpl;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceUtil;
@@ -64,14 +65,14 @@ import java.util.logging.Logger;
  * @author Jagadish Ramu
  */
 @Service
-public class UnprovisioningState  implements PaaSDeploymentState {
+public class UnprovisioningState extends AbstractPaaSDeploymentState {
 
     @Inject
     private Habitat habitat;
 
     private static Logger logger = Logger.getLogger(ServiceOrchestratorImpl.class.getName());
 
-    public void handle(PaaSDeploymentContext context) {
+    public void handle(PaaSDeploymentContext context) throws PaaSDeploymentException {
         unprovisionServices(context);
     }
 
@@ -87,7 +88,7 @@ public class UnprovisioningState  implements PaaSDeploymentState {
         String virtualClusterName = orchestrator.getVirtualClusterName(appServiceMetadata);
 
         for (final ServiceDescription sd : appSDs) {
-            sd.setVirtualClusterName(virtualClusterName);
+            //sd.setVirtualClusterName(virtualClusterName);
             Future future = ServiceUtil.getThreadPool().submit(new Runnable() {
                 public void run() {
                     Plugin<?> chosenPlugin = orchestrator.getPluginForServiceType(installedPlugins, sd.getServiceType());
@@ -123,4 +124,9 @@ public class UnprovisioningState  implements PaaSDeploymentState {
         orchestrator.removeProvisionedServices(appName);
         orchestrator.removeServiceMetadata(appName);
     }
+
+    public Class<PaaSDeploymentState> getRollbackState() {
+        return null;
+    }
+
 }

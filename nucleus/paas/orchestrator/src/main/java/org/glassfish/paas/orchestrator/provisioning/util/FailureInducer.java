@@ -38,21 +38,26 @@
  * holder.
  */
 
-package org.glassfish.paas.orchestrator;
+package org.glassfish.paas.orchestrator.provisioning.util;
 
-import org.jvnet.hk2.annotations.Contract;
+import org.glassfish.paas.orchestrator.PaaSDeploymentState;
+import org.glassfish.paas.orchestrator.ServiceOrchestratorImpl;
 
-/**
- * @author Jagadish Ramu
- */
-@Contract
-public interface PaaSDeploymentState {
 
-    public void beforeExecution(PaaSDeploymentContext context) throws PaaSDeploymentException ;
+public class FailureInducer {
 
-    public void handle(PaaSDeploymentContext context) throws PaaSDeploymentException;
+    private static Class<PaaSDeploymentState> failureState;
 
-    public void afterExecution(PaaSDeploymentContext context) throws PaaSDeploymentException ;
+    public static void setFailureState(Class state) throws IllegalArgumentException {
+        if(state != null && PaaSDeploymentState.class.isAssignableFrom(state) &&
+                ServiceOrchestratorImpl.getAllStates().contains(state)){
+            failureState = state;
+        }else{
+            throw new IllegalArgumentException("Invalid state [ "+state+" ]");
+        }
+    }
 
-    public Class getRollbackState();
+    public static Class<PaaSDeploymentState> getFailureState(){
+        return failureState;
+    }
 }

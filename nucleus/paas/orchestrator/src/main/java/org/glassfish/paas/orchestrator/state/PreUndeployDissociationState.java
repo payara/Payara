@@ -54,9 +54,13 @@ public class PreUndeployDissociationState extends DissociationState {
     @Inject
     private Habitat habitat;
 
-    public void handle(PaaSDeploymentContext context) {
+    public void handle(PaaSDeploymentContext context) throws PaaSDeploymentException {
         boolean beforeUndeploy = true;
         //TODO we may not have a rollback state here as it is not possible to re-associate partially dissociated services ?
         dissociateProvisionedServices(context, beforeUndeploy);
+    }
+
+    public Class<PaaSDeploymentState> getRollbackState() {
+        return null;
     }
 }

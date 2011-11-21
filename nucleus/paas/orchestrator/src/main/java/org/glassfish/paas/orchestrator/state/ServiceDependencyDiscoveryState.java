@@ -60,18 +60,28 @@ import java.util.logging.Logger;
  * @author Jagadish Ramu
  */
 @Service
-public class ServiceDependencyDiscoveryState implements PaaSDeploymentState {
+public class ServiceDependencyDiscoveryState extends AbstractPaaSDeploymentState {
 
     @Inject
     private Habitat habitat;
 
     private static Logger logger = Logger.getLogger(ServiceOrchestratorImpl.class.getName());
 
-    public void handle(PaaSDeploymentContext context) {
-        ServiceMetadata appServiceMetadata = serviceDependencyDiscovery(context);
-        final ServiceOrchestratorImpl orchestrator = context.getOrchestrator();
-        String appName = context.getAppName();
-        orchestrator.addServiceMetadata(appName, appServiceMetadata);
+    public void handle(PaaSDeploymentContext context) throws PaaSDeploymentException{
+        try{
+            ServiceMetadata appServiceMetadata = serviceDependencyDiscovery(context);
+            final ServiceOrchestratorImpl orchestrator = context.getOrchestrator();
+            String appName = context.getAppName();
+            //registering metadata with Orchestrator must be the last operation (only if service dependency discovery
+            //completes without any errors).
+            orchestrator.addServiceMetadata(appName, appServiceMetadata);
+        }catch(Exception e){
+            throw new PaaSDeploymentException(e);
+        }
+    }
+
+    public Class getRollbackState() {
+        return null;
     }
 
     private ServiceMetadata serviceDependencyDiscovery(PaaSDeploymentContext context) {
@@ -181,7 +191,8 @@ public class ServiceDependencyDiscoveryState implements PaaSDeploymentState {
                             ServiceDescription defSD = svcPlugin.getDefaultServiceDescription(appName, sr);
                             if (existingSDs.containsKey(defSD.getName())) {
                                 Plugin plugin = existingSDs.get(defSD.getName());
-                                if (svcPlugin.getClass().equals(plugin.getClass()) && svcPlugin.getServiceType().equals(plugin.getServiceType())) {
+                                if (svcPlugin.getClass().equals(plugin.getClass())
+                                        && svcPlugin.getServiceType().equals(plugin.getServiceType())) {
                                     //service description provided by same plugin, avoid adding the service-description.
                                     continue;
                                 } else {
