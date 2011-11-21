@@ -118,7 +118,7 @@ public final class JMXStartupService implements PostStartup, PostConstruct {
     private final class ShutdownListener implements EventListener {
 
         public void event(EventListener.Event event) {
-            if (event.is(EventTypes.SERVER_SHUTDOWN)) {
+            if (event.is(EventTypes.PREPARE_SHUTDOWN)) {
                 shutdown();
             }
         }

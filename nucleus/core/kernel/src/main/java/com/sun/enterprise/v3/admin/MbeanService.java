@@ -78,23 +78,14 @@ public class MbeanService implements Startup {
     @Inject
     private static ServerEnvironment env;
 
-    private static MbeanService _mbeanService;
-
-
     @Override
     public Lifecycle getLifecycle() {
         return Startup.Lifecycle.SERVER;
     }
 
-    private MbeanService() {
-        _mbeanService = this;
-    }
-
     public static MbeanService getInstance() {
         if (habitat == null)
             return null;
-        if (_mbeanService != null)
-            return _mbeanService;
         return habitat.getComponent(MbeanService.class);
     }
 
