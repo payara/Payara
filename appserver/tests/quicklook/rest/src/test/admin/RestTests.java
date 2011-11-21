@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -77,6 +77,26 @@ public class RestTests {
     public void testEndpointWithEncodedSlash() {
         try {
             HttpURLConnection connection = (HttpURLConnection) new URL("http://localhost:4848/management/domain/resources/jdbc-resource/jdbc%2F__TimerPool.xml").openConnection();
+            Assert.assertEquals(200, connection.getResponseCode());
+        } catch (Exception e) {
+            Assert.fail(e.getMessage());
+        }
+    }
+
+    @Test
+    public void testAdminCommandEndpoint() {
+        try {
+            HttpURLConnection connection = (HttpURLConnection) new URL("http://localhost:4848/management/domain/version.xml").openConnection();
+            Assert.assertEquals(200, connection.getResponseCode());
+        } catch (Exception e) {
+            Assert.fail(e.getMessage());
+        }
+    }
+
+    @Test
+    public void testChildConfigBeanEndpoint() {
+        try {
+            HttpURLConnection connection = (HttpURLConnection) new URL("http://localhost:4848/management/domain/applications.xml").openConnection();
             Assert.assertEquals(200, connection.getResponseCode());
         } catch (Exception e) {
             Assert.fail(e.getMessage());
