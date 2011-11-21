@@ -47,6 +47,7 @@ import org.jvnet.hk2.component.*;
 import org.glassfish.api.admin.*;
 import com.sun.enterprise.admin.cli.remote.RemoteCommand;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
+import java.util.logging.Logger;
 
 /**
  *  CLI Utility class
@@ -102,7 +103,8 @@ public class CLIUtil {
      * to the specified command.
      */
     public static void displayClosestMatch(final String commandName,
-                               String[] commands, final String msg)
+                               String[] commands, final String msg,
+                               final Logger logger)
                                throws InvalidCommandException {
         try {
             // remove leading "*" and ending "*" chars
@@ -133,12 +135,14 @@ public class CLIUtil {
                     getMatchedCommands(trimmedCommandName, commands);
                     //".*"+trimmedCommandName+".*", commands);
             // don't want to display more than 50 commands
+            StringWriter sw = new StringWriter();
+            PrintWriter pw = new PrintWriter(sw);
             if (matchedCommands.length > 0 &&
                     matchedCommands.length < MAX_COMMANDS_TO_DISPLAY) {
-                System.out.println(msg != null ? msg :
+                pw.println(msg != null ? msg :
                                    strings.get("ClosestMatchedCommands"));
                 for (String eachCommand : matchedCommands)
-                    System.out.println("    " + eachCommand);
+                    pw.println("    " + eachCommand);
             } else {
                 // find the closest distance
                 final String nearestString = StringEditDistance.findNearest(
@@ -146,12 +150,14 @@ public class CLIUtil {
                 // don't display the string if the edit distance is too large
                 if (StringEditDistance.editDistance(
                         trimmedCommandName, nearestString) < 5) {
-                    System.out.println(msg != null? msg :
+                    pw.println(msg != null? msg :
                                        strings.get("ClosestMatchedCommands"));
-                    System.out.println("    " + nearestString);
+                    pw.println("    " + nearestString);
                 } else
                     throw new InvalidCommandException(commandName);
             }
+            pw.flush();
+            logger.severe(sw.toString());
         } catch (Exception e) {
             throw new InvalidCommandException(commandName);
         }

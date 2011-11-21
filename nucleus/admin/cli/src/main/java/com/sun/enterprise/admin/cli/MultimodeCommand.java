@@ -234,7 +234,7 @@ public class MultimodeCommand extends CLICommand {
                 try {
                     CLIUtil.displayClosestMatch(command,
                         CLIUtil.getAllCommands(habitat, po, env),
-                       strings.get("ClosestMatchedLocalAndRemoteCommands"));
+                       strings.get("ClosestMatchedLocalAndRemoteCommands"), logger);
                 } catch (InvalidCommandException e) {
                     // not a big deal if we cannot help
                 }
@@ -245,7 +245,7 @@ public class MultimodeCommand extends CLICommand {
                     try {
                         CLIUtil.displayClosestMatch(command,
                             CLIUtil.getLocalCommands(habitat),
-                            strings.get("ClosestMatchedLocalCommands"));
+                            strings.get("ClosestMatchedLocalCommands"), logger);
                     } catch (InvalidCommandException e) {
                         logger.info(
                                 strings.get("InvalidRemoteCommand", command));
