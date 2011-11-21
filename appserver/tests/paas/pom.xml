@@ -53,6 +53,7 @@
       <module>basic-db</module>
       <module>bookstore</module>
       <module>basic-db-initsql</module>
+      <module>scale_service</module>
     </modules>
     <reporting>
     <plugins>

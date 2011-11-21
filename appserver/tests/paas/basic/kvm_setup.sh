@@ -39,18 +39,19 @@
 #
 
 GF_HOME=${GF_HOME:-$S1AS_HOME}
-TEMPLATES_DIR=/space
+TEMPLATES_DIR=/space/bhavani/Desktop
 $GF_HOME/bin/asadmin start-domain --debug
 $GF_HOME/bin/asadmin create-ims-config-libvirt kvm
+$GF_HOME/bin/asadmin set virtualizations.libvirt-virtualization.kvm.template-cache-size=0
 $GF_HOME/bin/asadmin stop-domain
 $GF_HOME/bin/asadmin start-domain --debug
-$GF_HOME/bin/asadmin create-server-pool --virtualization kvm --subnet 129.158.193.70/250 --portName "br0" cloud
+$GF_HOME/bin/asadmin create-server-pool --virtualization kvm --subnet 192.168.122.2/250 --portName "virbr0" cloud
 
 $GF_HOME/bin/asadmin create-template --virtualization kvm --files $TEMPLATES_DIR/glassfish.img,$TEMPLATES_DIR/glassfish.xml --indexes ServiceType=JavaEE,VirtualizationType=libvirt glassfish
 $GF_HOME/bin/asadmin create-template-user --virtualization kvm --userid 1000 --groupid 1000 --template glassfish cloud
 
-$GF_HOME/bin/asadmin create-template --virtualization kvm --files $TEMPLATES_DIR/glassfish.img,$TEMPLATES_DIR/glassfish.xml --indexes ServiceType=Database,VirtualizationType=libvirt javadb
-$S1AS_HOME/bin/asadmin create-template-user --virtualization kvm --userid 1000 --groupid 1000 --template javadb cloud
+#$GF_HOME/bin/asadmin create-template --virtualization kvm --files $TEMPLATES_DIR/glassfish.img,$TEMPLATES_DIR/glassfish.xml --indexes ServiceType=Database,VirtualizationType=libvirt javadb
+#$S1AS_HOME/bin/asadmin create-template-user --virtualization kvm --userid 1000 --groupid 1000 --template javadb cloud
 
 #$GF_HOME/bin/asadmin create-template --virtualization kvm --files $TEMPLATES_DIR/MySQL.img,$TEMPLATES_DIR/MySQL.xml --indexes ServiceType=Database,VirtualizationType=libvirt MySQL
 #$S1AS_HOME/bin/asadmin create-template-user --virtualization kvm --userid 1000 --groupid 1000 --template MySQL mysqluser
@@ -62,4 +63,4 @@ $S1AS_HOME/bin/asadmin create-template-user --virtualization kvm --userid 1000 -
 #$S1AS_HOME/bin/asadmin create-template-user --virtualization kvm --userid 1000 --groupid 1000 --template apachemodjk cloud
 
 $GF_HOME/bin/asadmin create-machine --serverPool cloud --networkName localhost local
-$GF_HOME/bin/asadmin create-machine-user --serverPool cloud --machine local --userId 1000 --groupId 1000 shalini
+$GF_HOME/bin/asadmin create-machine-user --serverPool cloud --machine local --userId 1000 --groupId 1000 bhavani

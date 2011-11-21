@@ -39,6 +39,7 @@
 #
 GF_HOME=${GF_HOME:-$S1AS_HOME}
 echo "Your GlassFish is at $GF_HOME"
+rm $GF_HOME/modules/paas.lbplugin.jar
 $GF_HOME/bin/asadmin start-domain --debug
 $GF_HOME/bin/asadmin create-ims-config-native
 $GF_HOME/bin/asadmin stop-domain 
