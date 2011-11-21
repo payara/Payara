@@ -52,6 +52,7 @@ import org.glassfish.api.admin.ExecuteOn;
 import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
+import org.glassfish.resources.api.ResourceStatus;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
@@ -96,7 +97,7 @@ public class AddResources implements AdminCommand {
     private Domain domain;
 
     @Inject
-    private org.glassfish.resources.admin.cli.ResourceFactory resourceFactory;
+    private ResourceFactory resourceFactory;
     
     /**
      * Executes the command with the command parameters passed as Properties
@@ -116,19 +117,19 @@ public class AddResources implements AdminCommand {
         }
         
         try {
-            final ArrayList results = org.glassfish.resources.admin.cli.ResourcesManager.createResources(
+            final ArrayList results = ResourcesManager.createResources(
                     domain.getResources(), xmlFile, target, resourceFactory);
             final Iterator resultsIter = results.iterator();
             report.getTopMessagePart().setChildrenType("Command");
             boolean isSuccess = false;
             while (resultsIter.hasNext()) {
-                org.glassfish.resources.api.ResourceStatus rs = ((org.glassfish.resources.api.ResourceStatus) resultsIter.next());
+                ResourceStatus rs = ((ResourceStatus) resultsIter.next());
                 final String msgToAdd = rs.getMessage();
                 if ((msgToAdd != null) && (!msgToAdd.equals(""))) {
                     final ActionReport.MessagePart part = report.getTopMessagePart().addChild();
                     part.setMessage(msgToAdd);
                 }
-                if (rs.getStatus() == org.glassfish.resources.api.ResourceStatus.SUCCESS || rs.isAlreadyExists())
+                if (rs.getStatus() == ResourceStatus.SUCCESS || rs.isAlreadyExists())
                     isSuccess = true;
             }
             report.setActionExitCode(

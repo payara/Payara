@@ -41,6 +41,7 @@
 package org.glassfish.resources.naming;
 
 
+import org.glassfish.resources.api.ResourceInfo;
 import org.glassfish.resources.util.ResourceUtil;
 
 import java.util.Enumeration;
@@ -62,9 +63,9 @@ public class JndiProxyObjectFactory implements ObjectFactory {
 
     // for every external-jndi-resource there is an InitialContext
     // created from the factory and environment properties
-    private static Hashtable<org.glassfish.resources.api.ResourceInfo, Context> contextMap = new Hashtable<org.glassfish.resources.api.ResourceInfo, Context>();
+    private static Hashtable<ResourceInfo, Context> contextMap = new Hashtable<ResourceInfo, Context>();
 
-    public static Context removeInitialContext(org.glassfish.resources.api.ResourceInfo resourceInfo) {
+    public static Context removeInitialContext(ResourceInfo resourceInfo) {
         return contextMap.remove(resourceInfo);
     }
 
@@ -78,7 +79,7 @@ public class JndiProxyObjectFactory implements ObjectFactory {
                                    "factory-class '" + factoryClass + "'");
                 return null;
         } else if (! (factory instanceof
-                            javax.naming.spi.InitialContextFactory)) {
+                            InitialContextFactory)) {
 
                 System.err.println("external-jndi-resource factory-class '"
                                   + factoryClass + "' must be of type "
@@ -108,7 +109,7 @@ public class JndiProxyObjectFactory implements ObjectFactory {
         // name to lookup in the external factory
         String jndiLookupName = "";
         String jndiFactoryClass = null;
- 	    org.glassfish.resources.api.ResourceInfo resourceInfo = null;
+ 	    ResourceInfo resourceInfo = null;
 
         // get the target initial naming context and the lookup name
         Reference ref = (Reference) obj;
@@ -118,7 +119,7 @@ public class JndiProxyObjectFactory implements ObjectFactory {
 
             String prop = addr.getType();
             if (prop.equals("resourceInfo")) {
-                resourceInfo = (org.glassfish.resources.api.ResourceInfo)addr.getContent();
+                resourceInfo = (ResourceInfo)addr.getContent();
             }
             else if (prop.equals("jndiLookupName")) {
                 jndiLookupName = (String) addr.getContent();
@@ -132,8 +133,8 @@ public class JndiProxyObjectFactory implements ObjectFactory {
 		    throw new NamingException("JndiProxyObjectFactory: no resourceInfo context info");
 	    }
 
-	    org.glassfish.resources.naming.ProxyRefAddr contextAddr =
-                (org.glassfish.resources.naming.ProxyRefAddr)ref.get(resourceInfo.getName());
+	    ProxyRefAddr contextAddr =
+                (ProxyRefAddr)ref.get(resourceInfo.getName());
 	    Hashtable env = null;
 	    if (contextAddr == null ||
             jndiFactoryClass == null ||
@@ -162,7 +163,7 @@ public class JndiProxyObjectFactory implements ObjectFactory {
         try {
             return context.lookup(jndiLookupName);
         } catch (NameNotFoundException e) {
-            throw new org.glassfish.resources.naming.ExternalNameNotFoundException(e);
+            throw new ExternalNameNotFoundException(e);
         }
     }
 }
