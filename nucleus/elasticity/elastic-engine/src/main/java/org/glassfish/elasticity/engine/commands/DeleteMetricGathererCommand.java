@@ -6,49 +6,38 @@ import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
-import org.glassfish.elasticity.config.serverbeans.*;
-import org.glassfish.elasticity.engine.container.ElasticServiceManager;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
 import org.jvnet.hk2.config.*;
-
 import java.beans.PropertyVetoException;
 import java.util.logging.Logger;
+import org.glassfish.elasticity.config.serverbeans.*;
 
 /**
  * Created by IntelliJ IDEA.
  * User: cmott
- * Date: 10/19/11
+ * Date: 11/18/11
  */
-@Service(name="create-jvm-memory-metric-gatherer")
-@I18n("create.jvm-memory.metric.gatherer")
+@Service(name="delete-metric-gatherer")
+@I18n("delete.metric.gatherer")
 @Scoped(PerLookup.class)
-public class CreateJvmMemoryMetricGathererCommand implements AdminCommand{
+public class DeleteMetricGathererCommand implements AdminCommand{
 
-   @Inject
-   Domain domain;
+     @Inject
+     Domain domain;
 
-   @Inject
-   ElasticServices elasticServices;
+    @Inject
+     ElasticServices elasticServices;
 
-  @Param(name="name", primary = true)
-   String name;
+    @Param(name="name", primary = true)
+     String name;
 
-  @Param(name="service")
-  String servicename;
+    @Param(name="service")
+    String servicename;
 
-    @Param(name="collection-rate", optional = true)
-    int collectionRate;
-
-    @Param(name="retain-data", optional = true)
-    int retainData;
-
-    @Param(name="auto-start", defaultValue = "false", optional = true)
-    boolean autoStart;
-
-    @Override
+     @Override
     public void execute(AdminCommandContext context) {
         ActionReport report = context.getActionReport();
         Logger logger= context.logger;
@@ -71,18 +60,22 @@ public class CreateJvmMemoryMetricGathererCommand implements AdminCommand{
             report.setMessage(msg);
             return;
         }
-        if (elasticService.getMetricGatherers().getMetricGatherer(name) == null) {
+        if (elasticService.getMetricGatherers().getMetricGatherer(name) != null) {
              try {
-                 createMetricGathererElement(name);
+                 deleteMetricGathererElement(name);
             } catch(TransactionFailure e) {
-                logger.warning("failed.to.create.metric.gatherer " + name);
+                logger.warning("failed.to.delete.metric.gatherer " + name);
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                 report.setMessage(e.getMessage());
              }
-         } //if already exists then it's an error
-    }
+         } else {
+            logger.warning("failed.to.delete.metric.gatherer " + name);
+            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            report.setMessage("metric.gatherer.not.found"+ name);
 
-        public void createMetricGathererElement(final String alertName) throws TransactionFailure {
+        }
+    }
+         public void deleteMetricGathererElement(final String name) throws TransactionFailure {
         ConfigSupport.apply(new SingleConfigCode() {
             @Override
             public Object run(ConfigBeanProxy param) throws PropertyVetoException, TransactionFailure {
@@ -91,23 +84,14 @@ public class CreateJvmMemoryMetricGathererCommand implements AdminCommand{
                 if (t != null) {
                     ElasticService elasticService = elasticServices.getElasticService(servicename);
                     if (elasticService != null) {
-                        ElasticService writeableService = t.enroll(elasticService);
-                        MetricGatherers writeableMGs = elasticService.getMetricGatherers();
-                        if (writeableMGs == null)
-                            writeableMGs = writeableService.createChild(MetricGatherers.class);
-                        else
-                            writeableMGs = t.enroll(writeableMGs);
+                        MetricGatherers writeableMG = elasticService.getMetricGatherers();
+                        if (writeableMG != null) {
+                            writeableMG = t.enroll(writeableMG);
+                            MetricGatherer mg = writeableMG.getMetricGatherer(name);
+                            writeableMG.getMetricGatherer().remove(mg);
+                        }
+                        //nothing to delete
 
-                        MetricGatherer writeableGatherer = writeableMGs.createChild(MetricGatherer.class);
-                        if (name != null)
-                            writeableGatherer.setName(name);
-                        if (autoStart)
-                            writeableGatherer.setAutoStart(autoStart);
-                        if (collectionRate > 0)
-                            writeableGatherer.setCollectionRate(collectionRate);
-
-                        writeableMGs.getMetricGatherer().add(writeableGatherer);
-                        writeableService.setMetricGatherers(writeableMGs);
                     }
                 }
                 return Boolean.TRUE;

@@ -64,14 +64,19 @@ public class CreateLogActionCommand implements AdminCommand {
             report.setMessage(msg);
             return;
         }
-
-        // find the metrics gatherer and then add it - should be an hk2 service(?)
-        try {
-            createLogActionElement(name);
-        } catch(TransactionFailure e) {
-            logger.warning("failed.to.create.log.action " + name);
-            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            report.setMessage(e.getMessage());
+    // check if the log action already exists
+        if (elasticService.getActions().getLogAction(name) != null) {
+           logger.warning("delete.action.exists " + name);
+           report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+           report.setMessage("delete.action.exists "+ name);
+        }  else {
+            try {
+                createLogActionElement(name);
+            } catch(TransactionFailure e) {
+                 logger.warning("failed.to.create.log.action " + name);
+                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                 report.setMessage(e.getMessage());
+             }
         }
     }
         public void createLogActionElement(final String alertName) throws TransactionFailure {

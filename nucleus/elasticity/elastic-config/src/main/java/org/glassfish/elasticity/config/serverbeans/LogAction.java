@@ -64,24 +64,4 @@ public interface LogAction extends ActionConfig {
     @Attribute(defaultValue = "INFO")
     String getLogLevel();
 
-      /**
-   * Return the action with the given name, or null if no such action exists.
-   *
-   * @param   name    the name of the action
-   * @return          the Action object, or null if no such action
-   */
-
-    @DuckTyped
-    public LogAction getLogAction(String name);
-
-    class Duck {
-      public static LogAction getLogAction(Actions instance, String name) {
-          for (LogAction action : instance.getLogAction()) {
-              if (action.getName().equals(name)) {
-                  return action;
-              }
-          }
-          return null;
-       }
-    }
 }

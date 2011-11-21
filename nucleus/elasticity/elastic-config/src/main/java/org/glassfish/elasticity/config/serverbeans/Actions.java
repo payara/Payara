@@ -91,5 +91,18 @@ public interface Actions  extends ConfigBeanProxy  {
     @Element
     ScaleDownAction getScaleDownAction();
 
+    @DuckTyped
+    public LogAction getLogAction(String name);
+
+    class Duck {
+      public static LogAction getLogAction(Actions instance, String name) {
+          for (LogAction action : instance.getLogAction()) {
+              if (action.getName().equals(name)) {
+                  return action;
+              }
+          }
+          return null;
+       }
+    }
 
 }
