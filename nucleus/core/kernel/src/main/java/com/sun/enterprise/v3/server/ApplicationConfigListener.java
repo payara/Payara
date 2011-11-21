@@ -114,6 +114,39 @@ public class ApplicationConfigListener implements TransactionListener,
     private final static String UPGRADE_PARAM = "-upgrade";
 
     public void transactionCommited( final List<PropertyChangeEvent> changes) {
+        boolean isUpdatingAttribute = true;
+        for (PropertyChangeEvent event : changes) {
+            Object oldValue = event.getOldValue();
+            Object newValue = event.getNewValue();
+            if (event.getSource() instanceof Applications) { 
+                if (event.getPropertyName().equals(ServerTags.APPLICATION)) {
+                    if (oldValue == null || newValue == null) {
+                        // we are adding/removing application element here 
+                        // and updating existing attribute
+                        isUpdatingAttribute = false;
+                        break;
+                    }
+                }
+            } else if (event.getSource() instanceof Server || 
+                    event.getSource() instanceof Cluster) {
+                if (event.getPropertyName().equals(
+                        ServerTags.APPLICATION_REF)) {
+                    if (oldValue == null || newValue == null) {
+                        // we are adding/removing application-ref element here
+                        // and updating existing attribute
+                        isUpdatingAttribute = false;
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (!isUpdatingAttribute) {
+            // if we are not updating existing attribute, we should 
+            // skip the config listener
+            return;
+        }
+
         for (PropertyChangeEvent event : changes) {
             if (event.getSource() instanceof Application || 
                 event.getSource() instanceof ApplicationRef) {

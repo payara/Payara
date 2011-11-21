@@ -51,6 +51,7 @@ public class ServerTags  {
     static public final String LOCALE = "locale";
     // Tags for Element applications
     static public final String APPLICATIONS = "applications";
+    static public final String APPLICATION = "application";
     // Tags for Element resources
     static public final String RESOURCES = "resources";
     // Tags for Element configs
