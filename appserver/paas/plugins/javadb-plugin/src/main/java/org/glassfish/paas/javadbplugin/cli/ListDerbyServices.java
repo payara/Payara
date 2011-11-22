@@ -51,6 +51,7 @@ import org.glassfish.paas.orchestrator.config.Service;
 import org.glassfish.paas.orchestrator.config.Services;
 import org.glassfish.paas.orchestrator.config.SharedService;
 import org.glassfish.paas.orchestrator.provisioning.ProvisionerUtil;
+import org.glassfish.paas.orchestrator.provisioning.cli.ServiceType;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.component.PerLookup;
@@ -85,7 +86,7 @@ public class ListDerbyServices implements AdminCommand {
             if (serviceName.equals("*")) {
                 Services services = dbServiceUtil.getServices();
                 for (Service service : services.getServices()) {
-                    if (service.getType().equals("database")) {
+                    if (service.getType().equals(ServiceType.DATABASE.toString())) {
                         if (appName != null) {
                             if (service instanceof ApplicationScopedService) {
                                 if (appName.equals(((ApplicationScopedService) service).getApplicationName())) {
