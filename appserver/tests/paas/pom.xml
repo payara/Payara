@@ -72,6 +72,7 @@
 		<reportsDirectory>${env.PAAS_TESTS_HOME}/basic-db/target/surefire-reports</reportsDirectory>
 		<reportsDirectory>${env.PAAS_TESTS_HOME}/bookstore/target/surefire-reports</reportsDirectory>
 		<reportsDirectory>${env.PAAS_TESTS_HOME}/basic-db-initsql/target/surefire-reports</reportsDirectory>
+		<reportsDirectory>${env.PAAS_TESTS_HOME}/scale_service/target/surefire-reports</reportsDirectory>
 		<reportsDirectory>${env.PAAS_TESTS_HOME}/deployment-rollback/target/surefire-reports</reportsDirectory>
           </reportsDirectories>
         </configuration>
