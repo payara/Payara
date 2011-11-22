@@ -108,9 +108,12 @@ public class DefaultAllocationStrategy implements AllocationStrategy {
                     potentialServerPools.remove(serverPool);
                 }
             } catch(VirtException e) {
-                RuntimeContext.logger.log(Level.SEVERE, "Cannot allocate virtual machine in server pool " + serverPool, e);
+                if (RuntimeContext.logger.isLoggable(Level.FINE)) {
+                    RuntimeContext.logger.log(Level.FINE, "Cannot allocate virtual machine in server pool " + serverPool.getName(), e);
+                } else {
+                    RuntimeContext.logger.log(Level.WARNING, "Cannot allocate virtual machine in server pool " + serverPool.getName());
+                }
                 potentialServerPools.remove(serverPool); // loop back and try to allocate in the next serverPool
-                throw e;
             }
         }
         throw new VirtException("Cannot allocate a virtual machine in any of the configured server pools");

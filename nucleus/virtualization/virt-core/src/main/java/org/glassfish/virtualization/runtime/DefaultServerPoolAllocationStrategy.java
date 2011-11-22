@@ -109,7 +109,11 @@ class DefaultServerPoolAllocationStrategy implements ServerPoolAllocationStrateg
                 RuntimeContext.logger.log(Level.SEVERE, "Cannot allocate virtual machine on " + targetMachine);
                 potentialMachines.remove(targetMachine); // let's try on the remaining machines...
             } catch(VirtException e) {
-                RuntimeContext.logger.log(Level.SEVERE, "Cannot allocate virtual machine on " + targetMachine);
+                if (RuntimeContext.logger.isLoggable(Level.FINE)) {
+                    RuntimeContext.logger.log(Level.FINE, "Cannot allocate virtual machine on " + targetMachine,e);
+                } else {
+                    RuntimeContext.logger.log(Level.WARNING, "Cannot allocate virtual machine on " + targetMachine + " reason : " + e.getMessage());
+                }
                 potentialMachines.remove(targetMachine); // let's try on the remaining machines...
             }
         }

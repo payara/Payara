@@ -113,12 +113,13 @@ public class RemoteTemplate extends VMTemplate {
     }
 
     private String remotePath() {
+        String fileName = null;
         try {
-            String fileName = templateInstance.getFileByExtension(".img").getName();
-            return machine.getConfig().getTemplatesLocation() + "/" + getDefinition().getName() + "/" + fileName;
+            fileName = fileName();
         } catch (FileNotFoundException e) {
             return null;
         }
+        return machine.getConfig().getTemplatesLocation() + "/" + getDefinition().getName() + "/" + fileName;
     }
 
     @Override
@@ -287,6 +288,16 @@ public class RemoteTemplate extends VMTemplate {
     }
 
     protected String fileName() throws FileNotFoundException {
-        return templateInstance.getFileByExtension(".img").getName();
+        File file=null;
+        try {
+            file = templateInstance.getFileByExtension(".img");
+        } catch (FileNotFoundException e) {
+            try {
+                file = templateInstance.getFileByExtension(".vdi");
+            } catch (FileNotFoundException e1) {
+                return null;
+            }
+        }
+        return file.getName();
     }
 }
