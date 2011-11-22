@@ -159,6 +159,7 @@ public class SecurityHandler {
                 attrMap.put("dbUser", origProps.get("db-user"));
                 attrMap.put("dbPassword", origProps.get("db-password"));
                 attrMap.put("digestAlgorithm", origProps.get("digest-algorithm"));
+                attrMap.put("pswdEncAlgorithm", origProps.get("digestrealm-password-enc-algorithm"));
                 attrMap.put("encoding", origProps.get("encoding"));
                 attrMap.put("charset", origProps.get("charset"));
 
@@ -281,6 +282,7 @@ public class SecurityHandler {
                 putOptional(attrMap, propList, "db-user", "dbUser");
                 putOptional(attrMap, propList, "db-password", "dbPassword");
                 putOptional(attrMap, propList, "digest-algorithm", "digestAlgorithm");
+                putOptional(attrMap, propList, "digestrealm-password-enc-algorithm", "pswdEncAlgorithm");
                 putOptional(attrMap, propList, "encoding", "encoding");
                 putOptional(attrMap, propList, "charset", "charset");
                 putOptional(attrMap, propList, "assign-groups", "jdbcAsGroups");
@@ -563,6 +565,7 @@ public class SecurityHandler {
         skipRealmPropsList.add("db-user");
         skipRealmPropsList.add("db-password");
         skipRealmPropsList.add("digest-algorithm");
+        skipRealmPropsList.add("digestrealm-password-enc-algorithm");
         skipRealmPropsList.add("encoding");
         skipRealmPropsList.add("charset");
     }

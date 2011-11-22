@@ -2,7 +2,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -182,7 +182,10 @@
         </sun:property> 
         <sun:property id="digest" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.realm.digest}" helpText="$resource{i18nc.realm.digestHelp}" >
             <sun:textField id="digest" columns="$int{60}" maxLength="#{sessionScope.fieldLengths['maxLength.realm.digest']}" text="#{attrMap.digestAlgorithm}"  />
-        </sun:property> 
+        </sun:property>
+        <sun:property id="pswdEnc" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.realm.pswdEnc}" helpText="$resource{i18nc.realm.pswdEncHelp}" >
+            <sun:textField id="pswdEnc" columns="$int{60}" maxLength="#{sessionScope.fieldLengths['maxLength.realm.pswdEncAlgorithm']}" text="#{attrMap.pswdEncAlgorithm}"  />
+        </sun:property>
         <sun:property id="encoding" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.realm.encoding}" helpText="$resource{i18nc.realm.encodingHelp}" >
             <sun:textField id="encoding" columns="$int{60}" maxLength="#{sessionScope.fieldLengths['maxLength.realm.encoding']}" text="#{attrMap.encoding}"  />
         </sun:property> 

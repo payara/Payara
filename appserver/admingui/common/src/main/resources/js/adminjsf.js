@@ -1410,6 +1410,15 @@ function checkRequired(componentId, reqMsg){
     return result;
 }
 
+function checkEmpty(componentId){
+    var component = getTextElement(componentId);
+    var value = component.value;
+    if ( (value != null) && (value != '') && (isWhitespace(value) == false)){
+        return false;
+    }
+    return true;
+}
+
 function isWhitespace(s) {
     var i;
     var whitespace = " \t\n\r";
