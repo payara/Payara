@@ -38,7 +38,7 @@
  * holder.
  */
 
-package org.glassfish.virtualization.local;
+package org.glassfish.paas.javadbplugin;
 
 import org.glassfish.virtualization.spi.VirtualCluster;
 import org.glassfish.virtualization.spi.*;
