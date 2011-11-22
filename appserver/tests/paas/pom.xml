@@ -55,6 +55,7 @@
       <module>basic-db-initsql</module>
       <module>scale_service</module>
       <module>deployment-rollback</module>
+      <module>enable-disable-test</module>
     </modules>
     <reporting>
     <plugins>
@@ -74,6 +75,7 @@
 		<reportsDirectory>${env.PAAS_TESTS_HOME}/basic-db-initsql/target/surefire-reports</reportsDirectory>
 		<reportsDirectory>${env.PAAS_TESTS_HOME}/scale_service/target/surefire-reports</reportsDirectory>
 		<reportsDirectory>${env.PAAS_TESTS_HOME}/deployment-rollback/target/surefire-reports</reportsDirectory>
+		<reportsDirectory>${env.PAAS_TESTS_HOME}/enable-disable-test/target/surefire-reports</reportsDirectory>
           </reportsDirectories>
         </configuration>
       </plugin>
