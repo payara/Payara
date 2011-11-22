@@ -57,7 +57,10 @@ import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
+import java.util.Properties;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.logging.Level;
@@ -165,24 +168,38 @@ public class GetHealthCommand implements AdminCommand {
             return;
         }
 
-        // order by instance name and output
-        ActionReport.MessagePart top = report.getTopMessagePart();
+        // order by instance name for human-readable output
         SortedSet<String> names = new TreeSet<String>(history.getInstances());
+
+        // this list will be set in the "extra properties" used by admin console
+        List<Properties> statesAndTimes =
+            new ArrayList<Properties>(names.size());
+
         for(String name : names) {
+            Properties instanceStateAndTime = new Properties();
             HealthHistory.InstanceHealth ih = history.getHealthByInstance(name);
+
+            instanceStateAndTime.put("name", name);
+            instanceStateAndTime.put("status", ih.state.name());
+
             if (HealthHistory.NOTIME == ih.time) {
                 result.append(Strings.get("get.health.instance.state",
                     name, ih.state));
-                top.addProperty(name, ih.state.toString());
+                instanceStateAndTime.put("time", "");
             } else {
-                String status = Strings.get("get.health.instance.state.since",
-                    name, ih.state, new Date(ih.time).toString());
-                result.append(status);
-                top.addProperty(name, status.substring(name.length(),
-                    status.length() - 1).trim());
+                result.append(Strings.get("get.health.instance.state.since",
+                    name, ih.state, new Date(ih.time).toString()));
+                instanceStateAndTime.put("time", String.valueOf(ih.time));
             }
+
             result.append("\n");
+            statesAndTimes.add(instanceStateAndTime);
         }
+
+        Properties instanceStateTimes = new Properties();
+        instanceStateTimes.put("instances", statesAndTimes);
+        report.setExtraProperties(instanceStateTimes);
+
         String rawResult = result.toString();
         report.setMessage(rawResult.substring(0, rawResult.lastIndexOf("\n")));
     }
