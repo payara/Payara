@@ -86,18 +86,14 @@ function checkClassname() {
 	} else if (type.match('SolarisRealm') != null) {
 	    return checkRequired(id="form1:solarisSection:jaax:jaax" , '#{reqMsg}') ;
 	} else if (type.match('JDBCRealm') != null) {
-	    var ck =   checkRequired(id="form1:jdbcSection:jaax:jaax" , '#{reqMsg}' ) &&
+	    return checkRequired(id="form1:jdbcSection:jaax:jaax" , '#{reqMsg}' ) &&
 		checkRequired(id="form1:jdbcSection:jndi:jndi" , '#{reqMsg}' )  &&
 		checkRequired(id="form1:jdbcSection:userTable:userTable" , '#{reqMsg}' )  &&
 		checkRequired(id="form1:jdbcSection:userName:userName", '#{reqMsg}' )  &&
 		checkRequired(id="form1:jdbcSection:pswd:pswd" , '#{reqMsg}' )  &&
 		checkRequired(id="form1:jdbcSection:groupTable:groupTable" , '#{reqMsg}' )  &&
-		checkRequired(id="form1:jdbcSection:groupName:groupName" , '#{reqMsg}' );
-            if (!ck ) return ck;
-            if (checkEmpty('form1:jdbcSection:pswdEnc:pswdEnc')){
-                return getConfirm(this, '$resource{i18nc.msg.JS.security.emptyPswdEncryptionAlgorithm}');
-            }
-            return true;
+		checkRequired(id="form1:jdbcSection:groupName:groupName" , '#{reqMsg}' ) &&
+                checkRequired(id="form1:jdbcSection:pswdEnc:pswdEnc" , '#{reqMsg}' );
 	} else if (type.match('PamRealm') != null) {
 	    return checkRequired(id="form1:pamSection:jaax:jaax" , '#{reqMsg}') ;
 	} else if (type == '') {

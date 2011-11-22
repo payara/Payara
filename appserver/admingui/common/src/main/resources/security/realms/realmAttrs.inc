@@ -171,6 +171,9 @@
         <sun:property id="groupName" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.realm.groupName}" helpText="$resource{i18nc.realm.groupNameHelp}" >
             <sun:textField id="groupName" columns="$int{60}" maxLength="#{sessionScope.fieldLengths['maxLength.realm.groupName']}" text="#{attrMap.groupNameColumn}" required="#{true}" />
         </sun:property>
+        <sun:property id="pswdEnc" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.realm.pswdEnc}" helpText="$resource{i18nc.realm.pswdEncHelp}" >
+            <sun:textField id="pswdEnc" columns="$int{60}" maxLength="#{sessionScope.fieldLengths['maxLength.realm.pswdEncAlgorithm']}" text="#{attrMap.pswdEncAlgorithm}"  required="#{true}" />
+        </sun:property>
         <sun:property id="asgroup" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.realm.asgroup}" helpText="$resource{i18nc.realm.asgroupHelp}" >
             <sun:textField id="asgroup" columns="$int{60}" maxLength="#{sessionScope.fieldLengths['maxLength.realm.asgroup']}" text="#{attrMap.jdbcAsGroups}"  />
         </sun:property> 
@@ -182,9 +185,6 @@
         </sun:property> 
         <sun:property id="digest" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.realm.digest}" helpText="$resource{i18nc.realm.digestHelp}" >
             <sun:textField id="digest" columns="$int{60}" maxLength="#{sessionScope.fieldLengths['maxLength.realm.digest']}" text="#{attrMap.digestAlgorithm}"  />
-        </sun:property>
-        <sun:property id="pswdEnc" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.realm.pswdEnc}" helpText="$resource{i18nc.realm.pswdEncHelp}" >
-            <sun:textField id="pswdEnc" columns="$int{60}" maxLength="#{sessionScope.fieldLengths['maxLength.realm.pswdEncAlgorithm']}" text="#{attrMap.pswdEncAlgorithm}"  />
         </sun:property>
         <sun:property id="encoding" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.realm.encoding}" helpText="$resource{i18nc.realm.encodingHelp}" >
             <sun:textField id="encoding" columns="$int{60}" maxLength="#{sessionScope.fieldLengths['maxLength.realm.encoding']}" text="#{attrMap.encoding}"  />

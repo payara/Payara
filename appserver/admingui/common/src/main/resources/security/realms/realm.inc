@@ -60,6 +60,7 @@
         setComponentRequired(id="form1:jdbcSection:pswd:pswd" required="$boolean{true}" );
         setComponentRequired(id="form1:jdbcSection:groupTable:groupTable" required="$boolean{true}" );
         setComponentRequired(id="form1:jdbcSection:groupName:groupName" required="$boolean{true}" );
+        setComponentRequired(id="form1:jdbcSection:pswdEnc:pswdEnc" required="$boolean{true}" );
     />
 </event>
 

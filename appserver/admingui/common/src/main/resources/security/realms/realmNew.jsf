@@ -64,6 +64,7 @@
     setComponentRequired(id="form1:jdbcSection:pswd:pswd" required="$boolean{false}" );
     setComponentRequired(id="form1:jdbcSection:groupTable:groupTable" required="$boolean{false}" );
     setComponentRequired(id="form1:jdbcSection:groupName:groupName" required="$boolean{false}" );
+    setComponentRequired(id="form1:jdbcSection:pswdEnc:pswdEnc" required="$boolean{false}" );
     setPageSessionAttribute(key="helpKey" value="$resource{help_common.realmNew}");
 />
     
