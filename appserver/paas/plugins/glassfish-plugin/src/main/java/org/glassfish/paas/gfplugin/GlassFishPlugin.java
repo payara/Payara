@@ -278,7 +278,12 @@ public class GlassFishPlugin extends ServiceProvisioningEngineBase
     public boolean stopService(ServiceDescription serviceDescription, ServiceInfo serviceInfo) {
         String serviceName = serviceDescription.getName();
         /**
-         * Step 1. Stop all the instances.
+         * Step 1. Disable elastic service.
+          */
+        commandRunner.run("disable-auto-scaling", serviceName);
+
+        /**
+         * Step 2. Stop all the instances.
          */
         boolean stopSuccessful = false;
         String clusterName = serviceDescription.getVirtualClusterName();
@@ -291,7 +296,7 @@ public class GlassFishPlugin extends ServiceProvisioningEngineBase
         serviceDescription.setName(serviceName); // reset the service name.
 
         /**
-         * Step 2. Stop the cluster/DAS.
+         * Step 3. Stop the cluster/DAS.
          * 
          * For now, stop local cluster and jjust create a new ProvisionedService object
          * representing cluster so that State gets updated correctly.
@@ -299,11 +304,6 @@ public class GlassFishPlugin extends ServiceProvisioningEngineBase
         commandRunner.run("stop-cluster", serviceDescription.getVirtualClusterName());
         new GlassFishProvisionedService(serviceDescription,
                 new Properties(), ServiceStatus.STOPPED, null);
-
-        /**
-         * Step 3. Disable elastic service.
-          */
-        commandRunner.run("disable-auto-scaling", serviceName);
 
         return stopSuccessful;
     }
