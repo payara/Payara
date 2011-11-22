@@ -67,7 +67,6 @@ import org.glassfish.virtualization.spi.AllocationStrategy;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.component.Habitat;
-import org.jvnet.hk2.component.PostConstruct;
 
 
 @org.jvnet.hk2.annotations.Service

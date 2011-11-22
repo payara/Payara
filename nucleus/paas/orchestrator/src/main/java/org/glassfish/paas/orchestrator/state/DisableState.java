@@ -50,8 +50,12 @@ import org.glassfish.paas.orchestrator.service.metadata.ServiceMetadata;
 import org.glassfish.paas.orchestrator.service.spi.Plugin;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.component.Habitat;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -63,29 +67,59 @@ public class DisableState extends AbstractPaaSDeploymentState {
     @Inject
     private ServiceUtil serviceUtil;
 
+    @Inject
+    private Habitat habitat;
+
     private static Logger logger = Logger.getLogger(ServiceOrchestratorImpl.class.getName());
 
     public void handle(PaaSDeploymentContext context) throws PaaSDeploymentException {
         stopServices(context);
     }
 
-    private void stopServices(PaaSDeploymentContext context) {
+    private void stopServices(PaaSDeploymentContext context) throws PaaSDeploymentException {
         final ServiceOrchestratorImpl orchestrator = context.getOrchestrator();
-        final Set<Plugin> installedPlugins = orchestrator.getPlugins();
+        //
         String appName = context.getAppName();
         final ServiceMetadata appServiceMetadata = orchestrator.getServiceMetadata(appName);
 
+        //TODO better name for stoppedSDs.
+        List<ServiceDescription> stoppedSDs = new ArrayList<ServiceDescription>();
         for(ServiceDescription sd : appServiceMetadata.getServiceDescriptions()){
-            Plugin<?> chosenPlugin = orchestrator.getPluginForServiceType(installedPlugins, sd.getServiceType());
-            ServiceInfo serviceInfo = serviceUtil.retrieveCloudEntry(sd.getName(), appName, null );
-            if(serviceInfo != null){
-                chosenPlugin.stopService(sd, serviceInfo);
-            }else{
-                logger.warning("unable to retrieve service-info for service : " + sd.getName() + " of application : " + appName);
+            try{
+                stopService(context, appName, sd);
+                stoppedSDs.add(sd);
+            }catch(Exception e){
+                logger.log(Level.WARNING, "Exception while stopping service " +
+                        "[ "+sd.getName()+" ] for application [ "+appName+" ]", e);
+
+                EnableState enableState = habitat.getComponent(EnableState.class);
+                for(ServiceDescription stoppedSD : stoppedSDs){
+                    try{
+                        enableState.startService(context, appName, stoppedSD);
+                    }catch(Exception stopException){
+                        logger.log(Level.WARNING, "Exception while starting service " +
+                                "[ "+sd.getName()+" ] for application [ "+appName+" ]", stopException);
+                    }
+                }
+                throw new PaaSDeploymentException(e);
             }
         }
         orchestrator.removeProvisionedServices(appName);
         orchestrator.removeServiceMetadata(appName);
+    }
+
+    public boolean stopService(PaaSDeploymentContext context, String appName, ServiceDescription sd) {
+        final ServiceOrchestratorImpl orchestrator = context.getOrchestrator();
+        final Set<Plugin> installedPlugins = orchestrator.getPlugins();
+        Plugin<?> chosenPlugin = orchestrator.getPluginForServiceType(installedPlugins, sd.getServiceType());
+        ServiceInfo serviceInfo = serviceUtil.retrieveCloudEntry(sd.getName(), appName, null );
+        if(serviceInfo != null){
+            chosenPlugin.stopService(sd, serviceInfo);
+            return true;
+        }else{
+            logger.warning("unable to retrieve service-info for service : " + sd.getName() + " of application : " + appName);
+            return false;
+        }
     }
 
     public Class getRollbackState() {

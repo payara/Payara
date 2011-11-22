@@ -51,8 +51,11 @@ import org.glassfish.paas.orchestrator.service.spi.Plugin;
 import org.glassfish.paas.orchestrator.service.spi.ProvisionedService;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.component.Habitat;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -66,6 +69,9 @@ public class EnableState extends AbstractPaaSDeploymentState {
     @Inject
     private ServiceUtil serviceUtil;
 
+    @Inject
+    private Habitat habitat;
+
     private static Logger logger = Logger.getLogger(ServiceOrchestratorImpl.class.getName());
 
     public void handle(PaaSDeploymentContext context) throws PaaSDeploymentException {
@@ -76,25 +82,49 @@ public class EnableState extends AbstractPaaSDeploymentState {
         return null;
     }
 
-    private Set<ProvisionedService> startServices(PaaSDeploymentContext context) {
+    private Set<ProvisionedService> startServices(PaaSDeploymentContext context) throws PaaSDeploymentException {
         Set<ProvisionedService> appPSs = new HashSet<ProvisionedService>();
         final ServiceOrchestratorImpl orchestrator = context.getOrchestrator();
-        final Set<Plugin> installedPlugins = orchestrator.getPlugins();
         String appName = context.getAppName();
         final ServiceMetadata appServiceMetadata = orchestrator.getServiceMetadata(appName);
 
+        List<ServiceDescription> provisionedSDs = new ArrayList<ServiceDescription>();
         for(ServiceDescription sd : appServiceMetadata.getServiceDescriptions()){
-            Plugin<?> chosenPlugin = orchestrator.getPluginForServiceType(installedPlugins, sd.getServiceType());
-            logger.log(Level.INFO, "Retrieving provisioned Service for " + sd + " through " + chosenPlugin);
-            ServiceInfo serviceInfo = serviceUtil.retrieveCloudEntry(sd.getName(), appName, null );
-            if(serviceInfo != null){
-                ProvisionedService ps = chosenPlugin.startService(sd, serviceInfo);
+            try{
+                ProvisionedService ps = startService(context, appName, sd);
                 appPSs.add(ps);
-            }else{
-                logger.warning("unable to retrieve service-info for service : " + sd.getName() + " of application : " + appName);
+                provisionedSDs.add(sd);
+            }catch(Exception e){
+                logger.log(Level.WARNING, "Exception while starting service " +
+                        "[ "+sd.getName()+" ] for application [ "+appName+" ]", e);
+
+                DisableState disableState = habitat.getComponent(DisableState.class);
+                for(ServiceDescription provisionedSD : provisionedSDs){
+                    try{
+                        disableState.stopService(context, appName, provisionedSD);
+                    }catch(Exception stopException){
+                        logger.log(Level.WARNING, "Exception while stopping service " +
+                                "[ "+sd.getName()+" ] for application [ "+appName+" ]", stopException);
+                    }
+                }
+                throw new PaaSDeploymentException(e);
             }
         }
         orchestrator.addProvisionedServices(appName, appPSs);
         return appPSs;
+    }
+
+    public ProvisionedService startService(PaaSDeploymentContext context, String appName, ServiceDescription sd) {
+        final ServiceOrchestratorImpl orchestrator = context.getOrchestrator();
+        final Set<Plugin> installedPlugins = orchestrator.getPlugins();
+        Plugin<?> chosenPlugin = orchestrator.getPluginForServiceType(installedPlugins, sd.getServiceType());
+        logger.log(Level.INFO, "Retrieving provisioned Service for " + sd + " through " + chosenPlugin);
+        ServiceInfo serviceInfo = serviceUtil.retrieveCloudEntry(sd.getName(), appName, null );
+        if(serviceInfo != null){
+            return chosenPlugin.startService(sd, serviceInfo);
+        }else{
+            logger.warning("unable to retrieve service-info for service : " + sd.getName() + " of application : " + appName);
+            return null;
+        }
     }
 }

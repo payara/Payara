@@ -148,9 +148,9 @@ public class ApplicationLifecycleInterceptorImpl implements ApplicationLifecycle
                                 serviceOrchestratorImpl.undeploy(params, context);
                             }
                         }
-                        //TODO as of today, we get only after-CLEAN-unload-disable event.
-                        //TODO we expect after-STOP-unload-disable, but since the target is not "DAS",
-                        //TODO DAS will not receive such event.
+                        //we get only after-CLEAN-unload-disable event.
+                        //we expect after-STOP-unload-disable, but since the target is not "DAS",
+                        //DAS will not receive such event.
                         String appName = params.name();
                         if (params.origin == OpsParams.Origin.unload) {
                             if (params.command == OpsParams.Command.disable) {
