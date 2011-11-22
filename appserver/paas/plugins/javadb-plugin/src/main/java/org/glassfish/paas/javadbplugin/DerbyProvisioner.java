@@ -118,6 +118,9 @@ public class DerbyProvisioner implements DatabaseProvisioner {
     }
 
     public void startDatabase(VirtualMachine virtualMachine) {
+        if(virtualMachine.getMachine() == null) {
+            return;
+        }
        // this line below needs to come from the template...
         String installDir = virtualMachine.getProperty(VirtualMachine.PropertyName.INSTALL_DIR);
         String[] args = {installDir + File.separator + "glassfish" +
@@ -133,6 +136,9 @@ public class DerbyProvisioner implements DatabaseProvisioner {
     }
 
     public void stopDatabase(VirtualMachine virtualMachine) {
+        if(virtualMachine.getMachine() == null) {
+            return;
+        }
         String installDir = virtualMachine.getProperty(VirtualMachine.PropertyName.INSTALL_DIR);
         String[] args = {installDir  + File.separator + "glassfish" +
                 File.separator + "bin" + File.separator + "asadmin " , "stop-database"};
