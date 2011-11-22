@@ -45,6 +45,7 @@ import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.CommandLock;
+import org.glassfish.paas.javadbplugin.DerbyProvisioner;
 import org.glassfish.paas.orchestrator.provisioning.ServiceInfo;
 import org.glassfish.paas.orchestrator.provisioning.ProvisionerUtil;
 import org.glassfish.paas.orchestrator.provisioning.DatabaseProvisioner;
@@ -100,6 +101,9 @@ public class DeleteDerbyService implements AdminCommand {
     @Inject(optional=true)
     VirtualMachineLifecycle vmLifecycle;
 
+    @Inject
+    private DerbyProvisioner derbyProvisioner;
+
     public void execute(AdminCommandContext context) {
 
         final ActionReport report = context.getActionReport();
@@ -116,6 +120,7 @@ public class DeleteDerbyService implements AdminCommand {
                     VirtualCluster virtualCluster = virtualClusters.byName(virtualClusterName);
                     String vmId = dbServiceUtil.getInstanceID(serviceName, appName, ServiceType.DATABASE);
                     VirtualMachine vm = virtualCluster.vmByName(vmId);
+                    derbyProvisioner.stopDatabase(vm);
                     vmLifecycle.delete(vm);
                     dbServiceUtil.unregisterCloudEntry(serviceName, appName);
                     report.setActionExitCode(ActionReport.ExitCode.SUCCESS);

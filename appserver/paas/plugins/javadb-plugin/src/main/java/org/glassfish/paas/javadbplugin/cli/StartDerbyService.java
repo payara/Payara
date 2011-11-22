@@ -124,7 +124,7 @@ public class StartDerbyService implements AdminCommand {
                             vmLifecycle.start(virtualMachine);
                         }
                     }
-                    //derbyProvisioner.startDatabase(ipAddress);
+                    derbyProvisioner.startDatabase(virtualMachine);
 
                     dbServiceUtil.updateState(serviceName, appName, Running.toString(), DATABASE);
                     report.setMessage("Derby db service [" + serviceName + "] started");

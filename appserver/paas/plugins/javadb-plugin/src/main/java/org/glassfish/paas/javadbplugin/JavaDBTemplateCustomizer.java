@@ -56,31 +56,12 @@ public class JavaDBTemplateCustomizer implements TemplateCustomizer {
 
     @Override
     public void start(VirtualMachine virtualMachine, boolean firstStart) {
-       // this line below needs to come from the template...
-        String installDir = virtualMachine.getProperty(VirtualMachine.PropertyName.INSTALL_DIR);
-        String[] args = {installDir + "/glassfish/bin/asadmin" , "start-database"};
-        try {
-            RuntimeContext.logger.info("Virtual Machine " + virtualMachine.getName() + " output : " +
-                    virtualMachine.executeOn(args));
-        } catch (IOException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-        } catch (InterruptedException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-        }
+        //Deliberate NoOP as this is handled in provisioner
     }
 
     @Override
     public void stop(VirtualMachine virtualMachine) {
-        String installDir = virtualMachine.getProperty(VirtualMachine.PropertyName.INSTALL_DIR);
-        String[] args = {installDir  + "/glassfish/bin/asadmin" , "stop-database"};
-        try {
-            RuntimeContext.logger.info("Virtual Machine " + virtualMachine.getName() + " output : " +
-                    virtualMachine.executeOn(args));
-        } catch (IOException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-        } catch (InterruptedException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-        }
+        //Deliberate NoOP as this is handled in provisioner
     }
 
     public boolean isActive(VirtualCluster virtualCluster, VirtualMachine virtualMachine) throws VirtException {

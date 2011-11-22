@@ -186,8 +186,8 @@ public class CreateDerbyService implements AdminCommand, Runnable {
 
                 VirtualMachine vm = future.get();
 
-                // TODO :: create user specified database.
-                
+                derbyProvisioner.startDatabase(vm);
+
                 // add app-scoped-service config for each vm instance as well.
                 //Get database name from application
                 String databaseName = serviceConfigurations.getProperty("database.name");

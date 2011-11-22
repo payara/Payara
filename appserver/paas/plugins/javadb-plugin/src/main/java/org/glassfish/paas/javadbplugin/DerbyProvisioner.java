@@ -46,10 +46,13 @@ import org.apache.tools.ant.types.Path;
 import org.glassfish.internal.api.ClassLoaderHierarchy;
 import org.glassfish.paas.orchestrator.provisioning.DatabaseProvisioner;
 import org.glassfish.paas.orchestrator.provisioning.util.RemoteCommandExecutor;
+import org.glassfish.virtualization.spi.VirtualMachine;
+import org.glassfish.virtualization.util.RuntimeContext;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -112,6 +115,35 @@ public class DerbyProvisioner implements DatabaseProvisioner {
         String args[] = new String[]{userName, ipAddress, keyPairLocation, command};
         remoteCommandExecutor.executeCommand(args);
         System.out.println("Database stopped : " + ipAddress);
+    }
+
+    public void startDatabase(VirtualMachine virtualMachine) {
+       // this line below needs to come from the template...
+        String installDir = virtualMachine.getProperty(VirtualMachine.PropertyName.INSTALL_DIR);
+        String[] args = {installDir + File.separator + "glassfish" +
+                File.separator + "bin" + File.separator + "asadmin " , "start-database"};
+        try {
+            RuntimeContext.logger.info("Virtual Machine " + virtualMachine.getName() + " output : " +
+                    virtualMachine.executeOn(args));
+        } catch (IOException e) {
+            logger.log(Level.WARNING, "Exception while starting database : " + e);
+        } catch (InterruptedException e) {
+            logger.log(Level.WARNING, "Exception while starting database : " + e);
+        }
+    }
+
+    public void stopDatabase(VirtualMachine virtualMachine) {
+        String installDir = virtualMachine.getProperty(VirtualMachine.PropertyName.INSTALL_DIR);
+        String[] args = {installDir  + File.separator + "glassfish" +
+                File.separator + "bin" + File.separator + "asadmin " , "stop-database"};
+        try {
+            RuntimeContext.logger.info("Virtual Machine " + virtualMachine.getName() + " output : " +
+                    virtualMachine.executeOn(args));
+        } catch (IOException e) {
+            logger.log(Level.WARNING, "Exception while stopping database : " + e);
+        } catch (InterruptedException e) {
+            logger.log(Level.WARNING, "Exception while stopping database : " + e);
+        }
     }
 
     public String getDefaultServiceName() {
