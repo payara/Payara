@@ -80,11 +80,36 @@
                 createMap(result="#{requestScope.ct}");
                 mapPut(map="#{requestScope.ct}" key="config"  value="$pageSession{config}");
                 mapPut(map="#{requestScope.ct}" key="id" value="#{pageSession.name}" );
-                println("Creating cluster ....");
-                println("#{sessionScope.REST_URL}/clusters/cluster");
-                println("#{requestScope.ct}");
                 gf.createEntity( endpoint="#{sessionScope.REST_URL}/clusters/cluster"   attrs="#{requestScope.ct}")
                 gf.createClusterInstances(clusterName="#{pageSession.name}", instanceRow="#{instances}");
+                
+                if (#{clusterType}) {
+                    createMap(result="#{requestScope.jmsAttrs}");
+                    mapPut(map="#{requestScope.jmsAttrs}" key="clustertype" value="$pageSession{clusterType}");
+                    mapPut(map="#{requestScope.jmsAttrs}" key="configStoreType" value="$pageSession{configStoreType}");
+                    mapPut(map="#{requestScope.jmsAttrs}" key="messageStoreType" value="$pageSession{messageStoreType}");
+                    if (#{dbVendor}) {
+                        mapPut(map="#{requestScope.jmsAttrs}" key="dbVendor" value="$pageSession{dbVendor}");
+                    }
+                    if (#{dbUser}) {
+                        mapPut(map="#{requestScope.jmsAttrs}" key="dbUser" value="$pageSession{dbUser}");
+                    }
+                    if (#{dbUrl}) {
+                        mapPut(map="#{requestScope.jmsAttrs}" key="dbUrl" value="$pageSession{dbUrl}");
+                    }
+                    gf.restRequest(endpoint="#{sessionScope.REST_URL}/clusters/cluster/#{pageSession.name}/configure-jms-cluster",
+                        attrs="#{requestScope.jmsAttrs}",
+                        method="post",
+                        result="#{pageSession.resultMap}",
+                        throwException="#{false}");
+                        
+                        if ("#{pageSession.resultMap.data.exit_code}=FAILURE") {
+                            prepareAlertMsg(summary="$resource{i18ncs.cluster.jms.ConfigureJmsClusterFailure}", 
+                                detail="#{pageSession.resultMap.data.message}"
+                                type="error");
+                        }
+                }
+                
                 gf.redirect(page="#{request.contextPath}/cluster/cluster/clusters.jsf?alertType=${alertType}&alertSummary=${alertSummary}&alertDetail=${alertDetail}");
              />
             </sun:button>
@@ -105,8 +130,7 @@
                 <sun:textField id="NameText" text="#{pageSession.name}" styleClass="required" columns="$int{55}" maxLength="#{sessionScope.fieldLengths['maxLength.cluster.ClusterName']}" required="#{true}" />
             </sun:property>
             <sun:property id="configProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18ncs.clusterNew.Configuration}" helpText="$resource{i18ncs.clusterNew.ConfigurationHelp}">
-                <sun:dropDown id="Config" labels="#{pageSession.configsList}" selected="#{pageSession.config}" >
-                </sun:dropDown>
+                <sun:dropDown id="Config" labels="#{pageSession.configsList}" selected="#{pageSession.config}"/>
             </sun:property>
             <sun:property id="configOptionProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}">
                 <sun:radioButton id="optC"  name="configOptionGrp" label="$resource{i18ncs.clusterNew.CopyConfig}" selected="#{configOption}" selectedValue="copy" />
@@ -115,7 +139,15 @@
                 "<br />
             </sun:property>
         </sun:propertySheetSection>
+        <event>
+            <!afterCreate
+                includeIntegrations(type="org.glassfish.admingui:newClusterPropSheet");
+            />
+        </event>
     </sun:propertySheet>
+"    <div class="ConLin_sun4">
+"        <img id="propertyForm:propertySheet:configureJmsClusterSection:configureJmsClusterSection_dot1" width="1" height="1" border="0" alt="" src="/theme/com/sun/webui/jsf/suntheme/images/other/dot.gif">
+"    </div>
     <sun:table id="basicTable" style="padding: 10pt" deselectMultipleButton="$boolean{true}" selectMultipleButton="$boolean{true}"
                title="$resource{i18ncs.clusterNew.TableTitle}">
         <!-- Actions (Top) -->
@@ -158,7 +190,7 @@
     </sun:table>
 
 
-	<sun:hidden id="helpKey" value="$resource{help_cluster.clusterNew}" />
+    <sun:hidden id="helpKey" value="$resource{help_cluster.clusterNew}" />
 </sun:form>
 </define>
 </composition>

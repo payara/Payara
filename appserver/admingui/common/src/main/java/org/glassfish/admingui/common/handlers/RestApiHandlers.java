@@ -40,12 +40,10 @@
 
 package org.glassfish.admingui.common.handlers;
 
-import org.glassfish.admingui.common.util.RestUtil;
 import com.sun.jsftemplating.annotation.Handler;
 import com.sun.jsftemplating.annotation.HandlerInput;
 import com.sun.jsftemplating.annotation.HandlerOutput;
 import com.sun.jsftemplating.layout.descriptors.handler.HandlerContext;
-
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -53,11 +51,18 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
-
 import org.glassfish.admingui.common.util.GuiUtil;
 import org.glassfish.admingui.common.util.RestResponse;
-
-import static org.glassfish.admingui.common.util.RestUtil.*;
+import org.glassfish.admingui.common.util.RestUtil;
+import static org.glassfish.admingui.common.util.RestUtil.appendEncodedSegment;
+import static org.glassfish.admingui.common.util.RestUtil.buildChildEntityList;
+import static org.glassfish.admingui.common.util.RestUtil.buildDefaultValueMap;
+import static org.glassfish.admingui.common.util.RestUtil.delete;
+import static org.glassfish.admingui.common.util.RestUtil.get;
+import static org.glassfish.admingui.common.util.RestUtil.getChildMap;
+import static org.glassfish.admingui.common.util.RestUtil.parseResponse;
+import static org.glassfish.admingui.common.util.RestUtil.sendCreateRequest;
+import static org.glassfish.admingui.common.util.RestUtil.sendUpdateRequest;
 
 /**
  *
