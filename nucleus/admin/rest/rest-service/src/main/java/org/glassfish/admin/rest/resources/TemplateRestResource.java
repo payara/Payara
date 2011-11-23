@@ -151,6 +151,21 @@ public class TemplateRestResource {
         }
     }
 
+    /**
+     * allows for remote files to be put in a tmp area and we pass the
+     * local location of this file to the corresponding command instead of the content of the file
+     * * Yu need to add  enctype="multipart/form-data" in the form
+     * for ex:  <form action="http://localhost:4848/management/domain/applications/application" method="post" enctype="multipart/form-data">
+     * then any param of type="file" will be uploaded, stored locally and the param will use the local location
+     * on the server side (ie. just the path)
+     */
+    @POST
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    public Response post(FormDataMultiPart formData) {
+        HashMap<String, String> data = createDataBasedOnForm(formData);
+        return createEntity(data); //execute the deploy command with a copy of the file locally
+    }
+
     @DELETE
     public Response delete(HashMap<String, String> data) {
         if (entity == null) {//wrong resource
@@ -232,21 +247,6 @@ public class TemplateRestResource {
     @OPTIONS
     public Response options() {
         return Response.ok(buildActionReportResult(false)).build();
-    }
-
-    /**
-     * allows for remote files to be put in a tmp area and we pass the
-     * local location of this file to the corresponding command instead of the content of the file
-     * * Yu need to add  enctype="multipart/form-data" in the form
-     * for ex:  <form action="http://localhost:4848/management/domain/applications/application" method="post" enctype="multipart/form-data">
-     * then any param of type="file" will be uploaded, stored locally and the param will use the local location
-     * on the server side (ie. just the path)
-     */
-    @POST
-    @Consumes(MediaType.MULTIPART_FORM_DATA)
-    public Response post(FormDataMultiPart formData) {
-        HashMap<String, String> data = createDataBasedOnForm(formData);
-        return createEntity(data); //execute the deploy command with a copy of the file locally
     }
 
     public void setEntity(Dom p) {

@@ -134,6 +134,7 @@ public class TemplateExecCommand {
         int status = HttpURLConnection.HTTP_OK; /*200 - ok*/
         if (exitCode == ActionReport.ExitCode.FAILURE) {
             status = HttpURLConnection.HTTP_INTERNAL_ERROR;
+            results.setErrorMessage(actionReport.getCombinedMessage());
         }
         return Response.status(status).entity(results).build();
 

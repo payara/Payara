@@ -141,7 +141,6 @@ public class StructuredLogViewerResource {
             String logLevel, boolean onlyLevel, String anySearch, List<String> listOfModules,
             String instanceName,
             String type) throws IOException {
-
         if (habitat.getComponent(LogManager.class) == null) {
             //the logger service is not install, so we cannot rely on it.
             //return an error

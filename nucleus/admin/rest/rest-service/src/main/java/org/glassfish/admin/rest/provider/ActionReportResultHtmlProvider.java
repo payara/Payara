@@ -70,13 +70,13 @@ public class ActionReportResultHtmlProvider extends BaseProvider<ActionReportRes
     public String getContent(ActionReportResult proxy) {
         RestActionReporter ar = (RestActionReporter) proxy.getActionReport();
         StringBuilder result = new StringBuilder(ProviderUtil.getHtmlHeader(getBaseUri()));
-
-//        result.append("<h1>")
-//                .append(ar.getActionDescription())
-//                .append("</h1><div>");
+        String message = ar.getCombinedMessage();
+        if (message != null) {
+            result.append("<h3>").append(message).append("</h3>");
+        }
 
         if (proxy.isError()) {
-            result.append("<h2>").append(ar.getActionDescription() +" Error:</h2>")
+            result.append("<h2>").append(ar.getActionDescription()).append(" Error:</h2>")
                     .append(proxy.getErrorMessage());
         } else {
             final Map<String, String> childResources = (Map<String, String>) ar.getExtraProperties().get("childResources");

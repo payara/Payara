@@ -72,6 +72,7 @@ public class StaticResource {
         ".jpeg", "image/jpeg",
         ".jpg", "image/jpeg",
         ".js", "application/x-javascript",
+        ".javascript", "application/x-javascript",
         ".json", "application/json",
         ".png", "image/png",
         ".text", "text/plain",

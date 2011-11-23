@@ -40,22 +40,11 @@
 
 package org.glassfish.admin.rest.provider;
 
+import com.sun.appserv.server.util.Version;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import org.codehaus.jettison.json.JSONArray;
-import org.codehaus.jettison.json.JSONException;
-import org.glassfish.admin.rest.Constants;
-import org.glassfish.admin.rest.ResourceUtil;
-import org.glassfish.admin.rest.Util;
-import org.glassfish.admin.rest.results.OptionsResult;
-import org.glassfish.external.statistics.Statistic;
-import org.glassfish.external.statistics.impl.StatisticImpl;
-import org.jvnet.hk2.config.ConfigBean;
-
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.UriInfo;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -66,6 +55,18 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.UriInfo;
+import org.codehaus.jettison.json.JSONArray;
+import org.codehaus.jettison.json.JSONException;
+import org.glassfish.admin.rest.Constants;
+import org.glassfish.admin.rest.ResourceUtil;
+import org.glassfish.admin.rest.Util;
+import org.glassfish.admin.rest.results.OptionsResult;
+import org.glassfish.external.statistics.Statistic;
+import org.glassfish.external.statistics.impl.StatisticImpl;
+import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.config.ConfigBean;
 
 
 /**
@@ -295,7 +296,7 @@ public class ProviderUtil {
 
         }
         //hack-1 : support delete method for html
-        //hardcode "post" instead of commandMethod which chould be post or delete.
+        //hardcode "post" instead of commandMethod which should be post or delete.
         String webMethod="post";
         if (commandMethod.equalsIgnoreCase("get")){
              webMethod="get";
@@ -402,13 +403,12 @@ public class ProviderUtil {
     }
 
     static public String getHtmlHeader(String baseUri) {
-        String result = "<html><head>";
-        result = result + "<title>GlassFish REST Interface</title>";
+        String title = Version.getVersion() + " REST Interface";
+        String result = "<html><head><title>" + title + "</title>";
         result = result + getInternalStyleSheet(baseUri);
-        //FIXME - uncomment with the correct link for css file. This external file will override the internal style sheet.
-        ///result = result + "<link rel=\"stylesheet\" type=\"text/css\" href=\"http://localhost:8080/glassfish_rest_interface.css\" />";
+        result = result + getAjaxJavascript(baseUri);
         result = result + "</head><body>";
-        result = result + "<h1 class=\"mainheader\">GlassFish REST Interface</h1>";
+        result = result + "<h1 class=\"mainheader\">" + title + "</h1>";
         result = result + "<hr/>";
         return result;
     }
@@ -536,7 +536,7 @@ public class ProviderUtil {
     }
 
     /**
-     *  This method converts a string into stringarray, uses the delimeter as the
+     *  This method converts a string into string array, uses the delimeter as the
      *  separator character. If the delimiter is null, uses space as default.
      */
     private static String[] stringToArray(String str, String delimiter) {
@@ -559,5 +559,9 @@ public class ProviderUtil {
     private static String getInternalStyleSheet(String baseUri) {
 
         return " <link rel=\"stylesheet\" type=\"text/css\" href=\""+baseUri+"static/std.css\" />";
+    }
+
+    private static String getAjaxJavascript(String baseUri) {
+        return " <script type=\"text/javascript\" src=\""+baseUri+"static/ajax.javascript\"></script>";
     }
 }
