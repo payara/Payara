@@ -45,7 +45,7 @@
     <groupId>org.glassfish.tests.paas</groupId>
     <artifactId>rollback-test</artifactId>
     <version>4.0-SNAPSHOT</version>
-    <name>Basic PaaS sample</name>
+    <name>Deployment Rollback Test</name>
     <packaging>war</packaging>
     <build>
         <finalName>rollback-test-sample</finalName>

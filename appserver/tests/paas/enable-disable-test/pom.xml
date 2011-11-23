@@ -45,7 +45,7 @@
     <groupId>org.glassfish.tests.paas</groupId>
     <artifactId>enable-disable-test</artifactId>
     <version>4.0-SNAPSHOT</version>
-    <name>Basic InitSQL PaaS sample</name>
+    <name>Enable Disable Test</name>
     <packaging>war</packaging>
     <build>
         <finalName>enable-disable-sample</finalName>

@@ -166,6 +166,7 @@ public class EnableDisableTest {
 				System.out.println("Destroying the resources created");
 				System.err.println("Undeployed [" + appName + "]");
 			}
+            glassfish.dispose();
 		}
 
 	}
