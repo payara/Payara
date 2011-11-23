@@ -114,10 +114,11 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
     }
 
     public static Collection<Class> getAllStates(){
-        //TODO for now, returning only deployment states as
-        //TODO we will have support of atomicity only during deployment.
+        //TODO for now we will have support of atomicity only during deployment, enable, disable.
         Set<Class> allStates = new HashSet<Class>();
         allStates.addAll(DEPLOYMENT_STATES);
+        Collections.addAll(allStates, ENABLE_PHASE_STATES);
+        Collections.addAll(allStates, DISABLE_PHASE_STATES);
         return Collections.unmodifiableSet(allStates);
     }
 

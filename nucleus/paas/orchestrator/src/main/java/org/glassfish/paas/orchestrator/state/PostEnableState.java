@@ -38,26 +38,26 @@
  * holder.
  */
 
-package org.glassfish.paas.orchestrator.provisioning.util;
 
-import org.glassfish.paas.orchestrator.PaaSDeploymentState;
-import org.glassfish.paas.orchestrator.ServiceOrchestratorImpl;
+package org.glassfish.paas.orchestrator.state;
 
+import org.glassfish.paas.orchestrator.PaaSDeploymentContext;
+import org.glassfish.paas.orchestrator.PaaSDeploymentException;
+import org.jvnet.hk2.annotations.Service;
 
-public class FailureInducer {
-
-    private static Class<PaaSDeploymentState> failureState;
-
-    public static void setFailureState(Class state) throws IllegalArgumentException {
-        if(state == null || ( PaaSDeploymentState.class.isAssignableFrom(state) &&
-                ServiceOrchestratorImpl.getAllStates().contains(state))){
-            failureState = state;
-        }else{
-            throw new IllegalArgumentException("Invalid state [ "+state+" ]");
-        }
+/**
+ * Note : This is purely a state used for testing purposes
+ * ie., to check whether rollback of all of its previous states can be done.
+ *
+ * @author Jagadish Ramu
+ */
+@Service
+public class PostEnableState extends AbstractPaaSDeploymentState {
+    public void handle(PaaSDeploymentContext context) throws PaaSDeploymentException {
+        //no-op
     }
 
-    public static Class<PaaSDeploymentState> getFailureState(){
-        return failureState;
+    public Class getRollbackState() {
+        return null;
     }
 }

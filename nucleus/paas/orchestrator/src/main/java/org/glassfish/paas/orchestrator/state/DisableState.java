@@ -123,6 +123,6 @@ public class DisableState extends AbstractPaaSDeploymentState {
     }
 
     public Class getRollbackState() {
-        return null;
+        return EnableState.class;
     }
 }

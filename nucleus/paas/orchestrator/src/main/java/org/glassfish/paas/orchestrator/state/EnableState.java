@@ -79,7 +79,7 @@ public class EnableState extends AbstractPaaSDeploymentState {
     }
 
     public Class getRollbackState() {
-        return null;
+        return DisableState.class;
     }
 
     private Set<ProvisionedService> startServices(PaaSDeploymentContext context) throws PaaSDeploymentException {
