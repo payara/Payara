@@ -317,6 +317,7 @@ public class CoyoteAdapter extends HttpHandler {
                 request.getHost(), request.getContext());
             Container container = connector.getContainer();
             try {
+                request.lockSession();
                 if (container.getPipeline().hasNonBasicValves() ||
                         container.hasCustomPipeline()) {
                     container.getPipeline().invoke(request, response);
@@ -341,9 +342,13 @@ public class CoyoteAdapter extends HttpHandler {
                     }
                 }
             } finally {
-                connector.requestEndEvent(request.getRequest(),
-                    request.getHost(), request.getContext(),
-                    response.getStatus());
+                try {
+                    connector.requestEndEvent(request.getRequest(),
+                        request.getHost(), request.getContext(),
+                        response.getStatus());
+                } finally {
+                    request.unlockSession();
+                }
             }
         }
 

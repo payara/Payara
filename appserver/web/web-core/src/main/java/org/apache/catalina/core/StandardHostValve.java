@@ -457,7 +457,6 @@ final class StandardHostValve
             hres.setStatus(statusCode, message);
 
             // Forward control to the specified location
-            request.lockSession();
             ServletContext servletContext =
                 request.getContext().getServletContext();
             ApplicationDispatcher dispatcher = (ApplicationDispatcher)
@@ -484,8 +483,6 @@ final class StandardHostValve
             // Report our failure to process this custom page
             log("Exception Processing " + errorPage, t);
             return (false);
-        } finally {
-            request.unlockSession();
         }
 
     }
