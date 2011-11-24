@@ -47,111 +47,98 @@ import org.glassfish.embeddable.GlassFish;
 import org.glassfish.embeddable.GlassFishProperties;
 import org.glassfish.embeddable.GlassFishRuntime;
 import org.glassfish.embeddable.Deployer;
-import org.glassfish.resources.util.ResourceUtil;
 import org.junit.Test;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
-import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.Date;
-import java.util.Enumeration;
-import java.util.Properties;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
-
-/**
- * @author Shalini M
- */
 
 public class EnableDisableTest {
 
-	@Test
-	public void test() throws Exception {
+    @Test
+    public void test() throws Exception {
 
-		// 1. Bootstrap GlassFish DAS in embedded mode.
-		GlassFishProperties glassFishProperties = new GlassFishProperties();
-		glassFishProperties.setInstanceRoot(System.getenv("S1AS_HOME")
-				+ "/domains/domain1");
-		glassFishProperties.setConfigFileReadOnly(false);
-		GlassFish glassfish = GlassFishRuntime.bootstrap().newGlassFish(
-				glassFishProperties);
-		PrintStream sysout = System.out;
-		glassfish.start();
-		System.setOut(sysout);
+        // 1. Bootstrap GlassFish DAS in embedded mode.
+        GlassFishProperties glassFishProperties = new GlassFishProperties();
+        glassFishProperties.setInstanceRoot(System.getenv("S1AS_HOME")
+                + "/domains/domain1");
+        glassFishProperties.setConfigFileReadOnly(false);
+        GlassFish glassfish = GlassFishRuntime.bootstrap().newGlassFish(
+                glassFishProperties);
+        PrintStream sysout = System.out;
+        glassfish.start();
+        System.setOut(sysout);
 
-		// 2. Deploy the PaaS application.
-		File archive = new File(System.getProperty("basedir")
-				+ "/target/enable-disable-sample.war"); // TODO :: use
-																// mvn apis to
-																// get the
-																// archive
-																// location.
-		Assert.assertTrue(archive.exists());
+        // 2. Deploy the PaaS application.
+        File archive = new File(System.getProperty("basedir")
+                + "/target/enable-disable-sample.war"); // TODO :: use
+        // mvn apis to
+        // get the
+        // archive
+        // location.
+        Assert.assertTrue(archive.exists());
 
-		Deployer deployer = null;
-		String appName = null;
-		try {
-			deployer = glassfish.getDeployer();
-			appName = deployer.deploy(archive);
+        Deployer deployer = null;
+        String appName = null;
+        try {
+            deployer = glassfish.getDeployer();
+            appName = deployer.deploy(archive);
 
-			System.err.println("Deployed [" + appName + "]");
-			Assert.assertNotNull(appName);
+            System.err.println("Deployed [" + appName + "]");
+            Assert.assertNotNull(appName);
 
             CommandResult result = null;
-			CommandRunner commandRunner = glassfish.getCommandRunner();
+            CommandRunner commandRunner = glassfish.getCommandRunner();
             {
-                result = commandRunner.run("list-services","appname="+appName, "output=STATE");
+                result = commandRunner.run("list-services", "appname=" + appName, "output=STATE");
                 System.out.println("\nlist-services command output [ "
                         + result.getOutput() + "]");
 
                 boolean notRunning = result.getOutput().toLowerCase().contains("notrunning");
                 Assert.assertTrue(!notRunning);
-                boolean stopped =result.getOutput().toLowerCase().contains("stopped");
+                boolean stopped = result.getOutput().toLowerCase().contains("stopped");
                 Assert.assertTrue(!stopped);
             }
 
-			// 3. Access the app to make sure PaaS app is correctly provisioned.
-			String HTTP_PORT = (System.getProperty("http.port") != null) ? System
-					.getProperty("http.port") : "28080";
+            // 3. Access the app to make sure PaaS app is correctly provisioned.
+            String HTTP_PORT = (System.getProperty("http.port") != null) ? System
+                    .getProperty("http.port") : "28080";
 
-			get("http://localhost:" + HTTP_PORT
-					+ "/enable-disable-sample/EnableDisableServlet",
-					"Customer ID");
+            get("http://localhost:" + HTTP_PORT
+                    + "/enable-disable-sample/EnableDisableServlet",
+                    "Customer ID");
 
             {
                 result = commandRunner.run("disable", appName);
-                System.out.println("disable "+ appName + " output : " + result.getOutput());
-                System.out.println("disable "+ appName + " status : " + result.getExitStatus());
+                System.out.println("disable " + appName + " output : " + result.getOutput());
+                System.out.println("disable " + appName + " status : " + result.getExitStatus());
                 Assert.assertEquals(result.getExitStatus(), CommandResult.ExitStatus.SUCCESS);
 
-                result = commandRunner.run("list-services","appname="+appName, "output=STATE");
-                System.out.println("list-services --appname=["+appName+"] : status : " + result.getExitStatus());
+                result = commandRunner.run("list-services", "appname=" + appName, "output=STATE");
+                System.out.println("list-services --appname=[" + appName + "] : status : " + result.getExitStatus());
                 System.out.println("\nlist-services command output [ "
                         + result.getOutput() + "]");
                 boolean notRunning = result.getOutput().toLowerCase().contains("notrunning");
-                boolean stopped =result.getOutput().toLowerCase().contains("stopped");
+                boolean stopped = result.getOutput().toLowerCase().contains("stopped");
                 Assert.assertTrue(stopped || notRunning);
             }
 
             {
                 result = commandRunner.run("enable", appName);
-                System.out.println("enable "+ appName + " output : " + result.getOutput());
-                System.out.println("enable "+ appName + " status : " + result.getExitStatus());
+                System.out.println("enable " + appName + " output : " + result.getOutput());
+                System.out.println("enable " + appName + " status : " + result.getExitStatus());
                 Assert.assertEquals(result.getExitStatus(), CommandResult.ExitStatus.SUCCESS);
 
-                result = commandRunner.run("list-services","appname="+appName, "output=STATE");
-                System.out.println("list-services --appname=["+appName+"] : status : " + result.getExitStatus());
+                result = commandRunner.run("list-services", "appname=" + appName, "output=STATE");
+                System.out.println("list-services --appname=[" + appName + "] : status : " + result.getExitStatus());
                 System.out.println("\nlist-services command output [ "
                         + result.getOutput() + "]");
                 boolean notRunning = result.getOutput().toLowerCase().contains("notrunning");
                 Assert.assertTrue(!notRunning);
-                boolean stopped =result.getOutput().toLowerCase().contains("stopped");
+                boolean stopped = result.getOutput().toLowerCase().contains("stopped");
                 Assert.assertTrue(!stopped);
             }
 
@@ -159,35 +146,35 @@ public class EnableDisableTest {
                     + "/enable-disable-sample/EnableDisableServlet",
                     "Customer ID");
 
-			// 4. Undeploy the PaaS application .
-		} finally {
-			if (appName != null) {
-				deployer.undeploy(appName);
-				System.out.println("Destroying the resources created");
-				System.err.println("Undeployed [" + appName + "]");
-			}
+            // 4. Undeploy the PaaS application .
+        } finally {
+            if (appName != null) {
+                deployer.undeploy(appName);
+                System.out.println("Destroying the resources created");
+                System.err.println("Undeployed [" + appName + "]");
+            }
             glassfish.dispose();
-		}
+        }
 
-	}
+    }
 
-	private void get(String urlStr, String result) throws Exception {
-		URL url = new URL(urlStr);
-		URLConnection yc = url.openConnection();
-		System.out.println("\nURLConnection [" + yc + "] : ");
-		BufferedReader in = new BufferedReader(new InputStreamReader(
-				yc.getInputStream()));
-		String line = null;
-		boolean found = false;
-		while ((line = in.readLine()) != null) {
-			System.out.println(line);
-			if (line.indexOf(result) != -1) {
-				found = true;
-			}
-		}
-		Assert.assertTrue(found);
-		System.out.println("\n***** SUCCESS **** Found [" + result
-				+ "] in the response.*****\n");
-	}
+    private void get(String urlStr, String result) throws Exception {
+        URL url = new URL(urlStr);
+        URLConnection yc = url.openConnection();
+        System.out.println("\nURLConnection [" + yc + "] : ");
+        BufferedReader in = new BufferedReader(new InputStreamReader(
+                yc.getInputStream()));
+        String line = null;
+        boolean found = false;
+        while ((line = in.readLine()) != null) {
+            System.out.println(line);
+            if (line.contains(result)) {
+                found = true;
+            }
+        }
+        Assert.assertTrue(found);
+        System.out.println("\n***** SUCCESS **** Found [" + result
+                + "] in the response.*****\n");
+    }
 
 }

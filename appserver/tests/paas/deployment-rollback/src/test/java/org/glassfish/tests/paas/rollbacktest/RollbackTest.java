@@ -44,7 +44,6 @@ import junit.framework.Assert;
 import org.glassfish.embeddable.*;
 import org.glassfish.paas.orchestrator.provisioning.util.FailureInducer;
 import org.glassfish.paas.orchestrator.state.*;
-import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
@@ -54,14 +53,14 @@ public class RollbackTest {
 
     private File archive = new File(System.getProperty("basedir")
             + "/target/rollback-test-sample.war"); // TODO :: use mvn apis
-                                                    // to get the archive
-                                                    // location.
+    // to get the archive
+    // location.
     private GlassFish glassfish = null;
     String appName = "rollback-test";
     boolean initialized = false;
 
     public void initialize() throws Exception {
-        if(!initialized){
+        if (!initialized) {
             // 1. Bootstrap GlassFish DAS in embedded mode.
             GlassFishProperties glassFishProperties = new GlassFishProperties();
             glassFishProperties.setInstanceRoot(System.getenv("S1AS_HOME")
@@ -77,34 +76,31 @@ public class RollbackTest {
         }
     }
 
-	@Test
-	public void test() throws Exception {
+    @Test
+    public void test() throws Exception {
 
         initialize();
-		// 2. Deploy the PaaS application.
+        // 2. Deploy the PaaS application.
         Assert.assertTrue(archive.exists());
 
         testDeploymentRollback();
         testEnableRollback();
         testDisableRollback();
         tearDown();
-	}
+    }
 
     public void testDeploymentRollback() throws Exception {
         Class[] states = {ServiceDependencyDiscoveryState.class, ProvisioningState.class, PreDeployAssociationState.class,
-                PostDeployAssociationState.class, DeploymentCompletionState.class };
+                PostDeployAssociationState.class, DeploymentCompletionState.class};
 
-        for(Class state : states){
-            //String appName = state.getSimpleName();
+        for (Class state : states) {
             testRollback(glassfish, archive, appName, state);
         }
     }
 
     public void testEnableRollback() throws Exception {
-        Class[] states = {ServiceDependencyDiscoveryState.class, EnableState.class, PostEnableState.class };
+        Class[] states = {ServiceDependencyDiscoveryState.class, EnableState.class, PostEnableState.class};
         FailureInducer.setFailureState(null);
-
-        //String appName = "enable-rollback-test";
 
         System.out.println("Archive absolute path : " + archive.getAbsolutePath());
         CommandRunner commandRunner = glassfish.getCommandRunner();
@@ -121,15 +117,15 @@ public class RollbackTest {
         System.out.println("disable command failure-cause : " + result.getFailureCause());
         Assert.assertTrue(result.getExitStatus() == CommandResult.ExitStatus.SUCCESS);
 
-        result = commandRunner.run("list-services","appname="+appName, "output=STATE");
-        System.out.println("list-services --appname=["+appName+"] : status : " + result.getExitStatus());
+        result = commandRunner.run("list-services", "appname=" + appName, "output=STATE");
+        System.out.println("list-services --appname=[" + appName + "] : status : " + result.getExitStatus());
         System.out.println("\nlist-services command output [ "
                 + result.getOutput() + "]");
         boolean notRunning = result.getOutput().toLowerCase().contains("notrunning");
-        boolean stopped =result.getOutput().toLowerCase().contains("stopped");
+        boolean stopped = result.getOutput().toLowerCase().contains("stopped");
         Assert.assertTrue(stopped || notRunning);
 
-        for(Class state : states){
+        for (Class state : states) {
             try {
                 System.out.println("Setting failure inducer with state : " + state.getSimpleName());
                 FailureInducer.setFailureState(state);
@@ -140,12 +136,12 @@ public class RollbackTest {
                 System.out.println("enable command failure-cause : " + result.getFailureCause());
                 Assert.assertTrue(result.getExitStatus() == CommandResult.ExitStatus.FAILURE);
 
-                result = commandRunner.run("list-services","appname="+appName, "output=STATE");
-                System.out.println("list-services --appname=["+appName+"] : status : " + result.getExitStatus());
+                result = commandRunner.run("list-services", "appname=" + appName, "output=STATE");
+                System.out.println("list-services --appname=[" + appName + "] : status : " + result.getExitStatus());
                 System.out.println("\nlist-services command output [ "
                         + result.getOutput() + "]");
                 notRunning = result.getOutput().toLowerCase().contains("notrunning");
-                stopped =result.getOutput().toLowerCase().contains("stopped");
+                stopped = result.getOutput().toLowerCase().contains("stopped");
                 Assert.assertTrue(stopped || notRunning);
 
 
@@ -155,52 +151,32 @@ public class RollbackTest {
             }
         }
 
-            FailureInducer.setFailureState(null);
-            result = commandRunner.run("enable", appName);
+        FailureInducer.setFailureState(null);
+        result = commandRunner.run("enable", appName);
 
-            System.out.println("enable command result : " + result.getOutput());
-            System.out.println("enable command exit-status : " + result.getExitStatus());
-            System.out.println("enable command failure-cause : " + result.getFailureCause());
-            Assert.assertTrue(result.getExitStatus() == CommandResult.ExitStatus.SUCCESS);
+        System.out.println("enable command result : " + result.getOutput());
+        System.out.println("enable command exit-status : " + result.getExitStatus());
+        System.out.println("enable command failure-cause : " + result.getFailureCause());
+        Assert.assertTrue(result.getExitStatus() == CommandResult.ExitStatus.SUCCESS);
 
-            result = commandRunner.run("list-services","appname="+appName, "output=STATE");
-            System.out.println("list-services --appname=["+appName+"] : status : " + result.getExitStatus());
-            System.out.println("\nlist-services command output [ "
-                    + result.getOutput() + "]");
-            notRunning = result.getOutput().toLowerCase().contains("notrunning");
-            Assert.assertTrue(!notRunning);
-            stopped =result.getOutput().toLowerCase().contains("stopped");
-            Assert.assertTrue(!stopped);
+        result = commandRunner.run("list-services", "appname=" + appName, "output=STATE");
+        System.out.println("list-services --appname=[" + appName + "] : status : " + result.getExitStatus());
+        System.out.println("\nlist-services command output [ "
+                + result.getOutput() + "]");
+        notRunning = result.getOutput().toLowerCase().contains("notrunning");
+        Assert.assertTrue(!notRunning);
+        stopped = result.getOutput().toLowerCase().contains("stopped");
+        Assert.assertTrue(!stopped);
 
     }
 
     public void testDisableRollback() throws Exception {
-        Class[] states = {DisableState.class, PostDisableState.class };
+        Class[] states = {DisableState.class, PostDisableState.class};
         FailureInducer.setFailureState(null);
 
         CommandRunner commandRunner = glassfish.getCommandRunner();
-        //String appName = "enable-rollback-test"; //Using same app deployed before.
         CommandResult result = null;
-        for(Class state : states){
-
-/*
-            result = commandRunner.run("disable", appName);
-
-            System.out.println("disable command result : " + result.getOutput());
-            System.out.println("disable command exit-status : " + result.getExitStatus());
-            System.out.println("disable command failure-cause : " + result.getFailureCause());
-            Assert.assertTrue(result.getExitStatus() == CommandResult.ExitStatus.SUCCESS);
-
-            result = commandRunner.run("list-services","appname="+appName, "output=STATE");
-            System.out.println("list-services --appname=["+appName+"] : status : " + result.getExitStatus());
-            System.out.println("\nlist-services command output [ "
-                    + result.getOutput() + "]");
-            boolean notRunning = result.getOutput().toLowerCase().contains("notrunning");
-            Assert.assertTrue(!notRunning);
-            boolean stopped =result.getOutput().toLowerCase().contains("stopped");
-            Assert.assertTrue(!stopped);
-*/
-
+        for (Class state : states) {
 
             try {
                 System.out.println("Setting failure inducer with state : " + state.getSimpleName());
@@ -212,12 +188,12 @@ public class RollbackTest {
                 System.out.println("disable command failure-cause : " + result.getFailureCause());
                 Assert.assertTrue(result.getExitStatus() == CommandResult.ExitStatus.FAILURE);
 
-                result = commandRunner.run("list-services","appname="+appName, "output=STATE");
-                System.out.println("list-services --appname=["+appName+"] : status : " + result.getExitStatus());
+                result = commandRunner.run("list-services", "appname=" + appName, "output=STATE");
+                System.out.println("list-services --appname=[" + appName + "] : status : " + result.getExitStatus());
                 System.out.println("\nlist-services command output [ "
                         + result.getOutput() + "]");
                 boolean notRunning = result.getOutput().toLowerCase().contains("notrunning");
-                boolean stopped =result.getOutput().toLowerCase().contains("stopped");
+                boolean stopped = result.getOutput().toLowerCase().contains("stopped");
                 Assert.assertTrue(!stopped && !notRunning);
 
 
@@ -225,21 +201,10 @@ public class RollbackTest {
                 System.out.println("Failure while testing disable-rollback on application [" + archive.getName() + "] " + gfe.getLocalizedMessage());
                 gfe.printStackTrace();
             }
-
-/*
-            FailureInducer.setFailureState(null);
-            result = commandRunner.run("enable", appName);
-
-            System.out.println("enable command result : " + result.getOutput());
-            System.out.println("enable command exit-status : " + result.getExitStatus());
-            System.out.println("enable command failure-cause : " + result.getFailureCause());
-            Assert.assertTrue(result.getExitStatus() == CommandResult.ExitStatus.SUCCESS);
-*/
         }
     }
 
     public void tearDown() throws Exception {
-        //String appName = "enable-rollback-test";
         FailureInducer.setFailureState(null);
         CommandRunner commandRunner = glassfish.getCommandRunner();
         CommandResult result = commandRunner.run("undeploy", appName);
@@ -253,33 +218,29 @@ public class RollbackTest {
 
     private void testRollback(GlassFish glassfish, File archive, String appName, Class state) throws GlassFishException {
 
+        CommandRunner commandRunner = glassfish.getCommandRunner();
         try {
+            System.out.println("Setting failure inducer with state : " + state.getSimpleName());
+            FailureInducer.setFailureState(state);
+            System.out.println("Archive absolute path : " + archive.getAbsolutePath());
+            CommandResult result = commandRunner.run("deploy", "--name=" + appName, archive.getAbsolutePath());
+            System.out.println("Deploy command result : " + result.getOutput());
+            System.out.println("Deploy command exit-status : " + result.getExitStatus());
+            System.out.println("Deploy command failure-cause : " + result.getFailureCause());
 
-            CommandRunner commandRunner = glassfish.getCommandRunner();
-            try {
-                System.out.println("Setting failure inducer with state : " + state.getSimpleName());
-                FailureInducer.setFailureState(state);
-                System.out.println("Archive absolute path : " + archive.getAbsolutePath());
-                CommandResult result = commandRunner.run("deploy", "--name=" + appName, archive.getAbsolutePath());
-                System.out.println("Deploy command result : " + result.getOutput());
-                System.out.println("Deploy command exit-status : " + result.getExitStatus());
-                System.out.println("Deploy command failure-cause : " + result.getFailureCause());
+            validateResult(appName, commandRunner);
 
-                validateResult(appName, commandRunner);
-
-            } catch (Exception gfe) {
-                System.out.println("Failure while deploying application [" + archive.getName() + "] " + gfe.getLocalizedMessage());
-                gfe.printStackTrace();
-                validateResult(appName, commandRunner);
-            }
-        } finally {
+        } catch (Exception gfe) {
+            System.out.println("Failure while deploying application [" + archive.getName() + "] " + gfe.getLocalizedMessage());
+            gfe.printStackTrace();
+            validateResult(appName, commandRunner);
         }
     }
 
     private void validateResult(String appName, CommandRunner commandRunner) {
         CommandResult result;
-        result = commandRunner.run("list-services", "--appname="+ appName );
-        System.out.println("list-services --appname=["+appName+"] : status : " + result.getExitStatus());
+        result = commandRunner.run("list-services", "--appname=" + appName);
+        System.out.println("list-services --appname=[" + appName + "] : status : " + result.getExitStatus());
         Assert.assertEquals(result.getExitStatus(), CommandResult.ExitStatus.FAILURE);
 
         result = commandRunner.run("list-services");
