@@ -41,9 +41,8 @@
 package org.glassfish.paas.gfplugin;
 
 
+import org.glassfish.paas.gfplugin.cli.ApplicationServerProvisioner;
 import org.glassfish.paas.orchestrator.ClientRuntimeWrapper;
-import org.glassfish.paas.orchestrator.provisioning.ApplicationServerProvisioner;
-import org.glassfish.paas.orchestrator.provisioning.DatabaseProvisioner;
 import org.glassfish.paas.orchestrator.provisioning.util.RemoteCommandExecutor;
 import org.glassfish.embeddable.*;
 import org.jvnet.hk2.annotations.Inject;
@@ -88,6 +87,15 @@ public class GlassFishProvisioner implements ApplicationServerProvisioner {
     public static final String APPLICATION_SERVER_PROVIDER = "APPLICATION_SERVER_PROVIDER";
     public static final String GLASSFISH = "GLASSFISH";
     public static final String GF_INSTALL_DIR = "GF_INSTALL_DIR";
+
+    //database/JDBC related constants
+    public static final String USER = "user";
+    public static final String PASSWORD = "password";
+    public static final String DATABASENAME = "databasename";
+    public static final String PORTNUMBER = "portnumber";
+    public static final String URL = "url";
+    public static final String RESOURCE_TYPE = "resourcetype";
+    public static final String CLASSNAME = "classname";
 
     private String instanceUserName;
     private String keyPair;
@@ -250,15 +258,15 @@ public class GlassFishProvisioner implements ApplicationServerProvisioner {
 
         Properties properties = (Properties) props.clone();
 
-        if (properties.get(DatabaseProvisioner.RESOURCE_TYPE) != null) {
-            params.add("--resType=" + (String) properties.get(DatabaseProvisioner.RESOURCE_TYPE));
+        if (properties.get(RESOURCE_TYPE) != null) {
+            params.add("--resType=" + (String) properties.get(RESOURCE_TYPE));
 
-            properties.remove(DatabaseProvisioner.RESOURCE_TYPE);
+            properties.remove(RESOURCE_TYPE);
         }
 
-        if (properties.get(DatabaseProvisioner.CLASSNAME) != null) {
-            params.add("--datasourceClassname=" + (String) properties.get(DatabaseProvisioner.CLASSNAME));
-            properties.remove(DatabaseProvisioner.CLASSNAME);
+        if (properties.get(CLASSNAME) != null) {
+            params.add("--datasourceClassname=" + (String) properties.get(CLASSNAME));
+            properties.remove(CLASSNAME);
         } else {
             throw new RuntimeException("classname is mandatory for creating jdbc-connection-pool");
         }

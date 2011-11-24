@@ -50,8 +50,6 @@ import org.glassfish.paas.orchestrator.provisioning.DatabaseProvisioner;
 import org.glassfish.paas.orchestrator.provisioning.ServiceInfo;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceType;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceUtil;
-import org.glassfish.paas.orchestrator.provisioning.iaas.CloudProvisioner;
-import org.glassfish.paas.orchestrator.provisioning.ProvisionerUtil;
 import org.glassfish.virtualization.spi.*;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
@@ -87,22 +85,19 @@ public class CreateDerbyService implements AdminCommand, Runnable {
     @Param(name="serviceconfigurations", optional=true, separator=';')
     public Properties serviceConfigurations;
 
-    @Inject(optional = true) // made it optional for non-virtual scenario to work
+    @Inject
     private TemplateRepository templateRepository;
 
-    @Inject(optional = true) // made it optional for non-virtual scenario to work
+    @Inject
     IAAS iaas;
 
     // TODO :: remove dependency on VirtualCluster(s).
-    @Inject(optional = true) // // made it optional for non-virtual scenario to work
+    @Inject
     VirtualClusters virtualClusters;
 
 
     @Param(name = "servicename", primary = true, optional = false)
     private String serviceName;
-
-    @Inject
-    private ProvisionerUtil provisionerUtil;
 
     @Inject
     private DerbyProvisioner derbyProvisioner;
@@ -213,24 +208,6 @@ public class CreateDerbyService implements AdminCommand, Runnable {
             } catch (Throwable ex) {
                 throw new RuntimeException(ex);
             }
-            return;
-        }else{
-            //local mode related functionality.
-            CloudProvisioner cloudProvisioner = provisionerUtil.getCloudProvisioner();
-            String instanceID = cloudProvisioner.createMasterInstance();
-            String ipAddress = cloudProvisioner.getIPAddress(instanceID);
-
-            DatabaseProvisioner dbProvisioner = provisionerUtil.getDatabaseProvisioner();
-            dbProvisioner.startDatabase(ipAddress);
-
-            ServiceInfo entry = new ServiceInfo();
-            entry.setInstanceId(instanceID);
-            entry.setIpAddress(ipAddress);
-            entry.setState(ServiceInfo.State.Running.toString());
-            entry.setServiceName(serviceName);
-            entry.setAppName(appName);
-            entry.setServerType(ServiceType.DATABASE.toString());
-            dbServiceUtil.registerDBInfo(entry);
         }
     }
 

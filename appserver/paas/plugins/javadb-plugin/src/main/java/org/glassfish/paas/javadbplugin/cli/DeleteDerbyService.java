@@ -46,11 +46,7 @@ import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.CommandLock;
 import org.glassfish.paas.javadbplugin.DerbyProvisioner;
-import org.glassfish.paas.orchestrator.provisioning.ServiceInfo;
-import org.glassfish.paas.orchestrator.provisioning.ProvisionerUtil;
-import org.glassfish.paas.orchestrator.provisioning.DatabaseProvisioner;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceType;
-import org.glassfish.paas.orchestrator.provisioning.iaas.CloudProvisioner;
 import org.glassfish.virtualization.runtime.VirtualMachineLifecycle;
 import org.glassfish.virtualization.spi.VirtualCluster;
 import org.jvnet.hk2.annotations.Inject;
@@ -61,8 +57,6 @@ import org.glassfish.virtualization.runtime.VirtualClusters;
 import org.glassfish.virtualization.spi.TemplateRepository;
 import org.glassfish.virtualization.spi.VirtualMachine;
 
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * @author Jagadish Ramu
@@ -77,9 +71,6 @@ public class DeleteDerbyService implements AdminCommand {
     private String serviceName;
 
     @Inject
-    private ProvisionerUtil provisionerUtil;
-
-    @Inject
     private DatabaseServiceUtil dbServiceUtil;
 
     @Param(name = "appname", optional = true)
@@ -91,11 +82,11 @@ public class DeleteDerbyService implements AdminCommand {
     @Param(name="virtualcluster", optional=true)
     private String virtualClusterName;
     
-    @Inject(optional = true) // made it optional for non-virtual scenario to work
+    @Inject
     private TemplateRepository templateRepository;
 
     // TODO :: remove dependency on VirtualCluster(s).
-    @Inject(optional = true) // made it optional for non-virtual scenario to work
+    @Inject
     VirtualClusters virtualClusters;
 
     @Inject(optional=true)
@@ -132,35 +123,6 @@ public class DeleteDerbyService implements AdminCommand {
                     report.setMessage("deleting service [" + serviceName + "] failed");
                     report.setFailureCause(ex);
                 }
-            }
-            return;
-        }else{
-            try{
-                //local mode related functionality.
-                String ipAddress = dbServiceUtil.getIPAddress(serviceName, appName, ServiceType.DATABASE);
-
-                dbServiceUtil.updateState(serviceName, appName,
-                ServiceInfo.State.Stop_in_progress.toString(), ServiceType.DATABASE);
-
-                DatabaseProvisioner dbProvisioner = provisionerUtil.getDatabaseProvisioner();
-                dbProvisioner.stopDatabase(ipAddress);
-                dbServiceUtil.updateState(serviceName, appName,
-                ServiceInfo.State.NotRunning.toString(), ServiceType.DATABASE);
-
-                CloudProvisioner cloudProvisioner = provisionerUtil.getCloudProvisioner();
-                String instanceID = dbServiceUtil.getInstanceID(serviceName, appName, ServiceType.DATABASE);
-                List<String> instanceIDs = new ArrayList<String>();
-                instanceIDs.add(instanceID);
-                cloudProvisioner.deleteInstances(instanceIDs);
-                dbServiceUtil.unregisterCloudEntry(serviceName, appName);
-                report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
-                report.setMessage("Service with name [" +
-                        serviceName + "] is decommissioned successfully.");
-
-            } catch (Exception e) {
-                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-                report.setMessage("deleting service [" + serviceName + "] failed");
-                report.setFailureCause(e);
             }
         }
     }

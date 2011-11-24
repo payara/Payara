@@ -37,8 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
-package org.glassfish.paas.orchestrator.provisioning;
+package org.glassfish.paas.gfplugin.cli;
 
 import org.jvnet.hk2.annotations.Contract;
 
@@ -48,24 +47,10 @@ import java.util.Properties;
  * @author Jagadish Ramu
  */
 @Contract
-public interface LBProvisioner extends Provisioner {
+public interface Provisioner {
 
     boolean handles(Properties metaData);
 
     void initialize(Properties properties);
-
-    void startLB(String ipAddress);
-
-    void configureLB(String ipAddress);
-
-    void associateApplicationServerWithLB(String ipAddress, String dasIPAddress, String domainName);
-
-    void stopLB(String ipAddress);
-
-    String getVendorName();
-
-    String getDefaultServiceName();
-
-    Properties getDefaultConnectionProperties();
 
 }

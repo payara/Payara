@@ -38,7 +38,7 @@
  * holder.
  */
 
-package org.glassfish.paas.orchestrator.provisioning;
+package org.glassfish.paas.gfplugin.cli;
 
 
 import org.glassfish.embeddable.CommandResult;

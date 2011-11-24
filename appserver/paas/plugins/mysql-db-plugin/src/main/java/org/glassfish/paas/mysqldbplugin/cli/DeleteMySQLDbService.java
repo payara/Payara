@@ -45,7 +45,6 @@ import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.CommandLock;
-import org.glassfish.paas.orchestrator.provisioning.ProvisionerUtil;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceType;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceUtil;
 import org.jvnet.hk2.annotations.Inject;
@@ -79,16 +78,13 @@ public class DeleteMySQLDbService implements AdminCommand {
     private String appName;
 
     @Inject
-    private ProvisionerUtil provisionerUtil;
-
-    @Inject
     private ServiceUtil serviceUtil;
 
-    @Inject(optional = true) // made it optional for non-virtual scenario to work
+    @Inject
     private TemplateRepository templateRepository;
 
     // TODO :: remove dependency on VirtualCluster(s).
-    @Inject(optional = true) // made it optional for non-virtual scenario to work
+    @Inject
     VirtualClusters virtualClusters;
 
     @Inject(optional = true)

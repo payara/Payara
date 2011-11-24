@@ -38,18 +38,18 @@
  * holder.
  */
 
-package org.glassfish.paas.orchestrator.provisioning;
+package org.glassfish.paas.gfplugin.cli;
 
-import org.glassfish.paas.orchestrator.provisioning.iaas.CloudProvisioner;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PostConstruct;
+import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.Singleton;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -59,21 +59,16 @@ import java.util.Properties;
  */
 @Scoped(Singleton.class)
 @Service
-public class ProvisionerUtil implements PostConstruct {
+public class ProvisionerUtil {
 
-    @Inject
-    private ProvisionerFactory provisionerFactory;
 
     private Properties cloudConfig = null;
 
-    private CloudProvisioner cloudProvisioner;
-    private Map<String, ApplicationServerProvisioner> appserverProvisioners =
-            new HashMap<String, ApplicationServerProvisioner>();
-    private DatabaseProvisioner databaseProvisioner = null;
-    private LBProvisioner lbProvisioner = null;
+    @Inject
+    private Habitat habitat;
 
-    public void postConstruct() {
-    }
+    private Map<String, org.glassfish.paas.gfplugin.cli.ApplicationServerProvisioner> appserverProvisioners =
+            new HashMap<String, org.glassfish.paas.gfplugin.cli.ApplicationServerProvisioner>();
 
     public Properties getProperties() {
         if (cloudConfig == null) {
@@ -108,15 +103,7 @@ public class ProvisionerUtil implements PostConstruct {
         }
     }
 
-    public CloudProvisioner getCloudProvisioner() {
-        if (cloudProvisioner == null) {
-            cloudProvisioner = (CloudProvisioner) provisionerFactory.
-                    getProvisioner(getProperties(), CloudProvisioner.class);
-        }
-        return cloudProvisioner;
-    }
-
-    public ApplicationServerProvisioner getAppServerProvisioner(String host) {
+    public org.glassfish.paas.gfplugin.cli.ApplicationServerProvisioner getAppServerProvisioner(String host) {
         if (appserverProvisioners.containsKey(host)) {
             return appserverProvisioners.get(host);
         } else {
@@ -126,64 +113,29 @@ public class ProvisionerUtil implements PostConstruct {
                 properties.put("APPLICATION_SERVER_PROVIDER", "GLASSFISH");
                 properties.put("GF_PORT", "4848");
             }
-            ApplicationServerProvisioner provisioner = (ApplicationServerProvisioner)
-                    provisionerFactory.getProvisioner(properties, ApplicationServerProvisioner.class);
+            org.glassfish.paas.gfplugin.cli.ApplicationServerProvisioner provisioner = (org.glassfish.paas.gfplugin.cli.ApplicationServerProvisioner)
+                    getProvisioner(properties, org.glassfish.paas.gfplugin.cli.ApplicationServerProvisioner.class);
             provisioner.initialize(properties);
             appserverProvisioners.put(host, provisioner);
             return provisioner;
         }
     }
 
-    public DatabaseProvisioner getDatabaseProvisioner() {
+    public org.glassfish.paas.gfplugin.cli.Provisioner getProvisioner(Properties metaData, Class clz) {
 
-        //TODO ideally, one instance is sufficient ?
-        if (databaseProvisioner != null) {
-            return databaseProvisioner;
-        } else {
-            Properties properties = getProperties();
-            //properties.put("GF_HOST", host);
-            DatabaseProvisioner provisioner = (DatabaseProvisioner)
-                    provisionerFactory.getProvisioner(properties, DatabaseProvisioner.class);
-            provisioner.initialize(properties);
-            databaseProvisioner = provisioner;
-            return provisioner;
+        Collection<org.glassfish.paas.gfplugin.cli.Provisioner> provisioners = habitat.getAllByContract(clz);
+        for (org.glassfish.paas.gfplugin.cli.Provisioner provisioner : provisioners) {
+            try {
+                if (provisioner.handles(metaData) && clz.isAssignableFrom(provisioner.getClass())) {
+                    System.out.println("Found Provisioner for type [" + clz + "] : " + provisioner.getClass());
+                    provisioner.initialize(metaData);
+                    return provisioner;
+                }
+            } catch (Exception e) {
+                e.printStackTrace(); //TODO logging
+            }
         }
+        throw new RuntimeException("Unable to get an Provisioner for metaData " + metaData);
     }
 
-    public DatabaseProvisioner getDatabaseProvisioner(String vendorName) {
-        if (databaseProvisioner == null) {
-            getDatabaseProvisioner();
-        }
-        if (databaseProvisioner.getVendorName().equalsIgnoreCase(vendorName)) {
-            return databaseProvisioner;
-        } else {
-            throw new RuntimeException("No database provisioner available for vendor [" + vendorName + "]");
-        }
-    }
-
-    public LBProvisioner getLBProvisioner() {
-
-        //TODO ideally, one instance is sufficient ?
-        if (lbProvisioner != null) {
-            return lbProvisioner;
-        } else {
-            Properties properties = getProperties();
-            LBProvisioner provisioner = (LBProvisioner)
-                    provisionerFactory.getProvisioner(properties, LBProvisioner.class);
-            provisioner.initialize(properties);
-            lbProvisioner = provisioner;
-            return provisioner;
-        }
-    }
-
-    public LBProvisioner getLBProvisioner(String vendorName) {
-        if (lbProvisioner == null) {
-            getLBProvisioner();
-        }
-        if (lbProvisioner.getVendorName().equalsIgnoreCase(vendorName)) {
-            return lbProvisioner;
-        } else {
-            throw new RuntimeException("No load-balancer provisioner available for vendor [" + vendorName + "]");
-        }
-    }
 }

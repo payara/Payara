@@ -52,11 +52,7 @@ import org.glassfish.embeddable.CommandRunner;
 import org.glassfish.embeddable.GlassFish;
 import org.glassfish.paas.gfplugin.cli.GlassFishServiceUtil;
 import org.glassfish.paas.orchestrator.ServiceOrchestrator;
-import org.glassfish.paas.orchestrator.provisioning.ApplicationServerProvisioner;
-import org.glassfish.paas.orchestrator.provisioning.LBProvisioner;
-import org.glassfish.paas.orchestrator.provisioning.ProvisionerUtil;
 import org.glassfish.paas.orchestrator.provisioning.ServiceInfo;
-import org.glassfish.paas.orchestrator.provisioning.cli.ServiceType;
 import org.glassfish.paas.orchestrator.service.JavaEEServiceType;
 import org.glassfish.paas.orchestrator.service.ServiceStatus;
 import org.glassfish.paas.orchestrator.service.metadata.Property;
@@ -77,7 +73,6 @@ import org.jvnet.hk2.component.PerLookup;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
@@ -105,7 +100,7 @@ public class GlassFishPlugin extends ServiceProvisioningEngineBase
     private GlassFishServiceUtil gfServiceUtil;
 
     @Inject
-    private ProvisionerUtil provisionerUtil;
+    private org.glassfish.paas.gfplugin.cli.ProvisionerUtil provisionerUtil;
 
     @Inject
     private Domain domain;
@@ -318,7 +313,7 @@ public class GlassFishPlugin extends ServiceProvisioningEngineBase
         GlassFishProvisioner gfProvisioner = (GlassFishProvisioner)
                 provisionerUtil.getAppServerProvisioner(dasIPAddress);
         GlassFish provisionedGlassFish = gfProvisioner.getGlassFish();
-        serviceDescription.setVirtualClusterName(serviceDescription.getName());
+        //serviceDescription.setVirtualClusterName(serviceDescription.getName());
         GlassFishProvisionedService gfps =new GlassFishProvisionedService(
                 serviceDescription, serviceProperties, ServiceStatus.RUNNING, provisionedGlassFish);
         return gfps;
@@ -385,6 +380,7 @@ public class GlassFishPlugin extends ServiceProvisioningEngineBase
 //        }
 
 //        if (provisionedSvc instanceof GlassFishLBProvisionedService) {
+/*
         if (svcRef.getServiceRefType().equals("HTTP_LOAD_BALANCER")) {
 
 //                SimpleServiceDefinition gfServiceDefinition =
@@ -421,6 +417,7 @@ public class GlassFishPlugin extends ServiceProvisioningEngineBase
 //            }
 
             }
+*/
 
             //if (svcRef.getServiceRefType().equals(JAVAEE_SERVICE_TYPE)) {
                 //if (serviceConsumer instanceof GlassFishProvisionedService) {

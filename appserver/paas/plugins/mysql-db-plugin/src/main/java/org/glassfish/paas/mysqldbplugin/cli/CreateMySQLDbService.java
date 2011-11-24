@@ -46,8 +46,6 @@ import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.CommandLock;
 import org.glassfish.paas.mysqldbplugin.MySQLDbProvisioner;
-import org.glassfish.paas.orchestrator.provisioning.ApplicationServerProvisioner;
-import org.glassfish.paas.orchestrator.provisioning.ProvisionerUtil;
 import org.glassfish.paas.orchestrator.provisioning.ServiceInfo;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceType;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceUtil;
@@ -98,10 +96,6 @@ public class CreateMySQLDbService implements AdminCommand, Runnable {
 
     @Inject
     ServiceUtil serviceUtil;
-
-    @Inject
-    private ProvisionerUtil provisionerUtil;
-
 
     @Inject(optional = true) // made it optional for non-virtual scenario to work
     private TemplateRepository templateRepository;

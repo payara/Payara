@@ -48,7 +48,7 @@ import java.util.Properties;
  * @author Jagadish Ramu
  */
 @Contract
-public interface DatabaseProvisioner extends Provisioner {
+public interface DatabaseProvisioner {
 
     String USER = "user";
     String PASSWORD = "password";

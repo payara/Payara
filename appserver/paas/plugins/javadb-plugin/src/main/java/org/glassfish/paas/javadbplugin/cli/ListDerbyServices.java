@@ -50,7 +50,6 @@ import org.glassfish.paas.orchestrator.config.ApplicationScopedService;
 import org.glassfish.paas.orchestrator.config.Service;
 import org.glassfish.paas.orchestrator.config.Services;
 import org.glassfish.paas.orchestrator.config.SharedService;
-import org.glassfish.paas.orchestrator.provisioning.ProvisionerUtil;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceType;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
@@ -65,9 +64,6 @@ import java.util.Collection;
 @org.jvnet.hk2.annotations.Service(name = "_list-derby-services")
 @Scoped(PerLookup.class)
 public class ListDerbyServices implements AdminCommand {
-
-    @Inject
-    private ProvisionerUtil registryService;
 
     @Inject
     private DatabaseServiceUtil dbServiceUtil;
