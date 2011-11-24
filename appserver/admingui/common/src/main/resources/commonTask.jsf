@@ -123,7 +123,13 @@
             </event>
         </sun:commonTasksGroup>
 
-          <sun:commonTasksGroup id="monitoring"  title="$resource{i18n.commonTasks.group.Monitoring}" />
+          <sun:commonTasksGroup id="monitoring"  title="$resource{i18n.commonTasks.group.Monitoring}" >
+              <sun:commonTask
+                text="$resource{i18nc.tree.monitorData}"
+                toolTip="$resource{i18nc.tree.monitorData}"
+                onClick="return admingui.woodstock.commonTaskHandler('treeForm:tree:monitoring_data','#{request.contextPath}/common/monitor/monitoringInfo.jsf');">
+            </sun:commonTask>
+          </sun:commonTasksGroup>
 
 #include "/common/commonTaskDoc.inc"
         </sun:commonTasksSection>

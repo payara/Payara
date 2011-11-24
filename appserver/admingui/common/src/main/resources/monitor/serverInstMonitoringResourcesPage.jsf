@@ -55,6 +55,7 @@
 	getRequestValue(key="configName" value=>$page{configName} default="server-config");
         getRequestValue(key="instanceName" value=>$pageSession{instanceName} default="server");
         urlencode(value="#{pageSession.instanceName}" encoding="UTF-8" result="#{pageSession.encodedInstanceName}");
+        setSessionAttribute(key="serverInstTabs" value="monitor_resources");
         gf.getInstanceMonitorURL(instanceName="#{pageSession.encodedInstanceName}"  monitorURL="#{pageSession.monitorURL}");
         setPageSessionAttribute(key="selfPage" value="#{request.contextPath}/common/monitor/serverInstMonitoringResourcesPage.jsf");
     />

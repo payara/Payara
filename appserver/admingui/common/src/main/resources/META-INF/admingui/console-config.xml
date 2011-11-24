@@ -122,6 +122,12 @@
                 parentId="tree"
                 content="pluginTreeNodeServer.jsf" />
         <integration-point
+                id="monitoring_data"
+                type="org.glassfish.admingui:navNode"
+                priority="550"
+                parentId="tree"
+                content="pluginTreeNodeMonitoringInfo.jsf" />
+        <integration-point
                 id="common_apps"
                 type="org.glassfish.admingui:navNode"
                 priority="500"
