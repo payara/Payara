@@ -106,7 +106,7 @@ public class DeleteSsl implements AdminCommand {
 
     /**
      * Executes the command with the command parameters passed as Properties
-     * where the keys are the paramter names and the values the parameter values
+     * where the keys are the parameter names and the values the parameter values
      *
      * @param context information
      */
@@ -164,12 +164,12 @@ public class DeleteSsl implements AdminCommand {
                         return null;
                     }
                 }, jmxConnector);
+
+                report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
             }
         } catch(TransactionFailure e) {
             reportError(report, e);
         }
-
-        report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
     }
 
     public void reportError(ActionReport report, Exception e) {
