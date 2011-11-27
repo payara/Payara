@@ -110,15 +110,9 @@ public class ListAdminObjects implements AdminCommand {
                     list.add(r.getJndiName());
                 }
             }
-            if (list.isEmpty()) {
+            for (String jndiName : list) {
                 final ActionReport.MessagePart part = report.getTopMessagePart().addChild();
-                part.setMessage(localStrings.getLocalString("nothingToList",
-                    "Nothing to list."));
-            } else {
-                for (String jndiName : list) {
-                    final ActionReport.MessagePart part = report.getTopMessagePart().addChild();
-                    part.setMessage(jndiName);
-                }
+                part.setMessage(jndiName);
             }
         } catch (Exception e) {
             report.setMessage(localStrings.getLocalString("list.admin.object.fail",
