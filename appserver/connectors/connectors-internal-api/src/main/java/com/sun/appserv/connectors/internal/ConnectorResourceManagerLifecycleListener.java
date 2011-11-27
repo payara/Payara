@@ -46,21 +46,42 @@ import com.sun.appserv.connectors.internal.api.ConnectorRuntime;
 import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
 import com.sun.enterprise.config.serverbeans.*;
 import com.sun.logging.LogDomains;
+import org.glassfish.api.ActionReport;
+import org.glassfish.api.admin.CommandRunner;
+import org.glassfish.api.admin.ParameterMap;
+import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.naming.GlassfishNamingManager;
+import org.glassfish.connectors.config.ConnectorConnectionPool;
+import org.glassfish.connectors.config.JdbcConnectionPool;
+import org.glassfish.hk2.scopes.Singleton;
+import org.glassfish.internal.api.ClassLoaderHierarchy;
+import org.glassfish.resources.api.PoolInfo;
 import org.glassfish.resources.listener.ResourceManagerLifecycleListener;
+import org.glassfish.resources.util.ResourceUtil;
 import org.jvnet.hk2.annotations.Inject;
+import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.Inhabitant;
+import org.jvnet.hk2.config.*;
 
 import javax.naming.NamingException;
+import java.beans.PropertyChangeEvent;
 import java.util.Collection;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 
+/**
+ * ResourceManager lifecycle listener that listens to resource-manager startup and shutdown
+ * and does connector related work. eg: binding connector proxies.</br>
+ * Also, does ping-connection-pool for application and module scoped resources (if ping=true)
+ * @author Jagadish Ramu
+ */
 @Service
-public class ConnectorResourceManagerLifecycleListener implements ResourceManagerLifecycleListener {
+@Scoped(Singleton.class)
+public class ConnectorResourceManagerLifecycleListener implements ResourceManagerLifecycleListener, ConfigListener {
 
     @Inject
     private GlassfishNamingManager namingMgr;
@@ -78,6 +99,12 @@ public class ConnectorResourceManagerLifecycleListener implements ResourceManage
     private Habitat connectorRuntimeHabitat;
 
     private ConnectorRuntime runtime;
+
+    @Inject
+    private ClassLoaderHierarchy clh;
+
+    @Inject
+    private ServerEnvironment serverEnvironment;
 
     private static final Logger logger =
             LogDomains.getLogger(ConnectorRuntime.class, LogDomains.RESOURCE_BUNDLE);
@@ -147,6 +174,104 @@ public class ConnectorResourceManagerLifecycleListener implements ResourceManage
             if(logger.isLoggable(Level.FINEST)) {
                 logger.finest("ConnectorRuntime not initialized, hence skipping " +
                     "resource-adapters shutdown, resources, pools cleanup");
+            }
+        }
+    }
+
+    public UnprocessedChangeEvents changed(PropertyChangeEvent[] events) {
+            return ConfigSupport.sortAndDispatch(events, new ConfigChangeHandler(events), logger);
+    }
+
+    class ConfigChangeHandler implements Changed {
+
+        PropertyChangeEvent[] events;
+
+        private ConfigChangeHandler(PropertyChangeEvent[] events) {
+            this.events = events;
+        }
+
+        /**
+         * Notification of a change on a configuration object
+         *
+         * @param type            CHANGE means the changedInstance has mutated.
+         * @param changedType     type of the configuration object
+         * @param changedInstance changed instance.
+         */
+        public <T extends ConfigBeanProxy> NotProcessed changed(Changed.TYPE type, Class<T> changedType,
+                                                                T changedInstance) {
+            NotProcessed np = null;
+            if(serverEnvironment.isDas()){
+                ClassLoader contextCL = Thread.currentThread().getContextClassLoader();
+                try {
+                    //use connector-class-loader so as to get access to classes from resource-adapters
+                    ClassLoader ccl = clh.getConnectorClassLoader(null);
+                    Thread.currentThread().setContextClassLoader(ccl);
+                    switch (type) {
+                        case ADD:
+                            np = handleAddEvent(changedInstance);
+                            break;
+                        default:
+                            np = new NotProcessed("Unrecognized type of change: " + type);
+                            break;
+                    }
+                } finally {
+                    Thread.currentThread().setContextClassLoader(contextCL);
+                }
+            }
+            return np;
+        }
+        private <T extends ConfigBeanProxy> NotProcessed handleAddEvent(T instance) {
+            NotProcessed np = null;
+            if(instance instanceof Application){
+                Resources resources = ((Application)instance).getResources();
+                pingConnectionPool(resources);
+
+                Application app = (Application)instance;
+                List<Module> modules = app.getModule();
+                if(modules != null){
+                    for(Module module : modules){
+                        if(module.getResources() !=null && module.getResources().getResources() != null){
+                            pingConnectionPool(module.getResources());
+                        }
+                    }
+                }
+            }
+            return np;
+        }
+
+        private void pingConnectionPool(Resources resources) {
+            if(resources != null){
+                if(resources.getResources() != null){
+                    for(Resource resource : resources.getResources()){
+                        if(resource instanceof ResourcePool){
+                            ResourcePool pool = (ResourcePool)resource;
+                            boolean ping = false;
+                            if(pool instanceof JdbcConnectionPool){
+                                ping = Boolean.valueOf(((JdbcConnectionPool)pool).getPing());
+                            }else if (pool instanceof ConnectorConnectionPool) {
+                                ping = Boolean.valueOf(((ConnectorConnectionPool)pool).getPing());
+                            }
+                            if(ping){
+                                PoolInfo poolInfo = ResourceUtil.getPoolInfo(pool);
+                                CommandRunner commandRunner = habitat.getComponent(CommandRunner.class);
+                                ActionReport report = habitat.getComponent(ActionReport.class);
+                                CommandRunner.CommandInvocation invocation =
+                                        commandRunner.getCommandInvocation("ping-connection-pool", report);
+                                ParameterMap params = new ParameterMap();
+                                params.add("appname",poolInfo.getApplicationName());
+                                params.add("modulename",poolInfo.getModuleName());
+                                params.add("DEFAULT", poolInfo.getName());
+                                invocation.parameters(params).execute();
+                                if(report.getActionExitCode() == ActionReport.ExitCode.SUCCESS){
+                                    logger.log(Level.INFO, "app-scoped.ping.connection.pool.success", poolInfo);
+                                }else{
+                                    Object args[] = new Object[]{poolInfo, report.getFailureCause()};
+                                    logger.log(Level.WARNING, "app-scoped.ping.connection.pool.failed", args);
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
     }
