@@ -105,12 +105,6 @@ public class ListJdbcConnectionPools implements AdminCommand {
                 final ActionReport.MessagePart part = report.getTopMessagePart().addChild();
                 part.setMessage(pool.getName());
             }
-            if(report.getTopMessagePart().getChildren().size() == 0){
-                ActionReport.MessagePart part = report.getTopMessagePart().addChild();
-                part.setMessage(localStrings.getLocalString("list.jdbc.connection.pools.empty",
-                    "Nothing to list."));
-            }
-
         } catch (Exception e) {
             report.setMessage(localStrings.getLocalString("list.jdbc.connection.pools.failed",
                     "List JDBC connection pools failed"));

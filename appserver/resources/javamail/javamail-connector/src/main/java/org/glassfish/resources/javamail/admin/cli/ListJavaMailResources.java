@@ -113,15 +113,10 @@ public class ListJavaMailResources implements AdminCommand {
                 }
             }
 
-            if (list.isEmpty()) {
-                report.setMessage(localStrings.getLocalString(
-                        "list.javamail.resources.empty", "Nothing to list."));
-            } else {
-                for (String jndiName : list) {
-                    final ActionReport.MessagePart part =
-                            report.getTopMessagePart().addChild();
-                    part.setMessage(jndiName);
-                }
+            for (String jndiName : list) {
+                final ActionReport.MessagePart part =
+                        report.getTopMessagePart().addChild();
+                part.setMessage(jndiName);
             }
             report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
         } catch (Exception e) {

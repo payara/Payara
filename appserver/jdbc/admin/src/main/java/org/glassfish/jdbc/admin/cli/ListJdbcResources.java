@@ -111,11 +111,6 @@ public class ListJdbcResources implements AdminCommand {
                     part.setMessage(jndiName);
                 }
             }
-            if(report.getTopMessagePart().getChildren().size() == 0){
-                ActionReport.MessagePart part = report.getTopMessagePart().addChild();
-                part.setMessage(localStrings.getLocalString("list.jdbc.resources.empty",
-                    "Nothing to list."));
-            }
         } catch (Exception e) {
             report.setMessage(localStrings.getLocalString("list.jdbc.resources.failed",
                     "List JDBC resources failed"));

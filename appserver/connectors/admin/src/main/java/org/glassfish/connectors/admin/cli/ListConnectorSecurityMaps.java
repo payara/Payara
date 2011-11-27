@@ -163,11 +163,6 @@ public class ListConnectorSecurityMaps extends ConnectorSecurityMap implements A
                     }
                 }
             }
-            if(securityMaps == null || securityMaps.isEmpty()){
-                ActionReport.MessagePart part = report.getTopMessagePart().addChild();
-                part.setMessage(localStrings.getLocalString("list.connector.security.maps.empty",
-                    "Nothing to list."));
-            }
         } catch (Exception e) {
             Logger.getLogger(ListConnectorSecurityMaps.class.getName()).log(Level.SEVERE,
                     "list-connector-security-maps failed", e);

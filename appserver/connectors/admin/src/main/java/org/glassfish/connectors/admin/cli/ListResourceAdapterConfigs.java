@@ -129,28 +129,22 @@ public class ListResourceAdapterConfigs implements AdminCommand {
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                 return;
             }
-            if (raMap.isEmpty()) {
-                final ActionReport.MessagePart part = report.getTopMessagePart().addChild();
-                part.setMessage(localStrings.getLocalString("nothingToList",
-                    "Nothing to list."));
+            /**
+              get the properties if long_opt=true. Otherwise return the name.
+             */
+            if (long_opt) {
+                for (Entry<String, List<Property>> raEntry : raMap.entrySet()) {
+                    final ActionReport.MessagePart part = report.getTopMessagePart().addChild();
+                    part.setMessage(raEntry.getKey());
+                    for (Property prop : raEntry.getValue()) {
+                        final ActionReport.MessagePart propPart = part.addChild();
+                        propPart.setMessage("\t" + prop.getName() + "=" + prop.getValue());
+                    }
+                }
             } else {
-                /**
-                  get the properties if long_opt=true. Otherwise return the name.
-                 */
-                if (long_opt) {
-                    for (Entry<String, List<Property>> raEntry : raMap.entrySet()) {
-                        final ActionReport.MessagePart part = report.getTopMessagePart().addChild();
-                        part.setMessage(raEntry.getKey());
-                        for (Property prop : raEntry.getValue()) {
-                            final ActionReport.MessagePart propPart = part.addChild();
-                            propPart.setMessage("\t" + prop.getName() + "=" + prop.getValue());
-                        }
-                    }
-                } else {
-                    for (String ra : raMap.keySet()) {
-                        final ActionReport.MessagePart part = report.getTopMessagePart().addChild();
-                        part.setMessage(ra);
-                    }
+                for (String ra : raMap.keySet()) {
+                    final ActionReport.MessagePart part = report.getTopMessagePart().addChild();
+                    part.setMessage(ra);
                 }
             }
         } catch (Exception e) {

@@ -109,11 +109,6 @@ public class ListConnectorResources implements AdminCommand {
                     part.setMessage(resource.getJndiName());
                 }
             }
-            if(report.getTopMessagePart().getChildren().size() == 0){
-                ActionReport.MessagePart part = report.getTopMessagePart().addChild();
-                part.setMessage(localStrings.getLocalString("list.connector.resources.empty",
-                    "Nothing to list."));
-            }
         } catch (Exception e) {
             report.setMessage(localStrings.getLocalString("list.connector.resources.fail",
                     "List connector resources failed") + " " + e.getLocalizedMessage());

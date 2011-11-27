@@ -114,18 +114,10 @@ public class ListCustomResources implements AdminCommand {
                     list.add(customResource.getJndiName());
                 }
             }
-            if (list.isEmpty()) {
+            for (String jndiName : list) {
                 final ActionReport.MessagePart part =
                         report.getTopMessagePart().addChild();
-                part.setMessage(localStrings.getLocalString(
-                        "list.custom.resources.empty",
-                        "Nothing to list."));
-            } else {
-                for (String jndiName : list) {
-                    final ActionReport.MessagePart part =
-                            report.getTopMessagePart().addChild();
-                    part.setMessage(jndiName);
-                }
+                part.setMessage(jndiName);
             }
             report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
         } catch (Exception e) {

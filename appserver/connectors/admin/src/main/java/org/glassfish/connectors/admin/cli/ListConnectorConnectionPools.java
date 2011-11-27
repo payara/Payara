@@ -102,12 +102,6 @@ public class ListConnectorConnectionPools implements AdminCommand {
                 final ActionReport.MessagePart part = report.getTopMessagePart().addChild();
                 part.setMessage(pool.getName());
             }
-            if(report.getTopMessagePart().getChildren().size() == 0){
-                ActionReport.MessagePart part = report.getTopMessagePart().addChild();
-                part.setMessage(localStrings.getLocalString("list.connector.connection.pools.empty",
-                    "Nothing to list."));
-            }
-            
         } catch (Exception e) {
             Logger.getLogger(ListConnectorConnectionPools.class.getName()).log(Level.SEVERE,
                     "Something went wrong in list-connector-connection-pools", e);
