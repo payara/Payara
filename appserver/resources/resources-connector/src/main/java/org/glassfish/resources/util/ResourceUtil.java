@@ -42,7 +42,9 @@ package org.glassfish.resources.util;
 
 import com.sun.enterprise.config.serverbeans.*;
 import com.sun.logging.LogDomains;
+import org.glassfish.resources.api.PoolInfo;
 import org.glassfish.resources.api.ResourceConstants;
+import org.glassfish.resources.api.ResourceInfo;
 
 import java.util.Collection;
 import java.util.logging.Level;
@@ -66,17 +68,17 @@ public class ResourceUtil {
         return null;
     }
 
-    public static org.glassfish.resources.api.ResourceInfo getResourceInfo(BindableResource resource){
+    public static ResourceInfo getResourceInfo(BindableResource resource){
 
         if(resource.getParent() != null && resource.getParent().getParent() instanceof Application){
             Application application = (Application)resource.getParent().getParent();
-            return new org.glassfish.resources.api.ResourceInfo(resource.getJndiName(), application.getName());
+            return new ResourceInfo(resource.getJndiName(), application.getName());
         }else if(resource.getParent() != null && resource.getParent().getParent() instanceof Module){
             Module module = (Module)resource.getParent().getParent();
             Application application = (Application)module.getParent();
-            return new org.glassfish.resources.api.ResourceInfo(resource.getJndiName(), application.getName(), module.getName());
+            return new ResourceInfo(resource.getJndiName(), application.getName(), module.getName());
         }else{
-            return new org.glassfish.resources.api.ResourceInfo(resource.getJndiName());
+            return new ResourceInfo(resource.getJndiName());
         }
     }
 
@@ -89,37 +91,37 @@ public class ResourceUtil {
      * @param resource
      * @return resource name / jndi-name
      */
-    public static org.glassfish.resources.api.ResourceInfo getGenericResourceInfo(Resource resource){
-        org.glassfish.resources.api.ResourceInfo resourceInfo = null;
+    public static ResourceInfo getGenericResourceInfo(Resource resource){
+        ResourceInfo resourceInfo = null;
         String resourceName = resource.getIdentity();
         resourceInfo = getGenericResourceInfo(resource, resourceName);
         return resourceInfo;
     }
 
-    public static org.glassfish.resources.api.ResourceInfo getGenericResourceInfo(Resource resource, String resourceName){
+    public static ResourceInfo getGenericResourceInfo(Resource resource, String resourceName){
         if(resource.getParent() != null && resource.getParent().getParent() instanceof Application){
             Application application = (Application)resource.getParent().getParent();
-            return new org.glassfish.resources.api.ResourceInfo(resourceName, application.getName());
+            return new ResourceInfo(resourceName, application.getName());
         }else if(resource.getParent() != null && resource.getParent().getParent() instanceof Module){
             Module module = (Module)resource.getParent().getParent();
             Application application = (Application)module.getParent();
-            return new org.glassfish.resources.api.ResourceInfo(resourceName, application.getName(), module.getName());
+            return new ResourceInfo(resourceName, application.getName(), module.getName());
         }else{
-            return new org.glassfish.resources.api.ResourceInfo(resourceName);
+            return new ResourceInfo(resourceName);
         }
     }
 
-    public static org.glassfish.resources.api.PoolInfo getPoolInfo(ResourcePool resource){
+    public static PoolInfo getPoolInfo(ResourcePool resource){
 
         if(resource.getParent() != null && resource.getParent().getParent() instanceof Application){
             Application application = (Application)resource.getParent().getParent();
-            return new org.glassfish.resources.api.PoolInfo(resource.getName(), application.getName());
+            return new PoolInfo(resource.getName(), application.getName());
         }else if(resource.getParent() != null && resource.getParent().getParent() instanceof Module){
             Module module = (Module)resource.getParent().getParent();
             Application application = (Application)module.getParent();
-            return new org.glassfish.resources.api.PoolInfo(resource.getName(), application.getName(), module.getName());
+            return new PoolInfo(resource.getName(), application.getName(), module.getName());
         }else{
-            return new org.glassfish.resources.api.PoolInfo(resource.getName());
+            return new PoolInfo(resource.getName());
         }
     }
 
