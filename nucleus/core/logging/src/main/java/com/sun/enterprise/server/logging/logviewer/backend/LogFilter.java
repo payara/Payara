@@ -148,7 +148,7 @@ public class LogFilter {
         try {
             logFileDetailsForServer = loggingConfig.getLoggingFileDetails();
             logFileDetailsForServer = TranslatedConfigView.getTranslatedValue(logFileDetailsForServer).toString();
-			logFileDetailsForServer = new File(logFileDetailsForServer).getAbsolutePath();
+            logFileDetailsForServer = new File(logFileDetailsForServer).getAbsolutePath();
         } catch (Exception ex) {
             logger.log(Level.SEVERE, "logging.backend.error.fetchrecord", ex);
             return new AttributeList();
@@ -268,6 +268,53 @@ public class LogFilter {
 
     }
 
+    /*
+    * This method is used by LogViewerResource which is used to display raw log data like 'tail -f server.log'.
+    */
+    public String getLogFileForGivenTarget(String targetServerName) throws IOException {
+        Server targetServer = domain.getServerNamed(targetServerName);
+        String serverNode = targetServer.getNodeRef();
+
+        if (targetServer.isDas()) {
+            // getting log file for DAS from logging.properties and returning the same
+            String logFileDetailsForServer = loggingConfig.getLoggingFileDetails();
+            logFileDetailsForServer = TranslatedConfigView.getTranslatedValue(logFileDetailsForServer).toString();
+            return logFileDetailsForServer;
+        } else {
+            // getting log file for instance from logging.properties
+            String logFileDetailsForInstance = getInstanceLogFileDirectory(targetServer);
+            Node node = domain.getNodes().getNode(serverNode);
+            String loggingDir = "";
+            String loggingFile = "";
+
+            // replacing instanceRoot value if it's there
+            if (logFileDetailsForInstance.contains("${com.sun.aas.instanceRoot}/logs") && node.getNodeDir() != null) {
+                // this code is used if no changes made in logging.properties file
+                loggingDir = node.getNodeDir() + File.separator + serverNode
+                        + File.separator + targetServerName;
+                loggingFile = logFileDetailsForInstance.replace("${com.sun.aas.instanceRoot}", loggingDir);
+            } else if (logFileDetailsForInstance.contains("${com.sun.aas.instanceRoot}/logs") && node.getInstallDir() != null) {
+                loggingDir = node.getInstallDir() + File.separator + "glassfish" + File.separator + "nodes"
+                        + File.separator + serverNode + File.separator + targetServerName;
+                loggingFile = logFileDetailsForInstance.replace("${com.sun.aas.instanceRoot}", loggingDir);
+            } else {
+                loggingFile = logFileDetailsForInstance;
+            }
+
+            if (node.isLocal()) {
+                // if local just returning log file to view
+                return loggingFile;
+            } else {
+                // if remote then need to download log file on DAS and returning that log file for view
+                String logFileName = logFileDetailsForInstance.substring(logFileDetailsForInstance.lastIndexOf(File.separator) + 1, logFileDetailsForInstance.length());
+                File instanceFile = new LogFilterForInstance().downloadGivenInstanceLogFile(habitat, targetServer, domain, logger,
+                        targetServerName, env.getDomainRoot().getAbsolutePath(), logFileName, logFileDetailsForInstance);
+                return instanceFile.getAbsolutePath();
+            }
+
+
+        }
+    }
 
     public AttributeList getLogRecordsUsingQuery(
             String logFileName, Long fromRecord, Boolean next, Boolean forward,

@@ -40,8 +40,10 @@
 
 package org.glassfish.admin.rest.resources.custom;
 
+import com.sun.enterprise.server.logging.logviewer.backend.LogFilter;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.jersey.api.core.ResourceContext;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -56,18 +58,14 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Response;
+import javax.ws.rs.core.*;
 
 import java.io.OutputStreamWriter;
 import java.net.URI;
 import java.util.zip.GZIPOutputStream;
 import javax.ws.rs.Path;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response.ResponseBuilder;
-import javax.ws.rs.core.StreamingOutput;
-import javax.ws.rs.core.UriInfo;
+
 import org.glassfish.admin.rest.logviewer.CharSpool;
 import org.glassfish.admin.rest.logviewer.LineEndNormalizingWriter;
 import org.glassfish.admin.rest.logviewer.WriterOutputStream;
@@ -77,12 +75,12 @@ import org.jvnet.hk2.config.Dom;
 
 /**
  * Represents a large text data.
- *
- * <p>
+ * <p/>
+ * <p/>
  * This class defines methods for handling progressive text update.
- *
+ * <p/>
  * <h2>Usage</h2>
- * <p>
+ * <p/>
  *
  * @author Kohsuke Kawaguchi
  */
@@ -96,6 +94,7 @@ public class LogViewerResource {
 
     @Context
     protected Habitat habitat;
+
     /**
      * Represents the data source of this text.
      */
@@ -107,6 +106,7 @@ public class LogViewerResource {
 
         boolean exists();
     }
+
     private Source source;
     protected Charset charset;
     private volatile boolean completed;
@@ -124,7 +124,9 @@ public class LogViewerResource {
     @GET
     @Produces("text/plain;charset=UTF-8")
     public Response get(@QueryParam("start")
-            @DefaultValue("0") long start, @Context HttpHeaders hh) throws IOException {
+                        @DefaultValue("0") long start,
+                        @QueryParam("instanceName") @DefaultValue("server") String instanceName,
+                        @Context HttpHeaders hh) throws IOException {
         boolean gzipOK = true;
         MultivaluedMap<String, String> headerParams = hh.getRequestHeaders();
         String acceptEncoding = headerParams.getFirst("Accept-Encoding");
@@ -133,13 +135,20 @@ public class LogViewerResource {
         }
 
 
-        ServerEnvironmentImpl env = habitat.getComponent(ServerEnvironmentImpl.class);
-        String logLocation = env.getProps().get(SystemPropertyConstants.INSTANCE_ROOT_PROPERTY) + "/logs/server.log";
+        // getting logFilter object from habitat
+        LogFilter logFilter = habitat.getComponent(LogFilter.class);
+        String logLocation = "";
+
+        // getting log file location on DAS for server/local instance/remote instance
+        logLocation = logFilter.getLogFileForGivenTarget(instanceName);
         initLargeText(new File(logLocation), false);
 
 
         if (!source.exists()) {
             // file doesn't exist yet
+            UriBuilder uriBuilder = ui.getAbsolutePathBuilder();
+            uriBuilder.queryParam("start", 0);
+            uriBuilder.queryParam("instanceName", instanceName);
 
             return Response.ok(
                     new StreamingOutput() {
@@ -148,7 +157,7 @@ public class LogViewerResource {
                         public void write(OutputStream out) throws IOException, WebApplicationException {
                         }
                     }).
-                    header("X-Text-Append-Next", ui.getAbsolutePathBuilder().queryParam("start", 0).build()).build();
+                    header("X-Text-Append-Next", uriBuilder.build()).build();
         }
 
 
@@ -159,9 +168,9 @@ public class LogViewerResource {
         long size = writeLogTo(start, spool);
 
         //       response.addHeader("X-Text-Size", String.valueOf(r));
-       // if (!completed) {
-            //           response.addHeader("X-More-Data", "true");
-       // }
+        // if (!completed) {
+        //           response.addHeader("X-More-Data", "true");
+        // }
         if (size < 10000) {
             gzipOK = false;
         }
@@ -177,7 +186,10 @@ public class LogViewerResource {
                         w.close();
                     }
                 });
-        URI next = ui.getAbsolutePathBuilder().queryParam("start", size).build();
+        UriBuilder uriBuilder = ui.getAbsolutePathBuilder();
+        uriBuilder.queryParam("start", size);
+        uriBuilder.queryParam("instanceName", instanceName);
+        URI next = uriBuilder.build();
         rp.header("X-Text-Append-Next", next);
         if (gzipOK) {
             rp = rp.header("Content-Encoding", "gzip");
@@ -235,13 +247,10 @@ public class LogViewerResource {
     /**
      * Writes the tail portion of the file to the {@link OutputStream}.
      *
-     * @param start
-     *      The byte offset in the input file where the write operation starts.
-     *
-     * @return
-     *      if the file is still being written, this method writes the file
-     *      until the last newline character and returns the offset to start
-     *      the next write operation.
+     * @param start The byte offset in the input file where the write operation starts.
+     * @return if the file is still being written, this method writes the file
+     *         until the last newline character and returns the offset to start
+     *         the next write operation.
      */
     private long writeLogTo(long start, OutputStream os) throws IOException {
         /// CountingOutputStream os = new CountingOutputStream(out);
