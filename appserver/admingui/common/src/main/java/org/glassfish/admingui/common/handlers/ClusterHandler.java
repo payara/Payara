@@ -52,6 +52,8 @@
  */
 package org.glassfish.admingui.common.handlers;
 
+import com.sun.enterprise.config.serverbeans.Cluster;
+import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.jsftemplating.annotation.Handler;
 import com.sun.jsftemplating.annotation.HandlerInput;
 import com.sun.jsftemplating.annotation.HandlerOutput;
@@ -69,6 +71,12 @@ import org.glassfish.admingui.common.util.RestUtil;
 import org.glassfish.api.admin.InstanceState;
 
 public class ClusterHandler {
+    public static final String CLUSTER_RESOURCE_NAME = "org.glassfish.cluster.admingui.Strings";
+
+    //The following is defined in v3/cluster/admin/src/main/java/..../cluster/Constants.java
+    public static final String RUNNING = "RUNNING";
+    public static final String NOT_RUNNING = "NOT_RUNNING";
+    public static final String PARTIALLY_RUNNING = "PARTIALLY_RUNNING";
 
     /** Creates a new instance of InstanceHandler */
     public ClusterHandler() {
@@ -522,11 +530,30 @@ public class ClusterHandler {
             }
         }
      }
-
-    public static final String CLUSTER_RESOURCE_NAME = "org.glassfish.cluster.admingui.Strings";
-
-    //The following is defined in v3/cluster/admin/src/main/java/..../cluster/Constants.java
-    public static final String RUNNING = "RUNNING";
-    public static final String NOT_RUNNING = "NOT_RUNNING";
-    public static final String PARTIALLY_RUNNING = "PARTIALLY_RUNNING";
+    
+    @Handler(id="gf.getClusterForConfig",
+            input={
+                @HandlerInput(name="configName", type=String.class, required=true)
+            },
+            output={
+                @HandlerOutput(name="cluster", type=String.class)
+            })
+    public static void getClusterForConfig(HandlerContext handlerCtx) {
+        String configName = (String)handlerCtx.getInputValue("configName");
+        String clusterName = null;
+        Domain domain = GuiUtil.getHabitat().getComponent(Domain.class);
+        
+        for (Cluster cluster: domain.getClusters().getCluster()) {
+            if (cluster.getConfigRef().equals(configName)) {
+                clusterName = cluster.getName();
+                break;
+            }
+        }
+        
+        if (clusterName != null) {
+            handlerCtx.setOutputValue("cluster", clusterName);
+        } else {
+            //
+        }
+    }
 }

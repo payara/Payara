@@ -83,8 +83,40 @@
 #include "/common/shared/alertMsg.inc"
                 <!-- Page Title -->
                 <sun:title id="propertyContentPage" title="$resource{i18njms.jms.Title}" helpText="$resource{i18njms.jms.PageHelp}">
-#include "/common/shared/editPageButtons.inc"
-                    <sun:button id="pingButton" text="$resource{i18njms.jms.Ping}"
+    <!facet pageButtonsTop>
+        <sun:panelGroup id="topButtons">
+            <sun:button id="saveButton" rendered="#{edit}" text="$resource{i18n.button.Save}"
+                    onClick="if (guiValidate('#{reqMsg}','#{reqInt}','#{reqPort}')) {submitAndDisable(this, '$resource{i18n.button.Processing}');}; return false;" >
+                <!command
+                    gf.createEntity(endpoint="#{pageSession.selfUrl}"
+                        attrs="#{pageSession.valueMap}"
+                        skipAttrs="#{pageSession.skipAttrsList}"
+                        convertToFalse="#{pageSession.convertToFalseList}"
+                        onlyUseAttrs="#{pageSession.onlyUseAttrs}"
+                    );
+                    
+                    // Save properties...
+                    removeEmptyProps(props="#{pageSession.tableList}" modifiedProps="#{pageSession.tableList}");
+                    javaToJSON(obj="#{pageSession.tableList}" json="#{requestScope.tmpJSON}");
+                    gf.restRequest(endpoint="#{pageSession.selfUrl}/property.json", method="POST", data="#{requestScope.tmpJSON}", result="#{requestScope.restResponse}");
+
+                    if (#{pageSession.valueMap['masterBroker']}) {
+                        createMap(result="#{requestScope.mbAttrs}");
+                        mapPut(map="#{requestScope.mbAttrs}" key="id" value="#{pageSession.valueMap['masterBroker']}");
+                        gf.restRequest(endpoint="#{sessionScope.REST_URL}/clusters/cluster/#{pageSession['clusterName']}/change-master-broker",
+                            attrs="#{requestScope.mbAttrs}",
+                            method="post",
+                            result="#{pageSession.resultMap}",
+                            throwException="#{true}");
+                    }
+
+                    prepareSuccessfulMsg();
+                    gf.redirect(page="#{pageSession.selfPage}&alertType=${alertType}&alertSummary=${alertSummary}&alertDetail=${alertDetail}");
+                />
+            </sun:button>
+        </sun:panelGroup>
+    </facet>
+    <sun:button id="pingButton" text="$resource{i18njms.jms.Ping}"
                         rendered="#{pageSession.configName != 'default-config'}"
                         onClick="return submitAndDisable(this, '$resource{i18n.button.Processing}');" >
                         <!command
@@ -137,6 +169,21 @@
                             <sun:property id="attemptsProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18njms.jms.Attempts}" helpText="$resource{i18njms.jms.AttemptsHelp}">
                                 <sun:textField id="Attempts" styleClass="intAllowMinusOne" columns="$int{10}" maxLength="#{sessionScope.fieldLengths['maxLength.jms.Attempts']}" text="#{pageSession.valueMap['reconnectAttempts']}" />
                             </sun:property>
+                            <sun:property id="maseterBrokerProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18njms.jms.MasterBroker}" 
+                                          helpText="$resource{i18njms.jms.MasterBrokerHelp}">
+                                <sun:dropDown id="MasterBroker" labels="#{pageSession.instanceList}" labels1="$pageSession{jmsMasterBrokerList}" selected="#{pageSession.valueMap['masterBroker']}">
+                                    <!beforeCreate
+                                        gf.getClusterForConfig(configName="#{configName}" cluster="#{pageSession.clusterName}");
+                                        gf.restRequest(endpoint="#{sessionScope.REST_URL}/clusters/cluster/#{pageSession.clusterName}/list-instances",  
+                                            method="get", result="#{requestScope.result}");
+                                        setPageSessionAttribute(key="instanceList" value={});
+                                        listAdd(list="#{pageSession.instanceList}", value="");
+                                        foreach (var="instance", list="#{requestScope.result.data.extraProperties.instanceList}") {
+                                            listAdd(list="#{pageSession.instanceList}", value="#{instance.name}");
+                                        }
+                                    />
+                                </sun:dropDown>
+                            </sun:property>
                             <sun:property id="hostProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18njms.jms.Host}" helpText="$resource{i18njms.jms.HostHelp}">
                                 <sun:dropDown id="Host" labels="$pageSession{jmsHostList}" selected="#{pageSession.valueMap['defaultJmsHost']}">
                                     <!beforeCreate
@@ -162,7 +209,7 @@
                     </sun:propertySheet>    
 #include "/common/shared/propertyDescTable.inc"
                 </sun:title>
-	<sun:hidden id="helpKey" value="$resource{helpjms.jmsService}" />
+                <sun:hidden id="helpKey" value="$resource{helpjms.jmsService}" />
             </sun:form>
 </define>
 </composition>
