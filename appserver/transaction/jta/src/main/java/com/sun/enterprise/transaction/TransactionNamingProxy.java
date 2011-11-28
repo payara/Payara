@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,13 +40,7 @@
 
 package com.sun.enterprise.transaction;
 
-import org.glassfish.api.naming.GlassfishNamingManager;
-import org.glassfish.api.naming.NamedNamingObjectProxy;
-import org.glassfish.api.naming.NamingObjectProxy;
-import org.glassfish.api.naming.NamingObjectsProvider;
-//import org.glassfish.api.naming.GlassfishNamingManager;
-//import org.glassfish.api.admin.ProcessEnvironment;
-//import org.glassfish.api.admin.ProcessEnvironment.ProcessType;
+import org.glassfish.api.naming.*;
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.api.invocation.ComponentInvocation;
 
@@ -56,9 +50,7 @@ import com.sun.logging.LogDomains;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
-import org.jvnet.hk2.component.PostConstruct;
 
-import javax.naming.Context;
 import javax.naming.NamingException;
 
 import java.util.concurrent.ExecutorService;
@@ -72,8 +64,12 @@ import java.util.logging.Logger;
  * @author Marina Vatkina
  */
 @Service
+@NamespacePrefixes({TransactionNamingProxy.USER_TX,
+        TransactionNamingProxy.TRANSACTION_SYNC_REGISTRY,
+        TransactionNamingProxy.APPSERVER_TRANSACTION_MGR,
+        TransactionNamingProxy.APPSERVER_TRANSACTION_SYNC_REGISTRY})
 public class TransactionNamingProxy 
-        implements NamedNamingObjectProxy, NamingObjectsProvider, PostConstruct {
+        implements NamedNamingObjectProxy {
 
     @Inject
     private Habitat habitat;
@@ -86,48 +82,20 @@ public class TransactionNamingProxy
 
     private static Logger logger = LogDomains.getLogger(TransactionNamingProxy.class, LogDomains.JTA_LOGGER);
 
-    private static final String USER_TX = "java:comp/UserTransaction";
-    private static final String USER_TX_NO_JAVA_COMP = "UserTransaction";
+    static final String USER_TX = "java:comp/UserTransaction";
+    static final String USER_TX_NO_JAVA_COMP = "UserTransaction";
 
-    private static final String TRANSACTION_SYNC_REGISTRY 
+    static final String TRANSACTION_SYNC_REGISTRY
             = "java:comp/TransactionSynchronizationRegistry";
 
-    private static final String APPSERVER_TRANSACTION_SYNC_REGISTRY
+    static final String APPSERVER_TRANSACTION_SYNC_REGISTRY
             = "java:appserver/TransactionSynchronizationRegistry";
 
-    private static final String TRANSACTION_MGR
+    static final String TRANSACTION_MGR
             = "java:pm/TransactionManager";
 
-    private static final String APPSERVER_TRANSACTION_MGR 
+    static final String APPSERVER_TRANSACTION_MGR
             = "java:appserver/TransactionManager";
-
-    public void postConstruct() {
-//        Issue 13108 (Cycle in our component chain involving GlassFishNamingManager
-//        and TransactionNamingProxy).  Comment out the publishing of "UserTransaction"
-//        and related field injections to break the circular dependency.
-
-        if( processEnv.getProcessType().isServer()) {
-            final Habitat h = habitat;
-            // made the lookup of the naming manager asynchronous to avoid getting
-            // in an infinite cyclic dependency (see IT 13108). By making the lookup
-            // asynchronous, we ensure the NamingManager implementation has finished
-            // initializing in *this* thread before getting returned by the
-            // getComponent() call below.
-            es.submit(new Runnable() {
-                @Override
-                public void run() {
-                    GlassfishNamingManager namingMgr = h.getComponent(GlassfishNamingManager.class);
-                    try {
-                        namingMgr.publishObject(USER_TX_NO_JAVA_COMP,
-                            new UserTransactionProxy(), true);
-                    } catch (NamingException e) {
-                       logger.warning("Can't bind \"UserTransaction\" in JNDI");
-                    }
-                }
-            });
-        }
-
-    }
 
     public Object handle(String name) throws NamingException {
 
@@ -141,14 +109,6 @@ public class TransactionNamingProxy
         }
 
         return null;
-    }
-
-    private class UserTransactionProxy implements NamingObjectProxy {
-
-        public Object create(Context ic) throws NamingException {
-            checkUserTransactionLookupAllowed();
-            return habitat.getComponent(UserTransactionImpl.class);
-        }
     }
 
     private void checkUserTransactionLookupAllowed() throws NamingException {

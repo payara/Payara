@@ -40,35 +40,44 @@
 
 package com.sun.enterprise.transaction.startup;
 
-import java.util.List;
-import java.util.logging.Logger;
-import java.util.logging.Level;
-
+import com.sun.enterprise.transaction.api.JavaEETransactionManager;
+import com.sun.enterprise.transaction.config.TransactionService;
+import com.sun.logging.LogDomains;
 import org.glassfish.api.Startup;
+import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.EventTypes;
 import org.glassfish.api.event.Events;
-import org.glassfish.api.event.EventListener;
-import com.sun.enterprise.transaction.config.TransactionService;
-import com.sun.enterprise.transaction.api.JavaEETransactionManager;
-import com.sun.logging.LogDomains;
-
-import org.jvnet.hk2.annotations.Service;
+import org.glassfish.api.naming.GlassfishNamingManager;
+import org.glassfish.api.naming.NamingObjectProxy;
 import org.jvnet.hk2.annotations.Inject;
+import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.PostConstruct;
+import org.jvnet.hk2.component.PreDestroy;
+
+import javax.naming.Context;
+import javax.naming.NamingException;
+import java.util.logging.Logger;
 
 /**
  * Service wrapper to only lookup the transaction recovery when there
  * are applications deployed since the actual service has ORB dependency.
+ *
+ * This is also responsible for binding (non java:comp) UserTransaction in naming tree.
  */
 @Service
-public class TransactionLifecycleService implements Startup, PostConstruct {
+public class TransactionLifecycleService implements Startup, PostConstruct, PreDestroy {
 
     @Inject
     Habitat habitat;
 
     @Inject
     Events events;
+
+    @Inject(optional=true)
+    GlassfishNamingManager nm;
+
+    static final String USER_TX_NO_JAVA_COMP = "UserTransaction";
 
     private static Logger _logger = LogDomains.getLogger(TransactionLifecycleService.class, LogDomains.JTA_LOGGER);
 
@@ -89,6 +98,29 @@ public class TransactionLifecycleService implements Startup, PostConstruct {
             }
         };
         events.register(glassfishEventListener);
+        if (nm != null) {
+            try {
+                nm.publishObject(USER_TX_NO_JAVA_COMP, new NamingObjectProxy.InitializationNamingObjectProxy() {
+                    @Override
+                    public Object create(Context ic) throws NamingException {
+                        return habitat.forContract("javax.transaction.UserTransaction").get();
+                    }
+                }, false);
+            } catch (NamingException e) {
+                _logger.warning("Can't bind \"UserTransaction\" in JNDI");
+            }
+        }
+    }
+
+    @Override
+    public void preDestroy() {
+        if (nm != null) {
+            try {
+                nm.unpublishObject(USER_TX_NO_JAVA_COMP);
+            } catch (NamingException e) {
+                _logger.warning("Can't unbind \"UserTransaction\" in JNDI");
+            }
+        }
     }
 
     public void onReady() {

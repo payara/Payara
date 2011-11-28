@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,10 +40,8 @@
 
 package com.sun.ejb.containers;
 
+import org.glassfish.api.naming.NamespacePrefixes;
 import org.glassfish.api.naming.NamedNamingObjectProxy;
-import org.glassfish.api.invocation.ComponentInvocation;
-
-import com.sun.ejb.EjbInvocation;
 
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
@@ -58,13 +56,14 @@ import javax.naming.NamingException;
  * @author Ken Saks
  */
 @Service
+@NamespacePrefixes(InternalInterceptorBindingNamingProxy.INTERCEPTOR_BINDING)
 public class InternalInterceptorBindingNamingProxy
         implements NamedNamingObjectProxy {
 
     @Inject
     private Habitat habitat;
 
-    private static final String INTERCEPTOR_BINDING
+    static final String INTERCEPTOR_BINDING
             = "java:org.glassfish.ejb.container.interceptor_binding_spi";
 
     public Object handle(String name) throws NamingException {

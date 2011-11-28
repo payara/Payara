@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2006-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,9 +41,8 @@
 package com.sun.enterprise.container.common.impl;
 
 
+import org.glassfish.api.naming.NamespacePrefixes;
 import org.glassfish.api.naming.NamedNamingObjectProxy;
-import org.glassfish.api.invocation.ComponentInvocation;
-import org.glassfish.api.admin.*;
 
 import com.sun.enterprise.deployment.*;
 
@@ -60,7 +59,6 @@ import com.sun.enterprise.container.common.spi.ManagedBeanManager;
 import com.sun.logging.LogDomains;
 
 import javax.naming.*;
-import java.util.Hashtable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -69,6 +67,10 @@ import org.glassfish.api.admin.ProcessEnvironment.ProcessType;
 
 
 @Service
+@NamespacePrefixes({JavaModuleNamingProxy.JAVA_APP_CONTEXT,
+        JavaModuleNamingProxy.JAVA_APP_NAME,
+        JavaModuleNamingProxy.JAVA_MODULE_CONTEXT,
+        JavaModuleNamingProxy.JAVA_MODULE_NAME})
 public class JavaModuleNamingProxy
         implements NamedNamingObjectProxy, PostConstruct {
 
@@ -96,16 +98,16 @@ public class JavaModuleNamingProxy
         processType = processEnv.getProcessType();
     }
 
-    private static final String JAVA_MODULE_CONTEXT
+    static final String JAVA_MODULE_CONTEXT
             = "java:module/";
 
-    private static final String JAVA_APP_CONTEXT
+    static final String JAVA_APP_CONTEXT
             = "java:app/";
 
-    private  static final String JAVA_APP_NAME
+    static final String JAVA_APP_NAME
             = "java:app/AppName";
 
-    private  static final String JAVA_MODULE_NAME
+    static final String JAVA_MODULE_NAME
             = "java:module/ModuleName";
 
     public Object handle(String name) throws NamingException {

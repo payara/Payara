@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,6 +40,7 @@
 
 package org.glassfish.enterprise.iiop.api;
 
+import org.glassfish.api.naming.NamespacePrefixes;
 import org.glassfish.api.naming.NamedNamingObjectProxy;
 
 import org.jvnet.hk2.annotations.Service;
@@ -56,9 +57,10 @@ import javax.naming.NamingException;
  * @author Ken Saks
  */
 @Service
+@NamespacePrefixes(ORBNamingProxy.ORB_CONTEXT)
 public class ORBNamingProxy implements NamedNamingObjectProxy {
 
-    private static final String ORB_CONTEXT
+    static final String ORB_CONTEXT
             = "java:comp/ORB";
 
     @Inject

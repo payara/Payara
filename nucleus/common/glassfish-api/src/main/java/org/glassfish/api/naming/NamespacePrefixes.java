@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,59 +38,29 @@
  * holder.
  */
 
-package org.glassfish.enterprise.iiop.api;
 
-import org.glassfish.api.naming.NamespacePrefixes;
-import org.glassfish.api.naming.NamedNamingObjectProxy;
+package org.glassfish.api.naming;
 
+import org.jvnet.hk2.annotations.Contract;
+import org.jvnet.hk2.annotations.Index;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.annotations.Inject;
-import org.jvnet.hk2.component.Habitat;
 
-import javax.ejb.spi.HandleDelegate;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
 
-import javax.naming.NamingException;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
- * Proxy for java:comp/ORB lookups
+ * Goes with {@link Service} annotation on a {@link NamedNamingObjectProxy}. Using this annotation
+ * a {@link NamedNamingObjectProxy} indicates what namespace prefixes are handled by a proxy. This extra metadata
+ * enables lazy instantiation of {@link NamedNamingObjectProxy} objects.
  *
- *
- * @author Ken Saks
+ * @author sanjeeb.sahoo@oracle.com
  */
-@Service
-@NamespacePrefixes(HandleDelegateNamingProxy.HANDLE_DELEGATE)
-public class HandleDelegateNamingProxy implements NamedNamingObjectProxy {
-
-    static final String HANDLE_DELEGATE
-            = "java:comp/HandleDelegate";
-
-    @Inject
-    private Habitat habitat;
-
-    private volatile HandleDelegateFacade facade;
-
-    public Object handle(String name) throws NamingException {
-
-        HandleDelegate delegate = null;
-
-        if (HANDLE_DELEGATE.equals(name)) {
-            try {
-                if (facade == null) {
-                    HandleDelegateFacade hd = habitat.getByContract(HandleDelegateFacade.class);
-                    facade = hd;
-                }
-                delegate = facade.getHandleDelegate();
-
-            } catch(Throwable t) {
-                NamingException ne = new NamingException
-                        ("Error resolving java:comp/HandleDelegate lookup");
-                ne.initCause(t);
-                throw ne;
-            }
-        }
-
-        return delegate;
-    }
-
-
+@Contract
+@Retention(RUNTIME)
+@Target(ElementType.TYPE)
+public @interface NamespacePrefixes {
+    @Index String[] value();
 }

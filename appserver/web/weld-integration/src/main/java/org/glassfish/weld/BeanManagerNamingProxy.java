@@ -44,6 +44,7 @@ import javax.naming.NamingException;
 
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.api.invocation.InvocationManager;
+import org.glassfish.api.naming.NamespacePrefixes;
 import org.glassfish.api.naming.NamedNamingObjectProxy;
 import org.jboss.weld.bootstrap.WeldBootstrap;
 import org.jboss.weld.bootstrap.spi.BeanDeploymentArchive;
@@ -63,6 +64,7 @@ import com.sun.enterprise.deployment.WebBundleDescriptor;
  * @author Ken Saks
  */
 @Service
+@NamespacePrefixes(value = BeanManagerNamingProxy.BEAN_MANAGER_CONTEXT)
 public class BeanManagerNamingProxy implements NamedNamingObjectProxy {
 
     @Inject
@@ -74,7 +76,7 @@ public class BeanManagerNamingProxy implements NamedNamingObjectProxy {
     @Inject
     private WeldDeployer weldDeployer;
 
-    private static final String BEAN_MANAGER_CONTEXT
+    static final String BEAN_MANAGER_CONTEXT
             = "java:comp/BeanManager";
  
 

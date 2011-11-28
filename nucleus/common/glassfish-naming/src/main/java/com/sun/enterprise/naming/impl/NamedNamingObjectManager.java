@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2008-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,13 +41,18 @@
 package com.sun.enterprise.naming.impl;
 
 import org.glassfish.api.naming.NamedNamingObjectProxy;
-import org.glassfish.api.naming.GlassfishNamingManager;
+import org.glassfish.api.naming.NamespacePrefixes;
 import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.Inhabitant;
 
 import javax.naming.NamingException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.List;
-import java.util.ArrayList;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * @author Mahesh Kannan
@@ -55,43 +60,90 @@ import java.util.ArrayList;
  */
 public class NamedNamingObjectManager {
 
-    private static AtomicReference gotAllNamedProxies
-            = new AtomicReference();
+    private static final AtomicReference<Habitat> habitat
+            = new AtomicReference<Habitat>();
 
-    private static List<NamedNamingObjectProxy> proxies = new ArrayList<NamedNamingObjectProxy>();
+    private static final Map<String, NamedNamingObjectProxy> proxies = new HashMap<String, NamedNamingObjectProxy>();
 
+    private static final ReadWriteLock rwLock = new ReentrantReadWriteLock();
+
+    private static final Logger logger = Logger.getLogger(NamedNamingObjectManager.class.getPackage().getName());
 
     public static void checkAndLoadProxies(Habitat habitat)
-        throws NamingException {
-        if (gotAllNamedProxies.get() != habitat) {
+            throws NamingException {
+        if (NamedNamingObjectManager.habitat.get() != habitat) {
             if (habitat != null) {
-                synchronized (gotAllNamedProxies) {
-                    if (gotAllNamedProxies.get() != habitat) {
+                rwLock.writeLock().lock();
+                try {
+                    if (NamedNamingObjectManager.habitat.get() != habitat) {
+                        NamedNamingObjectManager.habitat.set(habitat);
                         proxies.clear();
-                        GlassfishNamingManager nm =
-                                habitat.getByContract(GlassfishNamingManager.class);
-                        for (NamedNamingObjectProxy proxy : habitat.getAllByContract(NamedNamingObjectProxy.class)) {
-                            //System.out.println("Got NamedNamingObjectProxy: " + proxy.getClass().getName());
-                            proxies.add(proxy);
-                        }
-                        gotAllNamedProxies.set(habitat);
                     }
+                } finally {
+                    rwLock.writeLock().unlock();
                 }
             }
         }
     }
 
     public static Object tryNamedProxies(String name)
-        throws NamingException {
+            throws NamingException {
 
-        Object obj = null;
-        for (NamedNamingObjectProxy proxy : proxies) {
-            obj = proxy.handle(name);
-            if (obj != null) {
-                break;
+        NamedNamingObjectProxy proxy = getCachedProxy(name);
+        if (proxy != null) {
+            logger.logp(Level.INFO, "NamedNamingObjectManager", "tryNamedProxies", "found cached proxy [{0}] for [{1}]", new Object[]{proxy, name});
+            return proxy.handle(name);
+        }
+
+//        for (Binding<?> b : getHabitat().getBindings(new NamingDescriptor())) {
+//            for (String prefix : b.getDescriptor().getNames()) {
+//                if (name.startsWith(prefix)) {
+//                    proxy = (NamedNamingObjectProxy) b.getProvider().get();
+//                    System.out.println("NamedNamingObjectManager.tryNamedProxies: found a proxy " + proxy + " for " + name);
+//                    cacheProxy(prefix, proxy);
+//                    return proxy.handle(name);
+//                }
+//            }
+//        }
+        for (Inhabitant<?> inhabitant : getHabitat().getInhabitants(NamespacePrefixes.class)) {
+            for (String prefix : inhabitant.getDescriptor().getNames()) {
+                if (name.startsWith(prefix)) {
+                    proxy = (NamedNamingObjectProxy) inhabitant.get();
+                    logger.logp(Level.INFO, "NamedNamingObjectManager", "tryNamedProxies", "found a new proxy [{0}] for [{1}]", new Object[]{proxy, name});
+                    cacheProxy(prefix, proxy);
+                    return proxy.handle(name);
+                }
             }
         }
 
-        return obj;
+        return null;
     }
+
+    private static Habitat getHabitat() {
+        return habitat.get();
+    }
+
+    private static NamedNamingObjectProxy getCachedProxy(String name) {
+        rwLock.readLock().lock();
+        try {
+            for (String proxyPrefix : proxies.keySet()) {
+                if (name.startsWith(proxyPrefix)) {
+                    return proxies.get(proxyPrefix);
+                }
+            }
+        } finally {
+            rwLock.readLock().unlock();
+        }
+        return null;
+    }
+
+    private static void cacheProxy(String prefix, NamedNamingObjectProxy proxy) {
+        rwLock.writeLock().lock();
+        try {
+            proxies.put(prefix, proxy);
+        } finally {
+            rwLock.writeLock().unlock();
+        }
+    }
+
 }

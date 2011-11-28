@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,12 +40,12 @@
 
 package com.sun.ejb.containers;
 
+import org.glassfish.api.naming.NamespacePrefixes;
 import org.glassfish.api.naming.NamedNamingObjectProxy;
 import org.glassfish.api.invocation.ComponentInvocation;
 
 import com.sun.ejb.EjbInvocation;
 
-import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.naming.NamingException;
@@ -58,10 +58,11 @@ import javax.naming.NamingException;
  * @author Marina Vatkina
  */
 @Service
+@NamespacePrefixes(TimerServiceNamingProxy.EJB_TIMER_SERVICE)
 public class TimerServiceNamingProxy 
         implements NamedNamingObjectProxy {
 
-    private static final String EJB_TIMER_SERVICE 
+    static final String EJB_TIMER_SERVICE
             = "java:comp/TimerService";
 
     public Object handle(String name) throws NamingException {

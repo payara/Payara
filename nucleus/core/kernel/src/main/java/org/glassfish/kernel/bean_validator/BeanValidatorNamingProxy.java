@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -45,10 +45,13 @@ import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.validation.ValidatorContext;
 import javax.validation.ValidatorFactory;
+
+import org.glassfish.api.naming.NamespacePrefixes;
 import org.glassfish.api.naming.NamedNamingObjectProxy;
 import org.jvnet.hk2.annotations.Service;
 
 @Service
+@NamespacePrefixes({BeanValidatorNamingProxy.nameForValidator, BeanValidatorNamingProxy.nameForValidatorFactory})
 public class BeanValidatorNamingProxy implements NamedNamingObjectProxy {
 
     static final String nameForValidator = "java:comp/Validator";
