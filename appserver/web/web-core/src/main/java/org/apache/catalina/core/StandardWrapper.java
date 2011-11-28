@@ -107,7 +107,6 @@ import org.apache.catalina.security.SecurityUtil;
 import org.apache.catalina.util.Enumerator;
 import org.apache.catalina.util.InstanceSupport;
 import org.apache.tomcat.util.modeler.Registry;
-import org.glassfish.grizzly.http.server.util.IntrospectionUtils;
 import org.glassfish.web.valve.GlassFishValve;
 // END GlassFish 1343
 
@@ -903,16 +902,13 @@ public class StandardWrapper
         Throwable rootCause = e;
         Throwable rootCauseCheck;
         // Extra aggressive rootCause finding
+        int loops = 0;
         do {
-            try {
-                rootCauseCheck = (Throwable) IntrospectionUtils.getProperty( rootCause, "rootCause");
-                if (rootCauseCheck!=null)
-                    rootCause = rootCauseCheck;
-
-            } catch (ClassCastException ex) {
-                rootCauseCheck = null;
-            }
-        } while (rootCauseCheck != null);
+            loops++;
+            rootCauseCheck = rootCause.getCause();
+            if (rootCauseCheck != null)
+                rootCause = rootCauseCheck;
+        } while (rootCauseCheck != null && (loops < 20));
         return rootCause;
     }
 
