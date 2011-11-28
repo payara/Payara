@@ -58,7 +58,8 @@ import org.glassfish.internal.api.*;
  * @author PRASHANTH ABBAGANI
  */
 @Service
-public class JVMStatsProviderBootstrap implements PostStartup, PostConstruct {
+@PostStartupRunLevel
+public class JVMStatsProviderBootstrap implements PostConstruct {
 
     private ServerRuntimeStatsProvider sRuntimeStatsProvider = new ServerRuntimeStatsProvider();
     private JVMClassLoadingStatsProvider clStatsProvider = new JVMClassLoadingStatsProvider();

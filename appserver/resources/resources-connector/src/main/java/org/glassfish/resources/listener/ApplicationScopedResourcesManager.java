@@ -68,7 +68,8 @@ import org.jvnet.hk2.config.ObservableBean;
  */
 @Scoped(Singleton.class)
 @Service(name="ApplicationScopedResourcesManager")
-public class ApplicationScopedResourcesManager implements PostStartup, PostConstruct, PreDestroy, ConfigListener {
+@PostStartupRunLevel
+public class ApplicationScopedResourcesManager implements PostConstruct, PreDestroy, ConfigListener {
 
     private static final Logger _logger = LogDomains.getLogger(ApplicationScopedResourcesManager.class,LogDomains.RESOURCE_BUNDLE);
 

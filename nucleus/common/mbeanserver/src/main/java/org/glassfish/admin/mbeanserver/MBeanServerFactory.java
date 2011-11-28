@@ -57,7 +57,8 @@ import org.glassfish.internal.api.*;
  */
 @Service
 @FactoryFor(MBeanServer.class)
-public final class MBeanServerFactory implements Factory, PostStartup {
+@PostStartupRunLevel
+public final class MBeanServerFactory implements Factory {
     private static void debug( final String s ) { System.out.println(s); }
     
     private final MBeanServer     mMBeanServer;

@@ -44,7 +44,7 @@ import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PostConstruct;
 import org.jvnet.hk2.component.Habitat;
-import org.glassfish.internal.api.Init;
+import org.glassfish.internal.api.InitRunLevel;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.api.naming.GlassfishNamingManager;
 
@@ -58,7 +58,8 @@ import java.util.logging.Level;
  * start up time
  */
 @Service
-public class MEJBService implements Init, PostConstruct {
+@InitRunLevel
+public class MEJBService implements PostConstruct {
 
     // we need to inject Globals as it used by the naming manager and
     // therefore needs to be allocated.

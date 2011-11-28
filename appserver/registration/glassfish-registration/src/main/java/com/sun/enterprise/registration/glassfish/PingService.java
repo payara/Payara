@@ -58,13 +58,14 @@ import java.lang.StringBuffer;
 import com.sun.pkg.client.Image;
 import com.sun.pkg.client.Fmri;
 import com.sun.pkg.client.SystemInfo;
-import org.glassfish.internal.api.PostStartup;
+import org.glassfish.internal.api.PostStartupRunLevel;
 
 import com.sun.appserv.server.util.Version;
 
 
 @Service(name = "PingService")
-public class PingService implements PostStartup, PostConstruct {
+@PostStartupRunLevel
+public class PingService implements PostConstruct {
 
     @Inject
     Logger logger;

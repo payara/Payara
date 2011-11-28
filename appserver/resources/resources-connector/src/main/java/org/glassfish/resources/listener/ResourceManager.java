@@ -72,7 +72,8 @@ import org.jvnet.hk2.config.ObservableBean;
  */
 @Scoped(Singleton.class)
 @Service(name="ResourceManager") // this name is used in ApplicationLoaderService
-public class ResourceManager implements PostStartup, PostConstruct, PreDestroy, ConfigListener {
+@PostStartupRunLevel
+public class ResourceManager implements PostConstruct, PreDestroy, ConfigListener {
 
     private static final Logger logger =
             LogDomains.getLogger(ResourceManager.class,LogDomains.RESOURCE_BUNDLE);
