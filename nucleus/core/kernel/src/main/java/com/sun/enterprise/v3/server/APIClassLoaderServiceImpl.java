@@ -74,6 +74,7 @@ public class APIClassLoaderServiceImpl implements PostConstruct {
      * 2. APIClassLoader maintains a blacklist, i.e., classes and resources that could not be loaded to avoid
      * unnecessary delegation. It flushes that list everytime a new bundle is installed in the system.
      * This takes care of performance problem in typical production use of GlassFish.
+     * TODO: We need to add an upper threshold for blacklist to avoid excessive use of memory.
      */
 
     private ClassLoader theAPIClassLoader;
@@ -82,6 +83,17 @@ public class APIClassLoaderServiceImpl implements PostConstruct {
     private static final String APIExporterModuleName =
             "GlassFish-Application-Common-Module"; // NOI18N
     private static final String MAILCAP = "META-INF/mailcap";
+    private static final String META_INF_SERVICES = "META-INF/services/";
+    private static final Enumeration<URL> EMPTY_URLS = new Enumeration<URL>() {
+
+        public boolean hasMoreElements() {
+            return false;
+        }
+
+        public URL nextElement() {
+            throw new NoSuchElementException();
+        }
+    };
     final static Logger logger = LogDomains.getLogger(APIClassLoaderServiceImpl.class, LogDomains.LOADER_LOGGER);
     private Module APIModule;
 
@@ -187,6 +199,11 @@ public class APIClassLoaderServiceImpl implements PostConstruct {
                     try {
                         c = apiModuleLoader.loadClass(name); // we ignore the resolution flag
                     } catch (ClassNotFoundException cnfe) {
+                        // punch in. find the provider class, no matter where we are.
+                        Module m = mr.getProvidingModule(name);
+                        if (m != null) {
+                            return m.getClassLoader().loadClass(name); // abort search if we fail to load.
+                        }
                     }
                 }
                 if (c == null) {
@@ -216,6 +233,18 @@ public class APIClassLoaderServiceImpl implements PostConstruct {
                             break;
                         }
                     }
+                } else if(name.startsWith(META_INF_SERVICES)) {
+                    // punch in to find the service loader from any module
+                    // If this is a META-INF/services lookup, search in every
+                    // modules that we know of.
+                    String serviceName = name.substring(
+                            META_INF_SERVICES.length());
+
+                    for( Module m : mr.getModules() ) {
+                        List<URL> list = m.getMetadata().getDescriptors(
+                                serviceName);
+                        if(!list.isEmpty())     return list.get(0);
+                    }
                 } else {
                     url = apiModuleLoader.getResource(name);
                 }
@@ -236,8 +265,6 @@ public class APIClassLoaderServiceImpl implements PostConstruct {
         public Enumeration<URL> getResources(String name) throws IOException {
             List<Enumeration<URL>> enumerators = new ArrayList<Enumeration<URL>>();
             enumerators.add(findResources(name));
-            // Either requested resource belongs to java/ namespace or
-            // it was not found in any of the bundles, so delegate to parent.
             if (getParent() != null) {
                 enumerators.add(getParent().getResources(name));
             }
@@ -258,11 +285,20 @@ public class APIClassLoaderServiceImpl implements PostConstruct {
                         enumerators.add(m.getClassLoader().getResources(name));
                     }
                     return new CompositeEnumeration(enumerators);
+                } else if (name.startsWith(META_INF_SERVICES)) {
+                    // punch in. find the service loader from any module
+                    String serviceName = name.substring(META_INF_SERVICES.length());
+                    List<URL> punchedInURLs = new ArrayList<URL>();
+                    for (Module m : mr.getModules()) {
+                        punchedInURLs.addAll(m.getMetadata().getDescriptors(serviceName));
+                    }
+                    return Collections.enumeration(punchedInURLs);
                 } else {
+                    // search in the parent classloader
                     return apiModuleLoader.getResources(name);
                 }
             }
-            return Collections.enumeration(Collections.<URL>emptyList());
+            return EMPTY_URLS;
         }
 
         @Override
