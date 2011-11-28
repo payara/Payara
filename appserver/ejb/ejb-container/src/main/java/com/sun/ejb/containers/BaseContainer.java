@@ -497,6 +497,12 @@ public abstract class BaseContainer
                     isBeanManagedTran = false;
                 }
 
+                // Instantiate the ORB and Remote naming manager
+                // to allow client lookups of JMS queues/topics/connectionfactories
+                // TODO - implement the sniffer for DAS/cluster instance - listening on the naming port that will
+                // instantiate the orb/remote naming service on demand upon initial access.
+                // Once that's available, this call can be removed.               
+                initializeProtocolManager();
             }
             else {
                 
