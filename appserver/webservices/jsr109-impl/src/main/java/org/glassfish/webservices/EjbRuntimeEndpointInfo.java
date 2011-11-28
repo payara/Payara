@@ -123,7 +123,7 @@ public class EjbRuntimeEndpointInfo {
         return endpoint.getEndpointAddressUri();
     }
 
-    public WebServiceContext getWebServiceContext() {
+    public synchronized WebServiceContext getWebServiceContext() {
         return wsCtxt;
     }
 
@@ -300,10 +300,12 @@ public class EjbRuntimeEndpointInfo {
         //Issue 10776 The wsCtxt created using WebServiceReferenceManagerImpl
         //does not have the jaxwsContextDelegate set
         //set it using this method
-        addWSContextInfo(wsCtxt);
-        if (inv != null) {
-            EJBInvocation ejbInv = (EJBInvocation) inv;
-            ejbInv.setWebServiceContext(wsCtxt);
+        synchronized (this) {
+            addWSContextInfo(wsCtxt);
+            if (inv != null) {
+                EJBInvocation ejbInv = (EJBInvocation) inv;
+                ejbInv.setWebServiceContext(wsCtxt);
+            }
         }
         adapterInvInfo.setAdapter(adapter);
         return adapterInvInfo;
