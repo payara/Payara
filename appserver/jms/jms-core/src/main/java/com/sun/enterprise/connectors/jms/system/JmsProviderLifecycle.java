@@ -56,7 +56,7 @@ import com.sun.appserv.connectors.internal.api.ConnectorConstants;
 
 import com.sun.appserv.connectors.internal.api.ConnectorRuntimeException;
 import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
-import org.glassfish.internal.api.PostStartupRunLevel;
+import org.glassfish.internal.api.PostStartup;
 
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.v3.services.impl.DummyNetworkListener;
@@ -73,8 +73,7 @@ import org.glassfish.api.admin.ServerEnvironment;
 //import java.util.List;
 
 @Service
-@PostStartupRunLevel
-public class JmsProviderLifecycle implements PostConstruct{
+public class JmsProviderLifecycle implements  PostStartup, PostConstruct{
     private static final String JMS_INITIALIZE_ON_DEMAND = "org.glassfish.jms.InitializeOnDemand";
     //Lifecycle properties
     public static final String EMBEDDED="EMBEDDED";
