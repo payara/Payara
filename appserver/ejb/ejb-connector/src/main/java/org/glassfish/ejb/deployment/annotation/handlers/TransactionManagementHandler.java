@@ -48,6 +48,7 @@ import javax.ejb.TransactionManagementType;
 
 import com.sun.enterprise.deployment.EjbDescriptor;
 
+import org.glassfish.apf.AnnotationHandlerFor;
 import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.apf.AnnotationProcessorException;
 import org.glassfish.apf.HandlerProcessingResult;
@@ -61,17 +62,11 @@ import org.jvnet.hk2.annotations.Service;
  * @author Shing Wai Chan
  */
 @Service
+@AnnotationHandlerFor(TransactionManagement.class)
 public class TransactionManagementHandler extends AbstractAttributeHandler {
     
     public TransactionManagementHandler() {
     }
-    
-    /**
-     * @return the annoation type this annotation handler is handling
-     */
-    public Class<? extends Annotation> getAnnotationType() {
-        return TransactionManagement.class;
-    }    
 
     protected HandlerProcessingResult processAnnotation(AnnotationInfo ainfo,
             EjbContext[] ejbContexts) throws AnnotationProcessorException {

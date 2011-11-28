@@ -43,6 +43,7 @@ package com.sun.enterprise.security.deployment.annotation.handlers;
 import com.sun.enterprise.deployment.EjbDescriptor;
 import com.sun.enterprise.deployment.MethodDescriptor;
 import com.sun.enterprise.deployment.MethodPermission;
+import org.glassfish.apf.AnnotationHandlerFor;
 import org.glassfish.security.common.Role;
 import org.jvnet.hk2.annotations.Service;
 
@@ -58,18 +59,11 @@ import java.lang.annotation.Annotation;
  * @author Shing Wai Chan
  */
 @Service
+@AnnotationHandlerFor(RolesAllowed.class)
 public class RolesAllowedHandler extends AbstractAuthAnnotationHandler {
     
     public RolesAllowedHandler() {
     }
-    
-    /**
-     * @return the annoation type this annotation handler is handling
-     */
-    @Override
-    public Class<? extends Annotation> getAnnotationType() {
-        return RolesAllowed.class;
-    }    
 
     /**
      * Add roles and permissions to given method in EjbDescriptor.

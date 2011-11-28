@@ -48,11 +48,7 @@ import java.lang.annotation.Annotation;
 import java.util.logging.Logger;
 
 import com.sun.logging.LogDomains;
-import org.glassfish.apf.AnnotationProcessorException;
-import org.glassfish.apf.AnnotatedElementHandler;
-import org.glassfish.apf.AnnotationInfo;
-import org.glassfish.apf.ResultType;
-import org.glassfish.apf.HandlerProcessingResult;
+import org.glassfish.apf.*;
 
 import org.glassfish.apf.impl.HandlerProcessingResultImpl;
 
@@ -84,6 +80,7 @@ import org.jvnet.hk2.annotations.Service;
  * @author Jerome Dochez
  */
 @Service
+@AnnotationHandlerFor(javax.xml.ws.WebServiceProvider.class)
 public class WebServiceProviderHandler extends AbstractHandler {
     
     private Logger logger = LogDomains.getLogger(this.getClass(),LogDomains.WEBSERVICES_LOGGER);
@@ -94,10 +91,6 @@ public class WebServiceProviderHandler extends AbstractHandler {
     public WebServiceProviderHandler() {
     }
         
-    public Class<? extends Annotation> getAnnotationType() {
-        return javax.xml.ws.WebServiceProvider.class;
-    }    
-
     /**
      * @return an array of annotation types this annotation handler would
      * require to be processed (if present) before it processes it's own

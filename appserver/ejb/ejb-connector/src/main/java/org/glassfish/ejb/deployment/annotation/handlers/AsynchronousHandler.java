@@ -52,6 +52,7 @@ import com.sun.enterprise.deployment.EjbDescriptor;
 import com.sun.enterprise.deployment.MethodDescriptor;
 import com.sun.enterprise.deployment.EjbSessionDescriptor;
 
+import org.glassfish.apf.AnnotationHandlerFor;
 import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.apf.AnnotationProcessorException;
 import org.glassfish.apf.HandlerProcessingResult;
@@ -66,19 +67,13 @@ import org.jvnet.hk2.annotations.Service;
  * @author Marina Vatkina
  */
 @Service
+@AnnotationHandlerFor(Asynchronous.class)
 public class AsynchronousHandler extends AbstractAttributeHandler
         implements PostProcessor<EjbContext> {
 
     public AsynchronousHandler() {
     }
-    
-    /**
-     * @return the annoation type this annotation handler is handling
-     */
-    public Class<? extends Annotation> getAnnotationType() {
-        return Asynchronous.class;
-    }    
-        
+
     protected HandlerProcessingResult processAnnotation(AnnotationInfo ainfo,
             EjbContext[] ejbContexts) throws AnnotationProcessorException {
         

@@ -57,11 +57,7 @@ import javax.xml.ws.spi.WebServiceFeatureAnnotation;
 import javax.xml.ws.soap.MTOM;
 import javax.xml.ws.soap.Addressing;
 
-import org.glassfish.apf.AnnotatedElementHandler;
-import org.glassfish.apf.AnnotationInfo;
-import org.glassfish.apf.ResultType;
-import org.glassfish.apf.HandlerProcessingResult;
-import org.glassfish.apf.AnnotationProcessorException;
+import org.glassfish.apf.*;
 import org.glassfish.apf.impl.HandlerProcessingResultImpl;
 
 import com.sun.enterprise.deployment.annotation.context.AppClientContext;
@@ -79,13 +75,9 @@ import static com.sun.enterprise.util.StringUtils.ok;
  * @author Jerome Dochez
  */
 @Service
+@AnnotationHandlerFor(javax.xml.ws.WebServiceRef.class)
 public class WebServiceRefHandler extends AbstractHandler  {
 
-    @Override
-    public Class<? extends Annotation> getAnnotationType() {
-        return javax.xml.ws.WebServiceRef.class;
-    }
-    
     /**
      * @return an array of annotation types this annotation handler would
      * require to be processed (if present) before it processes it's own

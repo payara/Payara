@@ -68,14 +68,11 @@ import org.jvnet.hk2.annotations.Service;
  * @author Jagadish Ramu
  */
 @Service
+@AnnotationHandlerFor(AuthenticationMechanism.class)
 public class AuthenticationMechanismHandler extends AbstractHandler {
 
     protected final static LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(AbstractHandler.class);
-
-    public Class<? extends Annotation> getAnnotationType() {
-        return AuthenticationMechanism.class;
-    }
 
     public HandlerProcessingResult processAnnotation(AnnotationInfo element) throws AnnotationProcessorException {
         AnnotatedElementHandler aeHandler = element.getProcessingContext().getHandler();

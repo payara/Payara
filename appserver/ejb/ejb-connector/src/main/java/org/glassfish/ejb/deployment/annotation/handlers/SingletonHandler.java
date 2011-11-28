@@ -40,6 +40,7 @@
 
 package org.glassfish.ejb.deployment.annotation.handlers;
 
+import org.glassfish.apf.AnnotationHandlerFor;
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.apf.AnnotationProcessorException;
@@ -62,17 +63,11 @@ import javax.ejb.DependsOn;
  * @author Shing Wai Chan
  */
 @Service
+@AnnotationHandlerFor(Singleton.class)
 public class SingletonHandler extends AbstractEjbHandler {
 
 
     public SingletonHandler() {}
-
-    /**
-     * @return the annoation type this annotation handler is handling
-     */
-    public Class<? extends Annotation> getAnnotationType() {
-        return Singleton.class;
-    }
 
     /**
      * Return the name attribute of given annotation.

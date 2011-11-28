@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -55,10 +55,9 @@ import java.util.logging.Logger;
 
 /**
  * This is an abstract base class for Handlers.
- * Concrete subclass need to implements the following methods:
- *     public Class&lt;? extends Annotation&gt; getAnnotationType();
- *     public HandlerProcessingResult processAnnotation(AnnotationInfo ainfo) 
- *          throws AnnotationProcessorException;
+ * Concrete subclass has to be annotated with {@link AnnotationHandlerFor} so that appropriate metadata
+ * can be generated statically. Concrete subclass has to also implement the following method:
+ *     public HandlerProcessingResult processAnnotation(AnnotationInfo ainfo)
  *
  * @author Shing Wai Chan
  */
@@ -69,6 +68,11 @@ public abstract class AbstractHandler implements AnnotationHandler {
 
     @Inject(name="EJB", optional=true)
     protected AnnotationTypesProvider ejbProvider;
+
+    @Override
+    public final Class<? extends Annotation> getAnnotationType() {
+        return getClass().getAnnotation(AnnotationHandlerFor.class).value();
+    }
 
     /**
      * @return an array of annotation types this annotation handler would

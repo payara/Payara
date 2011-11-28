@@ -41,6 +41,7 @@
 package com.sun.enterprise.deployment.annotation.handlers;
 
 import com.sun.enterprise.deployment.AuthorizationConstraintImpl;
+import org.glassfish.apf.*;
 import org.glassfish.security.common.Role;
 import com.sun.enterprise.deployment.SecurityConstraintImpl;
 import com.sun.enterprise.deployment.UserDataConstraintImpl;
@@ -52,10 +53,6 @@ import com.sun.enterprise.deployment.web.UserDataConstraint;
 import com.sun.enterprise.deployment.web.WebResourceCollection;
 import com.sun.enterprise.deployment.annotation.context.WebBundleContext;
 import com.sun.enterprise.deployment.annotation.context.WebComponentContext;
-import org.glassfish.apf.AnnotationInfo;
-import org.glassfish.apf.AnnotationProcessorException;
-import org.glassfish.apf.HandlerProcessingResult;
-import org.glassfish.apf.ResultType;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.servlet.annotation.HttpConstraint;
@@ -78,16 +75,9 @@ import java.util.logging.Level;
  * @author Shing Wai Chan
  */
 @Service
+@AnnotationHandlerFor(ServletSecurity.class)
 public class ServletSecurityHandler extends AbstractWebHandler {
     public ServletSecurityHandler() {
-    }
-
-    /**
-     * @return the annotation type this annotation handler is handling
-     */
-    @Override
-    public Class<? extends Annotation> getAnnotationType() {
-        return ServletSecurity.class;
     }
 
     @Override

@@ -43,10 +43,7 @@ package com.sun.enterprise.deployment.annotation.handlers;
 import com.sun.enterprise.deployment.LifecycleCallbackDescriptor;
 import com.sun.enterprise.deployment.MetadataSource;
 import com.sun.enterprise.deployment.annotation.context.ResourceContainerContext;
-import org.glassfish.apf.AnnotatedElementHandler;
-import org.glassfish.apf.AnnotationInfo;
-import org.glassfish.apf.AnnotationProcessorException;
-import org.glassfish.apf.HandlerProcessingResult;
+import org.glassfish.apf.*;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.annotation.PreDestroy;
@@ -58,18 +55,12 @@ import java.lang.reflect.Method;
  *
  */
 @Service
+@AnnotationHandlerFor(PreDestroy.class)
 public class PreDestroyHandler extends AbstractResourceHandler {
     
     public PreDestroyHandler() {
     }
-    
-    /**
-     * @return the annoation type this annotation handler is handling
-     */
-    public Class<? extends Annotation> getAnnotationType() {
-        return PreDestroy.class;
-    }    
-        
+
     protected HandlerProcessingResult processAnnotation(AnnotationInfo ainfo,
             ResourceContainerContext[] rcContexts)
             throws AnnotationProcessorException {

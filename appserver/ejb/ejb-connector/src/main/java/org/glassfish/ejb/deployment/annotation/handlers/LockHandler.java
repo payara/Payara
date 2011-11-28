@@ -53,6 +53,7 @@ import javax.ejb.*;
 import com.sun.enterprise.deployment.util.TypeUtil;
 import com.sun.enterprise.deployment.MethodDescriptor;
 
+import org.glassfish.apf.AnnotationHandlerFor;
 import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.apf.AnnotationProcessorException;
 import org.glassfish.apf.HandlerProcessingResult;
@@ -68,17 +69,11 @@ import org.jvnet.hk2.annotations.Service;
  * @author Marina Vatkina
  */
 @Service
+@AnnotationHandlerFor(Lock.class)
 public class LockHandler extends AbstractAttributeHandler 
         implements PostProcessor<EjbContext> {
 
     public LockHandler() {
-    }
-
-    /**
-     * @return the annoation type this annotation handler is handling
-     */
-    public Class<? extends Annotation> getAnnotationType() {
-        return Lock.class;
     }
 
     protected HandlerProcessingResult processAnnotation(AnnotationInfo ainfo,

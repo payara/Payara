@@ -46,6 +46,7 @@ import javax.ejb.StatefulTimeout;
 import com.sun.enterprise.deployment.EjbDescriptor;
 import com.sun.enterprise.deployment.EjbSessionDescriptor;
 
+import org.glassfish.apf.AnnotationHandlerFor;
 import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.apf.AnnotationProcessorException;
 import org.glassfish.apf.HandlerProcessingResult;
@@ -58,16 +59,10 @@ import org.jvnet.hk2.annotations.Service;
  * @author Ken Saks
  */
 @Service
+@AnnotationHandlerFor(StatefulTimeout.class)
 public class StatefulTimeoutHandler extends AbstractAttributeHandler {
 
     public StatefulTimeoutHandler() {
-    }
-
-    /**
-     * @return the annoation type this annotation handler is handling
-     */
-    public Class<? extends Annotation> getAnnotationType() {
-        return StatefulTimeout.class;
     }
 
     protected HandlerProcessingResult processAnnotation(AnnotationInfo ainfo,

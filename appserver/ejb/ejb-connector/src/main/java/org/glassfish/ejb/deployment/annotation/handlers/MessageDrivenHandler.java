@@ -52,6 +52,7 @@ import com.sun.enterprise.deployment.EjbDescriptor;
 import com.sun.enterprise.deployment.EjbMessageBeanDescriptor;
 import com.sun.enterprise.deployment.EnvironmentProperty;
 
+import org.glassfish.apf.AnnotationHandlerFor;
 import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.apf.AnnotationProcessorException;
 import org.glassfish.apf.HandlerProcessingResult;
@@ -64,19 +65,13 @@ import org.jvnet.hk2.annotations.Service;
  * @author Shing Wai Chan
  */
 @Service
+@AnnotationHandlerFor(MessageDriven.class)
 public class MessageDrivenHandler extends AbstractEjbHandler {
     
     /** Creates a new instance of MessageDrivenHandler */
     public MessageDrivenHandler() {
     }
     
-    /**
-     * @return the annoation type this annotation handler is handling
-     */
-    public Class<? extends Annotation> getAnnotationType() {
-        return MessageDriven.class;
-    }    
-        
     /**
      * Return the name attribute of given annotation.
      * @param annotation

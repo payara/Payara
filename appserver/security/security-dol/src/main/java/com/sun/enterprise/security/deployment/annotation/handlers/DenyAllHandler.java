@@ -43,6 +43,7 @@ package com.sun.enterprise.security.deployment.annotation.handlers;
 import com.sun.enterprise.deployment.EjbDescriptor;
 import com.sun.enterprise.deployment.MethodDescriptor;
 import com.sun.enterprise.deployment.MethodPermission;
+import org.glassfish.apf.AnnotationHandlerFor;
 import org.jvnet.hk2.annotations.Service;
 
 import java.lang.annotation.Annotation;
@@ -56,19 +57,12 @@ import javax.annotation.security.RolesAllowed;
  * @author Shing Wai Chan
  */
 @Service
+@AnnotationHandlerFor(DenyAll.class)
 public class DenyAllHandler extends AbstractAuthAnnotationHandler {
     
     public DenyAllHandler() {
     }
     
-    /**
-     * @return the annoation type this annotation handler is handling
-     */
-    @Override
-    public Class<? extends Annotation> getAnnotationType() {
-        return DenyAll.class;
-    }    
-
     @Override
     protected void processEjbMethodSecurity(Annotation authAnnotation,
             MethodDescriptor md, EjbDescriptor ejbDesc) {

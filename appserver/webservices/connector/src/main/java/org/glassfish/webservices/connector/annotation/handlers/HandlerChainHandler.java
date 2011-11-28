@@ -58,12 +58,8 @@ import java.util.Iterator;
 import java.util.ArrayList;
 import java.io.InputStream;
 import java.util.logging.Level;
-import org.glassfish.apf.AnnotatedElementHandler;
-import org.glassfish.apf.AnnotationInfo;
-import org.glassfish.apf.ProcessingContext;
-import org.glassfish.apf.ResultType;
-import org.glassfish.apf.HandlerProcessingResult;
-import org.glassfish.apf.AnnotationProcessorException;
+
+import org.glassfish.apf.*;
 import org.glassfish.apf.impl.HandlerProcessingResultImpl;
 import com.sun.enterprise.deployment.annotation.context.ResourceContainerContextImpl;
 
@@ -97,16 +93,13 @@ import org.jvnet.hk2.annotations.Service;
  * @author Jerome Dochez
  */
 @Service
+@AnnotationHandlerFor(HandlerChain.class)
 public class HandlerChainHandler extends AbstractHandler {
     
     /** Creates a new instance of HandlerChainHandler */
     public HandlerChainHandler() {
     }
-    
-    public Class<? extends Annotation> getAnnotationType() {
-        return HandlerChain.class;
-    }
-    
+
     /**
      * @return an array of annotation types this annotation handler would
      * require to be processed (if present) before it processes it's own

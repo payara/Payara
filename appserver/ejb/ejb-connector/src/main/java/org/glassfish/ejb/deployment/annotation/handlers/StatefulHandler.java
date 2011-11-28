@@ -47,6 +47,7 @@ import javax.ejb.Stateful;
 
 import com.sun.enterprise.deployment.EjbDescriptor;
 import com.sun.enterprise.deployment.EjbSessionDescriptor;
+import org.glassfish.apf.AnnotationHandlerFor;
 import org.glassfish.ejb.deployment.annotation.handlers.AbstractEjbHandler;
 
 import org.glassfish.apf.AnnotationInfo;
@@ -60,20 +61,13 @@ import org.jvnet.hk2.annotations.Service;
  * @author Shing Wai Chan
  */
 @Service
+@AnnotationHandlerFor(Stateful.class)
 public class StatefulHandler extends AbstractEjbHandler {
     
     /** Creates a new instance of StatefulHandler */
     public StatefulHandler() {
     }
-    
-                                                                                
-    /**
-     * @return the annoation type this annotation handler is handling
-     */
-    public Class<? extends Annotation> getAnnotationType() {
-        return Stateful.class;
-    }    
-        
+
     /**
      * Return the name attribute of given annotation.
      * @param annotation

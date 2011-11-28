@@ -49,10 +49,7 @@ import com.sun.enterprise.deployment.EjbDescriptor;
 import com.sun.enterprise.deployment.EjbBundleDescriptor;
 import com.sun.enterprise.deployment.EjbApplicationExceptionInfo;
 
-import org.glassfish.apf.HandlerProcessingResult;
-import org.glassfish.apf.AnnotationInfo;
-import org.glassfish.apf.AnnotatedElementHandler;
-import org.glassfish.apf.AnnotationProcessorException;
+import org.glassfish.apf.*;
 import com.sun.enterprise.deployment.annotation.context.EjbBundleContext;
 import com.sun.enterprise.deployment.annotation.handlers.AbstractHandler;
 import org.jvnet.hk2.annotations.Service;
@@ -61,18 +58,12 @@ import org.jvnet.hk2.annotations.Service;
  * Handles @javax.ejb.ApplicationException 
  */
 @Service
+@AnnotationHandlerFor(ApplicationException.class)
 public class ApplicationExceptionHandler extends AbstractHandler {
     
     public ApplicationExceptionHandler() {
     }
     
-    /**
-     * @return the annoation type this annotation handler is handling
-     */
-    public Class<? extends Annotation> getAnnotationType() {
-        return ApplicationException.class;
-    }    
-
      public HandlerProcessingResult processAnnotation
          (AnnotationInfo ainfo) throws AnnotationProcessorException {
 

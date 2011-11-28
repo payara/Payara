@@ -51,6 +51,7 @@ import com.sun.enterprise.deployment.EjbDescriptor;
 import com.sun.enterprise.deployment.EjbInterceptor;
 import com.sun.enterprise.deployment.LifecycleCallbackDescriptor;
 
+import org.glassfish.apf.AnnotationHandlerFor;
 import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.apf.AnnotationProcessorException;
 import org.glassfish.apf.HandlerProcessingResult;
@@ -64,18 +65,12 @@ import org.jvnet.hk2.annotations.Service;
  *
  */
 @Service
+@AnnotationHandlerFor(AroundTimeout.class)
 public class AroundTimeoutHandler extends AroundInvokeHandler {
     
     public AroundTimeoutHandler() {
     }
-    
-    /**
-     * @return the annoation type this annotation handler is handling
-     */
-    public Class<? extends Annotation> getAnnotationType() {
-        return AroundTimeout.class;
-    }    
-        
+
     protected HandlerProcessingResult processAnnotation(AnnotationInfo ainfo,
             EjbContext[] ejbContexts) throws AnnotationProcessorException {
 

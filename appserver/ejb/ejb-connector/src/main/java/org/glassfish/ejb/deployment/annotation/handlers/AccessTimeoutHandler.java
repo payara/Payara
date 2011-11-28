@@ -54,6 +54,7 @@ import com.sun.enterprise.deployment.util.TypeUtil;
 import com.sun.enterprise.deployment.MethodDescriptor;
 import com.sun.enterprise.deployment.EjbSessionDescriptor;
 
+import org.glassfish.apf.AnnotationHandlerFor;
 import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.apf.AnnotationProcessorException;
 import org.glassfish.apf.HandlerProcessingResult;
@@ -68,17 +69,11 @@ import org.jvnet.hk2.annotations.Service;
  * @author Marina Vatkina
  */
 @Service
+@AnnotationHandlerFor(AccessTimeout.class)
 public class AccessTimeoutHandler extends AbstractAttributeHandler 
         implements PostProcessor<EjbContext> {
 
     public AccessTimeoutHandler() {
-    }
-
-    /**
-     * @return the annoation type this annotation handler is handling
-     */
-    public Class<? extends Annotation> getAnnotationType() {
-        return AccessTimeout.class;
     }
 
     protected HandlerProcessingResult processAnnotation(AnnotationInfo ainfo,

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,11 +40,8 @@
 
 package com.sun.enterprise.deployment.annotation.handlers;
 
+import org.glassfish.apf.*;
 import org.jvnet.hk2.annotations.Service;
-import org.glassfish.apf.HandlerProcessingResult;
-import org.glassfish.apf.AnnotationInfo;
-import org.glassfish.apf.AnnotationProcessorException;
-import org.glassfish.apf.ResultType;
 import org.glassfish.apf.impl.HandlerProcessingResultImpl;
 
 import javax.annotation.sql.DataSourceDefinitions;
@@ -62,19 +59,13 @@ import com.sun.enterprise.util.LocalStringManagerImpl;
  * @author Jagadish Ramu
  */
 @Service
+@AnnotationHandlerFor(DataSourceDefinitions.class)
 public class DataSourceDefinitionsHandler extends AbstractResourceHandler {
 
     protected final static LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(AbstractHandler.class);
     
     public DataSourceDefinitionsHandler() {
-    }
-
-    /**
-     * @return the annoation type this annotation handler is handling
-     */
-    public Class<? extends Annotation> getAnnotationType() {
-        return DataSourceDefinitions.class;
     }
 
     protected HandlerProcessingResult processAnnotation(AnnotationInfo ainfo, ResourceContainerContext[] rcContexts)

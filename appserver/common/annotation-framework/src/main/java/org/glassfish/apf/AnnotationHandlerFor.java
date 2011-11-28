@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,57 +38,29 @@
  * holder.
  */
 
+
 package org.glassfish.apf;
 
 import org.jvnet.hk2.annotations.Contract;
+import org.jvnet.hk2.annotations.Index;
+import org.jvnet.hk2.annotations.Service;
 
 import java.lang.annotation.Annotation;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
+
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
- * This interface defines the contract for annotation handlers 
- * and the annotation processing engine. Each annotation handler
- * is registered for a particular annotation type and will be 
- * called by the engine when such annotation type is encountered.
+ * Normally goes with {@link Service} annotation, and this annotation must be placed
+ * on a class that implements {@link AnnotationHandler}.
  *
- * The AnnotationHandler is a stateless object, no state should 
- * be stored, instead users should use the ProcessingContext.
- *
- * Annotation can be defined or processed in random orders on a 
- * particular type, however, a particular annotation may need 
- * other annotation to be processed before itself in order to be 
- * processed successfully. An annotation type can indicate through
- * the @see getAnnotations() method which annotation types should 
- * be processed before itself.
- *
- * Each implementation of this interface must specify the annotation that it can handle using
- * {@link AnnotationHandlerFor} annotation.
- *
- * @author Jerome Dochez
+ * @author sanjeeb.sahoo@oracle.com
  */
 @Contract
-public interface AnnotationHandler {
-    
-    /**
-     * @return the annoation type this annotation handler is handling
-     */
-    public Class<? extends Annotation> getAnnotationType();
-    
-    /**
-     * Process a particular annotation which type is the same as the 
-     * one returned by @see getAnnotationType(). All information 
-     * pertinent to the annotation and its context is encapsulated 
-     * in the passed AnnotationInfo instance.
-     * 
-     * @param element the annotation information
-     */
-    public HandlerProcessingResult processAnnotation(AnnotationInfo element)
-        throws AnnotationProcessorException;
-    
-    /**
-     * @return an array of annotation types this annotation handler would 
-     * require to be processed (if present) before it processes it's own 
-     * annotation type.
-     */
-    public Class<? extends Annotation>[] getTypeDependencies();
-        
+@Retention(RUNTIME)
+@Target(ElementType.TYPE)
+public @interface AnnotationHandlerFor {
+    @Index Class<? extends Annotation> value();
 }

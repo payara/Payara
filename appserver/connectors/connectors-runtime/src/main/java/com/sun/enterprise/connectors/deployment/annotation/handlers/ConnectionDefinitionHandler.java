@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -61,14 +61,11 @@ import org.glassfish.apf.impl.HandlerProcessingResultImpl;
 import org.jvnet.hk2.annotations.Service;
 
 @Service
+@AnnotationHandlerFor(ConnectionDefinition.class)
 public class ConnectionDefinitionHandler extends AbstractHandler  {
 
     protected final static LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(AbstractHandler.class);
-
-    public Class<? extends Annotation> getAnnotationType() {
-        return ConnectionDefinition.class;
-    }
 
     public void processAnnotation(AnnotationInfo element, ConnectionDefinition defn)
             throws AnnotationProcessorException {

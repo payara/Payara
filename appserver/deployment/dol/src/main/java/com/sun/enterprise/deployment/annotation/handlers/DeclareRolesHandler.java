@@ -44,6 +44,7 @@ import com.sun.enterprise.deployment.*;
 import com.sun.enterprise.deployment.annotation.context.EjbContext;
 import com.sun.enterprise.deployment.annotation.context.WebBundleContext;
 import com.sun.enterprise.deployment.annotation.context.WebComponentContext;
+import org.glassfish.apf.AnnotationHandlerFor;
 import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.apf.AnnotationProcessorException;
 import org.glassfish.apf.HandlerProcessingResult;
@@ -60,18 +61,12 @@ import java.lang.annotation.Annotation;
  * @author Shing Wai Chan
  */
 @Service
+@AnnotationHandlerFor(DeclareRoles.class)
 public class DeclareRolesHandler extends AbstractCommonAttributeHandler {
     
     public DeclareRolesHandler() {
     }
     
-    /**
-     * @return the annoation type this annotation handler is handling
-     */
-    public Class<? extends Annotation> getAnnotationType() {
-        return DeclareRoles.class;
-    }    
-        
     protected HandlerProcessingResult processAnnotation(AnnotationInfo ainfo,
             EjbContext[] ejbContexts) throws AnnotationProcessorException {
         

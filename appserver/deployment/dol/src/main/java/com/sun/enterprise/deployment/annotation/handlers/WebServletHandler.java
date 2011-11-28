@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -45,10 +45,7 @@ import com.sun.enterprise.deployment.WebComponentDescriptor;
 import com.sun.enterprise.deployment.annotation.context.WebBundleContext;
 import com.sun.enterprise.deployment.annotation.context.WebComponentContext;
 import com.sun.enterprise.util.net.URLPattern;
-import org.glassfish.apf.AnnotationInfo;
-import org.glassfish.apf.AnnotationProcessorException;
-import org.glassfish.apf.HandlerProcessingResult;
-import org.glassfish.apf.ResultType;
+import org.glassfish.apf.*;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.servlet.annotation.WebInitParam;
@@ -66,16 +63,9 @@ import java.util.logging.Level;
  * @author Shing Wai Chan
  */
 @Service
+@AnnotationHandlerFor(WebServlet.class)
 public class WebServletHandler extends AbstractWebHandler {
     public WebServletHandler() {
-    }
-
-    /**
-     * @return the annotation type this annotation handler is handling
-     */
-    @Override
-    public Class<? extends Annotation> getAnnotationType() {
-        return WebServlet.class;
     }
 
     @Override

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,6 +41,7 @@
 package com.sun.enterprise.deployment.annotation.handlers;
 
 import com.sun.enterprise.deployment.annotation.context.ResourceContainerContext;
+import org.glassfish.apf.AnnotationHandlerFor;
 import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.apf.AnnotationProcessorException;
 import org.glassfish.apf.HandlerProcessingResult;
@@ -58,19 +59,12 @@ import java.util.List;
  *
  */
 @Service
+@AnnotationHandlerFor(PersistenceContexts.class)
 public class EntityManagerReferencesHandler 
     extends EntityManagerReferenceHandler {
     
     public EntityManagerReferencesHandler() {
     }
-    
-    /**
-     * @return the annoation type this annotation handler is handling
-     */
-    public Class<? extends Annotation> getAnnotationType() {
-        return PersistenceContexts.class;
-    }    
-        
 
     protected HandlerProcessingResult processAnnotation(AnnotationInfo ainfo,
             ResourceContainerContext[] rcContexts)

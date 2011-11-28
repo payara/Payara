@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -44,6 +44,7 @@ import com.sun.enterprise.deployment.EjbDescriptor;
 import com.sun.enterprise.deployment.MethodDescriptor;
 import com.sun.enterprise.deployment.MethodPermission;
 import com.sun.enterprise.deployment.WebComponentDescriptor;
+import org.glassfish.apf.AnnotationHandlerFor;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.annotation.security.DenyAll;
@@ -58,19 +59,12 @@ import java.lang.annotation.Annotation;
  * @author Shing Wai Chan
  */
 @Service
+@AnnotationHandlerFor(PermitAll.class)
 public class PermitAllHandler extends AbstractAuthAnnotationHandler {
     
     public PermitAllHandler() {
     }
     
-    /**
-     * @return the annoation type this annotation handler is handling
-     */
-    @Override
-    public Class<? extends Annotation> getAnnotationType() {
-        return PermitAll.class;
-    }    
-
     @Override
     protected void processEjbMethodSecurity(Annotation authAnnoation,
             MethodDescriptor md, EjbDescriptor ejbDesc) {

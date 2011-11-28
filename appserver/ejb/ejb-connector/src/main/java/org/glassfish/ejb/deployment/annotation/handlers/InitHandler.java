@@ -55,6 +55,7 @@ import com.sun.enterprise.deployment.EjbSessionDescriptor;
 import com.sun.enterprise.deployment.MethodDescriptor;
 import com.sun.enterprise.deployment.util.TypeUtil;
 
+import org.glassfish.apf.AnnotationHandlerFor;
 import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.apf.AnnotationProcessorException;
 import org.glassfish.apf.HandlerProcessingResult;
@@ -67,18 +68,12 @@ import org.jvnet.hk2.annotations.Service;
  *
  */
 @Service
+@AnnotationHandlerFor(Init.class)
 public class InitHandler extends AbstractAttributeHandler {
     
     public InitHandler() {
     }
     
-    /**
-     * @return the annoation type this annotation handler is handling
-     */
-    public Class<? extends Annotation> getAnnotationType() {
-        return Init.class;
-    }    
-        
     protected HandlerProcessingResult processAnnotation(AnnotationInfo ainfo,
             EjbContext[] ejbContexts) throws AnnotationProcessorException {
 

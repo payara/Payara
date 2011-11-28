@@ -44,6 +44,7 @@ import com.sun.enterprise.deployment.EntityManagerFactoryReferenceDescriptor;
 import com.sun.enterprise.deployment.InjectionTarget;
 import com.sun.enterprise.deployment.MetadataSource;
 import com.sun.enterprise.deployment.annotation.context.ResourceContainerContext;
+import org.glassfish.apf.AnnotationHandlerFor;
 import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.apf.AnnotationProcessorException;
 import org.glassfish.apf.HandlerProcessingResult;
@@ -62,17 +63,11 @@ import java.util.logging.Level;
  *
  */
 @Service
+@AnnotationHandlerFor(PersistenceUnit.class)
 public class EntityManagerFactoryReferenceHandler 
     extends AbstractResourceHandler {
     
     public EntityManagerFactoryReferenceHandler() {
-    }
-
-    /**
-     * @return the annoation type this annotation handler is handling
-     */
-    public Class<? extends Annotation> getAnnotationType() {
-        return PersistenceUnit.class;
     }
 
     /**

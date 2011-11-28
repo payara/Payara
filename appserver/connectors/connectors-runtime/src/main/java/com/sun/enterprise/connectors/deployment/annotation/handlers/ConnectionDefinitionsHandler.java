@@ -60,14 +60,11 @@ import org.jvnet.hk2.annotations.Service;
  * @author Jagadish Ramu
  */
 @Service
+@AnnotationHandlerFor(ConnectionDefinitions.class)
 public class ConnectionDefinitionsHandler extends AbstractHandler  {
 
     protected final static LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(AbstractHandler.class);
-    
-    public Class<? extends Annotation> getAnnotationType() {
-        return ConnectionDefinitions.class;
-    }
 
     public HandlerProcessingResult processAnnotation(AnnotationInfo element) throws AnnotationProcessorException {
         AnnotatedElementHandler aeHandler = element.getProcessingContext().getHandler();

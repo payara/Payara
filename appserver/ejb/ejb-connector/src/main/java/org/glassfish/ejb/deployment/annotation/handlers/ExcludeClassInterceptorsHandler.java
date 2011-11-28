@@ -52,6 +52,7 @@ import com.sun.enterprise.deployment.EjbBundleDescriptor;
 import com.sun.enterprise.deployment.MethodDescriptor;
 import com.sun.enterprise.deployment.InterceptorBindingDescriptor;
 
+import org.glassfish.apf.AnnotationHandlerFor;
 import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.apf.AnnotationProcessorException;
 import org.glassfish.apf.HandlerProcessingResult;
@@ -65,19 +66,13 @@ import org.jvnet.hk2.annotations.Service;
  *
  */
 @Service
+@AnnotationHandlerFor(ExcludeClassInterceptors.class)
 public class ExcludeClassInterceptorsHandler 
     extends AbstractAttributeHandler {
     
     public ExcludeClassInterceptorsHandler() {
     }
     
-    /**
-     * @return the annoation type this annotation handler is handling
-     */
-    public Class<? extends Annotation> getAnnotationType() {
-        return ExcludeClassInterceptors.class;
-    }    
-        
     protected HandlerProcessingResult processAnnotation(AnnotationInfo ainfo,
             EjbContext[] ejbContexts) throws AnnotationProcessorException {
 

@@ -52,6 +52,7 @@ import com.sun.enterprise.deployment.EjbSessionDescriptor;
 import com.sun.enterprise.deployment.MethodDescriptor;
 import com.sun.enterprise.deployment.EjbRemovalInfo;
 
+import org.glassfish.apf.AnnotationHandlerFor;
 import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.apf.AnnotationProcessorException;
 import org.glassfish.apf.HandlerProcessingResult;
@@ -64,18 +65,12 @@ import org.jvnet.hk2.annotations.Service;
  *
  */
 @Service
+@AnnotationHandlerFor(Remove.class)
 public class RemoveHandler extends AbstractAttributeHandler {
     
     public RemoveHandler() {
     }
-    
-    /**
-     * @return the annoation type this annotation handler is handling
-     */
-    public Class<? extends Annotation> getAnnotationType() {
-        return Remove.class;
-    }    
-        
+
     protected HandlerProcessingResult processAnnotation(AnnotationInfo ainfo,
             EjbContext[] ejbContexts) throws AnnotationProcessorException {
 

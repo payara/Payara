@@ -47,6 +47,7 @@ import javax.ejb.ConcurrencyManagementType;
 
 import com.sun.enterprise.deployment.EjbDescriptor;
 
+import org.glassfish.apf.AnnotationHandlerFor;
 import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.apf.AnnotationProcessorException;
 import org.glassfish.apf.HandlerProcessingResult;
@@ -61,16 +62,10 @@ import org.jvnet.hk2.annotations.Service;
  * @author Kenneth Saks
  */
 @Service
+@AnnotationHandlerFor(ConcurrencyManagement.class)
 public class ConcurrencyManagementHandler extends AbstractAttributeHandler {
 
     public ConcurrencyManagementHandler() {
-    }
-
-    /**
-     * @return the annoation type this annotation handler is handling
-     */
-    public Class<? extends Annotation> getAnnotationType() {
-        return ConcurrencyManagement.class;
     }
 
     protected HandlerProcessingResult processAnnotation(AnnotationInfo ainfo,

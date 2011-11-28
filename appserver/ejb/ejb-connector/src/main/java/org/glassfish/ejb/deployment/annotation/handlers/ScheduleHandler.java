@@ -54,10 +54,7 @@ import com.sun.enterprise.deployment.MethodDescriptor;
 import com.sun.enterprise.deployment.ScheduledTimerDescriptor;
 //import com.sun.ejb.containers.TimerSchedule;
 
-import org.glassfish.apf.AnnotationInfo;
-import org.glassfish.apf.AnnotatedElementHandler;
-import org.glassfish.apf.AnnotationProcessorException;
-import org.glassfish.apf.HandlerProcessingResult;
+import org.glassfish.apf.*;
 import com.sun.enterprise.deployment.annotation.context.EjbContext;
 import org.glassfish.ejb.deployment.annotation.handlers.AbstractAttributeHandler;
 import org.jvnet.hk2.annotations.Service;
@@ -69,18 +66,12 @@ import org.jvnet.hk2.annotations.Service;
  * @author Marina Vatkina
  */
 @Service
+@AnnotationHandlerFor(Schedule.class)
 public class ScheduleHandler extends AbstractAttributeHandler {
 
     public ScheduleHandler() {
     }
-    
-    /**
-     * @return the annoation type this annotation handler is handling
-     */
-    public Class<? extends Annotation> getAnnotationType() {
-        return Schedule.class;
-    }    
-        
+
     protected HandlerProcessingResult processAnnotation(AnnotationInfo ainfo,
             EjbContext[] ejbContexts) throws AnnotationProcessorException {
 

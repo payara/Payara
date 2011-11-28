@@ -48,11 +48,7 @@ import java.lang.reflect.AnnotatedElement;
 import java.lang.annotation.Annotation;
 import java.text.MessageFormat;
 
-import org.glassfish.apf.AnnotationProcessorException;
-import org.glassfish.apf.AnnotatedElementHandler;
-import org.glassfish.apf.AnnotationInfo;
-import org.glassfish.apf.ResultType;
-import org.glassfish.apf.HandlerProcessingResult;
+import org.glassfish.apf.*;
 
 import org.glassfish.apf.impl.HandlerProcessingResultImpl;
 
@@ -80,6 +76,7 @@ import org.jvnet.hk2.annotations.Service;
  * @author Jerome Dochez
  */
 @Service
+@AnnotationHandlerFor(javax.jws.WebService.class)
 public class WebServiceHandler extends AbstractHandler {
 
     private Logger logger = LogDomains.getLogger(this.getClass(),LogDomains.WEBSERVICES_LOGGER);
@@ -88,10 +85,6 @@ public class WebServiceHandler extends AbstractHandler {
 
     /** Creates a new instance of WebServiceHandler */
     public WebServiceHandler() {
-    }
-
-    public Class<? extends Annotation> getAnnotationType() {
-        return javax.jws.WebService.class;
     }
 
     /**

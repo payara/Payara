@@ -60,15 +60,12 @@ import org.glassfish.apf.impl.HandlerProcessingResultImpl;
  * @author Jagadish Ramu
  */
 @Service
+@AnnotationHandlerFor(Activation.class)
 public class ActivationHandler extends AbstractHandler {
 
     protected final static LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(AbstractHandler.class);
     
-    public Class<? extends Annotation> getAnnotationType() {
-        return Activation.class;
-    }
-
     public HandlerProcessingResult processAnnotation(AnnotationInfo element) throws AnnotationProcessorException {
         AnnotatedElementHandler aeHandler = element.getProcessingContext().getHandler();
         Activation activation = (Activation) element.getAnnotation();

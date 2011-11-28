@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,17 +40,20 @@
 
 package com.sun.enterprise.deployment.annotation.factory;
 
-import org.glassfish.apf.AnnotationHandler;
-import org.glassfish.apf.AnnotationProcessor;
+import org.glassfish.apf.*;
 import org.glassfish.apf.factory.Factory;
 import org.glassfish.apf.impl.AnnotationProcessorImpl;
 import org.glassfish.api.ContractProvider;
+import org.glassfish.hk2.Services;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.Inhabitant;
 import org.jvnet.hk2.component.PostConstruct;
 import org.jvnet.hk2.component.Singleton;
 
+import java.lang.annotation.Annotation;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -65,7 +68,7 @@ import java.util.Set;
 public class SJSASFactory extends Factory implements ContractProvider, PostConstruct {
 
     @Inject
-    AnnotationHandler[] handlers;
+    Habitat habitat;
 
     private Set<String> annotationClassNames = new HashSet<String>();
 
@@ -87,10 +90,29 @@ public class SJSASFactory extends Factory implements ContractProvider, PostConst
         if (systemProcessor == null) {
             // initialize our system annotation processor...            
             systemProcessor = new AnnotationProcessorImpl();
-            for (AnnotationHandler anHandler : handlers) {
-                systemProcessor.pushAnnotationHandler(anHandler); 
+            for (final Inhabitant i : habitat.getInhabitants(AnnotationHandlerFor.class)) {
+                String annotationTypeName = (String) i.metadata().get(AnnotationHandlerFor.class.getName()).get(0);
+                systemProcessor.pushAnnotationHandler(annotationTypeName, new AnnotationHandler() {
+                    @Override
+                    public Class<? extends Annotation> getAnnotationType() {
+                        final AnnotationHandler realHandler = (AnnotationHandler) i.get();
+                        return realHandler.getAnnotationType();
+                    }
+
+                    @Override
+                    public HandlerProcessingResult processAnnotation(AnnotationInfo element) throws AnnotationProcessorException {
+                        final AnnotationHandler realHandler = (AnnotationHandler) i.get();
+                        return realHandler.processAnnotation(element);
+                    }
+
+                    @Override
+                    public Class<? extends Annotation>[] getTypeDependencies() {
+                        final AnnotationHandler realHandler = (AnnotationHandler) i.get();
+                        return realHandler.getTypeDependencies();
+                    }
+                });
                 annotationClassNames.add("L" +
-                    anHandler.getAnnotationType().getName().
+                    annotationTypeName.
                     replace('.', '/') + ";");
             }
         }

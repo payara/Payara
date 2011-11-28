@@ -44,6 +44,7 @@ import com.sun.enterprise.deployment.EjbDescriptor;
 import com.sun.enterprise.deployment.MethodDescriptor;
 import com.sun.enterprise.deployment.MethodPermission;
 import com.sun.enterprise.deployment.WebComponentDescriptor;
+import org.glassfish.apf.AnnotationHandlerFor;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.annotation.security.DenyAll;
@@ -58,18 +59,11 @@ import java.lang.annotation.Annotation;
  * @author Shing Wai Chan
  */
 @Service
+@AnnotationHandlerFor(PermitAll.class)
 public class PermitAllHandler extends AbstractAuthAnnotationHandler {
     
     public PermitAllHandler() {
     }
-    
-    /**
-     * @return the annoation type this annotation handler is handling
-     */
-    @Override
-    public Class<? extends Annotation> getAnnotationType() {
-        return PermitAll.class;
-    }    
 
     @Override
     protected void processEjbMethodSecurity(Annotation authAnnoation,

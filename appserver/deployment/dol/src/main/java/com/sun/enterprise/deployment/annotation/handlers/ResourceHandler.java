@@ -42,6 +42,7 @@ package com.sun.enterprise.deployment.annotation.handlers;
 
 import com.sun.enterprise.deployment.*;
 import com.sun.enterprise.deployment.annotation.context.ResourceContainerContext;
+import org.glassfish.apf.AnnotationHandlerFor;
 import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.apf.AnnotationProcessorException;
 import org.glassfish.apf.HandlerProcessingResult;
@@ -68,6 +69,7 @@ import java.util.logging.Level;
  * annotation.
  */
 @Service
+@AnnotationHandlerFor(Resource.class)
 public class ResourceHandler extends AbstractResourceHandler {
 
     // Map of all @Resource types that map to env-entries and their
@@ -120,13 +122,6 @@ public class ResourceHandler extends AbstractResourceHandler {
     }
         
     public ResourceHandler() {
-    }
-
-    /**
-     * @return the annoation type this annotation handler is handling
-     */
-    public Class<? extends Annotation> getAnnotationType() {
-        return Resource.class;
     }
 
     /**

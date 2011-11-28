@@ -42,6 +42,7 @@ package com.sun.enterprise.security.deployment.annotation.handlers;
 
 import com.sun.enterprise.deployment.EjbDescriptor;
 import com.sun.enterprise.deployment.annotation.handlers.AbstractCommonAttributeHandler;
+import org.glassfish.apf.AnnotationHandlerFor;
 import org.glassfish.security.common.Role;
 import com.sun.enterprise.deployment.RunAsIdentityDescriptor;
 import com.sun.enterprise.deployment.WebComponentDescriptor;
@@ -62,18 +63,12 @@ import java.lang.annotation.Annotation;
  * @author Shing Wai Chan
  */
 @Service
+@AnnotationHandlerFor(RunAs.class)
 public class RunAsHandler extends AbstractCommonAttributeHandler {
     
     public RunAsHandler() {
     }
     
-    /**
-     * @return the annoation type this annotation handler is handling
-     */
-    public Class<? extends Annotation> getAnnotationType() {
-        return RunAs.class;
-    }
-
     protected HandlerProcessingResult processAnnotation(AnnotationInfo ainfo,
             EjbContext[] ejbContexts) throws AnnotationProcessorException {
         

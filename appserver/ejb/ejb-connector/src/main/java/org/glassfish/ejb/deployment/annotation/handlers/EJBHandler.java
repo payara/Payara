@@ -57,6 +57,7 @@ import com.sun.enterprise.deployment.EjbReferenceDescriptor;
 import com.sun.enterprise.deployment.EjbSessionDescriptor;
 import com.sun.enterprise.deployment.InjectionTarget;
 import com.sun.enterprise.deployment.MetadataSource;
+import org.glassfish.apf.AnnotationHandlerFor;
 import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.apf.AnnotationProcessorException;
 import org.glassfish.apf.HandlerProcessingResult;
@@ -72,16 +73,10 @@ import static com.sun.enterprise.util.StringUtils.ok;
  * @author Shing Wai Chan
  */
 @Service
+@AnnotationHandlerFor(EJB.class)
 public class EJBHandler extends AbstractResourceHandler {
     
     public EJBHandler() {
-    }
-
-    /**
-     * @return the annoation type this annotation handler is handling
-     */
-    public Class<? extends Annotation> getAnnotationType() {
-        return EJB.class;
     }
 
     /**

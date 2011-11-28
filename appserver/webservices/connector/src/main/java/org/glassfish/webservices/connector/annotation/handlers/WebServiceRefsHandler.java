@@ -50,9 +50,7 @@ import java.util.List;
 import javax.xml.ws.WebServiceRefs;
 import javax.xml.ws.WebServiceRef;
 
-import org.glassfish.apf.HandlerProcessingResult;
-import org.glassfish.apf.AnnotationInfo;
-import org.glassfish.apf.AnnotationProcessorException;
+import org.glassfish.apf.*;
 import org.glassfish.apf.HandlerProcessingResult;
 import com.sun.enterprise.deployment.annotation.context.ResourceContainerContext;
 import org.jvnet.hk2.annotations.Service;
@@ -62,19 +60,12 @@ import org.jvnet.hk2.annotations.Service;
  *
  */
 @Service
+@AnnotationHandlerFor(WebServiceRefs.class)
 public class WebServiceRefsHandler extends WebServiceRefHandler {
     
     public WebServiceRefsHandler() {
     }
     
-    /**
-     * @return the annoation type this annotation handler is handling
-     */
-    public Class<? extends Annotation> getAnnotationType() {
-        return WebServiceRefs.class;
-    }    
-        
-
     public HandlerProcessingResult processAnnotation(AnnotationInfo ainfo)
             throws AnnotationProcessorException {
 

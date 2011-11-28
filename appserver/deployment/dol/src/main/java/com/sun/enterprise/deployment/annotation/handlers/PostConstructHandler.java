@@ -43,6 +43,7 @@ package com.sun.enterprise.deployment.annotation.handlers;
 import com.sun.enterprise.deployment.LifecycleCallbackDescriptor;
 import com.sun.enterprise.deployment.MetadataSource;
 import com.sun.enterprise.deployment.annotation.context.ResourceContainerContext;
+import org.glassfish.apf.AnnotationHandlerFor;
 import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.apf.AnnotationProcessorException;
 import org.glassfish.apf.HandlerProcessingResult;
@@ -57,18 +58,12 @@ import java.lang.reflect.Method;
  *
  */
 @Service
+@AnnotationHandlerFor(PostConstruct.class)
 public class PostConstructHandler extends AbstractResourceHandler {
     
     public PostConstructHandler() {
     }
     
-    /**
-     * @return the annoation type this annotation handler is handling
-     */
-    public Class<? extends Annotation> getAnnotationType() {
-        return PostConstruct.class;
-    }    
-        
     protected HandlerProcessingResult processAnnotation(AnnotationInfo ainfo,
             ResourceContainerContext[] rcContexts)
             throws AnnotationProcessorException {

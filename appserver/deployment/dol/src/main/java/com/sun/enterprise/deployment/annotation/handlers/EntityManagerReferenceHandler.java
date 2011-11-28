@@ -45,10 +45,7 @@ import com.sun.enterprise.deployment.InjectionTarget;
 import com.sun.enterprise.deployment.MetadataSource;
 import com.sun.enterprise.deployment.annotation.context.AppClientContext;
 import com.sun.enterprise.deployment.annotation.context.ResourceContainerContext;
-import org.glassfish.apf.AnnotatedElementHandler;
-import org.glassfish.apf.AnnotationInfo;
-import org.glassfish.apf.AnnotationProcessorException;
-import org.glassfish.apf.HandlerProcessingResult;
+import org.glassfish.apf.*;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.persistence.PersistenceContext;
@@ -66,17 +63,11 @@ import java.util.logging.Level;
  *
  */
 @Service
+@AnnotationHandlerFor(PersistenceContext.class)
 public class EntityManagerReferenceHandler 
     extends AbstractResourceHandler {
     
     public EntityManagerReferenceHandler() {
-    }
-
-    /**
-     * @return the annoation type this annotation handler is handling
-     */
-    public Class<? extends Annotation> getAnnotationType() {
-        return PersistenceContext.class;
     }
 
     /**

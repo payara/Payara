@@ -40,6 +40,7 @@
 
 package com.sun.enterprise.deployment.annotation.handlers;
 
+import org.glassfish.apf.AnnotationHandlerFor;
 import org.glassfish.deployment.common.RootDeploymentDescriptor;
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.apf.HandlerProcessingResult;
@@ -63,16 +64,10 @@ import com.sun.enterprise.deployment.*;
  * @author Jagadish Ramu
  */
 @Service
+@AnnotationHandlerFor(DataSourceDefinition.class)
 public class DataSourceDefinitionHandler extends AbstractResourceHandler {
 
     public DataSourceDefinitionHandler() {
-    }
-
-    /**
-     * @return the annoation type this annotation handler is handling
-     */
-    public Class<? extends Annotation> getAnnotationType() {
-        return DataSourceDefinition.class;
     }
 
     protected HandlerProcessingResult processAnnotation(AnnotationInfo ainfo, ResourceContainerContext[] rcContexts)

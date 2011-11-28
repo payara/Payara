@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -44,10 +44,7 @@ import com.sun.enterprise.deployment.MultipartConfigDescriptor;
 import com.sun.enterprise.deployment.WebComponentDescriptor;
 import com.sun.enterprise.deployment.annotation.context.WebBundleContext;
 import com.sun.enterprise.deployment.annotation.context.WebComponentContext;
-import org.glassfish.apf.AnnotationInfo;
-import org.glassfish.apf.AnnotationProcessorException;
-import org.glassfish.apf.HandlerProcessingResult;
-import org.glassfish.apf.ResultType;
+import org.glassfish.apf.*;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.servlet.annotation.MultipartConfig;
@@ -61,15 +58,9 @@ import java.lang.annotation.Annotation;
  * @author Shing Wai Chan
  */
 @Service
+@AnnotationHandlerFor(MultipartConfig.class)
 public class MultipartConfigHandler extends AbstractWebHandler {
     public MultipartConfigHandler() {
-    }
-
-    /**
-     * @return the annotation type this annotation handler is handling
-     */
-    public Class<? extends Annotation> getAnnotationType() {
-        return MultipartConfig.class;
     }
 
     protected HandlerProcessingResult processAnnotation(AnnotationInfo ainfo,

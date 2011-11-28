@@ -77,8 +77,8 @@ import java.util.logging.Level;
 public class AnnotationProcessorImpl implements AnnotationProcessor {
     
     AnnotationProcessorImpl delegate;
-    Map<Class<? extends Annotation>, List<AnnotationHandler>> handlers = 
-            new HashMap<Class<? extends Annotation>, List<AnnotationHandler>>();
+    Map<String, List<AnnotationHandler>> handlers =
+            new HashMap<String, List<AnnotationHandler>>();
     
     int errorCount;
     Logger logger;
@@ -142,8 +142,8 @@ public class AnnotationProcessorImpl implements AnnotationProcessor {
      * annotation processing tool when classes need to be processed in a 
      * particular context rather than when they are picked up by the scanner.
      * 
-     * @param the processing context 
-     * @param the list of classes to process
+     * @param ctx the processing context
+     * @param classes the list of classes to process
      * @return the processing result for such classes
      * @throws AnnotationProcessorException if handlers fail to process 
      * an annotation
@@ -312,7 +312,7 @@ public class AnnotationProcessorImpl implements AnnotationProcessor {
         if (annPackage != null && annPackage.getName().startsWith("java.lang"))
             return;
         
-        List<AnnotationHandler> annotationHandlers = handlers.get(annotation.annotationType());
+        List<AnnotationHandler> annotationHandlers = handlers.get(annotation.annotationType().getName());
         if (annotationHandlers!=null) {
             for (AnnotationHandler handler : annotationHandlers) {
                 
@@ -396,7 +396,21 @@ public class AnnotationProcessorImpl implements AnnotationProcessor {
     }
     public void pushAnnotationHandler(AnnotationHandler handler) {
         
-        Class<? extends Annotation> type = handler.getAnnotationType();
+        String type = handler.getAnnotationType().getName();
+        pushAnnotationHandler(type, handler);
+    }
+
+    /**
+     * This method is similar to {@link #pushAnnotationHandler(AnnotationHandler)} except that
+     * it takes an additional String type argument which allows us to avoid extracting the information from the
+     * AnnotationHandler. Calling the AnnotationHandler can lead to its instantiation where as the annotation
+     * that a handler is responsible for handling is a metadata that can be statically extracted. This allows us to
+     * build more lazy systems.
+     *
+     * @param type
+     * @param handler
+     */
+    public void pushAnnotationHandler(String type, AnnotationHandler handler) {
         List<AnnotationHandler> currentHandlers = handlers.get(type);
         if (currentHandlers==null) {
             currentHandlers = new ArrayList<AnnotationHandler>();
@@ -404,16 +418,16 @@ public class AnnotationProcessorImpl implements AnnotationProcessor {
         }
         currentHandlers.add(handler);
     }
-    
+
     public void popAnnotationHandler(Class<? extends Annotation> type) {
-        List<AnnotationHandler> currentHandlers = handlers.get(type);
+        List<AnnotationHandler> currentHandlers = handlers.get(type.getName());
         if (currentHandlers!=null) {
-            currentHandlers.remove(currentHandlers.size());
+            currentHandlers.remove(currentHandlers.size()-1);
         }        
     }    
 
     public AnnotationHandler getAnnotationHandler(Class<? extends Annotation> type) {
-        List<AnnotationHandler> currentHandlers = handlers.get(type);
+        List<AnnotationHandler> currentHandlers = handlers.get(type.getName());
         if (currentHandlers!=null && currentHandlers.size()>0) {
             return currentHandlers.get(0);
         }        
