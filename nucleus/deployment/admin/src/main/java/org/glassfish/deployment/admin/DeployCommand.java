@@ -45,6 +45,8 @@ import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.deploy.shared.ArchiveFactory;
 import com.sun.enterprise.deploy.shared.FileArchive;
 import com.sun.enterprise.util.LocalStringManagerImpl;
+
+import org.glassfish.admin.payload.PayloadImpl;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.admin.AdminCommand;
@@ -71,6 +73,7 @@ import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.Transaction;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.*;
 import java.util.logging.Level;
@@ -686,6 +689,13 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
         Logger logger = context.getLogger();
         try {
             Payload.Outbound outboundPayload = context.getOutboundPayload();
+            // GLASSFISH-17554: pass to DownloadServlet
+            boolean retrieveArtifacts = false; 
+            if (outboundPayload == null) {
+                outboundPayload = PayloadImpl.Outbound.newInstance();
+                retrieveArtifacts = true;
+            }
+                
             Properties props = new Properties();
             /*
              * file-xfer-root is used as a URI, so convert backslashes.
@@ -698,6 +708,25 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
                 outboundPayload.attachFile("application/octet-stream",
                         uriPair.getPart(),"files",props,
                         new File(uriPair.getFull().getSchemeSpecificPart()));
+            }
+            
+            if (retrieveArtifacts) {
+                File targetLocalFile = new File(targetLocalDir); // CAUTION: file instead of dir
+                if (targetLocalFile.exists()) {
+                    final String msg = localStrings.getLocalString("download.errFileExists",
+                            "Unable to generate files. File [{0}] already exists.", targetLocalFile.getAbsolutePath());
+                    throw new Exception(msg);
+                }
+
+                if (!targetLocalFile.getParentFile().exists()) {
+                    final String msg = localStrings.getLocalString("download.errParentFileMissing",
+                            "Unable to generate files. Directory [{0}] does not exist.", targetLocalFile.getParent());
+                    throw new Exception(msg);
+                }
+                FileOutputStream targetStream = new FileOutputStream(targetLocalFile);
+                outboundPayload.writeTo(targetStream);
+                targetStream.flush();
+                targetStream.close();
             }
         } catch (Exception e) {
             final String errorMsg = localStrings.getLocalString(

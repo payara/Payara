@@ -168,6 +168,7 @@ public class ApplicationHandlers {
                 oneRow.put("hasEndpoint", false);
                 oneRow.put("hasLaunch", false);
                 oneRow.put("hasAppClientLaunch", false);
+                oneRow.put("hasAppClientStub", false);
                 oneRow.put("sniffers", snifferList.toString());
 
                 if (snifferList.contains("web")) {
@@ -185,6 +186,7 @@ public class ApplicationHandlers {
                         List<String> targetList = DeployUtil.getApplicationTarget(appName, "application-ref");
                         oneRow.put("hasAppClientLaunch", (targetList.isEmpty())? false: true);
                     }
+                    oneRow.put("hasAppClientStub", true);
                 }
                 result.add(oneRow);
                 getSubComponentDetail(appName, moduleName, snifferList, result);
@@ -228,6 +230,7 @@ public class ApplicationHandlers {
                     oneRow.put("sniffers", "");
                     oneRow.put("hasEndpoint", false);
                     oneRow.put("hasAppClientLaunch", false);
+                    oneRow.put("hasAppClientStub", false);
                     if (wsAppMap != null){
                         if (! (AppUtil.getEndpointDetails( wsAppMap, moduleName, e.getKey()) == null)){
                             oneRow.put("hasEndpoint", true );

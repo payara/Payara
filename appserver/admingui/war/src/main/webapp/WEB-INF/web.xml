@@ -107,7 +107,8 @@
 	<init-param>
 	    <param-name>ContentSources</param-name>
 	    <param-value>
-                org.glassfish.admingui.common.servlet.LBConfigContentSource 
+                org.glassfish.admingui.common.servlet.LBConfigContentSource,
+                org.glassfish.admingui.common.servlet.ClientStubsContentSource
 	    </param-value>
 	</init-param>
 	<init-param>
