@@ -52,8 +52,7 @@ import org.glassfish.internal.deployment.*;
  *
  */
 @Service
-@PostStartupRunLevel
-public class PostInitializer implements PostConstruct {
+public class PostInitializer implements PostStartup, PostConstruct {
 
 
     @Inject

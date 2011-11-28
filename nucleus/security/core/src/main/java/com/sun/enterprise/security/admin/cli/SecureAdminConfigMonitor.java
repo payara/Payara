@@ -45,7 +45,7 @@ import com.sun.enterprise.config.serverbeans.SecureAdmin;
 import com.sun.logging.LogDomains;
 import java.beans.PropertyChangeEvent;
 import java.util.logging.Logger;
-import org.glassfish.internal.api.PostStartupRunLevel;
+import org.glassfish.internal.api.PostStartup;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
@@ -66,8 +66,7 @@ import org.jvnet.hk2.config.UnprocessedChangeEvents;
  */
 @Service
 @Scoped(Singleton.class)
-@PostStartupRunLevel
-public class SecureAdminConfigMonitor implements ConfigListener {
+public class SecureAdminConfigMonitor implements ConfigListener, PostStartup {
 
     private static final String restartRequiredMsg = Strings.get("secure.admin.change.requires.restart");
 

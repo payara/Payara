@@ -75,8 +75,7 @@ import org.jvnet.hk2.config.UnprocessedChangeEvents;
  */
 @Service
 @Scoped(Singleton.class)
-@PostStartupRunLevel
-public class DynamicReloadService implements ConfigListener, PostConstruct, PreDestroy {
+public class DynamicReloadService implements ConfigListener, PostStartup, PostConstruct, PreDestroy {
 
     @Inject
     DasConfig activeDasConfig;

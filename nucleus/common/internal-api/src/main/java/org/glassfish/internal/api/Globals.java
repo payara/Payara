@@ -45,6 +45,7 @@ import com.sun.enterprise.module.single.StaticModulesRegistry;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Inject;
+import org.glassfish.internal.api.Init;
 import com.sun.enterprise.config.serverbeans.ConfigBeansUtilities;
 
 /**
@@ -53,8 +54,7 @@ import com.sun.enterprise.config.serverbeans.ConfigBeansUtilities;
  * @author Jerome Dochez
  */
 @Service(name = "globals")
-@InitRunLevel
-public class Globals {
+public class Globals implements Init {
 
     @Inject
     static volatile Habitat defaultHabitat;

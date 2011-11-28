@@ -89,8 +89,7 @@ import org.glassfish.internal.api.*;
  * which will initialize (boot) AMX when a connection arrives.
  */
 @Service
-@PostStartupRunLevel
-public final class JMXStartupService implements PostConstruct {
+public final class JMXStartupService implements PostStartup, PostConstruct {
 
     private static void debug(final String s) {
         System.out.println("### " + s);

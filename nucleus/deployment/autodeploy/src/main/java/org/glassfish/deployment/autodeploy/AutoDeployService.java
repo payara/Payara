@@ -82,8 +82,7 @@ import org.jvnet.hk2.config.UnprocessedChangeEvents;
  */
 @Service
 @Scoped(Singleton.class)
-@PostStartupRunLevel
-public class AutoDeployService implements PostConstruct, PreDestroy, ConfigListener {
+public class AutoDeployService implements PostStartup, PostConstruct, PreDestroy, ConfigListener {
 
     @Inject
     DasConfig activeDasConfig;
