@@ -124,7 +124,7 @@
             <version>${project.version}</version>
         </dependency> 
         <dependency>
-            <groupId>org.glassfish.admingui</groupId>
+            <groupId>org.glassfish.docs.help</groupId>
             <artifactId>console-ejb-plugin-help</artifactId>
         </dependency> 
         <dependency>
@@ -133,7 +133,7 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.admingui</groupId>
+            <groupId>org.glassfish.docs.help</groupId>
             <artifactId>console-corba-plugin-help</artifactId>
         </dependency>
 

@@ -118,7 +118,7 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.admingui</groupId>
+            <groupId>org.glassfish.docs.help</groupId>
             <artifactId>console-common-help</artifactId>
         </dependency>
         <dependency>
@@ -145,7 +145,7 @@
            <version>${project.version}</version>
         </dependency>
         <dependency>
-           <groupId>org.glassfish.admingui</groupId>
+           <groupId>org.glassfish.docs.help</groupId>
            <artifactId>console-cluster-plugin-help</artifactId>
         </dependency>
 

@@ -112,10 +112,9 @@
                                        <groupId>org.glassfish.docs.man</groupId>
                                        <artifactId>appclient-server-core-manpage</artifactId>
                                        <version>${v3-docs.version}</version>
-                                       <type>jar</type>
+                                       <type>zip</type>
                                        <overWrite>true</overWrite>
                                        <outputDirectory>${project.build.outputDirectory}</outputDirectory>
-                                       <excludes>META-INF/**</excludes>
                                    </artifactItem>
                                 </artifactItems>
                            </configuration>

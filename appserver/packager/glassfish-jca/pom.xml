@@ -145,7 +145,7 @@
             <version>${project.version}</version>
         </dependency> 
         <dependency>
-            <groupId>org.glassfish.admingui</groupId>
+            <groupId>org.glassfish.docs.help</groupId>
 	    <artifactId>console-jca-plugin-help</artifactId>
         </dependency> 
 
