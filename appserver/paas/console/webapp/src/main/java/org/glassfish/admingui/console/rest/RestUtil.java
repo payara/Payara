@@ -48,8 +48,6 @@ package org.glassfish.admingui.console.rest;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-import javax.security.auth.message.AuthException;
-import javax.servlet.RequestDispatcher;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
@@ -82,13 +80,10 @@ import javax.net.ssl.SSLSession;
 import com.sun.enterprise.security.SecurityServicesUtil;
 import com.sun.enterprise.config.serverbeans.SecureAdmin;
 import com.sun.enterprise.security.ssl.SSLUtils;
+import com.sun.jersey.api.client.filter.CsrfProtectionFilter;
 import com.sun.jersey.client.urlconnection.HTTPSProperties;
 import org.jvnet.hk2.component.Habitat;
 
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import org.glassfish.admingui.console.util.GuiUtil;
@@ -105,9 +100,11 @@ public class RestUtil {
     public static final String RESPONSE_TYPE = "application/json";
     public static final String GUI_TOKEN_FOR_EMPTY_PROPERTY_VALUE = "()";
     public static final Client JERSEY_CLIENT = Client.create();
-
     private static final String REST_TOKEN_COOKIE = "gfresttoken";
 
+    static {
+        JERSEY_CLIENT.addFilter(new CsrfProtectionFilter());
+    }
 
     public static String getPropValue(String endpoint, String propName, Object data, String contentType){
         Map responseMap = (Map) restRequest(endpoint+"/property.json", null, "GET", data, contentType, false);
