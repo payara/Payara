@@ -280,7 +280,13 @@ public class UploadBean {
         Map res = (Map) RestUtil.restRequest(REST_URL + "/applications/_generate-glassfish-services-deployment-plan", dpAttrs, "POST", null, null, false, false).get("data");
         System.out.println("endpoint=" + REST_URL + "/applications/_generate-glassfish-services-deployment-plan");
         System.out.println("payload=" + dpAttrs);
-        System.out.println("_generate-glassfish-services-deployment-plan returns:" + res );
+        System.out.println("_generate-glassfish-services-deployment-plan returns: " + res );
+        if (res == null || res.get("extraProperties")==null){
+            System.out.println("No Deployment Plan path returned. ");
+            FacesContext.getCurrentInstance().addMessage("wizard:deployButton",
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error",  "Deployment aborted.  No deployment plan available.  Refer to server.log for more info."));
+            return null;
+        }
         Map extr = (Map) res.get("extraProperties");
         String deploymentPlanPath = (String) extr.get("deployment-plan-file-path");
         if (GuiUtil.isEmpty(deploymentPlanPath)){

@@ -183,7 +183,7 @@ public class CommandUtil {
             List<Map<String, Object>> list = (List<Map<String, Object>>) ((Map) appData.get("extraProperties")).get("list");
             System.out.println("endpoint="+REST_URL + "/applications/_get-service-metadata");
             System.out.println("payload="+attrs);
-            System.out.println("========== _get-service-metadata returns: " + list);
+            System.out.println("========== _get-service-metadata returns: \n" + list);
             return list;
         }catch(Exception ex){
             System.out.println("Exception occurs:");
