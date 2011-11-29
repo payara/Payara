@@ -181,8 +181,9 @@ public class CommandUtil {
         try{
             Map appData = (Map) RestUtil.restRequest(REST_URL + "/applications/_get-service-metadata", attrs, "GET", null, null, false, true).get("data");
             List<Map<String, Object>> list = (List<Map<String, Object>>) ((Map) appData.get("extraProperties")).get("list");
-            System.out.println("========== _get-service-metadata : " );
-            System.out.println(list);
+            System.out.println("endpoint="+REST_URL + "/applications/_get-service-metadata");
+            System.out.println("payload="+attrs);
+            System.out.println("========== _get-service-metadata returns: " + list);
             return list;
         }catch(Exception ex){
             System.out.println("Exception occurs:");

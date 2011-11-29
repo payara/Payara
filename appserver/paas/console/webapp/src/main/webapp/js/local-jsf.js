@@ -1377,7 +1377,7 @@ if (!((jsf && jsf.specversion && jsf.specversion >= 20000 ) &&
             };
 
             req.onload = function() {
-                alert('onload!');
+                //alert('onload!');
                 var document = this.frame.contentWindow.document || this.frame.contentDocument || this.frame.document;
                 var body = document.body || document.documentElement ;
                 var request = {};

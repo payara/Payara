@@ -278,6 +278,9 @@ public class UploadBean {
         dpAttrs.put("modifiedServiceDesc", metaDataJson);
         //ensure that template-id is the same as templateId, ie whatever user has changed that to.
         Map res = (Map) RestUtil.restRequest(REST_URL + "/applications/_generate-glassfish-services-deployment-plan", dpAttrs, "POST", null, null, false, false).get("data");
+        System.out.println("endpoint=" + REST_URL + "/applications/_generate-glassfish-services-deployment-plan");
+        System.out.println("payload=" + dpAttrs);
+        System.out.println("_generate-glassfish-services-deployment-plan returns:" + res );
         Map extr = (Map) res.get("extraProperties");
         String deploymentPlanPath = (String) extr.get("deployment-plan-file-path");
         if (GuiUtil.isEmpty(deploymentPlanPath)){
