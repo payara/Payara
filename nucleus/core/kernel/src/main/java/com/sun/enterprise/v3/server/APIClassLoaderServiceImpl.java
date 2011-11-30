@@ -225,12 +225,18 @@ public class APIClassLoaderServiceImpl implements PostConstruct {
             if (isBlackListed(name)) return null;
             URL url = null;
             if (!name.startsWith("java/")) {
+                url = apiModuleLoader.getResource(name);
+                if (url != null) {
+                    return url;
+                }
+
+                // now punch-ins for various cases that require special handling
                 if (name.equals(MAILCAP)) {
                     // punch in for META-INF/mailcap files.
                     // see issue #8426
                     for (Module m : mr.getModules()) {
                         if ((url = m.getClassLoader().getResource(name)) != null) {
-                            break;
+                            return url;
                         }
                     }
                 } else if(name.startsWith(META_INF_SERVICES)) {
@@ -243,18 +249,16 @@ public class APIClassLoaderServiceImpl implements PostConstruct {
                     for( Module m : mr.getModules() ) {
                         List<URL> list = m.getMetadata().getDescriptors(
                                 serviceName);
-                        if(!list.isEmpty())     return list.get(0);
+                        if(!list.isEmpty()) {
+                            return list.get(0);
+                        }
                     }
-                } else {
-                    url = apiModuleLoader.getResource(name);
                 }
             }
-            if (url == null) {
-                // Either requested resource belongs to java/ namespace or
-                // it was not found in any of the bundles, so call
-                // super class implementation which will delegate to parent.
-                url = super.getResource(name);
-            }
+            // Either requested resource belongs to java/ namespace or
+            // it was not found in any of the bundles, so call
+            // super class implementation which will delegate to parent.
+            url = super.getResource(name);
             if (url == null) {
                 addToBlackList(name);
             }
@@ -278,24 +282,40 @@ public class APIClassLoaderServiceImpl implements PostConstruct {
         @Override
         protected Enumeration<URL> findResources(String name) throws IOException {
             if (!name.startsWith("java/")) {
+                List<Enumeration<URL>> enumerations = new ArrayList<Enumeration<URL>>();
+                Enumeration<URL> apiResources = apiModuleLoader.getResources(name);
+                if (apiResources.hasMoreElements()) {
+                    enumerations.add(apiResources);
+                }
+
+                // now punch-ins for various cases that require special handling
                 if (name.equals(MAILCAP)) {
-                    // punch in for META-INF/mailcap files. see issue #8426
-                    List<Enumeration<URL>> enumerators = new ArrayList<Enumeration<URL>>();
+                     // punch in for META-INF/mailcap files. see issue #8426
                     for (Module m : mr.getModules()) {
-                        enumerators.add(m.getClassLoader().getResources(name));
+                        if (m == APIModule) continue; // we have already looked up resources in apiModuleLoader
+                        enumerations.add(m.getClassLoader().getResources(name));
                     }
-                    return new CompositeEnumeration(enumerators);
                 } else if (name.startsWith(META_INF_SERVICES)) {
                     // punch in. find the service loader from any module
                     String serviceName = name.substring(META_INF_SERVICES.length());
                     List<URL> punchedInURLs = new ArrayList<URL>();
                     for (Module m : mr.getModules()) {
+                        if (m == APIModule) continue; // we have already looked up resources in apiModuleLoader
                         punchedInURLs.addAll(m.getMetadata().getDescriptors(serviceName));
                     }
-                    return Collections.enumeration(punchedInURLs);
-                } else {
-                    // search in the parent classloader
-                    return apiModuleLoader.getResources(name);
+                    if (!punchedInURLs.isEmpty()) {
+                        enumerations.add(Collections.enumeration(punchedInURLs));
+                    }
+                }
+
+                // now assemble the result and return
+                switch (enumerations.size()) {
+                    case 0:
+                        return EMPTY_URLS;
+                    case 1:
+                        return enumerations.get(0);
+                    default:
+                        return new CompositeEnumeration(enumerations);
                 }
             }
             return EMPTY_URLS;
