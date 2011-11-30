@@ -155,6 +155,7 @@ public class SecurityHandler {
                 attrMap.put("userNameColumn", origProps.get("user-name-column"));
                 attrMap.put("passwordColumn", origProps.get("password-column"));
                 attrMap.put("groupTable", origProps.get("group-table"));
+                attrMap.put("groupTableUserName", origProps.get("group-table-user-name-column"));
                 attrMap.put("groupNameColumn", origProps.get("group-name-column"));
                 attrMap.put("dbUser", origProps.get("db-user"));
                 attrMap.put("dbPassword", origProps.get("db-password"));
@@ -278,6 +279,7 @@ public class SecurityHandler {
                 putOptional(attrMap, propList, "user-name-column", "userNameColumn");
                 putOptional(attrMap, propList, "password-column", "passwordColumn");
                 putOptional(attrMap, propList, "group-table", "groupTable");
+                putOptional(attrMap, propList, "group-table-user-name-column", "groupTableUserName");
                 putOptional(attrMap, propList, "group-name-column", "groupNameColumn");
                 putOptional(attrMap, propList, "db-user", "dbUser");
                 putOptional(attrMap, propList, "db-password", "dbPassword");
@@ -562,6 +564,7 @@ public class SecurityHandler {
         skipRealmPropsList.add("password-column");
         skipRealmPropsList.add("group-table");
         skipRealmPropsList.add("group-name-column");
+        skipRealmPropsList.add("group-table-user-name-column");
         skipRealmPropsList.add("db-user");
         skipRealmPropsList.add("db-password");
         skipRealmPropsList.add("digest-algorithm");

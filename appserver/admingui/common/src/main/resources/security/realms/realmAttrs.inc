@@ -168,6 +168,9 @@
         <sun:property id="groupTable" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.realm.groupTable}" helpText="$resource{i18nc.realm.groupTableHelp}" >
             <sun:textField id="groupTable" columns="$int{60}" maxLength="#{sessionScope.fieldLengths['maxLength.realm.groupTable']}" text="#{attrMap.groupTable}" required="#{true}" />
         </sun:property>
+        <sun:property id="groupTableUserName" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.realm.groupTableUserName}" helpText="$resource{i18nc.realm.groupTableUserNameHelp}" >
+            <sun:textField id="groupTable" columns="$int{60}" maxLength="#{sessionScope.fieldLengths['maxLength.realm.userName']}" text="#{attrMap.groupTableUserName}" />
+        </sun:property>
         <sun:property id="groupName" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.realm.groupName}" helpText="$resource{i18nc.realm.groupNameHelp}" >
             <sun:textField id="groupName" columns="$int{60}" maxLength="#{sessionScope.fieldLengths['maxLength.realm.groupName']}" text="#{attrMap.groupNameColumn}" required="#{true}" />
         </sun:property>
