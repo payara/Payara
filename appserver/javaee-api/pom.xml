@@ -149,7 +149,6 @@ comment out since we don't want dev to generate javaee-api.jar
         <module>javax.annotation</module>
         <module>javax.jms</module>
         <module>javax.jws</module>
-        <module>javax.servlet.jsp</module>
         <module>javax.servlet.jsp.jstl</module>
         <module>javax.xml.rpc</module>
         <module>javax.xml.soap</module>

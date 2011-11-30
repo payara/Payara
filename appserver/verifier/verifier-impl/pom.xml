@@ -147,7 +147,7 @@
         </dependency>
         <dependency>
             <groupId>org.glassfish.web</groupId>
-            <artifactId>jsp-impl</artifactId>
+            <artifactId>javax.servlet.jsp</artifactId>
             <optional>true</optional>
             <scope>provided</scope>
         </dependency>

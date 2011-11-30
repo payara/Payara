@@ -68,7 +68,7 @@
                     <archive>
                         <manifestEntries>
                             <Glassfish-require-services>org.glassfish.api.admingui.ConsoleProvider</Glassfish-require-services>
-                            <HK2-Import-Bundles>org.glassfish.admingui.console-common,org.glassfish.hk2.hk2,org.glassfish.admingui.console-plugin-service, org.glassfish.deployment.deployment-client,org.glassfish.registration.registration-api,org.glassfish.registration.registration-impl, javax.servlet-api, org.glassfish.javax.servlet.jsp, com.sun.jsftemplating, org.glassfish.admingui.dataprovider, com.sun.pkg.client  </HK2-Import-Bundles>
+                            <HK2-Import-Bundles>org.glassfish.admingui.console-common,org.glassfish.hk2.hk2,org.glassfish.admingui.console-plugin-service, org.glassfish.deployment.deployment-client,org.glassfish.registration.registration-api,org.glassfish.registration.registration-impl, javax.servlet-api, javax.servlet.jsp-api, javax.el-api, com.sun.jsftemplating, org.glassfish.admingui.dataprovider, com.sun.pkg.client  </HK2-Import-Bundles>
                         </manifestEntries>
                     </archive>
                 </configuration>
