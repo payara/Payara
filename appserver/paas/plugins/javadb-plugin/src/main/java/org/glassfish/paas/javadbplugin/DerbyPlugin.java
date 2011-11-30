@@ -124,7 +124,11 @@ public class DerbyPlugin implements Plugin<RDBMSServiceType> {
             List<Property> properties = new ArrayList<Property>();
             properties.add(new Property("service-type", RDBMS_ServiceType));
 
+            String initSqlFile = "";
+            String databaseName = "";
             List<Property> configurations = new ArrayList<Property>();
+            configurations.add(new Property(INIT_SQL_PROPERTY, initSqlFile));
+            configurations.add(new Property(DATABASE_NAME, databaseName));
 
             ServiceDescription sd = new ServiceDescription(defaultServiceName, appName,
                     "lazy", new ServiceCharacteristics(properties), configurations);
