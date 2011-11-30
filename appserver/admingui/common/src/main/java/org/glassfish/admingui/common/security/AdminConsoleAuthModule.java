@@ -194,8 +194,7 @@ public class AdminConsoleAuthModule implements ServerAuthModule {
             Subject savedClientSubject = (Subject) session.getValue(SAVED_SUBJECT);
             if (savedClientSubject != null) {
                 // Copy all principals...
-                clientSubject.getPrincipals().addAll(
-                        savedClientSubject.getPrincipals());
+                clientSubject.getPrincipals().addAll(savedClientSubject.getPrincipals());
                 clientSubject.getPublicCredentials().addAll(savedClientSubject.getPublicCredentials());
                 clientSubject.getPrivateCredentials().addAll(savedClientSubject.getPrivateCredentials());
                 return AuthStatus.SUCCESS;
@@ -325,6 +324,11 @@ public class AdminConsoleAuthModule implements ServerAuthModule {
             // Continue...
             return AuthStatus.SEND_CONTINUE;
         } else {
+            int status = restResp.getResponseCode();
+            if (status == 403) {
+                request.setAttribute("errorText", GuiUtil.getMessage("alert.ConfigurationError"));
+                request.setAttribute("messageText", GuiUtil.getMessage("alert.EnableSecureAdmin"));
+            }
             RequestDispatcher rd = request.getRequestDispatcher(this.loginErrorPage);
             try {
                 rd.forward(request, response);

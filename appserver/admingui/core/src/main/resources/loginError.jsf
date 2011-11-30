@@ -73,23 +73,35 @@
                 />
             </event>
 <f:verbatim>
-            <div id="error" class="AlrtTbl" style="width: 300px; position: fixed; top: 100px; margin: auto;">
+            <div id="error" class="AlrtTbl" style="width: 415px; position: fixed; top: 100px; margin: auto;">
                 <div class="AlrtErrTxt">
                     <img src="#{request.contextPath}/theme/com/sun/webui/jsf/suntheme/images/alerts/error_large.gif" alt="Error" height="21" width="21" />
 </f:verbatim>
-                    <sun:label text="$resource{i18n.alert.AuthenticationFailed}" />
+                    <sun:label text="#{errorText}" text1="$resource{i18n.alert.AuthenticationFailed}">
+                        <!beforeCreate
+                            if (!#{errorText}) {
+                                setAttribute(key="errorText" value="$resource{i18n.alert.AuthenticationFailed}");
+                            }
+                        />   
+                    </sun:label>
 <f:verbatim>
                 </div>
                 <div class="AlrtMsgTxt">
 </f:verbatim>
-                    <sun:label text="$resource{i18n.alert.ReenterUsernamePassword}" />
+                    <sun:label text="#{messageText}">
+                        <!beforeCreate
+                            if (!#{messageText}) {
+                                setAttribute(key="messageText" value="$resource{i18n.alert.ReenterUsernamePassword}");
+                            }
+                        />   
+                    </sun:label>
 <f:verbatim>
                 </div>
             </div>
             <script src="#{request.contextPath}/resource/js/cj.js"></script>
             <script type="text/javascript">
                 var left = document.getElementById('body3').clientWidth;
-                document.getElementById('error').style.left = (left/2- 100) + 'px';
+                document.getElementById('error').style.left = (left/2-100) + 'px';
             </script>
         </div>
     </div>
