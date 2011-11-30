@@ -742,7 +742,7 @@ admingui.nav = {
         var matches = admingui.util.findNodes(tree, admingui.nav.matchURL,
             (qmark > -1) ? url.substring(0, qmark) : url);
         if (matches) {
-            var bestMatch = matches[0];
+            var bestMatch = null;
             if (qmark > -1) {
                 var params = admingui.nav.createObjectFromQueryString(url);
 
@@ -755,7 +755,9 @@ admingui.nav = {
                     }
                 }
             }
-            admingui.nav.selectTreeNode(admingui.nav.getContainingTreeNode(bestMatch));
+            if (bestMatch) {
+                admingui.nav.selectTreeNode(admingui.nav.getContainingTreeNode(bestMatch));
+            }
         }
     },
 
