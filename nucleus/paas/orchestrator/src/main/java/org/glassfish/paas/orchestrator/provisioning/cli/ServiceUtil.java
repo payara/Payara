@@ -41,13 +41,9 @@ package org.glassfish.paas.orchestrator.provisioning.cli;
 
 
 import com.sun.enterprise.config.serverbeans.Domain;
-import org.glassfish.paas.orchestrator.config.ApplicationScopedService;
-import org.glassfish.paas.orchestrator.config.Service;
-import org.glassfish.paas.orchestrator.config.Services;
-import org.glassfish.paas.orchestrator.config.SharedService;
+import org.glassfish.paas.orchestrator.ServiceOrchestratorImpl;
+import org.glassfish.paas.orchestrator.config.*;
 import org.glassfish.paas.orchestrator.provisioning.ServiceInfo;
-
-
 import org.glassfish.paas.orchestrator.service.ServiceStatus;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.component.PostConstruct;
@@ -60,9 +56,11 @@ import org.jvnet.hk2.config.types.Property;
 import java.beans.PropertyVetoException;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 
 @org.jvnet.hk2.annotations.Service
 public class ServiceUtil implements PostConstruct {
@@ -71,6 +69,8 @@ public class ServiceUtil implements PostConstruct {
 
     @Inject
     private Domain domain;
+
+    private static Logger logger = Logger.getLogger(ServiceOrchestratorImpl.class.getName());
 
     public static ExecutorService getThreadPool() {
         return threadPool;
@@ -88,7 +88,7 @@ public class ServiceUtil implements PostConstruct {
     public void setProperty(String serviceName, String appName,
                             final String propName, final String propValue) {
         Service matchingService = getService(serviceName, appName);
-        if(matchingService != null){
+        if (matchingService != null) {
             try {
                 if (ConfigSupport.apply(new SingleConfigCode<Service>() {
                     public Object run(Service serviceConfig) throws PropertyVetoException, TransactionFailure {
@@ -107,7 +107,7 @@ public class ServiceUtil implements PostConstruct {
                         return serviceConfig;
                     }
                 }, matchingService) == null) {
-                    String msg = "Unable to update property ["+propName+"] of service ["+serviceName+"]";
+                    String msg = "Unable to update property [" + propName + "] of service [" + serviceName + "]";
                     System.out.println(msg);
                     throw new RuntimeException(msg);
                 }
@@ -115,16 +115,16 @@ public class ServiceUtil implements PostConstruct {
                 transactionFailure.printStackTrace();
                 throw new RuntimeException(transactionFailure.getMessage(), transactionFailure);
             }
-        }else{
-            throw new RuntimeException("Invalid service, no such service ["+serviceName+"] found");
+        } else {
+            throw new RuntimeException("Invalid service, no such service [" + serviceName + "] found");
         }
     }
 
     // set a general property for application-scoped-service config element.
     public void removeProperty(String serviceName, String appName,
-                            final String propName) {
+                               final String propName) {
         Service matchingService = getService(serviceName, appName);
-        if(matchingService != null){
+        if (matchingService != null) {
             try {
                 if (ConfigSupport.apply(new SingleConfigCode<Service>() {
                     public Object run(Service serviceConfig) throws PropertyVetoException, TransactionFailure {
@@ -135,7 +135,7 @@ public class ServiceUtil implements PostConstruct {
                         return serviceConfig;
                     }
                 }, matchingService) == null) {
-                    String msg = "Unable to remove property ["+propName+"] of service ["+serviceName+"]";
+                    String msg = "Unable to remove property [" + propName + "] of service [" + serviceName + "]";
                     System.out.println(msg);
                     throw new RuntimeException(msg);
                 }
@@ -143,8 +143,8 @@ public class ServiceUtil implements PostConstruct {
                 transactionFailure.printStackTrace();
                 throw new RuntimeException(transactionFailure.getMessage(), transactionFailure);
             }
-        } else{
-            throw new RuntimeException("Invalid service, no such service ["+serviceName+"] found");
+        } else {
+            throw new RuntimeException("Invalid service, no such service [" + serviceName + "] found");
         }
     }
 
@@ -154,7 +154,7 @@ public class ServiceUtil implements PostConstruct {
 
     private void updateVMIDThroughConfig(String serviceName, String appName, final String vmId) {
         Service matchingService = getService(serviceName, appName);
-        if(matchingService != null){
+        if (matchingService != null) {
             try {
                 if (ConfigSupport.apply(new SingleConfigCode<Service>() {
                     public Object run(Service serviceConfig) throws PropertyVetoException, TransactionFailure {
@@ -174,7 +174,7 @@ public class ServiceUtil implements PostConstruct {
                         return serviceConfig;
                     }
                 }, matchingService) == null) {
-                    String msg = "Unable to update vm-id ["+vmId+"] of service ["+serviceName+"]";
+                    String msg = "Unable to update vm-id [" + vmId + "] of service [" + serviceName + "]";
                     System.out.println(msg);
                     throw new RuntimeException(msg);
                 }
@@ -182,8 +182,8 @@ public class ServiceUtil implements PostConstruct {
                 transactionFailure.printStackTrace();
                 throw new RuntimeException(transactionFailure.getMessage(), transactionFailure);
             }
-        }else{
-            throw new RuntimeException("Invalid service, no such service ["+serviceName+"] found");
+        } else {
+            throw new RuntimeException("Invalid service, no such service [" + serviceName + "] found");
         }
     }
 
@@ -243,7 +243,7 @@ public class ServiceUtil implements PostConstruct {
 
     private void updateIPAddressThroughConfig(String serviceName, String appName, final String IPAddress) {
         Service matchingService = getService(serviceName, appName);
-        if(matchingService != null){
+        if (matchingService != null) {
             try {
 
                 if (ConfigSupport.apply(new SingleConfigCode<Service>() {
@@ -263,7 +263,7 @@ public class ServiceUtil implements PostConstruct {
                         return serviceConfig;
                     }
                 }, matchingService) == null) {
-                    String msg = "Unable to update ip-address ["+IPAddress+"] of service ["+serviceName+"]";
+                    String msg = "Unable to update ip-address [" + IPAddress + "] of service [" + serviceName + "]";
                     System.out.println(msg);
                     throw new RuntimeException(msg);
                 }
@@ -271,8 +271,8 @@ public class ServiceUtil implements PostConstruct {
                 transactionFailure.printStackTrace();
                 throw new RuntimeException(transactionFailure.getMessage(), transactionFailure);
             }
-        }else{
-            throw new RuntimeException("Invalid service, no such service ["+serviceName+"] found");
+        } else {
+            throw new RuntimeException("Invalid service, no such service [" + serviceName + "] found");
         }
     }
 
@@ -340,29 +340,29 @@ public class ServiceUtil implements PostConstruct {
         ServiceInfo cre = null;
         matchingService = getService(serviceName, appName);
 
-        if(matchingService != null){
+        if (matchingService != null) {
             cre = new ServiceInfo();
             cre.setServiceName(matchingService.getServiceName());
-            if(matchingService.getProperty() != null){
-                if(matchingService.getProperty("ip-address") != null){
+            if (matchingService.getProperty() != null) {
+                if (matchingService.getProperty("ip-address") != null) {
                     cre.setIpAddress(matchingService.getProperty("ip-address").getValue());
                 }
 
-                if(matchingService.getProperty("vm-id") != null){
+                if (matchingService.getProperty("vm-id") != null) {
                     cre.setInstanceId(matchingService.getProperty("vm-id").getValue());
                 }
 
                 List<Property> properties = matchingService.getProperty();
-                for(Property property : properties){
+                for (Property property : properties) {
                     cre.getProperties().put(property.getName(), property.getValue());
                 }
             }
 
             //TODO need a "Stateful" service type ?
-            if(matchingService instanceof ApplicationScopedService){
-                cre.setState(((ApplicationScopedService)matchingService).getState());
-            }else if(matchingService instanceof SharedService){
-                cre.setState(((SharedService)matchingService).getState());
+            if (matchingService instanceof ApplicationScopedService) {
+                cre.setState(((ApplicationScopedService) matchingService).getState());
+            } else if (matchingService instanceof SharedService) {
+                cre.setState(((SharedService) matchingService).getState());
             }
             cre.setServerType(matchingService.getType());
         }
@@ -372,17 +372,17 @@ public class ServiceUtil implements PostConstruct {
     private Service getService(String serviceName, String appName) {
         Service matchingService = null;
         Services services = getServices();
-        for(Service service : services.getServices()){
-            if(service.getServiceName().equals(serviceName)){
-                if(appName != null){
-                    if(service instanceof ApplicationScopedService){
-                        String applicationName = ((ApplicationScopedService)service).getApplicationName();
-                        if(appName.equals(applicationName)){
+        for (Service service : services.getServices()) {
+            if (service.getServiceName().equals(serviceName)) {
+                if (appName != null) {
+                    if (service instanceof ApplicationScopedService) {
+                        String applicationName = ((ApplicationScopedService) service).getApplicationName();
+                        if (appName.equals(applicationName)) {
                             matchingService = service;
                             break;
                         }
                     }
-                }else{
+                } else {
                     matchingService = service;
                     break;
                 }
@@ -391,9 +391,9 @@ public class ServiceUtil implements PostConstruct {
         return matchingService;
     }
 
-    public Services getServices(){
+    public Services getServices() {
         Services services = domain.getExtensionByType(Services.class);
-        if(services == null){
+        if (services == null) {
             try {
                 if (ConfigSupport.apply(new SingleConfigCode<Domain>() {
                     public Object run(Domain param) throws PropertyVetoException, TransactionFailure {
@@ -423,20 +423,20 @@ public class ServiceUtil implements PostConstruct {
         unregisterCloudEntryThroughConfig(serviceName, appName);
     }
 
-    private void unregisterCloudEntryThroughConfig(final String serviceName,final String appName) {
+    private void unregisterCloudEntryThroughConfig(final String serviceName, final String appName) {
         Services services = getServices();
         try {
             if (ConfigSupport.apply(new SingleConfigCode<Services>() {
                 public Object run(Services servicesConfig) throws PropertyVetoException, TransactionFailure {
                     Service deletedService = null;
-                    for(Service service: servicesConfig.getServices()){
-                        if(serviceName.equals(service.getServiceName())){
-                        if(service instanceof ApplicationScopedService){
-                            ApplicationScopedService appScopedService = (ApplicationScopedService)service;
-                               if(appScopedService.getApplicationName().equals(appName)){
-                                   servicesConfig.getServices().remove(appScopedService);
-                                   deletedService = appScopedService;
-                                   break;
+                    for (Service service : servicesConfig.getServices()) {
+                        if (serviceName.equals(service.getServiceName())) {
+                            if (service instanceof ApplicationScopedService) {
+                                ApplicationScopedService appScopedService = (ApplicationScopedService) service;
+                                if (appScopedService.getApplicationName().equals(appName)) {
+                                    servicesConfig.getServices().remove(appScopedService);
+                                    deletedService = appScopedService;
+                                    break;
                                 }
                             }
                         }
@@ -444,7 +444,7 @@ public class ServiceUtil implements PostConstruct {
                     return deletedService;
                 }
             }, services) == null) {
-                String msg = "Unable to remove service ["+serviceName+"]";
+                String msg = "Unable to remove service [" + serviceName + "]";
                 System.out.println(msg);
                 throw new RuntimeException(msg);
             }
@@ -488,8 +488,8 @@ public class ServiceUtil implements PostConstruct {
 */
 
                     Map<String, String> properties = entry.getProperties();
-                    if(properties != null){
-                        for(Map.Entry<String, String> entry : properties.entrySet()){
+                    if (properties != null) {
+                        for (Map.Entry<String, String> entry : properties.entrySet()) {
                             Property prop = service.createChild(Property.class);
                             prop.setName(entry.getKey());
                             prop.setValue(entry.getValue());
@@ -501,7 +501,7 @@ public class ServiceUtil implements PostConstruct {
                     return service;
                 }
             }, services) == null) {
-                String msg = "Unable to service ["+entry.getServiceName()+"]";
+                String msg = "Unable to service [" + entry.getServiceName() + "]";
                 System.out.println(msg);
                 throw new RuntimeException(msg);
             }
@@ -515,21 +515,45 @@ public class ServiceUtil implements PostConstruct {
         System.out.println("[ServiceUtil] " + message);
     }
 
-    public ServiceStatus getServiceStatus(ServiceInfo entry){
-        if(entry.getState() != null && entry.getState().equals(ServiceInfo.State.Running.toString())){
+    public ServiceStatus getServiceStatus(ServiceInfo entry) {
+        if (entry.getState() != null && entry.getState().equals(ServiceInfo.State.Running.toString())) {
             return ServiceStatus.RUNNING;
         }
-        if(entry.getState() != null && entry.getState().equals(ServiceInfo.State.Start_in_progress.toString())){
+        if (entry.getState() != null && entry.getState().equals(ServiceInfo.State.Start_in_progress.toString())) {
             return ServiceStatus.STARTING;
         }
-        if(entry.getState() != null && entry.getState().equals(ServiceInfo.State.Stop_in_progress.toString())){
+        if (entry.getState() != null && entry.getState().equals(ServiceInfo.State.Stop_in_progress.toString())) {
             return ServiceStatus.STOPPED;
         }
-        if(entry.getState() != null && entry.getState().equals(ServiceInfo.State.NotRunning.toString())){
+        if (entry.getState() != null && entry.getState().equals(ServiceInfo.State.NotRunning.toString())) {
             return ServiceStatus.STOPPED;
         }
         //TODO handle delete in progress/create in progress later.
 
         return ServiceStatus.UNKNOWN;
     }
+
+    public ServiceProvisioningEngines getServiceProvisioningEngines() {
+        ServiceProvisioningEngines spes = domain.getExtensionByType(ServiceProvisioningEngines.class);
+        if (spes == null) {
+            try {
+                if (ConfigSupport.apply(new SingleConfigCode<Domain>() {
+                    public Object run(Domain param) throws PropertyVetoException, TransactionFailure {
+                        ServiceProvisioningEngines spes = param.createChild(ServiceProvisioningEngines.class);
+                        param.getExtensions().add(spes);
+                        return spes;
+                    }
+                }, domain) == null) {
+                    logger.log(Level.SEVERE, "Unable to create 'service-provisioning-engines' config");
+                }
+            } catch (TransactionFailure transactionFailure) {
+                logger.log(Level.SEVERE, "Unable to create 'service-provisioning-engines' config", transactionFailure);
+                throw new RuntimeException(transactionFailure.getMessage(), transactionFailure);
+            }
+        }
+
+        spes = domain.getExtensionByType(ServiceProvisioningEngines.class);
+        return spes;
+    }
+
 }
