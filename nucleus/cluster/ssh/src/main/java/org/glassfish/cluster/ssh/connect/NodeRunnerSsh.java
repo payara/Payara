@@ -84,6 +84,9 @@ public class NodeRunnerSsh  {
         return node.getType().equals("SSH");
     }
 
+    String getLastCommandRun() {
+        return lastCommandRun;
+    }
 
     public int runAdminCommandOnRemoteNode(Node node, StringBuilder output,
                                        List<String> args,

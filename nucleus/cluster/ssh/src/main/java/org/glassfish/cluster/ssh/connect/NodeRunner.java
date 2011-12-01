@@ -220,7 +220,9 @@ public class NodeRunner {
 
         if ("SSH".equals(type)) {
             NodeRunnerSsh nrs = new NodeRunnerSsh(habitat, logger);
-            return nrs.runAdminCommandOnRemoteNode(node, output, args, stdinLines);
+            int result = nrs.runAdminCommandOnRemoteNode(node, output, args, stdinLines);
+            lastCommandRun = nrs.getLastCommandRun();
+            return result;
         }
 
         if ("DCOM".equals(type)) {

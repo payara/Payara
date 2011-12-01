@@ -499,7 +499,7 @@ public class NodeUtils {
                             m1, m2));
             }
             else {
-                String msg = Strings.get("ssh.bad.connect", nodehost);
+                String msg = Strings.get("ssh.bad.connect", nodehost, "SSH");
                 logger.warning(StringUtils.cat(": ", msg, m1, m2,
                         sshL.toString()));
                 throw new CommandValidationException(StringUtils.cat(NL,
