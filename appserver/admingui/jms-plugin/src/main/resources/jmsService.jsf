@@ -74,6 +74,8 @@
             setPageSessionAttribute(key="showCancelButton" value="#{false}" );
             setPageSessionAttribute(key="hasPropertySheet" value="#{true}" );
             setPageSessionAttribute(key="hasPropertyTable" value="#{true}" );
+            
+            gf.getClusterForConfig(configName="#{configName}" cluster="#{pageSession.clusterName}");
 
         />
     </event>   
@@ -170,16 +172,17 @@
                                 <sun:textField id="Attempts" styleClass="intAllowMinusOne" columns="$int{10}" maxLength="#{sessionScope.fieldLengths['maxLength.jms.Attempts']}" text="#{pageSession.valueMap['reconnectAttempts']}" />
                             </sun:property>
                             <sun:property id="maseterBrokerProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18njms.jms.MasterBroker}" 
-                                          helpText="$resource{i18njms.jms.MasterBrokerHelp}">
-                                <sun:dropDown id="MasterBroker" labels="#{pageSession.instanceList}" labels1="$pageSession{jmsMasterBrokerList}" selected="#{pageSession.valueMap['masterBroker']}">
+                                          helpText="$resource{i18njms.jms.MasterBrokerHelp}" rendered="#{! empty clusterName}">
+                                <sun:dropDown id="MasterBroker" labels="#{pageSession.instanceList}" selected="#{pageSession.valueMap['masterBroker']}">
                                     <!beforeCreate
-                                        gf.getClusterForConfig(configName="#{configName}" cluster="#{pageSession.clusterName}");
-                                        gf.restRequest(endpoint="#{sessionScope.REST_URL}/clusters/cluster/#{pageSession.clusterName}/list-instances",  
-                                            method="get", result="#{requestScope.result}");
-                                        setPageSessionAttribute(key="instanceList" value={});
-                                        listAdd(list="#{pageSession.instanceList}", value="");
-                                        foreach (var="instance", list="#{requestScope.result.data.extraProperties.instanceList}") {
-                                            listAdd(list="#{pageSession.instanceList}", value="#{instance.name}");
+                                        if (#{pageSession.clusterName}) {
+                                            gf.restRequest(endpoint="#{sessionScope.REST_URL}/clusters/cluster/#{pageSession.clusterName}/list-instances",  
+                                                method="get", result="#{requestScope.result}");
+                                            setPageSessionAttribute(key="instanceList" value={});
+                                            listAdd(list="#{pageSession.instanceList}", value="");
+                                            foreach (var="instance", list="#{requestScope.result.data.extraProperties.instanceList}") {
+                                                listAdd(list="#{pageSession.instanceList}", value="#{instance.name}");
+                                            }
                                         }
                                     />
                                 </sun:dropDown>
