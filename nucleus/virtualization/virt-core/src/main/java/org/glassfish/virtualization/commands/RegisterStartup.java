@@ -63,6 +63,10 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.concurrent.CountDownLatch;
 import java.util.logging.Level;
+import org.glassfish.api.admin.ExecuteOn;
+import org.glassfish.api.admin.RestEndpoint;
+import org.glassfish.api.admin.RestEndpoints;
+import org.glassfish.api.admin.RuntimeType;
 
 /**
  * Administrative command to register a virtual machine is started and can be interfaced.
@@ -71,6 +75,10 @@ import java.util.logging.Level;
 @Service(name="register-startup")
 @Scoped(PerLookup.class)
 @CommandLock(CommandLock.LockType.NONE)
+@ExecuteOn(RuntimeType.DAS)
+@RestEndpoints({
+   @RestEndpoint(configBean = VirtualMachineConfig.class, opType = RestEndpoint.OpType.GET, path = "register-startup", description = "Register startup")
+})
 public class RegisterStartup implements AdminCommand {
 
     @Param

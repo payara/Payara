@@ -53,12 +53,18 @@ import org.jvnet.hk2.config.types.Property;
 import java.beans.PropertyVetoException;
 import java.util.List;
 import java.util.concurrent.locks.Lock;
+import org.glassfish.api.admin.RestRedirect;
+import org.glassfish.api.admin.RestRedirects;
 
 /**
  * Persisted information about created virtual machine
  * @author Jerome Dochez
  */
 @Configured
+@RestRedirects({
+ @RestRedirect(opType = RestRedirect.OpType.GET, commandName = "register-virtual-machine"),
+ @RestRedirect(opType = RestRedirect.OpType.GET, commandName = "register-startup")
+})
 public interface VirtualMachineConfig extends Named, ConfigBeanProxy, VirtualMachineExtension {
 
     @Attribute(reference = true)

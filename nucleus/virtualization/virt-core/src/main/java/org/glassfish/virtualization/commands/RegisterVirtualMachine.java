@@ -70,6 +70,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.logging.Level;
+import org.glassfish.api.admin.ExecuteOn;
+import org.glassfish.api.admin.RestEndpoint;
+import org.glassfish.api.admin.RestEndpoints;
+import org.glassfish.api.admin.RuntimeType;
 
 /**
  * Registers a new virtual machine to this serverPool master.
@@ -77,6 +81,10 @@ import java.util.logging.Level;
 @Service(name="register-virtual-machine")
 @Scoped(PerLookup.class)
 @CommandLock(CommandLock.LockType.NONE)
+@ExecuteOn(RuntimeType.DAS)
+@RestEndpoints({
+   @RestEndpoint(configBean = VirtualMachineConfig.class, opType = RestEndpoint.OpType.GET, path = "register-virtual-machine", description = "Register Virtual Machine")
+})
 public class RegisterVirtualMachine implements AdminCommand {
 
     @Param
