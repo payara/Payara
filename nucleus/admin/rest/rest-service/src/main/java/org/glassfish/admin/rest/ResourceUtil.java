@@ -1114,12 +1114,15 @@ public class ResourceUtil {
      * @return Authentication related headers
      */
     private static Map<String, String> getAuthRelatedHeaders(Request req) {
-        Map<String, String> authRelatedHeaders = Collections.EMPTY_MAP;
+        Map<String, String> authRelatedHeaders = new HashMap<String,String>();
         String adminIndicatorHeader = req.getHeader(SecureAdmin.Util.ADMIN_INDICATOR_HEADER_NAME);
         if(adminIndicatorHeader != null) {
-            authRelatedHeaders = new HashMap<String, String>(1);
             authRelatedHeaders.put(SecureAdmin.Util.ADMIN_INDICATOR_HEADER_NAME, adminIndicatorHeader);
         }
+        String authToken = req.getHeader(SecureAdmin.Util.ADMIN_ONE_TIME_AUTH_TOKEN_HEADER_NAME);
+        if(authToken != null) {
+	    authRelatedHeaders.put(SecureAdmin.Util.ADMIN_ONE_TIME_AUTH_TOKEN_HEADER_NAME, authToken);
+	}
         return authRelatedHeaders;
     }
 
