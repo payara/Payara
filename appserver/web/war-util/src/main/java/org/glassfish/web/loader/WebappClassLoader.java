@@ -1071,23 +1071,25 @@ public class WebappClassLoader
 
         Vector<URL> result = new Vector<URL>();
 
-        int repositoriesLength = repositories.length;
+        if (repositories != null) {
+            int repositoriesLength = repositories.length;
 
-        int i;
+            int i;
 
-        // Looking at the repositories
-        for (i = 0; i < repositoriesLength; i++) {
-            try {
-                String fullPath = repositories[i] + name;
-                resources.lookup(fullPath);
-                // Note : Not getting an exception here means the resource was
-                // found
+            // Looking at the repositories
+            for (i = 0; i < repositoriesLength; i++) {
                 try {
-                    result.addElement(getURI(new File(files[i], name)));
-                } catch (MalformedURLException e) {
-                    // Ignore
+                    String fullPath = repositories[i] + name;
+                    resources.lookup(fullPath);
+                    // Note : Not getting an exception here means the resource was
+                    // found
+                    try {
+                        result.addElement(getURI(new File(files[i], name)));
+                    } catch (MalformedURLException e) {
+                        // Ignore
+                    }
+                } catch (NamingException e) {
                 }
-            } catch (NamingException e) {
             }
         }
 
@@ -2121,6 +2123,11 @@ public class WebappClassLoader
      */
     private ResourceEntry findResourceInternalFromRepositories(String name,
                                                                String path) {
+
+        if (repositories == null) {
+            return null;
+        }
+
         ResourceEntry entry = null;
         int contentLength = -1;
         InputStream binaryStream = null;
