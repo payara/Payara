@@ -38,35 +38,36 @@
  * holder.
  */
 
-package org.glassfish.weld;
-
-import javax.enterprise.inject.spi.Extension;
+package org.glassfish.weld.connector;
 
 public class WeldUtils {
 
-    static final char SEPARATOR_CHAR = '/';
-    static final String WEB_INF = "WEB-INF";
-    static final String WEB_INF_CLASSES = WEB_INF + SEPARATOR_CHAR
+    public static final char SEPARATOR_CHAR = '/';
+    public static final String WEB_INF = "WEB-INF";
+    public static final String WEB_INF_CLASSES = WEB_INF + SEPARATOR_CHAR
             + "classes";
-    static final String WEB_INF_LIB = WEB_INF + SEPARATOR_CHAR + "lib";
-    static final String WEB_INF_BEANS_XML = "WEB-INF" + SEPARATOR_CHAR
+    public static final String WEB_INF_LIB = WEB_INF + SEPARATOR_CHAR + "lib";
+    public static final String WEB_INF_BEANS_XML = "WEB-INF" + SEPARATOR_CHAR
             + "beans.xml";
 
-    static final String META_INF_BEANS_XML = "META-INF" + SEPARATOR_CHAR
+    public static final String META_INF_BEANS_XML = "META-INF" + SEPARATOR_CHAR
             + "beans.xml";
 
     private static final String SERVICES_DIR = "services";
-    private static final String SERVICES_CLASSNAME = Extension.class.getCanonicalName();
-    static final String META_INF_SERVICES_EXTENSION = "META-INF"
+
+    // We don't want this connector module to depend on CDI API, as connector can be present in a distribution
+    // which does not have CDI implementation. So, we use the class name as a string.
+    private static final String SERVICES_CLASSNAME = "javax.enterprise.inject.spi.Extension";
+    public static final String META_INF_SERVICES_EXTENSION = "META-INF"
             + SEPARATOR_CHAR + SERVICES_DIR + SEPARATOR_CHAR
             + SERVICES_CLASSNAME;
     
-    static final String CLASS_SUFFIX = ".class";
-    static final String JAR_SUFFIX = ".jar";
-    static final String RAR_SUFFIX = ".rar";
-    static final String EXPANDED_RAR_SUFFIX = "_rar";
-    static final String EXPANDED_JAR_SUFFIX = "_jar";
+    public static final String CLASS_SUFFIX = ".class";
+    public static final String JAR_SUFFIX = ".jar";
+    public static final String RAR_SUFFIX = ".rar";
+    public static final String EXPANDED_RAR_SUFFIX = "_rar";
+    public static final String EXPANDED_JAR_SUFFIX = "_jar";
 
-    static enum BDAType { WAR, JAR, UNKNOWN };
+    public static enum BDAType { WAR, JAR, UNKNOWN };
 
 }

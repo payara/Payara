@@ -38,11 +38,7 @@
  * holder.
  */
 
-package org.glassfish.weld;
-
-import static org.glassfish.weld.WeldUtils.JAR_SUFFIX;
-import static org.glassfish.weld.WeldUtils.META_INF_BEANS_XML;
-import static org.glassfish.weld.WeldUtils.SEPARATOR_CHAR;
+package org.glassfish.weld.connector;
 
 import java.io.IOException;
 import java.util.Enumeration;
@@ -84,11 +80,11 @@ public class WeldCompositeSniffer extends WeldSniffer implements CompositeSniffe
             while (entries.hasMoreElements() && !entryPresent) {
                 String entryName = entries.nextElement();
                 // if a jar in lib dir and not WEB-INF/lib/foo/bar.jar
-                if (entryName.endsWith(JAR_SUFFIX) &&
-                    entryName.indexOf(SEPARATOR_CHAR, libLocation.length() + 1 ) == -1 ) {
+                if (entryName.endsWith(WeldUtils.JAR_SUFFIX) &&
+                    entryName.indexOf(WeldUtils.SEPARATOR_CHAR, libLocation.length() + 1 ) == -1 ) {
                     try {
                         ReadableArchive jarInLib = archive.getSubArchive(entryName);
-                        entryPresent = isEntryPresent(jarInLib, META_INF_BEANS_XML);
+                        entryPresent = isEntryPresent(jarInLib, WeldUtils.META_INF_BEANS_XML);
                         jarInLib.close();
                         if (entryPresent) break;
                     } catch (IOException e) {

@@ -41,10 +41,10 @@
 package org.glassfish.weld;
 
 import static java.util.logging.Level.FINE;
-import static org.glassfish.weld.WeldUtils.JAR_SUFFIX;
-import static org.glassfish.weld.WeldUtils.META_INF_BEANS_XML;
-import static org.glassfish.weld.WeldUtils.META_INF_SERVICES_EXTENSION;
-import static org.glassfish.weld.WeldUtils.SEPARATOR_CHAR;
+import static org.glassfish.weld.connector.WeldUtils.JAR_SUFFIX;
+import static org.glassfish.weld.connector.WeldUtils.META_INF_BEANS_XML;
+import static org.glassfish.weld.connector.WeldUtils.META_INF_SERVICES_EXTENSION;
+import static org.glassfish.weld.connector.WeldUtils.SEPARATOR_CHAR;
 
 import java.io.IOException;
 import java.net.URI;
@@ -66,7 +66,7 @@ import javax.enterprise.inject.spi.Extension;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.javaee.core.deployment.ApplicationHolder;
-import org.glassfish.weld.WeldUtils.BDAType;
+import org.glassfish.weld.connector.WeldUtils.BDAType;
 import org.jboss.weld.bootstrap.WeldBootstrap;
 import org.jboss.weld.bootstrap.api.ServiceRegistry;
 import org.jboss.weld.bootstrap.api.helpers.SimpleServiceRegistry;

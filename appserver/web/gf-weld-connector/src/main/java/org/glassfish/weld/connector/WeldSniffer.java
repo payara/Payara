@@ -38,16 +38,7 @@
  * holder.
  */
 
-package org.glassfish.weld;
-
-import static org.glassfish.weld.WeldUtils.EXPANDED_JAR_SUFFIX;
-import static org.glassfish.weld.WeldUtils.EXPANDED_RAR_SUFFIX;
-import static org.glassfish.weld.WeldUtils.JAR_SUFFIX;
-import static org.glassfish.weld.WeldUtils.META_INF_BEANS_XML;
-import static org.glassfish.weld.WeldUtils.SEPARATOR_CHAR;
-import static org.glassfish.weld.WeldUtils.WEB_INF;
-import static org.glassfish.weld.WeldUtils.WEB_INF_BEANS_XML;
-import static org.glassfish.weld.WeldUtils.WEB_INF_LIB;
+package org.glassfish.weld.connector;
 
 import java.io.IOException;
 import java.util.Enumeration;
@@ -83,13 +74,13 @@ public class WeldSniffer extends GenericSniffer implements Sniffer {
         // scan for beans.xml in expected locations. If at least one is found, this is
         // a Weld archive
         //
-        if (isEntryPresent(archive, WEB_INF)) {
-            isWeldArchive = isEntryPresent(archive, WEB_INF_BEANS_XML);
+        if (isEntryPresent(archive, WeldUtils.WEB_INF)) {
+            isWeldArchive = isEntryPresent(archive, WeldUtils.WEB_INF_BEANS_XML);
 
             if (!isWeldArchive) {
                 // Check jars under WEB_INF/lib
-                if (isEntryPresent(archive, WEB_INF_LIB)) {
-                    isWeldArchive = scanLibDir(archive, WEB_INF_LIB); 
+                if (isEntryPresent(archive, WeldUtils.WEB_INF_LIB)) {
+                    isWeldArchive = scanLibDir(archive, WeldUtils.WEB_INF_LIB);
                 } 
             } 
         } 
@@ -98,17 +89,17 @@ public class WeldSniffer extends GenericSniffer implements Sniffer {
         // It might only be true for an ejb-jar wihtin an .ear.  Revisit when officially
         // adding support for .ears
         String archiveName = archive.getName();
-        if (!isWeldArchive && archiveName != null && archiveName.endsWith(EXPANDED_JAR_SUFFIX)) {
-            isWeldArchive = isEntryPresent(archive, META_INF_BEANS_XML);
+        if (!isWeldArchive && archiveName != null && archiveName.endsWith(WeldUtils.EXPANDED_JAR_SUFFIX)) {
+            isWeldArchive = isEntryPresent(archive, WeldUtils.META_INF_BEANS_XML);
         }
 
         // If stand-alone ejb-jar
-        if (!isWeldArchive && isEntryPresent(archive, META_INF_BEANS_XML) ) {
+        if (!isWeldArchive && isEntryPresent(archive, WeldUtils.META_INF_BEANS_XML) ) {
             isWeldArchive = true;
         }     
 
-        if (!isWeldArchive && archiveName != null && archiveName.endsWith(EXPANDED_RAR_SUFFIX)) {
-            isWeldArchive = isEntryPresent(archive, META_INF_BEANS_XML);
+        if (!isWeldArchive && archiveName != null && archiveName.endsWith(WeldUtils.EXPANDED_RAR_SUFFIX)) {
+            isWeldArchive = isEntryPresent(archive, WeldUtils.META_INF_BEANS_XML);
         }
         
         return isWeldArchive;
@@ -121,11 +112,11 @@ public class WeldSniffer extends GenericSniffer implements Sniffer {
             while (entries.hasMoreElements() && !entryPresent) {
                 String entryName = entries.nextElement();
                 // if a jar in lib dir and not WEB-INF/lib/foo/bar.jar
-                if (entryName.endsWith(JAR_SUFFIX) && 
-                    entryName.indexOf(SEPARATOR_CHAR, libLocation.length() + 1 ) == -1 ) {
+                if (entryName.endsWith(WeldUtils.JAR_SUFFIX) &&
+                    entryName.indexOf(WeldUtils.SEPARATOR_CHAR, libLocation.length() + 1 ) == -1 ) {
                     try {
                         ReadableArchive jarInLib = archive.getSubArchive(entryName);
-                        entryPresent = isEntryPresent(jarInLib, META_INF_BEANS_XML);
+                        entryPresent = isEntryPresent(jarInLib, WeldUtils.META_INF_BEANS_XML);
                         jarInLib.close();
                     } catch (IOException e) {
                     } 
