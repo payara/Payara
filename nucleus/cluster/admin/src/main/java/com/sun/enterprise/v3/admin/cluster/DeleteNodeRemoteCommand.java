@@ -192,7 +192,7 @@ public abstract class DeleteNodeRemoteCommand implements AdminCommand {
         String host = map.getOne(NodeUtils.PARAM_NODEHOST);
         command.add(host);
 
-        String firstErrorMessage = Strings.get("delete.node.ssh.uninstall.failed", host);
+        String firstErrorMessage = Strings.get("delete.node.ssh.uninstall.failed", node.getName(), host);
         StringBuilder out = new StringBuilder();
         int exitCode = execCommand(command, out);
 
