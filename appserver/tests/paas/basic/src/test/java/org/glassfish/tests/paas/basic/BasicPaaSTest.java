@@ -134,6 +134,19 @@ public class BasicPaaSTest {
 			if (appName != null) {
 				deployer.undeploy(appName);
 				System.err.println("Undeployed [" + appName + "]");
+				try {
+					boolean undeployClean = false;
+					CommandResult commandResult = glassfish.getCommandRunner()
+							.run("list-services");
+					if (commandResult.getOutput().contains("Nothing to list.")) {
+						undeployClean = true;
+					}
+					Assert.assertTrue(undeployClean);
+				} catch (Exception e) {
+					System.err
+							.println("Couldn't varify whether undeploy succeeded");
+				}
+
 			}
 		}
 
