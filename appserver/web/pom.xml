@@ -66,6 +66,7 @@
         <module>webtier-all</module>
         <module>admin</module>
         <module>gf-web-connector</module>
+        <module>gf-weld-connector</module>
         <module>weld-integration</module>
         <module>weld-integration-fragment</module>
         <module>weld-integration-test-fragment</module>
