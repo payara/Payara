@@ -40,7 +40,7 @@
 package com.sun.enterprise.v3.admin.cluster;
 
 import com.sun.enterprise.util.cluster.RemoteType;
-import com.sun.enterprise.universal.process.WindowsException;
+import com.sun.enterprise.util.cluster.windows.process.WindowsException;
 import java.util.logging.Level;
 import org.jvnet.hk2.component.Habitat;
 import org.glassfish.internal.api.RelativePathResolver;
@@ -55,10 +55,10 @@ import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.*;
 import org.glassfish.api.admin.CommandValidationException;
 import com.sun.enterprise.universal.glassfish.TokenResolver;
-import com.sun.enterprise.universal.process.WindowsCredentials;
-import com.sun.enterprise.universal.process.WindowsRemotePinger;
-import com.sun.enterprise.util.io.WindowsRemoteFile;
-import com.sun.enterprise.util.io.WindowsRemoteFileSystem;
+import com.sun.enterprise.util.cluster.windows.process.WindowsCredentials;
+import com.sun.enterprise.util.cluster.windows.process.WindowsRemotePinger;
+import com.sun.enterprise.util.cluster.windows.io.WindowsRemoteFile;
+import com.sun.enterprise.util.cluster.windows.io.WindowsRemoteFileSystem;
 import org.glassfish.cluster.ssh.launcher.SSHLauncher;
 import java.util.logging.Logger;
 import java.io.File;

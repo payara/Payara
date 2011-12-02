@@ -39,8 +39,8 @@
  */
 package com.sun.enterprise.admin.cli.cluster;
 
-import com.sun.enterprise.util.io.WindowsRemoteFile;
-import com.sun.enterprise.util.io.WindowsRemoteFileSystem;
+import com.sun.enterprise.util.cluster.windows.io.WindowsRemoteFile;
+import com.sun.enterprise.util.cluster.windows.io.WindowsRemoteFileSystem;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.CommandException;
 import org.jvnet.hk2.annotations.Scoped;

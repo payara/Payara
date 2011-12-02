@@ -38,7 +38,7 @@
  * holder.
  */
 
-package com.sun.enterprise.universal.process;
+package com.sun.enterprise.util.cluster.windows.process;
 
 import static com.sun.enterprise.util.StringUtils.ok;
 

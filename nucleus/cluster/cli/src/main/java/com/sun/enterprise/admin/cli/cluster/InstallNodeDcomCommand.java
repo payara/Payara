@@ -40,12 +40,12 @@
 package com.sun.enterprise.admin.cli.cluster;
 
 import com.sun.enterprise.universal.io.SmartFile;
-import com.sun.enterprise.universal.process.WindowsCredentials;
-import com.sun.enterprise.universal.process.WindowsException;
-import com.sun.enterprise.universal.process.WindowsRemoteScripter;
-import com.sun.enterprise.util.io.WindowsRemoteFile;
-import com.sun.enterprise.util.io.WindowsRemoteFileCopyProgress;
-import com.sun.enterprise.util.io.WindowsRemoteFileSystem;
+import com.sun.enterprise.util.cluster.windows.process.WindowsCredentials;
+import com.sun.enterprise.util.cluster.windows.process.WindowsException;
+import com.sun.enterprise.util.cluster.windows.process.WindowsRemoteScripter;
+import com.sun.enterprise.util.cluster.windows.io.WindowsRemoteFile;
+import com.sun.enterprise.util.cluster.windows.io.WindowsRemoteFileCopyProgress;
+import com.sun.enterprise.util.cluster.windows.io.WindowsRemoteFileSystem;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;

@@ -37,10 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package com.sun.enterprise.universal.process;
+package com.sun.enterprise.util.cluster.windows.process;
 
-import com.sun.enterprise.util.StringUtils;
-import java.util.*;
 import java.util.logging.Level;
 import org.jinterop.dcom.common.JISystem;
 import org.jinterop.dcom.core.IJIComObject;
@@ -53,52 +51,21 @@ import org.jinterop.dcom.impls.JIObjectFactory;
 import org.jinterop.dcom.impls.automation.IJIDispatch;
 
 /**
- * Wrapper for calling asadmin -- since it is done all the time, this convenience class
- * was created
+ * See if remote is alive.  Simply run "asadmin version" and look for the string
+ * "GlassFish" in the output.  That can't possibly happen unless everything is
+ * setup OK.
+
  * @author Byron Nevins
  */
-public class WindowsRemoteAsadmin extends WindowsRemoteScripter {
-    private final String asadminRemotePath;
+public class WindowsRemotePinger {
 
-    public WindowsRemoteAsadmin(String remoteInstallRoot, WindowsCredentials bonafides) {
-        super(bonafides);
-        remoteInstallRoot = remoteInstallRoot.replace('/', '\\');
-
-        if (!remoteInstallRoot.endsWith("\\"))
-            remoteInstallRoot += "\\";
-
-        asadminRemotePath = StringUtils.quotePathIfNecessary(remoteInstallRoot + "lib\\nadmin.bat");
+    private WindowsRemotePinger() {
+        // all static class.  No instances allowed.
     }
 
-    /**
-     * Run a remote asadmin script command
-     * @param cmdArgs e.g. "start-local-instance", "i1"
-     * @return the stdout from the asadmin command
-     *
-     */
-    public String run(Collection<String> cmdArgs) throws WindowsException {
-        StringBuilder sb = new StringBuilder(asadminRemotePath);
-        sb.append(' ');
-
-        for (String s : cmdArgs) {
-            sb.append(s).append(' ');
-        }
-
-        return super.run(sb.toString());
-    }
-
-    /**
-     * Run a remote asadmin script command
-     * @param cmd e.g. "start-local-instance i1"
-     * @return the stdout from the asadmin command
-     *
-     */
-    @Override
-    public final String run(String cmd) throws WindowsException {
-        StringBuilder sb = new StringBuilder(asadminRemotePath);
-        sb.append(' ');
-        sb.append(cmd);
-
-        return super.run(sb.toString());
+    public static boolean ping(String remoteInstallRoot, WindowsCredentials bonafides) throws WindowsException {
+        WindowsRemoteAsadmin rasadmin = new WindowsRemoteAsadmin(remoteInstallRoot, bonafides);
+        String out = rasadmin.run("version");
+        return out.indexOf("GlassFish") >= 0;
     }
 }

@@ -37,10 +37,10 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package com.sun.enterprise.util.io;
+package com.sun.enterprise.util.cluster.windows.io;
 
-import com.sun.enterprise.universal.process.WindowsCredentials;
-import com.sun.enterprise.universal.process.WindowsException;
+import com.sun.enterprise.util.cluster.windows.process.WindowsCredentials;
+import com.sun.enterprise.util.cluster.windows.process.WindowsException;
 import java.io.*;
 import java.util.*;
 import java.util.logging.Level;
@@ -72,7 +72,7 @@ public final class WindowsRemoteFile {
             throws WindowsException {
         this(new WindowsRemoteFileSystem(bonafides), path);
     }
-    
+
     public WindowsRemoteFile(WindowsRemoteFileSystem wrfs, String path)
             throws WindowsException {
         try {

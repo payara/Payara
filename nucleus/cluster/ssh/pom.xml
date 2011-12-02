@@ -115,7 +115,11 @@
             <artifactId>common-util</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
-
+        <dependency>
+            <groupId>org.glassfish.cluster</groupId>
+            <artifactId>cluster-common</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
     </dependencies>
 </project>
 

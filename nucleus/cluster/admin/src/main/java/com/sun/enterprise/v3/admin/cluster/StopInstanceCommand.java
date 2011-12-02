@@ -41,7 +41,7 @@
 package com.sun.enterprise.v3.admin.cluster;
 
 import com.sun.enterprise.admin.remote.ServerRemoteAdminCommand;
-import com.sun.enterprise.universal.process.WindowsException;
+import com.sun.enterprise.util.cluster.windows.process.WindowsException;
 import java.util.logging.Logger;
 import java.io.File;
 import java.io.IOException;
@@ -68,7 +68,7 @@ import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.internal.api.ServerContext;
 import com.sun.enterprise.util.SystemPropertyConstants;
 
-import com.sun.enterprise.util.io.WindowsRemoteFile;
+import com.sun.enterprise.util.cluster.windows.io.WindowsRemoteFile;
 import org.glassfish.api.admin.*;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
@@ -96,8 +96,8 @@ import org.glassfish.cluster.ssh.util.DcomInfo;
 @ExecuteOn(RuntimeType.DAS)
 @RestEndpoints({
     @RestEndpoint(configBean=Server.class,
-        opType=RestEndpoint.OpType.POST, 
-        path="stop-instance", 
+        opType=RestEndpoint.OpType.POST,
+        path="stop-instance",
         description="Stop Instance",
         params={
             @RestParam(name="id", value="$parent")

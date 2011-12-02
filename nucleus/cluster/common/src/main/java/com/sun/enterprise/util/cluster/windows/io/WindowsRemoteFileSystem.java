@@ -38,9 +38,9 @@
  * holder.
  */
 
-package com.sun.enterprise.util.io;
+package com.sun.enterprise.util.cluster.windows.io;
 
-import com.sun.enterprise.universal.process.WindowsCredentials;
+import com.sun.enterprise.util.cluster.windows.process.WindowsCredentials;
 import java.net.*;
 import jcifs.smb.NtlmPasswordAuthentication;
 

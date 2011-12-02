@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,35 +37,31 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package com.sun.enterprise.universal.process;
 
-import java.util.logging.Level;
-import org.jinterop.dcom.common.JISystem;
-import org.jinterop.dcom.core.IJIComObject;
-import org.jinterop.dcom.core.JIComServer;
-import org.jinterop.dcom.core.JIProgId;
-import org.jinterop.dcom.core.JISession;
-import org.jinterop.dcom.core.JIString;
-import org.jinterop.dcom.core.JIVariant;
-import org.jinterop.dcom.impls.JIObjectFactory;
-import org.jinterop.dcom.impls.automation.IJIDispatch;
+package com.sun.enterprise.util.cluster.windows.io;
+
+import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 
 /**
- * See if remote is alive.  Simply run "asadmin version" and look for the string
- * "GlassFish" in the output.  That can't possibly happen unless everything is
- * setup OK.
-
+ * Strings -- Get your Strings here.
+ * One file with Strings
+ * So one class for messing with them!
+ * Nothing in here is public protected.  Only for use by this one java package.
  * @author Byron Nevins
  */
-public class WindowsRemotePinger {
 
-    private WindowsRemotePinger() {
-        // all static class.  No instances allowed.
+final class Strings {
+    private Strings() {
+        // no instances allowed!
     }
 
-    public static boolean ping(String remoteInstallRoot, WindowsCredentials bonafides) throws WindowsException {
-        WindowsRemoteAsadmin rasadmin = new WindowsRemoteAsadmin(remoteInstallRoot, bonafides);
-        String out = rasadmin.run("version");
-        return out.indexOf("GlassFish") >= 0;
+    final static String get(String indexString) {
+        return strings.get(indexString);
     }
+
+    final static String get(String indexString, Object... objects) {
+        return strings.get(indexString, objects);
+    }
+
+    final private static LocalStringsImpl strings = new LocalStringsImpl(Strings.class);
 }

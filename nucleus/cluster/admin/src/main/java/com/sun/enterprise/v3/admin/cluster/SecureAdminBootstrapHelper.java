@@ -41,10 +41,10 @@ package com.sun.enterprise.v3.admin.cluster;
 
 import com.sun.enterprise.util.cluster.RemoteType;
 import com.sun.enterprise.config.serverbeans.Node;
-import com.sun.enterprise.universal.process.WindowsException;
+import com.sun.enterprise.util.cluster.windows.process.WindowsException;
 import com.sun.enterprise.util.io.FileUtils;
-import com.sun.enterprise.util.io.WindowsRemoteFile;
-import com.sun.enterprise.util.io.WindowsRemoteFileSystem;
+import com.sun.enterprise.util.cluster.windows.io.WindowsRemoteFile;
+import com.sun.enterprise.util.cluster.windows.io.WindowsRemoteFileSystem;
 import com.trilead.ssh2.SFTPv3FileAttributes;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;

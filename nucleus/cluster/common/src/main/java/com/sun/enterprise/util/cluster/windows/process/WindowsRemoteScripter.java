@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package com.sun.enterprise.universal.process;
+package com.sun.enterprise.util.cluster.windows.process;
 
 import java.util.*;
 import java.util.logging.Level;

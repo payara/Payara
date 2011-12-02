@@ -39,8 +39,8 @@
  */
 package org.glassfish.cluster.ssh.connect;
 
-import com.sun.enterprise.universal.process.WindowsRemoteAsadmin;
-import com.sun.enterprise.util.io.WindowsRemoteFile;
+import com.sun.enterprise.util.cluster.windows.process.WindowsRemoteAsadmin;
+import com.sun.enterprise.util.cluster.windows.io.WindowsRemoteFile;
 import java.io.*;
 import java.net.*;
 import java.util.*;
@@ -48,14 +48,14 @@ import java.util.logging.*;
 
 import com.sun.enterprise.config.serverbeans.SshAuth;
 import com.sun.enterprise.config.serverbeans.SshConnector;
-import com.sun.enterprise.universal.process.WindowsCredentials;
-import com.sun.enterprise.universal.process.WindowsException;
-import com.sun.enterprise.universal.process.WindowsRemoteScripter;
+import com.sun.enterprise.util.cluster.windows.process.WindowsCredentials;
+import com.sun.enterprise.util.cluster.windows.process.WindowsException;
+import com.sun.enterprise.util.cluster.windows.process.WindowsRemoteScripter;
 import org.glassfish.api.admin.SSHCommandExecutionException;
 import com.sun.enterprise.config.serverbeans.Node;
 import com.sun.enterprise.util.StringUtils;
 import com.sun.enterprise.util.SystemPropertyConstants;
-import com.sun.enterprise.util.io.WindowsRemoteFileSystem;
+import com.sun.enterprise.util.cluster.windows.io.WindowsRemoteFileSystem;
 import org.glassfish.cluster.ssh.util.DcomInfo;
 import org.glassfish.cluster.ssh.util.DcomUtils;
 import org.glassfish.common.util.admin.AsadminInput;

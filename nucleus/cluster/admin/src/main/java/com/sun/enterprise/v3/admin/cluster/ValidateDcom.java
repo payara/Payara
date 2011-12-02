@@ -39,12 +39,12 @@
  */
 package com.sun.enterprise.v3.admin.cluster;
 
-import com.sun.enterprise.universal.process.WindowsException;
+import com.sun.enterprise.util.cluster.windows.process.WindowsException;
 import com.sun.enterprise.universal.glassfish.TokenResolver;
-import com.sun.enterprise.universal.process.WindowsCredentials;
-import com.sun.enterprise.universal.process.WindowsRemoteScripter;
-import com.sun.enterprise.universal.process.WindowsWmi;
-import com.sun.enterprise.util.io.WindowsRemoteFileSystem;
+import com.sun.enterprise.util.cluster.windows.process.WindowsCredentials;
+import com.sun.enterprise.util.cluster.windows.process.WindowsRemoteScripter;
+import com.sun.enterprise.util.cluster.windows.process.WindowsWmi;
+import com.sun.enterprise.util.cluster.windows.io.WindowsRemoteFileSystem;
 import java.io.*;
 import java.io.IOException;
 import java.net.*;
@@ -52,7 +52,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.glassfish.api.admin.CommandValidationException;
 import static com.sun.enterprise.util.StringUtils.ok;
-import com.sun.enterprise.util.io.WindowsRemoteFile;
+import com.sun.enterprise.util.cluster.windows.io.WindowsRemoteFile;
 import java.net.InetAddress;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
