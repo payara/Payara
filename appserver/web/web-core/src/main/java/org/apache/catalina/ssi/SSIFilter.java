@@ -65,6 +65,7 @@ import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
+import java.nio.charset.Charset;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 /**
@@ -199,7 +200,7 @@ public class SSIFilter implements Filter {
             // Ignore, will try to use a writer
         }
         if (out == null) {
-            res.getWriter().write(new String(bytes));
+            res.getWriter().write(new String(bytes, Charset.defaultCharset()));
         } else {
             out.write(bytes);
         }

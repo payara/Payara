@@ -71,11 +71,13 @@ import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLDecoder;
+import java.nio.charset.Charset;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.Locale;
 import org.glassfish.grizzly.http.server.Constants;
+import org.glassfish.grizzly.utils.Charsets;
 
 /**
  * An implementation of SSIExternalResolver that is used with servlets.
@@ -569,9 +571,9 @@ public class SSIServletExternalResolver implements SSIExternalResolver {
             //Assume platform default encoding unless otherwise specified
             String retVal;
             if (inputEncoding == null) {
-                retVal = new String( bytes );
+                retVal = new String(bytes, Charset.defaultCharset());
             } else {
-                retVal = new String (bytes, inputEncoding);
+                retVal = new String (bytes, Charsets.lookupCharset(inputEncoding));
             }
 
             //make an assumption that an empty response is a failure. This is

@@ -58,7 +58,9 @@
 
 package org.apache.naming;
 
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
+import java.nio.charset.UnsupportedCharsetException;
+import org.glassfish.grizzly.utils.Charsets;
 
 /**
  * Utility methods originally defined in org.apache.catalina.util.RequestUtil
@@ -162,11 +164,11 @@ public final class Util {
         byte[] bytes = null;
         try {
             if (enc == null) {
-                bytes = str.getBytes();
+                bytes = str.getBytes(Charset.defaultCharset());
             } else {
-                bytes = str.getBytes(enc);
+                bytes = str.getBytes(Charsets.lookupCharset(enc));
             }
-        } catch (UnsupportedEncodingException uee) {}
+        } catch (UnsupportedCharsetException uee) {}
 
         return urlDecode(bytes, enc);
 
@@ -211,12 +213,12 @@ public final class Util {
         }
         if (enc != null) {
             try {
-                return new String(bytes, 0, ox, enc);
+                return new String(bytes, 0, ox, Charsets.lookupCharset(enc));
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
-        return new String(bytes, 0, ox);
+        return new String(bytes, 0, ox, Charset.defaultCharset());
 
     }
 

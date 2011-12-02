@@ -1890,14 +1890,14 @@ public class Request
 
                     @Override
                     public String run() throws UnsupportedEncodingException {
-                        return new String(finalBuffer, finalEnc);
+                        return new String(finalBuffer, RequestUtil.lookupCharset(finalEnc));
                     }
                 });
             } catch (PrivilegedActionException pae) {
                 throw (UnsupportedEncodingException) pae.getCause();
             }
         } else {
-            new String(buffer, enc);
+            new String(buffer, RequestUtil.lookupCharset(enc));
         }
         // END S1AS 6179607
 

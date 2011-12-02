@@ -65,9 +65,11 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
 import java.util.Locale;
 import java.util.Map;
+
+import org.glassfish.grizzly.utils.Charsets;
 
 /**
  * <p>High level API for processing file uploads.</p>
@@ -234,6 +236,8 @@ class RequestItemIterator {
     private static final String MULTIPART = "multipart/";
     private static final String MULTIPART_FORM_DATA = "multipart/form-data";
     private static final String MULTIPART_MIXED = "multipart/mixed";
+
+    private static final Charset ISO_8859_1_CHARSET = Charsets.DEFAULT_CHARSET;
 
     // Multipart instance, for accessing global properties, e.g. maxFileSize
     private Multipart multipart;
@@ -610,9 +614,9 @@ class RequestItemIterator {
         }
         byte[] boundary;
         try {
-            boundary = boundaryStr.getBytes(Globals.ISO_8859_1_ENCODING);
-        } catch (UnsupportedEncodingException e) {
-            boundary = boundaryStr.getBytes();
+            boundary = boundaryStr.getBytes(ISO_8859_1_CHARSET);
+        } catch (Exception e) {
+            boundary = boundaryStr.getBytes(Charset.defaultCharset());
         }
         return boundary;
     }

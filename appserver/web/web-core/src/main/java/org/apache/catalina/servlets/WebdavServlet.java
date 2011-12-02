@@ -62,6 +62,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
@@ -1147,7 +1148,8 @@ public class WebdavServlet
             
             byte[] digestBytes = null;
             synchronized(md5Helper) {
-                digestBytes = md5Helper.digest(lockTokenStr.getBytes());
+                digestBytes = md5Helper.digest(lockTokenStr.getBytes(
+                            Charset.defaultCharset()));
             }
             String lockToken = new String(md5Encoder.encode(digestBytes));
 

@@ -45,6 +45,7 @@ import org.glassfish.ha.store.api.Storeable;
 import org.glassfish.ha.store.spi.StorableMap;
 
 import java.io.*;
+import java.nio.charset.Charset;
 import java.util.*;
 
 /**
@@ -229,7 +230,7 @@ public final class CompositeMetadata implements Storeable {
                 if (stringExtraParam == null) {
                     dos.writeInt(0);
                 } else {
-                    byte[] sd = stringExtraParam.getBytes();
+                    byte[] sd = stringExtraParam.getBytes(Charset.defaultCharset());
                     dos.writeInt(sd.length);
                     dos.write(sd);
                 }
@@ -238,7 +239,7 @@ public final class CompositeMetadata implements Storeable {
             if (dirtyBits[2]) {
                 dos.writeInt(entries.size());
                 for (SessionAttributeMetadata attr : entries) {
-                    byte[] opNameInBytes = attr.getOperation().toString().getBytes();
+                    byte[] opNameInBytes = attr.getOperation().toString().getBytes(Charset.defaultCharset());
                     dos.writeInt(opNameInBytes.length);
                     dos.write(opNameInBytes);
 
@@ -246,7 +247,7 @@ public final class CompositeMetadata implements Storeable {
                     if (attrName == null) {
                         dos.writeInt(0); //NOTE: We don't allow null attrNames!!
                     } else {
-                        byte[] attrNameData = attrName.getBytes();
+                        byte[] attrNameData = attrName.getBytes(Charset.defaultCharset());
                         dos.writeInt(attrNameData.length);
                         dos.write(attrNameData);
 
@@ -301,7 +302,7 @@ public final class CompositeMetadata implements Storeable {
                 if (len > 0) {
                     byte[] sd = new byte[len];
                     dis.readFully(sd);
-                    stringExtraParam = new String(sd);
+                    stringExtraParam = new String(sd, Charset.defaultCharset());
                 }
             }
 
@@ -312,13 +313,13 @@ public final class CompositeMetadata implements Storeable {
                     int opNameLen = dis.readInt();
                     byte[] opnameData = new byte[opNameLen];
                     dis.readFully(opnameData);
-                    String opName = new String(opnameData);
+                    String opName = new String(opnameData, Charset.defaultCharset());
 
                     int attrNameLen = dis.readInt();
                     if (attrNameLen > 0) {
                         byte[] sd = new byte[attrNameLen];
                         dis.readFully(sd);
-                        String attrName = new String(sd);
+                        String attrName = new String(sd, Charset.defaultCharset());
 
                         SessionAttributeMetadata.Operation smdOpcode = SessionAttributeMetadata.Operation.valueOf(opName);
                         switch (smdOpcode) {

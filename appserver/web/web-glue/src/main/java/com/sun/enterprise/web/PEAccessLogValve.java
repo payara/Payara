@@ -61,6 +61,7 @@ import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.channels.FileChannel;
+import java.nio.charset.Charset;
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -652,13 +653,14 @@ public final class PEAccessLogValve
             try{
                 charBuffer.flip();
                 ByteBuffer byteBuffer =
-                    ByteBuffer.wrap(charBuffer.toString().getBytes());
+                    ByteBuffer.wrap(charBuffer.toString().getBytes(Charset.defaultCharset()));
                 while (byteBuffer.hasRemaining()){
                     fileChannel.write(byteBuffer);
                 }
-                charBuffer.clear();
             } catch (IOException ex){
                 ;
+            } finally {
+                charBuffer.clear();
             }
         }
 

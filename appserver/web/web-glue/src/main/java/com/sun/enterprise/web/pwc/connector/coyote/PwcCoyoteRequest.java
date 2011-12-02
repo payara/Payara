@@ -54,6 +54,7 @@ import javax.servlet.http.Cookie;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
 import java.text.MessageFormat;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
@@ -289,7 +290,7 @@ public class PwcCoyoteRequest extends Request {
                 // START SJSAS 6346738
                 formDataLen = actualLen;
                 // END SJSAS 6346738
-                String formDataString = new String(formData).substring(0, len);
+                String formDataString = new String(formData, Charset.defaultCharset()).substring(0, len);
                 encoding = parseFormHintField(formDataString, formHintField);
             }
         } catch (Throwable t) {

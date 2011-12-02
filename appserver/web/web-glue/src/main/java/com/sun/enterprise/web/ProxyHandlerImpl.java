@@ -44,6 +44,7 @@ import com.sun.appserv.ProxyHandler;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.ByteArrayInputStream;
+import java.nio.charset.Charset;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
@@ -81,8 +82,7 @@ public class ProxyHandlerImpl extends ProxyHandler {
             clientCert = clientCert.replaceAll("% d% a", "\n");
             clientCert = "-----BEGIN CERTIFICATE-----\n" + clientCert
                          + "\n-----END CERTIFICATE-----";
-            byte[] certBytes = new byte[clientCert.length()];
-            clientCert.getBytes(0, clientCert.length(), certBytes, 0);
+            byte[] certBytes = clientCert.getBytes(Charset.defaultCharset());
             ByteArrayInputStream bais = new ByteArrayInputStream(certBytes);
             CertificateFactory cf = CertificateFactory.getInstance("X.509");
             certs = new X509Certificate[1];

@@ -59,6 +59,8 @@
 package org.apache.catalina.util;
 
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
+import java.nio.charset.UnsupportedCharsetException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -68,6 +70,7 @@ import javax.servlet.http.Cookie;
 
 import org.apache.naming.Util;
 import org.glassfish.grizzly.http.util.ByteChunk;
+import org.glassfish.grizzly.utils.Charsets;
 
 /**
  * General purpose request parsing and encoding utility methods.
@@ -293,11 +296,11 @@ public final class RequestUtil {
             byte[] bytes = null;
             try {
                 if (encoding == null) {
-                    bytes = data.getBytes();
+                    bytes = data.getBytes(Charset.defaultCharset());
                 } else {
-                    bytes = data.getBytes(encoding);
+                    bytes = data.getBytes(Charsets.lookupCharset(encoding));
                 }
-            } catch (UnsupportedEncodingException uee) {
+            } catch (UnsupportedCharsetException uee) {
             }
 
             parseParameters(map, bytes, encoding);
@@ -468,7 +471,7 @@ public final class RequestUtil {
                 byte c = data[ix++];
                 switch ((char) c) {
                 case '&':
-                    value = new String(data, 0, ox, encoding);
+                    value = new String(data, 0, ox, Charsets.lookupCharset(encoding));
                     if (key != null) {
                         putMapEntry(map, key, value);
                         key = null;
@@ -477,7 +480,7 @@ public final class RequestUtil {
                     break;
                 case '=':
                     if (key == null) {
-                        key = new String(data, 0, ox, encoding);
+                        key = new String(data, 0, ox, Charsets.lookupCharset(encoding));
                         ox = 0;
                     } else {
                         data[ox++] = c;
@@ -496,7 +499,7 @@ public final class RequestUtil {
             }
             //The last value does not end in '&'.  So save it now.
             if (key != null) {
-                value = new String(data, 0, ox, encoding);
+                value = new String(data, 0, ox, Charsets.lookupCharset(encoding));
                 putMapEntry(map, key, value);
             }
         }
@@ -527,9 +530,9 @@ public final class RequestUtil {
             if (st.hasMoreTokens()) {
                 try {
                     String contextPath = new String(
-                            HexUtils.convert(hexPath), "UTF-8");
+                            HexUtils.convert(hexPath), Charsets.UTF8_CHARSET);
                     result.put(contextPath, st.nextToken());
-                } catch(UnsupportedEncodingException ex) {
+                } catch(UnsupportedCharsetException ex) {
                     //should not be here
                     throw new IllegalArgumentException(ex);
                 }
@@ -569,8 +572,8 @@ public final class RequestUtil {
             String contextPath = e.getKey();
             // encode so that there is no / or %2F
             try {
-                sb.append(new String(HexUtils.convert(contextPath.getBytes("UTF-8"))));
-            } catch(UnsupportedEncodingException ex) {
+                sb.append(new String(HexUtils.convert(contextPath.getBytes(Charsets.UTF8_CHARSET))));
+            } catch(UnsupportedCharsetException ex) {
                 //should not be here
                 throw new IllegalArgumentException(ex);
             }
@@ -581,4 +584,31 @@ public final class RequestUtil {
         return sb.toString();
     }
 
+    /**
+     * This is a convenient API which wraps around the one in Grizzly and throws
+     * checked java.io.UnsupportedEncodingException instead of
+     * unchecked java.nio.charset.UnsupportedCharsetException.
+     * cf. String.getBytes(String charset) throws UnsupportedEncodingException
+     *
+     * @exception UnsupportedEncodingException
+     */
+    public static Charset lookupCharset(String enc) throws UnsupportedEncodingException {
+        Charset charset = null;
+        Throwable throwable = null;
+        try {
+            charset = Charsets.lookupCharset(enc);
+        } catch(Throwable t) {
+            throwable = t;
+        }
+
+        if (charset == null) {
+            UnsupportedEncodingException uee = new UnsupportedEncodingException();
+            if (throwable != null) {
+                uee.initCause(throwable);
+            }
+            throw uee;
+        }
+
+        return charset;
+    }
 }

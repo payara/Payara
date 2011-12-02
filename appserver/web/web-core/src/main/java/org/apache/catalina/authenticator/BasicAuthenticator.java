@@ -66,6 +66,7 @@ import org.apache.catalina.util.Base64;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.security.Principal;
 import java.util.Locale;
 import java.util.logging.Level;
@@ -215,7 +216,7 @@ public class BasicAuthenticator
 
         // Decode and parse the authorization credentials
         String unencoded =
-          new String(Base64.decode(authorization.getBytes()));
+          new String(Base64.decode(authorization.getBytes(Charset.defaultCharset())));
         int colon = unencoded.indexOf(':');
         if (colon < 0)
             return (null);
@@ -242,7 +243,7 @@ public class BasicAuthenticator
 
         // Decode and parse the authorization credentials
         String unencoded =
-          new String(Base64.decode(authorization.getBytes()));
+          new String(Base64.decode(authorization.getBytes(Charset.defaultCharset())));
         int colon = unencoded.indexOf(':');
         if (colon < 0)
             return (null);
