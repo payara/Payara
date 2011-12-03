@@ -218,7 +218,7 @@ final class SSHFileOperations implements FileOperations {
     }
 
     @Override
-    public void localCopy(String source, String destDir) throws IOException {
+    public synchronized void localCopy(String source, String destDir) throws IOException {
 
         SFTPClient sftpClient = getSFTPClient();
 

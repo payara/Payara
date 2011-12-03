@@ -138,18 +138,20 @@ public class RemoteTemplate extends VMTemplate {
             @Override
             public Object run(FileOperations fileOperations) throws IOException {
                 try {
-                    for (String fileName : fileOperations.ls(cacheLocation)) {
-                        try {
-                            Long fileNameAsNumber = Long.parseLong(fileName);
-                            if (fileNameAsNumber > cacheSize) {
-                                // we do need this file any more, it's either an attempted copy that never finished
-                                // or it's a leftover cached template from a cache reduction.
-                                fileOperations.delete(cacheLocation + File.separator + fileName);
+                    if (fileOperations.exists(cacheLocation)) {
+                        for (String fileName : fileOperations.ls(cacheLocation)) {
+                            try {
+                                Long fileNameAsNumber = Long.parseLong(fileName);
+                                if (fileNameAsNumber > cacheSize) {
+                                    // we do need this file any more, it's either an attempted copy that never finished
+                                    // or it's a leftover cached template from a cache reduction.
+                                    fileOperations.delete(cacheLocation + File.separator + fileName);
+                                }
+                            } catch (NumberFormatException e) {
+                                RuntimeContext.logger.log(Level.WARNING, "Weird file name format in cache " + fileName);
                             }
-                        } catch (NumberFormatException e) {
-                            RuntimeContext.logger.log(Level.WARNING, "Weird file name format in cache " + fileName);
-                        }
 
+                        }
                     }
                 } catch (IOException e) {
                     RuntimeContext.logger.log(Level.SEVERE, "Exception while cleaning cache on " + machine, e);
@@ -175,6 +177,9 @@ public class RemoteTemplate extends VMTemplate {
                         // first we need to ensure that the cache is clean of any temporary file
                         int inProgress=0;
                         try {
+                            if (!fileOps.exists(cacheLocation)) {
+                                fileOps.mkdir(cacheLocation);
+                            }
                             for (String fileName : fileOps.ls(cacheLocation)) {
                                 try {
                                     Long fileNameAsNumber = Long.parseLong(fileName);
