@@ -88,7 +88,7 @@ public interface ServiceOrchestrator {
      * @return The <code>ServiceMetadata</code> of the application discovered
      * by OE and SPEs.
      */
-    public ServiceMetadata getServices(ReadableArchive archive);
+    public ServiceMetadata getServices(ReadableArchive archive) throws Exception;
     
     /**
      * Scales the size of a Service up or down as per the provided scalingFactor.

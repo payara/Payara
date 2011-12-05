@@ -43,10 +43,7 @@ package org.glassfish.paas.orchestrator.service.metadata;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  *
@@ -68,14 +65,14 @@ import java.util.Set;
 public class ServiceMetadata {
 
     private Set<ServiceDescription> serviceDescriptions;
-    private Set<ServiceReference> serviceReferences = new HashSet<ServiceReference>();
+    private Set<ServiceReference> serviceReferences = new LinkedHashSet<ServiceReference>();
     private String appName;
 
     
     @XmlElement(name = "service-description")
     public Set<ServiceDescription> getServiceDescriptions() {
         if(serviceDescriptions == null ){
-            serviceDescriptions = new HashSet<ServiceDescription>();
+            serviceDescriptions = new LinkedHashSet<ServiceDescription>();
         }
         return serviceDescriptions;
     }

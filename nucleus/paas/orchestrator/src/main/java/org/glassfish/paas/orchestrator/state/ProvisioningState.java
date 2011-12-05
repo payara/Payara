@@ -53,10 +53,7 @@ import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
@@ -97,7 +94,7 @@ public class ProvisioningState extends AbstractPaaSDeploymentState {
         logger.entering(getClass().getName(), "provisionServices");
         final ServiceOrchestratorImpl orchestrator = context.getOrchestrator();
         final Set<ProvisionedService> appPSs = new HashSet<ProvisionedService>();
-        final Set<Plugin> installedPlugins = orchestrator.getPlugins();
+        //final Set<Plugin> installedPlugins = orchestrator.getPlugins();
         final DeploymentContext dc = context.getDeploymentContext();
         String appName = context.getAppName();
         final ServiceMetadata appServiceMetadata = orchestrator.getServiceMetadata(appName);
@@ -122,7 +119,8 @@ public class ProvisioningState extends AbstractPaaSDeploymentState {
                 //sd.setVirtualClusterName(virtualClusterName);
                 Future<ProvisionedService> future = ServiceUtil.getThreadPool().submit(new Callable<ProvisionedService>() {
                     public ProvisionedService call() {
-                        Plugin<?> chosenPlugin = orchestrator.getPluginForServiceType(installedPlugins, sd.getServiceType());
+                        //Plugin<?> chosenPlugin = orchestrator.getPluginForServiceType(installedPlugins, sd.getServiceType());
+                        Plugin<?> chosenPlugin = sd.getPlugin();
                         logger.log(Level.INFO, "Started Provisioning Service in parallel for " + sd + " through " + chosenPlugin);
                         return chosenPlugin.provisionService(sd, dc);
                     }
@@ -148,8 +146,7 @@ public class ProvisioningState extends AbstractPaaSDeploymentState {
 
             for (final ServiceDescription sd : appSDs) {
                 try {
-                    //sd.setVirtualClusterName(virtualClusterName);
-                    Plugin<?> chosenPlugin = orchestrator.getPluginForServiceType(installedPlugins, sd.getServiceType());
+                    Plugin<?> chosenPlugin = sd.getPlugin();
                     logger.log(Level.INFO, "Started Provisioning Service serially for " + sd + " through " + chosenPlugin);
                     ProvisionedService ps = chosenPlugin.provisionService(sd, dc);
                     appPSs.add(ps);
@@ -170,7 +167,7 @@ public class ProvisioningState extends AbstractPaaSDeploymentState {
             for(ProvisionedService ps : appPSs){
                 try{
                     ServiceDescription sd = ps.getServiceDescription();
-                    Plugin<?> chosenPlugin = orchestrator.getPluginForServiceType(installedPlugins, sd.getServiceType());
+                    Plugin<?> chosenPlugin = sd.getPlugin();
                     logger.log(Level.INFO, "Rolling back provisioned-service for " + sd + " through " + chosenPlugin );
                     chosenPlugin.unprovisionService(sd, dc); //TODO we could do unprovisioning in parallel.
                     logger.log(Level.INFO, "Rolled back provisioned-service for " + sd + " through " + chosenPlugin );
@@ -183,7 +180,6 @@ public class ProvisioningState extends AbstractPaaSDeploymentState {
             // TODO :: assuming app-scoped virtual cluster. fix it when supporting shared/external service.
             orchestrator.removeVirtualCluster(virtualClusterName);
 
-            //XXX (Siva): Failure handling. Exception design.
             PaaSDeploymentException re = new PaaSDeploymentException("Failure while provisioning services");
             if(rootCause != null){
                 re.initCause(rootCause);

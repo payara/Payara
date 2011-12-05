@@ -110,8 +110,9 @@ public class DisableState extends AbstractPaaSDeploymentState {
 
     public boolean stopService(PaaSDeploymentContext context, String appName, ServiceDescription sd) {
         final ServiceOrchestratorImpl orchestrator = context.getOrchestrator();
-        final Set<Plugin> installedPlugins = orchestrator.getPlugins();
-        Plugin<?> chosenPlugin = orchestrator.getPluginForServiceType(installedPlugins, sd.getServiceType());
+        //final Set<Plugin> installedPlugins = orchestrator.getPlugins();
+        //Plugin<?> chosenPlugin = orchestrator.getPluginForServiceType(installedPlugins, sd.getServiceType());
+        Plugin chosenPlugin = sd.getPlugin();
         ServiceInfo serviceInfo = serviceUtil.retrieveCloudEntry(sd.getName(), appName, null );
         if(serviceInfo != null){
             chosenPlugin.stopService(sd, serviceInfo);

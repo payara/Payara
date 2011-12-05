@@ -41,6 +41,7 @@
 package org.glassfish.paas.orchestrator.service.metadata;
 
 import org.glassfish.internal.api.Globals;
+import org.glassfish.paas.orchestrator.service.spi.Plugin;
 import org.glassfish.virtualization.spi.TemplateInstance;
 import org.glassfish.virtualization.spi.TemplateRepository;
 
@@ -50,6 +51,8 @@ import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlElements;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -63,10 +66,12 @@ public class ServiceDescription {
     private String appName;
     private String virtualClusterName;
 
-    // User can either specify which template to use or the characterstics of the template.
+    // User can either specify which template to use or the characteristics of the template.
     private Object templateOrCharacteristics;
 
-    private List<Property> configurations;
+    private List<Property> configurations = new ArrayList<Property>();
+    private Plugin plugin;
+    private List<ServiceReference> serviceReferences = new ArrayList<ServiceReference>();
 
     public ServiceDescription() {
         // default constructor required for JAXB.
@@ -201,5 +206,24 @@ public class ServiceDescription {
 
     public void setVirtualClusterName(String virtualClusterName) {
         this.virtualClusterName = virtualClusterName;
+    }
+
+    @XmlTransient
+    public Plugin getPlugin(){
+        return plugin;
+    }
+
+    public void setPlugin(Plugin plugin){
+        this.plugin = plugin;
+    }
+
+
+    public void addServiceReference(ServiceReference serviceReference){
+        serviceReferences.add(serviceReference);
+    }
+
+    @XmlTransient
+    public Collection<ServiceReference> getServiceReferences(){
+        return serviceReferences;
     }
 }

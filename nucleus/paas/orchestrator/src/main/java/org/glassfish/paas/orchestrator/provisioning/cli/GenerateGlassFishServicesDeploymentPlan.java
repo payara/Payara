@@ -151,6 +151,11 @@ public class GenerateGlassFishServicesDeploymentPlan implements AdminCommand {
             report.setMessage("Failure while generating the updated glassfish-services.xml : " + e.getMessage());
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setFailureCause(e);
+        }catch (Exception e) {
+                e.printStackTrace();
+                report.setMessage("Failure while generating the updated glassfish-services.xml : " + e.getMessage());
+                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                report.setFailureCause(e);
         } finally {
             try {
                 if (readableArchive != null) {

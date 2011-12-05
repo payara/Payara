@@ -123,6 +123,10 @@ public class GlassFishPlugin extends ServiceProvisioningEngineBase
         return DeploymentUtils.isJavaEE(cloudArchive, habitat);
     }
 
+    public boolean handles(ServiceDescription serviceDescription) {
+        return false;
+    }
+
     public boolean isReferenceTypeSupported(String referenceType) {
         if(referenceType.equals(JAVAEE_SERVICE_TYPE)){
             return true;

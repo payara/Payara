@@ -104,6 +104,10 @@ public class DerbyPlugin implements Plugin<RDBMSServiceType> {
         return true;
     }
 
+    public boolean handles(ServiceDescription serviceDescription) {
+        return false;
+    }
+
     public boolean isReferenceTypeSupported(String referenceType) {
         return DATASOURCE.equalsIgnoreCase(referenceType);
     }

@@ -65,17 +65,17 @@ public abstract class AssociationState extends AbstractPaaSDeploymentState {
             throws PaaSDeploymentException {
         logger.entering(getClass().getName(), "associateProvisionedServices-beforeDeployment=" + preDeployment);
         final ServiceOrchestratorImpl orchestrator = context.getOrchestrator();
-        final Set<Plugin> installedPlugins = orchestrator.getPlugins();
         final DeploymentContext dc = context.getDeploymentContext();
         String appName = context.getAppName();
         final ServiceMetadata appServiceMetadata = orchestrator.getServiceMetadata(appName);
+        final Set<Plugin> plugins = orchestrator.getPlugins(appServiceMetadata);
         final Set<ProvisionedService> appProvisionedSvcs = orchestrator.getProvisionedServices(appName);
 
 
         List<AssociatedServiceRecord> associatedServicesList = new ArrayList<AssociatedServiceRecord>();
         try{
             for (ProvisionedService serviceProducer : appProvisionedSvcs) {
-                for (Plugin<?> svcPlugin : installedPlugins) {
+                for (Plugin<?> svcPlugin : plugins) {
                     //associate the provisioned service only with plugins that handle other service types.
                     if (!serviceProducer.getServiceType().equals(svcPlugin.getServiceType())) {
                         Set<ServiceReference> appSRs = appServiceMetadata.getServiceReferences();

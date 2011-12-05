@@ -61,12 +61,11 @@ public abstract class DissociationState extends AbstractPaaSDeploymentState {
 
     protected void dissociateProvisionedServices(PaaSDeploymentContext context, boolean beforeUndeploy) {
         final ServiceOrchestratorImpl orchestrator = context.getOrchestrator();
-        final Set<Plugin> installedPlugins = orchestrator.getPlugins();
         final DeploymentContext dc = context.getDeploymentContext();
         String appName = context.getAppName();
         final ServiceMetadata appServiceMetadata = orchestrator.getServiceMetadata(appName);
         Set<ProvisionedService> appProvisionedSvcs = orchestrator.getProvisionedServices(appName);
-
+        final Set<Plugin> installedPlugins = orchestrator.getPlugins(appServiceMetadata);
         logger.entering(getClass().getName(), "dissociateProvisionedServices=" + beforeUndeploy);
         boolean failed = false;
         Exception failureCause = null;

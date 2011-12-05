@@ -54,7 +54,10 @@ import org.glassfish.embeddable.CommandResult;
 import org.glassfish.embeddable.CommandRunner;
 import org.glassfish.hk2.scopes.Singleton;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
+import org.glassfish.paas.orchestrator.config.ServiceProvisioningEngine;
+import org.glassfish.paas.orchestrator.config.ServiceProvisioningEngines;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceUtil;
+import org.glassfish.paas.orchestrator.service.ServiceType;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceDescription;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceMetadata;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceReference;
@@ -85,8 +88,8 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
     @Inject
     private VirtualClusters virtualClusters;
 
-    private Map<String, ServiceMetadata> serviceMetadata = new HashMap<String, ServiceMetadata>();
-    private Map<String, Set<ProvisionedService>> provisionedServices = new HashMap<String, Set<ProvisionedService>>();
+    private Map<String, ServiceMetadata> serviceMetadata = new LinkedHashMap<String, ServiceMetadata>();
+    private Map<String, Set<ProvisionedService>> provisionedServices = new LinkedHashMap<String, Set<ProvisionedService>>();
 
     private static final Class [] PRE_DEPLOY_PHASE_STATES = {ServiceDependencyDiscoveryState.class, ProvisioningState.class,
             PreDeployAssociationState.class};
@@ -115,19 +118,27 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
 
     public static Collection<Class> getAllStates(){
         //TODO for now we will have support of atomicity only during deployment, enable, disable.
-        Set<Class> allStates = new HashSet<Class>();
+        Set<Class> allStates = new LinkedHashSet<Class>();
         allStates.addAll(DEPLOYMENT_STATES);
         Collections.addAll(allStates, ENABLE_PHASE_STATES);
         Collections.addAll(allStates, DISABLE_PHASE_STATES);
         return Collections.unmodifiableSet(allStates);
     }
 
+    public Set<Plugin> getPlugins(ServiceMetadata appServiceMetadata) {
+        Set<Plugin> plugins = new LinkedHashSet<Plugin>();
+        for(ServiceDescription sd : appServiceMetadata.getServiceDescriptions()){
+            plugins.add(sd.getPlugin());
+        }
+        return plugins;
+    }
+
     public Set<Plugin> getPlugins() {
         if(pluginsSet == null){
-            Set<Plugin> plugins = new HashSet<Plugin>();
+            Set<Plugin> plugins = new LinkedHashSet<Plugin>();
             plugins.addAll(habitat.getAllByContract(Plugin.class));
             logger.log(Level.INFO, "Discovered plugins:" + plugins);
-            checkForDuplicatePlugins(plugins);
+            //checkForDuplicatePlugins(plugins);
             pluginsSet = plugins;
         }
         return pluginsSet;
@@ -307,10 +318,10 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
         return false;
     }
 
-    public ServiceMetadata getServices(ReadableArchive archive){
+    public ServiceMetadata getServices(ReadableArchive archive) throws Exception {
         ServiceDependencyDiscoveryState state = habitat.getByType(ServiceDependencyDiscoveryState.class);
         PaaSDeploymentContext pc = new PaaSDeploymentContext(archive.getName(), null, this);
-        return state.getServiceDependencyMetadata(pc, getPlugins(), archive.getName(), archive);
+        return state.getServiceDependencyMetadata(pc, archive.getName(), archive);
     }
 
     public Collection<ProvisionedService> getServicesProvisionedByPlugin(Plugin plugin,
@@ -375,10 +386,65 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
         //XXX: for now assume that there is one plugin per servicetype
         //and choose the first plugin that handles this service type.
         //in the future, need to handle conflicts
+        Plugin matchingPlugin = null;
+        List<Plugin> matchingPlugins = new ArrayList<Plugin>();
         for (Plugin svcPlugin : installedPlugins) {
-            if (svcPlugin.getServiceType().toString().equalsIgnoreCase(serviceType)) return svcPlugin;
+            if (svcPlugin.getServiceType().toString().equalsIgnoreCase(serviceType)){
+                matchingPlugins.add(svcPlugin);
+            }
         }
-        return null;
+        if(matchingPlugins.size() > 1){
+            matchingPlugin = getDefaultPlugin(matchingPlugins, serviceType);
+        }else if(matchingPlugins.size() == 1){
+            matchingPlugin = matchingPlugins.get(0);
+        }
+        return matchingPlugin;
+    }
+
+    public Plugin getDefaultPluginForServiceRef(String serviceRefType) {
+        Plugin defaultPlugin = null;
+
+        List<Plugin> matchingPlugin = new ArrayList<Plugin>();
+        for (Plugin plugin : getPlugins()) {
+            if (plugin.isReferenceTypeSupported(serviceRefType)) {
+                matchingPlugin.add(plugin);
+            }
+        }
+        //TODO we are assuming that no two different plugin types will support same service-ref type
+        for (Plugin plugin : matchingPlugin) {
+            ServiceProvisioningEngines spes = habitat.getComponent(ServiceProvisioningEngines.class);
+            if (spes != null) {
+                for (ServiceProvisioningEngine spe : spes.getServiceProvisioningEngines()) {
+                    if (spe.getType().equalsIgnoreCase(plugin.getServiceType().toString()) && spe.getDefault()) {
+                        String className = spe.getClassName();
+                        if (plugin.getClass().getName().equals(className)) {
+                            defaultPlugin = plugin;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        return defaultPlugin;
+    }
+
+    public Plugin getDefaultPlugin(List<Plugin> pluginsList, String type) {
+        Plugin defaultPlugin = null;
+        ServiceProvisioningEngines spes = habitat.getComponent(ServiceProvisioningEngines.class);
+        if(spes != null){
+            for(ServiceProvisioningEngine spe : spes.getServiceProvisioningEngines()){
+                if(spe.getType().equalsIgnoreCase(type) && spe.getDefault()){
+                    String className = spe.getClassName();
+                    for(Plugin plugin : pluginsList){
+                        if(plugin.getClass().getName().equals(className)){
+                            defaultPlugin = plugin;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        return defaultPlugin;
     }
 
     @Override
@@ -423,10 +489,13 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
             logger.log(Level.FINE, "oldPS: " + oldPS);
             
             //Find Plugin that provided this Service
-            Set<Plugin> installedPlugins = getPlugins();
+            //Set<Plugin> installedPlugins = getPlugins();
+/*
             Plugin<?> chosenPlugin = getPluginForServiceType(
                     installedPlugins, oldPS.getServiceDescription().getServiceType());
-            
+*/
+            Plugin<?> chosenPlugin = oldPS.getServiceDescription().getPlugin();
+
             //ask it to scale the service and get new PS
             logger.log(Level.INFO, "Scaling Service " + svcName 
                     + " using Plugin:" + chosenPlugin);
@@ -440,8 +509,9 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
             assert newPS.getServiceType().equals(oldPS.getServiceType());
             
             //now re-associate all plugins with the new PS.
-            ServiceMetadata appServiceMetadata = serviceMetadata.get(effectiveAppName); 
-            for (Plugin<?> svcPlugin : installedPlugins) {
+            ServiceMetadata appServiceMetadata = serviceMetadata.get(effectiveAppName);
+            Set<Plugin> plugins = getPlugins(appServiceMetadata);
+            for (Plugin<?> svcPlugin : plugins) {
                 //re-associate the new PS only with plugins that handle other service types.
                 if (!newPS.getServiceType().equals(svcPlugin.getServiceType())) {
                     Set<ServiceReference> appSRs = appServiceMetadata.getServiceReferences();

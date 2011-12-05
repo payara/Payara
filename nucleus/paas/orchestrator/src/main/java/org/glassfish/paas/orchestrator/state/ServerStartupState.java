@@ -76,7 +76,7 @@ public class ServerStartupState extends AbstractPaaSDeploymentState {
     public Set<ProvisionedService> retrieveProvisionedServices(PaaSDeploymentContext context) {
         logger.entering(getClass().getName(), "retrieveProvisionedServices");
         final ServiceOrchestratorImpl orchestrator = context.getOrchestrator();
-        final Set<Plugin> installedPlugins = orchestrator.getPlugins();
+        //final Set<Plugin> installedPlugins = orchestrator.getPlugins();
         String appName = context.getAppName();
         final ServiceMetadata appServiceMetadata = orchestrator.getServiceMetadata(appName);
 
@@ -88,7 +88,8 @@ public class ServerStartupState extends AbstractPaaSDeploymentState {
                 //Temporary workaround to set virtual-cluster in all ProvisionedServices
                 //sd.setVirtualClusterName(virtualClusterName);
 
-                Plugin<?> chosenPlugin = orchestrator.getPluginForServiceType(installedPlugins, sd.getServiceType());
+                //Plugin<?> chosenPlugin = orchestrator.getPluginForServiceType(installedPlugins, sd.getServiceType());
+                Plugin<?> chosenPlugin = sd.getPlugin();
                 logger.log(Level.INFO, "Retrieving provisioned Service for " + sd + " through " + chosenPlugin);
                 ServiceInfo serviceInfo = serviceUtil.retrieveCloudEntry(sd.getName(), appName, null );
                 if(serviceInfo != null){

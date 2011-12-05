@@ -116,8 +116,8 @@ public class EnableState extends AbstractPaaSDeploymentState {
 
     public ProvisionedService startService(PaaSDeploymentContext context, String appName, ServiceDescription sd) {
         final ServiceOrchestratorImpl orchestrator = context.getOrchestrator();
-        final Set<Plugin> installedPlugins = orchestrator.getPlugins();
-        Plugin<?> chosenPlugin = orchestrator.getPluginForServiceType(installedPlugins, sd.getServiceType());
+        //final Set<Plugin> installedPlugins = orchestrator.getPlugins();
+        Plugin<?> chosenPlugin = sd.getPlugin();
         logger.log(Level.INFO, "Retrieving provisioned Service for " + sd + " through " + chosenPlugin);
         ServiceInfo serviceInfo = serviceUtil.retrieveCloudEntry(sd.getName(), appName, null );
         if(serviceInfo != null){

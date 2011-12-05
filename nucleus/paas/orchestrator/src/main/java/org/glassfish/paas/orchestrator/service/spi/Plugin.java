@@ -95,6 +95,15 @@ public interface Plugin<T extends ServiceType> {
     public boolean handles(ReadableArchive cloudArchive);
 
     /**
+     * Checks if this plugin can handle the specified service-description
+     *
+     * @param serviceDescription service-description to be handled
+     * @return true if the plugin can handle service provisioning for this
+     *         service-description, false otherwise
+     */
+    public boolean handles(ServiceDescription serviceDescription);
+
+    /**
      * Checks if a service reference of a particular ref-type
      * can be supported by a service that this plugin can provision.
      * <p/>

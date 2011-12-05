@@ -112,6 +112,10 @@ public class LBPlugin implements Plugin {
         return true;
     }
 
+    public boolean handles(ServiceDescription serviceDescription) {
+        return false;
+    }
+
     public boolean isReferenceTypeSupported(String referenceType) {
         LBPluginLogger.getLogger().log(Level.INFO,"Given referenceType : " + referenceType + " : " + Constants.LB.equalsIgnoreCase(referenceType));
         return Constants.LB.equalsIgnoreCase(referenceType);

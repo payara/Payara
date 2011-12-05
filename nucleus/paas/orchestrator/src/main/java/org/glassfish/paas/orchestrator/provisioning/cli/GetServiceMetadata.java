@@ -122,6 +122,9 @@ public class GetServiceMetadata implements AdminCommand {
         } catch (IOException e) {
             report.setMessage("Failure while reading the archive");
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+        } catch (Exception e) {
+            report.setMessage("Failure while getting service-metadata");
+            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
         }finally{
             try{
                 if(readableArchive != null){

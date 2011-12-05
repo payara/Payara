@@ -78,7 +78,7 @@ public class UnprovisioningState extends AbstractPaaSDeploymentState {
 
     private void unprovisionServices(PaaSDeploymentContext context) {
         final ServiceOrchestratorImpl orchestrator = context.getOrchestrator();
-        final Set<Plugin> installedPlugins = orchestrator.getPlugins();
+        //final Set<Plugin> installedPlugins = orchestrator.getPlugins();
         final DeploymentContext dc = context.getDeploymentContext();
         String appName = context.getAppName();
         final ServiceMetadata appServiceMetadata = orchestrator.getServiceMetadata(appName);
@@ -91,7 +91,8 @@ public class UnprovisioningState extends AbstractPaaSDeploymentState {
             //sd.setVirtualClusterName(virtualClusterName);
             Future future = ServiceUtil.getThreadPool().submit(new Runnable() {
                 public void run() {
-                    Plugin<?> chosenPlugin = orchestrator.getPluginForServiceType(installedPlugins, sd.getServiceType());
+                    //Plugin<?> chosenPlugin = orchestrator.getPluginForServiceType(installedPlugins, sd.getServiceType());
+                    Plugin<?> chosenPlugin = sd.getPlugin();
                     logger.log(Level.INFO, "Unprovisioning Service for " + sd + " through " + chosenPlugin);
                     chosenPlugin.unprovisionService(sd, dc);
                 }
