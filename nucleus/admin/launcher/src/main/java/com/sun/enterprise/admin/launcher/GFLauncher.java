@@ -66,6 +66,7 @@ public abstract class GFLauncher {
     ///////////////////////////////////////////////////////////////////////////
     //////     PUBLIC api area starts here             ////////////////////////
     ///////////////////////////////////////////////////////////////////////////
+
     /**
      *
      * @return The info object that contains startup info
@@ -465,7 +466,7 @@ public abstract class GFLauncher {
         }
 
         long endTime = System.currentTimeMillis();
-        GFLauncherLogger.info("launchTime", (endTime - getStartTime()));
+        //GFLauncherLogger.info("launchTime", (endTime - getStartTime()));
 
         //if verbose, hang around until the domain stops
         if (getInfo().isVerboseOrWatchdog())

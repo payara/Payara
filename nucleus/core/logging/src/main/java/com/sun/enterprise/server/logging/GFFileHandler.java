@@ -109,6 +109,10 @@ public class GFFileHandler extends StreamHandler implements PostConstruct, PreDe
 
     private int maxHistoryFiles = 10;
 
+
+    private String gffileHandlerFormatter = "";
+    private String currentgffileHandlerFormatter = "";
+
     // For now the mimimum rotation value is 0.5 MB.
     private static final int MINIMUM_FILE_ROTATION_VALUE = 500000;
 
@@ -169,6 +173,55 @@ public class GFFileHandler extends StreamHandler implements PostConstruct, PreDe
         }
         changeFileName(serverLog);
 
+        // Reading just few lines of log file to get the log fomatter used.
+        FileInputStream fs = null;
+        String strLine = "";
+        int odlFormatter = 0;
+        int uflFormatter = 0;
+        int otherFormatter = 0;
+        boolean mustRotate = false;
+
+        try {
+            fs = new FileInputStream(serverLog);
+            BufferedReader br = new BufferedReader(new InputStreamReader(fs));
+            while ((strLine = br.readLine()) != null) {
+                strLine = strLine.trim();
+                if (!strLine.equals("")) {
+                    if (strLine.startsWith("[[") && strLine.endsWith("]") && countOccurrences(strLine,'[')>4) { // for odl formatter
+                        odlFormatter++;
+                    } else if (strLine.startsWith("[#|") && strLine.endsWith("|#]") && countOccurrences(strLine,'|')>4) {  // for ufl formatter
+                        uflFormatter++;
+                    } else {
+                        otherFormatter++;  // for other formatter
+                    }
+
+                    // multiple formatter found under log file then must rotate the log file
+                    if (odlFormatter > 0 && uflFormatter > 0) {
+                        mustRotate = true;
+                        break;
+                    } else if (uflFormatter > 0 && otherFormatter > 0) {
+                        mustRotate = true;
+                        break;
+                    } else if (otherFormatter > 0 && odlFormatter > 0) {
+                        mustRotate = true;
+                        break;
+                    }
+
+                    // reading first few lines and breaking loop
+                    if (odlFormatter > 2 || uflFormatter > 2 || odlFormatter > 2) {
+                        break;
+                    }
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
+
+        if (odlFormatter > 0) {
+            currentgffileHandlerFormatter = "com.sun.enterprise.server.logging.ODLLogFormatter";
+        } else if (uflFormatter > 0) {
+            currentgffileHandlerFormatter = "com.sun.enterprise.server.logging.UniformLogFormatter";
+        }
 
         // start the Queue consummer thread.
 
@@ -186,6 +239,11 @@ public class GFFileHandler extends StreamHandler implements PostConstruct, PreDe
         pump.setDaemon(true);
         pump.start();
         LogRecord lr = new LogRecord(Level.INFO, "Running GlassFish Version: " + version.getFullVersion());
+        lr.setThreadID((int) Thread.currentThread().getId());
+        lr.setLoggerName(getClass().getName());
+        EarlyLogHandler.earlyMessages.add(lr);
+
+        lr = new LogRecord(Level.INFO, "GlassFis is using Log Formatter: " + manager.getProperty(cname + ".formatter"));
         lr.setThreadID((int) Thread.currentThread().getId());
         lr.setLoggerName(getClass().getName());
         EarlyLogHandler.earlyMessages.add(lr);
@@ -284,6 +342,17 @@ public class GFFileHandler extends StreamHandler implements PostConstruct, PreDe
             }
         }
 
+        // Below snapshot of the code is used to rotate server.log file on startup. It is used to avoid different format
+        // log messages logged under same server.log file.
+        gffileHandlerFormatter = manager.getProperty(cname + ".formatter");
+        if (mustRotate) {
+            rotate();
+        }
+        else if (!currentgffileHandlerFormatter.equals("") && gffileHandlerFormatter != null && !gffileHandlerFormatter.equals(currentgffileHandlerFormatter)) {
+            rotate();
+        }
+
+
         //setLevel(Level.ALL);
         String ff = manager.getProperty(cname + ".flushFrequency");
         if (ff != null)
@@ -303,6 +372,7 @@ public class GFFileHandler extends StreamHandler implements PostConstruct, PreDe
         String formatterName = manager.getProperty(cname + ".formatter");
 
         if (formatterName == null || UniformLogFormatter.class.getName().equals(formatterName)) {
+            // this loop is used for UFL formatter
             UniformLogFormatter formatterClass = null;
             // set the formatter
             if (agent != null) {
@@ -365,10 +435,21 @@ public class GFFileHandler extends StreamHandler implements PostConstruct, PreDe
                 formatterClass.setRecordEndMarker(recordEndMarker);
                 formatterClass.setRecordDateFormat(recordDateFormat);
                 formatterClass.setRecordFieldSeparator(recordFieldSeparator);
-
             }
 
+        } else if (formatterName == null || ODLLogFormatter.class.getName().equals(formatterName)) {
+            // this loop is used for ODL formatter
+            ODLLogFormatter formatterClass = null;
+            // set the formatter
+            if (agent != null) {
+                formatterClass = new ODLLogFormatter(new AgentFormatterDelegate(agent));
+                setFormatter(formatterClass);
+            } else {
+                formatterClass = new ODLLogFormatter();
+                setFormatter(formatterClass);
+            }
         } else {
+            // this loop is used for any other formatter
             try {
                 setFormatter((Formatter) this.getClass().getClassLoader().loadClass(formatterName).newInstance());
             } catch (InstantiationException e) {
@@ -516,7 +597,7 @@ public class GFFileHandler extends StreamHandler implements PostConstruct, PreDe
         }
 
         public void close() throws IOException {
-            if(isOpen) {
+            if (isOpen) {
                 isOpen = false;
                 flush();
                 out.close();
@@ -579,9 +660,9 @@ public class GFFileHandler extends StreamHandler implements PostConstruct, PreDe
             for (int i = 0; i < pathes.length - maxHistoryFiles; i++) {
                 File logFile = new File((String) pathes[i]);
                 boolean delFile = logFile.delete();
-                if(!delFile) {
+                if (!delFile) {
                     publish(new LogRecord(Level.SEVERE,
-                                    "Error, could not delete log file: " + logFile.getAbsolutePath()));    
+                            "Error, could not delete log file: " + logFile.getAbsolutePath()));
                 }
             }
         } catch (Exception e) {
@@ -603,7 +684,7 @@ public class GFFileHandler extends StreamHandler implements PostConstruct, PreDe
                         thisInstance.flush();
                         thisInstance.close();
                         try {
-                            if(!absoluteFile.exists()) {
+                            if (!absoluteFile.exists()) {
                                 File creatingDeletedLogFile = new File(absoluteFile.getAbsolutePath());
                                 creatingDeletedLogFile.createNewFile();
                                 absoluteFile = creatingDeletedLogFile;
@@ -655,7 +736,8 @@ public class GFFileHandler extends StreamHandler implements PostConstruct, PreDe
     }
 
 
-    /**                                                                                                   5005
+    /**
+     * 5005
      * Retrieves the LogRecord from our Queue and store them in the file
      */
     public void log() {
@@ -721,5 +803,16 @@ public class GFFileHandler extends StreamHandler implements PostConstruct, PreDe
         return new File(absoluteServerLogName);
 
     }
+
+    private int countOccurrences(String haystack, char needle) {
+        int count = 0;
+        for (int i = 0; i < haystack.length(); i++) {
+            if (haystack.charAt(i) == needle) {
+                count++;
+            }
+        }
+        return count;
+    }
+
 }
 

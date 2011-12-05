@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -274,8 +274,9 @@ public class LogManagerService implements Init, PostConstruct, PreDestroy, org.g
             formatterClassname = props.get(CONSOLEHANDLER_FORMATTER_PROPERTY);
             consoleHandlerFormatterDetail = formatterClassname;
             Class formatterClass = LogManagerService.class.getClassLoader().loadClass(formatterClassname);
-            UniformLogFormatter formatter = (UniformLogFormatter) formatterClass.newInstance();
             if (formatterClass.getName().equals("com.sun.enterprise.server.logging.UniformLogFormatter")) {
+                // used to support UFL formatter in GF.
+                UniformLogFormatter formatter = (UniformLogFormatter) formatterClass.newInstance();
                 String cname = "com.sun.enterprise.server.logging.GFFileHandler";
                 recordBeginMarker = props.get(cname + ".logFormatBeginMarker");
                 if (recordBeginMarker == null || ("").equals(recordBeginMarker)) {
@@ -319,12 +320,17 @@ public class LogManagerService implements Init, PostConstruct, PreDestroy, org.g
                 formatter.setRecordEndMarker(recordEndMarker);
                 formatter.setRecordDateFormat(recordDateFormat);
                 formatter.setRecordFieldSeparator(recordFieldSeparator);
-
-            }
-
-            for (Handler handler : logMgr.getLogger("").getHandlers()) {
-                // only get the ConsoleHandler
-                handler.setFormatter(formatter);
+                for (Handler handler : logMgr.getLogger("").getHandlers()) {
+                    // only get the ConsoleHandler
+                    handler.setFormatter(formatter);
+                }
+            } else if (formatterClass.getName().equals("com.sun.enterprise.server.logging.ODLLogFormatter")) {
+                // used to support ODL formatter in GF.
+                ODLLogFormatter formatter = (ODLLogFormatter) formatterClass.newInstance();
+                for (Handler handler : logMgr.getLogger("").getHandlers()) {
+                    // only get the ConsoleHandler
+                    handler.setFormatter(formatter);
+                }
             }
 
             //setting default attributes value for all properties
@@ -465,71 +471,71 @@ public class LogManagerService implements Init, PostConstruct, PreDestroy, org.g
                                     }
                                 } else if (a.equals(HANDLER_PROPERTY)) {
                                     if (!props.get(a).equals(handlerDetail)) {
-                                        generateAttributeChangeEvent(HANDLER_PROPERTY,handlerDetail,props);
+                                        generateAttributeChangeEvent(HANDLER_PROPERTY, handlerDetail, props);
                                     }
                                 } else if (a.equals(CONSOLEHANDLER_FORMATTER_PROPERTY)) {
                                     if (!props.get(a).equals(consoleHandlerFormatterDetail)) {
-                                        generateAttributeChangeEvent(CONSOLEHANDLER_FORMATTER_PROPERTY,consoleHandlerFormatterDetail,props);                                        
+                                        generateAttributeChangeEvent(CONSOLEHANDLER_FORMATTER_PROPERTY, consoleHandlerFormatterDetail, props);
                                     }
                                 } else if (a.equals(GFFILEHANDLER_FORMATTER_PROPERTY)) {
                                     if (!props.get(a).equals(gffileHandlerFormatterDetail)) {
-                                        generateAttributeChangeEvent(GFFILEHANDLER_FORMATTER_PROPERTY,gffileHandlerFormatterDetail,props);
+                                        generateAttributeChangeEvent(GFFILEHANDLER_FORMATTER_PROPERTY, gffileHandlerFormatterDetail, props);
                                     }
                                 } else if (a.equals(ROTATIONTIMELIMITINMINUTES_PROPERTY)) {
                                     if (!props.get(a).equals(rotationOnTimeLimitInMinutesDetail)) {
-                                        generateAttributeChangeEvent(ROTATIONTIMELIMITINMINUTES_PROPERTY,rotationOnTimeLimitInMinutesDetail,props);
+                                        generateAttributeChangeEvent(ROTATIONTIMELIMITINMINUTES_PROPERTY, rotationOnTimeLimitInMinutesDetail, props);
                                     }
                                 } else if (a.equals(FLUSHFREQUENCY_PROPERTY)) {
                                     if (!props.get(a).equals(flushFrequencyDetail)) {
-                                        generateAttributeChangeEvent(FLUSHFREQUENCY_PROPERTY,flushFrequencyDetail,props);
+                                        generateAttributeChangeEvent(FLUSHFREQUENCY_PROPERTY, flushFrequencyDetail, props);
                                     }
                                 } else if (a.equals(FILEHANDLER_LIMIT_PROPERTY)) {
                                     if (!props.get(a).equals(filterHandlerDetails)) {
-                                        generateAttributeChangeEvent(FILEHANDLER_LIMIT_PROPERTY,filterHandlerDetails,props);
+                                        generateAttributeChangeEvent(FILEHANDLER_LIMIT_PROPERTY, filterHandlerDetails, props);
                                     }
                                 } else if (a.equals(LOGTOCONSOLE_PROPERTY)) {
                                     if (!props.get(a).equals(logToConsoleDetail)) {
-                                        generateAttributeChangeEvent(LOGTOCONSOLE_PROPERTY,logToConsoleDetail,props);
+                                        generateAttributeChangeEvent(LOGTOCONSOLE_PROPERTY, logToConsoleDetail, props);
                                     }
                                 } else if (a.equals(ROTATIONLIMITINBYTES_PROPERTY)) {
                                     if (!props.get(a).equals(rotationInTimeLimitInBytesDetail)) {
-                                        generateAttributeChangeEvent(ROTATIONLIMITINBYTES_PROPERTY,rotationInTimeLimitInBytesDetail,props);
+                                        generateAttributeChangeEvent(ROTATIONLIMITINBYTES_PROPERTY, rotationInTimeLimitInBytesDetail, props);
                                     }
                                 } else if (a.equals(USESYSTEMLOGGING_PROPERTY)) {
                                     if (!props.get(a).equals(useSystemLoggingDetail)) {
-                                        generateAttributeChangeEvent(USESYSTEMLOGGING_PROPERTY,useSystemLoggingDetail,props);
+                                        generateAttributeChangeEvent(USESYSTEMLOGGING_PROPERTY, useSystemLoggingDetail, props);
                                     }
                                 } else if (a.equals(FILEHANDLER_COUNT_PROPERTY)) {
                                     if (!props.get(a).equals(fileHandlerCountDetail)) {
-                                        generateAttributeChangeEvent(FILEHANDLER_COUNT_PROPERTY,fileHandlerCountDetail,props);
+                                        generateAttributeChangeEvent(FILEHANDLER_COUNT_PROPERTY, fileHandlerCountDetail, props);
                                     }
                                 } else if (a.equals(RETAINERRORSSTATICTICS_PROPERTY)) {
                                     if (!props.get(a).equals(retainErrorsStaticticsDetail)) {
-                                        generateAttributeChangeEvent(RETAINERRORSSTATICTICS_PROPERTY,retainErrorsStaticticsDetail,props);
+                                        generateAttributeChangeEvent(RETAINERRORSSTATICTICS_PROPERTY, retainErrorsStaticticsDetail, props);
                                     }
                                 } else if (a.equals(LOG4J_VERSION_PROPERTY)) {
                                     if (!props.get(a).equals(log4jVersionDetail)) {
-                                        generateAttributeChangeEvent(LOG4J_VERSION_PROPERTY,log4jVersionDetail,props);
+                                        generateAttributeChangeEvent(LOG4J_VERSION_PROPERTY, log4jVersionDetail, props);
                                     }
                                 } else if (a.equals(MAXHISTORY_FILES_PROPERTY)) {
                                     if (!props.get(a).equals(maxHistoryFilesDetail)) {
-                                        generateAttributeChangeEvent(MAXHISTORY_FILES_PROPERTY,maxHistoryFilesDetail,props);
+                                        generateAttributeChangeEvent(MAXHISTORY_FILES_PROPERTY, maxHistoryFilesDetail, props);
                                     }
                                 } else if (a.equals(ROTATIONONDATECHANGE_PROPERTY)) {
                                     if (!props.get(a).equals(rotationOnDateChangeDetail)) {
-                                        generateAttributeChangeEvent(ROTATIONONDATECHANGE_PROPERTY,rotationOnDateChangeDetail,props);
+                                        generateAttributeChangeEvent(ROTATIONONDATECHANGE_PROPERTY, rotationOnDateChangeDetail, props);
                                     }
                                 } else if (a.equals(FILEHANDLER_PATTERN_PROPERTY)) {
                                     if (!props.get(a).equals(fileHandlerPatternDetail)) {
-                                        generateAttributeChangeEvent(FILEHANDLER_PATTERN_PROPERTY,fileHandlerPatternDetail,props);
+                                        generateAttributeChangeEvent(FILEHANDLER_PATTERN_PROPERTY, fileHandlerPatternDetail, props);
                                     }
                                 } else if (a.equals(FILEHANDLER_FORMATTER_PROPERTY)) {
                                     if (!props.get(a).equals(fileHandlerFormatterDetail)) {
-                                        generateAttributeChangeEvent(FILEHANDLER_FORMATTER_PROPERTY,fileHandlerFormatterDetail,props);
+                                        generateAttributeChangeEvent(FILEHANDLER_FORMATTER_PROPERTY, fileHandlerFormatterDetail, props);
                                     }
                                 } else if (a.equals(LOGFORMAT_DATEFORMAT_PROPERTY)) {
                                     if (!props.get(a).equals(logFormatDateFormatDetail)) {
-                                        generateAttributeChangeEvent(LOGFORMAT_DATEFORMAT_PROPERTY,logFormatDateFormatDetail,props);
+                                        generateAttributeChangeEvent(LOGFORMAT_DATEFORMAT_PROPERTY, logFormatDateFormatDetail, props);
                                     }
                                 }
                             }
@@ -566,7 +572,6 @@ public class LogManagerService implements Init, PostConstruct, PreDestroy, org.g
                 logger.log(logRecord);
             }
         }
-
     }
 
     public void generateAttributeChangeEvent(String property, String propertyDetail, Map props) {

@@ -83,10 +83,10 @@ import java.util.Properties;
 @Scoped(PerLookup.class)
 @I18n("set.log.attributes")
 @RestEndpoints({
-    @RestEndpoint(configBean=Domain.class,
-        opType=RestEndpoint.OpType.POST, 
-        path="set-log-attributes", 
-        description="set-log-attributes")
+        @RestEndpoint(configBean = Domain.class,
+                opType = RestEndpoint.OpType.POST,
+                path = "set-log-attributes",
+                description = "set-log-attributes")
 })
 public class SetLogAttributes implements AdminCommand {
 
@@ -149,16 +149,17 @@ public class SetLogAttributes implements AdminCommand {
                 final String att_name = (String) key;
                 final String att_value = (String) properties.get(att_name);
                 // that is is a valid level
-                boolean vlvl = false;
-                for (String s : validAttributes) {
-                    if (s.equals(att_name)) {
+                boolean vlAttribute = false;
+                for (String attrName : validAttributes) {
+                    if (attrName.equals(att_name)) {
                         m.put(att_name, att_value);
-                        vlvl = true;
+                        vlAttribute = true;
                         sbfSuccessMsg.append(localStrings.getLocalString(
                                 "set.log.attribute.properties", "{0} logging attribute set with value {1}.\n", att_name, att_value));
                     }
                 }
-                if (!vlvl) {
+
+                if (!vlAttribute) {
                     report.setMessage(localStrings.getLocalString("set.log.attribute.invalid",
                             "Invalid logging attribute name found {0}.", att_name));
                     invalidAttribute = true;
@@ -227,8 +228,8 @@ public class SetLogAttributes implements AdminCommand {
                             "set.log.attribute.success", "These logging attributes are set for {0}.", target));
                     report.setMessage(sbfSuccessMsg.toString());
                     report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
-                }
-            }
+                        }
+                    }
 
         } catch (IOException e) {
             report.setMessage(localStrings.getLocalString("set.log.attribute.failed",
@@ -236,4 +237,4 @@ public class SetLogAttributes implements AdminCommand {
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
         }
     }
-}
+    }
