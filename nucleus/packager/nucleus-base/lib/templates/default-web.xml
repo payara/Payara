@@ -317,13 +317,14 @@
         /lib/
         \lib\
         jstl-impl.jar
-        el-impl.jar
+        javax.el-api.jar
+        javax.el.jar
         javax.servlet-api.jar
-        javax.servlet.jsp.jar
+        javax.servlet.jsp-api.jar
         javax.servlet.jsp.jstl.jar
         javax.jms.jar
         jsf-api.jar
-        jsp-impl.jar
+        javax.servlet.jsp.jar
         jsf-impl.jar
         jspcaching-connector.jar
         web-glue.jar
