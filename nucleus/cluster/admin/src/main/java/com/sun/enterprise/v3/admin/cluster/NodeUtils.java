@@ -136,11 +136,6 @@ public class NodeUtils {
         if (node == null)
             return "";
 
-        // dcomfix
-        if (RemoteType.valueOf(node.getType()) == RemoteType.DCOM) {
-            throw new CommandValidationException("NOT YET IMPLEMENTED FOR DCOM");
-        }
-
         List<String> command = new ArrayList<String>();
         command.add("version");
         command.add("--local");
