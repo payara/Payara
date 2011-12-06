@@ -67,6 +67,12 @@
         gf.redirect(page="#{request.contextPath}/common/appServer/pswdAliases.jsf");
     />
     </sun:tab>
+    <sun:tab id="domainLogs" immediate="true" text="$resource{i18nc.domainLogs.tab}" toolTip="$resource{i18nc.domainLogs.tabTip}" >
+    <!command
+        setSessionAttribute(key="domainTabs" value="domainLogs");
+        gf.redirect(page="#{request.contextPath}/common/appServer/domainLogs.jsf");
+    />
+    </sun:tab>
 </sun:tabSet>
 <event>
     <!afterCreate

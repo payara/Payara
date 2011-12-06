@@ -49,6 +49,7 @@ import com.sun.enterprise.server.logging.logviewer.backend.LogFilterForInstance;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.logging.LogDomains;
+import org.glassfish.admin.payload.PayloadImpl;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
@@ -63,6 +64,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
@@ -120,9 +123,6 @@ public class CollectLogFiles implements AdminCommand {
         Properties props = initFileXferProps();
 
         Server targetServer = domain.getServerNamed(target);
-
-        File retrieveFile = makingDirectory(retrieveFilePath, report, localStrings.getLocalString(
-                "collectlogfiles.outputPath.notexist", "Retrieve File Path does not exist. Please enter correct value for Retrieve File Path."));
 
         if (targetServer != null && targetServer.isDas()) {
 
@@ -470,16 +470,52 @@ public class CollectLogFiles implements AdminCommand {
 
         // Playing with outbound payload to attach zip file..
         Payload.Outbound outboundPayload = context.getOutboundPayload();
+        // GLASSFISH-17627: pass to DownloadServlet
+        boolean retrieveFiles = false; 
+        if (outboundPayload == null) {
+            outboundPayload = PayloadImpl.Outbound.newInstance();
+            retrieveFiles = true;
+        }
 
-        //code to attach zip file to output directory
+        //code to files to output directory
         try {
-            File zipFile = new File(zipFileName);
-            outboundPayload.attachFile(
+            // GLASSFISH-17627: ignore zipFile, but add files directly, similarly to zipFile
+            List<File> files = new ArrayList<File>(Arrays.asList(tempDirectory.listFiles()));
+
+            for (int i = 0; i < files.size(); i++) {
+                File file = files.get(i);
+                //if the file is directory, "recurse"
+                if (file.isDirectory()) {
+                    files.addAll(Arrays.asList(file.listFiles()));
+                    continue;
+                }
+
+                if (file.getAbsolutePath().contains(".zip")) {
+                    continue;
+                }
+
+                outboundPayload.attachFile(
                     "application/octet-stream",
-                    tempDirectory.toURI().relativize(zipFile.toURI()),
+                    tempDirectory.toURI().relativize(file.toURI()),
                     "files",
                     props,
-                    zipFile);
+                    file);
+            }
+
+            if (retrieveFiles) {
+                File targetLocalFile = new File(retrieveFilePath); // CAUTION: file instead of dir
+                if (targetLocalFile.exists()) {
+                    throw new Exception("File exists");
+                }
+
+                if (!targetLocalFile.getParentFile().exists()) {
+                    throw new Exception("Parent directory does not exist");
+                }
+                FileOutputStream targetStream = new FileOutputStream(targetLocalFile);
+                outboundPayload.writeTo(targetStream);
+                targetStream.flush();
+                targetStream.close();
+            }
         }
         catch (Exception ex) {
             final String errorMsg = localStrings.getLocalString(
