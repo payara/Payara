@@ -81,17 +81,19 @@ public class UptimeCommand implements AdminCommand {
     public void execute(AdminCommandContext context) {
         final ActionReport report = context.getActionReport();
         long totalTime_ms = getUptime();
+        String totalTime_mss = "" + totalTime_ms;	
         Duration duration = new Duration(totalTime_ms);
         duration.setTerse();
         report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
         String message;
 
         if (milliseconds)
-            message = "" + totalTime_ms;
+            message = totalTime_mss;
         else
             message = localStrings.getLocalString("uptime.output.terse", "Uptime: {0}", duration);
 
         report.setMessage(message);
+        report.getTopMessagePart().addProperty("milliseconds", totalTime_mss);
     }
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(UptimeCommand.class);
 
