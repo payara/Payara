@@ -97,7 +97,7 @@
                     mapPut(map="#{pageSession.argsMap}" key="target" value="#{pageSession.selectedTarget}");
                     gf.restRequest(endpoint="#{sessionScope.REST_URL}/resources/add-resources.json"
                             attrs="#{pageSession.argsMap}"
-                            method="GET"
+                            method="POST"
                             result="#{requestScope.result}");
                     if ("#{requestScope.result.data['exit_code']} = SUCCESS") {
                         prepareAlertMsg(type="success" summary="$resource{i18nc.resources.addResources.successfulMsg}");
