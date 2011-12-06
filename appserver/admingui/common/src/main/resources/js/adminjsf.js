@@ -1869,7 +1869,9 @@ admingui.deploy = {
         window.setTimeout("disableComponent('" + dirPathId+ "', 'text')", 1);
         if(getSelectedValueFromForm(document.forms['form'], 'uploadRdBtn')=='serverSide'){
             enableDOMComponent(dirPathId);
-            enableBtnComponent(dirSelectBtnId);
+            if ( (dirSelectBtnId != null) && (dirSelectBtnId != '') && (isWhitespace(dirSelectBtnId) == false)){
+                enableBtnComponent(dirSelectBtnId);
+            }
             enableBtnComponent(filSelectBtnId);
             disableComponent(fileuploadId, 'file');
         }
@@ -1878,7 +1880,9 @@ admingui.deploy = {
     uploadRdBtnAction : function(dirPathId, dirSelectBtnId, filSelectBtnId, fileuploadId, radioChoosenId) {
         //disableDOMComponent(dirPathId);
         window.setTimeout("disableComponent('" + dirPathId + "', 'text')", 1);
+        if ( (dirSelectBtnId != null) && (dirSelectBtnId != '') && (isWhitespace(dirSelectBtnId) == false)){
         disableBtnComponent(dirSelectBtnId);
+        }
         disableBtnComponent(filSelectBtnId);
         enableComponent(fileuploadId, 'file');
         comp = getTextElement(radioChoosenId);
@@ -1887,12 +1891,22 @@ admingui.deploy = {
 
     fileChooseAction : function(dirPathId, dirSelectBtnId, filSelectBtnId, fileuploadId, radioChoosenId) {
         enableDOMComponent(dirPathId);
+        if ( (dirSelectBtnId != null) && (dirSelectBtnId != '') && (isWhitespace(dirSelectBtnId) == false)){
         enableBtnComponent(dirSelectBtnId);
+        }
         enableBtnComponent(filSelectBtnId);
         disableComponent(fileuploadId, 'file');
         comp = getTextElement(radioChoosenId);
         comp.value='local';
     },
+
+    populateDir : function (fileChooserId, dirPathId){
+        var component = document.getElementById(fileChooserId);
+        var fc = component.getSelectionValue();        
+        window.opener.getTextElement(dirPathId).value = fc;
+        return true;
+    },
+
 
     showPropertySheet : function(propSheetId, obj, appNameId, contextRootId, appTypeString, appName){
         var cc = null;

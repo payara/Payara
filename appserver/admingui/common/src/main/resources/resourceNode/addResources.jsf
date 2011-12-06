@@ -2,7 +2,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -40,46 +40,24 @@
 
 -->
 
-<!-- resourceNode/resources.jsf -->
-
+<!-- common/resourceNode/addResources.jsf -->
 <!initPage
-    setResourceBundle(key="i18n" bundle="org.glassfish.admingui.core.Strings")
-    setResourceBundle(key="i18nc" bundle="org.glassfish.common.admingui.Strings")
+    setResourceBundle(key="i18nc" bundle="org.glassfish.common.admingui.Strings");
     setResourceBundle(key="help_common" bundle="org.glassfish.common.admingui.Helplinks");
 />
-<!composition template="/templates/default.layout"  guiTitle="$resource{i18n.resourcesPageTitle}" >
+<!composition template="/templates/default.layout" guiTitle="$resource{i18nc.resources.addResources}"
+    guiOnLoad="admingui.nav.selectTreeNodeWithURL('#{request.contextPath}/common/resourceNode/resources.jsf')"
+    guiTemplateOnLoad="admingui.deploy.uploadInit('#{dirPathId}','#{null}','#{dirSelectBtnId}','#{filSelectBtnId}','#{fileuploadId}');"  >
 <!define name="content">
-   <sun:form id="resourcesForm"> 
-                <sun:title 
-                id="resourcesPageTitle" 
-                title="$resource{i18n.resourcesPageTitle}" 
-                helpText="$resource{i18n.resourcesPageTitleHelp}"
-                />
-#include "/common/shared/alertMsg.inc"
-                "<br />
-                <sun:panelGroup id="topButtons">
-                    <sun:button id="addResources" text="$resource{i18nc.resources.addResources}">
-                        <!command
-                            gf.redirect(page="#{requestScope.contextPath}/common/resourceNode/addResources.jsf");
-                        />
-                    </sun:button>
-                </sun:panelGroup>
-                <sun:propertySheet>
-                    <sun:propertySheetSection id="propSheetSection">
-                         <!afterCreate
-                            getClientId(component="$this{component}" clientId=>$attribute{sheetId});
-                        />
-                    </sun:propertySheetSection>
-                    <event>
-                        <!afterCreate
-                            getUIComponent(clientId="#{sheetId}"  component=>$attribute{component})
-                            includeIntegrations(type="org.glassfish.admingui:resources" root="#{component}");
-                        />
-                    </event>
-                </sun:propertySheet>
-
-                <sun:hidden id="helpKey" value="$resource{help_common.resources}" />
-            </sun:form>           
+<f:verbatim>
+    <script type="text/javascript">
+	document.body.style.cursor = 'auto';
+    </script>
+    <iframe src="/common/resourceNode/addResourcesFrame.jsf" style="overflow:auto; width:100%; height:100%; border:0px;">
+    </iframe>
+</f:verbatim>
+    <sun:form>
+	<sun:hidden id="helpKey" value="$resource{help_common.addResources}" />
+    </sun:form>
 </define>
 </composition>
-
