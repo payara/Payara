@@ -91,6 +91,13 @@ public class UnpooledResource extends ConnectionPool{
     }
 
     @Override
+    protected void reconfigureSteadyPoolSize(int oldSteadyPoolSize,
+                                           int newSteadyPoolSize) throws PoolingException {
+        //No-op as the steady pool size should not be reconfigured when connection
+        //pooling is switched off
+    }
+
+    @Override
     protected ResourceHandle getUnenlistedResource(ResourceSpec spec, ResourceAllocator alloc,
             Transaction tran) throws PoolingException {
         ResourceHandle handle = null;

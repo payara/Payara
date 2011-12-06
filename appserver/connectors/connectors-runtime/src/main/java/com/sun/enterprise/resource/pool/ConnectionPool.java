@@ -1357,6 +1357,7 @@ public class ConnectionPool implements ResourcePool, ConnectionLeakListener,
                 * 1000;
         if (poolInitialized) {
             if (_idleTime != idletime && _idleTime != 0) {
+                idletime = _idleTime;
                 scheduleResizerTask();
             }
             if (_idleTime == 0) {
@@ -1418,14 +1419,18 @@ public class ConnectionPool implements ResourcePool, ConnectionLeakListener,
                 if (toKill > 0)
                     killExtraResources(toKill);
             }
+            reconfigureSteadyPoolSize(oldSteadyPoolSize, _steadyPoolSize);
+        }
+    }
 
-            if (oldSteadyPoolSize != steadyPoolSize) {
-                if (poolInitialized) {
-                    if (oldSteadyPoolSize < steadyPoolSize) {
-                        increaseSteadyPoolSize(_steadyPoolSize);
-                        if (poolLifeCycleListener != null) {
-                            poolLifeCycleListener.connectionsFreed(steadyPoolSize);
-                        }
+    protected void reconfigureSteadyPoolSize(int oldSteadyPoolSize,
+                                           int newSteadyPoolSize) throws PoolingException {
+        if(oldSteadyPoolSize != steadyPoolSize) {
+            if(poolInitialized) {
+                if(oldSteadyPoolSize < steadyPoolSize) {
+                    increaseSteadyPoolSize(newSteadyPoolSize);
+                    if (poolLifeCycleListener != null) {
+                        poolLifeCycleListener.connectionsFreed(steadyPoolSize);
                     }
                 }
             }
