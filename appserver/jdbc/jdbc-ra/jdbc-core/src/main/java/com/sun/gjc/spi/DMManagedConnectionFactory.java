@@ -168,8 +168,7 @@ public class DMManagedConnectionFactory extends ManagedConnectionFactory {
                 null, dsConn, pc, this);
 
         //GJCINT
-        setIsolation(mc);
-        isValid(mc);
+        validateAndSetIsolation(mc);
         return mc;
     }
 

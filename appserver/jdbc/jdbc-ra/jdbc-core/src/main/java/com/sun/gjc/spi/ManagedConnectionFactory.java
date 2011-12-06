@@ -57,6 +57,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import javax.resource.ResourceException;
 import javax.resource.spi.ConnectionRequestInfo;
+import javax.resource.spi.ResourceAllocationException;
 import javax.resource.spi.security.PasswordCredential;
 import javax.sql.PooledConnection;
 import java.sql.Connection;
@@ -632,8 +633,22 @@ public abstract class ManagedConnectionFactory implements javax.resource.spi.Man
      * Common operation performed by all the child MCFs before returning a created mc
      */
     protected void validateAndSetIsolation(ManagedConnection mc) throws ResourceException {
-        isValid(mc);
-        setIsolation(mc);
+        try {
+            isValid(mc);
+            setIsolation(mc);
+        } catch (ResourceException e) {
+            if (mc != null) {
+                try {
+                    mc.destroy();
+                } catch (ResourceException e1) {
+                    _logger.log(Level.WARNING, "jdbc.exc_destroy", e1);
+                }
+            }
+            String msg = localStrings.getString("jdbc.exc_destroy", e.getMessage());
+            ResourceAllocationException rae = new ResourceAllocationException(
+                    msg, e);
+            throw rae;
+        }
     }
 
     private void detectStatementCachingSupport() {
