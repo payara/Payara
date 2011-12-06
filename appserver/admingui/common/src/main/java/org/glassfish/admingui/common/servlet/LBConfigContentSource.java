@@ -59,8 +59,18 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.servlet.ServletRequest;
 import org.glassfish.admingui.common.util.RestUtil;
+import com.sun.jersey.api.client.Client;
+import com.sun.jersey.api.client.ClientResponse;
+import com.sun.jersey.api.client.WebResource;
+import com.sun.jersey.api.client.filter.HTTPBasicAuthFilter;
+import com.sun.jersey.core.util.MultivaluedMapImpl;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+import javax.ws.rs.core.Cookie;
+import javax.ws.rs.core.MultivaluedMap;
+import org.glassfish.admingui.common.security.AdminConsoleAuthModule;
+import org.glassfish.admingui.common.util.RestResponse;
 
 /**
  *
@@ -91,7 +101,8 @@ public class LBConfigContentSource  implements DownloadServlet.ContentSource {
 	ctx.setAttribute(DownloadServlet.EXTENSION, "LB-CONFIG");
 
 	// Get appName
-	ServletRequest request = ctx.getServletRequest();
+	HttpServletRequest request = (HttpServletRequest) ctx.getServletRequest();
+        HttpSession session = request.getSession();
 	String lbName = request.getParameter("lbName");
         String restUrl = request.getParameter("restUrl");
         
@@ -107,7 +118,16 @@ public class LBConfigContentSource  implements DownloadServlet.ContentSource {
             String slbFile = tempDir + System.getProperty("file.separator") + lbFileName;
             File lbFile = new File(slbFile);
             attrsMap.put("id", slbFile);
-            RestUtil.restRequest( endpoint , attrsMap, "post", null, false);
+            Client client2 = RestUtil.JERSEY_CLIENT;
+            WebResource webResource = client2.resource(endpoint);
+            String token = (String) session.getAttribute(AdminConsoleAuthModule.REST_TOKEN);
+            MultivaluedMap formData = new MultivaluedMapImpl();
+            formData.putSingle("id", slbFile);
+            ClientResponse cr = webResource
+                .cookie(new Cookie("gfresttoken", token))
+                .accept(RestUtil.RESPONSE_TYPE).post(ClientResponse.class, formData);
+            RestResponse rr = RestResponse.getRestResponse(cr);
+            RestUtil.parseResponse(rr, null, endpoint, attrsMap, true, true);
 	    tmpFile = new FileInputStream(lbFile);
             lbFile.delete();
 	} catch (Exception ex) {
