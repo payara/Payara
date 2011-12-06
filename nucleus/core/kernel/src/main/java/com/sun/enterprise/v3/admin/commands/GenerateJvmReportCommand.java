@@ -70,21 +70,21 @@ import org.glassfish.config.support.TargetType;
 @ExecuteOn(value = {RuntimeType.INSTANCE}, ifNeverStarted=FailurePolicy.Error)
 @RestEndpoints({
     @RestEndpoint(configBean=Cluster.class,
-        opType=RestEndpoint.OpType.POST, 
+        opType=RestEndpoint.OpType.GET, 
         path="generate-jvm-report", 
         description="Generate Report",
         params={
             @RestParam(name="target", value="$parent")
         }),
     @RestEndpoint(configBean=Server.class,
-        opType=RestEndpoint.OpType.POST, 
+        opType=RestEndpoint.OpType.GET, 
         path="generate-jvm-report", 
         description="Generate Report",
         params={
             @RestParam(name="target", value="$parent")
         }),
     @RestEndpoint(configBean=JavaConfig.class,
-        opType=RestEndpoint.OpType.POST, 
+        opType=RestEndpoint.OpType.GET, 
         path="generate-jvm-report", 
         description="Generate Report",
         params={
