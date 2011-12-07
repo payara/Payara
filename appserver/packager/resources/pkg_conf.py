@@ -61,7 +61,7 @@
 # example, grizzly version would look like 1.8.2-0,0. 
 
 glassfish_version="4.0,0-${build.id}"
-felix_version="3.0.8,0-0"
+felix_version="4.0.2,0-0"
 javadb_version="10.5.3.0,0-0"
 corba_version="3.2.0,0-6"
 jsf_version="2.1.3,0-4"
