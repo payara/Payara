@@ -39,7 +39,6 @@
  */
 package com.sun.enterprise.admin.cli.cluster;
 
-import com.sun.enterprise.universal.io.SmartFile;
 import com.sun.enterprise.util.cluster.windows.process.WindowsCredentials;
 import com.sun.enterprise.util.cluster.windows.process.WindowsException;
 import com.sun.enterprise.util.cluster.windows.process.WindowsRemoteScripter;
@@ -48,6 +47,7 @@ import com.sun.enterprise.util.cluster.windows.io.WindowsRemoteFileCopyProgress;
 import com.sun.enterprise.util.cluster.windows.io.WindowsRemoteFileSystem;
 import java.io.File;
 import java.io.IOException;
+import java.util.*;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -67,6 +67,9 @@ public class InstallNodeDcomCommand extends InstallNodeBaseCommand {
     private String user;
     @Param(name = "windowsdomain", shortName = "d", optional = true, defaultValue = "")
     private String windowsDomain;
+    private final List<HostAndPassword> passwords = new ArrayList<HostAndPassword>();
+
+    private String remoteInstallDirString;
 
     @Override
     final String getRawRemoteUser() {
@@ -86,7 +89,7 @@ public class InstallNodeDcomCommand extends InstallNodeBaseCommand {
     @Override
     void copyToHosts(File zipFile, ArrayList<String> binDirFiles) throws CommandException {
         try {
-            copyToHostsInternal(zipFile, binDirFiles, getInstallDir());
+            copyToHostsInternal(zipFile, binDirFiles);
         }
         catch (CommandException ex) {
             throw ex;
@@ -102,6 +105,7 @@ public class InstallNodeDcomCommand extends InstallNodeBaseCommand {
      * to happen before the very very slow zipfile creation.
      * FAIL FAST principle
      * This adds a bit of extra overhead to the command...
+     * Note that allowing multiple hosts makes things MUCH more complicated.
      * @throws WindowsException
      */
     @Override
@@ -109,14 +113,17 @@ public class InstallNodeDcomCommand extends InstallNodeBaseCommand {
         if (getForce())
             return;
 
+        remoteInstallDirString = getInstallDir().replace('/', '\\');
+
         try {
             for (String host : hosts) {
                 String remotePassword = getWindowsPassword(host);
+                passwords.add(new HostAndPassword(host, remotePassword));
                 WindowsRemoteFileSystem wrfs = new WindowsRemoteFileSystem(host, getRemoteUser(), remotePassword);
-                WindowsRemoteFile remoteInstallDir = new WindowsRemoteFile(wrfs, getInstallDir());
+                WindowsRemoteFile remoteInstallDir = new WindowsRemoteFile(wrfs, remoteInstallDirString);
 
                 if (remoteInstallDir.exists())
-                    throw new CommandException(Strings.get("install.dir.exists", getInstallDir()));
+                    throw new CommandException(Strings.get("install.dir.exists", remoteInstallDir));
             }
         }
         catch (WindowsException ex) {
@@ -124,15 +131,15 @@ public class InstallNodeDcomCommand extends InstallNodeBaseCommand {
         }
     }
 
-    private void copyToHostsInternal(File zipFile, ArrayList<String> binDirFiles, String windowsInstallDir)
+    private void copyToHostsInternal(File zipFile, ArrayList<String> binDirFiles)
             throws CommandException, WindowsException {
         final String zipFileName = "glassfish_install.zip";
         final String unpackScriptName = "unpack.bat";
 
         for (String host : hosts) {
-            String remotePassword = getWindowsPassword(host);
+            String remotePassword = getPassword(host);
             WindowsRemoteFileSystem wrfs = new WindowsRemoteFileSystem(host, getRemoteUser(), remotePassword);
-            WindowsRemoteFile remoteInstallDir = new WindowsRemoteFile(wrfs, windowsInstallDir);
+            WindowsRemoteFile remoteInstallDir = new WindowsRemoteFile(wrfs, remoteInstallDirString);
             remoteInstallDir.mkdirs(getForce());
             WindowsRemoteFile remoteZip = new WindowsRemoteFile(remoteInstallDir, zipFileName);
             WindowsRemoteFile unpackScript = new WindowsRemoteFile(remoteInstallDir, unpackScriptName);
@@ -146,9 +153,9 @@ public class InstallNodeDcomCommand extends InstallNodeBaseCommand {
                 }
             });
             System.out.println("");
-            String fullZipFileName = SmartFile.sanitize(windowsInstallDir + "/" + zipFileName);
-            String fullUnpackScriptPath = SmartFile.sanitize(windowsInstallDir + "/" + unpackScriptName);
-            unpackScript.copyFrom(makeScriptString(windowsInstallDir, zipFileName));
+            String fullZipFileName = remoteInstallDirString + "\\" + zipFileName;
+            String fullUnpackScriptPath = remoteInstallDirString + "\\" + unpackScriptName;
+            unpackScript.copyFrom(makeScriptString(remoteInstallDirString, zipFileName));
             logger.fine("WROTE FILE TO REMOTE SYSTEM: " + fullZipFileName + " and " + fullUnpackScriptPath);
             unpackOnHosts(host, remotePassword, fullUnpackScriptPath.replace('/', '\\'));
         }
@@ -178,5 +185,26 @@ public class InstallNodeDcomCommand extends InstallNodeBaseCommand {
             throw new CommandException(Strings.get("dcom.error.unpacking", unpackScript, out));
 
         logger.fine("Output from Windows Unpacker:\n" + out);
+    }
+
+    private String getPassword(String host) {
+        if(!ok(host))
+            return null;
+
+        for(HostAndPassword hap : passwords) {
+            if(host.equals(hap.host))
+                return hap.password;
+        }
+
+        return null;
+    }
+    private static class HostAndPassword {
+        private final String host;
+        private final String password;
+
+        public HostAndPassword(String host, String password) {
+            this.host = host;
+            this.password = password;
+        }
     }
 }
