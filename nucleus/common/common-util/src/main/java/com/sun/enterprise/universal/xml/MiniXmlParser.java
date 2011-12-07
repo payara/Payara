@@ -176,8 +176,12 @@ public class MiniXmlParser {
     public void setupConfigDir(File configDir, File installDir) {
         loggingConfig.setupConfigDir(configDir, installDir);
     }
+    
+    public boolean getSecureAdminEnabled() {
+        return secureAdminEnabled;
+    }
 
-    /**
+    /** 
      * loggingConfig will return an IOException if there is no
      * logging properties file.
      *
@@ -419,6 +423,17 @@ public class MiniXmlParser {
             }
         }
     }
+    
+    private void parseSecureAdmin() {
+        Map<String,String> secureAdminProperties = parseAttributes();
+        
+        if (secureAdminProperties.containsKey("enabled")) {
+            String value = secureAdminProperties.get("enabled");
+            if("true".equals(value)) {
+                secureAdminEnabled =  true;
+            }
+        }         
+    }
 
     private void parseNetworkConfig()
             throws XMLStreamException, EndDocumentException {
@@ -635,7 +650,7 @@ public class MiniXmlParser {
             // we are going through domain.xml in one long relentless sweep and
             // we can't back up!
 
-            while (skipToButNotPast("domain", "property", "clusters", "system-property")) {
+            while (skipToButNotPast("domain", "property", "clusters", "system-property","secure-admin")) {
                 String name = parser.getLocalName();
                 if ("clusters".equals(name))
                     parseClusters();
@@ -643,6 +658,8 @@ public class MiniXmlParser {
                     parseSystemProperty(SysPropsHandler.Type.DOMAIN);
                 else if ("property".equals(name))
                     parseDomainProperty(); // property found -- maybe it is the domain name?
+                else if("secure-admin".equals(name)) 
+                    parseSecureAdmin();
             }
             if (domainName == null) {
                 Logger.getLogger(MiniXmlParser.class.getName()).log(
@@ -996,6 +1013,7 @@ public class MiniXmlParser {
     private boolean sawConfig;
     private SysPropsHandler sysProps = new SysPropsHandler();
     private List<ParsedCluster> clusters = null;
+    private boolean secureAdminEnabled = false;
     
 
 }

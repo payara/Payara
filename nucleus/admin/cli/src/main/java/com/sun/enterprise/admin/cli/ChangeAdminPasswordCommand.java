@@ -40,13 +40,25 @@
 
 package com.sun.enterprise.admin.cli;
 
+import com.sun.enterprise.admin.launcher.GFLauncher;
+import com.sun.enterprise.admin.launcher.GFLauncherException;
+import com.sun.enterprise.admin.launcher.GFLauncherFactory;
+import com.sun.enterprise.admin.launcher.GFLauncherInfo;
 import java.io.Console;
 import org.jvnet.hk2.annotations.*;
 import org.jvnet.hk2.component.*;
 import org.glassfish.api.admin.*;
 import com.sun.enterprise.admin.remote.RemoteAdminCommand;
+import com.sun.enterprise.config.serverbeans.SecureAdmin;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
+import com.sun.enterprise.universal.xml.MiniXmlParser;
+import com.sun.enterprise.universal.xml.MiniXmlParserException;
+import com.sun.enterprise.util.net.NetUtils;
+import java.io.IOException;
+import java.net.ConnectException;
+import org.glassfish.api.Param;
+import org.glassfish.security.common.FileRealmHelper;
 
 /**
  * The change-admin-password command.
@@ -68,14 +80,22 @@ import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 @Service(name = "change-admin-password")
 @Scoped(PerLookup.class)
 @ExecuteOn({RuntimeType.DAS})
-public class ChangeAdminPasswordCommand extends CLICommand {
+public class ChangeAdminPasswordCommand extends LocalDomainCommand {
     private ParameterMap params;
+    
 
     private static final LocalStringsImpl strings =
             new LocalStringsImpl(ChangeAdminPasswordCommand.class);
 
     private static final String oldpwName = Environment.AS_ADMIN_ENV_PREFIX + "PASSWORD";
     private static final String newpwName = Environment.AS_ADMIN_ENV_PREFIX + "NEWPASSWORD";
+    
+    @Param(name = "domain_name", optional = true)
+    private String userArgDomainName;
+    
+    private SecureAdmin secureAdmin = null;
+
+    
     
     /**
      * Require the user to actually type the passwords unless they are in
@@ -84,6 +104,8 @@ public class ChangeAdminPasswordCommand extends CLICommand {
     @Override
     protected void validate()
             throws CommandException, CommandValidationException {
+        setDomainName(userArgDomainName);
+        super.validate();
         /*
          * If --user wasn't specified as a program option,
          * we treat it as a required option and prompt for it
@@ -132,12 +154,40 @@ public class ChangeAdminPasswordCommand extends CLICommand {
      */
     @Override
     protected int executeCommand() throws CommandException {
-        RemoteAdminCommand rac = new RemoteAdminCommand(name,
-            programOpts.getHost(), programOpts.getPort(),
-            programOpts.isSecure(), programOpts.getUser(),
-            programOpts.getPassword(), logger);
-        rac.executeCommand(params);
-        return SUCCESS;
+        
+         if(ok(domainDirParam) || ok(userArgDomainName)) {
+          //If domaindir or domain arguments are provided,
+           // do not attempt remote connection. Change password locally
+           String domainDir = (ok(domainDirParam))?domainDirParam:getDomainsDir().getPath();
+           String domainName = (ok(userArgDomainName))?userArgDomainName:getDomainName();
+           return changeAdminPasswordLocally(domainDir,domainName);         
+        
+       } else {
+           try {
+            RemoteAdminCommand rac = new RemoteAdminCommand(name,
+                programOpts.getHost(), programOpts.getPort(),
+                programOpts.isSecure(), programOpts.getUser(),
+                programOpts.getPassword(), logger);
+            rac.executeCommand(params);
+            return SUCCESS;
+           } catch(CommandException ce) {
+               if ( ce.getCause() instanceof ConnectException) {
+                   //Remote change failure - change password with default values of
+                   // domaindir and domain name,if the --host option is not provided.
+                   if(!isLocalHost(programOpts.getHost())) {
+                       throw ce;
+                   }
+                   return changeAdminPasswordLocally(getDomainsDir().getPath(),
+                           getDomainName());
+                   
+                   
+               } else {
+                   throw ce;
+               }
+           }
+        }
+       
+        
     }
 
     /**
@@ -158,11 +208,75 @@ public class ChangeAdminPasswordCommand extends CLICommand {
             if (!newpassword.equals(newpasswordAgain)) {
                 throw new CommandValidationException(
                     strings.get("OptionsDoNotMatch", "Admin Password"));
-            }
+            } 
         }
 
         passwords.put(oldpwName, oldpassword);
         passwords.put(newpwName, newpassword);
         return oldpassword;
     }
+    
+    private int changeAdminPasswordLocally(String domainDir, String domainName) throws CommandException {
+        
+        if(!isLocalHost(programOpts.getHost())) {
+            throw new CommandException(strings.get("CannotExecuteLocally"));
+        }  
+        
+        GFLauncher launcher = null;
+        try {
+            launcher = GFLauncherFactory.getInstance(RuntimeType.DAS);
+            GFLauncherInfo info = launcher.getInfo();
+            info.setDomainName(domainName);
+            info.setDomainParentDir(domainDir);
+            launcher.setup();
+            
+            //If secure admin is enabled and if new password is null
+            //throw new exception
+            if(launcher.isSecureAdminEnabled()) {
+                String newPassword = (String) passwords.get(newpwName);
+                if ((newPassword == null) || (newPassword.isEmpty())) {
+                    throw new CommandException(strings.get("NullNewPassword"));
+                }
+            }
+
+            String adminKeyFile = launcher.getAdminRealmKeyFile();
+
+            if (adminKeyFile != null) {
+                //This is a FileRealm, instantiate it.
+                FileRealmHelper helper = new FileRealmHelper(adminKeyFile);
+
+                //Authenticate the old password
+                String[] groups = helper.authenticate(programOpts.getUser(), ((String) passwords.get(oldpwName)).toCharArray());
+                if (groups == null) {
+                    throw new CommandException(strings.get("InvalidCredentials", programOpts.getUser()));
+                }
+                helper.updateUser(programOpts.getUser(), programOpts.getUser(), ((String) passwords.get(newpwName)).toCharArray(), null);
+                helper.persist();
+                return SUCCESS;
+
+            } else {
+                //Cannot change password locally for non file realms
+                throw new CommandException(strings.get("NotFileRealmCannotChangeLocally"));
+
+            }
+
+        } catch (MiniXmlParserException ex) {
+            throw new CommandException(ex);
+        } catch (GFLauncherException ex) {
+            throw new CommandException(ex);
+        } catch (IOException ex) {
+            throw new CommandException(ex);
+        }
+    }
+ 
+    
+    private static boolean isLocalHost(String host) {        
+        if(host != null && (NetUtils.isThisHostLocal(host) || NetUtils.isLocal(host))) {
+            return true;          
+        }
+        return false;
+    }
+        
+
+
 }
