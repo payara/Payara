@@ -192,7 +192,7 @@ public interface Cluster extends ConfigBeanProxy, Injectable, PropertyBag, Named
      */
     @Attribute
     @Min(value=2048)
-    @Max(value=32000)
+    @Max(value=49151)  // fix bug 13475586
     String getGmsMulticastPort();
 
     /**
@@ -801,7 +801,8 @@ public interface Cluster extends ConfigBeanProxy, Injectable, PropertyBag, Named
 
     private String generateHeartbeatPort() {
         final int MIN_GMS_MULTICAST_PORT = 2048;
-        final int MAX_GMS_MULTICAST_PORT = 32000;
+        final int MAX_GMS_MULTICAST_PORT = 32000; // be pessimistic for generation of random port and assume
+                                                  // ephemeral port range between 32k to 64k.
 
         int portInterval = MAX_GMS_MULTICAST_PORT - MIN_GMS_MULTICAST_PORT;
         return Integer.valueOf(Math.round((float)(Math.random() * portInterval)) + MIN_GMS_MULTICAST_PORT).toString();
