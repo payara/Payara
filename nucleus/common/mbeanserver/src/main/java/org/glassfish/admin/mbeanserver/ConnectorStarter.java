@@ -75,7 +75,6 @@ abstract class ConnectorStarter {
     }
 
     public String hostname() throws UnknownHostException {
-        InetAddress.getByName(mHostName);
         if (mHostName.equals("") || mHostName.equals("0.0.0.0")) {
             return Util.localhost();
         } else if (mHostName.contains(":") && !mHostName.startsWith("[")) {
