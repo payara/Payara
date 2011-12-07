@@ -97,7 +97,7 @@ public class NodeRunnerDcom {
 
             // This is where the rubber meets the road...
             String out = asadmin.run(fullcommand);
-
+            output.append(out);
 
             logger.info(Strings.get("remote.command.summary", humanreadable, out));
             return 0;
