@@ -75,12 +75,13 @@ public class ApplicationTest extends BaseSeleniumTestClass {
     private static final String ELEMENT_DEPLOY_BUTTON = "propertyForm:deployTable:topActionsGroup1:deployButton";
     private static final String TRIGGER_SUCCESS = "New values successfully saved";
     private static final String TRIGGER_DOMAIN_ATTRIBUTES = "Domain Attributes";
+    private static final String TRIGGER_DOMAIN_LOGS = "i18nc.domainLogs.PageHelp";
     private static final String TRIGGER_APPLICATION_CONFIGURATION = "Enable reloading so that changes to deployed applications";
 
     //The following test will pass ONLY if there is no cluster or standalone instance.  This is for "PE" profile
     //TODO: We may need to DELETE all cluster and standalone instance in the beginning of this test.
 
-//    @Test
+    //@Test
     public void testDeployWar() {
         final String applicationName = generateRandomString();
         clickAndWait("treeForm:tree:applications:applications_link", TRIGGER_APPLICATIONS);
@@ -157,5 +158,15 @@ public class ApplicationTest extends BaseSeleniumTestClass {
         setFieldValue("propertyForm:propertySheet:propertSectionTextField:localeProp:Locale", "en_UK");
         clickAndWait("propertyForm:propertyContentPage:topButtons:saveButton", TRIGGER_SUCCESS);
         assertEquals("en_UK", getFieldValue("propertyForm:propertySheet:propertSectionTextField:localeProp:Locale"));
+    }
+
+    @Test
+    public void testDomainLogs() {
+        clickAndWait("treeForm:tree:nodes:nodes_link", TRIGGER_DOMAIN_ATTRIBUTES);
+        clickAndWait("propertyForm:domainTabs:domainLogs", resolveTriggerText(TRIGGER_DOMAIN_LOGS));
+        // click download, but ignore it (selenium can't interect with Save File dialog
+        pressButton("form:propertyContentPage:topButtons:collectLogFiles");
+        // if above is broken, assertion will fail
+        assertTrue(isTextPresent(TRIGGER_DOMAIN_LOGS));
     }
 }

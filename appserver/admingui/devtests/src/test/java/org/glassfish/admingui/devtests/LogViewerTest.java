@@ -40,9 +40,7 @@
 
 package org.glassfish.admingui.devtests;
 
-import org.glassfish.admingui.common.util.GuiUtil;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import static org.junit.Assert.*;
 
 import org.junit.Test;
 
@@ -50,15 +48,36 @@ import org.junit.Test;
 public class LogViewerTest extends BaseSeleniumTestClass {
     private static final String TRIGGER_SERVER = "i18n.instance.GeneralTitle";
     private static final String TRIGGER_LV = "i18nc.logViewer.levelLabel";
+    private static final String TRIGGER_IV = "i18nc.logViewer.instanceLabel";
 
 
     // basic sanity test for log viewer
     @Test
     public void testLogViewer() {
-        clickAndWait("treeForm:tree:applicationServer:applicationServer_link", TRIGGER_SERVER);
-        pressButton("propertyForm:propertyContentPage:logViewer");
-        waitForPopUp("LogViewerWindow", "999999");
-        isTextPresent(TRIGGER_LV);
+    	try {
+	        clickAndWait("treeForm:tree:applicationServer:applicationServer_link", TRIGGER_SERVER);
+	        pressButton("propertyForm:propertyContentPage:logViewer");
+	        waitForPopUp("LogViewerWindow", "999999");
+	        selectWindow("LogViewerWindow");
+	        assertTrue(isTextPresent(TRIGGER_LV));
+    	} finally {
+    		selectWindow("");
+    	}
+    }
+
+    // basic sanity test for raw log viewer
+    @Test
+    public void testRawLogViewer() {
+    	try {
+		    clickAndWait("treeForm:tree:applicationServer:applicationServer_link", TRIGGER_SERVER);
+		    pressButton("propertyForm:propertyContentPage:logViewerRaw");
+		    waitForPopUp("LogViewerWindow", "999999");
+		    selectWindow("LogViewerWindow");
+		    assertTrue(isTextPresent(TRIGGER_IV));
+    	} finally {
+    		selectWindow("");
+    		
+    	}
     }
 }
 
