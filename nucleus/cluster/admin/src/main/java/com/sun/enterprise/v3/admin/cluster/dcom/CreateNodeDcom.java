@@ -61,7 +61,7 @@ import static com.sun.enterprise.util.StringUtils.ok;
 public class CreateNodeDcom extends CreateRemoteNodeCommand {
     @Param(name = "windowsuser", shortName = "w", optional = true, defaultValue = NodeUtils.NODE_DEFAULT_REMOTE_USER)
     private String windowsuser;
-    @Param(name = "windowspassword", optional = false, password = true)
+    @Param(name = "windowspassword", optional = true, password = true)
     private String windowspassword;
     @Param(name = "windowsdomain", shortName = "d", optional = true)
     private String windowsdomain;

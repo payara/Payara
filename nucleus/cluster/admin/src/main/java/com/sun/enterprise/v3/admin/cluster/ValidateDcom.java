@@ -78,7 +78,7 @@ import org.glassfish.cluster.ssh.util.DcomUtils;
 public class ValidateDcom implements AdminCommand {
     @Param(name = "windowsuser", shortName = "w", optional = true, defaultValue = "${user.name}")
     private String user;
-    @Param(name = "windowspassword", optional = false, password = true)
+    @Param(name = "windowspassword", optional = true, password = true)
     private String password;
     @Param(name = "host", optional = false, primary = true)
     private String host;
@@ -101,11 +101,13 @@ public class ValidateDcom implements AdminCommand {
 
     @Override
     public final void execute(AdminCommandContext context) {
-        init(context);
 
         try {
             // try/finally is least messy way of making sure partial success news
             // is delivered back to caller
+            if(!init(context))
+                return;
+
             if (!testDcomPort())
                 return;
 
@@ -126,12 +128,18 @@ public class ValidateDcom implements AdminCommand {
         }
     }
 
-    private void init(AdminCommandContext context) {
+    private boolean init(AdminCommandContext context) {
         report = context.getActionReport();
         report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
         logger = context.getLogger();
         user = resolver.resolve(user);
         password = DcomUtils.resolvePassword(resolver.resolve(password));
+
+        if(!ok(password)) {
+            setError(Strings.get("dcom.nopassword"));
+            return false;
+        }
+
         // backslash does not actually matter but it's neater
         testdir = resolver.resolve(testdir).replace('/', '\\');
         if (testdir.endsWith("\\"))
@@ -143,6 +151,7 @@ public class ValidateDcom implements AdminCommand {
         creds = new WindowsCredentials(host, windowsdomain, user, password);
         wrfs = new WindowsRemoteFileSystem(creds);
         scriptFullPath = testdir + "\\" + SCRIPT_NAME;
+        return true;
     }
 
     /**
