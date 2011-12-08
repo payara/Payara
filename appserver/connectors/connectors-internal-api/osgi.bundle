@@ -39,7 +39,6 @@
 #
 
 -exportcontents: com.sun.appserv.connectors.internal.api; \
-    		 org.glassfish.resources; \
     		 org.glassfish.connectors.config; \
     		 org.glassfish.connectors.config.validators; \
              org.glassfish.api.jdbc.validation; \
