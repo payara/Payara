@@ -81,7 +81,6 @@
                 mapPut(map="#{requestScope.ct}" key="config"  value="$pageSession{config}");
                 mapPut(map="#{requestScope.ct}" key="id" value="#{pageSession.name}" );
                 gf.createEntity( endpoint="#{sessionScope.REST_URL}/clusters/cluster"   attrs="#{requestScope.ct}")
-                gf.createClusterInstances(clusterName="#{pageSession.name}", instanceRow="#{instances}");
                 
                 if (#{clusterType}) {
                     createMap(result="#{requestScope.jmsAttrs}");
@@ -107,9 +106,11 @@
                             prepareAlertMsg(summary="$resource{i18ncs.cluster.jms.ConfigureJmsClusterFailure}", 
                                 detail="#{pageSession.resultMap.data.message}"
                                 type="error");
+                            gf.restRequest(endpoint="#{sessionScope.REST_URL}/clusters/cluster/#{pageSession.name}", method="delete");
                         }
                 }
                 
+                gf.createClusterInstances(clusterName="#{pageSession.name}", instanceRow="#{instances}");
                 gf.redirect(page="#{request.contextPath}/cluster/cluster/clusters.jsf?alertType=${alertType}&alertSummary=${alertSummary}&alertDetail=${alertDetail}");
              />
             </sun:button>
@@ -125,7 +126,7 @@
     </sun:title>
 
     <sun:propertySheet id="propertySheet">
-        <sun:propertySheetSection id="propertSectionTextField">
+        <sun:propertySheetSection id="propertySectionTextField">
             <sun:property id="NameTextProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18ncs.cluster.ClusterName}" >
                 <sun:textField id="NameText" text="#{pageSession.name}" styleClass="required" columns="$int{55}" maxLength="#{sessionScope.fieldLengths['maxLength.cluster.ClusterName']}" required="#{true}" />
             </sun:property>
@@ -138,16 +139,20 @@
                 <sun:radioButton id="optR"  name="configOptionGrp" label="$resource{i18ncs.clusterNew.ReferenceConfig}" selected="#{configOption}" selectedValue="ref" />
                 "<br />
             </sun:property>
+            <event>
+                <!afterCreate
+                    includeIntegrations(type="org.glassfish.admingui:newClusterDropDown");
+                />
+            </event>
         </sun:propertySheetSection>
-        <event>
-            <!afterCreate
-                includeIntegrations(type="org.glassfish.admingui:newClusterPropSheet");
-            />
-        </event>
     </sun:propertySheet>
-"    <div class="ConLin_sun4">
-"        <img id="propertyForm:propertySheet:configureJmsClusterSection:configureJmsClusterSection_dot1" width="1" height="1" border="0" alt="" src="/theme/com/sun/webui/jsf/suntheme/images/other/dot.gif">
-"    </div>
+                
+    <event>
+        <!afterCreate
+            includeIntegrations(type="org.glassfish.admingui:newClusterPropSheet");
+        />
+    </event>
+
     <sun:table id="basicTable" style="padding: 10pt" deselectMultipleButton="$boolean{true}" selectMultipleButton="$boolean{true}"
                title="$resource{i18ncs.clusterNew.TableTitle}">
         <!-- Actions (Top) -->

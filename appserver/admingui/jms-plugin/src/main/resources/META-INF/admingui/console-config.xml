@@ -54,11 +54,17 @@
                         parentId="#{configNameId}"
                         content="configurationNodes.jsf" />
 
-    <integration-point  id="configureJmsCluster"
+    <integration-point  id="configureJmsClusterDropDown"
+                        type="org.glassfish.admingui:newClusterDropDown"
+                        priority="500"
+                        parentId="propertySectionTextField"
+                        content="configureJmsClusterDropDown.inc"/>
+
+    <integration-point  id="configureJmsClusterSheet"
                         type="org.glassfish.admingui:newClusterPropSheet"
                         priority="500"
-                        parentId="propertySheet"
-                        content="configureJmsCluster.inc"/>
+                        parentId="propertyForm"
+                        content="configureJmsClusterSheet.inc"/>
 
     <!-- Add a link under the Configuration Page -->
     <integration-point id="jms_ConfigurationLink"
