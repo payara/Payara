@@ -88,3 +88,21 @@
     }
 </handler>
 
+ <!-- To test whether the monitoring is off or not.
+   input:   #{pageSession.configName}
+   output:  #{pageSession.isMonitoringOff}
+ -->
+<handler id="gfr.isMonitoringOff">
+    urlencode(value="#{configName}" encoding="UTF-8" result="#{encodedConfigName}");
+    setPageSessionAttribute(key="isMonitoringOff" value="#{true}");
+    gf.getEntityAttrs(endpoint="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/monitoring-service" valueMap="#{requestScope.monitorResult}");
+    if ("#{requestScope.monitorResult['monitoringEnabled']}=true") {
+        getMonitorLevels(endpoint="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}" monitorCompList="#{requestScope.tableList}")
+        setPageSessionAttribute(key="monitorDisable" value="monitorLevels");
+        foreach(var="oneRow" list="#{requestScope.tableList}") {
+            if("!(#{oneRow.level}=OFF)") {
+                setPageSessionAttribute(key="isMonitoringOff" value="#{false}");
+            }
+        }
+    }
+</handler>

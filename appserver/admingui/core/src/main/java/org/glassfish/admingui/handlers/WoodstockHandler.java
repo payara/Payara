@@ -488,11 +488,11 @@ public class WoodstockHandler {
                     }
                 }
             }
-        }
-        List resMenuOptions = getAppScopedResourcesMenuOptions(appname, moduleName, monitorURL, handlerCtx);
-        if (resMenuOptions.size() > 0) {
-            menuList.addAll(resMenuOptions);
-        }
+            List resMenuOptions = getAppScopedResourcesMenuOptions(appname, moduleName, monitorURL, handlerCtx);
+            if (resMenuOptions.size() > 0) {
+                menuList.addAll(resMenuOptions);
+            }
+        }        
         // Add Menu Options.
         jumpMenuOptions = (Option[]) menuList.toArray(new Option[menuList.size()]);
         handlerCtx.setOutputValue("ComponentList", jumpMenuOptions);

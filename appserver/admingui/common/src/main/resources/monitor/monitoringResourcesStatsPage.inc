@@ -41,23 +41,40 @@
 -->
 
 <!-- monitor/monitoringStatsPage.inc -->
-
+#include "/common/shared/commonHandlers.inc"
 <event>
     <!beforeCreate
-	gf.getChildrenNamesList(endpoint="#{pageSession.monitorURL}/resources", result="#{pageSession.poolsList}");
-        gf.getMonitoringPools(endpoint="#{sessionScope.REST_URL}/resources",
-            poolNames = "#{pageSession.poolsList}",
-            jdbcList="#{pageSession.jdbcList}",
-            firstJdbc="#{pageSession.firstJdbc}",
-            connectorList="#{pageSession.connectorList}",
-            firstConnector="#{pageSession.firstConnector}");
-        addToMonitorList(oldList="#{pageSession.jdbcList}", newList="#{pageSession.connectorList}"  result="#{pageSession.resourceList}");
-        populateResourceMonitorDropDown(ResourceList="#{resourceList}", MonitorList=>$attribute{monitorList} FirstItem=>$attribute{firstVal});
-        if(!#{viewVal}) {
-            setAttribute(key="viewVal" value="#{firstVal}");
+        gfr.getListOfRunningInstances();
+        setPageSessionAttribute(key="displayPropSection" value="#{true}");
+        gf.containedIn(list="#{pageSession.runningInstances}" testStr="#{pageSession.instanceName}" contain="#{requestScope.isInstanceRunning}");
+        setPageSessionAttribute(key="isMonitoringOff" value="#{false}");
+        if("#{requestScope.isInstanceRunning}"){
+            setAttribute(key="instanceRunningAlert" value="#{false}");
+            gfr.isMonitoringOff();
+            if("!#{pageSession.isMonitoringOff}") {
+                gf.getChildrenNamesList(endpoint="#{pageSession.monitorURL}/resources", result="#{pageSession.poolsList}");
+                gf.getMonitoringPools(endpoint="#{sessionScope.REST_URL}/resources",
+                    poolNames = "#{pageSession.poolsList}",
+                    jdbcList="#{pageSession.jdbcList}",
+                    firstJdbc="#{pageSession.firstJdbc}",
+                    connectorList="#{pageSession.connectorList}",
+                    firstConnector="#{pageSession.firstConnector}");
+                addToMonitorList(oldList="#{pageSession.jdbcList}", newList="#{pageSession.connectorList}"  result="#{pageSession.resourceList}");
+                populateResourceMonitorDropDown(ResourceList="#{resourceList}", MonitorList=>$attribute{monitorList} FirstItem=>$attribute{firstVal});
+                if(!#{viewVal}) {
+                    setAttribute(key="viewVal" value="#{firstVal}");
+                }
+                if(!#{appVal}) {
+                    setAttribute(key="appVal" value="");
+                }
+            }
+            if("#{pageSession.isMonitoringOff}") {
+                setPageSessionAttribute(key="displayPropSection" value="#{false}");
+            }
         }
-        if(!#{appVal}) {
-            setAttribute(key="appVal" value="");
+        if("!#{requestScope.isInstanceRunning}"){
+            setPageSessionAttribute(key="displayPropSection" value="#{false}");
+            setAttribute(key="instanceRunningAlert" value="#{true}");
         }
         calculateHelpUrl(pluginId="#{pluginId}", helpKey: "$resource{help_web.monitorResources}", url="#{olhLink}");
     />
@@ -84,8 +101,18 @@
          </sun:panelGroup>
      </facet> 
 #include "/common/shared/nameSection.inc"
+    <sun:propertySheet id="infoSheet">
+        <sun:propertySheetSection id="infoSheetSection">
+            <sun:property id="instNotRunningProp" rendered="#{instanceRunningAlert}"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" >
+                <sun:staticText id="instNotRunning"text="$resource{i18nc.monitoring.webContainer.instanceNotRunningMsg}" />
+            </sun:property>
+            <sun:property id="monDisabledProp" rendered="#{isMonitoringOff}" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" >
+                <sun:staticText id="monDisabled"  text="$resource{i18nc.monitoring.webContainer.disableMonitoringMsg}" />
+            </sun:property>
+        </sun:propertySheetSection>
+    </sun:propertySheet>
      <sun:propertySheet id="propertySheet">
-         <sun:propertySheetSection id="viewPropertySection">
+         <sun:propertySheetSection id="viewPropertySection" rendered="#{displayPropSection}">
              <sun:property id="VsProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}">
                  <sun:dropDown id="View" label="$resource{i18nc.monitoring.resource} : " selected="#{viewVal}" items="$attribute{monitorList}" submitForm="#{true}" immediate="#{true}" >
                      <!command

@@ -41,58 +41,75 @@
 -->
 
 <!-- monitor/monitoringAppStatsPage.inc -->
-
+#include "/common/shared/commonHandlers.inc"
 <event>
     <!beforeCreate
-        gf.getChildrenNamesList(endpoint="#{sessionScope.REST_URL}/applications/application" result="#{pageSession.tmpList}");
-        removeListElement(list="#{pageSession.tmpList}" name="list-sub-components" finalList="#{pageSession.tmpList}");
-        gf.getChildrenNamesList(endpoint="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/http-service/virtual-server" result="#{pageSession.vsList}");
-        addToMonitorList(oldList="#{pageSession.loginList}", newList="#{pageSession.tmpList}"  result="#{pageSession.appList}");
-        populateApplicationsMonitorDropDown(monitorURL="#{pageSession.monitorURL}" AppsList="#{appList}", MonitorList=>$attribute{monitorList} FirstItem=>$attribute{firstVal});
-        if(!#{viewVal}) {
-            setAttribute(key="viewVal" value="#{firstVal}");
-        }
-        if(#{viewVal}) {
-            setPageSessionAttribute(key="viewVal" value="#{viewVal}");
-        }
-        if(#{cVal}) {
-            setPageSessionAttribute(key="cVal" value="#{cVal}");
-        }
-        getAppName(endpoint="#{sessionScope.REST_URL}/applications/application" name="#{viewVal}", appName=>$attribute{appValue}, appFullName=>$attribute{appFullName});
-        //To get the sub components of a module
-        if(#{viewVal}) {
-            setAttribute(key="isAppScopedresourcesComp" value="$boolean{false}");
-            if(#{cVal}) {
-                startsWith(testStr="#{cVal}" pattern="resources/" result=>$attribute{isAppScopedresourcesComp});
-            }
-            if(!#{isAppScopedresourcesComp}) {
-                createMap(result="#{requestScope.attrsMap}");
-                mapPut(map="#{requestScope.attrsMap}"  key="id" value="#{viewVal}");
-                mapPut(map="#{requestScope.attrsMap}"  key="appname"  value="#{appValue}");
-                gf.restRequest(
-                    endpoint="#{sessionScope.REST_URL}/applications/application/#{appValue}/list-sub-components"
-                    attrs="#{requestScope.attrsMap}"
-                    method="GET"
-                    result="#{requestScope.result}" );
-                setPageSessionAttribute(key="propsMap" value="#{requestScope.result.data.properties}");
-            }
-        }
+        gfr.getListOfRunningInstances();
+        setPageSessionAttribute(key="displayPropSection" value="#{true}");
+        gf.containedIn(list="#{pageSession.runningInstances}" testStr="#{pageSession.instanceName}" contain="#{requestScope.isInstanceRunning}");
+        setPageSessionAttribute(key="isMonitoringOff" value="#{false}");
+        if("#{requestScope.isInstanceRunning}"){
+            setAttribute(key="instanceRunningAlert" value="#{false}");
+            gfr.isMonitoringOff();
+            if("!#{pageSession.isMonitoringOff}") {
+                gf.getChildrenNamesList(endpoint="#{sessionScope.REST_URL}/applications/application" result="#{pageSession.tmpList}");
+                removeListElement(list="#{pageSession.tmpList}" name="list-sub-components" finalList="#{pageSession.tmpList}");
+                gf.getChildrenNamesList(endpoint="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/http-service/virtual-server" result="#{pageSession.vsList}");
+                addToMonitorList(oldList="#{pageSession.loginList}", newList="#{pageSession.tmpList}"  result="#{pageSession.appList}");
+                populateApplicationsMonitorDropDown(monitorURL="#{pageSession.monitorURL}" AppsList="#{appList}", MonitorList=>$attribute{monitorList} FirstItem=>$attribute{firstVal});
+                if(!#{viewVal}) {
+                    setAttribute(key="viewVal" value="#{firstVal}");
+                }
+                if(#{viewVal}) {
+                    setPageSessionAttribute(key="viewVal" value="#{viewVal}");
+                }
+                if(#{cVal}) {
+                    setPageSessionAttribute(key="cVal" value="#{cVal}");
+                }
+                getAppName(endpoint="#{sessionScope.REST_URL}/applications/application" name="#{viewVal}", appName=>$attribute{appValue}, appFullName=>$attribute{appFullName});
+                //To get the sub components of a module
+                if(#{viewVal}) {
+                    setAttribute(key="isAppScopedresourcesComp" value="$boolean{false}");
+                    if(#{cVal}) {
+                        startsWith(testStr="#{cVal}" pattern="resources/" result=>$attribute{isAppScopedresourcesComp});
+                    }
+                    if(!#{isAppScopedresourcesComp}) {
+                        createMap(result="#{requestScope.attrsMap}");
+                        mapPut(map="#{requestScope.attrsMap}"  key="id" value="#{viewVal}");
+                        mapPut(map="#{requestScope.attrsMap}"  key="appname"  value="#{appValue}");
+                        gf.restRequest(
+                            endpoint="#{sessionScope.REST_URL}/applications/application/#{appValue}/list-sub-components"
+                            attrs="#{requestScope.attrsMap}"
+                            method="GET"
+                            result="#{requestScope.result}" );
+                        setPageSessionAttribute(key="propsMap" value="#{requestScope.result.data.properties}");
+                    }
+                }
 
-        getWebStatsUrl(app="#{appFullName}", 
-            compVal="#{cVal}",
-            monitorURL="#{pageSession.monitorURL}",
-            vsList="#{pageSession.vsList}",
-            moduleProps="#{pageSession.propsMap}",
-            webServletUrl=>$attribute{webServletUrl},
-            webUrl=>$attribute{webUrl},
-            webServletType=>$attribute{webServletType},
-            webType=>$attribute{webType});
-        getStatsUrl(app="#{appFullName}",
-            compVal="#{cVal}",
-            monitorURL="#{pageSession.monitorURL}",
-            moduleProps="#{pageSession.propsMap}",
-            statUrl=>$attribute{statUrl},
-            statType=>$attribute{statType});
+                getWebStatsUrl(app="#{appFullName}",
+                    compVal="#{cVal}",
+                    monitorURL="#{pageSession.monitorURL}",
+                    vsList="#{pageSession.vsList}",
+                    moduleProps="#{pageSession.propsMap}",
+                    webServletUrl=>$attribute{webServletUrl},
+                    webUrl=>$attribute{webUrl},
+                    webServletType=>$attribute{webServletType},
+                    webType=>$attribute{webType});
+                getStatsUrl(app="#{appFullName}",
+                    compVal="#{cVal}",
+                    monitorURL="#{pageSession.monitorURL}",
+                    moduleProps="#{pageSession.propsMap}",
+                    statUrl=>$attribute{statUrl},
+                    statType=>$attribute{statType});
+            }
+            if("#{pageSession.isMonitoringOff}") {
+                setPageSessionAttribute(key="displayPropSection" value="#{false}");
+            }
+        }
+        if("!#{requestScope.isInstanceRunning}"){
+            setPageSessionAttribute(key="displayPropSection" value="#{false}");
+            setAttribute(key="instanceRunningAlert" value="#{true}");
+        }
         calculateHelpUrl(pluginId="#{pluginId}", helpKey: "$resource{help_web.monitorApps}", url="#{olhLink}");
     />
 </event>    
@@ -120,8 +137,18 @@
             </sun:panelGroup>
         </facet>
 #include "/common/shared/nameSection.inc"
+    <sun:propertySheet id="infoSheet">
+        <sun:propertySheetSection id="infoSheetSection">
+            <sun:property id="instNotRunningProp" rendered="#{instanceRunningAlert}"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" >
+                <sun:staticText id="instNotRunning"text="$resource{i18nc.monitoring.webContainer.instanceNotRunningMsg}" />
+            </sun:property>
+            <sun:property id="monDisabledProp" rendered="#{isMonitoringOff}" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" >
+                <sun:staticText id="monDisabled"  text="$resource{i18nc.monitoring.webContainer.disableMonitoringMsg}" />
+            </sun:property>
+        </sun:propertySheetSection>
+    </sun:propertySheet>
             <sun:propertySheet id="propertySheet">
-                    <sun:propertySheetSection id="viewPropertySection">
+                    <sun:propertySheetSection id="viewPropertySection" rendered="#{displayPropSection}">
             <sun:property id="ApplicationProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}">
                 
                 <sun:dropDown id="View" label="$resource{i18nc.monitoring.Application} : " items="$attribute{monitorList}" selected="#{viewVal}" submitForm="#{true}" immediate="#{true}" >

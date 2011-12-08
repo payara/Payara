@@ -41,14 +41,31 @@
 -->
 
 <!-- monitor/monitoringServerStatsPage.inc -->
-
+#include "/common/shared/commonHandlers.inc"
 <event>
     <!beforeCreate
-	gf.getChildrenNamesList(endpoint="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/http-service/virtual-server" result="#{pageSession.vsList}");
-        gf.getChildrenNamesList(endpoint="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/network-config/network-listeners/network-listener" result="#{pageSession.nlList}");
-        gf.getChildrenNamesList(endpoint="#{pageSession.monitorURL}/jvm/thread-system", result="#{pageSession.threadList}");
-        gf.getChildrenNamesList(endpoint="#{pageSession.monitorURL}/jvm/garbage-collectors", result="#{pageSession.gcList}");
-        populateServerMonitorDropDown(VSList="#{vsList}", ThreadSystemList="#{threadList}", GCList="#{gcList}", NLList="#{nlList}", MonitorList=>$attribute{monitorList});
+         gfr.getListOfRunningInstances();
+        setPageSessionAttribute(key="displayPropSection" value="#{true}");
+        gf.containedIn(list="#{pageSession.runningInstances}" testStr="#{pageSession.instanceName}" contain="#{requestScope.isInstanceRunning}");
+        setPageSessionAttribute(key="isMonitoringOff" value="#{false}");
+        if("#{requestScope.isInstanceRunning}"){
+            setAttribute(key="instanceRunningAlert" value="#{false}");
+            gfr.isMonitoringOff();
+            if("!#{pageSession.isMonitoringOff}") {
+                gf.getChildrenNamesList(endpoint="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/http-service/virtual-server" result="#{pageSession.vsList}");
+                gf.getChildrenNamesList(endpoint="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/network-config/network-listeners/network-listener" result="#{pageSession.nlList}");
+                gf.getChildrenNamesList(endpoint="#{pageSession.monitorURL}/jvm/thread-system", result="#{pageSession.threadList}");
+                gf.getChildrenNamesList(endpoint="#{pageSession.monitorURL}/jvm/garbage-collectors", result="#{pageSession.gcList}");
+                populateServerMonitorDropDown(VSList="#{vsList}", ThreadSystemList="#{threadList}", GCList="#{gcList}", NLList="#{nlList}", MonitorList=>$attribute{monitorList});
+                 }
+            if("#{pageSession.isMonitoringOff}") {
+                setPageSessionAttribute(key="displayPropSection" value="#{false}");
+            }
+        }
+        if("!#{requestScope.isInstanceRunning}"){
+            setPageSessionAttribute(key="displayPropSection" value="#{false}");
+            setAttribute(key="instanceRunningAlert" value="#{true}");
+        }
         if(!#{viewVal}){
         getStats(endpoint="#{pageSession.monitorURL}/security/ejb", result=>$attribute{ejbStatsList} hasStats=>$attribute{hasStatsEJB});
         getStats(endpoint="#{pageSession.monitorURL}/web/jsp", result=>$attribute{jspWebStatsList}  hasStats=>$attribute{hasStatsJsp});
@@ -117,8 +134,18 @@
         </sun:panelGroup>
     </facet>
 #include "/common/shared/nameSection.inc"
+    <sun:propertySheet id="infoSheet">
+        <sun:propertySheetSection id="infoSheetSection">
+            <sun:property id="instNotRunningProp" rendered="#{instanceRunningAlert}"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" >
+                <sun:staticText id="instNotRunning"text="$resource{i18nc.monitoring.webContainer.instanceNotRunningMsg}" />
+            </sun:property>
+            <sun:property id="monDisabledProp" rendered="#{isMonitoringOff}" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" >
+                <sun:staticText id="monDisabled"  text="$resource{i18nc.monitoring.webContainer.disableMonitoringMsg}" />
+            </sun:property>
+        </sun:propertySheetSection>
+    </sun:propertySheet>
     <sun:propertySheet id="propertySheet">
-        <sun:propertySheetSection id="viewPropertySection">
+        <sun:propertySheetSection id="viewPropertySection" rendered="#{displayPropSection}">
             <sun:property id="VsProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}">
                 <sun:dropDown id="View" label="$resource{i18nc.monitoring.View} : " selected="#{viewVal}" items="$attribute{monitorList}" submitForm="#{true}" immediate="#{true}" >
                     <!command
