@@ -55,6 +55,7 @@ import org.jvnet.hk2.component.PerLookup;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * This command lists the set of service-provisioning engines that are configured.
@@ -90,10 +91,11 @@ public class ListServiceProvisioningEngines implements AdminCommand {
         List<String> outputList = new ArrayList<String>();
 
         ServiceProvisioningEngines serviceProvisioningEngines = serviceUtil.getServiceProvisioningEngines();
+        Locale locale = Locale.getDefault();
 
         if (type == null) {
             for (ServiceProvisioningEngine serviceProvisioningEngine : serviceProvisioningEngines.getServiceProvisioningEngines()) {
-                output = serviceProvisioningEngine.getType().toUpperCase() + "    < " + serviceProvisioningEngine.getClassName() + " >";
+                output = serviceProvisioningEngine.getType().toUpperCase(locale) + "\t<" + serviceProvisioningEngine.getClassName() + ">";
                 if (serviceProvisioningEngine.getDefault()) {
                     output = output + "\t<default>";
                 }
@@ -103,7 +105,7 @@ public class ListServiceProvisioningEngines implements AdminCommand {
         } else {
             for (ServiceProvisioningEngine serviceProvisioningEngine : serviceProvisioningEngines.getServiceProvisioningEngines()) {
                 if (serviceProvisioningEngine.getType().equalsIgnoreCase(type)) {
-                    output = type.toUpperCase() + "\t<" + serviceProvisioningEngine.getClassName() + ">";
+                    output = type.toUpperCase(locale) + "\t<" + serviceProvisioningEngine.getClassName() + ">";
                     if (serviceProvisioningEngine.getDefault()) {
                         output = output + "\t<default>";
                     }

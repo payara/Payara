@@ -58,6 +58,7 @@ import org.jvnet.hk2.config.TransactionFailure;
 import org.jvnet.hk2.config.types.Property;
 
 import java.beans.PropertyVetoException;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 
@@ -124,10 +125,10 @@ public class RegisterServiceProvisioningEngine implements AdminCommand {
         try {
             if (ConfigSupport.apply(new SingleConfigCode<ServiceProvisioningEngines>() {
                 public Object run(ServiceProvisioningEngines serviceProvisioningEngines) throws PropertyVetoException, TransactionFailure {
-
+                    Locale locale=Locale.getDefault();
                     ServiceProvisioningEngine serviceProvisioningEngine = serviceProvisioningEngines.createChild(ServiceProvisioningEngine.class);
                     serviceProvisioningEngine.setClassName(className);
-                    serviceProvisioningEngine.setType(type.toUpperCase());
+                    serviceProvisioningEngine.setType(type.toUpperCase(locale));
                     serviceProvisioningEngine.setDefault(defaultService);
 
                     if (properties != null) {
