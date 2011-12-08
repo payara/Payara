@@ -68,7 +68,6 @@ public class InstallNodeDcomCommand extends InstallNodeBaseCommand {
     @Param(name = "windowsdomain", shortName = "d", optional = true, defaultValue = "")
     private String windowsDomain;
     private final List<HostAndPassword> passwords = new ArrayList<HostAndPassword>();
-
     private String remoteInstallDirString;
 
     @Override
@@ -110,20 +109,20 @@ public class InstallNodeDcomCommand extends InstallNodeBaseCommand {
      */
     @Override
     final void precopy() throws CommandException {
-        if (getForce())
-            return;
-
         remoteInstallDirString = getInstallDir().replace('/', '\\');
 
         try {
             for (String host : hosts) {
                 String remotePassword = getWindowsPassword(host);
                 passwords.add(new HostAndPassword(host, remotePassword));
-                WindowsRemoteFileSystem wrfs = new WindowsRemoteFileSystem(host, getRemoteUser(), remotePassword);
-                WindowsRemoteFile remoteInstallDir = new WindowsRemoteFile(wrfs, remoteInstallDirString);
 
-                if (remoteInstallDir.exists())
-                    throw new CommandException(Strings.get("install.dir.exists", remoteInstallDir));
+                if (!getForce()) {
+                    WindowsRemoteFileSystem wrfs = new WindowsRemoteFileSystem(host, getRemoteUser(), remotePassword);
+                    WindowsRemoteFile remoteInstallDir = new WindowsRemoteFile(wrfs, remoteInstallDirString);
+
+                    if (remoteInstallDir.exists())
+                        throw new CommandException(Strings.get("install.dir.exists", remoteInstallDir));
+                }
             }
         }
         catch (WindowsException ex) {
@@ -188,16 +187,17 @@ public class InstallNodeDcomCommand extends InstallNodeBaseCommand {
     }
 
     private String getPassword(String host) {
-        if(!ok(host))
+        if (!ok(host))
             return null;
 
-        for(HostAndPassword hap : passwords) {
-            if(host.equals(hap.host))
+        for (HostAndPassword hap : passwords) {
+            if (host.equals(hap.host))
                 return hap.password;
         }
 
         return null;
     }
+
     private static class HostAndPassword {
         private final String host;
         private final String password;
