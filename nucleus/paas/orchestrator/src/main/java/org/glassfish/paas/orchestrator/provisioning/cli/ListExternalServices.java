@@ -2,6 +2,7 @@ package org.glassfish.paas.orchestrator.provisioning.cli;
 
 import com.sun.enterprise.config.serverbeans.Domain;
 import org.glassfish.api.ActionReport;
+import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.ExecuteOn;
@@ -30,13 +31,14 @@ public class ListExternalServices implements AdminCommand{
 
         ActionReport.MessagePart messagePart = report.getTopMessagePart();
         Services services = domain.getExtensionByType(Services.class);
-        for(org.glassfish.paas.orchestrator.config.Service service : services.getServices()){
-            if(service instanceof ExternalService){
-                ActionReport.MessagePart part = messagePart.addChild();
-                part.setMessage(service.getServiceName());
+        if(services != null){
+            for(org.glassfish.paas.orchestrator.config.Service service : services.getServices()){
+                if(service instanceof ExternalService){
+                    ActionReport.MessagePart part = messagePart.addChild();
+                    part.setMessage(service.getServiceName());
+                }
             }
         }
-
         report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
     }
 }
