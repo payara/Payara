@@ -119,7 +119,7 @@ public class GrizzlyService implements Startup, RequestDispatcher, PostConstruct
 
     private final Collection<NetworkProxy> proxies = new LinkedBlockingQueue<NetworkProxy>();
 
-    List<Future<Result<Thread>>> futures;
+    volatile List<Future<Result<Thread>>> futures;
 
     Collection<String> hosts = new ArrayList<String>();
 
@@ -389,7 +389,7 @@ public class GrizzlyService implements Startup, RequestDispatcher, PostConstruct
         // create the proxy for the port.
         GrizzlyProxy proxy = new GrizzlyProxy(this, listener);
 
-        Future<Result<Thread>> future;
+        Future<Result<Thread>> future = null;
 
         try {
             proxy.initialize();
@@ -439,11 +439,21 @@ public class GrizzlyService implements Startup, RequestDispatcher, PostConstruct
 
             // add the new proxy to our list of proxies.
             proxies.add(proxy);
-            futures.add(future);
-        } catch (IOException e) {
-            final FutureImpl<Result<Thread>> errorFuture = UnsafeFutureImpl.<Result<Thread>>create();
-            errorFuture.failure(e);
+        } catch (Throwable e) {
+            final FutureImpl<Result<Thread>> errorFuture =
+                    UnsafeFutureImpl.<Result<Thread>>create();
+            errorFuture.result(new Result<Thread>(e));
             future = errorFuture;
+        } finally {
+            if (future == null) {
+                final FutureImpl<Result<Thread>> errorFuture =
+                        UnsafeFutureImpl.<Result<Thread>>create();
+                errorFuture.result(new Result<Thread>(
+                        new IllegalStateException("Unexpected error")));
+                future = errorFuture;
+            }
+            
+            futures.add(future);
         }
         
         return future;
