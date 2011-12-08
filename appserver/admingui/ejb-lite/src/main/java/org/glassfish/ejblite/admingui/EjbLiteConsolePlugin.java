@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -43,7 +43,7 @@
  * and open the template in the editor.
  */
 
-package org.glassfish.ejb.admingui;
+package org.glassfish.ejblite.admingui;
 
 import org.glassfish.api.admingui.ConsoleProvider;
 import org.jvnet.hk2.annotations.Service;
@@ -55,7 +55,7 @@ import java.net.URL;
  */
 
 @Service
-public class EjbConsolePlugin implements ConsoleProvider {
+public class EjbLiteConsolePlugin implements ConsoleProvider {
 
 /**
  *  <p> Returns the URL of the Integration Point configuration file
