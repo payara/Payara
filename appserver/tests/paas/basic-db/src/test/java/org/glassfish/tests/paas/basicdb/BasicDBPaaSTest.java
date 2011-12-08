@@ -63,6 +63,8 @@ import java.util.Enumeration;
 import java.util.Properties;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @author bhavanishankar@dev.java.net
@@ -116,9 +118,10 @@ public class BasicDBPaaSTest {
 			 * DB is provisioned
 			 * 
 			 */
-			get("http://localhost:" + HTTP_PORT
-					+ "/basic_db_paas_sample/BasicDBPaaSServlet", "SYSFILES");
+			String instanceIP = getLBIPAddress(glassfish);
 
+			get("http://" + instanceIP + ":" + HTTP_PORT
+					+ "/basic_db_paas_sample/BasicDBPaaSServlet", "SYSFILES");
 			// 4. Undeploy the PaaS-DB application using undeploy.
 		} finally {
 			if (appName != null) {
@@ -157,6 +160,48 @@ public class BasicDBPaaSTest {
 		Assert.assertTrue(found);
 		System.out.println("\n***** SUCCESS **** Found [" + result
 				+ "] in the response.*****\n");
+	}
+
+	private String getLBIPAddress(GlassFish glassfish) {
+		String lbIP = null;
+		String IPAddressPattern = "IP-ADDRESS\\s*\n*(.*)\\s*\n(([01]?\\d*|2[0-4]\\d|25[0-5])\\."
+				+ "([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\."
+				+ "([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\."
+				+ "([0-9]?\\d\\d?|2[0-4]\\d|25[0-5]))";
+		try {
+			CommandRunner commandRunner = glassfish.getCommandRunner();
+			String result = commandRunner
+					.run("list-services", "--type", "LOAD_BALANCER",
+							"--output", "IP-ADDRESS").getOutput().toString();
+			if (result.contains("Nothing to list.")) {
+				result = commandRunner
+						.run("list-services", "--type", "JavaEE", "--output",
+								"IP-ADDRESS").getOutput().toString();
+
+				Pattern p = Pattern.compile(IPAddressPattern);
+				Matcher m = p.matcher(result);
+				if (m.find()) {
+					lbIP = m.group(2);
+				} else {
+					lbIP = "localhost";
+				}
+			} else {
+				Pattern p = Pattern.compile(IPAddressPattern);
+				Matcher m = p.matcher(result);
+				if (m.find()) {
+					lbIP = m.group(2);
+				} else {
+					lbIP = "localhost";
+				}
+
+			}
+
+		} catch (Exception e) {
+			System.out.println("Regex has thrown an exception "
+					+ e.getMessage());
+			return "localhost";
+		}
+		return lbIP;
 	}
 
 }
