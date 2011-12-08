@@ -43,6 +43,7 @@ package org.glassfish.resources.api;
 import com.sun.enterprise.config.serverbeans.Resource;
 import org.glassfish.api.naming.NamingObjectProxy;
 import org.glassfish.resources.naming.ResourceNamingService;
+import org.glassfish.resources.util.ResourceManagerFactory;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
@@ -67,7 +68,7 @@ import java.util.Collection;
 public class ResourceProxy implements NamingObjectProxy.InitializationNamingObjectProxy {
 
     @Inject
-    private Habitat deployerHabitat;
+    private Habitat habitat;
 
     @Inject
     private ResourceNamingService namingService;
@@ -125,13 +126,6 @@ public class ResourceProxy implements NamingObjectProxy.InitializationNamingObje
      * @return ResourceDeployer
      */
     protected ResourceDeployer getResourceDeployer(Object resource){
-        Collection<ResourceDeployer> deployers = deployerHabitat.getAllByContract(ResourceDeployer.class);
-
-        for(ResourceDeployer deployer : deployers){
-            if(deployer.handles(resource)){
-                return deployer;
-            }
-        }
-        return null;
+        return habitat.getComponent(ResourceManagerFactory.class).getResourceDeployer(resource);
     }
 }

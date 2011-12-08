@@ -44,7 +44,6 @@ import com.sun.appserv.connectors.internal.api.ConnectorConstants;
 import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
 import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.deployment.*;
-import com.sun.enterprise.deployment.Application;
 import org.glassfish.connectors.config.JdbcConnectionPool;
 import org.glassfish.connectors.config.JdbcResource;
 import org.glassfish.resources.api.ResourceConflictException;
@@ -53,8 +52,10 @@ import com.sun.logging.LogDomains;
 import org.glassfish.deployment.common.Descriptor;
 import org.glassfish.deployment.common.RootDeploymentDescriptor;
 import org.glassfish.javaee.services.DataSourceDefinitionProxy;
+import org.glassfish.resources.api.ResourceDeployerInfo;
 import org.glassfish.resources.api.ResourceInfo;
 import org.glassfish.resources.naming.ResourceNamingService;
+import org.glassfish.resources.util.ResourceManagerFactory;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.config.ConfigBeanProxy;
@@ -73,6 +74,7 @@ import java.util.logging.Level;
  * @author Jagadish Ramu
  */
 @Service
+@ResourceDeployerInfo(DataSourceDefinitionDescriptor.class)
 public class DataSourceDefinitionDeployer implements ResourceDeployer {
 
     @Inject
@@ -96,13 +98,12 @@ public class DataSourceDefinitionDeployer implements ResourceDeployer {
 
         JdbcConnectionPool jdbcCp = new MyJdbcConnectionPool(desc, poolName);
 
-        Collection<ResourceDeployer> deployers = habitat.getAllByContract(ResourceDeployer.class);
         //deploy pool
-        getDeployer(jdbcCp, deployers).deployResource(jdbcCp);
+        getDeployer(jdbcCp).deployResource(jdbcCp);
 
         //deploy resource
         JdbcResource jdbcResource = new MyJdbcResource(poolName, resourceName);
-        getDeployer(jdbcResource, deployers).deployResource(jdbcResource);
+        getDeployer(jdbcResource).deployResource(jdbcResource);
     }
 
     /**
@@ -128,15 +129,8 @@ public class DataSourceDefinitionDeployer implements ResourceDeployer {
     }
 
 
-    private ResourceDeployer getDeployer(Object resource, Collection<ResourceDeployer> deployers) {
-        ResourceDeployer resourceDeployer = null;
-        for (ResourceDeployer deployer : deployers) {
-            if (deployer.handles(resource)) {
-                resourceDeployer = deployer;
-                break;
-            }
-        }
-        return resourceDeployer;
+    private ResourceDeployer getDeployer(Object resource) {
+        return habitat.getComponent(ResourceManagerFactory.class).getResourceDeployer(resource);
     }
 
     private DataSourceProperty convertProperty(String name, String value) {
@@ -295,7 +289,6 @@ public class DataSourceDefinitionDeployer implements ResourceDeployer {
     public void undeployResource(Object resource) throws Exception {
 
         final DataSourceDefinitionDescriptor desc = (DataSourceDefinitionDescriptor) resource;
-        Collection<ResourceDeployer> deployers = habitat.getAllByContract(ResourceDeployer.class);
 
         String poolName = ConnectorsUtil.deriveDataSourceDefinitionPoolName(desc.getResourceId(), desc.getName());
         String resourceName = ConnectorsUtil.deriveDataSourceDefinitionResourceName(desc.getResourceId(), desc.getName());
@@ -307,11 +300,11 @@ public class DataSourceDefinitionDeployer implements ResourceDeployer {
 
         //undeploy resource
         JdbcResource jdbcResource = new MyJdbcResource(poolName, resourceName);
-        getDeployer(jdbcResource, deployers).undeployResource(jdbcResource);
+        getDeployer(jdbcResource).undeployResource(jdbcResource);
 
         //undeploy pool
         JdbcConnectionPool jdbcCp = new MyJdbcConnectionPool(desc, poolName);
-        getDeployer(jdbcCp, deployers).undeployResource(jdbcCp);
+        getDeployer(jdbcCp).undeployResource(jdbcCp);
 
         desc.setDeployed(false);
     }

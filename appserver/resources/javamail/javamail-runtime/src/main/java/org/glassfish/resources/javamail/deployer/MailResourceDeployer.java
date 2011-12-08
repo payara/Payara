@@ -80,6 +80,7 @@ import javax.naming.NamingException;
  * @since JDK1.4
  */
 @Service
+@ResourceDeployerInfo(MailResource.class)
 @Scoped(Singleton.class)
 public class MailResourceDeployer extends GlobalResourceDeployer
         implements ResourceDeployer {

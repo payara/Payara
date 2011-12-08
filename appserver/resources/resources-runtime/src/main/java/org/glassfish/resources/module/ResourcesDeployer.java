@@ -63,6 +63,7 @@ import org.glassfish.resources.admin.cli.ResourcesXMLParser;
 import org.glassfish.resources.admin.cli.SunResourcesXML;
 import org.glassfish.resources.api.*;
 import org.glassfish.resources.api.ResourceDeployer;
+import org.glassfish.resources.util.ResourceManagerFactory;
 import org.glassfish.resources.util.ResourceUtil;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
@@ -625,14 +626,7 @@ public class ResourcesDeployer extends JavaEEDeployer<ResourcesContainer, Resour
      * @return ResourceDeployer
      */
     private static ResourceDeployer getResourceDeployer(Object resource){
-        Collection<ResourceDeployer> deployers = habitat.getAllByContract(ResourceDeployer.class);
-
-        for(ResourceDeployer deployer : deployers){
-            if(deployer.handles(resource)){
-                return deployer;
-            }
-        }
-        return null;
+        return habitat.getComponent(ResourceManagerFactory.class).getResourceDeployer(resource);
     }
 
     /**

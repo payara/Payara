@@ -45,6 +45,7 @@ import com.sun.appserv.connectors.internal.api.*;
 import org.glassfish.connectors.config.SecurityMap;
 import org.glassfish.resources.api.PoolInfo;
 import org.glassfish.resources.api.ResourceDeployer;
+import org.glassfish.resources.api.ResourceDeployerInfo;
 import org.jvnet.hk2.config.types.Property;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
@@ -70,6 +71,7 @@ import java.util.logging.Logger;
  */
 
 @Service
+@ResourceDeployerInfo(org.glassfish.connectors.config.ConnectorConnectionPool.class)
 @Scoped(Singleton.class)
 public class ConnectorConnectionPoolDeployer extends AbstractConnectorResourceDeployer
         implements ResourceDeployer {

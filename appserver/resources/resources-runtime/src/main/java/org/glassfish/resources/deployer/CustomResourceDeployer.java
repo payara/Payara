@@ -85,6 +85,7 @@ import javax.naming.StringRefAddr;
  * @since   JDK1.4
  */
 @Service
+@ResourceDeployerInfo(CustomResource.class)
 @Scoped(Singleton.class)
 public class CustomResourceDeployer implements ResourceDeployer {
 

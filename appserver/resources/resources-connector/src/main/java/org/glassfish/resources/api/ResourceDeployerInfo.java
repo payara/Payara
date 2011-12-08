@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,64 +38,24 @@
  * holder.
  */
 
-package com.sun.enterprise.resource.deployer;
+package org.glassfish.resources.api;
 
-import org.glassfish.connectors.config.WorkSecurityMap;
-import org.glassfish.resources.api.ResourceDeployer;
-import org.glassfish.resources.api.ResourceDeployerInfo;
-import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.component.Singleton;
+import org.jvnet.hk2.annotations.Contract;
+import org.jvnet.hk2.annotations.Index;
 
-@Service
-@ResourceDeployerInfo(WorkSecurityMap.class)
-@Scoped(Singleton.class)
-public class ConnectorWorkSecurityMapDeployer  extends AbstractConnectorResourceDeployer implements ResourceDeployer {
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
 
-    public synchronized void deployResource(Object resource, String applicationName, String moduleName)
-            throws Exception {
-        //no-op
-    }
-    
-    public void deployResource(Object resoure) throws Exception {
-        //no-op
-    }
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
-    public void undeployResource(Object resoure) throws Exception {
-        //no-op
-    }
-
-    public void undeployResource(Object resource, String applicationName, String moduleName) throws Exception{
-        //no-op
-    }
-
-    public void redeployResource(Object resource) throws Exception {
-        //no-op
-    }
-
-    public void enableResource(Object resoure) throws Exception {
-        //no-op
-    }
-
-    public void disableResource(Object resoure) throws Exception {
-        //no-op
-    }
-
-    public boolean handles(Object resource) {
-        return resource instanceof WorkSecurityMap;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public boolean supportsDynamicReconfiguration() {
-        return false;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public Class[] getProxyClassesForDynamicReconfiguration() {
-        return new Class[0];
-    }
+/**
+ *
+ * @author Jagadish Ramu
+ */
+@Contract
+@Retention(RUNTIME)
+@Target(ElementType.TYPE)
+public @interface ResourceDeployerInfo {
+    @Index Class value();
 }

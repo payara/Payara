@@ -43,6 +43,7 @@ package org.glassfish.javaee.services;
 import org.glassfish.api.naming.NamingObjectProxy;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.resources.api.ResourceDeployer;
+import org.glassfish.resources.util.ResourceManagerFactory;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Inject;
@@ -91,7 +92,7 @@ public class DataSourceDefinitionProxy implements NamingObjectProxy.Initializati
                                 "["+ desc.getName() +" ] as habitat is null");
                     }
                 }
-                getResourceDeployer(desc, habitat.getAllByContract(ResourceDeployer.class)).deployResource(desc);
+                getResourceDeployer(desc).deployResource(desc);
             }catch(Exception e){
                 NamingException ne = new NamingException("Unable to create resource ["+ desc.getName() +" ]");
                 ne.initCause(e);
@@ -105,14 +106,7 @@ public class DataSourceDefinitionProxy implements NamingObjectProxy.Initializati
         this.desc = desc;
     }
 
-    private ResourceDeployer getResourceDeployer(Object resource, Collection<ResourceDeployer> deployers) {
-        ResourceDeployer resourceDeployer = null;
-        for(ResourceDeployer deployer : deployers){
-            if(deployer.handles(resource)){
-                resourceDeployer = deployer;
-                break;
-            }
-        }
-        return resourceDeployer;
+    private ResourceDeployer getResourceDeployer(Object resource) {
+        return habitat.getComponent(ResourceManagerFactory.class).getResourceDeployer(resource);
     }
 }

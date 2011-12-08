@@ -51,6 +51,7 @@ import java.util.List;
 import java.util.logging.*;
 
 import org.glassfish.resources.api.ResourceDeployer;
+import org.glassfish.resources.api.ResourceDeployerInfo;
 import org.glassfish.resources.api.ResourceInfo;
 import org.jvnet.hk2.config.types.Property;
 import org.jvnet.hk2.annotations.Service;
@@ -63,6 +64,7 @@ import org.jvnet.hk2.component.Singleton;
  */
 
 @Service
+@ResourceDeployerInfo(AdminObjectResource.class)
 @Scoped(Singleton.class)
 public class AdminObjectResourceDeployer extends AbstractConnectorResourceDeployer
         implements ResourceDeployer {

@@ -43,6 +43,7 @@ package org.glassfish.resources.listener;
 import org.glassfish.resources.api.ResourceDeployer;
 import org.glassfish.resources.api.ResourceInfo;
 import org.glassfish.resources.api.ResourcesBinder;
+import org.glassfish.resources.util.ResourceManagerFactory;
 import org.glassfish.resources.util.ResourceUtil;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
@@ -283,14 +284,7 @@ public class ApplicationScopedResourcesManager implements PostStartup, PostConst
      * @return ResourceDeployer
      */
     private ResourceDeployer getResourceDeployer(Object resource){
-        Collection<ResourceDeployer> deployers = deployerHabitat.getAllByContract(ResourceDeployer.class);
-
-        for(ResourceDeployer deployer : deployers){
-            if(deployer.handles(resource)){
-                return deployer;
-            }
-        }
-        return null;
+        return habitat.getComponent(ResourceManagerFactory.class).getResourceDeployer(resource);
     }
 
     private void  debug(String message){

@@ -41,10 +41,12 @@
 package com.sun.enterprise.connectors;
 
 import com.sun.enterprise.config.serverbeans.Application;
+import com.sun.enterprise.config.serverbeans.Resource;
 import com.sun.enterprise.connectors.util.*;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.lang.reflect.Proxy;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.*;
@@ -90,12 +92,11 @@ import com.sun.enterprise.security.jmac.callback.ContainerCallbackHandler;
 import com.sun.enterprise.security.SecurityServicesUtil;
 import com.sun.enterprise.transaction.api.JavaEETransactionManager;
 import org.glassfish.admin.monitor.MonitoringBootstrap;
-import org.glassfish.resources.api.PoolInfo;
-import org.glassfish.resources.api.ResourceDeployer;
-import org.glassfish.resources.api.ResourceInfo;
-import org.glassfish.resources.api.ResourcesRegistry;
+import org.glassfish.resources.api.*;
 import org.glassfish.resources.listener.ResourceManager;
 import org.glassfish.resources.naming.ResourceNamingService;
+import org.glassfish.resources.util.ResourceManagerFactory;
+import org.jvnet.hk2.component.*;
 import org.jvnet.hk2.config.types.Property;
 import org.glassfish.api.admin.*;
 import com.sun.logging.LogDomains;
@@ -109,10 +110,6 @@ import org.glassfish.server.ServerEnvironmentImpl;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
-import org.jvnet.hk2.component.PostConstruct;
-import org.jvnet.hk2.component.PreDestroy;
-import org.jvnet.hk2.component.Singleton;
 
 
 /**
@@ -1159,14 +1156,7 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
     }
 
     public ResourceDeployer getResourceDeployer(Object resource){
-        Collection<ResourceDeployer> deployers = deployerHabitat.getAllByContract(ResourceDeployer.class);
-
-        for(ResourceDeployer deployer : deployers){
-            if(deployer.handles(resource)){
-                return deployer;
-            }
-        }
-        return null;
+        return habitat.getComponent(ResourceManagerFactory.class).getResourceDeployer(resource);
     }
 
     /** Add the resource adapter configuration to the connector registry

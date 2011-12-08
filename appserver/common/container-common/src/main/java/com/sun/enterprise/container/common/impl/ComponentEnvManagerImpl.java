@@ -56,6 +56,7 @@ import org.glassfish.api.naming.NamingObjectProxy;
 import org.glassfish.deployment.common.Descriptor;
 import org.glassfish.javaee.services.DataSourceDefinitionProxy;
 import org.glassfish.resources.api.ResourceDeployer;
+import org.glassfish.resources.util.ResourceManagerFactory;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
@@ -330,15 +331,8 @@ public class ComponentEnvManagerImpl
         }
     }
 
-    private ResourceDeployer getResourceDeployer(Object resource, Collection<ResourceDeployer> deployers) {
-        ResourceDeployer resourceDeployer = null;
-        for(ResourceDeployer deployer : deployers){
-            if(deployer.handles(resource)){
-                resourceDeployer = deployer;
-                break;
-            }
-        }
-        return resourceDeployer;
+    private ResourceDeployer getResourceDeployer(Object resource) {
+        return habitat.getComponent(ResourceManagerFactory.class).getResourceDeployer(resource);
     }
 
 
@@ -392,10 +386,9 @@ public class ComponentEnvManagerImpl
     private void undeployDataSourceDefinitions(JndiNameEnvironment env) {
 
         for (DataSourceDefinitionDescriptor dsd : env.getDataSourceDefinitionDescriptors()) {
-            Collection<ResourceDeployer> resourceDeployers = habitat.getAllByContract(ResourceDeployer.class);
             try{
                 if(dsd.isDeployed()){
-                    ResourceDeployer deployer = getResourceDeployer(dsd, resourceDeployers);
+                    ResourceDeployer deployer = getResourceDeployer(dsd);
                     deployer.undeployResource(dsd);
                     dsd.setDeployed(false);
                 }

@@ -49,10 +49,7 @@ import com.sun.enterprise.connectors.ConnectorRuntime;
 import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
 import org.glassfish.connectors.config.JdbcConnectionPool;
 import org.glassfish.connectors.config.JdbcResource;
-import org.glassfish.resources.api.PoolInfo;
-import org.glassfish.resources.api.ResourceConflictException;
-import org.glassfish.resources.api.ResourceDeployer;
-import org.glassfish.resources.api.ResourceInfo;
+import org.glassfish.resources.api.*;
 import com.sun.enterprise.util.i18n.StringManager;
 import com.sun.enterprise.connectors.util.ResourcesUtil;
 import com.sun.logging.LogDomains;
@@ -79,6 +76,7 @@ import org.jvnet.hk2.component.Singleton;
  * @since JDK1.4
  */
 @Service
+@ResourceDeployerInfo(JdbcResource.class)
 @Scoped(Singleton.class)
 public class JdbcResourceDeployer implements ResourceDeployer {
 

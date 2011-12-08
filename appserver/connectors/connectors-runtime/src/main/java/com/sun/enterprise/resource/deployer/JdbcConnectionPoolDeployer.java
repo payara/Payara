@@ -44,15 +44,13 @@ import com.sun.appserv.connectors.internal.api.ConnectorConstants;
 import com.sun.appserv.connectors.internal.api.ConnectorRuntimeException;
 import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
 import com.sun.enterprise.config.serverbeans.*;
+import com.sun.enterprise.config.serverbeans.Resource;
 import org.glassfish.connectors.config.JdbcConnectionPool;
-import org.glassfish.resources.api.PoolInfo;
-import org.glassfish.resources.api.ResourceConflictException;
-import org.glassfish.resources.api.ResourceDeployer;
+import org.glassfish.resources.api.*;
 import com.sun.enterprise.connectors.ConnectorRegistry;
 import com.sun.enterprise.resource.DynamicallyReconfigurableResource;
 import com.sun.enterprise.resource.pool.ResourcePool;
 import com.sun.enterprise.resource.pool.waitqueue.PoolWaitQueue;
-import org.glassfish.resources.api.ResourceInfo;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Inject;
@@ -91,6 +89,7 @@ import java.util.logging.Logger;
 // This class was created to fix the bug # 4650787
 
 @Service
+@ResourceDeployerInfo(JdbcConnectionPool.class)
 @Scoped(Singleton.class)
 public class JdbcConnectionPoolDeployer implements ResourceDeployer {
 

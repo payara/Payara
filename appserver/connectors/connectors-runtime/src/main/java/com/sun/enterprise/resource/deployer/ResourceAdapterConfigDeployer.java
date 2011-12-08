@@ -40,19 +40,18 @@
 
 package com.sun.enterprise.resource.deployer;
 
-import com.sun.enterprise.config.serverbeans.Application;
-import com.sun.enterprise.config.serverbeans.Resource;
-import com.sun.enterprise.config.serverbeans.Resources;
 import org.glassfish.connectors.config.ResourceAdapterConfig;
-import org.glassfish.resources.api.ResourceConflictException;
 import org.glassfish.resources.api.ResourceDeployer;
 import com.sun.enterprise.connectors.ConnectorRuntime;
 import com.sun.logging.LogDomains;
 
 import java.util.logging.*;
 
+import org.glassfish.resources.api.ResourceDeployerInfo;
+import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
+import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.Singleton;
 
 /**
@@ -60,8 +59,12 @@ import org.jvnet.hk2.component.Singleton;
  */
 
 @Service
+@ResourceDeployerInfo(ResourceAdapterConfig.class)
 @Scoped(Singleton.class)
 public class ResourceAdapterConfigDeployer extends AbstractConnectorResourceDeployer implements ResourceDeployer {
+
+    @Inject
+    private Habitat habitat;
 
     private static Logger _logger = LogDomains.getLogger(ResourceAdapterConfigDeployer.class, LogDomains.RSR_LOGGER);
 
@@ -81,7 +84,7 @@ public class ResourceAdapterConfigDeployer extends AbstractConnectorResourceDepl
         ResourceAdapterConfig domainConfig =
                 (ResourceAdapterConfig) resource;
         String rarName = domainConfig.getResourceAdapterName();
-        ConnectorRuntime crt = ConnectorRuntime.getRuntime();
+        ConnectorRuntime crt = getConnectorRuntime();
         if (_logger.isLoggable(Level.FINE)) {
             _logger.log(Level.FINE,
                     "Calling backend to add resource adapterConfig ", rarName);
@@ -91,6 +94,10 @@ public class ResourceAdapterConfigDeployer extends AbstractConnectorResourceDepl
             _logger.log(Level.FINE,
                     "Added resource adapterConfig in backend", rarName);
         }
+    }
+
+    private ConnectorRuntime getConnectorRuntime() {
+        return habitat.getComponent(ConnectorRuntime.class);
     }
 
     /**
@@ -108,7 +115,7 @@ public class ResourceAdapterConfigDeployer extends AbstractConnectorResourceDepl
         ResourceAdapterConfig domainConfig =
                 (ResourceAdapterConfig) resource;
         String rarName = domainConfig.getResourceAdapterName();
-        ConnectorRuntime crt = ConnectorRuntime.getRuntime();
+        ConnectorRuntime crt = getConnectorRuntime();
         crt.deleteResourceAdapterConfig(rarName);
     }
 

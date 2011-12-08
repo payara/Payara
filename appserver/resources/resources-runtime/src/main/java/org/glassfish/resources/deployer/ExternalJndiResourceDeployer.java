@@ -85,6 +85,7 @@ import java.util.logging.Logger;
  * @since   JDK1.4
  */
 @Service
+@ResourceDeployerInfo(ExternalJndiResource.class)
 @Scoped(Singleton.class)
 public class ExternalJndiResourceDeployer implements ResourceDeployer {
 
