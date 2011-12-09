@@ -51,6 +51,7 @@ import com.sun.jts.CosTransactions.RecoveryManager;
 import com.sun.jts.utils.RecoveryHooks.FailureInducer;
 
 import org.glassfish.internal.api.ServerContext;
+import org.glassfish.internal.api.PostStartup;
 import org.glassfish.api.admin.ProcessEnvironment;
 import org.glassfish.enterprise.iiop.api.GlassFishORBHelper;
 import com.sun.enterprise.transaction.api.ResourceRecoveryManager;
@@ -312,6 +313,8 @@ public class TransactionServiceProperties {
             if (habitat != null) {
                 ProcessEnvironment processEnv = habitat.getComponent(ProcessEnvironment.class);
                 if( processEnv.getProcessType().isServer()) {
+                    // Start ResourceManager if it hadn't started yet
+                    habitat.getComponent(PostStartup.class,"ResourceManager");
                     value = properties.getProperty("pending-txn-cleanup-interval");
                     int interval = -1;
                     if (isValueSet(value)) {

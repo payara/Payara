@@ -1175,7 +1175,12 @@ public class RecoveryManager {
             return;
         }
 
-        dbXARecovery(Configuration.getServerName(), xaResources);
+        //dbXARecovery(Configuration.getServerName(), xaResources);
+        // Configuration.getServerName() might be not quite right at auto-recovery
+        String sname = LogDBHelper.getInstance().getServerNameForInstanceName(Configuration.getPropertyValue(Configuration.INSTANCE_NAME));
+        if (sname != null) {
+            dbXARecovery(sname, xaResources);
+        }
 
         try {
         resyncComplete(false, false);
@@ -1188,12 +1193,18 @@ public class RecoveryManager {
         Map gtidMap = LogDBHelper.getInstance().getGlobalTIDMap(serverName);
 
         Set uniqueXids = new HashSet();
+        if(_logger.isLoggable(Level.INFO)) {
+            _logger.log(Level.INFO, "RecoveryManager.dbXARecovery recovering for serverName: " + serverName);
+        }
 
         // if flag is set use commit_one_phase (old style), otherwise use commit
         boolean one_phase = getCommitOnePhaseDuringRecovery();
         while (xaResources.hasMoreElements()) {
 
             XAResource xaResource = (XAResource) xaResources.nextElement();
+            if(_logger.isLoggable(Level.INFO)) {
+                _logger.log(Level.INFO, "RecoveryManager.dbXARecovery processing  xaResource: " + xaResource);
+            }
 
             // Get the list of XIDs which represent in-doubt transactions
             // for the database.
@@ -1210,6 +1221,10 @@ public class RecoveryManager {
                     String branchQualifier =
                         new String(inDoubtXids[i].getBranchQualifier());
                     //String serverName = Configuration.getServerName();
+                    if(_logger.isLoggable(Level.INFO)) {
+                        _logger.log(Level.INFO, "RecoveryManager.dbXARecovery inDoubtXid: " + 
+                                inDoubtXids[i] + " branchQualifier: " + branchQualifier);
+                    }
                     
                     if (branchQualifier.startsWith(serverName)) {
 
@@ -1237,6 +1252,9 @@ public class RecoveryManager {
                             byte[] gtrid = inDoubtXids[i].getGlobalTransactionId();
                             GlobalTID gtid = GlobalTID.fromTIDBytes(gtrid);
                             Long localTID = (Long)gtidMap.get(gtid);
+                            if(_logger.isLoggable(Level.INFO)) {
+                                _logger.log(Level.INFO, "RecoveryManager.dbXARecovery completing transaction for localTID: " + localTID);
+                            }
                             if (localTID == null) {
                                  xaResource.rollback(inDoubtXids[i]);
                             } else {
@@ -1245,18 +1263,18 @@ public class RecoveryManager {
                             }
                             } catch (Exception ex) { ex.printStackTrace(); }
                         } else {
-                            if(_logger.isLoggable(Level.FINE))
+                            if(_logger.isLoggable(Level.INFO))
                             {
-                                _logger.logp(Level.FINE,"RecoveryManager",
+                                _logger.logp(Level.INFO,"RecoveryManager",
                                             "dbXARecovery",
                                             " This xid is NOTUNIQUE " +
                                             inDoubtXids[i]);
                             }
                         }
                     } else {
-                        if(_logger.isLoggable(Level.FINE))
+                        if(_logger.isLoggable(Level.INFO))
                         {
-                            _logger.logp(Level.FINE,"RecoveryManager",
+                            _logger.logp(Level.INFO,"RecoveryManager",
                                         "dbXARecovery",
                                         " This xid doesn't belong to me " +
                                         inDoubtXids[i]);

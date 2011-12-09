@@ -162,7 +162,7 @@ public class CurrentImpl extends org.omg.CORBA.LocalObject
 
             if (Configuration.isDBLoggingEnabled()) {
                 //Put a marker record into the log table
-                LogDBHelper.getInstance();
+                LogDBHelper.getInstance().initTable();
             }
 
             // Get a reference to the current ControlImpl object.
@@ -342,6 +342,11 @@ public class CurrentImpl extends org.omg.CORBA.LocalObject
             if( !active ) {
                 NO_PERMISSION exc = new NO_PERMISSION(0,CompletionStatus.COMPLETED_NO);
                 throw exc;
+            }
+
+            if (Configuration.isDBLoggingEnabled()) {
+                //Put a marker record into the log table
+                LogDBHelper.getInstance().initTable();
             }
 
             // Get a reference to the current ControlImpl object.
