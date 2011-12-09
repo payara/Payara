@@ -53,6 +53,7 @@ import java.util.logging.Logger;
 import org.glassfish.api.admin.CommandValidationException;
 import static com.sun.enterprise.util.StringUtils.ok;
 import com.sun.enterprise.util.cluster.windows.io.WindowsRemoteFile;
+import com.sun.enterprise.util.net.NetUtils;
 import java.net.InetAddress;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
@@ -105,7 +106,10 @@ public class ValidateDcom implements AdminCommand {
         try {
             // try/finally is least messy way of making sure partial success news
             // is delivered back to caller
-            if(!init(context))
+            if (!init(context))
+                return;
+
+            if (!testNotLocal())
                 return;
 
             if (!testDcomPort())
@@ -123,7 +127,7 @@ public class ValidateDcom implements AdminCommand {
             if (!testRemoteScript())
                 return;
 
-            if(!testJdkAvailable())
+            if (!testJdkAvailable())
                 return;
         }
         finally {
@@ -138,7 +142,7 @@ public class ValidateDcom implements AdminCommand {
         user = resolver.resolve(user);
         password = DcomUtils.resolvePassword(resolver.resolve(password));
 
-        if(!ok(password)) {
+        if (!ok(password)) {
             setError(Strings.get("dcom.nopassword"));
             return false;
         }
@@ -266,11 +270,12 @@ public class ValidateDcom implements AdminCommand {
     private void setError(Exception e, String msg) {
         //report.setFailureCause(e);
         setError(msg + " : " + e.getMessage());
-        if(verbose) {
+        if (verbose) {
             Throwable t = e;
             do {
                 dumpStack(t);
-            } while((t = t.getCause()) != null);
+            }
+            while ((t = t.getCause()) != null);
         }
     }
 
@@ -334,5 +339,14 @@ public class ValidateDcom implements AdminCommand {
             setError(ex, Strings.get("dcom.no.jdk", host));
             return false;
         }
+    }
+
+    private boolean testNotLocal() {
+        if (NetUtils.isThisHostLocal(host)) {
+            setError(Strings.get("dcom.yes.local", host));
+            return false;
+        }
+        out.append(Strings.get("dcom.no.local", host));
+        return true;
     }
 }
