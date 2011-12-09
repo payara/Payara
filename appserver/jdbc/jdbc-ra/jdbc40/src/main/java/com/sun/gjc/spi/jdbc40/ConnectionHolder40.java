@@ -93,8 +93,10 @@ public class ConnectionHolder40 extends ConnectionHolder {
      */
     protected void init() {
         try {
-            defaultClientInfo = getClientInfo();
-        } catch (SQLException e) {
+            if (isSupportClientInfo()) {
+                defaultClientInfo = getClientInfo();
+            }
+        } catch (Throwable e) {
             _logger.log(Level.INFO, "jdbc.unable_to_get_client_info", e.getMessage());
             if(_logger.isLoggable(Level.FINEST)) {
                 _logger.log(Level.FINEST, "jdbc.unable_to_get_client_info", e);
@@ -372,6 +374,48 @@ public class ConnectionHolder40 extends ConnectionHolder {
     }
 
     /**
+     * Returns true if the client info properties are supported.
+     * The application server calls the <code>getClientInfo</code> method and the <code>setClientInfo</code> method
+     * only if the driver supports the client info properties.
+     * The <code>DatabaseMetaData#getClientInfoProperties</code> method is used to determine
+     * whether the driver supports the client info properties or not.
+     * Note that the <code>DatabaseMetaData</code> will be cached by <code>ManagedConnection</code>.
+     * <p/>
+     * 
+     * @return true if the client info properties are supported, false otherwise
+     *
+     * @throws javax.resource.ResourceException if the access to connection is failed.
+     *
+     * @throws java.sql.SQLException if the database server returns an error when retrieving 
+     *                               a list of the client info properties.
+     *
+     * @see java.sql.DatabaseMetaData#getClientInfoProperties
+     * @since 1.6
+     */
+    private boolean isSupportClientInfo() throws ResourceException, SQLException {
+        Boolean isSupportClientInfo = getManagedConnection().isClientInfoSupported();
+        if (isSupportClientInfo != null) {
+            return isSupportClientInfo;
+        } else {
+            ResultSet rs = getManagedConnection().getCachedDatabaseMetaData().getClientInfoProperties();
+            try {
+                isSupportClientInfo = rs.next();
+                getManagedConnection().setClientInfoSupported(isSupportClientInfo);
+                return isSupportClientInfo;
+            } finally {
+                try {
+                rs.close();
+                } catch(SQLException ex) {
+                    if(_logger.isLoggable(Level.FINEST)) {
+                        _logger.log(Level.FINEST, "jdbc.unable_to_get_client_info", ex);
+                    }
+                    return false;
+                }
+            }
+        }
+    }
+    
+    /**
      * Factory method for creating Array objects.
      *
      * @param typeName the SQL name of the type the elements of the array map to. The typeName is a
@@ -526,12 +570,14 @@ public class ConnectionHolder40 extends ConnectionHolder {
         if (!jdbc30Connection) {
             try {
                 checkValidity();
-                if (defaultClientInfo == null) {
-                    setClientInfo(new Properties());
-                } else {
-                    setClientInfo(defaultClientInfo);
+                if (isSupportClientInfo()) {
+                    if (defaultClientInfo == null) {
+                        setClientInfo(new Properties());
+                    } else {
+                        setClientInfo(defaultClientInfo);
+                    }
                 }
-            } catch (SQLClientInfoException e) {
+            } catch (Throwable e) {
                 _logger.log(Level.INFO, "jdbc.unable_to_set_client_info", e.getMessage());
                 if(_logger.isLoggable(Level.FINEST)) {
                     _logger.log(Level.FINEST, "jdbc.unable_to_set_client_info", e);

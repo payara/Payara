@@ -63,6 +63,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.sql.PreparedStatement;
 import java.sql.CallableStatement;
+import java.sql.DatabaseMetaData;
 import com.sun.gjc.spi.base.*;
 import com.sun.gjc.spi.base.CacheObjectKey;
 import com.sun.gjc.spi.base.datastructure.Cache;
@@ -141,6 +142,9 @@ public class ManagedConnection implements javax.resource.spi.ManagedConnection,
     
     private boolean aborted = false;
 
+    private DatabaseMetaData cachedDatabaseMetaData = null;
+    private Boolean isClientInfoSupported = null;
+    
     /**
      * Constructor for <code>ManagedConnection</code>. The pooledConn parameter is expected
      * to be null and sqlConn parameter is the actual connection in case where
@@ -915,6 +919,31 @@ public class ManagedConnection implements javax.resource.spi.ManagedConnection,
     public void setLastTransactionIsolationLevel(int isolationLevel) {
         lastTransactionIsolationLevel = isolationLevel;
     }
+    
+    /**
+     * Returns the cached <code>DatabaseMetaData</code>.
+     *
+     * @return <code>DatabaseMetaData</code>
+     */
+    public DatabaseMetaData getCachedDatabaseMetaData() throws ResourceException {
+        if(cachedDatabaseMetaData == null){
+            try {
+                cachedDatabaseMetaData = getActualConnection().getMetaData();
+            } catch (SQLException sqle) {
+                throw new ResourceException(sqle.getMessage(), sqle);
+            }
+        }
+        return cachedDatabaseMetaData;
+    }
+    
+    public Boolean isClientInfoSupported() {
+        return isClientInfoSupported;
+    }
+
+    public void setClientInfoSupported(Boolean isClientInfoSupported) {
+        this.isClientInfoSupported = isClientInfoSupported;
+    }
+
     private void logFine(String logMessage){
         if(_logger.isLoggable(Level.FINE)) {
             _logger.log(Level.FINE, logMessage);
