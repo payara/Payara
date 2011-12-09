@@ -73,7 +73,9 @@
         setSessionAttribute(key="secureCancelUrl" value="#{pageSession.selfPage}")
         setPageSessionAttribute(key="readOnly" value="#{false}" );
         if ("(#{pageSession.Name}=admin-listener)") {
-            setPageSessionAttribute(key="readOnly" value="#{true}" );
+           if ("(#{pageSession.configName}=server-config)") {
+                setPageSessionAttribute(key="readOnly" value="#{true}" );
+           }
         }
         //If secure admin is enabled, we will not show the other tabs since GUI doesn't have support for handling low level grizzly config yet.
         setPageSessionAttribute(key="showSSLTab" value="#{true}");
