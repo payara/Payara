@@ -42,5 +42,15 @@
         label="$resource{i18ncs.cluster.jms.ConfigType}" 
         helpText="$resource{i18ncs.cluster.jms.ConfigTypeHelp}">
     <sun:dropDown id="configType" selected="#{pageSession.jmsConfigType}" labels={"Basic" "Custom"}
-        onChange="javascript: var el = document.getElementById('#{jmsPropertySheetId}').style.display = (this.value == 'Basic') ? 'none' : 'block'; "/>
+        onChange="javascript: toggleSheet(this.value, '#{jmsPropertySheetId}');">
+    <!afterCreate
+        getClientId(component="$this{component}" clientId=>$page{jmsPropertyDropDownId});
+    />
+    </sun:dropDown>
+"    <script type="text/javascript">
+"        function toggleSheet(value, sheet) {
+"            document.getElementById(sheet).style.display = (value == 'Basic') ? 'none' : 'block';
+"        }
+"        toggleSheet(document.getElementById('#{jmsPropertyDropDownId}').value, '#{jmsPropertySheetId}');
+"    </script>
 </sun:property>

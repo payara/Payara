@@ -40,22 +40,44 @@
 
 package org.glassfish.admingui.devtests;
 
-import org.glassfish.admingui.devtests.util.ElementFinder;
-import org.glassfish.admingui.devtests.util.SeleniumHelper;
+import com.google.common.base.Function;
 import com.thoughtworks.selenium.SeleniumException;
-import org.junit.*;
-import org.openqa.selenium.*;
-
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.math.BigInteger;
 import java.net.URL;
-import java.net.URLConnection;
 import java.security.SecureRandom;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.ResourceBundle;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.glassfish.admingui.common.util.RestResponse;
+import org.glassfish.admingui.common.util.RestUtil;
+import org.glassfish.admingui.devtests.util.ElementFinder;
+import org.glassfish.admingui.devtests.util.SeleniumHelper;
 import org.glassfish.admingui.devtests.util.SeleniumWrapper;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Rule;
+import org.openqa.selenium.By;
+import org.openqa.selenium.StaleElementReferenceException;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.WebDriverWait;
 
 public class BaseSeleniumTestClass {
     public static final String CURRENT_WINDOW = "selenium.browserbot.getCurrentWindow()";
@@ -118,23 +140,8 @@ public class BaseSeleniumTestClass {
     @BeforeClass
     public static void setUp() throws Exception {
         if (!DEBUG) {
-            try {
-                URL rotateLogUrl = new URL(helper.getBaseUrl() + "/management/domain/rotate-log");
-                URLConnection conn = rotateLogUrl.openConnection();
-                conn.setDoOutput(true);
-                OutputStreamWriter wr = new OutputStreamWriter(conn.getOutputStream());
-                wr.write("");
-                wr.flush();
-                BufferedReader rd = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-                String line = rd.readLine();
-                while (line != null) {
-                    line = rd.readLine();
-                }
-                wr.close();
-                rd.close();
-            } catch (IOException ioe) {
-
-            }
+            RestResponse rr = RestUtil.post(helper.getBaseUrl() + "/management/domain/rotate-log", new HashMap<String, Object>());
+            System.out.println(rr.isSuccess());
         }
     }
 
@@ -189,6 +196,7 @@ public class BaseSeleniumTestClass {
      * @return
      */
     public String getFieldValue(String elem) {
+        waitForElement(elem);
         return selenium.getValue(elem);
     }
     /**
@@ -197,6 +205,7 @@ public class BaseSeleniumTestClass {
      * @param text
      */
     public void setFieldValue(String elem, String text) {
+        waitForElement(elem);
         selenium.type(elem, text);
     }
 
@@ -207,29 +216,33 @@ public class BaseSeleniumTestClass {
      * @return
      */
     public String getText(String elem) {
+        waitForElement(elem);
         return selenium.getText(elem);
     }
 
     /**
      * Deelects (unchecks) the specified checkbox.  After calling this method, the
      * checkbox will be unchecked regardless of its initial state.
-     * @param cb
+     * @param elem
      */
-    public void markCheckbox(String cb) {
-        selenium.check(cb);
+    public void markCheckbox(String elem) {
+        waitForElement(elem);
+        selenium.check(elem);
     }
 
     /**
      * Selects (checks) the specified checkbox.  After calling this method, the
      * checkbox will be checked regardless of its initial state.
-     * @param cb
+     * @param elem
      */
-    public void clearCheckbox(String cb) {
-        selenium.uncheck(cb);
+    public void clearCheckbox(String elem) {
+        waitForElement(elem);
+        selenium.uncheck(elem);
     }
 
-    public void pressButton(String button) {
-        selenium.click(button);
+    public void pressButton(String elem) {
+        waitForElement(elem);
+        selenium.click(elem);
     }
 
     /**
@@ -238,6 +251,7 @@ public class BaseSeleniumTestClass {
      * @return
      */
     public String getSelectedValue(String elem) {
+        waitForElement(elem);
         return selenium.getSelectedValue(elem);
     }
 
@@ -292,11 +306,13 @@ public class BaseSeleniumTestClass {
      * @return
      */
     protected boolean isChecked(String elem) {
+        waitForElement(elem);
         return selenium.isChecked(elem);
     }
 
-    protected void selectFile(String uploadElement, String archivePath) {
-        selenium.attachFile(uploadElement, archivePath);
+    protected void selectFile(String elem, String archivePath) {
+        waitForElement(elem);
+        selenium.attachFile(elem, archivePath);
     }
 
     protected boolean isAlertPresent() {
@@ -461,7 +477,7 @@ public class BaseSeleniumTestClass {
                 Assert.fail("The operation timed out waiting for the page to load.");
             }
 
-            RenderedWebElement ajaxPanel = null;
+            WebElement ajaxPanel = null;
             boolean panelIsDisplayed = false;
 
             try {
@@ -948,13 +964,32 @@ public class BaseSeleniumTestClass {
         }
     }
 
+    private void waitForElement(String elem) {
+        // times out after 5 seconds
+        WebDriverWait wait = new WebDriverWait(driver, 5);
+
+        // while the following loop runs, the DOM changes - 
+        // page is refreshed, or element is removed and re-added
+        wait.until(presenceOfElementLocated(By.id(elem)));
+        selenium.focus(elem);
+    }
+
+    private static Function<WebDriver, WebElement> presenceOfElementLocated(final By locator) {
+        return new Function<WebDriver, WebElement>() {
+            @Override
+            public WebElement apply(WebDriver driver) {
+                return driver.findElement(locator);
+            }
+        };
+    }
+
     private void insureElementIsVisible (final String id) {
         if (!id.contains("treeForm:tree")) {
             return;
         }
 
         try {
-            RenderedWebElement element = (RenderedWebElement) selenium.findElement(By.id(id), TIMEOUT);
+            WebElement element = (WebElement) selenium.findElement(By.id(id), TIMEOUT);
             if (element.isDisplayed()) {
                 return;
             }
@@ -966,11 +1001,11 @@ public class BaseSeleniumTestClass {
         boolean parentIsDisplayed = false;
 
         try {
-            RenderedWebElement parentElement = (RenderedWebElement) selenium.findElement(By.id(parentId), TIMEOUT);
+            WebElement parentElement = (WebElement) selenium.findElement(By.id(parentId), TIMEOUT);
             parentIsDisplayed = parentElement.isDisplayed();
         } catch (StaleElementReferenceException sere) {
             sleep(1000);
-            RenderedWebElement parentElement = (RenderedWebElement) selenium.findElement(By.id(parentId), TIMEOUT);
+            WebElement parentElement = (WebElement) selenium.findElement(By.id(parentId), TIMEOUT);
             parentIsDisplayed = parentElement.isDisplayed();
 
         }
@@ -1001,7 +1036,19 @@ public class BaseSeleniumTestClass {
                     handleLogin();
                 }
                 if (!textShouldBeMissing) {
-                    if (isTextPresent(triggerText)) {
+                    boolean visible = false;
+                    final List<WebElement> elements = driver.findElements(By.xpath("//*[contains(text(), '" + triggerText + "')]"));
+                    if (!elements.isEmpty()) {
+                        for (WebElement e : elements) {
+                            if (e.isDisplayed()) {
+                                visible = true;
+                            }
+                        }
+                    } else {
+                        visible = true;
+                    }
+
+                    if (isTextPresent(triggerText) && visible) {
                         found = true;
                     }
                 } else if (!isTextPresent(triggerText)) {

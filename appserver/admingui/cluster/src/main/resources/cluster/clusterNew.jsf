@@ -107,6 +107,7 @@
                                 detail="#{pageSession.resultMap.data.message}"
                                 type="error");
                             gf.restRequest(endpoint="#{sessionScope.REST_URL}/clusters/cluster/#{pageSession.name}", method="delete");
+                            gf.redirect(page="#{request.contextPath}/cluster/cluster/clusterNew.jsf?alertType=${alertType}&alertSummary=${alertSummary}&alertDetail=${alertDetail}");
                         }
                 }
                 

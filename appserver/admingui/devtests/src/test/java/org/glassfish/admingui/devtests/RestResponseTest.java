@@ -64,7 +64,9 @@ public class RestResponseTest {
         RestResponse response = RestUtil.get(URL_GENERATE_JVM_REPORT, new HashMap<String, Object>(){{
             put ("type", "summary");
         }});
-        assertTrue(response.getResponseBody().contains("Operating System Information"));
+        final String responseBody = response.getResponseBody();
+        System.err.println(responseBody);
+        assertTrue(responseBody.contains("Operating System Information"));
     }
 
     @Test

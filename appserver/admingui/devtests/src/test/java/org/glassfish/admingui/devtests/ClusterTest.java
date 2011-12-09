@@ -39,24 +39,23 @@
  */
 package org.glassfish.admingui.devtests;
 
-import org.junit.Assert;
-import org.junit.Test;
-
 import java.util.List;
-
+import org.junit.Assert;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import org.junit.Test;
 
 /**
  *
  * @author anilam
  */
 public class ClusterTest extends BaseSeleniumTestClass {
+
     public static final String ID_CLUSTERS_TABLE = "propertyForm:clustersTable";
     public static final String ID_CLUSTERS_TABLE_DELETE_BUTTON = "propertyForm:clustersTable:topActionsGroup1:button1";
     public static final String ID_CLUSTERS_TABLE_SELECT_ALL_BUTTON = "propertyForm:clustersTable:_tableActionsTop:_selectMultipleButton";
     public static final String ID_CLUSTERS_TABLE_STOP_BUTTON = "propertyForm:clustersTable:topActionsGroup1:button3";
-    
     public static final String TRIGGER_CLUSTER_NO_RUNNING_INSTANCES = "i18ncs.cluster.migrateEjbTimersNoRunningInstance";
     public static final String TRIGGER_CONFIGURATION_TEXT = "i18n.configuration.pageTitleHelp";
     public static final String TRIGGER_MIGRATE_EJB_TIMERS = "i18ncs.cluster.migrateEjbTimersHelp";
@@ -171,7 +170,7 @@ public class ClusterTest extends BaseSeleniumTestClass {
         setFieldValue("propertyForm:propertySheet:propertSectionTextField:NameTextProp:NameText", instanceName2);
         clickAndWait("propertyForm:propertyContentPage:topButtons:newButton", TRIGGER_CLUSTER_INSTANCES_PAGE);
         assertTrue(isTextPresent(instanceName2));
-        
+
         deleteCluster(clusterName);
     }
 
@@ -206,7 +205,7 @@ public class ClusterTest extends BaseSeleniumTestClass {
         pressButton("propertyForm:clusterTabs:clusterProps:clusterInstanceProps");
         waitForPageLoad(TRIGGER_CLUSTER_SYSTEM_PROPERTIES, TIMEOUT, true);
         assertTableRowCount("propertyForm:basicTable", clusterPropCount);
-        
+
         deleteCluster(clusterName);
     }
 
@@ -221,6 +220,55 @@ public class ClusterTest extends BaseSeleniumTestClass {
 
         assertEquals(0, getTableRowsByValue(ID_CLUSTERS_TABLE, clusterName1, "col1").size());
         assertEquals(0, getTableRowsByValue(ID_CLUSTERS_TABLE, clusterName2, "col1").size());
+    }
+
+    @Test
+    public void testClusterWithJmsOptions() {
+        String clusterName = "cluster" + generateRandomString();
+        gotoClusterPage();
+        clickAndWait("propertyForm:clustersTable:topActionsGroup1:newButton", TRIGGER_NEW_CLUSTER_PAGE);
+        setFieldValue("propertyForm:propertySheet:propertySectionTextField:NameTextProp:NameText", clusterName);
+        selectDropdownOption("propertyForm:propertySheet:propertySectionTextField:jmsConfigTypeProp:configType", "Custom");
+        waitForPageLoad("i18ncs.cluster.jms.configStoreTypeHelp", TIMEOUT);
+
+        selectDropdownOption("propertyForm:jmsPropertySheet:configureJmsClusterSection:ClusterTypeProp:clusterType", "Conventional");
+        selectDropdownOption("propertyForm:jmsPropertySheet:configureJmsClusterSection:ConfigStoreTypeProp:configStoreType", "Master Broker");
+        selectDropdownOption("propertyForm:jmsPropertySheet:configureJmsClusterSection:MessageStoreTypeProp:messageStoreType", "File");
+
+        addTableRow("propertyForm:basicTable", "propertyForm:basicTable:topActionsGroup1:addSharedTableButton",
+                "Server Instances to Be Created");
+        setFieldValue("propertyForm:basicTable:rowGroup1:0:col2:name", clusterName + "in1");
+        addTableRow("propertyForm:basicTable", "propertyForm:basicTable:topActionsGroup1:addSharedTableButton",
+                "Server Instances to Be Created");
+        setFieldValue("propertyForm:basicTable:rowGroup1:0:col2:name", clusterName + "in2");
+
+        clickAndWait("propertyForm:propertyContentPage:topButtons:newButton", TRIGGER_CLUSTER_PAGE);
+        assertTrue(isTextPresent(clusterName));
+    }
+
+    @Test
+    public void testClusterWithBadJmsOptions() {
+        String clusterName = "cluster" + generateRandomString();
+        gotoClusterPage();
+        clickAndWait("propertyForm:clustersTable:topActionsGroup1:newButton", TRIGGER_NEW_CLUSTER_PAGE);
+        setFieldValue("propertyForm:propertySheet:propertySectionTextField:NameTextProp:NameText", clusterName);
+        selectDropdownOption("propertyForm:propertySheet:propertySectionTextField:jmsConfigTypeProp:configType", "Custom");
+        waitForPageLoad("i18ncs.cluster.jms.configStoreTypeHelp", TIMEOUT);
+
+        selectDropdownOption("propertyForm:jmsPropertySheet:configureJmsClusterSection:ClusterTypeProp:clusterType", "Conventional");
+        selectDropdownOption("propertyForm:jmsPropertySheet:configureJmsClusterSection:ConfigStoreTypeProp:configStoreType", "Master Broker");
+        selectDropdownOption("propertyForm:jmsPropertySheet:configureJmsClusterSection:MessageStoreTypeProp:messageStoreType", "JDBC");
+
+        addTableRow("propertyForm:basicTable", "propertyForm:basicTable:topActionsGroup1:addSharedTableButton",
+                "Server Instances to Be Created");
+        setFieldValue("propertyForm:basicTable:rowGroup1:0:col2:name", clusterName + "in1");
+        addTableRow("propertyForm:basicTable", "propertyForm:basicTable:topActionsGroup1:addSharedTableButton",
+                "Server Instances to Be Created");
+        setFieldValue("propertyForm:basicTable:rowGroup1:0:col2:name", clusterName + "in2");
+
+        clickAndWait("propertyForm:propertyContentPage:topButtons:newButton", "An error occurred");
+        gotoClusterPage();
+        assertFalse(isTextPresent(clusterName));
     }
 
     public void gotoClusterPage() {
@@ -269,12 +317,12 @@ public class ClusterTest extends BaseSeleniumTestClass {
     public void createCluster(String clusterName, String... instanceNames) {
         gotoClusterPage();
         clickAndWait("propertyForm:clustersTable:topActionsGroup1:newButton", TRIGGER_NEW_CLUSTER_PAGE);
-        setFieldValue("propertyForm:propertySheet:propertSectionTextField:NameTextProp:NameText", clusterName);
+        setFieldValue("propertyForm:propertySheet:propertySectionTextField:NameTextProp:NameText", clusterName);
 
         if (instanceNames != null) {
             for (String instanceName : instanceNames) {
                 if (instanceName != null && !instanceName.equals("")) {
-                    addTableRow("propertyForm:basicTable", "propertyForm:basicTable:topActionsGroup1:addSharedTableButton", 
+                    addTableRow("propertyForm:basicTable", "propertyForm:basicTable:topActionsGroup1:addSharedTableButton",
                             "Server Instances to Be Created");
                     setFieldValue("propertyForm:basicTable:rowGroup1:0:col2:name", instanceName);
 //                    createClusterInstance(clusterName, instanceName);
@@ -283,7 +331,7 @@ public class ClusterTest extends BaseSeleniumTestClass {
         }
         clickAndWait("propertyForm:propertyContentPage:topButtons:newButton", TRIGGER_CLUSTER_PAGE);
     }
-    
+
     public void createClusterInstance(String clusterName, String instanceName) {
         gotoClusterInstancesPage(clusterName);
         clickAndWait("propertyForm:instancesTable:topActionsGroup1:newButton", "Name of the node machine on which the server instance will reside");
@@ -295,7 +343,7 @@ public class ClusterTest extends BaseSeleniumTestClass {
     public void deleteCluster(String clusterName) {
         gotoClusterPage();
         rowActionWithConfirm(ID_CLUSTERS_TABLE_STOP_BUTTON, ID_CLUSTERS_TABLE, clusterName);
-            deleteRow(ID_CLUSTERS_TABLE_DELETE_BUTTON, ID_CLUSTERS_TABLE, clusterName);
+        deleteRow(ID_CLUSTERS_TABLE_DELETE_BUTTON, ID_CLUSTERS_TABLE, clusterName);
     }
 
     public void deleteAllClusters() {
@@ -304,7 +352,7 @@ public class ClusterTest extends BaseSeleniumTestClass {
         if (getTableRowCount(ID_CLUSTERS_TABLE) == 0) {
             return;
         }
-        
+
 
         List<String> rows = getTableRowsByValue(ID_CLUSTERS_TABLE, "Running", "col3");
         if (!rows.isEmpty()) {

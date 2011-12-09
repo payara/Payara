@@ -37,14 +37,15 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
 package org.glassfish.admingui.devtests;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
-
 public class JavaMessageServiceTest extends BaseSeleniumTestClass {
+
     public static final String DEFAULT_JMS_HOST = "default_JMS_host";
     private static final String TRIGGER_GENERAL_INFORMATION = "i18n.instance.GeneralTitle";
     private static final String TRIGGER_JMS_SERVICE = "i18njms.jms.PageHelp";
@@ -68,7 +69,7 @@ public class JavaMessageServiceTest extends BaseSeleniumTestClass {
         selectDropdownOption("propertyForm:propertyContentPage:propertySheet:propertSectionTextField:behaviorProp:Behavior", "priority");
 
         int count = addTableRow("propertyForm:propertyContentPage:basicTable", "propertyForm:propertyContentPage:basicTable:topActionsGroup1:addSharedTableButton");
-        setFieldValue("propertyForm:propertyContentPage:basicTable:rowGroup1:0:col2:col1St", "property"+generateRandomString());
+        setFieldValue("propertyForm:propertyContentPage:basicTable:rowGroup1:0:col2:col1St", "property" + generateRandomString());
         setFieldValue("propertyForm:propertyContentPage:basicTable:rowGroup1:0:col3:col1St", "value");
         clickAndWait("propertyForm:propertyContentPage:topButtons:saveButton", TRIGGER_NEW_VALUES_SAVED);
 
@@ -83,8 +84,8 @@ public class JavaMessageServiceTest extends BaseSeleniumTestClass {
 
     @Test
     public void testJmsHosts() {
-        String hostText = "host"+generateRandomString();
-        String host = "somemachine"+generateRandomNumber(1000);
+        String hostText = "host" + generateRandomString();
+        String host = "somemachine" + generateRandomNumber(1000);
         String port = Integer.toString(generateRandomNumber(32768));
 
         clickAndWait("treeForm:tree:configurations:server-config:jmsConfiguration:jmsHosts:jmsHosts_link", TRIGGER_JMS_HOSTS);
@@ -102,50 +103,50 @@ public class JavaMessageServiceTest extends BaseSeleniumTestClass {
         clickAndWait("propertyForm:propertyContentPage:topButtons:cancelButton", TRIGGER_JMS_HOSTS);
         deleteRow("propertyForm:configs:topActionsGroup1:button1", "propertyForm:configs", hostText, "col0", "colName");
     }
-    
+
     @Test
     public void testJmsHostInNonServerConfig() {
-        String hostText = "host"+generateRandomString();
+        String hostText = "host" + generateRandomString();
         String instanceName = "in" + generateRandomString();
         final String LINK_HOSTS = "treeForm:tree:configurations:" + instanceName + "-config:jmsConfiguration:jmsHosts:jmsHosts_link";
-        
+
         StandaloneTest sat = new StandaloneTest();
         sat.createStandAloneInstance(instanceName);
         sat.startInstance(instanceName);
-        
+
         // Create new JMS Host for the standalone instance's config
         clickAndWait(LINK_HOSTS, TRIGGER_JMS_HOSTS);
         clickAndWait("propertyForm:configs:topActionsGroup1:newButton", TRIGGER_NEW_JMS_HOST);
         setFieldValue("propertyForm:propertySheet:propertSectionTextField:JmsHostTextProp:JmsHostText", hostText);
         setFieldValue("propertyForm:propertySheet:propertSectionTextField:HostProp:Host", "localhost");
         clickAndWait("propertyForm:propertyContentPage:topButtons:newButton", TRIGGER_NEW_VALUES_SAVED);
-        
+
         // Verify that the host is not visible to the DAS
         reset();
         clickAndWait("treeForm:tree:configurations:server-config:jmsConfiguration:jmsHosts:jmsHosts_link", TRIGGER_JMS_HOSTS);
         assertFalse(isTextPresent(hostText));
-        
+
         // Delete the default host for the SA instance
         reset();
         clickAndWait(LINK_HOSTS, TRIGGER_JMS_HOSTS);
         deleteRow("propertyForm:configs:topActionsGroup1:button1", "propertyForm:configs", DEFAULT_JMS_HOST, "col0", "colName");
-        
+
         // Verify that the DAS still has the default JMS Host
         reset();
         clickAndWait("treeForm:tree:configurations:server-config:jmsConfiguration:jmsHosts:jmsHosts_link", TRIGGER_JMS_HOSTS);
         assertTrue(isTextPresent(DEFAULT_JMS_HOST));
-        
+
         // Delete SA config's new host
         reset();
         clickAndWait(LINK_HOSTS, TRIGGER_JMS_HOSTS);
         deleteRow("propertyForm:configs:topActionsGroup1:button1", "propertyForm:configs", hostText, "col0", "colName");
-        
+
         sat.deleteAllStandaloneInstances();
     }
 
     @Test
     public void testJmsPhysicalDestinations() {
-        final String name = "dest"+generateRandomString();
+        final String name = "dest" + generateRandomString();
         final String maxUnconsumed = Integer.toString(generateRandomNumber(100));
         final String maxMessageSize = Integer.toString(generateRandomNumber(100));
         final String maxTotalMemory = Integer.toString(generateRandomNumber(100));
@@ -173,7 +174,7 @@ public class JavaMessageServiceTest extends BaseSeleniumTestClass {
         assertEquals(maxUnconsumed, getFieldValue("jmsPhysDestForm:propertySheet:propertSectionTextField:maxNumMsgsProp:maxNumMsgs"));
         assertEquals(maxMessageSize, getFieldValue("jmsPhysDestForm:propertySheet:propertSectionTextField:maxBytesPerMsgProp:maxBytesPerMsg"));
         assertEquals(maxTotalMemory, getFieldValue("jmsPhysDestForm:propertySheet:propertSectionTextField:maxTotalMsgBytesProp:maxTotalMsgBytes"));
-        
+
         // TODO: These options do not seem to be be supported by the backend. Passing these props to the CLI does not affect its value. Disabling for now.
         // FIXME
 //        assertEquals("REMOVE_LOW_PRIORITY", getFieldValue("jmsPhysDestForm:propertySheet:propertSectionTextField:limitBehaviorProp:Type"));
@@ -192,5 +193,31 @@ public class JavaMessageServiceTest extends BaseSeleniumTestClass {
         clickAndWait("treeForm:tree:applicationServer:applicationServer_link", TRIGGER_GENERAL_INFORMATION);
         clickAndWait("propertyForm:serverInstTabs:jmsPhysDest", TRIGGER_JMS_PHYSICAL_DESTINATIONS);
         deleteRow("propertyForm:configs:topActionsGroup1:deleteButton", "propertyForm:configs", name);
+    }
+
+    @Test
+    public void testMasterBroker() {
+        ClusterTest ct = new ClusterTest();
+        try {
+            final String FIELD_MASTER_BROKER = "propertyForm:propertyContentPage:propertySheet:propertSectionTextField:maseterBrokerProp:MasterBroker";
+
+            String clusterName = "clusterName" + generateRandomString();
+            ct.deleteAllClusters();
+            final String instance1 = clusterName + generateRandomString();
+            final String instance2 = clusterName + generateRandomString();
+            ct.createCluster(clusterName, instance1, instance2);
+            final String ELEMENT_JMS_LINK = "treeForm:tree:configurations:" + clusterName + "-config:jmsConfiguration:jmsConfiguration_link";
+
+            clickAndWait(ELEMENT_JMS_LINK, TRIGGER_JMS_SERVICE);
+            selectDropdownOption(FIELD_MASTER_BROKER, instance2);
+
+            clickAndWait("propertyForm:propertyContentPage:topButtons:saveButton", TRIGGER_NEW_VALUES_SAVED);
+            reset();
+            clickAndWait(ELEMENT_JMS_LINK, TRIGGER_JMS_SERVICE);
+
+            assertEquals(instance2, getFieldValue(FIELD_MASTER_BROKER));
+        } finally {
+            ct.deleteAllClusters();
+        }
     }
 }

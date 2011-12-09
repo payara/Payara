@@ -46,6 +46,8 @@ import org.glassfish.admingui.devtests.BaseSeleniumTestClass;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.firefox.FirefoxDriver;
+import org.openqa.selenium.firefox.FirefoxProfile;
+import org.openqa.selenium.firefox.internal.ProfilesIni;
 import org.openqa.selenium.htmlunit.HtmlUnitDriver;
 import org.openqa.selenium.ie.InternetExplorerDriver;
 
@@ -79,7 +81,12 @@ public class SeleniumHelper {
             String browser = getParameter("browser", "firefox");
 
             if ("firefox".equalsIgnoreCase(browser)) {
-                driver = new FirefoxDriver();//new FirefoxProfile(new File("src/test/resources/firefoxProfile")));
+                ProfilesIni allProfiles = new ProfilesIni();
+                FirefoxProfile profile = allProfiles.getProfile("default");
+                profile.setPreference("dom.disable_window_move_resize", false);
+                final FirefoxDriver firefoxDriver = new FirefoxDriver(profile);
+                driver = firefoxDriver;
+                firefoxDriver.executeScript("window.resizeTo(screen.availWidth, screen.availHeight);", new Object[]{});
             } else if ("chrome".equalsIgnoreCase(browser)) {
                 driver = new ChromeDriver();
             } else if ("ie".equalsIgnoreCase(browser)) {
@@ -94,6 +101,9 @@ public class SeleniumHelper {
             (new BaseSeleniumTestClass()).openAndWait("/", BaseSeleniumTestClass.TRIGGER_COMMON_TASKS, 480); // Make sure the server has started and the user logged in
         }
 
+        selenium.windowFocus();
+        selenium.windowMaximize();
+        selenium.setTimeout("90000");
         return selenium;
     }
 

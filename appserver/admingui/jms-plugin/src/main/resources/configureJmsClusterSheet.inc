@@ -76,5 +76,4 @@
     <!afterCreate
         getClientId(component="$this{component}" clientId=>$page{jmsPropertySheetId});
     />
-
 </sun:propertySheet>

@@ -39,10 +39,8 @@
  */
 package org.glassfish.admingui.devtests;
 
-import org.junit.Test;
-
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertFalse;
+import org.junit.Test;
 
 public class AdminObjectTest extends BaseSeleniumTestClass {
     private static final String TRIGGER_ADMIN_OBJECT_RESOURCES = "i18njca.adminObjectResources.pageTitleHelp";

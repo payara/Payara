@@ -42,9 +42,9 @@ package org.glassfish.admingui.devtests.util;
 import org.glassfish.admingui.devtests.BaseSeleniumTestClass;
 import org.junit.Assert;
 import org.openqa.selenium.By;
-import org.openqa.selenium.RenderedWebElement;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebDriverBackedSelenium;
+import org.openqa.selenium.WebElement;
 
 /**
  *
@@ -307,29 +307,29 @@ public class SeleniumWrapper extends WebDriverBackedSelenium {
         }
     }
 
-    public RenderedWebElement findElement(By by) {
-        RenderedWebElement element = (RenderedWebElement) driver.findElement(by);
+    public WebElement findElement(By by) {
+        WebElement element = (WebElement) driver.findElement(by);
 
         try {
             element.isDisplayed(); // Force an op on the element to make sure it's a valid reference
         } catch (Exception e) {
             sleep(1000);
-            element = (RenderedWebElement) driver.findElement(by);
+            element = (WebElement) driver.findElement(by);
         }
 
         return element;
     }
 
-    public RenderedWebElement findElement(By by, int timeoutInSeconds) {
+    public WebElement findElement(By by, int timeoutInSeconds) {
         for (int seconds = 0;; seconds++) {
             if (seconds >= (timeoutInSeconds)) {
                 Assert.fail("The operation timed out waiting for the page to load.");
             }
 
-            RenderedWebElement element = null;
+            WebElement element = null;
 
             try {
-                element = (RenderedWebElement) driver.findElement(by);
+                element = (WebElement) driver.findElement(by);
                 element.isDisplayed();
                 return element;
             } catch (Exception ex) {
