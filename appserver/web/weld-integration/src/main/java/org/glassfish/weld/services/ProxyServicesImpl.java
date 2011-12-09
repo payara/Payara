@@ -44,7 +44,9 @@ import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.security.PrivilegedExceptionAction;
 
+import org.glassfish.internal.api.ClassLoaderHierarchy;
 import org.jboss.weld.serialization.spi.ProxyServices;
+import org.jvnet.hk2.component.Habitat;
 
 /**
  * An implementation of the <code>ProxyServices</code> Service.
@@ -69,7 +71,14 @@ import org.jboss.weld.serialization.spi.ProxyServices;
  * @author Sivakumar Thyagarajan
  */
 public class ProxyServicesImpl implements ProxyServices {
+    
+    ClassLoaderHierarchy clh;
+    
+    public ProxyServicesImpl(Habitat habitat) {
+        clh = habitat.getByContract(ClassLoaderHierarchy.class);
+    }
 
+    
     @Override
     public ClassLoader getClassLoader(final Class<?> proxiedBeanType) {
         SecurityManager sm = System.getSecurityManager();
@@ -77,13 +86,58 @@ public class ProxyServicesImpl implements ProxyServices {
             return AccessController
                     .doPrivileged(new PrivilegedAction<ClassLoader>() {
                         public ClassLoader run() {
-                            return _getClassLoader();
+                            return getClassLoaderforBean(proxiedBeanType);
                         }
                     });
         } else {
-            return _getClassLoader();
+            return getClassLoaderforBean(proxiedBeanType);
         }
     }
+    
+    /**
+     * Gets the ClassLoader associated with the Bean. Weld generates Proxies
+     * for Beans from an application/BDA and for certain API artifacts such as
+     * <code>UserTransaction</code>.
+     * 
+     * @param proxiedBeanType
+     * @return
+     */
+    private ClassLoader getClassLoaderforBean(Class<?> proxiedBeanType) {
+        //Get the ClassLoader that loaded the Bean. For Beans in an application,
+        //this would be the application/module classloader. For other API
+        //Bean classes, such as UserTransaction, this would be a non-application
+        //classloader
+        ClassLoader prxCL = proxiedBeanType.getClassLoader();
+        //Check if this is an application classloader
+        boolean isAppCL = isApplicationClassLoader(prxCL);
+        if (!isAppCL) {
+            prxCL = _getClassLoader(); 
+            //fall back to the old behaviour of using TCL to get the application
+            //or module classloader. We return this classloader for non-application
+            //Beans, as Weld Proxies requires other Weld support classes (such as
+            //JBoss Reflection API) that is exported through the weld-osgi-bundle.
+        }
+        return prxCL;
+    }
+
+    /**
+     * Check if the ClassLoader of the Bean type being proxied is a 
+     * GlassFish application ClassLoader. The current logic checks if
+     * the common classloader appears as a parent in the classloader hierarchy
+     * of the Bean's classloader.
+     */
+    private boolean isApplicationClassLoader(ClassLoader prxCL) {
+        boolean isAppCL = false;
+        while (prxCL != null) {
+            if (prxCL.equals(clh.getCommonClassLoader())) {
+                isAppCL = true;
+                break;
+            }
+            prxCL = prxCL.getParent();
+        }
+        return isAppCL;
+    }
+
 
     private ClassLoader _getClassLoader() {
         ClassLoader tcl = Thread.currentThread().getContextClassLoader();

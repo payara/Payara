@@ -381,7 +381,7 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
             SecurityServices securityServices = new SecurityServicesImpl();
             deploymentImpl.getServices().add(SecurityServices.class, securityServices);
            
-            ProxyServices proxyServices = new ProxyServicesImpl();
+            ProxyServices proxyServices = new ProxyServicesImpl(habitat);
             deploymentImpl.getServices().add(ProxyServices.class, proxyServices);
 
         } else {
