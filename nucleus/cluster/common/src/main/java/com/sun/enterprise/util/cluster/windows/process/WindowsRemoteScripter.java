@@ -57,9 +57,19 @@ import org.jinterop.dcom.impls.automation.IJIDispatch;
  */
 public class WindowsRemoteScripter {
     private final WindowsCredentials bonafides;
+    private String outputStream = "StdOut";
 
     public WindowsRemoteScripter(WindowsCredentials bonafides) {
         this.bonafides = bonafides;
+    }
+
+    /*
+     * You get your choice of stderr OR stdout.  Getting both is hairy and too
+     * difficult.
+     * The default is stdout
+     */
+    public final void wantStdErr() {
+        outputStream = "StdErr";
     }
 
     /**
@@ -116,7 +126,7 @@ public class WindowsRemoteScripter {
             final IJIDispatch wbemObjectSet_dispatch =
                     (IJIDispatch) JIObjectFactory.narrowObject((results[0]).getObjectAsComObject());
 
-            JIVariant stdOutJIVariant = wbemObjectSet_dispatch.get("StdOut");
+            JIVariant stdOutJIVariant = wbemObjectSet_dispatch.get(outputStream);
 
             IJIDispatch stdOut =
                     (IJIDispatch) JIObjectFactory.narrowObject(stdOutJIVariant.getObjectAsComObject());

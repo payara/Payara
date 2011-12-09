@@ -122,6 +122,9 @@ public class ValidateDcom implements AdminCommand {
 
             if (!testRemoteScript())
                 return;
+
+            if(!testJdkAvailable())
+                return;
         }
         finally {
             report.setMessage(out.toString());
@@ -284,7 +287,7 @@ public class ValidateDcom implements AdminCommand {
 
         // numlines or fewer lines
         for (int i = 0; i < numlines && i < ss.length; i++) {
-            sb.append(ss[i]).append('\n');
+            sb.append("    ").append(ss[i]).append('\n');
         }
 
         return sb.toString();
@@ -309,6 +312,26 @@ public class ValidateDcom implements AdminCommand {
         }
         catch (IOException e) {
             setError(e, Strings.get("validate.dcom.no.connect", description, port, host));
+            return false;
+        }
+    }
+
+    private boolean testJdkAvailable() {
+        try {
+            script = new WindowsRemoteFile(wrf, SCRIPT_NAME);
+            script.copyFrom("javac -version \r\n");
+            WindowsRemoteScripter scripter = new WindowsRemoteScripter(creds);
+
+            // javac and jar write to stderr NOT stdout
+            scripter.wantStdErr();
+
+            String scriptOut = scripter.run(scriptFullPath);
+            script.delete();
+            out.append(Strings.get("dcom.yes.jdk", host, scriptOut));
+            return true;
+        }
+        catch (WindowsException ex) {
+            setError(ex, Strings.get("dcom.no.jdk", host));
             return false;
         }
     }
