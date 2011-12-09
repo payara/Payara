@@ -373,6 +373,9 @@ public class NodeUtils {
             String installdir = node.getInstallDirUnixStyle();
             String domain = host; // DCOMFIX
 
+            if(!StringUtils.ok(installdir))
+                throw new CommandValidationException(Strings.get("dcom.no.installdir"));
+
             pingDcomConnection(host, domain, username, password, getInstallRoot(installdir));
         }
         // very complicated catch copied from pingssh above...
