@@ -333,6 +333,7 @@ public class ValidateDcom implements AdminCommand {
             String scriptOut = scripter.run(scriptFullPath);
             script.delete();
             out.append(Strings.get("dcom.yes.jdk", host, scriptOut));
+            out.append('\n');
             return true;
         }
         catch (WindowsException ex) {
@@ -347,6 +348,7 @@ public class ValidateDcom implements AdminCommand {
             return false;
         }
         out.append(Strings.get("dcom.no.local", host));
+        out.append('\n');
         return true;
     }
 }
