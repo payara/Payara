@@ -399,6 +399,10 @@ public class NodeUtils {
      */
     void pingDcomConnection(String host, String domain, String username,
             String password, String installRoot) throws CommandValidationException {
+        // don't bother trying to connect if we have no password!
+        if(!StringUtils.ok(password))
+            throw new CommandValidationException(Strings.get("dcom.nopassword"));
+
         try {
             installRoot = installRoot.replace('/', '\\');
             WindowsRemoteFileSystem wrfs = new WindowsRemoteFileSystem(host, username, password);
