@@ -183,7 +183,7 @@ public class WebVerifier extends BaseVerifier {
         }
         String as_lib_root=System.getProperty("com.sun.aas.installRoot")+File.separator+"lib"+File.separator;
         if (verifierFrameworkContext.getJavaEEVersion().compareTo("5") >= 0) { // NOI18N
-            cp += File.pathSeparator+as_lib_root+"jsf-impl.jar"+File.pathSeparator+ // NOI18N
+            cp += File.pathSeparator+as_lib_root+"javax.faces.jar"+File.pathSeparator+ // NOI18N
                   as_lib_root+"appserv-jstl.jar"+File.pathSeparator; // NOI18N
         }
         cp = cp + File.pathSeparator + jspOutDir.getAbsolutePath();

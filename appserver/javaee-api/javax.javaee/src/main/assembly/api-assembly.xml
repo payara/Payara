@@ -96,8 +96,7 @@
                 <include>org.glassfish:javax.activation</include>
                 <include>javax.xml.bind:jaxb-api-osgi</include>
                 <include>org.glassfish:javax.xml.bind</include>
-                <include>com.sun.faces:jsf-api</include>
-                <include>com.sun.faces:jsf-impl</include>
+                <include>org.glassfish:javax.faces</include>
                 <include>org.glassfish:javax.servlet.jsp</include>
                 <include>org.glassfish:javax.jws</include>
                 <include>javax.ws.rs:jsr311-api</include>

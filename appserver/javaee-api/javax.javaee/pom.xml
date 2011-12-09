@@ -225,13 +225,9 @@
             <artifactId>jaxb-api-osgi</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.sun.faces</groupId>
-            <artifactId>jsf-api</artifactId>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>com.sun.faces</groupId>
-            <artifactId>jsf-impl</artifactId>
+            <groupId>org.glassfish</groupId>
+            <artifactId>javax.faces</artifactId>
+            <version>${mojarra.version}</version>
             <optional>true</optional>
         </dependency>
         <dependency>

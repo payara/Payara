@@ -219,8 +219,8 @@
         <jvm-options>-Djdbc.drivers=org.apache.derby.jdbc.ClientDriver</jvm-options>
         <jvm-options>-Djavax.management.builder.initial=com.sun.enterprise.admin.server.core.jmx.AppServerMBeanServerBuilder</jvm-options>
         <jvm-options>-Dcom.sun.enterprise.config.config_environment_factory_class=com.sun.enterprise.config.serverbeans.AppserverConfigEnvironmentFactory</jvm-options>
-        <jvm-options>-Dcom.sun.enterprise.taglibs=appserv-jstl.jar,jsf-impl.jar</jvm-options>
-        <jvm-options>-Dcom.sun.enterprise.taglisteners=jsf-impl.jar</jvm-options>
+        <jvm-options>-Dcom.sun.enterprise.taglibs=appserv-jstl.jar,javax.faces.jar</jvm-options>
+        <jvm-options>-Dcom.sun.enterprise.taglisteners=javax.faces.jar</jvm-options>
         <jvm-options>-XX:NewRatio=2</jvm-options>
         <!--
         Use the following jvm-options element to disable the quick startup:

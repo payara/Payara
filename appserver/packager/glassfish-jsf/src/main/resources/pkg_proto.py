@@ -49,7 +49,7 @@ pkg = {
     "version"       : conf.jsf_version,
     "attributes"    : {
                         "pkg.summary" : "GlassFish JSF",
-                        "pkg.description" : "GlassFish Java Server Faces Technology (JSF) module simplifies building user interfaces for JavaServer applications. Developers of various skill levels can quickly build web applications by: assembling reusable UI components in a page; connecting these components to an application data source; and wiring client-generated events to server-side event handlers. For more information, see https://javaserverfaces.dev.java.net/.  "+conf.glassfish_description_long,
+                        "pkg.description" : "GlassFish Java Server Faces Technology (JSF) module simplifies building user interfaces for JavaServer applications. Developers of various skill levels can quickly build web applications by: assembling reusable UI components in a page; connecting these components to an application data source; and wiring client-generated events to server-side event handlers. For more information, see https://javaserverfaces.java.net/.  "+conf.glassfish_description_long,
                         "info.classification" : conf.glassfish_info_classification,
                       },
     "depends"       : {

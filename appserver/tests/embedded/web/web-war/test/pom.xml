@@ -176,16 +176,11 @@
         </dependency>
 
         <dependency>
-            <groupId>com.sun.faces</groupId>
-            <artifactId>jsf-impl</artifactId>
-            <version>${jsf-impl.version}</version>
+          <groupId>org.glassfish</groupId>
+          <artifactId>javax.faces</artifactId>
+          <version>2.1.6</version>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>com.sun.faces</groupId>
-            <artifactId>jsf-api</artifactId>
-            <version>${jsf-api.version}</version>
-            <scope>test</scope>
-        </dependency>
+
    </dependencies>
 </project>

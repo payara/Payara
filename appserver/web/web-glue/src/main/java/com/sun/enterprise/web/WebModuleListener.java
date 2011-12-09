@@ -268,16 +268,14 @@ final class WebModuleListener
             defaultHabitat,
             webModule.getID(), null
         );
-        // If the configuration flag usMyFaces is set, remove jsf-api.jar
-        // and jsf-impl.jar from the system class path
+        // If the configuration flag usMyFaces is set, remove javax.faces.jar
+        // from the system class path
         Boolean useMyFaces = (Boolean)
             servletContext.getAttribute("com.sun.faces.useMyFaces");
         if (useMyFaces != null && useMyFaces) {
             sysClassPath =
-                sysClassPath.replace("jsf-api.jar", "$disabled$.raj");
-            sysClassPath =
-                sysClassPath.replace("jsf-impl.jar", "$disabled$.raj");
-            // jsf-connector.jar manifest has a Class-Path to jsf-impl.jar
+                sysClassPath.replace("javax.faces.jar", "$disabled$.raj");
+            // jsf-connector.jar manifest has a Class-Path to javax.faces.jar
             sysClassPath =
                 sysClassPath.replace("jsf-connector.jar", "$disabled$.raj");
         }

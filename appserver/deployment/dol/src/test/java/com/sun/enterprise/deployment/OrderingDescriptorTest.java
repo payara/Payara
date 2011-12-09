@@ -60,7 +60,7 @@ import static org.junit.Assert.*;
 
 /**
  * This class tests relative order sorting.
- * The first part of tests are ported from jsf-ri TestFacesConfigOrdering.java.
+ * The first part of tests are ported from javax.faces TestFacesConfigOrdering.java.
  *
  * @author Shing Wai Chan
  */
@@ -129,7 +129,7 @@ public class OrderingDescriptorTest {
         wfs.add(createWebFragmentDescriptor("E", null, new String[] { OTHERS }));
         wfs.add(createWebFragmentDescriptor("F", null, null));
         OrderingDescriptor.sort(wfs);
-        //an alternative result from jsf-ri
+        //an alternative result from javax.faces
         //String[] ids = { "B", "E", "F", "", "C", "D" };
         String[] ids = { "E", "B", "F", "D", "", "C" };
         validate(ids, wfs);
@@ -145,7 +145,7 @@ public class OrderingDescriptorTest {
         wfs.add(createWebFragmentDescriptor("E", new String[] { "C" }, new String[] { OTHERS }));
         wfs.add(createWebFragmentDescriptor("F", null, null));
         OrderingDescriptor.sort(wfs);
-        //an alternative result from jsf-ri
+        //an alternative result from javax.faces
         //String[] ids = { "B", "C", "E", "F", "A", "D" };
         String[] ids = { "C", "E", "B", "F", "D", "A" };
         validate(ids, wfs);
@@ -159,7 +159,7 @@ public class OrderingDescriptorTest {
         wfs.add(createWebFragmentDescriptor("C", null, new String[] { OTHERS }));
         wfs.add(createWebFragmentDescriptor("D", null, null));
         OrderingDescriptor.sort(wfs);
-        //an alternative result from jsf-ri
+        //an alternative result from javax.faces
         //String[] ids = { "C", "B", "D", "A" };
         String[] ids = { "C", "D", "B", "A" };
         validate(ids, wfs);
@@ -221,7 +221,7 @@ public class OrderingDescriptorTest {
         wfs.add(createWebFragmentDescriptor("C", null, new String[] { "B" }));
         wfs.add(createWebFragmentDescriptor("D", null, null));
         OrderingDescriptor.sort(wfs);
-        //an alternative result from jsf-ri
+        //an alternative result from javax.faces
         //String[] ids = { "A", "C", "D", "B" };
         String[] ids = { "C", "B", "A", "D" };
         validate(ids, wfs);

@@ -323,9 +323,8 @@
         javax.servlet.jsp-api.jar
         javax.servlet.jsp.jstl.jar
         javax.jms.jar
-        jsf-api.jar
+        javax.faces.jar
         javax.servlet.jsp.jar
-        jsf-impl.jar
         jspcaching-connector.jar
         web-glue.jar
         bean-validator.jar

@@ -146,8 +146,8 @@
         <jvm-options>-Djava.ext.dirs=${com.sun.aas.javaRoot}/lib/ext${path.separator}${com.sun.aas.javaRoot}/jre/lib/ext${path.separator}${com.sun.aas.instanceRoot}/lib/ext${path.separator}${com.sun.aas.derbyRoot}/lib</jvm-options>
         <jvm-options>-Djdbc.drivers=org.apache.derby.jdbc.ClientDriver</jvm-options>
         <jvm-options>-Dcom.sun.enterprise.config.config_environment_factory_class=com.sun.enterprise.config.serverbeans.AppserverConfigEnvironmentFactory</jvm-options>
-        <jvm-options>-Dcom.sun.enterprise.taglibs=appserv-jstl.jar,jsf-impl.jar</jvm-options>
-        <jvm-options>-Dcom.sun.enterprise.taglisteners=jsf-impl.jar</jvm-options>
+        <jvm-options>-Dcom.sun.enterprise.taglibs=appserv-jstl.jar,javax.faces.jar</jvm-options>
+        <jvm-options>-Dcom.sun.enterprise.taglisteners=javax.faces.jar</jvm-options>
         <jvm-options>-XX:NewRatio=2</jvm-options>
       </java-config>
       <thread-pools>

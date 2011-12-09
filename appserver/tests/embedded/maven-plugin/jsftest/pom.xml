@@ -155,9 +155,9 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>com.sun.faces</groupId>
-            <artifactId>jsf-api</artifactId>
-            <version>2.1.0</version>
+            <groupId>javax.faces</groupId>
+            <artifactId>javax.faces-api</artifactId>
+            <version>2.1</version>
             <scope>provided</scope>
         </dependency>
 <!--

@@ -139,8 +139,9 @@
             <artifactId>javax.el-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.sun.faces</groupId>
-            <artifactId>jsf-api</artifactId>
+            <groupId>org.glassfish</groupId>
+            <artifactId>javax.faces</artifactId>
+            <version>${mojarra.version}</version>
         </dependency>
         <dependency>
             <groupId>com.sun.jersey</groupId>

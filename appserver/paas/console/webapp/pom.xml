@@ -74,7 +74,9 @@
         </dependency>
         <dependency>
             <groupId>javax.faces</groupId>
-            <artifactId>jsf-api</artifactId>
+            <artifactId>javax.faces-api</artifactId>
+            <version>${version.jsf}</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
@@ -90,8 +92,8 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>com.sun.faces</groupId>
-            <artifactId>jsf-impl</artifactId>
+            <groupId>org.glassfish</groupId>
+            <artifactId>javax.faces</artifactId>
         </dependency>
 
         <dependency>
