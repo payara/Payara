@@ -51,15 +51,7 @@ import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.component.PerLookup;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.TreeSet;
+import java.util.*;
 
 @org.jvnet.hk2.annotations.Service(name = "list-services")
 @Scoped(PerLookup.class)
@@ -92,6 +84,10 @@ public class ListServices implements AdminCommand {
     public static final String SCOPE_SHARED = "shared";
     public static final String SCOPE_APPLICATION = "application";
 
+    //The list which contains all the options for the command.
+    //Changing the order of elements in this list requires some effort changing the code
+    public static final List<String> listOfOptionsForCommand =Arrays.asList("SERVICE-NAME","IP-ADDRESS","VM-ID","SERVER-TYPE","STATE","SCOPE");
+
     public void execute(AdminCommandContext context) {
         final ActionReport report = context.getActionReport();
 
@@ -110,7 +106,7 @@ public class ListServices implements AdminCommand {
                 if (service instanceof ApplicationScopedService) {
                     if (appName.equals(((ApplicationScopedService) service).getApplicationName())) {
                         if (type != null) {
-                            if (service.getType().equals(type)) {
+                            if (service.getType().equals(type.toUpperCase())) {
                                 if (scope != null) {
                                     if (scope.equals(getServiceScope(service))) {
                                         matchedServices.add(service);
@@ -137,7 +133,7 @@ public class ListServices implements AdminCommand {
                     for (Service service : services.getServices()) {
                         if (service.getServiceName().equals(serviceRef.getServiceName())) {
                             if (type != null) {
-                                if (service.getType().equals(type)) {
+                                if (service.getType().equals(type.toUpperCase())) {
                                     if (scope != null) {
                                         if (scope.equals(getServiceScope(service))) {
                                             matchedServices.add(service);
@@ -169,9 +165,10 @@ public class ListServices implements AdminCommand {
                 return;
             }
 
+
             for (Service service : services.getServices()) {
                 if (type != null) {
-                    if (service.getType().equals(type)) {
+                    if (service.getType().equals(type.toUpperCase())) {
                         if (scope != null) {
                             if (scope.equals(getServiceScope(service))) {
                                 matchedServices.add(service);
@@ -195,6 +192,7 @@ public class ListServices implements AdminCommand {
         Properties extraProperties = new Properties();
         extraProperties.put("list", new ArrayList<Map<String, String>>());
 
+
         if (matchedServices.size() > 0) {
 
             int heading_count = 0;
@@ -206,7 +204,8 @@ public class ListServices implements AdminCommand {
                 int count = 0;
                 for (String s : outputheaders) {
                     s = s.trim().toUpperCase();
-                    if (!(s.equals("SERVICE-NAME") || s.equals("IP-ADDRESS") || s.equals("VM-ID") || s.equals("SERVER-TYPE") || s.equals("STATE") || s.equals("SCOPE"))) {
+                   // if (!(s.equals("SERVICE-NAME") || s.equals("IP-ADDRESS") || s.equals("VM-ID") || s.equals("SERVER-TYPE") || s.equals("STATE") || s.equals("SCOPE"))) {
+                    if (!listOfOptionsForCommand.contains(s)) {
                         report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                         report.setMessage("The column name [" + s.toLowerCase() + "] provided in --output is not valid.");
                         return;
@@ -214,12 +213,13 @@ public class ListServices implements AdminCommand {
                     headerList.add(s);
                 }
             } else {
-                headerList.add("SERVICE-NAME");
+                /*headerList.add("SERVICE-NAME");
                 headerList.add("IP-ADDRESS");
                 headerList.add("VM-ID");
                 headerList.add("SERVER-TYPE");
                 headerList.add("STATE");
-                headerList.add("SCOPE");
+                headerList.add("SCOPE"); */
+                headerList.addAll(listOfOptionsForCommand);
                 if (type != null) {
                     if (scope != null) {
                         headerList.remove("SCOPE");
@@ -251,25 +251,41 @@ public class ListServices implements AdminCommand {
 
             boolean foundRows = false;
 
-            HashMap<String, String> name_map = new HashMap<String, String>();
-            HashMap<String, String> ip_map = new HashMap<String, String>();
-            HashMap<String, String> vm_map = new HashMap<String, String>();
-            HashMap<String, String> type_map = new HashMap<String, String>();
-            HashMap<String, String> state_map = new HashMap<String, String>();
-            HashMap<String, String> scope_map = new HashMap<String, String>();
+            LinkedHashMap<String,HashMap> mapOfMaps=new LinkedHashMap<String,HashMap>();
+            /*HashMap<String, String> name_map=null;
+            HashMap<String, String> ip_map=null;
+            HashMap<String, String> vm_map=null;
+            HashMap<String, String> type_map=null;
+            HashMap<String, String> state_map=null;
+            HashMap<String, String> scope_map=null;
+            HashMap<String, String> subnet_map=null;*/
+
+           // for (String s : headings) {
+            for(int i=0;i<listOfOptionsForCommand.size();i++){
+                //int index=listOfOptionsForCommand.indexOf(s);
+                 mapOfMaps.put(listOfOptionsForCommand.get(i),new HashMap<String,String>());
+                }
+
+
+            HashMap<String,String> valueMap=new HashMap<String, String>();
 
             for (Service service : matchedServices) {
                 foundRows = true;
                 String cloudName = service.getServiceName();
+                valueMap.put(listOfOptionsForCommand.get(0),cloudName);
                 String ipAddress = service.getPropertyValue("ip-address");
+
                 if (ipAddress == null) {
                     ipAddress = "-";
                 }
+                valueMap.put(listOfOptionsForCommand.get(1),ipAddress);
                 String instanceID = service.getPropertyValue("vm-id");
                 if (instanceID == null) {
                     instanceID = "-";
                 }
+                valueMap.put(listOfOptionsForCommand.get(2),instanceID);
                 String serverType = service.getType();
+                valueMap.put(listOfOptionsForCommand.get(3),serverType);
 
                 String serviceType = null;
                 String state = "-";
@@ -283,33 +299,33 @@ public class ListServices implements AdminCommand {
                     state = "-";
                     serviceType = SCOPE_EXTERNAL;
                 }
-
-                name_map.put(cloudName, cloudName);
+                valueMap.put(listOfOptionsForCommand.get(4),state);
+                valueMap.put(listOfOptionsForCommand.get(5),serviceType);
+                //String subnet="-";
+                //subnet=service.getPropertyValue("subnet");
+                /*name_map.put(cloudName, cloudName);
                 ip_map.put(cloudName, ipAddress);
                 vm_map.put(cloudName, instanceID);
                 type_map.put(cloudName, serverType);
                 state_map.put(cloudName, state);
-                scope_map.put(cloudName, serviceType);
+                scope_map.put(cloudName, serviceType);*/
+                 String option;
+                //for (String s : headings) {
+                for(int i=0;i<listOfOptionsForCommand.size();i++){
+                    option= listOfOptionsForCommand.get(i);
+                    HashMap<String,String> map=mapOfMaps.get(option);
+                    map.put(valueMap.get("SERVICE-NAME"),valueMap.get(option));
+                    mapOfMaps.put(option,map);
+                }
 
                 if (key == null) {
                     if (output != null) {
                         String[] outputstring = new String[heading_count];
                         int count = 0;
+
                         for (String s : headings) {
-                            if (s.equals("SERVICE-NAME")) {
-                                outputstring[count] = cloudName;
-                            } else if (s.equals("IP-ADDRESS")) {
-                                outputstring[count] = ipAddress;
-                            } else if (s.equals("VM-ID")) {
-                                outputstring[count] = instanceID;
-                            } else if (s.equals("SERVER-TYPE")) {
-                                outputstring[count] = serverType;
-                            } else if (s.equals("STATE")) {
-                                outputstring[count] = state;
-                            } else if (s.equals("SCOPE")) {
-                                outputstring[count] = serviceType;
-                            }
-                            count++;
+                             outputstring[count]=valueMap.get(s);
+                             count++;
                         }
                         cf.addRow(outputstring);
                     } else if (type == null) {
@@ -333,7 +349,23 @@ public class ListServices implements AdminCommand {
             }
 
             if (key != null) {
-                if (key.equals("service-name")) {
+                key=key.trim().toUpperCase();
+
+                if(!listOfOptionsForCommand.contains(key)){
+                        report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                        report.setMessage("The key [" + key.toLowerCase() + "] provided in --key is not valid.");
+                        return;
+                }
+
+                HashMap<String,String> sortedHashMap=new HashMap<String, String>();
+                sortedHashMap=sortHashMap(mapOfMaps.get(key));
+                mapOfMaps.put(key,sortedHashMap);
+
+                for (String e : sortedHashMap.keySet()) {
+                       cf.addRow(this.generateOutputRow(headings, heading_count, e, mapOfMaps));
+                    }
+
+               /* if (key.equals("service-name")) {
                     name_map = sortHashMap(name_map);
                     for (String e : name_map.keySet()) {
                         cf.addRow(this.generateOutputRow(headings, heading_count, e, name_map, ip_map, vm_map, type_map, state_map, scope_map));
@@ -364,7 +396,7 @@ public class ListServices implements AdminCommand {
                     for (String e : scope_map.keySet()) {
                         cf.addRow(this.generateOutputRow(headings, heading_count, e, name_map, ip_map, vm_map, type_map, state_map, scope_map));
                     }
-                }
+                }  */
             }
 
 
@@ -427,11 +459,13 @@ public class ListServices implements AdminCommand {
         return sortedMap;
     }
 
-    public String[] generateOutputRow(String[] headings, int heading_count, String e, HashMap<String, String> name_map, HashMap<String, String> ip_map, HashMap<String, String> vm_map, HashMap<String, String> type_map, HashMap<String, String> state_map, HashMap<String, String> scope_map) {
+       //public String[] generateOutputRow(String[] headings, int heading_count, String e, HashMap<String, String> name_map, HashMap<String, String> ip_map, HashMap<String, String> vm_map, HashMap<String, String> type_map, HashMap<String, String> state_map, HashMap<String, String> scope_map) {
+     public String[] generateOutputRow(String[] headings, int heading_count, String e, HashMap<String, HashMap> mapOfMaps) {
         String[] outputRow = new String[heading_count];
         int count = 0;
+        HashMap<String,String> map=new HashMap<String, String>();
         for (String s : headings) {
-            if (s.equals("SERVICE-NAME")) {
+          /*  if (s.equals("SERVICE-NAME")) {
                 outputRow[count] = name_map.get(e);
             } else if (s.equals("IP-ADDRESS")) {
                 outputRow[count] = ip_map.get(e);
@@ -443,7 +477,10 @@ public class ListServices implements AdminCommand {
                 outputRow[count] = state_map.get(e);
             } else if (s.equals("SCOPE")) {
                 outputRow[count] = scope_map.get(e);
-            }
+            } */
+
+            map=mapOfMaps.get(s);
+            outputRow[count] = map.get(e);
             count++;
         }
         return outputRow;

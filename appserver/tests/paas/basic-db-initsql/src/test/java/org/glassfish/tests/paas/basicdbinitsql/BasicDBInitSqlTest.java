@@ -41,28 +41,20 @@
 package org.glassfish.tests.paas.basicdbinitsql;
 
 import junit.framework.Assert;
-import org.glassfish.embeddable.CommandResult;
-import org.glassfish.embeddable.CommandRunner;
-import org.glassfish.embeddable.GlassFish;
-import org.glassfish.embeddable.GlassFishProperties;
-import org.glassfish.embeddable.GlassFishRuntime;
-import org.glassfish.embeddable.Deployer;
+import org.glassfish.api.ActionReport;
+import org.glassfish.api.admin.ParameterMap;
+import org.glassfish.embeddable.*;
+import org.glassfish.internal.api.Globals;
 import org.junit.Test;
+import org.jvnet.hk2.component.Habitat;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
-import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.Date;
-import java.util.Enumeration;
-import java.util.Properties;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -117,6 +109,8 @@ public class BasicDBInitSqlTest {
 			get("http://" + instanceIP + ":" + HTTP_PORT
 					+ "/basic_db_initsql_paas_sample/BasicDBInitSqlServlet",
 					"Customer ID");
+
+            testListServices();
 
 			// 4. Undeploy the PaaS application .
 		} finally {
@@ -201,4 +195,179 @@ public class BasicDBInitSqlTest {
 		}
 		return lbIP;
 	}
+
+private void testListServices() {
+        Habitat habitat = Globals.getDefaultHabitat();
+        org.glassfish.api.admin.CommandRunner commandRunner = habitat.getComponent(org.glassfish.api.admin.CommandRunner.class);
+
+
+        //Testing for the '--output' option of lst-services sub-commands
+        {
+            List<String> outputOptions = new ArrayList<String>();
+            outputOptions.add("SERVICE-NAME");
+            outputOptions.add("VM-ID");
+            outputOptions.add("SERVER-TYPE");
+            ActionReport report = habitat.getComponent(ActionReport.class);
+            org.glassfish.api.admin.CommandRunner.CommandInvocation invocation = commandRunner.getCommandInvocation("list-services", report);
+            ParameterMap parameterMap = new ParameterMap();
+            parameterMap.add("output", "service-name,vm-id,server-type");
+            invocation.parameters(parameterMap).execute();
+            List<Map<String, String>> list = (List<Map<String, String>>) report.getExtraProperties().get("list");
+            Map<String, String> map = list.get(0);
+            Set set = map.keySet();
+            outputOptions.removeAll(set);
+            boolean isEmpty = outputOptions.isEmpty();
+            System.out.println("list-services --output option test passed:: " + isEmpty);
+            Assert.assertTrue(isEmpty);
+        }
+
+        //Testing for the '--key' option of lst-services sub-commands
+        {
+            String key = "VM-ID";
+            ActionReport report = habitat.getComponent(ActionReport.class);
+            org.glassfish.api.admin.CommandRunner.CommandInvocation invocation = commandRunner.getCommandInvocation("list-services", report);
+            ParameterMap parameterMap = new ParameterMap();
+            parameterMap.add("key", key);
+            parameterMap.add("output", key);
+            invocation.parameters(parameterMap).execute();
+            List<Map<String, String>> list = (List<Map<String, String>>) report.getExtraProperties().get("list");
+            ListIterator listIterator = list.listIterator();
+            List<String> valueList = new ArrayList<String>();
+            Map<String, String> map;
+            while (listIterator.hasNext()) {
+                map = (Map<String, String>) listIterator.next();
+                valueList.add(map.get(key));
+            }
+            boolean isSorted = isSortedList(valueList);
+            System.out.println("list-services --key option test passed:: " + isSorted);
+            Assert.assertTrue(isSorted);
+
+        }
+
+        //Testing for the '--type' option of lst-services sub-commands
+        {
+            String type = "DATABASE";
+            ActionReport report = habitat.getComponent(ActionReport.class);
+            org.glassfish.api.admin.CommandRunner.CommandInvocation invocation = commandRunner.getCommandInvocation("list-services", report);
+            ParameterMap parameterMap = new ParameterMap();
+            parameterMap.add("type", type);
+            parameterMap.add("output", "SERVER-TYPE");
+            invocation.parameters(parameterMap).execute();
+            List<Map<String, String>> list = (List<Map<String, String>>) report.getExtraProperties().get("list");
+            ListIterator listIterator = list.listIterator();
+            List<String> valueList = new ArrayList<String>();
+            Map<String, String> map;
+            String typeFound = null;
+            boolean onlyTypeFound = false;
+            while (listIterator.hasNext()) {
+                map = (Map<String, String>) listIterator.next();
+                typeFound = (String) map.get("SERVER-TYPE");
+                if (type.equals(typeFound)) {
+                    onlyTypeFound = true;
+                } else {
+                    onlyTypeFound = false;
+                    break;
+                }
+            }
+            if (valueList.isEmpty()) {
+                onlyTypeFound = true;
+            }
+
+            System.out.println("list-services --type option test passed:: " + onlyTypeFound);
+            Assert.assertTrue(onlyTypeFound);
+
+        }
+
+        //Testing for the '--scope' option of lst-services sub-commands
+        //Here, the war deployed is 'basic_db_initsql_paas_sample.war', hence using it as the appname.
+        {
+            String scope = "application";
+            ActionReport report = habitat.getComponent(ActionReport.class);
+            org.glassfish.api.admin.CommandRunner.CommandInvocation invocation = commandRunner.getCommandInvocation("list-services", report);
+            ParameterMap parameterMap = new ParameterMap();
+            parameterMap.add("scope", scope);
+            parameterMap.add("output", "SCOPE");
+            parameterMap.add("appname", "basic_db_initsql_paas_sample");
+            invocation.parameters(parameterMap).execute();
+            List<Map<String, String>> list = (List<Map<String, String>>) report.getExtraProperties().get("list");
+            ListIterator listIterator = list.listIterator();
+            List<String> valueList = new ArrayList<String>();
+            Map<String, String> map;
+            String scopeFound = null;
+            boolean onlyScopeFound = false;
+            while (listIterator.hasNext()) {
+                map = (Map<String, String>) listIterator.next();
+                scopeFound = (String) map.get("SCOPE");
+                if (scope.equals(scopeFound)) {
+                    onlyScopeFound = true;
+                } else {
+                    onlyScopeFound = false;
+                    break;
+                }
+            }
+            if (valueList.isEmpty()) {
+                onlyScopeFound = true;
+            }
+
+            System.out.println("list-services --scope option test passed:: " + onlyScopeFound);
+            Assert.assertTrue(onlyScopeFound);
+
+        }
+
+        //  test the option --terse=false.
+        {
+            List<String> outputOptions = new ArrayList<String>();
+            outputOptions.add("SERVICE-NAME");
+            outputOptions.add("VM-ID");
+            outputOptions.add("SERVER-TYPE");
+            ActionReport report = habitat.getComponent(ActionReport.class);
+            org.glassfish.api.admin.CommandRunner.CommandInvocation invocation = commandRunner.getCommandInvocation("list-services", report);
+            ParameterMap parameterMap = new ParameterMap();
+            parameterMap.add("output", "service-name,vm-id,server-type");
+            parameterMap.add("terse", "true");
+            invocation.parameters(parameterMap).execute();
+            List<Map<String, String>> list = (List<Map<String, String>>) report.getExtraProperties().get("list");
+            boolean headersNotFound = false;
+            for (Map<String, String> map : list) {
+                headersNotFound = false;
+                Set<String> headers = map.keySet();
+                for (String header : headers) {
+                    if ("".equals(header)) {
+                        headersNotFound = true;
+                    } else {
+                        headersNotFound = false;
+                        break;
+                    }
+                }
+                if (!headersNotFound) {
+                    break;
+                }
+            }
+            System.out.println("list-services --terse=true option test passed:: " + headersNotFound);
+            Assert.assertTrue(headersNotFound);
+
+
+        }
+
+
+    }
+
+    private boolean isSortedList(List list) {
+        ListIterator list_iter = list.listIterator();
+        if (!list_iter.hasNext()) {
+            return true;
+        }
+        String t = (String) list_iter.next();
+        while (list_iter.hasNext()) {
+            String t2 = (String) list_iter.next();
+            if (t.compareTo(t2) > 0) {
+                return false;
+            }
+            t = t2;
+        }
+        return true;
+
+
+    }
+
 }
