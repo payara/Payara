@@ -592,9 +592,12 @@ public final class ServerSynchronizer implements PostConstruct {
             if (skip != null && skip.contains(name))
                 continue;
             if (f.isDirectory() && level == SyncLevel.RECURSIVE) {
-                if (getFileNames(f, baseDir, skip, names, level) == 0) {
+                int subFileCnt = getFileNames(f, baseDir, skip, names, level);
+                if (subFileCnt == 0) {
                     names.add(name);
                     cnt++;
+                } else {
+                    cnt += subFileCnt;
                 }
             } else {
                 names.add(name);
