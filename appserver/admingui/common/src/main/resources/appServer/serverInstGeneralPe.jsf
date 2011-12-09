@@ -186,6 +186,17 @@
                 <sun:property id="debugProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.inst.debugLabel}">
                     <sun:staticText id="debugEnabled" text="#{sessionScope.debugInfo}"/>
                 </sun:property>
+                <sun:property id="upTimeProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.inst.upTimeLabel}">
+                    <!beforeCreate
+                        gf.restRequest(
+                        endpoint="#{sessionScope.REST_URL}/uptime"
+                        method="GET"
+                        result="#{requestScope.upTimeResult}");
+                        convertMillisToReadable(milliseconds="#{requestScope.upTimeResult.data.properties.milliseconds}"
+                            readableString=>$attribute{formattedUpTime});
+                    />
+                    <sun:staticText id="debugEnabled" text="#{formattedUpTime}"/>
+                </sun:property>
             </sun:propertySheetSection>
             <event>
                 <!afterCreate

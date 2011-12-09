@@ -243,6 +243,63 @@ public class CommonHandlers {
     }
 
     /**
+     *	<p> This handler converts the milliseconds to readable format </p>
+     *
+     *  <p> Output value: "readableString" -- Type: <code>String</code>/</p>
+     *	@param	handlerCtx	The HandlerContext.
+     */
+    @Handler(id="convertMillisToReadable",
+    	input={
+            @HandlerInput(name="milliseconds", type=Long.class, required=true )},
+        output={
+            @HandlerOutput(name="readableString", type=String.class)})
+    public static void convertMillisToReadable(HandlerContext handlerCtx) {
+        Long milliseconds = (Long) handlerCtx.getInputValue("milliseconds");
+        final long MSEC_PER_SECOND = 1000;
+        final long MSEC_PER_MINUTE = 60 * MSEC_PER_SECOND;
+        final long MSEC_PER_HOUR = MSEC_PER_MINUTE * 60;
+        final long MSEC_PER_DAY = MSEC_PER_HOUR * 24;
+        final long MSEC_PER_WEEK = MSEC_PER_DAY * 7;
+        String FORMAT2 = "%d %s %d %s";
+        String FORMAT1 = "%d %s";
+
+        String readableString = "";
+
+        long msecLeftover = milliseconds;
+
+        long numWeeks = msecLeftover / MSEC_PER_WEEK;
+        msecLeftover -= numWeeks * MSEC_PER_WEEK;
+
+        long numDays = msecLeftover / MSEC_PER_DAY;
+        msecLeftover -= numDays * MSEC_PER_DAY;
+
+        long numHours = msecLeftover / MSEC_PER_HOUR;
+        msecLeftover -= numHours * MSEC_PER_HOUR;
+
+        long numMinutes = msecLeftover / MSEC_PER_MINUTE;
+        msecLeftover -= numMinutes * MSEC_PER_MINUTE;
+
+        long numSeconds = msecLeftover / MSEC_PER_SECOND;
+        msecLeftover -= numSeconds * MSEC_PER_SECOND;
+
+        long numMilliSeconds = msecLeftover;
+        if (numWeeks > 0) {
+            readableString = String.format(FORMAT2, numWeeks, GuiUtil.getMessage("common.Weeks"), numDays, GuiUtil.getMessage("common.Days"));
+        } else if (numDays > 0) {
+            readableString = String.format(FORMAT1, numDays, GuiUtil.getMessage("common.Days"));
+        } else if (numHours > 0) {
+            readableString = String.format(FORMAT2, numHours, GuiUtil.getMessage("common.Hours"), numMinutes, GuiUtil.getMessage("common.Minutes"));
+        } else if (numMinutes > 0) {
+            readableString = String.format(FORMAT2, numMinutes, GuiUtil.getMessage("common.Minutes"), numSeconds, GuiUtil.getMessage("common.Seconds"));
+        } else if (numSeconds > 0) {
+            readableString = String.format(FORMAT1, numSeconds, GuiUtil.getMessage("common.Seconds"));
+        } else {
+            readableString = String.format(FORMAT1, numMilliSeconds, GuiUtil.getMessage("common.Milliseconds"));
+        }
+        handlerCtx.setOutputValue("readableString", readableString);
+    }
+
+    /**
      *	<p> This handler creates a map with the given keys and values </p>
      *
      *  <p> Output value: "map" -- Type: <code>Map</code>/</p>
