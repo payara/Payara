@@ -218,7 +218,7 @@ public interface EjbTagNames extends TagNames {
     public final static String TIMER_HOUR = "hour";
     public final static String TIMER_DAY_OF_MONTH = "day-of-month";
     public final static String TIMER_MONTH = "month";
-    public final static String TIMER_DAY_OF_WEEK = "day-of-Week";
+    public final static String TIMER_DAY_OF_WEEK = "day-of-week";
     public final static String TIMER_YEAR = "year";
 
 
