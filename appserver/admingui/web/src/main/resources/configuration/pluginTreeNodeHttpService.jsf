@@ -49,4 +49,20 @@
     <!beforeCreate
         setResourceBundle(key="i18n_web" bundle="org.glassfish.web.admingui.Strings");
     />
+    <dynamicTreeNode id="httpListeners"
+        treeAdaptorClass="org.glassfish.admingui.common.tree.ListTreeAdaptor"
+        children="#{requestScope.children}"
+        childImageURL="/resource/web/images/http.gif"
+        childExpanded="false"
+        childURL="/web/configuration/httpListenerEdit.jsf?name=#{$this{valueBinding}.text}&configName=${configName}"
+        text="$resource{i18n_web.tree.configuration.httpListeners}"
+        url="/web/configuration/httpListeners.jsf?configName=${configName}">
+        <ui:event type="beforeCreate">
+            gf.restRequest(endpoint="#{sessionScope.REST_URL}/configs/config/${configName}/network-config/network-listeners/network-listener" method="get" result="#{requestScope.resp}");
+            setAttribute(key="children" value="#{requestScope.resp.data.extraProperties.childResources}");
+        </ui:event>
+        <!facet image>
+            <sun:iconHyperlink id="treeIcon" icon="TREE_FOLDER" url="/web/configuration/httpListeners.jsf?configName=${configName}" border="0" immediate="true" alt="$resource{i18n_web.tree.grizzly.networkListeners}"/>
+        </facet>
+    </dynamicTreeNode>
 </sun:treeNode>

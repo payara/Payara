@@ -70,6 +70,7 @@
         setPageSessionAttribute(key="hasPropertyTable" value="#{false}" );
     />
     </event>
+" <script type="text/javascript">admingui.nav.selectTreeNodeById(admingui.nav.TREE_ID+":configurations:#{pageSession.configName}:networkConfig:networkListeners");</script>
             <sun:form id="propertyForm">
 #include "/common/shared/alertMsg.inc"
     <sun:title id="propertyContentPage" title="$resource{i18n_web.grizzly.networkListenerNewPageTitle}" helpText="$resource{i18n_web.grizzly.networkListenerNewPageTitleHelp}">

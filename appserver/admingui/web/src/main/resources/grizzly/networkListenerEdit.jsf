@@ -106,6 +106,7 @@
         }
         />
     </event>
+" <script type="text/javascript">admingui.nav.selectTreeNodeById(admingui.nav.TREE_ID+":configurations:#{pageSession.configName}:networkConfig:networkListeners:#{pageSession.Name}");</script>
             <sun:form id="propertyForm">
 #include "listenerTabs.inc"
 #include "/common/shared/alertMsg.inc"
