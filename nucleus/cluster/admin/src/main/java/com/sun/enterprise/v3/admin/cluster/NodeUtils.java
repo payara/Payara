@@ -371,9 +371,12 @@ public class NodeUtils {
             String username = auth.getUserName();
             String password = resolvePassword(auth.getPassword());
             String installdir = node.getInstallDirUnixStyle();
-            String domain = host; // DCOMFIX
+            String domain = node.getWindowsDomain();
 
-            if(!StringUtils.ok(installdir))
+            if(!StringUtils.ok(domain))
+                domain = host;
+
+            if (!StringUtils.ok(installdir))
                 throw new CommandValidationException(Strings.get("dcom.no.installdir"));
 
             pingDcomConnection(host, domain, username, password, getInstallRoot(installdir));
@@ -403,8 +406,11 @@ public class NodeUtils {
     void pingDcomConnection(String host, String domain, String username,
             String password, String installRoot) throws CommandValidationException {
         // don't bother trying to connect if we have no password!
-        if(!StringUtils.ok(password))
+        if (!StringUtils.ok(password))
             throw new CommandValidationException(Strings.get("dcom.nopassword"));
+
+        if (NetUtils.isThisHostLocal(host))
+            throw new CommandValidationException(Strings.get("dcom.yes.local", host));
 
         try {
             installRoot = installRoot.replace('/', '\\');
@@ -441,13 +447,18 @@ public class NodeUtils {
             validateDcomConnection(map);
     }
 
-    // DCOMFIX -- need to add domain to the connect info in config
     private void validateDcomConnection(ParameterMap map) throws CommandValidationException {
+        if (Boolean.parseBoolean(map.getOne(PARAM_INSTALL))) {
+            // we don't want to insist that there is an installation - there isn't one probably!!
+            return;
+        }
+
         String nodehost = resolver.resolve(map.getOne(PARAM_NODEHOST));
         String installdir = resolver.resolve(map.getOne(PARAM_INSTALLDIR));
         String user = resolver.resolve(map.getOne(PARAM_REMOTEUSER));
         String password = map.getOne(PARAM_REMOTEPASSWORD);
         String domain = nodehost;
+
         pingDcomConnection(nodehost, domain, user, password, getInstallRoot(installdir));
     }
 
