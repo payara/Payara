@@ -136,6 +136,10 @@ public class SSHLauncher {
     private String rawPassword = null;
     private String rawKeyPassPhrase = null;
 
+    public void init(Logger logger) {
+        this.logger = logger;
+    }
+
     public void init(Node node, Logger logger) {
         this.logger = logger;
         int port;

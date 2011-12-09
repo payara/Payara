@@ -213,17 +213,6 @@ abstract class NativeRemoteCommandsBase extends CLICommand {
                 || val.equalsIgnoreCase("y") || val.equalsIgnoreCase("n");
     }
 
-    boolean isEncryptedKey() throws CommandException {
-        boolean res = false;
-        try {
-            res = SSHUtil.isEncryptedKey(getSshKeyFile());
-        }
-        catch (IOException ioe) {
-            throw new CommandException(Strings.get("ErrorParsingKey", getSshKeyFile(), ioe.getMessage()));
-        }
-        return res;
-    }
-
     /**
      * Method to delete files and directories on remote host
      * 'nodes' directory is not considered for deletion since it would contain

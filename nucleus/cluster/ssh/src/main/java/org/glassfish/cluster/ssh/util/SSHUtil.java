@@ -50,6 +50,7 @@ import java.io.File;
 import java.io.IOException;
 
 import com.sun.enterprise.util.io.FileUtils;
+import org.glassfish.api.admin.CommandException;
 /**
  * @author Rajiv Mordani
  */
@@ -114,14 +115,50 @@ public class SSHUtil {
      * @return true|false
      * @throws CommandException
      */
-    public static boolean isEncryptedKey(String sshkeyfile) throws IOException {
-        boolean result = false;
-
-        String f = FileUtils.readSmallFile(sshkeyfile);
-        if (f.startsWith("-----BEGIN ") && f.contains("ENCRYPTED")
-                && f.endsWith(" PRIVATE KEY-----" + NL)) {
-            result=true;
+    public static boolean isEncryptedKey(String keyFile) throws CommandException {
+        boolean res = false;
+        try {
+            String f = FileUtils.readSmallFile(keyFile);
+            if (f.startsWith("-----BEGIN ") && f.contains("ENCRYPTED")
+                    && f.endsWith(" PRIVATE KEY-----" + NL)) {
+                res=true;
+            }
         }
-        return result;
+        catch (IOException ioe) {
+            throw new CommandException(Strings.get("error.parsing.key", keyFile, ioe.getMessage()));
+        }
+        return res;
+    }
+    
+        
+    /**
+     * This method validates either private or public key file. In case of private
+     * key, it parses the key file contents to verify if it indeed contains a key
+     * @param  file the key file
+     * @return success if file exists, false otherwise
+     */
+    public static boolean validateKeyFile(String file) throws CommandException {
+        boolean ret = false;
+        //if key exists, set prompt flag
+        File f = new File(file);
+        if (f.exists()) {
+            if (!f.getName().endsWith(".pub")) {
+                String key = null;
+                try {
+                    key = FileUtils.readSmallFile(file);
+                }
+                catch (IOException ioe) {
+                    throw new CommandException(Strings.get("unable.to.read.key", file, ioe.getMessage()));
+                }
+                if (!key.startsWith("-----BEGIN ") && !key.endsWith(" PRIVATE KEY-----" + NL)) {
+                    throw new CommandException(Strings.get("invalid.key.file", file));
+                }
+            }
+            ret = true;
+        }
+        else {
+            throw new CommandException(Strings.get("key.does.not.exist", file));
+        }
+        return ret;
     }
 }

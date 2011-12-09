@@ -101,7 +101,7 @@ public class UninstallNodeSshCommand extends UninstallNodeBaseCommand {
         }
 
         //we need the key passphrase if key is encrypted
-        if (sshkeyfile != null && isEncryptedKey()) {
+        if (sshkeyfile != null && SSHUtil.isEncryptedKey(sshkeyfile)) {
             sshkeypassphrase = getSSHPassphrase(true);
         }
     }

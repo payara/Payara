@@ -51,8 +51,6 @@ import org.glassfish.internal.api.Globals;
 import org.glassfish.cluster.ssh.launcher.SSHLauncher;
 import org.glassfish.cluster.ssh.util.SSHUtil;
 
-import com.sun.enterprise.util.io.FileUtils;
-
 /**
  *  This is a local command that distributes the SSH public key to remote node(s)
  *
@@ -101,20 +99,20 @@ public final class SetupSshKey extends NativeRemoteCommandsBase {
                 promptPass = true;
                 sshkeyfile = existingKey;
 
-                if (isEncryptedKey()) {
+                if (SSHUtil.isEncryptedKey(sshkeyfile)) {
                     sshkeypassphrase = getSSHPassphrase(false);
                 }
             }
         }
         else {
-            validateKeyFile(sshkeyfile);
-            if (isEncryptedKey()) {
+            promptPass = SSHUtil.validateKeyFile(sshkeyfile);
+            if (SSHUtil.isEncryptedKey(sshkeyfile)) {
                 sshkeypassphrase = getSSHPassphrase(false);
             }
         }
 
         if (sshpublickeyfile != null) {
-            validateKeyFile(sshpublickeyfile);
+            SSHUtil.validateKeyFile(sshpublickeyfile);
         }
 
     }
@@ -167,33 +165,6 @@ public final class SetupSshKey extends NativeRemoteCommandsBase {
             }
         }
         return SUCCESS;
-    }
-
-    /**
-     * Method that sets the prompt flag only if key file exists
-     * @param file the key file
-     */
-    private void validateKeyFile(String file) throws CommandException {
-        //if key exists, set prompt flag
-        File f = new File(file);
-        if (f.exists()) {
-            if (!f.getName().endsWith(".pub")) {
-                String key = null;
-                try {
-                    key = FileUtils.readSmallFile(file);
-                }
-                catch (IOException ioe) {
-                    throw new CommandException(Strings.get("UnableToReadKey", file, ioe.getMessage()));
-                }
-                if (!key.startsWith("-----BEGIN ") && !key.endsWith(" PRIVATE KEY-----" + NL)) {
-                    throw new CommandException(Strings.get("InvalidKeyFile", file));
-                }
-            }
-            promptPass = true;
-        }
-        else {
-            throw new CommandException(Strings.get("KeyDoesNotExist", file));
-        }
     }
 
     /**
