@@ -182,22 +182,23 @@ public class EJBContainerProviderImpl implements EJBContainerProvider {
                     glassFishProperties.setConfigFileReadOnly(false); // make sure the domain.xml is written back. 
                 }
 
-                if (l != null) {
-                    if (l.reuse_instance_location) {
-                        if (_logger.isLoggable(Level.FINE)) {
-                            _logger.fine("[EJBContainerProviderImpl] Reusing instance location at: " + l.instance_root);
-                        }
-                        glassFishProperties.setInstanceRoot(l.instance_root.getCanonicalPath());
-                    } else {
-                        glassFishProperties.setConfigFileURI(l.domain_file.toURI().toString());
-                    }
+                if (l.installed_root != null && l.instance_root != null) {
+                    // Real install
                     bootstrapProperties.setInstallRoot(l.installed_root.getCanonicalPath());
+                }
+                if (l.instance_root != null && l.reuse_instance_location) {
+                    if (_logger.isLoggable(Level.FINE)) {
+                        _logger.fine("[EJBContainerProviderImpl] Reusing instance location at: " + l.instance_root);
+                    }
+                    glassFishProperties.setInstanceRoot(l.instance_root.getCanonicalPath());
+                } else if (l.domain_file != null) {
+                    glassFishProperties.setConfigFileURI(l.domain_file.toURI().toString());
                 }
                 addWebContainerIfRequested(properties, glassFishProperties);
 
                 runtime = GlassFishRuntime.bootstrap(bootstrapProperties);
                 GlassFish server = runtime.newGlassFish(glassFishProperties);
-                if (l != null && !l.reuse_instance_location) {
+                if (l.instance_root != null && !l.reuse_instance_location) {
                     // XXX Start the server to get the services
                     server.start();
                     EmbeddedSecurity es = server.getService(EmbeddedSecurity.class);
@@ -424,7 +425,7 @@ public class EJBContainerProviderImpl implements EJBContainerProvider {
         }
 
         // Skip jars in the install modules directory
-        if (l != null && l.modules_dir != null && 
+        if (l.modules_dir != null && 
                 l.modules_dir.equals(file.getAbsoluteFile().getParentFile().getAbsolutePath())) {
             _logger.info("... skipping module: " + file.getName());
             return true;
@@ -479,10 +480,10 @@ public class EJBContainerProviderImpl implements EJBContainerProvider {
      * if such file does not exist.
      * Returns null if such file does not exist.
      */
-    private File getValidFile(String location) {
+    private File getValidFile(String location, String msg_key) {
         File f = new File(location);
         if (!f.exists()) {
-            _logger.log(Level.SEVERE, "ejb.embedded.location_not_exists", location);
+            _logger.log(Level.WARNING, msg_key, location);
             f = null;
         }
         return f;
@@ -506,10 +507,12 @@ public class EJBContainerProviderImpl implements EJBContainerProvider {
      * Create File objects corresponding to instance root and domain.xml location.
      */
     private Locations getLocations(Map<?, ?> properties) throws EJBException {
-        Locations l = null;
         String installed_root_location = null;
         String instance_root_location = null;
         String domain_file_location = null;
+        File installed_root = null;
+        File instance_root = null;
+        File domain_file = null;
         boolean reuse_instance_location = false;
 
         if (properties != null) {
@@ -536,7 +539,7 @@ public class EJBContainerProviderImpl implements EJBContainerProvider {
             _logger.fine("[EJBContainerProviderImpl] installed_root_location : " + installed_root_location);
         }
         if (installed_root_location != null) {
-            File installed_root = getValidFile(installed_root_location);
+            installed_root = getValidFile(installed_root_location, "ejb.embedded.installation_location_not_exists");
             if (installed_root != null) {
                 if (instance_root_location == null) {
                     // Calculate location for the domain relative to GF install
@@ -548,45 +551,44 @@ public class EJBContainerProviderImpl implements EJBContainerProvider {
                 if (_logger.isLoggable(Level.FINE)) {
                     _logger.fine("[EJBContainerProviderImpl] instance_root_location: " + instance_root_location);
                 }
-                File instance_root = getValidFile(instance_root_location);
-                if (instance_root != null) {
-                    if (domain_file_location == null) {
-                        // Calculate location for the domain.xml relative to GF instance
-                        domain_file_location = instance_root_location
-                                + File.separatorChar + "config" 
-                                + File.separatorChar + "domain.xml";
+                instance_root = getValidFile(instance_root_location, "ejb.embedded.instance_location_not_exists");
+            }
+        }
+        if (instance_root != null && domain_file_location == null) {
+            // Calculate location for the domain.xml relative to GF instance
+            domain_file_location = instance_root_location
+                    + File.separatorChar + "config" 
+                    + File.separatorChar + "domain.xml";
+        }
+
+        if (_logger.isLoggable(Level.FINE)) {
+            _logger.fine("[EJBContainerProviderImpl] domain_file_location : " + domain_file_location);
+        }
+
+        if (domain_file_location != null) {
+            domain_file = getValidFile(domain_file_location, "ejb.embedded.configuration_file_location_not_exists");
+            if (domain_file != null) {
+                if (!reuse_instance_location) {
+                    File temp_domain_file = null;
+                    try {
+                        DomainXmlTransformer dxf = new DomainXmlTransformer(domain_file, _logger);
+                        boolean keep_ports = (properties == null)? false : ((properties.get(GF_WEB_HTTP_PORT) == null)? false : true);
+                        temp_domain_file = dxf.transform(keep_ports);
+                    } catch (Exception e) {
+                        throw new EJBException(localStrings.getString(
+                                "ejb.embedded.exception_creating_temporary_domain_xml_file"), e);
                     }
 
-                    if (_logger.isLoggable(Level.FINE)) {
-                        _logger.fine("[EJBContainerProviderImpl] domain_file_location : " + domain_file_location);
-                    }
-                    File domain_file = getValidFile(domain_file_location);
-                    if (domain_file != null) {
-                        if (!reuse_instance_location) {
-                            File temp_domain_file = null;
-                            try {
-                                DomainXmlTransformer dxf = new DomainXmlTransformer(domain_file, _logger);
-                                boolean keep_ports = (properties == null)? false : ((properties.get(GF_WEB_HTTP_PORT) == null)? false : true);
-                                temp_domain_file = dxf.transform(keep_ports);
-                            } catch (Exception e) {
-                                throw new EJBException(localStrings.getString(
-                                        "ejb.embedded.exception_creating_temporary_domain_xml_file"), e);
-                            }
-
-                            if (temp_domain_file != null) {
-                                domain_file = temp_domain_file;
-                            } else {
-                                throw new EJBException(localStrings.getString(
-                                        "ejb.embedded.failed_create_temporary_domain_xml_file"));
-                            }
-                        }
-                        l = new Locations(installed_root, instance_root, domain_file, reuse_instance_location);
+                    if (temp_domain_file != null) {
+                        domain_file = temp_domain_file;
+                    } else {
+                        throw new EJBException(localStrings.getString(
+                                "ejb.embedded.failed_create_temporary_domain_xml_file"));
                     }
                 }
             }
         }
-
-        return l;
+        return new Locations(installed_root, instance_root, domain_file, reuse_instance_location);
     }
 
     private InputStream getDeploymentDescriptor(ReadableArchive archive) throws IOException {
