@@ -45,6 +45,7 @@ import com.sun.enterprise.util.cluster.windows.process.WindowsRemoteScripter;
 import com.sun.enterprise.util.cluster.windows.io.WindowsRemoteFile;
 import com.sun.enterprise.util.cluster.windows.io.WindowsRemoteFileCopyProgress;
 import com.sun.enterprise.util.cluster.windows.io.WindowsRemoteFileSystem;
+import com.sun.enterprise.util.net.NetUtils;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
@@ -69,6 +70,21 @@ public class InstallNodeDcomCommand extends InstallNodeBaseCommand {
     private String windowsDomain;
     private final List<HostAndPassword> passwords = new ArrayList<HostAndPassword>();
     private String remoteInstallDirString;
+
+    /**
+     * DCOM won't work right on localhost.  Luckily it makes no sense to do that in
+     * in a real, non-test scenario anyway.
+     * @throws CommandException
+     */
+    @Override
+    protected void validate() throws CommandException {
+        super.validate();
+
+        for (String host : hosts) {
+            if (NetUtils.isThisHostLocal(host))
+                throw new CommandException(Strings.get("install.node.nolocal", host));
+        }
+    }
 
     @Override
     final String getRawRemoteUser() {
