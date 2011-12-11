@@ -321,6 +321,14 @@ public class SecureAdminConfigUpgrade extends SecureAdminUpgradeHelper implement
 
     private void ensureKeyPairForInstanceAlias() throws IOException, NoSuchAlgorithmException, CertificateException, KeyStoreException, UnrecoverableKeyException, ProcessManagerException {
         /*
+         * No need to add glassfish-instance to the keystore if it already exists.
+         */
+        final KeyStore ks = sslUtils().getKeyStore();
+        if (ks.containsAlias(SecureAdmin.Duck.DEFAULT_INSTANCE_ALIAS)) {
+            return;
+        }
+        
+        /*
          * This is ugly but effective.  We need to add a new private key to 
          * the keystore and a new self-signed cert to the truststore.  To do so
          * we run keytool commands to change the on-disk stores, then we 
