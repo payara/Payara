@@ -112,7 +112,6 @@ abstract class NativeRemoteCommandsBase extends CLICommand {
     @Override
     protected void validate() throws CommandException {
         remoteUser = resolver.resolve(getRawRemoteUser());
-        validateHosts();
     }
 
     final String getRemoteUser() {
@@ -374,9 +373,6 @@ abstract class NativeRemoteCommandsBase extends CLICommand {
      * @return
      */
     String removeTrailingSlash(String s) {
-        if (!StringUtils.ok(s))
-            return s;
-
         if (s.endsWith("/")) {
             s = s.substring(0, s.length() - 1);
         }
@@ -492,16 +488,6 @@ abstract class NativeRemoteCommandsBase extends CLICommand {
         File f = new File(file);
         if (!f.exists()) {
             throw new CommandException(Strings.get("KeyDoesNotExist", file));
-        }
-    }
-    private void validateHosts() throws CommandException {
-        // it makes no sense to allow this command torun on the local machine!
-        // Obviously we are running on the local machine so it doesn't need
-        // GlassFish installed.
-
-        for (String host : hosts) {
-            if(NetUtils.isThisHostLocal(host))
-                throw new CommandException(Strings.get("install.node.nolocal", host));
         }
     }
 }
