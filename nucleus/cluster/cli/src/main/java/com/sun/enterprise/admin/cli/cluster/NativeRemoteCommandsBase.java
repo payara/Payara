@@ -318,8 +318,8 @@ abstract class NativeRemoteCommandsBase extends CLICommand {
                         }
                     }
 
-                    final URL[] urlsA = urls.toArray(new URL[urls.size()]);   
-            
+                    final URL[] urlsA = urls.toArray(new URL[urls.size()]);
+
                     ClassLoader cl = (ClassLoader)AccessController.doPrivileged(
                             new PrivilegedAction() {
                                 @Override
@@ -373,6 +373,9 @@ abstract class NativeRemoteCommandsBase extends CLICommand {
      * @return
      */
     String removeTrailingSlash(String s) {
+        if (!StringUtils.ok(s))
+            return s;
+
         if (s.endsWith("/")) {
             s = s.substring(0, s.length() - 1);
         }
