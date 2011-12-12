@@ -85,7 +85,6 @@ public class SetupSshCommand implements AdminCommand {
     private List<String> hosts;
     private Logger logger;
     TokenResolver resolver = new TokenResolver();
-    boolean promptPass = false;
     
     @Inject
     SSHLauncher sshL;
