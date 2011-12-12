@@ -54,7 +54,7 @@ import java.util.logging.Logger;
  */
 public abstract class AbstractPaaSDeploymentState implements PaaSDeploymentState {
 
-    protected static Logger logger = Logger.getLogger(ServiceOrchestratorImpl.class.getName());
+    protected final static Logger logger = Logger.getLogger(ServiceOrchestratorImpl.class.getName());
 
     public void beforeExecution(PaaSDeploymentContext context) throws PaaSDeploymentException {
         detectAndFail(true);
