@@ -78,6 +78,7 @@
         setPageSessionAttribute(key="listenerName" value="#{pageSession.Name}");
         urlencode(value="#{pageSession.listenerName}" encoding="UTF-8" result="#{pageSession.encodedListenerName}");
         setPageSessionAttribute(key="selfPage" value="#{request.contextPath}/web/configuration/httpListenerEdit.jsf?name=#{pageSession.encodedName}&configName=#{pageSession.configName}");
+        setSessionAttribute(key="secureCancelUrl" value="#{pageSession.selfPage}")
         />
     </event>
 "    <script type="text/javascript">admingui.nav.selectTreeNodeById(admingui.nav.TREE_ID+":configurations:#{pageSession.configName}httpService:httpListeners:#{pageSession.Name}");</script>
