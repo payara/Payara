@@ -299,6 +299,11 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
 
     private void firePITEvent(WeldBootstrap bootstrap,
             BeanDeploymentArchive bda, Class<?> bdaClazz) {
+        //Fix for issue GLASSFISH-17464
+        //The PIT event should not be fired for interfaces
+        if(bdaClazz.isInterface()){
+            return;
+        }
         AnnotatedType at = bootstrap.getManager(bda).createAnnotatedType(bdaClazz);
         InjectionTarget<?> it = bootstrap.getManager(bda).fireProcessInjectionTarget(at);
         ((BeanDeploymentArchiveImpl)bda).putInjectionTarget(at, it);
