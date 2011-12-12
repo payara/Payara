@@ -55,7 +55,6 @@ import org.glassfish.internal.api.RelativePathResolver;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
 import com.sun.enterprise.admin.cli.CLICommand;
-import org.glassfish.cluster.ssh.util.SSHUtil;
 import org.glassfish.cluster.ssh.launcher.SSHLauncher;
 import org.glassfish.cluster.ssh.sftp.SFTPClient;
 
@@ -345,8 +344,8 @@ abstract class NativeRemoteCommandsBase extends CLICommand {
                         String d = removeTrailingSlash(node.getInstallDirUnixStyle());
 
                         //check both hostname and install location
-                        if ((NetUtils.isEqual(node.getNodeHost(), host)
-                                || NetUtils.isThisHostLocal(host)) && d.equals(iDir)) {
+                        if (NetUtils.isEqual(node.getNodeHost(), host)
+                                && d.equals(iDir)) {
                             result = true;
                         }
                     }
