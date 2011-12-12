@@ -198,7 +198,7 @@ public class PropertiesBagResource {
                 
                 if ((existingProp == null) || !unescapedValue.equals(existingProp.getValue())) {
                     data.put(escapedName, property.get("value"));
-                    if (canSaveDesc) {
+                    if (canSaveDesc && (description != null)) {
                         data.put(escapedName + ".description", description);
                     }
                 }

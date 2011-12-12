@@ -173,6 +173,23 @@ public class PropertiesBagTest extends RestTestBase {
         }
     }
 
+    // the prop name can not contain .
+    // need to remove the . test when http://java.net/jira/browse/GLASSFISH-15418  is fixed
+//    @Test
+    public void testPropertiesWithDots() {
+        List<Map<String, String>> properties = new ArrayList<Map<String, String>>();
+        final String prop = "some.property.with.dots." + generateRandomNumber();
+        final String description = "This is the description";
+        final String value = generateRandomString();
+        properties.add(createProperty(prop, value, description));
+        createProperties(URL_DERBYPOOL_PROPERTIES, properties);
+        List<Map<String, String>> newProperties = getProperties(get(URL_DERBYPOOL_PROPERTIES));
+        Map<String, String> newProp = getProperty(newProperties, prop);
+        assertTrue(newProp != null);
+        assertTrue(value.equals(newProp.get("value")));
+        assertTrue(description.equals(newProp.get("description")));
+    }
+    
     // This operation is taking a REALLY long time from the console, probably due
     // to improper properties handling when create the RA config.  However, when
     // updating the config's properties, we need to verfiy that only the changed
@@ -263,13 +280,16 @@ public class PropertiesBagTest extends RestTestBase {
     }
 
     protected Map<String, String> createProperty(final String name, final String value) {
-        return createProperty(name, value, "");
+        return createProperty(name, value, null);
     }
+    
     protected Map<String, String> createProperty(final String name, final String value, final String description) {
         return new HashMap<String, String>() {{
                 put ("name", name);
                 put ("value", value);
-                put ("description", description);
+                if (description != null) {
+                    put ("description", description);
+                }
             }};
     }
 
@@ -316,13 +336,17 @@ public class PropertiesBagTest extends RestTestBase {
     }
 
     protected boolean isPropertyFound(List<Map<String, String>> properties, String name) {
-        boolean propertyFound = false;
-        for (Map property : properties) {
+        return getProperty(properties, name) != null;
+    }
+
+    protected Map<String, String> getProperty(List<Map<String, String>> properties, String name) {
+        Map<String, String> retval = null;
+        for (Map<String,String> property : properties) {
             if (name.equals(property.get("name"))) {
-                propertyFound = true;
+                retval = property;
             }
         }
 
-        return propertyFound;
+        return retval;
     }
 }
