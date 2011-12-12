@@ -119,12 +119,16 @@ public class RemoveLibraryCommand implements AdminCommand {
             for (String libraryName : names) {
                 File libraryFile = new File(libDir, libraryName);
                 if (libraryFile.exists()) {
-                    FileUtils.deleteFile(libraryFile);
-                    PropertyChangeEvent pe = new PropertyChangeEvent(libDir,
-                        "remove-library", libraryFile, null);
-                    UnprocessedChangeEvent uce = new UnprocessedChangeEvent(
-                        pe, "remove-library");
-                    unprocessed.add(uce);
+                    boolean isDeleted = FileUtils.deleteFile(libraryFile);
+                    if (!isDeleted) {
+                        msg.append(localStrings.getLocalString("lfnd","Could not remove library file", libraryFile.getAbsolutePath()));
+                    } else {
+                        PropertyChangeEvent pe = new PropertyChangeEvent(libDir,
+                            "remove-library", libraryFile, null);
+                        UnprocessedChangeEvent uce = new UnprocessedChangeEvent(
+                            pe, "remove-library");
+                        unprocessed.add(uce);
+                    }
                 } else {
                     msg.append(localStrings.getLocalString("lfnf","Library file not found", libraryFile.getAbsolutePath()));
                 }
