@@ -797,6 +797,17 @@ public class RestUtil {
         }
     }
 
+    public static void postRestRequestFromServlet(HttpServletRequest request, String endpoint, Map<String, Object> attrs, boolean quiet, boolean throwException) {
+        String token = (String) request.getSession().getAttribute(AdminConsoleAuthModule.REST_TOKEN);
+        WebResource webResource = JERSEY_CLIENT.resource(endpoint);
+        MultivaluedMap formData = buildMultivalueMap(attrs);
+        ClientResponse cr = webResource
+               .cookie(new Cookie(REST_TOKEN_COOKIE, token))
+                .accept(RESPONSE_TYPE).post(ClientResponse.class, formData);
+        RestResponse rr = RestResponse.getRestResponse(cr);
+        parseResponse(rr, null, endpoint, attrs, quiet, throwException);
+    }
+
     private static class BasicHostnameVerifier implements HostnameVerifier {
         final HostnameVerifier defaultVerifier = javax.net.ssl.HttpsURLConnection.getDefaultHostnameVerifier();
         public BasicHostnameVerifier(){
