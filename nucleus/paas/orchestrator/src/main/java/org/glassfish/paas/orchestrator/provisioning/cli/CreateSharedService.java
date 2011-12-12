@@ -43,20 +43,17 @@ package org.glassfish.paas.orchestrator.provisioning.cli;
 import com.sun.enterprise.config.serverbeans.Domain;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
-import org.glassfish.api.admin.AdminCommand;
-import org.glassfish.api.admin.AdminCommandContext;
-import org.glassfish.api.admin.ExecuteOn;
-import org.glassfish.api.admin.RuntimeType;
+import org.glassfish.api.admin.*;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
-import org.glassfish.paas.orchestrator.config.Services;
-import org.glassfish.paas.orchestrator.config.SharedService;
+import org.glassfish.paas.orchestrator.config.*;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
+import org.jvnet.hk2.config.Transaction;
 import org.jvnet.hk2.config.TransactionFailure;
 import org.jvnet.hk2.config.types.Property;
 
@@ -64,31 +61,41 @@ import java.beans.PropertyVetoException;
 import java.util.Map;
 import java.util.Properties;
 
+/**
+ * @author Jagadish Ramu
+ */
 @Service(name = "create-shared-service")
 @Scoped(PerLookup.class)
 @ExecuteOn(RuntimeType.DAS)
-@TargetType(value={CommandTarget.DAS})
-public class CreateSharedService implements AdminCommand{
+@TargetType(value = {CommandTarget.DAS})
+@CommandLock(CommandLock.LockType.NONE)
+public class CreateSharedService implements AdminCommand {
 
-    @Param(name="defaultService", defaultValue = "false", optional = true)
+    @Param(name = "defaultService", defaultValue = "false", optional = true)
     private Boolean defaultService;
 
-    @Param(name="force", defaultValue = "false", optional = true)
+    @Param(name = "force", defaultValue = "false", optional = true)
     private Boolean force;
 
-    @Param(name="servicetype", optional = false)
+    @Param(name = "servicetype", optional = false)
     private String serviceType;
 
-    @Param(name="property", optional=true, separator=':')
+    @Param(name = "properties", optional = true, separator = ':')
     private Properties properties;
 
-    @Param(name="initmode", optional = true, acceptableValues = "eager,lazy", defaultValue = "eager")
+    @Param(name = "characteristics", optional = true, separator = ':')
+    private Properties characteristics;
+
+    @Param(name = "configuration", optional = true, separator = ':')
+    private Properties configuration;
+
+    @Param(name = "initmode", optional = true, acceptableValues = "eager,lazy", defaultValue = "eager")
     private String initMode;
 
-    @Param(name="template", optional = false)
+    @Param(name = "template", optional = true)
     private String template;
 
-    @Param(name="servicename", primary = true)
+    @Param(name = "servicename", primary = true)
     private String serviceName;
 
     @Inject
@@ -103,17 +110,17 @@ public class CreateSharedService implements AdminCommand{
 
         final ActionReport report = context.getActionReport();
 
-        if(defaultService){
-            if(force){
-                //TODO unset default=true in any other external service that already exists.
-            }else{
+        if (defaultService) {
+            if (force) {
+                //TODO unset default=true in any other shared service that already exists.
+            } else {
                 Services services = domain.getExtensionByType(Services.class);
-                if(services != null){
-                    for(org.glassfish.paas.orchestrator.config.Service service : services.getServices()){
-                        if(service instanceof SharedService){
-                            if(((SharedService) service).getDefault()){
-                                report.setMessage("An shared service named ["+service.getServiceName()+"] is already marked as default service, " +
-                                        "use --force=true to override the same");
+                if (services != null) {
+                    for (org.glassfish.paas.orchestrator.config.Service service : services.getServices()) {
+                        if (service instanceof SharedService) {
+                            if (((SharedService) service).getDefault() && service.getType().equalsIgnoreCase(serviceType)) {
+                                report.setMessage("A shared service by name [" + service.getServiceName() + "] is already marked as default service, " +
+                                        " for service-type [" + serviceType + "] use --force=true to override the same");
                                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                                 return;
                             }
@@ -122,6 +129,11 @@ public class CreateSharedService implements AdminCommand{
                 }
             }
         }
+
+        //TODO interact with Orchestrator to see whether this particular service-configuration can
+        //TODO be really supported.
+
+        //TODO accept either template-id or characteristics but not both.
 
         Services services = serviceUtil.getServices();
         try {
@@ -141,21 +153,45 @@ public class CreateSharedService implements AdminCommand{
                             sharedService.getProperty().add(prop);
                         }
                     }
+
+                    if (characteristics != null) {
+                        Characteristics chars
+                                = sharedService.createChild(Characteristics.class);
+                        Transaction t = Transaction.getTransaction(chars);
+                        for (Map.Entry e : characteristics.entrySet()) {
+                            Characteristic characteristic = chars.createChild(Characteristic.class);
+                            characteristic.setName((String) e.getKey());
+                            characteristic.setValue((String) e.getValue());
+                            chars.getCharacteristic().add(characteristic);
+                        }
+                        sharedService.setCharacteristics(chars);
+                    }
+
+                    if (configuration != null) {
+                        Configurations configs
+                                = sharedService.createChild(Configurations.class);
+                        for (Map.Entry e : configuration.entrySet()) {
+                            Configuration config = configs.createChild(Configuration.class);
+                            config.setName((String)e.getKey());
+                            config.setValue((String)e.getValue());
+                            configs.getConfiguration().add(config);
+                        }
+                        sharedService.setConfigurations(configs);
+                    }
+
                     param.getServices().add(sharedService);
                     return sharedService;
                 }
             }, services) == null) {
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                 report.setMessage("Unable to create shared service");
-                return;
-            }else{
+            } else {
                 report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
-                return;
             }
-        } catch (TransactionFailure transactionFailure) {
+        } catch (Exception e) {
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            report.setMessage("Unable to create shared service due to : " + transactionFailure.getMessage());
-            return;
+            report.setMessage("Unable to create shared service [" + serviceName + "] due to : " + e.getMessage());
+            report.setFailureCause(e);
         }
     }
 }

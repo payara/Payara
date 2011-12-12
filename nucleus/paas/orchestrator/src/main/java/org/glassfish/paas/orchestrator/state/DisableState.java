@@ -70,8 +70,6 @@ public class DisableState extends AbstractPaaSDeploymentState {
     @Inject
     private Habitat habitat;
 
-    private static Logger logger = Logger.getLogger(ServiceOrchestratorImpl.class.getName());
-
     public void handle(PaaSDeploymentContext context) throws PaaSDeploymentException {
         stopServices(context);
     }

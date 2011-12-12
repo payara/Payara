@@ -38,27 +38,17 @@
  * holder.
  */
 
-package org.glassfish.paas.orchestrator.state;
+package org.glassfish.paas.orchestrator.config;
 
-import org.glassfish.paas.orchestrator.PaaSDeploymentContext;
-import org.glassfish.paas.orchestrator.PaaSDeploymentException;
-import org.jvnet.hk2.annotations.Inject;
-import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.Injectable;
+import org.jvnet.hk2.config.ConfigBeanProxy;
+import org.jvnet.hk2.config.Configured;
+import org.jvnet.hk2.config.types.Property;
+
 
 /**
  * @author Jagadish Ramu
  */
-@Service
-public class DeployState extends AbstractPaaSDeploymentState {
-
-    @Inject
-    private Habitat habitat;
-
-    public void handle(PaaSDeploymentContext context) throws PaaSDeploymentException {
-    }
-
-    public Class getRollbackState() {
-        return UndeployState.class;
-    }
+@Configured
+public interface Configuration extends ConfigBeanProxy, Injectable, Property {
 }

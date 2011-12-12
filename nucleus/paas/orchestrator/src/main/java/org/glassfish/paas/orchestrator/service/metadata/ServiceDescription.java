@@ -136,7 +136,7 @@ public class ServiceDescription {
                 templateOrCharacteristics instanceof ServiceCharacteristics){
             this.templateOrCharacteristics = templateOrCharacteristics;
         }else{
-            throw new RuntimeException("Invalid type, neither TemplateIdentifier nor ServiceCharacteristics");
+            throw new RuntimeException("Invalid type ["+templateOrCharacteristics.getClass()+"], neither TemplateIdentifier nor ServiceCharacteristics");
         }
     }
 
@@ -177,9 +177,11 @@ public class ServiceDescription {
                     Globals.getDefaultHabitat().getByContract(TemplateRepository.class);
             TemplateInstance templateInstance =
                     templateRepository.byName(templateId.getId());
-            return templateInstance.getConfig().byName("ServiceType").getValue();
+            if(templateInstance != null){
+                return templateInstance.getConfig().byName("ServiceType").getValue();
+            }
         }
-        return null; // should never come here.
+        return null; // should never come here.  //TODO throw exception ?
     }
 
 

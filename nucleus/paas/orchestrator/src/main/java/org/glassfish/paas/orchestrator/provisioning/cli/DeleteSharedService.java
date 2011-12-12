@@ -43,28 +43,33 @@ package org.glassfish.paas.orchestrator.provisioning.cli;
 import com.sun.enterprise.config.serverbeans.Domain;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
-import org.glassfish.api.admin.AdminCommand;
-import org.glassfish.api.admin.AdminCommandContext;
-import org.glassfish.api.admin.ExecuteOn;
-import org.glassfish.api.admin.RuntimeType;
+import org.glassfish.api.admin.*;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
+import org.glassfish.embeddable.CommandResult;
+import org.glassfish.embeddable.CommandRunner;
+import org.glassfish.paas.orchestrator.PaaSDeploymentContext;
+import org.glassfish.paas.orchestrator.ServiceOrchestratorImpl;
 import org.glassfish.paas.orchestrator.config.Services;
 import org.glassfish.paas.orchestrator.config.SharedService;
+import org.glassfish.paas.orchestrator.service.spi.Plugin;
+import org.glassfish.paas.orchestrator.service.spi.ProvisionedService;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
-import org.jvnet.hk2.config.ConfigSupport;
-import org.jvnet.hk2.config.SingleConfigCode;
-import org.jvnet.hk2.config.TransactionFailure;
 
-import java.beans.PropertyVetoException;
+import java.util.logging.Logger;
 
+
+/**
+ * @author Jagadish Ramu
+ */
 @Service(name = "delete-shared-service")
 @Scoped(PerLookup.class)
 @ExecuteOn(RuntimeType.DAS)
 @TargetType(value = {CommandTarget.DAS})
+@CommandLock(CommandLock.LockType.NONE)
 public class DeleteSharedService implements AdminCommand {
 
     @Param(name = "servicename", primary = true)
@@ -72,6 +77,14 @@ public class DeleteSharedService implements AdminCommand {
 
     @Inject
     private Domain domain;
+
+    @Inject
+    private CommandRunner commandRunner;
+
+    @Inject
+    private ServiceOrchestratorImpl serviceOrchestrator;
+
+    private static Logger logger = Logger.getLogger(ServiceOrchestratorImpl.class.getName());
 
     public void execute(AdminCommandContext context) {
         final ActionReport report = context.getActionReport();
@@ -84,19 +97,21 @@ public class DeleteSharedService implements AdminCommand {
                 if (service.getServiceName().equals(serviceName)) {
                     if (service instanceof SharedService) {
                         found = true;
-                        try {
-                            if (ConfigSupport.apply(new SingleConfigCode<Services>() {
-                                public Object run(Services param) throws PropertyVetoException, TransactionFailure {
-                                    param.getServices().remove(service);
-                                    report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
-                                    return service;
-                                }
-                            }, services) == null) {
-                            }
-                        } catch (TransactionFailure transactionFailure) {
-                            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-                            report.setMessage("Deleting shared-service [" + serviceName + "] failed : " + transactionFailure.getMessage());
-                            return;
+
+                        SharedService sharedService = (SharedService) service;
+                        ProvisionedService provisionedService = serviceOrchestrator.getSharedService(sharedService.getServiceName());
+                        Plugin plugin = provisionedService.getServiceDescription().getPlugin();
+                        PaaSDeploymentContext pdc = new PaaSDeploymentContext(null, null, serviceOrchestrator);
+                        plugin.unprovisionService(provisionedService.getServiceDescription(), pdc);
+
+                        // delete virtual cluster
+                        String virtualClusterName = service.getServiceName();
+                        CommandResult result = commandRunner.run("delete-cluster", virtualClusterName);
+                        logger.finest("Command delete-cluster [" + virtualClusterName + "] executed. " +
+                                "Command Output [" + result.getOutput() + "]");
+                        if (result.getExitStatus().equals(CommandResult.ExitStatus.FAILURE)) {
+                            throw new RuntimeException("Failure while deleting virtual-cluster, " +
+                                    "Unable to delete virtual-cluster [" + virtualClusterName + "]");
                         }
                     }
                 }
@@ -104,12 +119,10 @@ public class DeleteSharedService implements AdminCommand {
             if (!found) {
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                 report.setMessage("No shared-service by name [" + serviceName + "] is available");
-                return;
             }
         } else {
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setMessage("Invalid service name [" + serviceName + "]");
-            return;
         }
     }
 }

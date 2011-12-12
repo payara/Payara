@@ -67,8 +67,6 @@ public class UndeployState extends AbstractPaaSDeploymentState {
     @Inject
     private CommandRunner commandRunner;
 
-    private static Logger logger = Logger.getLogger(ServiceOrchestratorImpl.class.getName());
-
     public void handle(PaaSDeploymentContext context) throws PaaSDeploymentException {
         String appName = context.getAppName();
 

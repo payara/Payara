@@ -72,8 +72,6 @@ public class EnableState extends AbstractPaaSDeploymentState {
     @Inject
     private Habitat habitat;
 
-    private static Logger logger = Logger.getLogger(ServiceOrchestratorImpl.class.getName());
-
     public void handle(PaaSDeploymentContext context) throws PaaSDeploymentException {
         startServices(context);
     }

@@ -48,20 +48,18 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.glassfish.api.deployment.ApplicationContainer;
-import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.embeddable.CommandResult;
 import org.glassfish.embeddable.CommandRunner;
 import org.glassfish.paas.lbplugin.cli.GlassFishLBProvisionedService;
 import org.glassfish.paas.lbplugin.logger.LBPluginLogger;
+import org.glassfish.paas.orchestrator.PaaSDeploymentContext;
 import org.glassfish.paas.orchestrator.ServiceOrchestrator;
-import org.glassfish.paas.orchestrator.ServiceOrchestrator.ReconfigAction;
 import org.glassfish.paas.orchestrator.provisioning.ServiceInfo;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceType;
 import org.glassfish.paas.orchestrator.service.HTTPLoadBalancerServiceType;
 import org.glassfish.paas.orchestrator.service.ServiceStatus;
 import org.glassfish.paas.orchestrator.service.metadata.Property;
-import org.glassfish.paas.orchestrator.service.metadata.ServiceCharacteristics;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceDescription;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceReference;
 import org.glassfish.paas.orchestrator.service.spi.Plugin;
@@ -181,7 +179,7 @@ public class LBPlugin implements Plugin {
         return appName + "-lb";
     }
 
-    public ProvisionedService provisionService(ServiceDescription serviceDescription, DeploymentContext dc) {
+    public ProvisionedService provisionService(ServiceDescription serviceDescription, PaaSDeploymentContext dc) {
         String serviceName = serviceDescription.getName();
         LBPluginLogger.getLogger().log(Level.INFO,"Given serviceName : " + serviceName);
         logger.entering(getClass().getName(), "provisionService");
@@ -258,7 +256,7 @@ public class LBPlugin implements Plugin {
     }
 
     public void associateServices(ProvisionedService serviceConsumer, ServiceReference svcRef,
-                                  ProvisionedService serviceProvider, boolean beforeDeployment, DeploymentContext dc) {
+                                  ProvisionedService serviceProvider, boolean beforeDeployment, PaaSDeploymentContext dc) {
         if(beforeDeployment){
             return;
         }
@@ -394,7 +392,7 @@ public class LBPlugin implements Plugin {
         return defs;
     }
 
-    public boolean unprovisionService(ServiceDescription serviceDescription, DeploymentContext dc){
+    public boolean unprovisionService(ServiceDescription serviceDescription, PaaSDeploymentContext dc){
         String serviceName = serviceDescription.getName();
         ArrayList params = new ArrayList<String>();
 
@@ -433,7 +431,7 @@ public class LBPlugin implements Plugin {
     }
 
     public void dissociateServices(ProvisionedService serviceConsumer, ServiceReference svcRef,
-                                   ProvisionedService serviceProvider, boolean beforeUndeploy, DeploymentContext dc){
+                                   ProvisionedService serviceProvider, boolean beforeUndeploy, PaaSDeploymentContext dc){
         if(!beforeUndeploy){
             return;
         }

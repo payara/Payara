@@ -98,12 +98,14 @@ public class DeleteDerbyService implements AdminCommand {
     public void execute(AdminCommandContext context) {
 
         final ActionReport report = context.getActionReport();
+/*
         // Check if the service is already configured.
         if (!dbServiceUtil.isServiceAlreadyConfigured(serviceName, appName, ServiceType.DATABASE)) {
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setMessage("Service with name [" + serviceName + "] is not available.");
             return;
         }
+*/
 
         if (templateRepository != null && virtualClusters != null) { // we are in virtualized environment.
             if (virtualClusters != null && serviceName != null) {

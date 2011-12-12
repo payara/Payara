@@ -59,8 +59,6 @@ import java.util.logging.Logger;
  */
 public abstract class AssociationState extends AbstractPaaSDeploymentState {
 
-    private static Logger logger = Logger.getLogger(ServiceOrchestratorImpl.class.getName());
-
     protected void associateProvisionedServices(PaaSDeploymentContext context, boolean preDeployment)
             throws PaaSDeploymentException {
         logger.entering(getClass().getName(), "associateProvisionedServices-beforeDeployment=" + preDeployment);
@@ -86,7 +84,7 @@ public abstract class AssociationState extends AbstractPaaSDeploymentState {
                                     orchestrator.getServicesProvisionedByPlugin(svcPlugin, appProvisionedSvcs);
                             for (ProvisionedService serviceConsumer : serviceConsumers) {
                                 try {
-                                    svcPlugin.associateServices(serviceConsumer, serviceRef, serviceProducer, preDeployment, dc);
+                                    svcPlugin.associateServices(serviceConsumer, serviceRef, serviceProducer, preDeployment, context);
                                     associatedServicesList.add(
                                             new AssociatedServiceRecord(serviceProducer, serviceConsumer, serviceRef, svcPlugin));
                                 } catch (Exception e) {
@@ -104,7 +102,6 @@ public abstract class AssociationState extends AbstractPaaSDeploymentState {
         }finally{
             associatedServicesList.clear();
         }
-        context.setAction(PaaSDeploymentContext.Action.PROCEED);
     }
 
     private void rollback(List<AssociatedServiceRecord> associatedServices, PaaSDeploymentContext context,
@@ -116,7 +113,7 @@ public abstract class AssociationState extends AbstractPaaSDeploymentState {
             Plugin plugin = asr.getPlugin();
             try{
                 plugin.dissociateServices(serviceConsumer, serviceRef, serviceProvider, preDeployment,
-                        context.getDeploymentContext());
+                        context);
             }catch(Exception e){
                 logger.log(Level.WARNING, "Failure while dissociating " + serviceConsumer.getName()
                         + " and " + serviceProvider.getName() + " " +

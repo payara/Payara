@@ -62,7 +62,6 @@ public interface Service extends ConfigBeanProxy, Injectable, PropertyBag{
     /**
     	Properties as per {@link PropertyBag}
      */
-    @ToDo(priority=ToDo.Priority.IMPORTANT, details="Provide PropertyDesc for legal props" )
     @PropertiesDesc(props={})
     @Element
     List<Property> getProperty();

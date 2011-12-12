@@ -43,35 +43,46 @@ package org.glassfish.paas.orchestrator.config;
 import org.glassfish.api.Param;
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.Configured;
+import org.jvnet.hk2.config.Element;
 
 import java.beans.PropertyVetoException;
 import javax.validation.constraints.NotNull;
 
+/**
+ * @author Jagadish Ramu
+ */
 @Configured
-public interface SharedService extends Service{
+public interface SharedService extends Service {
 
+    //TODO either template or characteristics will be present.
     @Attribute(defaultValue = "false")
-    @Param
     boolean getDefault();
 
     void setDefault(boolean defaultValue) throws PropertyVetoException;
 
     @Attribute(defaultValue = "eager")
-    @Param
     String getInitMode();
 
     void setInitMode(String initMode) throws PropertyVetoException;
 
     @Attribute
-    @Param
     String getState();
 
     void setState(String state) throws PropertyVetoException;
 
     @Attribute
-    @Param
     String getTemplate();
 
     void setTemplate(String template) throws PropertyVetoException;
+
+    @Element
+    Characteristics getCharacteristics();
+
+    void setCharacteristics(Characteristics characteristics) throws PropertyVetoException;
+
+    @Element
+    Configurations getConfigurations();
+
+    void setConfigurations(Configurations configurations) throws PropertyVetoException;
 
 }

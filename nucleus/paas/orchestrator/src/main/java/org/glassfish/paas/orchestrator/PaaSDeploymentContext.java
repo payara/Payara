@@ -44,15 +44,14 @@ import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceMetadata;
 
 /**
+ * Deployment Context of a PaaS enabled application</br>
+ *
  * @author Jagadish Ramu
  */
 public class PaaSDeploymentContext {
     private ServiceOrchestratorImpl orchestrator;
     private DeploymentContext dc;
     private String appName;
-    private Action action = Action.PROCEED;
-
-    public enum Action {ROLLBACK, PROCEED}
 
     public PaaSDeploymentContext(String appName, DeploymentContext dc, ServiceOrchestratorImpl orchestrator){
         this.orchestrator = orchestrator;
@@ -70,9 +69,5 @@ public class PaaSDeploymentContext {
 
     public DeploymentContext getDeploymentContext(){
         return dc;
-    }
-
-    public void setAction(Action action){
-        this.action = action;
     }
 }

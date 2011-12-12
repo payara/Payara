@@ -51,6 +51,7 @@ import org.glassfish.deployment.common.DeploymentUtils;
 import org.glassfish.embeddable.CommandRunner;
 import org.glassfish.embeddable.GlassFish;
 import org.glassfish.paas.gfplugin.cli.GlassFishServiceUtil;
+import org.glassfish.paas.orchestrator.PaaSDeploymentContext;
 import org.glassfish.paas.orchestrator.ServiceOrchestrator;
 import org.glassfish.paas.orchestrator.provisioning.ServiceInfo;
 import org.glassfish.paas.orchestrator.service.JavaEEServiceType;
@@ -153,7 +154,7 @@ public class GlassFishPlugin extends ServiceProvisioningEngineBase
         return generateDefaultServiceDescription(appName);
     }
 
-    public boolean unprovisionService(ServiceDescription serviceDescription, DeploymentContext dc) {
+    public boolean unprovisionService(ServiceDescription serviceDescription, PaaSDeploymentContext dc) {
         String serviceName = serviceDescription.getName();
         /**
          * Step 1. Delete all the service instances.
@@ -183,7 +184,7 @@ public class GlassFishPlugin extends ServiceProvisioningEngineBase
     }
 
     public ProvisionedService provisionService(ServiceDescription serviceDescription,
-                                               DeploymentContext dc) {
+                                               PaaSDeploymentContext pdc) {
         String serviceName = serviceDescription.getName();
         /**
          * Step 1. Provision DAS and cluster
@@ -218,9 +219,11 @@ public class GlassFishPlugin extends ServiceProvisioningEngineBase
          * TODO what if someone requests for multiple GlassFish services ? As of now, the last one is considered as deployment target.
          */
         String clusterName = serviceName;
-        DeployCommandParameters dcp = dc.getCommandParameters(
-                DeployCommandParameters.class);
-        dcp.target = clusterName;
+        DeploymentContext dc = pdc.getDeploymentContext();
+        if(dc != null){
+            DeployCommandParameters dcp = dc.getCommandParameters(DeployCommandParameters.class);
+            dcp.target = clusterName;
+        }
 
         /**
          * Step 4. Create elastic service.
@@ -330,7 +333,7 @@ public class GlassFishPlugin extends ServiceProvisioningEngineBase
      * @param beforeDeployment indicates if this association is happening before the
      */
     public void associateServices(ProvisionedService serviceConsumer, ServiceReference svcRef,
-                                  ProvisionedService serviceProvider, boolean beforeDeployment, DeploymentContext dc) {
+                                  ProvisionedService serviceProvider, boolean beforeDeployment, PaaSDeploymentContext dc) {
 //        if (provisionedSvc instanceof DerbyProvisionedService) {
         if (svcRef.getServiceRefType().equals("javax.sql.DataSource") &&
 	        serviceProvider.getServiceType().toString().equals("Database")  &&
@@ -425,7 +428,7 @@ public class GlassFishPlugin extends ServiceProvisioningEngineBase
 
             //if (svcRef.getServiceRefType().equals(JAVAEE_SERVICE_TYPE)) {
                 //if (serviceConsumer instanceof GlassFishProvisionedService) {
-                    if (beforeDeployment) {
+         /*           if (beforeDeployment) {
                         GlassFishProvisionedService gfps = (GlassFishProvisionedService) serviceConsumer;
                         String clusterServiceName = gfServiceUtil.getClusterName(serviceConsumer.getName(), gfps.getServiceDescription().getAppName());
                         if (dc != null) { //TODO remove once "deploy-service" is made obselete
@@ -435,11 +438,11 @@ public class GlassFishPlugin extends ServiceProvisioningEngineBase
                   //  }
               //  }
 
-        }
+        }*/
     }
 
     public void dissociateServices(ProvisionedService serviceConsumer, ServiceReference svcRef,
-                                   ProvisionedService serviceProvider, boolean beforeUndeploy, DeploymentContext dc) {
+                                   ProvisionedService serviceProvider, boolean beforeUndeploy, PaaSDeploymentContext dc) {
         if (beforeUndeploy) {
             //if (serviceConsumer instanceof GlassFishProvisionedService) {
                // if (svcRef.getServiceRefType().equals(JAVAEE_SERVICE_TYPE)) {
@@ -447,10 +450,10 @@ public class GlassFishPlugin extends ServiceProvisioningEngineBase
                     String serviceName = gfps.getServiceDescription().getName();
                     String clusterName = gfServiceUtil.getClusterName(serviceName, gfps.getServiceDescription().getAppName());
 
-                    if (dc != null) { //TODO remove once "deploy-service" is made obselete
+                    /*if (dc != null) { //TODO remove once "deploy-service" is made obselete
                         UndeployCommandParameters ucp = dc.getCommandParameters(UndeployCommandParameters.class);
                         ucp.target = clusterName;
-                    }
+                    }*/
                 //}
             //}
         } else {

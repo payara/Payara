@@ -56,8 +56,8 @@ import org.glassfish.hk2.scopes.Singleton;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
 import org.glassfish.paas.orchestrator.config.ServiceProvisioningEngine;
 import org.glassfish.paas.orchestrator.config.ServiceProvisioningEngines;
+import org.glassfish.paas.orchestrator.provisioning.ServiceInfo;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceUtil;
-import org.glassfish.paas.orchestrator.service.ServiceType;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceDescription;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceMetadata;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceReference;
@@ -90,6 +90,7 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
 
     private Map<String, ServiceMetadata> serviceMetadata = new LinkedHashMap<String, ServiceMetadata>();
     private Map<String, Set<ProvisionedService>> provisionedServices = new LinkedHashMap<String, Set<ProvisionedService>>();
+    private Map<String, ProvisionedService> sharedServices = new LinkedHashMap<String, ProvisionedService>();
 
     private static final Class [] PRE_DEPLOY_PHASE_STATES = {ServiceDependencyDiscoveryState.class, ProvisioningState.class,
             PreDeployAssociationState.class};
@@ -138,26 +139,10 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
             Set<Plugin> plugins = new LinkedHashSet<Plugin>();
             plugins.addAll(habitat.getAllByContract(Plugin.class));
             logger.log(Level.INFO, "Discovered plugins:" + plugins);
-            //checkForDuplicatePlugins(plugins);
             pluginsSet = plugins;
         }
         return pluginsSet;
     }
-
-    private void checkForDuplicatePlugins(Set<Plugin> plugins) {
-        Map<String, Plugin> serviceTypes = new HashMap<String, Plugin>();
-        for(Plugin plugin : plugins){
-            String serviceType = plugin.getServiceType().toString();
-            if(serviceTypes.get(serviceType) != null){
-                throw new RuntimeException("Support for choosing a plugin from multiple plugins ["+plugin.getClass().getName()+ "," +
-                        serviceTypes.get(serviceType).getClass().getName() +"] that handle the service" +
-                        "type ["+serviceType+"] is not yet available");
-            }else{
-                serviceTypes.put(serviceType, plugin);
-            }
-        }
-    }
-
 
     public void deployApplication(String appName, ReadableArchive cloudArchive) {
         /*
@@ -213,16 +198,21 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
         }
     }
 
-    private void handleFailure(String appName, Class[] tasks, boolean deployment, PaaSDeploymentState state, PaaSDeploymentContext pc,
-                               Exception e) {
+    private void handleFailure(String appName, Class[] tasks, boolean deployment, PaaSDeploymentState state,
+                               PaaSDeploymentContext pc, Exception e) {
         logger.log(Level.WARNING, "Failure while handling [ " + state.getClass().getSimpleName() + " ] : ", e);
         if(deployment){
             rollbackDeployment(pc, state, DEPLOYMENT_STATES);
-            throw new DeploymentException("Failure while deploying application [ "+appName+" ], rolled back all operations. Refer root cause", e);
-        }else{
-            throw new DeploymentException("Failure while undeploying application [ "+appName+" ]. Refer root cause", e);
-        }
+            DeploymentException de = new DeploymentException("Failure while deploying application [ "+appName+" ], " +
+                    "rolled back all deploy operations.");
+            de.initCause(e);
+            throw de;
 
+        }else{
+            DeploymentException de = new DeploymentException("Failure while undeploying application [ "+appName+" ]." );
+            de.initCause(e);
+            throw de;
+        }
     }
 
     private void rollbackDeployment(PaaSDeploymentContext context, PaaSDeploymentState failedState, List<Class> tasksList) {
@@ -381,25 +371,6 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
             logger.log(Level.WARNING, failureCause.getLocalizedMessage(), failureCause);
         }
     }
-    
-    public Plugin<?> getPluginForServiceType(Set<Plugin> installedPlugins, String serviceType) {
-        //XXX: for now assume that there is one plugin per servicetype
-        //and choose the first plugin that handles this service type.
-        //in the future, need to handle conflicts
-        Plugin matchingPlugin = null;
-        List<Plugin> matchingPlugins = new ArrayList<Plugin>();
-        for (Plugin svcPlugin : installedPlugins) {
-            if (svcPlugin.getServiceType().toString().equalsIgnoreCase(serviceType)){
-                matchingPlugins.add(svcPlugin);
-            }
-        }
-        if(matchingPlugins.size() > 1){
-            matchingPlugin = getDefaultPlugin(matchingPlugins, serviceType);
-        }else if(matchingPlugins.size() == 1){
-            matchingPlugin = matchingPlugins.get(0);
-        }
-        return matchingPlugin;
-    }
 
     public Plugin getDefaultPluginForServiceRef(String serviceRefType) {
         Plugin defaultPlugin = null;
@@ -428,17 +399,19 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
         return defaultPlugin;
     }
 
-    public Plugin getDefaultPlugin(List<Plugin> pluginsList, String type) {
+    public Plugin getDefaultPlugin(Collection<Plugin> pluginsList, String type) {
         Plugin defaultPlugin = null;
-        ServiceProvisioningEngines spes = habitat.getComponent(ServiceProvisioningEngines.class);
-        if(spes != null){
-            for(ServiceProvisioningEngine spe : spes.getServiceProvisioningEngines()){
-                if(spe.getType().equalsIgnoreCase(type) && spe.getDefault()){
-                    String className = spe.getClassName();
-                    for(Plugin plugin : pluginsList){
-                        if(plugin.getClass().getName().equals(className)){
-                            defaultPlugin = plugin;
-                            break;
+        if(pluginsList != null){
+            ServiceProvisioningEngines spes = habitat.getComponent(ServiceProvisioningEngines.class);
+            if(spes != null){
+                for(ServiceProvisioningEngine spe : spes.getServiceProvisioningEngines()){
+                    if(spe.getType().equalsIgnoreCase(type) && spe.getDefault()){
+                        String className = spe.getClassName();
+                        for(Plugin plugin : pluginsList){
+                            if(plugin.getClass().getName().equals(className)){
+                                defaultPlugin = plugin;
+                                break;
+                            }
                         }
                     }
                 }
@@ -559,6 +532,59 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
 
     public void addProvisionedServices(String appName, Set<ProvisionedService> provisionedServiceSet) {
         provisionedServices.put(appName, provisionedServiceSet);
+    }
+
+    public void addSharedService(String serviceName, ProvisionedService provisionedService) {
+        sharedServices.put(serviceName, provisionedService);
+    }
+
+    public ProvisionedService getSharedService(String serviceName){
+        ProvisionedService provisionedService = sharedServices.get(serviceName);
+        if(provisionedService == null){
+            ServiceInfo serviceInfo = serviceUtil.retrieveCloudEntry(serviceName, null, null);
+            if(serviceInfo != null){
+                ServiceDescription sd = serviceUtil.getSharedServiceDescription(serviceInfo);
+                Plugin plugin = getPlugin(sd);
+                sd.setPlugin(plugin);
+                provisionedService = plugin.getProvisionedService(sd, serviceInfo);
+                sharedServices.put(serviceName, provisionedService);
+            }else{
+                throw new RuntimeException("No such shared service ["+serviceName+"] is available");
+            }
+        }
+        if(provisionedService == null){
+            throw new RuntimeException("No such shared service ["+serviceName+"] is available");
+        }
+        return provisionedService;
+    }
+
+    public Plugin getPlugin(ServiceDescription sd){
+                        Collection<Plugin> plugins = new LinkedHashSet<Plugin>();
+            for(Plugin plugin : getPlugins()){
+                if( plugin.handles(sd) ){
+                    plugins.add(plugin);
+                }
+
+                if(sd.getServiceType().equalsIgnoreCase(plugin.getServiceType().toString())){
+                    plugins.add(plugin);
+                }
+            }
+
+            Plugin matchingPlugin = null;
+            if(plugins.size() > 1){
+                matchingPlugin = getDefaultPlugin(plugins, sd.getServiceType());
+                if(matchingPlugin == null){
+                    throw new RuntimeException("Unable to resolve conflict among multiple service-provisioning engines " +
+                            "that can handle service-type ["+sd.getServiceType()+"]" +
+                            " specified in the service-description ["+sd+"]");
+                }
+            }else if(plugins.size()  == 1){
+                matchingPlugin = plugins.iterator().next();
+            }else{
+                throw new RuntimeException("No service-provisioning-engine can handle service-type ["+sd.getServiceType()+"]" +
+                        " specified in service-description ["+sd+"]");
+            }
+        return matchingPlugin;
     }
 
     public ServiceMetadata removeServiceMetadata(String appName) {

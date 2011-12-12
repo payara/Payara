@@ -40,10 +40,10 @@
 package org.glassfish.paas.mysqldbplugin;
 
 import org.glassfish.api.deployment.ApplicationContainer;
-import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.embeddable.CommandResult;
 import org.glassfish.embeddable.CommandRunner;
+import org.glassfish.paas.orchestrator.PaaSDeploymentContext;
 import org.glassfish.paas.orchestrator.ServiceOrchestrator;
 import org.glassfish.paas.orchestrator.provisioning.DatabaseProvisioner;
 import org.glassfish.paas.orchestrator.provisioning.ServiceInfo;
@@ -169,7 +169,7 @@ public class MySQLDBPlugin implements Plugin<RDBMSServiceType> {
         return sb.toString();
     }
 
-    public ProvisionedService provisionService(ServiceDescription serviceDescription, DeploymentContext dc) {
+    public ProvisionedService provisionService(ServiceDescription serviceDescription, PaaSDeploymentContext dc) {
 
         String serviceName = serviceDescription.getName();
         String serviceConfigurations = formatArgument(serviceDescription.getConfigurations(), ";");
@@ -218,7 +218,7 @@ public class MySQLDBPlugin implements Plugin<RDBMSServiceType> {
     }
 
     public void associateServices(ProvisionedService serviceConsumer, ServiceReference svcRef,
-                                  ProvisionedService serviceProvider, boolean beforeDeployment, DeploymentContext dc) {
+                                  ProvisionedService serviceProvider, boolean beforeDeployment, PaaSDeploymentContext dc) {
         //no-op
     }
 
@@ -302,7 +302,7 @@ public class MySQLDBPlugin implements Plugin<RDBMSServiceType> {
         return new HashSet<ServiceDescription>();
     }
 
-    public boolean unprovisionService(ServiceDescription serviceDescription, DeploymentContext dc){
+    public boolean unprovisionService(ServiceDescription serviceDescription, PaaSDeploymentContext dc){
         String appNameParam="";
         if(serviceDescription.getAppName() != null){
             appNameParam="--appname="+serviceDescription.getAppName();
@@ -322,7 +322,7 @@ public class MySQLDBPlugin implements Plugin<RDBMSServiceType> {
     }
 
     public void dissociateServices(ProvisionedService serviceConsumer, ServiceReference svcRef,
-                                   ProvisionedService serviceProvider, boolean beforeUndeploy, DeploymentContext dc){
+                                   ProvisionedService serviceProvider, boolean beforeUndeploy, PaaSDeploymentContext dc){
         //no-op
     }
 

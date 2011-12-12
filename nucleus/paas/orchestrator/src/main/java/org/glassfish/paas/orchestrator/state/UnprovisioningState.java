@@ -70,13 +70,11 @@ public class UnprovisioningState extends AbstractPaaSDeploymentState {
     @Inject
     private Habitat habitat;
 
-    private static Logger logger = Logger.getLogger(ServiceOrchestratorImpl.class.getName());
-
     public void handle(PaaSDeploymentContext context) throws PaaSDeploymentException {
         unprovisionServices(context);
     }
 
-    private void unprovisionServices(PaaSDeploymentContext context) {
+    private void unprovisionServices(final PaaSDeploymentContext context) {
         final ServiceOrchestratorImpl orchestrator = context.getOrchestrator();
         //final Set<Plugin> installedPlugins = orchestrator.getPlugins();
         final DeploymentContext dc = context.getDeploymentContext();
@@ -94,7 +92,7 @@ public class UnprovisioningState extends AbstractPaaSDeploymentState {
                     //Plugin<?> chosenPlugin = orchestrator.getPluginForServiceType(installedPlugins, sd.getServiceType());
                     Plugin<?> chosenPlugin = sd.getPlugin();
                     logger.log(Level.INFO, "Unprovisioning Service for " + sd + " through " + chosenPlugin);
-                    chosenPlugin.unprovisionService(sd, dc);
+                    chosenPlugin.unprovisionService(sd, context);
                 }
             });
             unprovisioningFutures.add(future);
@@ -120,7 +118,6 @@ public class UnprovisioningState extends AbstractPaaSDeploymentState {
         // Clean up the glassfish cluster, virtual cluster config, etc..
         // TODO :: assuming app-scoped virtual cluster. fix it when supporting shared/external service.
         orchestrator.removeVirtualCluster(virtualClusterName);
-        context.setAction(PaaSDeploymentContext.Action.PROCEED);
 
         orchestrator.removeProvisionedServices(appName);
         orchestrator.removeServiceMetadata(appName);

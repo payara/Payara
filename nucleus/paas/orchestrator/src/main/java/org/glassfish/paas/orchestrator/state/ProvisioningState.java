@@ -40,7 +40,6 @@
 
 package org.glassfish.paas.orchestrator.state;
 
-import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.embeddable.CommandResult;
 import org.glassfish.embeddable.CommandRunner;
 import org.glassfish.paas.orchestrator.*;
@@ -57,15 +56,12 @@ import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * @author Jagadish Ramu
  */
 @Service
 public class ProvisioningState extends AbstractPaaSDeploymentState {
-
-    private static Logger logger = Logger.getLogger(ServiceOrchestratorImpl.class.getName());
 
     @Inject
     private CommandRunner commandRunner;
@@ -77,7 +73,7 @@ public class ProvisioningState extends AbstractPaaSDeploymentState {
         try{
             provisionServices(context);
         }catch(Exception e){
-            if(! (e instanceof  PaaSDeploymentState)){
+            if(! (e instanceof  PaaSDeploymentException)){
                 throw new PaaSDeploymentException(e);
             }
         }
@@ -87,15 +83,13 @@ public class ProvisioningState extends AbstractPaaSDeploymentState {
         return UnprovisioningState.class;
     }
 
-    private Set<ProvisionedService> provisionServices(PaaSDeploymentContext context) throws PaaSDeploymentException {
+    private Set<ProvisionedService> provisionServices(final PaaSDeploymentContext context) throws PaaSDeploymentException {
         //TODO refactor such that rollback is done in a different state.
         //TODO add exception handling for the entire task
         //TODO pass the exception via the PaaSDeploymentContext ?
         logger.entering(getClass().getName(), "provisionServices");
         final ServiceOrchestratorImpl orchestrator = context.getOrchestrator();
         final Set<ProvisionedService> appPSs = new HashSet<ProvisionedService>();
-        //final Set<Plugin> installedPlugins = orchestrator.getPlugins();
-        final DeploymentContext dc = context.getDeploymentContext();
         String appName = context.getAppName();
         final ServiceMetadata appServiceMetadata = orchestrator.getServiceMetadata(appName);
 
@@ -119,10 +113,9 @@ public class ProvisioningState extends AbstractPaaSDeploymentState {
                 //sd.setVirtualClusterName(virtualClusterName);
                 Future<ProvisionedService> future = ServiceUtil.getThreadPool().submit(new Callable<ProvisionedService>() {
                     public ProvisionedService call() {
-                        //Plugin<?> chosenPlugin = orchestrator.getPluginForServiceType(installedPlugins, sd.getServiceType());
                         Plugin<?> chosenPlugin = sd.getPlugin();
                         logger.log(Level.INFO, "Started Provisioning Service in parallel for " + sd + " through " + chosenPlugin);
-                        return chosenPlugin.provisionService(sd, dc);
+                        return chosenPlugin.provisionService(sd, context);
                     }
                 });
                 provisioningFutures.add(future);
@@ -148,7 +141,7 @@ public class ProvisioningState extends AbstractPaaSDeploymentState {
                 try {
                     Plugin<?> chosenPlugin = sd.getPlugin();
                     logger.log(Level.INFO, "Started Provisioning Service serially for " + sd + " through " + chosenPlugin);
-                    ProvisionedService ps = chosenPlugin.provisionService(sd, dc);
+                    ProvisionedService ps = chosenPlugin.provisionService(sd, context);
                     appPSs.add(ps);
                     logger.log(Level.INFO, "Completed Provisioning Service serially " + ps);
                 } catch (Exception e) {
@@ -161,7 +154,6 @@ public class ProvisioningState extends AbstractPaaSDeploymentState {
         }
         if(!failed){
             context.getOrchestrator().addProvisionedServices(context.getAppName(), appPSs);
-            context.setAction(PaaSDeploymentContext.Action.PROCEED);
             return appPSs;
         }else{
             for(ProvisionedService ps : appPSs){
@@ -169,7 +161,7 @@ public class ProvisioningState extends AbstractPaaSDeploymentState {
                     ServiceDescription sd = ps.getServiceDescription();
                     Plugin<?> chosenPlugin = sd.getPlugin();
                     logger.log(Level.INFO, "Rolling back provisioned-service for " + sd + " through " + chosenPlugin );
-                    chosenPlugin.unprovisionService(sd, dc); //TODO we could do unprovisioning in parallel.
+                    chosenPlugin.unprovisionService(sd, context); //TODO we could do unprovisioning in parallel.
                     logger.log(Level.INFO, "Rolled back provisioned-service for " + sd + " through " + chosenPlugin );
                 }catch(Exception e){
                     logger.log(Level.FINEST, "Failure while rolling back provisioned service " + ps, e);
@@ -184,8 +176,6 @@ public class ProvisioningState extends AbstractPaaSDeploymentState {
             if(rootCause != null){
                 re.initCause(rootCause);
             }
-            context.setAction(PaaSDeploymentContext.Action.ROLLBACK);
-
             orchestrator.removeProvisionedServices(appName);
             orchestrator.removeServiceMetadata(appName);
 

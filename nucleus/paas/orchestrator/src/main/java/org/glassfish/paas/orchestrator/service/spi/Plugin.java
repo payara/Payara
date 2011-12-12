@@ -43,8 +43,8 @@ package org.glassfish.paas.orchestrator.service.spi;
 import java.util.Set;
 
 import org.glassfish.api.deployment.ApplicationContainer;
-import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.archive.ReadableArchive;
+import org.glassfish.paas.orchestrator.PaaSDeploymentContext;
 import org.glassfish.paas.orchestrator.ServiceOrchestrator;
 import org.glassfish.paas.orchestrator.provisioning.ServiceInfo;
 import org.glassfish.paas.orchestrator.service.ServiceType;
@@ -178,7 +178,7 @@ public interface Plugin<T extends ServiceType> {
      * 
      * @return a Set of <code>ProvisionedService</code>s
      */
-    public ProvisionedService provisionService(ServiceDescription serviceDescription, DeploymentContext dc);
+    public ProvisionedService provisionService(ServiceDescription serviceDescription, PaaSDeploymentContext dc);
 
     /**
      * When CPAS is restarted, the CPAS uses this method to get the 
@@ -214,7 +214,7 @@ public interface Plugin<T extends ServiceType> {
      * 
      * @return true if the Service was successful unprovisioned, false otherwise.
      */
-    public boolean unprovisionService(ServiceDescription serviceDescription, DeploymentContext dc);
+    public boolean unprovisionService(ServiceDescription serviceDescription, PaaSDeploymentContext dc);
 
     /**
      * Scales the size of a Service up or down as per the provided scalingFactor.
@@ -255,7 +255,7 @@ public interface Plugin<T extends ServiceType> {
      */
     public void associateServices(ProvisionedService serviceConsumer, ServiceReference svcRef,
                                   ProvisionedService serviceProvider, boolean beforeDeployment,
-                                  DeploymentContext dc);
+                                  PaaSDeploymentContext dc);
 
     /**
      * A <code>ProvisionedService</code> for a <code>ServiceReference</code> is
@@ -276,7 +276,7 @@ public interface Plugin<T extends ServiceType> {
      */
     public void dissociateServices(ProvisionedService serviceConsumer, ServiceReference svcRef,
                                    ProvisionedService serviceProvider, boolean beforeUndeploy,
-                                   DeploymentContext dc);
+                                   PaaSDeploymentContext dc);
     
     /**
      * Deploy the orchestration-enabled archive. 

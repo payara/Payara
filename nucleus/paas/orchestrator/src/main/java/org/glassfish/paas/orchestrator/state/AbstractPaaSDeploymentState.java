@@ -44,12 +44,17 @@ package org.glassfish.paas.orchestrator.state;
 import org.glassfish.paas.orchestrator.PaaSDeploymentContext;
 import org.glassfish.paas.orchestrator.PaaSDeploymentException;
 import org.glassfish.paas.orchestrator.PaaSDeploymentState;
+import org.glassfish.paas.orchestrator.ServiceOrchestratorImpl;
 import org.glassfish.paas.orchestrator.provisioning.util.FailureInducer;
+
+import java.util.logging.Logger;
 
 /**
  * @author Jagadish Ramu
  */
 public abstract class AbstractPaaSDeploymentState implements PaaSDeploymentState {
+
+    protected static Logger logger = Logger.getLogger(ServiceOrchestratorImpl.class.getName());
 
     public void beforeExecution(PaaSDeploymentContext context) throws PaaSDeploymentException {
         detectAndFail(true);

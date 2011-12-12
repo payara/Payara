@@ -51,13 +51,11 @@ import org.glassfish.paas.orchestrator.service.spi.ProvisionedService;
 import java.util.Collection;
 import java.util.Set;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * @author Jagadish Ramu
  */
 public abstract class DissociationState extends AbstractPaaSDeploymentState {
-    static Logger logger = Logger.getLogger(ServiceOrchestratorImpl.class.getName());
 
     protected void dissociateProvisionedServices(PaaSDeploymentContext context, boolean beforeUndeploy) {
         final ServiceOrchestratorImpl orchestrator = context.getOrchestrator();
@@ -82,7 +80,7 @@ public abstract class DissociationState extends AbstractPaaSDeploymentState {
                                 orchestrator.getServicesProvisionedByPlugin(svcPlugin, appProvisionedSvcs);
                         for (ProvisionedService serviceConsumer : serviceConsumers) {
                             try {
-                                svcPlugin.dissociateServices(serviceConsumer, serviceRef, serviceProvider, beforeUndeploy, dc);
+                                svcPlugin.dissociateServices(serviceConsumer, serviceRef, serviceProvider, beforeUndeploy, context);
                             } catch (Exception e) {
                                 //TODO need to handle exception or continue ?
                                failed = true;
@@ -92,11 +90,6 @@ public abstract class DissociationState extends AbstractPaaSDeploymentState {
                     }
                 }
             }
-        }
-        if(failed){
-            context.setAction(PaaSDeploymentContext.Action.ROLLBACK);
-        }else{
-            context.setAction(PaaSDeploymentContext.Action.PROCEED);
         }
     }
 }

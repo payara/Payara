@@ -40,11 +40,11 @@
 package org.glassfish.paas.javadbplugin;
 
 import org.glassfish.api.deployment.ApplicationContainer;
-import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.embeddable.CommandResult;
 import org.glassfish.embeddable.CommandRunner;
 import org.glassfish.paas.javadbplugin.cli.DatabaseServiceUtil;
+import org.glassfish.paas.orchestrator.PaaSDeploymentContext;
 import org.glassfish.paas.orchestrator.ServiceOrchestrator;
 import org.glassfish.paas.orchestrator.provisioning.ServiceInfo;
 import org.glassfish.paas.orchestrator.provisioning.DatabaseProvisioner;
@@ -168,7 +168,7 @@ public class DerbyPlugin implements Plugin<RDBMSServiceType> {
         return sb.toString();
     }
 
-    public ProvisionedService provisionService(ServiceDescription serviceDescription, DeploymentContext dc) {
+    public ProvisionedService provisionService(ServiceDescription serviceDescription, PaaSDeploymentContext dc) {
 
         String serviceName = serviceDescription.getName();
         logger.entering(getClass().getName(), "provisionService");
@@ -176,29 +176,29 @@ public class DerbyPlugin implements Plugin<RDBMSServiceType> {
         CommandResult result = commandRunner.run("_list-derby-services");
         if (!result.getOutput().contains(serviceName)) {
             //create-derby-service
-            String serviceConfigurations = formatArgument(serviceDescription.getConfigurations(),";");
-            String appNameParam = "";
-            if (serviceDescription.getAppName() != null) {
-                appNameParam = "--appname=" + serviceDescription.getAppName();
-            }
+            String serviceConfigurations = formatArgument(serviceDescription.getConfigurations(), ";");
 
-        // either template identifier or service characteristics are specified, not both.
-        if (serviceDescription.getTemplateIdentifier() != null) {
-            String templateId = serviceDescription.getTemplateIdentifier().getId();
-            result = commandRunner.run("_create-derby-service",
-                    "--templateid=" + templateId,
-                    "--serviceconfigurations", serviceConfigurations,
-                    "--virtualcluster", serviceDescription.getVirtualClusterName(),
-                    "--waitforcompletion=true", appNameParam, serviceName);
-        } else if (serviceDescription.getServiceCharacteristics() != null) {
-            String serviceCharacteristics = formatArgument(serviceDescription.
-                    getServiceCharacteristics().getServiceCharacteristics());
-            result = commandRunner.run("_create-derby-service",
-                    "--servicecharacteristics=" + serviceCharacteristics,
-                    "--serviceconfigurations", serviceConfigurations,
-                    "--virtualcluster", serviceDescription.getVirtualClusterName(),
-                    "--waitforcompletion=true", appNameParam, serviceName);
-        }
+            List<String> params = new ArrayList<String>();
+            params.add("--serviceconfigurations");
+            params.add(serviceConfigurations);
+            params.add("--virtualcluster");
+            params.add(serviceDescription.getVirtualClusterName());
+            params.add("--waitforcompletion=true");
+
+            // either template identifier or service characteristics are specified, not both.
+            if (serviceDescription.getTemplateIdentifier() != null) {
+                params.add("--templateid=" + serviceDescription.getTemplateIdentifier().getId());
+            } else if (serviceDescription.getServiceCharacteristics() != null) {
+                String serviceCharacteristics = formatArgument(
+                        serviceDescription.getServiceCharacteristics().getServiceCharacteristics());
+                params.add("--servicecharacteristics=" + serviceCharacteristics);
+            }
+            if (serviceDescription.getAppName() != null) {
+                params.add("--appname=" + serviceDescription.getAppName());
+            }
+            params.add(serviceName); //make sure that servicename (operand) is the last param.
+
+            result = commandRunner.run("_create-derby-service", params.toArray(new String[params.size()]));
             if (result.getExitStatus().equals(CommandResult.ExitStatus.FAILURE)) {
                 System.out.println("_create-derby-service [" + serviceName + "] failed");
             }
@@ -228,7 +228,7 @@ public class DerbyPlugin implements Plugin<RDBMSServiceType> {
     }
 
     public void associateServices(ProvisionedService serviceConsumer, ServiceReference svcRef,
-                                  ProvisionedService serviceProvider, boolean beforeDeployment, DeploymentContext dc) {
+                                  ProvisionedService serviceProvider, boolean beforeDeployment, PaaSDeploymentContext dc) {
         //no-op
     }
 
@@ -321,15 +321,19 @@ public class DerbyPlugin implements Plugin<RDBMSServiceType> {
         return new HashSet<ServiceDescription>();
     }
 
-    public boolean unprovisionService(ServiceDescription serviceDescription, DeploymentContext dc){
-        String appNameParam="";
+    public boolean unprovisionService(ServiceDescription serviceDescription, PaaSDeploymentContext dc){
+
+        List<String> params = new ArrayList<String>();
+        params.add("--virtualcluster");
+        params.add(serviceDescription.getVirtualClusterName());
+        params.add("--waitforcompletion=true");
+
         if(serviceDescription.getAppName() != null){
-            appNameParam="--appname="+serviceDescription.getAppName();
+            params.add("--appname="+serviceDescription.getAppName());
         }
-        CommandResult result = commandRunner.run("_delete-derby-service",
-                "--waitforcompletion=true",
-                "--virtualcluster", serviceDescription.getVirtualClusterName(),
-                appNameParam, serviceDescription.getName());
+        params.add(serviceDescription.getName());
+
+        CommandResult result = commandRunner.run("_delete-derby-service", params.toArray(new String[params.size()]));
         System.out.println("_delete-derby-service command output [" + result.getOutput() + "]");
         if (result.getExitStatus() == CommandResult.ExitStatus.SUCCESS) {
             return true;
@@ -341,7 +345,7 @@ public class DerbyPlugin implements Plugin<RDBMSServiceType> {
     }
 
     public void dissociateServices(ProvisionedService serviceConsumer, ServiceReference svcRef,
-                                   ProvisionedService serviceProvider, boolean beforeUndeploy, DeploymentContext dc){
+                                   ProvisionedService serviceProvider, boolean beforeUndeploy, PaaSDeploymentContext dc){
         //no-op
     }
 

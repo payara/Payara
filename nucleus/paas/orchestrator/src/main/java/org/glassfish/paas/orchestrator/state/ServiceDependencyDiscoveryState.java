@@ -65,8 +65,6 @@ public class ServiceDependencyDiscoveryState extends AbstractPaaSDeploymentState
     @Inject
     private Habitat habitat;
 
-    private static Logger logger = Logger.getLogger(ServiceOrchestratorImpl.class.getName());
-
     public void handle(PaaSDeploymentContext context) throws PaaSDeploymentException{
         try{
             ServiceMetadata appServiceMetadata = serviceDependencyDiscovery(context);
@@ -343,10 +341,8 @@ public class ServiceDependencyDiscoveryState extends AbstractPaaSDeploymentState
             }
 
             logger.log(Level.INFO, "Final Service Metadata = " + appServiceMetadata);
-            context.setAction(PaaSDeploymentContext.Action.PROCEED);
             return appServiceMetadata;
         } catch (Exception e) {
-            context.setAction(PaaSDeploymentContext.Action.ROLLBACK);
             throw new PaaSDeploymentException(e);
         }
         //return null;
