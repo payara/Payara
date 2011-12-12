@@ -84,6 +84,7 @@ public class SetupSshCommand implements AdminCommand {
     @Param(optional = false, primary = true, multiple = true)
     private List<String> hosts;
     private Logger logger;
+    private String realPass;
     TokenResolver resolver = new TokenResolver();
     
     @Inject
@@ -91,11 +92,16 @@ public class SetupSshCommand implements AdminCommand {
 
     private void validate() throws CommandException {
         user = resolver.resolve(user);
-        // obtain real password
-        sshpassword = sshL.expandPasswordAlias(sshpassword);
 
         if (!StringUtils.ok(sshpassword)) {
-            throw new CommandException(Strings.get("setup.ssh.null.password"));
+            throw new CommandException(Strings.get("setup.ssh.null.sshpass"));
+        } else {
+            // obtain real password
+            realPass = sshL.expandPasswordAlias(sshpassword);
+
+            if (realPass == null) {
+                throw new CommandException(Strings.get("setup.ssh.unalias.error", sshpassword));
+            }
         }
         
         if (sshkeyfile == null) {
@@ -152,7 +158,7 @@ public class SetupSshCommand implements AdminCommand {
         }
         
         for (String node : hosts) {
-            sshL.init(user, node, port, sshpassword, sshkeyfile, sshkeypassphrase, logger);
+            sshL.init(user, node, port, realPass, sshkeyfile, sshkeypassphrase, logger);
             if (generatekey ) {
                 if (sshkeyfile != null || SSHUtil.getExistingKeyFile() != null) {
                     if (sshL.checkConnection()) {
@@ -162,7 +168,7 @@ public class SetupSshCommand implements AdminCommand {
                 }
             }
             try {
-                sshL.setupKey(node, sshpublickeyfile, generatekey, sshpassword);
+                sshL.setupKey(node, sshpublickeyfile, generatekey, realPass);
             }
             catch (IOException ce) {
                 logger.log(Level.INFO, "SSH key setup failed: " + ce);
