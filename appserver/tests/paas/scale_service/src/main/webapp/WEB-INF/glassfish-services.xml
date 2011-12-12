@@ -39,9 +39,9 @@
   ~ only if the new code is made subject to such option by the copyright
   ~ holder.
   -->
-
+<!--IMS throws NullPointerException if the application name has '_' character.-->
 <glassfish-services>
-<service-description name="scale_service" init-type="lazy">
+<service-description name="scaleservice" init-type="lazy">
   <characteristics>
     <characteristic name="service-type" value="JavaEE"/>
   </characteristics>

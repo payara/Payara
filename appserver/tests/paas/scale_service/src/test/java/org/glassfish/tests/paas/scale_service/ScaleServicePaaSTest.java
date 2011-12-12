@@ -135,7 +135,7 @@ public class ScaleServicePaaSTest {
                     "Request headers from the request:");
 
             // test scale up. TODO :: make sure app is accessible from the scaled instance
-            result = commandRunner.run("_scale-service", "--servicename=scale_service",
+            result = commandRunner.run("_scale-service", "--servicename=scaleservice",
                     "--scalecount=1", "--appname=scale_service");
             System.out.println("Output of scale up service [ " + result.getOutput() + "]");
             result = commandRunner.run("list-services");
@@ -145,7 +145,7 @@ public class ScaleServicePaaSTest {
             Assert.assertEquals(4, strings.length);
 
             // test scale down. TODO :: make sure app is no longer accessible from the scaled down instance
-            result = commandRunner.run("_scale-service", "--servicename=scale_service",
+            result = commandRunner.run("_scale-service", "--servicename=scaleservice",
                     "--scalecount=-1", "--appname=scale_service");
             System.out.println("Output of scale down service [ " + result.getOutput() + "]");
             result = commandRunner.run("list-services");
