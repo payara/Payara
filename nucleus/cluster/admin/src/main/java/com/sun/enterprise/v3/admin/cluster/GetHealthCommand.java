@@ -79,8 +79,8 @@ import org.glassfish.api.admin.*;
 @CommandLock(CommandLock.LockType.NONE)
 @RestEndpoints({
     @RestEndpoint(configBean=Cluster.class,
-        opType=RestEndpoint.OpType.GET, 
-        path="get-health", 
+        opType=RestEndpoint.OpType.GET,
+        path="get-health",
         description="Get Health",
         params={
             @RestParam(name="id", value="$parent")
@@ -98,7 +98,7 @@ public class GetHealthCommand implements AdminCommand {
     @Param(optional=false, primary=true)
     @I18n("get.health.cluster.name")
     private String clusterName;
-    
+
     private ActionReport report;
     private Logger logger;
     private GMSAdapter gmsAdapter;
@@ -183,8 +183,7 @@ public class GetHealthCommand implements AdminCommand {
             instanceStateAndTime.put("status", ih.state.name());
 
             if (HealthHistory.NOTIME == ih.time) {
-                result.append(Strings.get("get.health.instance.state",
-                    name, ih.state));
+                result.append(name + " " + ih.state);
                 instanceStateAndTime.put("time", "");
             } else {
                 result.append(Strings.get("get.health.instance.state.since",
