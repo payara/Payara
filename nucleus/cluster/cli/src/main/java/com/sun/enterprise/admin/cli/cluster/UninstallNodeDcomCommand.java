@@ -41,6 +41,7 @@ package com.sun.enterprise.admin.cli.cluster;
 
 import com.sun.enterprise.util.cluster.windows.io.WindowsRemoteFile;
 import com.sun.enterprise.util.cluster.windows.io.WindowsRemoteFileSystem;
+import com.sun.enterprise.util.net.NetUtils;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.CommandException;
 import org.jvnet.hk2.annotations.Scoped;
@@ -58,6 +59,21 @@ public class UninstallNodeDcomCommand extends UninstallNodeBaseCommand {
     private String user;
     @Param(name = "windowsdomain", shortName = "d", optional = true, defaultValue = "")
     private String windowsDomain;
+
+    /**
+     * DCOM won't work right on localhost.  Luckily it makes no sense to do that in
+     * in a real, non-test scenario anyway.
+     * @throws CommandException
+     */
+    @Override
+    protected void validate() throws CommandException {
+        super.validate();
+
+        for (String host : hosts) {
+            if (NetUtils.isThisHostLocal(host))
+                throw new CommandException(Strings.get("install.node.nolocal", host));
+        }
+    }
 
     @Override
     final String getRawRemoteUser() {
