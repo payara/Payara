@@ -47,20 +47,16 @@ import org.jvnet.hk2.component.PostConstruct;
 import java.util.logging.Logger;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.List;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.io.File;
 import com.sun.enterprise.registration.RegistrationException;
-import java.util.Date;
-import java.lang.StringBuffer;
 
 import com.sun.pkg.client.Image;
-import com.sun.pkg.client.Fmri;
 import com.sun.pkg.client.SystemInfo;
 import org.glassfish.internal.api.PostStartup;
 
 import com.sun.appserv.server.util.Version;
+import com.sun.enterprise.module.ModulesRegistry;
 
 
 @Service(name = "PingService")
@@ -71,7 +67,10 @@ public class PingService implements PostStartup, PostConstruct {
 
     @Inject
     Version version;
-    
+
+    //@Inject
+    //private ModulesRegistry modulesRegistry;
+
     private static final long ONE_WEEK =  7 * 24 * 60 * 60 * 1000;
     private static final String JVM_OPTION = 
             "com.sun.enterprise.registration.PING_TIMER_INTERVAL";
@@ -79,6 +78,7 @@ public class PingService implements PostStartup, PostConstruct {
             Long.getLong(JVM_OPTION, 7 * 24 * 60) * 60 * 1000;
     private static final String UC_PING_TIME_STAMP_FILE = ".ping";
     private static final String CONTEXT = "ping";
+    //private ActiveModules activeModules;
 
 
     @Override
@@ -96,7 +96,6 @@ public class PingService implements PostStartup, PostConstruct {
             logger.fine("Domain Ping disabled by Update Center option");
             return;                             
         }
-    
 
         try {
             RegistrationUtil.synchUUID();
@@ -105,6 +104,8 @@ public class PingService implements PostStartup, PostConstruct {
             logger.fine(ex.getMessage());
             return; 
         }
+
+        //activeModules = new ActiveModules(logger, modulesRegistry);
 
         final Timer pingTimer = new Timer("PingService", true); //Mark the timer as daemon so that it does not hold up appserver shutdown
 
@@ -117,11 +118,24 @@ public class PingService implements PostStartup, PostConstruct {
                     map.put("product", version.getProductName().replace(";", ":"));
                     map.put("version", getVersionNumber());
                     map.put("context", CONTEXT);
+                    // Disable module status usage tracking.
+                    //map.put("modules", activeModules.generateModuleStatus());
+
 
                     img = RegistrationUtil.getUpdateCenterImage();
                     img.setMetaData(map);
-                    img.refreshCatalog(img.getPreferredAuthorityName()); // this gets the information from the server
-                    logger.log(Level.INFO, "Domain Pinged: {0}", img.getPreferredAuthorityName());
+                    img.refreshCatalog(img.getPreferredAuthorityName());
+                    logger.log(Level.INFO, "Domain Pinged: {0}",
+                        img.getPreferredAuthorityName());
+                    if (logger.isLoggable(Level.FINE)) {
+                        logger.fine("X-JPkg-Metadata: product: " +
+                            map.get("product"));
+                        logger.fine("X-JPkg-Metadata: version: " +
+                            map.get("version"));
+                        logger.fine("X-JPkg-Metadata: context: " +
+                            map.get("context"));
+                        //logger.fine("X-JPkg-Metadata: modules: " + map.get("modules"));
+                    }
 
                 } catch (Exception e) {
                     // should the timer schedule be changed in case of
@@ -164,9 +178,10 @@ public class PingService implements PostStartup, PostConstruct {
             nextPing = 2 * 60 * 1000L;
         }
         
-
-        logger.fine("Domain Ping: next ping in " + nextPing/(60 * 1000) + " minutes");
-        // ping after nextPing milliseconds and subsequenlty after TIMER_INTERVAL intervals
+        logger.fine("Domain Ping: next ping in " + nextPing/(60 * 1000) +
+            " minutes");
+        // ping after nextPing milliseconds and subsequenlty after 
+        // TIMER_INTERVAL intervals
         pingTimer.schedule(pingTask, nextPing, TIMER_INTERVAL);
     }
 
@@ -175,8 +190,7 @@ public class PingService implements PostStartup, PostConstruct {
                 UC_PING_TIME_STAMP_FILE);
         if (!f.createNewFile())
             if (!f.setLastModified(System.currentTimeMillis()))
-                logger.fine("Could not update timestamp for : " + f.getAbsolutePath());
-                
+                logger.fine("PingService: Could not update timestamp for : " + f.getAbsolutePath());
     }
 
     private long getTimeStamp() throws Exception {
