@@ -59,7 +59,6 @@ import org.glassfish.cluster.ssh.util.SSHUtil;
 @Scoped(PerLookup.class)
 @ExecuteOn({RuntimeType.DAS})
 public final class SetupSshKey extends NativeRemoteCommandsBase {
-    private static final String NL = System.getProperty("line.separator");
     @Param(name = "sshuser", optional = true, defaultValue = "${user.name}")
     private String user;
     @Param(optional = true, defaultValue = "22", name = "sshport")
