@@ -220,6 +220,23 @@ public interface WebContainerAvailability extends ConfigBeanProxy, Injectable,
      *              {@link String }
      */
     public void setHttpSessionStorePoolName(String value) throws PropertyVetoException;
+
+    /**
+     * Gets thevalue of disableJreplica property.
+     *
+     * This is the property used to disable setting the JREPLICA cookie
+     *
+     * @return returns the string representation of the boolean value
+     */
+    @Attribute (defaultValue="false",dataType=Boolean.class)
+    public String getDisableJreplica();
+
+    /**
+     * Sets the disableJreplica property
+     * @param value allowed object is {@link String}
+     * @throws PropertyVetoException
+     */
+    public void setDisableJreplica(String value) throws PropertyVetoException;
     
     /**
     	Properties as per {@link PropertyBag}

@@ -65,6 +65,7 @@ public abstract class ReplicationManagerBase extends PersistentManagerBase {
     protected Logger logger = LogDomains.getLogger(ReplicationManagerBase.class, LogDomains.WEB_LOGGER);
 
     protected boolean relaxCacheVersionSemantics = false;
+    protected boolean disableJreplica = false;
 
     public BackingStore getBackingStore() {
         return this.backingStore;
@@ -197,6 +198,14 @@ public abstract class ReplicationManagerBase extends PersistentManagerBase {
         if (removed != null && logger.isLoggable(Level.FINE)){
             logger.fine("Remove from manager cache id=" + session.getId());
         }
+    }
+
+    public void setDisableJreplica(boolean disableJreplica) {
+        this.disableJreplica = disableJreplica;
+    }
+
+    public boolean isDisableJreplica() {
+        return  this.disableJreplica;
     }
 
 

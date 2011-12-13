@@ -85,6 +85,7 @@ public class ReplicatedWebMethodSessionStrategyBuilder extends BasePersistenceSt
         ReplicationStore store = null;
         HashMap<String, Object> vendorMap = new HashMap<String, Object>();
         boolean asyncReplicationValue = serverConfigLookup.getAsyncReplicationFromConfig((WebModule)ctx);
+        boolean disableJreplica = serverConfigLookup.getDisableJreplicaFromConfig();
         vendorMap.put("async.replication", asyncReplicationValue);
         vendorMap.put("broadcast.remove.expired", false);
         vendorMap.put("value.class.is.thread.safe", true);
@@ -107,6 +108,7 @@ public class ReplicatedWebMethodSessionStrategyBuilder extends BasePersistenceSt
         rwepMgr.setMaxIdleBackup(0);
         rwepMgr.setRelaxCacheVersionSemantics(relaxCacheVersionSemantics);
         rwepMgr.setStore(store);
+        rwepMgr.setDisableJreplica(disableJreplica);
         
         ctx.setManager(rwepMgr);
         if(!((StandardContext)ctx).isSessionTimeoutOveridden()) {

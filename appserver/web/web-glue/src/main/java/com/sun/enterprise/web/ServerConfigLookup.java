@@ -317,10 +317,6 @@ public class ServerConfigLookup {
         return waEnabled && webModuleAvailability;
     }
 
-    /**
-     * Get the persistenceType from domain.xml.
-     * return null if not found
-     */
 
     public boolean getAsyncReplicationFromConfig(WebModule ctx) {
         boolean asyncReplication = true;
@@ -335,6 +331,10 @@ public class ServerConfigLookup {
         return asyncReplication;
     }
 
+    /**
+     * Get the persistenceType from domain.xml.
+     * return null if not found
+     */
     public PersistenceType getPersistenceTypeFromConfig() {
         String persistenceTypeString = null;      
         PersistenceType persistenceType = null;
@@ -386,7 +386,16 @@ public class ServerConfigLookup {
             return null;
         }
         return webContainerAvailabilityBean.getPersistenceScope(); 
-    }     
+    }
+    
+    public boolean getDisableJreplicaFromConfig() {
+        WebContainerAvailability webContainerAvailabilityBean = getWebContainerAvailability();
+        if (webContainerAvailabilityBean == null) {
+            return false;
+        }
+        return toBoolean(webContainerAvailabilityBean.getDisableJreplica());
+
+    }
 
     /**
      * convert the input value to the appropriate Boolean value

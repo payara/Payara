@@ -248,6 +248,9 @@ public class ReplicationWebEventPersistentManager extends ReplicationManagerBase
     }
 
     public String getReplicaFromPredictor(String sessionId, String oldJreplicaValue) {
+        if (isDisableJreplica()) {
+            return null;
+        }
         HACookieInfo cookieInfo = predictor.makeCookie(gmsAdapterService.getGMSAdapter().getClusterName(), sessionId, oldJreplicaValue);
         HACookieManager.setCurrrent(cookieInfo);
         return cookieInfo.getNewReplicaCookie();
