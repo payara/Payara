@@ -142,8 +142,21 @@ public class ServerEnvironmentImpl implements ServerEnvironment, PostConstruct {
             }
         }
 
+        /*
+         * bnevins 12/12/11
+         * The following chunk of code sets things like hostname to be a file under instance root
+         * I.e. it's crazy.  It's 1 hour until SCF so I'll just fix the current problem which is a NPE
+         * if the value is null.
+         * At any rate the weird values that get set into System Properties get un-done at
+         * the line of code in bootstrap (see end of this comment).  It's easy to trace just step out of this method
+         * in a debugger
+         * createGlassFish(gfKernel, habitat, gfProps.getProperties())
+         */
         asenv.getProps().put(SystemPropertyConstants.INSTANCE_ROOT_PROPERTY, root.getAbsolutePath());
         for (Map.Entry<String, String> entry : asenv.getProps().entrySet()) {
+
+            if(entry.getValue() == null) // don't NPE File ctor
+                continue;
 
             File location = new File(entry.getValue());
             if (!location.isAbsolute()) {
