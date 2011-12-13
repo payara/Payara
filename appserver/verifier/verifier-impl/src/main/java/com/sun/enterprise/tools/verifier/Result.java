@@ -43,6 +43,7 @@ package com.sun.enterprise.tools.verifier;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 
 import com.sun.enterprise.tools.verifier.util.LogDomains;
 
@@ -93,12 +94,14 @@ public class Result {
      * @param c Class of the current test/assertion
      * @param compName
      */
+     private static final LocalStringsImpl strings = new LocalStringsImpl(Verifier.class);
     public void init(Class c, String version, String compName) {
         setComponentName(compName);
         StringBuffer assertion = new StringBuffer(
                 StringManagerHelper.getLocalStringsManager().getLocalString(
                         (c.getName() + ".assertion"), "")); // NOI18N
         String key = ".specMappingInfo_"+version; // NOI18N
+        String file="server log";
         StringBuffer specMappingInfo = new StringBuffer(
                 StringManagerHelper.getLocalStringsManager().getLocalString(
                         (c.getName() + key), ""));
@@ -107,8 +110,8 @@ public class Result {
             key = c.getName() + ".specMappingInfo";
             specMappingInfo = new StringBuffer(StringManagerHelper.getLocalStringsManager().getLocalString(key, ""));
         }
-        String  prefix = StringManagerHelper.getLocalStringsManager().getLocalString(
-                (getClass().getName() + ".prefix"), ""); // NOI18N
+         String  prefix = strings.get(
+                (getClass().getName() + ".prefix"), file); // NOI18N
         String  suffix = StringManagerHelper.getLocalStringsManager().getLocalString(
                 (getClass().getName() + ".suffix"), ""); // NOI18N
 

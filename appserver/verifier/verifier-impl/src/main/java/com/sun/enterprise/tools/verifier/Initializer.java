@@ -556,11 +556,7 @@ public class Initializer {
                 + "\n\n" + // NOI18N
                 (smh.getLocalString
                 (getClass().getName() + ".usageLine2", // NOI18N
-                        "where :")) // NOI18N
-                + "\n\n" + // NOI18N
-                (smh.getLocalString
-                (getClass().getName() + ".usageLine3", // NOI18N
-                        "  [optional_params]: Must be: ")) // NOI18N
+                        "where : [optional_params]: Must be:")) // NOI18N
                 + "\n\n" + // NOI18N
                 (smh.getLocalString
                 (getClass().getName() + ".usageLine5", // NOI18N
@@ -597,11 +593,7 @@ public class Initializer {
                 + "\n" + // NOI18N
                 (smh.getLocalString
                 (getClass().getName() + ".usageLine8", // NOI18N
-                        "          (Note: Overrides default behavior, ")) // NOI18N
-                + "\n" + // NOI18N
-                (smh.getLocalString
-                (getClass().getName() + ".usageLine9", // NOI18N
-                        "                 required jarFile not needed)")) // NOI18N
+                        "          (Note: Overrides default behavior,required jarFile not needed) ")) // NOI18N
                 + "\n\n" + // NOI18N
                 (smh.getLocalString
                 (getClass().getName() + ".usageLine10", // NOI18N
@@ -614,21 +606,13 @@ public class Initializer {
                 + "\n" + // NOI18N
                 (smh.getLocalString
                 (getClass().getName() + ".usageLine14", // NOI18N
-                        "            f|failures : set output report level " + // NOI18N
+                        "            f|failures : set output report level results " + // NOI18N
                 "to display only failure")) // NOI18N
                 + "\n" + // NOI18N
                 (smh.getLocalString
-                (getClass().getName() + ".usageLine15", // NOI18N
-                        "            results")) // NOI18N
-                + "\n" + // NOI18N
-                (smh.getLocalString
                 (getClass().getName() + ".usageLine12", // NOI18N
-                        "            w|warnings : set output report level " + // NOI18N
+                        "            w|warnings : set output report level failure results " + // NOI18N
                 "to display only warning and")) // NOI18N
-                + "\n" + // NOI18N
-                (smh.getLocalString
-                (getClass().getName() + ".usageLine13", // NOI18N
-                        "            failure results")) // NOI18N
                 + "\n" + // NOI18N
                 (smh.getLocalString
                 (getClass().getName() + ".usageLine27", // NOI18N
@@ -675,15 +659,7 @@ public class Initializer {
                 + "\n\n" +
                 (smh.getLocalString
                 (getClass().getName() + ".usageLine21",
-                        "Below is an example which runs verifier in verbose mode"))
-                + "\n" +
-                (smh.getLocalString
-                (getClass().getName() + ".usageLine22",
-                        "and writes all the results of static verification of "))
-                + "\n" +
-                (smh.getLocalString
-                (getClass().getName() + ".usageLine23",
-                        "file sample.ear to the destination directory /verifierresults"))
+                        "Below is an example which runs verifier in verbose mode and writes all the results of static verification of file sample.ear to the destination directory /verifierresults"))
                 + "\n\n" +
                 (smh.getLocalString
                 (getClass().getName() + ".usageLine24",
