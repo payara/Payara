@@ -1793,99 +1793,18 @@ public class EJBTimerService
 
     } //TimerCache{}
 
-    private File getTimerServiceShutdownFile() throws Exception {
-        File timerServiceShutdownFile = null;
-
-        String j2eeAppPath = 
-                ConfigBeansUtilities.getLocation(appID);
-
-        File timerServiceShutdownDirectory = new File(j2eeAppPath + File.separator);
-        if (!timerServiceShutdownDirectory.mkdirs()) {
-            if( logger.isLoggable(Level.FINE) ) {
-                logger.log(Level.FINE, "Failed to create timerServiceShutdownDirectory");
-            }
-        }
-        timerServiceShutdownFile = new File(j2eeAppPath + File.separator
-                    + TIMER_SERVICE_FILE);
-
-        return timerServiceShutdownFile;
-    }
-
-    private long getTimerServiceDownAt() {
-        long timerServiceWentDownAt = -1;
-        BufferedReader br = null;
-        try {
-            File timerServiceShutdownFile  = getTimerServiceShutdownFile();
-
-            if (timerServiceShutdownFile.exists()) {
-                DateFormat dateFormat =  
-                    new SimpleDateFormat(TIMER_SERVICE_DOWNTIME_FORMAT);
-        
-                FileReader fr = new FileReader(timerServiceShutdownFile);
-                br = new BufferedReader(fr, 128);
-                String line = br.readLine();
-
-                if (line != null) {
-                    Date myDate = dateFormat.parse(line);
-                    timerServiceWentDownAt = myDate.getTime();
-                    logger.log(Level.INFO, "ejb.timer_service_last_shutdown",
-                               new Object[] { line });
-                } else {
-                    logger.log(Level.WARNING, "ejb.timer_service_shutdown_unknown",
-                               new Object[] { timerServiceShutdownFile });
-                }
-            } else {
-                logger.log(Level.WARNING, "ejb.timer_service_shutdown_unknown",
-                           new Object[] { timerServiceShutdownFile });
-            }
-        } catch (Throwable th) {
-            logger.log(Level.WARNING, "ejb.timer_service_shutdown_unknown",
-                       new Object[] { "" });
-            logger.log(Level.WARNING, "", th);
-        } finally {
-            if (br != null) {
-                try {
-                    br.close();
-                } catch (Exception ex) {
-                    logger.log(Level.FINE, "Error closing timer service shutdown file", ex);
-                }
-            }
-        }
-        return timerServiceWentDownAt;
-    }
-
 
     /**
      * Called from TimerBeanContainer
      */
     public void onShutdown() {
         shutdown();
-        try {
-            DateFormat dateFormat =  
-                new SimpleDateFormat(TIMER_SERVICE_DOWNTIME_FORMAT);
-            String downTimeStr = dateFormat.format(new Date());
+        DateFormat dateFormat =  
+            new SimpleDateFormat(TIMER_SERVICE_DOWNTIME_FORMAT);
+        String downTimeStr = dateFormat.format(new Date());
 
-            File timerServiceShutdownFile  = getTimerServiceShutdownFile();
-            if (timerServiceShutdownFile.exists()) {
-                FileWriter fw = new FileWriter(timerServiceShutdownFile);
-                PrintWriter pw = new PrintWriter(fw);
-
-                pw.println(downTimeStr);
-
-                pw.flush();
-                pw.close();
-                fw.close();
-                logger.log(Level.INFO, "ejb.timer_service_shutdown_msg",
-                       new Object[] { downTimeStr });
-            } else {
-                logger.log(Level.WARNING, "ejb.timer_service_shutdown_unknown",
-                       new Object[] { TIMER_SERVICE_FILE });
-            } 
-        } catch (Throwable th) {
-            logger.log(Level.WARNING, "ejb.timer_service_shutdown_unknown",
-                       new Object[] { TIMER_SERVICE_FILE });
-            logger.log(Level.WARNING, "", th);
-        }
+        logger.log(Level.INFO, "ejb.timer_service_shutdown_msg",
+               new Object[] { downTimeStr });
     }
 
 
