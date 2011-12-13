@@ -178,6 +178,24 @@ public interface Node extends ConfigBeanProxy, Injectable, Named, ReferenceConta
     @Param(name = "windowsdomain", optional = true)
     void setWindowsDomain(String value) throws PropertyVetoException;
 
+    /**
+     * true if node is frozen and we should not allow new instances
+     * to be created on the nod.
+     *
+     * @return "true" if node is frozen
+     */
+    @Attribute(defaultValue = "false", dataType=Boolean.class)
+    String getFreeze();
+
+    /**
+     * Sets the value of the freeze
+     *
+     * @param value "true" to freeze node and not allow instances to be created
+     * 
+     * @throws PropertyVetoException if a listener vetoes the change
+     */
+    void setFreeze(String value) throws PropertyVetoException;
+
     @Element
     SshConnector getSshConnector();
 
@@ -233,6 +251,13 @@ public interface Node extends ConfigBeanProxy, Injectable, Named, ReferenceConta
      */
     @DuckTyped
     boolean isLocal();
+
+     /**
+      * Does the node allow instance creation?
+      * @return true if node allows instance creation, else false
+      */
+    @DuckTyped
+    boolean instanceCreationAllowed();
 
     class Duck {
         public static String getInstallDirUnixStyle(Node node) {
@@ -311,6 +336,10 @@ public interface Node extends ConfigBeanProxy, Injectable, Named, ReferenceConta
             }
             return false;
         }
+
+        public static boolean instanceCreationAllowed(Node node) {
+            return ! Boolean.parseBoolean(node.getFreeze());
+        }
     }
 
     @Service
@@ -344,6 +373,8 @@ public interface Node extends ConfigBeanProxy, Injectable, Named, ReferenceConta
         ServerEnvironment env;
         @Inject
         Domain domain;
+        @Inject
+        Nodes nodes;
 
         /**
          * Decorates the newly CRUD created cluster configuration instance.
@@ -361,6 +392,15 @@ public interface Node extends ConfigBeanProxy, Injectable, Named, ReferenceConta
         @Override
         public void decorate(AdminCommandContext context, final Node instance) throws TransactionFailure, PropertyVetoException {
 
+            LocalStringManagerImpl localStrings =
+                    new LocalStringManagerImpl(Node.class);
+            
+            /* 16034: see if instance creation is turned off on node */
+            if (! nodes.nodeCreationAllowed()) {
+                throw new TransactionFailure(localStrings.getLocalString(
+                    "nodeCreationNotAllowed",
+                    "Node creation is disabled. No new nodes may be created."));
+            }
             // If these options were passed a value of the empty string then
             // we want to make sure they are null in the Node. The
             // admin console often passes the empty string instead of null.

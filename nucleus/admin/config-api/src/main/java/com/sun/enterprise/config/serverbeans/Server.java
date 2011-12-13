@@ -497,9 +497,18 @@ public interface Server extends ConfigBeanProxy, Injectable, PropertyBag, Named,
             }
 
             if (node != null){
-                if (domain.getNodeNamed(node) == null) {
+                Node theNode = domain.getNodeNamed(node);
+                if (theNode == null) {
                     throw new TransactionFailure(localStrings.getLocalString(
                             "noSuchNode", "Node {0} does not exist.", node));
+                }
+
+                /* 16034: see if instance creation is turned off on node */
+                if (! theNode.instanceCreationAllowed()) {
+                    throw new TransactionFailure(localStrings.getLocalString(
+                            "instanceCreationNotAllowed",
+                            "Instance creation is disabled on node {0}.",
+                            node));
                 }
             }
 
