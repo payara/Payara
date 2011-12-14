@@ -54,9 +54,7 @@ import org.jvnet.hk2.component.Habitat;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * @author Jagadish Ramu
@@ -111,7 +109,7 @@ public class DisableState extends AbstractPaaSDeploymentState {
         //final Set<Plugin> installedPlugins = orchestrator.getPlugins();
         //Plugin<?> chosenPlugin = orchestrator.getPluginForServiceType(installedPlugins, sd.getServiceType());
         Plugin chosenPlugin = sd.getPlugin();
-        ServiceInfo serviceInfo = serviceUtil.retrieveCloudEntry(sd.getName(), appName, null );
+        ServiceInfo serviceInfo = serviceUtil.getServiceInfo(sd.getName(), appName, null);
         if(serviceInfo != null){
             chosenPlugin.stopService(sd, serviceInfo);
             return true;

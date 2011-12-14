@@ -84,7 +84,7 @@ public class ServiceUtil implements PostConstruct {
     }
 
     public boolean isValidService(String serviceName, String appName, ServiceType type) {
-        ServiceInfo entry = retrieveCloudEntry(serviceName, appName, type);
+        ServiceInfo entry = getServiceInfo(serviceName, appName, type);
         return entry != null;
     }
 
@@ -274,7 +274,7 @@ public class ServiceUtil implements PostConstruct {
     }
 
     public String getServiceType(String serviceName, String appName, ServiceType type) {
-        ServiceInfo entry = retrieveCloudEntry(serviceName, appName, type);
+        ServiceInfo entry = getServiceInfo(serviceName, appName, type);
         if (entry != null) {
             return entry.getServerType();
         } else {
@@ -283,7 +283,7 @@ public class ServiceUtil implements PostConstruct {
     }
 
     public String getServiceState(String serviceName, String appName, ServiceType type) {
-        ServiceInfo entry = retrieveCloudEntry(serviceName, appName, type);
+        ServiceInfo entry = getServiceInfo(serviceName, appName, type);
         if (entry != null) {
             return entry.getState();
         } else {
@@ -292,7 +292,7 @@ public class ServiceUtil implements PostConstruct {
     }
 
     public String getIPAddress(String serviceName, String appName, ServiceType type) {
-        ServiceInfo entry = retrieveCloudEntry(serviceName, appName, type);
+        ServiceInfo entry = getServiceInfo(serviceName, appName, type);
         if (entry != null) {
             return entry.getIpAddress();
         } else {
@@ -301,7 +301,7 @@ public class ServiceUtil implements PostConstruct {
     }
 
     public String getInstanceID(String serviceName, String appName, ServiceType type) {
-        ServiceInfo entry = retrieveCloudEntry(serviceName, appName, type);
+        ServiceInfo entry = getServiceInfo(serviceName, appName, type);
         if (entry != null) {
             return entry.getInstanceId();
         } else {
@@ -310,7 +310,7 @@ public class ServiceUtil implements PostConstruct {
     }
 
     public String getProperty(String serviceName, String appName, String propertyName, ServiceType type) {
-        ServiceInfo entry = retrieveCloudEntry(serviceName, appName, type);
+        ServiceInfo entry = getServiceInfo(serviceName, appName, type);
         if (entry != null) {
             return entry.getProperties().get(propertyName);
         } else {
@@ -319,7 +319,7 @@ public class ServiceUtil implements PostConstruct {
     }
 
 
-    public ServiceInfo retrieveCloudEntry(String serviceName, String appName, ServiceType type) {
+    public ServiceInfo getServiceInfo(String serviceName, String appName, ServiceType type) {
         Service matchingService = null;
         ServiceInfo cre = null;
         matchingService = getService(serviceName, appName);
@@ -436,7 +436,63 @@ public class ServiceUtil implements PostConstruct {
     }
 
 
-    public void registerCloudEntry(final ServiceInfo entry) {
+    public void registerServiceReference(final String serviceName, final String appName){
+        Services services = getServices();
+        boolean serviceFound = false;
+        for (Service service : services.getServices()) {
+            if (service.getServiceName().equals(serviceName) && (service instanceof SharedService) ||
+                    (service instanceof ExternalService)) {
+                serviceFound = true;
+                break;
+            }
+        }
+        if(serviceFound){
+            try {
+                ConfigSupport.apply(new SingleConfigCode<Services>() {
+                    public Object run(Services param) throws PropertyVetoException, TransactionFailure {
+                        ServiceRef serviceRef = param.createChild(ServiceRef.class);
+                        serviceRef.setApplicationName(appName);
+                        serviceRef.setServiceName(serviceName);
+                        param.getServiceRefs().add(serviceRef);
+                        return param;
+                    }
+                }, services);
+            } catch (TransactionFailure exception) {
+                throw new RuntimeException(exception.getMessage(), exception);
+            }
+        }else{
+            throw new RuntimeException("no shared or external service by name ["+serviceName+"] found.");
+        }
+    }
+
+    public void unregisterServiceReference(final String serviceName, final String appName){
+        Services services = getServices();
+            try {
+                ConfigSupport.apply(new SingleConfigCode<Services>() {
+                    public Object run(Services param) throws PropertyVetoException, TransactionFailure {
+                        ServiceRef serviceRefToUnregister = null;
+
+                        for (ServiceRef serviceRef : param.getServiceRefs()) {
+                            if (serviceRef.getServiceName().equals(serviceName) && (serviceRef.getApplicationName().equals(appName))) {
+                                serviceRefToUnregister = serviceRef;
+                                break;
+                            }
+                        }
+                        if(serviceRefToUnregister != null){
+                            param.getServiceRefs().remove(serviceRefToUnregister);
+                        }else{
+                            throw new RuntimeException("no shared or external service by name ["+serviceName+"] is referred" +
+                                    "by application ["+appName+"]");
+                        }
+                        return param;
+                    }
+                }, services);
+            } catch (TransactionFailure exception) {
+                throw new RuntimeException(exception.getMessage(), exception);
+            }
+    }
+
+    public void registerService(final ServiceInfo entry) {
         Services services = getServices();
         try {
             //TODO for now, if app-name is null, check whether its a shared service and
@@ -510,9 +566,8 @@ public class ServiceUtil implements PostConstruct {
                 System.out.println(msg);
                 throw new RuntimeException(msg);
             }
-        } catch (TransactionFailure transactionFailure) {
-            transactionFailure.printStackTrace();
-            throw new RuntimeException(transactionFailure.getMessage(), transactionFailure);
+        } catch (TransactionFailure exception) {
+            throw new RuntimeException(exception.getMessage(), exception);
         }
     }
 

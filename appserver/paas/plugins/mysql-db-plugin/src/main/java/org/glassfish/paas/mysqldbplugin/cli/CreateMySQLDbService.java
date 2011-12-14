@@ -204,7 +204,7 @@ public class CreateMySQLDbService implements AdminCommand, Runnable {
                 entry.setServerType(ServiceType.DATABASE.toString());
                 entry.setProperty(DatabaseProvisioner.DATABASENAME, mysqlDbProvisioner.getDatabaseName());
 
-                serviceUtil.registerCloudEntry(entry);
+                serviceUtil.registerService(entry);
             } catch (Throwable ex) {
                 throw new RuntimeException(ex);
             }

@@ -119,7 +119,7 @@ public class DerbyPlugin implements Plugin<RDBMSServiceType> {
 
     public ServiceDescription getDefaultServiceDescription(String appName, ServiceReference svcRef) {
 
-        if (DATASOURCE.equals(svcRef.getServiceRefType())) {
+        if (DATASOURCE.equals(svcRef.getType())) {
 
             DatabaseProvisioner dbProvisioner = new DerbyProvisioner();
 

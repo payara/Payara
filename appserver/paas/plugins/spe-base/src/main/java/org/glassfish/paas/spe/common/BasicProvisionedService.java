@@ -91,7 +91,7 @@ public class BasicProvisionedService implements ProvisionedService {
         }
         if (!serviceUtil.isServiceAlreadyConfigured(
                 serviceDescription.getName(), serviceDescription.getAppName(), null)) {
-            serviceUtil.registerCloudEntry(entry);
+            serviceUtil.registerService(entry);
         } else { // update only the state.
             serviceUtil.updateState(serviceDescription.getName(),
                     serviceDescription.getAppName(), status.toString(), null);

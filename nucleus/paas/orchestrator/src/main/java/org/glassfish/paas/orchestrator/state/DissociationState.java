@@ -74,17 +74,19 @@ public abstract class DissociationState extends AbstractPaaSDeploymentState {
                 if (!serviceProvider.getServiceType().equals(svcPlugin.getServiceType())) {
                     Set<ServiceReference> appSRs = appServiceMetadata.getServiceReferences();
                     for (ServiceReference serviceRef : appSRs) {
-                        logger.log(Level.INFO, "Dissociating ProvisionedService " + serviceProvider +
-                                " for ServiceReference " + serviceRef + " through " + svcPlugin);
-                        Collection<ProvisionedService> serviceConsumers =
-                                orchestrator.getServicesProvisionedByPlugin(svcPlugin, appProvisionedSvcs);
-                        for (ProvisionedService serviceConsumer : serviceConsumers) {
-                            try {
-                                svcPlugin.dissociateServices(serviceConsumer, serviceRef, serviceProvider, beforeUndeploy, context);
-                            } catch (Exception e) {
-                                //TODO need to handle exception or continue ?
-                               failed = true;
-                               failureCause = e;
+                        if(serviceRef.getType() != null){
+                            logger.log(Level.INFO, "Dissociating ProvisionedService " + serviceProvider +
+                                    " for ServiceReference " + serviceRef + " through " + svcPlugin);
+                            Collection<ProvisionedService> serviceConsumers =
+                                    orchestrator.getServicesProvisionedByPlugin(svcPlugin, appProvisionedSvcs);
+                            for (ProvisionedService serviceConsumer : serviceConsumers) {
+                                try {
+                                    svcPlugin.dissociateServices(serviceConsumer, serviceRef, serviceProvider, beforeUndeploy, context);
+                                } catch (Exception e) {
+                                    //TODO need to handle exception or continue ?
+                                   failed = true;
+                                   failureCause = e;
+                                }
                             }
                         }
                     }

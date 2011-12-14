@@ -78,21 +78,23 @@ public abstract class AssociationState extends AbstractPaaSDeploymentState {
                     if (!serviceProducer.getServiceType().equals(svcPlugin.getServiceType())) {
                         Set<ServiceReference> appSRs = appServiceMetadata.getServiceReferences();
                         for (ServiceReference serviceRef : appSRs) {
-                            logger.log(Level.INFO, "Associating ProvisionedService " + serviceProducer
-                                    + " for ServiceReference " + serviceRef + " through " + svcPlugin);
-                            Collection<ProvisionedService> serviceConsumers =
-                                    orchestrator.getServicesProvisionedByPlugin(svcPlugin, appProvisionedSvcs);
-                            for (ProvisionedService serviceConsumer : serviceConsumers) {
-                                try {
-                                    svcPlugin.associateServices(serviceConsumer, serviceRef, serviceProducer, preDeployment, context);
-                                    associatedServicesList.add(
-                                            new AssociatedServiceRecord(serviceProducer, serviceConsumer, serviceRef, svcPlugin));
-                                } catch (Exception e) {
-                                    logger.log(Level.WARNING, "Failure while associating " + serviceConsumer.getName()
-                                            + " and " + serviceProducer.getName() + " " +
-                                            "via service-reference " + serviceRef, e);
-                                    rollback(associatedServicesList, context, preDeployment);
-                                    throw new PaaSDeploymentException(e);
+                            if(serviceRef.getType() != null){
+                                logger.log(Level.INFO, "Associating ProvisionedService " + serviceProducer
+                                        + " for ServiceReference " + serviceRef + " through " + svcPlugin);
+                                Collection<ProvisionedService> serviceConsumers =
+                                        orchestrator.getServicesProvisionedByPlugin(svcPlugin, appProvisionedSvcs);
+                                for (ProvisionedService serviceConsumer : serviceConsumers) {
+                                    try {
+                                        svcPlugin.associateServices(serviceConsumer, serviceRef, serviceProducer, preDeployment, context);
+                                        associatedServicesList.add(
+                                                new AssociatedServiceRecord(serviceProducer, serviceConsumer, serviceRef, svcPlugin));
+                                    } catch (Exception e) {
+                                        logger.log(Level.WARNING, "Failure while associating " + serviceConsumer.getName()
+                                                + " and " + serviceProducer.getName() + " " +
+                                                "via service-reference " + serviceRef, e);
+                                        rollback(associatedServicesList, context, preDeployment);
+                                        throw new PaaSDeploymentException(e);
+                                    }
                                 }
                             }
                         }

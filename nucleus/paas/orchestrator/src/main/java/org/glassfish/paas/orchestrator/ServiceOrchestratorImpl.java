@@ -57,6 +57,7 @@ import org.glassfish.internal.deployment.ExtendedDeploymentContext;
 import org.glassfish.paas.orchestrator.config.ServiceProvisioningEngine;
 import org.glassfish.paas.orchestrator.config.ServiceProvisioningEngines;
 import org.glassfish.paas.orchestrator.provisioning.ServiceInfo;
+import org.glassfish.paas.orchestrator.provisioning.ServiceScope;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceUtil;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceDescription;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceMetadata;
@@ -92,11 +93,11 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
     private Map<String, Set<ProvisionedService>> provisionedServices = new LinkedHashMap<String, Set<ProvisionedService>>();
     private Map<String, ProvisionedService> sharedServices = new LinkedHashMap<String, ProvisionedService>();
 
-    private static final Class [] PRE_DEPLOY_PHASE_STATES = {ServiceDependencyDiscoveryState.class, ProvisioningState.class,
+    private static final Class [] PRE_DEPLOY_PHASE_STATES = {ServiceDependencyDiscoveryState.class, ProvisioningState.class, SharedServiceRegistrationState.class,
             PreDeployAssociationState.class};
     private static final Class [] POST_DEPLOY_PHASE_STATES = {PostDeployAssociationState.class, DeploymentCompletionState.class};
     private static final Class [] PRE_UNDEPLOY_PHASE_STATES = {PreUndeployDissociationState.class};
-    private static final Class [] POST_UNDEPLOY_PHASE_STATES = {PostUndeployDissociationState.class, UnprovisioningState.class};
+    private static final Class [] POST_UNDEPLOY_PHASE_STATES = {PostUndeployDissociationState.class, SharedServiceUnregisterState.class, UnprovisioningState.class};
     private static final Class [] ENABLE_PHASE_STATES = {ServiceDependencyDiscoveryState.class, EnableState.class};
     private static final Class [] DISABLE_PHASE_STATES = {DisableState.class};
     private static final Class [] SERVER_STARTUP_PHASE_STATES = {ServiceDependencyDiscoveryState.class, ServerStartupState.class};
@@ -330,15 +331,28 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
         Set<ServiceDescription> appSDs = appServiceMetadata.getServiceDescriptions();
         String virtualClusterName = null;
         for(ServiceDescription sd : appSDs) {
-            if("JavaEE".equalsIgnoreCase(sd.getServiceType())) {
+            //TODO check whether the service-scope is app-scoped and set it.
+            if("JavaEE".equalsIgnoreCase(sd.getServiceType()) && !ServiceScope.SHARED.equals(sd.getServiceScope())) {
                 virtualClusterName = sd.getName();
             }
         }
-        if(virtualClusterName == null) {
-            throw new RuntimeException("Application does not seem to contain any JavaEE " +
-                    "service requirement. Hence unable compute the name of virtual cluster.");
-        }
         return virtualClusterName;
+    }
+
+    public Collection<ServiceDescription> getServiceDescriptionsToProvision(String appName){
+        ServiceMetadata appServiceMetadata = getServiceMetadata(appName);
+        Collection<ServiceDescription> serviceDescriptions = appServiceMetadata.getServiceDescriptions();
+        List<ServiceDescription> sdsToProvision = new ArrayList<ServiceDescription>();
+        for(ServiceDescription sd : serviceDescriptions){
+            if(!ServiceScope.SHARED.equals(sd.getServiceScope()) && !ServiceScope.EXTERNAL.equals(sd.getServiceScope())){
+                sdsToProvision.add(sd);
+            }
+        }
+        return sdsToProvision;
+    }
+
+    public Collection<ServiceDescription> getServiceDescriptionsToUnprovision(String appName){
+        return getServiceDescriptionsToProvision(appName);
     }
 
 
@@ -541,21 +555,36 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
     public ProvisionedService getSharedService(String serviceName){
         ProvisionedService provisionedService = sharedServices.get(serviceName);
         if(provisionedService == null){
-            ServiceInfo serviceInfo = serviceUtil.retrieveCloudEntry(serviceName, null, null);
-            if(serviceInfo != null){
-                ServiceDescription sd = serviceUtil.getSharedServiceDescription(serviceInfo);
-                Plugin plugin = getPlugin(sd);
-                sd.setPlugin(plugin);
-                provisionedService = plugin.getProvisionedService(sd, serviceInfo);
-                sharedServices.put(serviceName, provisionedService);
-            }else{
-                throw new RuntimeException("No such shared service ["+serviceName+"] is available");
-            }
+            ServiceDescription sd = getSharedServiceDescription(serviceName);
+            Plugin plugin = sd.getPlugin();
+            ServiceInfo serviceInfo = serviceUtil.getServiceInfo(serviceName, null, null);
+            provisionedService = plugin.getProvisionedService(sd, serviceInfo);
+            sharedServices.put(serviceName, provisionedService);
         }
         if(provisionedService == null){
             throw new RuntimeException("No such shared service ["+serviceName+"] is available");
         }
         return provisionedService;
+    }
+
+    public ServiceDescription getSharedServiceDescription(String serviceName){
+
+        ServiceDescription sd = null;
+        ServiceInfo serviceInfo = serviceUtil.getServiceInfo(serviceName, null, null);
+        if(serviceInfo != null){
+            sd = serviceUtil.getSharedServiceDescription(serviceInfo);
+            if(sd != null){
+                sd.setServiceScope(ServiceScope.SHARED);
+            }else{
+                throw new RuntimeException("Could not retrieve shared-service-description ["+serviceName+"] ");
+            }
+            Plugin plugin = getPlugin(sd);
+            sd.setPlugin(plugin);
+            sd.setVirtualClusterName(sd.getName()); //TODO need to generate unique virtual-cluster-name
+        }else{
+            throw new RuntimeException("No such shared service ["+serviceName+"] is available");
+        }
+        return sd;
     }
 
     public Plugin getPlugin(ServiceDescription sd){

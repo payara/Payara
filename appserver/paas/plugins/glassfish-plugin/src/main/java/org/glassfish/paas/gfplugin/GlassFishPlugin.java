@@ -45,7 +45,6 @@ import com.sun.enterprise.deploy.shared.ArchiveFactory;
 import org.glassfish.api.deployment.ApplicationContainer;
 import org.glassfish.api.deployment.DeployCommandParameters;
 import org.glassfish.api.deployment.DeploymentContext;
-import org.glassfish.api.deployment.UndeployCommandParameters;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.deployment.common.DeploymentUtils;
 import org.glassfish.embeddable.CommandRunner;
@@ -335,7 +334,7 @@ public class GlassFishPlugin extends ServiceProvisioningEngineBase
     public void associateServices(ProvisionedService serviceConsumer, ServiceReference svcRef,
                                   ProvisionedService serviceProvider, boolean beforeDeployment, PaaSDeploymentContext dc) {
 //        if (provisionedSvc instanceof DerbyProvisionedService) {
-        if (svcRef.getServiceRefType().equals("javax.sql.DataSource") &&
+        if ("javax.sql.DataSource".equals(svcRef.getType()) &&
 	        serviceProvider.getServiceType().toString().equals("Database")  &&
             serviceConsumer.getServiceType().toString().equals("JavaEE")) {
 
@@ -371,8 +370,8 @@ public class GlassFishPlugin extends ServiceProvisioningEngineBase
             String clusterName = gfServiceUtil.getClusterName(serviceName, serviceDescription.getAppName());
             String dasIPAddress = gfServiceUtil.getDASIPAddress(serviceConsumer.getServiceDescription().getName());
 
-            String poolName = svcRef.getServiceRefName();
-            String resourceName = svcRef.getServiceRefName();
+            String poolName = svcRef.getName();
+            String resourceName = svcRef.getName();
 
             // Create JDBC resource and pool.
             // TODO :: delegate the pool creation to deployment backend.
@@ -457,15 +456,15 @@ public class GlassFishPlugin extends ServiceProvisioningEngineBase
                 //}
             //}
         } else {
-            if (svcRef.getServiceRefType().equals("javax.sql.DataSource") &&
+            if (svcRef.getType().equals("javax.sql.DataSource") &&
                 serviceProvider.getServiceType().toString().equals("Database") &&
                 serviceConsumer.getServiceType().toString().equals("JavaEE")) {
                 //if (serviceProvider instanceof GlassFishProvisionedService) {
                     GlassFishProvisionedService glassfishProvisionedService = (GlassFishProvisionedService) serviceConsumer;
                     String serviceName = glassfishProvisionedService.getServiceDescription().getName();
                     String clusterName = gfServiceUtil.getClusterName(serviceName, glassfishProvisionedService.getServiceDescription().getAppName());
-                    String poolName = svcRef.getServiceRefName();
-                    String resourceName = svcRef.getServiceRefName();
+                    String poolName = svcRef.getName();
+                    String resourceName = svcRef.getName();
 
                     //TODO once glassfish-resources.xml is used, deleting resources and pools explicitly is not required.
                     String dasIPAddress = gfServiceUtil.getDASIPAddress(glassfishProvisionedService.getServiceDescription().getName());

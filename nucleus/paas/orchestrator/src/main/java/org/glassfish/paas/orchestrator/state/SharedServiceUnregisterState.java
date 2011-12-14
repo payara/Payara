@@ -42,61 +42,42 @@ package org.glassfish.paas.orchestrator.state;
 
 import org.glassfish.paas.orchestrator.PaaSDeploymentContext;
 import org.glassfish.paas.orchestrator.PaaSDeploymentException;
-import org.glassfish.paas.orchestrator.PaaSDeploymentState;
 import org.glassfish.paas.orchestrator.ServiceOrchestratorImpl;
-import org.glassfish.paas.orchestrator.provisioning.ServiceInfo;
+import org.glassfish.paas.orchestrator.provisioning.ServiceScope;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceUtil;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceDescription;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceMetadata;
-import org.glassfish.paas.orchestrator.service.spi.Plugin;
 import org.glassfish.paas.orchestrator.service.spi.ProvisionedService;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.logging.Level;
+import java.util.Collection;
 
 /**
  * @author Jagadish Ramu
  */
 @Service
-public class ServerStartupState extends AbstractPaaSDeploymentState {
+public class SharedServiceUnregisterState extends AbstractPaaSDeploymentState {
 
     @Inject
     private ServiceUtil serviceUtil;
 
     public void handle(PaaSDeploymentContext context) throws PaaSDeploymentException {
-        retrieveProvisionedServices(context);
-    }
-
-    public Set<ProvisionedService> retrieveProvisionedServices(PaaSDeploymentContext context) {
-        logger.entering(getClass().getName(), "retrieveProvisionedServices");
-        final ServiceOrchestratorImpl orchestrator = context.getOrchestrator();
-        //final Set<Plugin> installedPlugins = orchestrator.getPlugins();
         String appName = context.getAppName();
-        final ServiceMetadata appServiceMetadata = orchestrator.getServiceMetadata(appName);
-
-        final Set<ProvisionedService> appPSs = new HashSet<ProvisionedService>();
-        String virtualClusterName = orchestrator.getVirtualClusterName(appServiceMetadata);
-        logger.log(Level.INFO, "Retrieve PS for app=" + appName + " virtualCluster=" + virtualClusterName);
-        Set<ServiceDescription> appSDs = appServiceMetadata.getServiceDescriptions();
-        for (final ServiceDescription sd : appSDs) {
-                Plugin<?> chosenPlugin = sd.getPlugin();
-                logger.log(Level.INFO, "Retrieving provisioned Service for " + sd + " through " + chosenPlugin);
-                ServiceInfo serviceInfo = serviceUtil.getServiceInfo(sd.getName(), appName, null);
-                if(serviceInfo != null){
-                    ProvisionedService ps = chosenPlugin.getProvisionedService(sd, serviceInfo);
-                    appPSs.add(ps);
-                }else{
-                    logger.warning("unable to retrieve service-info for service : " + sd.getName() + " of application : " + appName);
-                }
+        ServiceOrchestratorImpl orchestrator = context.getOrchestrator();
+        ServiceMetadata serviceMetadata = orchestrator.getServiceMetadata(appName);
+        Collection<ServiceDescription> serviceDescriptions =  serviceMetadata.getServiceDescriptions();
+        Collection<ProvisionedService> provisionedServices = orchestrator.getProvisionedServices(appName);
+        for(ServiceDescription sd : serviceDescriptions){
+            if(ServiceScope.SHARED.equals(sd.getServiceScope())){
+                ProvisionedService ps = orchestrator.getSharedService(sd.getName());
+                provisionedServices.remove(ps);
+                serviceUtil.unregisterServiceReference(sd.getName(), appName);
+            }
         }
-        orchestrator.addProvisionedServices(appName, appPSs);
-        return appPSs;
     }
 
-    public Class<PaaSDeploymentState> getRollbackState() {
+    public Class getRollbackState() {
         return null;
     }
 }

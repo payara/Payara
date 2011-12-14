@@ -165,7 +165,7 @@ public class ServiceProvisioningEngineBase {
         try {
             String serviceName = serviceDescription.getName();
             String appName = serviceDescription.getAppName();
-            ServiceInfo serviceInfo = serviceUtil.retrieveCloudEntry(
+            ServiceInfo serviceInfo = serviceUtil.getServiceInfo(
                     serviceName, appName, null);
             String virtualClusterName = serviceDescription.getVirtualClusterName();
             String vmId = serviceInfo.getInstanceId();
@@ -209,7 +209,7 @@ public class ServiceProvisioningEngineBase {
             boolean stopSuccessful = true;
             String serviceName = serviceDescription.getName();
             String appName = serviceDescription.getAppName();
-            ServiceInfo serviceInfo = serviceUtil.retrieveCloudEntry(
+            ServiceInfo serviceInfo = serviceUtil.getServiceInfo(
                     serviceName, appName, null);
             String virtualClusterName = serviceDescription.getVirtualClusterName();
             String vmId = serviceInfo.getInstanceId();
@@ -247,7 +247,7 @@ public class ServiceProvisioningEngineBase {
 
 
     public boolean deleteService(ServiceDescription serviceDescription) {
-        ServiceInfo serviceInfo = serviceUtil.retrieveCloudEntry(serviceDescription.getName(),
+        ServiceInfo serviceInfo = serviceUtil.getServiceInfo(serviceDescription.getName(),
                 serviceDescription.getAppName(), null);
         String virtualClusterName = serviceDescription.getVirtualClusterName();
         try {

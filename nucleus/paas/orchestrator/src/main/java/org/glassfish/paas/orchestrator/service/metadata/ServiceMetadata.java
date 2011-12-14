@@ -64,16 +64,13 @@ import java.util.*;
 @XmlRootElement(name = "glassfish-services")
 public class ServiceMetadata {
 
-    private Set<ServiceDescription> serviceDescriptions;
+    private Set<ServiceDescription> serviceDescriptions = new LinkedHashSet<ServiceDescription>();
     private Set<ServiceReference> serviceReferences = new LinkedHashSet<ServiceReference>();
     private String appName;
 
     
     @XmlElement(name = "service-description")
     public Set<ServiceDescription> getServiceDescriptions() {
-        if(serviceDescriptions == null ){
-            serviceDescriptions = new LinkedHashSet<ServiceDescription>();
-        }
         return serviceDescriptions;
     }
 
@@ -85,7 +82,7 @@ public class ServiceMetadata {
         getServiceDescriptions().add(sd);
     }
 
-    @XmlTransient
+    @XmlElement(name = "service-reference")
     public Set<ServiceReference> getServiceReferences() {
         return serviceReferences;
     }

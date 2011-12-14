@@ -120,7 +120,7 @@ public class MySQLDBPlugin implements Plugin<RDBMSServiceType> {
 
     public ServiceDescription getDefaultServiceDescription(String appName, ServiceReference svcRef) {
 
-        if (DATASOURCE.equals(svcRef.getServiceRefType())) {
+        if (DATASOURCE.equals(svcRef.getType())) {
 
             DatabaseProvisioner dbProvisioner = new MySQLDbProvisioner();
 
@@ -204,7 +204,7 @@ public class MySQLDBPlugin implements Plugin<RDBMSServiceType> {
             System.out.println("_create-mysql-db-service [" + serviceName + "] failed");
         }
 
-        ServiceInfo entry = serviceUtil.retrieveCloudEntry(serviceName,
+        ServiceInfo entry = serviceUtil.getServiceInfo(serviceName,
                 serviceDescription.getAppName(), ServiceType.DATABASE);
         if (entry == null) {
             throw new RuntimeException("unable to get DB service : " + serviceName);

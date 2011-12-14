@@ -45,6 +45,7 @@ import org.glassfish.paas.orchestrator.PaaSDeploymentContext;
 import org.glassfish.paas.orchestrator.PaaSDeploymentException;
 import org.glassfish.paas.orchestrator.PaaSDeploymentState;
 import org.glassfish.paas.orchestrator.ServiceOrchestratorImpl;
+import org.glassfish.paas.orchestrator.provisioning.ServiceScope;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceUtil;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceDescription;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceMetadata;
@@ -54,6 +55,7 @@ import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
@@ -74,22 +76,16 @@ public class UnprovisioningState extends AbstractPaaSDeploymentState {
         unprovisionServices(context);
     }
 
-    private void unprovisionServices(final PaaSDeploymentContext context) {
+    private void unprovisionServices(final PaaSDeploymentContext context) throws PaaSDeploymentException {
         final ServiceOrchestratorImpl orchestrator = context.getOrchestrator();
-        //final Set<Plugin> installedPlugins = orchestrator.getPlugins();
-        final DeploymentContext dc = context.getDeploymentContext();
         String appName = context.getAppName();
-        final ServiceMetadata appServiceMetadata = orchestrator.getServiceMetadata(appName);
 
-        Set<ServiceDescription> appSDs = appServiceMetadata.getServiceDescriptions();
+        Collection<ServiceDescription> serviceDescriptionsToUnprovision = orchestrator.getServiceDescriptionsToUnprovision(appName);
         List<Future> unprovisioningFutures = new ArrayList<Future>();
-        String virtualClusterName = orchestrator.getVirtualClusterName(appServiceMetadata);
 
-        for (final ServiceDescription sd : appSDs) {
-            //sd.setVirtualClusterName(virtualClusterName);
+        for (final ServiceDescription sd : serviceDescriptionsToUnprovision) {
             Future future = ServiceUtil.getThreadPool().submit(new Runnable() {
                 public void run() {
-                    //Plugin<?> chosenPlugin = orchestrator.getPluginForServiceType(installedPlugins, sd.getServiceType());
                     Plugin<?> chosenPlugin = sd.getPlugin();
                     logger.log(Level.INFO, "Unprovisioning Service for " + sd + " through " + chosenPlugin);
                     chosenPlugin.unprovisionService(sd, context);
@@ -104,27 +100,28 @@ public class UnprovisioningState extends AbstractPaaSDeploymentState {
                 future.get();
             } catch (InterruptedException e) {
                 failed = true;
-                e.printStackTrace();
+                logger.log(Level.WARNING, "Failure while unprovisioning services ", e);
             } catch (ExecutionException e) {
                 failed = true;
-                e.printStackTrace();
+                logger.log(Level.WARNING, "Failure while unprovisioning services ", e);
             }
         }
-        if(failed){
-            //TODO need a better mechanism ?
-            throw new RuntimeException("Failure while unprovisioning services, refer server.log for more details");
+        // Clean up the glassfish cluster, virtual cluster config, etc.. if they are application scoped.
+        final ServiceMetadata appServiceMetadata = orchestrator.getServiceMetadata(appName);
+        String virtualClusterName = orchestrator.getVirtualClusterName(appServiceMetadata);
+        if(virtualClusterName != null){
+            orchestrator.removeVirtualCluster(virtualClusterName);
         }
-
-        // Clean up the glassfish cluster, virtual cluster config, etc..
-        // TODO :: assuming app-scoped virtual cluster. fix it when supporting shared/external service.
-        orchestrator.removeVirtualCluster(virtualClusterName);
 
         orchestrator.removeProvisionedServices(appName);
         orchestrator.removeServiceMetadata(appName);
+
+        if(failed){
+            throw new PaaSDeploymentException("Failure while unprovisioning services, refer server.log for more details");
+        }
     }
 
     public Class<PaaSDeploymentState> getRollbackState() {
         return null;
     }
-
 }

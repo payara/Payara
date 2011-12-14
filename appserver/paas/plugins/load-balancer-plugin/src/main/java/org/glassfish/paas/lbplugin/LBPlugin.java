@@ -75,7 +75,6 @@ import com.sun.enterprise.deployment.WebBundleDescriptor;
 import com.sun.enterprise.deployment.archivist.ApplicationFactory;
 import org.glassfish.paas.lbplugin.util.LBServiceConfiguration;
 import org.glassfish.paas.orchestrator.service.metadata.TemplateIdentifier;
-import org.glassfish.virtualization.config.Template;
 import org.glassfish.virtualization.spi.TemplateCondition;
 import org.glassfish.virtualization.spi.TemplateInstance;
 import org.glassfish.virtualization.spi.TemplateRepository;
@@ -127,7 +126,7 @@ public class LBPlugin implements Plugin {
     }
 
     public ServiceDescription getDefaultServiceDescription(String appName, ServiceReference svcRef) {
-        if (Constants.LB.equals(svcRef.getServiceRefType())) {
+        if (Constants.LB.equals(svcRef.getType())) {
             TemplateInstance template = getLBTemplate();
             if(template == null){
                 throw new RuntimeException("No LB template exists.");
@@ -261,7 +260,7 @@ public class LBPlugin implements Plugin {
             return;
         }
 
-        if (!(svcRef.getServiceRefType().equals("JavaEE")
+        if (!("JavaEE".equals(svcRef.getType())
                 && serviceConsumer.getServiceType().toString().equals("LB")
                 && serviceProvider.getServiceType().toString().equals("JavaEE"))){
             return;
@@ -436,7 +435,7 @@ public class LBPlugin implements Plugin {
             return;
         }
 
-        if (!(svcRef.getServiceRefType().equals("JavaEE")
+        if (!(svcRef.getType().equals("JavaEE")
                 && serviceConsumer.getServiceType().toString().equals("LB")
                 && serviceProvider.getServiceType().toString().equals("JavaEE"))){
             return;

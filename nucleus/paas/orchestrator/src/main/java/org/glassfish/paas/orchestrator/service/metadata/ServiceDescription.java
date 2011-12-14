@@ -41,6 +41,7 @@
 package org.glassfish.paas.orchestrator.service.metadata;
 
 import org.glassfish.internal.api.Globals;
+import org.glassfish.paas.orchestrator.provisioning.ServiceScope;
 import org.glassfish.paas.orchestrator.service.spi.Plugin;
 import org.glassfish.virtualization.spi.TemplateInstance;
 import org.glassfish.virtualization.spi.TemplateRepository;
@@ -65,6 +66,7 @@ public class ServiceDescription {
     private String initType;
     private String appName;
     private String virtualClusterName;
+    private ServiceScope serviceScope;
 
     // User can either specify which template to use or the characteristics of the template.
     private Object templateOrCharacteristics;
@@ -220,6 +222,7 @@ public class ServiceDescription {
     }
 
 
+/*
     public void addServiceReference(ServiceReference serviceReference){
         serviceReferences.add(serviceReference);
     }
@@ -227,5 +230,15 @@ public class ServiceDescription {
     @XmlTransient
     public Collection<ServiceReference> getServiceReferences(){
         return serviceReferences;
+    }
+*/
+
+    @XmlTransient
+    public ServiceScope getServiceScope(){
+        return serviceScope;
+    }
+
+    public void setServiceScope(ServiceScope serviceScope){
+        this.serviceScope = serviceScope;
     }
 }

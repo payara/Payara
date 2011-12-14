@@ -116,7 +116,7 @@ public class GlassFishServiceUtil{
 */
 
     public void registerASInfo(ServiceInfo entry) {
-        serviceUtil.registerCloudEntry(entry);
+        serviceUtil.registerService(entry);
     }
 
     public void unregisterASInfo(String serviceName, String appName) {

@@ -58,7 +58,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * @author Jagadish Ramu
@@ -117,7 +116,7 @@ public class EnableState extends AbstractPaaSDeploymentState {
         //final Set<Plugin> installedPlugins = orchestrator.getPlugins();
         Plugin<?> chosenPlugin = sd.getPlugin();
         logger.log(Level.INFO, "Retrieving provisioned Service for " + sd + " through " + chosenPlugin);
-        ServiceInfo serviceInfo = serviceUtil.retrieveCloudEntry(sd.getName(), appName, null );
+        ServiceInfo serviceInfo = serviceUtil.getServiceInfo(sd.getName(), appName, null);
         if(serviceInfo != null){
             return chosenPlugin.startService(sd, serviceInfo);
         }else{

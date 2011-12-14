@@ -40,13 +40,8 @@
 
 package org.glassfish.paas.lbplugin;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 import org.glassfish.hk2.scopes.Singleton;
-import org.glassfish.paas.orchestrator.config.ApplicationScopedService;
 import org.glassfish.paas.orchestrator.config.Services;
-import org.glassfish.paas.orchestrator.config.Service;
 import org.glassfish.paas.orchestrator.provisioning.ServiceInfo;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceType;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceUtil;
@@ -62,7 +57,7 @@ public class LBServiceUtil {
     private ServiceUtil serviceUtil;
 
     public ServiceInfo retrieveCloudEntry(String serviceName, String appName, ServiceType type) {
-        return serviceUtil.retrieveCloudEntry(serviceName, appName, type);
+        return serviceUtil.getServiceInfo(serviceName, appName, type);
     }
 
     public boolean isServiceAlreadyConfigured(String serviceName, String appName, ServiceType type) {
@@ -78,7 +73,7 @@ public class LBServiceUtil {
     }
 
     public void registerLBInfo(ServiceInfo entry) {
-        serviceUtil.registerCloudEntry(entry);
+        serviceUtil.registerService(entry);
     }
 
     public void updateState(String serviceName, String appName, String state, ServiceType type) {

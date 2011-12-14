@@ -39,6 +39,8 @@
  */
 package org.glassfish.paas.orchestrator.service.metadata;
 
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlTransient;
 import java.util.Properties;
 
 /**
@@ -54,18 +56,20 @@ public class ServiceReference {
     //jndi name used by a component in the application
     //must not be null
     //Example: "jdbc/FooDataSource"
-    private String refId;
+    private String name;
 
     //this must point to a service-definition's id. This may or may not be specified.
     //If unspecified, the orchestrator would create a default service-definition
     //for this service-reference and set that as the target
     //Example: ""(empty) or "Department1-MySQLDatabase"
-    private String target;
+    private String serviceDescriptionName;
+
+    private String serviceName;
 
     //reference type for this service reference. 
     //For instance, this could be the resource manager connection factory type
     //Example: "javax.sql.DataSource"
-    private String refType;
+    private String referenceType;
 
     // Since the service can be referenced by a resource, we need to hold the resource properties.
     // Eg., If service is referenced from jdbc-connection-pool, this will hold all the pool properties.
@@ -74,47 +78,68 @@ public class ServiceReference {
 
     public ServiceReference() {}
     
-    public ServiceReference(String refId, String refType, String targetServiceDefinitionName) {
-        this.refId = refId;
-        this.target = targetServiceDefinitionName;
-        this.refType = refType;
+    public ServiceReference(String refId, String refType, String serviceDefinitionName) {
+        this.name = refId;
+        this.serviceDescriptionName = serviceDefinitionName;
+        this.referenceType = refType;
     }
 
     public ServiceReference(String refId, String refType,
-                            String targetServiceDefinitionName, Properties properties) {
-        this.refId = refId;
-        this.target = targetServiceDefinitionName;
-        this.refType = refType;
+                            String serviceDefinitionName, Properties properties) {
+        this.name = refId;
+        this.serviceDescriptionName = serviceDefinitionName;
+        this.referenceType = refType;
         this.setProperties(properties);
         if(properties != null && properties.getProperty("serviceName") != null) {
-            this.target = properties.getProperty("serviceName");
+            this.serviceDescriptionName = properties.getProperty("serviceName");
         }
     }
 
-
-    public String getServiceRefName() {
-        return refId;
+    @XmlAttribute(name = "name", required=true)
+    public String getName() {
+        return name;
     }
 
-    public String getTarget() {
-        return target;
+    public void setName(String name){
+        this.name = name;
     }
 
-    public String getServiceRefType() {
-        return refType;
+    @XmlAttribute(name = "service-name", required = true)
+    public String getServiceName() {
+        return serviceName;
     }
 
+    public void setServiceName(String serviceName){
+        this.serviceName = serviceName;
+    }
+
+    @XmlAttribute(name = "type")
+    public String getType() {
+        return referenceType;
+    }
+
+    public void setType(String type){
+        this.referenceType = type;
+    }
+
+    @XmlTransient
+    public String getServiceDescriptionName(){
+        return serviceDescriptionName;
+    }
+
+    public void setServiceDescriptionName(String serviceDescriptionName){
+        this.serviceDescriptionName = serviceDescriptionName;
+    }
 
     @Override
     public String toString() {
-        return "ServiceReference [refId = " + refId + ", serviceType = " + refType +
-                ", target = " + target + "]";
+        return "ServiceReference [name = " + name + ", referenceType = " + referenceType +
+                ", serviceName = " + serviceName + "]";
     }
 
     public Properties getProperties() {
         return properties;
     }
-
 
     public void setProperties(Properties properties) {
         this.properties = properties;

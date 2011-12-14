@@ -63,7 +63,7 @@ public class DatabaseServiceUtil {
     }
 
     public void registerDBInfo(ServiceInfo entry) {
-        serviceUtil.registerCloudEntry(entry);
+        serviceUtil.registerService(entry);
     }
 
     public void updateState(String serviceName, String appName, String state, ServiceType type) {
@@ -75,7 +75,7 @@ public class DatabaseServiceUtil {
     }
 
     public ServiceInfo retrieveCloudEntry(String serviceName, String appName, ServiceType type) {
-        return serviceUtil.retrieveCloudEntry(serviceName, appName, type);
+        return serviceUtil.getServiceInfo(serviceName, appName, type);
     }
 
     public String getIPAddress(String serviceName, String appName, ServiceType type) {

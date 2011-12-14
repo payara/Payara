@@ -48,7 +48,6 @@ import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.CommandLock;
-import org.glassfish.paas.orchestrator.provisioning.cli.ServiceType;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceUtil;
 import org.glassfish.paas.orchestrator.provisioning.ServiceInfo;
 
@@ -56,7 +55,6 @@ import static org.glassfish.paas.orchestrator.provisioning.ServiceInfo.State.*;
 import static org.glassfish.paas.orchestrator.provisioning.cli.ServiceType.*;
 
 import org.glassfish.virtualization.runtime.VirtualClusters;
-import org.glassfish.virtualization.runtime.VirtualMachineLifecycle;
 import org.glassfish.virtualization.spi.VirtException;
 import org.glassfish.virtualization.spi.VirtualMachine;
 import org.glassfish.virtualization.spi.VirtualCluster;
@@ -105,7 +103,7 @@ public class StopMySQLDbService implements AdminCommand {
         // Check if the service is already configured.
         if (serviceUtil.isValidService(serviceName, appName, DATABASE)) {
             synchronized (StopMySQLDbService.class) {
-                ServiceInfo entry = serviceUtil.retrieveCloudEntry(serviceName, appName, DATABASE);
+                ServiceInfo entry = serviceUtil.getServiceInfo(serviceName, appName, DATABASE);
                 String ipAddress = entry.getIpAddress();
                 String status = entry.getState();
                 try {

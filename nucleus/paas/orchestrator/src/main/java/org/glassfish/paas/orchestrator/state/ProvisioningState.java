@@ -43,6 +43,7 @@ package org.glassfish.paas.orchestrator.state;
 import org.glassfish.embeddable.CommandResult;
 import org.glassfish.embeddable.CommandRunner;
 import org.glassfish.paas.orchestrator.*;
+import org.glassfish.paas.orchestrator.provisioning.ServiceScope;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceUtil;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceDescription;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceMetadata;
@@ -73,7 +74,9 @@ public class ProvisioningState extends AbstractPaaSDeploymentState {
         try{
             provisionServices(context);
         }catch(Exception e){
-            if(! (e instanceof  PaaSDeploymentException)){
+            if(e instanceof PaaSDeploymentException){
+                throw (PaaSDeploymentException)e;
+            }else{
                 throw new PaaSDeploymentException(e);
             }
         }
@@ -96,21 +99,23 @@ public class ProvisioningState extends AbstractPaaSDeploymentState {
 
         // create one virtual cluster per deployment unit.
         String virtualClusterName = orchestrator.getVirtualClusterName(appServiceMetadata);
-        CommandResult result = commandRunner.run("create-cluster", virtualClusterName);
-        logger.info("Command create-cluster [" + virtualClusterName + "] executed. " +
-                "Command Output [" + result.getOutput() + "]");
-        if (result.getExitStatus().equals(CommandResult.ExitStatus.FAILURE)) {
-            throw new RuntimeException("Failure while provisioning services, " +
-                    "Unable to create cluster [" + virtualClusterName + "]");
+        if(virtualClusterName != null){
+            CommandResult result = commandRunner.run("create-cluster", virtualClusterName);
+            logger.info("Command create-cluster [" + virtualClusterName + "] executed. " +
+                    "Command Output [" + result.getOutput() + "]");
+            if (result.getExitStatus().equals(CommandResult.ExitStatus.FAILURE)) {
+                throw new RuntimeException("Failure while provisioning services, " +
+                        "Unable to create cluster [" + virtualClusterName + "]");
+            }
         }
 
-        Set<ServiceDescription> appSDs = appServiceMetadata.getServiceDescriptions();
+        Collection<ServiceDescription> serviceDescriptionsToProvision =
+                orchestrator.getServiceDescriptionsToProvision(appName);
         boolean failed = false;
         Exception rootCause = null;
         if (Boolean.getBoolean("org.glassfish.paas.orchestrator.parallel-provisioning")) {
             List<Future<ProvisionedService>> provisioningFutures = new ArrayList<Future<ProvisionedService>>();
-            for (final ServiceDescription sd : appSDs) {
-                //sd.setVirtualClusterName(virtualClusterName);
+            for (final ServiceDescription sd : serviceDescriptionsToProvision) {
                 Future<ProvisionedService> future = ServiceUtil.getThreadPool().submit(new Callable<ProvisionedService>() {
                     public ProvisionedService call() {
                         Plugin<?> chosenPlugin = sd.getPlugin();
@@ -137,7 +142,7 @@ public class ProvisioningState extends AbstractPaaSDeploymentState {
             }
         } else {
 
-            for (final ServiceDescription sd : appSDs) {
+            for (final ServiceDescription sd : serviceDescriptionsToProvision) {
                 try {
                     Plugin<?> chosenPlugin = sd.getPlugin();
                     logger.log(Level.INFO, "Started Provisioning Service serially for " + sd + " through " + chosenPlugin);
