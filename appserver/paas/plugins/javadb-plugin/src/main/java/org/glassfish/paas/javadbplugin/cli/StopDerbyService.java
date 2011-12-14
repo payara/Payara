@@ -112,7 +112,6 @@ public class StopDerbyService implements AdminCommand {
                 String ipAddress = entry.getIpAddress();
                 String status = entry.getState();
 
-                derbyProvisioner.stopDatabase(virtualMachine);
                 try {
                     if(status == null || status.equalsIgnoreCase(ServiceInfo.State.NotRunning.toString())) {
                         report.setMessage("Derby db service [" + serviceName + "] already stopped");
@@ -122,6 +121,7 @@ public class StopDerbyService implements AdminCommand {
                         return;
                     }
                     retrieveVirtualMachine();
+                    derbyProvisioner.stopDatabase(virtualMachine);
                     if(stopVM) {
                         if(virtualMachine != null) {
                             vmLifecycle.stop(virtualMachine);
