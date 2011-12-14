@@ -49,6 +49,8 @@ import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PostConstruct;
 
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -127,7 +129,15 @@ public class APIClassLoaderServiceImpl implements PostConstruct {
     }
 
     private ClassLoader getExtensionClassLoader() {
-        return ClassLoader.getSystemClassLoader().getParent();
+        if (System.getSecurityManager() != null) {
+            return AccessController.doPrivileged(new PrivilegedAction<ClassLoader>() {
+                public ClassLoader run() {
+                    return ClassLoader.getSystemClassLoader().getParent();
+                }
+            });        
+        } else {
+            return ClassLoader.getSystemClassLoader().getParent();
+        }
     }
 
     public ClassLoader getAPIClassLoader() {
@@ -265,12 +275,27 @@ public class APIClassLoaderServiceImpl implements PostConstruct {
             return url;
         }
 
+        /**
+         * This method is required as {@link ClassLoader#getParent} is a privileged method
+         */
+        private ClassLoader getParent_() {
+            if (System.getSecurityManager() != null) {
+                return AccessController.doPrivileged(new PrivilegedAction<ClassLoader>() {
+                    public ClassLoader run() {
+                        return getParent();
+                    }
+                });
+            } else {
+                return getParent();
+            }
+        }
+
         @Override
         public Enumeration<URL> getResources(String name) throws IOException {
             List<Enumeration<URL>> enumerators = new ArrayList<Enumeration<URL>>();
             enumerators.add(findResources(name));
-            if (getParent() != null) {
-                enumerators.add(getParent().getResources(name));
+            if (getParent_() != null) {
+                enumerators.add(getParent_().getResources(name));
             }
             return new CompositeEnumeration(enumerators);
         }
