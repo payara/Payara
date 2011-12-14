@@ -42,6 +42,7 @@ package com.sun.enterprise.v3.admin.cluster;
 import com.sun.enterprise.util.cluster.RemoteType;
 import com.sun.enterprise.util.cluster.windows.process.WindowsException;
 import java.util.logging.Level;
+import org.glassfish.cluster.ssh.util.DcomUtils;
 import org.jvnet.hk2.component.Habitat;
 import org.glassfish.internal.api.RelativePathResolver;
 import com.sun.enterprise.universal.process.ProcessManagerException;
@@ -373,7 +374,7 @@ public class NodeUtils {
             String installdir = node.getInstallDirUnixStyle();
             String domain = node.getWindowsDomain();
 
-            if(!StringUtils.ok(domain))
+            if (!StringUtils.ok(domain))
                 domain = host;
 
             if (!StringUtils.ok(installdir))
@@ -406,8 +407,12 @@ public class NodeUtils {
     void pingDcomConnection(String host, String domain, String username,
             String password, String installRoot) throws CommandValidationException {
         // don't bother trying to connect if we have no password!
+
         if (!StringUtils.ok(password))
             throw new CommandValidationException(Strings.get("dcom.nopassword"));
+
+        // resolve password aliases
+        password = DcomUtils.resolvePassword(resolver.resolve(password));
 
         if (NetUtils.isThisHostLocal(host))
             throw new CommandValidationException(Strings.get("dcom.yes.local", host));
