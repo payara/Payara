@@ -65,6 +65,7 @@ import org.glassfish.virtualization.spi.TemplateInstance;
 import org.glassfish.virtualization.spi.TemplateRepository;
 import org.glassfish.virtualization.spi.VirtualCluster;
 import org.glassfish.virtualization.spi.VirtualMachine;
+import org.glassfish.virtualization.spi.VirtException;
 import org.glassfish.virtualization.util.ServiceType;
 import org.glassfish.virtualization.util.SimpleSearchCriteria;
 import org.jvnet.hk2.annotations.Inject;
@@ -325,4 +326,28 @@ public class ServiceProvisioningEngineBase {
         }
     }
 
+    protected VirtualMachine getVmByID(String virtualClusterName, String vmId) {
+        try {
+            VirtualCluster virtualCluster = virtualClusters.byName(virtualClusterName);
+            return virtualCluster.vmByName(vmId);
+        } catch (VirtException e) {
+            throw new ServiceProvisioningException(e);
+        }
+    }
+
+    public ProvisionedService getProvisionedService(ServiceDescription serviceDescription) {
+        try {
+            String serviceName = serviceDescription.getName();
+            String appName = serviceDescription.getAppName();
+            ServiceInfo serviceInfo = serviceUtil.getServiceInfo(
+                    serviceName, appName, null);
+            Properties properties = new Properties();
+            properties.putAll(serviceInfo.getProperties());
+
+            return new BasicProvisionedService(serviceDescription, properties,
+                    serviceUtil.getServiceStatus(serviceInfo));
+        } catch (Exception ex) {
+            throw new ServiceProvisioningException(ex);
+        }
+    }
 }

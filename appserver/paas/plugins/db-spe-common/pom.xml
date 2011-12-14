@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
@@ -42,22 +43,52 @@
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-    <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.glassfish</groupId>
-        <artifactId>paas</artifactId>
+        <artifactId>paas.plugins</artifactId>
         <version>4.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
+    <modelVersion>4.0.0</modelVersion>
     <groupId>org.glassfish</groupId>
-    <artifactId>paas.plugins</artifactId>
-    <packaging>pom</packaging>
-    <name>GlassFish Service Plugins Modules</name>
-    <modules>
-        <module>spe-base</module>
-        <module>db-spe-common</module>	    
-        <module>glassfish-plugin</module>
-        <module>javadb-plugin</module>
-        <module>load-balancer-plugin</module>
-    </modules>
+    <artifactId>paas.db-spe-common</artifactId>
+    <packaging>hk2-jar</packaging>
+    <version>4.0-SNAPSHOT</version>
+    <name>DB Service Provisioning Common</name>
+
+    <build>
+    </build>
+    <dependencies>
+        <dependency>
+            <groupId>org.glassfish.hk2</groupId>
+            <artifactId>hk2</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.common</groupId>
+            <artifactId>glassfish-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish</groupId>
+            <artifactId>paas.orchestrator</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.virtualization</groupId>
+            <artifactId>virt-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish</groupId>
+            <artifactId>paas.spe-base</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+	<dependency>
+	    <groupId>org.glassfish.external</groupId>
+	    <artifactId>ant</artifactId>
+	    <optional>true</optional>
+            <version>${project.version}</version>
+        </dependency>
+    </dependencies>
 </project>
+
