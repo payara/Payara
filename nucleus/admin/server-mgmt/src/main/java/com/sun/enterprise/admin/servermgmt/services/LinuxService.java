@@ -319,14 +319,6 @@ public class LinuxService extends NonSMFServiceAdapter {
             }
         }
 
-        // YES -- Error handling properly is ~~ 95% of the code in here!
-        for (File f : deathRow) {
-            if (!f.canWrite()) {
-                throw new RuntimeException(Strings.get("cant_delete", f));
-            }
-        }
-
-        // OK we shook out all the errors possible.  Now we do the irreversible stuff
         for (File f : deathRow) {
             if (info.dryRun) {
                 dryRun("Would have deleted: " + f);
