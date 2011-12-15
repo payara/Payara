@@ -48,6 +48,7 @@ import java.util.Vector;
 
 import org.glassfish.loadbalancer.admin.cli.reader.api.ClusterReader;
 import org.glassfish.loadbalancer.admin.cli.reader.api.InstanceReader;
+import org.glassfish.loadbalancer.admin.cli.reader.api.WebModuleReader;
 import org.glassfish.loadbalancer.config.LbConfig;
 import com.sun.enterprise.config.serverbeans.Domain;
 import org.glassfish.loadbalancer.config.LoadBalancer;
@@ -160,9 +161,12 @@ public class LbConfigHelper {
         String SOCKET_TIMEOUT = "socket_timeout";
         String SOCKET_KEEPALIVE_VALUE = "1";
         String SOCKET_TIMEOUT_VALUE = "300";
-        String LOADBALANCER = "loadbalancer";
+        String LOADBALANCER = "-lb";
         String BALANCER_WORKERS = "balance_workers";
         String LB = "lb";
+        String CONTEXT_ROOT_MAPPING="CONTEXT_ROOT_MAPPING";
+        String APP="APP";
+        StringBuffer buffer = new StringBuffer();
 
         String workerList = "";
 
@@ -171,48 +175,56 @@ public class LbConfigHelper {
 
         ClusterReader clusterReaders[] = lbRdr.getClusters();
 
-        Vector<String> instanceListeners = new Vector<String>();
+        int c;
+        buffer.append("worker.properties\n");
 
         for(int i=0;i<clusterReaders.length;i++) {
+            String clusterWorkerList = "";
             ClusterReader clusterReader = clusterReaders[i];
+            String clusterName = clusterReader.getName();
+            WebModuleReader webmoduleReaders[] = clusterReader.getWebModules();
             InstanceReader instanceReaders[] = clusterReader.getInstances();
+
             for(int j =0; j<instanceReaders.length;j++) {
                 InstanceReader instanceReader = instanceReaders[j];
-                instanceListeners.add(instanceReader.getListeners());
-                instanceListeners.add(instanceReader.getName());
-            }
-        }
-
-        for(int i=0;i<instanceListeners.size();i++) {
-
-            String listenerHost ="";
-            String listenerPort="";
-            StringTokenizer st = new StringTokenizer(instanceListeners.get(i)," ");
-            while(st.hasMoreElements()) {
-                String listener = st.nextToken();
-                if(listener.contains("ajp://")) {
-                    listenerHost = listener.substring(listener.lastIndexOf("/")+1,listener.lastIndexOf(":"));
-                    listenerPort = listener.substring(listener.lastIndexOf(":")+1,listener.length());
+                String listenerHost = "";
+                String listenerPort = "";
+                StringTokenizer st = new StringTokenizer(instanceReader.getListeners(), " ");
+                while (st.hasMoreElements()) {
+                    String listener = st.nextToken();
+                    if (listener.contains("ajp://")) {
+                        listenerHost = listener.substring(listener.lastIndexOf("/") + 1, listener.lastIndexOf(":"));
+                        listenerPort = listener.substring(listener.lastIndexOf(":") + 1, listener.length());
+                        break;
+                    }
                 }
+                String listenterName = instanceReader.getName();
+
+                props.setProperty(WORKER + SEPARATOR + listenterName + SEPARATOR + HOST, listenerHost);
+                props.setProperty(WORKER + SEPARATOR + listenterName + SEPARATOR + PORT, listenerPort);
+                props.setProperty(WORKER + SEPARATOR + listenterName + SEPARATOR + TYPE, TYPE_VALUE);
+                props.setProperty(WORKER + SEPARATOR + listenterName + SEPARATOR + LBFACTOR, LBFACTOR_VALUE);
+                props.setProperty(WORKER + SEPARATOR + listenterName + SEPARATOR + SOCKET_KEEPALIVE, SOCKET_KEEPALIVE_VALUE);
+                props.setProperty(WORKER + SEPARATOR + listenterName + SEPARATOR + SOCKET_TIMEOUT, SOCKET_TIMEOUT_VALUE);
+                workerList = workerList + listenterName + ",";
+                clusterWorkerList = clusterWorkerList + listenterName + ",";
             }
-            String listenterName = instanceListeners.get(++i);
 
-            props.setProperty(WORKER+SEPARATOR+listenterName+SEPARATOR+HOST,listenerHost);
-            props.setProperty(WORKER+SEPARATOR+listenterName+SEPARATOR+PORT,listenerPort);
-            props.setProperty(WORKER+SEPARATOR+listenterName+SEPARATOR+TYPE,TYPE_VALUE );
-            props.setProperty(WORKER+SEPARATOR+listenterName+SEPARATOR+LBFACTOR, LBFACTOR_VALUE);
-            props.setProperty(WORKER+SEPARATOR+listenterName+SEPARATOR+SOCKET_KEEPALIVE,SOCKET_KEEPALIVE_VALUE);
-            props.setProperty(WORKER+SEPARATOR+listenterName+SEPARATOR+SOCKET_TIMEOUT,SOCKET_TIMEOUT_VALUE);
-            workerList = workerList + listenterName + ",";
+            workerList = workerList + clusterName + LOADBALANCER + "," ;
+            props.setProperty(WORKER+SEPARATOR+LIST,workerList.substring(0,workerList.length()-1));
+            props.setProperty(WORKER+SEPARATOR+clusterName+LOADBALANCER + SEPARATOR+TYPE,LB);
+            props.setProperty(WORKER+SEPARATOR+clusterName+LOADBALANCER + SEPARATOR+BALANCER_WORKERS,clusterWorkerList.substring(0,clusterWorkerList.length()-1));
+
+            for (int m=0; m<webmoduleReaders.length;m++) {
+               buffer.append(CONTEXT_ROOT_MAPPING+SEPARATOR+webmoduleReaders[m].getContextRoot()
+                       +"="+clusterName+LOADBALANCER+"\n");
+            }
+
         }
-
-        props.setProperty(WORKER+SEPARATOR+LIST,workerList + LOADBALANCER);
-        props.setProperty(WORKER+SEPARATOR+LOADBALANCER+SEPARATOR+TYPE,LB);
-        props.setProperty(WORKER+SEPARATOR+LOADBALANCER+SEPARATOR+BALANCER_WORKERS,workerList.substring(0,workerList.length()-1));
 
         try {
             
-        props.store(out, "worker.properties");
+        props.store(out,buffer.toString());
 
         } finally {
             if (out != null) {
