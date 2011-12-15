@@ -113,12 +113,11 @@ public class DeleteSharedService implements AdminCommand {
                                         for (Cluster cluster : clusterList) {
                                             ApplicationRef applicationRef = cluster.getApplicationRef(appName);
                                             if (applicationRef != null) {
-                                                if ("true".equalsIgnoreCase(applicationRef.getEnabled())) {
-                                                    report.setMessage("A shared service by name [" + serviceName + "] is used by an application " +
+                                                report.setMessage("A shared service by name [" + serviceName + "] is used by an application " +
                                                             "[" + appName + "].");
                                                     report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                                                     return;
-                                                }
+
                                             }
                                         }
 
