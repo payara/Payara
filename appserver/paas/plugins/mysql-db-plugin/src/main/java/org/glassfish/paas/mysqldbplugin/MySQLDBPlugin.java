@@ -105,12 +105,12 @@ public class MySQLDBPlugin  extends DatabaseSPEBase {
         Properties serviceProperties = new Properties();
         serviceProperties.putAll(defaultConnPoolProperties);
         serviceProperties.put(HOST, ipAddress);
-        serviceProperties.put(URL, "jdbc\\:mysql\\://" + ipAddress + "\\:" +
-                MYSQL_PORT + "/" + databaseName); // TODO :: grab the actual port.
         serviceProperties.put(PORT, MYSQL_PORT);
         if (databaseName != null && databaseName.trim().length() > 0) {
             serviceProperties.put(DATABASENAME, databaseName);
         }
+        serviceProperties.put(URL, "jdbc\\:mysql\\://" + ipAddress + "\\:" +
+                MYSQL_PORT + "/" + serviceProperties.getProperty(DATABASENAME));
         return serviceProperties;
     }
 
