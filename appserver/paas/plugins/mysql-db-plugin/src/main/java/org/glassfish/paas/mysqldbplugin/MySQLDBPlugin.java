@@ -126,7 +126,7 @@ public class MySQLDBPlugin  extends DatabaseSPEBase {
         Properties properties = new Properties();
         properties.put(USER, MYSQL_USERNAME);
         properties.put(PASSWORD, MYSQL_PASSWORD);
-        properties.put(DATABASENAME, mysqlDatabaseName);
+        properties.put(DATABASENAME, getDatabaseName());
         properties.put(RESOURCE_TYPE, "javax.sql.XADataSource");
         properties.put(CLASSNAME, "com.mysql.jdbc.jdbc2.optional.MysqlXADataSource");
         properties.put("createDatabaseIfNotExist", "true");

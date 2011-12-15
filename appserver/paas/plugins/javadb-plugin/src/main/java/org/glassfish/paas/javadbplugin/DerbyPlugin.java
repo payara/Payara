@@ -124,7 +124,7 @@ public class DerbyPlugin extends DatabaseSPEBase {
         Properties properties = new Properties();
         properties.put(USER, DERBY_USERNAME);
         properties.put(PASSWORD, DERBY_PASSWORD);
-        properties.put(DATABASENAME, derbyDatabaseName);
+        properties.put(DATABASENAME, getDatabaseName());
         properties.put("CONNECTIONATTRIBUTES", ";create\\=true");
 //        properties.put(DatabaseProvisioner.PORTNUMBER, DERBY_PORT);
         properties.put(RESOURCE_TYPE, "javax.sql.XADataSource");
