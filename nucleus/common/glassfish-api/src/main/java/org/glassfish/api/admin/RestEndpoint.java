@@ -52,20 +52,37 @@ public @interface RestEndpoint {
     enum OpType { GET, PUT, POST, DELETE}
 
     /**
-     * Rest operation type that should trigger a redirect to an actual asadmin
-     * command invocation
-     *
-     * @return the rest operation type for this redirect
-     */
-    OpType opType();
-
-    /**
      * ConfigBean to which to attach the AdminCommand
      *
      * @return the name of the target ConfigBean
      */
     Class<? extends ConfigBeanProxy> configBean();
-    String path();
+
+    /**
+     * Rest operation type that should trigger a redirect to an actual asadmin
+     * command invocation. The default is GET.
+     *
+     * @return the rest operation type for this redirect
+     */
+    OpType opType() default OpType.GET;
+
+    /**
+     * This is the value of the last segment in the generated URL.  If blank, this
+     * will default to the value of the name attribute on the commands @Service annotation
+     * @return 
+     */
+    String path() default "";
+    
+    /**
+     * The description of the endpoint. This is used primarily in the REST HTML interface.
+     * @return 
+     */
     String description() default "";
+    
+    /**
+     * A list of one or more @RestParam annotations representing the parameters to be
+     * used in the AdminCommand call
+     * @return 
+     */
     RestParam[] params() default {};
 }
