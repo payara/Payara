@@ -116,7 +116,7 @@ public class SetCommand extends V2DottedNameSupport implements AdminCommand, Pos
         for (String value : values) {
 
             if (value.contains(".log-service")) {
-                fail(context, localStrings.getLocalString("admin.set.invalid.logservice.command", "For setting log log levels/attributes use set-log-levels/set-log-attributes command."));
+                fail(context, localStrings.getLocalString("admin.set.invalid.logservice.command", "For setting log levels/attributes use set-log-levels/set-log-attributes command."));
                 return;
             }
 

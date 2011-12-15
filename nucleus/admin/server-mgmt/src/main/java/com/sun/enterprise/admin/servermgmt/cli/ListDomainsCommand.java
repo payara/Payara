@@ -88,7 +88,7 @@ public final class ListDomainsCommand extends LocalDomainCommand {
             if (domainsList.length > 0) {
                 for (String dn : domainsList) {
                     String status = getStatus(dn);
-                    logger.info(strings.get("list.domains.Output", dn, status));
+                    logger.info(status);
                 }
             } else {
                 logger.fine(strings.get("NoDomainsToList"));
@@ -113,11 +113,11 @@ public final class ListDomainsCommand extends LocalDomainCommand {
                 String restartRequired =
                     cmd.executeAndReturnOutput("_get-restart-required");
                 if (Boolean.parseBoolean(restartRequired.trim()))
-                    return strings.get("list.domains.StatusRestartRequired");
+                    return strings.get("list.domains.StatusRestartRequired", dn);
             } catch (Exception ex) {
             }
-            return strings.get("list.domains.StatusRunning");
+            return strings.get("list.domains.StatusRunning", dn);
         } else
-            return strings.get("list.domains.StatusNotRunning");
+            return strings.get("list.domains.StatusNotRunning", dn);
     }
 }
