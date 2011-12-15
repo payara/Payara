@@ -178,18 +178,18 @@ public abstract class DatabaseSPEBase extends ServiceProvisioningEngineBase
         String databaseName = serviceDescription.getConfiguration(DATABASE_NAME_SVC_CONFIG);
         if (databaseName != null && databaseName.trim().length() > 0) {
             setDatabaseName(databaseName);
-            createDatabase(getServiceProperties(ipAddress, databaseName));
+            createDatabase(getServiceProperties(ipAddress));
         }
 
         //Execute Init SQL
         String initSqlFile = serviceDescription.getConfiguration(INIT_SQL_SVC_CONFIG);
         if (initSqlFile != null && initSqlFile.trim().length() > 0) {
-            executeInitSql(getServiceProperties(ipAddress, databaseName), initSqlFile);
+            executeInitSql(getServiceProperties(ipAddress), initSqlFile);
         }
 
         //Add database name to provisioned service properties
         properties.putAll(getServiceProperties(
-                properties.getProperty(VIRTUAL_MACHINE_IP_ADDRESS), databaseName));
+                properties.getProperty(VIRTUAL_MACHINE_IP_ADDRESS)));
         return provisionedService;
     }
 
@@ -211,7 +211,7 @@ public abstract class DatabaseSPEBase extends ServiceProvisioningEngineBase
         String databaseName = serviceDescription.getConfiguration(DATABASE_NAME_SVC_CONFIG);
         Properties properties = provisionedService.getProperties();
         properties.putAll(getServiceProperties(
-                properties.getProperty(VIRTUAL_MACHINE_IP_ADDRESS), databaseName));
+                properties.getProperty(VIRTUAL_MACHINE_IP_ADDRESS)));
         return provisionedService;
     }
 
@@ -268,7 +268,7 @@ public abstract class DatabaseSPEBase extends ServiceProvisioningEngineBase
         String databaseName = serviceDescription.getConfiguration(DATABASE_NAME_SVC_CONFIG);
         //Add database name to provisioned service properties
         properties.putAll(getServiceProperties(
-                properties.getProperty(VIRTUAL_MACHINE_IP_ADDRESS), databaseName));
+                properties.getProperty(VIRTUAL_MACHINE_IP_ADDRESS)));
         return provisionedService;
     }
 
@@ -314,7 +314,7 @@ public abstract class DatabaseSPEBase extends ServiceProvisioningEngineBase
         return true;
     }
 
-    protected abstract Properties getServiceProperties(String ipAddress, String databaseName);
+    protected abstract Properties getServiceProperties(String ipAddress);
 
     /**
      * Start the database instance

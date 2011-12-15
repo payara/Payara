@@ -100,15 +100,16 @@ public class DerbyPlugin extends DatabaseSPEBase {
     }
 
     @Override
-    protected Properties getServiceProperties(String ipAddress, String databaseName) {
-        Properties defaultConnPoolProperties = getDefaultConnectionProperties();
+    protected Properties getServiceProperties(String ipAddress) {
         Properties serviceProperties = new Properties();
-        serviceProperties.putAll(defaultConnPoolProperties);
+        serviceProperties.put(USER, DERBY_USERNAME);
+        serviceProperties.put(PASSWORD, DERBY_PASSWORD);
         serviceProperties.put(HOST, ipAddress);
         serviceProperties.put(PORT, DERBY_PORT);
-        if (databaseName != null && databaseName.trim().length() > 0) {
-            serviceProperties.put(DATABASENAME, databaseName);
-        }
+        serviceProperties.put(DATABASENAME, getDatabaseName());
+        serviceProperties.put("CONNECTIONATTRIBUTES", ";create\\=true");
+        serviceProperties.put(RESOURCE_TYPE, "javax.sql.XADataSource");
+        serviceProperties.put(CLASSNAME, "org.apache.derby.jdbc.ClientXADataSource");
         return serviceProperties;
     }
 
@@ -118,18 +119,6 @@ public class DerbyPlugin extends DatabaseSPEBase {
 
     protected String getDatabaseName() {
         return derbyDatabaseName;
-    }
-
-    public Properties getDefaultConnectionProperties() {
-        Properties properties = new Properties();
-        properties.put(USER, DERBY_USERNAME);
-        properties.put(PASSWORD, DERBY_PASSWORD);
-        properties.put(DATABASENAME, getDatabaseName());
-        properties.put("CONNECTIONATTRIBUTES", ";create\\=true");
-//        properties.put(DatabaseProvisioner.PORTNUMBER, DERBY_PORT);
-        properties.put(RESOURCE_TYPE, "javax.sql.XADataSource");
-        properties.put(CLASSNAME, "org.apache.derby.jdbc.ClientXADataSource");
-        return properties;
     }
 
     public void startDatabase(VirtualMachine virtualMachine) {

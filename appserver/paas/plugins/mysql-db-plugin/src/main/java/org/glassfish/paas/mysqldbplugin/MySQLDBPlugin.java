@@ -100,17 +100,18 @@ public class MySQLDBPlugin  extends DatabaseSPEBase {
     }
 
     @Override
-    protected Properties getServiceProperties(String ipAddress, String databaseName) {
-        Properties defaultConnPoolProperties = getDefaultConnectionProperties();
+    protected Properties getServiceProperties(String ipAddress) {
         Properties serviceProperties = new Properties();
-        serviceProperties.putAll(defaultConnPoolProperties);
+        serviceProperties.put(USER, MYSQL_USERNAME);
+        serviceProperties.put(PASSWORD, MYSQL_PASSWORD);
+        serviceProperties.put(DATABASENAME, getDatabaseName());
         serviceProperties.put(HOST, ipAddress);
         serviceProperties.put(PORT, MYSQL_PORT);
-        if (databaseName != null && databaseName.trim().length() > 0) {
-            serviceProperties.put(DATABASENAME, databaseName);
-        }
         serviceProperties.put(URL, "jdbc\\:mysql\\://" + ipAddress + "\\:" +
-                MYSQL_PORT + "/" + serviceProperties.getProperty(DATABASENAME));
+                MYSQL_PORT + "/" + getDatabaseName());
+        serviceProperties.put(RESOURCE_TYPE, "javax.sql.XADataSource");
+        serviceProperties.put(CLASSNAME, "com.mysql.jdbc.jdbc2.optional.MysqlXADataSource");
+        serviceProperties.put("createDatabaseIfNotExist", "true");
         return serviceProperties;
     }
 
@@ -120,17 +121,6 @@ public class MySQLDBPlugin  extends DatabaseSPEBase {
 
     protected String getDatabaseName() {
         return mysqlDatabaseName;
-    }
-
-    public Properties getDefaultConnectionProperties() {
-        Properties properties = new Properties();
-        properties.put(USER, MYSQL_USERNAME);
-        properties.put(PASSWORD, MYSQL_PASSWORD);
-        properties.put(DATABASENAME, getDatabaseName());
-        properties.put(RESOURCE_TYPE, "javax.sql.XADataSource");
-        properties.put(CLASSNAME, "com.mysql.jdbc.jdbc2.optional.MysqlXADataSource");
-        properties.put("createDatabaseIfNotExist", "true");
-        return properties;
     }
 
     public void startDatabase(VirtualMachine virtualMachine) {
