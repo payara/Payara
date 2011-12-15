@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -58,6 +58,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
+import org.apache.catalina.connector.Request;
+
 public class Multipart {
 
     private final String location;
@@ -67,12 +69,13 @@ public class Multipart {
     private File repository;
     private ProgressListener listener;
 
-    private final HttpServletRequest request;
+    private final Request request;
     private ArrayList<Part> parts;
     private List<Part> unmodifiableParts;
 
-    public Multipart(HttpServletRequest request, String location,
-                long maxFileSize, long maxRequestSize, int fileSizeThreshold) {
+    public Multipart(Request request,
+                String location, long maxFileSize, long maxRequestSize,
+                int fileSizeThreshold) {
         this.request = request;
         this.location = location;
         this.maxFileSize = maxFileSize;
@@ -87,6 +90,14 @@ public class Multipart {
             } else {
                 repository = new File(repository, location);
             }
+        }
+    }
+
+    public void init() {
+        try {
+            initParts();
+        } catch (Exception ex) {
+            throw new RuntimeException("Error in multipart initialization", ex);
         }
     }
 
@@ -142,6 +153,12 @@ public class Multipart {
                                          requestItem.getName());
                 Streams.copy(requestItem.openStream(),
                              partItem.getOutputStream(), true);
+                String fileName = partItem.getFileName();
+                if (fileName == null || fileName.length() == 0) {
+                    // Add part name and value as a parameter
+                    request.addParameter(partItem.getName(),
+                                         new String[] {partItem.getString()});
+                }
                 parts.add((Part)partItem);
             }
         } catch (SizeException ex) {

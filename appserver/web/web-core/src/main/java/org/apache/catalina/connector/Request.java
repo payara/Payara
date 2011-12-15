@@ -305,7 +305,7 @@ public class Request
      */
     protected boolean sessionParsed = false;
 
-    protected boolean parameterEncodingSet = false;
+    protected boolean parametersProcessed = false;
     /**
      * Cookies parsed flag.
      */
@@ -574,7 +574,7 @@ public class Request
         userPrincipal = null;
         subject = null;
         sessionParsed = false;
-        parameterEncodingSet = false;
+        parametersProcessed = false;
         cookiesParsed = false;
         locales.clear();
         localesParsed = false;
@@ -1304,6 +1304,21 @@ public class Request
 //        return (new Enumerator<Locale>(results));
     }
 
+    private void processParameters() {
+        if (parametersProcessed) {
+            return;
+        }
+        getCharacterEncoding();
+        if (getMethod().equalsIgnoreCase("POST")) {
+            String contentType = getContentType();
+            if (contentType != null && 
+                        contentType.startsWith("multipart/form-data")) {
+                getMultipart().init();
+            }
+        }
+        parametersProcessed = true;
+    }
+
     /**
      * Return the value of the specified request parameter, if any; otherwise,
      * return <code>null</code>.  If there is more than one value defined,
@@ -1319,10 +1334,7 @@ public class Request
             parseRequestParameters();
         }
 */
-        if (!parameterEncodingSet) {
-            getCharacterEncoding();
-            parameterEncodingSet = true;
-        }
+        processParameters();
 
         return coyoteRequest.getParameter(name);
     }
@@ -1366,10 +1378,7 @@ public class Request
             parseRequestParameters();
         }
 */
-        if (!parameterEncodingSet) {
-            getCharacterEncoding();
-            parameterEncodingSet = true;
-        }
+        processParameters();
 
         return new Enumerator<String>(coyoteRequest.getParameterNames());
     }
@@ -1387,10 +1396,7 @@ public class Request
             parseRequestParameters();
         }
 */
-        if (!parameterEncodingSet) {
-            getCharacterEncoding();
-            parameterEncodingSet = true;
-        }
+        processParameters();
 
         return coyoteRequest.getParameterValues(name);
     }
