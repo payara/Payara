@@ -704,6 +704,10 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
         return jkConnector;
     }
 
+    public HashMap<String, WebConnector> getConnectorMap() {
+        return connectorMap;
+    }
+
     /**
      * Instantiates and injects the given Servlet class for the given
      * WebModule
@@ -1189,6 +1193,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
         if (startAccessLog
                 && vs.isAccessLoggingEnabled(globalAccessLoggingEnabled)) {
             vs.addValve((GlassFishValve) accessLogValve);
+            vs.addHttpProbes(false);
         }
 
         if (_logger.isLoggable(Level.FINEST)) {
@@ -1351,6 +1356,9 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
         vs.configureErrorPage();
         vs.configureErrorReportValve();
         vs.setServerContext(getServerContext());
+        vs.setServerConfig(serverConfig);
+        vs.setGrizzlyService(grizzlyService);
+        vs.setWebContainer(this);
 
         return vs;
     }

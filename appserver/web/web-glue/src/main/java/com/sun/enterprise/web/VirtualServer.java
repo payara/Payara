@@ -43,6 +43,7 @@ package com.sun.enterprise.web;
 import com.sun.enterprise.config.serverbeans.ApplicationRef;
 import com.sun.enterprise.config.serverbeans.Applications;
 import com.sun.enterprise.config.serverbeans.AuthRealm;
+import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.ConfigBeansUtilities;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.HttpService;
@@ -58,6 +59,8 @@ import com.sun.enterprise.server.logging.GFFileHandler;
 import com.sun.enterprise.util.StringUtils;
 import com.sun.enterprise.util.io.FileUtils;
 import com.sun.enterprise.v3.common.PlainTextActionReporter;
+import com.sun.enterprise.v3.services.impl.GrizzlyProxy;
+import com.sun.enterprise.v3.services.impl.GrizzlyService;
 import com.sun.enterprise.web.logger.CatalinaLogger;
 import com.sun.enterprise.web.logger.FileLoggerHandler;
 import com.sun.enterprise.web.logger.FileLoggerHandlerFactory;
@@ -71,6 +74,8 @@ import org.apache.catalina.authenticator.AuthenticatorBase;
 import org.apache.catalina.authenticator.SingleSignOn;
 import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.core.StandardHost;
+import org.apache.catalina.connector.Response;
+import org.apache.catalina.connector.Request;
 import org.apache.catalina.deploy.ErrorPage;
 import org.apache.catalina.valves.RemoteAddrValve;
 import org.apache.catalina.valves.RemoteHostValve;
@@ -84,14 +89,29 @@ import org.glassfish.api.deployment.archive.ArchiveHandler;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.deployment.common.ApplicationConfigInfo;
 import org.glassfish.deployment.common.DeploymentContextImpl;
+import org.glassfish.deployment.common.DeploymentUtils;
 import org.glassfish.embeddable.CommandRunner;
-import org.glassfish.embeddable.Deployer;
 import org.glassfish.embeddable.GlassFishException;
 import org.glassfish.embeddable.web.Context;
 import org.glassfish.embeddable.web.ConfigException;
 import org.glassfish.embeddable.web.WebListener;
 import org.glassfish.embeddable.web.config.VirtualServerConfig;
-import org.glassfish.deployment.common.DeploymentUtils;
+import org.glassfish.grizzly.Buffer;
+import org.glassfish.grizzly.Connection;
+import org.glassfish.grizzly.config.GenericGrizzlyListener;
+import org.glassfish.grizzly.config.dom.NetworkListener;
+import org.glassfish.grizzly.http.ContentEncoding;
+import org.glassfish.grizzly.http.HttpContent;
+import org.glassfish.grizzly.http.HttpCodecFilter;
+import org.glassfish.grizzly.http.HttpProbe;
+import org.glassfish.grizzly.http.HttpHeader;
+import org.glassfish.grizzly.http.HttpPacket;
+import org.glassfish.grizzly.http.HttpRequestPacket;
+import org.glassfish.grizzly.http.HttpResponsePacket;
+import org.glassfish.grizzly.http.TransferEncoding;
+import org.glassfish.grizzly.http.util.HttpStatus;
+import org.glassfish.grizzly.filterchain.FilterChainContext;
+
 import org.glassfish.internal.api.ClassLoaderHierarchy;
 import org.glassfish.internal.api.ServerContext;
 import org.glassfish.internal.api.Globals;
@@ -258,6 +278,12 @@ public class VirtualServer extends StandardHost
     private String defaultContextPath = null;
 
     private transient ServerContext serverContext;
+
+    private Config serverConfig;
+
+    private GrizzlyService grizzlyService;
+
+    private WebContainer webContainer;
 
     private boolean ssoFailoverEnabled = false;
 
@@ -1601,6 +1627,121 @@ public class VirtualServer extends StandardHost
         }
     }
 
+    void addHttpProbes(boolean disable) {
+
+        List<String> listenerList = StringUtils.parseStringList(
+                vsBean.getNetworkListeners(), ",");
+        String[] listeners = (listenerList != null) ?
+                listenerList.toArray(new String[listenerList.size()]) :
+                new String[0];
+        List<NetworkListener> networkListeners = new ArrayList<NetworkListener>();
+
+        for (String listener : listeners) {
+            for (NetworkListener networkListener :
+                    serverConfig.getNetworkConfig().getNetworkListeners().getNetworkListener()) {
+                if (networkListener.getName().equals(listener)) {
+                    networkListeners.add(networkListener);
+                }
+            }
+        }
+        for (final NetworkListener listener : networkListeners) {
+            final GrizzlyProxy proxy =
+                    (GrizzlyProxy) grizzlyService.lookupNetworkProxy(listener);
+            if (proxy != null) {
+                GenericGrizzlyListener grizzlyListener =
+                        (GenericGrizzlyListener) proxy.getUnderlyingListener();
+                List<HttpCodecFilter> codecFilters =
+                        grizzlyListener.getFilters(HttpCodecFilter.class);
+                if (codecFilters == null || codecFilters.isEmpty()) {
+                    _logger.log(Level.SEVERE, "pewebcontainer.accesslog.reconfigure");
+                } else {
+                    for (HttpCodecFilter codecFilter : codecFilters) {
+                        if (disable) {
+                            codecFilter.getMonitoringConfig().clearProbes();
+                        } else {
+                            if (codecFilter.getMonitoringConfig().getProbes().length == 0) {
+
+                                    codecFilter.getMonitoringConfig().addProbes(new HttpProbe() {
+                                        @Override
+                                        public void onDataReceivedEvent(Connection connection, Buffer buffer) {
+                                        }
+                                        @Override
+                                        public void onDataSentEvent(Connection connection, Buffer buffer) {
+                                        }
+                                        @Override
+                                        public void onHeaderParseEvent(Connection connection, HttpHeader header, int size) {
+                                        }
+                                        @Override
+                                        public void onHeaderSerializeEvent(Connection connection, HttpHeader header, Buffer buffer) {
+                                        }
+                                        @Override
+                                        public void onContentChunkParseEvent(Connection connection, HttpContent content) {
+                                        }
+                                        @Override
+                                        public void onContentChunkSerializeEvent(Connection connection, HttpContent content) {
+                                        }
+                                        @Override
+                                        public void onContentEncodingParseEvent(Connection connection, HttpHeader header, Buffer buffer, ContentEncoding contentEncoding) {
+                                        }
+                                        @Override
+                                        public void onContentEncodingSerializeEvent(Connection connection, HttpHeader header, Buffer buffer, ContentEncoding contentEncoding) {
+                                        }
+                                        @Override
+                                        public void onTransferEncodingParseEvent(Connection connection, HttpHeader header, Buffer buffer, TransferEncoding transferEncoding) {
+                                        }
+                                        @Override
+                                        public void onTransferEncodingSerializeEvent(Connection connection, HttpHeader header, Buffer buffer, TransferEncoding transferEncoding) {
+                                        }
+                                        @Override
+                                        public void onErrorEvent(Connection connection, HttpPacket packet, Throwable error) {
+
+                                            if (packet instanceof HttpRequestPacket) {
+
+                                                final HttpRequestPacket requestPacket = (HttpRequestPacket) packet;
+                                                final HttpResponsePacket responsePacket = requestPacket.getResponse();
+
+                                                // 400 should be hardcoded since the response status isn't available for bad requests
+                                                responsePacket.setStatus(HttpStatus.BAD_REQUEST_400);
+
+                                                org.glassfish.grizzly.http.server.Request request = org.glassfish.grizzly.http.server.Request.create();
+                                                org.glassfish.grizzly.http.server.Response response = org.glassfish.grizzly.http.server.Response.create();
+
+                                                request.initialize(response, requestPacket, FilterChainContext.create(connection), null);
+                                                response.initialize(request, responsePacket, FilterChainContext.create(connection), null);
+
+                                                Response res = new Response();
+                                                res.setCoyoteResponse(response);
+
+                                                WebConnector connector = webContainer.getConnectorMap().get(listener.getName());
+                                                if (connector != null) {
+                                                    Request req = new Request();
+                                                    req.setCoyoteRequest(request);
+                                                    req.setConnector(connector);
+                                                    try {
+                                                        accessLogValve.postInvoke(req, res);
+                                                    } catch (IOException ex) {
+                                                        _logger.log(Level.SEVERE, "pewebcontainer.accesslog.reconfigure", ex);
+                                                    }
+                                                } else {
+                                                    _logger.log(Level.SEVERE, "pewebcontainer.accesslog.reconfigure");
+                                                }
+                                            } else {
+                                                _logger.log(Level.SEVERE, "pewebcontainer.accesslog.reconfigure");
+                                            }
+                                        }
+                                    });
+                            }
+                        }
+                    }
+                }
+            } else {
+                _logger.log(Level.SEVERE, "pewebcontainer.accesslog.reconfigure");
+            }
+
+        }
+    }
+
+
     /**
      * Reconfigures the access log of this VirtualServer with its
      * updated access log related properties.
@@ -1648,6 +1789,7 @@ public class VirtualServer extends StandardHost
                 webcontainerFeatureFactory);
             if (restart) {
                 accessLogValve.start();
+                addHttpProbes(false);
             }
         } catch (LifecycleException le) {
             _logger.log(Level.SEVERE,
@@ -1683,6 +1825,7 @@ public class VirtualServer extends StandardHost
                             le);
             }
         }
+        addHttpProbes(false);
     }
 
     /**
@@ -1691,6 +1834,7 @@ public class VirtualServer extends StandardHost
      */
     void disableAccessLogging() {
         removeValve(accessLogValve);
+        addHttpProbes(true);
     }
 
     /**
@@ -1821,7 +1965,19 @@ public class VirtualServer extends StandardHost
     void setServerContext(ServerContext serverContext) {
         this.serverContext = serverContext;
     }
-      
+
+    void setServerConfig(Config serverConfig) {
+        this.serverConfig = serverConfig;
+    }
+
+    void setGrizzlyService(GrizzlyService grizzlyService) {
+        this.grizzlyService = grizzlyService;
+    }
+
+    void setWebContainer(WebContainer webContainer) {
+        this.webContainer = webContainer;
+    }
+
     // ----------------------------------------------------- embedded methods
     
     
