@@ -40,6 +40,9 @@
 
 package org.glassfish.paas.orchestrator.provisioning.cli;
 
+import com.sun.enterprise.config.serverbeans.ApplicationRef;
+import com.sun.enterprise.config.serverbeans.Cluster;
+import com.sun.enterprise.config.serverbeans.Clusters;
 import com.sun.enterprise.config.serverbeans.Domain;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
@@ -50,6 +53,7 @@ import org.glassfish.embeddable.CommandResult;
 import org.glassfish.embeddable.CommandRunner;
 import org.glassfish.paas.orchestrator.PaaSDeploymentContext;
 import org.glassfish.paas.orchestrator.ServiceOrchestratorImpl;
+import org.glassfish.paas.orchestrator.config.ServiceRef;
 import org.glassfish.paas.orchestrator.config.Services;
 import org.glassfish.paas.orchestrator.config.SharedService;
 import org.glassfish.paas.orchestrator.service.spi.Plugin;
@@ -59,6 +63,7 @@ import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
 
+import java.util.List;
 import java.util.logging.Logger;
 
 
@@ -97,6 +102,29 @@ public class DeleteSharedService implements AdminCommand {
                 if (service.getServiceName().equals(serviceName)) {
                     if (service instanceof SharedService) {
                         found = true;
+                        List<ServiceRef> serviceRefList=services.getServiceRefs();
+                        String appName=null;
+                        for (ServiceRef serviceRef : serviceRefList) {
+                                if (serviceName.equalsIgnoreCase(serviceRef.getServiceName())) {
+                                    appName = serviceRef.getApplicationName();
+                                    if (appName != null) {
+                                        Clusters clusters = domain.getClusters();
+                                        List<Cluster> clusterList = clusters.getCluster();
+                                        for (Cluster cluster : clusterList) {
+                                            ApplicationRef applicationRef = cluster.getApplicationRef(appName);
+                                            if (applicationRef != null) {
+                                                if ("true".equalsIgnoreCase(applicationRef.getEnabled())) {
+                                                    report.setMessage("A shared service by name [" + serviceName + "] is used by an application " +
+                                                            "[" + appName + "].");
+                                                    report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                                                    return;
+                                                }
+                                            }
+                                        }
+
+                                    }
+                                }
+                            }
 
                         SharedService sharedService = (SharedService) service;
                         ProvisionedService provisionedService = serviceOrchestrator.getSharedService(sharedService.getServiceName());

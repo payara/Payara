@@ -130,6 +130,12 @@ public class CreateSharedService implements AdminCommand {
             }
         }
 
+        if(initMode.equalsIgnoreCase("lazy")){
+            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            report.setFailureCause(new UnsupportedOperationException("Init type 'lazy' not supported. Set init-mode of service as 'eager'"));
+            return;
+        }
+
         //TODO interact with Orchestrator to see whether this particular service-configuration can
         //TODO be really supported.
 

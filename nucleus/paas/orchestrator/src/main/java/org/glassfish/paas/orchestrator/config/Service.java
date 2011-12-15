@@ -42,7 +42,6 @@ package org.glassfish.paas.orchestrator.config;
 
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.config.PropertiesDesc;
-import org.glassfish.quality.ToDo;
 import org.jvnet.hk2.component.Injectable;
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.ConfigBeanProxy;
@@ -51,10 +50,9 @@ import org.jvnet.hk2.config.Element;
 import org.jvnet.hk2.config.types.Property;
 import org.jvnet.hk2.config.types.PropertyBag;
 
+import javax.validation.constraints.NotNull;
 import java.beans.PropertyVetoException;
 import java.util.List;
-
-import javax.validation.constraints.NotNull;
 
 @Configured
 public interface Service extends ConfigBeanProxy, Injectable, PropertyBag{
@@ -74,10 +72,9 @@ public interface Service extends ConfigBeanProxy, Injectable, PropertyBag{
 
     void setType(String type) throws PropertyVetoException;
 
-    //TODO later (when app-scoped-service and service-ref are stored within <application>) this attribute should be key
     @Param
     @NotNull
-    @Attribute()
+    @Attribute(key = true)
     String getServiceName();
 
     void setServiceName(String name) throws PropertyVetoException;
