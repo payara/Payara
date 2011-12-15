@@ -39,24 +39,28 @@
  */
 package org.glassfish.admin.rest.cli;
 
-import org.glassfish.api.ActionReport;
-import org.glassfish.api.Param;
-
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
-
-import org.jvnet.hk2.annotations.Service;
+import java.beans.PropertyVetoException;
+import org.glassfish.admin.rest.RestConfig;
+import org.glassfish.api.ActionReport;
+import org.glassfish.api.Param;
+import org.glassfish.api.admin.AdminCommand;
+import org.glassfish.api.admin.AdminCommandContext;
+import org.glassfish.api.admin.CommandLock;
+import org.glassfish.api.admin.ExecuteOn;
+import org.glassfish.api.admin.RestEndpoint;
+import org.glassfish.api.admin.RestEndpoints;
+import org.glassfish.api.admin.RuntimeType;
+import org.glassfish.api.admin.ServerEnvironment;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.component.PerLookup;
+import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.PerLookup;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
-
-import java.beans.PropertyVetoException;
-import org.glassfish.admin.rest.RestConfig;
-import org.glassfish.api.admin.*;
 
 /**
  * Remote asadmin command: set-rest-config
@@ -73,10 +77,7 @@ import org.glassfish.api.admin.*;
 @ExecuteOn(RuntimeType.DAS)
 @CommandLock(CommandLock.LockType.NONE)
 @RestEndpoints({
-    @RestEndpoint(configBean=Domain.class,
-        opType=RestEndpoint.OpType.POST, 
-        path="_set-rest-admin-config", 
-        description="_set-rest-admin-config")
+    @RestEndpoint(configBean=Domain.class, opType=RestEndpoint.OpType.POST)
 })
 public class SetRestConfig implements AdminCommand {
 

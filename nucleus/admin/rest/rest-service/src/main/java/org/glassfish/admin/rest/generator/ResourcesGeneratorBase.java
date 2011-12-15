@@ -40,23 +40,20 @@
 package org.glassfish.admin.rest.generator;
 
 import java.util.HashMap;
-import org.glassfish.admin.rest.ResourceUtil;
-import org.glassfish.api.admin.RestRedirect;
-import org.jvnet.hk2.config.ConfigModel;
-import org.jvnet.hk2.config.DomDocument;
-
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import org.glassfish.admin.rest.Constants;
+import org.glassfish.admin.rest.ResourceUtil;
 import org.glassfish.admin.rest.RestService;
 import org.glassfish.api.admin.CommandModel;
 import org.glassfish.api.admin.CommandRunner;
-import org.glassfish.api.admin.RestRedirects;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.ConfigBeanProxy;
+import org.jvnet.hk2.config.ConfigModel;
+import org.jvnet.hk2.config.DomDocument;
 
 /**
  * @author Mitesh Meswani

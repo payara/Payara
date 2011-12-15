@@ -62,7 +62,6 @@ public class ApplicationTest extends RestTestBase {
     public static final String URL_APPLICATION_DEPLOY = "/domain/applications/application";
     public static final String URL_CODI_SAMPLE = "http://java.net/jira/secure/attachment/44850/GlassfishIssues.war";
     public static final String URL_CREATE_INSTANCE = "/domain/create-instance";
-    public static final String URL_SUB_COMPONENTS = "/domain/applications/application/list-sub-components";
 
     @Test
     public void testApplicationDeployment() throws URISyntaxException {
@@ -137,12 +136,12 @@ public class ApplicationTest extends RestTestBase {
 
         try {
             deployApp(getFile("stateless-simple.ear"), appName, appName);
-            ClientResponse response = get(URL_SUB_COMPONENTS + "?id=" + appName);
+            ClientResponse response = get(URL_APPLICATION_DEPLOY +"/" + appName + "/list-sub-components?id=" + appName);
             checkStatusForSuccess(response);
             String subComponents = response.getEntity(String.class);
             assertTrue(subComponents.contains("stateless-simple.war"));
 
-            response = get(URL_SUB_COMPONENTS + "?id=stateless-simple.war&appname=" + appName);
+            response = get(URL_APPLICATION_DEPLOY +"/" + appName + "/list-sub-components?id=stateless-simple.war&appname=" + appName);
             checkStatusForSuccess(response);
             subComponents = response.getEntity(String.class);
             assertTrue(subComponents.contains("GreeterServlet"));
@@ -201,7 +200,7 @@ public class ApplicationTest extends RestTestBase {
                 put("modulename", "stateless-simple.war");
             }};
 
-            ClientResponse response = get("/domain/applications/application/get-context-root", contextRootPayload);
+            ClientResponse response = get("/domain/applications/application/" +appName + "/get-context-root", contextRootPayload);
             checkStatusForSuccess(response);
             assertTrue(response.getEntity(String.class).contains("helloworld"));
         } finally {

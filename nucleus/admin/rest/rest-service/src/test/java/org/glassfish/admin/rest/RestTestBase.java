@@ -78,6 +78,7 @@ public class RestTestBase {
     protected static final String AUTH_USER_NAME = "dummyuser";
     protected static final String AUTH_PASSWORD = "dummypass";
     protected static final String CONTEXT_ROOT_MANAGEMENT = "management";
+    private static final HTTPBasicAuthFilter basicAuthFilter = new HTTPBasicAuthFilter(AUTH_USER_NAME, AUTH_PASSWORD);
 
     protected Client client;
     protected static String adminHost;
@@ -142,11 +143,11 @@ public class RestTestBase {
     }
 
     protected void resetClient() {
-        client.removeAllFilters();
+        client.removeFilter(basicAuthFilter);
     }
 
     protected void authenticate() {
-        client.addFilter(new HTTPBasicAuthFilter(AUTH_USER_NAME, AUTH_PASSWORD));
+        client.addFilter(basicAuthFilter);
     }
 
     protected <T> T getTestClass(Class<T> clazz) {

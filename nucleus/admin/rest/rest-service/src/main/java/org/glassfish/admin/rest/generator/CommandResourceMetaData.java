@@ -35,7 +35,12 @@
 package org.glassfish.admin.rest.generator;
 
 import java.lang.reflect.Method;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.RestEndpoint;
 import org.glassfish.api.admin.RestEndpoints;
@@ -137,8 +142,8 @@ public class CommandResourceMetaData {
                                 CommandResourceMetaData metaData = new CommandResourceMetaData();
                                 metaData.command = service.name();
                                 metaData.httpMethod = endpoint.opType().name();
-                                metaData.resourcePath = endpoint.path();
-                                metaData.displayName = endpoint.description();
+                                metaData.resourcePath = endpoint.path().isEmpty() ? service.name() : endpoint.path();
+                                metaData.displayName = endpoint.description().isEmpty() ? metaData.resourcePath : endpoint.description();
 
                                 metaData.commandParams = new ParameterMetaData[endpoint.params().length];
                                 int index = 0;

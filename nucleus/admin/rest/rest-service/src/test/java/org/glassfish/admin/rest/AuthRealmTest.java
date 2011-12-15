@@ -55,7 +55,7 @@ public class AuthRealmTest extends RestTestBase {
     public static final String URL_LIST_FILE_USERS = "/domain/configs/config/server-config/security-service/auth-realm/file/list-users";
     public static final String URL_CREATE_USER = "/domain/configs/config/server-config/security-service/auth-realm/file/create-user";
     public static final String URL_DELETE_USER = "/domain/configs/config/server-config/security-service/auth-realm/file/delete-user";
-    public static final String URL_AUTH_REALM_CLASS_NAMES = "/domain/configs/config/server-config/security-service/auth-realm/list-predefined-authrealm-classnames";
+    public static final String URL_AUTH_REALM_CLASS_NAMES = "/domain/list-predefined-authrealm-classnames";
 
     // Disable this test for now...
 //    @Test
@@ -103,11 +103,6 @@ public class AuthRealmTest extends RestTestBase {
     @Test
     public void testListAuthRealmClassNames() {
         List<String> classNameList = getCommandResults(get(URL_AUTH_REALM_CLASS_NAMES));
-        // Overkill? Too fragile?
-        assertTrue(classNameList.contains("com.sun.enterprise.security.auth.realm.certificate.CertificateRealm"));
-//        assertTrue(classNameList.contains("com.sun.enterprise.security.ee.auth.realm.jdbc.JDBCRealm"));
-        assertTrue(classNameList.contains("com.sun.enterprise.security.auth.realm.file.FileRealm"));
-        assertTrue(classNameList.contains("com.sun.enterprise.security.auth.realm.pam.PamRealm"));
-        assertTrue(classNameList.contains("com.sun.enterprise.security.auth.realm.ldap.LDAPRealm"));
+        assertTrue(!classNameList.isEmpty());
     }
 }

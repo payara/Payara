@@ -85,11 +85,9 @@ import org.jvnet.hk2.config.types.Property;
 @ExecuteOn({RuntimeType.DAS})
 @TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE,
     CommandTarget.CLUSTER, CommandTarget.CONFIG, CommandTarget.CLUSTERED_INSTANCE})
-//        {"Config", "__synchronize-realm-from-config", "POST", "synchronize-realm-from-config", "Synchronize-realm-from-config", "target=$parent"},
 @RestEndpoints({
     @RestEndpoint(configBean=Config.class,
         opType=OpType.POST,
-        description="Synchronize-realm-from-config",
         path="synchronize-realm-from-config",
         params={
             @RestParam(name="target", value="$parent")

@@ -67,10 +67,7 @@ import org.glassfish.api.admin.*;
 @Scoped(PerLookup.class)
 @CommandLock(CommandLock.LockType.NONE)
 @RestEndpoints({
-    @RestEndpoint(configBean=Domain.class,
-        opType=RestEndpoint.OpType.GET, 
-        path="_get-rest-admin-config", 
-        description="Get Rest Admin Configuration")
+    @RestEndpoint(configBean=Domain.class)
 })
 public class GetRestConfig implements AdminCommand {
 

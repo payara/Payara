@@ -62,7 +62,6 @@ import org.glassfish.api.admin.*;
 @CommandLock(CommandLock.LockType.NONE)
 @RestEndpoints({
     @RestEndpoint(configBean=Domain.class,
-        opType=RestEndpoint.OpType.GET, 
         path="list-predefined-authrealm-classnames", 
         description="List Auth Realm Class Names")
 })
