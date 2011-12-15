@@ -72,7 +72,7 @@ public class ServerStartupState extends AbstractPaaSDeploymentState {
 
     public Set<ProvisionedService> retrieveProvisionedServices(PaaSDeploymentContext context) {
         logger.entering(getClass().getName(), "retrieveProvisionedServices");
-        final ServiceOrchestratorImpl orchestrator = context.getOrchestrator();
+        final ServiceOrchestratorImpl orchestrator = (ServiceOrchestratorImpl)context.getOrchestrator();
         //final Set<Plugin> installedPlugins = orchestrator.getPlugins();
         String appName = context.getAppName();
         final ServiceMetadata appServiceMetadata = orchestrator.getServiceMetadata(appName);

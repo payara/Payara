@@ -73,7 +73,7 @@ public class DisableState extends AbstractPaaSDeploymentState {
     }
 
     private void stopServices(PaaSDeploymentContext context) throws PaaSDeploymentException {
-        final ServiceOrchestratorImpl orchestrator = context.getOrchestrator();
+        final ServiceOrchestratorImpl orchestrator = (ServiceOrchestratorImpl)context.getOrchestrator();
         //
         String appName = context.getAppName();
         final ServiceMetadata appServiceMetadata = orchestrator.getServiceMetadata(appName);
@@ -105,7 +105,7 @@ public class DisableState extends AbstractPaaSDeploymentState {
     }
 
     public boolean stopService(PaaSDeploymentContext context, String appName, ServiceDescription sd) {
-        final ServiceOrchestratorImpl orchestrator = context.getOrchestrator();
+        final ServiceOrchestratorImpl orchestrator = (ServiceOrchestratorImpl)context.getOrchestrator();
         //final Set<Plugin> installedPlugins = orchestrator.getPlugins();
         //Plugin<?> chosenPlugin = orchestrator.getPluginForServiceType(installedPlugins, sd.getServiceType());
         Plugin chosenPlugin = sd.getPlugin();

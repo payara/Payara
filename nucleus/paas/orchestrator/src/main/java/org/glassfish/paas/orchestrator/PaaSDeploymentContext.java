@@ -49,7 +49,7 @@ import org.glassfish.paas.orchestrator.service.metadata.ServiceMetadata;
  * @author Jagadish Ramu
  */
 public class PaaSDeploymentContext {
-    private ServiceOrchestratorImpl orchestrator;
+    private ServiceOrchestrator orchestrator;
     private DeploymentContext dc;
     private String appName;
 
@@ -59,7 +59,7 @@ public class PaaSDeploymentContext {
         this.dc = dc;
     }
 
-    public ServiceOrchestratorImpl getOrchestrator(){
+    public ServiceOrchestrator getOrchestrator(){
         return orchestrator;
     }
 

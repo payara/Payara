@@ -62,7 +62,7 @@ public abstract class AssociationState extends AbstractPaaSDeploymentState {
     protected void associateProvisionedServices(PaaSDeploymentContext context, boolean preDeployment)
             throws PaaSDeploymentException {
         logger.entering(getClass().getName(), "associateProvisionedServices-beforeDeployment=" + preDeployment);
-        final ServiceOrchestratorImpl orchestrator = context.getOrchestrator();
+        final ServiceOrchestratorImpl orchestrator = (ServiceOrchestratorImpl)context.getOrchestrator();
         final DeploymentContext dc = context.getDeploymentContext();
         String appName = context.getAppName();
         final ServiceMetadata appServiceMetadata = orchestrator.getServiceMetadata(appName);

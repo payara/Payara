@@ -58,6 +58,7 @@ import org.jvnet.hk2.config.types.Property;
 
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -231,6 +232,19 @@ public class ServiceUtil implements PostConstruct {
         } else {
             throw new RuntimeException("Invalid service, no such service [" + serviceName + "] found");
         }
+    }
+
+    public Collection<String> getApplicationsUsingSharedService(String sharedService){
+        List<String> applications = new ArrayList<String>();
+        ServiceInfo serviceInfo = getServiceInfo(sharedService, null, null);
+        if(serviceInfo != null){
+            for(ServiceRef serviceRef : getServices().getServiceRefs()){
+                if(serviceRef.getServiceName().equals(sharedService)){
+                    applications.add(serviceRef.getApplicationName());
+                }
+            }
+        }
+        return applications;
     }
 
     public void updateIPAddress(String serviceName, String appName, final String IPAddress, ServiceType type) {
@@ -569,10 +583,6 @@ public class ServiceUtil implements PostConstruct {
         } catch (TransactionFailure exception) {
             throw new RuntimeException(exception.getMessage(), exception);
         }
-    }
-
-    private void debug(String message) {
-        System.out.println("[ServiceUtil] " + message);
     }
 
     public ServiceStatus getServiceStatus(ServiceInfo entry) {

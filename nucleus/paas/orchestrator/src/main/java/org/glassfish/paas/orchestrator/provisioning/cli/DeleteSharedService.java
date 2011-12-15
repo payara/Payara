@@ -103,6 +103,7 @@ public class DeleteSharedService implements AdminCommand {
                         Plugin plugin = provisionedService.getServiceDescription().getPlugin();
                         PaaSDeploymentContext pdc = new PaaSDeploymentContext(null, null, serviceOrchestrator);
                         plugin.unprovisionService(provisionedService.getServiceDescription(), pdc);
+                        serviceOrchestrator.removeSharedService(sharedService.getServiceName());
 
                         // delete virtual cluster
                         String virtualClusterName = service.getServiceName();

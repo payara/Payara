@@ -58,7 +58,7 @@ import java.util.logging.Level;
 public abstract class DissociationState extends AbstractPaaSDeploymentState {
 
     protected void dissociateProvisionedServices(PaaSDeploymentContext context, boolean beforeUndeploy) {
-        final ServiceOrchestratorImpl orchestrator = context.getOrchestrator();
+        final ServiceOrchestratorImpl orchestrator = (ServiceOrchestratorImpl)context.getOrchestrator();
         final DeploymentContext dc = context.getDeploymentContext();
         String appName = context.getAppName();
         final ServiceMetadata appServiceMetadata = orchestrator.getServiceMetadata(appName);

@@ -73,7 +73,7 @@ public class ServiceDependencyDiscoveryState extends AbstractPaaSDeploymentState
     public void handle(PaaSDeploymentContext context) throws PaaSDeploymentException{
         try{
             ServiceMetadata appServiceMetadata = serviceDependencyDiscovery(context);
-            final ServiceOrchestratorImpl orchestrator = context.getOrchestrator();
+            final ServiceOrchestratorImpl orchestrator = (ServiceOrchestratorImpl)context.getOrchestrator();
             String appName = context.getAppName();
             //registering metadata with Orchestrator must be the last operation (only if service dependency discovery
             //completes without any errors).
@@ -101,7 +101,7 @@ public class ServiceDependencyDiscoveryState extends AbstractPaaSDeploymentState
                                                         String appName, ReadableArchive archive)
     throws PaaSDeploymentException {
 
-        final ServiceOrchestratorImpl orchestrator = context.getOrchestrator();
+        final ServiceOrchestratorImpl orchestrator = (ServiceOrchestratorImpl)context.getOrchestrator();
         Set<Plugin> installedPlugins = orchestrator.getPlugins();
         try {
             //1. SERVICE DISCOVERY

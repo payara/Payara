@@ -43,7 +43,6 @@ package org.glassfish.paas.orchestrator.state;
 import org.glassfish.embeddable.CommandResult;
 import org.glassfish.embeddable.CommandRunner;
 import org.glassfish.paas.orchestrator.*;
-import org.glassfish.paas.orchestrator.provisioning.ServiceScope;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceUtil;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceDescription;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceMetadata;
@@ -91,7 +90,7 @@ public class ProvisioningState extends AbstractPaaSDeploymentState {
         //TODO add exception handling for the entire task
         //TODO pass the exception via the PaaSDeploymentContext ?
         logger.entering(getClass().getName(), "provisionServices");
-        final ServiceOrchestratorImpl orchestrator = context.getOrchestrator();
+        final ServiceOrchestratorImpl orchestrator = (ServiceOrchestratorImpl)context.getOrchestrator();
         final Set<ProvisionedService> appPSs = new HashSet<ProvisionedService>();
         String appName = context.getAppName();
         final ServiceMetadata appServiceMetadata = orchestrator.getServiceMetadata(appName);
@@ -158,7 +157,7 @@ public class ProvisioningState extends AbstractPaaSDeploymentState {
             }
         }
         if(!failed){
-            context.getOrchestrator().addProvisionedServices(context.getAppName(), appPSs);
+            orchestrator.addProvisionedServices(context.getAppName(), appPSs);
             return appPSs;
         }else{
             for(ProvisionedService ps : appPSs){
@@ -175,7 +174,9 @@ public class ProvisioningState extends AbstractPaaSDeploymentState {
 
             // Clean up the glassfish cluster, virtual cluster config, etc..
             // TODO :: assuming app-scoped virtual cluster. fix it when supporting shared/external service.
-            orchestrator.removeVirtualCluster(virtualClusterName);
+            if(virtualClusterName != null){
+                orchestrator.removeVirtualCluster(virtualClusterName);
+            }
 
             PaaSDeploymentException re = new PaaSDeploymentException("Failure while provisioning services");
             if(rootCause != null){

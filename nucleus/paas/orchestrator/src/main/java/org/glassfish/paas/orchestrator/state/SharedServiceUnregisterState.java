@@ -64,7 +64,7 @@ public class SharedServiceUnregisterState extends AbstractPaaSDeploymentState {
 
     public void handle(PaaSDeploymentContext context) throws PaaSDeploymentException {
         String appName = context.getAppName();
-        ServiceOrchestratorImpl orchestrator = context.getOrchestrator();
+        ServiceOrchestratorImpl orchestrator = (ServiceOrchestratorImpl)context.getOrchestrator();
         ServiceMetadata serviceMetadata = orchestrator.getServiceMetadata(appName);
         Collection<ServiceDescription> serviceDescriptions =  serviceMetadata.getServiceDescriptions();
         Collection<ProvisionedService> provisionedServices = orchestrator.getProvisionedServices(appName);

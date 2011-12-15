@@ -521,6 +521,11 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
         return true;
     }
 
+
+    public Collection<String> getApplicationsUsingSharedService(String sharedService){
+        return serviceUtil.getApplicationsUsingSharedService(sharedService);
+    }
+
     /**
      * @inheritDoc
      */
@@ -550,6 +555,10 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
 
     public void addSharedService(String serviceName, ProvisionedService provisionedService) {
         sharedServices.put(serviceName, provisionedService);
+    }
+
+    public ProvisionedService removeSharedService(String serviceName) {
+        return sharedServices.remove(serviceName);
     }
 
     public ProvisionedService getSharedService(String serviceName){

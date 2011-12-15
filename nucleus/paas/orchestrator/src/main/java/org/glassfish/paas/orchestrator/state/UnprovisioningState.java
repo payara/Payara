@@ -77,7 +77,7 @@ public class UnprovisioningState extends AbstractPaaSDeploymentState {
     }
 
     private void unprovisionServices(final PaaSDeploymentContext context) throws PaaSDeploymentException {
-        final ServiceOrchestratorImpl orchestrator = context.getOrchestrator();
+        final ServiceOrchestratorImpl orchestrator = (ServiceOrchestratorImpl)context.getOrchestrator();
         String appName = context.getAppName();
 
         Collection<ServiceDescription> serviceDescriptionsToUnprovision = orchestrator.getServiceDescriptionsToUnprovision(appName);

@@ -81,7 +81,7 @@ public class EnableState extends AbstractPaaSDeploymentState {
 
     private Set<ProvisionedService> startServices(PaaSDeploymentContext context) throws PaaSDeploymentException {
         Set<ProvisionedService> appPSs = new HashSet<ProvisionedService>();
-        final ServiceOrchestratorImpl orchestrator = context.getOrchestrator();
+        final ServiceOrchestratorImpl orchestrator = (ServiceOrchestratorImpl)context.getOrchestrator();
         String appName = context.getAppName();
         final ServiceMetadata appServiceMetadata = orchestrator.getServiceMetadata(appName);
 
@@ -112,7 +112,7 @@ public class EnableState extends AbstractPaaSDeploymentState {
     }
 
     public ProvisionedService startService(PaaSDeploymentContext context, String appName, ServiceDescription sd) {
-        final ServiceOrchestratorImpl orchestrator = context.getOrchestrator();
+        final ServiceOrchestratorImpl orchestrator = (ServiceOrchestratorImpl)context.getOrchestrator();
         //final Set<Plugin> installedPlugins = orchestrator.getPlugins();
         Plugin<?> chosenPlugin = sd.getPlugin();
         logger.log(Level.INFO, "Retrieving provisioned Service for " + sd + " through " + chosenPlugin);

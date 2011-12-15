@@ -134,7 +134,7 @@ public class ServiceReference {
     @Override
     public String toString() {
         return "ServiceReference [name = " + name + ", referenceType = " + referenceType +
-                ", serviceName = " + serviceName + "]";
+                ", serviceName = " + serviceName + ", serviceDescriptionName = " + serviceDescriptionName + "  ]";
     }
 
     public Properties getProperties() {
