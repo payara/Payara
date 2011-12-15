@@ -178,7 +178,7 @@ public final class InstanceInfo {
 
     private void getFutureResult() {
         try {
-            InstanceCommandResult r = future.get(timeoutInMsec, TimeUnit.SECONDS);
+            InstanceCommandResult r = future.get(timeoutInMsec, TimeUnit.MILLISECONDS);
             InstanceCommandExecutor res = (InstanceCommandExecutor) r.getInstanceCommand();
             String instanceLocation = res.getCommandOutput();
             // Remove the pesky \n out
