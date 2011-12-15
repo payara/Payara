@@ -46,9 +46,10 @@ import java.io.File;
 import java.util.*;
 import java.util.logging.*;
 
-import com.sun.enterprise.web.EmbeddedWebContainer;
 import com.sun.enterprise.web.ContextFacade;
+import com.sun.enterprise.web.EmbeddedWebContainer;
 import com.sun.enterprise.web.VirtualServerFacade;
+import com.sun.enterprise.web.WebConnector;
 import com.sun.enterprise.config.serverbeans.HttpService;
 import org.glassfish.grizzly.config.dom.Ssl;
 import org.glassfish.grizzly.config.dom.FileCache;
@@ -493,21 +494,33 @@ public class WebContainerImpl implements WebContainer {
 
             }
 
+            EmbeddedWebArchivist archivist = habitat.getComponent(EmbeddedWebArchivist.class);
+            archivist.setDefaultWebXml(config.getDefaultWebXml());
+
+            embedded.setDirectoryListing(config.getListings());
+
             WebListener listener = getWebListener(config.getListenerName());
             if (listener == null) {
-                listener = createWebListener(config.getListenerName(), HttpListener.class);
-                listener.setPort(config.getPort());
-                addWebListener(listener, config.getVirtualServerId());
+                listener = getWebListener(config.getPort());
+                if (listener == null) {
+                    boolean found = false;
+                    for (Map.Entry entry : webContainer.getConnectorMap().entrySet()) {
+                        if (((WebConnector)entry.getValue()).getPort() == config.getPort()) {
+                            found = true;
+                            log.info("Port "+config.getPort()+" is already configured");
+                        }
+                    }
+                    if (!found) {
+                        listener = createWebListener(config.getListenerName(), HttpListener.class);
+                        listener.setPort(config.getPort());
+                        addWebListener(listener, config.getVirtualServerId());
+                    }
+                }
             } else {
                 if (listener.getPort() != config.getPort()) {
                     listener.setPort(config.getPort());
                 }
             }
-
-            EmbeddedWebArchivist archivist = habitat.getComponent(EmbeddedWebArchivist.class);
-            archivist.setDefaultWebXml(config.getDefaultWebXml());
-
-            embedded.setDirectoryListing(config.getListings());
 
         }  catch (Exception ex) {
             ex.printStackTrace();
@@ -800,7 +813,7 @@ public class WebContainerImpl implements WebContainer {
 
     }
 
-    /*private WebListener getWebListener(int port) {
+    private WebListener getWebListener(int port) {
 
         for (WebListener listener : listeners) {
             if (listener.getPort() == port) {
@@ -810,7 +823,7 @@ public class WebContainerImpl implements WebContainer {
 
         return null;
 
-    }*/
+    }
 
     /**
      * Gets the collection of <tt>WebListener</tt> instances registered
