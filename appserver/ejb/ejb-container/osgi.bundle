@@ -48,6 +48,8 @@
                         com.sun.ejb.spi.container; \
                         com.sun.appserv.ejb; version=${project.osgi.version}
 
+# See issue #10545 to know why we have explicitly added org.glassfish.apf.context
+# in Import-Package
 # Note that the CORBA and javax classes are needed so that dynamic RMI-IIOP
 # can create a stub for ReadOnlyEJBHome.
 Import-Package: \
@@ -65,6 +67,7 @@ Import-Package: \
                         org.omg.CORBA_2_3.portable;resolution:=optional, \
                         javax.rmi.CORBA;resolution:=optional, \
                         com.sun.corba.ee.impl.presentation.rmi.codegen;resolution:=optional, \
+                        org.glassfish.apf.context, \
                         *
 
 Bundle-SymbolicName: \
