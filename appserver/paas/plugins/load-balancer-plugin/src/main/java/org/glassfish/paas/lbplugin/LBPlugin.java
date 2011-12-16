@@ -74,6 +74,7 @@ import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.WebBundleDescriptor;
 import com.sun.enterprise.deployment.archivist.ApplicationFactory;
 import org.glassfish.paas.lbplugin.util.LBServiceConfiguration;
+import org.glassfish.paas.orchestrator.provisioning.ServiceScope;
 import org.glassfish.paas.orchestrator.service.metadata.TemplateIdentifier;
 import org.glassfish.virtualization.spi.TemplateCondition;
 import org.glassfish.virtualization.spi.TemplateInstance;
@@ -178,6 +179,7 @@ public class LBPlugin implements Plugin {
         return appName + "-lb";
     }
 
+    @Override
     public ProvisionedService provisionService(ServiceDescription serviceDescription, PaaSDeploymentContext dc) {
         String serviceName = serviceDescription.getName();
         LBPluginLogger.getLogger().log(Level.INFO,"Given serviceName : " + serviceName);
@@ -210,6 +212,11 @@ public class LBPlugin implements Plugin {
             params.add("--waitforcompletion=true");
             params.add("--virtualcluster");
             params.add(serviceDescription.getVirtualClusterName());
+            String domainName = System.getProperty(Constants.DOMAIN_NAME_SYSTEM_PROPERTY);
+            if(domainName != null){
+               params.add("--domainname");
+               params.add(domainName);
+            }
             params.add(serviceName);
             parameters = new String[params.size()];
             parameters = params.toArray(parameters);
@@ -220,7 +227,7 @@ public class LBPlugin implements Plugin {
             }
         //}
 
-        ServiceInfo entry = lbServiceUtil.retrieveCloudEntry(serviceName, serviceDescription.getAppName(), ServiceType.LOAD_BALANCER);
+        ServiceInfo entry = lbServiceUtil.retrieveCloudEntry(serviceName, serviceDescription.getAppName(), ServiceType.LB);
         if (entry == null) {
             throw new RuntimeException("unable to get LB service : " + serviceName);
         }
@@ -244,16 +251,18 @@ public class LBPlugin implements Plugin {
 
         GlassFishLBProvisionedService ps = new GlassFishLBProvisionedService(serviceDescription, new Properties());
         ps.setStatus(ServiceStatus.STARTED);
-        return ps;
+        return (ProvisionedService) ps;
     }
 
+    @Override
     public ProvisionedService getProvisionedService(ServiceDescription serviceDescription, ServiceInfo serviceInfo) {
-        ServiceInfo entry = lbServiceUtil.retrieveCloudEntry(serviceDescription.getName(), serviceDescription.getAppName(), ServiceType.LOAD_BALANCER);
+        ServiceInfo entry = lbServiceUtil.retrieveCloudEntry(serviceDescription.getName(), serviceDescription.getAppName(), ServiceType.LB);
         GlassFishLBProvisionedService ps = new GlassFishLBProvisionedService(serviceDescription, new Properties());
         ps.setStatus(lbServiceUtil.getServiceStatus(entry));
-        return ps;
+        return (ProvisionedService) ps;
     }
 
+    @Override
     public void associateServices(ProvisionedService serviceConsumer, ServiceReference svcRef,
                                   ProvisionedService serviceProvider, boolean beforeDeployment, PaaSDeploymentContext dc) {
         if(beforeDeployment){
@@ -285,6 +294,13 @@ public class LBPlugin implements Plugin {
         params.add(serviceProvider.getServiceDescription().getName());
         params.add("--virtualcluster");
         params.add(serviceDescription.getVirtualClusterName());
+        ServiceScope scope = serviceDescription.getServiceScope();
+        if(scope != null && scope.equals(ServiceScope.SHARED)){
+            if (lbServiceUtil.getApplicationsUsingSharedService(
+                    serviceName).size() > 1){
+                params.add("--first=false");
+            }
+        }
         params.add(serviceName);
         parameters = new String[params.size()];
         parameters = params.toArray(parameters);
@@ -455,6 +471,13 @@ public class LBPlugin implements Plugin {
         params.add(serviceProvider.getServiceDescription().getName());
         params.add("--virtualcluster");
         params.add(serviceDescription.getVirtualClusterName());
+        ServiceScope scope = serviceDescription.getServiceScope();
+        if(scope != null && scope.equals(ServiceScope.SHARED)){
+            if (lbServiceUtil.getApplicationsUsingSharedService(
+                    serviceName).size() > 1){
+                params.add("--last=false");
+            }
+        }
         params.add(serviceName);
         parameters = new String[params.size()];
         parameters = params.toArray(parameters);

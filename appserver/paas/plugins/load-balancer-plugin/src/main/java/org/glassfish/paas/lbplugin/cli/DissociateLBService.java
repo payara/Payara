@@ -46,6 +46,7 @@ import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.CommandLock;
 import org.glassfish.embeddable.CommandRunner;
+import org.glassfish.internal.api.ServerContext;
 import org.glassfish.paas.lbplugin.LBProvisionerFactory;
 import org.glassfish.paas.lbplugin.logger.LBPluginLogger;
 import org.jvnet.hk2.annotations.Inject;
@@ -71,6 +72,13 @@ public class DissociateLBService extends BaseLBService implements AdminCommand {
     @Param(name = "clustername")
     String clusterName;
 
+    @Param(name = "last", optional=true, defaultValue="true")
+    boolean isLast;
+
+    @Inject
+    private ServerContext serverContext;
+
+    @Override
     public void execute(AdminCommandContext context) {
         ActionReport report = context.getActionReport();
         LBPluginLogger.getLogger().log(Level.INFO,"_dissociate-lb-service called.");
@@ -78,7 +86,8 @@ public class DissociateLBService extends BaseLBService implements AdminCommand {
             retrieveVirtualMachine();
             LBProvisionerFactory.getInstance().getLBProvisioner()
                     .dissociateApplicationServerWithLB(virtualMachine,
-                    serviceName, commandRunner, clusterName, habitat);
+                    serviceName, commandRunner, clusterName, habitat,
+                    serverContext.getInstallRoot().getAbsolutePath(), isLast);
             report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
             report.setMessage("Service with name [" + serviceName + "] is dissociated with cluster  " + "[ " + clusterName + " ] successfully.");
         } catch (Exception ex) {

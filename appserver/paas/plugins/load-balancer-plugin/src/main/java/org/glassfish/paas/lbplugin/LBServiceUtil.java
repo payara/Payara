@@ -40,6 +40,7 @@
 
 package org.glassfish.paas.lbplugin;
 
+import java.util.Collection;
 import org.glassfish.hk2.scopes.Singleton;
 import org.glassfish.paas.orchestrator.config.Services;
 import org.glassfish.paas.orchestrator.provisioning.ServiceInfo;
@@ -94,6 +95,10 @@ public class LBServiceUtil {
 
     public ServiceStatus getServiceStatus(ServiceInfo entry) {
         return serviceUtil.getServiceStatus(entry);
+    }
+
+    public Collection<String> getApplicationsUsingSharedService(String sharedService){
+        return serviceUtil.getApplicationsUsingSharedService(sharedService);
     }
 
 }

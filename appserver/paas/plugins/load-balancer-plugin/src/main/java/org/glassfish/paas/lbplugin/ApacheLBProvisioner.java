@@ -129,15 +129,12 @@ public class ApacheLBProvisioner implements LBProvisioner{
     }
 
     @Override
-    public void configureLB(VirtualMachine virtualMachine, LBServiceConfiguration configuration) throws Exception{
+    public void configureLB(VirtualMachine virtualMachine, String domainName, LBServiceConfiguration configuration) throws Exception{
         String[] command = null;
-        if (configuration.isSslEnabled()) {
-            command = new String[]{configureServerScript,
-                        configuration.getHttpPort(), configuration.getHttpsPort()};
-        } else {
-            command = new String[]{configureServerScript,
-                        configuration.getHttpPort()};
-        }
+        command = new String[]{configureServerScript,
+                    configuration.getHttpPort(),
+                    (configuration.isSslEnabled() ? configuration.getHttpsPort() : "-1"),
+                    (domainName != null ? domainName : Constants.NULL_DOMAIN_NAME)};
         String output = virtualMachine.executeOn(command);
         LBPluginLogger.getLogger().log(Level.INFO,"Output of configure apache server command : " + output);
         
@@ -146,9 +143,9 @@ public class ApacheLBProvisioner implements LBProvisioner{
     @Override
     public void associateApplicationServerWithLB(VirtualMachine virtualMachine,
             String serviceName, CommandRunner commandRunner, String clusterName,
-            Habitat habitat, String glassfishHome, boolean isReconfig) throws Exception{
+            Habitat habitat, String glassfishHome, boolean isFirst, boolean isReconfig) throws Exception{
         if(!isReconfig){
-            createApacheConfig(clusterName, commandRunner, habitat, serviceName);
+            createApacheConfig(clusterName, commandRunner, habitat, serviceName, isFirst);
         } else {
             if(isNativeMode()){
                 createAjpListenerPerInstance(clusterName, commandRunner, habitat);
@@ -169,7 +166,7 @@ public class ApacheLBProvisioner implements LBProvisioner{
     }
 
     private void createApacheConfig(String clusterName,
-            CommandRunner commandRunner, Habitat habitat, String serviceName)
+            CommandRunner commandRunner, Habitat habitat, String serviceName, boolean isFirst)
             throws RuntimeException {
         ArrayList params = new ArrayList();
         CommandResult result;
@@ -222,22 +219,35 @@ public class ApacheLBProvisioner implements LBProvisioner{
             throw new RuntimeException("jk-enabled for " + AJP_LISTENER_NAME + " failed.");
         }
         LBPluginLogger.getLogger().log(Level.INFO, "jk-enabled succeeded");
-        params.clear();
-        params.add("--target");
-        params.add(clusterName);
-        params.add(serviceName + "-lb-config");
-        result = commandRunner.run("create-http-lb-config", (String[]) params.toArray(new String[params.size()]));
-        if (result.getExitStatus().equals(CommandResult.ExitStatus.FAILURE)) {
-            LBPluginLogger.getLogger().log(Level.INFO, "create-http-lb-config failed");
-            throw new RuntimeException("create-http-lb-config failed.");
+
+        if (isFirst) {
+            params.clear();
+            params.add(serviceName + "-lb-config");
+            result = commandRunner.run("create-http-lb-config", (String[]) params.toArray(new String[params.size()]));
+            if (result.getExitStatus().equals(CommandResult.ExitStatus.FAILURE)) {
+                LBPluginLogger.getLogger().log(Level.INFO, "create-http-lb-config failed");
+                throw new RuntimeException("create-http-lb-config failed.");
+            }
+            LBPluginLogger.getLogger().log(Level.INFO, "create-http-lb-config succeeded");
         }
-        LBPluginLogger.getLogger().log(Level.INFO, "create-http-lb-config succeeded");
+        
+        params.clear();
+        params.add("--config");
+        params.add(serviceName + "-lb-config");
+        params.add(clusterName);
+        result = commandRunner.run("create-http-lb-ref", (String[]) params.toArray(new String[params.size()]));
+        if (result.getExitStatus().equals(CommandResult.ExitStatus.FAILURE)) {
+            LBPluginLogger.getLogger().log(Level.INFO, "create-http-lb-ref failed");
+            throw new RuntimeException("create-http-lb-ref failed.");
+        }
+        LBPluginLogger.getLogger().log(Level.INFO, "create-http-lb-ref succeeded");
+
     }
     
     @Override
     public void dissociateApplicationServerWithLB(VirtualMachine virtualMachine,
             String serviceName, CommandRunner commandRunner, String clusterName,
-            Habitat habitat) {
+            Habitat habitat, String glassfishHome, boolean isLast) throws Exception {
         ArrayList params = new ArrayList();
         params.add(clusterName);
         CommandResult result = commandRunner.run("disable-http-lb-server", (String[]) params.toArray(new String[params.size()]));
@@ -258,14 +268,19 @@ public class ApacheLBProvisioner implements LBProvisioner{
         }
         LBPluginLogger.getLogger().log(Level.INFO, "delete-http-lb-ref succeeded");
 
-        params.clear();
-        params.add(serviceName + "-lb-config");
-        result = commandRunner.run("delete-http-lb-config", (String[]) params.toArray(new String[params.size()]));
-        if (result.getExitStatus().equals(CommandResult.ExitStatus.FAILURE)) {
-            LBPluginLogger.getLogger().log(Level.INFO, "delete-http-lb-config failed");
-            throw new RuntimeException("delete-http-lb-config failed.");
+        reconfigureApache(habitat, virtualMachine, serviceName, glassfishHome);
+
+        if (isLast) {
+            params.clear();
+            params.add(serviceName + "-lb-config");
+            result = commandRunner.run("delete-http-lb-config", (String[]) params.toArray(new String[params.size()]));
+            if (result.getExitStatus().equals(CommandResult.ExitStatus.FAILURE)) {
+                LBPluginLogger.getLogger().log(Level.INFO, "delete-http-lb-config failed");
+                throw new RuntimeException("delete-http-lb-config failed.");
+            }
+            LBPluginLogger.getLogger().log(Level.INFO, "delete-http-lb-config succeeded");
         }
-        LBPluginLogger.getLogger().log(Level.INFO, "delete-http-lb-config succeeded");
+        
     }
 
     @Override

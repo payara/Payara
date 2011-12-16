@@ -60,11 +60,11 @@ public interface LBProvisioner {
 
     public void associateApplicationServerWithLB(VirtualMachine virtualMachine,
             String serviceName, CommandRunner commandRunner, String clusterName,
-            Habitat habitat, String glassfishHome, boolean isReconfig) throws Exception;
+            Habitat habitat, String glassfishHome, boolean isFirst, boolean isReconfig) throws Exception;
 
     public void dissociateApplicationServerWithLB(VirtualMachine virtualMachine,
             String serviceName, CommandRunner commandRunner, String clusterName,
-            Habitat habitat) throws Exception;
+            Habitat habitat, String glassfishHome, boolean isLast) throws Exception;
 
     public boolean handles(String vendorName);
 
@@ -76,6 +76,6 @@ public interface LBProvisioner {
 
     public void initialize();
 
-    public void configureLB(VirtualMachine vm, LBServiceConfiguration configuration) throws Exception;
+    public void configureLB(VirtualMachine vm, String domainName, LBServiceConfiguration configuration) throws Exception;
 
 }

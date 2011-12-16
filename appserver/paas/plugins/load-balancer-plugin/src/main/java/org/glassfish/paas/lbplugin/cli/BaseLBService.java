@@ -85,7 +85,7 @@ public class BaseLBService {
         if (virtualClusters != null && serviceName != null && virtualClusterName != null) {
             virtualCluster = virtualClusters.byName(virtualClusterName);
             String vmId = lbServiceUtil.getInstanceID(
-                    serviceName, appName, ServiceType.LOAD_BALANCER);
+                    serviceName, appName, ServiceType.LB);
             if (vmId != null) {
                 LBPluginLogger.getLogger().log(Level.INFO,"Found VirtualMachine for load-balancer with id : " + vmId);
                 virtualMachine = virtualCluster.vmByName(vmId);

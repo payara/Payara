@@ -41,5 +41,5 @@
 package org.glassfish.paas.orchestrator.provisioning.cli;
 
 public enum ServiceType {
-    APPLICATION_SERVER, DATABASE, LOAD_BALANCER
+    APPLICATION_SERVER, DATABASE, LB
 }

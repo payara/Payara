@@ -77,8 +77,8 @@ public class StartLBService extends BaseLBService implements AdminCommand {
         final ActionReport report = context.getActionReport();
         LBPluginLogger.getLogger().log(Level.INFO,"_start-lb-service called.");
 
-        if (lbServiceUtil.isValidService(serviceName, appName, LOAD_BALANCER)) {
-            ServiceInfo entry = lbServiceUtil.retrieveCloudEntry(serviceName, appName, LOAD_BALANCER);
+        if (lbServiceUtil.isValidService(serviceName, appName, LB)) {
+            ServiceInfo entry = lbServiceUtil.retrieveCloudEntry(serviceName, appName, LB);
             String ipAddress = entry.getIpAddress();
             String status = entry.getState();
             if (status == null || status.equalsIgnoreCase(ServiceInfo.State.Start_in_progress.toString())
@@ -88,19 +88,19 @@ public class StartLBService extends BaseLBService implements AdminCommand {
                 return;
             }
 
-            lbServiceUtil.updateState(serviceName, appName, Start_in_progress.toString(), LOAD_BALANCER);
+            lbServiceUtil.updateState(serviceName, appName, Start_in_progress.toString(), LB);
             try {
                 retrieveVirtualMachine();
                 if (startVM) {
                     virtualMachine.start();
                 }
                 LBProvisionerFactory.getInstance().getLBProvisioner().startLB(virtualMachine);
-                lbServiceUtil.updateState(serviceName, appName, Running.toString(), LOAD_BALANCER);
+                lbServiceUtil.updateState(serviceName, appName, Running.toString(), LB);
                 report.setMessage("lb-service [" + serviceName + "] started");
                 report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
             } catch (Exception ex) {
                 LBPluginLogger.getLogger().log(Level.INFO,"exception",ex);
-                lbServiceUtil.updateState(serviceName, appName, ServiceInfo.State.NotRunning.toString(), LOAD_BALANCER);
+                lbServiceUtil.updateState(serviceName, appName, ServiceInfo.State.NotRunning.toString(), LB);
                 report.setMessage("lb-service [" + serviceName + "] start failed");
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             }

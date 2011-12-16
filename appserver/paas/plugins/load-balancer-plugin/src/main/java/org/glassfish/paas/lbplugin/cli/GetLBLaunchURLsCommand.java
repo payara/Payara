@@ -60,6 +60,7 @@ import org.glassfish.paas.lbplugin.util.LBServiceConfiguration;
 import org.glassfish.paas.orchestrator.config.ApplicationScopedService;
 import org.glassfish.paas.orchestrator.config.Services;
 import org.glassfish.paas.orchestrator.config.Service;
+import org.glassfish.paas.orchestrator.config.ServiceRef;
 import org.glassfish.paas.orchestrator.provisioning.ServiceInfo;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceType;
 
@@ -85,22 +86,23 @@ public class GetLBLaunchURLsCommand implements AdminCommand {
         ActionReport report = context.getActionReport();
         String contextRoot = getContextRoot(appName);
 
-        ApplicationScopedService appScopedService =
-                getService(ServiceType.LOAD_BALANCER.name(), appName);
-        if(appScopedService == null){
+        Service lbService =
+                getService(ServiceType.LB.name(), appName);
+        if(lbService == null){
             return;
         }
 
         ServiceInfo entry = lbServiceUtil.retrieveCloudEntry(
-                appScopedService.getServiceName(),
-                appName, ServiceType.LOAD_BALANCER);
+                lbService.getServiceName(),
+                appName, ServiceType.LB);
         if(entry == null){
             throw new RuntimeException("Unable to get entry for lb service");
         }
         LBServiceConfiguration configuration = LBServiceConfiguration.
                 parseServiceInfo(entry);
-        String ipAddress = appScopedService.getPropertyValue(
+        String ipAddress = lbService.getPropertyValue(
                 Constants.IP_ADDRESS_PROP_NAME);
+        String domainName = lbService.getPropertyValue(Constants.DOMAIN_NAME);
 
         ActionReport.MessagePart part = report.getTopMessagePart();
         //Add a new part for adding LB urls
@@ -111,7 +113,8 @@ public class GetLBLaunchURLsCommand implements AdminCommand {
         childPart.setMessage(Integer.toString(j++));
         childPart.addProperty(DeploymentProperties.PROTOCOL,
                 Constants.HTTP_PROTOCOL);
-        childPart.addProperty(DeploymentProperties.HOST, ipAddress);
+        childPart.addProperty(DeploymentProperties.HOST,
+                (domainName != null ? domainName : ipAddress));
         childPart.addProperty(DeploymentProperties.PORT,
                 configuration.getHttpPort());
         childPart.addProperty(DeploymentProperties.CONTEXT_PATH,
@@ -120,7 +123,8 @@ public class GetLBLaunchURLsCommand implements AdminCommand {
             childPart = part.addChild();
             childPart.addProperty(DeploymentProperties.PROTOCOL,
                     Constants.HTTPS_PROTOCOL);
-            childPart.addProperty(DeploymentProperties.HOST, ipAddress);
+            childPart.addProperty(DeploymentProperties.HOST,
+                    (domainName != null ? domainName : ipAddress));
             childPart.addProperty(DeploymentProperties.PORT,
                     configuration.getHttpsPort());
             childPart.addProperty(DeploymentProperties.CONTEXT_PATH,
@@ -128,7 +132,7 @@ public class GetLBLaunchURLsCommand implements AdminCommand {
         }
     }
 
-    private ApplicationScopedService getService(String serviceType, String appName) {
+    private Service getService(String serviceType, String appName) {
         Services services = lbServiceUtil.getServices();
         for (Service service : services.getServices()) {
             if (service instanceof ApplicationScopedService) {
@@ -137,6 +141,16 @@ public class GetLBLaunchURLsCommand implements AdminCommand {
                 if (appName.equals(appScopedService.getApplicationName())
                         && serviceType.equalsIgnoreCase(appScopedService.getType())) {
                     return appScopedService;
+                }
+            }
+        }
+        for (ServiceRef serviceRef : services.getServiceRefs()) {
+            if (appName.equals(serviceRef.getApplicationName())) {
+                for (Service service : services.getServices()) {
+                    if (serviceRef.getServiceName().equals(service.getServiceName())
+                            && serviceType.equalsIgnoreCase(service.getType())) {
+                        return service;
+                    }
                 }
             }
         }

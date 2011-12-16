@@ -49,6 +49,7 @@ import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.CommandLock;
+import org.glassfish.paas.lbplugin.Constants;
 import org.glassfish.paas.lbplugin.LBProvisionerFactory;
 import org.glassfish.paas.lbplugin.LBProvisioner;
 import org.glassfish.paas.lbplugin.logger.LBPluginLogger;
@@ -79,6 +80,9 @@ public class CreateLBService extends BaseLBService implements AdminCommand, Runn
 
     @Param(name="templateid", optional=true)
     private String templateId;
+
+    @Param(name="domainname", optional=true)
+    private String domainName;
 
     @Param(name="servicecharacteristics", optional=true, separator=':')
     public Properties serviceCharacteristics;
@@ -223,18 +227,21 @@ public class CreateLBService extends BaseLBService implements AdminCommand, Runn
                         serviceConfigurations);
 
                 LBProvisionerFactory.getInstance().getLBProvisioner()
-                        .configureLB(vm, configuration);
+                        .configureLB(vm, domainName, configuration);
 
 
 
                 // add app-scoped-service config for each vm instance as well.
                 entry = new ServiceInfo();
                 entry.setServiceName(serviceName);
-                entry.setServerType(ServiceType.LOAD_BALANCER.toString());
+                entry.setServerType(ServiceType.LB.toString());
                 entry.setIpAddress(vm.getAddress().getHostAddress());
                 entry.setInstanceId(vm.getName());
                 entry.setState(ServiceInfo.State.NotRunning.toString());
                 entry.setAppName(appName);
+                if(domainName != null){
+                    entry.setProperty(Constants.DOMAIN_NAME, domainName);
+                }
                 configuration.updateServiceInfo(entry);
                 lbServiceUtil.registerLBInfo(entry);
             } catch (Throwable ex) {

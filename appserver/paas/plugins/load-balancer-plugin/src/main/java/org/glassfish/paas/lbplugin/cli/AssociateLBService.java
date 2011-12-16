@@ -75,9 +75,13 @@ public class AssociateLBService extends BaseLBService implements AdminCommand {
     @Param(name = "clustername")
     String clusterName;
 
+    @Param(name = "first", optional=true, defaultValue="true")
+    boolean isFirst;
+
     @Inject
     private ServerContext serverContext;
 
+    @Override
     public void execute(AdminCommandContext context) {
         ActionReport report = context.getActionReport();
         LBPluginLogger.getLogger().log(Level.INFO,"_associate-lb-service called.");
@@ -87,7 +91,7 @@ public class AssociateLBService extends BaseLBService implements AdminCommand {
                     .associateApplicationServerWithLB(virtualMachine,
                     serviceName, commandRunner, clusterName, habitat,
                     serverContext.getInstallRoot().getAbsolutePath(),
-                    isReconfig);
+                    isFirst, isReconfig);
             report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
             report.setMessage("Service with name [" + serviceName + "] is associated with cluster  " + "[ " + clusterName + " ] successfully.");
         } catch (Exception ex) {
