@@ -242,9 +242,6 @@ public class Request
     }
     // ----------------------------------------------------- Instance Variables
 
-    // Is the remote browser closed the connection.
-    protected boolean clientClosedConnection = false;
-
 
     /**
      * The set of cookies associated with this Request.
@@ -648,7 +645,6 @@ public class Request
         asyncStarted.set(false);
         isAsyncComplete = false;
         asyncStartedThread = null;
-        clientClosedConnection = false;
     }
 
     /**
@@ -4210,11 +4206,7 @@ public class Request
         boolean result = true;
         final AsyncContextImpl asyncContextLocal = this.asyncContext;
         try {
-            if (clientClosedConnection && asyncContextLocal != null) {
-                asyncContextLocal.notifyAsyncListeners(AsyncContextImpl.AsyncEventType.ERROR, null);
-            } else {
-                asyncTimeout();
-            }
+            asyncTimeout();
         } finally {
             result = asyncContextLocal != null && !asyncContextLocal.getAndResetDispatchInScope();
         }
