@@ -39,6 +39,7 @@
  */
 package com.sun.enterprise.v3.admin.cluster;
 
+import com.sun.enterprise.config.serverbeans.Nodes;
 import java.util.List;
 import java.util.ArrayList;
 import com.sun.enterprise.util.cluster.RemoteType;
@@ -62,6 +63,12 @@ import org.glassfish.cluster.ssh.util.SSHUtil;
 @I18n("create.node.ssh")
 @Scoped(PerLookup.class)
 @ExecuteOn({RuntimeType.DAS})
+@RestEndpoints({
+    @RestEndpoint(configBean=Nodes.class,
+        opType=RestEndpoint.OpType.POST, 
+        path="create-node-ssh", 
+        description="Create Node SSH")
+})
 public class CreateNodeSshCommand extends CreateRemoteNodeCommand {
     @Param(name = "sshport", optional = true, defaultValue = NodeUtils.NODE_DEFAULT_SSH_PORT)
     private String sshport;
