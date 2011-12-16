@@ -99,7 +99,7 @@
         setPageSessionAttribute(key="rest-api" value="true");
         setPageSessionAttribute(key="networkListenerUrl", value="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/network-config/network-listeners/network-listener");
         gf.getChildrenNamesList(endpoint="#{pageSession.networkListenerUrl}", id="name", result="#{pageSession.networkListeners}");
-        gf.getChildList(parentEndpoint="#{pageSession.selfUrl}", childType="#{pageSession.childType}", result="#{requestScope.listOfRows}");
+        gf.getProtocols(configName="#{pageSession.configName}", result="#{requestScope.listOfRows}");
         foreach (var="protocol" list="#{requestScope.listOfRows}") {
             createList(size="0" result="#{pageSession.listenerList}");
             foreach (var="listener" list="#{pageSession.networkListeners}") {

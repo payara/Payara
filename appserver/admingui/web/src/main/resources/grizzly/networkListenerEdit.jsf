@@ -65,9 +65,11 @@
         setPageSessionAttribute(key="selfUrl", value="#{pageSession.parentUrl}/#{pageSession.childType}/#{pageSession.Name}");
         setPageSessionAttribute(key="rest-api" value="true");
         gf.getEntityAttrs(endpoint="#{pageSession.selfUrl}", valueMap="#{pageSession.valueMap}");
-
+        setPageSessionAttribute(key="protocolName" value="#{pageSession.valueMap['protocol']}");
+        if ("#{pageSession.valueMap['protocol']}=$constant{com.sun.enterprise.config.serverbeans.ServerTags.PORT_UNIF_PROTOCOL_NAME}"){
+            setPageSessionAttribute(key="protocolName" value="$constant{com.sun.enterprise.config.serverbeans.ServerTags.SEC_ADMIN_LISTENER_PROTOCOL_NAME}");
+        }
         setPageSessionAttribute(key="convertToFalseList" value={"enabled", "jkEnabled"});
-        setPageSessionAttribute(key="protocolName" value="#{pageSession.valueMap['protocol']}")
         urlencode(value="#{pageSession.protocolName}" encoding="UTF-8" result="#{pageSession.encodedProtocolName}");
         setPageSessionAttribute(key="parentUrl2", value="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/network-config/protocols");
         setPageSessionAttribute(key="childType2" value="protocol");
@@ -87,9 +89,9 @@
         setSessionAttribute(key="secureCancelUrl" value="#{pageSession.selfPage}")
         setPageSessionAttribute(key="readOnly" value="#{false}" );
         if ("(#{pageSession.Name}=admin-listener)") {
-           if ("(#{pageSession.configName}=server-config)") {
+            if ("(#{pageSession.configName}=server-config)") {
                 setPageSessionAttribute(key="readOnly" value="#{true}" );
-           } 
+            }
         }
         //If secure admin is enabled, we will not show the other tabs since GUI doesn't have support for handling low level grizzly config yet.
         setPageSessionAttribute(key="showSSLTab" value="#{true}");
@@ -126,7 +128,7 @@
 
     <sun:property id="protocol"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.grizzly.networkListener.protocol}" >
              //<sun:staticText id="protocol" text="#{pageSession.valueMap['protocol']}" />
-             <sun:hyperlink id="protocol" text="#{pageSession.valueMap['protocol']}" url="#{request.contextPath}/web/grizzly/protocolEdit.jsf?name=#{pageSession.valueMap['protocol']}&configName=#{configName}" />
+             <sun:hyperlink id="protocol" text="#{pageSession.protocolName}" url="#{request.contextPath}/web/grizzly/protocolEdit.jsf?name=#{pageSession.protocolName}&configName=#{configName}" />
         </sun:property>
 
     <sun:property id="http-protocol"  rendered="#{pageSession.showHttp}" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="HTTP Protocol: " >
@@ -135,7 +137,7 @@
             gf.restRequest(endpoint="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/network-config/network-listeners/network-listener/#{pageSession.Name}/find-http-protocol.json" method="get" result="#{pageSession.httpProtocol}");
             setPageSessionAttribute(key="httpProtocolName" value="#{pageSession.httpProtocol.data.properties.protocol}");
             setPageSessionAttribute(key="sameAsProtocol" value="#{false}");
-            if ("#{pageSession.httpProtocolName}=#{pageSession.valueMap['protocol']}")
+            if ("#{pageSession.httpProtocolName}=#{pageSession.protocolName}")
                 setPageSessionAttribute(key="sameAsProtocol" value="#{true}");
             if(! #{pageSession.sameAsProtocol}){
                 setPageSessionAttribute(key="showHttp" value="#{true}")

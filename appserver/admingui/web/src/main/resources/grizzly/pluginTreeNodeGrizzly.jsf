@@ -78,6 +78,7 @@
         <!facet image>
             <sun:iconHyperlink id="treeIcon" icon="TREE_FOLDER" url="/web/grizzly/protocols.jsf?configName=${configName}" border="0" immediate="true" alt="$resource{i18n_web.tree.grizzly.protocols}"/>
         </facet>
+        <!filterTree filterProtocols() />
     </dynamicTreeNode>
 
     <dynamicTreeNode id="transports"

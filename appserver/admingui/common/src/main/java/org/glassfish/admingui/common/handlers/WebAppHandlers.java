@@ -53,8 +53,10 @@
 package org.glassfish.admingui.common.handlers;
 
 import com.sun.jsftemplating.annotation.HandlerInput;
+import com.sun.jsftemplating.annotation.HandlerOutput;
 import com.sun.jsftemplating.annotation.Handler;
 import com.sun.jsftemplating.layout.descriptors.handler.HandlerContext;
+import com.sun.enterprise.config.serverbeans.ServerTags;
 
 import java.net.URLEncoder;
 import java.util.ArrayList;
@@ -176,4 +178,52 @@ public class WebAppHandlers {
        }
    }
 
+   @Handler(id="gf.getProtocols",
+        input={
+            @HandlerInput(name="configName", type=String.class, required=true)
+        },
+        output={
+            @HandlerOutput(name = "result", type = java.util.List.class)
+        })
+   public static void getProtocols(HandlerContext handlerCtx) {
+       String configName = (String) handlerCtx.getInputValue("configName");
+       String endpoint = GuiUtil.getSessionValue("REST_URL") + "/configs/config/" + configName + "/network-config/protocols/protocol";
+       List<Map> result = new ArrayList<Map>();
+       try {
+            List<Map> childElements = (List<Map>) RestUtil.buildChildEntityList(endpoint, "", null, null, "name");
+            for (Map m: childElements) {
+                String name = (String) m.get("name");
+                if (!(name.equals(ServerTags.PORT_UNIF_PROTOCOL_NAME) || name.equals(ServerTags.REDIRECT_PROTOCOL_NAME))) {
+                    result.add(m);
+                }
+            }
+            handlerCtx.setOutputValue("result", result);
+        } catch (Exception ex) {
+            GuiUtil.handleException(handlerCtx, ex);
+        }
+   }
+
+   @Handler(id="gf.getNetworkListeners",
+        input={
+            @HandlerInput(name="configName", type=String.class, required=true)
+        },
+        output={
+            @HandlerOutput(name = "result", type = java.util.List.class)
+        })
+   public static void getNetworkListeners(HandlerContext handlerCtx) {
+       String configName = (String) handlerCtx.getInputValue("configName");
+       String endpoint = GuiUtil.getSessionValue("REST_URL") + "/configs/config/" + configName + "/network-config/network-listeners/network-listener";
+       try {
+            List<Map> childElements = (List<Map>) RestUtil.buildChildEntityList(endpoint, "", null, null, "name");
+            for (Map m: childElements) {
+                String name = (String) m.get("protocol");
+                if (name.equals(ServerTags.PORT_UNIF_PROTOCOL_NAME)) {
+                    m.put("protocol", ServerTags.SEC_ADMIN_LISTENER_PROTOCOL_NAME);
+                }
+            }
+            handlerCtx.setOutputValue("result", childElements);
+        } catch (Exception ex) {
+            GuiUtil.handleException(handlerCtx, ex);
+        }
+   }
 }
