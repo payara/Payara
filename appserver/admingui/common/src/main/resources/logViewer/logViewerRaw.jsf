@@ -118,7 +118,9 @@ function logViewerRaw(url) {
     };
 
     var poll = function() {
-        admingui.ajax.get(url, 'log', success);
+        admingui.ajax.get(url, 'log', success, function(req) {
+            req.setRequestHeader('X-Auth-Token', '#{sessionScope.__rTkn__}');
+        });
     }
     
     poll();

@@ -2110,7 +2110,7 @@ admingui.ajax = {
         return reqObj;
     },
 
-    get: function(url, targetId, callback) {
+    get: function(url, targetId, callback, beforesend) {
         // Ping header to make sure header stays "fresh"
         if (targetId && (targetId == 'content')) {
             admingui.ajax.pingHeader();
@@ -2149,6 +2149,10 @@ admingui.ajax = {
 		}
 	    }
             req.open("GET", url, true);
+            if (beforesend) {
+                // Callback that can be used to modify request before it is sent
+                beforesend(req);
+            }
             req.send("");
         }
     },
