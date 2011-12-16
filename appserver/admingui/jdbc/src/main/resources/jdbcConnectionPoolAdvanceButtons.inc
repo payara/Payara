@@ -65,6 +65,15 @@
                         }
                     }
                 }
+
+                if ("!(#{pageSession.valueMap.isConnectionValidationRequired}=true)") {
+                    //While saving the connection validation settings, first save the connection validation to false.
+                    gf.filterMap(map="#{pageSession.valueMap}" attrNames={'isConnectionValidationRequired'} keep="#{true}" resultMap="#{validationMap}");
+                    gf.createEntity(endpoint="#{pageSession.resourceUrl}"
+                            attrs="#{validationMap}"
+                            convertToFalse="#{pageSession.convertToFalseList}"
+                     );
+                }
                 
                 if ("#{pageSession.valueMap['lazyConnectionAssociation']}") {
                         setValueExpression(expression="#{pageSession.valueMap['lazyConnectionEnlistment']}", value="true");
