@@ -50,6 +50,7 @@ import com.sun.enterprise.config.serverbeans.ServerTags;
 import com.sun.enterprise.deployment.EjbDescriptor;
 import com.sun.enterprise.admin.monitor.callflow.Agent;
 import com.sun.enterprise.util.io.FileUtils;
+import com.sun.enterprise.util.Utility;
 import com.sun.logging.LogDomains;
 import com.sun.ejb.base.sfsb.util.EJBServerConfigLookup;
 import com.sun.enterprise.deployment.xml.RuntimeTagNames;
@@ -146,7 +147,7 @@ public class EjbContainerUtilImpl
     private  Map<Long, BaseContainer> id2Container
             = new ConcurrentHashMap<Long, BaseContainer>();
 
-    private  Timer _timer = new Timer(true);
+    private  Timer _timer;
 
     private  boolean _insideContainer = true;
 
@@ -199,8 +200,9 @@ public class EjbContainerUtilImpl
     }
 
     public void postConstruct() {
+        ClassLoader ejbImplClassLoader = EjbContainerUtilImpl.class.getClassLoader();
         if (callFlowAgent == null) {
-            callFlowAgent = (Agent) Proxy.newProxyInstance(EjbContainerUtilImpl.class.getClassLoader(),
+            callFlowAgent = (Agent) Proxy.newProxyInstance(ejbImplClassLoader,
                     new Class[] {Agent.class},
                     new InvocationHandler() {
                         public Object invoke(Object proxy, Method m, Object[] args) {
@@ -215,6 +217,20 @@ public class EjbContainerUtilImpl
             // On a clustered instance default is true
             _doDBReadBeforeTimeout = true;
         }
+       
+        //avoid starting JDK timer in application class loader.  The life of _timer
+        //field is longer than deployed apps, and any reference to app class loader
+        //in JDK timer thread will cause class loader leak.  Issue 17468 
+        ClassLoader originalClassLoader = null;
+        try {
+            originalClassLoader = Utility.setContextClassLoader(ejbImplClassLoader);
+            _timer = new Timer(true);
+        } finally {
+            if (originalClassLoader != null) {
+                Utility.setContextClassLoader(originalClassLoader);
+            }
+        }
+
         _me = this;
     }
 
