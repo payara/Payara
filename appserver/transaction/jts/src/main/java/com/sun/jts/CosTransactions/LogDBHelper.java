@@ -115,12 +115,19 @@ class LogDBHelper {
         }
     }
 
-    void initTable() {
+    void setServerName() {
         // Add a mapping between the serverName and the instanceName
-        serverName = Configuration.getServerName();
+        String serverName0 = Configuration.getServerName();
+        if (serverName != null && serverName.equals(serverName0)) {
+            //Nothing changed
+            return;
+        } else {
+            serverName = serverName0;
+        }
+
         if (_logger.isLoggable(Level.INFO)) {
-            _logger.info("LogDBHelper.initTable for serverName: " + serverName);
-            _logger.info("LogDBHelper.initTable for instanceName: " + instanceName);
+            _logger.info("LogDBHelper.setServerName for serverName: " + serverName);
+            _logger.info("LogDBHelper.setServerName for instanceName: " + instanceName);
         }
         String s = getServerNameForInstanceName(instanceName);
         if (s == null) {
@@ -133,6 +140,7 @@ class LogDBHelper {
             // Override the mapping
             _logger.log(Level.WARNING, "jts.exception_in_db_log_server_to_instance_mapping", 
                     new Object[] {instanceName, s, serverName});
+            deleteRecord(0, s);
             addRecord(0, null);
         }
     }

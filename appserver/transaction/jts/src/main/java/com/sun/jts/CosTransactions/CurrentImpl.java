@@ -162,7 +162,7 @@ public class CurrentImpl extends org.omg.CORBA.LocalObject
 
             if (Configuration.isDBLoggingEnabled()) {
                 //Put a marker record into the log table
-                LogDBHelper.getInstance().initTable();
+                LogDBHelper.getInstance().setServerName();
             }
 
             // Get a reference to the current ControlImpl object.
@@ -346,7 +346,7 @@ public class CurrentImpl extends org.omg.CORBA.LocalObject
 
             if (Configuration.isDBLoggingEnabled()) {
                 //Put a marker record into the log table
-                LogDBHelper.getInstance().initTable();
+                LogDBHelper.getInstance().setServerName();
             }
 
             // Get a reference to the current ControlImpl object.
