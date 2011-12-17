@@ -283,6 +283,9 @@ public class ServiceUtil implements PostConstruct {
     }
 
     public boolean isServiceAlreadyConfigured(String serviceName, String appName, ServiceType type) {
+        if(appName==null){
+            return false;
+        }
         Service matchingService = getService(serviceName, appName);
         return matchingService != null;
     }
@@ -507,6 +510,7 @@ public class ServiceUtil implements PostConstruct {
     }
 
     public void registerService(final ServiceInfo entry) {
+        System.out.println("In registerService::IP address is : "+entry.getIpAddress());
         Services services = getServices();
         try {
             //TODO for now, if app-name is null, check whether its a shared service and
