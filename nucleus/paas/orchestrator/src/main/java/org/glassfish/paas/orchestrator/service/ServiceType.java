@@ -39,11 +39,14 @@
  */
 package org.glassfish.paas.orchestrator.service;
 
+import org.jvnet.hk2.annotations.Contract;
+
 /**
  * Represents a type of Service that is supported by the GlassFish PaaS runtime.
  *
  * @author Sivakumar Thyagarajan
  */
+@Contract
 public abstract class ServiceType {
 
     /**

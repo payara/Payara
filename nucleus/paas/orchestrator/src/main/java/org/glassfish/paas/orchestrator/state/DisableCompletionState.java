@@ -37,20 +37,28 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package org.glassfish.paas.orchestrator.service;
 
+
+package org.glassfish.paas.orchestrator.state;
+
+import org.glassfish.paas.orchestrator.PaaSDeploymentContext;
+import org.glassfish.paas.orchestrator.PaaSDeploymentException;
+import org.glassfish.paas.orchestrator.ServiceOrchestratorImpl;
 import org.jvnet.hk2.annotations.Service;
 
+/**
+ * @author Jagadish Ramu
+ */
 @Service
-public class RDBMSServiceType extends ServiceType {
+public class DisableCompletionState extends AbstractPaaSDeploymentState {
 
-    @Override
-    public String toString() {
-        return "Database";
+    public void handle(PaaSDeploymentContext context) throws PaaSDeploymentException {
+        String appName = context.getAppName();
+        orchestrator.removeProvisionedServices(appName);
+        orchestrator.removeServiceMetadata(appName);
     }
 
-    @Override
-    public String getName() {
-        return "Database";
+    public Class getRollbackState() {
+        return EnableState.class;
     }
 }

@@ -45,7 +45,10 @@ import org.glassfish.paas.orchestrator.PaaSDeploymentContext;
 import org.glassfish.paas.orchestrator.PaaSDeploymentException;
 import org.glassfish.paas.orchestrator.PaaSDeploymentState;
 import org.glassfish.paas.orchestrator.ServiceOrchestratorImpl;
+import org.glassfish.paas.orchestrator.provisioning.cli.ServiceUtil;
 import org.glassfish.paas.orchestrator.provisioning.util.FailureInducer;
+import org.jvnet.hk2.annotations.Inject;
+import org.jvnet.hk2.component.Habitat;
 
 import java.util.logging.Logger;
 
@@ -55,6 +58,15 @@ import java.util.logging.Logger;
 public abstract class AbstractPaaSDeploymentState implements PaaSDeploymentState {
 
     protected final static Logger logger = Logger.getLogger(ServiceOrchestratorImpl.class.getName());
+
+    @Inject
+    protected Habitat habitat;
+
+    @Inject
+    protected ServiceUtil serviceUtil;
+
+    @Inject
+    protected ServiceOrchestratorImpl orchestrator;
 
     public void beforeExecution(PaaSDeploymentContext context) throws PaaSDeploymentException {
         detectAndFail(true);

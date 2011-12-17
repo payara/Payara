@@ -52,7 +52,6 @@ import org.glassfish.paas.orchestrator.service.spi.ProvisionedService;
 
 import java.util.*;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * @author Jagadish Ramu
@@ -62,17 +61,15 @@ public abstract class AssociationState extends AbstractPaaSDeploymentState {
     protected void associateProvisionedServices(PaaSDeploymentContext context, boolean preDeployment)
             throws PaaSDeploymentException {
         logger.entering(getClass().getName(), "associateProvisionedServices-beforeDeployment=" + preDeployment);
-        final ServiceOrchestratorImpl orchestrator = (ServiceOrchestratorImpl)context.getOrchestrator();
-        final DeploymentContext dc = context.getDeploymentContext();
         String appName = context.getAppName();
         final ServiceMetadata appServiceMetadata = orchestrator.getServiceMetadata(appName);
         final Set<Plugin> plugins = orchestrator.getPlugins(appServiceMetadata);
-        final Set<ProvisionedService> appProvisionedSvcs = orchestrator.getProvisionedServices(appName);
-
+        Set<org.glassfish.paas.orchestrator.service.spi.Service> servicesForAssociation =
+                orchestrator.getServicesForAssociation(appName);
 
         List<AssociatedServiceRecord> associatedServicesList = new ArrayList<AssociatedServiceRecord>();
         try{
-            for (ProvisionedService serviceProducer : appProvisionedSvcs) {
+            for (org.glassfish.paas.orchestrator.service.spi.Service serviceProducer : servicesForAssociation) {
                 for (Plugin<?> svcPlugin : plugins) {
                     //associate the provisioned service only with plugins that handle other service types.
                     if (!serviceProducer.getServiceType().equals(svcPlugin.getServiceType())) {
@@ -81,9 +78,9 @@ public abstract class AssociationState extends AbstractPaaSDeploymentState {
                             if(serviceRef.getType() != null){
                                 logger.log(Level.INFO, "Associating ProvisionedService " + serviceProducer
                                         + " for ServiceReference " + serviceRef + " through " + svcPlugin);
-                                Collection<ProvisionedService> serviceConsumers =
-                                        orchestrator.getServicesProvisionedByPlugin(svcPlugin, appProvisionedSvcs);
-                                for (ProvisionedService serviceConsumer : serviceConsumers) {
+                                Collection<org.glassfish.paas.orchestrator.service.spi.Service> serviceConsumers =
+                                        orchestrator.getServicesManagedByPlugin(svcPlugin, servicesForAssociation);
+                                for (org.glassfish.paas.orchestrator.service.spi.Service serviceConsumer : serviceConsumers) {
                                     try {
                                         svcPlugin.associateServices(serviceConsumer, serviceRef, serviceProducer, preDeployment, context);
                                         associatedServicesList.add(
@@ -109,8 +106,8 @@ public abstract class AssociationState extends AbstractPaaSDeploymentState {
     private void rollback(List<AssociatedServiceRecord> associatedServices, PaaSDeploymentContext context,
                           boolean preDeployment) {
         for(AssociatedServiceRecord asr : associatedServices){
-            ProvisionedService serviceProvider = asr.getProvider();
-            ProvisionedService serviceConsumer = asr.getConsumer();
+            org.glassfish.paas.orchestrator.service.spi.Service serviceProvider = asr.getProvider();
+            org.glassfish.paas.orchestrator.service.spi.Service serviceConsumer = asr.getConsumer();
             ServiceReference serviceRef = asr.getServiceReference();
             Plugin plugin = asr.getPlugin();
             try{
@@ -126,12 +123,13 @@ public abstract class AssociationState extends AbstractPaaSDeploymentState {
     }
 
     class AssociatedServiceRecord {
-        private ProvisionedService provider;
-        private ProvisionedService consumer;
+        private org.glassfish.paas.orchestrator.service.spi.Service provider;
+        private org.glassfish.paas.orchestrator.service.spi.Service consumer;
         private ServiceReference serviceRef;
         private Plugin plugin;
 
-        public AssociatedServiceRecord(ProvisionedService serviceProvider, ProvisionedService serviceConsumer,
+        public AssociatedServiceRecord(org.glassfish.paas.orchestrator.service.spi.Service serviceProvider,
+                                       org.glassfish.paas.orchestrator.service.spi.Service serviceConsumer,
                                        ServiceReference serviceRef, Plugin plugin){
             this.provider = serviceProvider;
             this.consumer = serviceConsumer;
@@ -139,11 +137,11 @@ public abstract class AssociationState extends AbstractPaaSDeploymentState {
             this.plugin = plugin;
         }
 
-        public ProvisionedService getProvider(){
+        public org.glassfish.paas.orchestrator.service.spi.Service getProvider(){
             return provider;
         }
 
-        public ProvisionedService getConsumer(){
+        public org.glassfish.paas.orchestrator.service.spi.Service getConsumer(){
             return consumer;
         }
 

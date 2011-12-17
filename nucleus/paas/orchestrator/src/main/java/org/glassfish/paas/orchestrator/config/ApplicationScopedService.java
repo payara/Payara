@@ -46,6 +46,9 @@ import org.jvnet.hk2.config.Configured;
 
 import java.beans.PropertyVetoException;
 
+/**
+ * @author Jagadish Ramu
+ */
 @Configured
 public interface ApplicationScopedService extends Service{
 

@@ -253,8 +253,8 @@ public interface Plugin<T extends ServiceType> {
      * deployment or enablement that caused this association
      *                         
      */
-    public void associateServices(ProvisionedService serviceConsumer, ServiceReference svcRef,
-                                  ProvisionedService serviceProvider, boolean beforeDeployment,
+    public void associateServices(org.glassfish.paas.orchestrator.service.spi.Service serviceConsumer, ServiceReference svcRef,
+                                  org.glassfish.paas.orchestrator.service.spi.Service serviceProvider, boolean beforeDeployment,
                                   PaaSDeploymentContext dc);
 
     /**
@@ -274,8 +274,8 @@ public interface Plugin<T extends ServiceType> {
      * @param dc The <code>DeploymentContext</code> associated with the application
      * undeployment or disablement that caused this dis-association
      */
-    public void dissociateServices(ProvisionedService serviceConsumer, ServiceReference svcRef,
-                                   ProvisionedService serviceProvider, boolean beforeUndeploy,
+    public void dissociateServices(org.glassfish.paas.orchestrator.service.spi.Service serviceConsumer, ServiceReference svcRef,
+                                   org.glassfish.paas.orchestrator.service.spi.Service serviceProvider, boolean beforeUndeploy,
                                    PaaSDeploymentContext dc);
     
     /**
@@ -356,7 +356,8 @@ public interface Plugin<T extends ServiceType> {
      * @param newSvcProvider The new Service Provider ProvisionedService
      * @param reason The reason for the re-configuration.
      */
-    public boolean reassociateServices(ProvisionedService svcConsumer, ProvisionedService oldSvcProvider,
-            ProvisionedService newSvcProvider, 
-            ServiceOrchestrator.ReconfigAction reason);
+    public boolean reassociateServices(org.glassfish.paas.orchestrator.service.spi.Service svcConsumer,
+                   org.glassfish.paas.orchestrator.service.spi.Service oldSvcProvider,
+                   org.glassfish.paas.orchestrator.service.spi.Service newSvcProvider,
+                   ServiceOrchestrator.ReconfigAction reason);
 }

@@ -47,6 +47,7 @@ import org.glassfish.paas.orchestrator.service.metadata.ServiceMetadata;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceReference;
 import org.glassfish.paas.orchestrator.service.spi.Plugin;
 import org.glassfish.paas.orchestrator.service.spi.ProvisionedService;
+import org.jvnet.hk2.annotations.Service;
 
 import java.util.Collection;
 import java.util.Set;
@@ -58,16 +59,15 @@ import java.util.logging.Level;
 public abstract class DissociationState extends AbstractPaaSDeploymentState {
 
     protected void dissociateProvisionedServices(PaaSDeploymentContext context, boolean beforeUndeploy) {
-        final ServiceOrchestratorImpl orchestrator = (ServiceOrchestratorImpl)context.getOrchestrator();
-        final DeploymentContext dc = context.getDeploymentContext();
         String appName = context.getAppName();
         final ServiceMetadata appServiceMetadata = orchestrator.getServiceMetadata(appName);
-        Set<ProvisionedService> appProvisionedSvcs = orchestrator.getProvisionedServices(appName);
+        Set<org.glassfish.paas.orchestrator.service.spi.Service> allServices =
+                orchestrator.getServicesForDissociation(appName);
         final Set<Plugin> installedPlugins = orchestrator.getPlugins(appServiceMetadata);
         logger.entering(getClass().getName(), "dissociateProvisionedServices=" + beforeUndeploy);
         boolean failed = false;
         Exception failureCause = null;
-        for (ProvisionedService serviceProvider : appProvisionedSvcs) {
+        for (org.glassfish.paas.orchestrator.service.spi.Service serviceProvider : allServices) {
             for (Plugin<?> svcPlugin : installedPlugins) {
                 //Dissociate the provisioned service only with plugins that handle other service types.
                 //TODO why is this check done ?
@@ -77,9 +77,9 @@ public abstract class DissociationState extends AbstractPaaSDeploymentState {
                         if(serviceRef.getType() != null){
                             logger.log(Level.INFO, "Dissociating ProvisionedService " + serviceProvider +
                                     " for ServiceReference " + serviceRef + " through " + svcPlugin);
-                            Collection<ProvisionedService> serviceConsumers =
-                                    orchestrator.getServicesProvisionedByPlugin(svcPlugin, appProvisionedSvcs);
-                            for (ProvisionedService serviceConsumer : serviceConsumers) {
+                            Collection<org.glassfish.paas.orchestrator.service.spi.Service> serviceConsumers =
+                                    orchestrator.getServicesManagedByPlugin(svcPlugin, allServices);
+                            for (org.glassfish.paas.orchestrator.service.spi.Service serviceConsumer : serviceConsumers) {
                                 try {
                                     svcPlugin.dissociateServices(serviceConsumer, serviceRef, serviceProvider, beforeUndeploy, context);
                                 } catch (Exception e) {

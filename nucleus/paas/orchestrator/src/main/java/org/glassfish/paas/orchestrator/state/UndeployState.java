@@ -49,20 +49,15 @@ import org.glassfish.paas.orchestrator.PaaSDeploymentState;
 import org.glassfish.paas.orchestrator.ServiceOrchestratorImpl;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
 
-import java.util.Set;
+import java.util.Collection;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * @author Jagadish Ramu
  */
 @Service
 public class UndeployState extends AbstractPaaSDeploymentState {
-
-    @Inject
-    private Habitat habitat;
 
     @Inject
     private CommandRunner commandRunner;

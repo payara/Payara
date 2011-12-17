@@ -258,7 +258,7 @@ public class ServiceProvisioningEngineBase {
                 VirtualMachine vm = virtualCluster.vmByName(vmId);
                 vmLifecycle.delete(vm);
             }
-            serviceUtil.unregisterCloudEntry(serviceDescription.getName(),
+            serviceUtil.unregisterServiceInfo(serviceDescription.getName(),
                     serviceDescription.getAppName());
             return true;
         } catch (Exception exception) {

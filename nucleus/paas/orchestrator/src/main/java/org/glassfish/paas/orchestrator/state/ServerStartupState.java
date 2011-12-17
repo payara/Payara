@@ -45,12 +45,10 @@ import org.glassfish.paas.orchestrator.PaaSDeploymentException;
 import org.glassfish.paas.orchestrator.PaaSDeploymentState;
 import org.glassfish.paas.orchestrator.ServiceOrchestratorImpl;
 import org.glassfish.paas.orchestrator.provisioning.ServiceInfo;
-import org.glassfish.paas.orchestrator.provisioning.cli.ServiceUtil;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceDescription;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceMetadata;
 import org.glassfish.paas.orchestrator.service.spi.Plugin;
 import org.glassfish.paas.orchestrator.service.spi.ProvisionedService;
-import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
 
 import java.util.HashSet;
@@ -63,17 +61,12 @@ import java.util.logging.Level;
 @Service
 public class ServerStartupState extends AbstractPaaSDeploymentState {
 
-    @Inject
-    private ServiceUtil serviceUtil;
-
     public void handle(PaaSDeploymentContext context) throws PaaSDeploymentException {
         retrieveProvisionedServices(context);
     }
 
     public Set<ProvisionedService> retrieveProvisionedServices(PaaSDeploymentContext context) {
         logger.entering(getClass().getName(), "retrieveProvisionedServices");
-        final ServiceOrchestratorImpl orchestrator = (ServiceOrchestratorImpl)context.getOrchestrator();
-        //final Set<Plugin> installedPlugins = orchestrator.getPlugins();
         String appName = context.getAppName();
         final ServiceMetadata appServiceMetadata = orchestrator.getServiceMetadata(appName);
 
@@ -92,7 +85,7 @@ public class ServerStartupState extends AbstractPaaSDeploymentState {
                     logger.warning("unable to retrieve service-info for service : " + sd.getName() + " of application : " + appName);
                 }
         }
-        orchestrator.addProvisionedServices(appName, appPSs);
+        orchestrator.registerProvisionedServices(appName, appPSs);
         return appPSs;
     }
 

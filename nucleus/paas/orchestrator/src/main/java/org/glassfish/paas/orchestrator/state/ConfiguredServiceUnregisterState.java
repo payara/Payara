@@ -37,20 +37,45 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package org.glassfish.paas.orchestrator.service;
 
+package org.glassfish.paas.orchestrator.state;
+
+import org.glassfish.paas.orchestrator.PaaSDeploymentContext;
+import org.glassfish.paas.orchestrator.PaaSDeploymentException;
+import org.glassfish.paas.orchestrator.ServiceOrchestratorImpl;
+import org.glassfish.paas.orchestrator.provisioning.ServiceScope;
+import org.glassfish.paas.orchestrator.service.metadata.ServiceDescription;
+import org.glassfish.paas.orchestrator.service.metadata.ServiceMetadata;
+import org.glassfish.paas.orchestrator.service.spi.ConfiguredService;
+import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
 
+import java.util.Collection;
+import java.util.LinkedHashSet;
+import java.util.Set;
+
+/**
+ * @author Jagadish Ramu
+ */
 @Service
-public class RDBMSServiceType extends ServiceType {
+public class ConfiguredServiceUnregisterState extends AbstractPaaSDeploymentState {
 
-    @Override
-    public String toString() {
-        return "Database";
+    public void handle(PaaSDeploymentContext context) throws PaaSDeploymentException {
+        String appName = context.getAppName();
+        ServiceMetadata serviceMetadata = orchestrator.getServiceMetadata(appName);
+        Collection<ServiceDescription> serviceDescriptions =  serviceMetadata.getServiceDescriptions();
+        Set<ConfiguredService> configuredServicesSet = new LinkedHashSet<ConfiguredService>();
+        for(ServiceDescription sd : serviceDescriptions){
+            if(ServiceScope.EXTERNAL.equals(sd.getServiceScope())){
+                configuredServicesSet.add(orchestrator.getConfiguredService(sd.getName()));
+            }
+        }
+        orchestrator.unregisterConfiguredServices(appName, configuredServicesSet);
     }
 
-    @Override
-    public String getName() {
-        return "Database";
+
+    public Class getRollbackState() {
+        return null;
     }
+
 }

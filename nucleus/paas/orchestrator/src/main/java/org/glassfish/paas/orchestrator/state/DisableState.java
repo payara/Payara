@@ -44,6 +44,7 @@ import org.glassfish.paas.orchestrator.PaaSDeploymentContext;
 import org.glassfish.paas.orchestrator.PaaSDeploymentException;
 import org.glassfish.paas.orchestrator.ServiceOrchestratorImpl;
 import org.glassfish.paas.orchestrator.provisioning.ServiceInfo;
+import org.glassfish.paas.orchestrator.provisioning.ServiceScope;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceUtil;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceDescription;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceMetadata;
@@ -62,52 +63,41 @@ import java.util.logging.Level;
 @Service
 public class DisableState extends AbstractPaaSDeploymentState {
 
-    @Inject
-    private ServiceUtil serviceUtil;
-
-    @Inject
-    private Habitat habitat;
-
     public void handle(PaaSDeploymentContext context) throws PaaSDeploymentException {
         stopServices(context);
     }
 
     private void stopServices(PaaSDeploymentContext context) throws PaaSDeploymentException {
-        final ServiceOrchestratorImpl orchestrator = (ServiceOrchestratorImpl)context.getOrchestrator();
-        //
         String appName = context.getAppName();
         final ServiceMetadata appServiceMetadata = orchestrator.getServiceMetadata(appName);
 
         //TODO better name for stoppedSDs.
-        List<ServiceDescription> stoppedSDs = new ArrayList<ServiceDescription>();
-        for(ServiceDescription sd : appServiceMetadata.getServiceDescriptions()){
-            try{
-                stopService(context, appName, sd);
-                stoppedSDs.add(sd);
-            }catch(Exception e){
-                logger.log(Level.WARNING, "Exception while stopping service " +
-                        "[ "+sd.getName()+" ] for application [ "+appName+" ]", e);
+        List<ServiceDescription> stoppedServiceSDs = new ArrayList<ServiceDescription>();
+        for (ServiceDescription sd : appServiceMetadata.getServiceDescriptions()) {
+            if(ServiceScope.APPLICATION.equals(sd.getServiceScope())){
+                try {
+                    stopService(context, appName, sd);
+                    stoppedServiceSDs.add(sd);
+                } catch (Exception e) {
+                    logger.log(Level.WARNING, "Exception while stopping service " +
+                            "[ " + sd.getName() + " ] for application [ " + appName + " ]", e);
 
-                EnableState enableState = habitat.getComponent(EnableState.class);
-                for(ServiceDescription stoppedSD : stoppedSDs){
-                    try{
-                        enableState.startService(context, appName, stoppedSD);
-                    }catch(Exception stopException){
-                        logger.log(Level.WARNING, "Exception while starting service " +
-                                "[ "+sd.getName()+" ] for application [ "+appName+" ]", stopException);
+                    EnableState enableState = habitat.getComponent(EnableState.class);
+                    for (ServiceDescription stoppedSD : stoppedServiceSDs) {
+                        try {
+                            enableState.startService(context, appName, stoppedSD);
+                        } catch (Exception stopException) {
+                            logger.log(Level.WARNING, "Exception while starting service " +
+                                    "[ " + sd.getName() + " ] for application [ " + appName + " ]", stopException);
+                        }
                     }
+                    throw new PaaSDeploymentException(e);
                 }
-                throw new PaaSDeploymentException(e);
             }
         }
-        orchestrator.removeProvisionedServices(appName);
-        orchestrator.removeServiceMetadata(appName);
     }
 
     public boolean stopService(PaaSDeploymentContext context, String appName, ServiceDescription sd) {
-        final ServiceOrchestratorImpl orchestrator = (ServiceOrchestratorImpl)context.getOrchestrator();
-        //final Set<Plugin> installedPlugins = orchestrator.getPlugins();
-        //Plugin<?> chosenPlugin = orchestrator.getPluginForServiceType(installedPlugins, sd.getServiceType());
         Plugin chosenPlugin = sd.getPlugin();
         ServiceInfo serviceInfo = serviceUtil.getServiceInfo(sd.getName(), appName, null);
         if(serviceInfo != null){

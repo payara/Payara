@@ -53,6 +53,7 @@ import org.glassfish.paas.orchestrator.service.metadata.ServiceDescription;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceReference;
 import org.glassfish.paas.orchestrator.service.spi.Plugin;
 import org.glassfish.paas.orchestrator.service.spi.ProvisionedService;
+import org.glassfish.paas.orchestrator.service.spi.Service;
 import org.glassfish.paas.spe.common.ServiceProvisioningEngineBase;
 import org.glassfish.virtualization.spi.AllocationStrategy;
 import org.glassfish.virtualization.spi.VirtualMachine;
@@ -196,8 +197,8 @@ public abstract class DatabaseSPEBase extends ServiceProvisioningEngineBase
     /**
      * {@inheritDoc}
      */
-    public void associateServices(ProvisionedService serviceConsumer,
-                                  ServiceReference svcRef, ProvisionedService serviceProvider,
+    public void associateServices(Service serviceConsumer,
+                                  ServiceReference svcRef, Service serviceProvider,
                                   boolean beforeDeployment, PaaSDeploymentContext dc) {
         //no-op
     }
@@ -239,8 +240,8 @@ public abstract class DatabaseSPEBase extends ServiceProvisioningEngineBase
     /**
      * {@inheritDoc}
      */
-    public void dissociateServices(ProvisionedService serviceConsumer,
-                                   ServiceReference svcRef, ProvisionedService serviceProvider,
+    public void dissociateServices(Service serviceConsumer,
+                                   ServiceReference svcRef, Service serviceProvider,
                                    boolean beforeUndeploy, PaaSDeploymentContext dc) {
         //no-op
     }
@@ -308,8 +309,9 @@ public abstract class DatabaseSPEBase extends ServiceProvisioningEngineBase
     /**
      * {@inheritDoc}
      */
-    public boolean reassociateServices(ProvisionedService svcConsumer,
-                                       ProvisionedService oldSvcProvider, ProvisionedService newSvcProvider,
+    public boolean reassociateServices(org.glassfish.paas.orchestrator.service.spi.Service svcConsumer,
+                                       org.glassfish.paas.orchestrator.service.spi.Service oldSvcProvider,
+                                       org.glassfish.paas.orchestrator.service.spi.Service newSvcProvider,
                                        ServiceOrchestrator.ReconfigAction reason) {
         return true;
     }

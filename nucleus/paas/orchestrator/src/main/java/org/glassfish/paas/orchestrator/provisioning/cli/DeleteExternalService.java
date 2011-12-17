@@ -49,6 +49,8 @@ import org.glassfish.api.admin.ExecuteOn;
 import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
+import org.glassfish.paas.orchestrator.ServiceOrchestrator;
+import org.glassfish.paas.orchestrator.ServiceOrchestratorImpl;
 import org.glassfish.paas.orchestrator.config.ExternalService;
 import org.glassfish.paas.orchestrator.config.Services;
 import org.jvnet.hk2.annotations.Inject;
@@ -61,6 +63,9 @@ import org.jvnet.hk2.config.TransactionFailure;
 
 import java.beans.PropertyVetoException;
 
+/**
+ * @author Jagadish Ramu
+ */
 @Service(name = "delete-external-service")
 @Scoped(PerLookup.class)
 @ExecuteOn(RuntimeType.DAS)
@@ -73,12 +78,19 @@ public class DeleteExternalService implements AdminCommand {
     @Inject
     private Domain domain;
 
+    @Inject
+    private ServiceUtil serviceUtil;
+
+    @Inject
+    private ServiceOrchestratorImpl serviceOrchestrator;
+
+
     public void execute(AdminCommandContext context) {
         final ActionReport report = context.getActionReport();
 
         //TODO make sure that no service-ref is present for this service
 
-        Services services = domain.getExtensionByType(Services.class);
+        Services services = serviceUtil.getServices();
         boolean found = false;
         if (services != null) {
             for (final org.glassfish.paas.orchestrator.config.Service service : services.getServices()) {
@@ -90,13 +102,15 @@ public class DeleteExternalService implements AdminCommand {
                                 public Object run(Services param) throws PropertyVetoException, TransactionFailure {
                                     param.getServices().remove(service);
                                     report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
+                                    serviceOrchestrator.removeExternalService(serviceName);
                                     return service;
                                 }
                             }, services) == null) {
                             }
-                        } catch (TransactionFailure transactionFailure) {
+                        } catch (TransactionFailure e) {
                             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-                            report.setMessage("Deleting external-service [" + serviceName + "] failed : " + transactionFailure.getMessage());
+                            report.setMessage("Deleting external-service [" + serviceName + "] failed : " + e.getMessage());
+                            report.setFailureCause(e);
                             return;
                         }
                     }
@@ -105,12 +119,10 @@ public class DeleteExternalService implements AdminCommand {
             if (!found) {
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                 report.setMessage("No external-service by name [" + serviceName + "] is available");
-                return;
             }
         } else {
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setMessage("Invalid service name [" + serviceName + "]");
-            return;
         }
     }
 }

@@ -37,20 +37,30 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package org.glassfish.paas.orchestrator.service;
 
-import org.jvnet.hk2.annotations.Service;
+package org.glassfish.paas.orchestrator.service.spi;
 
-@Service
-public class RDBMSServiceType extends ServiceType {
+import org.glassfish.paas.orchestrator.service.ServiceType;
+import org.glassfish.paas.orchestrator.service.metadata.ServiceDescription;
 
-    @Override
-    public String toString() {
-        return "Database";
-    }
+import java.util.Properties;
 
-    @Override
-    public String getName() {
-        return "Database";
-    }
+/**
+ * @author Sivakumar Thyagarajan, Jagadish Ramu
+ */
+public interface Service {
+
+    public ServiceType getServiceType();
+
+    // service description that was used to provision this service.
+    public ServiceDescription getServiceDescription();
+
+    // additional information (eg., host, port, etc) after provisioning the service.
+    // TODO :: should we also have explicit methods like getHost(), getPort()?
+    public Properties getServiceProperties();
+
+    public String getName();
+
+    public Properties getProperties();
+
 }

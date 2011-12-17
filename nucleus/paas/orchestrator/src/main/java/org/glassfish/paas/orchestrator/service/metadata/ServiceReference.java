@@ -78,16 +78,16 @@ public class ServiceReference {
 
     public ServiceReference() {}
     
-    public ServiceReference(String refId, String refType, String serviceDefinitionName) {
+    public ServiceReference(String refId, String refType, String serviceDescriptionName) {
         this.name = refId;
-        this.serviceDescriptionName = serviceDefinitionName;
+        this.serviceDescriptionName = serviceDescriptionName;
         this.referenceType = refType;
     }
 
     public ServiceReference(String refId, String refType,
-                            String serviceDefinitionName, Properties properties) {
+                            String serviceDescriptionName, Properties properties) {
         this.name = refId;
-        this.serviceDescriptionName = serviceDefinitionName;
+        this.serviceDescriptionName = serviceDescriptionName;
         this.referenceType = refType;
         this.setProperties(properties);
         if(properties != null && properties.getProperty("serviceName") != null) {

@@ -37,20 +37,11 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package org.glassfish.paas.orchestrator.service;
 
-import org.jvnet.hk2.annotations.Service;
+package org.glassfish.paas.orchestrator.service.spi;
 
-@Service
-public class RDBMSServiceType extends ServiceType {
-
-    @Override
-    public String toString() {
-        return "Database";
-    }
-
-    @Override
-    public String getName() {
-        return "Database";
-    }
+/**
+ * @author Jagadish Ramu
+ */
+public interface ConfiguredService extends Service {
 }

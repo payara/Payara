@@ -67,6 +67,7 @@ public class ServiceDescription {
     private String appName;
     private String virtualClusterName;
     private ServiceScope serviceScope;
+    private String serviceType;
 
     // User can either specify which template to use or the characteristics of the template.
     private Object templateOrCharacteristics;
@@ -134,11 +135,14 @@ public class ServiceDescription {
     }
 
     public void setTemplateOrCharacteristics(Object templateOrCharacteristics) {
-        if(templateOrCharacteristics instanceof TemplateIdentifier ||
-                templateOrCharacteristics instanceof ServiceCharacteristics){
-            this.templateOrCharacteristics = templateOrCharacteristics;
-        }else{
-            throw new RuntimeException("Invalid type ["+templateOrCharacteristics.getClass()+"], neither TemplateIdentifier nor ServiceCharacteristics");
+        //for an external-service, neither template nor characteristics will be applicable.
+        if (templateOrCharacteristics != null) {
+            if (templateOrCharacteristics instanceof TemplateIdentifier ||
+                    templateOrCharacteristics instanceof ServiceCharacteristics) {
+                this.templateOrCharacteristics = templateOrCharacteristics;
+            } else {
+                throw new RuntimeException("Invalid type [" + templateOrCharacteristics.getClass() + "], neither TemplateIdentifier nor ServiceCharacteristics");
+            }
         }
     }
 
@@ -183,7 +187,12 @@ public class ServiceDescription {
                 return templateInstance.getConfig().byName("ServiceType").getValue();
             }
         }
-        return null; // should never come here.  //TODO throw exception ?
+        return serviceType;
+    }
+
+    @XmlTransient
+    public void setServiceType(String serviceType){ //used for external-service
+        this.serviceType = serviceType;
     }
 
 

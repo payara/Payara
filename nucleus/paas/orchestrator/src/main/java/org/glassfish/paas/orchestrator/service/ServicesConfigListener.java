@@ -53,6 +53,7 @@ import org.glassfish.paas.orchestrator.service.metadata.Property;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceCharacteristics;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceDescription;
 import org.glassfish.paas.orchestrator.service.metadata.TemplateIdentifier;
+import org.glassfish.paas.orchestrator.service.spi.ConfiguredService;
 import org.glassfish.paas.orchestrator.service.spi.Plugin;
 import org.glassfish.paas.orchestrator.service.spi.ProvisionedService;
 import org.jvnet.hk2.annotations.Inject;
@@ -63,10 +64,7 @@ import org.jvnet.hk2.component.Singleton;
 import org.jvnet.hk2.config.*;
 
 import java.beans.PropertyChangeEvent;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.LinkedHashSet;
-import java.util.List;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -220,9 +218,13 @@ public class ServicesConfigListener implements ConfigListener, PostConstruct, Pr
                 Plugin defaultPlugin = serviceOrchestrator.getPlugin(sd);
                 sd.setPlugin(defaultPlugin);
                 sd.setServiceScope(ServiceScope.SHARED);
-                PaaSDeploymentContext pdc = new PaaSDeploymentContext(null, null, serviceOrchestrator);
+                PaaSDeploymentContext pdc = new PaaSDeploymentContext(null, null);
                 ProvisionedService ps = defaultPlugin.provisionService(sd, pdc);
                 serviceOrchestrator.addSharedService(sd.getName(), ps);
+            }else if (instance instanceof ExternalService){
+                ExternalService externalService = (ExternalService)instance;
+                ConfiguredService configuredService = serviceUtil.getExternalService(externalService.getServiceName());
+                serviceOrchestrator.addExternalService(externalService.getServiceName(), configuredService);
             }
             return np;
         }

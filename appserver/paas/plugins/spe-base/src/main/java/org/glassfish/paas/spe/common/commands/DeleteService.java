@@ -46,7 +46,6 @@ import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.CommandLock;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceUtil;
-import org.glassfish.paas.orchestrator.service.spi.ServiceProvisioningException;
 import org.glassfish.virtualization.runtime.VirtualClusters;
 import org.glassfish.virtualization.runtime.VirtualMachineLifecycle;
 import org.glassfish.virtualization.spi.VirtualCluster;
@@ -95,7 +94,7 @@ public class DeleteService implements AdminCommand {
             VirtualCluster virtualCluster = virtualClusters.byName(virtualClusterName);
             VirtualMachine vm = virtualCluster.vmByName(vmId);
             vmLifecycle.delete(vm);
-            serviceUtil.unregisterCloudEntry(serviceName, appName);
+            serviceUtil.unregisterServiceInfo(serviceName, appName);
             report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
             report.setMessage("Successfully deleted service [" + serviceName + "]");
         } catch (Exception exception) {

@@ -44,14 +44,12 @@ import org.glassfish.paas.orchestrator.PaaSDeploymentContext;
 import org.glassfish.paas.orchestrator.PaaSDeploymentException;
 import org.glassfish.paas.orchestrator.ServiceOrchestratorImpl;
 import org.glassfish.paas.orchestrator.provisioning.ServiceInfo;
-import org.glassfish.paas.orchestrator.provisioning.cli.ServiceUtil;
+import org.glassfish.paas.orchestrator.provisioning.ServiceScope;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceDescription;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceMetadata;
 import org.glassfish.paas.orchestrator.service.spi.Plugin;
 import org.glassfish.paas.orchestrator.service.spi.ProvisionedService;
-import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -65,12 +63,6 @@ import java.util.logging.Level;
 @Service
 public class EnableState extends AbstractPaaSDeploymentState {
 
-    @Inject
-    private ServiceUtil serviceUtil;
-
-    @Inject
-    private Habitat habitat;
-
     public void handle(PaaSDeploymentContext context) throws PaaSDeploymentException {
         startServices(context);
     }
@@ -81,39 +73,38 @@ public class EnableState extends AbstractPaaSDeploymentState {
 
     private Set<ProvisionedService> startServices(PaaSDeploymentContext context) throws PaaSDeploymentException {
         Set<ProvisionedService> appPSs = new HashSet<ProvisionedService>();
-        final ServiceOrchestratorImpl orchestrator = (ServiceOrchestratorImpl)context.getOrchestrator();
         String appName = context.getAppName();
         final ServiceMetadata appServiceMetadata = orchestrator.getServiceMetadata(appName);
 
         List<ServiceDescription> provisionedSDs = new ArrayList<ServiceDescription>();
-        for(ServiceDescription sd : appServiceMetadata.getServiceDescriptions()){
-            try{
-                ProvisionedService ps = startService(context, appName, sd);
-                appPSs.add(ps);
-                provisionedSDs.add(sd);
-            }catch(Exception e){
-                logger.log(Level.WARNING, "Exception while starting service " +
-                        "[ "+sd.getName()+" ] for application [ "+appName+" ]", e);
+        for (ServiceDescription sd : appServiceMetadata.getServiceDescriptions()) {
+            if (!ServiceScope.EXTERNAL.equals(sd.getServiceScope()) && !ServiceScope.SHARED.equals(sd.getServiceScope())) {
+                try {
+                    ProvisionedService ps = startService(context, appName, sd);
+                    appPSs.add(ps);
+                    provisionedSDs.add(sd);
+                } catch (Exception e) {
+                    logger.log(Level.WARNING, "Exception while starting service " +
+                            "[ " + sd.getName() + " ] for application [ " + appName + " ]", e);
 
-                DisableState disableState = habitat.getComponent(DisableState.class);
-                for(ServiceDescription provisionedSD : provisionedSDs){
-                    try{
-                        disableState.stopService(context, appName, provisionedSD);
-                    }catch(Exception stopException){
-                        logger.log(Level.WARNING, "Exception while stopping service " +
-                                "[ "+sd.getName()+" ] for application [ "+appName+" ]", stopException);
+                    DisableState disableState = habitat.getComponent(DisableState.class);
+                    for (ServiceDescription provisionedSD : provisionedSDs) {
+                        try {
+                            disableState.stopService(context, appName, provisionedSD);
+                        } catch (Exception stopException) {
+                            logger.log(Level.WARNING, "Exception while stopping service " +
+                                    "[ " + sd.getName() + " ] for application [ " + appName + " ]", stopException);
+                        }
                     }
+                    throw new PaaSDeploymentException(e);
                 }
-                throw new PaaSDeploymentException(e);
             }
         }
-        orchestrator.addProvisionedServices(appName, appPSs);
+        orchestrator.registerProvisionedServices(appName, appPSs);
         return appPSs;
     }
 
     public ProvisionedService startService(PaaSDeploymentContext context, String appName, ServiceDescription sd) {
-        final ServiceOrchestratorImpl orchestrator = (ServiceOrchestratorImpl)context.getOrchestrator();
-        //final Set<Plugin> installedPlugins = orchestrator.getPlugins();
         Plugin<?> chosenPlugin = sd.getPlugin();
         logger.log(Level.INFO, "Retrieving provisioned Service for " + sd + " through " + chosenPlugin);
         ServiceInfo serviceInfo = serviceUtil.getServiceInfo(sd.getName(), appName, null);

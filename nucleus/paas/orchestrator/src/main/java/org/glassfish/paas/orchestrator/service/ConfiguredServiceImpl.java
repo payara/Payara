@@ -37,20 +37,53 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+
 package org.glassfish.paas.orchestrator.service;
 
-import org.jvnet.hk2.annotations.Service;
+import org.glassfish.paas.orchestrator.service.metadata.ServiceDescription;
+import org.glassfish.paas.orchestrator.service.spi.ConfiguredService;
 
-@Service
-public class RDBMSServiceType extends ServiceType {
+import java.util.Properties;
 
-    @Override
-    public String toString() {
-        return "Database";
+/**
+ * @author Jagadish Ramu
+ */
+public class ConfiguredServiceImpl implements ConfiguredService {
+
+    private String serviceName ;
+    private ServiceType serviceType;
+    private ServiceDescription serviceDescription;
+    private Properties serviceProperties = new Properties();
+    private Properties properties = new Properties();
+
+    public ConfiguredServiceImpl(String serviceName, ServiceType serviceType, ServiceDescription serviceDescription,
+                                 Properties serviceProperties){
+        this.serviceDescription = serviceDescription;
+        this.serviceName = serviceName;
+        this.serviceType = serviceType;
+        this.serviceProperties = serviceProperties;
     }
 
-    @Override
+    public ServiceType getServiceType() {
+        return serviceType;
+    }
+
+    public ServiceDescription getServiceDescription() {
+        return serviceDescription;
+    }
+
+    public Properties getServiceProperties() {
+        return serviceProperties;
+    }
+
     public String getName() {
-        return "Database";
+        return serviceName;
+    }
+
+    public Properties getProperties() {
+        return properties;
+    }
+    public void setProperties(Properties properties){
+        this.properties = properties;
     }
 }

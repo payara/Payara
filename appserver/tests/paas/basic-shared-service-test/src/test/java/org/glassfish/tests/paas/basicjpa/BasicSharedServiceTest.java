@@ -289,15 +289,17 @@ public class BasicSharedServiceTest {
         parameterMap.add("DEFAULT", "my-shared-lb-service");
         invocation.parameters(parameterMap).execute();
 
-        Assert.assertTrue(report.hasFailures());
         System.out.print("Expected Failure message: " + report.getMessage());
+        Assert.assertTrue(report.hasFailures());
+
 
         parameterMap = new ParameterMap();
         parameterMap.add("DEFAULT", "my-shared-db-service");
         invocation.parameters(parameterMap).execute();
 
-        Assert.assertTrue(report.hasFailures());
         System.out.print("Expected Failure message: " + report.getMessage());
+        Assert.assertTrue(report.hasFailures());
+
 
         //Try deleting a shared service, referenced by the app. Should 'FAIL'
         report = habitat.getComponent(ActionReport.class);
@@ -306,15 +308,17 @@ public class BasicSharedServiceTest {
         parameterMap.add("DEFAULT", "my-shared-lb-service");
         invocation.parameters(parameterMap).execute();
 
-        Assert.assertTrue(report.hasFailures());
         System.out.print("Expected Failure message: " + report.getMessage());
+        Assert.assertTrue(report.hasFailures());
+
 
         parameterMap = new ParameterMap();
         parameterMap.add("DEFAULT", "my-shared-db-service");
         invocation.parameters(parameterMap).execute();
 
-        Assert.assertTrue(report.hasFailures());
         System.out.println("Expected Failure message: " + report.getMessage());
+        Assert.assertTrue(report.hasFailures());
+
 
 
         //List the services and check the status of both the services - it should be 'RUNNING'
@@ -335,7 +339,7 @@ public class BasicSharedServiceTest {
         }
         Assert.assertTrue(sharedServiceStarted);//check if the shared services are started.
 
-        /*//Disable the application and try stopping  the shared service. Command should succeed
+        //Disable the application and try stopping  the shared service. Command should succeed
         invocation = commandRunner.getCommandInvocation("disable", report);
         parameterMap = new ParameterMap();
         parameterMap.add("DEFAULT","basic-shared-service-test");
@@ -346,7 +350,7 @@ public class BasicSharedServiceTest {
 
 
         invocation = commandRunner.getCommandInvocation("stop-shared-service", report);
-        ParameterMap parameterMap = new ParameterMap();
+        parameterMap = new ParameterMap();
         parameterMap.add("DEFAULT","my-shared-lb-service");
         invocation.parameters(parameterMap).execute();
 
@@ -354,7 +358,7 @@ public class BasicSharedServiceTest {
         System.out.print("MSG: "+report.getMessage());
 
         invocation = commandRunner.getCommandInvocation("stop-shared-service", report);
-        ParameterMap parameterMap = new ParameterMap();
+        parameterMap = new ParameterMap();
         parameterMap.add("DEFAULT","my-shared-db-service");
         invocation.parameters(parameterMap).execute();
 
@@ -366,52 +370,58 @@ public class BasicSharedServiceTest {
         parameterMap.add("scope","shared");
         parameterMap.add("output","service-name,state");
         invocation=commandRunner.getCommandInvocation("list-services",report);
-        invocation.parameters(parameterMap).execute;
+        invocation.parameters(parameterMap).execute();
 
         boolean sharedServiceStopped=false;
-        List<Map<String, String>> list = (List<Map<String, String>>) report.getExtraProperties().get("list");
+        list = (List<Map<String, String>>) report.getExtraProperties().get("list");
         for(Map<String,String> map:list){
             sharedServiceStopped=false;
             String state=map.get("STATE");
             if("STOPPED".equalsIgnoreCase(state)){
                 sharedServiceStopped=true;
+            }else{
+                sharedServiceStopped = false;
+                break;
             }
         }
-        Assertion.assertTrue(sharedServiceStopped);//check if the shared services are stopped
+        Assert.assertTrue(sharedServiceStopped);//check if the shared services are stopped
 
         // Start the shared services.
         invocation = commandRunner.getCommandInvocation("start-shared-service", report);
-        ParameterMap parameterMap = new ParameterMap();
+        parameterMap = new ParameterMap();
         parameterMap.add("DEFAULT","my-shared-lb-service");
         invocation.parameters(parameterMap).execute();
 
         Assert.assertFalse(report.hasFailures());
         System.out.print("MSG: "+report.getMessage());
 
-        ParameterMap parameterMap = new ParameterMap();
+        parameterMap = new ParameterMap();
         parameterMap.add("DEFAULT","my-shared-db-service");
         invocation.parameters(parameterMap).execute();
 
         Assert.assertFalse(report.hasFailures());
         System.out.print("MSG: "+report.getMessage());
 
-        //List the services and check the status of both the services - it should be 'STOPPED'
+        //List the services and check the status of both the services - it should be 'STARTED'
         parameterMap=new ParameterMap();
         parameterMap.add("scope","shared");
         parameterMap.add("output","service-name,state");
         invocation=commandRunner.getCommandInvocation("list-services",report);
-        invocation.parameters(parameterMap).execute;
+        invocation.parameters(parameterMap).execute();
 
-        boolean sharedServiceStarted=false;
-        List<Map<String, String>> list = (List<Map<String, String>>) report.getExtraProperties().get("list");
+        sharedServiceStarted=false;
+        list = (List<Map<String, String>>) report.getExtraProperties().get("list");
         for(Map<String,String> map:list){
             sharedServiceStopped=false;
             String state=map.get("STATE");
-            if("STOPPED".equalsIgnoreCase(state)){
+            if("STARTED".equalsIgnoreCase(state) || "RUNNING".equalsIgnoreCase(state) ){
                 sharedServiceStarted=true;
+            }else{
+                sharedServiceStarted = false;
+                break;
             }
         }
-        Assertion.assertTrue(sharedServiceStarted);//check if the shared services are started.
+        Assert.assertTrue(sharedServiceStarted);//check if the shared services are started.
 
         //Enable the application and try stopping  accessing
         invocation = commandRunner.getCommandInvocation("enable", report);
@@ -420,7 +430,7 @@ public class BasicSharedServiceTest {
         invocation.parameters(parameterMap).execute();
 
         System.out.print("Enabled application basic-shared-service-test: "+!report.hasFailures());
-        Assert.assertFalse(report.hasFailures());*/
+        Assert.assertFalse(report.hasFailures());
 
 
         /*

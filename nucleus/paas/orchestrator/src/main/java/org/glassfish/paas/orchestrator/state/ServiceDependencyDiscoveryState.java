@@ -43,17 +43,13 @@ package org.glassfish.paas.orchestrator.state;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.paas.orchestrator.*;
-import org.glassfish.paas.orchestrator.provisioning.ServiceInfo;
 import org.glassfish.paas.orchestrator.provisioning.ServiceScope;
-import org.glassfish.paas.orchestrator.provisioning.cli.ServiceUtil;
 import org.glassfish.paas.orchestrator.service.ServiceType;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceDescription;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceMetadata;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceReference;
 import org.glassfish.paas.orchestrator.service.spi.Plugin;
-import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
 
 import java.util.*;
 import java.util.logging.Level;
@@ -64,16 +60,9 @@ import java.util.logging.Level;
 @Service
 public class ServiceDependencyDiscoveryState extends AbstractPaaSDeploymentState {
 
-    @Inject
-    private Habitat habitat;
-
-    @Inject
-    private ServiceUtil serviceUtil;
-
     public void handle(PaaSDeploymentContext context) throws PaaSDeploymentException{
         try{
             ServiceMetadata appServiceMetadata = serviceDependencyDiscovery(context);
-            final ServiceOrchestratorImpl orchestrator = (ServiceOrchestratorImpl)context.getOrchestrator();
             String appName = context.getAppName();
             //registering metadata with Orchestrator must be the last operation (only if service dependency discovery
             //completes without any errors).
@@ -101,7 +90,6 @@ public class ServiceDependencyDiscoveryState extends AbstractPaaSDeploymentState
                                                         String appName, ReadableArchive archive)
     throws PaaSDeploymentException {
 
-        final ServiceOrchestratorImpl orchestrator = (ServiceOrchestratorImpl)context.getOrchestrator();
         Set<Plugin> installedPlugins = orchestrator.getPlugins();
         try {
             //1. SERVICE DISCOVERY
@@ -123,9 +111,11 @@ public class ServiceDependencyDiscoveryState extends AbstractPaaSDeploymentState
 
             Map<ServiceDescription, Plugin> pluginsToHandleSDs = new LinkedHashMap<ServiceDescription, Plugin>();
 
+            //Get service-references defined in services.xml and retrieve
+            //the corresponding service-description (shared/external).
             for(ServiceReference serviceReference : appServiceMetadata.getServiceReferences()){
                 String serviceName = serviceReference.getServiceName();
-                ServiceDescription sd = orchestrator.getSharedServiceDescription(serviceName);
+                ServiceDescription sd = orchestrator.getReferredServiceDescription(serviceName);
                 appServiceMetadata.addServiceDescription(sd);
                 pluginsToHandleSDs.put(sd, sd.getPlugin());
             }
@@ -205,11 +195,10 @@ public class ServiceDependencyDiscoveryState extends AbstractPaaSDeploymentState
                     Set<ServiceDescription> implicitServiceDescs = svcPlugin.getImplicitServiceDescriptions(archive, appName);
 
                     for (ServiceDescription sd : implicitServiceDescs) {
+                        logger.log(Level.INFO, "Implicit ServiceDescription:" + sd);
                         pluginsToHandleSDs.put(sd, svcPlugin);
                         sd.setPlugin(svcPlugin);
-                    }
-                    for (ServiceDescription sd : implicitServiceDescs) {
-                        logger.log(Level.INFO, "Implicit ServiceDescription:" + sd);
+                        sd.setServiceScope(ServiceScope.APPLICATION);
                         appServiceMetadata.addServiceDescription(sd);
                     }
                 }
@@ -292,6 +281,7 @@ public class ServiceDependencyDiscoveryState extends AbstractPaaSDeploymentState
                     } else {
                         //get the default SD for the plugin.
                         matchingSDForServiceRef = matchingPlugin.getDefaultServiceDescription(appName, sr);
+                        matchingSDForServiceRef.setServiceScope(ServiceScope.APPLICATION);
                         appServiceMetadata.addServiceDescription(matchingSDForServiceRef);
                         pluginsToHandleSDs.put(matchingSDForServiceRef, matchingPlugin);
                     }
@@ -306,8 +296,7 @@ public class ServiceDependencyDiscoveryState extends AbstractPaaSDeploymentState
             //set virtual-cluster name
             String virtualClusterName = orchestrator.getVirtualClusterName(appServiceMetadata);
             for (ServiceDescription sd : appServiceMetadata.getServiceDescriptions()) {
-                //TODO check for " !(shared || external) "
-                if(sd.getVirtualClusterName() == null){
+                if(ServiceScope.APPLICATION.equals(sd.getServiceScope())){
                     sd.setVirtualClusterName(virtualClusterName);
                 }
             }

@@ -45,10 +45,14 @@ import org.jvnet.hk2.component.Injectable;
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.Configured;
+import org.jvnet.hk2.config.Element;
 
 import java.beans.PropertyVetoException;
 import javax.validation.constraints.NotNull;
 
+/**
+ * @author Jagadish Ramu
+ */
 @Configured
 public interface ExternalService extends ConfigBeanProxy, Injectable, Service{
 
@@ -57,4 +61,9 @@ public interface ExternalService extends ConfigBeanProxy, Injectable, Service{
     boolean getDefault();
 
     void setDefault(boolean defaultValue) throws PropertyVetoException;
+
+    @Element
+    Configurations getConfigurations();
+
+    void setConfigurations(Configurations configurations) throws PropertyVetoException;
 }

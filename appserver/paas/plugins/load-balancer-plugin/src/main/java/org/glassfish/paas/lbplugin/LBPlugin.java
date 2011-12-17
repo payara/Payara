@@ -261,10 +261,10 @@ public class LBPlugin implements Plugin {
         ps.setStatus(lbServiceUtil.getServiceStatus(entry));
         return (ProvisionedService) ps;
     }
-
+   
     @Override
-    public void associateServices(ProvisionedService serviceConsumer, ServiceReference svcRef,
-                                  ProvisionedService serviceProvider, boolean beforeDeployment, PaaSDeploymentContext dc) {
+    public void associateServices(org.glassfish.paas.orchestrator.service.spi.Service serviceConsumer, ServiceReference svcRef,
+                                  org.glassfish.paas.orchestrator.service.spi.Service serviceProvider, boolean beforeDeployment, PaaSDeploymentContext dc) {
         if(beforeDeployment){
             return;
         }
@@ -277,8 +277,8 @@ public class LBPlugin implements Plugin {
         callAssociateService(serviceConsumer, serviceProvider, false);
     }
 
-    private void callAssociateService(ProvisionedService serviceConsumer,
-            ProvisionedService serviceProvider, boolean isReconfig) {
+    private void callAssociateService(org.glassfish.paas.orchestrator.service.spi.Service serviceConsumer,
+            org.glassfish.paas.orchestrator.service.spi.Service serviceProvider, boolean isReconfig) {
         ServiceDescription serviceDescription = serviceConsumer.getServiceDescription();
         String serviceName = serviceDescription.getName();
         logger.entering(getClass().getName(), "provisionService");
@@ -445,8 +445,8 @@ public class LBPlugin implements Plugin {
         return true;
     }
 
-    public void dissociateServices(ProvisionedService serviceConsumer, ServiceReference svcRef,
-                                   ProvisionedService serviceProvider, boolean beforeUndeploy, PaaSDeploymentContext dc){
+    public void dissociateServices(org.glassfish.paas.orchestrator.service.spi.Service serviceConsumer, ServiceReference svcRef,
+                                   org.glassfish.paas.orchestrator.service.spi.Service serviceProvider, boolean beforeUndeploy, PaaSDeploymentContext dc){
         if(!beforeUndeploy){
             return;
         }
@@ -519,9 +519,9 @@ public class LBPlugin implements Plugin {
     }
 
     @Override
-    public boolean reassociateServices(ProvisionedService serviceConsumer,
-            ProvisionedService oldServiceProvider,
-            ProvisionedService newServiceProvider,
+    public boolean reassociateServices(org.glassfish.paas.orchestrator.service.spi.Service serviceConsumer,
+            org.glassfish.paas.orchestrator.service.spi.Service oldServiceProvider,
+            org.glassfish.paas.orchestrator.service.spi.Service newServiceProvider,
             ServiceOrchestrator.ReconfigAction reason) {
         callAssociateService(serviceConsumer, newServiceProvider, true);
         return true;

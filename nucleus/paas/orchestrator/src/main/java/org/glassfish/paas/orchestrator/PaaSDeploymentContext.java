@@ -41,7 +41,6 @@
 package org.glassfish.paas.orchestrator;
 
 import org.glassfish.api.deployment.DeploymentContext;
-import org.glassfish.paas.orchestrator.service.metadata.ServiceMetadata;
 
 /**
  * Deployment Context of a PaaS enabled application</br>
@@ -49,18 +48,12 @@ import org.glassfish.paas.orchestrator.service.metadata.ServiceMetadata;
  * @author Jagadish Ramu
  */
 public class PaaSDeploymentContext {
-    private ServiceOrchestrator orchestrator;
     private DeploymentContext dc;
     private String appName;
 
-    public PaaSDeploymentContext(String appName, DeploymentContext dc, ServiceOrchestratorImpl orchestrator){
-        this.orchestrator = orchestrator;
+    public PaaSDeploymentContext(String appName, DeploymentContext dc){
         this.appName = appName;
         this.dc = dc;
-    }
-
-    public ServiceOrchestrator getOrchestrator(){
-        return orchestrator;
     }
 
     public String getAppName(){

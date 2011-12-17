@@ -331,8 +331,8 @@ public class GlassFishPlugin extends ServiceProvisioningEngineBase
      * @param svcRef           Service Reference from GlassFish to that service.
      * @param beforeDeployment indicates if this association is happening before the
      */
-    public void associateServices(ProvisionedService serviceConsumer, ServiceReference svcRef,
-                                  ProvisionedService serviceProvider, boolean beforeDeployment, PaaSDeploymentContext dc) {
+    public void associateServices(org.glassfish.paas.orchestrator.service.spi.Service serviceConsumer, ServiceReference svcRef,
+                                  org.glassfish.paas.orchestrator.service.spi.Service serviceProvider, boolean beforeDeployment, PaaSDeploymentContext dc) {
 //        if (provisionedSvc instanceof DerbyProvisionedService) {
         if ("javax.sql.DataSource".equals(svcRef.getType()) &&
 	        serviceProvider.getServiceType().toString().equals("Database")  &&
@@ -440,8 +440,8 @@ public class GlassFishPlugin extends ServiceProvisioningEngineBase
         }*/
     }
 
-    public void dissociateServices(ProvisionedService serviceConsumer, ServiceReference svcRef,
-                                   ProvisionedService serviceProvider, boolean beforeUndeploy, PaaSDeploymentContext dc) {
+    public void dissociateServices(org.glassfish.paas.orchestrator.service.spi.Service serviceConsumer, ServiceReference svcRef,
+                                   org.glassfish.paas.orchestrator.service.spi.Service serviceProvider, boolean beforeUndeploy, PaaSDeploymentContext dc) {
         if (beforeUndeploy) {
             //if (serviceConsumer instanceof GlassFishProvisionedService) {
                // if (svcRef.getServiceRefType().equals(JAVAEE_SERVICE_TYPE)) {
@@ -607,8 +607,9 @@ public class GlassFishPlugin extends ServiceProvisioningEngineBase
     }
 
     @Override
-    public boolean reassociateServices(ProvisionedService svcConsumer,
-            ProvisionedService oldSvcProvider, ProvisionedService newSvcProvider,
+    public boolean reassociateServices(org.glassfish.paas.orchestrator.service.spi.Service svcConsumer,
+            org.glassfish.paas.orchestrator.service.spi.Service oldSvcProvider,
+            org.glassfish.paas.orchestrator.service.spi.Service newSvcProvider,
             ServiceOrchestrator.ReconfigAction reason) {
         //no-op
         throw new UnsupportedOperationException("Reassociation of Service " +

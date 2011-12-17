@@ -54,16 +54,14 @@ import org.glassfish.embeddable.CommandResult;
 import org.glassfish.embeddable.CommandRunner;
 import org.glassfish.hk2.scopes.Singleton;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
-import org.glassfish.paas.orchestrator.config.ServiceProvisioningEngine;
-import org.glassfish.paas.orchestrator.config.ServiceProvisioningEngines;
+import org.glassfish.paas.orchestrator.config.*;
 import org.glassfish.paas.orchestrator.provisioning.ServiceInfo;
 import org.glassfish.paas.orchestrator.provisioning.ServiceScope;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceUtil;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceDescription;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceMetadata;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceReference;
-import org.glassfish.paas.orchestrator.service.spi.Plugin;
-import org.glassfish.paas.orchestrator.service.spi.ProvisionedService;
+import org.glassfish.paas.orchestrator.service.spi.*;
 import org.glassfish.paas.orchestrator.state.*;
 import org.glassfish.virtualization.spi.VirtualCluster;
 import org.glassfish.virtualization.runtime.VirtualClusters;
@@ -91,16 +89,25 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
 
     private Map<String, ServiceMetadata> serviceMetadata = new LinkedHashMap<String, ServiceMetadata>();
     private Map<String, Set<ProvisionedService>> provisionedServices = new LinkedHashMap<String, Set<ProvisionedService>>();
+    private Map<String, Set<ConfiguredService>> configuredServices = new LinkedHashMap<String, Set<ConfiguredService>>();
     private Map<String, ProvisionedService> sharedServices = new LinkedHashMap<String, ProvisionedService>();
+    private Map<String, ConfiguredService> externalServices = new LinkedHashMap<String, ConfiguredService>();
 
-    private static final Class [] PRE_DEPLOY_PHASE_STATES = {ServiceDependencyDiscoveryState.class, ProvisioningState.class, SharedServiceRegistrationState.class,
+    private static final Class [] PRE_DEPLOY_PHASE_STATES = {ServiceDependencyDiscoveryState.class, ProvisioningState.class,
+            SharedServiceRegistrationState.class, ConfiguredServiceRegistrationState.class, ServiceReferenceRegistrationState.class,
             PreDeployAssociationState.class};
     private static final Class [] POST_DEPLOY_PHASE_STATES = {PostDeployAssociationState.class, DeploymentCompletionState.class};
     private static final Class [] PRE_UNDEPLOY_PHASE_STATES = {PreUndeployDissociationState.class};
-    private static final Class [] POST_UNDEPLOY_PHASE_STATES = {PostUndeployDissociationState.class, SharedServiceUnregisterState.class, UnprovisioningState.class};
-    private static final Class [] ENABLE_PHASE_STATES = {ServiceDependencyDiscoveryState.class, EnableState.class};
-    private static final Class [] DISABLE_PHASE_STATES = {DisableState.class};
-    private static final Class [] SERVER_STARTUP_PHASE_STATES = {ServiceDependencyDiscoveryState.class, ServerStartupState.class};
+    private static final Class [] POST_UNDEPLOY_PHASE_STATES = {PostUndeployDissociationState.class,
+            ServiceReferenceUnregisterState.class, ConfiguredServiceUnregisterState.class, SharedServiceUnregisterState.class,
+            UnprovisioningState.class};
+    private static final Class [] ENABLE_PHASE_STATES = {ServiceDependencyDiscoveryState.class, SharedServiceRegistrationState.class,
+            ConfiguredServiceRegistrationState.class , EnableState.class};
+    private static final Class [] DISABLE_PHASE_STATES = {DisableState.class, SharedServiceUnregisterState.class,
+            ConfiguredServiceUnregisterState.class, DisableCompletionState.class };
+    private static final Class [] SERVER_STARTUP_PHASE_STATES = {ServiceDependencyDiscoveryState.class,
+            SharedServiceRegistrationState.class, ConfiguredServiceRegistrationState.class,  ServerStartupState.class,
+            };
     private static final List<Class> DEPLOYMENT_STATES = new ArrayList<Class>();
 
     private static Logger logger = Logger.getLogger(ServiceOrchestratorImpl.class.getName());
@@ -175,8 +182,16 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
         */
     }
 
-    public Set<ProvisionedService> getProvisionedServices(String appName) {
-        return provisionedServices.get(appName);
+    public Set<org.glassfish.paas.orchestrator.service.spi.Service> getServicesForAssociation(String appName){
+        Set<org.glassfish.paas.orchestrator.service.spi.Service> servicesSet =
+                new LinkedHashSet<org.glassfish.paas.orchestrator.service.spi.Service>();
+            servicesSet.addAll(getProvisionedServices(appName));
+            servicesSet.addAll(getConfiguredServices(appName));
+        return servicesSet;
+    }
+
+    public Set<org.glassfish.paas.orchestrator.service.spi.Service> getServicesForDissociation(String appName){
+        return getServicesForAssociation(appName);
     }
 
     public ServiceMetadata getServiceMetadata(String appName) {
@@ -186,7 +201,7 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
     private void orchestrateTask(Class[] tasks, String appName, DeploymentContext dc, boolean deployment) {
         for(Class clz : tasks){
             PaaSDeploymentState state = habitat.getByType(clz.getName());
-            PaaSDeploymentContext pc = new PaaSDeploymentContext(appName, dc, this);
+            PaaSDeploymentContext pc = new PaaSDeploymentContext(appName, dc);
             try{
                 state.beforeExecution(pc);
                 state.handle(pc);
@@ -311,19 +326,32 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
 
     public ServiceMetadata getServices(ReadableArchive archive) throws Exception {
         ServiceDependencyDiscoveryState state = habitat.getByType(ServiceDependencyDiscoveryState.class);
-        PaaSDeploymentContext pc = new PaaSDeploymentContext(archive.getName(), null, this);
+        PaaSDeploymentContext pc = new PaaSDeploymentContext(archive.getName(), null);
         return state.getServiceDependencyMetadata(pc, archive.getName(), archive);
     }
 
-    public Collection<ProvisionedService> getServicesProvisionedByPlugin(Plugin plugin,
-                                                                          Set<ProvisionedService> allProvisionedServices){
-        List<ProvisionedService> provisionedServices = new ArrayList<ProvisionedService>();
-        for(ProvisionedService ps : allProvisionedServices){
-            if(ps.getServiceType().equals(plugin.getServiceType())){
-                provisionedServices.add(ps);
+    public Collection<org.glassfish.paas.orchestrator.service.spi.Service> getServicesManagedByPlugin(Plugin plugin,
+                                              Set<org.glassfish.paas.orchestrator.service.spi.Service> allServices){
+        List<org.glassfish.paas.orchestrator.service.spi.Service> services =
+                new ArrayList<org.glassfish.paas.orchestrator.service.spi.Service>();
+        for(org.glassfish.paas.orchestrator.service.spi.Service service : allServices){
+            if(service.getServiceType().equals(plugin.getServiceType())){
+                services.add(service);
             }
         }
-        return provisionedServices;
+        return services;
+    }
+
+    public Collection<ProvisionedService> getServicesProvisionedByPlugin(Plugin plugin,
+                                              Set<ProvisionedService> provisionedServices){
+        List<ProvisionedService> services =
+                new ArrayList<ProvisionedService>();
+        for(ProvisionedService service : provisionedServices){
+            if(service.getServiceType().equals(plugin.getServiceType())){
+                services.add(service);
+            }
+        }
+        return services;
     }
 
     // Name of the JavaEE service will be the name of the virtual cluster.
@@ -445,7 +473,7 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
             public void run() {
             /*
              * At this point in time, the CEM passes the Service Name as the
-             * app Name and hence a temproary workaround to find the right appName 
+             * app Name and hence a temporary workaround to find the right appName
              */
             //Hack starts here.
             String effectiveAppName = appName;
@@ -453,7 +481,7 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
             String tmpAppName = null;
             for (String app: provisionedServices.keySet()){
                 logger.log(Level.INFO, "Checking app for Service " + svcName);
-                Set<ProvisionedService> appsServices = provisionedServices.get(app);
+                Set<ProvisionedService> appsServices = getProvisionedServices(app);
                 for(ProvisionedService p: appsServices){
                     if (p.getName().equals(svcName)) {
                         tmpAppName = app;
@@ -467,7 +495,7 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
             //Hack ends here.
     
             //Get Old PS
-            Set<ProvisionedService> appPS = provisionedServices.get(effectiveAppName);
+            Set<ProvisionedService> appPS = getProvisionedServices(effectiveAppName);
             logger.log(Level.FINE, "appPS: " + appPS);
             ProvisionedService oldPS = null;
             for(ProvisionedService ps: appPS) {
@@ -506,9 +534,9 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
                         logger.log(Level.INFO, "Re-associating New ProvisionedService " 
                                 + newPS + " for ServiceReference " + serviceRef 
                                 + " through " + svcPlugin);
-                        Collection<ProvisionedService> serviceConsumers = 
-                                getServicesProvisionedByPlugin(svcPlugin, appPS);
-                        for(ProvisionedService serviceConsumer : serviceConsumers){
+                        Collection<org.glassfish.paas.orchestrator.service.spi.Service> serviceConsumers =
+                                getServicesManagedByPlugin(svcPlugin, getServicesForAssociation(appName));
+                        for(org.glassfish.paas.orchestrator.service.spi.Service serviceConsumer : serviceConsumers){
                             svcPlugin.reassociateServices(serviceConsumer, oldPS, 
                                     newPS, ReconfigAction.AUTO_SCALING);
                         }
@@ -521,10 +549,6 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
         return true;
     }
 
-
-    public Collection<String> getApplicationsUsingSharedService(String sharedService){
-        return serviceUtil.getApplicationsUsingSharedService(sharedService);
-    }
 
     /**
      * @inheritDoc
@@ -549,16 +573,67 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
         serviceMetadata.put(appName, appServiceMetadata);
     }
 
-    public void addProvisionedServices(String appName, Set<ProvisionedService> provisionedServiceSet) {
-        provisionedServices.put(appName, provisionedServiceSet);
+    public boolean unregisterProvisionedServices(String appName, Collection<ProvisionedService> provisionedServices) {
+        return getProvisionedServices(appName).removeAll(provisionedServices);
+    }
+
+    public boolean unregisterConfiguredServices(String appName, Collection<ConfiguredService> configuredServices) {
+        return getConfiguredServices(appName).removeAll(configuredServices);
+    }
+
+    public void registerProvisionedServices(String appName, Collection<ProvisionedService> provisionedServices) {
+        getProvisionedServices(appName).addAll(provisionedServices);
+    }
+
+    public void registerConfiguredServices(String appName, Collection<ConfiguredService> configuredServices) {
+        getConfiguredServices(appName).addAll(configuredServices);
+    }
+
+    private Set<ProvisionedService> getProvisionedServices(String appName) {
+        Set<ProvisionedService> ps = provisionedServices.get(appName);
+        if(ps == null){
+            ps = new LinkedHashSet<ProvisionedService>();
+            provisionedServices.put(appName, ps);
+        }
+        return provisionedServices.get(appName);
+    }
+
+    private Set<ConfiguredService> getConfiguredServices(String appName) {
+        Set<ConfiguredService> cs = configuredServices.get(appName);
+        if(cs == null){
+            cs = new LinkedHashSet<ConfiguredService>();
+            configuredServices.put(appName, cs);
+        }
+        return configuredServices.get(appName);
     }
 
     public void addSharedService(String serviceName, ProvisionedService provisionedService) {
         sharedServices.put(serviceName, provisionedService);
     }
 
+    public void addExternalService(String serviceName, ConfiguredService configuredService){
+        externalServices.put(serviceName, configuredService);
+    }
+
+    public ConfiguredService removeExternalService(String serviceName){
+        return externalServices.remove(serviceName);
+    }
+
     public ProvisionedService removeSharedService(String serviceName) {
         return sharedServices.remove(serviceName);
+    }
+
+    public ConfiguredService getConfiguredService(String serviceName){
+        ConfiguredService configuredService = externalServices.get(serviceName);
+        if(configuredService == null){
+            ServiceDescription sd = getExternalServiceDescription(serviceName);
+            configuredService = serviceUtil.getExternalService(serviceName);
+            externalServices.put(serviceName, configuredService);
+        }
+        if(configuredService == null){
+            throw new RuntimeException("No such external service ["+serviceName+"] is available");
+        }
+        return configuredService;
     }
 
     public ProvisionedService getSharedService(String serviceName){
@@ -574,6 +649,42 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
             throw new RuntimeException("No such shared service ["+serviceName+"] is available");
         }
         return provisionedService;
+    }
+
+    public ServiceDescription getExternalServiceDescription(String serviceName){
+        ServiceDescription sd = null;
+        ServiceInfo serviceInfo = serviceUtil.getServiceInfo(serviceName, null, null);
+
+        if(serviceInfo != null){
+            sd = serviceUtil.getExternalServiceDescription(serviceInfo);
+            if(sd != null){
+                sd.setServiceScope(ServiceScope.EXTERNAL);
+            }else{
+                throw new RuntimeException("Could not retrieve external-service-description ["+serviceName+"] ");
+            }
+            sd.setServiceType(serviceInfo.getServerType());
+            //TODO should we associate a plugin for external service's service-description as
+            //TODO external-service is not handled by a plugin ?
+            Plugin plugin = getPlugin(sd);
+            sd.setPlugin(plugin);
+        }else{
+            throw new RuntimeException("No such external service ["+serviceName+"] is available");
+        }
+        return sd;
+    }
+
+    public ServiceDescription getReferredServiceDescription(String serviceName) throws PaaSDeploymentException {
+        org.glassfish.paas.orchestrator.config.Service service = serviceUtil.getService(serviceName, null);
+        ServiceDescription sd = null;
+        if(service instanceof SharedService){
+            sd = getSharedServiceDescription(serviceName);
+        }else if(service instanceof ExternalService){
+            sd = getExternalServiceDescription(serviceName);
+        }
+        if(sd == null){
+            throw new PaaSDeploymentException("No external/shared service ["+serviceName+"] found");
+        }
+        return sd;
     }
 
     public ServiceDescription getSharedServiceDescription(String serviceName){

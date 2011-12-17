@@ -40,6 +40,9 @@
 
 package org.glassfish.paas.orchestrator.service;
 
+import org.jvnet.hk2.annotations.Service;
+
+@Service
 public class HTTPLoadBalancerServiceType extends ServiceType {
 
     @Override

@@ -49,6 +49,8 @@ import org.glassfish.api.admin.ExecuteOn;
 import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
+import org.glassfish.paas.orchestrator.config.Configuration;
+import org.glassfish.paas.orchestrator.config.Configurations;
 import org.glassfish.paas.orchestrator.config.ExternalService;
 import org.glassfish.paas.orchestrator.config.Services;
 import org.jvnet.hk2.annotations.Inject;
@@ -64,11 +66,14 @@ import java.beans.PropertyVetoException;
 import java.util.Map;
 import java.util.Properties;
 
+/**
+ * @author Jagadish Ramu
+ */
 @Service(name = "create-external-service")
 @Scoped(PerLookup.class)
 @ExecuteOn(RuntimeType.DAS)
 @TargetType(value={CommandTarget.DAS})
-public class CreateExternalService implements AdminCommand{
+public class CreateExternalService implements AdminCommand {
 
     @Param(name="defaultService", defaultValue = "false", optional = true)
     private Boolean defaultService;
@@ -82,11 +87,17 @@ public class CreateExternalService implements AdminCommand{
     @Param(name="property", optional=true, separator=':')
     private Properties properties;
 
+    @Param(name = "configuration", optional = true, separator = ':')
+    private Properties configuration;
+
     @Param(name="servicename", primary = true)
     private String serviceName;
 
     @Inject
     private Domain domain;
+
+    @Inject
+    private ServiceUtil serviceUtil;
 
     //TODO logging
     //TODO java-doc
@@ -94,79 +105,66 @@ public class CreateExternalService implements AdminCommand{
 
         final ActionReport report = context.getActionReport();
 
+        Services services = serviceUtil.getServices();
         if(defaultService){
             if(force){
                 //TODO unset default=true in any other external service that already exists.
             }else{
-                Services services = domain.getExtensionByType(Services.class);
-                if(services != null){
-                    for(org.glassfish.paas.orchestrator.config.Service service : services.getServices()){
-                        if(service instanceof ExternalService){
-                            if(Boolean.valueOf(((ExternalService)service).getDefault())){
-                                report.setMessage("An external service named ["+service.getServiceName()+"] is already marked as default service, " +
-                                        "use --force=true to override the same");
-                                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-                                return;
-                            }
+
+                for(org.glassfish.paas.orchestrator.config.Service service : services.getServices()){
+                    if(service instanceof ExternalService){
+                        if(((ExternalService) service).getDefault()){
+                            report.setMessage("An external service named ["+service.getServiceName()+"] is already marked as default service, " +
+                                    "use --force=true to override the same");
+                            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                            return;
                         }
                     }
                 }
             }
         }
 
-        Services services = domain.getExtensionByType(Services.class);
-        if(services ==null){
-            try {
-                if (ConfigSupport.apply(new SingleConfigCode<Domain>() {
-                    public Object run(Domain param) throws PropertyVetoException, TransactionFailure {
-                        Services services = param.createChild(Services.class);
-                        param.getExtensions().add(services);
-                        return services;
-                    }
-                }, domain) == null) {
-                    report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-                    report.setMessage("Unable to create external service");
-                    return;
-                }
-            } catch (TransactionFailure transactionFailure) {
-                //TODO log
-                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-                report.setMessage("Unable to create external service due to : " + transactionFailure.getMessage());
-                return;
-            }
-        }
-
-        services = domain.getExtensionByType(Services.class);
         try {
             if (ConfigSupport.apply(new SingleConfigCode<Services>() {
                 public Object run(Services param) throws PropertyVetoException, TransactionFailure {
-                    ExternalService extService = param.createChild(ExternalService.class);
-                    extService.setDefault(defaultService);
-                    extService.setType(serviceType);
-                    extService.setServiceName(serviceName);
+                    ExternalService externalService = param.createChild(ExternalService.class);
+                    externalService.setDefault(defaultService);
+                    externalService.setType(serviceType);
+                    externalService.setServiceName(serviceName);
+
+                    if (configuration != null) {
+                        Configurations configs
+                                = externalService.createChild(Configurations.class);
+                        for (Map.Entry e : configuration.entrySet()) {
+                            Configuration config = configs.createChild(Configuration.class);
+                            config.setName((String)e.getKey());
+                            config.setValue((String)e.getValue());
+                            configs.getConfiguration().add(config);
+                        }
+                        externalService.setConfigurations(configs);
+                    }
+
                     if (properties != null) {
                         for (Map.Entry e : properties.entrySet()) {
-                            Property prop = extService.createChild(Property.class);
+                            Property prop = externalService.createChild(Property.class);
                             prop.setName((String) e.getKey());
                             prop.setValue((String) e.getValue());
-                            extService.getProperty().add(prop);
+                            externalService.getProperty().add(prop);
                         }
                     }
-                    param.getServices().add(extService);
-                    return extService;
+                    param.getServices().add(externalService);
+                    return externalService;
                 }
             }, services) == null) {
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                 report.setMessage("Unable to create external service");
-                return;
             }else{
                 report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
-                return;
             }
         } catch (TransactionFailure transactionFailure) {
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setMessage("Unable to create external service due to : " + transactionFailure.getMessage());
-            return;
+            report.setFailureCause(transactionFailure);
         }
     }
 }

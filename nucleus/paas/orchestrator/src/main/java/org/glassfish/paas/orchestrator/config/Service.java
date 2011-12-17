@@ -54,6 +54,9 @@ import javax.validation.constraints.NotNull;
 import java.beans.PropertyVetoException;
 import java.util.List;
 
+/**
+ * @author Jagadish Ramu
+ */
 @Configured
 public interface Service extends ConfigBeanProxy, Injectable, PropertyBag{
 

@@ -128,7 +128,7 @@ public class DeleteSharedService implements AdminCommand {
                         SharedService sharedService = (SharedService) service;
                         ProvisionedService provisionedService = serviceOrchestrator.getSharedService(sharedService.getServiceName());
                         Plugin plugin = provisionedService.getServiceDescription().getPlugin();
-                        PaaSDeploymentContext pdc = new PaaSDeploymentContext(null, null, serviceOrchestrator);
+                        PaaSDeploymentContext pdc = new PaaSDeploymentContext(null, null);
                         plugin.unprovisionService(provisionedService.getServiceDescription(), pdc);
                         serviceOrchestrator.removeSharedService(sharedService.getServiceName());
 

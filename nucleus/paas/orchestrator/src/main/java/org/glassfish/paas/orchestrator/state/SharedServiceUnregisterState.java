@@ -44,7 +44,6 @@ import org.glassfish.paas.orchestrator.PaaSDeploymentContext;
 import org.glassfish.paas.orchestrator.PaaSDeploymentException;
 import org.glassfish.paas.orchestrator.ServiceOrchestratorImpl;
 import org.glassfish.paas.orchestrator.provisioning.ServiceScope;
-import org.glassfish.paas.orchestrator.provisioning.cli.ServiceUtil;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceDescription;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceMetadata;
 import org.glassfish.paas.orchestrator.service.spi.ProvisionedService;
@@ -52,6 +51,7 @@ import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
 
 import java.util.Collection;
+import java.util.LinkedHashSet;
 
 /**
  * @author Jagadish Ramu
@@ -59,22 +59,17 @@ import java.util.Collection;
 @Service
 public class SharedServiceUnregisterState extends AbstractPaaSDeploymentState {
 
-    @Inject
-    private ServiceUtil serviceUtil;
-
     public void handle(PaaSDeploymentContext context) throws PaaSDeploymentException {
         String appName = context.getAppName();
-        ServiceOrchestratorImpl orchestrator = (ServiceOrchestratorImpl)context.getOrchestrator();
         ServiceMetadata serviceMetadata = orchestrator.getServiceMetadata(appName);
         Collection<ServiceDescription> serviceDescriptions =  serviceMetadata.getServiceDescriptions();
-        Collection<ProvisionedService> provisionedServices = orchestrator.getProvisionedServices(appName);
+        Collection<ProvisionedService> sharedServices = new LinkedHashSet<ProvisionedService>();
         for(ServiceDescription sd : serviceDescriptions){
             if(ServiceScope.SHARED.equals(sd.getServiceScope())){
-                ProvisionedService ps = orchestrator.getSharedService(sd.getName());
-                provisionedServices.remove(ps);
-                serviceUtil.unregisterServiceReference(sd.getName(), appName);
+                sharedServices.add(orchestrator.getSharedService(sd.getName()));
             }
         }
+        orchestrator.unregisterProvisionedServices(appName, sharedServices);
     }
 
     public Class getRollbackState() {

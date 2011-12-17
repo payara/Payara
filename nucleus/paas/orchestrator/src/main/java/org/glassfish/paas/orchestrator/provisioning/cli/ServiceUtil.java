@@ -41,14 +41,21 @@ package org.glassfish.paas.orchestrator.provisioning.cli;
 
 
 import com.sun.enterprise.config.serverbeans.Domain;
+import org.glassfish.hk2.scopes.Singleton;
 import org.glassfish.paas.orchestrator.ServiceOrchestratorImpl;
 import org.glassfish.paas.orchestrator.config.*;
+import org.glassfish.paas.orchestrator.config.Service;
 import org.glassfish.paas.orchestrator.provisioning.ServiceInfo;
+import org.glassfish.paas.orchestrator.provisioning.ServiceScope;
+import org.glassfish.paas.orchestrator.service.ConfiguredServiceImpl;
 import org.glassfish.paas.orchestrator.service.ServiceStatus;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceCharacteristics;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceDescription;
 import org.glassfish.paas.orchestrator.service.metadata.TemplateIdentifier;
+import org.glassfish.paas.orchestrator.service.spi.ConfiguredService;
 import org.jvnet.hk2.annotations.Inject;
+import org.jvnet.hk2.annotations.Scoped;
+import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.PostConstruct;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
@@ -57,10 +64,7 @@ import org.jvnet.hk2.config.TransactionFailure;
 import org.jvnet.hk2.config.types.Property;
 
 import java.beans.PropertyVetoException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
@@ -68,12 +72,16 @@ import java.util.logging.Logger;
 
 
 @org.jvnet.hk2.annotations.Service
+@Scoped(Singleton.class)
 public class ServiceUtil implements PostConstruct {
 
     private static ExecutorService threadPool = Executors.newCachedThreadPool();
 
     @Inject
     private Domain domain;
+
+    @Inject
+    private Habitat habitat;
 
     private static Logger logger = Logger.getLogger(ServiceOrchestratorImpl.class.getName());
 
@@ -283,6 +291,7 @@ public class ServiceUtil implements PostConstruct {
     }
 
     public boolean isServiceAlreadyConfigured(String serviceName, String appName, ServiceType type) {
+        //TODO hack, ignoring the shared-service/external-service related call for now.
         if(appName==null){
             return false;
         }
@@ -370,7 +379,41 @@ public class ServiceUtil implements PostConstruct {
         return cre;
     }
 
-    private Service getService(String serviceName, String appName) {
+    public ConfiguredService getExternalService(String serviceName){
+        Services services = getServices();
+        ExternalService externalService = null;
+        for(Service service : services.getServices()){
+            if(service.getServiceName().equals(serviceName) && service instanceof ExternalService){
+                externalService = (ExternalService)service;
+                break;
+            }
+        }
+        if(externalService == null){
+            throw new RuntimeException("No external service by name "+serviceName+" found");
+        }
+        ServiceDescription sd = new ServiceDescription();
+        sd.setServiceScope(ServiceScope.EXTERNAL);
+        sd.setName(externalService.getServiceName());
+        sd.setServiceType(externalService.getType());
+
+        Properties properties = new Properties();
+        if (externalService.getConfigurations() != null && externalService.getConfigurations().getConfiguration() != null) {
+            List<org.glassfish.paas.orchestrator.service.metadata.Property> configurationList = new ArrayList<org.glassfish.paas.orchestrator.service.metadata.Property>();
+            for (Configuration config : externalService.getConfigurations().getConfiguration()) {
+                org.glassfish.paas.orchestrator.service.metadata.Property property
+                        = new org.glassfish.paas.orchestrator.service.metadata.Property();
+                property.setName(config.getName());
+                property.setValue(config.getValue());
+                configurationList.add(property);
+                properties.put(property.getName(), property.getValue());
+            }
+            sd.setConfigurations(configurationList);
+        }
+        ConfiguredServiceImpl configuredService = new ConfiguredServiceImpl(externalService.getServiceName(),
+                getServiceType(externalService.getType()), sd, properties);
+        return configuredService;
+    }
+    public Service getService(String serviceName, String appName) {
         Service matchingService = null;
         Services services = getServices();
         for (Service service : services.getServices()) {
@@ -416,7 +459,7 @@ public class ServiceUtil implements PostConstruct {
     }
 
 
-    public void unregisterCloudEntry(final String serviceName, final String appName) {
+    public void unregisterServiceInfo(final String serviceName, final String appName) {
         Services services = getServices();
         try {
             if (ConfigSupport.apply(new SingleConfigCode<Services>() {
@@ -630,6 +673,35 @@ public class ServiceUtil implements PostConstruct {
         return spes;
     }
 
+    public ServiceDescription getExternalServiceDescription(ServiceInfo serviceInfo){
+        ServiceDescription sd = null;
+        Service service = getService(serviceInfo.getServiceName(), serviceInfo.getAppName());
+        if(service != null){
+            if(service instanceof ExternalService){
+                ExternalService externalService = (ExternalService)service;
+
+                Object characteristicsOrTemplate = null;
+
+                List<org.glassfish.paas.orchestrator.service.metadata.Property> configuration = null;
+                if(externalService.getConfigurations() != null){
+                    if(externalService.getConfigurations().getConfiguration() != null){
+                        configuration = new ArrayList<org.glassfish.paas.orchestrator.service.metadata.Property>();
+                        for(Configuration config : externalService.getConfigurations().getConfiguration()){
+                            org.glassfish.paas.orchestrator.service.metadata.Property property =
+                                    new org.glassfish.paas.orchestrator.service.metadata.Property(config.getName(), config.getValue());
+                            configuration.add(property);
+                        }
+                    }
+                }
+                sd = new ServiceDescription(externalService.getServiceName(), null,
+                        null, characteristicsOrTemplate, configuration);
+            }
+        }else{
+            throw new RuntimeException("No such service ["+serviceInfo.getServiceName()+"] is available");
+        }
+        return sd;
+    }
+
     //TODO implementation for external and app-scoped-service also.
     public ServiceDescription getSharedServiceDescription(ServiceInfo serviceInfo){
         ServiceDescription sd = null;
@@ -679,6 +751,17 @@ public class ServiceUtil implements PostConstruct {
             throw new RuntimeException("No such service ["+serviceInfo.getServiceName()+"] is available");
         }
         return sd;
+    }
+
+    public org.glassfish.paas.orchestrator.service.ServiceType getServiceType(String serviceTypeString){
+        Collection<org.glassfish.paas.orchestrator.service.ServiceType> serviceTypes =
+                habitat.getAllByContract(org.glassfish.paas.orchestrator.service.ServiceType.class);
+        for(org.glassfish.paas.orchestrator.service.ServiceType serviceType : serviceTypes){
+            if(serviceType.toString().equals(serviceTypeString)){
+                return serviceType;
+            }
+        }
+        throw new RuntimeException("Unable to determine the type");
     }
 
 }

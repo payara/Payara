@@ -51,6 +51,9 @@ import org.jvnet.hk2.config.Element;
 import javax.validation.constraints.NotNull;
 import java.util.List;
 
+/**
+ * @author Jagadish Ramu
+ */
 @Configured
 public interface Services extends ConfigBeanProxy, Injectable, DomainExtension, ApplicationExtension {
 

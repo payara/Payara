@@ -90,7 +90,7 @@ public class LBServiceUtil {
     }
 
     public void unregisterLBInfo(String instance, String appName) {
-        serviceUtil.unregisterCloudEntry(instance, appName);
+        serviceUtil.unregisterServiceInfo(instance, appName);
     }
 
     public ServiceStatus getServiceStatus(ServiceInfo entry) {

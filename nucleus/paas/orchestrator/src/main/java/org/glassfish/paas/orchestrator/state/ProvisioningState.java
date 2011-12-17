@@ -50,7 +50,6 @@ import org.glassfish.paas.orchestrator.service.spi.Plugin;
 import org.glassfish.paas.orchestrator.service.spi.ProvisionedService;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
 
 import java.util.*;
 import java.util.concurrent.Callable;
@@ -65,9 +64,6 @@ public class ProvisioningState extends AbstractPaaSDeploymentState {
 
     @Inject
     private CommandRunner commandRunner;
-
-    @Inject
-    private Habitat habitat;
 
     public void handle(PaaSDeploymentContext context) throws PaaSDeploymentException {
         try{
@@ -90,7 +86,6 @@ public class ProvisioningState extends AbstractPaaSDeploymentState {
         //TODO add exception handling for the entire task
         //TODO pass the exception via the PaaSDeploymentContext ?
         logger.entering(getClass().getName(), "provisionServices");
-        final ServiceOrchestratorImpl orchestrator = (ServiceOrchestratorImpl)context.getOrchestrator();
         final Set<ProvisionedService> appPSs = new HashSet<ProvisionedService>();
         String appName = context.getAppName();
         final ServiceMetadata appServiceMetadata = orchestrator.getServiceMetadata(appName);
@@ -157,7 +152,7 @@ public class ProvisioningState extends AbstractPaaSDeploymentState {
             }
         }
         if(!failed){
-            orchestrator.addProvisionedServices(context.getAppName(), appPSs);
+            orchestrator.registerProvisionedServices(context.getAppName(), appPSs);
             return appPSs;
         }else{
             for(ProvisionedService ps : appPSs){

@@ -49,6 +49,9 @@ import org.jvnet.hk2.config.Configured;
 import java.beans.PropertyVetoException;
 import javax.validation.constraints.NotNull;
 
+/**
+ * @author Jagadish Ramu
+ */
 @Configured
 public interface ServiceRef extends ConfigBeanProxy, Injectable{
     //TODO later (when app-scoped-service and service-ref are stored within <application>) this attribute should be key

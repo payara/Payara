@@ -41,9 +41,7 @@
 package org.glassfish.paas.orchestrator.state;
 
 import org.glassfish.paas.orchestrator.*;
-import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
 
 
 /**
@@ -51,9 +49,6 @@ import org.jvnet.hk2.component.Habitat;
  */
 @Service
 public class PostUndeployDissociationState extends DissociationState {
-
-    @Inject
-    private Habitat habitat;
 
     public void handle(PaaSDeploymentContext context) throws PaaSDeploymentException {
         boolean beforeUndeploy = false;

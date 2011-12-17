@@ -120,7 +120,7 @@ public class GlassFishServiceUtil{
     }
 
     public void unregisterASInfo(String serviceName, String appName) {
-        serviceUtil.unregisterCloudEntry(serviceName, appName);
+        serviceUtil.unregisterServiceInfo(serviceName, appName);
     }
 
     public boolean isInstance(String serviceName) {

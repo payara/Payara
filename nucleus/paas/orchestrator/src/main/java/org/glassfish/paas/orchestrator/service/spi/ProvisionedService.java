@@ -41,11 +41,6 @@
 package org.glassfish.paas.orchestrator.service.spi;
 
 import org.glassfish.paas.orchestrator.service.ServiceStatus;
-import org.glassfish.paas.orchestrator.service.ServiceType;
-import org.glassfish.paas.orchestrator.service.metadata.ServiceDescription;
-
-import java.util.Properties;
-
 /**
  * Represents a Service provisioned by the PaaS runtime
  * <p/>
@@ -56,19 +51,8 @@ import java.util.Properties;
  *
  * @author Sivakumar Thyagarajan
  */
-public interface ProvisionedService {
-    public ServiceType getServiceType();
+public interface ProvisionedService extends Service {
 
-    // service description that was used to provision this service.
-    public ServiceDescription getServiceDescription();
-
-    // additional information (eg., host, port, etc) after provisioning the service.
-    // TODO :: should we also have explicit methods like getHost(), getPort()?
-    public Properties getServiceProperties();
-    
     public ServiceStatus getStatus();
 
-    public String getName();
-
-    public Properties getProperties();
 }
