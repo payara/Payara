@@ -40,9 +40,6 @@
 
 package org.glassfish.paas.orchestrator.provisioning.cli;
 
-import com.sun.enterprise.config.serverbeans.ApplicationRef;
-import com.sun.enterprise.config.serverbeans.Cluster;
-import com.sun.enterprise.config.serverbeans.Clusters;
 import com.sun.enterprise.config.serverbeans.Domain;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
@@ -53,7 +50,6 @@ import org.glassfish.embeddable.CommandResult;
 import org.glassfish.embeddable.CommandRunner;
 import org.glassfish.paas.orchestrator.PaaSDeploymentContext;
 import org.glassfish.paas.orchestrator.ServiceOrchestratorImpl;
-import org.glassfish.paas.orchestrator.config.ServiceRef;
 import org.glassfish.paas.orchestrator.config.Services;
 import org.glassfish.paas.orchestrator.config.SharedService;
 import org.glassfish.paas.orchestrator.service.spi.Plugin;
@@ -87,6 +83,9 @@ public class DeleteSharedService implements AdminCommand {
     private CommandRunner commandRunner;
 
     @Inject
+    private ServiceUtil serviceUtil;
+
+    @Inject
     private ServiceOrchestratorImpl serviceOrchestrator;
 
     private static Logger logger = Logger.getLogger(ServiceOrchestratorImpl.class.getName());
@@ -94,63 +93,43 @@ public class DeleteSharedService implements AdminCommand {
     public void execute(AdminCommandContext context) {
         final ActionReport report = context.getActionReport();
 
-        //TODO make sure that no service-ref is present for this service
-        Services services = domain.getExtensionByType(Services.class);
+        Services services = serviceUtil.getServices();
         boolean found = false;
-        if (services != null) {
-            for (final org.glassfish.paas.orchestrator.config.Service service : services.getServices()) {
-                if (service.getServiceName().equals(serviceName)) {
-                    if (service instanceof SharedService) {
-                        found = true;
-                        List<ServiceRef> serviceRefList=services.getServiceRefs();
-                        String appName=null;
-                        for (ServiceRef serviceRef : serviceRefList) {
-                                if (serviceName.equalsIgnoreCase(serviceRef.getServiceName())) {
-                                    appName = serviceRef.getApplicationName();
-                                    if (appName != null) {
-                                        Clusters clusters = domain.getClusters();
-                                        List<Cluster> clusterList = clusters.getCluster();
-                                        for (Cluster cluster : clusterList) {
-                                            ApplicationRef applicationRef = cluster.getApplicationRef(appName);
-                                            if (applicationRef != null) {
-                                                report.setMessage("A shared service by name [" + serviceName + "] is used by an application " +
-                                                            "[" + appName + "].");
-                                                    report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-                                                    return;
+        for (final org.glassfish.paas.orchestrator.config.Service service : services.getServices()) {
+            if (service.getServiceName().equals(serviceName)) {
+                if (service instanceof SharedService) {
+                    found = true;
+                    //check whether the service is in use by any application
+                    List<String> applicationsUsingService =
+                            serviceUtil.getApplicationsUsingService(service.getServiceName());
+                    if(applicationsUsingService.size() > 0){
+                        report.setMessage("The shared service [" + serviceName + "] is " +
+                                "used by an application [" + applicationsUsingService.get(0) + "].");
+                        report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                        return;
+                    }
+                    SharedService sharedService = (SharedService) service;
+                    ProvisionedService provisionedService = serviceOrchestrator.getSharedService(sharedService.getServiceName());
+                    Plugin plugin = provisionedService.getServiceDescription().getPlugin();
+                    PaaSDeploymentContext pdc = new PaaSDeploymentContext(null, null);
+                    plugin.unprovisionService(provisionedService.getServiceDescription(), pdc);
+                    serviceOrchestrator.removeSharedService(sharedService.getServiceName());
 
-                                            }
-                                        }
-
-                                    }
-                                }
-                            }
-
-                        SharedService sharedService = (SharedService) service;
-                        ProvisionedService provisionedService = serviceOrchestrator.getSharedService(sharedService.getServiceName());
-                        Plugin plugin = provisionedService.getServiceDescription().getPlugin();
-                        PaaSDeploymentContext pdc = new PaaSDeploymentContext(null, null);
-                        plugin.unprovisionService(provisionedService.getServiceDescription(), pdc);
-                        serviceOrchestrator.removeSharedService(sharedService.getServiceName());
-
-                        // delete virtual cluster
-                        String virtualClusterName = service.getServiceName();
-                        CommandResult result = commandRunner.run("delete-cluster", virtualClusterName);
-                        logger.finest("Command delete-cluster [" + virtualClusterName + "] executed. " +
-                                "Command Output [" + result.getOutput() + "]");
-                        if (result.getExitStatus().equals(CommandResult.ExitStatus.FAILURE)) {
-                            throw new RuntimeException("Failure while deleting virtual-cluster, " +
-                                    "Unable to delete virtual-cluster [" + virtualClusterName + "]");
-                        }
+                    // delete virtual cluster
+                    String virtualClusterName = service.getServiceName();
+                    CommandResult result = commandRunner.run("delete-cluster", virtualClusterName);
+                    logger.finest("Command delete-cluster [" + virtualClusterName + "] executed. " +
+                            "Command Output [" + result.getOutput() + "]");
+                    if (result.getExitStatus().equals(CommandResult.ExitStatus.FAILURE)) {
+                        throw new RuntimeException("Failure while deleting virtual-cluster, " +
+                                "Unable to delete virtual-cluster [" + virtualClusterName + "]");
                     }
                 }
             }
-            if (!found) {
-                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-                report.setMessage("No shared-service by name [" + serviceName + "] is available");
-            }
-        } else {
+        }
+        if (!found) {
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            report.setMessage("Invalid service name [" + serviceName + "]");
+            report.setMessage("No shared-service by name [" + serviceName + "] is available");
         }
     }
 }

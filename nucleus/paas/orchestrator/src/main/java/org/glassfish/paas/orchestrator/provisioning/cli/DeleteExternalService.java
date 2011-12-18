@@ -49,7 +49,6 @@ import org.glassfish.api.admin.ExecuteOn;
 import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
-import org.glassfish.paas.orchestrator.ServiceOrchestrator;
 import org.glassfish.paas.orchestrator.ServiceOrchestratorImpl;
 import org.glassfish.paas.orchestrator.config.ExternalService;
 import org.glassfish.paas.orchestrator.config.Services;
@@ -62,6 +61,7 @@ import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
 
 import java.beans.PropertyVetoException;
+import java.util.List;
 
 /**
  * @author Jagadish Ramu
@@ -88,41 +88,45 @@ public class DeleteExternalService implements AdminCommand {
     public void execute(AdminCommandContext context) {
         final ActionReport report = context.getActionReport();
 
-        //TODO make sure that no service-ref is present for this service
-
         Services services = serviceUtil.getServices();
         boolean found = false;
-        if (services != null) {
-            for (final org.glassfish.paas.orchestrator.config.Service service : services.getServices()) {
-                if (service.getServiceName().equals(serviceName)) {
-                    if (service instanceof ExternalService) {
-                        found = true;
-                        try {
-                            if (ConfigSupport.apply(new SingleConfigCode<Services>() {
-                                public Object run(Services param) throws PropertyVetoException, TransactionFailure {
-                                    param.getServices().remove(service);
-                                    report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
-                                    serviceOrchestrator.removeExternalService(serviceName);
-                                    return service;
-                                }
-                            }, services) == null) {
+        for (final org.glassfish.paas.orchestrator.config.Service service : services.getServices()) {
+            if (service.getServiceName().equals(serviceName)) {
+                if (service instanceof ExternalService) {
+                    found = true;
+
+                    //check whether the service is in use by any application
+                    List<String> applicationsUsingService =
+                            serviceUtil.getApplicationsUsingService(service.getServiceName());
+                    if(applicationsUsingService.size() > 0){
+                        report.setMessage("The external service [" + serviceName + "] is " +
+                                "used by an application [" + applicationsUsingService.get(0) + "].");
+                        report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                        return;
+                    }
+
+                    try {
+                        if (ConfigSupport.apply(new SingleConfigCode<Services>() {
+                            public Object run(Services param) throws PropertyVetoException, TransactionFailure {
+                                param.getServices().remove(service);
+                                report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
+                                serviceOrchestrator.removeExternalService(serviceName);
+                                return service;
                             }
-                        } catch (TransactionFailure e) {
-                            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-                            report.setMessage("Deleting external-service [" + serviceName + "] failed : " + e.getMessage());
-                            report.setFailureCause(e);
-                            return;
+                        }, services) == null) {
                         }
+                    } catch (TransactionFailure e) {
+                        report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                        report.setMessage("Deleting external-service [" + serviceName + "] failed : " + e.getMessage());
+                        report.setFailureCause(e);
+                        return;
                     }
                 }
             }
-            if (!found) {
-                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-                report.setMessage("No external-service by name [" + serviceName + "] is available");
-            }
-        } else {
+        }
+        if (!found) {
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            report.setMessage("Invalid service name [" + serviceName + "]");
+            report.setMessage("No external-service by name [" + serviceName + "] is available");
         }
     }
 }

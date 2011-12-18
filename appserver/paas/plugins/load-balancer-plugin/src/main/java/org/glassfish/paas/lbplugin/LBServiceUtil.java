@@ -98,7 +98,7 @@ public class LBServiceUtil {
     }
 
     public Collection<String> getApplicationsUsingSharedService(String sharedService){
-        return serviceUtil.getApplicationsUsingSharedService(sharedService);
+        return serviceUtil.getApplicationsUsingService(sharedService);
     }
 
 }

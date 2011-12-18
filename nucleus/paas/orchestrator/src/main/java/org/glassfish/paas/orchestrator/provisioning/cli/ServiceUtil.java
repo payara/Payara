@@ -40,7 +40,11 @@
 package org.glassfish.paas.orchestrator.provisioning.cli;
 
 
+import com.sun.enterprise.config.serverbeans.ApplicationRef;
+import com.sun.enterprise.config.serverbeans.Cluster;
+import com.sun.enterprise.config.serverbeans.Clusters;
 import com.sun.enterprise.config.serverbeans.Domain;
+import org.glassfish.api.ActionReport;
 import org.glassfish.hk2.scopes.Singleton;
 import org.glassfish.paas.orchestrator.ServiceOrchestratorImpl;
 import org.glassfish.paas.orchestrator.config.*;
@@ -242,12 +246,17 @@ public class ServiceUtil implements PostConstruct {
         }
     }
 
-    public Collection<String> getApplicationsUsingSharedService(String sharedService){
+    /**
+     * Utility to get the list of applications that refer a shared or external service.
+     * @param service shared-service-name or external-service-name
+     * @return Collection list of applications that use the service
+     */
+    public List<String> getApplicationsUsingService(String service){
         List<String> applications = new ArrayList<String>();
-        ServiceInfo serviceInfo = getServiceInfo(sharedService, null, null);
+        ServiceInfo serviceInfo = getServiceInfo(service, null, null);
         if(serviceInfo != null){
             for(ServiceRef serviceRef : getServices().getServiceRefs()){
-                if(serviceRef.getServiceName().equals(sharedService)){
+                if(serviceRef.getServiceName().equals(service)){
                     applications.add(serviceRef.getApplicationName());
                 }
             }
