@@ -58,6 +58,7 @@
       <module>enable-disable-test</module>
       <module>basic-jpa</module>
       <module>basic-shared-service-test</module>
+      <module>external-and-shared-service</module>
     </modules>
     <reporting>
     <plugins>
@@ -79,7 +80,8 @@
 		<reportsDirectory>${env.PAAS_TESTS_HOME}/deployment-rollback/target/surefire-reports</reportsDirectory>
 		<reportsDirectory>${env.PAAS_TESTS_HOME}/enable-disable-test/target/surefire-reports</reportsDirectory>
 		<reportsDirectory>${env.PAAS_TESTS_HOME}/basic-jpa/target/surefire-reports</reportsDirectory>
-        <reportsDirectory>${env.PAAS_TESTS_HOME}/basic-shared-service-test/target/surefire-reports</reportsDirectory>
+                <reportsDirectory>${env.PAAS_TESTS_HOME}/basic-shared-service-test/target/surefire-reports</reportsDirectory>
+                <reportsDirectory>${env.PAAS_TESTS_HOME}/external-and-shared-service/target/surefire-reports</reportsDirectory>
           </reportsDirectories>
         </configuration>
       </plugin>
