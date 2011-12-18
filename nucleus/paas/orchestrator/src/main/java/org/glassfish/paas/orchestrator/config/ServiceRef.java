@@ -66,6 +66,7 @@ public interface ServiceRef extends ConfigBeanProxy, Injectable{
            as part of global <services> section */
     @Attribute
     @Param
+    @NotNull
     String getApplicationName();
 
     void setApplicationName(String applicationName) throws PropertyVetoException;
