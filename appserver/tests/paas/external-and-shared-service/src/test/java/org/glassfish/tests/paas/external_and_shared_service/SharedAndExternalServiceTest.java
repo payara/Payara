@@ -261,7 +261,7 @@ public class SharedAndExternalServiceTest {
         org.glassfish.api.admin.CommandRunner.CommandInvocation invocation = commandRunner.getCommandInvocation("create-external-service", report);
         ParameterMap parameterMap = new ParameterMap();
         parameterMap.add("servicetype", "Database");
-        parameterMap.add("configuration", "ip-address=127.0.0.1:databasename=sun-appserv-samples:port=1527:user=APP:password=APP:host=127.0.0.1:classname=org.apache.derby.jdbc.ClientXADataSource:resourcetype=javax.sql.XADataSource");
+        parameterMap.add("configuration", "ip-address=127.0.0.1:databasename=sun-appserv-samples:connectionAttributes=;'create\\=true':port=1527:user=APP:password=APP:host=127.0.0.1:classname=org.apache.derby.jdbc.ClientXADataSource:resourcetype=javax.sql.XADataSource");
         //parameterMap.add("configuration", "ip-address=127.0.0.1:databasename=${com.sun.aas.installRoot}/databases/sun-appserv-samples:port=1527:user=APP:password=APP:connectionAttributes=;'create\\=true':host=127.0.0.1:classname=org.apache.derby.jdbc.EmbeddedXADataSource:resourcetype=javax.sql.XADataSource");
         parameterMap.add("DEFAULT", "my-shared-db-service");
 
