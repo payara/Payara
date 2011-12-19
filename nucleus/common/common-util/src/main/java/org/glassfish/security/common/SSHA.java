@@ -64,7 +64,7 @@ public class SSHA
     private static final String SSHA_256_TAG = "{SSHA256}";
     private static final String algoSHA = "SHA";
     private static final String algoSHA256 = "SHA-256";
-    public static String defaultAlgo = algoSHA256;
+    public static final String defaultAlgo = algoSHA256;
 
     //TODO V3 need to check if second arg is correct
     private static StringManager sm =

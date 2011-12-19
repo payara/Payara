@@ -113,7 +113,7 @@ public final class FileRealmHelper
     private static final String algoSHA = "SHA";
     private static final String algoSHA256 = "SHA-256";
     private static final String resetKey = "RESET";
-    protected static final StringManager sm =
+    private static final StringManager sm =
         StringManager.getManager(FileRealmHelper.class);
     /**
      * Constructor.
@@ -142,7 +142,9 @@ public final class FileRealmHelper
         keyfile = new File(keyfileName);
         // if not existent, try to create
         if (!keyfile.exists()) {
-            keyfile.createNewFile();
+            if (keyfile.createNewFile() == false) {
+                throw new IOException(sm.getString("filerealm.badwrite", keyfileName));
+            }
         }
         loadKeyFile();
     }
@@ -623,7 +625,6 @@ public final class FileRealmHelper
      */
     private void loadKeyFile() throws IOException
     {
-        File filePath = keyfile;
         BufferedReader input = null;
         
         try {
@@ -631,8 +632,9 @@ public final class FileRealmHelper
             while (input.ready()) {
                 
                 String line = input.readLine();
-                if (!line.startsWith(COMMENT) &&
-                    line.indexOf(FIELD_SEP) > 0) {
+                if (line != null &&
+                        !line.startsWith(COMMENT) &&
+                        line.indexOf(FIELD_SEP) >= 0) {
                     User ud = decodeUser(line, groupSizeMap);
                     userTable.put(ud.getName(), ud);
                 }
@@ -756,7 +758,7 @@ public final class FileRealmHelper
                     (groupSize.intValue() + 1) : 1));
             }
         }
-        ud.setGroups(membership.toArray(new String[0]));
+        ud.setGroups(membership.toArray(new String[membership.size()]));
         
         return ud;
     }
@@ -862,6 +864,45 @@ public final class FileRealmHelper
             this.hash = hash;
             this.salt = salt;
             this.algo = algo;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final User other = (User) obj;
+            if (!Arrays.deepEquals(this.groups, other.groups)) {
+                return false;
+            }
+            if ((this.realm == null) ? (other.realm != null) : !this.realm.equals(other.realm)) {
+                return false;
+            }
+            if (!Arrays.equals(this.salt, other.salt)) {
+                return false;
+            }
+            if (!Arrays.equals(this.hash, other.hash)) {
+                return false;
+            }
+            if ((this.algo == null) ? (other.algo != null) : !this.algo.equals(other.algo)) {
+                return false;
+            }
+            return super.equals(obj);
+        }
+
+        @Override
+        public int hashCode() {
+            int hc = 5;
+            hc = 17 * hc + Arrays.deepHashCode(this.groups);
+            hc = 17 * hc + (this.realm != null ? this.realm.hashCode() : 0);
+            hc = 17 * hc + Arrays.hashCode(this.salt);
+            hc = 17 * hc + Arrays.hashCode(this.hash);
+            hc = 17 * hc + (this.algo != null ? this.algo.hashCode() : 0);
+            hc = 17 * super.hashCode();
+            return hc;
         }
 
         /**
