@@ -426,7 +426,9 @@ public class LogDomains {
 
                         if(!vectorClazz.contains(clazz.getName())) {
                             Logger l = LogManager.getLogManager().getLogger(name);
-                            l.log(Level.FINE, "Can not find resource bundle for this logger. " + " class name that failed: " + clazz.getName());
+                            if(l!=null) {
+                                l.log(Level.FINE, "Can not find resource bundle for this logger. " + " class name that failed: " + clazz.getName());
+                            }
                             vectorClazz.add(clazz.getName());
                         }
 
