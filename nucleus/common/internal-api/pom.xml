@@ -111,9 +111,10 @@
             <artifactId>common-util</artifactId>
             <version>${project.version}</version>
         </dependency> 
-       <dependency>
+        <dependency>
             <groupId>org.glassfish.grizzly</groupId>
-            <artifactId>grizzly-http-server</artifactId>
+            <artifactId>nucleus-grizzly-all</artifactId>
+            <version>${project.version}</version>
         </dependency>
     </dependencies>
 </project>

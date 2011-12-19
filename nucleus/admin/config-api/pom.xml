@@ -171,7 +171,8 @@
         </dependency>
         <dependency>
             <groupId>org.glassfish.grizzly</groupId>
-            <artifactId>grizzly-config</artifactId>
+            <artifactId>nucleus-grizzly-all</artifactId>
+            <version>${project.version}</version>
         </dependency>
     </dependencies>
 </project>
