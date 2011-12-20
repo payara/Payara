@@ -56,10 +56,21 @@ public class PaaSDeploymentContext {
         this.dc = dc;
     }
 
+    /**
+     * provides the application-name. </br>
+     * application-name will be null in case of shared or external-service related operations/invocations.
+     * @return String appName
+     */
     public String getAppName(){
         return appName;
     }
 
+    /**
+     * provides the deployment-context associated with the deployment</br>
+     * deployment-context will be null in case of non-deployment related activity
+     * eg: scaling, monitoring actions etc.,
+     * @return DeploymentContext
+     */
     public DeploymentContext getDeploymentContext(){
         return dc;
     }
