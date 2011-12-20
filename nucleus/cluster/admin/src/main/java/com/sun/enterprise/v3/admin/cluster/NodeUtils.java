@@ -90,7 +90,7 @@ public class NodeUtils {
     static final String PARAM_INSTALLDIR = "installdir";
     static final String PARAM_NODEDIR = "nodedir";
     static final String PARAM_REMOTEPORT = "sshport";
-    static final String PARAM_REMOTEUSER = "sshuser";
+    public static final String PARAM_REMOTEUSER = "sshuser";
     static final String PARAM_SSHKEYFILE = "sshkeyfile";
     static final String PARAM_REMOTEPASSWORD = "sshpassword";
     static final String PARAM_SSHKEYPASSPHRASE = "sshkeypassphrase";

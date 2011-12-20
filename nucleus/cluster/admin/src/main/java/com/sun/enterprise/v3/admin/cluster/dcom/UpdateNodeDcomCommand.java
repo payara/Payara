@@ -65,6 +65,16 @@ import java.util.logging.Logger;
 @Service(name = "update-node-dcom")
 @Scoped(PerLookup.class)
 @ExecuteOn({RuntimeType.DAS})
+@RestEndpoints({
+    @RestEndpoint(configBean=Node.class,
+        opType=RestEndpoint.OpType.POST,
+        path="update-node-dcom",
+        description="Update Node DCOM",
+        params={
+            @RestParam(name="id", value="$parent")
+        })
+})
+
 public class UpdateNodeDcomCommand extends UpdateNodeRemoteCommand  {
     @Param(name = "windowsuser", shortName = "w", optional = true, defaultValue = "${user.name}")
     private String windowsuser;

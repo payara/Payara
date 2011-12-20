@@ -89,6 +89,7 @@ public abstract class DeleteNodeRemoteCommand implements AdminCommand {
     protected abstract List<String> getPasswords();
 
     protected abstract String getUninstallCommandName();
+    protected abstract void setTypeSpecificOperands(List<String> command, ParameterMap map);
 
     protected final void executeInternal(AdminCommandContext context) {
         ActionReport report = context.getActionReport();
@@ -176,19 +177,7 @@ public abstract class DeleteNodeRemoteCommand implements AdminCommand {
             command.add("--force");
         }
 
-        command.add("--sshport");
-        command.add(map.getOne(NodeUtils.PARAM_REMOTEPORT));
-
-        command.add("--sshuser");
-        command.add(map.getOne(NodeUtils.PARAM_REMOTEUSER));
-
-        String key = map.getOne(NodeUtils.PARAM_SSHKEYFILE);
-
-        if (key != null) {
-            command.add("--sshkeyfile");
-            command.add(key);
-        }
-
+        setTypeSpecificOperands(command, map);
         String host = map.getOne(NodeUtils.PARAM_NODEHOST);
         command.add(host);
 

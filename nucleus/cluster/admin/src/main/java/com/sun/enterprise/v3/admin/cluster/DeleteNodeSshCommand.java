@@ -62,8 +62,8 @@ import org.jvnet.hk2.component.*;
 @ExecuteOn({RuntimeType.DAS})
 @RestEndpoints({
     @RestEndpoint(configBean=Nodes.class,
-        opType=RestEndpoint.OpType.DELETE, 
-        path="delete-node-ssh", 
+        opType=RestEndpoint.OpType.DELETE,
+        path="delete-node-ssh",
         description="Delete Node SSH")
 })
 public class DeleteNodeSshCommand extends DeleteNodeRemoteCommand {
@@ -90,5 +90,21 @@ public class DeleteNodeSshCommand extends DeleteNodeRemoteCommand {
     @Override
     protected String getUninstallCommandName() {
         return "uninstall-node-ssh";
+    }
+    
+    @Override
+    final protected void setTypeSpecificOperands(List<String> command, ParameterMap map) {
+        command.add("--sshport");
+        command.add(map.getOne(NodeUtils.PARAM_REMOTEPORT));
+
+        command.add("--sshuser");
+        command.add(map.getOne(NodeUtils.PARAM_REMOTEUSER));
+
+        String key = map.getOne(NodeUtils.PARAM_SSHKEYFILE);
+
+        if (key != null) {
+            command.add("--sshkeyfile");
+            command.add(key);
+        }
     }
 }

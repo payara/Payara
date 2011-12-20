@@ -56,6 +56,16 @@ import org.jvnet.hk2.component.PerLookup;
 @Scoped(PerLookup.class)
 @CommandLock(CommandLock.LockType.NONE)
 @ExecuteOn({RuntimeType.DAS})
+@RestEndpoints({
+    @RestEndpoint(configBean=Node.class,
+        opType=RestEndpoint.OpType.GET,
+        path="ping-node-dcom",
+        description="Ping Node DCOM",
+        params={
+            @RestParam(name="id", value="$parent")
+        })
+})
+
 public class PingNodeDcomCommand extends PingNodeRemoteCommand {
     @Override
     public void execute(AdminCommandContext context) {

@@ -39,6 +39,7 @@
  */
 package com.sun.enterprise.v3.admin.cluster.dcom;
 
+import com.sun.enterprise.config.serverbeans.Nodes;
 import com.sun.enterprise.util.cluster.RemoteType;
 import org.glassfish.cluster.ssh.util.DcomUtils;
 import java.util.List;
@@ -58,6 +59,12 @@ import static com.sun.enterprise.util.StringUtils.ok;
 @Scoped(PerLookup.class)
 @CommandLock(CommandLock.LockType.NONE)
 @ExecuteOn({RuntimeType.DAS})
+@RestEndpoints({
+    @RestEndpoint(configBean=Nodes.class,
+        opType=RestEndpoint.OpType.POST,
+        path="create-node-dcom",
+        description="Create Node DCOM")
+})
 public class CreateNodeDcom extends CreateRemoteNodeCommand {
     @Param(name = "windowsuser", shortName = "w", optional = true, defaultValue = NodeUtils.NODE_DEFAULT_REMOTE_USER)
     private String windowsuser;

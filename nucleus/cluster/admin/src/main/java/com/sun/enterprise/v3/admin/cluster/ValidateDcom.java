@@ -39,6 +39,7 @@
  */
 package com.sun.enterprise.v3.admin.cluster;
 
+import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.util.cluster.windows.process.WindowsException;
 import com.sun.enterprise.universal.glassfish.TokenResolver;
 import com.sun.enterprise.util.cluster.windows.process.WindowsCredentials;
@@ -50,7 +51,9 @@ import java.io.IOException;
 import java.net.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.glassfish.api.admin.*;
 import org.glassfish.api.admin.CommandValidationException;
+import org.glassfish.api.admin.RestEndpoints;
 import static com.sun.enterprise.util.StringUtils.ok;
 import com.sun.enterprise.util.cluster.windows.io.WindowsRemoteFile;
 import com.sun.enterprise.util.net.NetUtils;
@@ -76,6 +79,13 @@ import org.glassfish.cluster.ssh.util.DcomUtils;
 @Scoped(PerLookup.class)
 @CommandLock(CommandLock.LockType.NONE)
 @ExecuteOn({RuntimeType.DAS})
+@RestEndpoints({
+    @RestEndpoint(configBean=Domain.class,
+        opType=RestEndpoint.OpType.GET,
+        path="validate-dcom",
+        description="Validate DCOM")
+})
+
 public class ValidateDcom implements AdminCommand {
     @Param(name = "windowsuser", shortName = "w", optional = true, defaultValue = "${user.name}")
     private String user;

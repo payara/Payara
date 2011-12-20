@@ -39,6 +39,8 @@
  */
 package com.sun.enterprise.v3.admin.cluster.dcom;
 
+import com.sun.enterprise.config.serverbeans.Nodes;
+import com.sun.enterprise.v3.admin.cluster.NodeUtils;
 import org.glassfish.cluster.ssh.util.DcomUtils;
 import com.sun.enterprise.v3.admin.cluster.DeleteNodeRemoteCommand;
 import java.util.List;
@@ -55,6 +57,13 @@ import org.jvnet.hk2.component.PerLookup;
 @Scoped(PerLookup.class)
 @CommandLock(CommandLock.LockType.NONE)
 @ExecuteOn({RuntimeType.DAS})
+@RestEndpoints({
+    @RestEndpoint(configBean=Nodes.class,
+        opType=RestEndpoint.OpType.DELETE,
+        path="delete-node-dcom",
+        description="Delete Node DCOM")
+})
+
 public class DeleteNodeDcom extends DeleteNodeRemoteCommand {
     @Override
     public void execute(AdminCommandContext context) {
@@ -69,5 +78,13 @@ public class DeleteNodeDcom extends DeleteNodeRemoteCommand {
     @Override
     protected String getUninstallCommandName() {
         return "uninstall-node-dcom";
+    }
+
+    @Override
+    final protected void setTypeSpecificOperands(List<String> command, ParameterMap map) {
+        command.add("--windowsuser");
+        command.add(map.getOne(NodeUtils.PARAM_REMOTEUSER));
+        command.add("--windowsdomain");
+        command.add(map.getOne(NodeUtils.PARAM_WINDOWS_DOMAIN));
     }
 }
