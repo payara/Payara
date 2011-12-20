@@ -410,13 +410,6 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                 context.getSource().setExtraData(Boolean.class, tempAppInfo.isJavaEEApp());
                 appRegistry.add(appName, tempAppInfo);
 
-                events.send(new Event<DeploymentContext>(Deployment.DEPLOYMENT_BEFORE_CLASSLOADER_CREATION, context), false);
-
-                context.createApplicationClassLoader(clh, handler);
-                if (tracing!=null) {
-                    tracing.addMark(DeploymentTracing.Mark.CLASS_LOADER_CREATED);
-                }
-
                 try {
                     notifyLifecycleInterceptorsBefore(ExtendedDeploymentContext.Phase.PREPARE, context);
                 } catch(Throwable interceptorException) {
@@ -425,6 +418,13 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                     logger.log(Level.SEVERE, interceptorException.getMessage(), interceptorException);
                     tracker.actOn(logger);
                     return null;
+                }
+
+                events.send(new Event<DeploymentContext>(Deployment.DEPLOYMENT_BEFORE_CLASSLOADER_CREATION, context), false);
+
+                context.createApplicationClassLoader(clh, handler);
+                if (tracing!=null) {
+                    tracing.addMark(DeploymentTracing.Mark.CLASS_LOADER_CREATED);
                 }
 
                     // this is a first time deployment as opposed as load following an unload event,
