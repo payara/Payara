@@ -47,6 +47,11 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;  
@@ -89,6 +94,8 @@ public class ResourcesXMLParser implements EntityResolver
     private File resourceFile = null;
     private Document document;
     private List<org.glassfish.resources.api.Resource> vResources;
+    private Map<Resource, Node> resourceMap = new HashMap<Resource, Node>();
+    
     private boolean isDoctypePresent = false;
     /* list of resources that needs to be created prior to module deployment. This 
      * includes all non-Connector resources and resource-adapter-config
@@ -165,6 +172,60 @@ public class ResourcesXMLParser implements EntityResolver
         generateResourceObjects(scope);
     }
 
+    /**
+     * Persist the XML file.
+     * @param to target location
+     */
+    public void persist(File to) {
+        // now serialize to a file.
+        FileOutputStream out = null;
+        try {
+            String systemValue = (new File(document.getDoctype().getSystemId())).getName();
+            Transformer transformer = TransformerFactory.newInstance().newTransformer();
+            transformer.setOutputProperty(OutputKeys.DOCTYPE_SYSTEM, systemValue);
+            out = new FileOutputStream(to);
+            transformer.transform(new DOMSource(document), new StreamResult(out));
+        } catch (Exception ex) {
+            _logger.log(Level.WARNING, ex.getMessage(), ex);
+        } finally {
+            if (out != null) {
+                try {
+                    out.close();
+                } catch (Exception ex) {
+                    _logger.warning(ex.getMessage());
+                }
+            }
+        }
+    }
+
+    // update the document node with modified resource
+    public void updateDocumentNode(Resource originalResource,
+                               Resource modifiedResource) {
+        Node resourceNode = resourceMap.remove(originalResource);
+
+        // Remove all the existing property nodes.
+        while (resourceNode.hasChildNodes()) {
+            resourceNode.removeChild(resourceNode.getFirstChild());
+        }
+
+        // Put the new/modified property nodes.
+        Properties props = modifiedResource.getProperties();
+        for (String key : props.stringPropertyNames()) {
+            String val = props.getProperty(key);
+            org.w3c.dom.Element prop = document.createElement("property");
+            prop.setAttribute("name", key);
+            prop.setAttribute("value", val);
+            resourceNode.appendChild(prop);
+        }
+
+        // update the map
+        resourceMap.put(modifiedResource, resourceNode);
+    }
+    
+    public File getResourceFile() {
+        return resourceFile;
+    }
+    
     /**
      *Parse the XML Properties file and populate it into document object
      */
@@ -517,6 +578,7 @@ public class ResourcesXMLParser implements EntityResolver
         NodeList children = nextKid.getChildNodes();
         generatePropertyElement(persistenceResource, children);
         vResources.add(persistenceResource);
+        resourceMap.put(persistenceResource, nextKid);
 
         //debug strings
         printResourceElements(persistenceResource);
@@ -555,6 +617,7 @@ public class ResourcesXMLParser implements EntityResolver
         NodeList children = nextKid.getChildNodes();
         generatePropertyElement(customResource, children);
         vResources.add(customResource);
+        resourceMap.put(customResource, nextKid);
         
         //debug strings
         printResourceElements(customResource);
@@ -592,6 +655,7 @@ public class ResourcesXMLParser implements EntityResolver
         NodeList children = nextKid.getChildNodes();
         generatePropertyElement(jndiResource, children);
         vResources.add(jndiResource);
+        resourceMap.put(jndiResource, nextKid);
         
         //debug strings
         printResourceElements(jndiResource);
@@ -635,6 +699,7 @@ public class ResourcesXMLParser implements EntityResolver
         }
 
         vResources.add(jdbcResource);
+        resourceMap.put(jdbcResource, nextKid);
         
         //debug strings
         printResourceElements(jdbcResource);
@@ -875,6 +940,7 @@ public class ResourcesXMLParser implements EntityResolver
         NodeList children = nextKid.getChildNodes();
         generatePropertyElement(jdbcConnPool, children);
         vResources.add(jdbcConnPool);
+        resourceMap.put(jdbcConnPool, nextKid);
         
         //debug strings
         printResourceElements(jdbcConnPool);
@@ -939,6 +1005,7 @@ public class ResourcesXMLParser implements EntityResolver
         NodeList children = nextKid.getChildNodes();
         generatePropertyElement(mailResource, children);
         vResources.add(mailResource);
+        resourceMap.put(mailResource, nextKid);
         
         //debug strings
         printResourceElements(mailResource);
@@ -983,6 +1050,7 @@ public class ResourcesXMLParser implements EntityResolver
         NodeList children = nextKid.getChildNodes();
         generatePropertyElement(adminObjectResource, children);
         vResources.add(adminObjectResource);
+        resourceMap.put(adminObjectResource, nextKid);
         
         //debug strings
         printResourceElements(adminObjectResource);
@@ -1020,6 +1088,7 @@ public class ResourcesXMLParser implements EntityResolver
         NodeList children = nextKid.getChildNodes();
         generatePropertyElement(connectorResource, children);
         vResources.add(connectorResource);
+        resourceMap.put(connectorResource, nextKid);
         
         //debug strings
         printResourceElements(connectorResource);
@@ -1242,6 +1311,7 @@ public class ResourcesXMLParser implements EntityResolver
         generatePropertyElement(connectorConnPoolResource, children);
         
         vResources.add(connectorConnPoolResource);
+        resourceMap.put(connectorConnPoolResource, nextKid);
         // with the given poolname ..create security-map
         if (children != null){
             for (int i=0; i<children.getLength(); i++) {
@@ -1315,6 +1385,7 @@ public class ResourcesXMLParser implements EntityResolver
             }
         }
         vResources.add(workSecurityMapResource);
+        resourceMap.put(workSecurityMapResource, node);
 
         //debug strings
         printResourceElements(workSecurityMapResource);
@@ -1375,6 +1446,7 @@ public class ResourcesXMLParser implements EntityResolver
             map.setAttribute(SECURITY_MAP_PRINCIPAL,convertToStringArray(principal.toString()));
             map.setAttribute("user_group",convertToStringArray(usergroup.toString()));
        vResources.add(map);
+        resourceMap.put(map, mapNode);
     }//end of generateSecurityMap....     
    
     
@@ -1410,6 +1482,7 @@ public class ResourcesXMLParser implements EntityResolver
         NodeList children = nextKid.getChildNodes();
         generatePropertyElement(resAdapterConfigResource, children);
         vResources.add(resAdapterConfigResource);
+        resourceMap.put(resAdapterConfigResource, nextKid);
         
         //debug strings
         printResourceElements(resAdapterConfigResource);

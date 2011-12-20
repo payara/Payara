@@ -168,6 +168,71 @@ public class ResourcesDeployer extends JavaEEDeployer<ResourcesContainer, Resour
         debug("Resources-Deployer :unload() called");
     }
 
+    /**
+     * Retrieve connector and non-connector resources from the archive.
+     *
+     * @param archive Archieve from which the resources to be retrieved.
+     * @param appName Name of the application
+     * @param connectorResources Connector resources will be added to this list.
+     * @param nonConnectorResources Non connector resources will be added to this list.
+     * @param resourceXmlParsers Resource xml parsers corresponding to both connector and non connector resources will be stored in this.
+     */
+    public static void getResources(ReadableArchive archive, String appName,
+                                             List<org.glassfish.resources.api.Resource> connectorResources,
+                                             List<org.glassfish.resources.api.Resource> nonConnectorResources,
+                                             Map<org.glassfish.resources.api.Resource, ResourcesXMLParser> resourceXmlParsers) {
+        try {
+            if (DeploymentUtils.hasResourcesXML(archive)) {
+                Map<String, Map<String, List>> appScopedResources = new HashMap<String, Map<String, List>>();
+                Map<String, String> fileNames = new HashMap<String, String>();
+                //using appName as it is possible that "deploy --name=APPNAME" will
+                //be different than the archive name.
+                retrieveAllResourcesXMLs(fileNames, archive, appName);
+
+                for (Map.Entry<String, String> entry : fileNames.entrySet()) {
+                    String moduleName = entry.getKey();
+                    String fileName = entry.getValue();
+                    debug("GlassFish Resources XML : " + fileName);
+
+                    moduleName = ResourceUtil.getActualModuleNameWithExtension(moduleName);
+                    String scope;
+                    if (appName.equals(moduleName)) {
+                        scope = JAVA_APP_SCOPE_PREFIX;
+                    } else {
+                        scope = JAVA_MODULE_SCOPE_PREFIX;
+                    }
+
+                    File file = new File(fileName);
+                    ResourcesXMLParser parser = new ResourcesXMLParser(file, scope);
+
+                    validateResourcesXML(file, parser);
+
+                    List<org.glassfish.resources.api.Resource> resources = parser.getResourcesList();
+
+                    if (nonConnectorResources != null) {
+                        nonConnectorResources.addAll(ResourcesXMLParser.
+                                getNonConnectorResourcesList(resources, false, true));
+                    }
+
+                    if (connectorResources != null) {
+                        connectorResources.addAll(ResourcesXMLParser.
+                                getConnectorResourcesList(resources, false, true));
+                    }
+
+                    if (resourceXmlParsers != null) {
+                        for (org.glassfish.resources.api.Resource res : resources) {
+                            resourceXmlParsers.put(res, parser);
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            // only DeploymentExceptions are propagated and result in deployment failure
+            // in the event notification infrastructure
+            throw new DeploymentException("Failue while processing glassfish-resources.xml(s) in the archive ", e);
+        }
+    }
+    
     private void processArchive(DeploymentContext dc) {
 
         try {
@@ -228,7 +293,7 @@ public class ResourcesDeployer extends JavaEEDeployer<ResourcesContainer, Resour
         }
     }
 
-    private void validateResourcesXML(File file, ResourcesXMLParser parser) throws ResourceConflictException {
+    private static void validateResourcesXML(File file, ResourcesXMLParser parser) throws ResourceConflictException {
         String filePath = file.getPath();
         SunResourcesXML sunResourcesXML = new SunResourcesXML(filePath, parser.getResourcesList());
         List<SunResourcesXML> resourcesXMLList = new ArrayList<SunResourcesXML>();
@@ -567,7 +632,7 @@ public class ResourcesDeployer extends JavaEEDeployer<ResourcesContainer, Resour
         return commandParams.name();
     }
 
-    public void retrieveAllResourcesXMLs(Map<String, String> fileNames, ReadableArchive archive,
+    public static void retrieveAllResourcesXMLs(Map<String, String> fileNames, ReadableArchive archive,
                                          String actualArchiveName) throws IOException {
 
         if(DeploymentUtils.isEAR(archive)){
@@ -600,7 +665,7 @@ public class ResourcesDeployer extends JavaEEDeployer<ResourcesContainer, Resour
         }
     }
 
-    private void retrieveResourcesXMLFromArchive(Map<String, String> fileNames, ReadableArchive archive,
+    private static void retrieveResourcesXMLFromArchive(Map<String, String> fileNames, ReadableArchive archive,
                                                  String actualArchiveName) {
         if(DeploymentUtils.hasResourcesXML(archive)){
             String archivePath = archive.getURI().getPath();
