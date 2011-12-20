@@ -42,13 +42,20 @@ package org.glassfish.paas.gfplugin;
 
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.deploy.shared.ArchiveFactory;
+import com.sun.enterprise.deployment.archivist.ApplicationArchivist;
+import com.sun.enterprise.deployment.archivist.Archivist;
+import com.sun.enterprise.deployment.archivist.ArchivistFactory;
+import com.sun.enterprise.deployment.deploy.shared.DeploymentPlanArchive;
+import com.sun.enterprise.util.zip.ZipWriter;
 import org.glassfish.api.deployment.ApplicationContainer;
 import org.glassfish.api.deployment.DeployCommandParameters;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.archive.ReadableArchive;
+import org.glassfish.api.deployment.archive.WritableArchive;
 import org.glassfish.deployment.common.DeploymentUtils;
 import org.glassfish.embeddable.CommandRunner;
 import org.glassfish.embeddable.GlassFish;
+import org.glassfish.javaee.core.deployment.ApplicationHolder;
 import org.glassfish.paas.gfplugin.cli.GlassFishServiceUtil;
 import org.glassfish.paas.orchestrator.PaaSDeploymentContext;
 import org.glassfish.paas.orchestrator.ServiceOrchestrator;
@@ -63,6 +70,8 @@ import org.glassfish.paas.orchestrator.service.spi.Plugin;
 import org.glassfish.paas.orchestrator.service.spi.ProvisionedService;
 import org.glassfish.paas.orchestrator.service.spi.ServiceProvisioningException;
 import org.glassfish.paas.spe.common.ServiceProvisioningEngineBase;
+import org.glassfish.resources.admin.cli.ResourcesXMLParser;
+import org.glassfish.resources.api.Resource;
 import org.glassfish.virtualization.spi.AllocationStrategy;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
@@ -75,6 +84,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -85,10 +95,13 @@ import java.util.logging.Logger;
 @Service
 @Scoped(PerLookup.class)
 public class GlassFishPlugin extends ServiceProvisioningEngineBase
-        implements Plugin<JavaEEServiceType> {
+        implements Plugin<JavaEEServiceType>, GlassFishPluginConstants {
 
     @Inject
     private GlassFishCloudArchiveProcessor archiveProcessor;
+
+    @Inject
+    ArchivistFactory archivistFactory;
 
     @Inject
     ArchiveFactory archiveFactory;
@@ -135,18 +148,22 @@ public class GlassFishPlugin extends ServiceProvisioningEngineBase
         return false;
     }
 
-    public Set<ServiceReference> getServiceReferences(File archive, String appName) {
+/*
+    public Set<ServiceReference> getServiceReferences(File archive, String appName,
+                                                      PaaSDeploymentContext dc) {
         try {
-            return getServiceReferences(appName, archiveFactory.openArchive(archive));
+            return getServiceReferences(appName, archiveFactory.openArchive(archive), dc);
         } catch (IOException e) {
             e.printStackTrace();
             throw new RuntimeException(e);
         }
     }
+*/
 
-    public Set<ServiceReference> getServiceReferences(String appName, ReadableArchive cloudArchive) {
+    public Set<ServiceReference> getServiceReferences(String appName,
+                                                      ReadableArchive cloudArchive, PaaSDeploymentContext dc) {
         // Parse the archive and figure out resource references.
-        return archiveProcessor.getServiceReferences(cloudArchive, appName);
+        return archiveProcessor.getServiceReferences(cloudArchive, appName, dc);
     }
 
     public ServiceDescription getDefaultServiceDescription(String appName, ServiceReference svcRef) {
@@ -373,9 +390,66 @@ public class GlassFishPlugin extends ServiceProvisioningEngineBase
             String poolName = svcRef.getName();
             String resourceName = svcRef.getName();
 
-            // Create JDBC resource and pool.
-            // TODO :: delegate the pool creation to deployment backend.
-            // TODO :: Decorate the archive with modified/newly_created META-INF/glassfish-resources.xml
+            // If the user has supplied glassfish-resources.xml with 'service-name' in it,
+            // then substitute 'service-name' with actual co-ordinates of the service.
+            if(dc != null && dc.getDeploymentContext() != null) {
+                Map<Resource, ResourcesXMLParser> resourceXmlParsers =
+                        dc.getDeploymentContext().getTransientAppMetaData(RESOURCE_XML_PARSERS, Map.class);
+                List<Resource> nonConnectorResources =
+                        dc.getDeploymentContext().getTransientAppMetaData(NON_CONNECTOR_RESOURCES, List.class);
+                ResourcesXMLParser parser = null;
+                // Find correct jdbc connection pool corresponding to the referenced resource
+                // and substitute values for 'service-name' property.
+                for(Resource res : nonConnectorResources) {
+                    if(res.getType().equals(JDBC_RESOURCE)) {
+                        if(res.getAttributes().get(JNDI_NAME).equals(resourceName)) {
+                            Resource connPool = archiveProcessor.getConnectionPool(
+                                    res, resourceXmlParsers);
+                            parser = resourceXmlParsers.get(connPool);
+                            // Clone the jdbc-connection-pool resource and modify
+                            // "service-name" property with its actual co-ordinates
+                            Resource modifiedConnPool = null;
+                            modifiedConnPool = new Resource(connPool.getType());
+                            modifiedConnPool.setDescription(connPool.getDescription());
+                            modifiedConnPool.getAttributes().putAll(connPool.getAttributes());
+                            modifiedConnPool.getProperties().putAll(connPool.getProperties());
+                            modifiedConnPool.getProperties().putAll(dbProperties);
+                            modifiedConnPool.getProperties().remove(SERVICE_NAME);
+                            parser.updateDocumentNode(connPool, modifiedConnPool);
+                            break; // jdbc-connection-pool with a given name is unique in glassfish-resources.xml
+                        }
+                    }
+                }
+                if (parser != null) { // generate deployment plan
+                    File dir = new File(System.getProperty(TMR_DIR),
+                            serviceName + "/deployment_plan");
+                    dir.mkdirs();
+                    String xmlName = parser.getResourceFile().getName();
+                    parser.persist(new File(dir, xmlName));
+                    try {
+                        ZipWriter zipWriter = new ZipWriter(dir + ".jar", dir.getAbsolutePath());
+                        zipWriter.write();
+                        DeployCommandParameters dcp = dc.getDeploymentContext().
+                                getCommandParameters(DeployCommandParameters.class);
+                        dcp.deploymentplan = new File(dir + ".jar");
+                        dcp.deploymentplan.deleteOnExit();
+                        /**
+                         * TODO ->
+                         * Deployment backend itself should handle the deployment plan.
+                         * But currently deployment backend does not process the plan after APPICATION_PREPARE phase.
+                         * Instead it processes the DP only during the very beginning of the deployment.
+                         * so the DP set by this code is ignored by the deployment backend.
+                         * So, for now, we will process it manually here itself.
+                         */
+                        handleDeploymentPlan(dc.getDeploymentContext());
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    }
+                    return; // we are done, deployment backend will take care of creating required jdbc pool and resources using the generated deployment plan.
+                }
+            }
+
+            // Create global JDBC pool and resource.
             GlassFishProvisioner glassFishProvisioner = (GlassFishProvisioner)
                     provisionerUtil.getAppServerProvisioner(dasIPAddress);
             glassFishProvisioner.createJdbcConnectionPool(dasIPAddress, clusterName,
@@ -438,6 +512,34 @@ public class GlassFishPlugin extends ServiceProvisioningEngineBase
               //  }
 
         }*/
+    }
+
+    // This method is copied from DolProvider. This method is not used when glassfish-resources.xml is modified inline.
+    protected void handleDeploymentPlan(DeploymentContext dc) throws IOException {
+        DeployCommandParameters params =
+                dc.getCommandParameters(DeployCommandParameters.class);
+        File deploymentPlan = params.deploymentplan;
+        ClassLoader cl = dc.getClassLoader(); // cl might be null, but it is not used for the operations done in this method.
+        ReadableArchive sourceArchive = dc.getSource();
+        Archivist archivist = archivistFactory.getArchivist(
+                sourceArchive, cl);
+        ApplicationHolder holder = dc.getModuleMetaData(ApplicationHolder.class);
+        //Note in copying of deployment plan to the portable archive,
+        //we should make sure the manifest in the deployment plan jar
+        //file does not overwrite the one in the original archive
+        if (deploymentPlan != null) {
+            DeploymentPlanArchive dpa = new DeploymentPlanArchive();
+            dpa.setParentArchive(sourceArchive);
+            dpa.open(deploymentPlan.toURI());
+            // need to revisit for ear case
+            WritableArchive targetArchive = archiveFactory.createArchive(
+                sourceArchive.getURI());
+            if (archivist instanceof ApplicationArchivist) {
+                ((ApplicationArchivist)archivist).copyInto(holder.app, dpa, targetArchive, false);
+            } else {
+               archivist.copyInto(dpa, targetArchive, false);
+            }
+        }
     }
 
     public void dissociateServices(org.glassfish.paas.orchestrator.service.spi.Service serviceConsumer, ServiceReference svcRef,

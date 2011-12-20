@@ -128,11 +128,12 @@ public interface Plugin<T extends ServiceType> {
      *
      * @param cloudArchive the orchestration-enabled archive for which the CAS needs to determine
      *                     implicit ServiceReferences
+     * @param dc PaaS deployment context
      * @return A Set of ServiceReferences required to be satisfied for the
      *         proper functioning of the orchestration-enabled archive
      */
     public Set<ServiceReference> getServiceReferences(
-            String appName, ReadableArchive cloudArchive);
+            String appName, ReadableArchive cloudArchive, PaaSDeploymentContext dc);
 
     /**
      * For a discovered (implicit) ServiceReference, the application developer

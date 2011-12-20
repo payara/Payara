@@ -120,7 +120,7 @@ public class LBPlugin implements Plugin {
     }
 
     @Override
-    public Set getServiceReferences(String appName, ReadableArchive cloudArchive) {
+    public Set getServiceReferences(String appName, ReadableArchive cloudArchive, PaaSDeploymentContext dc) {
         HashSet<ServiceReference> serviceReferences = new HashSet<ServiceReference>();
         serviceReferences.add(new ServiceReference(cloudArchive.getName(), "JavaEE", null));
         return serviceReferences;

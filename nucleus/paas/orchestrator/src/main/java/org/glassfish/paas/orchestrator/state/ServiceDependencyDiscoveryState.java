@@ -216,7 +216,7 @@ public class ServiceDependencyDiscoveryState extends AbstractPaaSDeploymentState
             //1.2 Get implicit ServiceReferences
             for (Plugin svcPlugin : resolvedPluginsList) {
                 //if (svcPlugin.handles(archive)) {
-                Set<ServiceReference> implicitServiceRefs = svcPlugin.getServiceReferences(appName, archive);
+                Set<ServiceReference> implicitServiceRefs = svcPlugin.getServiceReferences(appName, archive, context);
                 for (ServiceReference sr : implicitServiceRefs) {
                     sr.setRequestingPlugin(svcPlugin);
                     logger.log(Level.INFO, "ServiceReference:" + sr);

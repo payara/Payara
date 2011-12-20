@@ -115,6 +115,11 @@
             <artifactId>paas.spe-base</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.glassfish.resources</groupId>
+            <artifactId>resources-runtime</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 </project>
 

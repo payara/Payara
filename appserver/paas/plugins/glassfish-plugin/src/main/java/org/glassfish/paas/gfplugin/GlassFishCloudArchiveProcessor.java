@@ -46,7 +46,11 @@ import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.data.ApplicationRegistry;
 import org.glassfish.javaee.core.deployment.DolProvider;
+import org.glassfish.paas.orchestrator.PaaSDeploymentContext;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceReference;
+import org.glassfish.resources.admin.cli.ResourcesXMLParser;
+import org.glassfish.resources.api.Resource;
+import org.glassfish.resources.module.ResourcesDeployer;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
 
@@ -59,7 +63,7 @@ import java.util.*;
  * @author bhavanishankar@java.net
  */
 @Service
-public class GlassFishCloudArchiveProcessor {
+public class GlassFishCloudArchiveProcessor implements GlassFishPluginConstants {
 
 
     @Inject
@@ -73,7 +77,7 @@ public class GlassFishCloudArchiveProcessor {
     private DolProvider dolProvider;
 
     public Set<ServiceReference> getServiceReferences(
-            ReadableArchive cloudArchive, String appName) {
+            ReadableArchive cloudArchive, String appName, PaaSDeploymentContext dc) {
         Set<ServiceReference> serviceReferences = new HashSet<ServiceReference>();
         Set<ResourceReferenceDescriptor> resRefs = new HashSet<ResourceReferenceDescriptor>();
         Application application = null;
@@ -139,11 +143,37 @@ public class GlassFishCloudArchiveProcessor {
             }
 
             // TODO :: Get the explicit service references from META-INF/glassfish-resources.xml
-            for (ResourceReferenceDescriptor resRef : filteredResRefSet) {
-                serviceReferences.add(new ServiceReference(resRef.getName(),
-                        resRef.getType(), null, resRef.getSchemaGeneratorProperties()));
+            Map<String, String> serviceNameRefs = new HashMap<String, String>();
+            List<Resource> nonConnectorResources = new ArrayList();
+            Map<Resource, ResourcesXMLParser> resourceXmlParsers = new HashMap();
+            ResourcesDeployer.getResources(cloudArchive, appName, null, nonConnectorResources, resourceXmlParsers);
+            for (Resource res : nonConnectorResources) {
+                if (res.getType().equals(JDBC_RESOURCE)) { // TODO :: handle for other resource types also.
+                    Resource poolRes = getConnectionPool(res, resourceXmlParsers);
+                    String serviceName = (String) poolRes.getProperties().get(SERVICE_NAME);
+                    String refName = (String) res.getAttributes().get(JNDI_NAME);
+                    if (serviceName != null) {
+                        serviceNameRefs.put(refName, serviceName);
+                    }
+                }
             }
 
+            for (ResourceReferenceDescriptor resRef : filteredResRefSet) {
+                ServiceReference ref =new ServiceReference(resRef.getName(),
+                        resRef.getType(), null, resRef.getSchemaGeneratorProperties());
+                // if the glassfish-resources.xml had referenced a service, then set the name of referenced service in the ref.
+                ref.setServiceName(serviceNameRefs.get(resRef.getName()));
+                serviceReferences.add(ref);
+            }
+
+            if(dc != null && dc.getDeploymentContext() != null) {
+                // Cache the resouceXmlParser so that it can be used in other
+                // deployment phases, instead of creating a new one in every phase.
+                dc.getDeploymentContext().addTransientAppMetaData(RESOURCE_XML_PARSERS,
+                        resourceXmlParsers);
+                dc.getDeploymentContext().addTransientAppMetaData(NON_CONNECTOR_RESOURCES,
+                        nonConnectorResources);
+            }
             //add an implicit service-reference of type "glassfish"/"javaee" so that
             //glassfish plugin will always get called during association/dissociation phase
             //This will be used to set "target" during "deploy" and "undeploy"
@@ -155,6 +185,20 @@ public class GlassFishCloudArchiveProcessor {
         return serviceReferences;
     }
 
+    public Resource getConnectionPool(Resource forResource ,
+                                      Map<Resource, ResourcesXMLParser> resourceXmlParsers) {
+        Set<Resource> resources = resourceXmlParsers.keySet();
+        String poolName = (String)forResource.getAttributes().get(POOL_NAME);
+        for(Resource res : resources) {
+            if(res.getType().equals(JDBC_CONNECTION_POOL)) {
+                if(res.getAttributes().get("name").equals(poolName)) {
+                    return res;
+                }
+            }
+        }
+        return null;
+    }
+    
     private void scanAndPopulateServiceRefsForDSRefsInPUs(Set<ServiceReference> serviceReferences, Application application) {
         Set<BundleDescriptor> bundleDescriptors = application.getBundleDescriptors();
         Set<String> jndiNames = new HashSet<String>();

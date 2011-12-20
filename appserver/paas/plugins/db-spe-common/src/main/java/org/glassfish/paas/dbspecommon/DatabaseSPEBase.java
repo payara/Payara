@@ -109,7 +109,8 @@ public abstract class DatabaseSPEBase extends ServiceProvisioningEngineBase
      * {@inheritDoc}
      */
     public Set<ServiceReference> getServiceReferences(String appName,
-                                                      ReadableArchive cloudArchive) {
+                                                      ReadableArchive cloudArchive,
+                                                      PaaSDeploymentContext context) {
         return new HashSet<ServiceReference>();
     }
 
