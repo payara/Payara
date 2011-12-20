@@ -218,6 +218,7 @@ public class ServiceDependencyDiscoveryState extends AbstractPaaSDeploymentState
                 //if (svcPlugin.handles(archive)) {
                 Set<ServiceReference> implicitServiceRefs = svcPlugin.getServiceReferences(appName, archive);
                 for (ServiceReference sr : implicitServiceRefs) {
+                    sr.setRequestingPlugin(svcPlugin);
                     logger.log(Level.INFO, "ServiceReference:" + sr);
                     appServiceMetadata.addServiceReference(sr);
                     //if the service-ref refers a service-name, retrieve the service-description of the service.

@@ -39,6 +39,8 @@
  */
 package org.glassfish.paas.orchestrator.service.metadata;
 
+import org.glassfish.paas.orchestrator.service.spi.Plugin;
+
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlTransient;
 import java.util.Properties;
@@ -74,6 +76,9 @@ public class ServiceReference {
     // Eg., If service is referenced from jdbc-connection-pool, this will hold all the pool properties.
     // TODO :: instead of storing resource properties, we can directly have a reference to the resource itself.
     private Properties properties = new Properties();
+
+    //Plugin that requested this service-reference.
+    private Plugin requestingPlugin = null;
 
     public ServiceReference() {}
     
@@ -119,6 +124,15 @@ public class ServiceReference {
 
     public void setType(String type){
         this.referenceType = type;
+    }
+
+    public void setRequestingPlugin(Plugin plugin){
+        this.requestingPlugin = plugin;
+    }
+
+    @XmlTransient
+    public Plugin getRequestingPlugin(){
+        return requestingPlugin;
     }
 
     @Override

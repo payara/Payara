@@ -134,10 +134,20 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
         return Collections.unmodifiableSet(allStates);
     }
 
+    /**
+     * get plugins list for association or dissociation or re-association
+     * @param appServiceMetadata ServiceMetadata
+     * @return Set<Plugin> Set of plugins.
+     */
     public Set<Plugin> getPlugins(ServiceMetadata appServiceMetadata) {
         Set<Plugin> plugins = new LinkedHashSet<Plugin>();
         for(ServiceDescription sd : appServiceMetadata.getServiceDescriptions()){
             plugins.add(sd.getPlugin());
+        }
+        for(ServiceReference sr : appServiceMetadata.getServiceReferences()){
+            if(sr.getRequestingPlugin() != null){
+                plugins.add(sr.getRequestingPlugin());
+            }
         }
         return plugins;
     }
