@@ -546,4 +546,19 @@ public class DeploymentContextImpl implements ExtendedDeploymentContext, PreDest
         }
         actionReport = null;
     }
+
+    /**
+     * Prepare the scratch directories, creating the directories
+     * if they do not exist
+     */
+    public void prepareScratchDirs() throws IOException {
+        prepareScratchDir(getScratchDir("ejb"));
+        prepareScratchDir(getScratchDir("xml"));
+        prepareScratchDir(getScratchDir("jsp"));
+    }
+
+    private void prepareScratchDir(File f) throws IOException {
+        if (!f.isDirectory() && !f.mkdirs())
+            throw new IOException("Cannot create scratch directory : " + f.getAbsolutePath());
+    }
 }

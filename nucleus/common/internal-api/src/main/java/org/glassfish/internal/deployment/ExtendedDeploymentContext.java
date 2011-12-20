@@ -41,6 +41,7 @@
 package org.glassfish.internal.deployment;
 
 import java.io.File;
+import java.io.IOException;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.archive.ArchiveHandler;
 import org.glassfish.api.deployment.archive.ReadableArchive;
@@ -189,4 +190,10 @@ public interface ExtendedDeploymentContext extends DeploymentContext {
      * @param isFinalClean whether this clean is the final clean or a selective one.
      */
     public void postDeployClean(boolean isFinalClean);
+
+    /**
+     * Prepare the scratch directories, creating the directories 
+     * if they do not exist
+     */
+    public void prepareScratchDirs() throws IOException;
 }
