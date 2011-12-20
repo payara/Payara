@@ -2172,6 +2172,7 @@ admingui.ajax = {
             ajaxPanel.style.display = "block";
             ajaxPanel.style.top = document.body.scrollTop;
             ajaxPanel.style.visibility = "visible";
+            document.getElementById('ajaxPanelClose').focus();
         }
     },
 

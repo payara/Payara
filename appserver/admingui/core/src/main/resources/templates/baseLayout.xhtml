@@ -134,13 +134,13 @@
 "<div id="blank" style="position:fixed; top:0px; left:0px; height:100%; width:100%; background-color: #FFF; z-index:99999;">&nbsp;</div>
 <f:verbatim>
     <div id="ajaxIndicator" style="visibility: hidden"></div>
-    <div id="ajaxPanel" style="visibility: hidden">
+    <div id="ajaxPanel" style="visibility: hidden" role="dialog" aria-describedby="ajaxPanelBody">
         <div class="modalBackground">
         </div>
         <div class="modalContainer">
             <div class="modal">
-                <div class="modalTop"><a href="javascript:admingui.ajax.ajaxComplete(); return false">[X]</a></div>
-                <div class="modalBody">
+                <div class="modalTop"><a href="#" onclick="admingui.ajax.ajaxComplete(); return false" id="ajaxPanelClose">[X]</a></div>
+                <div class="modalBody" id="ajaxPanelBody">
                     <p>$resource{i18n.msg.longRunningProcess}</p>
                 </div>
             </div>
