@@ -177,7 +177,7 @@ public class BasicPaaSTest {
 		try {
 			CommandRunner commandRunner = glassfish.getCommandRunner();
 			String result = commandRunner
-					.run("list-services", "--type", "LOAD_BALANCER",
+					.run("list-services", "--type", "LB",
 							"--output", "IP-ADDRESS").getOutput().toString();
 			if (result.contains("Nothing to list.")) {
 				result = commandRunner
