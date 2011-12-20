@@ -58,12 +58,11 @@ public class ServiceReference {
     //Example: "jdbc/FooDataSource"
     private String name;
 
-    //this must point to a service-definition's id. This may or may not be specified.
+    //this must point to a service-definition's id or the name of shared or external-service
+    //This may or may not be specified.
     //If unspecified, the orchestrator would create a default service-definition
-    //for this service-reference and set that as the target
+    //for this service-reference and set that as the target (serviceName)
     //Example: ""(empty) or "Department1-MySQLDatabase"
-    private String serviceDescriptionName;
-
     private String serviceName;
 
     //reference type for this service reference. 
@@ -78,20 +77,20 @@ public class ServiceReference {
 
     public ServiceReference() {}
     
-    public ServiceReference(String refId, String refType, String serviceDescriptionName) {
+    public ServiceReference(String refId, String refType, String serviceName) {
         this.name = refId;
-        this.serviceDescriptionName = serviceDescriptionName;
+        this.serviceName = serviceName;
         this.referenceType = refType;
     }
 
     public ServiceReference(String refId, String refType,
-                            String serviceDescriptionName, Properties properties) {
+                            String serviceName, Properties properties) {
         this.name = refId;
-        this.serviceDescriptionName = serviceDescriptionName;
+        this.serviceName = serviceName;
         this.referenceType = refType;
         this.setProperties(properties);
         if(properties != null && properties.getProperty("serviceName") != null) {
-            this.serviceDescriptionName = properties.getProperty("serviceName");
+            this.serviceName = properties.getProperty("serviceName");
         }
     }
 
@@ -122,19 +121,10 @@ public class ServiceReference {
         this.referenceType = type;
     }
 
-    @XmlTransient
-    public String getServiceDescriptionName(){
-        return serviceDescriptionName;
-    }
-
-    public void setServiceDescriptionName(String serviceDescriptionName){
-        this.serviceDescriptionName = serviceDescriptionName;
-    }
-
     @Override
     public String toString() {
-        return "ServiceReference [name = " + name + ", referenceType = " + referenceType +
-                ", serviceName = " + serviceName + ", serviceDescriptionName = " + serviceDescriptionName + "  ]";
+        return "ServiceReference [ name = " + name + ", referenceType = " + referenceType +
+                ", serviceName = " + serviceName + " ]";
     }
 
     public Properties getProperties() {

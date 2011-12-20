@@ -673,7 +673,8 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
         return sd;
     }
 
-    public ServiceDescription getReferredServiceDescription(String serviceName) throws PaaSDeploymentException {
+    public ServiceDescription getServiceDescriptionForSharedOrExternalService(String serviceName)
+            throws PaaSDeploymentException {
         org.glassfish.paas.orchestrator.config.Service service = serviceUtil.getService(serviceName, null);
         ServiceDescription sd = null;
         if(service instanceof SharedService){
@@ -681,9 +682,12 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
         }else if(service instanceof ExternalService){
             sd = getExternalServiceDescription(serviceName);
         }
+        /* it is possible that the request is for application-scoped-service's service-description
+           return null instead of throwing exception.
         if(sd == null){
             throw new PaaSDeploymentException("No external/shared service ["+serviceName+"] found");
         }
+        */
         return sd;
     }
 

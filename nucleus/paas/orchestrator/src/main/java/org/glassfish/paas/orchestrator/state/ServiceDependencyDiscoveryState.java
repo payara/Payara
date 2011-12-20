@@ -111,15 +111,18 @@ public class ServiceDependencyDiscoveryState extends AbstractPaaSDeploymentState
 
             Map<ServiceDescription, Plugin> pluginsToHandleSDs = new LinkedHashMap<ServiceDescription, Plugin>();
 
+            Set<ServiceReference> wiredServiceReferences = new LinkedHashSet<ServiceReference>();
             //Get service-references defined in services.xml and retrieve
             //the corresponding service-description (shared/external).
             for(ServiceReference serviceReference : appServiceMetadata.getServiceReferences()){
                 String serviceName = serviceReference.getServiceName();
-                ServiceDescription sd = orchestrator.getReferredServiceDescription(serviceName);
+                ServiceDescription sd = orchestrator.getServiceDescriptionForSharedOrExternalService(serviceName);
                 appServiceMetadata.addServiceDescription(sd);
+                wiredServiceReferences.add(serviceReference);
                 pluginsToHandleSDs.put(sd, sd.getPlugin());
             }
 
+            //make sure that each service-description is wired to appropriate plugin.
             for (ServiceDescription sd : appServiceMetadata.getServiceDescriptions()) {
                 if (sd.getPlugin() == null) {
                     //Get the list of plugins that handle a particular service-description.
@@ -217,6 +220,15 @@ public class ServiceDependencyDiscoveryState extends AbstractPaaSDeploymentState
                 for (ServiceReference sr : implicitServiceRefs) {
                     logger.log(Level.INFO, "ServiceReference:" + sr);
                     appServiceMetadata.addServiceReference(sr);
+                    //if the service-ref refers a service-name, retrieve the service-description of the service.
+                    if(sr.getServiceName() != null){
+                        ServiceDescription sd = orchestrator.getServiceDescriptionForSharedOrExternalService(sr.getServiceName());
+                        if(sd != null){
+                            appServiceMetadata.addServiceDescription(sd);
+                            pluginsToHandleSDs.put(sd, sd.getPlugin());
+                            wiredServiceReferences.add(sr);
+                        }
+                    }
                 }
                 //}
             }
@@ -227,69 +239,81 @@ public class ServiceDependencyDiscoveryState extends AbstractPaaSDeploymentState
             Set<ServiceDescription> appSDs = appServiceMetadata.getServiceDescriptions();
             Set<ServiceReference> appSRs = appServiceMetadata.getServiceReferences();
             for (ServiceReference sr : appSRs) {
-                String targetSD = sr.getServiceName();
-                boolean serviceDescriptionExists = false;
-                for (ServiceDescription sd : appSDs) {
-                    //XXX: For now we assume all SRs are satisfied by app-scoped SDs
-                    //In the future this has to be modified to search in global SDs
-                    //as well
-                    if (sd.getName().equals(targetSD)) {
-                        serviceDescriptionExists = true;
-                        //sd.addServiceReference(sr);
-                    }
-                }
-
-                if (!serviceDescriptionExists) {
-                    List<Plugin> pluginsList = new ArrayList<Plugin>();
-                    for (Plugin plugin : installedPlugins) {
-                        if (plugin.isReferenceTypeSupported(sr.getType())) {
-                            pluginsList.add(plugin);
+                if (!wiredServiceReferences.contains(sr)) {
+                    String targetSD = sr.getServiceName();
+                    boolean serviceDescriptionExists = false;
+                    for (ServiceDescription sd : appSDs) {
+                        //scan through available service-descriptions (app-scoped is of our interest)
+                        //to see whether the referred service-description matches the service-name
+                        //specified by service-reference.
+                        if (sd.getName().equals(targetSD)) {
+                            serviceDescriptionExists = true;
+                            break;
+                            //sd.addServiceReference(sr);
                         }
                     }
-                    Plugin matchingPlugin = null;
-                    if (pluginsList.size() == 1) {
-                        matchingPlugin = pluginsList.get(0);
-                    } else if (pluginsList.size() == 0) {
-                        throw new PaaSDeploymentException("No service-provisioning-engine available to handle service-ref [ " + sr + " ]");
-                    } else {
-                        matchingPlugin = orchestrator.getDefaultPluginForServiceRef(sr.getType());
-                    }
 
-                    if (matchingPlugin == null) {
-                        //we could not find a matching plugin as there is no default plugin.
-                        //get a plugin that handles this service-ref
-                        Collection<Plugin> plugins = pluginsToHandleSDs.values();
-                        for (Plugin plugin : plugins) {
+                    //no matching service-description found. Lets try a plugin (default plugin if
+                    //multiple plugins support same service-type) and get service-description.
+                    if (!serviceDescriptionExists) {
+                        //a plugin has asked for specific service which is not found.
+                        //fail deployment.
+                        if(sr.getServiceName() != null){
+                            throw new PaaSDeploymentException("unable to find the service ["+sr.getServiceName()+"] " +
+                                    "for service-reference [ "+sr+" ]");
+                        }
+
+                        List<Plugin> pluginsList = new ArrayList<Plugin>();
+                        for (Plugin plugin : installedPlugins) {
                             if (plugin.isReferenceTypeSupported(sr.getType())) {
-                                matchingPlugin = plugin;
-                                break;
+                                pluginsList.add(plugin);
                             }
                         }
-                    }
+                        Plugin matchingPlugin = null;
+                        if (pluginsList.size() == 1) {
+                            matchingPlugin = pluginsList.get(0);
+                        } else if (pluginsList.size() == 0) {
+                            throw new PaaSDeploymentException("No service-provisioning-engine available to handle service-ref [ " + sr + " ]");
+                        } else {
+                            matchingPlugin = orchestrator.getDefaultPluginForServiceRef(sr.getType());
+                        }
 
-
-                    ServiceDescription matchingSDForServiceRef = null;
-
-                    if (pluginsToHandleSDs.values().contains(matchingPlugin)) {
-                        //get an existing SD for the plugin in question.
-                        for (Map.Entry<ServiceDescription, Plugin> entry : pluginsToHandleSDs.entrySet()) {
-                            if (entry.getValue().equals(matchingPlugin)) {
-                                matchingSDForServiceRef = entry.getKey();
-                                break;
+                        if (matchingPlugin == null) {
+                            //we could not find a matching plugin as there is no default plugin.
+                            //get a plugin that handles this service-ref
+                            Collection<Plugin> plugins = pluginsToHandleSDs.values();
+                            for (Plugin plugin : plugins) {
+                                if (plugin.isReferenceTypeSupported(sr.getType())) {
+                                    matchingPlugin = plugin;
+                                    break;
+                                }
                             }
                         }
-                    } else {
-                        //get the default SD for the plugin.
-                        matchingSDForServiceRef = matchingPlugin.getDefaultServiceDescription(appName, sr);
-                        matchingSDForServiceRef.setServiceScope(ServiceScope.APPLICATION);
-                        appServiceMetadata.addServiceDescription(matchingSDForServiceRef);
-                        pluginsToHandleSDs.put(matchingSDForServiceRef, matchingPlugin);
+
+
+                        ServiceDescription matchingSDForServiceRef = null;
+
+                        if (pluginsToHandleSDs.values().contains(matchingPlugin)) {
+                            //get an existing SD for the plugin in question.
+                            for (Map.Entry<ServiceDescription, Plugin> entry : pluginsToHandleSDs.entrySet()) {
+                                if (entry.getValue().equals(matchingPlugin)) {
+                                    matchingSDForServiceRef = entry.getKey();
+                                    break;
+                                }
+                            }
+                        } else {
+                            //get the default SD for the plugin.
+                            matchingSDForServiceRef = matchingPlugin.getDefaultServiceDescription(appName, sr);
+                            matchingSDForServiceRef.setServiceScope(ServiceScope.APPLICATION);
+                            appServiceMetadata.addServiceDescription(matchingSDForServiceRef);
+                            pluginsToHandleSDs.put(matchingSDForServiceRef, matchingPlugin);
+                        }
+                        serviceRefToSD.put(sr, matchingSDForServiceRef);
+                        sr.setServiceName(matchingSDForServiceRef.getName());
                     }
-                    serviceRefToSD.put(sr, matchingSDForServiceRef);
                 }
             }
             setPluginForSD(orchestrator, pluginsToHandleSDs, installedPlugins, appServiceMetadata);
-
 
             assertMetadataComplete(appSDs, appSRs);
 
