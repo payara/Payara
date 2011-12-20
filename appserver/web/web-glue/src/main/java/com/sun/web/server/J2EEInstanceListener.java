@@ -251,10 +251,6 @@ public final class J2EEInstanceListener implements InstanceListener {
                 // Emit monitoring probe event
                 wm.beforeServiceEvent(event.getWrapper().getName());
                 // enlist resources with TM for service method
-                Transaction tran;
-                if ((tran = tm.getTransaction()) != null) {
-                    inv.setTransaction(tran);
-                }
                 tm.enlistComponentResources();
             }
         } catch (Exception ex) {
