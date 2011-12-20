@@ -71,7 +71,6 @@ public class DisableState extends AbstractPaaSDeploymentState {
         String appName = context.getAppName();
         final ServiceMetadata appServiceMetadata = orchestrator.getServiceMetadata(appName);
 
-        //TODO better name for stoppedSDs.
         List<ServiceDescription> stoppedServiceSDs = new ArrayList<ServiceDescription>();
         for (ServiceDescription sd : appServiceMetadata.getServiceDescriptions()) {
             if(ServiceScope.APPLICATION.equals(sd.getServiceScope())){
