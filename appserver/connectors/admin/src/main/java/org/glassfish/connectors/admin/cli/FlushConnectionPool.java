@@ -147,7 +147,7 @@ public class FlushConnectionPool implements AdminCommand {
             report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
         } catch (ConnectorRuntimeException e) {
             report.setMessage(localStrings.getLocalString("flush.connection.pool.fail",
-                    "Failed to flush connection pool {0} due to {1}.", poolName, e.getMessage()));
+                    "Flush connection pool for {0} failed", poolName));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setFailureCause(e);
         }

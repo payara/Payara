@@ -1324,9 +1324,9 @@ public class ConnectionPool implements ResourcePool, ConnectionLeakListener,
         
         if(!poolInitialized) {
             _logger.log(Level.WARNING, "poolmgr.flush_noop_pool_not_initialized", getPoolInfo());
-            throw new PoolingException("Flush Connection Pool failed for " +
-                    getPoolInfo() +
-                    ". Please see server.log for more details.");
+            String exString = localStrings.getString("poolmgr.flush_noop_pool_not_initialized",
+                    poolInfo.toString());
+            throw new PoolingException(exString);
         }
         
         try {        

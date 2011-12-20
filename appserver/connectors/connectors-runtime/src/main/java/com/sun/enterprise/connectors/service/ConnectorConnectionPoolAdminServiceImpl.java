@@ -429,9 +429,8 @@ public class ConnectorConnectionPoolAdminServiceImpl extends ConnectorService {
             //Since we have an exception, the pool is not good
             Object params[] = new Object[]{poolInfo, re.getMessage()};
             _logger.log(Level.WARNING, "test.connection.pool.failed", params);
-            ResourceException e = new ResourceException("Ping failed Exception - " +
-                    re.getMessage() +
-                    ". Please check the server.log for more details.");
+            ResourceException e = new ResourceException(re.getLocalizedMessage() +
+                    " Please check the server.log for more details.");
             e.initCause(re);
             throw e;
         } finally {
@@ -1498,7 +1497,12 @@ public class ConnectorConnectionPoolAdminServiceImpl extends ConnectorService {
         try {
             return poolMgr.flushConnectionPool( poolInfo );
         } catch (PoolingException ex) {
-            throw new ConnectorRuntimeException(ex.getMessage());
+            ConnectorRuntimeException e = new ConnectorRuntimeException(
+                    ex.getLocalizedMessage() +
+                    ". Please check the server.log for more details.");
+            e.initCause(ex);
+            throw e;
+
         }
     }
 

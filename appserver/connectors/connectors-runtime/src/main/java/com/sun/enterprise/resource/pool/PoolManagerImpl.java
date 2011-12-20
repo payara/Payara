@@ -54,6 +54,7 @@ import com.sun.enterprise.resource.listener.PoolLifeCycle;
 import com.sun.enterprise.resource.rm.*;
 import com.sun.enterprise.transaction.api.JavaEETransaction;
 import com.sun.enterprise.transaction.api.JavaEETransactionManager;
+import com.sun.enterprise.util.i18n.StringManager;
 import com.sun.logging.LogDomains;
 import org.glassfish.resources.api.PoolInfo;
 import org.jvnet.hk2.annotations.Service;
@@ -83,6 +84,8 @@ import java.util.logging.Logger;
 public class PoolManagerImpl extends AbstractPoolManager implements ComponentInvocationHandler {
 
     private final ConcurrentHashMap<PoolInfo, ResourcePool> poolTable;
+    protected final static StringManager localStrings =
+            StringManager.getManager(PoolManagerImpl.class);
 
     private ResourceManager resourceManager;
     private ResourceManager sysResourceManager;
@@ -688,8 +691,9 @@ public class PoolManagerImpl extends AbstractPoolManager implements ComponentInv
             result = pool.flushConnectionPool();
         } else {
             _logger.log(Level.WARNING, "poolmgr.flush_noop_pool_not_initialized", poolInfo);
-            throw new PoolingException("Flush Connection Pool for pool " +
-                    poolInfo + " failed. Please see server.log for more details.");
+            String exString = localStrings.getString("poolmgr.flush_noop_pool_not_initialized",
+                    poolInfo.toString());
+            throw new PoolingException(exString);
         }
         return result;
     }
