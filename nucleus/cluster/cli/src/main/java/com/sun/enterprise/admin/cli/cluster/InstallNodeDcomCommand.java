@@ -166,6 +166,10 @@ public class InstallNodeDcomCommand extends InstallNodeBaseCommand {
                     //final int percent = (int)((double)numcopied / (double)numtotal * 100.0);
                     System.out.print(".");
                 }
+                @Override
+                public int getChunkSize() {
+                    return 1048576;
+                }
             });
             System.out.println("");
             String fullZipFileName = remoteInstallDirString + "\\" + zipFileName;

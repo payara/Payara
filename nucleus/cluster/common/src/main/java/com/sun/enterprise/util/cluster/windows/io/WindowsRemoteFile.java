@@ -42,6 +42,7 @@ package com.sun.enterprise.util.cluster.windows.io;
 import com.sun.enterprise.util.cluster.windows.process.WindowsCredentials;
 import com.sun.enterprise.util.cluster.windows.process.WindowsException;
 import java.io.*;
+import java.io.FileOutputStream;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -54,7 +55,6 @@ public final class WindowsRemoteFile {
     private SmbFile smbFile;
     private WindowsRemoteFileSystem wrfs;
     private String smbPath;
-    private static final int BUFSIZE = 1048576;
 
     public WindowsRemoteFile(WindowsRemoteFile parent, String path)
             throws WindowsException {
@@ -142,6 +142,70 @@ public final class WindowsRemoteFile {
         }
     }
 
+    /**
+     * Copy the remote Windows file to the given File
+     *
+     * @param f The File that will be created or overwritten with the contents of
+     * this Windows Remote File.
+     * @throws WindowsException
+     * @since 3.1.2
+     */
+    public final void copyTo(final File file) throws WindowsException {
+        copyTo(file, null);
+    }
+
+    /**
+     * Copy the remote Windows file to the given File
+     *
+     * @param f The File that will be created or overwritten with the contents of
+     * this Windows Remote File.
+     * @param progress The optional callback object that gets called for each
+     * chunk of data that gets copied over the wire.  Setting it to null is OK.
+     * @throws WindowsException
+     * @since 3.1.2
+     */
+    public final void copyTo(final File file, final WindowsRemoteFileCopyProgress progress) throws WindowsException {
+        BufferedInputStream bis = null;
+        BufferedOutputStream bos = null;
+        try {
+            final long filelength = smbFile.length();
+            bis = new BufferedInputStream(smbFile.getInputStream());
+            bos = new BufferedOutputStream(new FileOutputStream(file));
+
+            byte[] buf = new byte[getChunkSize(progress, filelength)];
+            int numBytes = 0;
+            long totalBytesCopied = 0;
+
+            while ((numBytes = bis.read(buf)) >= 0) {
+                bos.write(buf, 0, numBytes);
+                totalBytesCopied += numBytes;
+
+                // It's OK to send in a null Progress object
+                if (progress != null)
+                    progress.callback(totalBytesCopied, filelength);
+            }
+        }
+        catch (Exception se) {
+            throw new WindowsException(se);
+        }
+        finally {
+            if (bis != null)
+                try {
+                    bis.close();
+                }
+                catch (Exception e) {
+                    // this is SO messy!
+                }
+            if (bos != null)
+                try {
+                    bos.close();
+                }
+                catch (Exception e) {
+                    // this is SO messy!
+                }
+        }
+    }
+
     public final void delete() throws WindowsException {
         try {
             smbFile.delete();
@@ -199,7 +263,7 @@ public final class WindowsRemoteFile {
                 createNewFile();
 
             sout = new BufferedOutputStream(smbFile.getOutputStream());
-            byte[] buf = new byte[BUFSIZE];
+            byte[] buf = new byte[getChunkSize(progress, filelength)];
             int numBytes = 0;
             long totalBytesCopied = 0;
 
@@ -319,5 +383,15 @@ public final class WindowsRemoteFile {
             path = path.substring(0, path.length() - 1);
 
         return path;
+    }
+
+    private int getChunkSize(WindowsRemoteFileCopyProgress progress, long filelength) {
+        int chunksize = progress == null ? 1048576 : progress.getChunkSize();
+
+        // be careful!  filelength is a long!!!
+        if(filelength < Integer.MAX_VALUE && chunksize > (int)filelength)
+            return (int)filelength;
+
+        return chunksize;
     }
 }
