@@ -152,7 +152,7 @@ public class PingConnectionPool implements AdminCommand {
         } catch (Exception e) {
             report.setMessage(
                     localStrings.getLocalString("ping.connection.pool.fail",
-                            "Ping Connection Pool for {0} Failed", poolInfo) + " " + e.getLocalizedMessage());
+                            "Ping Connection Pool for {0} Failed", poolInfo));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setFailureCause(e);
         }
