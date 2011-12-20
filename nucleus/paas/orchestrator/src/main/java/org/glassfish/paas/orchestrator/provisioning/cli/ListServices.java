@@ -106,7 +106,7 @@ public class ListServices implements AdminCommand {
                 if (service instanceof ApplicationScopedService) {
                     if (appName.equals(((ApplicationScopedService) service).getApplicationName())) {
                         if (type != null) {
-                            if (service.getType().equals(type.toUpperCase())) {
+                            if (service.getType().equalsIgnoreCase(type)) {
                                 if (scope != null) {
                                     if (scope.equals(getServiceScope(service))) {
                                         matchedServices.add(service);
@@ -133,7 +133,7 @@ public class ListServices implements AdminCommand {
                     for (Service service : services.getServices()) {
                         if (service.getServiceName().equals(serviceRef.getServiceName())) {
                             if (type != null) {
-                                if (service.getType().equals(type.toUpperCase())) {
+                                if (service.getType().equalsIgnoreCase(type)) {
                                     if (scope != null) {
                                         if (scope.equals(getServiceScope(service))) {
                                             matchedServices.add(service);
@@ -168,7 +168,7 @@ public class ListServices implements AdminCommand {
 
             for (Service service : services.getServices()) {
                 if (type != null) {
-                    if (service.getType().equals(type.toUpperCase())) {
+                    if (service.getType().equalsIgnoreCase(type)) {
                         if (scope != null) {
                             if (scope.equals(getServiceScope(service))) {
                                 matchedServices.add(service);
