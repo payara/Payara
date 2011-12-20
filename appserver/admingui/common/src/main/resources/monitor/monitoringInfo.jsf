@@ -64,6 +64,7 @@
             </sun:tableColumn>
             <sun:tableColumn headerText="$resource{i18n.instanceValues.colClusterName}" sort="clusterName" rowHeader="$boolean{true}" id="col1">
                 <sun:hyperlink id="clusterName" text="#{td.value.clusterName}" rendered="#{td.value.isCluster}" url="#{td.value.clusterLink}" />
+                <sun:staticText id="noValue" text="$resource{i18n.common.NA}" rendered="#{!td.value.isCluster}" />
             </sun:tableColumn>
             <sun:tableColumn headerText="$resource{i18n.common.Action}" rowHeader="$boolean{true}" id="col2">
                 <sun:hyperlink id="actionLink" text="$resource{i18n.commonTasks.task.configMonitor}" url="#{td.value.actionLink}" />
