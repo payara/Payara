@@ -167,8 +167,7 @@ public class ProvisioningState extends AbstractPaaSDeploymentState {
                 }
             }
 
-            // Clean up the glassfish cluster, virtual cluster config, etc..
-            // TODO :: assuming app-scoped virtual cluster. fix it when supporting shared/external service.
+            // Clean up the virtual cluster config if is application-scoped.
             if(virtualClusterName != null){
                 orchestrator.removeVirtualCluster(virtualClusterName);
             }
