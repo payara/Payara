@@ -500,7 +500,6 @@ public class SSHLauncher {
             if (!validInstallDir) {
                 String msg = "Invalid install directory: could not find " +
                         testPath + " on " + host;
-                logger.warning(msg);
                 throw new FileNotFoundException(msg);
             }
             logger.fine("Node home validated");
