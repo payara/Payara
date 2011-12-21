@@ -239,21 +239,16 @@ public class DeploymentHandler {
              if (ctxRoot != null){
                  payload.put("contextroot", ctxRoot);
              }
-
-             String availabilityEnabled = valueMap.get("availabilityenabled");
-             if (availabilityEnabled != null){
-                payload.put("availabilityenabled", Boolean.parseBoolean(availabilityEnabled));
-             }
              String keepState = deployMap.get("keepState");
              if (keepState != null){
                 payload.put("keepstate",keepState);
              }
-
              payload.put("id", filePath);
              payload.put("force", "true");
              payload.put("name", appName);
              payload.put("verify", deployMap.get("verify"));
              payload.put("precompilejsp", deployMap.get("precompilejsp"));
+             payload.put("availabilityEnabled", deployMap.get("availabilityEnabled"));
              if ("osgi".equals(deployMap.get("type"))){
                  payload.put("type", "osgi");
              }
