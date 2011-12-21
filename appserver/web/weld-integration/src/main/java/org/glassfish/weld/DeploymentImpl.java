@@ -109,12 +109,9 @@ public class DeploymentImpl implements Deployment {
         // Collect /lib Jar BDAs (if any) from the parent module.
         // If we've produced BDA(s) from any /lib jars, <code>return</code> as
         // additional BDA(s) will be produced for any subarchives (war/jar).
-
-        if (libJarBDAs == null) {
-            libJarBDAs = scanForLibJars(archive, ejbs, context);
-            if ((libJarBDAs != null) && libJarBDAs.size() > 0) {
-                return;
-            }
+        libJarBDAs = scanForLibJars(archive, ejbs, context);
+        if ((libJarBDAs != null) && libJarBDAs.size() > 0) {
+            return;
         }
 
         BeanDeploymentArchive bda = new BeanDeploymentArchiveImpl(archive, ejbs, context);
@@ -373,14 +370,14 @@ public class DeploymentImpl implements Deployment {
 
     @Override
     public String toString() {
-        String val = null;
+        StringBuffer valBuff = new StringBuffer();
         List<BeanDeploymentArchive> beanDeploymentArchives = getBeanDeploymentArchives();
         ListIterator<BeanDeploymentArchive> lIter = beanDeploymentArchives.listIterator();        
         while (lIter.hasNext()) {
             BeanDeploymentArchive bda = lIter.next();
-            val += bda.toString(); 
+            valBuff.append(bda.toString()); 
         }
-        return val;
+        return valBuff.toString();
     }
     
     public BeanDeploymentArchive getBeanDeploymentArchiveForArchive(String archiveId) {

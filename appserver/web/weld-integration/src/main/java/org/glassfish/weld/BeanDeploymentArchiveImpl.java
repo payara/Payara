@@ -287,12 +287,17 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
         return this.friendlyId;
     }
     
-    //A graphical representation of the BDA hierarchy
+    //A graphical representation of the BDA hierarchy to aid in debugging
+    //and to provide a better representation of how Weld treats the deployed
+    //archive.
     public String toString() {
         String beanClassesString = ((getBeanClasses().size() > 0) ? getBeanClasses().toString() : ""); 
-        String val = "|ID: " + getId() + ", bdaType= " + bdaType 
-                        + ", accessibleBDAs #:" + getBeanDeploymentArchives().size() + ", " + formatAccessibleBDAs(this)
-                        +  ", Bean Classes #: " + getBeanClasses().size() + "," + beanClassesString + ", ejbs=" + getEjbs() +"\n";
+        String initVal = "|ID: " + getId() + ", bdaType= " + bdaType 
+                        + ", accessibleBDAs #:" + getBeanDeploymentArchives().size() 
+                        + ", " + formatAccessibleBDAs(this)
+                        +  ", Bean Classes #: " + getBeanClasses().size() + "," 
+                        + beanClassesString + ", ejbs=" + getEjbs() +"\n";
+        StringBuffer valBuff = new StringBuffer(initVal);
         
         Collection<BeanDeploymentArchive> bdas = getBeanDeploymentArchives();
         Iterator<BeanDeploymentArchive> iter = bdas.iterator();
@@ -303,11 +308,14 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
                 embedBDAType = ((BeanDeploymentArchiveImpl)bda).getBDAType();
             }
             String embedBDABeanClasses = ((bda.getBeanClasses().size() > 0) ? bda.getBeanClasses().toString() : "");
-            val += "|---->ID: " + bda.getId() + ", bdaType= " + embedBDAType.toString() 
-                    + ", accessibleBDAs #:" + bda.getBeanDeploymentArchives().size() + ", " + formatAccessibleBDAs(bda)  
-                    +  ", Bean Classes #: " + bda.getBeanClasses().size() + "," + embedBDABeanClasses + ", ejbs=" + bda.getEjbs() + "\n";
+            String val = "|---->ID: " + bda.getId() + ", bdaType= " + embedBDAType.toString() 
+                    + ", accessibleBDAs #:" + bda.getBeanDeploymentArchives().size() 
+                    + ", " + formatAccessibleBDAs(bda) +  ", Bean Classes #: " 
+                    + bda.getBeanClasses().size() + "," + embedBDABeanClasses 
+                    + ", ejbs=" + bda.getEjbs() + "\n";
+            valBuff.append(val);
         }
-        return val;
+        return valBuff.toString();
     }
 
     private String formatAccessibleBDAs(BeanDeploymentArchive bda) {
