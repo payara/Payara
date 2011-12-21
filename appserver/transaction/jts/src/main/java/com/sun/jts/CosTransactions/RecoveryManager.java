@@ -1655,11 +1655,13 @@ public class RecoveryManager {
     static void createRecoveryFile(String serverName) {
         try {
             String logPath = LogControl.getLogPath();
-            File recoveryFile = LogControl.recoveryIdentifierFile(serverName,logPath);
-            RandomAccessFile raf = new RandomAccessFile(recoveryFile,"rw");
-            raf.writeBytes(serverName);
-            raf.setLength(serverName.length());
-            raf.close();
+            if (new File(logPath).exists()) {
+                File recoveryFile = LogControl.recoveryIdentifierFile(serverName,logPath);
+                RandomAccessFile raf = new RandomAccessFile(recoveryFile,"rw");
+                raf.writeBytes(serverName);
+                raf.setLength(serverName.length());
+                raf.close();
+            }
         } catch (Exception ex) {
             _logger.log(Level.WARNING,"jts.exception_in_recovery_file_handling",ex);
         }

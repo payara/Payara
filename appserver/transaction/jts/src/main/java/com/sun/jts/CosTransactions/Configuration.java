@@ -283,13 +283,13 @@ public class Configuration extends Object {
         result[0] = DIRECTORY_OK;
 
         if( envValue == null || envValue.length() == 0 ||
-            !new File(envValue).isDirectory() ) {
+            (new File(envValue).exists() && !new File(envValue).isDirectory()) ) {
             result[0] = DEFAULT_USED;
 
             // If the default subdirectory is not valid, then use the current directory.
 
             envValue = "."+File.separator+defaultSubdirectory/*#Frozen*/;
-            if( !new File(envValue).isDirectory() ) {
+            if( new File(envValue).exists() && !new File(envValue).isDirectory() ) {
                 result[0] = DEFAULT_INVALID;
             }
         }
