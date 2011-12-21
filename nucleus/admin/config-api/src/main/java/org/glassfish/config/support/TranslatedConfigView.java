@@ -43,8 +43,6 @@ package org.glassfish.config.support;
 import org.jvnet.hk2.config.ConfigView;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.component.Habitat;
-import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.annotations.Inject;
 //import org.glassfish.security.common.RelativePathResolver;
 import org.glassfish.security.common.MasterPassword;
 
@@ -73,6 +71,7 @@ public class TranslatedConfigView implements ConfigView {
     final static Pattern p = Pattern.compile("([^\\$]*)\\$\\{([^\\}]*)\\}([^\\$]*)");
 
     private static final String ALIAS_TOKEN = "ALIAS";
+    private static int MAX_SUBSTITUTION_DEPTH = 100;
     
     public static Object getTranslatedValue(Object value) {
         if (value!=null && value instanceof String) {
@@ -86,21 +85,33 @@ public class TranslatedConfigView implements ConfigView {
                     try{
                         return getRealPasswordFromAlias(masterpasswd,stringValue);
                     } catch (Exception e) {
-                        Logger.getAnonymousLogger().severe("Error in dealiasing the password " +e.getLocalizedMessage());
+                        Logger.getAnonymousLogger().severe(
+                                Strings.get("TranslatedConfigView.aliaserror", stringValue, e.getLocalizedMessage()));
                         return stringValue;
                     }
                 }
             }
            
 
+            // Perform system property substitution in the value
+            // The loop limit is imposed to prevent infinite looping to values
+            // such as a=${a} or a=foo ${b} and b=bar {$a}
             Matcher m = p.matcher(stringValue);
-            while (m.find()) {
+            String origValue = stringValue;
+            int i = 0;
+            while (m.find() && i < MAX_SUBSTITUTION_DEPTH) {
                 String newValue = System.getProperty(m.group(2).trim());
-                if (newValue!=null) {
-                    stringValue = m.replaceFirst(m.quoteReplacement(m.group(1)+
-                            System.getProperty(m.group(2).trim())+m.group(3)));
+                if (newValue != null) {
+                    stringValue = m.replaceFirst(
+                            Matcher.quoteReplacement(m.group(1) + newValue + m.group(3)));
                     m.reset(stringValue);
                 }
+                i++;     
+            }
+            if (i >= MAX_SUBSTITUTION_DEPTH) {
+                Logger.getAnonymousLogger().severe(
+                        Strings.get("TranslatedConfigView.badprop", 
+                        i, origValue));
             }
             return stringValue;
         }
@@ -115,23 +126,28 @@ public class TranslatedConfigView implements ConfigView {
 
     }
 
+    @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         return getTranslatedValue(masterView.invoke(proxy, method, args));
     }
 
 
+    @Override
     public ConfigView getMasterView() {
         return masterView;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
+    @Override
     public void setMasterView(ConfigView view) {
         // immutable implementation
     }
 
+    @Override
     public <T extends ConfigBeanProxy> Class<T> getProxyType() {
         return masterView.getProxyType();
     }
 
+    @Override
     public <T extends ConfigBeanProxy> T getProxy(Class<T> proxyType) {
         return proxyType.cast(Proxy.newProxyInstance(proxyType.getClassLoader(), new Class[]{proxyType},
                  this));
