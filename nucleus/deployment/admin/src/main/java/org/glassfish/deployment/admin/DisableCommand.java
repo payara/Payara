@@ -155,6 +155,12 @@ public class DisableCommand extends UndeployCommandParameters implements AdminCo
         if (origin == Origin.unload && command == Command.disable) {
             // we should only validate this for the disable command
             deployment.validateSpecifiedTarget(target);
+
+            // we need to set the default target for non-paas case first
+            // so the versioned code could execute as expected
+            if (target == null) {
+                target = deployment.getDefaultTarget();
+            }
         }
 
         boolean isVersionExpressionWithWilcard =

@@ -263,4 +263,7 @@ public interface Deployment {
 
     // sets the default target when the target is not specified
     public String getDefaultTarget(String appName, OpsParams.Origin origin);
+
+    // gets the default target when no target is specified for non-paas case
+    public String getDefaultTarget();
 }

@@ -148,6 +148,12 @@ public class UndeployCommand extends UndeployCommandParameters implements AdminC
 
         deployment.validateSpecifiedTarget(target);
 
+        // we need to set the default target for non-paas case first 
+        // so the versioned code could execute as expected
+        if (target == null) {
+            target = deployment.getDefaultTarget();
+        }
+
         /**
          * A little bit of dancing around has to be done, in case the
          * user passed the path to the original directory.
@@ -159,7 +165,6 @@ public class UndeployCommand extends UndeployCommandParameters implements AdminC
         if (cluster!=null) {
             target = name;
         }
-
 
         // retrieve matched version(s) if exist
         List<String> matchedVersions = null;
