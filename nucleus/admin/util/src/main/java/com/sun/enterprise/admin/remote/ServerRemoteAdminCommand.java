@@ -78,7 +78,7 @@ public class ServerRemoteAdminCommand extends RemoteAdminCommand {
     public ServerRemoteAdminCommand(Habitat habitat, String name, String host, int port,
             boolean secure, String user, String password, Logger logger)
             throws CommandException {
-        super(name, host, port, false, "admin", "", logger);
+        super(name, host, port, secure, "admin", "", logger);
         completeInit(habitat);
     }
 
@@ -87,6 +87,7 @@ public class ServerRemoteAdminCommand extends RemoteAdminCommand {
         final Domain domain = habitat.getComponent(Domain.class);
         secureAdmin = domain.getSecureAdmin();
         serverEnv = habitat.getComponent(ServerEnvironment.class);
+        this.secure = SecureAdmin.Util.isEnabled(secureAdmin);
         setInteractive(false);
     }
 
