@@ -56,7 +56,7 @@
         }
         createMap(result="#{pageSession.deployMap}")
         mapPut(map="#{pageSession.deployMap}", key="appName", value="#{pageSession.appName}");
-        setPageSessionAttribute(key="convertToFalse" value={"precompilejsp", "verify"})
+        setPageSessionAttribute(key="convertToFalse" value={"precompilejsp", "verify" ,"availabilityEnabled"})
 
         //we want to show/preserver java-web-start-enabled, and preserveAppsScopedResourcs
 
@@ -78,6 +78,10 @@
         setPageSessionAttribute(key="listPageLink" value="#{gf_application_list_page}");
         setPageSessionAttribute(key="extraArgs" value="#{gf_application_extra_args}");
         setPageSessionAttribute(key="cancelPage" value="#{gf_application_cancel_page}");
+        gf.onlyDASExist(onlyDAS="#{pageSession.onlyDASExist}");
+        if ("!(#{pageSession.onlyDASExist})"){
+            mapPut(map="#{pageSession.deployMap}", key="availabilityEnabled", value="#{pageSession.valueMap['availabilityEnabled']}");
+        }
     />
     </event>
 <sun:form id="form" method="POST" enctype="multipart/form-data">  
@@ -141,6 +145,9 @@
             </sun:property>
             <sun:property id="jws"  labelAlign="left" noWrap="#{false}" overlapLabel="#{false}"  label="$resource{i18n.deploy.JavaWebStart}" helpText="$resource{i18n.deploy.JavaWebStartHelp}" >
                 <sun:checkbox selected="#{pageSession.deployMap['$constant{org.glassfish.deployment.client.DFDeploymentProperties.DEPLOY_OPTION_JAVA_WEB_START_ENABLED}']}" selectedValue="true" label=" " />
+            </sun:property>
+            <sun:property id="availability" rendered="#{!pageSession.onlyDASExist}" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.deploy.availability}" helpText="$resource{i18n.deploy.availabilityHelp}">
+                <sun:checkbox id="availability" label="$resource{i18n.common.Enabled}" selected="#{pageSession.deployMap['availabilityEnabled']}" selectedValue="true" />
             </sun:property>
             <sun:property id="keepStateProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}"  label="$resource{i18n.redeploy.keepState}" helpText="$resource{i18n.redeploy.keepStateHelp}" >
                 <sun:checkbox selected="#{pageSession.deployMap['keepState']}" selectedValue="true" label=" " />
