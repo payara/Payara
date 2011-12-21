@@ -123,10 +123,6 @@ public abstract class BasePersistenceStrategyBuilder
 
         ctx.setBackgroundProcessorDelay(reapInterval);
 
-        // For intra-vm session locking
-        StandardContext sctx = (StandardContext) ctx;
-        sctx.restrictedSetPipeline(new PESessionLockingStandardPipeline(sctx));
-
     }
     
     public void setDefaultParams(Context ctx, SessionManager smBean) {
