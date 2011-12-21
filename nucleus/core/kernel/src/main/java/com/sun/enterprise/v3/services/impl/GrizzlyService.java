@@ -54,7 +54,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.sun.enterprise.config.serverbeans.Config;
-import com.sun.enterprise.config.serverbeans.ConfigBeansUtilities;
 import com.sun.enterprise.config.serverbeans.HttpService;
 import com.sun.enterprise.config.serverbeans.SystemProperty;
 import com.sun.enterprise.config.serverbeans.VirtualServer;
@@ -69,7 +68,6 @@ import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.container.EndpointRegistrationException;
 import org.glassfish.api.container.RequestDispatcher;
 import org.glassfish.api.deployment.ApplicationContainer;
-import org.glassfish.flashlight.provider.ProbeProviderFactory;
 import org.glassfish.grizzly.config.dom.NetworkConfig;
 import org.glassfish.grizzly.config.dom.NetworkListener;
 import org.glassfish.grizzly.config.dom.NetworkListeners;
@@ -77,7 +75,6 @@ import org.glassfish.grizzly.config.dom.Protocol;
 import org.glassfish.grizzly.http.server.HttpHandler;
 import org.glassfish.grizzly.http.server.util.Mapper;
 import org.glassfish.grizzly.impl.FutureImpl;
-import org.glassfish.grizzly.impl.ReadyFutureImpl;
 import org.glassfish.grizzly.impl.UnsafeFutureImpl;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
@@ -108,9 +105,6 @@ public class GrizzlyService implements Startup, RequestDispatcher, PostConstruct
 
     @Inject
     Habitat habitat;
-
-    @Inject
-    ProbeProviderFactory probeProviderFactory;
 
     @Inject
     Transactions transactions;
@@ -385,7 +379,6 @@ public class GrizzlyService implements Startup, RequestDispatcher, PostConstruct
             return null;
         }
 
-        final boolean ajpListener = ConfigBeansUtilities.toBoolean(listener.getJkEnabled());
         // create the proxy for the port.
         GrizzlyProxy proxy = new GrizzlyProxy(this, listener);
 
@@ -394,7 +387,7 @@ public class GrizzlyService implements Startup, RequestDispatcher, PostConstruct
         try {
             proxy.initialize();
 
-            if (!ajpListener && !"light-weight-listener".equals(listener.getProtocol())) {
+            if (!"light-weight-listener".equals(listener.getProtocol())) {
                 final NetworkConfig networkConfig = listener.getParent(NetworkListeners.class).getParent(NetworkConfig.class);
                 // attach all virtual servers to this port
                 for (VirtualServer vs : networkConfig.getParent(Config.class).getHttpService().getVirtualServer()) {
@@ -420,34 +413,19 @@ public class GrizzlyService implements Startup, RequestDispatcher, PostConstruct
                 }
             }
 
-            if (!ajpListener) {
-                future = proxy.start();
-            } else {
-                // we need to create a proxy for AJP based listeners, however, we
-                // don't want Grizzly to actually handle the request since the
-                // webcontainer will start a separate listener implementation to
-                // handle such requests.  So the Future needs to return a
-                // non-null value here to prevent issues elsewhere.
-                future = ReadyFutureImpl.create(new Result<Thread>(
-                        new Thread(new Runnable() {
-
-                    @Override
-                    public void run() {
-                    }
-                })));
-            }
+            future = proxy.start();
 
             // add the new proxy to our list of proxies.
             proxies.add(proxy);
         } catch (Throwable e) {
             final FutureImpl<Result<Thread>> errorFuture =
-                    UnsafeFutureImpl.<Result<Thread>>create();
+                    UnsafeFutureImpl.create();
             errorFuture.result(new Result<Thread>(e));
             future = errorFuture;
         } finally {
             if (future == null) {
                 final FutureImpl<Result<Thread>> errorFuture =
-                        UnsafeFutureImpl.<Result<Thread>>create();
+                        UnsafeFutureImpl.create();
                 errorFuture.result(new Result<Thread>(
                         new IllegalStateException("Unexpected error")));
                 future = errorFuture;
