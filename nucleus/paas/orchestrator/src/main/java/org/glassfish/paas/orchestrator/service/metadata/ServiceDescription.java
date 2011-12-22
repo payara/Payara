@@ -42,7 +42,7 @@ package org.glassfish.paas.orchestrator.service.metadata;
 
 import org.glassfish.internal.api.Globals;
 import org.glassfish.paas.orchestrator.provisioning.ServiceScope;
-import org.glassfish.paas.orchestrator.service.spi.Plugin;
+import org.glassfish.paas.orchestrator.service.spi.ServicePlugin;
 import org.glassfish.virtualization.spi.TemplateInstance;
 import org.glassfish.virtualization.spi.TemplateRepository;
 
@@ -53,7 +53,6 @@ import javax.xml.bind.annotation.XmlElements;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 /**
@@ -73,7 +72,7 @@ public class ServiceDescription {
     private Object templateOrCharacteristics;
 
     private List<Property> configurations = new ArrayList<Property>();
-    private Plugin plugin;
+    private ServicePlugin plugin;
     private List<ServiceReference> serviceReferences = new ArrayList<ServiceReference>();
 
     public ServiceDescription() {
@@ -222,11 +221,11 @@ public class ServiceDescription {
     }
 
     @XmlTransient
-    public Plugin getPlugin(){
+    public ServicePlugin getPlugin(){
         return plugin;
     }
 
-    public void setPlugin(Plugin plugin){
+    public void setPlugin(ServicePlugin plugin){
         this.plugin = plugin;
     }
 

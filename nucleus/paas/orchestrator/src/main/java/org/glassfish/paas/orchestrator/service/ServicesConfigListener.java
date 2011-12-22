@@ -54,7 +54,7 @@ import org.glassfish.paas.orchestrator.service.metadata.ServiceCharacteristics;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceDescription;
 import org.glassfish.paas.orchestrator.service.metadata.TemplateIdentifier;
 import org.glassfish.paas.orchestrator.service.spi.ConfiguredService;
-import org.glassfish.paas.orchestrator.service.spi.Plugin;
+import org.glassfish.paas.orchestrator.service.spi.ServicePlugin;
 import org.glassfish.paas.orchestrator.service.spi.ProvisionedService;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
@@ -215,7 +215,7 @@ public class ServicesConfigListener implements ConfigListener, PostConstruct, Pr
                 }
                 //set the virtual-cluster name in the service-description.
                 sd.setVirtualClusterName(virtualClusterName);
-                Plugin defaultPlugin = serviceOrchestrator.getPlugin(sd);
+                ServicePlugin defaultPlugin = serviceOrchestrator.getPlugin(sd);
                 sd.setPlugin(defaultPlugin);
                 sd.setServiceScope(ServiceScope.SHARED);
                 PaaSDeploymentContext pdc = new PaaSDeploymentContext(null, null);

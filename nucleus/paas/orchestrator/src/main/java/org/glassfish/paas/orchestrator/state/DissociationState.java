@@ -40,14 +40,10 @@
 
 package org.glassfish.paas.orchestrator.state;
 
-import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.paas.orchestrator.PaaSDeploymentContext;
-import org.glassfish.paas.orchestrator.ServiceOrchestratorImpl;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceMetadata;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceReference;
-import org.glassfish.paas.orchestrator.service.spi.Plugin;
-import org.glassfish.paas.orchestrator.service.spi.ProvisionedService;
-import org.jvnet.hk2.annotations.Service;
+import org.glassfish.paas.orchestrator.service.spi.ServicePlugin;
 
 import java.util.Collection;
 import java.util.Set;
@@ -63,12 +59,12 @@ public abstract class DissociationState extends AbstractPaaSDeploymentState {
         final ServiceMetadata appServiceMetadata = orchestrator.getServiceMetadata(appName);
         Set<org.glassfish.paas.orchestrator.service.spi.Service> allServices =
                 orchestrator.getServicesForDissociation(appName);
-        final Set<Plugin> installedPlugins = orchestrator.getPlugins(appServiceMetadata);
+        final Set<ServicePlugin> installedPlugins = orchestrator.getPlugins(appServiceMetadata);
         logger.entering(getClass().getName(), "dissociateProvisionedServices=" + beforeUndeploy);
         boolean failed = false;
         Exception failureCause = null;
         for (org.glassfish.paas.orchestrator.service.spi.Service serviceProvider : allServices) {
-            for (Plugin<?> svcPlugin : installedPlugins) {
+            for (ServicePlugin<?> svcPlugin : installedPlugins) {
                 //Dissociate the provisioned service only with plugins that handle other service types.
                 //TODO why is this check done ?
                 if (!serviceProvider.getServiceType().equals(svcPlugin.getServiceType())) {

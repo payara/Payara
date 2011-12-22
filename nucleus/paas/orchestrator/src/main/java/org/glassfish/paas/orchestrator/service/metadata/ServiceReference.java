@@ -39,7 +39,7 @@
  */
 package org.glassfish.paas.orchestrator.service.metadata;
 
-import org.glassfish.paas.orchestrator.service.spi.Plugin;
+import org.glassfish.paas.orchestrator.service.spi.ServicePlugin;
 
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlTransient;
@@ -78,7 +78,7 @@ public class ServiceReference {
     private Properties properties = new Properties();
 
     //Plugin that requested this service-reference.
-    private Plugin requestingPlugin = null;
+    private ServicePlugin requestingPlugin = null;
 
     public ServiceReference() {}
     
@@ -126,12 +126,12 @@ public class ServiceReference {
         this.referenceType = type;
     }
 
-    public void setRequestingPlugin(Plugin plugin){
+    public void setRequestingPlugin(ServicePlugin plugin){
         this.requestingPlugin = plugin;
     }
 
     @XmlTransient
-    public Plugin getRequestingPlugin(){
+    public ServicePlugin getRequestingPlugin(){
         return requestingPlugin;
     }
 

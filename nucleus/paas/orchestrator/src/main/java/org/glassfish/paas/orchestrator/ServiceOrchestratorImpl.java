@@ -111,7 +111,7 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
     private static final List<Class> DEPLOYMENT_STATES = new ArrayList<Class>();
 
     private static Logger logger = Logger.getLogger(ServiceOrchestratorImpl.class.getName());
-    private Set<Plugin> pluginsSet = null;
+    private Set<ServicePlugin> pluginsSet = null;
 
     public static final String ORCHESTRATOR_UNDEPLOY_CALL = "orchestrator.undeploy.call";
 
@@ -139,8 +139,8 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
      * @param appServiceMetadata ServiceMetadata
      * @return Set<Plugin> Set of plugins.
      */
-    public Set<Plugin> getPlugins(ServiceMetadata appServiceMetadata) {
-        Set<Plugin> plugins = new LinkedHashSet<Plugin>();
+    public Set<ServicePlugin> getPlugins(ServiceMetadata appServiceMetadata) {
+        Set<ServicePlugin> plugins = new LinkedHashSet<ServicePlugin>();
         for(ServiceDescription sd : appServiceMetadata.getServiceDescriptions()){
             plugins.add(sd.getPlugin());
         }
@@ -152,10 +152,10 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
         return plugins;
     }
 
-    public Set<Plugin> getPlugins() {
+    public Set<ServicePlugin> getPlugins() {
         if(pluginsSet == null){
-            Set<Plugin> plugins = new LinkedHashSet<Plugin>();
-            plugins.addAll(habitat.getAllByContract(Plugin.class));
+            Set<ServicePlugin> plugins = new LinkedHashSet<ServicePlugin>();
+            plugins.addAll(habitat.getAllByContract(ServicePlugin.class));
             logger.log(Level.INFO, "Discovered plugins:" + plugins);
             pluginsSet = plugins;
         }
@@ -340,7 +340,7 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
         return state.getServiceDependencyMetadata(pc, archive.getName(), archive);
     }
 
-    public Collection<org.glassfish.paas.orchestrator.service.spi.Service> getServicesManagedByPlugin(Plugin plugin,
+    public Collection<org.glassfish.paas.orchestrator.service.spi.Service> getServicesManagedByPlugin(ServicePlugin plugin,
                                               Set<org.glassfish.paas.orchestrator.service.spi.Service> allServices){
         List<org.glassfish.paas.orchestrator.service.spi.Service> services =
                 new ArrayList<org.glassfish.paas.orchestrator.service.spi.Service>();
@@ -352,7 +352,7 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
         return services;
     }
 
-    public Collection<ProvisionedService> getServicesProvisionedByPlugin(Plugin plugin,
+    public Collection<ProvisionedService> getServicesProvisionedByPlugin(ServicePlugin plugin,
                                               Set<ProvisionedService> provisionedServices){
         List<ProvisionedService> services =
                 new ArrayList<ProvisionedService>();
@@ -424,17 +424,17 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
         }
     }
 
-    public Plugin getDefaultPluginForServiceRef(String serviceRefType) {
-        Plugin defaultPlugin = null;
+    public ServicePlugin getDefaultPluginForServiceRef(String serviceRefType) {
+        ServicePlugin defaultPlugin = null;
 
-        List<Plugin> matchingPlugin = new ArrayList<Plugin>();
-        for (Plugin plugin : getPlugins()) {
+        List<ServicePlugin> matchingPlugin = new ArrayList<ServicePlugin>();
+        for (ServicePlugin plugin : getPlugins()) {
             if (plugin.isReferenceTypeSupported(serviceRefType)) {
                 matchingPlugin.add(plugin);
             }
         }
         //TODO we are assuming that no two different plugin types will support same service-ref type
-        for (Plugin plugin : matchingPlugin) {
+        for (ServicePlugin plugin : matchingPlugin) {
             ServiceProvisioningEngines spes = habitat.getComponent(ServiceProvisioningEngines.class);
             if (spes != null) {
                 for (ServiceProvisioningEngine spe : spes.getServiceProvisioningEngines()) {
@@ -451,15 +451,15 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
         return defaultPlugin;
     }
 
-    public Plugin getDefaultPlugin(Collection<Plugin> pluginsList, String type) {
-        Plugin defaultPlugin = null;
+    public ServicePlugin getDefaultPlugin(Collection<ServicePlugin> pluginsList, String type) {
+        ServicePlugin defaultPlugin = null;
         if(pluginsList != null){
             ServiceProvisioningEngines spes = habitat.getComponent(ServiceProvisioningEngines.class);
             if(spes != null){
                 for(ServiceProvisioningEngine spe : spes.getServiceProvisioningEngines()){
                     if(spe.getType().equalsIgnoreCase(type) && spe.getDefault()){
                         String className = spe.getClassName();
-                        for(Plugin plugin : pluginsList){
+                        for(ServicePlugin plugin : pluginsList){
                             if(plugin.getClass().getName().equals(className)){
                                 defaultPlugin = plugin;
                                 break;
@@ -519,7 +519,7 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
             Plugin<?> chosenPlugin = getPluginForServiceType(
                     installedPlugins, oldPS.getServiceDescription().getServiceType());
 */
-            Plugin<?> chosenPlugin = oldPS.getServiceDescription().getPlugin();
+            ServicePlugin<?> chosenPlugin = oldPS.getServiceDescription().getPlugin();
 
             //ask it to scale the service and get new PS
             logger.log(Level.INFO, "Scaling Service " + svcName 
@@ -535,8 +535,8 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
             
             //now re-associate all plugins with the new PS.
             ServiceMetadata appServiceMetadata = serviceMetadata.get(effectiveAppName);
-            Set<Plugin> plugins = getPlugins(appServiceMetadata);
-            for (Plugin<?> svcPlugin : plugins) {
+            Set<ServicePlugin> plugins = getPlugins(appServiceMetadata);
+            for (ServicePlugin<?> svcPlugin : plugins) {
                 //re-associate the new PS only with plugins that handle other service types.
                 if (!newPS.getServiceType().equals(svcPlugin.getServiceType())) {
                     Set<ServiceReference> appSRs = appServiceMetadata.getServiceReferences();
@@ -650,7 +650,7 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
         ProvisionedService provisionedService = sharedServices.get(serviceName);
         if(provisionedService == null){
             ServiceDescription sd = getSharedServiceDescription(serviceName);
-            Plugin plugin = sd.getPlugin();
+            ServicePlugin plugin = sd.getPlugin();
             ServiceInfo serviceInfo = serviceUtil.getServiceInfo(serviceName, null, null);
             provisionedService = plugin.getProvisionedService(sd, serviceInfo);
             sharedServices.put(serviceName, provisionedService);
@@ -675,7 +675,7 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
             sd.setServiceType(serviceInfo.getServerType());
             //TODO should we associate a plugin for external service's service-description as
             //TODO external-service is not handled by a plugin ?
-            Plugin plugin = getPlugin(sd);
+            ServicePlugin plugin = getPlugin(sd);
             sd.setPlugin(plugin);
         }else{
             throw new RuntimeException("No such external service ["+serviceName+"] is available");
@@ -712,7 +712,7 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
             }else{
                 throw new RuntimeException("Could not retrieve shared-service-description ["+serviceName+"] ");
             }
-            Plugin plugin = getPlugin(sd);
+            ServicePlugin plugin = getPlugin(sd);
             sd.setPlugin(plugin);
             sd.setVirtualClusterName(sd.getName()); //TODO need to generate unique virtual-cluster-name
         }else{
@@ -721,9 +721,9 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
         return sd;
     }
 
-    public Plugin getPlugin(ServiceDescription sd){
-                        Collection<Plugin> plugins = new LinkedHashSet<Plugin>();
-            for(Plugin plugin : getPlugins()){
+    public ServicePlugin getPlugin(ServiceDescription sd){
+                        Collection<ServicePlugin> plugins = new LinkedHashSet<ServicePlugin>();
+            for(ServicePlugin plugin : getPlugins()){
                 if( plugin.handles(sd) ){
                     plugins.add(plugin);
                 }
@@ -733,7 +733,7 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
                 }
             }
 
-            Plugin matchingPlugin = null;
+            ServicePlugin matchingPlugin = null;
             if(plugins.size() > 1){
                 matchingPlugin = getDefaultPlugin(plugins, sd.getServiceType());
                 if(matchingPlugin == null){

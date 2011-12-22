@@ -54,7 +54,7 @@ import org.glassfish.virtualization.spi.AllocationStrategy;
 import org.jvnet.hk2.annotations.Contract;
 
 /**
- * An SPI to allow the adding in of multiple service provider implementations
+ * An SPI to allow the adding of multiple service provider implementations
  * into the PaaS runtime. Each <code>Plugin</code> supports a Service of a 
  * particular <code>ServiceType</code>
  * <p/>
@@ -77,7 +77,7 @@ import org.jvnet.hk2.annotations.Contract;
  * @author Sivakumar Thyagarajan
  */
 @Contract
-public interface Plugin<T extends ServiceType> {
+public interface ServicePlugin<T extends ServiceType> {
     /**
      * Provides the <code>ServiceType</code> supported by this plugin
      *

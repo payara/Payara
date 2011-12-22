@@ -48,7 +48,7 @@ import org.glassfish.paas.orchestrator.service.ServiceType;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceDescription;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceMetadata;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceReference;
-import org.glassfish.paas.orchestrator.service.spi.Plugin;
+import org.glassfish.paas.orchestrator.service.spi.ServicePlugin;
 import org.jvnet.hk2.annotations.Service;
 
 import java.util.*;
@@ -90,7 +90,7 @@ public class ServiceDependencyDiscoveryState extends AbstractPaaSDeploymentState
                                                         String appName, ReadableArchive archive)
     throws PaaSDeploymentException {
 
-        Set<Plugin> installedPlugins = orchestrator.getPlugins();
+        Set<ServicePlugin> installedPlugins = orchestrator.getPlugins();
         try {
             //1. SERVICE DISCOVERY
             //parse glassfish-services.xml to get all declared SRs and SDs
@@ -109,7 +109,7 @@ public class ServiceDependencyDiscoveryState extends AbstractPaaSDeploymentState
 
             logger.log(Level.INFO, "Discovered declared service metadata via glassfish-services.xml = " + appServiceMetadata);
 
-            Map<ServiceDescription, Plugin> pluginsToHandleSDs = new LinkedHashMap<ServiceDescription, Plugin>();
+            Map<ServiceDescription, ServicePlugin> pluginsToHandleSDs = new LinkedHashMap<ServiceDescription, ServicePlugin>();
 
             Set<ServiceReference> wiredServiceReferences = new LinkedHashSet<ServiceReference>();
             //Get service-references defined in services.xml and retrieve
@@ -126,8 +126,8 @@ public class ServiceDependencyDiscoveryState extends AbstractPaaSDeploymentState
             for (ServiceDescription sd : appServiceMetadata.getServiceDescriptions()) {
                 if (sd.getPlugin() == null) {
                     //Get the list of plugins that handle a particular service-description.
-                    List<Plugin> pluginsList = new ArrayList<Plugin>();
-                    for (Plugin svcPlugin : installedPlugins) {
+                    List<ServicePlugin> pluginsList = new ArrayList<ServicePlugin>();
+                    for (ServicePlugin svcPlugin : installedPlugins) {
                         if (svcPlugin.handles(sd)) {
                             pluginsList.add(svcPlugin);
                         }
@@ -138,7 +138,7 @@ public class ServiceDependencyDiscoveryState extends AbstractPaaSDeploymentState
                         sd.setPlugin(pluginsList.get(0));
                     } else if (pluginsList.size() > 1) {
                         //resolve the conflict via default plugin defined in configuration.
-                        Plugin defaultPlugin = null;
+                        ServicePlugin defaultPlugin = null;
                         ServiceType type = pluginsList.get(0).getServiceType();
                         defaultPlugin = orchestrator.getDefaultPlugin(pluginsList, type.toString());
                         if (defaultPlugin != null) {
@@ -154,12 +154,12 @@ public class ServiceDependencyDiscoveryState extends AbstractPaaSDeploymentState
 
 
             //determine the list of plugins that handle the archive.
-            Map<ServiceType, List<Plugin>> matchingPlugins = new HashMap<ServiceType, List<Plugin>>();
-            for (Plugin svcPlugin : installedPlugins) {
+            Map<ServiceType, List<ServicePlugin>> matchingPlugins = new HashMap<ServiceType, List<ServicePlugin>>();
+            for (ServicePlugin svcPlugin : installedPlugins) {
                 if (svcPlugin.handles(archive)) {
-                    List<Plugin> plugins = matchingPlugins.get(svcPlugin.getServiceType());
+                    List<ServicePlugin> plugins = matchingPlugins.get(svcPlugin.getServiceType());
                     if (plugins == null) {
-                        plugins = new ArrayList<Plugin>();
+                        plugins = new ArrayList<ServicePlugin>();
                         matchingPlugins.put(svcPlugin.getServiceType(), plugins);
                     }
                     plugins.add(svcPlugin);
@@ -167,12 +167,12 @@ public class ServiceDependencyDiscoveryState extends AbstractPaaSDeploymentState
             }
 
             //resolve the list to one plugin per service-type
-            List<Plugin> resolvedPluginsList = new ArrayList<Plugin>();
+            List<ServicePlugin> resolvedPluginsList = new ArrayList<ServicePlugin>();
             //check for duplicate plugins and resolve them.
             for (ServiceType type : matchingPlugins.keySet()) {
-                List<Plugin> plugins = matchingPlugins.get(type);
+                List<ServicePlugin> plugins = matchingPlugins.get(type);
                 if (plugins.size() > 1) {
-                    Plugin plugin = orchestrator.getDefaultPlugin(plugins, type.toString());
+                    ServicePlugin plugin = orchestrator.getDefaultPlugin(plugins, type.toString());
                     if (plugin != null) {
                         resolvedPluginsList.add(plugin);
                     } else {
@@ -188,7 +188,7 @@ public class ServiceDependencyDiscoveryState extends AbstractPaaSDeploymentState
             //specified a javaee service-description in its orchestration.xml, the PaaS runtime
             //through the GlassFish plugin that a default javaee service-description
             //is implied
-            for (Plugin svcPlugin : resolvedPluginsList) {
+            for (ServicePlugin svcPlugin : resolvedPluginsList) {
                 //if (svcPlugin.handles(archive)) {
                 //If a ServiceDescription has not been declared explicitly in
                 //the application for the plugin's type, ask the plugin (since it
@@ -214,7 +214,7 @@ public class ServiceDependencyDiscoveryState extends AbstractPaaSDeploymentState
 
 
             //1.2 Get implicit ServiceReferences
-            for (Plugin svcPlugin : resolvedPluginsList) {
+            for (ServicePlugin svcPlugin : resolvedPluginsList) {
                 //if (svcPlugin.handles(archive)) {
                 Set<ServiceReference> implicitServiceRefs = svcPlugin.getServiceReferences(appName, archive, context);
                 for (ServiceReference sr : implicitServiceRefs) {
@@ -264,13 +264,13 @@ public class ServiceDependencyDiscoveryState extends AbstractPaaSDeploymentState
                                     "for service-reference [ "+sr+" ]");
                         }
 
-                        List<Plugin> pluginsList = new ArrayList<Plugin>();
-                        for (Plugin plugin : installedPlugins) {
+                        List<ServicePlugin> pluginsList = new ArrayList<ServicePlugin>();
+                        for (ServicePlugin plugin : installedPlugins) {
                             if (plugin.isReferenceTypeSupported(sr.getType())) {
                                 pluginsList.add(plugin);
                             }
                         }
-                        Plugin matchingPlugin = null;
+                        ServicePlugin matchingPlugin = null;
                         if (pluginsList.size() == 1) {
                             matchingPlugin = pluginsList.get(0);
                         } else if (pluginsList.size() == 0) {
@@ -282,8 +282,8 @@ public class ServiceDependencyDiscoveryState extends AbstractPaaSDeploymentState
                         if (matchingPlugin == null) {
                             //we could not find a matching plugin as there is no default plugin.
                             //get a plugin that handles this service-ref
-                            Collection<Plugin> plugins = pluginsToHandleSDs.values();
-                            for (Plugin plugin : plugins) {
+                            Collection<ServicePlugin> plugins = pluginsToHandleSDs.values();
+                            for (ServicePlugin plugin : plugins) {
                                 if (plugin.isReferenceTypeSupported(sr.getType())) {
                                     matchingPlugin = plugin;
                                     break;
@@ -296,7 +296,7 @@ public class ServiceDependencyDiscoveryState extends AbstractPaaSDeploymentState
 
                         if (pluginsToHandleSDs.values().contains(matchingPlugin)) {
                             //get an existing SD for the plugin in question.
-                            for (Map.Entry<ServiceDescription, Plugin> entry : pluginsToHandleSDs.entrySet()) {
+                            for (Map.Entry<ServiceDescription, ServicePlugin> entry : pluginsToHandleSDs.entrySet()) {
                                 if (entry.getValue().equals(matchingPlugin)) {
                                     matchingSDForServiceRef = entry.getKey();
                                     break;
@@ -334,13 +334,13 @@ public class ServiceDependencyDiscoveryState extends AbstractPaaSDeploymentState
         //return null;
     }
 
-    private void setPluginForSD(ServiceOrchestratorImpl orchestrator, Map<ServiceDescription, Plugin> pluginsToHandleSDs,
-                                Set<Plugin> installedPlugins, ServiceMetadata appServiceMetadata) throws PaaSDeploymentException {
+    private void setPluginForSD(ServiceOrchestratorImpl orchestrator, Map<ServiceDescription, ServicePlugin> pluginsToHandleSDs,
+                                Set<ServicePlugin> installedPlugins, ServiceMetadata appServiceMetadata) throws PaaSDeploymentException {
         //make sure that each service-description has a plugin.
         for (ServiceDescription sd : appServiceMetadata.getServiceDescriptions()) {
             if (sd.getPlugin() == null) {
-                List<Plugin> matchingPluginsForSDs = new ArrayList<Plugin>();
-                for (Plugin plugin : installedPlugins) {
+                List<ServicePlugin> matchingPluginsForSDs = new ArrayList<ServicePlugin>();
+                for (ServicePlugin plugin : installedPlugins) {
                     if (plugin.getServiceType().toString().equals(sd.getServiceType())) {
                         matchingPluginsForSDs.add(plugin);
                     }
@@ -353,7 +353,7 @@ public class ServiceDependencyDiscoveryState extends AbstractPaaSDeploymentState
                     throw new PaaSDeploymentException("Unable to find a service-provisioning-engine that handles" +
                             "service-description [" + sd.getName() + "] of type [" + sd.getServiceType() + "]");
                 } else {
-                    Plugin plugin = orchestrator.getDefaultPlugin(matchingPluginsForSDs, sd.getServiceType());
+                    ServicePlugin plugin = orchestrator.getDefaultPlugin(matchingPluginsForSDs, sd.getServiceType());
                     if (plugin != null) {
                         sd.setPlugin(plugin);
                         pluginsToHandleSDs.put(sd, plugin);

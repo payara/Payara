@@ -62,7 +62,7 @@ import org.glassfish.paas.orchestrator.service.ServiceStatus;
 import org.glassfish.paas.orchestrator.service.metadata.Property;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceDescription;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceReference;
-import org.glassfish.paas.orchestrator.service.spi.Plugin;
+import org.glassfish.paas.orchestrator.service.spi.ServicePlugin;
 import org.glassfish.paas.orchestrator.service.spi.ProvisionedService;
 import org.glassfish.virtualization.spi.AllocationStrategy;
 import org.jvnet.hk2.annotations.Inject;
@@ -85,7 +85,7 @@ import org.glassfish.virtualization.spi.TemplateRepository;
  */
 @Scoped(PerLookup.class)
 @Service
-public class LBPlugin implements Plugin {
+public class LBPlugin implements ServicePlugin {
 
     @Inject
     private CommandRunner commandRunner;

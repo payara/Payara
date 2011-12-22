@@ -46,7 +46,7 @@ import org.glassfish.paas.orchestrator.*;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceUtil;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceDescription;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceMetadata;
-import org.glassfish.paas.orchestrator.service.spi.Plugin;
+import org.glassfish.paas.orchestrator.service.spi.ServicePlugin;
 import org.glassfish.paas.orchestrator.service.spi.ProvisionedService;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
@@ -112,7 +112,7 @@ public class ProvisioningState extends AbstractPaaSDeploymentState {
             for (final ServiceDescription sd : serviceDescriptionsToProvision) {
                 Future<ProvisionedService> future = ServiceUtil.getThreadPool().submit(new Callable<ProvisionedService>() {
                     public ProvisionedService call() {
-                        Plugin<?> chosenPlugin = sd.getPlugin();
+                        ServicePlugin<?> chosenPlugin = sd.getPlugin();
                         logger.log(Level.INFO, "Started Provisioning Service in parallel for " + sd + " through " + chosenPlugin);
                         return chosenPlugin.provisionService(sd, context);
                     }
@@ -138,7 +138,7 @@ public class ProvisioningState extends AbstractPaaSDeploymentState {
 
             for (final ServiceDescription sd : serviceDescriptionsToProvision) {
                 try {
-                    Plugin<?> chosenPlugin = sd.getPlugin();
+                    ServicePlugin<?> chosenPlugin = sd.getPlugin();
                     logger.log(Level.INFO, "Started Provisioning Service serially for " + sd + " through " + chosenPlugin);
                     ProvisionedService ps = chosenPlugin.provisionService(sd, context);
                     appPSs.add(ps);
@@ -158,7 +158,7 @@ public class ProvisioningState extends AbstractPaaSDeploymentState {
             for(ProvisionedService ps : appPSs){
                 try{
                     ServiceDescription sd = ps.getServiceDescription();
-                    Plugin<?> chosenPlugin = sd.getPlugin();
+                    ServicePlugin<?> chosenPlugin = sd.getPlugin();
                     logger.log(Level.INFO, "Rolling back provisioned-service for " + sd + " through " + chosenPlugin );
                     chosenPlugin.unprovisionService(sd, context); //TODO we could do unprovisioning in parallel.
                     logger.log(Level.INFO, "Rolled back provisioned-service for " + sd + " through " + chosenPlugin );

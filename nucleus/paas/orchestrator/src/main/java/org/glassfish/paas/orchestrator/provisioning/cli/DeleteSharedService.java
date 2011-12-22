@@ -52,7 +52,7 @@ import org.glassfish.paas.orchestrator.PaaSDeploymentContext;
 import org.glassfish.paas.orchestrator.ServiceOrchestratorImpl;
 import org.glassfish.paas.orchestrator.config.Services;
 import org.glassfish.paas.orchestrator.config.SharedService;
-import org.glassfish.paas.orchestrator.service.spi.Plugin;
+import org.glassfish.paas.orchestrator.service.spi.ServicePlugin;
 import org.glassfish.paas.orchestrator.service.spi.ProvisionedService;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
@@ -110,7 +110,7 @@ public class DeleteSharedService implements AdminCommand {
                     }
                     SharedService sharedService = (SharedService) service;
                     ProvisionedService provisionedService = serviceOrchestrator.getSharedService(sharedService.getServiceName());
-                    Plugin plugin = provisionedService.getServiceDescription().getPlugin();
+                    ServicePlugin plugin = provisionedService.getServiceDescription().getPlugin();
                     PaaSDeploymentContext pdc = new PaaSDeploymentContext(null, null);
                     plugin.unprovisionService(provisionedService.getServiceDescription(), pdc);
                     serviceOrchestrator.removeSharedService(sharedService.getServiceName());

@@ -42,16 +42,12 @@ package org.glassfish.paas.orchestrator.state;
 
 import org.glassfish.paas.orchestrator.PaaSDeploymentContext;
 import org.glassfish.paas.orchestrator.PaaSDeploymentException;
-import org.glassfish.paas.orchestrator.ServiceOrchestratorImpl;
 import org.glassfish.paas.orchestrator.provisioning.ServiceInfo;
 import org.glassfish.paas.orchestrator.provisioning.ServiceScope;
-import org.glassfish.paas.orchestrator.provisioning.cli.ServiceUtil;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceDescription;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceMetadata;
-import org.glassfish.paas.orchestrator.service.spi.Plugin;
-import org.jvnet.hk2.annotations.Inject;
+import org.glassfish.paas.orchestrator.service.spi.ServicePlugin;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -97,7 +93,7 @@ public class DisableState extends AbstractPaaSDeploymentState {
     }
 
     public boolean stopService(PaaSDeploymentContext context, String appName, ServiceDescription sd) {
-        Plugin chosenPlugin = sd.getPlugin();
+        ServicePlugin chosenPlugin = sd.getPlugin();
         ServiceInfo serviceInfo = serviceUtil.getServiceInfo(sd.getName(), appName, null);
         if(serviceInfo != null){
             chosenPlugin.stopService(sd, serviceInfo);

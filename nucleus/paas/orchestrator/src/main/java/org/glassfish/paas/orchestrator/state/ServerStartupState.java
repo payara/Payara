@@ -43,11 +43,10 @@ package org.glassfish.paas.orchestrator.state;
 import org.glassfish.paas.orchestrator.PaaSDeploymentContext;
 import org.glassfish.paas.orchestrator.PaaSDeploymentException;
 import org.glassfish.paas.orchestrator.PaaSDeploymentState;
-import org.glassfish.paas.orchestrator.ServiceOrchestratorImpl;
 import org.glassfish.paas.orchestrator.provisioning.ServiceInfo;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceDescription;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceMetadata;
-import org.glassfish.paas.orchestrator.service.spi.Plugin;
+import org.glassfish.paas.orchestrator.service.spi.ServicePlugin;
 import org.glassfish.paas.orchestrator.service.spi.ProvisionedService;
 import org.jvnet.hk2.annotations.Service;
 
@@ -75,7 +74,7 @@ public class ServerStartupState extends AbstractPaaSDeploymentState {
         logger.log(Level.INFO, "Retrieve PS for app=" + appName + " virtualCluster=" + virtualClusterName);
         Set<ServiceDescription> appSDs = appServiceMetadata.getServiceDescriptions();
         for (final ServiceDescription sd : appSDs) {
-                Plugin<?> chosenPlugin = sd.getPlugin();
+                ServicePlugin<?> chosenPlugin = sd.getPlugin();
                 logger.log(Level.INFO, "Retrieving provisioned Service for " + sd + " through " + chosenPlugin);
                 ServiceInfo serviceInfo = serviceUtil.getServiceInfo(sd.getName(), appName, null);
                 if(serviceInfo != null){

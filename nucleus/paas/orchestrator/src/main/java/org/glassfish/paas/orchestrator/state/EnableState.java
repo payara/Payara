@@ -42,12 +42,11 @@ package org.glassfish.paas.orchestrator.state;
 
 import org.glassfish.paas.orchestrator.PaaSDeploymentContext;
 import org.glassfish.paas.orchestrator.PaaSDeploymentException;
-import org.glassfish.paas.orchestrator.ServiceOrchestratorImpl;
 import org.glassfish.paas.orchestrator.provisioning.ServiceInfo;
 import org.glassfish.paas.orchestrator.provisioning.ServiceScope;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceDescription;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceMetadata;
-import org.glassfish.paas.orchestrator.service.spi.Plugin;
+import org.glassfish.paas.orchestrator.service.spi.ServicePlugin;
 import org.glassfish.paas.orchestrator.service.spi.ProvisionedService;
 import org.jvnet.hk2.annotations.Service;
 
@@ -105,7 +104,7 @@ public class EnableState extends AbstractPaaSDeploymentState {
     }
 
     public ProvisionedService startService(PaaSDeploymentContext context, String appName, ServiceDescription sd) {
-        Plugin<?> chosenPlugin = sd.getPlugin();
+        ServicePlugin<?> chosenPlugin = sd.getPlugin();
         logger.log(Level.INFO, "Retrieving provisioned Service for " + sd + " through " + chosenPlugin);
         ServiceInfo serviceInfo = serviceUtil.getServiceInfo(sd.getName(), appName, null);
         if(serviceInfo != null){

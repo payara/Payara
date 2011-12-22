@@ -66,7 +66,7 @@ import org.glassfish.paas.orchestrator.service.metadata.Property;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceCharacteristics;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceDescription;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceReference;
-import org.glassfish.paas.orchestrator.service.spi.Plugin;
+import org.glassfish.paas.orchestrator.service.spi.ServicePlugin;
 import org.glassfish.paas.orchestrator.service.spi.ProvisionedService;
 import org.glassfish.paas.orchestrator.service.spi.ServiceProvisioningException;
 import org.glassfish.paas.spe.common.ServiceProvisioningEngineBase;
@@ -95,7 +95,7 @@ import java.util.logging.Logger;
 @Service
 @Scoped(PerLookup.class)
 public class GlassFishPlugin extends ServiceProvisioningEngineBase
-        implements Plugin<JavaEEServiceType>, GlassFishPluginConstants {
+        implements ServicePlugin<JavaEEServiceType>, GlassFishPluginConstants {
 
     @Inject
     private GlassFishCloudArchiveProcessor archiveProcessor;

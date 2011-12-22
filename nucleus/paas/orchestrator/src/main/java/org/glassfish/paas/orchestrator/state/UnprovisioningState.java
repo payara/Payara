@@ -43,11 +43,10 @@ package org.glassfish.paas.orchestrator.state;
 import org.glassfish.paas.orchestrator.PaaSDeploymentContext;
 import org.glassfish.paas.orchestrator.PaaSDeploymentException;
 import org.glassfish.paas.orchestrator.PaaSDeploymentState;
-import org.glassfish.paas.orchestrator.ServiceOrchestratorImpl;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceUtil;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceDescription;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceMetadata;
-import org.glassfish.paas.orchestrator.service.spi.Plugin;
+import org.glassfish.paas.orchestrator.service.spi.ServicePlugin;
 import org.jvnet.hk2.annotations.Service;
 
 import java.util.ArrayList;
@@ -76,7 +75,7 @@ public class UnprovisioningState extends AbstractPaaSDeploymentState {
         for (final ServiceDescription sd : serviceDescriptionsToUnprovision) {
             Future future = ServiceUtil.getThreadPool().submit(new Runnable() {
                 public void run() {
-                    Plugin<?> chosenPlugin = sd.getPlugin();
+                    ServicePlugin<?> chosenPlugin = sd.getPlugin();
                     logger.log(Level.INFO, "Unprovisioning Service for " + sd + " through " + chosenPlugin);
                     chosenPlugin.unprovisionService(sd, context);
                 }

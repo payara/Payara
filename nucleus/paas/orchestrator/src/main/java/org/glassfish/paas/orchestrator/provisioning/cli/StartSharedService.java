@@ -53,7 +53,7 @@ import org.glassfish.paas.orchestrator.config.SharedService;
 import org.glassfish.paas.orchestrator.provisioning.ServiceInfo;
 import org.glassfish.paas.orchestrator.service.ServiceStatus;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceDescription;
-import org.glassfish.paas.orchestrator.service.spi.Plugin;
+import org.glassfish.paas.orchestrator.service.spi.ServicePlugin;
 import org.glassfish.paas.orchestrator.service.spi.ProvisionedService;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
@@ -113,7 +113,7 @@ public class StartSharedService implements AdminCommand {
                         } else {
                             ServiceInfo serviceInfo = serviceUtil.getServiceInfo(serviceName, null, null);
                             ServiceDescription serviceDescription = orchestrator.getSharedServiceDescription(serviceName);
-                            Plugin plugin = serviceDescription.getPlugin();
+                            ServicePlugin plugin = serviceDescription.getPlugin();
                             /*ServiceDescription serviceDescription = serviceUtil.getSharedServiceDescription(serviceInfo);
                             Plugin plugin = orchestrator.getPlugin(serviceDescription);*/
                             ProvisionedService provisionedService = plugin.startService(serviceDescription, serviceInfo);

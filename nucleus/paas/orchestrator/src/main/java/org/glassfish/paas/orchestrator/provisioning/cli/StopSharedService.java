@@ -56,7 +56,7 @@ import org.glassfish.paas.orchestrator.config.SharedService;
 import org.glassfish.paas.orchestrator.provisioning.ServiceInfo;
 import org.glassfish.paas.orchestrator.service.ServiceStatus;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceDescription;
-import org.glassfish.paas.orchestrator.service.spi.Plugin;
+import org.glassfish.paas.orchestrator.service.spi.ServicePlugin;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
@@ -144,7 +144,7 @@ public class StopSharedService implements AdminCommand {
                             if (!appEnabled) {
                                 ServiceInfo serviceInfo = serviceUtil.getServiceInfo(serviceName, null, null);
                                 ServiceDescription serviceDescription = orchestrator.getSharedServiceDescription(serviceName);
-                                Plugin plugin = serviceDescription.getPlugin();
+                                ServicePlugin plugin = serviceDescription.getPlugin();
                                 /*ServiceDescription serviceDescription = serviceUtil.getSharedServiceDescription(serviceInfo);
                                 Plugin plugin = orchestrator.getPlugin(serviceDescription);*/
                                 boolean serviceStopped = plugin.stopService(serviceDescription, serviceInfo);
