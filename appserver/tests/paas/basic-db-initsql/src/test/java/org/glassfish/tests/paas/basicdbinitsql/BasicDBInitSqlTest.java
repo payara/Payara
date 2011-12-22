@@ -316,10 +316,7 @@ private void testListServices() {
 
         //  test the option --terse=false.
         {
-            List<String> outputOptions = new ArrayList<String>();
-            outputOptions.add("SERVICE-NAME");
-            outputOptions.add("VM-ID");
-            outputOptions.add("SERVER-TYPE");
+
             ActionReport report = habitat.getComponent(ActionReport.class);
             org.glassfish.api.admin.CommandRunner.CommandInvocation invocation = commandRunner.getCommandInvocation("list-services", report);
             ParameterMap parameterMap = new ParameterMap();
@@ -347,6 +344,29 @@ private void testListServices() {
             Assert.assertTrue(headersNotFound);
 
 
+        }
+
+
+        // test --type option
+        {
+            String typeValue="Javaee";
+            ActionReport report = habitat.getComponent(ActionReport.class);
+            org.glassfish.api.admin.CommandRunner.CommandInvocation invocation = commandRunner.getCommandInvocation("list-services", report);
+            ParameterMap parameterMap = new ParameterMap();
+            parameterMap.add("output", "server-type");
+            parameterMap.add("type",typeValue);
+            invocation.parameters(parameterMap).execute();
+            List<Map<String, String>> list = (List<Map<String, String>>) report.getExtraProperties().get("list");
+            boolean otherTypeFound = false;
+            for (Map<String, String> map : list) {
+                 String value=  map.get("SERVER-TYPE");
+                 if(!value.equalsIgnoreCase(typeValue)){
+                     otherTypeFound=true;
+                     break;
+                 }
+            }
+            System.out.println("list-services --type option test passed:: " + !otherTypeFound);
+            Assert.assertFalse(otherTypeFound);
         }
 
 
