@@ -123,6 +123,11 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
                 "default-config not detected during upgrade. Running DefaultConfigUpgrade to create default-config."));
 
         String template = getDomainXmlTemplate();
+        if (template == null) {
+            throw new RuntimeException(localStrings.getLocalString(
+                    "DefaultConfigUpgrade.problemGettingDomainXmlTemplate",
+                    "DefaultConfigUpgrade failed.  Problem getting domain.xml template."));
+        }
 
         try {
             ConfigSupport.apply(new MinDefaultConfigCode(), configs);
@@ -1136,10 +1141,24 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
                                 p.setName(val);
                             }
                         }
+                        while (true) {
+                            if (parser.next() == START_ELEMENT) {
+                                if (parser.getLocalName().equals("http") && p != null) {
                         createHttp(p);
                         createSsl(p);
+                                    break;
+                                } else if (parser.getLocalName().equals("http-redirect") && p != null) {
                         createHttpRedirect(p);
+                                    break;
+                                } else if (parser.getLocalName().equals("port-unification") && p != null) {
                         createPortUnification(p);
+                                    break;
+                                } else {
+                                    break;
+                    }
+                }
+                        }
+
                     }
                 }
             } catch (TransactionFailure ex) {
@@ -1154,9 +1173,7 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
 
     /* <http default-virtual-server="__asadmin" max-connections="250"> (1 example with most attributes)*/
     private void createHttp(Protocol p) throws PropertyVetoException {
-        while (true) {
             try {
-                if (parser.next() == START_ELEMENT) {
                     if (parser.getLocalName().equals("http") && p != null) {
                         Http h = p.createChild(Http.class);
                         p.setHttp(h);
@@ -1166,23 +1183,20 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
                             if (attr.equals("default-virtual-server")) {
                                 h.setDefaultVirtualServer(val);
                             }
+                    if (attr.equals("encoded-slash-enabled")) {
+                        h.setEncodedSlashEnabled(val);
+                    }
                             if (attr.equals("max-connections")) {
                                 h.setMaxConnections(val);
                             }
                         }
                         createFileCache(h);
-                        break;
                     }
-                }
             } catch (TransactionFailure ex) {
                 Logger.getLogger(DefaultConfigUpgrade.class.getName()).log(
                         Level.SEVERE, "Failure creating Http config object", ex);
-            } catch (XMLStreamException ex) {
-                Logger.getLogger(DefaultConfigUpgrade.class.getName()).log(
-                        Level.SEVERE, "Problem parsing http element in domain.xml template", ex);
             }
         }
-    }
 
     /* <file-cache enabled="false"/> (1 example with most attributes)*/
     private void createFileCache(Http h) throws PropertyVetoException {
@@ -1232,6 +1246,9 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
                             if (attr.equals("cert-nickname")) {
                                 ssl.setCertNickname(val);
                             }
+                            if (attr.equals("client-auth")) {
+                                ssl.setClientAuth(val);
+                        }
                         }
                         break;
                     }
@@ -1248,10 +1265,7 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
     
     /* <http-redirect secure="true"></http-redirect> */
     private void createHttpRedirect(Protocol p) throws PropertyVetoException {
-        while (!(parser.getEventType() == END_ELEMENT && parser.getLocalName().equals("protocol"))) {
             try {
-                if (parser.next() == START_ELEMENT) {
-                    if (parser.getLocalName().equals("http-direct") && p != null) {
                         HttpRedirect hr = p.createChild(HttpRedirect.class);
                         p.setHttpRedirect(hr);
                         for (int i = 0; i < parser.getAttributeCount(); i++) {
@@ -1261,54 +1275,36 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
                                 hr.setSecure(val);
                             }
                         }
-                        break;
-                    }
-                }
             } catch (TransactionFailure ex) {
                 Logger.getLogger(DefaultConfigUpgrade.class.getName()).log(
                         Level.SEVERE, "Failure creating HttpRedirect config object", ex);
-            } catch (XMLStreamException ex) {
-                Logger.getLogger(DefaultConfigUpgrade.class.getName()).log(
-                        Level.SEVERE, "Problem parsing http-redirect element in domain.xml template", ex);
             }
         }
-    }
     
     /* <port-unification>
      *       <protocol-finder protocol="sec-admin-listener" name="http-finder" classname="org.glassfish.grizzly.config.portunif.HttpProtocolFinder"></protocol-finder>
      *       <protocol-finder protocol="admin-http-redirect" name="admin-http-redirect" classname="org.glassfish.grizzly.config.portunif.HttpProtocolFinder"></protocol-finder>
      * </port-unification> */
     private void createPortUnification(Protocol p) throws PropertyVetoException {
-        while (true) {
             try {
-                if (parser.next() == START_ELEMENT) {
-                    if (parser.getLocalName().equals("port-unification") && p != null) {
                         PortUnification pu = p.createChild(PortUnification.class);
                         p.setPortUnification(pu);
                         
                         createProtocolFinder(pu);
-                        break;
-                    }
-                }
             } catch (TransactionFailure ex) {
                 Logger.getLogger(DefaultConfigUpgrade.class.getName()).log(
                         Level.SEVERE, "Failure creating PortUnification config object", ex);
-            } catch (XMLStreamException ex) {
-                Logger.getLogger(DefaultConfigUpgrade.class.getName()).log(
-                        Level.SEVERE, "Problem parsing port-unification element in domain.xml template", ex);
             }
         }
-    }
     
     private void createProtocolFinder(PortUnification pu) throws PropertyVetoException {
-        while (true) {
+        while (!(parser.getEventType() == END_ELEMENT && parser.getLocalName().equals("port-unification"))) {
             try {
                 if (parser.next() == START_ELEMENT) {
                     if (parser.getLocalName().equals("protocol-finder") && pu != null) {
                         ProtocolFinder pf = pu.createChild(ProtocolFinder.class);
-                        List<ProtocolFinder> pfList = new ArrayList();
+                        List<ProtocolFinder> pfList = pu.getProtocolFinder();
                         pfList.add(pf);
-                        pu.setProtocolFinder(pfList);
                         for (int i = 0; i < parser.getAttributeCount(); i++) {
                             String attr = parser.getAttributeLocalName(i);
                             String val = parser.getAttributeValue(i);
@@ -1322,7 +1318,6 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
                                 pf.setClassname(val);
                             }
                         }
-                        break;
                     }
                 }
             } catch (TransactionFailure ex) {
