@@ -42,4 +42,5 @@
 
 -exportcontents: \
     org.glassfish.paas.gfplugin; \
+    org.glassfish.paas.gfplugin.customizer; \
     org.glassfish.paas.gfplugin.cli; version=${project.osgi.version}
