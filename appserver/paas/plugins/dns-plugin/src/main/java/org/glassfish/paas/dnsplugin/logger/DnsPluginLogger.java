@@ -37,31 +37,29 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+package org.glassfish.paas.dnsplugin.logger;
 
-package org.glassfish.paas.lbplugin;
+import com.sun.enterprise.util.i18n.StringManager;
+import com.sun.logging.LogDomains;
+import java.util.logging.Logger;
 
 /**
  *
  * @author kshitiz
  */
-public class Constants {
+public class DnsPluginLogger {
 
-    public static final String LB = "LB";
-    public static final String SERVICE_TYPE_PROP_NAME = "service-type";
-    public static final String LB_TEMPLATE_NAME_PROP_NAME = "lb-template-name";
-    public static final String HTTP_PORT_PROP_NAME = "http-port";
-    public static final String SSL_ENABLED_PROP_NAME = "ssl-enabled";
-    public static final String HTTPS_PORT_PROP_NAME = "https-port";
-    public static final String DEFAULT_HTTP_PORT = "50080";
-    public static final String DEFAULT_SSL_ENABLED = "false";
-    public static final String DEFAULT_HTTPS_PORT = "50443";
-    public static final String ServiceTypeLB =
-            org.glassfish.virtualization.util.ServiceType.Type.LB.name();
-    public static final String HTTP_PROTOCOL = "http";
-    public static final String HTTPS_PROTOCOL = "https";
-    public static final String IP_ADDRESS_PROP_NAME = "ip-address";
-    public static final String DOMAIN_NAME_SYSTEM_PROPERTY = "paas.lbplugin.domain-name";
-    public static final String DOMAIN_NAME = "domain-name";
-    public static final String NULL_DOMAIN_NAME = "NULL_DOMAIN_NAME";
+    private static final Logger _logger = LogDomains.getLogger
+            (DnsPluginLogger.class, LogDomains.ADMIN_LOGGER);
+    private static final StringManager localStrings =
+            StringManager.getManager(DnsPluginLogger.class);
 
+    public static StringManager getLocalStrings() {
+        return localStrings;
+    }
+
+    public static Logger getLogger() {
+        return _logger;
+    }
+    
 }

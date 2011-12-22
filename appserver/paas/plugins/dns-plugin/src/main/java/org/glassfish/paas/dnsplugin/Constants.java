@@ -38,7 +38,7 @@
  * holder.
  */
 
-package org.glassfish.paas.lbplugin;
+package org.glassfish.paas.dnsplugin;
 
 /**
  *
@@ -46,22 +46,12 @@ package org.glassfish.paas.lbplugin;
  */
 public class Constants {
 
-    public static final String LB = "LB";
-    public static final String SERVICE_TYPE_PROP_NAME = "service-type";
-    public static final String LB_TEMPLATE_NAME_PROP_NAME = "lb-template-name";
-    public static final String HTTP_PORT_PROP_NAME = "http-port";
-    public static final String SSL_ENABLED_PROP_NAME = "ssl-enabled";
-    public static final String HTTPS_PORT_PROP_NAME = "https-port";
-    public static final String DEFAULT_HTTP_PORT = "50080";
-    public static final String DEFAULT_SSL_ENABLED = "false";
-    public static final String DEFAULT_HTTPS_PORT = "50443";
-    public static final String ServiceTypeLB =
-            org.glassfish.virtualization.util.ServiceType.Type.LB.name();
-    public static final String HTTP_PROTOCOL = "http";
-    public static final String HTTPS_PROTOCOL = "https";
-    public static final String IP_ADDRESS_PROP_NAME = "ip-address";
-    public static final String DOMAIN_NAME_SYSTEM_PROPERTY = "paas.lbplugin.domain-name";
+    public static final String DNS = "DOMAIN_NAME_SERVER";
     public static final String DOMAIN_NAME = "domain-name";
-    public static final String NULL_DOMAIN_NAME = "NULL_DOMAIN_NAME";
+    public static final String DNS_IP = "dns-ip";
+    public static final String DNS_PRIVATE_KEY_FILE_LOCATION =
+            "dns-private-key-file-loc";
+    public static final String IP_ADDRESS_PROP_NAME = "ip-address";
+    public static final String DNS_UPDATE_UTILITY = "nsupdate";
 
 }

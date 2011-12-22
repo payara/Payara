@@ -432,13 +432,20 @@ public class ServiceUtil implements PostConstruct {
                         String applicationName = ((ApplicationScopedService) service).getApplicationName();
                         if (appName.equals(applicationName)) {
                             matchingService = service;
-                            break;
+                        }
+                    } else {
+                        for (ServiceRef serviceRef : services.getServiceRefs()) {
+                            if (appName.equals(serviceRef.getApplicationName()) &&
+                                    serviceRef.getServiceName().equals(serviceName)) {
+                                matchingService = service;
+                                break;
+                            }
                         }
                     }
                 } else {
                     matchingService = service;
-                    break;
                 }
+                break;
             }
         }
         return matchingService;

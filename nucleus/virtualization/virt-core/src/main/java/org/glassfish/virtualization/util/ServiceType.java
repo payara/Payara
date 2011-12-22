@@ -53,7 +53,7 @@ import org.jvnet.hk2.annotations.Service;
 @Scoped(PerLookup.class)
 public class ServiceType extends ValueBasedTemplateIndex {
 
-    public enum Type { JavaEE, Database, MQ, LB }
+    public enum Type { JavaEE, Database, MQ, LB, DNS }
 
     private Type value;
 
