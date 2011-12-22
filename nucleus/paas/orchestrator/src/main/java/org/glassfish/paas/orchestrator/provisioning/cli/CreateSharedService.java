@@ -110,6 +110,20 @@ public class CreateSharedService implements AdminCommand {
 
         final ActionReport report = context.getActionReport();
 
+        if (initMode.equalsIgnoreCase("lazy")) {
+            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            report.setFailureCause(new UnsupportedOperationException("Init type 'lazy' not supported. Set init-mode of service as 'eager'"));
+            return;
+        }
+
+        //TODO accept either template-id or characteristics but not both.
+
+        if (template != null && characteristics != null) {
+            report.setMessage("Provide either template or characteristics and not both while creating a shared service");
+            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            return;
+        }
+
         if (defaultService) {
             if (force) {
                 //TODO unset default=true in any other shared service that already exists.
@@ -130,16 +144,10 @@ public class CreateSharedService implements AdminCommand {
             }
         }
 
-        if(initMode.equalsIgnoreCase("lazy")){
-            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            report.setFailureCause(new UnsupportedOperationException("Init type 'lazy' not supported. Set init-mode of service as 'eager'"));
-            return;
-        }
 
         //TODO interact with Orchestrator to see whether this particular service-configuration can
         //TODO be really supported.
 
-        //TODO accept either template-id or characteristics but not both.
 
         Services services = serviceUtil.getServices();
         try {
@@ -178,8 +186,8 @@ public class CreateSharedService implements AdminCommand {
                                 = sharedService.createChild(Configurations.class);
                         for (Map.Entry e : configuration.entrySet()) {
                             Configuration config = configs.createChild(Configuration.class);
-                            config.setName((String)e.getKey());
-                            config.setValue((String)e.getValue());
+                            config.setName((String) e.getKey());
+                            config.setValue((String) e.getValue());
                             configs.getConfiguration().add(config);
                         }
                         sharedService.setConfigurations(configs);
