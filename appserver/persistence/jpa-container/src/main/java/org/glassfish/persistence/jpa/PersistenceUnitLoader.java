@@ -51,6 +51,7 @@ import com.sun.logging.LogDomains;
 
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityManager;
+import javax.persistence.PersistenceException;
 import javax.persistence.ValidationMode;
 import javax.persistence.spi.PersistenceUnitInfo;
 import javax.persistence.spi.PersistenceProvider;
@@ -203,6 +204,20 @@ public class PersistenceUnitLoader {
         }
 
         EntityManagerFactory emf = provider.createContainerEntityManagerFactory(pInfo, overRides);
+        EntityManager em = null;
+        try {
+            // Create EM to trigger any validations that are lazily performed by the provider
+            // EM creation also triggers DDL generation by provider.
+            em = emf.createEntityManager();
+        } catch (PersistenceException e) {
+            // Exception indicates something went wrong while performing validation. Clean up and rethrow to fail deployment
+            emf.close();
+            throw e;
+        } finally {
+            if (em != null) {
+                em.close();
+            }
+        }
 
         if (fineMsgLoggable) {
             logger.logp(Level.FINE, "PersistenceUnitLoader", "loadPU", // NOI18N

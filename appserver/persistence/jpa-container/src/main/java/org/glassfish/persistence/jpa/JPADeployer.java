@@ -65,6 +65,7 @@ import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.PostConstruct;
 import javax.persistence.EntityManagerFactory;
+import java.io.IOException;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -192,7 +193,7 @@ public class JPADeployer extends SimpleDeployer<JPAContainer, JPApplicationConta
             }
         }
         if (hasScopedResource) {
-            // Scoped resources are registered by connectorruntime after prepare(). That is too late for JPA
+            // Scoped resources are registered by connector runtime after prepare(). That is too late for JPA
             // This is a hack to initialize connectorRuntime for scoped resources
             connectorRuntime.registerDataSourceDefinitions(application);
         }
@@ -212,9 +213,20 @@ public class JPADeployer extends SimpleDeployer<JPAContainer, JPApplicationConta
                             new ServerProviderContainerContractInfo(context, connectorRuntime, isDas) :
                             new EmbeddedProviderContainerContractInfo(context, connectorRuntime, isDas);
 
+                    try {
+                        ((ExtendedDeploymentContext) context).prepareScratchDirs();
+                    } catch (IOException e) {
+                        // There is no way to recover if we are not able to create the scratch dirs. Just rethrow the exception.
+                        // TODO when java2db is shifted here, attempt to create scratch dir only if java2db is enabled
+                        throw new RuntimeException(e);
+                    }
+
+
                     PersistenceUnitLoader puLoader = new PersistenceUnitLoader(pud, providerContainerContractInfo);
                     // Store the puLoader in context. It is retrieved to execute java2db and to
                     // store the loaded emfs in a JPAApplicationContainer object for cleanup
+                    //TODO - Now since we are creating EM eagerly in prepare(). The DDL files are also available at this point.
+                    //TODO - It makes sense to refactor code from APPLICATION_PREPARED event handler such that (1)java2db happens here (2) EMF created just for java2db should be closed and not saved in transientappmetadata here.
                     context.addTransientAppMetaData(getUniquePuIdentifier(pud), puLoader );
                 }
             }
@@ -248,7 +260,7 @@ public class JPADeployer extends SimpleDeployer<JPAContainer, JPApplicationConta
   -We will not create EMFs on instance if application is not enabled
 
         ------------------------------------------------------------------------------------
-            Scenario                                       Expcted Behavior
+            Scenario                                       Expected Behavior
         ------------------------------------------------------------------------------------
         deploy --target=server   --enabled=true.   DAS(EMF created, java2db, EMF remains open)
            -restart                                DAS(EMF created, EMF remains open)
@@ -258,7 +270,7 @@ public class JPADeployer extends SimpleDeployer<JPAContainer, JPApplicationConta
 
         deploy --target=server   --enabled=false.  DAS(EMF created,java2db, EMF closed in APPLICATION_PREPARED)
            -restart                                DAS(No EMF created)
-           -undelpoy                               DAS(No EMF to close, Drop tables)
+           -undeploy                               DAS(No EMF to close, Drop tables)
 
            -enable                                 DAS(EMF created)
            -undelpoy                               DAS(EMF closed, Drop tables)
@@ -272,7 +284,7 @@ public class JPADeployer extends SimpleDeployer<JPAContainer, JPApplicationConta
             -restart                               DAS(No EMF created)
                                                    INSTANCE1(EMF created)
                                                    INSTANCE2(EMF created)
-            -undelpoy                              DAS(No EMF to close, Drop tables)
+            -undeploy                              DAS(No EMF to close, Drop tables)
                                                    INSTANCE1(EMF closed)
 
             -create-application-ref server         DAS(EMF created)

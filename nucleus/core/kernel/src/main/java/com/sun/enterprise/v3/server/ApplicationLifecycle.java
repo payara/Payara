@@ -477,7 +477,6 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                 context.setPhase(DeploymentContextImpl.Phase.PREPARED);
                 Thread.currentThread().setContextClassLoader(context.getClassLoader());
                 appInfo.setAppClassLoader(context.getClassLoader());
-                installTransformers(context);
                 events.send(new Event<DeploymentContext>(Deployment.APPLICATION_PREPARED, context), false);
 
                 // now were falling back into the mainstream loading/starting sequence, at this
@@ -2138,65 +2137,6 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
             }
         }
     } 
-
-    private void installTransformers(ExtendedDeploymentContext appContext) throws Exception{
-        // install at app level
-        installTransformersOnModule(appContext, true);
-
-        Map<String, ExtendedDeploymentContext> moduleContexts = 
-            appContext.getModuleDeploymentContexts();
-
-        // install at module level 
-        for (Map.Entry<String, ExtendedDeploymentContext> entry : moduleContexts.entrySet()) {
-            ExtendedDeploymentContext context = entry.getValue();
-            installTransformersOnModule(context, false);
-        }
-    }
-
-    private void installTransformersOnModule(ExtendedDeploymentContext context, boolean isAppLevel) throws Exception{
-        ActionReport report = context.getActionReport();
-        if (!context.getTransformers().isEmpty()) {
-            // add the class file transformers to the new class loader
-            try {
-                InstrumentableClassLoader icl = InstrumentableClassLoader.class.cast(context.getFinalClassLoader());
-                String isComposite = context.getAppProps().getProperty(
-                    ServerTags.IS_COMPOSITE);
-
-                if (Boolean.valueOf(isComposite) &&
-                    icl instanceof URLClassLoader) {
-                    URLClassLoader urlCl = (URLClassLoader)icl;
-                    if (isAppLevel) {
-                        // for ear lib PUs, let's install the
-                        // tranformers with the EarLibClassLoader
-                        icl = InstrumentableClassLoader.class.cast(urlCl.getParent().getParent());
-                    } else {
-                        // for modules inside the ear, let's install the
-                        // transformers with the EarLibClassLoader in
-                        // addition to installing them to module classloader
-                        ClassLoader libCl = urlCl.getParent().getParent();
-                        if (!(libCl instanceof URLClassLoader)) {
-                            // web module
-                            libCl = libCl.getParent();
-                        }
-                        if (libCl instanceof URLClassLoader) {
-                            InstrumentableClassLoader libIcl = InstrumentableClassLoader.class.cast(libCl);
-                            for (ClassFileTransformer transformer : context.getTransformers()) {
-                                libIcl.addTransformer(transformer);
-                            }
-                        }
-
-                    }
-                }
-                for (ClassFileTransformer transformer : context.getTransformers()) {
-                    icl.addTransformer(transformer);
-                }
-
-            } catch (Exception e) {
-                report.failure(logger, "Class loader used for loading application cannot handle bytecode enhancer", e);
-                throw e;
-            }
-        }
-    }
 
     private boolean loadOnCurrentInstance(DeploymentContext context) {
         final DeployCommandParameters commandParams = context.getCommandParameters(DeployCommandParameters.class);

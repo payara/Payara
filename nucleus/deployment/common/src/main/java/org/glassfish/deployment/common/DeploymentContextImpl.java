@@ -40,12 +40,12 @@
 
 package org.glassfish.deployment.common;
 
+import com.sun.enterprise.config.serverbeans.ServerTags;
 import org.glassfish.deployment.versioning.VersioningUtils;
 import java.lang.instrument.ClassFileTransformer;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.deployment.InstrumentableClassLoader;
 import org.glassfish.api.deployment.OpsParams;
-import org.glassfish.api.deployment.DeployCommandParameters;
 
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.api.deployment.archive.ArchiveHandler;
@@ -63,6 +63,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.MalformedURLException;
+import java.net.URLClassLoader;
 
 import org.jvnet.hk2.component.PreDestroy;
 import com.sun.enterprise.util.io.FileUtils;
@@ -351,11 +352,7 @@ public class DeploymentContextImpl implements ExtendedDeploymentContext, PreDest
     }
 
     /**
-     * Add a new ClassFileTransformer to the context. Once all the deployers potentially
-     * invalidating the application class loader (as indicated by the
-     * @link {MetaData.invalidatesClassLoader()})
-     * the deployment backend will recreate the application's class loader registering
-     * all the ClassTransformers added by the deployers to this context.
+     * Add a new ClassFileTransformer to the context
      *
      * @param transformer the new class file transformer to register to the new application
      * class loader
@@ -365,7 +362,33 @@ public class DeploymentContextImpl implements ExtendedDeploymentContext, PreDest
      */
     public void addTransformer(ClassFileTransformer transformer) {
 
-        transformers.add(transformer);
+        InstrumentableClassLoader icl = InstrumentableClassLoader.class.cast(getFinalClassLoader());
+        String isComposite = getAppProps().getProperty(ServerTags.IS_COMPOSITE);
+
+        if (Boolean.valueOf(isComposite) && icl instanceof URLClassLoader) {
+            URLClassLoader urlCl = (URLClassLoader)icl;
+            boolean isAppLevel = (getParentContext() == null);
+            if (isAppLevel) {
+                // for ear lib PUs, let's install the
+                // tranformers with the EarLibClassLoader
+                icl = InstrumentableClassLoader.class.cast(urlCl.getParent().getParent());
+            } else {
+                // for modules inside the ear, let's install the
+                // transformers with the EarLibClassLoader in
+                // addition to installing them to module classloader
+                ClassLoader libCl = urlCl.getParent().getParent();
+                if (!(libCl instanceof URLClassLoader)) {
+                    // web module
+                    libCl = libCl.getParent();
+                }
+                if (libCl instanceof URLClassLoader) {
+                    InstrumentableClassLoader libIcl = InstrumentableClassLoader.class.cast(libCl);
+                    libIcl.addTransformer(transformer);
+                }
+
+            }
+        }
+        icl.addTransformer(transformer);
     }
 
     /**
