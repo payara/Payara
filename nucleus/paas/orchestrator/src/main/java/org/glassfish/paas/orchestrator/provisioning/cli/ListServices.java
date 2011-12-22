@@ -463,7 +463,7 @@ public class ListServices implements AdminCommand {
      public String[] generateOutputRow(String[] headings, int heading_count, String e, HashMap<String, HashMap> mapOfMaps) {
         String[] outputRow = new String[heading_count];
         int count = 0;
-        HashMap<String,String> map=new HashMap<String, String>();
+        HashMap<String,String> map=null;
         for (String s : headings) {
           /*  if (s.equals("SERVICE-NAME")) {
                 outputRow[count] = name_map.get(e);

@@ -107,7 +107,6 @@ public class StopSharedService implements AdminCommand {
             for (org.glassfish.paas.orchestrator.config.Service service : services.getServices()) {
                 if (service instanceof SharedService) {
                     SharedService sharedService = (SharedService) service;
-                    String serviceType = sharedService.getType();
                     if (sharedService.getServiceName().equalsIgnoreCase(serviceName)) {
                         sharedServiceFound = true;
                         if (sharedService.getState().equalsIgnoreCase(ServiceStatus.STOPPED.toString())) {
