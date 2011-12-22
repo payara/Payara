@@ -45,7 +45,7 @@
     <groupId>org.glassfish.tests.paas</groupId>
     <artifactId>external-and-shared-service-test</artifactId>
     <version>4.0-SNAPSHOT</version>
-    <name>Basic Shared Sevice Test</name>
+    <name>External and Shared Service Test</name>
     <packaging>war</packaging>
     <build>
         <finalName>external-and-shared-service-test</finalName>
