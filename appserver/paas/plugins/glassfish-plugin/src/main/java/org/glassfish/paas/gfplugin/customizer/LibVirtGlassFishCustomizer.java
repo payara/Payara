@@ -37,9 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package org.glassfish.virtualization.libvirt;
+package org.glassfish.paas.gfplugin.customizer;
 
-import org.glassfish.virtualization.runtime.GlassFishTemplateCustomizer;
 import org.jvnet.hk2.annotations.Service;
 
 /**

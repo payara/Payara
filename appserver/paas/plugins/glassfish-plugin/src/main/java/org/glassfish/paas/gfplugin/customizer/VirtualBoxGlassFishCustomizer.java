@@ -38,9 +38,8 @@
  * holder.
  */
 
-package org.glassfish.virtualization.virtualbox;
+package org.glassfish.paas.gfplugin.customizer;
 
-import org.glassfish.virtualization.runtime.GlassFishTemplateCustomizer;
 import org.jvnet.hk2.annotations.Service;
 
 /**

@@ -38,130 +38,115 @@
  * holder.
  */
 
-package org.glassfish.virtualization.local;
+package org.glassfish.paas.gfplugin.customizer;
 
 import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.config.serverbeans.Node;
 import com.sun.enterprise.config.serverbeans.Server;
-import com.sun.enterprise.util.ExecException;
-import com.sun.enterprise.util.OS;
-import com.sun.enterprise.util.ProcessExecutor;
 import org.glassfish.api.ActionReport;
 import org.glassfish.gms.bootstrap.GMSAdapter;
 import org.glassfish.gms.bootstrap.GMSAdapterService;
 import org.glassfish.gms.bootstrap.HealthHistory;
 import org.glassfish.hk2.Services;
-import org.glassfish.internal.api.ServerContext;
 import org.glassfish.virtualization.spi.VirtualCluster;
-import org.glassfish.virtualization.spi.*;
+import org.glassfish.virtualization.spi.Machine;
+import org.glassfish.virtualization.spi.TemplateCustomizer;
+import org.glassfish.virtualization.spi.VirtException;
+import org.glassfish.virtualization.spi.VirtualMachine;
 import org.glassfish.virtualization.util.RuntimeContext;
 import org.jvnet.hk2.annotations.Inject;
-import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.config.ConfigSupport;
-import org.jvnet.hk2.config.SingleConfigCode;
-import org.jvnet.hk2.config.TransactionFailure;
-import org.jvnet.hk2.config.types.Property;
-
-import java.beans.PropertyVetoException;
-import java.io.File;
-import java.util.logging.Level;
 
 /**
- * Implementation of the non virtualized glassfish template customizer.
+ * Customization of the GlassFish template.
+ *
  * @author Jerome Dochez
  */
-@Service(name="Native-JavaEE")
-public class LocalGlassFishTemplateCustomizer implements TemplateCustomizer {
+public class GlassFishTemplateCustomizer implements TemplateCustomizer {
 
     @Inject
     Domain domain;
 
     @Inject
-    RuntimeContext rtContext;
-
-    @Inject
-    private ServerContext serverContext;
-
-    @Inject
     Services services;
+
+    @Inject
+    RuntimeContext rtContext;
 
     @Inject
     GMSAdapterService gmsAdapterService;
 
     @Override
-    public void customize(final VirtualCluster cluster, final VirtualMachine virtualMachine) throws VirtException {
-
+    public void customize(VirtualCluster cluster, VirtualMachine virtualMachine) throws VirtException {
         ActionReport report = services.forContract(ActionReport.class).named("plain").get();
-       // this line below needs to come from the template...
-        String[] createArgs = {serverContext.getInstallRoot().getAbsolutePath() +
-                File.separator + "lib" + File.separator + "nadmin" + (OS.isWindows()? ".bat" : "") , "create-local-instance",
-                "--cluster", cluster.getConfig().getName(),
-                 virtualMachine.getName()};
-        ProcessExecutor createInstance = new ProcessExecutor(createArgs);
+        final String nodeName = getNodeName(virtualMachine);
+        // create-node-ssh --nodehost $ip_address --installdir $GLASSFISH_HOME $node_name
+        String installDir = virtualMachine.getProperty(VirtualMachine.PropertyName.INSTALL_DIR);
+        rtContext.executeAdminCommand(report, "create-node-ssh", nodeName, "nodehost", virtualMachine.getAddress().getHostAddress(),
+                "sshUser", virtualMachine.getUser().getName(), "installdir", installDir);
 
-        try {
-            createInstance.execute();
-        } catch (ExecException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        if (report.hasFailures()) {
+            return;
         }
-        
-        for (Server instance : cluster.getConfig().getInstances()) {
-            if (instance.getName().equals(virtualMachine.getName())) {
-                try {
-                    ConfigSupport.apply(new SingleConfigCode<Server>() {
-                        @Override
-                        public Object run(Server wServer) throws PropertyVetoException, TransactionFailure {
-                            Property property = wServer.createChild(Property.class);
-                            property.setName("ServerPool");
-                            property.setValue(virtualMachine.getServerPool().getName());
-                            wServer.getProperty().add(property);
-                            return null;
-                        }
-                    }, instance);
-                } catch (TransactionFailure transactionFailure) {
-                    RuntimeContext.logger.log(Level.SEVERE,
-                            "Cannot add properties to newly created instance configuration", transactionFailure);
-                    throw new VirtException(transactionFailure);
-                }
-            }
-        }
+        rtContext.executeAdminCommand(report, "create-instance", nodeName + "Instance", "node", nodeName,
+                "cluster", cluster.getConfig().getName());
+
     }
 
     public boolean isActive(VirtualCluster virtualCluster, VirtualMachine virtualMachine) throws VirtException {
         if (virtualMachine.getInfo().getState().equals(Machine.State.READY)) {
             GMSAdapter adapter = gmsAdapterService.getGMSAdapterByName(virtualCluster.getConfig().getName());
-            HealthHistory.InstanceHealth instanceHealth = adapter.getHealthHistory().getHealthByInstance(virtualMachine.getName());
+            String nodeName = getNodeName(virtualMachine);
+            HealthHistory.InstanceHealth instanceHealth = adapter.getHealthHistory().getHealthByInstance(nodeName+"Instance");
             return instanceHealth.state.equals(HealthHistory.STATE.RUNNING);
         }
         return false;
     }
 
     @Override
-    public void clean(VirtualMachine virtualMachine) {
-        // let's find our instance name.
-        String instanceName = virtualMachine.getName();
-        Server instance = domain.getServerNamed(instanceName);
-        if (instance != null) {
-            ActionReport report = services.forContract(ActionReport.class).named("plain").get();
-            rtContext.executeAdminCommand(report, "delete-instance", instanceName);
+    public void start(VirtualMachine virtualMachine, boolean firstStart) {
+        ActionReport report = services.forContract(ActionReport.class).named("plain").get();
+        if (firstStart) {
+            // finally starts the instance.
+            try {
+                rtContext.executeAdminCommand(report, "start-instance", getNodeName(virtualMachine) + "Instance");
+            } catch (Exception e) {
+                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            }
         }
     }
 
     @Override
-    public void start(VirtualMachine virtualMachine, boolean firstStart) {
-        String[] startArgs = {serverContext.getInstallRoot().getAbsolutePath() +
-                File.separator + "lib" + File.separator + "nadmin" +  (OS.isWindows()? ".bat" : "") , "start-local-instance",
-                 virtualMachine.getName()};
-        ProcessExecutor startInstance = new ProcessExecutor(startArgs);
-        try {
-            startInstance.execute();
-        } catch (ExecException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+    public void clean(VirtualMachine virtualMachine) {
+
+        // let's find our instance name.
+        String vmName = virtualMachine.getName();
+        String instanceName = virtualMachine.getServerPool().getName()+"_"+virtualMachine.getMachine().getName()+"_"+vmName+"Instance";
+        Server server = domain.getServerNamed(instanceName);
+
+        if (server!=null) {
+            String nodeName = server.getNodeRef();
+            ActionReport report = services.forContract(ActionReport.class).named("plain").get();
+            rtContext.executeAdminCommand(report, "delete-instance", instanceName);
+            Node node = domain.getNodeNamed(nodeName);
+            if (node!=null) {
+                if (node.getType().equals("SSH")) {
+                    rtContext.executeAdminCommand(report, "delete-node-ssh", nodeName);
+                }
+            }
         }
+    }
+
+    private String getNodeName(VirtualMachine virtualMachine) {
+        return  virtualMachine.getServerPool().getName() + "_" +
+                virtualMachine.getMachine().getName() + "_" + virtualMachine.getName();
+
     }
 
     @Override
     public void stop(VirtualMachine virtualMachine) {
-        String instanceName = virtualMachine.getName();
+        String vmName = virtualMachine.getName();
+        String instanceName = virtualMachine.getServerPool().getName() + "_" +
+                virtualMachine.getMachine().getName() + "_" + vmName + "Instance";
         Server instance = domain.getServerNamed(instanceName);
         if (instance != null) {
             ActionReport report = services.forContract(ActionReport.class).named("plain").get();
