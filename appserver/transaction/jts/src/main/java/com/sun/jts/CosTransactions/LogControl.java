@@ -236,7 +236,7 @@ public class LogControl {
             logName = logFileName;
             File logDir = directory(logName,directoryPath);
             if( !logDir.exists() )
-                logDir.mkdir();
+                logDir.mkdirs();
         }
 
         // Build name of log's control file, e.g. (<logname>.control)
