@@ -213,7 +213,6 @@ public abstract class CreateRemoteNodeCommand implements AdminCommand {
         populateCommandArgs(command);
         command.add(nodehost);
 
-        String firstErrorMessage = Strings.get("create.node.ssh.install.failed", nodehost);
         StringBuilder out = new StringBuilder();
         int exitCode = execCommand(command, out);
 
@@ -228,7 +227,7 @@ public abstract class CreateRemoteNodeCommand implements AdminCommand {
             res = true;
         }
         else {
-            report.setMessage(firstErrorMessage);
+            report.setMessage(out.toString().trim());
         }
         return res;
     }

@@ -299,14 +299,12 @@ public class InstallNodeSshCommand extends InstallNodeBaseCommand {
      * Determines if GlassFish is installed on remote host at specified location.
      * Uses SSH launcher to execute 'asadmin version'
      * @param host remote host
-     * @return true if GlassFish install is found, false otherwise.
      * @throws CommandException
      * @throws IOException
      * @throws InterruptedException
      */
-    private boolean checkIfAlreadyInstalled(String host, String sshInstallDir) throws CommandException, IOException, InterruptedException {
+    private void checkIfAlreadyInstalled(String host, String sshInstallDir) throws CommandException, IOException, InterruptedException {
         //check if an installation already exists on remote host
-        boolean res = false;
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
         try {
             String asadmin = Constants.v4 ? "/lib/nadmin' version --local --terse" : "/bin/asadmin' version --local --terse";
@@ -314,8 +312,7 @@ public class InstallNodeSshCommand extends InstallNodeBaseCommand {
             int status = sshLauncher.runCommand(cmd, outStream);
             if (status == 0) {
                 logger.finer(host + ":'" + cmd + "'" + " returned [" + outStream.toString() + "]");
-                logger.info(Strings.get("found.glassfish.install", host, sshInstallDir));
-                res = true;
+                throw new CommandException(Strings.get("install.dir.exists", sshInstallDir));
             }
             else {
                 logger.finer(host + ":'" + cmd + "'" + " failed [" + outStream.toString() + "]");
@@ -325,14 +322,13 @@ public class InstallNodeSshCommand extends InstallNodeBaseCommand {
             logger.info(Strings.get("glassfish.install.check.failed", host));
             throw new IOException(ex);
         }
-        return res;
     }
 
     @Override
     final void precopy() throws CommandException {
         if (getForce())
             return;
-
+        
         boolean prompt = promptPass;
         for (String host : hosts) {
             sshLauncher.init(getRemoteUser(), host, getRemotePort(), sshpassword, getSshKeyFile(), sshkeypassphrase, logger);
@@ -354,8 +350,8 @@ public class InstallNodeSshCommand extends InstallNodeBaseCommand {
 
             try {
                 SFTPClient sftpClient = sshLauncher.getSFTPClient();
-                if (sftpClient.exists(sshInstallDir) && checkIfAlreadyInstalled(host, sshInstallDir)){
-                    throw new CommandException(Strings.get("install.dir.exists", sshInstallDir));
+                if (sftpClient.exists(sshInstallDir)){
+                    checkIfAlreadyInstalled(host, sshInstallDir);
                 }
             }
             catch (IOException ex) {
