@@ -71,6 +71,9 @@ import java.util.logging.Logger;
 @ExecuteOn(RuntimeType.DAS)
 @TargetType(value = {CommandTarget.DAS})
 @CommandLock(CommandLock.LockType.NONE)
+@RestEndpoints({
+        @RestEndpoint(configBean = Domain.class, opType = RestEndpoint.OpType.GET, path = "delete-shared-service", description = "Delete a shared service")
+})
 public class DeleteSharedService implements AdminCommand {
 
     @Param(name = "servicename", primary = true)

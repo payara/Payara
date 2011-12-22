@@ -43,10 +43,7 @@ package org.glassfish.paas.orchestrator.provisioning.cli;
 import com.sun.enterprise.config.serverbeans.Domain;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
-import org.glassfish.api.admin.AdminCommand;
-import org.glassfish.api.admin.AdminCommandContext;
-import org.glassfish.api.admin.ExecuteOn;
-import org.glassfish.api.admin.RuntimeType;
+import org.glassfish.api.admin.*;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.paas.orchestrator.config.Configuration;
@@ -73,6 +70,9 @@ import java.util.Properties;
 @Scoped(PerLookup.class)
 @ExecuteOn(RuntimeType.DAS)
 @TargetType(value={CommandTarget.DAS})
+@RestEndpoints({
+        @RestEndpoint(configBean = Domain.class, opType = RestEndpoint.OpType.GET, path = "create-external-service", description = "Create an external service")
+})
 public class CreateExternalService implements AdminCommand {
 
     @Param(name="defaultService", defaultValue = "false", optional = true)

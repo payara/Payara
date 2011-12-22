@@ -69,6 +69,9 @@ import java.util.Properties;
 @ExecuteOn(RuntimeType.DAS)
 @TargetType(value = {CommandTarget.DAS})
 @CommandLock(CommandLock.LockType.NONE)
+@RestEndpoints({
+        @RestEndpoint(configBean = Domain.class, opType = RestEndpoint.OpType.GET, path = "create-shared-service", description = "Create a shared service")
+})
 public class CreateSharedService implements AdminCommand {
 
     @Param(name = "defaultService", defaultValue = "false", optional = true)
