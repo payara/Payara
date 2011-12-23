@@ -252,7 +252,7 @@ public class NodeRunner {
     /* hack TODO do not know how to get int status back from Windows
      */
     private int determineStatus(List<String> args, StringBuilder output) {
-        if (isDeleteFS(args) && output.toString().indexOf("failed") >= 0)
+        if (isDeleteFS(args) && output.toString().indexOf("UTIL6046") >= 0)
             return 1;
         return 0;
     }
