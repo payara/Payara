@@ -227,7 +227,8 @@ public class NodeRunner {
 
         if ("DCOM".equals(type)) {
             NodeRunnerDcom nrd = new NodeRunnerDcom(logger);
-            return nrd.runAdminCommandOnRemoteNode(node, output, args, stdinLines);
+            nrd.runAdminCommandOnRemoteNode(node, output, args, stdinLines);
+            return determineStatus(args, output);
         }
 
         throw new UnsupportedOperationException("Node is not of type SSH or DCOM");
@@ -246,5 +247,21 @@ public class NodeRunner {
         }
 
         return fullCommand.toString();
+    }
+
+    /* hack TODO do not know how to get int status back from Windows
+     */
+    private int determineStatus(List<String> args, StringBuilder output) {
+        if (isDeleteFS(args) && output.toString().indexOf("failed") >= 0)
+            return 1;
+        return 0;
+    }
+
+    private boolean isDeleteFS(List<String> args) {
+        for (String arg : args) {
+            if ("_delete-instance-filesystem".equals(arg))
+                return true;
+        }
+        return false;
     }
 }
