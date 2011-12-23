@@ -162,22 +162,44 @@ public class FlashlightProbeProviderFactory
 
     public <T> T getProbeProvider(Class<T> providerClazz, String invokerId)
             throws InstantiationException, IllegalAccessException {
-        //TODO: check for null and generate default names
+
+        if (providerClazz == null) {
+            throw new NullPointerException("providerClazz cannot be null");
+        }
+
         ProbeProvider provAnn = providerClazz.getAnnotation(ProbeProvider.class);
 
-        String moduleProviderName = provAnn.moduleProviderName();
-        String moduleName = provAnn.moduleName();
-        String probeProviderName = provAnn.probeProviderName();
+        String moduleProviderName = null;
+        String moduleName = null;
+        String probeProviderName = null;
 
-        if (isValidString(moduleProviderName) && 
-            isValidString(moduleName) && 
-            isValidString(probeProviderName)) {
+        if (provAnn != null) {
+            moduleProviderName = provAnn.moduleProviderName();
+            moduleName = provAnn.moduleName();
+            probeProviderName = provAnn.probeProviderName();
+        }
+
+        if (moduleProviderName == null) {
+            moduleProviderName = providerClazz.getName();
+        }
+
+        if (moduleName == null) {
+            moduleName = providerClazz.getName();
+        }
+
+        if (probeProviderName == null) {
+            probeProviderName = providerClazz.getSimpleName();
+        }
+
+        if (isValidString(moduleProviderName)
+                && isValidString(moduleName)
+                && isValidString(probeProviderName)) {
             return getProbeProvider(moduleProviderName, moduleName,
-                                probeProviderName,
-                                invokerId, providerClazz);
+                    probeProviderName,
+                    invokerId, providerClazz);
         } else {
             logger.log(Level.WARNING,
-                       "invalidProbeProvider", new Object[] {providerClazz.getName()});
+                    "invalidProbeProvider", new Object[]{providerClazz.getName()});
             return null;
         }
     }
