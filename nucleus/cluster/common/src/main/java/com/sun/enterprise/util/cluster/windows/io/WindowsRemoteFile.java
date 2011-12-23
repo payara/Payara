@@ -389,7 +389,7 @@ public final class WindowsRemoteFile {
         int chunksize = progress == null ? 1048576 : progress.getChunkSize();
 
         // be careful!  filelength is a long!!!
-        if(filelength < Integer.MAX_VALUE && chunksize > (int)filelength)
+        if(filelength < Integer.MAX_VALUE && chunksize > (int)filelength && filelength > 0)
             return (int)filelength;
 
         return chunksize;
