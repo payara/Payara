@@ -57,6 +57,15 @@ import java.nio.channels.SelectableChannel;
 
 import org.jvnet.hk2.component.PostConstruct;
 
+import org.glassfish.api.event.Events;
+import org.glassfish.api.event.EventTypes;
+import org.glassfish.api.event.Events;
+import org.glassfish.api.event.EventListener;
+import com.sun.logging.LogDomains;
+
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 /**
  * This class exposes any orb/iiop functionality needed by modules in the app server.
  * This prevents modules from needing any direct dependencies on the orb-iiop module.
@@ -72,6 +81,9 @@ public class GlassFishORBHelper implements PostConstruct, ORBLocator {
     @Inject
     private ProcessEnvironment processEnv;
 
+    private static final Logger _logger =
+        LogDomains.getLogger(GlassFishORBHelper.class, LogDomains.CORBA_LOGGER);
+
     private GlassFishORBFactory orbFactory;
 
     private volatile ORB orb = null ;
@@ -86,8 +98,25 @@ public class GlassFishORBHelper implements PostConstruct, ORBLocator {
         orbFactory = habitat.getByContract(GlassFishORBFactory.class);
     }
 
+    public void onShutdown() {
+        _logger.log(Level.FINE, ("ORB Shutdown started"));
+        orb.destroy();
+    }
+
     public synchronized void setORB( ORB orb ) {
         this.orb = orb ;
+        
+        if (orb != null) {
+            EventListener glassfishEventListener = new org.glassfish.api.event.EventListener() {
+
+                public void event(org.glassfish.api.event.EventListener.Event event) {
+                if (event.is(EventTypes.SERVER_SHUTDOWN)) {
+                        onShutdown();
+                    }
+                }
+            };
+            habitat.getByContract(Events.class).register(glassfishEventListener);
+        }
     }
 
     /**
