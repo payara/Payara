@@ -152,6 +152,9 @@ public class ListServices implements AdminCommand {
                                         matchedServices.add(service);
                                         break;
                                     }
+                                }else{
+                                     matchedServices.add(service);
+                                    break;
                                 }
                             }
                         }
