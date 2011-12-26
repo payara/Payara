@@ -41,13 +41,12 @@
 package org.glassfish.tests.paas.enable_disable_test;
 
 import junit.framework.Assert;
-import org.glassfish.embeddable.CommandResult;
-import org.glassfish.embeddable.CommandRunner;
-import org.glassfish.embeddable.GlassFish;
-import org.glassfish.embeddable.GlassFishProperties;
-import org.glassfish.embeddable.GlassFishRuntime;
-import org.glassfish.embeddable.Deployer;
+import org.glassfish.api.ActionReport;
+import org.glassfish.api.admin.ParameterMap;
+import org.glassfish.embeddable.*;
+import org.glassfish.internal.api.Globals;
 import org.junit.Test;
+import org.jvnet.hk2.component.Habitat;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -55,6 +54,8 @@ import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -108,6 +109,34 @@ public class EnableDisableTest {
 				Assert.assertTrue(!stopped);
 			}
 
+            //2.a.Check if all services of the application are in ONLY running state.
+
+            Habitat habitat = Globals.getDefaultHabitat();
+            org.glassfish.api.admin.CommandRunner commandRunner1 = habitat.getComponent(org.glassfish.api.admin.CommandRunner.class);
+            ActionReport report = habitat.getComponent(ActionReport.class);
+            org.glassfish.api.admin.CommandRunner.CommandInvocation invocation = commandRunner1.getCommandInvocation("list-services", report);
+            ParameterMap parameterMap=new ParameterMap();
+            parameterMap.add("appname",appName);
+            parameterMap.add("output","state");
+            parameterMap.add("scope","application");
+            invocation.parameters(parameterMap).execute();
+
+            Assert.assertFalse(report.hasFailures());
+            List<Map<String,String>> listOfMap= (List<Map<String, String>>) report.getExtraProperties().get("list");
+            String state=null;
+            boolean servicesRunning=false;
+            for(Map<String,String> map:listOfMap){
+                servicesRunning=false;
+                state=map.get("STATE");
+                if(state.equalsIgnoreCase("running")){
+                   servicesRunning=true;
+                }else {
+                    break;
+                }
+            }
+            Assert.assertTrue(servicesRunning);
+            System.out.println("All services in RUNNING state");
+
 			// 3. Access the app to make sure PaaS app is correctly provisioned.
 			String HTTP_PORT = (System.getProperty("http.port") != null) ? System
 					.getProperty("http.port") : "28080";
@@ -118,56 +147,49 @@ public class EnableDisableTest {
 					+ "/enable-disable-sample/EnableDisableServlet",
 					"Customer ID");
 
-			{
-				result = commandRunner.run("disable", appName);
-				System.out.println("disable " + appName + " output : "
-						+ result.getOutput());
-				System.out.println("disable " + appName + " status : "
-						+ result.getExitStatus());
-				Assert.assertEquals(result.getExitStatus(),
-						CommandResult.ExitStatus.SUCCESS);
 
-				result = commandRunner.run("list-services", "appname="
-						+ appName, "output=STATE");
-				System.out.println("list-services --appname=[" + appName
-						+ "] : status : " + result.getExitStatus());
-				System.out.println("\nlist-services command output [ "
-						+ result.getOutput() + "]");
-				boolean notRunning = result.getOutput().toLowerCase()
-						.contains("notrunning");
-				boolean stopped = result.getOutput().toLowerCase()
-						.contains("stopped");
-				Assert.assertTrue(stopped || notRunning);
-			}
+            //4.Disable application
+            ParameterMap parameterMap1=new ParameterMap();
+            parameterMap1.add("DEFAULT",appName);
+            invocation = commandRunner1.getCommandInvocation("disable", report);
+            invocation.parameters(parameterMap1).execute();
 
-			{
-				result = commandRunner.run("enable", appName);
-				System.out.println("enable " + appName + " output : "
-						+ result.getOutput());
-				System.out.println("enable " + appName + " status : "
-						+ result.getExitStatus());
-				Assert.assertEquals(result.getExitStatus(),
-						CommandResult.ExitStatus.SUCCESS);
+            Assert.assertFalse(report.hasFailures());
+            System.out.println("Disabled application ' "+appName+" ' ");
 
-				result = commandRunner.run("list-services", "appname="
-						+ appName, "output=STATE");
-				System.out.println("list-services --appname=[" + appName
-						+ "] : status : " + result.getExitStatus());
-				System.out.println("\nlist-services command output [ "
-						+ result.getOutput() + "]");
-				boolean notRunning = result.getOutput().toLowerCase()
-						.contains("notrunning");
-				Assert.assertTrue(!notRunning);
-				boolean stopped = result.getOutput().toLowerCase()
-						.contains("stopped");
-				Assert.assertTrue(!stopped);
-			}
+            //5.Check if NONE of the application of the service are in 'RUNNING' state
+            invocation = commandRunner1.getCommandInvocation("list-services", report);
+            invocation.parameters(parameterMap).execute();
+
+            Assert.assertFalse(report.hasFailures());
+            listOfMap= (List<Map<String, String>>) report.getExtraProperties().get("list");
+            for(Map<String,String> map:listOfMap){
+                servicesRunning=true;
+                state=map.get("STATE");
+                if(state.equalsIgnoreCase("running")){
+                   break;
+                }else {
+                    servicesRunning=false;
+                }
+            }
+            Assert.assertFalse(servicesRunning);
+            System.out.println("No service in RUNNING state");
+
+
+            //6.Enable application
+            invocation = commandRunner1.getCommandInvocation("enable", report);
+            parameterMap1=new ParameterMap();
+            parameterMap1.add("DEFAULT",appName);
+            invocation.parameters(parameterMap1).execute();
+
+            Assert.assertFalse(report.hasFailures());
+            System.out.println("Enabled application ' "+appName+" ' ");
 
 			get("http://" + instanceIP + ":" + HTTP_PORT
 					+ "/enable-disable-sample/EnableDisableServlet",
 					"Customer ID");
 
-			// 4. Undeploy the PaaS application .
+			// 8.. Undeploy the PaaS application .
 		} finally {
 			if (appName != null) {
 				deployer.undeploy(appName);
