@@ -1059,7 +1059,7 @@ public class ConnectionPool implements ResourcePool, ConnectionLeakListener,
                 poolLifeCycleListener.decrementConnectionUsed(resourceHandle.getId());
                 poolLifeCycleListener.incrementNumConnFree(false, steadyPoolSize);
             }
-        
+
             if (maxConnectionUsage_ > 0) {
                 performMaxConnectionUsageOperation(resourceHandle);
             }
@@ -1329,8 +1329,10 @@ public class ConnectionPool implements ResourcePool, ConnectionLeakListener,
             throw new PoolingException(exString);
         }
         
-        try {        
-            killExtraResources(ds.getResourcesSize());
+        try {
+            cancelResizerTask();
+            ds.removeAll();
+            scheduleResizerTask();
             increaseSteadyPoolSize(steadyPoolSize);
         } catch(PoolingException ex) {
             _logger.log(Level.WARNING, "pool.flush_pool_failure", 
