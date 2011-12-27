@@ -98,9 +98,8 @@ public class NodeRunnerDcom {
             // This is where the rubber meets the road...
             String out = asadmin.run(fullcommand);
             output.append(out);
-
             logger.info(Strings.get("remote.command.summary", humanreadable, out));
-            return 0;
+            return determineStatus(args);
         }
         catch (WindowsException ex) {
             throw new SSHCommandExecutionException(Strings.get(
@@ -165,5 +164,49 @@ public class NodeRunnerDcom {
         random += "" + new Random(System.currentTimeMillis()).nextInt(10000);
 
         return path + "\\DELETE_ME_" + random;
+    }
+    /*
+     * TODO: These methods ought to be in Node.java
+     *
+     */
+    private String getRemoteInstanceDirPath(String instanceName) {
+        if (node == null)
+            throw new NullPointerException(); // don't do that!
+
+        String nodeDir = node.getNodeDirAbsoluteUnixStyle();
+
+        if (nodeDir == null)
+            nodeDir = node.getInstallDirUnixStyle() + "/glassfish/nodes/" + node.getName();
+
+        return nodeDir + "/" + instanceName;
+    }
+    /* hack TODO do not know how to get int status back from Windows
+     * Stick in code that handles particular commands that we can figure out
+     * the status.
+     */
+
+    private int determineStatus(List<String> args){
+        if (args == null)
+            throw new NullPointerException();
+
+        if (isDeleteFS(args) && args.size() >= 2) {
+            try {
+                String dir = getRemoteInstanceDirPath(args.get(args.size() - 1));
+                WindowsRemoteFile f = new WindowsRemoteFile(dcomInfo.getCredentials(), dir);
+                return f.exists() ? 1 : 0;
+            }
+            catch (WindowsException ex) {
+                // this is good!  Fall through...
+            }
+        }
+        return 0;
+    }
+
+    private boolean isDeleteFS(List<String> args) {
+        for (String arg : args) {
+            if ("_delete-instance-filesystem".equals(arg))
+                return true;
+        }
+        return false;
     }
 }
