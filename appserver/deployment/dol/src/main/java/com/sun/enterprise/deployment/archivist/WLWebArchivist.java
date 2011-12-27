@@ -38,22 +38,20 @@
  * holder.
  */
 
-package org.glassfish.webservices.archivist;
+package com.sun.enterprise.deployment.archivist;
 
 import com.sun.enterprise.deployment.archivist.ExtensionsArchivist;
 import com.sun.enterprise.deployment.archivist.Archivist;
-import com.sun.enterprise.deployment.Application;
+import com.sun.enterprise.deployment.WebBundleDescriptor;
 import org.glassfish.deployment.common.RootDeploymentDescriptor;
 import org.glassfish.deployment.common.XModuleType;
 import com.sun.enterprise.deployment.io.DeploymentDescriptorFile;
-import com.sun.enterprise.deployment.io.runtime.WLApplicationRuntimeDDFile;
-import com.sun.enterprise.deployment.io.runtime.GFApplicationRuntimeDDFile;
-import com.sun.enterprise.deployment.io.runtime.ApplicationRuntimeDDFile;
+import com.sun.enterprise.deployment.io.runtime.WLWebRuntimeDDFile;
+import com.sun.enterprise.deployment.io.runtime.WebRuntimeDDFile;
+import com.sun.enterprise.deployment.io.runtime.GFWebRuntimeDDFile;
 import org.glassfish.api.deployment.archive.ReadableArchive;
-import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.PerLookup;
 import org.xml.sax.SAXParseException;
 
@@ -61,9 +59,7 @@ import java.io.IOException;
 
 @Service
 @Scoped(PerLookup.class)
-public class WLApplicationArchivist extends ExtensionsArchivist {
-    @Inject
-    private Habitat habitat;
+public class WLWebArchivist extends ExtensionsArchivist {
 
     @Override                                                  
     public DeploymentDescriptorFile getStandardDDFile(RootDeploymentDescriptor descriptor) {
@@ -72,17 +68,17 @@ public class WLApplicationArchivist extends ExtensionsArchivist {
 
     @Override
     public DeploymentDescriptorFile getConfigurationDDFile(RootDeploymentDescriptor descriptor) {
-        return new WLApplicationRuntimeDDFile();
+        return new WLWebRuntimeDDFile();
     }
 
     @Override
     public boolean supportsModuleType(XModuleType moduleType) {
-        return XModuleType.EAR ==moduleType;
+        return XModuleType.WAR ==moduleType;
     }
 
     @Override
     public XModuleType getModuleType() {
-        return XModuleType.EAR;
+        return XModuleType.WAR;
     }
 
     @Override
@@ -91,17 +87,17 @@ public class WLApplicationArchivist extends ExtensionsArchivist {
     }
 
     public RootDeploymentDescriptor getDefaultDescriptor() {
-        return new Application(habitat);
+        return new WebBundleDescriptor();
     }
 
     @Override
     public DeploymentDescriptorFile getGFCounterPartConfigurationDDFile(RootDeploymentDescriptor descriptor) {
-        return new GFApplicationRuntimeDDFile();
+        return new GFWebRuntimeDDFile();
     }
 
     @Override
     public DeploymentDescriptorFile getSunCounterPartConfigurationDDFile(RootDeploymentDescriptor descriptor) {
-        return new ApplicationRuntimeDDFile();
+        return new WebRuntimeDDFile();
     }
 }
 

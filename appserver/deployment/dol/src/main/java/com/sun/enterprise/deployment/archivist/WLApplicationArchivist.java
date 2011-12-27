@@ -38,20 +38,22 @@
  * holder.
  */
 
-package org.glassfish.webservices.archivist;
+package com.sun.enterprise.deployment.archivist;
 
 import com.sun.enterprise.deployment.archivist.ExtensionsArchivist;
 import com.sun.enterprise.deployment.archivist.Archivist;
-import com.sun.enterprise.deployment.WebBundleDescriptor;
+import com.sun.enterprise.deployment.Application;
 import org.glassfish.deployment.common.RootDeploymentDescriptor;
 import org.glassfish.deployment.common.XModuleType;
 import com.sun.enterprise.deployment.io.DeploymentDescriptorFile;
-import com.sun.enterprise.deployment.io.runtime.WLWebRuntimeDDFile;
-import com.sun.enterprise.deployment.io.runtime.WebRuntimeDDFile;
-import com.sun.enterprise.deployment.io.runtime.GFWebRuntimeDDFile;
+import com.sun.enterprise.deployment.io.runtime.WLApplicationRuntimeDDFile;
+import com.sun.enterprise.deployment.io.runtime.GFApplicationRuntimeDDFile;
+import com.sun.enterprise.deployment.io.runtime.ApplicationRuntimeDDFile;
 import org.glassfish.api.deployment.archive.ReadableArchive;
+import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.PerLookup;
 import org.xml.sax.SAXParseException;
 
@@ -59,7 +61,9 @@ import java.io.IOException;
 
 @Service
 @Scoped(PerLookup.class)
-public class WLWebArchivist extends ExtensionsArchivist {
+public class WLApplicationArchivist extends ExtensionsArchivist {
+    @Inject
+    private Habitat habitat;
 
     @Override                                                  
     public DeploymentDescriptorFile getStandardDDFile(RootDeploymentDescriptor descriptor) {
@@ -68,17 +72,17 @@ public class WLWebArchivist extends ExtensionsArchivist {
 
     @Override
     public DeploymentDescriptorFile getConfigurationDDFile(RootDeploymentDescriptor descriptor) {
-        return new WLWebRuntimeDDFile();
+        return new WLApplicationRuntimeDDFile();
     }
 
     @Override
     public boolean supportsModuleType(XModuleType moduleType) {
-        return XModuleType.WAR ==moduleType;
+        return XModuleType.EAR ==moduleType;
     }
 
     @Override
     public XModuleType getModuleType() {
-        return XModuleType.WAR;
+        return XModuleType.EAR;
     }
 
     @Override
@@ -87,17 +91,17 @@ public class WLWebArchivist extends ExtensionsArchivist {
     }
 
     public RootDeploymentDescriptor getDefaultDescriptor() {
-        return new WebBundleDescriptor();
+        return new Application(habitat);
     }
 
     @Override
     public DeploymentDescriptorFile getGFCounterPartConfigurationDDFile(RootDeploymentDescriptor descriptor) {
-        return new GFWebRuntimeDDFile();
+        return new GFApplicationRuntimeDDFile();
     }
 
     @Override
     public DeploymentDescriptorFile getSunCounterPartConfigurationDDFile(RootDeploymentDescriptor descriptor) {
-        return new WebRuntimeDDFile();
+        return new ApplicationRuntimeDDFile();
     }
 }
 

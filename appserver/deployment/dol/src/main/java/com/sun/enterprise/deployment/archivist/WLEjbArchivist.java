@@ -38,7 +38,7 @@
  * holder.
  */
 
-package org.glassfish.webservices.archivist;
+package com.sun.enterprise.deployment.archivist;
 
 import com.sun.enterprise.deployment.archivist.ExtensionsArchivist;
 import com.sun.enterprise.deployment.archivist.Archivist;
