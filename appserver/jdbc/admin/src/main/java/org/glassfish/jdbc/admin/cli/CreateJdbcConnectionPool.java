@@ -139,6 +139,12 @@ public class CreateJdbcConnectionPool implements AdminCommand {
     @Param(name="statementTimeout", alias = "statementTimeoutInSeconds",  optional=true, defaultValue = "-1")
     String statementtimeout = "-1";
     
+    @Param(name="statementLeakTimeout", alias = "statementLeakTimeoutInSeconds",  optional=true, defaultValue = "0")
+    String statementLeaktimeout = "0";
+
+    @Param(name="statementLeakReclaim", alias = "statementLeakReclaim",  optional=true, defaultValue="false")
+    Boolean statementLeakreclaim;
+
     @Param(name = "lazyConnectionEnlistment",  optional=true, defaultValue="false")
     Boolean lazyconnectionenlistment;
     
@@ -226,6 +232,8 @@ public class CreateJdbcConnectionPool implements AdminCommand {
         attrList.put(ResourceConstants.DRIVER_CLASSNAME, driverclassname);
         attrList.put(ResourceConstants.SQL_TRACE_LISTENERS, sqltracelisteners);
         attrList.put(ResourceConstants.STATEMENT_TIMEOUT_IN_SECONDS, statementtimeout);
+        attrList.put(ResourceConstants.STATEMENT_LEAK_TIMEOUT_IN_SECONDS, statementLeaktimeout);
+        attrList.put(ResourceConstants.STATEMENT_LEAK_RECLAIM, statementLeakreclaim.toString());
         attrList.put(ResourceConstants.STATEMENT_CACHE_SIZE, statementcachesize);
         attrList.put(ResourceConstants.LAZY_CONNECTION_ASSOCIATION, lazyconnectionassociation.toString());
         attrList.put(ResourceConstants.LAZY_CONNECTION_ENLISTMENT, lazyconnectionenlistment.toString());
