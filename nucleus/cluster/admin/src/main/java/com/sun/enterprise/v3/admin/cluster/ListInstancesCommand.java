@@ -99,7 +99,7 @@ public class ListInstancesCommand implements AdminCommand {
     InstanceStateService stateService;
     @Param(optional = true, defaultValue = "false", name = "long", shortName = "l")
     private boolean long_opt;
-    @Param(optional = true, defaultValue = "2000")
+    @Param(optional = true, defaultValue = "60000")
     private String timeoutmsec;
     @Param(optional = true, defaultValue = "false")
     private boolean standaloneonly;
@@ -121,7 +121,7 @@ public class ListInstancesCommand implements AdminCommand {
             timeoutInMsec = Integer.parseInt(timeoutmsec);
         }
         catch (Exception e) {
-            timeoutInMsec = 2000;
+            timeoutInMsec = 60000;
         }
 
         report = context.getActionReport();
