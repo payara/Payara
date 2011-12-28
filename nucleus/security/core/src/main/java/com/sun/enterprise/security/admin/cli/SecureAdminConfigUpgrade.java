@@ -76,7 +76,6 @@ import java.util.logging.Logger;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.admin.config.ConfigurationUpgrade;
 import org.glassfish.config.support.GrizzlyConfigSchemaMigrator;
-import org.glassfish.security.common.MasterPassword;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PostConstruct;
@@ -137,8 +136,6 @@ public class SecureAdminConfigUpgrade extends SecureAdminUpgradeHelper implement
     
     @Inject
     private ServerEnvironment serverEnv;
-    
-    private MasterPassword masterPassword = null;
     
     private Map<String,Config> writableConfigs = new HashMap<String,Config>();
     
@@ -232,8 +229,8 @@ public class SecureAdminConfigUpgrade extends SecureAdminUpgradeHelper implement
          */
         final Config config_w = writableConfig(c);
         
-        final NetworkListener nl_w = createAdminNetworkListener(transaction(), nc, adminListenerProtocol);
-        final VirtualServer vs_w = createAdminVirtualServer(transaction(), config_w);
+        createAdminNetworkListener(transaction(), nc, adminListenerProtocol);
+        createAdminVirtualServer(transaction(), config_w);
     }
     
     private Config writableConfig(final Config c) throws TransactionFailure {
@@ -337,7 +334,6 @@ public class SecureAdminConfigUpgrade extends SecureAdminUpgradeHelper implement
         final File keyStoreFile = serverEnv.getJKS();
         final File trustStoreFile = new File(serverEnv.getConfigDirPath(), "cacerts.jks");
         final String pw = masterPassword();
-        final char[] pwChar = pw.toCharArray();
         
         ProcessManager pm = new ProcessManager(new String[]{
             "keytool",
@@ -384,7 +380,9 @@ public class SecureAdminConfigUpgrade extends SecureAdminUpgradeHelper implement
             "-alias", SecureAdmin.Duck.DEFAULT_INSTANCE_ALIAS
         });
         pm.execute();
-        tempCertFile.delete();
+        if ( ! tempCertFile.delete()) {
+            logger.log(Level.FINE, "Unable to delete temp file {0}; continuing", tempCertFile.getAbsolutePath());
+        }
         
         if (pm.getExitValue() != 0) {
             throw new RuntimeException(pm.getStderr());

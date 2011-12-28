@@ -140,10 +140,8 @@ public class SecureAdminHelperImpl implements SecureAdminHelper {
         final FileRealm fr = adminRealm();
         try {
             FileRealmUser fru = (FileRealmUser)fr.getUser(username);
-            for (String group : fru.getGroups()) {
-                if (isInAdminGroup(fru)) {
-                    return;
-                }
+            if (isInAdminGroup(fru)) {
+                return;
             }
             /*
              * The user is valid but is not in the admin group.
@@ -201,29 +199,19 @@ public class SecureAdminHelperImpl implements SecureAdminHelper {
         final FileRealm adminRealm = adminRealm();
         for (final Enumeration<String> e = adminRealm.getUserNames(); e.hasMoreElements(); ) {
             final String username = e.nextElement();
-            final FileRealmUser fru;
-            try {
-                fru = (FileRealmUser) adminRealm.getUser(username);
-                
-                /*
-                 * Try to authenticate this user with an empty password.  If it 
-                 * works we can stop.
-                 */
-                final String[] groupNames = adminRealm.authenticate(username, emptyPassword);
-                if (groupNames != null) {
-                    for (String groupName : groupNames) {
-                        if (DOMAIN_ADMIN_GROUP_NAME.equals(groupName)) {
-                            return true;
-                        }
+            /*
+                * Try to authenticate this user with an empty password.  If it 
+                * works we can stop.
+                */
+            final String[] groupNames = adminRealm.authenticate(username, emptyPassword);
+            if (groupNames != null) {
+                for (String groupName : groupNames) {
+                    if (DOMAIN_ADMIN_GROUP_NAME.equals(groupName)) {
+                        return true;
                     }
                 }
-                    
-            } catch (NoSuchUserException ex) {
-                /*
-                 * This is odd.  The realm reported a username from getUserNames
-                 * which it now claims it does not know about.  Continue on.
-                 */
             }
+                    
         }
         return false;
     }

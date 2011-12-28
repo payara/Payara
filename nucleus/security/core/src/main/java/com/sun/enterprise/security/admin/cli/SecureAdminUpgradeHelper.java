@@ -50,10 +50,7 @@ import com.sun.enterprise.security.admin.cli.SecureAdminCommand.TopLevelContext;
 import com.sun.enterprise.security.admin.cli.SecureAdminCommand.Work;
 import com.sun.enterprise.security.ssl.SSLUtils;
 import java.io.IOException;
-import java.security.KeyPairGenerator;
-import java.security.KeyStore;
 import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
 import java.util.Iterator;
 import java.util.Properties;
 import java.util.UUID;
@@ -93,13 +90,10 @@ public class SecureAdminUpgradeHelper {
     private Transaction t = null;
     
     private SecureAdmin secureAdmin = null;
-    private SecureAdmin secureAdmin_w = null;
     
     private TopLevelContext topLevelContext = null;
     private SecureAdminHelper secureAdminHelper = null;
     private SSLUtils sslUtils = null;
-    
-    private boolean secureAdminWasCreated = false;
     
     private Properties startupArgs = null;
     
@@ -140,7 +134,6 @@ public class SecureAdminUpgradeHelper {
             secureAdmin = domain.getSecureAdmin();
             if (secureAdmin == null) {
                 secureAdmin = /* topLevelContext(). */writableSecureAdmin(); 
-                secureAdminWasCreated = true;
                 secureAdmin.setSpecialAdminIndicator(specialAdminIndicator());
             }
         }
@@ -153,13 +146,7 @@ public class SecureAdminUpgradeHelper {
     
     final protected SecureAdmin writableSecureAdmin() throws TransactionFailure {
         return topLevelContext().writableSecureAdmin();
-/*        if (secureAdmin_w == null) {
-            secureAdmin_w = writableDomain().createChild(SecureAdmin.class);
-            secureAdmin_w.setSpecialAdminIndicator(DAS_CONFIG_NAME);
-            writableDomain().setSecureAdmin(secureAdmin_w);
-        }
-        return secureAdmin_w;
-*/    }
+    }
     
     final protected SecureAdminHelper secureAdminHelper() {
         if (secureAdminHelper == null) {
@@ -173,17 +160,6 @@ public class SecureAdminUpgradeHelper {
             sslUtils = habitat.getComponent(SSLUtils.class);
         }
         return sslUtils;
-    }
-    
-    final protected void ensureInstanceKeyPairPresent(final String instanceAlias) throws IOException, KeyStoreException, NoSuchAlgorithmException {
-        final KeyStore ks = sslUtils().getKeyStore();
-        if ( ! ks.isKeyEntry(instanceAlias)) {
-            /*
-             * The instance key is not present.  Create a self-signed one
-             * and add it.
-             */
-            KeyPairGenerator gen = KeyPairGenerator.getInstance(instanceAlias);
-        }
     }
     
     final protected void ensureSecureAdminReady() throws TransactionFailure, IOException, KeyStoreException {
