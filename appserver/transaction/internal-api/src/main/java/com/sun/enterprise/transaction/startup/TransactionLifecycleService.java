@@ -52,6 +52,7 @@ import org.glassfish.api.naming.NamingObjectProxy;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.Inhabitant;
 import org.jvnet.hk2.component.PostConstruct;
 import org.jvnet.hk2.component.PreDestroy;
 
@@ -141,13 +142,19 @@ public class TransactionLifecycleService implements Startup, PostConstruct, PreD
     }
 
     public void onShutdown() {
-        // Cleanup
-        _logger.fine("ON TM SHUTDOWN STARTED");
+        // Cleanup if TM was loaded
         if (tm == null) {
-            tm = habitat.getByContract(JavaEETransactionManager.class);
+            Inhabitant<JavaEETransactionManager> inhabitant =
+                    habitat.getInhabitantByType(JavaEETransactionManager.class);
+            if (inhabitant != null && inhabitant.isActive()) {
+                tm = inhabitant.get();
+            }
         }
-        tm.shutdown();
-        _logger.fine("ON TM SHUTDOWN FINISHED");
+        if (tm != null) {
+            _logger.fine("ON TM SHUTDOWN STARTED");
+            tm.shutdown();
+            _logger.fine("ON TM SHUTDOWN FINISHED");
+        }
 
     }
 
