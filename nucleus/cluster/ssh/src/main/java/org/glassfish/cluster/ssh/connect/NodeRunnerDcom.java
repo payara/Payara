@@ -39,6 +39,7 @@
  */
 package org.glassfish.cluster.ssh.connect;
 
+import com.sun.enterprise.util.cluster.Paths;
 import com.sun.enterprise.util.cluster.windows.process.WindowsRemoteAsadmin;
 import com.sun.enterprise.util.cluster.windows.io.WindowsRemoteFile;
 import java.io.*;
@@ -165,48 +166,60 @@ public class NodeRunnerDcom {
 
         return path + "\\DELETE_ME_" + random;
     }
-    /*
-     * TODO: These methods ought to be in Node.java
-     *
-     */
-    private String getRemoteInstanceDirPath(String instanceName) {
-        if (node == null)
-            throw new NullPointerException(); // don't do that!
 
-        String nodeDir = node.getNodeDirAbsoluteUnixStyle();
 
-        if (nodeDir == null)
-            nodeDir = node.getInstallDirUnixStyle() + "/glassfish/nodes/" + node.getName();
-
-        return nodeDir + "/" + instanceName;
-    }
     /* hack TODO do not know how to get int status back from Windows
      * Stick in code that handles particular commands that we can figure out
      * the status.
      */
-
-    private int determineStatus(List<String> args){
+    private int determineStatus(List<String> args) {
         if (args == null)
             throw new NullPointerException();
 
-        if (isDeleteFS(args) && args.size() >= 2) {
+        if (args.size() < 2)
+            return 0;
+
+        String instanceName = args.get(args.size() - 1);
+
+        if (isCommand(args, "_delete-instance-filesystem")) {
             try {
-                String dir = getRemoteInstanceDirPath(args.get(args.size() - 1));
-                WindowsRemoteFile f = new WindowsRemoteFile(dcomInfo.getCredentials(), dir);
-                return f.exists() ? 1 : 0;
+                String dir = Paths.getInstanceDirPath(node, instanceName);
+                WindowsRemoteFile instanceDir = new WindowsRemoteFile(dcomInfo.getCredentials(), dir);
+                return instanceDir.exists() ? 1 : 0;
             }
             catch (WindowsException ex) {
-                // this is good!  Fall through...
+                return 0;
+            }
+        }
+        else if (isCommand(args, "_create-instance-filesystem")) {
+            try {
+                String dir = Paths.getDasPropsPath(node);
+                WindowsRemoteFile dasProps = new WindowsRemoteFile(dcomInfo.getCredentials(), dir);
+
+                if (dasProps.exists())
+                    return 0;
+
+                // uh-oh.  Wipe out the instance directory that was created
+                dir = Paths.getInstanceDirPath(node, instanceName);
+                WindowsRemoteFile instanceDir = new WindowsRemoteFile(dcomInfo.getCredentials(), dir);
+                instanceDir.delete();
+                return 1;
+            }
+            catch (WindowsException ex) {
+                return 1;
             }
         }
         return 0;
     }
 
-    private boolean isDeleteFS(List<String> args) {
-        for (String arg : args) {
-            if ("_delete-instance-filesystem".equals(arg))
+    private boolean isCommand(List<String> args, final String cmd) {
+        if (!ok(cmd))
+            return false;
+
+        for (String arg : args)
+            if (arg != null && arg.equals(cmd))
                 return true;
-        }
+
         return false;
     }
 }
