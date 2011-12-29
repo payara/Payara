@@ -110,15 +110,15 @@ public class ServerRemoteAdminCommand extends RemoteAdminCommand {
     }
 
     @Override
-    protected AuthenticationInfo authenticationInfo() {
+    protected synchronized AuthenticationInfo authenticationInfo() {
         AuthenticationInfo result = null;
         if (SecureAdmin.Util.isUsingUsernamePasswordAuth(secureAdmin)) {
             final SecureAdminInternalUser secureAdminInternalUser = SecureAdmin.Util.secureAdminInternalUser(secureAdmin);
             if (secureAdminInternalUser != null) {
                 try {
-                    String pw = masterPassword().getMasterPasswordAdapter().getPasswordForAlias(secureAdminInternalUser.getPasswordAlias());
-                    result = new AuthenticationInfo(secureAdminInternalUser.getUsername(), pw);
-                    pw = null;
+                    result = new AuthenticationInfo(secureAdminInternalUser.getUsername(), 
+                            masterPassword().getMasterPasswordAdapter().
+                                getPasswordForAlias(secureAdminInternalUser.getPasswordAlias()));
                 } catch (Exception ex) {
                     throw new RuntimeException(ex);
                 }

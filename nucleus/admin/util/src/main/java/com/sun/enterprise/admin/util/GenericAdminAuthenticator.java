@@ -146,7 +146,7 @@ public class GenericAdminAuthenticator implements AdminAccessController, JMXAuth
     private Map<String,Principal> serverPrincipals = new HashMap<String,Principal>();
 
     @Override
-    public void postConstruct() {
+    public synchronized void postConstruct() {
         secureAdmin = domain.getSecureAdmin();
         
         // Ensure that the admin password is set as required
@@ -346,7 +346,7 @@ public class GenericAdminAuthenticator implements AdminAccessController, JMXAuth
      * 
      * @return the access to be granted to the user if subsequently authorized
      */
-    private Access checkRemoteAccess(final String originHost,
+    private synchronized Access checkRemoteAccess(final String originHost,
             final boolean adminIndicatorCheckerMatched) {
         Access grantedAccess;
         if (serverEnv.isDas()) {
@@ -374,7 +374,7 @@ public class GenericAdminAuthenticator implements AdminAccessController, JMXAuth
         return grantedAccess;
     }
 
-    private boolean isAuthorizedInternalUser(final String username) {
+    private synchronized boolean isAuthorizedInternalUser(final String username) {
         for (SecureAdminInternalUser u : SecureAdmin.Util.secureAdminInternalUsers(secureAdmin)) {
             if (u.getUsername().equals(username)) {
                 return true;
@@ -402,7 +402,7 @@ public class GenericAdminAuthenticator implements AdminAccessController, JMXAuth
         }
     }
 
-    private boolean isPrincipalAuthorized(final Principal reqPrincipal) {
+    private synchronized boolean isPrincipalAuthorized(final Principal reqPrincipal) {
         final String principalName = reqPrincipal.getName();
         for (SecureAdminPrincipal configPrincipal : SecureAdmin.Util.secureAdminPrincipals(secureAdmin, habitat)) {
             if (configPrincipal.getDn().equals(principalName)) {
