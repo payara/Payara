@@ -41,7 +41,7 @@
   -->
 
 <glassfish-services>
-<service-description name="basic-shared-service" init-type="lazy">
+<service-description name="enable-disable-ext-shared-service" init-type="lazy">
   <characteristics>
     <characteristic name="service-type" value="JavaEE"/>
   </characteristics>

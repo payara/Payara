@@ -38,7 +38,7 @@
  * holder.
  */
 
-package org.glassfish.tests.paas.external_and_shared_service;
+package org.glassfish.tests.paas.enabledisable;
 
 import com.sun.enterprise.util.ExecException;
 import com.sun.enterprise.util.OS;
@@ -46,16 +46,17 @@ import com.sun.enterprise.util.ProcessExecutor;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.internal.api.Globals;
+import org.glassfish.internal.api.ServerContext;
 import org.glassfish.embeddable.CommandResult;
 import org.glassfish.embeddable.CommandRunner;
 import org.glassfish.embeddable.Deployer;
 import org.glassfish.embeddable.GlassFish;
 import org.glassfish.embeddable.GlassFishProperties;
 import org.glassfish.embeddable.GlassFishRuntime;
-import org.glassfish.internal.api.ServerContext;
 import org.junit.Assert;
 import org.junit.Test;
 import org.jvnet.hk2.component.Habitat;
+
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -72,7 +73,7 @@ import java.util.regex.Pattern;
  * @author Sandhya Kripalani
  */
 
-public class SharedAndExternalServiceTest {
+public class ExtSharedServiceEnableDisableTest {
 
     @Test
     public void test() throws Exception {
@@ -90,13 +91,15 @@ public class SharedAndExternalServiceTest {
 
         // 2. Deploy the PaaS-bookstore application.
         File archive = new File(System.getProperty("basedir")
-                + "/target/external-and-shared-service-test.war"); // TODO :: use mvn apis to get the
+                + "/target/ext-shared-service-enable-disable-test.war"); // TODO :: use mvn apis to get the
         // archive location.
-        org.junit.Assert.assertTrue(archive.exists());
+        Assert.assertTrue(archive.exists());
 
         Deployer deployer = null;
         String appName = null;
+
         try {
+
             {
                 //start-database
                 Habitat habitat = Globals.getDefaultHabitat();
@@ -113,7 +116,6 @@ public class SharedAndExternalServiceTest {
                 }
             }
 
-
             //Create the shared & external services first, as these services will be referenced by the application
             createSharedAndExternalServices();
 
@@ -128,7 +130,7 @@ public class SharedAndExternalServiceTest {
             System.out.println("\nlist-services command output [ "
                     + result.getOutput() + "]");
 
-            // 3. Access the app to make sure PaaS-external-and-shared-service-test app is correctly
+            // 3. Access the app to make sure PaaS-ext-shared-service-enable-disable-test app is correctly
             // provisioned.
 
             String HTTP_PORT = (System.getProperty("http.port") != null) ? System
@@ -137,15 +139,16 @@ public class SharedAndExternalServiceTest {
             String instanceIP = getLBIPAddress(glassfish);
 
             get("http://" + instanceIP + ":" + HTTP_PORT
-                    + "/external-and-shared-service-test/list", "Here is a list of animals in the zoo.");
+                    + "/ext-shared-service-enable-disable-test/list", "Here is a list of animals in the zoo.");
 
             testSharedAndExternalService();
 
-            // 4. Access the app to make sure PaaS-external-and-shared-service-test app is correctly
+
+            // 4. Access the app to make sure PaaS-ext-shared-service-enable-disable-test app is correctly
             // provisioned after running Shared-Services test
 
             get("http://" + instanceIP + ":" + HTTP_PORT
-                    + "/external-and-shared-service-test/list", "Here is a list of animals in the zoo.");
+                    + "/ext-shared-service-enable-disable-test/list", "Here is a list of animals in the zoo.");
 
             // 5. Undeploy the Zoo catalogue application .
 
@@ -154,7 +157,6 @@ public class SharedAndExternalServiceTest {
                 deployer.undeploy(appName);
                 System.err.println("Undeployed [" + appName + "]");
                 deleteSharedAndExternalService();
-
                 {
                     //stop-database
                     Habitat habitat = Globals.getDefaultHabitat();
@@ -169,7 +171,6 @@ public class SharedAndExternalServiceTest {
                         e.printStackTrace();
                     }
                 }
-
                 try {
                     boolean undeployClean = false;
                     CommandResult commandResult = glassfish.getCommandRunner()
@@ -251,7 +252,7 @@ public class SharedAndExternalServiceTest {
 
     private void createSharedAndExternalServices() {
 
-        System.out.println("################### Trying to Create Shared Service #######################");
+        System.out.println("################### Trying to Create External and Shared Service #######################");
         Habitat habitat = Globals.getDefaultHabitat();
         org.glassfish.api.admin.CommandRunner commandRunner = habitat.getComponent(org.glassfish.api.admin.CommandRunner.class);
         ActionReport report = habitat.getComponent(ActionReport.class);
@@ -269,20 +270,7 @@ public class SharedAndExternalServiceTest {
         Assert.assertFalse(report.hasFailures());
 
 
-/*
-        //Create external service of type Database
-        // asadmin create-external-service --servicetype=Database --configuration ip-address=127.0.0.1:databasename=sun-appserv-samples:port=1527:user=APP:password=APP:host=127.0.0.1:classname=org.apache.derby.jdbc.ClientXADataSource:resourcetype=javax.sql.XADataSource my-shared-db-service
-        parameterMap = new ParameterMap();
-        parameterMap.add("servicetype", "Database");
-        parameterMap.add("configuration", "ip-address=127.0.0.1:databasename=sun-appserv-samples:port=1527:user=APP:password=APP:host=127.0.0.1:classname=org.apache.derby.jdbc.ClientXADataSource:resourcetype=javax.sql.XADataSource");
-        //parameterMap.add("configuration", "ip-address=127.0.0.1:databasename=${com.sun.aas.installRoot}/databases/sun-appserv-samples:port=1527:user=APP:password=APP:connectionAttributes=;'create\\=true':host=127.0.0.1:classname=org.apache.derby.jdbc.EmbeddedXADataSource:resourcetype=javax.sql.XADataSource");
-        parameterMap.add("DEFAULT", "my-shared-db-service");
-
-        invocation.parameters(parameterMap).execute();
-
-        System.out.println("Created external service 'my-shared-db-service' :" + !report.hasFailures());
-*/
-        Assert.assertFalse(report.hasFailures());
+       Assert.assertFalse(report.hasFailures());
 
         // Create shared service of type LB
         //asadmin create-shared-service --template LBNative --configuration http-port=50080:https-port=50081:ssl-enabled=true --servicetype LB my-shared-lb-service
@@ -296,7 +284,7 @@ public class SharedAndExternalServiceTest {
 
         System.out.println("Created shared service 'my-shared-lb-service' :" + !report.hasFailures());
         Assert.assertFalse(report.hasFailures());
-        {
+
             //List the services and check the status of both the services - it should be 'RUNNING'
             invocation = commandRunner.getCommandInvocation("list-services", report);
             parameterMap = new ParameterMap();
@@ -314,7 +302,7 @@ public class SharedAndExternalServiceTest {
                 }
             }
             Assert.assertTrue(sharedServiceStarted);//check if the shared services are started.
-        }
+
     }
 
     private void testSharedAndExternalService() {
@@ -323,70 +311,14 @@ public class SharedAndExternalServiceTest {
         Habitat habitat = Globals.getDefaultHabitat();
         org.glassfish.api.admin.CommandRunner commandRunner = habitat.getComponent(org.glassfish.api.admin.CommandRunner.class);
         ActionReport report = habitat.getComponent(ActionReport.class);
-        //Try stopping a shared service, referenced by the app. Should 'FAIL'
 
-        org.glassfish.api.admin.CommandRunner.CommandInvocation invocation = commandRunner.getCommandInvocation("stop-shared-service", report);
+       //Disable the application and try stopping  the shared service. Command should succeed
+        org.glassfish.api.admin.CommandRunner.CommandInvocation invocation = commandRunner.getCommandInvocation("disable", report);
         ParameterMap parameterMap = new ParameterMap();
-        parameterMap.add("DEFAULT", "my-shared-lb-service");
+        parameterMap.add("DEFAULT", "ext-shared-service-enable-disable-test");
         invocation.parameters(parameterMap).execute();
 
-        System.out.print("Expected Failure message: " + report.getMessage());
-        Assert.assertTrue(report.hasFailures());
-
-        //Try deleting a shared service, referenced by the app. Should 'FAIL'
-        report = habitat.getComponent(ActionReport.class);
-        invocation = commandRunner.getCommandInvocation("delete-shared-service", report);
-        parameterMap = new ParameterMap();
-        parameterMap.add("DEFAULT", "my-shared-lb-service");
-        invocation.parameters(parameterMap).execute();
-
-        System.out.print("Expected Failure message: " + report.getMessage());
-        Assert.assertTrue(report.hasFailures());
-
-
-        //Try deleting a external service, referenced by the app. Should 'FAIL'
-        invocation = commandRunner.getCommandInvocation("delete-external-service", report);
-        parameterMap = new ParameterMap();
-        parameterMap.add("DEFAULT", "my-shared-db-service");
-        invocation.parameters(parameterMap).execute();
-
-        System.out.println("Expected Failure message: " + report.getMessage());
-        Assert.assertTrue(report.hasFailures());
-
-        invocation = commandRunner.getCommandInvocation("stop-shared-service", report);
-        parameterMap = new ParameterMap();
-        parameterMap.add("DEFAULT", "my-shared-lb-service");
-        invocation.parameters(parameterMap).execute();
-
-        Assert.assertTrue(report.hasFailures());
-        System.out.print("Expected failure MSG: " + report.getMessage());
-
-        //List the services and check the status of both the services - it should be 'RUNNING'
-        invocation = commandRunner.getCommandInvocation("list-services", report);
-        parameterMap = new ParameterMap();
-        parameterMap.add("scope", "shared");
-        parameterMap.add("output", "service-name,state");
-        invocation.parameters(parameterMap).execute();
-
-        boolean sharedServiceStarted = false;
-        List<Map<String, String>> list = (List<Map<String, String>>) report.getExtraProperties().get("list");
-        for (Map<String, String> map : list) {
-            sharedServiceStarted = false;
-            String state = map.get("STATE");
-            if ("RUNNING".equalsIgnoreCase(state)) {
-                sharedServiceStarted = true;
-            }
-        }
-        Assert.assertTrue(sharedServiceStarted);//check if the shared services are started.
-
-
-        /*//Disable the application and try stopping  the shared service. Command should succeed
-        invocation = commandRunner.getCommandInvocation("disable", report);
-        parameterMap = new ParameterMap();
-        parameterMap.add("DEFAULT", "external-and-shared-service-test");
-        invocation.parameters(parameterMap).execute();
-
-        System.out.print("Disabled application external-and-shared-service-test: " + !report.hasFailures());
+        System.out.println("Disabled application ext-shared-service-enable-disable-test: " + !report.hasFailures());
         Assert.assertFalse(report.hasFailures());
 
 
@@ -396,7 +328,7 @@ public class SharedAndExternalServiceTest {
         invocation.parameters(parameterMap).execute();
 
         Assert.assertFalse(report.hasFailures());
-        System.out.print("MSG: " + report.getMessage());
+        System.out.println("MSG: " + report.getMessage());
 
 
         //try deleting a external service when an app is using it. it should 'FAIL'
@@ -406,7 +338,7 @@ public class SharedAndExternalServiceTest {
         invocation.parameters(parameterMap).execute();
 
         Assert.assertTrue(report.hasFailures());
-        System.out.print("MSG: " + report.getMessage());
+        System.out.println("Expected Failure Msg: " + report.getMessage());
 
 
         //List the services and check the status of both the services - it should be 'STOPPED'
@@ -417,9 +349,9 @@ public class SharedAndExternalServiceTest {
         invocation.parameters(parameterMap).execute();
 
         boolean sharedServiceStopped = false;
-        list = (List<Map<String, String>>) report.getExtraProperties().get("list");
+        List<Map<String, String>> list = (List<Map<String, String>>) report.getExtraProperties().get("list");
         for (Map<String, String> map : list) {
-            sharedServiceStopped = false;
+        sharedServiceStopped = false;
             String state = map.get("STATE");
             if ("STOPPED".equalsIgnoreCase(state)) {
                 sharedServiceStopped = true;
@@ -437,7 +369,7 @@ public class SharedAndExternalServiceTest {
         invocation.parameters(parameterMap).execute();
 
         Assert.assertFalse(report.hasFailures());
-        System.out.print("MSG: " + report.getMessage());
+        System.out.println("MSG: " + report.getMessage());
 
         //List the services and check the status of both the services - it should be 'STARTED'
         parameterMap = new ParameterMap();
@@ -446,10 +378,10 @@ public class SharedAndExternalServiceTest {
         invocation = commandRunner.getCommandInvocation("list-services", report);
         invocation.parameters(parameterMap).execute();
 
-        sharedServiceStarted = false;
+        boolean sharedServiceStarted = false;
         list = (List<Map<String, String>>) report.getExtraProperties().get("list");
         for (Map<String, String> map : list) {
-            sharedServiceStopped = false;
+            sharedServiceStarted = false;
             String state = map.get("STATE");
             if ("STARTED".equalsIgnoreCase(state) || "RUNNING".equalsIgnoreCase(state)) {
                 sharedServiceStarted = true;
@@ -463,11 +395,30 @@ public class SharedAndExternalServiceTest {
         //Enable the application and try stopping  accessing
         invocation = commandRunner.getCommandInvocation("enable", report);
         parameterMap = new ParameterMap();
-        parameterMap.add("DEFAULT", "external-and-shared-service-test");
+        parameterMap.add("DEFAULT", "ext-shared-service-enable-disable-test");
         invocation.parameters(parameterMap).execute();
 
-        System.out.print("Enabled application external-and-shared-service-test: " + !report.hasFailures());
-        Assert.assertFalse(report.hasFailures());*/
+        System.out.println("Enabled application ext-shared-service-enable-disable-test: " + !report.hasFailures());
+        Assert.assertFalse(report.hasFailures());
+
+        {
+            //List the services and check the status of both the services - it should be 'RUNNING'
+            invocation = commandRunner.getCommandInvocation("list-services", report);
+            parameterMap = new ParameterMap();
+            parameterMap.add("output", "service-name,state");
+            invocation.parameters(parameterMap).execute();
+
+            sharedServiceStarted = false;
+            list = (List<Map<String, String>>) report.getExtraProperties().get("list");
+            for (Map<String, String> map : list) {
+                sharedServiceStarted = false;
+                String state = map.get("STATE");
+                if ("RUNNING".equalsIgnoreCase(state)) {
+                    sharedServiceStarted = true;
+                }
+            }
+            Assert.assertTrue(sharedServiceStarted);//check if the shared services are started.
+        }
 
     }
 
@@ -491,5 +442,7 @@ public class SharedAndExternalServiceTest {
 
         Assert.assertFalse(report.hasFailures());
     }
+
+
 
 }

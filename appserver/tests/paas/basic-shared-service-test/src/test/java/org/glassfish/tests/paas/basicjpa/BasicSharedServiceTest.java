@@ -339,7 +339,7 @@ public class BasicSharedServiceTest {
         }
         Assert.assertTrue(sharedServiceStarted);//check if the shared services are started.
 
-        //Disable the application and try stopping  the shared service. Command should succeed
+       /* //Disable the application and try stopping  the shared service. Command should succeed
         invocation = commandRunner.getCommandInvocation("disable", report);
         parameterMap = new ParameterMap();
         parameterMap.add("DEFAULT","basic-shared-service-test");
@@ -432,7 +432,7 @@ public class BasicSharedServiceTest {
         System.out.print("Enabled application basic-shared-service-test: "+!report.hasFailures());
         Assert.assertFalse(report.hasFailures());
 
-
+*/
         /*
 
 
