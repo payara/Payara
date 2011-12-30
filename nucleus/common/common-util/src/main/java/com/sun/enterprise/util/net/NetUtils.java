@@ -37,7 +37,6 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
 package com.sun.enterprise.util.net;
 
 import com.sun.enterprise.util.StringUtils;
@@ -49,11 +48,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class NetUtils {
-
     public static final int MAX_PORT = 65535;
-
     private final static boolean asDebug =
-                                Boolean.parseBoolean(System.getenv("AS_DEBUG"));
+            Boolean.parseBoolean(System.getenv("AS_DEBUG"));
 
     private static void printd(String string) {
         if (asDebug) {
@@ -62,7 +59,6 @@ public class NetUtils {
     }
 
     public enum PortAvailability {
-
         illegalNumber, noPermission, inUse, unknown, OK
     };
 
@@ -82,8 +78,8 @@ public class NetUtils {
      */
     public static boolean isThisHostLocal(String hostname) {
         // optimize common cases
-        if (hostname == null || hostname.length() == 0 ||
-                hostname.equalsIgnoreCase("localhost"))
+        if (hostname == null || hostname.length() == 0
+                || hostname.equalsIgnoreCase("localhost"))
             return true;
 
         // now check all the addresses of "localhost"
@@ -101,7 +97,7 @@ public class NetUtils {
             // are any of our addresses the same as any address of "localhost"?
             // XXX - redundant with the above check?
             InetAddress localHostAddrs[] =
-                InetAddress.getAllByName("localhost");
+                    InetAddress.getAllByName("localhost");
             if (localHostAddrs != null) {
                 for (InetAddress lia : localHostAddrs) {
                     for (InetAddress ia : hostAddrs) {
@@ -110,7 +106,8 @@ public class NetUtils {
                     }
                 }
             }
-        } catch (UnknownHostException ex) {
+        }
+        catch (UnknownHostException ex) {
             // ignore it
         }
 
@@ -118,7 +115,8 @@ public class NetUtils {
         Enumeration<NetworkInterface> eni = null;
         try {
             eni = NetworkInterface.getNetworkInterfaces();
-        } catch (SocketException ex) {
+        }
+        catch (SocketException ex) {
             // ignore it
         }
         if (eni != null && hostAddrs != null) {
@@ -145,51 +143,51 @@ public class NetUtils {
         String myCanonicalHostName = System.getProperty(SystemPropertyConstants.HOST_NAME_PROPERTY);
 
         try {
-            if (!StringUtils.ok(myCanonicalHostName))
-                myCanonicalHostName = getCanonicalHostName();
+        if (!StringUtils.ok(myCanonicalHostName))
+        myCanonicalHostName = getCanonicalHostName();
 
-            InetAddress[] adds = InetAddress.getAllByName(hostname);
+        InetAddress[] adds = InetAddress.getAllByName(hostname);
 
-            if (adds == null || adds.length <= 0)
-                return false;
+        if (adds == null || adds.length <= 0)
+        return false;
 
-            for (InetAddress ia : adds)
-                host_ips.add(ia.getHostAddress());
+        for (InetAddress ia : adds)
+        host_ips.add(ia.getHostAddress());
 
-            adds = InetAddress.getAllByName(myCanonicalHostName);
-            for (int i = 0; adds != null && i < adds.length; i++) {
-                String ip = adds[i].getHostAddress();
-                if (!local_ips.contains(ip))
-                    local_ips.add(ip);
-            }
+        adds = InetAddress.getAllByName(myCanonicalHostName);
+        for (int i = 0; adds != null && i < adds.length; i++) {
+        String ip = adds[i].getHostAddress();
+        if (!local_ips.contains(ip))
+        local_ips.add(ip);
+        }
 
-            adds = InetAddress.getAllByName("localhost");
-            for (int i = 0; adds != null && i < adds.length; i++) {
-                String ip = adds[i].getHostAddress();
-                if (!local_ips.contains(ip))
-                    local_ips.add(ip);
-            }
+        adds = InetAddress.getAllByName("localhost");
+        for (int i = 0; adds != null && i < adds.length; i++) {
+        String ip = adds[i].getHostAddress();
+        if (!local_ips.contains(ip))
+        local_ips.add(ip);
+        }
 
-            adds = InetAddress.getAllByName(null);
-            for (int i = 0; adds != null && i < adds.length; i++) {
-                String ip = adds[i].getHostAddress();
-                if (!local_ips.contains(ip))
-                    local_ips.add(ip);
-            }
+        adds = InetAddress.getAllByName(null);
+        for (int i = 0; adds != null && i < adds.length; i++) {
+        String ip = adds[i].getHostAddress();
+        if (!local_ips.contains(ip))
+        local_ips.add(ip);
+        }
         }
         catch (UnknownHostException ex) {
-            return false;
+        return false;
         }
 
         // if any hostAddress matches any localAddress -- then the host is local...
 
         for (String hip : host_ips)
-            for (String lip : local_ips)
-                if (hip.equals(lip))
-                    return true;
+        for (String lip : local_ips)
+        if (hip.equals(lip))
+        return true;
 
         return false;
-        */
+         */
     }
 
     /**
@@ -249,7 +247,6 @@ public class NetUtils {
 
     static public Socket getClientSocket(final String host, final int port, final int msecTimeout) {
         class SocketFetcher implements Runnable {
-
             @Override
             public void run() {
                 try {
@@ -304,7 +301,7 @@ public class NetUtils {
         String defaultHostname = InetAddress.getLocalHost().getHostName();
 
         // short-circuit out if user has reverse-DNS issues
-        if(Boolean.parseBoolean(System.getenv("AS_NO_REVERSE_DNS"))) {
+        if (Boolean.parseBoolean(System.getenv("AS_NO_REVERSE_DNS"))) {
             return defaultHostname;
         }
 
@@ -529,10 +526,10 @@ public class NetUtils {
             return PortAvailability.illegalNumber;
 
         // if we can setup a server socket on that port then it must be free.
-        if(isPortFreeServer(portNumber))
+        if (isPortFreeServer(portNumber))
             return PortAvailability.OK;
 
-        if(isPortFreeClient(null, portNumber)) {
+        if (isPortFreeClient(null, portNumber)) {
             // can not setup a server socket and can not connect as a client
             // that means we don't have permission...
             return PortAvailability.noPermission;
