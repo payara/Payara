@@ -49,6 +49,7 @@ import java.util.logging.Logger;
 
 public class NetUtils {
     public static final int MAX_PORT = 65535;
+    private final static int IS_RUNNING_DEFAULT_TIMEOUT = 3000;
     private final static boolean asDebug =
             Boolean.parseBoolean(System.getenv("AS_DEBUG"));
 
@@ -744,27 +745,35 @@ public class NetUtils {
      * <p>
      * In such cases, we need to know if the domain is running and this method
      * provides a way to do that.
-     *
+     * @param the timeout in milliseconds
      * @return boolean indicating whether the server is running
      */
-    public static boolean isRunning(String host, int port) {
-        Socket server = null;
+    public static boolean isRunning(String host, int port, int timeoutMilliseconds) {
+        Socket server = new Socket();
+
         try {
-            server = new Socket(host, port);
+            if (host == null)
+                host = InetAddress.getByName(null).getHostName();
+
+            InetSocketAddress whom = new InetSocketAddress(host, port);
+            server.connect(whom, timeoutMilliseconds);
             return true;
         }
         catch (Exception ex) {
             return false;
         }
         finally {
-            if (server != null) {
-                try {
-                    server.close();
-                }
-                catch (IOException ex) {
-                }
+            try {
+                server.close();
+            }
+            catch (IOException ex) {
+                // nothing to do
             }
         }
+    }
+
+    public static boolean isRunning(String host, int port) {
+        return isRunning(host, port, IS_RUNNING_DEFAULT_TIMEOUT);
     }
 
     /**
@@ -805,6 +814,17 @@ public class NetUtils {
         System.out.println("80: " + isPortFree(80));
         System.out.println("777: " + isPortFree(777));
         System.out.println("8000: " + isPortFree(8000));
+        System.out.println("");
+        timeit(null, 12345);
+        timeit(null, 4848);
+        timeit("10.0.4.5", 1234); // unlikely IP address
+    }
+
+    private static void timeit(String h, int p) {
+        long start = System.currentTimeMillis();
+        boolean b = isRunning(h, p);
+        long duration = System.currentTimeMillis() - start;
+        System.out.printf("isRunning says: %b for %s, %d, %d\n", b, h, p, duration);
     }
     /**
      *	This is the test query used to ping the server in an attempt to
