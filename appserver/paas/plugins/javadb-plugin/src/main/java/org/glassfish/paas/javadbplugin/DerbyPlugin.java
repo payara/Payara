@@ -39,6 +39,7 @@
  */
 package org.glassfish.paas.javadbplugin;
 
+import com.sun.logging.LogDomains;
 import org.glassfish.paas.dbspecommon.DatabaseSPEBase;
 import org.glassfish.virtualization.spi.VirtualMachine;
 import org.glassfish.virtualization.util.RuntimeContext;
@@ -64,7 +65,7 @@ public class DerbyPlugin extends DatabaseSPEBase {
     private static final String DERBY_PASSWORD = "APP";
     // TODO :: grab the actual port.
     private static final String DERBY_PORT = "1527";
-    private static Logger logger = Logger.getLogger(DerbyPlugin.class.getName());
+    private static Logger logger = LogDomains.getLogger(DerbyPlugin.class, LogDomains.PAAS_LOGGER);
 
     public String getDefaultServiceName() {
         return "default-derby-db-service";
@@ -73,29 +74,31 @@ public class DerbyPlugin extends DatabaseSPEBase {
     @Override
     public void executeInitSql(Properties dbProps, String sqlFile) {
         try {
-            logger.log(Level.INFO, "Executing init-sql : " + sqlFile);
+            logger.log(Level.INFO, "javadb.spe.init_sql.exec.start", sqlFile);
             String url = "jdbc:derby://" + dbProps.getProperty(HOST) + ":" +
                     dbProps.getProperty(PORT) + "/" +
                     dbProps.getProperty(DATABASENAME) + ";create=true";
             executeAntTask(dbProps, "org.apache.derby.jdbc.ClientDriver", url, sqlFile, true);
-            logger.log(Level.INFO, "Completed executing init-sql : " + sqlFile);
+            logger.log(Level.INFO, "javadb.spe.init_sql.exec.stop", sqlFile);
         } catch (Exception ex) {
-            logger.log(Level.WARNING, "Init SQL execution [ " + sqlFile + " ] failed with exception : " + ex);
+            Object[] args = new Object[] {sqlFile, ex};
+            logger.log(Level.WARNING, "javadb.spe.init_sql.fail.ex", args);
         }
     }
 
     @Override
     public void createDatabase(Properties dbProps) {
         try {
-            logger.log(Level.INFO, "Creating Database: " + dbProps.getProperty(DATABASENAME));
+            logger.log(Level.INFO, "javadb.spe.custom_db_creation.exec.start", dbProps.getProperty(DATABASENAME));
             String url = "jdbc:derby://" + dbProps.getProperty(HOST) + ":" +
                     dbProps.getProperty(PORT) + "/" +
                     dbProps.getProperty(DATABASENAME) + ";create=true";
             String sql = "VALUES(1)";
             executeAntTask(dbProps, "org.apache.derby.jdbc.ClientDriver", url, sql, false);
-            logger.log(Level.INFO, "Created database : " + dbProps.getProperty(DATABASENAME));
+            logger.log(Level.INFO, "javadb.spe.custom_db_creation.exec.stop", dbProps.getProperty(DATABASENAME));
         } catch (Exception ex) {
-            logger.log(Level.WARNING, "Database creation failed with exception : " + ex);
+            Object[] args = new Object[] {dbProps.getProperty(DATABASENAME), ex};
+            logger.log(Level.WARNING, "javadb.spe.custom_db_creation.fail.ex", args);
         }
     }
 
@@ -137,12 +140,15 @@ public class DerbyPlugin extends DatabaseSPEBase {
         String[] args = {installDir + File.separator + "glassfish" +
                 File.separator + "bin" + File.separator + "asadmin ", commandName};
         try {
-            RuntimeContext.logger.info("Virtual Machine " + virtualMachine.getName() + " output : " +
-                    virtualMachine.executeOn(args));
+            String output = virtualMachine.executeOn(args);
+            Object[] params = new Object[] {virtualMachine.getName(), output};
+            logger.log(Level.INFO, "javadb.spe.asadmin_cmd_exec", params);
         } catch (IOException e) {
-            logger.log(Level.WARNING, "Exception during " + commandName + "  : " + e);
+            Object[] params = new Object[] {commandName, e};
+            logger.log(Level.WARNING, "javadb.spe.command_execution.fail.ex", params);
         } catch (InterruptedException e) {
-            logger.log(Level.WARNING, "Exception during " + commandName + "  :" + e);
+            Object[] params = new Object[] {commandName, e};
+            logger.log(Level.WARNING, "javadb.spe.command_execution.fail.ex", params);
         }
     }
 }

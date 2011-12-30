@@ -39,6 +39,7 @@
  */
 package org.glassfish.paas.mysqldbplugin;
 
+import com.sun.logging.LogDomains;
 import org.glassfish.paas.dbspecommon.DatabaseSPEBase;
 import org.glassfish.virtualization.spi.VirtualMachine;
 import org.jvnet.hk2.annotations.Scoped;
@@ -62,7 +63,7 @@ public class MySQLDBPlugin  extends DatabaseSPEBase {
     private static final String MYSQL_PASSWORD = "mysql";
     // TODO :: grab the actual port.
     private static final String MYSQL_PORT = "3306";
-    private static Logger logger = Logger.getLogger(MySQLDBPlugin.class.getName());
+    private static Logger logger = LogDomains.getLogger(MySQLDBPlugin.class, LogDomains.PAAS_LOGGER);
 
     public String getDefaultServiceName() {
         return "default-mysql-db-service";
@@ -71,31 +72,35 @@ public class MySQLDBPlugin  extends DatabaseSPEBase {
     @Override
     public void executeInitSql(Properties dbProps, String sqlFile) {
         try {
-            logger.log(Level.INFO, "Executing init-sql : " + sqlFile);
+            logger.log(Level.INFO, "mysqldb.spe.init_sql.exec.start", sqlFile);
             String url = "jdbc:mysql://" + dbProps.getProperty(HOST) +
                     ":" + dbProps.getProperty(PORT) + "/" +
                     dbProps.getProperty(DATABASENAME) +
                     "?createDatabaseIfNotExist=true";
             executeAntTask(dbProps, "com.mysql.jdbc.Driver", url, sqlFile, true);
-            logger.log(Level.INFO, "Completed executing init-sql : " + sqlFile);
+            logger.log(Level.INFO, "mysqldb.spe.init_sql.exec.stop", sqlFile);
         } catch (Exception ex) {
-            logger.log(Level.WARNING, "Init SQL execution [ " + sqlFile + " ] failed with exception : " + ex);
+            Object[] args = new Object[] {sqlFile, ex};
+            logger.log(Level.WARNING, "mysqldb.spe.init_sql.fail.ex", args);
         }
     }
 
     @Override
     public void createDatabase(Properties dbProps) {
         try {
-            logger.log(Level.INFO, "Creating Database: " + dbProps.getProperty(DATABASENAME));
+            logger.log(Level.INFO, "mysqldb.spe.custom_db_creation.exec.start",
+                    dbProps.getProperty(DATABASENAME));
             String url = "jdbc:mysql://" + dbProps.getProperty(HOST) +
                     ":" + dbProps.getProperty(PORT) + "/" +
                     dbProps.getProperty(DATABASENAME) +
                     "?createDatabaseIfNotExist=true";
             String sql = "SELECT '1'";
             executeAntTask(dbProps, "com.mysql.jdbc.Driver", url, sql, false);
-            logger.log(Level.INFO, "Created database : ", dbProps.getProperty(DATABASENAME));
+            logger.log(Level.INFO, "mysqldb.spe.custom_db_creation.exec.stop",
+                    dbProps.getProperty(DATABASENAME));
         } catch (Exception ex) {
-            logger.log(Level.WARNING, "Database creation failed with exception : " + ex);
+            Object[] args = new Object[] {dbProps.getProperty(DATABASENAME), ex};
+            logger.log(Level.WARNING, "mysqldb.spe.custom_db_creation.fail.ex", args);
         }
     }
 

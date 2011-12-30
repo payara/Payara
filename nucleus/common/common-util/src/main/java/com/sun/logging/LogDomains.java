@@ -296,6 +296,10 @@ public class LogDomains {
      */
     public static final String VIRTUALIZATION_LOGGER = DOMAIN_ROOT + "org.glassfish.virtualization";
 
+    /**
+     * PaaS logger
+     */
+    public static final String PAAS_LOGGER = DOMAIN_ROOT + "org.glassfish.paas";
 
     // Lock to ensure the Logger creation is synchronized (JDK 6U10 and before can deadlock)
     static Lock lock = new ReentrantLock();
