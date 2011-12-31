@@ -49,7 +49,7 @@
 />
 <!composition template="/templates/default.layout"  
     guiTitle="$resource{i18n_web.configuration.threadPoolPageTitle}"
-    guiTemplateOnLoad="admingui.nav.refreshTree('treeForm:tree:configurations:#{pageSession.configName}:threadPools');"
+    guiTemplateOnLoad="admingui.nav.refreshTree('treeForm:tree:configurations:#{pageSession.encodedConfigName}:threadPools');"
 >
 
 <!define name="content">
