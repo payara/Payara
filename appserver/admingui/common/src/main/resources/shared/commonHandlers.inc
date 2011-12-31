@@ -2,7 +2,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 2010 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 2010-2011 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -42,6 +42,7 @@
 
 <!--
      This handler gets a list of password aliases
+     Input:  #{requestScope.doEscape}
      Output: #{pageSession.listOfAliases}
 -->
 <handler id="gfr.getPswdAliases">
@@ -53,7 +54,13 @@
     setPageSessionAttribute(key="listOfAliases" value={});
     if( "!(#{requestScope._listOfMap} = #{null})" ){
       foreach(var="oneChildMap" list="#{requestScope._listOfMap}"){
+        if ("#{requestScope.doEscape}"){
+            htmlEscape(value="#{requestScope.oneChildMap.message}" result="#{requestScope.encodedAliasName}");
+            listAdd(list="#{pageSession.listOfAliases}" value="#{requestScope.encodedAliasName}" );
+        }
+        if ("!#{requestScope.doEscape}"){
          listAdd(list="#{pageSession.listOfAliases}" value="#{requestScope.oneChildMap.message}" );
+      }
       }
       gf.listSort(list="#{pageSession.listOfAliases}");
     }

@@ -46,12 +46,13 @@
 />
 <!composition template="/templates/default.layout"
     guiTitle="$resource{i18nc.msgSecurity.ListPageTitle}"
-    guiTemplateOnLoad="admingui.nav.refreshTree('treeForm:tree:configurations:#{pageSession.configName}:security:messageSecurity');"
+    guiTemplateOnLoad="admingui.nav.refreshTree('treeForm:tree:configurations:#{pageSession.encodedConfigName}:security:messageSecurity');"
 >
 <!define name="content">
     <event>
     <!beforeCreate
-        getRequestValue(key="configName" value=>$page{configName} default="server-config");
+        getRequestValue(key="configName" value=>$page{configName});
+        urlencode(value="#{pageSession.configName}" encoding="UTF-8" result="#{pageSession.encodedConfigName}");
         setPageSessionAttribute(key="childType" value="message-security-config");
         setPageSessionAttribute(key="parentUrl", value="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/security-service");
         setPageSessionAttribute(key="selfUrl", value="#{pageSession.parentUrl}/#{pageSession.childType}");
@@ -70,7 +71,7 @@
         }
     />
     </event>
-"    <script type="text/javascript">admingui.nav.selectTreeNodeById(admingui.nav.TREE_ID+":configurations:#{pageSession.configName}:security:messageSecurity");</script>
+"    <script type="text/javascript">admingui.nav.selectTreeNodeById(admingui.nav.TREE_ID+":configurations:#{pageSession.encodedConfigName}:security:messageSecurity");</script>
 
 <sun:form id="propertyForm">
 #include "/common/shared/alertMsg.inc"

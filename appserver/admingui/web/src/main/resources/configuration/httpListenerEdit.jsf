@@ -50,10 +50,11 @@
     <!beforeCreate
         setSessionAttribute(key="listenerTabs" value="generalTab");
         getRequestValue(key="configName" value=>$page{configName});
+        urlencode(value="#{pageSession.configName}" encoding="UTF-8" result="#{pageSession.encodedConfigName}");
         getRequestValue(key="name" value="#{pageSession.Name}");
         urlencode(value="#{pageSession.Name}" encoding="UTF-8" result="#{pageSession.encodedName}");
 
-        setPageSessionAttribute(key="prefix", value="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/network-config");
+        setPageSessionAttribute(key="prefix", value="#{sessionScope.REST_URL}/configs/config/#{pageSession.encodedConfigName}/network-config");
 
         gf.getEntityAttrs(endpoint="#{pageSession.prefix}/network-listeners/network-listener/#{pageSession.encodedName}" valueMap="#{pageSession.valueMap}");
 
@@ -81,7 +82,7 @@
         setSessionAttribute(key="secureCancelUrl" value="#{pageSession.selfPage}")
         />
     </event>
-"    <script type="text/javascript">admingui.nav.selectTreeNodeById(admingui.nav.TREE_ID+":configurations:#{pageSession.configName}httpService:httpListeners:#{pageSession.Name}");</script>
+"    <script type="text/javascript">admingui.nav.selectTreeNodeById(admingui.nav.TREE_ID+":configurations:#{pageSession.encodedConfigName}:httpService:httpListeners:#{pageSession.encodedName}");</script>
 
 <sun:form id="propertyForm">
 #include "/common/shared/alertMsg.inc"

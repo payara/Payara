@@ -52,16 +52,17 @@
     <event>
     <!beforeCreate
         setSessionAttribute(key="listenerTabs" value="generalTab");
-        getRequestValue(key="configName" value=>$page{configName} default="server-config");
+        getRequestValue(key="configName" value=>$page{configName});
+        urlencode(value="#{pageSession.configName}" encoding="UTF-8" result="#{pageSession.encodedConfigName}");
         getRequestValue(key="name" value="#{pageSession.Name}");
         urlencode(value="#{pageSession.Name}" encoding="UTF-8" result="#{pageSession.encodedName}");
-        getRequestValue(key="cancelTo" value="#{pageSession.cancelTo}" default="networkListeners.jsf");
+        getRequestValue(key="cancelTo" value="#{pageSession.cancelTo}" default="web/grizzly/networkListeners.jsf");
         setPageSessionAttribute(key="listenerName" value="#{pageSession.Name}");
         urlencode(value="#{pageSession.listenerName}" encoding="UTF-8" result="#{pageSession.encodedListenerName}");
         setPageSessionAttribute(key="selfPage" value="#{request.contextPath}/web/grizzly/networkListenerEdit.jsf?name=#{pageSession.encodedName}&cancelTo=#{pageSession.cancelTo}&configName=#{pageSession.configName}");
-        setPageSessionAttribute(key="parentPage" value="#{request.contextPath}/web/grizzly/#{pageSession.cancelTo}");
+        setPageSessionAttribute(key="parentPage" value="#{request.contextPath}/#{pageSession.cancelTo}");
         setPageSessionAttribute(key="childType" value="network-listener");
-        setPageSessionAttribute(key="parentUrl", value="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/network-config/network-listeners");
+        setPageSessionAttribute(key="parentUrl", value="#{sessionScope.REST_URL}/configs/config/#{pageSession.encodedConfigName}/network-config/network-listeners");
         setPageSessionAttribute(key="selfUrl", value="#{pageSession.parentUrl}/#{pageSession.childType}/#{pageSession.Name}");
         setPageSessionAttribute(key="rest-api" value="true");
         gf.getEntityAttrs(endpoint="#{pageSession.selfUrl}", valueMap="#{pageSession.valueMap}");
@@ -71,7 +72,7 @@
         }
         setPageSessionAttribute(key="convertToFalseList" value={"enabled", "jkEnabled"});
         urlencode(value="#{pageSession.protocolName}" encoding="UTF-8" result="#{pageSession.encodedProtocolName}");
-        setPageSessionAttribute(key="parentUrl2", value="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/network-config/protocols");
+        setPageSessionAttribute(key="parentUrl2", value="#{sessionScope.REST_URL}/configs/config/#{pageSession.encodedConfigName}/network-config/protocols");
         setPageSessionAttribute(key="childType2" value="protocol");
         setPageSessionAttribute(key="selfUrl2", value="#{pageSession.parentUrl2}/#{pageSession.childType2}/#{pageSession.encodedProtocolName}");
         gf.getEntityAttrs(endpoint="#{pageSession.selfUrl2}", valueMap="#{pageSession.valueMap2}");
@@ -181,7 +182,7 @@
         <sun:property id="threadpool"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.grizzly.networkListener.threadPool}" helpText="$resource{i18n_web.grizzly.networkListener.threadPoolHelp}">
             <sun:dropDown id="threadpool" selected="#{pageSession.valueMap['threadPool']}" labels="$pageSession{threadPoolList}"  values="$pageSession{threadPoolList}" >
             <!beforeCreate
-                gf.getChildrenNamesList(endpoint="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/thread-pools/thread-pool" result="#{pageSession.threadPoolList}");
+                gf.getChildrenNamesList(endpoint="#{sessionScope.REST_URL}/configs/config/#{pageSession.encodedConfigName}/thread-pools/thread-pool" result="#{pageSession.threadPoolList}");
             />
            </sun:dropDown>
         </sun:property>

@@ -2,7 +2,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -47,14 +47,14 @@
 
 <!composition template="/templates/default.layout"  
     guiTitle="$resource{i18njms.jmsHosts.ListPageTitle}"
-    guiTemplateOnLoad="admingui.nav.refreshTree('treeForm:tree:configurations:#{pageSession.configName}:jmsConfiguration:jmsHosts');">
+    guiTemplateOnLoad="admingui.nav.refreshTree('treeForm:tree:configurations:#{pageSession.encodedConfigName}:jmsConfiguration:jmsHosts');">
 <!define name="content">
     <event>
     <!beforeCreate
         getRequestValue(key="configName" value=>$page{configName});
-
+        urlencode(value="#{pageSession.configName}" encoding="UTF-8" result="#{pageSession.encodedConfigName}");
         setPageSessionAttribute(key="childType" value="jms-host");
-        setPageSessionAttribute(key="parentUrl", value="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/jms-service");
+        setPageSessionAttribute(key="parentUrl", value="#{sessionScope.REST_URL}/configs/config/#{pageSession.encodedConfigName}/jms-service");
         setPageSessionAttribute(key="selfUrl", value="#{pageSession.parentUrl}/#{pageSession.childType}");
         setPageSessionAttribute(key="rest-api" value="true");
         gf.getChildList(parentEndpoint="#{pageSession.parentUrl}", childType="#{pageSession.childType}", result="#{requestScope.listOfRows}");
@@ -79,7 +79,7 @@
         }
     />
     </event>
-"    <script type="text/javascript">admingui.nav.selectTreeNodeById(admingui.nav.TREE_ID+":configurations:#{pageSession.configName}:jmsConfiguration:jmsHosts");</script>
+"    <script type="text/javascript">admingui.nav.selectTreeNodeById(admingui.nav.TREE_ID+":configurations:#{pageSession.encodedConfigName}:jmsConfiguration:jmsHosts");</script>
     <sun:form id="propertyForm">
 #include "/common/shared/alertMsg.inc"
         <sun:title id="propertyContentPage" title="$resource{i18njms.jmsHosts.ListPageTitle}" helpText="$resource{i18njms.jmsHosts.ListPageHelp}"/>

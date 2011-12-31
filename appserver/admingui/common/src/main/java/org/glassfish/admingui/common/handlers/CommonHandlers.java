@@ -448,10 +448,12 @@ public class CommonHandlers {
      *	<p> This method will "html escape" any &lt;, &gt;, or &amp; characters
      *	    that appear in a String from the QUERY_STRING.  This is to help
      *	    prevent XSS vulnerabilities.</p>
+     *  <p> orig without escape is available, but be very cautious when using it.
      *
      * 	<p> Input value: "key" -- Type: <code>String</code></p>
      *
      *	<p> Output value: "value" -- Type: <code>String</code></p>
+     *  <p> Output value: "orig" -- Type: <code>String</code></p>
      *
      */
     @Handler(id="getRequestValue",
@@ -459,12 +461,14 @@ public class CommonHandlers {
         @HandlerInput(name="key", type=String.class, required=true),
         @HandlerInput(name="default", type=String.class)},
     output={
-        @HandlerOutput(name="value", type=Object.class)}
+        @HandlerOutput(name="value", type=Object.class),
+        @HandlerOutput(name="orig", type=Object.class)}
     )
     public static void getRequestValue(HandlerContext handlerCtx) {
         String key = (String) handlerCtx.getInputValue("key");
         Object defaultValue = handlerCtx.getInputValue("default");
         Object value = handlerCtx.getFacesContext().getExternalContext().getRequestParameterMap().get(key);
+        Object orig = value;
         if ((value == null) || "".equals(value)) {
             value = handlerCtx.getFacesContext().getExternalContext().getRequestMap().get(key);
             if ((value == null) && (defaultValue != null)){
@@ -480,6 +484,7 @@ public class CommonHandlers {
 	    value = Util.htmlEscape((String) value);
         }
         handlerCtx.setOutputValue("value", value);
+        handlerCtx.setOutputValue("orig", orig);
     }
    
     /**

@@ -48,9 +48,9 @@
 <!composition template="/templates/default.layout"
     guiTitle="$resource{i18n_web.configuration.httpListenersPageTitle}"
     guiTemplateOnLoad="
-        admingui.nav.refreshTree('treeForm:tree:configurations:#{pageSession.configName}:networkConfig:protocols');
-        admingui.nav.refreshTree('treeForm:tree:configurations:#{pageSession.configName}:networkConfig:networkListeners');
-        admingui.nav.refreshTree('treeForm:tree:configurations:#{pageSession.configName}:httpService:httpListeners');"
+        admingui.nav.refreshTree('treeForm:tree:configurations:#{pageSession.encodedConfigName}:networkConfig:protocols');
+        admingui.nav.refreshTree('treeForm:tree:configurations:#{pageSession.encodedConfigName}:networkConfig:networkListeners');
+        admingui.nav.refreshTree('treeForm:tree:configurations:#{pageSession.encodedConfigName}:httpService:httpListeners');"
 >
 <!define name="listTableDeleteButton">
     <sun:button id="button1" text="$resource{i18n.button.Delete}" disabled="#{true}" primary="#{false}"
@@ -60,12 +60,12 @@
         getSelectedSingleMapRows(TableRowGroup="${tableRowGroup}" selectedRows=>$attribute{selectedRows});
         foreach (var="row" list="${selectedRows}") {
             setPageSessionAttribute(key="networkListenerName" value="#{row['name']}");
-            setPageSessionAttribute(key="networkListenerUrl", value="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/network-config/network-listeners/network-listener");
+            setPageSessionAttribute(key="networkListenerUrl", value="#{sessionScope.REST_URL}/configs/config/#{pageSession.encodedConfigName}/network-config/network-listeners/network-listener");
             gf.restRequest(endpoint="#{pageSession.networkListenerUrl}/#{pageSession.networkListenerName}", method="get", result="#{pageSession.networkListAttrs}");
             setPageSessionAttribute(key="protocolName" value="#{pageSession.networkListAttrs.data.extraProperties.entity['protocol']}");
-            setPageSessionAttribute(key="protocolUrl", value="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/network-config/protocols/protocol/#{pageSession.protocolName}");
-            setPageSessionAttribute(key="protocolHttpUrl", value="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/network-config/protocols/protocol/#{pageSession.protocolName}/http");
-            setPageSessionAttribute(key="virtualServerUrl", value="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/http-service/virtual-server");
+            setPageSessionAttribute(key="protocolUrl", value="#{sessionScope.REST_URL}/configs/config/#{pageSession.encodedConfigName}/network-config/protocols/protocol/#{pageSession.protocolName}");
+            setPageSessionAttribute(key="protocolHttpUrl", value="#{sessionScope.REST_URL}/configs/config/#{pageSession.encodedConfigName}/network-config/protocols/protocol/#{pageSession.protocolName}/http");
+            setPageSessionAttribute(key="virtualServerUrl", value="#{sessionScope.REST_URL}/configs/config/#{pageSession.encodedConfigName}/http-service/virtual-server");
             gf.checkIfEndPointExist(endpoint="#{pageSession.protocolHttpUrl}", exists="#{pageSession.protocolHttpExist}");
             // check if there is no listener exists for this protocol and it was created by GUI, then delete
             gf.getChildrenNamesList(endpoint="#{pageSession.networkListenerUrl}", id="name", result="#{pageSession.networkListeners}");
@@ -103,9 +103,10 @@
 <!define name="content">
     <event>
     <!beforeCreate
-        getRequestValue(key="configName" value=>$page{configName} default="server-config");
+        getRequestValue(key="configName" value=>$page{configName} );
+        urlencode(value="#{pageSession.configName}" encoding="UTF-8" result="#{pageSession.encodedConfigName}");
         setPageSessionAttribute(key="childType" value="network-listener");
-        setPageSessionAttribute(key="parentUrl", value="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/network-config/network-listeners");
+        setPageSessionAttribute(key="parentUrl", value="#{sessionScope.REST_URL}/configs/config/#{pageSession.encodedConfigName}/network-config/network-listeners");
         setPageSessionAttribute(key="selfUrl", value="#{pageSession.parentUrl}/#{pageSession.childType}");
         setPageSessionAttribute(key="rest-api" value="true");
 
@@ -119,7 +120,7 @@
         setPageSessionAttribute(key="tableTitle" value="$resource{i18n_web.grizzly.networkListeners.tableName}");
     />
     </event>
-"    <script type="text/javascript">admingui.nav.selectTreeNodeById(admingui.nav.TREE_ID+":configurations:#{pageSession.configName}:httpService:httpListeners");</script>
+"    <script type="text/javascript">admingui.nav.selectTreeNodeById(admingui.nav.TREE_ID+":configurations:#{pageSession.encodedConfigName}:httpService:httpListeners");</script>
     <sun:form id="propertyForm">
 #include "/common/shared/alertMsg.inc"
      <sun:title id="propertyContentPage" title="$resource{i18n_web.configuration.httpListenersPageTitle}"

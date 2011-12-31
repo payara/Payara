@@ -46,11 +46,13 @@
 />
 <!composition template="/templates/default.layout" 
     guiTitle="$resource{i18nc.realm.PageTitle}"
-    guiTemplateOnLoad="admingui.nav.refreshTree('treeForm:tree:configurations:#{pageSession.configName}:security:realms');">
+    guiTemplateOnLoad="admingui.nav.refreshTree('treeForm:tree:configurations:#{pageSession.encodedConfigName}:security:realms');"
+    >
 <!define name="content">
     <event>
     <!beforeCreate
-        getRequestValue(key="configName" value=>$page{configName} default="server-config");
+        getRequestValue(key="configName" value=>$page{configName});
+        urlencode(value="#{pageSession.name}" encoding="UTF-8" result=>$page{encodedConfigName});
         setPageSessionAttribute(key="childType" value="auth-realm");
         setPageSessionAttribute(key="parentUrl", value="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/security-service");
         setPageSessionAttribute(key="selfUrl", value="#{pageSession.parentUrl}/#{pageSession.childType}");
@@ -65,7 +67,7 @@
         setPageSessionAttribute(key="tableTitle" value="$resource{i18nc.realm.TableTitle}");
     />
     </event>
-"    <script type="text/javascript">admingui.nav.selectTreeNodeById(admingui.nav.TREE_ID+":configurations:#{pageSession.configName}:security:realms");</script>
+"    <script type="text/javascript">admingui.nav.selectTreeNodeById(admingui.nav.TREE_ID+":configurations:#{pageSession.encodedConfigName}:security:realms");</script>
 <sun:form id="propertyForm">
 #include "/common/shared/alertMsg.inc"
      <sun:title id="propertyContentPage" title="$resource{i18nc.realm.PageTitle}"

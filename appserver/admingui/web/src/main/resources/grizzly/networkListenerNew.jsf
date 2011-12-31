@@ -51,10 +51,11 @@
 <!define name="content">
     <event>
     <!beforeCreate
-        getRequestValue(key="configName" value=>$page{configName} default="server-config");
+        getRequestValue(key="configName" value=>$page{configName});
+        urlencode(value="#{pageSession.configName}" encoding="UTF-8" result="#{pageSession.encodedConfigName}");
         setPageSessionAttribute(key="parentPage" value="#{request.contextPath}/web/grizzly/networkListeners.jsf");
         setPageSessionAttribute(key="childType" value="network-listener");
-        setPageSessionAttribute(key="parentUrl", value="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/network-config/network-listeners");
+        setPageSessionAttribute(key="parentUrl", value="#{sessionScope.REST_URL}/configs/config/#{pageSession.encodedConfigName}/network-config/network-listeners");
         setPageSessionAttribute(key="selfUrl", value="#{pageSession.parentUrl}/#{pageSession.childType}");
         setPageSessionAttribute(key="rest-api" value="true");
         gf.getDefaultValues(endpoint="#{pageSession.selfUrl}", valueMap="#{pageSession.valueMap}");
@@ -70,7 +71,9 @@
         setPageSessionAttribute(key="hasPropertyTable" value="#{false}" );
     />
     </event>
-" <script type="text/javascript">admingui.nav.selectTreeNodeById(admingui.nav.TREE_ID+":configurations:#{pageSession.configName}:networkConfig:networkListeners");</script>
+
+"    <script type="text/javascript">admingui.nav.selectTreeNodeById(admingui.nav.TREE_ID+":configurations:#{pageSession.encodedConfigName}:networkConfig:networkListeners");</script>
+
             <sun:form id="propertyForm">
 #include "/common/shared/alertMsg.inc"
     <sun:title id="propertyContentPage" title="$resource{i18n_web.grizzly.networkListenerNewPageTitle}" helpText="$resource{i18n_web.grizzly.networkListenerNewPageTitleHelp}">
@@ -79,9 +82,9 @@
             <sun:button id="newButton" rendered="#{!edit}" text="$resource{i18n.button.OK}"
                 onClick="if (checkRequired()) {submitAndDisable(this, '$resource{i18n.button.Processing}');}; return false;" >
                 <!command
-                    setPageSessionAttribute(key="protocolUrl", value="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/network-config/protocols/protocol");
+                    setPageSessionAttribute(key="protocolUrl", value="#{sessionScope.REST_URL}/configs/config/#{pageSession.encodedConfigName}/network-config/protocols/protocol");
                     urlencode(value="#{pageSession.valueMap['name']}" result="#{requestScope.encodedListenerNameToCheck}");
-                    gf.checkIfEndPointExist(endpoint="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/network-config/network-listeners/network-listener/#{requestScope.encodedListenerNameToCheck}", exists="#{requestScope.exist}");
+                    gf.checkIfEndPointExist(endpoint="#{sessionScope.REST_URL}/configs/config/#{pageSession.encodedConfigName}/network-config/network-listeners/network-listener/#{requestScope.encodedListenerNameToCheck}", exists="#{requestScope.exist}");
                     if (#{requestScope.exist}){
                         gf.handleError(detail="$resource{i18n_web.grizzly.networkListener.alreadyExist, #{requestScope.encodedListenerNameToCheck}}");
                     }
@@ -105,10 +108,13 @@
                         mapPut(map="#{pageSession.protocolMap}", key="name", value="#{pageSession.valueMap['newProtocolName']}");
                         mapPut(map="#{pageSession.protocolMap}", key="target", value="#{pageSession.valueMap['target']}");
                         setPageSessionAttribute(key="protocolName", value="#{pageSession.valueMap['newProtocolName']}");
+
+
                         gf.createEntity(endpoint="#{pageSession.protocolUrl}", attrs="#{pageSession.protocolMap}");
                         createMap(result="#{pageSession.httpMap}");
                         mapPut(map="#{pageSession.httpMap}", key="defaultVirtualServer", value="#{pageSession.valueMap['defaultVirtualServer']}");
                         mapPut(map="#{pageSession.httpMap}", key="target", value="#{pageSession.valueMap['target']}");
+
                         gf.createEntity(endpoint="#{pageSession.protocolUrl}/#{pageSession.protocolName}/create-http", attrs="#{pageSession.httpMap}");
                     }
                     if ("!(#{pageSession.valueMap['protocolChoice']}=create)") {

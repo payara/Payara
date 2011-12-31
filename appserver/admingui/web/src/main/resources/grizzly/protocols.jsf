@@ -50,8 +50,8 @@
 <!composition template="/templates/default.layout"  
     guiTitle="$resource{i18n_web.grizzly.protocolsPageTitle}"
     guiTemplateOnLoad="
-        admingui.nav.refreshTree('treeForm:tree:configurations:#{pageSession.configName}:networkConfig:networkListeners');
-        admingui.nav.refreshTree('treeForm:tree:configurations:#{pageSession.configName}:networkConfig:protocols');"
+        admingui.nav.refreshTree('treeForm:tree:configurations:#{pageSession.encodedConfigName}:networkConfig:networkListeners');
+        admingui.nav.refreshTree('treeForm:tree:configurations:#{pageSession.encodedConfigName}:networkConfig:protocols');"
 >
 
 <!define name="listTableDeleteButton">
@@ -62,10 +62,11 @@
         getSelectedSingleMapRows(TableRowGroup="${tableRowGroup}" selectedRows=>$attribute{selectedRows});
         foreach (var="row" list="${selectedRows}") {
             setPageSessionAttribute(key="protocolName" value="#{row['name']}");
-            setPageSessionAttribute(key="protocolUrl", value="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/network-config/protocols/protocol/#{pageSession.protocolName}");
+            urlencode(value="#{pageSession.protocolName}" encoding="UTF-8" result="#{pageSession.encodedProtocolName}");
+            setPageSessionAttribute(key="protocolUrl", value="#{sessionScope.REST_URL}/configs/config/#{pageSession.encodedConfigName}/network-config/protocols/protocol/#{pageSession.encodedProtocolName}");
             setPageSessionAttribute(key="protocolHttpUrl", value="#{pageSession.protocolUrl}/http");
-            setPageSessionAttribute(key="networkListenerUrl", value="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/network-config/network-listeners/network-listener");
-            setPageSessionAttribute(key="virtualServerUrl", value="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/http-service/virtual-server");
+            setPageSessionAttribute(key="networkListenerUrl", value="#{sessionScope.REST_URL}/configs/config/#{pageSession.encodedConfigName}/network-config/network-listeners/network-listener");
+            setPageSessionAttribute(key="virtualServerUrl", value="#{sessionScope.REST_URL}/configs/config/#{pageSession.encodedConfigName}/http-service/virtual-server");
             gf.getChildrenNamesList(endpoint="#{pageSession.networkListenerUrl}", id="name", result="#{pageSession.networkListeners}");
             gf.checkIfEndPointExist(endpoint="#{pageSession.protocolHttpUrl}", exists="#{pageSession.protocolHttpExist}");
             foreach (var="listener" list="#{pageSession.networkListeners}") {
@@ -94,10 +95,11 @@
     <event>
     <!beforeCreate
         getRequestValue(key="configName" value=>$page{configName} default="server-config");
+        urlencode(value="#{pageSession.configName}" encoding="UTF-8" result="#{pageSession.encodedConfigName}");
         setPageSessionAttribute(key="childType" value="protocol");
-        setPageSessionAttribute(key="selfUrl", value="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/network-config/protocols");
+        setPageSessionAttribute(key="selfUrl", value="#{sessionScope.REST_URL}/configs/config/#{pageSession.encodedConfigName}/network-config/protocols");
         setPageSessionAttribute(key="rest-api" value="true");
-        setPageSessionAttribute(key="networkListenerUrl", value="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/network-config/network-listeners/network-listener");
+        setPageSessionAttribute(key="networkListenerUrl", value="#{sessionScope.REST_URL}/configs/config/#{pageSession.encodedConfigName}/network-config/network-listeners/network-listener");
         gf.getChildrenNamesList(endpoint="#{pageSession.networkListenerUrl}", id="name", result="#{pageSession.networkListeners}");
         gf.getProtocols(configName="#{pageSession.configName}", result="#{requestScope.listOfRows}");
         foreach (var="protocol" list="#{requestScope.listOfRows}") {
@@ -121,7 +123,7 @@
         setPageSessionAttribute(key="tableTitle"  value="$resource{i18n_web.grizzly.protocol.tableName}");
     />
     </event>
-"    <script type="text/javascript">admingui.nav.selectTreeNodeById(admingui.nav.TREE_ID+":configurations:#{pageSession.configName}:networkConfig:protocols");</script>
+"    <script type="text/javascript">admingui.nav.selectTreeNodeById(admingui.nav.TREE_ID+":configurations:#{pageSession.encodedConfigName}:networkConfig:protocols");</script>
             <sun:form id="propertyForm">
 #include "/common/shared/alertMsg.inc"
      <sun:title id="propertyContentPage" title="$resource{i18n_web.grizzly.protocolsPageTitle}"

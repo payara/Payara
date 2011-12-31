@@ -50,9 +50,9 @@
 <!define name="content">
     <event>
         <!beforeCreate
-            getRequestValue(key="name" value="#{pageSession.name}");
+            getRequestValue(key="name" value="#{pageSession.name}" , orig="#{pageSession.origName}");
             createMap(result="#{pageSession.valueMap}");
-            mapPut(map="#{pageSession.valueMap}" key="aliasname" value="#{pageSession.name}")
+            mapPut(map="#{pageSession.valueMap}" key="aliasname" value="#{pageSession.origName}")
             setPageSessionAttribute(key="edit" value="#{true}" );
         />
     </event>

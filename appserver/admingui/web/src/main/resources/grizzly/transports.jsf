@@ -48,14 +48,15 @@
 />
 <!composition template="/templates/default.layout"  
     guiTitle="$resource{i18n_web.transport.listPageTitle}"
-    guiTemplateOnLoad="admingui.nav.refreshTree('treeForm:tree:configurations:#{pageSession.configName}:networkConfig:transports');"
+    guiTemplateOnLoad="admingui.nav.refreshTree('treeForm:tree:configurations:#{pageSession.encodedConfigName}:networkConfig:transports');"
 >
 <!define name="content">
     <event>
     <!beforeCreate
-        getRequestValue(key="configName" value=>$page{configName} default="server-config");
+        getRequestValue(key="configName" value=>$page{configName} );
+        urlencode(value="#{pageSession.configName}" encoding="UTF-8" result="#{pageSession.encodedConfigName}");
         setPageSessionAttribute(key="childType" value="transport");
-        setPageSessionAttribute(key="parentUrl", value="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/network-config/transports");
+        setPageSessionAttribute(key="parentUrl", value="#{sessionScope.REST_URL}/configs/config/#{pageSession.encodedConfigName}/network-config/transports");
         setPageSessionAttribute(key="rest-api" value="true");
         gf.getChildList(parentEndpoint="#{pageSession.parentUrl}", childType="#{pageSession.childType}", result="#{requestScope.listOfRows}");
         createMap(result="#{pageSession.valueMap}");
@@ -67,7 +68,7 @@
         setPageSessionAttribute(key="tableTitle"  value="$resource{i18n_web.transport.tableName}");
     />
     </event>
-"    <script type="text/javascript">admingui.nav.selectTreeNodeById(admingui.nav.TREE_ID+":configurations:#{pageSession.configName}:networkConfig:transports");</script>
+"    <script type="text/javascript">admingui.nav.selectTreeNodeById(admingui.nav.TREE_ID+":configurations:#{pageSession.encodedConfigName}:networkConfig:transports");</script>
 
             <sun:form id="propertyForm">
 #include "/common/shared/alertMsg.inc"

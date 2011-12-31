@@ -40,16 +40,16 @@
 
 -->
 
-    <sun:propertySheet id="propertySheet" requiredFields="true">			 
-        
+    <sun:propertySheet id="propertySheet" requiredFields="true">
+
         <sun:propertySheetSection id="propertSectionTextField">
             <sun:property id="aliasName"  rendered="#{edit}" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.pswdAlias.aliasName}" >
-                <sun:staticText id="aliasName" text="#{pageSession.valueMap['aliasname']}"/>
+                <sun:staticText id="aliasName" text="#{pageSession.name}"/>
             </sun:property> 
 
             <sun:property id="aliasNameNew"  rendered="#{!edit}" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.pswdAlias.aliasName}"  helpText="$resource{i18nc.pswdAlias.aliasNameHelp}">
                 <sun:textField id="aliasNameNew" styleClass="required" required="#{true}" text="#{pageSession.valueMap['aliasname']}" columns="$int{55}" maxLength="#{sessionScope.fieldLengths['maxLength.common.Name']}" />
-            </sun:property> 
+            </sun:property>
 
             <sun:property id="newPasswordProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.pswdAlias.password}"  helpText="$resource{i18nc.pswdAlias.passwordHelp}">
             <sun:passwordField id="NewPassword"  styleClass="required" required="#{true}" columns="$int{25}" maxLength="#{sessionScope.fieldLengths['maxLength.server.NewPassword']}" text="#{pageSession.valueMap['aliaspassword']}" >
@@ -67,6 +67,6 @@
             </sun:property>
 
         </sun:propertySheetSection>
-    </sun:propertySheet>    
+    </sun:propertySheet>
 
 

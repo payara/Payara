@@ -46,12 +46,13 @@
 />
 <!composition template="/templates/default.layout"
     guiTitle="$resource{i18nc.auditModule.PageTitle}"
-    guiTemplateOnLoad="admingui.nav.refreshTree('treeForm:tree:configurations:#{pageSession.configName}:security:auditModules');"
+    guiTemplateOnLoad="admingui.nav.refreshTree('treeForm:tree:configurations:#{pageSession.encodedConfigName}:security:auditModules');"
 >
 <!define name="content">
     <event>
     <!beforeCreate
-        getRequestValue(key="configName" value=>$page{configName} default="server-config");
+        getRequestValue(key="configName" value=>$page{configName} );
+        urlencode(value="#{pageSession.configName}" encoding="UTF-8" result="#{pageSession.encodedConfigName}");
         setPageSessionAttribute(key="childType" value="audit-module");
         setPageSessionAttribute(key="parentUrl", value="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/security-service");
         setPageSessionAttribute(key="selfUrl", value="#{pageSession.parentUrl}/audit-module");
@@ -66,7 +67,7 @@
         setPageSessionAttribute(key="tableTitle" value="$resource{i18nc.auditModule.TableTitle}");
     />
     </event>
-"    <script type="text/javascript">admingui.nav.selectTreeNodeById(admingui.nav.TREE_ID+":configurations:#{pageSession.configName}:security:auditModules");</script>
+"    <script type="text/javascript">admingui.nav.selectTreeNodeById(admingui.nav.TREE_ID+":configurations:#{pageSession.encodedConfigName}:security:auditModules");</script>
 
 <sun:form id="propertyForm">
 #include "/common/shared/alertMsg.inc"
