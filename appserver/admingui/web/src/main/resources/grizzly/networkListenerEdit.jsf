@@ -94,12 +94,13 @@
                 setPageSessionAttribute(key="readOnly" value="#{true}" );
             }
         }
+
         //If secure admin is enabled, we will not show the other tabs since GUI doesn't have support for handling low level grizzly config yet.
         setPageSessionAttribute(key="showSSLTab" value="#{true}");
         setPageSessionAttribute(key="showHttpTab" value="#{true}");
         setPageSessionAttribute(key="showFileCacheTab" value="#{true}");
         if (#{sessionScope.secureAdminEnabled}){
-            gf.getEntityAttrs(endpoint="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/http-service/virtual-server/__asadmin" valueMap="#{requestScope.tvp}");
+            gf.getEntityAttrs(endpoint="#{sessionScope.REST_URL}/configs/config/#{pageSession.encodedConfigName}/http-service/virtual-server/__asadmin" valueMap="#{requestScope.tvp}");
             //TODO: do we need to handle the case where more than 1 listener is setup for __asadmin ??
             if ("#{requestScope.tvp['networkListeners']}=#{pageSession.listenerName}") {
                 setPageSessionAttribute(key="showSSLTab" value="#{false}");
@@ -109,7 +110,8 @@
         }
         />
     </event>
-" <script type="text/javascript">admingui.nav.selectTreeNodeById(admingui.nav.TREE_ID+":configurations:#{pageSession.configName}:networkConfig:networkListeners:#{pageSession.Name}");</script>
+"    <script type="text/javascript">admingui.nav.selectTreeNodeById(admingui.nav.TREE_ID+":configurations:#{pageSession.encodedConfigName}:networkConfig:networkListeners:#{pageSession.encodedName}");</script>
+
             <sun:form id="propertyForm">
 #include "listenerTabs.inc"
 #include "/common/shared/alertMsg.inc"
@@ -135,7 +137,7 @@
     <sun:property id="http-protocol"  rendered="#{pageSession.showHttp}" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="HTTP Protocol: " >
          <sun:staticText id="http-protocol" text="#{pageSession.httpProtocolName}" />
          <!beforeCreate
-            gf.restRequest(endpoint="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/network-config/network-listeners/network-listener/#{pageSession.Name}/find-http-protocol.json" method="get" result="#{pageSession.httpProtocol}");
+            gf.restRequest(endpoint="#{sessionScope.REST_URL}/configs/config/#{pageSession.encodedConfigName}/network-config/network-listeners/network-listener/#{pageSession.Name}/find-http-protocol.json" method="get" result="#{pageSession.httpProtocol}");
             setPageSessionAttribute(key="httpProtocolName" value="#{pageSession.httpProtocol.data.properties.protocol}");
             setPageSessionAttribute(key="sameAsProtocol" value="#{false}");
             if ("#{pageSession.httpProtocolName}=#{pageSession.protocolName}")

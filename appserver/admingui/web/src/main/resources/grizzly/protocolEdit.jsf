@@ -54,8 +54,8 @@
         getRequestValue(key="configName" value=>$page{configName} default="server-config");
         getRequestValue(key="name" value="#{pageSession.Name}");
         urlencode(value="#{pageSession.Name}" encoding="UTF-8" result="#{pageSession.encodedName}");
-        getRequestValue(key="cancelTo" value="#{pageSession.cancelTo}" default="protocols.jsf");
-        setPageSessionAttribute(key="parentPage" value="#{request.contextPath}/web/grizzly/#{pageSession.cancelTo}");
+        getRequestValue(key="cancelTo" value="#{pageSession.cancelTo}" default="web/grizzly/protocols.jsf");
+        setPageSessionAttribute(key="parentPage" value="#{request.contextPath}/#{pageSession.cancelTo}");
         setPageSessionAttribute(key="selfPage" value="#{request.contextPath}/web/grizzly/protocolEdit.jsf?name=#{pageSession.encodedName}&cancelTo=#{pageSession.cancelTo}&configName=#{pageSession.configName}");
         setPageSessionAttribute(key="childType" value="protocol");
         setPageSessionAttribute(key="parentUrl", value="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/network-config/protocols");
@@ -119,7 +119,6 @@
     <sun:propertySheet id="propertySheet">
 #include "/common/shared/configNameSection.inc"
 <sun:propertySheetSection id="propertSectionTextField">
-
         <sun:property id="nameNew"  rendered="#{!edit}" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.common.name}" helpText="$resource{i18n_web.common.nameHelp}">
             <sun:textField id="name"  styleClass="required" required="#{true}" columns="$int{50}" maxLength="#{sessionScope.fieldLengths['maxLength.common.Name']}" text="#{pageSession.valueMap['Name']}" />
         </sun:property>

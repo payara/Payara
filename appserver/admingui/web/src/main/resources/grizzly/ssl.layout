@@ -57,7 +57,7 @@
         setPageSessionAttribute(key="encodedProtocolName" value="#{pageSession.encodedName}");
         urlencode(value="#{pageSession.listenerName}" encoding="UTF-8" result="#{pageSession.encodedListenerName}");
         getRequestValue(key="cancelTo" value="#{pageSession.cancelTo}");
-        setPageSessionAttribute(key="parentPage", value="#{request.contextPath}/web/grizzly/#{pageSession.cancelTo}")
+        setPageSessionAttribute(key="parentPage", value="#{request.contextPath}/#{pageSession.cancelTo}")
         setPageSessionAttribute(key="childType" value="ssl")
         setPageSessionAttribute(key="parentUrl", value="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/network-config/protocols/protocol/#{pageSession.Name}");
         setPageSessionAttribute(key="selfUrl", value="#{pageSession.parentUrl}/#{pageSession.childType}");

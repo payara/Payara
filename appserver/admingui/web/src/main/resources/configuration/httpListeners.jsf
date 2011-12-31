@@ -151,7 +151,7 @@
 
     <sun:tableColumn headerText="$resource{i18n_web.grizzly.table.nameCol}"  sort="name" rowHeader="$boolean{true}" id="col1">
         <sun:hyperlink id="link" text="#{td.value.name}"
-            url="#{pageSession.editLink}&name=#{td.value.name}&cancelTo=networkListeners.jsf" />
+            url="#{pageSession.editLink}&name=#{td.value.name}" />
     </sun:tableColumn>
 
     <sun:tableColumn headerText="$resource{i18n_web.grizzly.table.portCol}"  sort="port" rowHeader="$boolean{true}" id="col3">

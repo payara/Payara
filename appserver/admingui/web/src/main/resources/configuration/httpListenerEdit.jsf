@@ -80,13 +80,15 @@
         urlencode(value="#{pageSession.listenerName}" encoding="UTF-8" result="#{pageSession.encodedListenerName}");
         setPageSessionAttribute(key="selfPage" value="#{request.contextPath}/web/configuration/httpListenerEdit.jsf?name=#{pageSession.encodedName}&configName=#{pageSession.configName}");
         setSessionAttribute(key="secureCancelUrl" value="#{pageSession.selfPage}")
+        setPageSessionAttribute(key="cancelTo" value="web/configuration/httpListeners.jsf");
+        setSessionAttribute(key="httpListenerTabs" value="generalTab");
         />
     </event>
 "    <script type="text/javascript">admingui.nav.selectTreeNodeById(admingui.nav.TREE_ID+":configurations:#{pageSession.encodedConfigName}:httpService:httpListeners:#{pageSession.encodedName}");</script>
 
 <sun:form id="propertyForm">
+#include "/web/configuration/httpListenerTabs.inc"
 #include "/common/shared/alertMsg.inc"
-
     <sun:title id="propertyContentPage" title="$resource{i18n_web.configuration.httpListenerEditPageTitle}" helpText="$resource{i18n_web.configuration.httpListenerEditPageTitleHelp}">
     <!facet pageButtonsTop>
         <sun:panelGroup id="topButtons">

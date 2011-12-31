@@ -153,7 +153,7 @@
 
     <sun:tableColumn headerText="$resource{i18n_web.grizzly.table.nameCol}"  sort="name" rowHeader="$boolean{true}" id="col1">
         <sun:hyperlink id="link" text="#{td.value.name}"
-            url="#{pageSession.editLink}&name=#{td.value.name}&cancelTo=networkListeners.jsf" />
+            url="#{pageSession.editLink}&name=#{td.value.name}&cancelTo=web/grizzly/networkListeners.jsf" />
     </sun:tableColumn>
 
     <sun:tableColumn headerText="$resource{i18n_web.grizzly.table.portCol}"  sort="port" rowHeader="$boolean{true}" id="col3">
@@ -161,7 +161,7 @@
     </sun:tableColumn>
 
     <sun:tableColumn headerText="$resource{i18n_web.grizzly.table.protocolCol}"  sort="protocol" rowHeader="$boolean{true}" id="pro">
-        <sun:hyperlink id="link" text="#{td.value.protocol}" url="#{request.contextPath}/web/grizzly/protocolEdit.jsf?name=#{td.value.protocol}&cancelTo=networkListeners.jsf&configName=#{pageSession.configName}" />
+        <sun:hyperlink id="link" text="#{td.value.protocol}" url="#{request.contextPath}/web/grizzly/protocolEdit.jsf?name=#{td.value.protocol}&cancelTo=web/grizzly/networkListeners.jsf&configName=#{pageSession.configName}" />
     </sun:tableColumn>
 
     <sun:tableColumn headerText="$resource{i18n_web.grizzly.table.threadPoolCol}" sort="threadPool" rowHeader="$boolean{true}" id="threadPool">
