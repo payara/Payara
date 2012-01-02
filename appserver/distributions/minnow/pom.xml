@@ -120,6 +120,7 @@
             <artifactId>nucleus</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
+            <optional>true</optional>
         </dependency>
 
         <!-- additional grizzly modules package -->
@@ -128,42 +129,49 @@
             <artifactId>glassfish-grizzly-full</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
+            <optional>true</optional>
         </dependency>   
         <dependency>
             <groupId>org.glassfish.packager</groupId>
             <artifactId>glassfish-common-web</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
+            <optional>true</optional>
         </dependency>       
         <dependency>
             <groupId>org.glassfish.packager</groupId>
             <artifactId>glassfish-ha</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>org.glassfish.packager</groupId>
             <artifactId>glassfish-jca</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>org.glassfish.packager</groupId>
             <artifactId>glassfish-jta</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
+            <optional>true</optional>
         </dependency>   
         <dependency>
             <groupId>org.glassfish.packager</groupId>
             <artifactId>glassfish-web</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
+            <optional>true</optional>
         </dependency>    
         <dependency>
             <groupId>org.glassfish.packager</groupId>
             <artifactId>glassfish-jdbc</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
+            <optional>true</optional>
         </dependency> 
 
 	<!-- additional servicetag registry dependency -->
@@ -172,6 +180,7 @@
             <artifactId>servicetag-registry</artifactId>
             <version>${project.version}</version>
             <type>distribution-fragment</type>
+            <optional>true</optional>
         </dependency>
         <!-- additional legal content dependency -->
         <dependency>
@@ -179,6 +188,7 @@
             <artifactId>legal-fragment</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
+            <optional>true</optional>
         </dependency>
     </dependencies>
 </project>
