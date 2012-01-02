@@ -51,6 +51,7 @@ import org.glassfish.gms.bootstrap.GMSAdapterService;
 import org.glassfish.gms.bootstrap.HealthHistory;
 import org.glassfish.hk2.Services;
 import org.glassfish.internal.api.ServerContext;
+import org.glassfish.paas.gfplugin.GlassFishPluginConstants;
 import org.glassfish.virtualization.spi.VirtualCluster;
 import org.glassfish.virtualization.spi.*;
 import org.glassfish.virtualization.util.RuntimeContext;
@@ -70,7 +71,8 @@ import java.util.logging.Level;
  * @author Jerome Dochez
  */
 @Service(name="Native-JavaEE")
-public class LocalGlassFishTemplateCustomizer implements TemplateCustomizer {
+public class LocalGlassFishTemplateCustomizer implements TemplateCustomizer,
+        GlassFishPluginConstants {
 
     @Inject
     Domain domain;
@@ -90,10 +92,11 @@ public class LocalGlassFishTemplateCustomizer implements TemplateCustomizer {
     @Override
     public void customize(final VirtualCluster cluster, final VirtualMachine virtualMachine) throws VirtException {
 
-        ActionReport report = services.forContract(ActionReport.class).named("plain").get();
+        ActionReport report = services.forContract(ActionReport.class)
+                .named(PLAIN_ACTION_REPORT).get();
        // this line below needs to come from the template...
-        String[] createArgs = {serverContext.getInstallRoot().getAbsolutePath() +
-                File.separator + "lib" + File.separator + "nadmin" + (OS.isWindows()? ".bat" : "") , "create-local-instance",
+        String[] createArgs = {getAsAdminCommand(),
+                CREATE_LOCAL_INSTANCE,
                 "--cluster", cluster.getConfig().getName(),
                  virtualMachine.getName()};
         ProcessExecutor createInstance = new ProcessExecutor(createArgs);
@@ -141,15 +144,21 @@ public class LocalGlassFishTemplateCustomizer implements TemplateCustomizer {
         String instanceName = virtualMachine.getName();
         Server instance = domain.getServerNamed(instanceName);
         if (instance != null) {
-            ActionReport report = services.forContract(ActionReport.class).named("plain").get();
-            rtContext.executeAdminCommand(report, "delete-instance", instanceName);
+            ActionReport report = services.forContract(ActionReport.class)
+                    .named(PLAIN_ACTION_REPORT).get();
+            rtContext.executeAdminCommand(report, DELETE_INSTANCE, instanceName);
         }
+    }
+
+    public String getAsAdminCommand() {
+        String args[] = new String[] {serverContext.getInstallRoot().getAbsolutePath()};
+        return ASADMIN_COMMAND.format(args).toString();
     }
 
     @Override
     public void start(VirtualMachine virtualMachine, boolean firstStart) {
-        String[] startArgs = {serverContext.getInstallRoot().getAbsolutePath() +
-                File.separator + "lib" + File.separator + "nadmin" +  (OS.isWindows()? ".bat" : "") , "start-local-instance",
+        String[] startArgs = {getAsAdminCommand(),
+                START_LOCAL_INSTANCE,
                  virtualMachine.getName()};
         ProcessExecutor startInstance = new ProcessExecutor(startArgs);
         try {
@@ -164,8 +173,10 @@ public class LocalGlassFishTemplateCustomizer implements TemplateCustomizer {
         String instanceName = virtualMachine.getName();
         Server instance = domain.getServerNamed(instanceName);
         if (instance != null) {
-            ActionReport report = services.forContract(ActionReport.class).named("plain").get();
-            rtContext.executeAdminCommand(report, "stop-instance", instanceName, "_vmShutdown", "false");
+            ActionReport report = services.forContract(ActionReport.class)
+                    .named(PLAIN_ACTION_REPORT).get();
+            rtContext.executeAdminCommand(report, STOP_INSTANCE, instanceName,
+                    VM_SHUTDOWN_ARG, "false");
         }
     }
 }

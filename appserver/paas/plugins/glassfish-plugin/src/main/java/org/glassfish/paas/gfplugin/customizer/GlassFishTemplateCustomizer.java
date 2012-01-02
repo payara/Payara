@@ -48,6 +48,7 @@ import org.glassfish.gms.bootstrap.GMSAdapter;
 import org.glassfish.gms.bootstrap.GMSAdapterService;
 import org.glassfish.gms.bootstrap.HealthHistory;
 import org.glassfish.hk2.Services;
+import org.glassfish.paas.gfplugin.GlassFishPluginConstants;
 import org.glassfish.virtualization.spi.VirtualCluster;
 import org.glassfish.virtualization.spi.Machine;
 import org.glassfish.virtualization.spi.TemplateCustomizer;
@@ -61,7 +62,8 @@ import org.jvnet.hk2.annotations.Inject;
  *
  * @author Jerome Dochez
  */
-public class GlassFishTemplateCustomizer implements TemplateCustomizer {
+public class GlassFishTemplateCustomizer implements TemplateCustomizer,
+        GlassFishPluginConstants {
 
     @Inject
     Domain domain;
@@ -77,26 +79,30 @@ public class GlassFishTemplateCustomizer implements TemplateCustomizer {
 
     @Override
     public void customize(VirtualCluster cluster, VirtualMachine virtualMachine) throws VirtException {
-        ActionReport report = services.forContract(ActionReport.class).named("plain").get();
+        ActionReport report = services.forContract(ActionReport.class)
+                .named(PLAIN_ACTION_REPORT).get();
         final String nodeName = getNodeName(virtualMachine);
         // create-node-ssh --nodehost $ip_address --installdir $GLASSFISH_HOME $node_name
         String installDir = virtualMachine.getProperty(VirtualMachine.PropertyName.INSTALL_DIR);
-        rtContext.executeAdminCommand(report, "create-node-ssh", nodeName, "nodehost", virtualMachine.getAddress().getHostAddress(),
-                "sshUser", virtualMachine.getUser().getName(), "installdir", installDir);
+        rtContext.executeAdminCommand(report, CREATE_NODE_SSH, nodeName,
+                NODE_HOST_ARG, virtualMachine.getAddress().getHostAddress(),
+                SSH_USER_ARG, virtualMachine.getUser().getName(),
+                INSTALL_DIR_ARG, installDir);
 
         if (report.hasFailures()) {
             return;
         }
-        rtContext.executeAdminCommand(report, "create-instance", nodeName + "Instance", "node", nodeName,
-                "cluster", cluster.getConfig().getName());
+        rtContext.executeAdminCommand(report, CREATE_INSTANCE, getInstanceName(virtualMachine),
+                NODE_ARG, nodeName,
+                CLUSTER_ARG, cluster.getConfig().getName());
 
     }
 
     public boolean isActive(VirtualCluster virtualCluster, VirtualMachine virtualMachine) throws VirtException {
         if (virtualMachine.getInfo().getState().equals(Machine.State.READY)) {
             GMSAdapter adapter = gmsAdapterService.getGMSAdapterByName(virtualCluster.getConfig().getName());
-            String nodeName = getNodeName(virtualMachine);
-            HealthHistory.InstanceHealth instanceHealth = adapter.getHealthHistory().getHealthByInstance(nodeName+"Instance");
+            String instanceName = getInstanceName(virtualMachine);
+            HealthHistory.InstanceHealth instanceHealth = adapter.getHealthHistory().getHealthByInstance(instanceName);
             return instanceHealth.state.equals(HealthHistory.STATE.RUNNING);
         }
         return false;
@@ -104,11 +110,13 @@ public class GlassFishTemplateCustomizer implements TemplateCustomizer {
 
     @Override
     public void start(VirtualMachine virtualMachine, boolean firstStart) {
-        ActionReport report = services.forContract(ActionReport.class).named("plain").get();
+        ActionReport report = services.forContract(ActionReport.class)
+                .named(PLAIN_ACTION_REPORT).get();
         if (firstStart) {
             // finally starts the instance.
             try {
-                rtContext.executeAdminCommand(report, "start-instance", getNodeName(virtualMachine) + "Instance");
+                rtContext.executeAdminCommand(report, START_INSTANCE,
+                        getInstanceName(virtualMachine));
             } catch (Exception e) {
                 e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
             }
@@ -125,32 +133,45 @@ public class GlassFishTemplateCustomizer implements TemplateCustomizer {
 
         if (server!=null) {
             String nodeName = server.getNodeRef();
-            ActionReport report = services.forContract(ActionReport.class).named("plain").get();
-            rtContext.executeAdminCommand(report, "delete-instance", instanceName);
+            ActionReport report = services.forContract(ActionReport.class).
+                    named(PLAIN_ACTION_REPORT).get();
+            rtContext.executeAdminCommand(report, DELETE_INSTANCE, instanceName);
             Node node = domain.getNodeNamed(nodeName);
             if (node!=null) {
-                if (node.getType().equals("SSH")) {
-                    rtContext.executeAdminCommand(report, "delete-node-ssh", nodeName);
+                if (node.getType().equals(NODE_TYPE_SSH)) {
+                    rtContext.executeAdminCommand(report, DELETE_NODE_SSH, nodeName);
                 }
             }
         }
     }
 
     private String getNodeName(VirtualMachine virtualMachine) {
-        return  virtualMachine.getServerPool().getName() + "_" +
-                virtualMachine.getMachine().getName() + "_" + virtualMachine.getName();
+        String args[] = new String[] {
+                virtualMachine.getServerPool().getName(),
+                virtualMachine.getMachine().getName(),
+                virtualMachine.getName()
+        };
+        return NODE_NAME_FORMAT.format(args).toString();
+    }
 
+    private String getInstanceName(VirtualMachine virtualMachine) {
+        String args[] = new String[] {
+                virtualMachine.getServerPool().getName(),
+                virtualMachine.getMachine().getName(),
+                virtualMachine.getName()
+        };
+        return INSTANCE_NAME_FORMAT.format(args).toString();
     }
 
     @Override
     public void stop(VirtualMachine virtualMachine) {
-        String vmName = virtualMachine.getName();
-        String instanceName = virtualMachine.getServerPool().getName() + "_" +
-                virtualMachine.getMachine().getName() + "_" + vmName + "Instance";
+        String instanceName = getInstanceName(virtualMachine);
         Server instance = domain.getServerNamed(instanceName);
         if (instance != null) {
-            ActionReport report = services.forContract(ActionReport.class).named("plain").get();
-            rtContext.executeAdminCommand(report, "stop-instance", instanceName, "_vmShutdown", "false");
+            ActionReport report = services.forContract(ActionReport.class).
+                    named(PLAIN_ACTION_REPORT).get();
+            rtContext.executeAdminCommand(report,
+                    STOP_INSTANCE, instanceName, VM_SHUTDOWN_ARG, "false");
         }
     }
 }

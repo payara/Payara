@@ -121,11 +121,6 @@ public class GlassFishPlugin extends ServiceProvisioningEngineBase
     @Inject
     private Habitat habitat;
 
-    public static final String JAVAEE_SERVICE_TYPE = "JavaEE";
-
-    public static final String MIN_CLUSTER_PROPERTY_NAME = "min.clustersize";
-    public static final String MAX_CLUSTER_PROPERTY_NAME = "max.clustersize";
-
     private static Logger logger = Logger.getLogger(GlassFishPlugin.class.getName());
 
     public JavaEEServiceType getServiceType() {
@@ -194,7 +189,7 @@ public class GlassFishPlugin extends ServiceProvisioningEngineBase
         /**
          * Step 3. Delete elastic service.
           */
-        commandRunner.run("_delete-elastic-service", serviceName);
+        commandRunner.run(DELETE_ELASTIC_SERVICE, serviceName);
         
         return deleteSuccessful;
     }
@@ -206,12 +201,12 @@ public class GlassFishPlugin extends ServiceProvisioningEngineBase
          * Step 1. Provision DAS and cluster
          * For now, just create provisioned service object pointing to the local DAS
          */
-        String dasIPAddress = "localhost";
+        String dasIPAddress = LOCALHOST;
         Properties serviceProperties = new Properties();
-        serviceProperties.setProperty("min.clustersize",
-                serviceDescription.getConfiguration("min.clustersize"));
-        serviceProperties.setProperty("max.clustersize",
-                serviceDescription.getConfiguration("max.clustersize"));
+        serviceProperties.setProperty(MIN_CLUSTERSIZE,
+                serviceDescription.getConfiguration(MIN_CLUSTERSIZE));
+        serviceProperties.setProperty(MAX_CLUSTERSIZE,
+                serviceDescription.getConfiguration(MAX_CLUSTERSIZE));
         GlassFishProvisioner gfProvisioner = (GlassFishProvisioner)
                 provisionerUtil.getAppServerProvisioner(dasIPAddress);
         GlassFish provisionedGlassFish = gfProvisioner.getGlassFish();
@@ -222,7 +217,7 @@ public class GlassFishPlugin extends ServiceProvisioningEngineBase
          * Step 2. Create as many GlassFish service instances as min.clustersize
          */
         int minClusterSize = Integer.parseInt(
-                serviceDescription.getConfiguration("min.clustersize"));
+                serviceDescription.getConfiguration(MIN_CLUSTERSIZE));
         for (int i = 0; i < minClusterSize; i++) {
             serviceDescription.setName(serviceName + "." + (i+1));
             ProvisionedService provisionedService = createService(serviceDescription);
@@ -244,9 +239,9 @@ public class GlassFishPlugin extends ServiceProvisioningEngineBase
         /**
          * Step 4. Create elastic service.
          */
-        commandRunner.run("_create-elastic-service",
-                "--min=" + serviceDescription.getConfiguration("min.clustersize"),
-                "--max=" + serviceDescription.getConfiguration("max.clustersize"),
+        commandRunner.run(CREATE_ELASTIC_SERVICE,
+                "--min=" + serviceDescription.getConfiguration(MIN_CLUSTERSIZE),
+                "--max=" + serviceDescription.getConfiguration(MAX_CLUSTERSIZE),
                 serviceName);
 
         // Return the ProvisionedService object that represents the DAS/Cluster.
@@ -272,19 +267,19 @@ public class GlassFishPlugin extends ServiceProvisioningEngineBase
         /**
          * Step 2. Start cluster. TODO :: remove start-cluster call once LocalGlassFishTemplateCustomizer's start is fixed.
          */
-        commandRunner.run("start-cluster", serviceDescription.getVirtualClusterName());
+        commandRunner.run(START_CLUSTER, serviceDescription.getVirtualClusterName());
 
         /**
          * Step 3. Enable elastic service.
          */
-        commandRunner.run("enable-auto-scaling", serviceName);
+        commandRunner.run(ENABLE_AUTO_SCALING, serviceName);
 
         /**
          * Step 4. Create a ProvisionedService object representing the DAS/cluster.
          */
         Properties serviceProperties = new Properties();
-        String dasIPAddress = "localhost";
-        serviceProperties.setProperty("host", dasIPAddress);
+        String dasIPAddress = LOCALHOST;
+        serviceProperties.setProperty(HOST, dasIPAddress);
 //                serviceProperties.setProperty("domainName", domainName);
         GlassFishProvisioner gfProvisioner = (GlassFishProvisioner)
                 provisionerUtil.getAppServerProvisioner(dasIPAddress);
@@ -298,7 +293,7 @@ public class GlassFishPlugin extends ServiceProvisioningEngineBase
         /**
          * Step 1. Disable elastic service.
           */
-        commandRunner.run("disable-auto-scaling", serviceName);
+        commandRunner.run(DISABLE_AUTO_SCALING, serviceName);
 
         /**
          * Step 2. Stop all the instances.
@@ -319,7 +314,7 @@ public class GlassFishPlugin extends ServiceProvisioningEngineBase
          * For now, stop local cluster and jjust create a new ProvisionedService object
          * representing cluster so that State gets updated correctly.
          */
-        commandRunner.run("stop-cluster", serviceDescription.getVirtualClusterName());
+        commandRunner.run(STOP_CLUSTER, serviceDescription.getVirtualClusterName());
         new GlassFishProvisionedService(serviceDescription,
                 new Properties(), ServiceStatus.STOPPED, null);
 
@@ -330,7 +325,7 @@ public class GlassFishPlugin extends ServiceProvisioningEngineBase
     public ProvisionedService getProvisionedService(ServiceDescription serviceDescription, ServiceInfo serviceInfo){
         String dasIPAddress = gfServiceUtil.getDASIPAddress(serviceDescription.getName());
         Properties serviceProperties = new Properties();
-        serviceProperties.setProperty("host", dasIPAddress);
+        serviceProperties.setProperty(HOST, dasIPAddress);
 //                serviceProperties.setProperty("domainName", domainName);
 
         GlassFishProvisioner gfProvisioner = (GlassFishProvisioner)
@@ -351,9 +346,9 @@ public class GlassFishPlugin extends ServiceProvisioningEngineBase
     public void associateServices(org.glassfish.paas.orchestrator.service.spi.Service serviceConsumer, ServiceReference svcRef,
                                   org.glassfish.paas.orchestrator.service.spi.Service serviceProvider, boolean beforeDeployment, PaaSDeploymentContext dc) {
 //        if (provisionedSvc instanceof DerbyProvisionedService) {
-        if ("javax.sql.DataSource".equals(svcRef.getType()) &&
-	        serviceProvider.getServiceType().toString().equals("Database")  &&
-            serviceConsumer.getServiceType().toString().equals("JavaEE")) {
+        if (JDBC_DATASOURCE.equals(svcRef.getType()) &&
+	        serviceProvider.getServiceType().toString().equals(DATABASE_SERVICE_TYPE)  &&
+            serviceConsumer.getServiceType().toString().equals(JAVAEE_SERVICE_TYPE)) {
 
             if (!beforeDeployment) return;
 
@@ -366,13 +361,13 @@ public class GlassFishPlugin extends ServiceProvisioningEngineBase
             }
             if(serviceProvider.getServiceProperties() != null){
                 dbProperties.putAll(serviceProvider.getServiceProperties());
-                String serverName = serviceProvider.getServiceProperties().getProperty("host");
-                String url = serviceProvider.getServiceProperties().getProperty("URL");
+                String serverName = serviceProvider.getServiceProperties().getProperty(HOST);
+                String url = serviceProvider.getServiceProperties().getProperty(JDBC_URL);
                 if(serverName != null) {
-                    dbProperties.setProperty("serverName", serverName);
+                    dbProperties.setProperty(JDBC_SERVERNAME, serverName);
                 }
                 if(url != null) {
-                    dbProperties.setProperty("URL", url);
+                    dbProperties.setProperty(JDBC_URL, url);
                 }
             }
 //                serviceDescription.getProperties();
@@ -383,7 +378,7 @@ public class GlassFishPlugin extends ServiceProvisioningEngineBase
             String serviceName = serviceConsumer.getServiceDescription().getName();
 //                String domainName = glassfishProvisionedService.getServiceProperties().getProperty("domainName"); // serviceUtil.getDomainName(serviceName);
             //String clusterName = gfServiceUtil.getClusterName(serviceName);
-            //String dasIPAddress = glassfishProvisionedService.getServiceProperties().getProperty("host"); // serviceUtil.getIPAddress(domainName, ServiceUtil.SERVICE_TYPE.APPLICATION_SERVER);
+            //String dasIPAddress = glassfishProvisionedService.getServiceProperties().getProperty(HOST); // serviceUtil.getIPAddress(domainName, ServiceUtil.SERVICE_TYPE.APPLICATION_SERVER);
             String clusterName = gfServiceUtil.getClusterName(serviceName, serviceDescription.getAppName());
             String dasIPAddress = gfServiceUtil.getDASIPAddress(serviceConsumer.getServiceDescription().getName());
 
@@ -422,16 +417,16 @@ public class GlassFishPlugin extends ServiceProvisioningEngineBase
                 }
                 if (parser != null) { // generate deployment plan
                     File dir = new File(System.getProperty(TMR_DIR),
-                            serviceName + "/deployment_plan");
+                            serviceName + DEPLOYMENT_PLAN_DIR);
                     dir.mkdirs();
                     String xmlName = parser.getResourceFile().getName();
                     parser.persist(new File(dir, xmlName));
                     try {
-                        ZipWriter zipWriter = new ZipWriter(dir + ".jar", dir.getAbsolutePath());
+                        ZipWriter zipWriter = new ZipWriter(dir + JAR_EXTN, dir.getAbsolutePath());
                         zipWriter.write();
                         DeployCommandParameters dcp = dc.getDeploymentContext().
                                 getCommandParameters(DeployCommandParameters.class);
-                        dcp.deploymentplan = new File(dir + ".jar");
+                        dcp.deploymentplan = new File(dir + JAR_EXTN);
                         dcp.deploymentplan.deleteOnExit();
                         /**
                          * TODO ->
@@ -468,7 +463,7 @@ public class GlassFishPlugin extends ServiceProvisioningEngineBase
             String appServerServiceName = serviceConsumer.getServiceDescription().getName();//gfServiceDefinition.getProperties().getProperty("servicename");
             //String domainName = glassfishProvisionedService.getServiceProperties().getProperty("domainName");//serviceUtil.getDomainName(appServerServiceName);
             //String clusterName = gfServiceUtil.getClusterName(appServerServiceName);
-            //String dasIPAddress = glassfishProvisionedService.getServiceProperties().getProperty("host"); //serviceUtil.getIPAddress(domainName, ServiceUtil.SERVICE_TYPE.APPLICATION_SERVER);
+            //String dasIPAddress = glassfishProvisionedService.getServiceProperties().getProperty(HOST); //serviceUtil.getIPAddress(domainName, ServiceUtil.SERVICE_TYPE.APPLICATION_SERVER);
             String clusterName = gfServiceUtil.getClusterName(appServerServiceName, serviceConsumer.getServiceDescription().getAppName());
             String dasIPAddress = gfServiceUtil.getDASIPAddress(serviceConsumer.getServiceDescription().getName());
 
@@ -558,9 +553,9 @@ public class GlassFishPlugin extends ServiceProvisioningEngineBase
                 //}
             //}
         } else {
-            if (svcRef.getType().equals("javax.sql.DataSource") &&
-                serviceProvider.getServiceType().toString().equals("Database") &&
-                serviceConsumer.getServiceType().toString().equals("JavaEE")) {
+            if (svcRef.getType().equals(JDBC_DATASOURCE) &&
+                serviceProvider.getServiceType().toString().equals(DATABASE_SERVICE_TYPE) &&
+                serviceConsumer.getServiceType().toString().equals(JAVAEE_SERVICE_TYPE)) {
                 //if (serviceProvider instanceof GlassFishProvisionedService) {
                     GlassFishProvisionedService glassfishProvisionedService = (GlassFishProvisionedService) serviceConsumer;
                     String serviceName = glassfishProvisionedService.getServiceDescription().getName();
@@ -626,12 +621,12 @@ public class GlassFishPlugin extends ServiceProvisioningEngineBase
 
     private ServiceDescription generateDefaultServiceDescription(String appName) {
         List<Property> characteristics = new ArrayList<Property>();
-        characteristics.add(new Property("service-type", JAVAEE_SERVICE_TYPE));
+        characteristics.add(new Property(SERVICE_TYPE, JAVAEE_SERVICE_TYPE));
         List<Property> configurations = new ArrayList<Property>();
-        configurations.add(new Property(MIN_CLUSTER_PROPERTY_NAME, "2"));
-        configurations.add(new Property(MAX_CLUSTER_PROPERTY_NAME, "4"));
+        configurations.add(new Property(MIN_CLUSTERSIZE, DEFAULT_MIN_CLUSTERSIZE));
+        configurations.add(new Property(MAX_CLUSTERSIZE, DEFAULT_MAX_CLUSTERSIZE));
         return new ServiceDescription(
-                "gf-service-"+appName, appName, "lazy",
+                "gf-service-"+appName, appName, INIT_TYPE_LAZY,
                 new ServiceCharacteristics(characteristics), configurations);
     }
 
@@ -644,9 +639,9 @@ public class GlassFishPlugin extends ServiceProvisioningEngineBase
             scaleDownService(serviceDescription, -scaleCount);
         }
         // TODO :: Return the provisioned service with the new cluster shape.
-        String dasIPAddress = "localhost"; // TODO :: change it when DAS is also provisioned separately.
+        String dasIPAddress = LOCALHOST; // TODO :: change it when DAS is also provisioned separately.
         Properties serviceProperties = new Properties();
-        serviceProperties.setProperty("host", dasIPAddress);
+        serviceProperties.setProperty(HOST, dasIPAddress);
         GlassFishProvisioner gfProvisioner = (GlassFishProvisioner)
                 provisionerUtil.getAppServerProvisioner(dasIPAddress);
         GlassFish provisionedGlassFish = gfProvisioner.getGlassFish();
@@ -661,7 +656,7 @@ public class GlassFishPlugin extends ServiceProvisioningEngineBase
         String clusterName = serviceDescription.getVirtualClusterName();
         int currentClusterSize = domain.getClusterNamed(clusterName).getInstances().size();
         int maxClusterSize = Integer.parseInt(
-                serviceDescription.getConfiguration("max.clustersize"));
+                serviceDescription.getConfiguration(MAX_CLUSTERSIZE));
         if (currentClusterSize + scaleCount > maxClusterSize) {
             String errMsg = "\nUnable to scale the service beyond the " +
                     "maximum size [" + maxClusterSize + "], " +
@@ -685,7 +680,7 @@ public class GlassFishPlugin extends ServiceProvisioningEngineBase
         String clusterName = serviceDescription.getVirtualClusterName();
         int currentClusterSize = domain.getClusterNamed(clusterName).getInstances().size();
         int minClusterSize = Integer.parseInt(
-                serviceDescription.getConfiguration("min.clustersize"));
+                serviceDescription.getConfiguration(MIN_CLUSTERSIZE));
         if (currentClusterSize - scaleCount < minClusterSize) {
             String errMsg = "\nUnable to scale the service below the " +
                     "minimum required size [" + minClusterSize + "], " +

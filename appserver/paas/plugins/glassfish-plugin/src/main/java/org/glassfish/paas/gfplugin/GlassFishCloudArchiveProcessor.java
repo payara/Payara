@@ -217,7 +217,7 @@ public class GlassFishCloudArchiveProcessor implements GlassFishPluginConstants 
         }
 
         for(String jndiName : jndiNames){
-            serviceReferences.add(new ServiceReference(jndiName, "javax.sql.DataSource", null));
+            serviceReferences.add(new ServiceReference(jndiName, JDBC_DATASOURCE, null));
         }
     }
 }

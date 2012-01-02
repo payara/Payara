@@ -40,26 +40,138 @@
 
 package org.glassfish.paas.gfplugin;
 
+import com.sun.enterprise.util.OS;
+
+import java.io.File;
+import java.text.MessageFormat;
+
 /**
  * @author bhavanishankar@java.net
  */
 
 public interface GlassFishPluginConstants {
 
-    // general service configuration related.
+    /**
+     * Service configuration related.
+     */
+    public String SERVICE_TYPE = "service-type";
+
     public String SERVICE_NAME = "service-name";
 
-    // jdbc related
+    public String JAVAEE_SERVICE_TYPE = "JavaEE";
+
+    public String INIT_TYPE_LAZY = "lazy";
+
+    public String MIN_CLUSTERSIZE = "min.clustersize";
+
+    public String MAX_CLUSTERSIZE = "max.clustersize";
+
+    public String DEFAULT_MIN_CLUSTERSIZE = "2";
+
+    public String DEFAULT_MAX_CLUSTERSIZE = "4";
+
+    /**
+     * JDBC related
+     */
+    public String DATABASE_SERVICE_TYPE = "Database";
+
     public String JDBC_RESOURCE = "jdbc-resource";
+
     public String JDBC_CONNECTION_POOL = "jdbc-connection-pool";
+
+    public String JDBC_SERVERNAME = "serverName";
+
+    public String JDBC_URL = "URL";
+
     public String POOL_NAME = "pool-name";
+
     public String JNDI_NAME = "jndi-name";
 
-    // temporary string constants
+    public String JDBC_DATASOURCE = "javax.sql.DataSource";
+
+    /**
+     * Temporary constants
+     */
+    public String FS = File.separator;
+
     public String RESOURCE_XML_PARSERS = "resourceXmlParsers";
+
     public String NON_CONNECTOR_RESOURCES = "nonConnectorResources";
 
     public String TMR_DIR = "java.io.tmpdir";
+
+    public String DEPLOYMENT_PLAN_DIR = FS + "deployment_plan";
+
+    public String JAR_EXTN = ".jar"; // used for deployment plan generation.
+
+    public String HOST = "host";
+
+    public String LOCALHOST = "localhost";
+
+    /**
+     * asadmin commands
+     */
+    public String START_CLUSTER = "start-cluster";
+
+    public String STOP_CLUSTER = "stop-cluster";
+
+    public String CREATE_ELASTIC_SERVICE = "_create-elastic-service";
+
+    public String DELETE_ELASTIC_SERVICE = "_delete-elastic-service";
+
+    public String ENABLE_AUTO_SCALING = "enable-auto-scaling";
+
+    public String DISABLE_AUTO_SCALING = "disable-auto-scaling";
+
+    /**
+     * asadmin commands used in customizer
+     */
+    public String CREATE_NODE_SSH = "create-node-ssh";
+
+    public String DELETE_NODE_SSH = "delete-node-ssh";
+
+    public String CREATE_INSTANCE = "create-instance";
+
+    public String DELETE_INSTANCE = "delete-instance";
+
+    public String START_INSTANCE = "start-instance";
+
+    public String STOP_INSTANCE = "stop-instance";
+
+    public String CREATE_LOCAL_INSTANCE = "create-local-instance";
+
+    public String START_LOCAL_INSTANCE = "start-local-instance";
+
+    /**
+     * asadmin command arguments used in customizer.
+     */
+    public String NODE_HOST_ARG = "nodehost";
+
+    public String NODE_ARG = "node";
+
+    public String SSH_USER_ARG = "sshUser";
+
+    public String INSTALL_DIR_ARG = "installdir";
+
+    public String CLUSTER_ARG = "cluster";
+
+    public String VM_SHUTDOWN_ARG = "_vmShutdown";
+
+    /**
+     * Other constants used in customizer.
+     */
+    public String PLAIN_ACTION_REPORT = "plain";
+
+    public String NODE_TYPE_SSH = "SSH";
+
+    public MessageFormat NODE_NAME_FORMAT =
+            new MessageFormat("{0}_{1}_{2}"); // poolName_machineName_vmName
+
+    public MessageFormat INSTANCE_NAME_FORMAT = new MessageFormat(
+            NODE_NAME_FORMAT.toPattern() + "Instance"); // poolName_machineName_vmNameInstance
+
+    public MessageFormat ASADMIN_COMMAND = new MessageFormat(
+            "{0}" + FS + "lib" + FS + "nadmin" + (OS.isWindows() ? ".bat" : "")); // {0} must be install root.
 
 }
 
