@@ -92,7 +92,7 @@ public class OSGiArchiveHandler extends GenericHandler implements CompositeHandl
     }
 
     public ClassLoader getClassLoader(ClassLoader parent, DeploymentContext context) {
-        return null;
+        return parent;
     }
 
 }

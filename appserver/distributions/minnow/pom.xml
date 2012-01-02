@@ -108,6 +108,12 @@
     <dependencies>
         <!-- Artifacts to be included in the distribution -->
 
+        <!-- All the dependencies are intentionally markes as optional so that one can
+             express dependency on a particular dependency and adding such a dependency
+             won't bring the transitive closure. A distribution is supposed to be
+             self sufficient. See GLASSFISH-17170 for more details.
+        -->
+
         <!-- nucleus distribution -->
         <dependency>
             <groupId>org.glassfish.distributions</groupId>

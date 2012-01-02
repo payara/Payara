@@ -142,12 +142,19 @@
     <dependencies>
         <!-- Artifacts to be included in the distribution -->
 
+        <!-- All the dependencies are intentionally markes as optional so that one can
+             express dependency on a particular dependency and adding such a dependency
+             won't bring the transitive closure. A distribution is supposed to be
+             self sufficient. See GLASSFISH-17170 for more details.
+        -->
+
         <!-- web distribution -->
         <dependency>
             <groupId>org.glassfish.distributions</groupId>
             <artifactId>web</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
+            <optional>true</optional>
         </dependency>
 
 	<!-- commons full package -->       
@@ -156,6 +163,7 @@
            <artifactId>glassfish-common-full</artifactId>
            <version>${project.version}</version>
            <type>zip</type>
+            <optional>true</optional>
         </dependency> 
     
 
@@ -165,6 +173,7 @@
             <artifactId>glassfish-ejb</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
+            <optional>true</optional>
         </dependency>     
 	
 	<!-- CMP package -->
@@ -173,6 +182,7 @@
             <artifactId>glassfish-cmp</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
+            <optional>true</optional>
         </dependency>     
 
         <!--corba package -->
@@ -181,6 +191,7 @@
             <artifactId>glassfish-corba</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
+            <optional>true</optional>
         </dependency>    
 
         <!-- metro package -->
@@ -189,6 +200,7 @@
             <artifactId>metro</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
+            <optional>true</optional>
         </dependency>
 
      <!-- appclient package -->
@@ -197,6 +209,7 @@
 	    <artifactId>glassfish-appclient</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
+            <optional>true</optional>
         </dependency>
 
         <!-- jms package -->
@@ -205,6 +218,7 @@
 	    <artifactId>glassfish-jms</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
+            <optional>true</optional>
         </dependency>
 
         <!-- mq package -->
@@ -213,6 +227,7 @@
 	    <artifactId>mq</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
+            <optional>true</optional>
         </dependency>
 
         <!-- additional servicetag registry dependency -->
@@ -221,6 +236,7 @@
             <artifactId>servicetag-registry</artifactId>
             <version>${project.version}</version>
             <type>distribution-fragment</type>
+            <optional>true</optional>
         </dependency>
         <!-- additional legal content dependency -->
         <dependency>
@@ -228,6 +244,7 @@
             <artifactId>legal-fragment</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
+            <optional>true</optional>
         </dependency>
 
 </dependencies>

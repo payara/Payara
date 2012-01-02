@@ -93,6 +93,9 @@ public class DynamicInterceptor implements MBeanServer
 
     public DynamicInterceptor() {
         mDelegateMBeanServer = null;
+        // we must initialize this eagely in order to avoid initializing this at the time of shutdown and failing
+        // because the modules have been shutdown. See GLASSFISH-18109 for more details.
+        MbeanService.getInstance();
     }
 
     private ReplicationInfo getTargets( final ObjectName objectName) throws InstanceNotFoundException {
