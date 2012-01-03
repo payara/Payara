@@ -70,8 +70,8 @@ import java.util.*;
  *
  * @author Shalini M
  */
-public abstract class DatabaseSPEBase extends ServiceProvisioningEngineBase
-        implements ServicePlugin<RDBMSServiceType>, DatabaseSPEConstants {
+public abstract class DatabaseSPEBase extends ServiceProvisioningEngineBase<RDBMSServiceType>
+        implements DatabaseSPEConstants {
 
     @Inject
     private ClassLoaderHierarchy clh;
@@ -168,7 +168,7 @@ public abstract class DatabaseSPEBase extends ServiceProvisioningEngineBase
      */
     public ProvisionedService provisionService(
             ServiceDescription serviceDescription, PaaSDeploymentContext dc) {
-        ProvisionedService provisionedService = createService(serviceDescription);
+        ProvisionedService provisionedService = createService(serviceDescription).join();
         //Start database
         Properties properties = provisionedService.getProperties();
         VirtualMachine vm = getVmByID(serviceDescription.getVirtualClusterName(),

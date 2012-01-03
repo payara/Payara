@@ -49,6 +49,7 @@ import org.glassfish.paas.orchestrator.service.metadata.ServiceCharacteristics;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceDescription;
 import org.glassfish.paas.orchestrator.service.metadata.TemplateIdentifier;
 import org.glassfish.paas.orchestrator.service.spi.ProvisionedService;
+import org.glassfish.paas.orchestrator.service.spi.ServicePlugin;
 import org.glassfish.paas.orchestrator.service.spi.ServiceProvisioningException;
 import org.glassfish.virtualization.runtime.VirtualClusters;
 import org.glassfish.virtualization.runtime.VirtualMachineLifecycle;
@@ -69,21 +70,19 @@ import org.glassfish.virtualization.spi.VirtException;
 import org.glassfish.virtualization.util.ServiceType;
 import org.glassfish.virtualization.util.SimpleSearchCriteria;
 import org.jvnet.hk2.annotations.Inject;
-import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Singleton;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.logging.Logger;
 
 /**
  * @author bhavanishankar@java.net
  */
-@Service
-@Scoped(Singleton.class)
-public class ServiceProvisioningEngineBase {
+public abstract class ServiceProvisioningEngineBase<T extends org.glassfish.paas.orchestrator.service.ServiceType> implements ServicePlugin {
 
     private static final Logger logger =
             Logger.getLogger(ServiceProvisioningEngineBase.class.getName());
@@ -103,8 +102,7 @@ public class ServiceProvisioningEngineBase {
     @Inject(optional = true)
     VirtualMachineLifecycle vmLifecycle;
 
-    @Inject
-    private CommandRunner commandRunner;
+    private static final ExecutorService executor = Executors.newCachedThreadPool();
 
     /**
      * Create a service using the service characteristics specified in service-descripion.
@@ -113,7 +111,7 @@ public class ServiceProvisioningEngineBase {
      * @return Basic Provisioned Service.
      * @throws ServiceProvisioningException When service creation fails.
      */
-    public ProvisionedService createService(ServiceDescription serviceDescription)
+    public ProvisioningFuture<ProvisionedService> createService(ServiceDescription serviceDescription)
             throws ServiceProvisioningException {
         return createService(serviceDescription, null, null);
     }
@@ -128,11 +126,25 @@ public class ServiceProvisioningEngineBase {
      * @return Basic Provisioned Service.
      * @throws ServiceProvisioningException When service creation fails.
      */
-    public ProvisionedService createService(ServiceDescription serviceDescription,
-                                            AllocationStrategy allocationStrategy,
-                                            List<Listener<AllocationPhase>> listeners)
+    public ProvisioningFuture<ProvisionedService> createService(final ServiceDescription serviceDescription,
+                                                                final AllocationStrategy allocationStrategy,
+                                                                final List<Listener<AllocationPhase>> listeners)
             throws ServiceProvisioningException {
+        ProvisioningFuture<ProvisionedService> future =
+                new ProvisioningFuture<ProvisionedService>(
+                        new Callable<ProvisionedService>() {
+                            public ProvisionedService call() throws Exception {
+                                return _createService(serviceDescription, allocationStrategy, listeners);
+                            }
+                        }
+                );
+        executor.execute(future);
+        return future;
+    }
 
+    private ProvisionedService _createService(ServiceDescription serviceDescription,
+                                              AllocationStrategy allocationStrategy,
+                                              List<Listener<AllocationPhase>> listeners) {
         // Note :: since allocationStrategy and listeners can not be passed to an admin
         // command, create-service can not be implemented as a command.
 
@@ -254,7 +266,7 @@ public class ServiceProvisioningEngineBase {
         try {
             VirtualCluster virtualCluster = virtualClusters.byName(virtualClusterName);
             String vmId = serviceInfo.getInstanceId();
-            if(vmId != null && virtualCluster.vmByName(vmId) != null) {
+            if (vmId != null && virtualCluster.vmByName(vmId) != null) {
                 VirtualMachine vm = virtualCluster.vmByName(vmId);
                 vmLifecycle.delete(vm);
             }

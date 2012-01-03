@@ -94,8 +94,8 @@ import java.util.logging.Logger;
  */
 @Service
 @Scoped(PerLookup.class)
-public class GlassFishPlugin extends ServiceProvisioningEngineBase
-        implements ServicePlugin<JavaEEServiceType>, GlassFishPluginConstants {
+public class GlassFishPlugin extends ServiceProvisioningEngineBase<JavaEEServiceType>
+        implements GlassFishPluginConstants {
 
     @Inject
     private GlassFishCloudArchiveProcessor archiveProcessor;
@@ -220,7 +220,7 @@ public class GlassFishPlugin extends ServiceProvisioningEngineBase
                 serviceDescription.getConfiguration(MIN_CLUSTERSIZE));
         for (int i = 0; i < minClusterSize; i++) {
             serviceDescription.setName(serviceName + "." + (i+1));
-            ProvisionedService provisionedService = createService(serviceDescription);
+            ProvisionedService provisionedService = createService(serviceDescription).join();
             // further customize the provisioned service
         }
         serviceDescription.setName(serviceName); // reset to original value.
@@ -666,7 +666,7 @@ public class GlassFishPlugin extends ServiceProvisioningEngineBase
         for (int i = currentClusterSize+1; scaleCount > 0 ; scaleCount--, i++) {
             serviceDescription.setName(serviceName + "." + i);
             ProvisionedService scaledService = super.createService(serviceDescription,
-                    allocStrategy, null);
+                    allocStrategy, null).join();
             // configure the VM after creating.
         }
         serviceDescription.setName(serviceName);
