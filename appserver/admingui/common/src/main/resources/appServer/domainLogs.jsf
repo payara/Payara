@@ -140,6 +140,7 @@
                   var doc = iframe.contentWindow.document; 
                   var matches = doc.body.innerHTML.match('Exception: (.+)?</pre>');
                   if (matches) {
+                      matches = matches[1].match('Exception: (.+)$') || matches;
                       alert(matches[1]);
                   }
               }, 1000);
