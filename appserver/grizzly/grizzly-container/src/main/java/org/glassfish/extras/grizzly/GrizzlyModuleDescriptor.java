@@ -100,10 +100,8 @@ public class GrizzlyModuleDescriptor {
             }
 
             adapterProperties.put(attrs.getNamedItem("class-name").getNodeValue(), list);
-            if (attrs != null){
-                addAdapter(attrs.getNamedItem("context-root").getNodeValue(),
-                        attrs.getNamedItem("class-name").getNodeValue());
-            }
+            addAdapter(attrs.getNamedItem("context-root").getNodeValue(),
+                    attrs.getNamedItem("class-name").getNodeValue());
         }
     }
 
@@ -118,7 +116,7 @@ public class GrizzlyModuleDescriptor {
         return tuples;
     }
 
-    class GrizzlyProperty{
+    static class GrizzlyProperty{
 
         String name ="";
         String value = "";
