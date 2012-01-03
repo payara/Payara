@@ -92,8 +92,7 @@ public class AjpAddOnProvider extends AjpAddOn implements ConfigAwareElement<Htt
             final String systemPropertyFilename =
                     System.getProperty("com.sun.enterprise.web.connector.enableJK.propertyFile");
 
-            if ((propertiesFile == null
-                    || (propertiesFile != null && !propertiesFile.exists()))
+            if ((propertiesFile == null || !propertiesFile.exists())
                     && systemPropertyFilename != null) {
                 propertiesFile = new File(systemPropertyFilename);
             }
