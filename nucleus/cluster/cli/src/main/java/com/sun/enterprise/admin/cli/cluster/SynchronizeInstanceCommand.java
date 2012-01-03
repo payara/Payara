@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -103,8 +103,11 @@ public class SynchronizeInstanceCommand extends LocalInstanceCommand {
     }
 
     /**
-     * Synchronize this server instance.  Return true if
-     * server is synchronized.
+     * Synchronize this server instance.  Return true if server is synchronized. 
+     * Return false if synchronization failed, but no files were changed
+     * (meaning that it is ok to bring the server up).
+     * Throw a CommandException if synchronization failed in such a way that 
+     * instance startup should not be attempted.
      */
     protected boolean synchronizeInstance() throws CommandException {
 
@@ -181,6 +184,7 @@ public class SynchronizeInstanceCommand extends LocalInstanceCommand {
         File domainXml =
                     new File(new File(instanceDir, "config"), "domain.xml");
         long dtime = domainXml.exists() ? domainXml.lastModified() : -1;
+        File docroot = new File(instanceDir, "docroot");
 
         CommandException exc = null;
         try {
@@ -303,9 +307,9 @@ public class SynchronizeInstanceCommand extends LocalInstanceCommand {
              * the sync state file so we'll do a full sync the next time.
              * If nothing has changed, allow the server to come up.
              */
-            if (domainXml != null && domainXml.exists() &&
-                    domainXml.lastModified() == dtime) {
-                // nothing changed
+            if (domainXml.exists() && domainXml.lastModified() == dtime &&
+                    docroot.isDirectory()) {
+                // nothing changed and sync has completed at least once
                 if (!syncState.delete())
                     logger.warning(
                         Strings.get("Sync.cantDeleteSyncState", syncState));
