@@ -20,3 +20,11 @@ Steps to run these automated tests:
    Without lb-plugin just skip the argument part.Deafult port of 28080 will be used.
 
    GF_EMBEDDED_ENABLE_CLI=true mvn clean verify surefire-report:report
+
+5. When multiple database plugins are present in the modules directory, to register a particular database plugin as the default service provisioning engine, use the register-service-provisioning-engine command. For example,
+
+asadmin register-service-provisioning-engine --type Database --defaultservice=true org.glassfish.paas.mysqldbplugin.MySQLDBPlugin
+
+or
+
+asadmin register-service-provisioning-engine --type Database --defaultservice=true org.glassfish.paas.javadbplugin.DerbyPlugin
