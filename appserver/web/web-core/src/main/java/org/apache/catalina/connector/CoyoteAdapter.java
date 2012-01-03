@@ -518,22 +518,7 @@ public class CoyoteAdapter extends HttpHandler {
             request.updatePaths(md);
         }
 
-        Object context = request.getMappingData().context;
-        if (context instanceof ContextRootInfo) {
-            // this block of code will be invoked when an AJP request is intended
-            // for an Adapter other than the CoyoteAdapter
-            final HttpHandler toInvoke = ((ContextRootInfo) context).getHttpHandler();
-            // Ensure the Adapter isn't the ContainerMapper.  It could be there
-            // is only one container/adapter currently active.  If this is the
-            // case, it could cause recursion and blow the stack.
-            if (!"com.sun.enterprise.v3.services.impl.ContainerMapper".equals(toInvoke.getClass().getName())) {
-                toInvoke.service(req, res);
-//                toInvoke.afterService(req, res);
-                return false;
-            }
-        }
-
-        Context ctx = (Context) context;
+        Context ctx = (Context) request.getMappingData().context;
 
         // Parse session id
         if (ctx != null) {
