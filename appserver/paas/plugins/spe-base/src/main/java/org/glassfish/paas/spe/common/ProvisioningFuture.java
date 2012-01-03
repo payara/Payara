@@ -45,8 +45,6 @@ import org.glassfish.paas.orchestrator.service.spi.ServiceProvisioningException;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Main purpose of this class is to handle all the threading exceptions.

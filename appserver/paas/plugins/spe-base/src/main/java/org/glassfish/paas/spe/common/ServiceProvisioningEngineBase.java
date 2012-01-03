@@ -40,6 +40,7 @@
 
 package org.glassfish.paas.spe.common;
 
+import com.sun.logging.LogDomains;
 import org.glassfish.embeddable.CommandRunner;
 import org.glassfish.paas.orchestrator.provisioning.ServiceInfo;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceUtil;
@@ -77,6 +78,7 @@ import java.util.Properties;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -84,8 +86,8 @@ import java.util.logging.Logger;
  */
 public abstract class ServiceProvisioningEngineBase<T extends org.glassfish.paas.orchestrator.service.ServiceType> implements ServicePlugin {
 
-    private static final Logger logger =
-            Logger.getLogger(ServiceProvisioningEngineBase.class.getName());
+    private static final Logger logger = LogDomains.getLogger(
+            ServiceProvisioningEngineBase.class, LogDomains.PAAS_LOGGER);
 
     @Inject(optional = true)
     private TemplateRepository templateRepository;
@@ -190,18 +192,17 @@ public abstract class ServiceProvisioningEngineBase<T extends org.glassfish.paas
                     vmState.equals(Machine.State.SUSPENDING)) {
                 vmLifecycle.start(vm);
             } else {
-                logger.warning("Virtual Machine [" + vm.getName() + "] is already running");
+                logger.log(Level.WARNING, "vm.running", vm.getName());
             }
 
             // Based on the VM state update the service info
             vmState = vm.getInfo().getState();
             if (vmState.equals(Machine.State.READY) ||
                     vmState.equals(Machine.State.RESUMING)) {
-                logger.info("Service [" + serviceName + "] of type [" +
-                        serviceDescription.getServiceType() + "] started successfully.");
+                logger.log(Level.INFO, "service.started",
+                        new Object[]{serviceName, serviceDescription.getServiceType()});
             } else {
-                logger.warning("Failed to update service info. Virtual Machine [" +
-                        vm.getName() + "] is not in RESUMING or READY state");
+                logger.log(Level.WARNING, "vm.start.failed", vm.getName());
             }
 
             Properties properties = new Properties();
@@ -233,7 +234,7 @@ public abstract class ServiceProvisioningEngineBase<T extends org.glassfish.paas
                     vmState.equals(Machine.State.RESUMING)) {
                 vmLifecycle.stop(vm);
             } else {
-                logger.warning("Virtual Machine [" + vm.getName() + "] is already stopped.");
+                logger.log(Level.WARNING, "vm.stopped", vm.getName());
                 stopSuccessful = false;
             }
 
@@ -244,10 +245,10 @@ public abstract class ServiceProvisioningEngineBase<T extends org.glassfish.paas
                     vmState.equals(Machine.State.SUSPENDING)) {
                 serviceUtil.updateState(serviceName, appName,
                         ServiceStatus.STOPPED.toString(), null);
-                logger.info("Service [" + serviceName + "] of type [" +
-                        serviceDescription.getServiceType() + "] stopped successfully.");
+                logger.log(Level.INFO, "service.stopped",
+                        new Object[]{serviceName, serviceDescription.getServiceType()});
             } else {
-                logger.warning("Unable to stop virtual machine [" + vm.getName() + "] ");
+                logger.log(Level.WARNING, "vm.stop.failed", vm.getName());
                 stopSuccessful = false;
             }
 
@@ -297,13 +298,12 @@ public abstract class ServiceProvisioningEngineBase<T extends org.glassfish.paas
                 // TODO :: for now let us pick the first matching templates
                 TemplateInstance matchingTemplate = matchingTemplates.iterator().next();
                 if (matchingTemplates.size() > 1) {
-                    logger.warning("\nMultiple matching templates found [" + matchingTemplates +
-                            "]. Used the first one [" + matchingTemplate + "]");
+                    logger.log(Level.WARNING, "multiple.matching.templates",
+                            new Object[]{matchingTemplates, matchingTemplate});
                 }
                 templateId = matchingTemplate.getConfig().getName();
             } else {
-                logger.warning("\nUnable to find any template matching " +
-                        "service characteristics. [" + sc + "]");
+                logger.log(Level.WARNING, "template.matching.failed", sc);
             }
         }
         return templateId;
