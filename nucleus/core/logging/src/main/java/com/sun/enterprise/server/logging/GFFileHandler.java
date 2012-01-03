@@ -187,9 +187,9 @@ public class GFFileHandler extends StreamHandler implements PostConstruct, PreDe
             while ((strLine = br.readLine()) != null) {
                 strLine = strLine.trim();
                 if (!strLine.equals("")) {
-                    if (strLine.startsWith("[[") && strLine.endsWith("]") && countOccurrences(strLine,'[')>4) { // for odl formatter
+                    if (strLine.startsWith("[[") && strLine.endsWith("]") && countOccurrences(strLine, '[') > 4) { // for odl formatter
                         odlFormatter++;
-                    } else if (strLine.startsWith("[#|") && strLine.endsWith("|#]") && countOccurrences(strLine,'|')>4) {  // for ufl formatter
+                    } else if (strLine.startsWith("[#|") && strLine.endsWith("|#]") && countOccurrences(strLine, '|') > 4) {  // for ufl formatter
                         uflFormatter++;
                     } else {
                         otherFormatter++;  // for other formatter
@@ -347,8 +347,7 @@ public class GFFileHandler extends StreamHandler implements PostConstruct, PreDe
         gffileHandlerFormatter = manager.getProperty(cname + ".formatter");
         if (mustRotate) {
             rotate();
-        }
-        else if (!currentgffileHandlerFormatter.equals("") && gffileHandlerFormatter != null && !gffileHandlerFormatter.equals(currentgffileHandlerFormatter)) {
+        } else if (!currentgffileHandlerFormatter.equals("") && gffileHandlerFormatter != null && !gffileHandlerFormatter.equals(currentgffileHandlerFormatter)) {
             rotate();
         }
 
@@ -696,8 +695,6 @@ public class GFFileHandler extends StreamHandler implements PostConstruct, PreDe
                                     new FieldPosition(0));
                             File rotatedFile = new File(renamedFileName.toString());
                             boolean renameSuccess = oldFile.renameTo(rotatedFile);
-                            FileOutputStream oldFileFO = new FileOutputStream(oldFile);
-                            oldFileFO.close();
                             if (!renameSuccess) {
                                 // If we don't succeed with file rename which
                                 // most likely can happen on Windows because
@@ -713,6 +710,8 @@ public class GFFileHandler extends StreamHandler implements PostConstruct, PreDe
                                         new FileOutputStream(freshServerLogFile);
                                 fo.close();
                             }
+                            FileOutputStream oldFileFO = new FileOutputStream(oldFile);
+                            oldFileFO.close();
                             openFile(getLogFileName());
                             absoluteFile = getLogFileName();
                             // This will ensure that the log rotation timer
