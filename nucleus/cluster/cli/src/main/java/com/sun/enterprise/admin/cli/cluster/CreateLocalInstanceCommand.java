@@ -48,6 +48,8 @@ import com.sun.enterprise.security.store.PasswordAdapter;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 import com.sun.enterprise.util.OS;
 import com.sun.enterprise.util.SystemPropertyConstants;
+import com.sun.enterprise.util.StringUtils;
+import com.sun.enterprise.util.io.FileUtils;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.CommandException;
@@ -136,7 +138,16 @@ public final class CreateLocalInstanceCommand extends CreateLocalInstanceFilesys
         setDasDefaultsOnly = true; //Issue 12847 - Call super.validate to setDasDefaults only
         super.validate();          //so _validate-node uses das host from das.properties. No dirs created.
         if (node != null) {
-            validateNode(node, getProductRootPath(), getInstanceHostName(true));
+            //BugDB 13431949 - if installdir is not specified on node, call validateNode to populate installdir.
+            //if installdir is specified on node, validate installdir locally
+            String nodeInstallDir = getNodeInstallDir();
+            if (nodeInstallDir == null || nodeInstallDir.isEmpty()) {
+                validateNode(node, getProductRootPath(), getInstanceHostName(true));
+            } else {
+                validateNodeInstallDir(nodeInstallDir, getProductRootPath());
+                validateNode(node, null, getInstanceHostName(true));
+            }
+            
         }
 
         if (!rendezvousWithDAS()) {
@@ -414,7 +425,7 @@ public final class CreateLocalInstanceCommand extends CreateLocalInstanceFilesys
     private int validateNode(String name, String installdir, String nodeHost) throws CommandException {
         ArrayList<String> argsList = new ArrayList<String>();
         argsList.add(0, "_validate-node");
-
+                
         if (nodeDir != null) {
             argsList.add("--nodedir");
             argsList.add(nodeDir);
@@ -431,10 +442,26 @@ public final class CreateLocalInstanceCommand extends CreateLocalInstanceFilesys
         argsList.add(name);
 
         String[] argsArray = new String[argsList.size()];
-        argsArray = argsList.toArray(argsArray);
+        argsArray = argsList.toArray(argsArray);    
 
         RemoteCommand rc = new RemoteCommand("_validate-node", this.programOpts, this.env);
         return rc.execute(argsArray);
+    }
+    
+    private void validateNodeInstallDir(String nodeInstallDir, String installDir) throws CommandValidationException {
+        String canonicalNodeInstallDir = FileUtils.safeGetCanonicalPath(new File(nodeInstallDir));
+        String canonicalInstallDir = FileUtils.safeGetCanonicalPath(new File(installDir));
+        if (canonicalNodeInstallDir == null || canonicalInstallDir == null) {
+            throw new CommandValidationException(
+                Strings.get("Instance.installdir.null", node,
+                           canonicalInstallDir, canonicalNodeInstallDir));
+        }
+
+        if ( !canonicalInstallDir.equals(canonicalNodeInstallDir) ) {
+            throw new CommandValidationException(
+                Strings.get("Instance.installdir.mismatch", node,
+                           canonicalInstallDir, canonicalNodeInstallDir));
+        }
     }
 
     private String getInstanceHostName(boolean isCanonical) throws CommandException {
