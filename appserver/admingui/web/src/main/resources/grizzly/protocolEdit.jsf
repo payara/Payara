@@ -71,12 +71,6 @@
         setPageSessionAttribute(key="hasPropertySheet" value="#{true}" );
         setPageSessionAttribute(key="hasPropertyTable" value="#{false}" );
         setSessionAttribute(key="secureCancelUrl" value="#{pageSession.selfPage}")
-        setPageSessionAttribute(key="readOnly" value="#{false}" );
-        if ("(#{pageSession.Name}=admin-listener)") {
-           if ("(#{pageSession.configName}=server-config)") {
-                setPageSessionAttribute(key="readOnly" value="#{true}" );
-           }
-        }
         //If secure admin is enabled, we will not show the other tabs since GUI doesn't have support for handling low level grizzly config yet.
         setPageSessionAttribute(key="showSSLTab" value="#{true}");
         setPageSessionAttribute(key="showHttpTab" value="#{true}");
@@ -97,7 +91,14 @@
                 setPageSessionAttribute(key="showFileCacheTab" value="#{false}");
             }
         }
-
+        // If protocol is sec-admin-listener or admin-listener, then save button and security enabled checkbox is disabled
+        setPageSessionAttribute(key="readOnly" value="#{false}" );
+        setPageSessionAttribute(key="disableSaveButton" value="#{false}");
+        if (" (#{pageSession.Name}=$constant{com.sun.enterprise.config.serverbeans.ServerTags.SEC_ADMIN_LISTENER_PROTOCOL_NAME}) 
+                                        || (#{pageSession.Name}=$constant{com.sun.enterprise.config.serverbeans.ServerTags.ADMIN_LISTENER_ID})"){
+                setPageSessionAttribute(key="disableSaveButton" value="#{true}");
+                setPageSessionAttribute(key="readOnly" value="#{true}" );
+        }
         />
     </event>
             <sun:form id="propertyForm">
@@ -107,6 +108,17 @@
                 <sun:title id="propertyContentPage" title="$resource{i18n_web.grizzly.protocolEditPageTitle}" helpText="$resource{i18n_web.grizzly.protocolEditPageTitleHelp}">
 <!facet pageButtonsTop>
         <sun:panelGroup id="topButtons">
+            <sun:button id="saveButton" disabled="#{disableSaveButton}" text="$resource{i18n.button.Save}"
+                    onClick="if (guiValidate('#{reqMsg}','#{reqInt}','#{reqPort}')) {submitAndDisable(this, '$resource{i18n.button.Processing}');}; return false;" >
+                <!command
+                    prepareSuccessfulMsg();
+                    gf.createEntity(endpoint="#{pageSession.selfUrl}"
+                        attrs="#{pageSession.valueMap}"
+                        convertToFalse="#{pageSession.convertToFalseList}"
+                    );
+                    gf.redirect(page="#{pageSession.selfPage}&alertType=${alertType}&alertSummary=${alertSummary}&alertDetail=${alertDetail}");
+                />
+            </sun:button>
             <sun:button id="cancelButton" immediate="#{true}" primary="#{false}" rendered="#{pageSession.showCancelButton}" text="$resource{i18n.button.Cancel}" >
                 <!command
                     gf.redirect(page="#{parentPage}?configName=#{configName}");
