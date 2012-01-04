@@ -38,59 +38,40 @@
  * holder.
  */
 
-package org.glassfish.paas.orchestrator;
-
-import com.sun.enterprise.module.ModulesRegistry;
-import com.sun.enterprise.module.single.StaticModulesRegistry;
-import org.glassfish.embeddable.GlassFish;
-import org.glassfish.embeddable.GlassFishException;
-import org.glassfish.embeddable.GlassFishProperties;
-import org.glassfish.embeddable.GlassFishRuntime;
-import org.jvnet.hk2.component.Habitat;
-
-import java.util.Properties;
+package org.glassfish.paas.gfplugin;
 
 /**
  * @author bhavanishankar@java.net
  */
 
-public class StaticClientRuntime extends GlassFishRuntime {
+public class RemoteCommandResult implements org.glassfish.embeddable.CommandResult {
 
-    public GlassFishRuntime setHabitat(Habitat habitat) {
-        this.habitat = habitat;
-        return this;
-    }
+    ExitStatus exitStatus = ExitStatus.FAILURE;
+    String output;
+    Throwable failureCause;
 
-    private Habitat habitat;
-
-    @Override
-    public void shutdown() throws GlassFishException {
-    }
-
-    @Override
-    public GlassFish newGlassFish(GlassFishProperties glassFishProperties)
-            throws GlassFishException {
-        ModulesRegistry registry;
-        System.out.println("serverHabitat = [ " + habitat + "]");
-        if (habitat == null) {
-            ClassLoader ecl = getClass().getClassLoader();
-            Thread.currentThread().setContextClassLoader(ecl);
-            registry = new StaticModulesRegistry(ecl);
+    public RemoteCommandResult(int exitStatus, String output, Throwable t) {
+        if (exitStatus == 0) {
+            this.exitStatus = ExitStatus.SUCCESS;
+            this.output = output == null || output.trim().length() == 0 ?
+                    "Command Executed Succesfully." : output;
         } else {
-            registry = habitat.getComponent(ModulesRegistry.class);
+            this.exitStatus = ExitStatus.FAILURE;
+            this.output = output == null || output.trim().length() == 0 ?
+                    "Command Failed." : output;
+            this.failureCause = t;
         }
+    }
 
-        String habitatName = glassFishProperties.getProperties().getProperty("host")
-                + ":" + glassFishProperties.getProperties().getProperty("port");
-        Habitat habitat = registry.createHabitat(habitatName);
-        System.out.println("Habitat = [ " + habitat + "]");
-        Properties cloned = new Properties();
-        cloned.putAll(glassFishProperties.getProperties());
-        /* System property is set to workaround this error:
-        It appears that server [xxxxxxx:4848] does not accept secure connections. Retry with --secure=false.
-        javax.net.ssl.SSLException: HelloRequest followed by an unexpected  handshake message
-        */
-        System.setProperty("sun.security.ssl.allowUnsafeRenegotiation", "true");
-        return new GlassFishClient(habitat, cloned);
+    public ExitStatus getExitStatus() {
+        return exitStatus;
+    }
+
+    public String getOutput() {
+        return output;
+    }
+
+    public Throwable getFailureCause() {
+        return failureCause;
     }
 }

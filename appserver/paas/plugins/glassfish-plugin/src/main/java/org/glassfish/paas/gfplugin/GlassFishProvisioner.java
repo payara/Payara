@@ -42,7 +42,7 @@ package org.glassfish.paas.gfplugin;
 
 
 import org.glassfish.paas.gfplugin.cli.ApplicationServerProvisioner;
-import org.glassfish.paas.orchestrator.ClientRuntimeWrapper;
+import org.glassfish.paas.gfplugin.ClientRuntimeWrapper;
 import org.glassfish.paas.orchestrator.provisioning.util.RemoteCommandExecutor;
 import org.glassfish.embeddable.*;
 import org.jvnet.hk2.annotations.Inject;

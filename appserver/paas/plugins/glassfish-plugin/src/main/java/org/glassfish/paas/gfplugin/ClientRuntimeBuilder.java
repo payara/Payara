@@ -38,30 +38,34 @@
  * holder.
  */
 
-package org.glassfish.paas.orchestrator;
+package org.glassfish.paas.gfplugin;
 
 import org.glassfish.embeddable.BootstrapProperties;
 import org.glassfish.embeddable.GlassFishException;
 import org.glassfish.embeddable.GlassFishRuntime;
-import org.glassfish.internal.api.Globals;
+import org.glassfish.embeddable.spi.RuntimeBuilder;
+
+import java.util.logging.Logger;
 
 /**
  * @author bhavanishankar@java.net
  */
 
+public class ClientRuntimeBuilder implements RuntimeBuilder {
 
-public class ClientRuntimeWrapper {
+    private static Logger logger = Logger.getLogger("glassfish-cloud");
 
-    static GlassFishRuntime clientRuntime;
+    public GlassFishRuntime build(BootstrapProperties bootstrapProperties) throws GlassFishException {
+        logger.info("build() called");
+        // TODO :: check if it is inside OSGi environment, if so create a different runtime.
+        return new StaticClientRuntime();
+    }
 
-    public static GlassFishRuntime bootstrap(BootstrapProperties bsProps)
-            throws GlassFishException {
-        try {
-            clientRuntime = GlassFishRuntime.bootstrap(bsProps);
-        } catch (Exception ex) {
-            // inside the running GF, hence already bootstrapped exception.
-            clientRuntime = new StaticClientRuntime().setHabitat(Globals.getDefaultHabitat());
+    public boolean handles(BootstrapProperties bootstrapProperties) {
+        logger.info("handles() called");
+        if ("GlassFishClient".equals(bootstrapProperties.getProperty("GlassFish_Platform"))) {
+            return true;
         }
-        return clientRuntime;
+        return false;
     }
 }

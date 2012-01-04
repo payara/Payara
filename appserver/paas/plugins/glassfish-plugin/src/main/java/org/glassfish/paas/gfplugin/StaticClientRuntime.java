@@ -38,34 +38,59 @@
  * holder.
  */
 
-package org.glassfish.paas.orchestrator;
+package org.glassfish.paas.gfplugin;
 
-import org.glassfish.embeddable.BootstrapProperties;
+import com.sun.enterprise.module.ModulesRegistry;
+import com.sun.enterprise.module.single.StaticModulesRegistry;
+import org.glassfish.embeddable.GlassFish;
 import org.glassfish.embeddable.GlassFishException;
+import org.glassfish.embeddable.GlassFishProperties;
 import org.glassfish.embeddable.GlassFishRuntime;
-import org.glassfish.embeddable.spi.RuntimeBuilder;
+import org.jvnet.hk2.component.Habitat;
 
-import java.util.logging.Logger;
+import java.util.Properties;
 
 /**
  * @author bhavanishankar@java.net
  */
 
-public class ClientRuntimeBuilder implements RuntimeBuilder {
+public class StaticClientRuntime extends GlassFishRuntime {
 
-    private static Logger logger = Logger.getLogger("glassfish-cloud");
-
-    public GlassFishRuntime build(BootstrapProperties bootstrapProperties) throws GlassFishException {
-        logger.info("build() called");
-        // TODO :: check if it is inside OSGi environment, if so create a different runtime.
-        return new StaticClientRuntime();
+    public GlassFishRuntime setHabitat(Habitat habitat) {
+        this.habitat = habitat;
+        return this;
     }
 
-    public boolean handles(BootstrapProperties bootstrapProperties) {
-        logger.info("handles() called");
-        if ("GlassFishClient".equals(bootstrapProperties.getProperty("GlassFish_Platform"))) {
-            return true;
+    private Habitat habitat;
+
+    @Override
+    public void shutdown() throws GlassFishException {
+    }
+
+    @Override
+    public GlassFish newGlassFish(GlassFishProperties glassFishProperties)
+            throws GlassFishException {
+        ModulesRegistry registry;
+        System.out.println("serverHabitat = [ " + habitat + "]");
+        if (habitat == null) {
+            ClassLoader ecl = getClass().getClassLoader();
+            Thread.currentThread().setContextClassLoader(ecl);
+            registry = new StaticModulesRegistry(ecl);
+        } else {
+            registry = habitat.getComponent(ModulesRegistry.class);
         }
-        return false;
+
+        String habitatName = glassFishProperties.getProperties().getProperty("host")
+                + ":" + glassFishProperties.getProperties().getProperty("port");
+        Habitat habitat = registry.createHabitat(habitatName);
+        System.out.println("Habitat = [ " + habitat + "]");
+        Properties cloned = new Properties();
+        cloned.putAll(glassFishProperties.getProperties());
+        /* System property is set to workaround this error:
+        It appears that server [xxxxxxx:4848] does not accept secure connections. Retry with --secure=false.
+        javax.net.ssl.SSLException: HelloRequest followed by an unexpected  handshake message
+        */
+        System.setProperty("sun.security.ssl.allowUnsafeRenegotiation", "true");
+        return new GlassFishClient(habitat, cloned);
     }
 }

@@ -38,40 +38,30 @@
  * holder.
  */
 
-package org.glassfish.paas.orchestrator;
+package org.glassfish.paas.gfplugin;
+
+import org.glassfish.embeddable.BootstrapProperties;
+import org.glassfish.embeddable.GlassFishException;
+import org.glassfish.embeddable.GlassFishRuntime;
+import org.glassfish.internal.api.Globals;
 
 /**
  * @author bhavanishankar@java.net
  */
 
-public class RemoteCommandResult implements org.glassfish.embeddable.CommandResult {
 
-    ExitStatus exitStatus = ExitStatus.FAILURE;
-    String output;
-    Throwable failureCause;
+public class ClientRuntimeWrapper {
 
-    public RemoteCommandResult(int exitStatus, String output, Throwable t) {
-        if (exitStatus == 0) {
-            this.exitStatus = ExitStatus.SUCCESS;
-            this.output = output == null || output.trim().length() == 0 ?
-                    "Command Executed Succesfully." : output;
-        } else {
-            this.exitStatus = ExitStatus.FAILURE;
-            this.output = output == null || output.trim().length() == 0 ?
-                    "Command Failed." : output;
-            this.failureCause = t;
+    static GlassFishRuntime clientRuntime;
+
+    public static GlassFishRuntime bootstrap(BootstrapProperties bsProps)
+            throws GlassFishException {
+        try {
+            clientRuntime = GlassFishRuntime.bootstrap(bsProps);
+        } catch (Exception ex) {
+            // inside the running GF, hence already bootstrapped exception.
+            clientRuntime = new StaticClientRuntime().setHabitat(Globals.getDefaultHabitat());
         }
-    }
-
-    public ExitStatus getExitStatus() {
-        return exitStatus;
-    }
-
-    public String getOutput() {
-        return output;
-    }
-
-    public Throwable getFailureCause() {
-        return failureCause;
+        return clientRuntime;
     }
 }
