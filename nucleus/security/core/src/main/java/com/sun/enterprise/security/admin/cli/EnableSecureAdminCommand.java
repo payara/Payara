@@ -234,19 +234,28 @@ public class EnableSecureAdminCommand extends SecureAdminCommand {
         }
     }
 
-        private String processAlias(String alias, final String defaultAlias, final SecureAdmin secureAdmin_w,
+    private String processAlias(String alias, final String defaultAlias, final SecureAdmin secureAdmin_w,
             Collection<String> badAliases) throws IOException, KeyStoreException {
-        if (alias == null) {
-            alias = defaultAlias;
-        }
-        if ( ! validateAlias(alias)) {
-            badAliases.add(alias);
+        boolean isAliasOK;
+        /*
+         * Do not validate the default aliases.  The user might be using
+         * password-based inter-process authentication in which case the aliases
+         * might not even be present in the keystore and/or truststore.  
+         */
+        if (alias.equals(defaultAlias)) {
+            isAliasOK = true;
         } else {
+            isAliasOK = validateAlias(alias);
+            if ( ! isAliasOK) {
+                badAliases.add(alias);
+            }
+        }
+        if (isAliasOK) {
             /*
              * If there is no SecureAdminPrincipal for the DN corresponding
              * to the specified alias then add one now.
              */
-            ensureSecureAdminPrincipalForAlias(alias, 
+            ensureSecureAdminPrincipalForAlias(alias,
                     secureAdmin_w);
         }
         return alias;   
