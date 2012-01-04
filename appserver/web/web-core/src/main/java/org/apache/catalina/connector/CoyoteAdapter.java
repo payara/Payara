@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -58,7 +58,6 @@
 
 package org.apache.catalina.connector;
 
-import java.io.IOException;
 import java.nio.charset.Charset;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
@@ -76,7 +75,6 @@ import org.apache.catalina.Wrapper;
 import org.apache.catalina.core.ContainerBase;
 import org.apache.catalina.util.ServerInfo;
 import org.apache.catalina.util.StringManager;
-import org.glassfish.grizzly.config.ContextRootInfo;
 import org.glassfish.grizzly.http.Method;
 import org.glassfish.grizzly.http.server.AfterServiceListener;
 import org.glassfish.grizzly.http.server.HttpHandler;
@@ -413,20 +411,6 @@ public class CoyoteAdapter extends HttpHandler {
         // otherwise, use connector configuration
         request.setSecure(req.isSecure());
 
-        // FIXME: the code below doesnt belongs to here, 
-        // this is only have sense 
-        // in Http11, not in ajp13..
-        // At this point the Host header has been processed.
-        // Override if the proxyPort/proxyHost are set 
-        String proxyName = connector.getProxyName();
-        int proxyPort = connector.getProxyPort();
-        if (proxyPort != 0) {
-            req.setServerPort(proxyPort);
-        }
-        if (proxyName != null) {
-            req.setServerName(proxyName);
-        }
-
         // URI decoding
         DataChunk decodedURI = req.getRequest().getRequestURIRef().getDecodedRequestURIBC();
         if (compatWithTomcat || !v3Enabled) {
@@ -516,6 +500,20 @@ public class CoyoteAdapter extends HttpHandler {
             MappingData md = request.getMappingData();
             req.setNote(MAPPING_DATA, md);
             request.updatePaths(md);
+        }
+
+        // FIXME: the code below doesnt belongs to here,
+        // this is only have sense
+        // in Http11, not in ajp13..
+        // At this point the Host header has been processed.
+        // Override if the proxyPort/proxyHost are set
+        String proxyName = connector.getProxyName();
+        int proxyPort = connector.getProxyPort();
+        if (proxyPort != 0) {
+            req.setServerPort(proxyPort);
+        }
+        if (proxyName != null) {
+            req.setServerName(proxyName);
         }
 
         Context ctx = (Context) request.getMappingData().context;
