@@ -603,7 +603,7 @@ public abstract class LocalInstanceCommand extends LocalServerCommand {
                 }
                 File f = new File(parent, hostname);
 
-                if (!mkdirs(f) || !isDirectory(f)) // for instance there is a regular file with that name
+                if (!(mkdirs(f) || isDirectory(f))) // for instance there is a regular file with that name
                 {
                     throw new CommandException(Strings.get("cantCreateNodeDirChild", f));
                 }

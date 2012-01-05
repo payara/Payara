@@ -66,9 +66,9 @@ import org.glassfish.paas.orchestrator.service.metadata.Property;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceCharacteristics;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceDescription;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceReference;
-import org.glassfish.paas.orchestrator.service.spi.ServicePlugin;
 import org.glassfish.paas.orchestrator.service.spi.ProvisionedService;
 import org.glassfish.paas.orchestrator.service.spi.ServiceProvisioningException;
+import org.glassfish.paas.spe.common.ProvisioningFuture;
 import org.glassfish.paas.spe.common.ServiceProvisioningEngineBase;
 import org.glassfish.resources.admin.cli.ResourcesXMLParser;
 import org.glassfish.resources.api.Resource;
@@ -218,12 +218,17 @@ public class GlassFishPlugin extends ServiceProvisioningEngineBase<JavaEEService
          */
         int minClusterSize = Integer.parseInt(
                 serviceDescription.getConfiguration(MIN_CLUSTERSIZE));
+        List<ProvisioningFuture> futures  = new ArrayList();
         for (int i = 0; i < minClusterSize; i++) {
-            serviceDescription.setName(serviceName + "." + (i+1));
-            ProvisionedService provisionedService = createService(serviceDescription).join();
-            // further customize the provisioned service
+            ServiceDescription sd = new ServiceDescription(serviceDescription);
+            sd.setName(serviceName + "." + (i+1));
+            futures.add(createService(sd)); // parallely create the nodes/instances.
         }
-        serviceDescription.setName(serviceName); // reset to original value.
+        // wait for the completion of node/instance creations.
+        for(ProvisioningFuture future : futures) {
+            ProvisionedService provisionedService = future.get();
+            // further customize the provisioned node/instance
+        }
 
         /**
          * Step 3. Set the target to the newly created cluster.
@@ -663,13 +668,17 @@ public class GlassFishPlugin extends ServiceProvisioningEngineBase<JavaEEService
                     "current size is [" + currentClusterSize + "]";
             throw new ServiceProvisioningException(errMsg);
         }
+        List<ProvisioningFuture> futures = new ArrayList();
         for (int i = currentClusterSize+1; scaleCount > 0 ; scaleCount--, i++) {
-            serviceDescription.setName(serviceName + "." + i);
-            ProvisionedService scaledService = super.createService(serviceDescription,
-                    allocStrategy, null).join();
-            // configure the VM after creating.
+            ServiceDescription sd = new ServiceDescription(serviceDescription);
+            sd.setName(serviceName + "." + (i+1));
+            futures.add(createService(sd, allocStrategy, null)); // parallely create the nodes/instances.
         }
-        serviceDescription.setName(serviceName);
+        // wait for the completion of node/instance creations.
+        for(ProvisioningFuture future : futures) {
+            ProvisionedService provisionedService = future.get();
+            // further customize the provisioned node/instance
+        }
     }
 
     private void scaleDownService(ServiceDescription serviceDescription,
@@ -688,11 +697,11 @@ public class GlassFishPlugin extends ServiceProvisioningEngineBase<JavaEEService
             throw new ServiceProvisioningException(errMsg);
         }
         for (int i = currentClusterSize; scaleCount > 0 ; scaleCount--, i--) {
-            serviceDescription.setName(serviceName + "." + i);
+            ServiceDescription sd = new ServiceDescription(serviceDescription);
+            sd.setName(serviceName + "." + (i+1));
             // perform operation on VM before deleting??
-            boolean deleteSuccessful = super.deleteService(serviceDescription);
+            boolean deleteSuccessful = super.deleteService(sd);
         }
-        serviceDescription.setName(serviceName);
     }
 
     @Override

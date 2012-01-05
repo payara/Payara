@@ -168,7 +168,7 @@ public abstract class DatabaseSPEBase extends ServiceProvisioningEngineBase<RDBM
      */
     public ProvisionedService provisionService(
             ServiceDescription serviceDescription, PaaSDeploymentContext dc) {
-        ProvisionedService provisionedService = createService(serviceDescription).join();
+        ProvisionedService provisionedService = createService(serviceDescription).get();
         //Start database
         Properties properties = provisionedService.getProperties();
         VirtualMachine vm = getVmByID(serviceDescription.getVirtualClusterName(),

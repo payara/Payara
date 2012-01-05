@@ -88,6 +88,15 @@ public class ServiceDescription {
         setConfigurations(configurations);
     }
 
+    public ServiceDescription(ServiceDescription other) { // clone the service description
+        setName(other.getName());
+        setAppName(other.getAppName());
+        setVirtualClusterName(other.getVirtualClusterName());
+        setInitType(other.getInitType());
+        setTemplateOrCharacteristics(other.getTemplateOrCharacteristics()); // TODO :: clone??
+        configurations.addAll(other.getConfigurations());
+    }
+
     @XmlAttribute(name = "name", required = true)
     public String getName() {
         return name;

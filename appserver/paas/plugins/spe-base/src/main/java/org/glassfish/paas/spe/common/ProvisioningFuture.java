@@ -40,31 +40,46 @@
 
 package org.glassfish.paas.spe.common;
 
+import org.glassfish.paas.orchestrator.service.ServiceStatus;
+import org.glassfish.paas.orchestrator.service.metadata.ServiceDescription;
+import org.glassfish.paas.orchestrator.service.spi.ProvisionedService;
 import org.glassfish.paas.orchestrator.service.spi.ServiceProvisioningException;
+import org.glassfish.virtualization.spi.AllocationPhase;
+import org.glassfish.virtualization.spi.PhasedFuture;
+import org.glassfish.virtualization.spi.VirtualMachine;
 
-import java.util.concurrent.Callable;
+import java.util.Properties;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.FutureTask;
 
 /**
- * Main purpose of this class is to handle all the threading exceptions.
- *
  * @author bhavanishankar@java.net
  */
 
-public class ProvisioningFuture<V> extends FutureTask<V> {
+public class ProvisioningFuture {
 
-    public ProvisioningFuture(Callable<V> vCallable) {
-        super(vCallable);
+    // TODO :: move constants to a separate interface
+    private static final String VM_ID = "vm-id";
+    private static final String VM_IP_ADDRESS = "ip-address";
+
+    PhasedFuture<AllocationPhase, VirtualMachine> future;
+    ServiceDescription serviceDescription;
+
+    ProvisioningFuture(ServiceDescription serviceDescription,
+                       PhasedFuture<AllocationPhase, VirtualMachine> future) {
+        this.serviceDescription = serviceDescription;
+        this.future = future;
     }
 
-    public ProvisioningFuture(Runnable runnable, V result) {
-        super(runnable, result);
-    }
-
-    public V join() throws ServiceProvisioningException {
+    public ProvisionedService get() throws ServiceProvisioningException {
         try {
-            return  super.get();
+            VirtualMachine vm = future.get();
+
+            Properties properties = new Properties();
+            properties.setProperty(VM_ID, vm.getName());
+            properties.setProperty(VM_IP_ADDRESS, vm.getAddress().getHostAddress());
+            return new BasicProvisionedService(serviceDescription, properties,
+                    ServiceStatus.RUNNING);
+
         } catch (InterruptedException e) {
             throw new ServiceProvisioningException(e);
         } catch (ExecutionException e) {

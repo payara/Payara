@@ -104,8 +104,6 @@ public abstract class ServiceProvisioningEngineBase<T extends org.glassfish.paas
     @Inject(optional = true)
     VirtualMachineLifecycle vmLifecycle;
 
-    private static final ExecutorService executor = Executors.newCachedThreadPool();
-
     /**
      * Create a service using the service characteristics specified in service-descripion.
      *
@@ -113,7 +111,7 @@ public abstract class ServiceProvisioningEngineBase<T extends org.glassfish.paas
      * @return Basic Provisioned Service.
      * @throws ServiceProvisioningException When service creation fails.
      */
-    public ProvisioningFuture<ProvisionedService> createService(ServiceDescription serviceDescription)
+    public ProvisioningFuture createService(ServiceDescription serviceDescription)
             throws ServiceProvisioningException {
         return createService(serviceDescription, null, null);
     }
@@ -128,25 +126,10 @@ public abstract class ServiceProvisioningEngineBase<T extends org.glassfish.paas
      * @return Basic Provisioned Service.
      * @throws ServiceProvisioningException When service creation fails.
      */
-    public ProvisioningFuture<ProvisionedService> createService(final ServiceDescription serviceDescription,
+    public ProvisioningFuture createService(final ServiceDescription serviceDescription,
                                                                 final AllocationStrategy allocationStrategy,
                                                                 final List<Listener<AllocationPhase>> listeners)
             throws ServiceProvisioningException {
-        ProvisioningFuture<ProvisionedService> future =
-                new ProvisioningFuture<ProvisionedService>(
-                        new Callable<ProvisionedService>() {
-                            public ProvisionedService call() throws Exception {
-                                return _createService(serviceDescription, allocationStrategy, listeners);
-                            }
-                        }
-                );
-        executor.execute(future);
-        return future;
-    }
-
-    private ProvisionedService _createService(ServiceDescription serviceDescription,
-                                              AllocationStrategy allocationStrategy,
-                                              List<Listener<AllocationPhase>> listeners) {
         // Note :: since allocationStrategy and listeners can not be passed to an admin
         // command, create-service can not be implemented as a command.
 
@@ -163,15 +146,10 @@ public abstract class ServiceProvisioningEngineBase<T extends org.glassfish.paas
         ServiceCharacteristics sc = serviceDescription.getServiceCharacteristics();
         String templateId = ti != null ? ti.getId() : findTemplate(sc);
 
-        VirtualMachine vm = createVM(templateId, virtualClusterName,
-                allocationStrategy, listeners);
+        PhasedFuture<AllocationPhase, VirtualMachine> future = createVM(
+                templateId, virtualClusterName, allocationStrategy, listeners);
 
-        Properties properties = new Properties();
-        properties.setProperty("vm-id", vm.getName());
-        properties.setProperty("ip-address", vm.getAddress().getHostAddress());
-
-        return new BasicProvisionedService(serviceDescription, properties,
-                ServiceStatus.RUNNING);
+        return new ProvisioningFuture(serviceDescription, future);
     }
 
 
@@ -309,7 +287,8 @@ public abstract class ServiceProvisioningEngineBase<T extends org.glassfish.paas
         return templateId;
     }
 
-    private VirtualMachine createVM(String templateId, String virtualClusterName,
+    private PhasedFuture<AllocationPhase, VirtualMachine> createVM(
+            String templateId, String virtualClusterName,
                                     AllocationStrategy allocationStrategy,
                                     List<Listener<AllocationPhase>> listeners)
             throws ServiceProvisioningException {
@@ -331,7 +310,7 @@ public abstract class ServiceProvisioningEngineBase<T extends org.glassfish.paas
                             iaas.allocate(allocationStrategy, allocationConstraints, listeners) :
                             iaas.allocate(allocationConstraints, listeners);
 
-            return future.get();
+            return future;
 
         } catch (Exception exception) {
             throw new ServiceProvisioningException(exception);
