@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -563,8 +563,10 @@ public class ApplicationArchivist extends Archivist<Application>
         
         List<ModuleDescriptor> nonexistentModules = 
             new ArrayList<ModuleDescriptor>();
+        
+        List<ModuleDescriptor> sortedModules = sortModules(app);
 
-        for (ModuleDescriptor aModule : app.getModules()) {
+        for (ModuleDescriptor aModule : sortedModules) {
             if(DOLUtils.getDefaultLogger().isLoggable(Level.FINE)) {
                 DOLUtils.getDefaultLogger().fine("Opening sub-module " + aModule);
             }
@@ -697,6 +699,17 @@ public class ApplicationArchivist extends Archivist<Application>
         }
         return true;
     }
+
+    private List<ModuleDescriptor> sortModules(Application app) {
+        List<ModuleDescriptor> sortedModules = 
+            new ArrayList<ModuleDescriptor>();
+        sortedModules.addAll(app.getModuleDescriptorsByType(XModuleType.RAR));
+        sortedModules.addAll(app.getModuleDescriptorsByType(XModuleType.EJB));
+        sortedModules.addAll(app.getModuleDescriptorsByType(XModuleType.WAR));
+        sortedModules.addAll(app.getModuleDescriptorsByType(XModuleType.CAR));
+        return sortedModules;
+    }
+  
     
     /**
      * Read the runtime deployment descriptors (can contained in one or 

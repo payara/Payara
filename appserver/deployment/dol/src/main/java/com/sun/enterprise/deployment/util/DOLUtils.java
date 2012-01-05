@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -56,6 +56,11 @@ import java.io.File;
 import java.io.IOException;
 import com.sun.enterprise.deployment.BundleDescriptor;
 import com.sun.enterprise.deployment.Application;
+import com.sun.enterprise.deployment.ConnectorDescriptor;
+import com.sun.enterprise.config.serverbeans.Applications;
+import org.glassfish.internal.data.ApplicationInfo;
+import org.glassfish.internal.data.ApplicationRegistry;
+import org.jvnet.hk2.component.Habitat;
 
 
 /**
@@ -131,4 +136,40 @@ public class DOLUtils {
            return application.getModuleByUri(ctx.getModuleUri());
        }
    }
+
+    public static boolean isRAConnectionFactory(Habitat habitat, 
+        String type, Application thisApp) {
+        // first check if this is a connection factory defined in a resource
+        // adapter in this application
+        if (isRAConnectionFactory(type, thisApp)) {
+            return true;
+        }
+
+        // then check if this is a connection factory defined in a standalone 
+        // resource adapter
+        Applications applications = habitat.getComponent(Applications.class);
+        if (applications != null) {
+            List<com.sun.enterprise.config.serverbeans.Application> raApps = applications.getApplicationsWithSnifferType(com.sun.enterprise.config.serverbeans.Application.CONNECTOR_SNIFFER_TYPE, true);
+            ApplicationRegistry appRegistry = habitat.getComponent(ApplicationRegistry.class);
+            for (com.sun.enterprise.config.serverbeans.Application raApp : raApps) {
+                ApplicationInfo appInfo = appRegistry.get(raApp.getName());
+                if (isRAConnectionFactory(type, appInfo.getMetaData(Application.class))) {   
+                    return true;
+                }   
+            }
+        }
+        return false; 
+    }
+
+    private static boolean isRAConnectionFactory(String type, Application app) {
+        if (app == null) {
+            return false;
+        }
+        for (ConnectorDescriptor cd : app.getBundleDescriptors(ConnectorDescriptor.class)) {
+            if (cd.getConnectionDefinitionByCFType(type) != null) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

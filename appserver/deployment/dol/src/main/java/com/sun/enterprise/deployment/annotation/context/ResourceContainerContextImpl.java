@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -460,7 +460,7 @@ public class ResourceContainerContextImpl extends AnnotationContext
         bundleDesc.addManagedBean(managedBeanDesc);             
     }
 
-    private Application getAppFromDescriptor() {
+    public Application getAppFromDescriptor() {
         Application app = null;
         if( descriptor instanceof BundleDescriptor ) {
             BundleDescriptor bundle = (BundleDescriptor) descriptor;

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,13 +41,17 @@
 package com.sun.enterprise.deployment.annotation.handlers;
 
 import com.sun.enterprise.deployment.*;
+import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.deployment.annotation.context.ResourceContainerContext;
+import com.sun.enterprise.deployment.annotation.context.ResourceContainerContextImpl;
 import org.glassfish.apf.AnnotationHandlerFor;
 import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.apf.AnnotationProcessorException;
 import org.glassfish.apf.HandlerProcessingResult;
-import org.glassfish.internal.api.Globals;
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.annotations.Inject;
+
 
 import static com.sun.enterprise.util.StringUtils.ok;
 
@@ -71,6 +75,9 @@ import java.util.logging.Level;
 @Service
 @AnnotationHandlerFor(Resource.class)
 public class ResourceHandler extends AbstractResourceHandler {
+
+    @Inject 
+    private Habitat habitat; 
 
     // Map of all @Resource types that map to env-entries and their
     // corresponding types.  
@@ -285,7 +292,7 @@ public class ResourceHandler extends AbstractResourceHandler {
         Class webServiceContext = null;
         try {
 
-            WSDolSupport support  = Globals.getDefaultHabitat().getComponent(WSDolSupport.class);
+            WSDolSupport support  = habitat.getComponent(WSDolSupport.class);
             if (support!=null) {
                 webServiceContext = support.getType("javax.xml.ws.WebServiceContext");
             }
@@ -296,6 +303,10 @@ public class ResourceHandler extends AbstractResourceHandler {
                 resourceType.getName().equals("javax.jms.Topic")) {
             return getMessageDestinationReferenceDescriptors(
                                                     logicalName, rcContexts);
+        } else if (envEntryTypes.containsKey(resourceType) ||
+                resourceType.isEnum()) {
+            return getEnvironmentPropertyDescriptors(logicalName, rcContexts,
+                                                    resourceAn);
         } else if (resourceType == javax.sql.DataSource.class ||
                 resourceType.getName().equals("javax.jms.ConnectionFactory") ||
                 resourceType.getName().equals("javax.jms.QueueConnectionFactory") ||
@@ -308,12 +319,9 @@ public class ResourceHandler extends AbstractResourceHandler {
                 resourceType == org.omg.CORBA.ORB.class || 
                 resourceType.getName().equals("javax.jms.XAConnectionFactory") ||
                 resourceType.getName().equals("javax.jms.XAQueueConnectionFactory") ||
-                resourceType.getName().equals("javax.jms.XATopicConnectionFactory") ) {
+                resourceType.getName().equals("javax.jms.XATopicConnectionFactory") || 
+                DOLUtils.isRAConnectionFactory(habitat, resourceType.getName(), ((ResourceContainerContextImpl)rcContexts[0]).getAppFromDescriptor()) ) {
             return getResourceReferenceDescriptors(logicalName, rcContexts);
-        } else if (envEntryTypes.containsKey(resourceType) ||
-                resourceType.isEnum()) {
-            return getEnvironmentPropertyDescriptors(logicalName, rcContexts,
-                                                    resourceAn);
         } else {
             return getJmsDestinationReferenceDescriptors(logicalName,
                                                             rcContexts);
