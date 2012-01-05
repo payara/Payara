@@ -115,9 +115,11 @@ public class AsmSerializableBeanGenerator
 	Constructor[] ctors = baseClass.getConstructors();
 	Constructor ctorWithParams = null;
 	for(Constructor ctor : ctors) {
-	    if( ctor.getParameterTypes().length > 0 ) {
+	    if(ctor.getParameterTypes().length == 0) {
+                ctorWithParams = null;    //exists the no-arg ctor, use it
+                break;
+            } else if(ctorWithParams == null) {
 		ctorWithParams = ctor;
-		break;
 	    }
 	}
 
