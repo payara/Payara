@@ -47,6 +47,7 @@ import com.sun.enterprise.config.serverbeans.Node;
 import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.util.StringUtils;
 import com.sun.enterprise.util.SystemPropertyConstants;
+import com.sun.enterprise.util.cluster.windows.process.WindowsException;
 import com.sun.logging.LogDomains;
 import org.glassfish.api.admin.CommandRunner;
 import org.glassfish.api.admin.ServerEnvironment;
@@ -307,14 +308,21 @@ public class LogFilter {
             } else {
                 // if remote then need to download log file on DAS and returning that log file for view
                 String logFileName = logFileDetailsForInstance.substring(logFileDetailsForInstance.lastIndexOf(File.separator) + 1, logFileDetailsForInstance.length());
-                File instanceFile = new LogFilterForInstance().downloadGivenInstanceLogFile(habitat, targetServer, domain, logger,
-                        targetServerName, env.getDomainRoot().getAbsolutePath(), logFileName, logFileDetailsForInstance);
+                File instanceFile = null;
+                try {
+                    instanceFile = new LogFilterForInstance().downloadGivenInstanceLogFile(habitat, targetServer, domain, logger,
+                            targetServerName, env.getDomainRoot().getAbsolutePath(), logFileName, logFileDetailsForInstance);
+                } catch (WindowsException we) {
+                    throw new IOException("File not found for the given instance");
+                }
+
                 return instanceFile.getAbsolutePath();
             }
 
-
         }
+
     }
+
 
     public AttributeList getLogRecordsUsingQuery(
             String logFileName, Long fromRecord, Boolean next, Boolean forward,
@@ -804,24 +812,24 @@ public class LogFilter {
     }
 
 
-    static final String[] LOG_LEVELS = {"SEVERE", "WARNING",
-            "INFO", "CONFIG", "FINE", "FINER", "FINEST"};
+static final String[] LOG_LEVELS = {"SEVERE", "WARNING",
+        "INFO", "CONFIG", "FINE", "FINER", "FINEST"};
 
-    private static SimpleDateFormat SIMPLE_DATE_FORMAT =
-            new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
+private static SimpleDateFormat SIMPLE_DATE_FORMAT =
+        new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
 
-    private static String[] serverLogElements =
-            {System.getProperty("com.sun.aas.instanceRoot"), "logs", "server.log"};
+private static String[] serverLogElements =
+        {System.getProperty("com.sun.aas.instanceRoot"), "logs", "server.log"};
 
-    private static String pL =
-            System.getProperty("com.sun.aas.processLauncher");
-    private static String verboseMode =
-            System.getProperty("com.sun.aas.verboseMode", "false");
-    private static String defaultLogFile =
-            System.getProperty("com.sun.aas.defaultLogFile");
-    private LogFile _logFile =
-            (pL != null && !verboseMode.equals("true") && defaultLogFile != null) ?
-                    new LogFile(defaultLogFile) :
-                    new LogFile(StringUtils.makeFilePath(serverLogElements, false));
-    private static Hashtable logFileCache = new Hashtable();
+private static String pL =
+        System.getProperty("com.sun.aas.processLauncher");
+private static String verboseMode =
+        System.getProperty("com.sun.aas.verboseMode", "false");
+private static String defaultLogFile =
+        System.getProperty("com.sun.aas.defaultLogFile");
+private LogFile _logFile =
+        (pL != null && !verboseMode.equals("true") && defaultLogFile != null) ?
+                new LogFile(defaultLogFile) :
+                new LogFile(StringUtils.makeFilePath(serverLogElements, false));
+private static Hashtable logFileCache = new Hashtable();
 }
