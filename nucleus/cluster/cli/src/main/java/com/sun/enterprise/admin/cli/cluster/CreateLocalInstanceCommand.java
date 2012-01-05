@@ -139,13 +139,16 @@ public final class CreateLocalInstanceCommand extends CreateLocalInstanceFilesys
         setDasDefaultsOnly = true; //Issue 12847 - Call super.validate to setDasDefaults only
         super.validate();          //so _validate-node uses das host from das.properties. No dirs created.
         if (node != null) {
-            //BugDB 13431949 - if installdir is not specified on node, call validateNode to populate installdir.
-            //if installdir is specified on node, validate installdir locally
+            //BugDB 13431949 - If installdir is not specified on node, call _validate-node on DAS to populate installdir.
+            //If installdir is specified on node, validate installdir locally so we can take advantage of java path processing to 
+            //normalize the installdir from the node.
+            //If installdir has tokens, call _validate-node on DAS to have DAS resolve the tokens
+            //If we are on Windows, call _validate-node on DAS instead of relying on the path processing in the local validation.
             String nodeInstallDir = getNodeInstallDir();
-            if (nodeInstallDir == null || nodeInstallDir.isEmpty()) {
+            if (nodeInstallDir == null || nodeInstallDir.isEmpty() || TokenResolver.hasToken(nodeInstallDir) || OS.isWindows()) {
                 validateNode(node, getProductRootPath(), getInstanceHostName(true));
             } else {
-                validateNodeInstallDir(nodeInstallDir, getProductRootPath());
+                validateNodeInstallDirLocal(nodeInstallDir, getProductRootPath());
                 validateNode(node, null, getInstanceHostName(true));
             }
             
@@ -449,10 +452,8 @@ public final class CreateLocalInstanceCommand extends CreateLocalInstanceFilesys
         return rc.execute(argsArray);
     }
     
-    private void validateNodeInstallDir(String nodeInstallDir, String installDir) throws CommandValidationException {
-        TokenResolver tr = new TokenResolver();
-        String resolvedNodeInstallDir = tr.resolve(nodeInstallDir);     
-        String canonicalNodeInstallDir = FileUtils.safeGetCanonicalPath(new File(resolvedNodeInstallDir));
+    private void validateNodeInstallDirLocal(String nodeInstallDir, String installDir) throws CommandValidationException {
+        String canonicalNodeInstallDir = FileUtils.safeGetCanonicalPath(new File(nodeInstallDir));
         String canonicalInstallDir = FileUtils.safeGetCanonicalPath(new File(installDir));
         if (canonicalNodeInstallDir == null || canonicalInstallDir == null) {
             throw new CommandValidationException(
