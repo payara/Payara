@@ -46,6 +46,7 @@ import com.sun.enterprise.admin.servermgmt.KeystoreManager;
 import com.sun.enterprise.admin.util.CommandModelData.ParamModelData;
 import com.sun.enterprise.security.store.PasswordAdapter;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
+import com.sun.enterprise.universal.glassfish.TokenResolver;
 import com.sun.enterprise.util.OS;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.enterprise.util.StringUtils;
@@ -449,7 +450,9 @@ public final class CreateLocalInstanceCommand extends CreateLocalInstanceFilesys
     }
     
     private void validateNodeInstallDir(String nodeInstallDir, String installDir) throws CommandValidationException {
-        String canonicalNodeInstallDir = FileUtils.safeGetCanonicalPath(new File(nodeInstallDir));
+        TokenResolver tr = new TokenResolver();
+        String resolvedNodeInstallDir = tr.resolve(nodeInstallDir);     
+        String canonicalNodeInstallDir = FileUtils.safeGetCanonicalPath(new File(resolvedNodeInstallDir));
         String canonicalInstallDir = FileUtils.safeGetCanonicalPath(new File(installDir));
         if (canonicalNodeInstallDir == null || canonicalInstallDir == null) {
             throw new CommandValidationException(
