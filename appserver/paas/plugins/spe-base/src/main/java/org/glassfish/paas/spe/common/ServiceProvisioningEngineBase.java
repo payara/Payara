@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,7 +41,6 @@
 package org.glassfish.paas.spe.common;
 
 import com.sun.logging.LogDomains;
-import org.glassfish.embeddable.CommandRunner;
 import org.glassfish.paas.orchestrator.provisioning.ServiceInfo;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceUtil;
 import org.glassfish.paas.orchestrator.service.ServiceStatus;
@@ -50,6 +49,9 @@ import org.glassfish.paas.orchestrator.service.metadata.ServiceCharacteristics;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceDescription;
 import org.glassfish.paas.orchestrator.service.metadata.TemplateIdentifier;
 import org.glassfish.paas.orchestrator.service.spi.ProvisionedService;
+import org.glassfish.paas.orchestrator.service.spi.Service;
+import org.glassfish.paas.orchestrator.service.spi.ServiceChangeEvent;
+import org.glassfish.paas.orchestrator.service.spi.ServiceChangeListener;
 import org.glassfish.paas.orchestrator.service.spi.ServicePlugin;
 import org.glassfish.paas.orchestrator.service.spi.ServiceProvisioningException;
 import org.glassfish.virtualization.runtime.VirtualClusters;
@@ -65,19 +67,17 @@ import org.glassfish.virtualization.spi.PhasedFuture;
 import org.glassfish.virtualization.spi.SearchCriteria;
 import org.glassfish.virtualization.spi.TemplateInstance;
 import org.glassfish.virtualization.spi.TemplateRepository;
+import org.glassfish.virtualization.spi.VirtException;
 import org.glassfish.virtualization.spi.VirtualCluster;
 import org.glassfish.virtualization.spi.VirtualMachine;
-import org.glassfish.virtualization.spi.VirtException;
 import org.glassfish.virtualization.util.ServiceType;
 import org.glassfish.virtualization.util.SimpleSearchCriteria;
 import org.jvnet.hk2.annotations.Inject;
+import org.jvnet.hk2.component.Habitat;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -104,6 +104,9 @@ public abstract class ServiceProvisioningEngineBase<T extends org.glassfish.paas
     @Inject(optional = true)
     VirtualMachineLifecycle vmLifecycle;
 
+    @Inject
+    private Habitat habitat;
+
     /**
      * Create a service using the service characteristics specified in service-descripion.
      *
@@ -127,8 +130,8 @@ public abstract class ServiceProvisioningEngineBase<T extends org.glassfish.paas
      * @throws ServiceProvisioningException When service creation fails.
      */
     public ProvisioningFuture createService(final ServiceDescription serviceDescription,
-                                                                final AllocationStrategy allocationStrategy,
-                                                                final List<Listener<AllocationPhase>> listeners)
+                                            final AllocationStrategy allocationStrategy,
+                                            final List<Listener<AllocationPhase>> listeners)
             throws ServiceProvisioningException {
         // Note :: since allocationStrategy and listeners can not be passed to an admin
         // command, create-service can not be implemented as a command.
@@ -289,8 +292,8 @@ public abstract class ServiceProvisioningEngineBase<T extends org.glassfish.paas
 
     private PhasedFuture<AllocationPhase, VirtualMachine> createVM(
             String templateId, String virtualClusterName,
-                                    AllocationStrategy allocationStrategy,
-                                    List<Listener<AllocationPhase>> listeners)
+            AllocationStrategy allocationStrategy,
+            List<Listener<AllocationPhase>> listeners)
             throws ServiceProvisioningException {
 
         try {
@@ -341,4 +344,43 @@ public abstract class ServiceProvisioningEngineBase<T extends org.glassfish.paas
             throw new ServiceProvisioningException(ex);
         }
     }
+
+    protected void fireServiceCreatedEvent(Service ps) {
+        for(ServiceChangeListener listener : getServiceChangeListeners()) {
+            listener.serviceCreated(new ServiceChangeEvent(this, null, ps));
+        }
+    }
+
+    protected void fireServiceDeletedEvent(Service ps) {
+        for(ServiceChangeListener listener : getServiceChangeListeners()) {
+            listener.serviceDeleted(new ServiceChangeEvent(this, ps, null));
+        }
+    }
+
+    protected void fireServiceStartedEvent(Service ps) {
+        for (ServiceChangeListener listener : getServiceChangeListeners()) {
+            listener.serviceStarted(new ServiceChangeEvent(this, ps, null));
+        }
+    }
+
+    protected void fireServiceStoppedEvent(Service ps) {
+        for (ServiceChangeListener listener : getServiceChangeListeners()) {
+            listener.serviceStopped(new ServiceChangeEvent(this, ps, null));
+        }
+    }
+
+    protected void fireServiceChangedEvent(Service before,
+                                           ProvisionedService after) {
+        for(ServiceChangeListener listener : getServiceChangeListeners()) {
+            listener.serviceChanged(new ServiceChangeEvent(this, before, after));
+        }
+    }
+
+    private Collection<ServiceChangeListener> getServiceChangeListeners() {
+        Collection<ServiceChangeListener> listeners = 
+                habitat.getAllByContract(ServiceChangeListener.class);
+        System.out.println("Service Change Listeners = " + listeners);
+        return listeners;
+    }
+
 }

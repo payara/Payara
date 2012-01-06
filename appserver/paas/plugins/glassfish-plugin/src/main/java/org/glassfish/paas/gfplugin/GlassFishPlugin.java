@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -166,6 +166,9 @@ public class GlassFishPlugin extends ServiceProvisioningEngineBase<JavaEEService
     }
 
     public boolean unprovisionService(ServiceDescription serviceDescription, PaaSDeploymentContext dc) {
+
+        ProvisionedService service = getProvisionedService(serviceDescription);
+
         String serviceName = serviceDescription.getName();
         /**
          * Step 1. Delete all the service instances.
@@ -190,7 +193,9 @@ public class GlassFishPlugin extends ServiceProvisioningEngineBase<JavaEEService
          * Step 3. Delete elastic service.
           */
         commandRunner.run(DELETE_ELASTIC_SERVICE, serviceName);
-        
+
+        fireServiceDeletedEvent(service);
+
         return deleteSuccessful;
     }
 
@@ -249,6 +254,8 @@ public class GlassFishPlugin extends ServiceProvisioningEngineBase<JavaEEService
                 "--max=" + serviceDescription.getConfiguration(MAX_CLUSTERSIZE),
                 serviceName);
 
+        fireServiceCreatedEvent(gfps);
+
         // Return the ProvisionedService object that represents the DAS/Cluster.
         return gfps;
     }
@@ -289,8 +296,12 @@ public class GlassFishPlugin extends ServiceProvisioningEngineBase<JavaEEService
         GlassFishProvisioner gfProvisioner = (GlassFishProvisioner)
                 provisionerUtil.getAppServerProvisioner(dasIPAddress);
         GlassFish provisionedGlassFish = gfProvisioner.getGlassFish();
-        return new GlassFishProvisionedService(serviceDescription,
+        ProvisionedService service =  new GlassFishProvisionedService(serviceDescription,
                 serviceProperties, ServiceStatus.RUNNING, provisionedGlassFish);
+
+        fireServiceStartedEvent(service);
+
+        return service;
     }
 
     public boolean stopService(ServiceDescription serviceDescription, ServiceInfo serviceInfo) {
@@ -320,8 +331,10 @@ public class GlassFishPlugin extends ServiceProvisioningEngineBase<JavaEEService
          * representing cluster so that State gets updated correctly.
          */
         commandRunner.run(STOP_CLUSTER, serviceDescription.getVirtualClusterName());
-        new GlassFishProvisionedService(serviceDescription,
+        ProvisionedService service = new GlassFishProvisionedService(serviceDescription,
                 new Properties(), ServiceStatus.STOPPED, null);
+
+        fireServiceStoppedEvent(service);
 
         return stopSuccessful;
     }
