@@ -2,7 +2,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 2009-2011 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 2009-2012 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -102,7 +102,7 @@
            width="$int{18}"
            url="#{request.contextPath}/theme/com/sun/webui/jsf/suntheme/images/table/actions_separator.gif"
         />
-        <sun:dropDown id="actions" selected="#{actionValue}" submitForm="#{true}" immediate="#{true}"
+        <sun:dropDown id="actions" selected="#{actionValue}" submitForm="#{true}" immediate="#{true}" toolTip="$resource{i18n.common.newDropDown}"
                       labels="$attribute{labels}" values="$attribute{values}"
                 >
               <!beforeCreate
