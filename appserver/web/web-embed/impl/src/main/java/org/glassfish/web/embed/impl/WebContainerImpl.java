@@ -330,6 +330,9 @@ public class WebContainerImpl implements WebContainer {
                 newSsl.setSSLInactivityTimeout(sslConfig.getHandshakeTimeout());
             }
 
+            newSsl.setCertNickname("s1as");
+            newSsl.setClassname("com.sun.enterprise.security.ssl.GlassfishSSLImpl");
+
         } else {
             log.severe("HttpsListener required for https protocol");
         }
