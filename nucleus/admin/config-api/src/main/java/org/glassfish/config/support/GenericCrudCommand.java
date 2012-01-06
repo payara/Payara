@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -66,6 +66,7 @@ import java.lang.reflect.*;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.jvnet.hk2.annotations.InhabitantAnnotation;
 
 /**
  * services pertinent to generic CRUD command implementations
@@ -142,10 +143,19 @@ public abstract class GenericCrudCommand implements CommandModelProvider, PostCo
         // find now the accessor method.
         String methodName = myself.metadata().get("method-name").get(0);
         targetMethod=null;
+        methodlookup:
         for (Method m : parentType.getMethods()) {
             if (m.getName().equals(methodName)) {
-                targetMethod=m;
-                break;
+                // Make sure that this method is annotated with an annotation 
+                // that is annotated with InhabitantAnnotation (such as @Create). 
+                // This makes sure that we have found the method we are looking for
+                // in case there is a like-named method that is not annotated.
+                for (Annotation a : m.getAnnotations()) {
+                    if (a.annotationType().getAnnotation(InhabitantAnnotation.class) != null) {
+                        targetMethod=m;
+                        break methodlookup;
+                    }
+                }
             }
         }
 
