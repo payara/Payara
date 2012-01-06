@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -500,6 +500,11 @@ public class StandardContext
      */
     private final Map<Integer, ErrorPage> statusPages =
         new HashMap<Integer, ErrorPage>();
+
+    /**
+     * Amount of ms that the container will wait for servlets to unload.
+     */
+    private long unloadDelay = 2000;
 
     /**
      * The watched resources for this application.
@@ -1717,6 +1722,33 @@ public class StandardContext
         //HERCULES:add
         sessionTimeoutOveridden = true;
         //end HERCULES:add
+    }
+
+    /**
+     * Return the value of the unloadDelay flag.
+     */
+    public long getUnloadDelay() {
+
+        return (this.unloadDelay);
+
+    }
+
+    /**
+     * Set the value of the unloadDelay flag, which represents the amount
+     * of ms that the container will wait when unloading servlets.
+     * Setting this to a small value may cause more requests to fail
+     * to complete when stopping a web application.
+     *
+     * @param unloadDelay The new value
+     */
+    public void setUnloadDelay(long unloadDelay) {
+
+        long oldUnloadDelay = this.unloadDelay;
+        this.unloadDelay = unloadDelay;
+        support.firePropertyChange("unloadDelay",
+                                   Long.valueOf(oldUnloadDelay),
+                                   Long.valueOf(this.unloadDelay));
+
     }
 
     /**
