@@ -41,6 +41,8 @@
 package org.glassfish.paas.orchestrator.service.spi;
 
 /**
+ * Represents a externally provisioned (configured) service
+ *
  * @author Jagadish Ramu
  */
 public interface ConfiguredService extends Service {

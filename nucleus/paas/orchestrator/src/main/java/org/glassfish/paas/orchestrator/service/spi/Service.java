@@ -46,21 +46,42 @@ import org.glassfish.paas.orchestrator.service.metadata.ServiceDescription;
 import java.util.Properties;
 
 /**
+ * Generic representation of a Service which can be
+ * of types, managed or unmanaged.
+ *
  * @author Sivakumar Thyagarajan, Jagadish Ramu
  */
 public interface Service {
 
+    /**
+     * type of service
+     * @return ServiceType
+     */
     public ServiceType getServiceType();
 
-    // service description that was used to provision this service.
+    /**
+     * ServiceDescription pertaining to the service.
+     * @return ServiceDescription
+     */
     public ServiceDescription getServiceDescription();
 
-    // additional information (eg., host, port, etc) after provisioning the service.
-    // TODO :: should we also have explicit methods like getHost(), getPort()?
+    /**
+     * service specific properties that could be used to get
+     * service related information.
+     * @return Properties
+     */
     public Properties getServiceProperties();
 
+    /**
+     * name of the service
+     * @return String name
+     */
     public String getName();
 
+    /**
+     * placeholder for extra-properties.
+     * @return Properties
+     */
     public Properties getProperties();
 
 }
