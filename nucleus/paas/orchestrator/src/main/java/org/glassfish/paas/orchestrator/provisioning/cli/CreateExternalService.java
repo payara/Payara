@@ -152,6 +152,12 @@ public class CreateExternalService implements AdminCommand {
                             externalService.getProperty().add(prop);
                         }
                     }
+                    for (Map.Entry e : configuration.entrySet()) {
+                        Property prop = externalService.createChild(Property.class);
+                        prop.setName((String)e.getKey());
+                        prop.setValue((String)e.getValue());
+                        externalService.getProperty().add(prop);
+                    }
                     param.getServices().add(externalService);
                     return externalService;
                 }
