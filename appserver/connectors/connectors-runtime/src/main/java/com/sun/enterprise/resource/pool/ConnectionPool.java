@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -1031,17 +1031,20 @@ public class ConnectionPool implements ResourcePool, ConnectionLeakListener,
      * @param handle Resource to be checked
      */
     protected void performMaxConnectionUsageOperation(ResourceHandle handle) {
-        if (handle.getUsageCount() >= maxConnectionUsage_) {
-            ds.removeResource(handle);
-            _logger.log(Level.INFO, "resource_pool.remove_max_used_conn", handle.getUsageCount());
+        ds.removeResource(handle);
+        _logger.log(Level.INFO, "resource_pool.remove_max_used_conn",
+                new Object[]{handle.getId(), handle.getUsageCount()});
 
-            //compensate with a new resource only when the pool-size is less than steady-pool-size
-            if (ds.getResourcesSize() < steadyPoolSize) {
-                try {
-                    createResourceAndAddToPool(handle.getResourceAllocator());
-                } catch (Exception e) {
-                    _logger.log(Level.WARNING, "resource_pool.failed_creating_resource", e);
-                }
+        if (poolLifeCycleListener != null) {
+            poolLifeCycleListener.decrementConnectionUsed(handle.getId());
+        }
+
+        //compensate with a new resource only when the pool-size is less than steady-pool-size
+        if (ds.getResourcesSize() < steadyPoolSize) {
+            try {
+                createResourceAndAddToPool(handle.getResourceAllocator());
+            } catch (Exception e) {
+                _logger.log(Level.WARNING, "resource_pool.failed_creating_resource", e);
             }
         }
     }
@@ -1052,18 +1055,19 @@ public class ConnectionPool implements ResourcePool, ConnectionLeakListener,
 
     protected void freeResource(ResourceHandle resourceHandle) {
         if(cleanupResource(resourceHandle)) {
-            // Put it back to the free collection.
-            ds.returnResource(resourceHandle);
-            //update the monitoring data
-            if (poolLifeCycleListener != null) {
-                poolLifeCycleListener.decrementConnectionUsed(resourceHandle.getId());
-                poolLifeCycleListener.incrementNumConnFree(false, steadyPoolSize);
+            //Only when resource handle usage count is more than maxConnUsage
+            if (maxConnectionUsage_ > 0 &&
+                    resourceHandle.getUsageCount() >= maxConnectionUsage_) {
+                 performMaxConnectionUsageOperation(resourceHandle);
+            } else {
+                // Put it back to the free collection.
+                ds.returnResource(resourceHandle);
+                //update the monitoring data
+                if (poolLifeCycleListener != null) {
+                    poolLifeCycleListener.decrementConnectionUsed(resourceHandle.getId());
+                    poolLifeCycleListener.incrementNumConnFree(false, steadyPoolSize);
+                }
             }
-
-            if (maxConnectionUsage_ > 0) {
-                performMaxConnectionUsageOperation(resourceHandle);
-            }
-
             //for both the cases of free.add and maxConUsageOperation, a free resource is added.
             // Hence notify waiting threads
             notifyWaitingThreads();

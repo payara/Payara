@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -261,18 +261,23 @@ public class AssocWithThreadResourcePool extends ConnectionPool {
     protected synchronized void freeUnenlistedResource(ResourceHandle h) {
         if (this.cleanupResource(h)) {
             if (h instanceof AssocWithThreadResourceHandle) {
-                if (!((AssocWithThreadResourceHandle) h).isAssociated()) {
-                    ds.returnResource(h);
-                }
-                //update monitoring data
-                if (poolLifeCycleListener != null) {
-                    poolLifeCycleListener.decrementConnectionUsed(h.getId());
-                    poolLifeCycleListener.incrementNumConnFree(false, steadyPoolSize);
-                }
-
-                if (maxConnectionUsage_ > 0) {
+                //Only when resource handle usage count is more than maxConnUsage
+                if (maxConnectionUsage_ > 0 &&
+                        h.getUsageCount() >= maxConnectionUsage_) {
                     performMaxConnectionUsageOperation(h);
+                } else {
+
+                    if (!((AssocWithThreadResourceHandle) h).isAssociated()) {
+                        ds.returnResource(h);
+                    }
+                    //update monitoring data
+                    if (poolLifeCycleListener != null) {
+                        poolLifeCycleListener.decrementConnectionUsed(h.getId());
+                        poolLifeCycleListener.incrementNumConnFree(false, steadyPoolSize);
+                    }
                 }
+                //for both the cases of free.add and maxConUsageOperation, a free resource is added.
+                // Hence notify waiting threads
                 notifyWaitingThreads();
             }
         }
