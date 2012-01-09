@@ -40,15 +40,10 @@
 package org.glassfish.paas.orchestrator.provisioning.cli;
 
 
-import com.sun.enterprise.config.serverbeans.ApplicationRef;
-import com.sun.enterprise.config.serverbeans.Cluster;
-import com.sun.enterprise.config.serverbeans.Clusters;
 import com.sun.enterprise.config.serverbeans.Domain;
-import org.glassfish.api.ActionReport;
 import org.glassfish.hk2.scopes.Singleton;
 import org.glassfish.paas.orchestrator.ServiceOrchestratorImpl;
 import org.glassfish.paas.orchestrator.config.*;
-import org.glassfish.paas.orchestrator.config.Service;
 import org.glassfish.paas.orchestrator.provisioning.ServiceInfo;
 import org.glassfish.paas.orchestrator.provisioning.ServiceScope;
 import org.glassfish.paas.orchestrator.service.ConfiguredServiceImpl;
@@ -166,7 +161,7 @@ public class ServiceUtil implements PostConstruct {
     }
 
     public void updateVMID(String serviceName, String appName, final String vmId, ServiceType type) {
-        Service matchingService = getService(serviceName, appName);
+        /*Service matchingService = getService(serviceName, appName);
         if (matchingService != null) {
             try {
                 if (ConfigSupport.apply(new SingleConfigCode<Service>() {
@@ -197,7 +192,8 @@ public class ServiceUtil implements PostConstruct {
             }
         } else {
             throw new RuntimeException("Invalid service, no such service [" + serviceName + "] found");
-        }
+        }*/
+        setProperty(serviceName,appName,"vm-id",vmId);
     }
 
     public void updateState(String serviceName, String appName, final String state, ServiceType type) {
@@ -265,7 +261,7 @@ public class ServiceUtil implements PostConstruct {
     }
 
     public void updateIPAddress(String serviceName, String appName, final String IPAddress, ServiceType type) {
-        Service matchingService = getService(serviceName, appName);
+        /*Service matchingService = getService(serviceName, appName);
         if (matchingService != null) {
             try {
 
@@ -296,7 +292,8 @@ public class ServiceUtil implements PostConstruct {
             }
         } else {
             throw new RuntimeException("Invalid service, no such service [" + serviceName + "] found");
-        }
+        }*/
+        setProperty(serviceName,appName,"ip-address",IPAddress);
     }
 
     public boolean isServiceAlreadyConfigured(String serviceName, String appName, ServiceType type) {
