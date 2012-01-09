@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2007-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -265,7 +265,7 @@ public class GlassfishNetworkListener extends GenericGrizzlyListener {
         return list;
     }
     
-    protected class HttpAdapterImpl implements HttpAdapter {
+    protected static class HttpAdapterImpl implements HttpAdapter {
         private final VirtualServer virtualServer;
         private final ContainerMapper conainerMapper;
         private final String webAppRootPath;
