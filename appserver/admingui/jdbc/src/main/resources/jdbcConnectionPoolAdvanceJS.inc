@@ -45,13 +45,24 @@
         function disableTableField(selStr, selValidCNVal) {
             var val = document.getElementById("$pageSession{valMethod}").value;
             var isConnValidation = document.getElementById("$pageSession{conValidationId}").checked;
-            if (isConnValidation && val == 'table'){                
+            if (isConnValidation && val == 'table'){
                 disableAllJdbcRadioButtons(false, 'table');
-                var dropDownVal = document.getElementById("$pageSession{tableDropdownTextId}").value;
-                if (dropDownVal == '') {
-                    enableJdbcRadioButtons('text', 'table');
+                var index = findSelectOptionIndex(document.getElementById("$pageSession{tableDropdownTextId}"), selStr);
+                var optionsExists = (document.getElementById("$pageSession{tableDropdownTextId}").options.length > 0);
+                var isSelStrExists = (selStr != null) && (selStr != '') && (isWhitespace(selStr) == false);
+                if (index == undefined || index == -1) {
+                    if (isSelStrExists == true) {
+                        enableJdbcRadioButtons('text', 'table');
+                    }
+                    else {
+                        if (optionsExists == true) {
+                            enableJdbcRadioButtons('dropdown', 'table');
+                        } else {
+                            enableJdbcRadioButtons('text', 'table');
+                        }
+                    }
                 } else {
-                    if(dropDownVal == selStr) {
+                    if(index >= 0) {
                         document.getElementById('$pageSession{tableTextId}').value='';
                         enableJdbcRadioButtons('dropdown', 'table');
                     }
@@ -61,11 +72,13 @@
                         enableJdbcRadioButtons('text', 'table');
                     }
                 }
+                enableBtnComponent('$pageSession{tableNamesButtonId}');
                 disableComponent('$pageSession{validCNDropdownTextId}', 'select');
                 disableTextComponent('$pageSession{validCNTextId}');
                 disableAllJdbcRadioButtons(true, 'validCN');
             }else if (isConnValidation && val == 'custom-validation') {
                 disableAllJdbcRadioButtons(false, 'validCN');
+                disableBtnComponent('$pageSession{tableNamesButtonId}');
                 var dropDownVal = document.getElementById("$pageSession{validCNDropdownTextId}").value;
                 if (dropDownVal == '') {
                     enableJdbcRadioButtons('text', 'validCN');
@@ -85,6 +98,7 @@
                 disableAllJdbcRadioButtons(true, 'table');
             }else{
                 disableComponent('$pageSession{tableDropdownTextId}', 'select');
+                disableBtnComponent('$pageSession{tableNamesButtonId}');
                 disableTextComponent('$pageSession{tableTextId}');
                 disableAllJdbcRadioButtons(true, 'table');
                 disableComponent('$pageSession{validCNDropdownTextId}', 'select');
@@ -100,16 +114,7 @@
         function getDropdownInfo(tableAttrs, validCNAttrs, tableVal, validCNVal) {
             var isConnValidation = document.getElementById("$pageSession{conValidationId}").checked;
             var methodVal = document.getElementById("$pageSession{valMethod}").value;
-            if (isConnValidation && methodVal == 'table'){
-                var b= tableAttrs.toString();
-                admingui.ajax.invoke("gf.restRequest", {
-                    endpoint:"#{sessionScope.REST_URL}/resources/get-validation-table-names",
-                    attrs:b,
-                    method:"get",
-                    result:""}, function(result) {
-                    processResult(result, tableVal, "validationTableNames=", "$pageSession{tableDropdownTextId}");
-                }, 3, false);
-            } else if (isConnValidation && methodVal == 'custom-validation'){
+            if (isConnValidation && methodVal == 'custom-validation'){
                 var c= validCNAttrs.toString();
                 admingui.ajax.invoke("gf.restRequest", {
                     endpoint:"#{sessionScope.REST_URL}/resources/get-validation-class-names",
@@ -117,6 +122,20 @@
                     method:"get",
                     result:""}, function(result) {
                     processResult(result, validCNVal, "validationClassNames=", "$pageSession{validCNDropdownTextId}");
+                }, 3, false);
+            }
+        }
+
+        function getValidationTableNames(tableAttrs, tableVal) {
+            var b= tableAttrs.toString();
+            var size = document.getElementById("$pageSession{tableDropdownTextId}").options.length;
+            if (size < 1) {
+                admingui.ajax.invoke("gf.restRequest", {
+                    endpoint:"#{sessionScope.REST_URL}/resources/get-validation-table-names",
+                    attrs:b,
+                    method:"get",
+                    result:""}, function(result) {
+                    processResult(result, tableVal, "validationTableNames=", "$pageSession{tableDropdownTextId}");
                 }, 3, false);
             }
         }
@@ -129,7 +148,8 @@
                     if (res != null) {
                         var index = res.indexOf(searchStr);
                         if (index != -1) {
-                            var tableNamesStr = res.substring(index + searchStr.length + 1, (res.length) - 2);
+                            var lastIndex = res.indexOf("]", index + searchStr.length + 1);
+                            var tableNamesStr = res.substring(index + searchStr.length + 1, lastIndex);
                             setDropdownOptions(tableNamesStr, selStr, dropdownId);
                         }
                     }

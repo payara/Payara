@@ -146,7 +146,7 @@
     <sun:propertySheetSection id="connectionValidationPropertySheet" label="$resource{i18njdbc.jdbcPool.Validation}">
 
         <sun:property id="conValidationProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18njdbc.jdbcPool.conValidation}" helpText="$resource{i18njdbc.jdbcPool.conValidationHelp}">
-            <sun:checkbox label="$resource{i18n.common.Required}" selected="#{pageSession.valueMap.isConnectionValidationRequired}" selectedValue="true" onChange="javascript: getDropdownInfo('#{pageSession.attrMap}', '#{pageSession.validCNAttrMap}', '#{pageSession.valueMap.validationTableName}', '#{pageSession.valueMap.validationClassName}'); disableTableField('#{pageSession.valueMap.validationTableName}','#{pageSession.valueMap.validationClassName}');" >
+            <sun:checkbox label="$resource{i18n.common.Required}" selected="#{pageSession.valueMap.isConnectionValidationRequired}" selectedValue="true" onChange="javascript: getDropdownInfo('#{pageSession.attrMap}', '#{pageSession.validCNAttrMap}', '#{pageSession.valueMap.validationTableName}', '#{pageSession.valueMap.validationClassname}'); disableTableField('#{pageSession.valueMap.validationTableName}','#{pageSession.valueMap.validationClassname}');" >
                 <!afterCreate
                     getClientId(component="$this{component}" clientId=>$page{conValidationId});
                 />
@@ -155,7 +155,7 @@
 
         <sun:property id="methodProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18njdbc.jdbcPool.valMethod}" >
             <sun:dropDown id="valMethod" selected="#{pageSession.valueMap.connectionValidationMethod}"
-                labels={"auto-commit" "meta-data"  "custom-validation" "table"} onChange="javascript: getDropdownInfo('#{pageSession.attrMap}', '#{pageSession.validCNAttrMap}', '#{pageSession.valueMap.validationTableName}', '#{pageSession.valueMap.validationClassName}'); disableTableField('#{pageSession.valueMap.validationTableName}', '#{pageSession.valueMap.validationClassName}');">
+                labels={"auto-commit" "meta-data"  "custom-validation" "table"} onChange="javascript: getDropdownInfo('#{pageSession.attrMap}', '#{pageSession.validCNAttrMap}', '#{pageSession.valueMap.validationTableName}', '#{pageSession.valueMap.validationClassname}'); disableTableField('#{pageSession.valueMap.validationTableName}', '#{pageSession.valueMap.validationClassname}');">
                 <!afterCreate
                     getClientId(component="$this{component}" clientId=>$page{valMethod});
                 />
@@ -177,6 +177,11 @@
                     getClientId(component="$this{component}" clientId=>$page{tableDropdownTextId});
                 />                
             </sun:dropDown>
+            <sun:button id="tableNamesButton" primary="#{false}" text="$resource{i18njdbc.jdbcPool.populatetableNames}" onClick="javascript: getValidationTableNames('#{pageSession.attrMap}', '#{pageSession.valueMap.validationTableName}'); disableTableField('#{pageSession.valueMap.validationTableName}', '#{pageSession.valueMap.validationClassname}');return false;">
+                <!afterCreate
+                    getClientId(component="$this{component}" clientId=>$page{tableNamesButtonId});
+                />
+            </sun:button>
             "<br />
             <sun:radioButton id="optB"  name="textOption" onClick="javascript: enableJdbcRadioButtons('text', 'table');" />
             <sun:textField id="tableText" columns="$int{55}" maxLength="#{sessionScope.fieldLengths['maxLength.jdbcPool.tableText']}" text="#{pageSession.tableTextValue}" >

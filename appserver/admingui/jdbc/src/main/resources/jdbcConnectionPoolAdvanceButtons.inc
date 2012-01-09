@@ -63,6 +63,10 @@
                         if ("#{pageSession.myValidCNOption}=text") {
                             setValueExpression(expression="#{pageSession.valueMap['validationClassname']}", value="#{pageSession.validCNTextValue}");
                         }
+                        gf.filterMap(map="#{pageSession.valueMap}" attrNames={'validationClassname'} keep="#{true}" resultMap="#{validationClassNameMap}");
+                        gf.createEntity(endpoint="#{pageSession.resourceUrl}"
+                                attrs="#{validationClassNameMap}"
+                         );
                     }
                 }
 

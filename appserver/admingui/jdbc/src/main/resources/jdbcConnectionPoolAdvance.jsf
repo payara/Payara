@@ -113,14 +113,6 @@
         }
         gf.createAttributeMap(keys={"className"} values={"$attribute{encodedClassName}"} map="#{pageSession.validCNAttrMap}");
         if ("#{pageSession.valueMap.isConnectionValidationRequired}=true") {
-            if ("#{pageSession.valueMap.connectionValidationMethod}=table") {
-                gf.restRequest(endpoint="#{sessionScope.REST_URL}/resources/get-validation-table-names"
-                    attrs="#{pageSession.attrMap}"
-                    method="get"
-                    result="#{requestScope.result}");
-                setPageSessionAttribute(key="tableNameList" value="#{requestScope.result.data.extraProperties.validationTableNames}");
-                gf.containedIn(list="#{pageSession.tableNameList}" testStr="#{pageSession.valueMap.validationTableName}" contain="#{requestScope.isTableNames}");
-            }
             if ("#{pageSession.valueMap.connectionValidationMethod}=custom-validation") {
                 gf.restRequest(endpoint="#{sessionScope.REST_URL}/resources/get-validation-class-names"
                     attrs="#{pageSession.validCNAttrMap}"
@@ -131,17 +123,12 @@
             }
         }
         setAttribute(key="emptyStr" value="");
-        setPageSessionAttribute(key="myTableOption" value="dropdown");
+        setPageSessionAttribute(key="myTableOption" value="text");
         setPageSessionAttribute(key="myValidCNOption" value="dropdown");
-        if (#{requestScope.isTableNames}) {
-            setPageSessionAttribute(key="tableDropDownValue" value="#{pageSession.valueMap.validationTableName}");
-        }
-        if (!#{requestScope.isTableNames}) {
-            if (#{pageSession.valueMap.validationTableName}) {
-                if ("!(#{pageSession.valueMap.validationTableName}='')") {
-                    setPageSessionAttribute(key="tableTextValue" value="#{pageSession.valueMap.validationTableName}");
-                    setPageSessionAttribute(key="myTableOption" value="text");
-                }
+        if (#{pageSession.valueMap.validationTableName}) {
+            if ("!(#{pageSession.valueMap.validationTableName}='')") {
+                setPageSessionAttribute(key="tableTextValue" value="#{pageSession.valueMap.validationTableName}");
+                setPageSessionAttribute(key="myTableOption" value="text");
             }
         }
         if (#{requestScope.isClassNames}) {
@@ -149,7 +136,7 @@
         }
         if (!#{requestScope.isClassNames}) {
             if (#{pageSession.valueMap.validationClassname}) {
-                if ("!(#{pageSession.valueMap.validationClassName}='')") {
+                if ("!(#{pageSession.valueMap.validationClassname}='')") {
                     setPageSessionAttribute(key="validCNTextValue" value="#{pageSession.valueMap.validationClassname}");
                     setPageSessionAttribute(key="myValidCNOption" value="text");
                 }
