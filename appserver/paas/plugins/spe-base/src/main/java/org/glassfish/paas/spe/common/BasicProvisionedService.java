@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -43,14 +43,12 @@ package org.glassfish.paas.spe.common;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.paas.orchestrator.provisioning.ServiceInfo;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceUtil;
-import org.glassfish.paas.orchestrator.service.HTTPLoadBalancerServiceType;
-import org.glassfish.paas.orchestrator.service.JavaEEServiceType;
-import org.glassfish.paas.orchestrator.service.RDBMSServiceType;
 import org.glassfish.paas.orchestrator.service.ServiceStatus;
 import org.glassfish.paas.orchestrator.service.ServiceType;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceDescription;
 import org.glassfish.paas.orchestrator.service.spi.ProvisionedService;
 
+import java.util.Collection;
 import java.util.Properties;
 
 /**
@@ -100,16 +98,14 @@ public class BasicProvisionedService implements ProvisionedService {
     }
 
     public ServiceType getServiceType() {
-        String serviceType = serviceDescription.getServiceType();
+        String sdServiceType = serviceDescription.getServiceType();
         // TODO :: FIXME >> make serviceType extensible
-        if ("JavaEE".equalsIgnoreCase(serviceType)) {
-            return new JavaEEServiceType();
-        }
-        if ("Database".equalsIgnoreCase(serviceType)) {
-            return new RDBMSServiceType();
-        }
-        if ("LB".equalsIgnoreCase(serviceType)) {
-            return new HTTPLoadBalancerServiceType();
+
+        Collection<ServiceType> serviceTypes = Globals.getDefaultHabitat().getAllByContract(ServiceType.class);
+        for(ServiceType serviceType : serviceTypes){
+            if(serviceType.getName().equals(sdServiceType)){
+                return serviceType;
+            }
         }
         return null;
     }
