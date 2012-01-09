@@ -104,7 +104,7 @@ theAL = new ActionListener() {
               apt:dataPath="Configuration.PROXY_HOST"
               apt:type="xs:string">
             <apt:visual>
-                <apt:textField apt:columns="25"/> 
+                <apt:textField apt:minimumSize="350,17" apt:columns="25"/>
             </apt:visual>
       </apt:property>  
 
@@ -113,7 +113,7 @@ theAL = new ActionListener() {
               apt:dataPath="Configuration.PROXY_PORT"
               apt:type="xs:string">
             <apt:visual>
-                <apt:textField apt:columns="6"/> 
+                <apt:textField apt:minimumSize="85,17" apt:columns="6"/>
             </apt:visual>
       </apt:property> 
 

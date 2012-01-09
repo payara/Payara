@@ -62,7 +62,7 @@
                 apt:dataPath="Configuration.INSTANCE_NAME"
                 apt:type="xs:string">
           <apt:visual>
-            <apt:textField apt:columns="15" apt:toolTip="$INSTANCE_NAME_TOOL_TIP"/>
+            <apt:textField apt:columns="15" apt:minimumSize="210,17" apt:toolTip="$INSTANCE_NAME_TOOL_TIP"/>
           </apt:visual>
         </apt:property>
 
@@ -71,7 +71,7 @@
               apt:dataPath="Configuration.SERVER_HOST_NAME"
               apt:type="xs:string">
             <apt:visual>
-                <apt:textField apt:columns="15" apt:toolTip="$SERVER_HOST_NAME_TOOL_TIP"/>
+                <apt:textField apt:columns="15" apt:minimumSize="210,17" apt:toolTip="$SERVER_HOST_NAME_TOOL_TIP"/>
             </apt:visual>
 	</apt:property>
 
@@ -81,7 +81,7 @@
               apt:dataPath="Configuration.SERVER_ADMIN_PORT"
               apt:type="xs:string">
             <apt:visual>
-                <apt:textField apt:columns="6" apt:toolTip="$SERVER_ADMIN_PORT_TOOL_TIP"/>
+                <apt:textField apt:columns="6" apt:minimumSize="85,17" apt:toolTip="$SERVER_ADMIN_PORT_TOOL_TIP"/>
             </apt:visual>
 	</apt:property>
 
@@ -122,7 +122,7 @@
                       apt:dataPath="Configuration.CLUSTER_NAME"
                       apt:type="xs:string">
           <apt:visual>
-            <apt:textField apt:columns="15" apt:toolTip=""/>
+            <apt:textField apt:columns="15" apt:minimumSize="210,17" apt:toolTip=""/>
           </apt:visual>
         </apt:property>
 
@@ -130,7 +130,7 @@
                       apt:dataPath="Configuration.DOMAIN_NAME"
                       apt:type="xs:string">
           <apt:visual>
-            <apt:textField apt:columns="15" apt:toolTip=""/>
+            <apt:textField apt:columns="15" apt:minimumSize="210,17" apt:toolTip=""/>
           </apt:visual>
         </apt:property>
 

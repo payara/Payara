@@ -128,7 +128,7 @@ return theAL;
                 apt:dataPath="regoptions.USERNAME"
                 apt:type="xs:string">
 	  <apt:visual>
-	    <apt:textField apt:columns="15" apt:toolTip="$USERNAME"/>
+	    <apt:textField apt:columns="15" apt:minimumSize="210,17" apt:toolTip="$USERNAME"/>
 	  </apt:visual>
         </apt:property>
 
@@ -136,7 +136,7 @@ return theAL;
                       apt:dataPath="regoptions.USERPASSWORD"
                       apt:type="xs:string">
 	  <apt:visual>
-	    <apt:password apt:columns="15" apt:toolTip="$USERPASSWORD"/>
+	    <apt:password apt:columns="15" apt:minimumSize="210,17" apt:toolTip="$USERPASSWORD"/>
 	  </apt:visual>
         </apt:property>
 

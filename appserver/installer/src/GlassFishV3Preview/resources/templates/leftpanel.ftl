@@ -39,20 +39,19 @@
 # holder.
 #
 --> 
-        <panel id="gLeftPanel" name="gLeftPanel" insets="0,0,0,0" Layout="GridBagLayout" opaque="false">
-          <gridbagconstraints gridx="0" gridy="1" gridwidth="1" gridheight="2" weightx="1" weighty="1" fill="GridBagConstraints.BOTH" insets="${leftpanel_insets}"/>
-         
-          <buttongroup id="gBtnGroup">
+        <panel id="gLeftPanel" name="gLeftPanel" Layout="GridBagLayout" opaque="false">
+            <gridbagconstraints gridx="0" gridy="1" gridwidth="1" gridheight="${buttons?size}" fill="GridBagConstraints.BOTH" insets="${leftpanel_insets}"/>
             <#list buttons as theButton>
-              <hradiobutton id="${theButton}" name="${theButton}" VerticalAlignment="TOP" HorizontalAlignment="RIGHT" Font="${dynamic_content_font}"
-                TextColor="<#if buttons?seq_index_of(theButton) < activeIndex>${leftpanel_done_textcolor}<#elseif buttons?seq_index_of(theButton) = activeIndex>${leftpanel_active_textcolor}<#else>${leftpanel_remaining_textcolor}</#if>"
-                Text="${theButton}" Enabled="false">
-                <gridbagconstraints gridx="0" gridy="${buttons?seq_index_of(theButton)}" weightx="1" weighty="0" fill="GridBagConstraints.HORIZONTAL" anchor="GridBagConstraints.NORTHWEST" insets="${leftpanel_button_insets}"/>
-              </hradiobutton>
+                <smoothlabel
+                    id="${theButton}" name="${theButton}" Font="${dynamic_content_font}" text="${theButton}"
+                    Foreground="<#if buttons?seq_index_of(theButton) < activeIndex>${leftpanel_done_textcolor}<#elseif buttons?seq_index_of(theButton) = activeIndex>${leftpanel_active_textcolor}<#else>${leftpanel_remaining_textcolor}</#if>">
+                    <gridbagconstraints
+                        gridx="0" gridy="${buttons?seq_index_of(theButton)}"
+                        anchor="GridBagConstraints.WEST"
+                        insets="${leftpanel_button_insets}"/>
+                </smoothlabel>
             </#list>
-          </buttongroup>
           <panel name="theLeftExpandablePanel" opaque="false">
             <gridbagconstraints gridx="0" gridy="${buttons?size}" gridwidth="1" gridheight="1" weightx="1" weighty="1" fill="GridBagConstraints.BOTH" />
           </panel>
-          
         </panel>

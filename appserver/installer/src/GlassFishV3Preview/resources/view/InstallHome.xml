@@ -96,6 +96,10 @@
             panelBottomText.setText((String)Msg.get("CONFIGONLY_BOTTOM_TEXT",null));
       }
        else {
+            List activeModes = (List)ConfigHelper.getValue("PageFlow.Mode.ACTIVE_MODES_LIST");
+            if (activeModes.contains("CONFIG_ONLY"))  {
+                activeModes.remove("CONFIG_ONLY");
+            }  
             panelTopText.setText(Msg.get("INSTALL_TOP_TEXT",null));
             panelBottomText.setText(Msg.get("INSTALL_BOTTOM_TEXT",null));
       }

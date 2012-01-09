@@ -191,6 +191,12 @@ public class BrowserLauncher {
              * environment variable is 'Default'
              */
             return DesktopType.GNOME;
+        } else if (System.getenv("DESKTOP_SESSION").contains("gnome")) {
+            /**
+            * GNOME is running if the value of the DESKTOP_SESSION
+            * environment variable contains 'gnome'
+            */
+            return DesktopType.GNOME;
         } else if ("true".equalsIgnoreCase(System.getenv("KDE_FULL_SESSION"))) {
             /**
              * KDE is running if the value of the KDE_FULL_SESSION environment
