@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,9 +37,29 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+package org.glassfish.paas.mq.logger;
 
-package org.glassfish.paas.orchestrator.provisioning.cli;
+import com.sun.enterprise.util.i18n.StringManager;
+import com.sun.logging.LogDomains;
+import java.util.logging.Logger;
 
-public enum ServiceType {
-    APPLICATION_SERVER, DATABASE, LB, MQ, DNS
+/**
+ *
+ * @author Jagadish Ramu
+ */
+public class MQServicePluginLogger {
+
+    private static final Logger _logger = LogDomains.getLogger
+            (MQServicePluginLogger.class, LogDomains.PAAS_LOGGER);
+    private static final StringManager localStrings =
+            StringManager.getManager(MQServicePluginLogger.class);
+
+    public static StringManager getLocalStrings() {
+        return localStrings;
+    }
+
+    public static Logger getLogger() {
+        return _logger;
+    }
+    
 }

@@ -38,8 +38,20 @@
  * holder.
  */
 
-package org.glassfish.paas.orchestrator.provisioning.cli;
+package org.glassfish.paas.orchestrator.service;
 
-public enum ServiceType {
-    APPLICATION_SERVER, DATABASE, LB, MQ, DNS
+import org.jvnet.hk2.annotations.Service;
+
+@Service
+public class MQServiceType extends ServiceType {
+
+    @Override
+    public String toString() {
+        return "MQ";
+    }
+
+    @Override
+    public String getName() {
+        return "MQ";
+    }
 }

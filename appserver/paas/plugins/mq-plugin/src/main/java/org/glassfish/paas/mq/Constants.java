@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,8 +38,51 @@
  * holder.
  */
 
-package org.glassfish.paas.orchestrator.provisioning.cli;
+package org.glassfish.paas.mq;
 
-public enum ServiceType {
-    APPLICATION_SERVER, DATABASE, LB, MQ, DNS
+import org.glassfish.virtualization.util.ServiceType;
+
+import java.util.LinkedHashSet;
+import java.util.Set;
+
+/**
+ *
+ * @author Jagadish Ramu
+ */
+public class Constants {
+
+    public static final String QCF = "javax.jms.QueueConnectionFactory";
+    public static final String TCF = "javax.jms.TopicConnectionFactory";
+    public static final String CF = "javax.jms.ConnectionFactory";
+    public static final String QUEUE = "javax.jms.Queue";
+    public static final String TOPIC = "javax.jms.Topic";
+    public static final String DESTINATION = "javax.jms.Destination";
+
+    public static final Set<String> serviceReferenceTypes = new LinkedHashSet<String>();
+
+    static{
+        serviceReferenceTypes.add(QCF);
+        serviceReferenceTypes.add(TCF);
+        serviceReferenceTypes.add(CF);
+        serviceReferenceTypes.add(QUEUE);
+        serviceReferenceTypes.add(TOPIC);
+        serviceReferenceTypes.add(DESTINATION);
+    }
+
+    public static final String JAVAEE_SERVICE_REFERENCE = "JavaEE";
+
+    public static final String JAVAEE_SERVICE_TYPE = "JavaEE";
+
+    public static final String MQ_SERVICE_TYPE = ServiceType.Type.MQ.name();
+
+    public static final String VIRTUAL_MACHINE_ID = "vm-id";
+
+    public static final String VIRTUAL_MACHINE_IP_ADDRESS = "ip-address";
+
+    public static final String RESOURCE_TYPE = "res-type";
+
+    public static final String MQ_PORT = "26767";
+
+    public static final String MQ_BROKER_NAME = "mq-service-broker";
+
 }
