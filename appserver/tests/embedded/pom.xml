@@ -58,5 +58,6 @@
     	<module>ejb</module>
     	<module>scatteredarchive</module>
         <module>maven-plugin</module>
+        <module>web</module>
     </modules>
 </project>
