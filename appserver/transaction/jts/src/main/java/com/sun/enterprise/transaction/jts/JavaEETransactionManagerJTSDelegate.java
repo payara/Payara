@@ -63,7 +63,6 @@ import com.sun.jts.CosTransactions.DefaultTransactionService;
 import com.sun.jts.CosTransactions.RecoveryManager;
 import com.sun.jts.CosTransactions.DelegatedRecoveryManager;
 import com.sun.jts.CosTransactions.RWLock;
-import com.sun.jts.CosTransactions.LogControl;
 
 import com.sun.enterprise.config.serverbeans.ServerTags;
 
@@ -605,7 +604,15 @@ public class JavaEETransactionManagerJTSDelegate
     /** {@inheritDoc}
     */
     public String getTxLogLocation() {
-            return LogControl.getLogPath();
+        if (Configuration.getServerName() == null) {
+            // If server name is null, the properties were not fully initialized
+            Properties props = TransactionServiceProperties.getJTSProperties(habitat, false);
+            DefaultTransactionService.setServerName(props);
+        }
+
+        return Configuration.getDirectory(Configuration.LOG_DIRECTORY,
+                                                 Configuration.JTS_SUBDIRECTORY,
+                                                 new int[1]);
     }
 
     /** {@inheritDoc}
