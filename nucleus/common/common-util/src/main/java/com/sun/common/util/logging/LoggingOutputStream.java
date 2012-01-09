@@ -189,6 +189,30 @@ public class LoggingOutputStream extends ByteArrayOutputStream {
             return  null;
         }
 
+        public PrintStream printf(Locale locale, String str, Object... args) {
+            StringBuilder sb = new StringBuilder();
+            Formatter formatter = new Formatter(sb, locale);
+            formatter.format(str,args);
+            print(sb.toString());
+            return  null;
+        }
+
+        public PrintStream format(String format, Object... args) {
+            StringBuilder sb = new StringBuilder();
+            Formatter formatter = new Formatter(sb, Locale.getDefault());
+            formatter.format(Locale.getDefault(), format, args);
+            print(sb.toString());
+            return  null;
+        }
+
+        public PrintStream format(Locale locale,String format, Object... args) {
+            StringBuilder sb = new StringBuilder();
+            Formatter formatter = new Formatter(sb, locale);
+            formatter.format(locale, format, args);
+            print(sb.toString());
+            return  null;
+        }
+
         public void println(String str) {
             if (!checkLocks()) return;
 
