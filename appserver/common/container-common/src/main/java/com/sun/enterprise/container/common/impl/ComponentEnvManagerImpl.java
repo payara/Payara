@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2008-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -412,15 +412,17 @@ public class ComponentEnvManagerImpl
             // eligible for look up
             if (next.hasAValue()) {
                 String name = descriptorToLogicalJndiName(next);
-
-                Object value = next.hasLookupName() ?
-                    namingUtils.createLazyNamingObjectFactory(name, next.getLookupName(), true) :
-                    namingUtils.createSimpleNamingObjectFactory(name, next.getValueObject());
-
+                Object value;
+                if(next.hasLookupName()) {
+                    value = namingUtils.createLazyNamingObjectFactory(name, next.getLookupName(), true);
+                } else if(next.getMappedName().length() > 0) {
+                    value = namingUtils.createLazyNamingObjectFactory(name, next.getMappedName(), true);
+                } else {
+                    value = namingUtils.createSimpleNamingObjectFactory(name, next.getValueObject());
+                }
                 jndiBindings.add(new CompEnvBinding(name, value));
             }
         }
-
     }
 
     private void addResourceReferences(ScopeType scope, Iterator resRefItr, Collection<JNDIBinding> jndiBindings) {
