@@ -345,41 +345,15 @@ public abstract class ServiceProvisioningEngineBase<T extends org.glassfish.paas
         }
     }
 
-    protected void fireServiceCreatedEvent(Service ps) {
+    protected void fireServiceChangeEvent(ServiceChangeEvent.Type type, Service ps) {
         for(ServiceChangeListener listener : getServiceChangeListeners()) {
-            listener.serviceCreated(new ServiceChangeEvent(this, null, ps));
-        }
-    }
-
-    protected void fireServiceDeletedEvent(Service ps) {
-        for(ServiceChangeListener listener : getServiceChangeListeners()) {
-            listener.serviceDeleted(new ServiceChangeEvent(this, ps, null));
-        }
-    }
-
-    protected void fireServiceStartedEvent(Service ps) {
-        for (ServiceChangeListener listener : getServiceChangeListeners()) {
-            listener.serviceStarted(new ServiceChangeEvent(this, ps, null));
-        }
-    }
-
-    protected void fireServiceStoppedEvent(Service ps) {
-        for (ServiceChangeListener listener : getServiceChangeListeners()) {
-            listener.serviceStopped(new ServiceChangeEvent(this, ps, null));
-        }
-    }
-
-    protected void fireServiceChangedEvent(Service before,
-                                           ProvisionedService after) {
-        for(ServiceChangeListener listener : getServiceChangeListeners()) {
-            listener.serviceChanged(new ServiceChangeEvent(this, before, after));
+            listener.onEvent(new ServiceChangeEvent(type, this, null, ps));
         }
     }
 
     private Collection<ServiceChangeListener> getServiceChangeListeners() {
         Collection<ServiceChangeListener> listeners = 
                 habitat.getAllByContract(ServiceChangeListener.class);
-        System.out.println("Service Change Listeners = " + listeners);
         return listeners;
     }
 

@@ -50,11 +50,16 @@ import java.util.EventObject;
 
 public class ServiceChangeEvent extends EventObject {
 
+    public enum Type {CREATED, DELETED, STARTED, STOPPED, MODIFIED}
+
+    Type type;
     Service oldValue;
     Service newValue;
 
-    public ServiceChangeEvent(Object source, Service oldValue, Service newValue) {
+    public ServiceChangeEvent(Type type, Object source, 
+                              Service oldValue, Service newValue) {
         super(source);
+        this.type = type;
         this.oldValue = oldValue;
         this.newValue = newValue;
     }
@@ -89,4 +94,7 @@ public class ServiceChangeEvent extends EventObject {
         return newValue;
     }
 
+    public Type getType() {
+        return type;
+    }
 }

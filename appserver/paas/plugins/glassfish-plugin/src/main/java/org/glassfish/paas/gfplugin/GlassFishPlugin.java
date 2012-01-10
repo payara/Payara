@@ -67,6 +67,7 @@ import org.glassfish.paas.orchestrator.service.metadata.ServiceCharacteristics;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceDescription;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceReference;
 import org.glassfish.paas.orchestrator.service.spi.ProvisionedService;
+import org.glassfish.paas.orchestrator.service.spi.ServiceChangeEvent;
 import org.glassfish.paas.orchestrator.service.spi.ServiceProvisioningException;
 import org.glassfish.paas.spe.common.ProvisioningFuture;
 import org.glassfish.paas.spe.common.ServiceProvisioningEngineBase;
@@ -194,7 +195,7 @@ public class GlassFishPlugin extends ServiceProvisioningEngineBase<JavaEEService
           */
         commandRunner.run(DELETE_ELASTIC_SERVICE, serviceName);
 
-        fireServiceDeletedEvent(service);
+        fireServiceChangeEvent(ServiceChangeEvent.Type.DELETED, service);
 
         return deleteSuccessful;
     }
@@ -254,7 +255,7 @@ public class GlassFishPlugin extends ServiceProvisioningEngineBase<JavaEEService
                 "--max=" + serviceDescription.getConfiguration(MAX_CLUSTERSIZE),
                 serviceName);
 
-        fireServiceCreatedEvent(gfps);
+        fireServiceChangeEvent(ServiceChangeEvent.Type.CREATED, gfps);
 
         // Return the ProvisionedService object that represents the DAS/Cluster.
         return gfps;
@@ -299,7 +300,7 @@ public class GlassFishPlugin extends ServiceProvisioningEngineBase<JavaEEService
         ProvisionedService service =  new GlassFishProvisionedService(serviceDescription,
                 serviceProperties, ServiceStatus.RUNNING, provisionedGlassFish);
 
-        fireServiceStartedEvent(service);
+        fireServiceChangeEvent(ServiceChangeEvent.Type.STARTED, service);
 
         return service;
     }
@@ -334,7 +335,7 @@ public class GlassFishPlugin extends ServiceProvisioningEngineBase<JavaEEService
         ProvisionedService service = new GlassFishProvisionedService(serviceDescription,
                 new Properties(), ServiceStatus.STOPPED, null);
 
-        fireServiceStoppedEvent(service);
+        fireServiceChangeEvent(ServiceChangeEvent.Type.STOPPED, service);
 
         return stopSuccessful;
     }

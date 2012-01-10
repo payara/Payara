@@ -53,41 +53,15 @@ import org.jvnet.hk2.annotations.Contract;
 public interface ServiceChangeListener {
 
     /**
-     * Invoked after the service is created.
-     *
-     * @param event event containing the service that was created.
-     */
-    public void serviceCreated(ServiceChangeEvent event);
-
-    /**
-     * Invoked after the service is deleted.
-     *
-     * @param event event containing the service that was deleted.
-     */
-    public void serviceDeleted(ServiceChangeEvent event);
-
-    /**
-     * Invoked after the service is modified.
+     * Invoked under the following cases:
      * <p/>
-     * The modifications can include service configuration change,
-     * service state change, etc.
+     * After the service is created (ServiceChangeEvent.Type.CREATED)
+     * After the service is deleted (ServiceChangeEvent.Type.DELETED)
+     * After the service is started (ServiceChangeEvent.Type.STARTED)
+     * After the service is stopped (ServiceChangeEvent.Type.STOPPED)
+     * After the service is modified (ServiceChangeEvent.Type.MODIFIED)
      *
-     * @param event event capturing the changes in service.
+     * @param event event object.
      */
-    public void serviceChanged(ServiceChangeEvent event);
-
-    /**
-     * Invoked after the service is started.
-     *
-     * @param event event containing the service that was started.
-     */
-    public void serviceStarted(ServiceChangeEvent event);
-
-    /**
-     * Invoked after the service is stopped.
-     *
-     * @param event event containing the service that was stopped.
-     */
-    public void serviceStopped(ServiceChangeEvent event);
-
+    public void onEvent(ServiceChangeEvent event);
 }
