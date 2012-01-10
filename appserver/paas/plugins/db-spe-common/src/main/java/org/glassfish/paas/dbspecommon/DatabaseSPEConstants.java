@@ -81,7 +81,7 @@ public interface DatabaseSPEConstants {
 
     static final String DATABASENAME = "databasename";
 
-    static final String PORT = "port";
+    static final String PORT = "PortNumber";
 
     static final String HOST = "host";
 

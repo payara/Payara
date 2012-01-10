@@ -145,6 +145,15 @@ public class MultipleSPETest {
             get("http://" + instanceIP + ":" + HTTP_PORT
                     + "/basic-spe-test/list", "Here is a list of animals in the zoo.");
 
+            //Retrieve the  port number used by the connection pool
+            invocation=commandRunner.getCommandInvocation("get", report);
+            parameterMap = new ParameterMap();
+
+            parameterMap.add("DEFAULT", "server.resources.jdbc-connection-pool.jdbc/__multiple_spe_paas_sample.property.PortNumber");
+            invocation.parameters(parameterMap).execute();
+
+            Assert.assertFalse(report.hasFailures());
+
             if (appName != null) {
                 deployer.undeploy(appName);
                 System.err.println("Undeployed [" + appName + "]");
