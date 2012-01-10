@@ -39,8 +39,11 @@
  */
 package org.glassfish.paas.dbspecommon;
 
+import org.apache.tools.ant.AntClassLoader;
 import org.glassfish.api.deployment.ApplicationContainer;
+import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.archive.ReadableArchive;
+import org.glassfish.deployment.common.DeploymentUtils;
 import org.glassfish.internal.api.ClassLoaderHierarchy;
 import org.glassfish.paas.orchestrator.PaaSDeploymentContext;
 import org.glassfish.paas.orchestrator.ServiceOrchestrator;
@@ -63,6 +66,8 @@ import org.apache.tools.ant.types.Path;
 import org.jvnet.hk2.annotations.Inject;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.*;
 
 /**
@@ -376,7 +381,26 @@ public abstract class DatabaseSPEBase extends ServiceProvisioningEngineBase<RDBM
      */
     protected void executeAntTask(Properties dbProps, String driverName, String url,
                                   String sql, boolean isSqlFile) {
-        Project project = new Project();
+        Project project = new Project() {
+
+            // JDBCTask loads the driver using the classloader returned by this method.
+            @Override
+            public AntClassLoader createClassLoader(Path path) {
+                // Default implementation always uses getClass().getClassLoader()
+                // as the base classloader while creating the new AntClassLoader
+                // While running inside GlassFish, the base classloader will be
+                // db-spe-common module's OSGi classloader,
+                // Since it is OSGi a classloader, it makes some of the classes
+                // viz., sun.reflect.Generated* cause IllegalAccessError during runtime.
+
+                // Hence create the classloader with common classloader (CCL)
+                // as the base classloader with parentFirst=true
+                // CCL has jdbc drivers placed in domain1/lib.
+                // Hence, SQL stmt execution will happen under the CCL's context.
+                return new AntClassLoader(clh.getCommonClassLoader(), this, path, true);
+            }
+        };
+
         project.init();
         SQLExec task = new SQLExec();
         SQLExec.OnError error = new SQLExec.OnError();
