@@ -41,11 +41,14 @@ package org.glassfish.paas.mq;
 
 import java.io.File;
 import java.io.FileWriter;
+import java.io.IOException;
+import java.lang.reflect.Array;
 import java.util.*;
 import java.util.logging.Level;
 
 import com.sun.enterprise.deployment.*;
 import com.sun.enterprise.deployment.archivist.ApplicationFactory;
+import com.sun.enterprise.util.OS;
 import org.glassfish.api.deployment.ApplicationContainer;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.deployment.common.DeploymentUtils;
@@ -250,6 +253,65 @@ public class MQServicePlugin extends ServiceProvisioningEngineBase<MQServiceType
         }
     }
 
+    public void executeCommand(VirtualMachine virtualMachine, String ... args){
+
+        List<String> commandArgs = Arrays.asList(args);
+
+        try {
+            String output = virtualMachine.executeOn(args);
+            MQServicePluginLogger.getLogger().log(Level.INFO, ("Command [" + commandArgs.toString() + "] output : " + output));
+        } catch (Exception e) {
+            MQServicePluginLogger.getLogger().log(Level.WARNING, "Unable to execute command ["+commandArgs.toString()+"]", e);
+        }
+    }
+
+
+    public void startMQ(final VirtualMachine virtualMachine){
+        if (virtualMachine.getMachine() == null) {
+            return;
+        }
+        final String fileName = "~/mq.plugin.broker.password.txt";
+        //we are creating the file in the remote machine. Assumption being its a linux machine.
+        executeCommand(virtualMachine, "echo \"imq.imqcmd.password=admin\" > " + fileName);
+
+        try {
+
+        Thread myThread = new Thread(){
+            public void run(){
+                try{
+                    String installDir = virtualMachine.getProperty(VirtualMachine.PropertyName.INSTALL_DIR);
+                    String[] args = {installDir + File.separator + "mq" +
+                            File.separator + "bin" + File.separator + "imqbrokerd", "-passfile", fileName,
+                            "-port", Constants.MQ_PORT, "-force", "-name", Constants.MQ_BROKER_NAME};
+                    executeCommand(virtualMachine, args);
+                }catch(Exception e){
+                    e.printStackTrace();
+                }finally{
+                    executeCommand(virtualMachine, "rm " + fileName);
+                }
+            }
+        };
+            myThread.start();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void stopMQ(VirtualMachine virtualMachine){
+
+        if (virtualMachine.getMachine() == null) {
+            return;
+        }
+        String fileName = "~/mq.plugin.broker.password.txt";
+        executeCommand(virtualMachine, "echo \"imq.imqcmd.password=admin\" > " + fileName);
+
+        String installDir = virtualMachine.getProperty(VirtualMachine.PropertyName.INSTALL_DIR);
+        String[] args = {installDir + File.separator + "mq" +
+                File.separator + "bin" + File.separator + "imqcmd", "shutdown","bkr", "-u", "admin", "-f", "-passfile", fileName,
+                "-b", "localhost:"+Constants.MQ_PORT};
+        executeCommand(virtualMachine, args);
+        executeCommand(virtualMachine, "rm " + fileName);
+    }
 
     public ProvisionedService provisionService(ServiceDescription serviceDescription, PaaSDeploymentContext dc) {
         ProvisionedService provisionedService = createService(serviceDescription).get();
@@ -257,6 +319,7 @@ public class MQServicePlugin extends ServiceProvisioningEngineBase<MQServiceType
         Properties properties = provisionedService.getProperties();
         VirtualMachine vm = getVmByID(serviceDescription.getVirtualClusterName(),
                 properties.getProperty(VIRTUAL_MACHINE_ID));
+        startMQ(vm);
         String ipAddress = properties.getProperty(VIRTUAL_MACHINE_IP_ADDRESS);
         properties.putAll(getServiceProperties(ipAddress, provisionedService.getName()));
         return provisionedService;
@@ -302,6 +365,7 @@ public class MQServicePlugin extends ServiceProvisioningEngineBase<MQServiceType
         VirtualMachine vm = getVmByID(serviceDescription.getVirtualClusterName(),
                 properties.getProperty(VIRTUAL_MACHINE_ID));
         String ipAddress = properties.getProperty(VIRTUAL_MACHINE_IP_ADDRESS);
+        stopMQ(vm);
         return deleteService(serviceDescription);
     }
 
@@ -315,7 +379,7 @@ public class MQServicePlugin extends ServiceProvisioningEngineBase<MQServiceType
         Properties properties = provisionedService.getProperties();
         VirtualMachine vm = getVmByID(serviceDescription.getVirtualClusterName(),
                 properties.getProperty(VIRTUAL_MACHINE_ID));
-
+        startMQ(vm);
         properties.putAll(getServiceProperties(
                 properties.getProperty(VIRTUAL_MACHINE_IP_ADDRESS), serviceInfo.getServiceName()));
         return provisionedService;
@@ -325,6 +389,7 @@ public class MQServicePlugin extends ServiceProvisioningEngineBase<MQServiceType
         Properties properties = getProvisionedService(serviceDescription).getProperties();
         VirtualMachine vm = getVmByID(serviceDescription.getVirtualClusterName(),
                 properties.getProperty(VIRTUAL_MACHINE_ID));
+        stopMQ(vm);
         return stopService(serviceDescription);
     }
 
