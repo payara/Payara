@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -42,8 +42,13 @@ package org.glassfish.paas.orchestrator.service;
 
 import org.glassfish.paas.orchestrator.service.metadata.ServiceDescription;
 import org.glassfish.paas.orchestrator.service.spi.ConfiguredService;
+import org.glassfish.paas.orchestrator.service.spi.ServiceLogRecord;
+import org.glassfish.paas.orchestrator.service.spi.ServiceLogType;
 
+import java.util.Date;
 import java.util.Properties;
+import java.util.Set;
+import java.util.logging.Level;
 
 /**
  * @author Jagadish Ramu
@@ -85,5 +90,21 @@ public class ConfiguredServiceImpl implements ConfiguredService {
     }
     public void setProperties(Properties properties){
         this.properties = properties;
+    }
+
+    public Set<ServiceLogRecord> collectLogs(ServiceLogType type, Level level, Date since) {
+        throw new UnsupportedOperationException("Not yet implemented");
+    }
+
+    public Set<ServiceLogRecord> collectLogs(ServiceLogType type, Level level, long count) {
+        throw new UnsupportedOperationException("Not yet implemented");
+    }
+
+    public Set<ServiceLogType> getLogTypes() {
+        throw new UnsupportedOperationException("Not yet implemented");
+    }
+
+    public ServiceLogType getDefaultLogType() {
+        throw new UnsupportedOperationException("Not yet implemented");
     }
 }

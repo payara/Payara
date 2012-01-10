@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -45,8 +45,13 @@ import org.glassfish.paas.orchestrator.service.ServiceStatus;
 import org.glassfish.paas.orchestrator.service.ServiceType;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceDescription;
 import org.glassfish.paas.orchestrator.service.spi.ProvisionedService;
+import org.glassfish.paas.orchestrator.service.spi.ServiceLogRecord;
+import org.glassfish.paas.orchestrator.service.spi.ServiceLogType;
 
+import java.util.Date;
 import java.util.Properties;
+import java.util.Set;
+import java.util.logging.Level;
 
 
 /**
@@ -91,6 +96,22 @@ public class GlassFishLBProvisionedService implements ProvisionedService {
     public Properties getProperties() {
         //TODO return the co-ordinates (eg: hostname, port, etc.,)
         return new Properties();
+    }
+
+    public Set<ServiceLogRecord> collectLogs(ServiceLogType type, Level level, Date since) {
+        throw new UnsupportedOperationException("Not yet implemented");
+    }
+
+    public Set<ServiceLogRecord> collectLogs(ServiceLogType type, Level level, long count) {
+        throw new UnsupportedOperationException("Not yet implemented");
+    }
+
+    public Set<ServiceLogType> getLogTypes() {
+        throw new UnsupportedOperationException("Not yet implemented");
+    }
+
+    public ServiceLogType getDefaultLogType() {
+        throw new UnsupportedOperationException("Not yet implemented");
     }
 
 }

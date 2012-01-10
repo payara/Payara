@@ -43,13 +43,17 @@ package org.glassfish.paas.orchestrator.service.spi;
 import org.glassfish.paas.orchestrator.service.ServiceType;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceDescription;
 
+import java.util.Date;
 import java.util.Properties;
+import java.util.Set;
+import java.util.logging.Level;
 
 /**
  * Generic representation of a Service which can be
  * of types, managed or unmanaged.
  *
  * @author Sivakumar Thyagarajan, Jagadish Ramu
+ * @author Bhavanishankar S
  */
 public interface Service {
 
@@ -84,4 +88,67 @@ public interface Service {
      */
     public Properties getProperties();
 
+    /**
+     * Collect the log records since the given time for a given level and type.
+     * <p/>
+     * Some implementation considerations:
+     * <p/>
+     * (a) Convert plain text file lines into ServiceLogRecord.
+     * (a) Map java.util.logging.Level to service specific log level.
+     * (b) Prefer service exposed transport over vm.executeOn(...) to collect logs.
+     * (c) If possible, decorate the log for isolating application usage in case of
+     * service being a shared service:
+     * <p/>
+     * For example:
+     * <p/>
+     * If app1 and app2 are both using the service, an external entity should be
+     * able to filter logs pertaining only to app1 (or app2). One way to achieve is
+     * by decorating the message being logged with application specific information.
+     * We need the underlying service to provide such capability and
+     * Plugin implementation must know how to configure it at the time of
+     * provisioning the service or at the time of associating the
+     * application with an existing provisioned (shared) service.
+     *
+     * @param type collect logs only for this type
+     * @param level collect logs only for this level
+     * @param since collect logs since this time till the latest
+     * @return service log records matching the input criteria
+     */
+
+    public Set<ServiceLogRecord> collectLogs(ServiceLogType type,
+                                             Level level, Date since);
+
+    /**
+     * Collect the most recent requested number of log records for a
+     * given level and type.
+     *
+     * @param type collect logs only for this type
+     * @param level collect logs only for this level
+     * @param count collect most recent given count of log records.
+     * @return service log records matching the input criteria
+     */
+    public Set<ServiceLogRecord> collectLogs(ServiceLogType type,
+                                             Level level, long count);
+
+
+    /**
+     * Get the available log types for the service.
+     * <p/>
+     * For example :
+     * <p/>
+     * Java EE service might have logs for HTTP access info, debug logs, jvm logs, etc
+     * <p/>
+     * Messaging service might contain MTA (message transfer agent) logs,
+     * Error logs, Message Store and Service logs.
+     *
+     * @return set of log types for the service.
+     */
+    public Set<ServiceLogType> getLogTypes();
+
+    /**
+     * Get the default log type for the service.
+     *
+     * @return default log type
+     */
+    public ServiceLogType getDefaultLogType();
 }

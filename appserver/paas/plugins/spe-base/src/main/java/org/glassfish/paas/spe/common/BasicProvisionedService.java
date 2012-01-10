@@ -47,14 +47,19 @@ import org.glassfish.paas.orchestrator.service.ServiceStatus;
 import org.glassfish.paas.orchestrator.service.ServiceType;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceDescription;
 import org.glassfish.paas.orchestrator.service.spi.ProvisionedService;
+import org.glassfish.paas.orchestrator.service.spi.ServiceLogRecord;
+import org.glassfish.paas.orchestrator.service.spi.ServiceLogType;
 
 import java.util.Collection;
+import java.util.Date;
 import java.util.Properties;
+import java.util.Set;
+import java.util.logging.Level;
 
 /**
  * Represents a node (or instance) belonging to a service.
  *
- * @author bhavanishankar@java.net
+ * @author Bhavanishankar S
  */
 
 public class BasicProvisionedService implements ProvisionedService {
@@ -128,6 +133,22 @@ public class BasicProvisionedService implements ProvisionedService {
 
     public Properties getProperties() {
         return serviceProperties;
+    }
+
+    public Set<ServiceLogRecord> collectLogs(ServiceLogType type, Level level, Date since) {
+        throw new UnsupportedOperationException("Not yet implemented");
+    }
+
+    public Set<ServiceLogRecord> collectLogs(ServiceLogType type, Level level, long count) {
+        throw new UnsupportedOperationException("Not yet implemented");
+    }
+
+    public Set<ServiceLogType> getLogTypes() {
+        throw new UnsupportedOperationException("Not yet implemented");
+    }
+
+    public ServiceLogType getDefaultLogType() {
+        throw new UnsupportedOperationException("Not yet implemented");
     }
 
     class InterceptedProperties extends Properties {
