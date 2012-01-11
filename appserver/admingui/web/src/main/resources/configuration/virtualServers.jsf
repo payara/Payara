@@ -109,11 +109,11 @@
                     url="#{pageSession.editLink}&name=#{td.value.name}" />
             </sun:tableColumn>
 
-                 <sun:tableColumn headerText="$resource{i18n_web.vs.StateTableColumn}" sort="state" rowHeader="$boolean{true}" id="col2">
+                 <sun:tableColumn headerText="$resource{i18n_web.vs.StateTableColumn}" sort="state" rowHeader="$boolean{false}" id="col2">
                 <staticText id="stateCol"  value="#{td.value.state}" />
             </sun:tableColumn>
 
-            <sun:tableColumn headerText="$resource{i18n_web.vs.DefaultWebTableColumn}"  sort="defaultWebModule" rowHeader="$boolean{true}" id="col3">
+            <sun:tableColumn headerText="$resource{i18n_web.vs.DefaultWebTableColumn}"  sort="defaultWebModule" rowHeader="$boolean{false}" id="col3">
                 <staticText id="stateCol"  value="#{td.value.defaultWebModule}" />
             </sun:tableColumn>
         </sun:tableRowGroup>

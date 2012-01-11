@@ -72,15 +72,15 @@
     </sun:tableColumn>
 
 
-    <sun:tableColumn headerText="#{resHeader}" sort="resourceAdapterName" rowHeader="$boolean{true}" id="col22">
+    <sun:tableColumn headerText="#{resHeader}" sort="resourceAdapterName" rowHeader="$boolean{false}" id="col22">
         <sun:staticText escape="true" id="resAdap"  value="#{td.value.resourceAdapterName}" />
     </sun:tableColumn>
     
-    <sun:tableColumn headerText="#{extraInfoHeader}" sort="connectionDefinitionName"   rowHeader="$boolean{true}" id="col3">
+    <sun:tableColumn headerText="#{extraInfoHeader}" sort="connectionDefinitionName"   rowHeader="$boolean{false}" id="col3">
         <sun:staticText escape="true" id="connDef"  value="#{td.value.connectionDefinitionName}" />
     </sun:tableColumn>  
     
-    <sun:tableColumn headerText="$resource{i18njca.resourcesTable.colDesc}" rowHeader="$boolean{true}" id="col4">
+    <sun:tableColumn headerText="$resource{i18njca.resourcesTable.colDesc}" rowHeader="$boolean{false}" id="col4">
         <sun:staticText escape="true" id="typeDesc" value="#{td.value.description}" />
     </sun:tableColumn>
     

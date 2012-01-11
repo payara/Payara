@@ -124,7 +124,7 @@
 
      <sun:tableColumn
         headerText="$resource{i18nc.configurations.instanceCol}"
-        rowHeader="$boolean{true}" id="col3">
+        rowHeader="$boolean{false}" id="col3">
          <event>
             <!beforeEncode
                 gf.listInstances(optionKeys={"id"} optionValues={"$pageSession{configName}"}, instances="#{requestScope.instanceList}" statusMap="#{requestScope.statusMap}");

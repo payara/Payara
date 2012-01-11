@@ -105,7 +105,7 @@
             url="#{pageSession.editLink}&name=#{td.value.name}" />
     </sun:tableColumn>
 
-    <sun:tableColumn headerText="$resource{i18nc.realm.colClassname}"   sort="classname" rowHeader="$boolean{true}" id="col2">
+    <sun:tableColumn headerText="$resource{i18nc.realm.colClassname}"   sort="classname" rowHeader="$boolean{false}" id="col2">
         <sun:staticText escape="true" id="classnameCol" value="#{td.value.classname}" />
     </sun:tableColumn>
 

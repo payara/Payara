@@ -106,7 +106,7 @@
             url="#{pageSession.editLink}&name=#{td.value.name}" />
     </sun:tableColumn>
 
-    <sun:tableColumn headerText="$resource{i18nc.jacc.colPolicyProvider}"  sort="policyProvider" rowHeader="$boolean{true}" id="col6">
+    <sun:tableColumn headerText="$resource{i18nc.jacc.colPolicyProvider}"  sort="policyProvider" rowHeader="$boolean{false}" id="col6">
         <sun:staticText escape="true" id="classnameCol" value="#{td.value.policyProvider}" />
     </sun:tableColumn>
   </sun:tableRowGroup>

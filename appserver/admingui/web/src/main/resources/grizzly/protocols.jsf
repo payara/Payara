@@ -159,14 +159,14 @@
     </sun:tableColumn>
 
 
-    <sun:tableColumn headerText="$resource{i18n_web.grizzly.protocol.listenerNameCol}" sort="name"  rowHeader="$boolean{true}" id="colnet">
+    <sun:tableColumn headerText="$resource{i18n_web.grizzly.protocol.listenerNameCol}" sort="name"  rowHeader="$boolean{false}" id="colnet">
         <foreach key="listenerName" list="#{td.value.listenerList}" >
             <sun:hyperlink  text="#{listenerName}" url="#{request.contextPath}/web/grizzly/networkListenerEdit.jsf?name=#{listenerName}&cancelTo=web/grizzly/protocols.jsf&configName=#{configName}" />"<br>
        </foreach>
     </sun:tableColumn>
 
 
-    <sun:tableColumn headerText="$resource{i18n_web.grizzly.protocol.securityEnabledCol}" sort="securityEnabled" rowHeader="$boolean{true}" id="ss">
+    <sun:tableColumn headerText="$resource{i18n_web.grizzly.protocol.securityEnabledCol}" sort="securityEnabled" rowHeader="$boolean{false}" id="ss">
         <staticText id="ss" value="#{td.value.securityEnabled}" />
     </sun:tableColumn>
 

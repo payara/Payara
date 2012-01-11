@@ -69,16 +69,16 @@
     <sun:tableColumn headerText="$resource{i18n.common.name.header}" sort="name" rowHeader="$boolean{true}" id="col1">
         <sun:hyperlink id="link" text="#{td.value.name}" url="#{pageSession.editLink}&instanceName=#{td.value.name}" />
     </sun:tableColumn>
-    <sun:tableColumn headerText="$resource{i18ncs.standalone.ColWeight}" sort="lbWeight" rowHeader="$boolean{true}" id="col2">
+    <sun:tableColumn headerText="$resource{i18ncs.standalone.ColWeight}" sort="lbWeight" rowHeader="$boolean{false}" id="col2">
         <sun:textField id="weight" columns="$int{10}" maxLength="#{sessionScope.fieldLengths['maxLength.standalone.lbWeight']}" text="#{td.value.lbWeight}" />
     </sun:tableColumn>
-    <sun:tableColumn headerText="$resource{i18ncs.common.ConfigurationCol}" sort="configRef" rowHeader="$boolean{true}" id="col3">
+    <sun:tableColumn headerText="$resource{i18ncs.common.ConfigurationCol}" sort="configRef" rowHeader="$boolean{false}" id="col3">
         <sun:hyperlink id="configlink" text="#{td.value.configRef}" url="/configuration/configuration.jsf?configName=#{td.value.configRef}" />
     </sun:tableColumn>
-    <sun:tableColumn headerText="$resource{i18ncs.common.NodeCol}" sort="node" rowHeader="$boolean{true}" id="col5">
+    <sun:tableColumn headerText="$resource{i18ncs.common.NodeCol}" sort="node" rowHeader="$boolean{false}" id="col5">
         <sun:hyperlink id="nodeAgentlink" text="#{td.value.nodeRef}"  url="#{request.contextPath}/cluster/node/nodeEdit.jsf?nodeName=#{td.value.nodeRef}" />
     </sun:tableColumn>
-    <sun:tableColumn headerText="$resource{i18n.common.Status}"  rowHeader="$boolean{true}" id="col6">
+    <sun:tableColumn headerText="$resource{i18n.common.Status}"  rowHeader="$boolean{false}" id="col6">
         <staticText id="statusCol" value="#{requestScope.statusString}" >
             <!beforeEncode
                 mapGet(Map="#{pageSession.instanceStatusMap}" Key="#{td.value.name}" Value="#{requestScope.status}")

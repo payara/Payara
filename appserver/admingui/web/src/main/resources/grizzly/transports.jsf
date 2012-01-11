@@ -103,12 +103,12 @@
         <sun:hyperlink id="link" text="#{td.value.name}"  url="#{pageSession.editLink}&name=#{td.value.name}" />
     </sun:tableColumn>
 
-    <sun:tableColumn headerText="$resource{i18n_web.transport.classnameCol}" sort="classname"  rowHeader="$boolean{true}" id="classname">
+    <sun:tableColumn headerText="$resource{i18n_web.transport.classnameCol}" sort="classname"  rowHeader="$boolean{false}" id="classname">
         <sun:staticText escape="true" id="classname" value="#{td.value.classname}" />
     </sun:tableColumn>
 
 
-    <sun:tableColumn headerText="$resource{i18n_web.transport.byteBufferTypeCol}" sort="byteBufferType" rowHeader="$boolean{true}" id="byteType">
+    <sun:tableColumn headerText="$resource{i18n_web.transport.byteBufferTypeCol}" sort="byteBufferType" rowHeader="$boolean{false}" id="byteType">
         <sun:staticText escape="true" id="byteType" value="#{td.value.byteBufferType}" />
     </sun:tableColumn>
 

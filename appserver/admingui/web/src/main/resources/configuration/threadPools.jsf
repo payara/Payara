@@ -108,19 +108,19 @@
             url="#{pageSession.editLink}&name=#{td.value.name}" />
     </sun:tableColumn>
 
-    <sun:tableColumn headerText="$resource{i18n_web.threadPool.maxThreadCol}"  sort="maxThreadPoolSize"  rowHeader="$boolean{true}" id="max">
+    <sun:tableColumn headerText="$resource{i18n_web.threadPool.maxThreadCol}"  sort="maxThreadPoolSize"  rowHeader="$boolean{false}" id="max">
         <staticText id="max" value="#{td.value.maxThreadPoolSize}" />
     </sun:tableColumn>
 
-    <sun:tableColumn headerText="$resource{i18n_web.threadPool.minThreadCol}"  sort="minThreadPoolSize" rowHeader="$boolean{true}" id="min">
+    <sun:tableColumn headerText="$resource{i18n_web.threadPool.minThreadCol}"  sort="minThreadPoolSize" rowHeader="$boolean{false}" id="min">
         <staticText id="min" value="#{td.value.minThreadPoolSize}" />
     </sun:tableColumn>
 
-    <sun:tableColumn headerText="$resource{i18n_web.threadPool.maxQueueCol}" sort="maxQueueSize" rowHeader="$boolean{true}" id="maxq">
+    <sun:tableColumn headerText="$resource{i18n_web.threadPool.maxQueueCol}" sort="maxQueueSize" rowHeader="$boolean{false}" id="maxq">
         <staticText id="maxq" value="#{td.value.maxQueueSize}" />
     </sun:tableColumn>
 
-    <sun:tableColumn headerText="$resource{i18n_web.threadPool.timeoutCol}"   sort="idleThreadTimeoutSeconds" rowHeader="$boolean{true}" id="idle">
+    <sun:tableColumn headerText="$resource{i18n_web.threadPool.timeoutCol}"   sort="idleThreadTimeoutSeconds" rowHeader="$boolean{false}" id="idle">
         <staticText id="idle" value="#{td.value.idleThreadTimeoutSeconds}" />
     </sun:tableColumn>
 

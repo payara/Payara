@@ -81,19 +81,19 @@
         <sun:hyperlink rendered="#{supportCluster}" id="targetLink" text="#{td.value.enabled}" url="#{targetLink}?name=#{td.value.name}" />
     </sun:tableColumn>-->
 
-    <sun:tableColumn rendered="#{!pageSession.onlyDASExist}" headerText="$resource{i18n.deployTable.colStatus}" sort="enabled" rowHeader="$boolean{true}" id="col22">
+    <sun:tableColumn rendered="#{!pageSession.onlyDASExist}" headerText="$resource{i18n.deployTable.colStatus}" sort="enabled" rowHeader="$boolean{false}" id="col22">
         <sun:hyperlink rendered="#{!pageSession.onlyDASExist}" id="targetLink" text="#{td.value.enableURL}" url="#{targetPage}?name=#{td.value.encodedName}&generalPage=#{pageSession.generalPage}?name=#{td.value.encodedName}" />
     </sun:tableColumn>
 
-    <sun:tableColumn  rendered="#{pageSession.onlyDASExist}" headerText="$resource{i18n.deployTable.colEnabled}" sort="enabled" rowHeader="$boolean{true}" id="col222">
+    <sun:tableColumn  rendered="#{pageSession.onlyDASExist}" headerText="$resource{i18n.deployTable.colEnabled}" sort="enabled" rowHeader="$boolean{false}" id="col222">
         <sun:image rendered="#{pageSession.onlyDASExist}" id="enCol" value="#{td.value.enableURL}" />
     </sun:tableColumn>
     
-    <sun:tableColumn headerText="$resource{i18njca.resourcesTable.colPool}" sort="poolName" rendered="#{pageSession.hasPool}"  rowHeader="$boolean{true}" id="col3">
+    <sun:tableColumn headerText="$resource{i18njca.resourcesTable.colPool}" sort="poolName" rendered="#{pageSession.hasPool}"  rowHeader="$boolean{false}" id="col3">
         <sun:hyperlink id="pool" text="#{td.value.poolName}" url="#{pageSession.editPoolLink}?name=#{td.value.poolName}" />
     </sun:tableColumn>
     
-    <sun:tableColumn headerText="$resource{i18njca.resourcesTable.colResType}" sort="resType" rendered="#{pageSession.hasResType}"  rowHeader="$boolean{true}" id="coltype">
+    <sun:tableColumn headerText="$resource{i18njca.resourcesTable.colResType}" sort="resType" rendered="#{pageSession.hasResType}"  rowHeader="$boolean{false}" id="coltype">
         <sun:staticText escape="true" id="resType" rendered="#{pageSession.hasResType}" value="#{td.value.resType}" />
     </sun:tableColumn>
 
@@ -115,7 +115,7 @@
     -->
      
     
-    <sun:tableColumn headerText="$resource{i18njca.resourcesTable.colDesc}" rowHeader="$boolean{true}" id="col4">
+    <sun:tableColumn headerText="$resource{i18njca.resourcesTable.colDesc}" rowHeader="$boolean{false}" id="col4">
         <sun:staticText escape="true" id="typeDesc" value="#{td.value.description}" />
     </sun:tableColumn>
     

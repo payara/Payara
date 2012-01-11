@@ -121,10 +121,10 @@
             <sun:tableColumn headerText="$resource{i18n.common.ResourceName}" rowHeader="$boolean{true}" id="col1">
                 <sun:hyperlink id="link" text="#{td.value.Name}" url="#{td.value.link}" />
             </sun:tableColumn>
-            <sun:tableColumn headerText="$resource{i18n.common.Enabled}" rowHeader="$boolean{true}" id="col2">
+            <sun:tableColumn headerText="$resource{i18n.common.Enabled}" rowHeader="$boolean{false}" id="col2">
                 <sun:image id="enablecol" value="#{td.value.Enabled}" />
             </sun:tableColumn>
-            <sun:tableColumn headerText="$resource{i18n.common.type.header}" rowHeader="$boolean{true}" id="col3">
+            <sun:tableColumn headerText="$resource{i18n.common.type.header}" rowHeader="$boolean{false}" id="col3">
                 <sun:staticText escape="true" id="type" value="#{td.value.Type}" />
             </sun:tableColumn>
        </sun:tableRowGroup>

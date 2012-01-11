@@ -120,15 +120,15 @@
         <sun:hyperlink id="link" text="#{td.value.name}" url="#{pageSession.editLink}?nodeName=#{td.value.name}" />
     </sun:tableColumn>
 
-    <sun:tableColumn headerText="$resource{i18ncs.node.nodeHostCol}" sort="nodeHost" rowHeader="$boolean{true}" valign="top" id="col2">
+    <sun:tableColumn headerText="$resource{i18ncs.node.nodeHostCol}" sort="nodeHost" rowHeader="$boolean{false}" valign="top" id="col2">
         <sun:staticText escape="true" id="nodeHostCol" value="#{td.value.nodeHost}" />
     </sun:tableColumn>
 
-    <sun:tableColumn headerText="$resource{i18ncs.node.nodeTypeCol}"  sort="type" rowHeader="$boolean{true}" valign="top" id="colType">
+    <sun:tableColumn headerText="$resource{i18ncs.node.nodeTypeCol}"  sort="type" rowHeader="$boolean{false}" valign="top" id="colType">
         <sun:staticText escape="true" id="typeCol" value="#{td.value.type}" />
     </sun:tableColumn>
 
-    <sun:tableColumn headerText="$resource{i18ncs.clusters.instanceCol}" rowHeader="$boolean{true}" id="col3">
+    <sun:tableColumn headerText="$resource{i18ncs.clusters.instanceCol}" rowHeader="$boolean{false}" id="col3">
          <event>
             <!beforeEncode
                 gf.listInstances(optionKeys={"id"} optionValues={"$pageSession{nodeName}"}, instances="#{requestScope.instanceList}" statusMap="#{requestScope.statusMap}");

@@ -72,15 +72,15 @@
     </sun:tableColumn>
 
 
-    <sun:tableColumn headerText="#{resHeader}" sort="resType" rowHeader="$boolean{true}" id="col22">
+    <sun:tableColumn headerText="#{resHeader}" sort="resType" rowHeader="$boolean{false}" id="col22">
         <sun:staticText escape="true" id="resType"  value="#{td.value.resType}" />
     </sun:tableColumn>
     
-    <sun:tableColumn headerText="$resource{i18njdbc.resourcesTable.colClassname}" sort="datasourceClassname" rowHeader="$boolean{true}" id="col3">
+    <sun:tableColumn headerText="$resource{i18njdbc.resourcesTable.colClassname}" sort="datasourceClassname" rowHeader="$boolean{false}" id="col3">
         <sun:staticText escape="true" id="datasourceClassname"  value="#{td.value.className}" />
     </sun:tableColumn>  
     
-    <sun:tableColumn headerText="$resource{i18njdbc.resourcesTable.colDesc}" rowHeader="$boolean{true}" id="col4">
+    <sun:tableColumn headerText="$resource{i18njdbc.resourcesTable.colDesc}" rowHeader="$boolean{false}" id="col4">
         <sun:staticText escape="true" id="typeDesc" value="#{td.value.description}" />
     </sun:tableColumn>
     

@@ -157,19 +157,19 @@
             url="#{pageSession.editLink}&name=#{td.value.name}&cancelTo=web/grizzly/networkListeners.jsf" />
     </sun:tableColumn>
 
-    <sun:tableColumn headerText="$resource{i18n_web.grizzly.table.portCol}"  sort="port" rowHeader="$boolean{true}" id="col3">
+    <sun:tableColumn headerText="$resource{i18n_web.grizzly.table.portCol}"  sort="port" rowHeader="$boolean{false}" id="col3">
         <sun:staticText id="port" value="#{td.value.port}" />
     </sun:tableColumn>
 
-    <sun:tableColumn headerText="$resource{i18n_web.grizzly.table.protocolCol}"  sort="protocol" rowHeader="$boolean{true}" id="pro">
+    <sun:tableColumn headerText="$resource{i18n_web.grizzly.table.protocolCol}"  sort="protocol" rowHeader="$boolean{false}" id="pro">
         <sun:hyperlink id="link" text="#{td.value.protocol}" url="#{request.contextPath}/web/grizzly/protocolEdit.jsf?name=#{td.value.protocol}&cancelTo=web/grizzly/networkListeners.jsf&configName=#{pageSession.configName}" />
     </sun:tableColumn>
 
-    <sun:tableColumn headerText="$resource{i18n_web.grizzly.table.threadPoolCol}" sort="threadPool" rowHeader="$boolean{true}" id="threadPool">
+    <sun:tableColumn headerText="$resource{i18n_web.grizzly.table.threadPoolCol}" sort="threadPool" rowHeader="$boolean{false}" id="threadPool">
         <sun:hyperlink id="link" text="#{td.value.threadPool}" url="#{request.contextPath}/web/configuration/threadPoolEdit.jsf?name=#{td.value.threadPool}&cancelTo=grizzly/networkListeners.jsf&configName=#{pageSession.configName}" />
     </sun:tableColumn>
 
-    <sun:tableColumn  headerText="$resource{i18n_web.grizzly.table.enabledCol}" sort="enabled" rowHeader="$boolean{true}" id="col22">
+    <sun:tableColumn  headerText="$resource{i18n_web.grizzly.table.enabledCol}" sort="enabled" rowHeader="$boolean{false}" id="col22">
         <sun:staticText id="enCol" text="#{td.value.enabled}" />
     </sun:tableColumn>
 

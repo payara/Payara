@@ -81,11 +81,11 @@
             <sun:hyperlink id="link" text="#{td.value.name}" url="#{pageSession.editLink}?name=#{td.value.name}" />
         </sun:tableColumn>
 
-        <sun:tableColumn id="colPoolName" headerText="$resource{i18njms.resourcesTable.colPoolName}" rendered="#{isConnPage}" sort="name" rowHeader="$boolean{true}">
+        <sun:tableColumn id="colPoolName" headerText="$resource{i18njms.resourcesTable.colPoolName}" rendered="#{isConnPage}" sort="name" rowHeader="$boolean{false}">
             <sun:hyperlink id="link" text="#{td.value.name}" url="#{pageSession.editLink}?name=#{td.value.name}&jndiName=#{td.value.name}" />
         </sun:tableColumn>
 
-        <sun:tableColumn id="jndiName" headerText="$resource{i18njms.resourcesTable.colJndiName}" rendered="#{isConnPage}" sort="name" rowHeader="$boolean{true}">
+        <sun:tableColumn id="jndiName" headerText="$resource{i18njms.resourcesTable.colJndiName}" rendered="#{isConnPage}" sort="name" rowHeader="$boolean{false}">
             <sun:staticText id="jndi" text="#{td.value.name}"  />
         </sun:tableColumn>
 
@@ -114,23 +114,23 @@
             </staticText>
         </sun:tableColumn>-->
 
-        <sun:tableColumn rendered="#{!pageSession.onlyDASExist and !isConnPage}" headerText="$resource{i18n.deployTable.colStatus}" sort="enabled" rowHeader="$boolean{true}" id="col22">
+        <sun:tableColumn rendered="#{!pageSession.onlyDASExist and !isConnPage}" headerText="$resource{i18n.deployTable.colStatus}" sort="enabled" rowHeader="$boolean{false}" id="col22">
             <sun:hyperlink rendered="#{!pageSession.onlyDASExist}" id="targetLink" text="#{td.value.enableURL}" url="#{targetPage}?name=#{td.value.encodedName}&generalPage=#{pageSession.generalPage}?name=#{td.value.encodedName}" />
         </sun:tableColumn>
 
-        <sun:tableColumn  rendered="#{pageSession.onlyDASExist and !isConnPage}" headerText="$resource{i18n.deployTable.colEnabled}" sort="enabled" rowHeader="$boolean{true}" id="col222">
+        <sun:tableColumn  rendered="#{pageSession.onlyDASExist and !isConnPage}" headerText="$resource{i18n.deployTable.colEnabled}" sort="enabled" rowHeader="$boolean{false}" id="col222">
             <sun:image rendered="#{pageSession.onlyDASExist}" id="enCol" value="#{td.value.enableURL}" />
         </sun:tableColumn>
 
-        <sun:tableColumn id="colConnDefName" headerText="$resource{i18njms.resourcesTable.colResType}" sort="connectionDefinitionName" rendered="#{isConnPage}" rowHeader="$boolean{true}">
+        <sun:tableColumn id="colConnDefName" headerText="$resource{i18njms.resourcesTable.colResType}" sort="connectionDefinitionName" rendered="#{isConnPage}" rowHeader="$boolean{false}">
             <h:outputText id="connDefName" value="#{td.value.connectionDefinitionName}" />
         </sun:tableColumn>
 
-        <sun:tableColumn id="colResType" headerText="$resource{i18njms.resourcesTable.colResType}" sort="resType" rendered="#{!isConnPage}" rowHeader="$boolean{true}">
+        <sun:tableColumn id="colResType" headerText="$resource{i18njms.resourcesTable.colResType}" sort="resType" rendered="#{!isConnPage}" rowHeader="$boolean{false}">
             <h:outputText id="resType" value="#{td.value.resType}"/>
         </sun:tableColumn>
 
-        <sun:tableColumn id="colTypeDesc" headerText="$resource{i18njms.resourcesTable.colDesc}" sort="description" rendered="#{!isConnPage}" rowHeader="$boolean{true}">
+        <sun:tableColumn id="colTypeDesc" headerText="$resource{i18njms.resourcesTable.colDesc}" sort="description" rendered="#{!isConnPage}" rowHeader="$boolean{false}">
             <h:outputText id="typeDesc" value="#{td.value.description}" />
         </sun:tableColumn>
 
