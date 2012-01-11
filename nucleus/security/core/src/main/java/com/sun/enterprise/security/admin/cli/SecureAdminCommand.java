@@ -855,18 +855,23 @@ public abstract class SecureAdminCommand implements AdminCommand {
 
                     /*
                      * Now apply the required changes to the admin listener
-                     * in the DAS configuration.
+                     * in the configurations.  Include all configs, because even
+                     * though the non-DAS configs default to use SSL the user
+                     * might have specified a different alias to use and that 
+                     * value must be set in the SSL element for the 
+                     * secure admin listener.
                      */
                     final Configs configs = domain_w.getConfigs();
-                    final Config c = configs.getConfigByName(DAS_CONFIG_NAME);
-                    final Config c_w = t.enroll(c);
-                    ConfigLevelContext configLevelContext = 
-                            new ConfigLevelContext(topLevelContext, c_w);
-                    for (Iterator<Work<ConfigLevelContext>> it = perConfigSteps(); it.hasNext();) {
-                        final Work<ConfigLevelContext> step = it.next();
-                        if ( ! step.run(configLevelContext)) {
-                            t.rollback();
-                            return Boolean.FALSE;
+                    for (Config c : configs.getConfig()) {
+                        final Config c_w = t.enroll(c);
+                        ConfigLevelContext configLevelContext = 
+                                new ConfigLevelContext(topLevelContext, c_w);
+                        for (Iterator<Work<ConfigLevelContext>> it = perConfigSteps(); it.hasNext();) {
+                            final Work<ConfigLevelContext> step = it.next();
+                            if ( ! step.run(configLevelContext)) {
+                                t.rollback();
+                                return Boolean.FALSE;
+                            }
                         }
                     }
                 }
