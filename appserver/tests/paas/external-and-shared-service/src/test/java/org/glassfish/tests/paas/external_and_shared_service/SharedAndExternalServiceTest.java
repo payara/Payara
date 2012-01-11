@@ -45,13 +45,8 @@ import com.sun.enterprise.util.OS;
 import com.sun.enterprise.util.ProcessExecutor;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.ParameterMap;
+import org.glassfish.embeddable.*;
 import org.glassfish.internal.api.Globals;
-import org.glassfish.embeddable.CommandResult;
-import org.glassfish.embeddable.CommandRunner;
-import org.glassfish.embeddable.Deployer;
-import org.glassfish.embeddable.GlassFish;
-import org.glassfish.embeddable.GlassFishProperties;
-import org.glassfish.embeddable.GlassFishRuntime;
 import org.glassfish.internal.api.ServerContext;
 import org.junit.Assert;
 import org.junit.Test;
@@ -61,10 +56,8 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
-import java.net.URL;
-import java.net.URLConnection;
-import java.util.List;
-import java.util.Map;
+import java.net.*;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -94,6 +87,28 @@ public class SharedAndExternalServiceTest {
         // archive location.
         org.junit.Assert.assertTrue(archive.exists());
 
+        //Obtaining the IP address of the DAS
+        String ip_address="127.0.0.1";
+        try{
+        Enumeration netint_enum= NetworkInterface.getNetworkInterfaces();
+        for (Iterator it = Collections.list(netint_enum).iterator(); it.hasNext();) {
+                NetworkInterface netint = (NetworkInterface) it.next();
+            if(netint.getName().equals("virbr0")){
+                Enumeration inetAddresses=netint.getInetAddresses();
+                if(inetAddresses.hasMoreElements())
+                {
+                    InetAddress inetAddress=(InetAddress)inetAddresses.nextElement();
+                    ip_address=inetAddress.toString();
+                    ip_address=ip_address.substring(1,ip_address.length());
+                    break;
+                }
+
+            }
+            }
+        }catch(SocketException socketException){
+            socketException.printStackTrace();
+        }
+
         Deployer deployer = null;
         String appName = null;
         try {
@@ -103,7 +118,7 @@ public class SharedAndExternalServiceTest {
                 ServerContext serverContext = habitat.getComponent(ServerContext.class);
                 String[] startdbArgs = {serverContext.getInstallRoot().getAbsolutePath() +
                         File.separator + "bin" + File.separator + "asadmin" + (OS.isWindows() ? ".bat" : ""), "start-database",
-                        "--dbhome" , serverContext.getInstallRoot().getAbsolutePath() + File.separator + "databases"};
+                        "--dbhome" , serverContext.getInstallRoot().getAbsolutePath() + File.separator + "databases","--dbhost",ip_address};
                 ProcessExecutor startDatabase = new ProcessExecutor(startdbArgs);
 
                 try {
@@ -115,7 +130,7 @@ public class SharedAndExternalServiceTest {
 
 
             //Create the shared & external services first, as these services will be referenced by the application
-            createSharedAndExternalServices();
+            createSharedAndExternalServices(ip_address);
 
             deployer = glassfish.getDeployer();
             appName = deployer.deploy(archive);
@@ -160,7 +175,7 @@ public class SharedAndExternalServiceTest {
                     Habitat habitat = Globals.getDefaultHabitat();
                     ServerContext serverContext = habitat.getComponent(ServerContext.class);
                     String[] stopDbArgs = {serverContext.getInstallRoot().getAbsolutePath() +
-                            File.separator + "bin" + File.separator + "asadmin" + (OS.isWindows() ? ".bat" : ""), "stop-database"};
+                            File.separator + "bin" + File.separator + "asadmin" + (OS.isWindows() ? ".bat" : ""), "stop-database","--dbhost",ip_address};
                     ProcessExecutor stopDatabase = new ProcessExecutor(stopDbArgs);
 
                     try {
@@ -249,7 +264,7 @@ public class SharedAndExternalServiceTest {
         return lbIP;
     }
 
-    private void createSharedAndExternalServices() {
+    private void createSharedAndExternalServices(String ipAddress_DAS) {
 
         System.out.println("################### Trying to Create Shared Service #######################");
         Habitat habitat = Globals.getDefaultHabitat();
@@ -257,13 +272,13 @@ public class SharedAndExternalServiceTest {
         ActionReport report = habitat.getComponent(ActionReport.class);
 
         //Create external service of type Database
-        // asadmin create-external-service --servicetype=Database --configuration ip-address=127.0.0.1:databasename=sun-appserv-samples:port=1527:user=APP:password=APP:host=127.0.0.1:classname=org.apache.derby.jdbc.ClientXADataSource:resourcetype=javax.sql.XADataSource my-shared-db-service
+        // asadmin create-external-service --servicetype=Database --configuration ip-address=127.0.0.1:databasename=sun-appserv-samples:port=1527:user=APP:password=APP:host=127.0.0.1:classname=org.apache.derby.jdbc.ClientXADataSource:resourcetype=javax.sql.XADataSource my-external-db-service
         org.glassfish.api.admin.CommandRunner.CommandInvocation invocation = commandRunner.getCommandInvocation("create-external-service", report);
         ParameterMap parameterMap = new ParameterMap();
         parameterMap.add("servicetype", "Database");
-        parameterMap.add("configuration", "ip-address=127.0.0.1:databasename=sun-appserv-samples:connectionAttributes=;'create\\=true':port=1527:user=APP:password=APP:host=127.0.0.1:classname=org.apache.derby.jdbc.ClientXADataSource:resourcetype=javax.sql.XADataSource");
+        parameterMap.add("configuration", "ip-address="+ipAddress_DAS+":databasename=sun-appserv-samples:connectionAttributes=;'create\\=true':port=1527:user=APP:password=APP:host="+ipAddress_DAS+":classname=org.apache.derby.jdbc.ClientXADataSource:resourcetype=javax.sql.XADataSource");
         //parameterMap.add("configuration", "ip-address=127.0.0.1:databasename=${com.sun.aas.installRoot}/databases/sun-appserv-samples:port=1527:user=APP:password=APP:connectionAttributes=;'create\\=true':host=127.0.0.1:classname=org.apache.derby.jdbc.EmbeddedXADataSource:resourcetype=javax.sql.XADataSource");
-        parameterMap.add("DEFAULT", "my-shared-db-service");
+        parameterMap.add("DEFAULT", "my-external-db-service");
 
         invocation.parameters(parameterMap).execute();
         Assert.assertFalse(report.hasFailures());
@@ -271,16 +286,16 @@ public class SharedAndExternalServiceTest {
 
 /*
         //Create external service of type Database
-        // asadmin create-external-service --servicetype=Database --configuration ip-address=127.0.0.1:databasename=sun-appserv-samples:port=1527:user=APP:password=APP:host=127.0.0.1:classname=org.apache.derby.jdbc.ClientXADataSource:resourcetype=javax.sql.XADataSource my-shared-db-service
+        // asadmin create-external-service --servicetype=Database --configuration ip-address=127.0.0.1:databasename=sun-appserv-samples:port=1527:user=APP:password=APP:host=127.0.0.1:classname=org.apache.derby.jdbc.ClientXADataSource:resourcetype=javax.sql.XADataSource my-external-db-service
         parameterMap = new ParameterMap();
         parameterMap.add("servicetype", "Database");
         parameterMap.add("configuration", "ip-address=127.0.0.1:databasename=sun-appserv-samples:port=1527:user=APP:password=APP:host=127.0.0.1:classname=org.apache.derby.jdbc.ClientXADataSource:resourcetype=javax.sql.XADataSource");
         //parameterMap.add("configuration", "ip-address=127.0.0.1:databasename=${com.sun.aas.installRoot}/databases/sun-appserv-samples:port=1527:user=APP:password=APP:connectionAttributes=;'create\\=true':host=127.0.0.1:classname=org.apache.derby.jdbc.EmbeddedXADataSource:resourcetype=javax.sql.XADataSource");
-        parameterMap.add("DEFAULT", "my-shared-db-service");
+        parameterMap.add("DEFAULT", "my-external-db-service");
 
         invocation.parameters(parameterMap).execute();
 
-        System.out.println("Created external service 'my-shared-db-service' :" + !report.hasFailures());
+        System.out.println("Created external service 'my-external-db-service' :" + !report.hasFailures());
 */
         Assert.assertFalse(report.hasFailures());
 
@@ -347,7 +362,7 @@ public class SharedAndExternalServiceTest {
         //Try deleting a external service, referenced by the app. Should 'FAIL'
         invocation = commandRunner.getCommandInvocation("delete-external-service", report);
         parameterMap = new ParameterMap();
-        parameterMap.add("DEFAULT", "my-shared-db-service");
+        parameterMap.add("DEFAULT", "my-external-db-service");
         invocation.parameters(parameterMap).execute();
 
         System.out.println("Expected Failure message: " + report.getMessage());
@@ -379,96 +394,6 @@ public class SharedAndExternalServiceTest {
         }
         Assert.assertTrue(sharedServiceStarted);//check if the shared services are started.
 
-
-        /*//Disable the application and try stopping  the shared service. Command should succeed
-        invocation = commandRunner.getCommandInvocation("disable", report);
-        parameterMap = new ParameterMap();
-        parameterMap.add("DEFAULT", "external-and-shared-service-test");
-        invocation.parameters(parameterMap).execute();
-
-        System.out.print("Disabled application external-and-shared-service-test: " + !report.hasFailures());
-        Assert.assertFalse(report.hasFailures());
-
-
-        invocation = commandRunner.getCommandInvocation("stop-shared-service", report);
-        parameterMap = new ParameterMap();
-        parameterMap.add("DEFAULT", "my-shared-lb-service");
-        invocation.parameters(parameterMap).execute();
-
-        Assert.assertFalse(report.hasFailures());
-        System.out.print("MSG: " + report.getMessage());
-
-
-        //try deleting a external service when an app is using it. it should 'FAIL'
-        invocation = commandRunner.getCommandInvocation("delete-external-service", report);
-        parameterMap = new ParameterMap();
-        parameterMap.add("DEFAULT", "my-shared-db-service");
-        invocation.parameters(parameterMap).execute();
-
-        Assert.assertTrue(report.hasFailures());
-        System.out.print("MSG: " + report.getMessage());
-
-
-        //List the services and check the status of both the services - it should be 'STOPPED'
-        parameterMap = new ParameterMap();
-        parameterMap.add("scope", "shared");
-        parameterMap.add("output", "service-name,state");
-        invocation = commandRunner.getCommandInvocation("list-services", report);
-        invocation.parameters(parameterMap).execute();
-
-        boolean sharedServiceStopped = false;
-        list = (List<Map<String, String>>) report.getExtraProperties().get("list");
-        for (Map<String, String> map : list) {
-            sharedServiceStopped = false;
-            String state = map.get("STATE");
-            if ("STOPPED".equalsIgnoreCase(state)) {
-                sharedServiceStopped = true;
-            } else {
-                sharedServiceStopped = false;
-                break;
-            }
-        }
-        Assert.assertTrue(sharedServiceStopped);//check if the shared services are stopped
-
-        // Start the shared services.
-        invocation = commandRunner.getCommandInvocation("start-shared-service", report);
-        parameterMap = new ParameterMap();
-        parameterMap.add("DEFAULT", "my-shared-lb-service");
-        invocation.parameters(parameterMap).execute();
-
-        Assert.assertFalse(report.hasFailures());
-        System.out.print("MSG: " + report.getMessage());
-
-        //List the services and check the status of both the services - it should be 'STARTED'
-        parameterMap = new ParameterMap();
-        parameterMap.add("scope", "shared");
-        parameterMap.add("output", "service-name,state");
-        invocation = commandRunner.getCommandInvocation("list-services", report);
-        invocation.parameters(parameterMap).execute();
-
-        sharedServiceStarted = false;
-        list = (List<Map<String, String>>) report.getExtraProperties().get("list");
-        for (Map<String, String> map : list) {
-            sharedServiceStopped = false;
-            String state = map.get("STATE");
-            if ("STARTED".equalsIgnoreCase(state) || "RUNNING".equalsIgnoreCase(state)) {
-                sharedServiceStarted = true;
-            } else {
-                sharedServiceStarted = false;
-                break;
-            }
-        }
-        Assert.assertTrue(sharedServiceStarted);//check if the shared services are started.
-
-        //Enable the application and try stopping  accessing
-        invocation = commandRunner.getCommandInvocation("enable", report);
-        parameterMap = new ParameterMap();
-        parameterMap.add("DEFAULT", "external-and-shared-service-test");
-        invocation.parameters(parameterMap).execute();
-
-        System.out.print("Enabled application external-and-shared-service-test: " + !report.hasFailures());
-        Assert.assertFalse(report.hasFailures());*/
-
     }
 
     private void deleteSharedAndExternalService() {
@@ -486,7 +411,7 @@ public class SharedAndExternalServiceTest {
 
         invocation = commandRunner.getCommandInvocation("delete-external-service", report);
         parameterMap = new ParameterMap();
-        parameterMap.add("DEFAULT", "my-shared-db-service");
+        parameterMap.add("DEFAULT", "my-external-db-service");
         invocation.parameters(parameterMap).execute();
 
         Assert.assertFalse(report.hasFailures());

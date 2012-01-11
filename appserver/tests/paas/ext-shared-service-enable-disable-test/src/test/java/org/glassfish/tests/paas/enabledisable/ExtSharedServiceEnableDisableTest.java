@@ -62,10 +62,8 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
-import java.net.URL;
-import java.net.URLConnection;
-import java.util.List;
-import java.util.Map;
+import java.net.*;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -95,6 +93,28 @@ public class ExtSharedServiceEnableDisableTest {
         // archive location.
         Assert.assertTrue(archive.exists());
 
+        //Obtaining the IP address of the DAS
+        String ip_address="127.0.0.1";
+        try{
+        Enumeration netint_enum= NetworkInterface.getNetworkInterfaces();
+        for (Iterator it = Collections.list(netint_enum).iterator(); it.hasNext();) {
+                NetworkInterface netint = (NetworkInterface) it.next();
+            if(netint.getName().equals("virbr0")){
+                Enumeration inetAddresses=netint.getInetAddresses();
+                if(inetAddresses.hasMoreElements())
+                {
+                    InetAddress inetAddress=(InetAddress)inetAddresses.nextElement();
+                    ip_address=inetAddress.toString();
+                    ip_address=ip_address.substring(1,ip_address.length());
+                    break;
+                }
+
+            }
+            }
+        }catch(SocketException socketException){
+            socketException.printStackTrace();
+        }
+
         Deployer deployer = null;
         String appName = null;
 
@@ -106,7 +126,7 @@ public class ExtSharedServiceEnableDisableTest {
                 ServerContext serverContext = habitat.getComponent(ServerContext.class);
                 String[] startdbArgs = {serverContext.getInstallRoot().getAbsolutePath() +
                         File.separator + "bin" + File.separator + "asadmin" + (OS.isWindows() ? ".bat" : ""), "start-database",
-                        "--dbhome" , serverContext.getInstallRoot().getAbsolutePath() + File.separator + "databases"};
+                        "--dbhome" , serverContext.getInstallRoot().getAbsolutePath() + File.separator + "databases","--dbhost",ip_address};
                 ProcessExecutor startDatabase = new ProcessExecutor(startdbArgs);
 
                 try {
@@ -117,7 +137,7 @@ public class ExtSharedServiceEnableDisableTest {
             }
 
             //Create the shared & external services first, as these services will be referenced by the application
-            createSharedAndExternalServices();
+            createSharedAndExternalServices(ip_address);
 
             deployer = glassfish.getDeployer();
             appName = deployer.deploy(archive);
@@ -162,7 +182,7 @@ public class ExtSharedServiceEnableDisableTest {
                     Habitat habitat = Globals.getDefaultHabitat();
                     ServerContext serverContext = habitat.getComponent(ServerContext.class);
                     String[] stopDbArgs = {serverContext.getInstallRoot().getAbsolutePath() +
-                            File.separator + "bin" + File.separator + "asadmin" + (OS.isWindows() ? ".bat" : ""), "stop-database"};
+                            File.separator + "bin" + File.separator + "asadmin" + (OS.isWindows() ? ".bat" : ""), "stop-database","--dbhost",ip_address};
                     ProcessExecutor stopDatabase = new ProcessExecutor(stopDbArgs);
 
                     try {
@@ -250,7 +270,7 @@ public class ExtSharedServiceEnableDisableTest {
         return lbIP;
     }
 
-    private void createSharedAndExternalServices() {
+    private void createSharedAndExternalServices(String ipAddress_DAS) {
 
         System.out.println("################### Trying to Create External and Shared Service #######################");
         Habitat habitat = Globals.getDefaultHabitat();
@@ -258,13 +278,13 @@ public class ExtSharedServiceEnableDisableTest {
         ActionReport report = habitat.getComponent(ActionReport.class);
 
         //Create external service of type Database
-        // asadmin create-external-service --servicetype=Database --configuration ip-address=127.0.0.1:databasename=sun-appserv-samples:port=1527:user=APP:password=APP:host=127.0.0.1:classname=org.apache.derby.jdbc.ClientXADataSource:resourcetype=javax.sql.XADataSource my-shared-db-service
+        // asadmin create-external-service --servicetype=Database --configuration ip-address=127.0.0.1:databasename=sun-appserv-samples:port=1527:user=APP:password=APP:host=127.0.0.1:classname=org.apache.derby.jdbc.ClientXADataSource:resourcetype=javax.sql.XADataSource my-external-db-service
         org.glassfish.api.admin.CommandRunner.CommandInvocation invocation = commandRunner.getCommandInvocation("create-external-service", report);
         ParameterMap parameterMap = new ParameterMap();
         parameterMap.add("servicetype", "Database");
-        parameterMap.add("configuration", "ip-address=127.0.0.1:databasename=sun-appserv-samples:connectionAttributes=;'create\\=true':port=1527:user=APP:password=APP:host=127.0.0.1:classname=org.apache.derby.jdbc.ClientXADataSource:resourcetype=javax.sql.XADataSource");
+        parameterMap.add("configuration", "ip-address="+ipAddress_DAS+":databasename=sun-appserv-samples:connectionAttributes=;'create\\=true':port=1527:user=APP:password=APP:host="+ipAddress_DAS+":classname=org.apache.derby.jdbc.ClientXADataSource:resourcetype=javax.sql.XADataSource");
         //parameterMap.add("configuration", "ip-address=127.0.0.1:databasename=${com.sun.aas.installRoot}/databases/sun-appserv-samples:port=1527:user=APP:password=APP:connectionAttributes=;'create\\=true':host=127.0.0.1:classname=org.apache.derby.jdbc.EmbeddedXADataSource:resourcetype=javax.sql.XADataSource");
-        parameterMap.add("DEFAULT", "my-shared-db-service");
+        parameterMap.add("DEFAULT", "my-external-db-service");
 
         invocation.parameters(parameterMap).execute();
         Assert.assertFalse(report.hasFailures());
@@ -334,7 +354,7 @@ public class ExtSharedServiceEnableDisableTest {
         //try deleting a external service when an app is using it. it should 'FAIL'
         invocation = commandRunner.getCommandInvocation("delete-external-service", report);
         parameterMap = new ParameterMap();
-        parameterMap.add("DEFAULT", "my-shared-db-service");
+        parameterMap.add("DEFAULT", "my-external-db-service");
         invocation.parameters(parameterMap).execute();
 
         Assert.assertTrue(report.hasFailures());
@@ -437,7 +457,7 @@ public class ExtSharedServiceEnableDisableTest {
 
         invocation = commandRunner.getCommandInvocation("delete-external-service", report);
         parameterMap = new ParameterMap();
-        parameterMap.add("DEFAULT", "my-shared-db-service");
+        parameterMap.add("DEFAULT", "my-external-db-service");
         invocation.parameters(parameterMap).execute();
 
         Assert.assertFalse(report.hasFailures());
