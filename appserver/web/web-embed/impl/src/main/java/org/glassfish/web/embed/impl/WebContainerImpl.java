@@ -331,6 +331,9 @@ public class WebContainerImpl implements WebContainer {
             if (sslConfig.getHandshakeTimeout() > 0) {
                 newSsl.setSSLInactivityTimeout(sslConfig.getHandshakeTimeout());
             }
+            if (sslConfig.getCertNickname() != null) {
+                newSsl.setCertNickname(sslConfig.getCertNickname());
+            }
 
         } else {
             log.severe("HttpsListener required for https protocol");

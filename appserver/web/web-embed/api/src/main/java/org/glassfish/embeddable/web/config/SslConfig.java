@@ -56,6 +56,7 @@ public class SslConfig {
     private char[] trustPassword;
     private int timeoutMilliSeconds;
     private Set<SslType> algorithms;
+    private String certNickname;
 
     /**
      * Create an instance of <tt>SslConfig</tt>.
@@ -168,11 +169,29 @@ public class SslConfig {
     }
 
     /**
-     * Gets the algorithm
+     * Sets the algorithm
      *
      * @return the algorithm
      */
     public Set<SslType> getAlgorithms() {
         return this.algorithms;
     }
+
+    /**
+     * Gets the nickname of the server certificate in the certificate database
+     *
+     * @return the certNickname 
+     */
+    public String getCertNickname() {
+       return this.certNickname;
+    }
+
+    /**
+     * Sets the certNickname
+     *
+     */
+    public void setCertNickname(String value) {
+        this.certNickname = value;
+    }
+
 }
