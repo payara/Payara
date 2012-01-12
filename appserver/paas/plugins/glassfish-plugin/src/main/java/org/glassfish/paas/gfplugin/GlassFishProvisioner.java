@@ -359,10 +359,14 @@ public class GlassFishProvisioner implements ApplicationServerProvisioner {
             if (propertiesString.length() > 0) {
                 propertiesString.append(":");
             }
-            propertiesString.append(key.toString() + "=" + properties.get(key).toString());
+            propertiesString.append(key.toString() + "=" + escape(properties.get(key).toString()));
         }
 
         return propertiesString;
+    }
+
+    private static String escape(String input) {
+        return input.replace("=", "\\=").replace(":", "\\:");
     }
 
     public void enableSecureAdmin(String ipAddress) {

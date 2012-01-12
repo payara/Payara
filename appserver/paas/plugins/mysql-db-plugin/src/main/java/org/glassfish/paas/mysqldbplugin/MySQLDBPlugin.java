@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -112,7 +112,7 @@ public class MySQLDBPlugin  extends DatabaseSPEBase {
         serviceProperties.put(DATABASENAME, getDatabaseName());
         serviceProperties.put(HOST, ipAddress);
         serviceProperties.put(PORT, MYSQL_PORT);
-        serviceProperties.put(URL, "jdbc\\:mysql\\://" + ipAddress + "\\:" +
+        serviceProperties.put(URL, "jdbc:mysql://" + ipAddress + ":" +
                 MYSQL_PORT + "/" + getDatabaseName());
         serviceProperties.put(RESOURCE_TYPE, "javax.sql.XADataSource");
         serviceProperties.put(CLASSNAME, "com.mysql.jdbc.jdbc2.optional.MysqlXADataSource");

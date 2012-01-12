@@ -91,4 +91,8 @@ public interface DatabaseSPEConstants {
 
     static final String DATASOURCE = "javax.sql.DataSource";
 
+    /**
+     * Temporary constants
+     */
+    public String DB_INITIALIZED = "_db_initialized";
 }

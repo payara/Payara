@@ -206,7 +206,65 @@ public abstract class DatabaseSPEBase extends ServiceProvisioningEngineBase<RDBM
     public void associateServices(Service serviceConsumer,
                                   ServiceReference svcRef, Service serviceProvider,
                                   boolean beforeDeployment, PaaSDeploymentContext dc) {
-        //no-op
+        //Skip during post deploy phase
+        if(!beforeDeployment) {
+            return;
+        }
+        final DeploymentContext context = dc.getDeploymentContext();
+        try {
+            Boolean isDatabaseInitialized = context.getTransientAppMetaData(
+                    getClass().getName() + DB_INITIALIZED, Boolean.class);
+            if (isDatabaseInitialized == null || !isDatabaseInitialized) {
+
+                final ReadableArchive readableArchive = context.getSource();
+                String initSqlFile = null;
+                String databaseName = null;
+                String servicePropertiesFile = null;
+                String ipAddress = serviceConsumer.getProperties().getProperty(VIRTUAL_MACHINE_IP_ADDRESS);
+                //Create Custom database
+                if (DeploymentUtils.isWebArchive(readableArchive)) {
+                    servicePropertiesFile = dc.getDeploymentContext().getSource().getURI().getPath() +
+                            "WEB-INF" + File.separator + "service.properties";
+                } else {
+                    servicePropertiesFile = dc.getDeploymentContext().getSource().getURI().getPath() +
+                            "META-INF" + File.separator + "service.properties";
+                }
+
+                if (new File(servicePropertiesFile).exists()) {
+                    //Get the database name from this file
+                    Properties properties = new Properties();
+                    try {
+                        InputStream inputStream = readableArchive.getEntry(servicePropertiesFile);
+                        if (inputStream != null) {
+                            properties.load(readableArchive.getEntry(servicePropertiesFile));
+                        }
+                    } catch (IOException e) {
+
+                    }
+                    databaseName = properties.getProperty(DATABASE_NAME_SVC_CONFIG);
+                    if (databaseName != null && databaseName.trim().length() > 0) {
+                        setDatabaseName(databaseName);
+                        createDatabase(getServiceProperties(ipAddress));
+                    }
+                }
+
+                //Execute Init SQL
+                if (DeploymentUtils.isWebArchive(readableArchive)) {
+                    initSqlFile = dc.getDeploymentContext().getSource().getURI().getPath() +
+                            "WEB-INF" + File.separator + "init.sql";
+                } else {
+                    initSqlFile = dc.getDeploymentContext().getSource().getURI().getPath() +
+                            "META-INF" + File.separator + "init.sql";
+                }
+                if (new File(initSqlFile).exists()) {
+                    executeInitSql(getServiceProperties(ipAddress), initSqlFile);
+                }
+            }
+        } finally {
+            //Since associateServices are called multiple times, this ensures that
+            //the custom db name creation and init sql execution are executed just once.
+            context.addTransientAppMetaData(getClass().getName()+DB_INITIALIZED, true);
+        }
     }
 
     /**
@@ -215,7 +273,6 @@ public abstract class DatabaseSPEBase extends ServiceProvisioningEngineBase<RDBM
     public ProvisionedService getProvisionedService(ServiceDescription serviceDescription,
                                                     ServiceInfo serviceInfo) {
         ProvisionedService provisionedService = getProvisionedService(serviceDescription);
-        String databaseName = serviceDescription.getConfiguration(DATABASE_NAME_SVC_CONFIG);
         Properties properties = provisionedService.getProperties();
         properties.putAll(getServiceProperties(
                 properties.getProperty(VIRTUAL_MACHINE_IP_ADDRESS)));
@@ -230,7 +287,6 @@ public abstract class DatabaseSPEBase extends ServiceProvisioningEngineBase<RDBM
         Properties properties = getProvisionedService(serviceDescription).getProperties();
         VirtualMachine vm = getVmByID(serviceDescription.getVirtualClusterName(),
                 properties.getProperty(VIRTUAL_MACHINE_ID));
-        String ipAddress = properties.getProperty(VIRTUAL_MACHINE_IP_ADDRESS);
         stopDatabase(vm);
         return deleteService(serviceDescription);
     }
@@ -272,8 +328,6 @@ public abstract class DatabaseSPEBase extends ServiceProvisioningEngineBase<RDBM
                 properties.getProperty(VIRTUAL_MACHINE_ID));
         startDatabase(vm);
 
-        String databaseName = serviceDescription.getConfiguration(DATABASE_NAME_SVC_CONFIG);
-        //Add database name to provisioned service properties
         properties.putAll(getServiceProperties(
                 properties.getProperty(VIRTUAL_MACHINE_IP_ADDRESS)));
         return provisionedService;

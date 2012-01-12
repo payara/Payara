@@ -424,6 +424,10 @@ public class GlassFishPlugin extends ServiceProvisioningEngineBase<JavaEEService
                             // "service-name" property with its actual co-ordinates
                             Resource modifiedConnPool = null;
                             modifiedConnPool = new Resource(connPool.getType());
+                            //TODO: set res-type and datasource-classname as pool attributes
+                            dbProperties.remove(RESOURCE_TYPE);
+                            dbProperties.remove(CLASSNAME);
+                            dbProperties.remove("host");
                             modifiedConnPool.setDescription(connPool.getDescription());
                             modifiedConnPool.getAttributes().putAll(connPool.getAttributes());
                             modifiedConnPool.getProperties().putAll(connPool.getProperties());

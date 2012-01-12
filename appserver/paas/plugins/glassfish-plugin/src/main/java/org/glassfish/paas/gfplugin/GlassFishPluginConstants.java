@@ -173,6 +173,9 @@ public interface GlassFishPluginConstants {
     public MessageFormat ASADMIN_COMMAND = new MessageFormat(
             "{0}" + FS + "lib" + FS + "nadmin" + (OS.isWindows() ? ".bat" : "")); // {0} must be install root.
 
+    public String RESOURCE_TYPE = "resourcetype";
+
+    public String CLASSNAME = "classname";
 }
 
 
