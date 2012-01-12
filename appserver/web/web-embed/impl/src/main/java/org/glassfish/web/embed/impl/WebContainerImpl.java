@@ -314,10 +314,6 @@ public class WebContainerImpl implements WebContainer {
             if (sslConfig.getTrustPassword() != null) {
                 newSsl.setTrustStorePassword(new String(sslConfig.getTrustPassword()));
             }
-            // If keystore or truststore is defined, classname cannot be defined
-            if ((sslConfig.getKeyStore() != null) || (sslConfig.getTrustStore() != null)) {
-                newSsl.setClassname("");
-            } 
 
             if (sslConfig.getAlgorithms() != null) {
                 for (SslType sslType : sslConfig.getAlgorithms()) {
