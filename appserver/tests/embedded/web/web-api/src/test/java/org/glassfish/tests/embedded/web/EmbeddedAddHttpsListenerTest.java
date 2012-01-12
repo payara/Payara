@@ -101,6 +101,8 @@ public class EmbeddedAddHttpsListenerTest {
         String keyPassword = "changeit";
         SslConfig sslConfig = new SslConfig(keyStorePath, trustStorePath);
         sslConfig.setKeyPassword(keyPassword.toCharArray());
+        sslConfig.setTrustPassword(keyPassword.toCharArray());
+        sslConfig.setCertNickname("s1as");
 
         listener.setSslConfig(sslConfig);
 
