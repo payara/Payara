@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,15 +39,16 @@
  */
 package org.glassfish.paas.javadbplugin;
 
+import com.sun.enterprise.util.OS;
 import com.sun.logging.LogDomains;
 import org.glassfish.paas.dbspecommon.DatabaseSPEBase;
 import org.glassfish.virtualization.spi.VirtualMachine;
-import org.glassfish.virtualization.util.RuntimeContext;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
 import java.io.File;
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -66,6 +67,9 @@ public class DerbyPlugin extends DatabaseSPEBase {
     // TODO :: grab the actual port.
     private static final String DERBY_PORT = "1527";
     private static Logger logger = LogDomains.getLogger(DerbyPlugin.class, LogDomains.PAAS_LOGGER);
+    private static final MessageFormat ASADMIN_COMMAND = new MessageFormat(
+            "{0}" + File.separator + "lib" + File.separator + "nadmin" +
+                    (OS.isWindows() ? ".bat" : "")); // {0} must be install root.
 
     public String getDefaultServiceName() {
         return "default-derby-db-service";
@@ -110,7 +114,7 @@ public class DerbyPlugin extends DatabaseSPEBase {
         serviceProperties.put(HOST, ipAddress);
         serviceProperties.put(PORT, DERBY_PORT);
         serviceProperties.put(DATABASENAME, getDatabaseName());
-        serviceProperties.put("CONNECTIONATTRIBUTES", ";create\\=true");
+        serviceProperties.put("CONNECTIONATTRIBUTES", ";create=true");
         serviceProperties.put(RESOURCE_TYPE, "javax.sql.XADataSource");
         serviceProperties.put(CLASSNAME, "org.apache.derby.jdbc.ClientXADataSource");
         return serviceProperties;
@@ -133,12 +137,11 @@ public class DerbyPlugin extends DatabaseSPEBase {
     }
 
     public void runAsadminCommand(String commandName, VirtualMachine virtualMachine) {
-        if (virtualMachine.getMachine() == null) {
-            return;
-        }
-        String installDir = virtualMachine.getProperty(VirtualMachine.PropertyName.INSTALL_DIR);
-        String[] args = {installDir + File.separator + "glassfish" +
-                File.separator + "bin" + File.separator + "asadmin ", commandName};
+        String[] installDir = {virtualMachine.getProperty(VirtualMachine.PropertyName.INSTALL_DIR) +
+                File.separator + "glassfish"};
+
+        String[] args = {ASADMIN_COMMAND.format(installDir).toString(),
+                commandName};
         try {
             String output = virtualMachine.executeOn(args);
             Object[] params = new Object[] {virtualMachine.getName(), output};
