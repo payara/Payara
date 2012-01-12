@@ -58,9 +58,10 @@ import org.glassfish.virtualization.util.RuntimeContext;
 import org.jvnet.hk2.annotations.Inject;
 
 /**
- * Customization of the GlassFish template.
+ * Customization of the GlassFish template for all virtualizations except Native.
  *
  * @author Jerome Dochez
+ * @author Bhavanishankar S
  */
 public class GlassFishTemplateCustomizer implements TemplateCustomizer,
         GlassFishPluginConstants {
@@ -86,7 +87,7 @@ public class GlassFishTemplateCustomizer implements TemplateCustomizer,
         String installDir = virtualMachine.getProperty(VirtualMachine.PropertyName.INSTALL_DIR);
         rtContext.executeAdminCommand(report, CREATE_NODE_SSH, nodeName,
                 NODE_HOST_ARG, virtualMachine.getAddress().getHostAddress(),
-                SSH_USER_ARG, virtualMachine.getUser().getName(),
+                SSH_USER_ARG, virtualMachine.getUser().getName(), /* TODO :: if vm.getUser() is null then should we use System.getProperty("user.name");*/
                 INSTALL_DIR_ARG, installDir);
 
         if (report.hasFailures()) {
@@ -115,6 +116,7 @@ public class GlassFishTemplateCustomizer implements TemplateCustomizer,
         if (firstStart) {
             // finally starts the instance.
             try {
+                // TODO :: check for virtualMachine.getInfo().getState()??
                 rtContext.executeAdminCommand(report, START_INSTANCE,
                         getInstanceName(virtualMachine));
             } catch (Exception e) {
@@ -127,14 +129,14 @@ public class GlassFishTemplateCustomizer implements TemplateCustomizer,
     public void clean(VirtualMachine virtualMachine) {
 
         // let's find our instance name.
-        String vmName = virtualMachine.getName();
-        String instanceName = virtualMachine.getServerPool().getName()+"_"+virtualMachine.getMachine().getName()+"_"+vmName+"Instance";
+        String instanceName = getInstanceName(virtualMachine);
         Server server = domain.getServerNamed(instanceName);
 
         if (server!=null) {
             String nodeName = server.getNodeRef();
             ActionReport report = services.forContract(ActionReport.class).
                     named(PLAIN_ACTION_REPORT).get();
+            // TODO :: check for virtualMachine.getInfo().getState()??
             rtContext.executeAdminCommand(report, DELETE_INSTANCE, instanceName);
             Node node = domain.getNodeNamed(nodeName);
             if (node!=null) {
@@ -146,18 +148,26 @@ public class GlassFishTemplateCustomizer implements TemplateCustomizer,
     }
 
     private String getNodeName(VirtualMachine virtualMachine) {
-        String args[] = new String[] {
+        String machineName = virtualMachine.getMachine() != null ?
+                virtualMachine.getMachine().getName() :
+                virtualMachine.getServerPool().getConfig().getVirtualization().getName();
+
+        String args[] = new String[]{
                 virtualMachine.getServerPool().getName(),
-                virtualMachine.getMachine().getName(),
+                machineName,
                 virtualMachine.getName()
         };
         return NODE_NAME_FORMAT.format(args).toString();
     }
 
     private String getInstanceName(VirtualMachine virtualMachine) {
-        String args[] = new String[] {
+        String machineName = virtualMachine.getMachine() != null ?
+                virtualMachine.getMachine().getName() :
+                virtualMachine.getServerPool().getConfig().getVirtualization().getName();
+
+        String args[] = new String[]{
                 virtualMachine.getServerPool().getName(),
-                virtualMachine.getMachine().getName(),
+                machineName,
                 virtualMachine.getName()
         };
         return INSTANCE_NAME_FORMAT.format(args).toString();
@@ -170,6 +180,7 @@ public class GlassFishTemplateCustomizer implements TemplateCustomizer,
         if (instance != null) {
             ActionReport report = services.forContract(ActionReport.class).
                     named(PLAIN_ACTION_REPORT).get();
+            // TODO :: check for virtualMachine.getInfo().getState()??
             rtContext.executeAdminCommand(report,
                     STOP_INSTANCE, instanceName, VM_SHUTDOWN_ARG, "false");
         }
