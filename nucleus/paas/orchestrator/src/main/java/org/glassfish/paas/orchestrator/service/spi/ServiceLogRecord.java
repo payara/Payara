@@ -45,22 +45,12 @@ import java.util.logging.LogRecord;
 
 /**
  * Service log record is an extended log record containing
- * enough information about where the log record belongs.
+ * enough information about which application the log record belongs.
  *
  * @author Bhavanishankar S
  */
 
 public class ServiceLogRecord extends LogRecord {
-
-    /**
-     * Service to which this log record belongs.
-     */
-    private Service service;
-
-    /**
-     * Specific Service node inside the service to which this log record belongs.
-     */
-    private String serviceNodeName;
 
     /**
      * Application running inside the service to which this log record belongs.
@@ -74,28 +64,6 @@ public class ServiceLogRecord extends LogRecord {
         super(level, msg);
     }
 
-    public Service getService() {
-        return service;
-    }
-
-    public String getServiceNodeName() {
-
-        return serviceNodeName;
-    }
-
-    public String applicationName() {
-
-        return getApplicationName();
-    }
-
-
-    public void setService(Service service) {
-        this.service = service;
-    }
-
-    public void setServiceNodeName(String serviceNodeName) {
-        this.serviceNodeName = serviceNodeName;
-    }
 
     public String getApplicationName() {
         return applicationName;

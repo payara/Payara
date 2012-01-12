@@ -45,10 +45,13 @@ import org.glassfish.paas.orchestrator.service.ServiceStatus;
 import org.glassfish.paas.orchestrator.service.ServiceType;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceDescription;
 import org.glassfish.paas.orchestrator.service.spi.ProvisionedService;
+import org.glassfish.paas.orchestrator.service.spi.Service;
 import org.glassfish.paas.orchestrator.service.spi.ServiceLogRecord;
 import org.glassfish.paas.orchestrator.service.spi.ServiceLogType;
 
 import java.util.Date;
+import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Level;
@@ -98,11 +101,11 @@ public class GlassFishLBProvisionedService implements ProvisionedService {
         return new Properties();
     }
 
-    public Set<ServiceLogRecord> collectLogs(ServiceLogType type, Level level, Date since) {
+    public Map<Service, List<ServiceLogRecord>> collectLogs(ServiceLogType type, Level level, Date since) {
         throw new UnsupportedOperationException("Not yet implemented");
     }
 
-    public Set<ServiceLogRecord> collectLogs(ServiceLogType type, Level level, long count) {
+    public Map<Service, List<ServiceLogRecord>> collectLogs(ServiceLogType type, Level level, long count) {
         throw new UnsupportedOperationException("Not yet implemented");
     }
 

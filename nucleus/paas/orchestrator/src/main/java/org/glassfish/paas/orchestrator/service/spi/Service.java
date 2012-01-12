@@ -44,6 +44,8 @@ import org.glassfish.paas.orchestrator.service.ServiceType;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceDescription;
 
 import java.util.Date;
+import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Level;
@@ -112,10 +114,12 @@ public interface Service {
      * @param type collect logs only for this type
      * @param level collect logs only for this level
      * @param since collect logs since this time till the latest
-     * @return service log records matching the input criteria
+     * @return service log records matching the input criteria. When the service has
+     * multiple nodes each node will have set of service records, otherwise the key
+     * for the map is this service itself.
      */
 
-    public Set<ServiceLogRecord> collectLogs(ServiceLogType type,
+    public Map<Service, List<ServiceLogRecord>> collectLogs(ServiceLogType type,
                                              Level level, Date since);
 
     /**
@@ -125,9 +129,11 @@ public interface Service {
      * @param type collect logs only for this type
      * @param level collect logs only for this level
      * @param count collect most recent given count of log records.
-     * @return service log records matching the input criteria
+     * @return service log records matching the input criteria. When the service has
+     * multiple nodes each node will have set of service records, otherwise the key
+     * for the map is this service itself.
      */
-    public Set<ServiceLogRecord> collectLogs(ServiceLogType type,
+    public Map<Service, List<ServiceLogRecord>> collectLogs(ServiceLogType type,
                                              Level level, long count);
 
 
