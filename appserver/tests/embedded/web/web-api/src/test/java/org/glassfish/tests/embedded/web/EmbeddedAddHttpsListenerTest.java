@@ -87,26 +87,52 @@ public class EmbeddedAddHttpsListenerTest {
         System.out.println("Added Web with base directory "+root.getAbsolutePath());
         embedded.setConfiguration(config);
     }
-    
-    @Test
-    public void test() throws Exception {
+
+    private void createHttpsListener(int port,
+                                     String name,
+                                     String keystore,
+                                     String password,
+                                     String certname) throws Exception {
 
         HttpsListener listener = new HttpsListener();
-        listener.setPort(9191);
-        listener.setId("https-listener-2");
-        listener.setProtocol("https");
+        listener.setPort(port);
+        listener.setId(name);
 
-        String keyStorePath = root.getAbsolutePath() + "/keystore.jks";
+        String keyStorePath = root.getAbsolutePath() + keystore;
         String trustStorePath = root.getAbsolutePath() + "/cacerts.jks";
-        String keyPassword = "changeit";
         SslConfig sslConfig = new SslConfig(keyStorePath, trustStorePath);
-        sslConfig.setKeyPassword(keyPassword.toCharArray());
-        sslConfig.setTrustPassword(keyPassword.toCharArray());
-        sslConfig.setCertNickname("s1as");
-
+        sslConfig.setKeyPassword(password.toCharArray());
+        String trustPassword = "changeit";
+        sslConfig.setTrustPassword(trustPassword.toCharArray());
+        if (certname != null) {
+            sslConfig.setCertNickname(certname);
+        }
         listener.setSslConfig(sslConfig);
 
         embedded.addWebListener(listener);
+    }
+
+    private void verify(int port) throws Exception {
+
+        URL servlet = new URL("https://localhost:"+port+"/classes/hello");
+        HttpsURLConnection uc = (HttpsURLConnection) servlet.openConnection();
+        BufferedReader in = new BufferedReader(new InputStreamReader(uc.getInputStream()));
+        StringBuilder sb = new StringBuilder();
+        String inputLine;
+        while ((inputLine = in.readLine()) != null){
+            sb.append(inputLine);
+        }
+        in.close();
+        System.out.println(sb);
+        Assert.assertEquals("Hello World!", sb.toString());
+    }
+
+    @Test
+    public void test() throws Exception {
+
+        createHttpsListener(9191, "default-ssl-listener", "/keystore.jks", "changeit", "s1as");
+        createHttpsListener(9292, "ssl-listener0", "/keystore0", "password0", "keystore0");
+        createHttpsListener(9393, "ssl-listener1", "/keystore1", "password1", null);
 
         Deployer deployer = glassfish.getDeployer();
 
@@ -129,17 +155,9 @@ public class EmbeddedAddHttpsListenerTest {
         Assert.assertTrue(appName != null);
 
         disableCertValidation();
-        URL servlet = new URL("https://localhost:9191/classes/hello");
-        HttpsURLConnection uc = (HttpsURLConnection) servlet.openConnection();
-        BufferedReader in = new BufferedReader(new InputStreamReader(uc.getInputStream()));
-        StringBuilder sb = new StringBuilder();
-        String inputLine;
-        while ((inputLine = in.readLine()) != null){
-            sb.append(inputLine);
-        }
-        in.close();
-        System.out.println(sb);
-        Assert.assertEquals("Hello World!", sb.toString());
+        verify(9191);
+        verify(9292);
+        verify(9393);
         
         if (appName!=null)
             deployer.undeploy(appName);
