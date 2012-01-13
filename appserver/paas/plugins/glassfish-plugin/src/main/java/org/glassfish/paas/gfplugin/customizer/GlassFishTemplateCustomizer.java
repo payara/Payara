@@ -113,17 +113,13 @@ public class GlassFishTemplateCustomizer implements TemplateCustomizer,
 
     @Override
     public void start(VirtualMachine virtualMachine, boolean firstStart) {
-        ActionReport report = services.forContract(ActionReport.class)
-                .named(PLAIN_ACTION_REPORT).get();
-        if (firstStart) {
-            // finally starts the instance.
-            try {
-                // TODO :: check for virtualMachine.getInfo().getState()??
-                rtContext.executeAdminCommand(report, START_INSTANCE,
-                        getInstanceName(virtualMachine));
-            } catch (Exception e) {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-            }
+        String instanceName = getInstanceName(virtualMachine);
+        Server instance = domain.getServerNamed(instanceName);
+        if (instance != null) {
+            ActionReport report = services.forContract(ActionReport.class)
+                    .named(PLAIN_ACTION_REPORT).get();
+            // TODO :: check for virtualMachine.getInfo().getState()??
+            rtContext.executeAdminCommand(report, START_INSTANCE, instanceName);
         }
     }
 
