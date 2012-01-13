@@ -110,6 +110,7 @@ public class StaticGlassFishRuntime extends GlassFishRuntime {
                     try {
                         super.dispose();
                     } finally {
+                        gfMap.remove(gfProps.getInstanceRoot());
                         if ("true".equalsIgnoreCase(gfProps.getProperties().
                                 getProperty(autoDelete)) && gfProps.getInstanceRoot() != null) {
                             File instanceRoot = new File(gfProps.getInstanceRoot());
