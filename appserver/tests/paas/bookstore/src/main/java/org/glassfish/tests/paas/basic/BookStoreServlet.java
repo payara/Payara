@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -82,11 +82,24 @@ public final class BookStoreServlet extends HttpServlet {
         writeCSS(writer);
         writer.println("</head>");
         writer.println("<body bgcolor=white>");
+
+        writer.println("<table border=\"0\">");
+        writer.println("<tr>");
+        writer.println("<td>");
+        writer.println("<img height=\"200\" width=\"200\" src=\"images/bookstore.gif\">");
+        writer.println("</td>");
+        writer.println("<td>");
         writer.println("<h1>Simple PaaS Enabled BookStore Application</h1>");
+        writer.println("</td>");
+        writer.println("</tr>");
+        writer.println("</table>");
+
+        writer.println("<table border=\"0\" width=\"100%\">");
         writer.println("<p>This application is served by <b>" +
                 getServletContext().getServerInfo() + "</b> [" +
                 System.getProperty("com.sun.aas.instanceName") + "]</p>");
         writer.println("Please wait while accessing the bookstore database.....");
+        writer.println("</table>");
         if (ds != null) {
             DatabaseOperations operations = new DatabaseOperations();
             String userName = "World";//System.getenv("USER");
