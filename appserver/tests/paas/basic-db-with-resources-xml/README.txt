@@ -1,7 +1,7 @@
 #
 # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 #
-# Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
 #
 # The contents of this file are subject to the terms of either the GNU
 # General Public License Version 2 only ("GPL") or the Common Development
@@ -37,23 +37,11 @@
 # only if the new code is made subject to such option by the copyright
 # holder.
 #
-GF_HOME=${GF_HOME:-$S1AS_HOME}
-export PATH=$GF_HOME/bin:$PATH
-TEMPLATES_DIR=/tmp
 
-asadmin start-domain domain1
+This test bundles init.sql file as part of application archive. A glassfish-resources.xml file is included in the WEB-INF directory that describes the jdbc-connection-pool/jdbc-resource to be used during provisioning. 
 
-asadmin create-ims-config-ovm --connectionstring "http://admin:abc123@sf-x2200-7.india.sun.com:8888;root:abc123"  ovm
-asadmin create-server-pool --subnet 10.12.152.25/50 --portname "foobar" --virtualization ovm pool2
+The init.sql file is used by the service provisioning engine to load data into database that is created during provisioning. Application reads data from this database table and prints the contents onto a servlet. 
 
-asadmin create-template --files $TEMPLATES_DIR/OVM_EL5U6_X86_PVM_GLASSFISH_TINY.tgz --indexes ServiceType=JavaEE,VirtualizationType=OVM GLASSFISH_TINY
-asadmin create-template-user --virtualization ovm --userid glassfish --groupid glassfish --template GLASSFISH_TINY glassfish
+Works on Derby as glassfish-resources.xml contents are related to Derby database.
 
-#asadmin create-template --files $TEMPLATES_DIR/OVM_EL5U6_X86_PVM_ORACLEDB.tgz --indexes ServiceType=Database,VirtualizationType=OVM ORACLE_DATABASE
-#asadmin create-template-user --virtualization ovm --userid oracle --groupid oinstall --template ORACLE_DATABASE oracle
-
-asadmin create-template --files $TEMPLATES_DIR/OVM_EL5U6_X86_PVM_DERBY_DATABASE.tgz --indexes ServiceType=Database,VirtualizationType=OVM DERBY_DATABASE
-asadmin create-template-user --virtualization ovm --userid glassfish --groupid glassfish --template DERBY_DATABASE glassfish
-
-asadmin create-template --files $TEMPLATES_DIR/OVM_JEOS_64_PVM_OTD_LARGE.tgz --properties vendor-name=otd --indexes ServiceType=LB,VirtualizationType=OVM otd-new
-asadmin create-template-user --virtualization ovm --userid 1000 --groupid 1000 --template otd-new cloud
+Please refer ../README.txt for more generic guidelines.

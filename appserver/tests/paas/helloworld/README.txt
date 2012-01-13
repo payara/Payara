@@ -1,51 +1,45 @@
+#
+# DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+#
+# Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+#
+# The contents of this file are subject to the terms of either the GNU
+# General Public License Version 2 only ("GPL") or the Common Development
+# and Distribution License("CDDL") (collectively, the "License").  You
+# may not use this file except in compliance with the License.  You can
+# obtain a copy of the License at
+# https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+# or packager/legal/LICENSE.txt.  See the License for the specific
+# language governing permissions and limitations under the License.
+#
+# When distributing the software, include this License Header Notice in each
+# file and include the License file at packager/legal/LICENSE.txt.
+#
+# GPL Classpath Exception:
+# Oracle designates this particular file as subject to the "Classpath"
+# exception as provided by Oracle in the GPL Version 2 section of the License
+# file that accompanied this code.
+#
+# Modifications:
+# If applicable, add the following below the License Header, with the fields
+# enclosed by brackets [] replaced by your own identifying information:
+# "Portions Copyright [year] [name of copyright owner]"
+#
+# Contributor(s):
+# If you wish your version of this file to be governed by only the CDDL or
+# only the GPL Version 2, indicate your decision by adding "[Contributor]
+# elects to include this software in this distribution under the [CDDL or GPL
+# Version 2] license."  If you don't indicate a single choice of license, a
+# recipient has the option to distribute your version of this file under
+# either the CDDL, the GPL Version 2 or to extend the choice of license to
+# its licensees as provided above.  However, if you add GPL Version 2 code
+# and therefore, elected the GPL Version 2 license, then the option applies
+# only if the new code is made subject to such option by the copyright
+# holder.
+#
+
 This is a simple Hello World application actually picked up from quicklook helloworld cluster test and cloud-enabled to run on a 2 instance GlassFish cluster. The application has been tested on OVM and native mode.
 
-Steps to run this test:
------------------------
-
-1. Unzip latest version of glassfish.zip and set S1AS_HOME enviroment variable to point to the extracted GlassFish location.
-
-  For example: export S1AS_HOME=/tmp/glassfish3/glassfish
-
-Set S1AS_HOME to /tmp/glassfish3/glassfish.
-
-2. [Optional] 
-
-(Only for OVM mode)
-
-Download and copy $VALUE_ADD_WS/virtualization/ovm/target/ovm.jar to $S1AS_HOME/modules directory.
-Download and copy $VALUE_ADD_WS/virtualization/ovmws/target/ovmws.jar to $S1AS_HOME/modules directory.
-
-Unzip $VALUE_ADD_WS/virtualization/ovm-files/target/ovm-files.zip under $S1AS_HOME/.. directory and configure network information:
--Edit the $S1AS_HOME/config/ovm/linux/ips file to add the list of static IPs followed by the hostnames you wish to use. The test needs at least 2 free static IPs.
--Edit the $S1AS_HOME/config/ovm/linux/network file to specify the network configuration (gateway, netmask, DNS etc.) of CPAS.
-
-3. [Optional] Setup virtualization enviroment for your GlassFish installation. 
-
-   Run native_setup.sh to run in native mode.
-   Modify ovm_setup.sh to suit your system details (OVM connection string, pool name etc.) and run it.
-
-This step is optional in which case the service(s) required for this PaaS app will be provisioned in non-virtualized environment.
-
-4. [Optional] 
-
-(Only for Native mode)
-
-Restart domain. 
-
-5. To manually test the app, do the following:
-
-a) Compile this test : mvn clean compile war:war
-b) Deploy the war : asadmin deploy /tmp/helloworld_sample.war
-c) Access the application : http://<instance-ip1>:28080/helloworld_sample/hi.jsp
-                            http://<instance-ip2>:28080/helloworld_sample/hi.jsp
-d) Undeploy the application : asadmin undeploy helloworld_sample
-
-6. To run the test automatically, run:
-
-GF_EMBEDDED_ENABLE_CLI=true mvn clean verify surefire-report:report | tee run.log
- 
 Test Duration: It takes approx. 20min for a successful run on OVM setup.
 
-Note : Make sure all ASMain processes are killed before this test is re-run.
-
+Please refer ../README.txt for more generic guidelines.

@@ -1,7 +1,7 @@
 #
 # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 #
-# Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011-2012 Oracle and/or its affiliates. All rights reserved.
 #
 # The contents of this file are subject to the terms of either the GNU
 # General Public License Version 2 only ("GPL") or the Common Development
@@ -39,19 +39,19 @@
 #
 
 GF_HOME=${GF_HOME:-$S1AS_HOME}
-TEMPLATES_DIR=/space/bhavani/Desktop
+TEMPLATES_DIR=/space
 $GF_HOME/bin/asadmin start-domain --debug
 $GF_HOME/bin/asadmin create-ims-config-libvirt kvm
 $GF_HOME/bin/asadmin set virtualizations.libvirt-virtualization.kvm.template-cache-size=0
 $GF_HOME/bin/asadmin stop-domain
 $GF_HOME/bin/asadmin start-domain --debug
-$GF_HOME/bin/asadmin create-server-pool --virtualization kvm --subnet 192.168.122.2/250 --portName "virbr0" cloud
+$GF_HOME/bin/asadmin create-server-pool --virtualization kvm --subnet 192.168.122.70/250 --portName "virbr0" cloud
 
 $GF_HOME/bin/asadmin create-template --virtualization kvm --files $TEMPLATES_DIR/glassfish.img,$TEMPLATES_DIR/glassfish.xml --indexes ServiceType=JavaEE,VirtualizationType=libvirt glassfish
 $GF_HOME/bin/asadmin create-template-user --virtualization kvm --userid 1000 --groupid 1000 --template glassfish cloud
 
-#$GF_HOME/bin/asadmin create-template --virtualization kvm --files $TEMPLATES_DIR/glassfish.img,$TEMPLATES_DIR/glassfish.xml --indexes ServiceType=Database,VirtualizationType=libvirt javadb
-#$S1AS_HOME/bin/asadmin create-template-user --virtualization kvm --userid 1000 --groupid 1000 --template javadb cloud
+$GF_HOME/bin/asadmin create-template --virtualization kvm --files $TEMPLATES_DIR/glassfish.img,$TEMPLATES_DIR/glassfish.xml --indexes ServiceType=Database,VirtualizationType=libvirt javadb
+$S1AS_HOME/bin/asadmin create-template-user --virtualization kvm --userid 1000 --groupid 1000 --template javadb cloud
 
 #$GF_HOME/bin/asadmin create-template --virtualization kvm --files $TEMPLATES_DIR/MySQL.img,$TEMPLATES_DIR/MySQL.xml --indexes ServiceType=Database,VirtualizationType=libvirt MySQL
 #$S1AS_HOME/bin/asadmin create-template-user --virtualization kvm --userid 1000 --groupid 1000 --template MySQL mysqluser
@@ -59,8 +59,8 @@ $GF_HOME/bin/asadmin create-template-user --virtualization kvm --userid 1000 --g
 #$GF_HOME/bin/asadmin create-template --virtualization kvm --files $TEMPLATES_DIR/oracledb.img,$TEMPLATES_DIR/oracledb.xml --indexes ServiceType=Database,VirtualizationType=libvirt oracledb
 #$S1AS_HOME/bin/asadmin create-template-user --virtualization kvm --userid 1000 --groupid 1000 --template oracledb shalinikvm
 
-#$GF_HOME/bin/asadmin create-template --virtualization kvm --files $TEMPLATES_DIR/apache.img,$TEMPLATES_DIR/apache.xml --properties scripts-dir=/home/cloud/workspace/scripts:install-dir=/home/cloud/workspace/apache/install --indexes ServiceType=LB,VirtualizationType=libvirt apachemodjk
+#$GF_HOME/bin/asadmin create-template --virtualization kvm --files $TEMPLATES_DIR/apache.img,$TEMPLATES_DIR/apache.xml --indexes ServiceType=LB,VirtualizationType=libvirt apachemodjk
 #$S1AS_HOME/bin/asadmin create-template-user --virtualization kvm --userid 1000 --groupid 1000 --template apachemodjk cloud
 
 $GF_HOME/bin/asadmin create-machine --serverPool cloud --networkName localhost local
-$GF_HOME/bin/asadmin create-machine-user --serverPool cloud --machine local --userId 1000 --groupId 1000 bhavani
+$GF_HOME/bin/asadmin create-machine-user --serverPool cloud --machine local --userId 1000 --groupId 1000 shalini

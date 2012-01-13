@@ -1,7 +1,7 @@
 #
 # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 #
-# Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011-2012 Oracle and/or its affiliates. All rights reserved.
 #
 # The contents of this file are subject to the terms of either the GNU
 # General Public License Version 2 only ("GPL") or the Common Development
@@ -38,9 +38,26 @@
 # holder.
 #
 GF_HOME=${GF_HOME:-$S1AS_HOME}
-echo "Your GlassFish is at $GF_HOME"
-rm $GF_HOME/modules/paas.lbplugin.jar
-rm $GF_HOME/modules/paas.javadbplugin.jar
-$GF_HOME/bin/asadmin start-domain --debug
-$GF_HOME/bin/asadmin create-ims-config-native
-$GF_HOME/bin/asadmin stop-domain 
+export PATH=$GF_HOME/bin:$PATH
+TEMPLATES_DIR=/tmp
+CONNECTION_STRING=http://adminUser:adminPassword@hostName:port;rootUser:rootPassword
+POOL_SUBNET=xx.xx.xxx.xx/xx
+ORACLE_USER=oracle
+ORACLE_GROUP=oracleGroup
+
+asadmin start-domain domain1
+
+asadmin create-ims-config-ovm --connectionstring $CONNECTION_STRING  ovm
+asadmin create-server-pool --subnet $POOL_SUBNET --portname "foobar" --virtualization ovm pool2
+
+asadmin create-template --files $TEMPLATES_DIR/GLASSFISH_TINY.tgz --indexes ServiceType=JavaEE,VirtualizationType=OVM GLASSFISH_TINY
+asadmin create-template-user --virtualization ovm --userid glassfish --groupid glassfish --template GLASSFISH_TINY glassfish
+
+asadmin create-template --files $TEMPLATES_DIR/ORACLEDB.tgz --indexes ServiceType=Database,VirtualizationType=OVM ORACLE_DATABASE
+asadmin create-template-user --virtualization ovm --userid $ORACLE_USER --groupid $ORACLE_GROUP --template ORACLE_DATABASE oracle
+
+#asadmin create-template --files $TEMPLATES_DIR/DERBY_DATABASE.tgz --indexes ServiceType=Database,VirtualizationType=OVM DERBY_DATABASE
+#asadmin create-template-user --virtualization ovm --userid glassfish --groupid glassfish --template DERBY_DATABASE glassfish
+
+#asadmin create-template --files $TEMPLATES_DIR/OTD_LARGE.tgz --properties vendor-name=otd --indexes ServiceType=LB,VirtualizationType=OVM otd-new
+#asadmin create-template-user --virtualization ovm --userid 1000 --groupid 1000 --template otd-new cloud

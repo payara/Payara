@@ -60,7 +60,8 @@
         <module>basic-shared-service-test</module>
         <module>external-and-shared-service</module>
         <module>ext-shared-service-enable-disable-test</module>
-        <module>multiple-spe-test</module>
+	<module>multiple-spe-test</module>
+	<module>basic-db-with-resources-xml</module>
     </modules>
     <reporting>
         <plugins>

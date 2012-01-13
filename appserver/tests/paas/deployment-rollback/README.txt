@@ -1,50 +1,46 @@
+#
+# DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+#
+# Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+#
+# The contents of this file are subject to the terms of either the GNU
+# General Public License Version 2 only ("GPL") or the Common Development
+# and Distribution License("CDDL") (collectively, the "License").  You
+# may not use this file except in compliance with the License.  You can
+# obtain a copy of the License at
+# https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+# or packager/legal/LICENSE.txt.  See the License for the specific
+# language governing permissions and limitations under the License.
+#
+# When distributing the software, include this License Header Notice in each
+# file and include the License file at packager/legal/LICENSE.txt.
+#
+# GPL Classpath Exception:
+# Oracle designates this particular file as subject to the "Classpath"
+# exception as provided by Oracle in the GPL Version 2 section of the License
+# file that accompanied this code.
+#
+# Modifications:
+# If applicable, add the following below the License Header, with the fields
+# enclosed by brackets [] replaced by your own identifying information:
+# "Portions Copyright [year] [name of copyright owner]"
+#
+# Contributor(s):
+# If you wish your version of this file to be governed by only the CDDL or
+# only the GPL Version 2, indicate your decision by adding "[Contributor]
+# elects to include this software in this distribution under the [CDDL or GPL
+# Version 2] license."  If you don't indicate a single choice of license, a
+# recipient has the option to distribute your version of this file under
+# either the CDDL, the GPL Version 2 or to extend the choice of license to
+# its licensees as provided above.  However, if you add GPL Version 2 code
+# and therefore, elected the GPL Version 2 license, then the option applies
+# only if the new code is made subject to such option by the copyright
+# holder.
+#
+
 This is a PaaS application to test atomic deployment.
 Orchestrator deploys the application via various steps and some of the steps with the aid of Service Provisioning engines.
 This test-case will use FailureInducer exposed by Orchestrator to induce failures at various states of deployment of the application 
 and checks whether the deployment is failed and no services/artifacts are left in the application server (DAS).
 
-Steps to run this test:
------------------------
-
-1. Unzip latest version of glassfish.zip and set S1AS_HOME enviroment variable to point to the extracted GlassFish location.
-
-  For example: export S1AS_HOME=/tmp/glassfish3/glassfish
-
-Set S1AS_HOME to /tmp/glassfish3/glassfish.
-
-2. 
-
-(Only for Native mode) : 
-
-Download lb.zip for appropriate platform.
-
-    Windows - http://ejp-152x-232.india.sun.com/lb/windows/lb.zip
-    Mac OS [ 64 bit ] - http://ejp-152x-232.india.sun.com/lb/macos/lb.zip
-    Ubuntu [ 32 bit ] - http://ejp-152x-232.india.sun.com/lb/ubuntu/lb.zip
-    Ubuntu [ 64 bit ] - http://ejp-152x-232.india.sun.com/lb/ubuntu-64/lb.zip
-
-Copy downloaded lb.zip under /tmp. This will be copied to the $S1AS_HOME/config directory while doing (3).
-
-(Only for OVM mode) :
-
-Download and Copy http://ejp-152x-232.india.sun.com/paas.lbplugin-otd.jar to $S1AS_HOME/modules directory.
-Download and Copy $VALUE_ADD_WS/virtualization/ovm/target/ovm.jar to $S1AS_HOME/modules directory.
-Download and Copy $VALUE_ADD_WS/virtualization/ovmws/target/ovmws.jar to $S1AS_HOME/modules directory.
-
-Unzip $VALUE_ADD_WS/virtualization/ovm-files/target/ovm-files.zip under $S1AS_HOME/.. directory.
-
-Edit the $S1AS_HOME/config/ovm/linux/ips file to add the list of static IPs followed by the hostnames you wish to use. 
-Edit the $S1AS_HOME/config/ovm/linux/network file for the network configuration of CPAS.
-
-3. [Optional] Setup virtualization enviroment for your GlassFish installation. 
-
-   For example, modify ovm_setup.sh/kvm_setup.sh/native_setup.sh to suite your system details and run it.
-
-This step is optional in which case the service(s) required for this PaaS app will be provisioned in non-virtualized environment.
-
-4. Restart domain after this step. (Only for native mode)
-
-5. execute : GF_EMBEDDED_ENABLE_CLI=true mvn clean verify surefire-report:report -DargLine="-Dhttp.port=50080"
- 
-Note : Make sure all ASMain processes are killed before this test is re-run.
-
+Please refer ../README.txt for more generic guidelines.
