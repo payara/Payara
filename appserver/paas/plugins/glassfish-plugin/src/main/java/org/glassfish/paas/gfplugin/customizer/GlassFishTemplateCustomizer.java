@@ -56,6 +56,7 @@ import org.glassfish.virtualization.spi.VirtException;
 import org.glassfish.virtualization.spi.VirtualMachine;
 import org.glassfish.virtualization.util.RuntimeContext;
 import org.jvnet.hk2.annotations.Inject;
+import org.jvnet.hk2.annotations.Service;
 
 /**
  * Customization of the GlassFish template for all virtualizations except Native.
@@ -63,6 +64,7 @@ import org.jvnet.hk2.annotations.Inject;
  * @author Jerome Dochez
  * @author Bhavanishankar S
  */
+@Service(name="JavaEE")
 public class GlassFishTemplateCustomizer implements TemplateCustomizer,
         GlassFishPluginConstants {
 
