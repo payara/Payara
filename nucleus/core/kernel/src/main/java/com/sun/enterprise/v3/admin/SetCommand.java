@@ -226,6 +226,11 @@ public class SetCommand extends V2DottedNameSupport implements AdminCommand, Pos
                     return false;
                 }
 
+                if (value == null || value.length() == 0) {
+                    // setting to the empty string means to remove the property, so don't create it
+                    success(context, targetName, value);
+                    return true;
+                }
                 // create and set the property
                 Map<String, String> attributes = new HashMap<String, String>();
                 attributes.put("value", value);
