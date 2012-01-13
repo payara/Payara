@@ -58,11 +58,11 @@ import org.glassfish.api.deployment.ApplicationContext;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.DeployCommandParameters;
 import org.glassfish.api.deployment.OpsParams;
+import org.glassfish.hk2.Services;
 import org.glassfish.internal.data.ApplicationInfo;
 
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.PerLookup;
 
 import com.sun.enterprise.security.PolicyLoader;
@@ -94,7 +94,7 @@ public class EjbApplication
     private ClassLoader ejbAppClassLoader;
     private DeploymentContext dc;
     
-    private Habitat habitat;
+    private Services services;
 
     private EJBSecurityManagerFactory ejbSMF;
      
@@ -118,16 +118,16 @@ public class EjbApplication
 
     public EjbApplication(
             EjbBundleDescriptor bundle, DeploymentContext dc,
-            ClassLoader cl, Habitat habitat, 
+            ClassLoader cl, Services services,
             EJBSecurityManagerFactory ejbSecMgrFactory) {
         this.ejbBundle = bundle;
         this.ejbs = bundle.getEjbs();
         this.ejbAppClassLoader = cl;
         this.dc = dc;
-        this.habitat = habitat;
-        this.ejbContainerFactory = habitat.getByContract(ContainerFactory.class);
+        this.services = services;
+        this.ejbContainerFactory = services.forContract(ContainerFactory.class).get();
         this.ejbSMF = ejbSecMgrFactory;
-        this.policyLoader = habitat.getComponent(PolicyLoader.class);
+        this.policyLoader = services.byType(PolicyLoader.class).get();
 
         Application app = ejbBundle.getApplication();
         initializeInOrder = (app != null) && (app.isInitializeInOrder());
@@ -283,7 +283,7 @@ public class EjbApplication
             // EjbDeployer.clean().  A different instance of DeploymentContext
             // is passed to EjbDeployer.clean so we cannot use anything in DC (e.g.
             // appProps, transientData) to store keepstate.
-            ApplicationRegistry appRegistry = habitat.getComponent(ApplicationRegistry.class);
+            ApplicationRegistry appRegistry = services.byType(ApplicationRegistry.class).get();
             ApplicationInfo appInfo = appRegistry.get(params.name());
             appInfo.addTransientAppMetaData(KEEP_STATE, keepState);
 

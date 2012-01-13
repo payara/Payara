@@ -67,6 +67,7 @@ import org.glassfish.deployment.common.DeploymentProperties;
 import org.glassfish.ejb.spi.CMPDeployer;
 import org.glassfish.ejb.api.DistributedEJBTimerService;
 import org.glassfish.enterprise.iiop.api.GlassFishORBHelper;
+import org.glassfish.hk2.Services;
 import org.glassfish.internal.api.ServerContext;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.deployment.Deployment;
@@ -80,7 +81,6 @@ import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PostConstruct;
 import org.jvnet.hk2.component.PreDestroy;
-import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
@@ -125,7 +125,7 @@ public class EjbContainerUtilImpl
     private ThreadPoolExecutor defaultThreadPoolExecutor;
     
     @Inject
-    private Habitat habitat;
+    private Services services;
 
     @Inject
     private ServerContext serverContext;
@@ -245,8 +245,8 @@ public class EjbContainerUtilImpl
         return orbHelper;
     }
 
-    public Habitat getDefaultHabitat() {
-        return habitat;
+    public Services getServices() {
+        return services;
     }
 
     public static boolean isInitialized() {
@@ -259,8 +259,8 @@ public class EjbContainerUtilImpl
             // and the stack trace to know how did we get here.
 
             // Create the instance first to access the logger.
-            _me = Globals.getDefaultHabitat().getComponent(
-                    EjbContainerUtilImpl.class);
+            _me = Globals.getDefaultHabitat().byType(
+                    EjbContainerUtilImpl.class).get();
             _me.getLogger().log(Level.WARNING, 
                     "Internal error: EJBContainerUtilImpl was null",
                     new Throwable());
@@ -316,7 +316,7 @@ public class EjbContainerUtilImpl
                 // Do postprocessing if everything is OK
                 if (_ejbTimerService != null) {
                     // load DistributedEJBTimerService 
-                    habitat.getByContract(DistributedEJBTimerService.class);
+                    services.forContract(DistributedEJBTimerService.class).get();
                     if (_ejbTimersCleanup) {
                         _ejbTimerService.destroyAllTimers(0L);
                     } else if (target == null) {
@@ -486,7 +486,7 @@ public class EjbContainerUtilImpl
     }
 
     public boolean isEJBLite() {
-        return (habitat.getByContract(CMPDeployer.class) == null);
+        return (services.forContract(CMPDeployer.class).get() == null);
     }
 
     public boolean isEmbeddedServer() {
@@ -503,7 +503,7 @@ public class EjbContainerUtilImpl
     
     private void deployEJBTimerService(String target) {
         synchronized (lock) {
-            Deployment deployment = habitat.getByContract(Deployment.class);
+            Deployment deployment = services.forContract(Deployment.class).get();
             boolean isRegistered = deployment.isRegistered(EjbContainerUtil.TIMER_SERVICE_APP_NAME);
 
             if (isRegistered) {
@@ -525,7 +525,7 @@ public class EjbContainerUtilImpl
                             "required WAR file (" + 
                             EjbContainerUtil.TIMER_SERVICE_APP_NAME + ".war) is not installed");
                 } else {
-                    ActionReport report = habitat.getComponent(ActionReport.class, "plain");
+                    ActionReport report = services.forContract(ActionReport.class).named("plain").get();
                     DeployCommandParameters params = new DeployCommandParameters(app);
                     String appName = EjbContainerUtil.TIMER_SERVICE_APP_NAME;
                     params.name = appName;

@@ -164,7 +164,7 @@ public final class MessageBeanContainer extends BaseContainer implements
 				super.registerTxAttrForMethod(next, MethodDescriptor.EJB_BEAN);
 			}
 			
-			poolMgr = EjbContainerUtilImpl.getInstance().getDefaultHabitat().getByContract(TransactedPoolManager.class);
+			poolMgr = EjbContainerUtilImpl.getInstance().getServices().forContract(TransactedPoolManager.class).get();
 			
 			// NOTE : No need to register tx attribute for ejbTimeout. It's
 			// done in BaseContainer intialization.
@@ -183,8 +183,8 @@ public final class MessageBeanContainer extends BaseContainer implements
                 clientFactory = (MessageBeanClientFactory) clientFactoryClass
                         .newInstance();
             } else {
-                clientFactory = EjbContainerUtilImpl.getInstance().getDefaultHabitat().getComponent(
-                        MessageBeanClientFactory.class, DEFAULT_MESSAGE_BEAN_CLIENT_FACTORY );
+                clientFactory = EjbContainerUtilImpl.getInstance().getServices().forContract(
+                        MessageBeanClientFactory.class).named(DEFAULT_MESSAGE_BEAN_CLIENT_FACTORY ).get();
             }
             _logger.log(Level.FINE, "Using " + clientFactory.getClass().getName()
                     + " for message bean client factory in " + appEJBName_);
@@ -255,9 +255,8 @@ public final class MessageBeanContainer extends BaseContainer implements
 			beanPoolDesc_ = new BeanPoolDescriptor();
 		}
 
-		MdbContainer mdbc = ejbContainerUtilImpl.getDefaultHabitat()
-				.getComponent(MdbContainer.class,
-                                ServerEnvironment.DEFAULT_INSTANCE_NAME);
+		MdbContainer mdbc = ejbContainerUtilImpl.getServices()
+				.forContract(MdbContainer.class).named(ServerEnvironment.DEFAULT_INSTANCE_NAME).get();
 
 		int maxPoolSize = beanPoolDesc_.getMaxPoolSize();
 		if (maxPoolSize < 0) {
@@ -828,8 +827,8 @@ public final class MessageBeanContainer extends BaseContainer implements
 				messageBeanClient_, loader, messageBeanPool_);
 		long timeout = 0;
 		try { 
-                    ConnectorRuntime cr = EjbContainerUtilImpl.getInstance().getDefaultHabitat()
-                            .getByContract(ConnectorRuntime.class);
+                    ConnectorRuntime cr = EjbContainerUtilImpl.getInstance().getServices()
+                            .forContract(ConnectorRuntime.class).get();
                     timeout = cr.getShutdownTimeout();
                 } catch (Throwable th) { 
                     _logger.log(Level.WARNING, "[MDBContainer] Got exception while trying " +

@@ -41,27 +41,17 @@
 package com.sun.ejb.containers;
 
 import java.lang.reflect.Method;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.HashSet;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-
-import java.io.File;
-import java.io.FileWriter;
-import java.io.FileReader;
-import java.io.BufferedReader;
-import java.io.PrintWriter;
 import java.io.Serializable;
 
 import java.sql.Connection;
@@ -72,24 +62,14 @@ import javax.ejb.EJBException;
 import javax.ejb.FinderException;
 import javax.ejb.CreateException;
 import javax.ejb.TimerConfig;
-import javax.ejb.ScheduleExpression;
 import javax.sql.DataSource;
 
-import com.sun.enterprise.admin.monitor.callflow.RequestType;
-import com.sun.enterprise.admin.monitor.callflow.Agent;
-
-import com.sun.enterprise.config.serverbeans.ConfigBeansUtilities;
-import org.glassfish.server.ServerEnvironmentImpl;
-
-import org.glassfish.api.invocation.ComponentInvocation;
 import com.sun.enterprise.deployment.MethodDescriptor;
 import com.sun.enterprise.deployment.ScheduledTimerDescriptor;
 import com.sun.appserv.connectors.internal.api.ConnectorRuntime;
 
 import javax.transaction.TransactionManager;
-import javax.transaction.Transaction;
-import javax.transaction.Synchronization;
-import javax.transaction.Status;
+
 import org.glassfish.ejb.config.EjbContainer;
 import org.glassfish.ejb.config.EjbTimerService;
 
@@ -831,7 +811,7 @@ public class PersistenceEJBTimerService extends EJBTimerService
      * created but not committed "sees" the timer but a client
      * in a different transaction doesn't. 
      *
-     * @param primaryKey can be null if not entity bean
+     * @param timedObjectPrimaryKey can be null if not entity bean
      *
      * @return Collection of TimerState objects.
      */
@@ -877,7 +857,7 @@ public class PersistenceEJBTimerService extends EJBTimerService
      * but a client in a different transaction doesn't. Called by
      * EJBTimerServiceWrapper when caller calls getTimers.
      * 
-     * @param primaryKey can be null if not entity bean
+     * @param timedObjectPrimaryKey can be null if not entity bean
      * @return Collection of Timer Ids.
      */
     Collection<TimerPrimaryKey> getTimerIds(long containerId, Object timedObjectPrimaryKey) {
@@ -1292,7 +1272,7 @@ public class PersistenceEJBTimerService extends EJBTimerService
 
     private void lookupTimerResource() throws Exception {
         String resource_name = ejbContainerUtil.getTimerResource();
-        ConnectorRuntime connectorRuntime = ejbContainerUtil.getDefaultHabitat().getByContract(ConnectorRuntime.class);
+        ConnectorRuntime connectorRuntime = ejbContainerUtil.getServices().forContract(ConnectorRuntime.class).get();
         timerDataSource = DataSource.class.cast(connectorRuntime.lookupNonTxResource(resource_name, false));
     }
 

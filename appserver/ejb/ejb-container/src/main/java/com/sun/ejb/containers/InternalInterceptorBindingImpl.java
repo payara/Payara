@@ -48,22 +48,20 @@ import java.util.Collection;
 
 import org.glassfish.api.invocation.InvocationManager;
 import com.sun.enterprise.container.common.spi.ManagedBeanManager;
-
-
-import org.jvnet.hk2.component.Habitat;
+import org.glassfish.hk2.Services;
 
 
 public class InternalInterceptorBindingImpl  {
 
-    private Habitat habitat;
+    private Services services;
 
-    public InternalInterceptorBindingImpl(Habitat h) {
-        habitat = h;
+    public InternalInterceptorBindingImpl(Services services) {
+        this.services = services;
     }
 
     public void registerInterceptor(Object systemInterceptor) {
 
-        InvocationManager invManager = habitat.getByContract(InvocationManager.class);
+        InvocationManager invManager = services.forContract(InvocationManager.class).get();
 
         ComponentInvocation currentInv = invManager.getCurrentInvocation();
 
@@ -76,7 +74,7 @@ public class InternalInterceptorBindingImpl  {
                          ".  This operation is only available from a web app context");
         }
 
-        ComponentEnvManager compEnvManager = habitat.getByContract(ComponentEnvManager.class);
+        ComponentEnvManager compEnvManager = services.forContract(ComponentEnvManager.class).get();
 
         JndiNameEnvironment env = compEnvManager.getCurrentJndiNameEnvironment();
 
@@ -105,7 +103,7 @@ public class InternalInterceptorBindingImpl  {
 
         // Register interceptor for any managed beans
         // TODO Handle 299-enabled case
-        ManagedBeanManager managedBeanManager = habitat.getByContract(ManagedBeanManager.class);
+        ManagedBeanManager managedBeanManager = services.forContract(ManagedBeanManager.class).get();
         managedBeanManager.registerRuntimeInterceptor(systemInterceptor, webBundle);
 
 

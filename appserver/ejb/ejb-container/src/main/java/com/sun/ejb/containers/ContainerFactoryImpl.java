@@ -53,9 +53,9 @@ import com.sun.logging.LogDomains;
 
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.ejb.security.application.EJBSecurityManager;
+import org.glassfish.hk2.Services;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Inject;
-import org.jvnet.hk2.component.Habitat;
 
 import java.util.ArrayList;
 import java.util.logging.Level;
@@ -67,7 +67,7 @@ import org.glassfish.ejb.config.EjbContainer;
 public final class ContainerFactoryImpl implements ContainerFactory {
 
     @Inject
-    private Habitat habitat;
+    private Services services;
 
     @Inject(name=ServerEnvironment.DEFAULT_INSTANCE_NAME)
     private EjbContainer ejbContainerDesc;
@@ -96,8 +96,8 @@ public final class ContainerFactoryImpl implements ContainerFactory {
                         container = new StatelessSessionContainer(ejbDescriptor, loader);
                     }
                 } else if( sd.isStateful() ) {
-                    StatefulContainerBuilder sfsbBuilder = habitat.getComponent(
-                            StatefulContainerBuilder.class);
+                    StatefulContainerBuilder sfsbBuilder = services.byType(
+                            StatefulContainerBuilder.class).get();
                     sfsbBuilder.buildContainer(dynamicConfigContext, ejbDescriptor, loader);
                     container = sfsbBuilder.getContainer();
                 } else {

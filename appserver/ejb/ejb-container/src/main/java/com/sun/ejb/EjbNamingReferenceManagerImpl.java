@@ -48,9 +48,9 @@ import com.sun.enterprise.deployment.EjbReferenceDescriptor;
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.enterprise.iiop.api.GlassFishORBHelper;
+import org.glassfish.hk2.Services;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
 import javax.naming.Context;
 import com.sun.enterprise.util.Utility;
 
@@ -72,7 +72,7 @@ public class EjbNamingReferenceManagerImpl
     InvocationManager invMgr;
 
     @Inject
-    Habitat habitat;
+    Services services;
 
     // Be careful with EjbContainerUtil usage.  It should only be used from code running within a
     // server environment.
@@ -178,7 +178,7 @@ public class EjbNamingReferenceManagerImpl
                  * MEJB resolution for cluster support post V3 FCS.
                  */
                 if (remoteJndiName.startsWith(CORBANAME)) {
-                    GlassFishORBHelper orbHelper = habitat.getComponent(GlassFishORBHelper.class);
+                    GlassFishORBHelper orbHelper = services.byType(GlassFishORBHelper.class).get();
 
                     ORB orb = orbHelper.getORB();
                     jndiObj = (Object) orb.string_to_object(remoteJndiName);
@@ -233,7 +233,7 @@ public class EjbNamingReferenceManagerImpl
 
         if( contextType.equals("javax.ejb.TimerService") ) {
             if (ejbContainerUtil == null) {
-                ejbContainerUtil = habitat.getByContract(EjbContainerUtil.class);
+                ejbContainerUtil = services.forContract(EjbContainerUtil.class).get();
             }
 
             if (ejbContainerUtil == null ) {

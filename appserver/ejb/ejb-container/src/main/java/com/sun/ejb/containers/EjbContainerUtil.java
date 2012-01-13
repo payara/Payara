@@ -44,6 +44,7 @@ import com.sun.enterprise.transaction.api.JavaEETransactionManager;
 import com.sun.enterprise.container.common.spi.util.ComponentEnvManager;
 import com.sun.enterprise.container.common.spi.util.InjectionManager;
 import com.sun.enterprise.deployment.EjbDescriptor;
+import org.glassfish.hk2.Services;
 import org.glassfish.internal.api.ServerContext;
 import org.glassfish.server.ServerEnvironmentImpl;
 import com.sun.enterprise.admin.monitor.callflow.Agent;
@@ -51,7 +52,6 @@ import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.api.naming.GlassfishNamingManager;
 import org.jvnet.hk2.annotations.Contract;
-import org.jvnet.hk2.component.Habitat;
 
 import javax.transaction.RollbackException;
 import javax.transaction.SystemException;
@@ -85,7 +85,7 @@ public interface EjbContainerUtil {
 
     public GlassFishORBHelper getORBHelper();
     
-    public Habitat getDefaultHabitat();
+    public Services getServices();
 
     public  Logger getLogger();
 

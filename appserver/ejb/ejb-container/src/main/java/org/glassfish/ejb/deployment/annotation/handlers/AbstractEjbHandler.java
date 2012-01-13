@@ -59,9 +59,6 @@ import javax.ejb.RemoteHome;
 import javax.ejb.LocalHome;
 import javax.ejb.Stateless;
 
-
-import org.jvnet.hk2.component.Habitat;
-
 import com.sun.enterprise.deployment.*;
 import com.sun.enterprise.deployment.util.TypeUtil;
 
@@ -69,6 +66,7 @@ import org.glassfish.apf.AnnotatedElementHandler;
 import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.apf.AnnotationProcessorException;
 import org.glassfish.apf.HandlerProcessingResult;
+import org.glassfish.hk2.Services;
 import org.glassfish.internal.api.Globals;
 import com.sun.enterprise.deployment.annotation.context.EjbBundleContext;
 import com.sun.enterprise.deployment.annotation.context.EjbContext;
@@ -99,9 +97,9 @@ public abstract class AbstractEjbHandler extends AbstractHandler {
     private AnnotationTypesProvider provider = null;
             
     public AbstractEjbHandler() {
-        Habitat h = Globals.getDefaultHabitat();
+        Services h = Globals.getDefaultHabitat();
         if( h != null ) {
-            provider = h.getComponent(AnnotationTypesProvider.class, "EJB");
+            provider = h.forContract(AnnotationTypesProvider.class).named("EJB").get();
         }
     }
     /**

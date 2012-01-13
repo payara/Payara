@@ -47,20 +47,11 @@ import com.sun.enterprise.container.common.spi.util.InterceptorInfo;
 
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Inject;
-import org.jvnet.hk2.component.Habitat;
 import com.sun.ejb.EJBUtils;
 import com.sun.ejb.containers.EjbOptionalIntfGenerator;
 import com.sun.ejb.containers.OptionalLocalInterfaceProvider;
 import com.sun.logging.LogDomains;
 
-import java.util.List;
-
-import com.sun.enterprise.deployment.InterceptorDescriptor;
-
-
-import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
-import java.lang.reflect.InvocationHandler;
 import java.util.logging.Logger;
 
 /**

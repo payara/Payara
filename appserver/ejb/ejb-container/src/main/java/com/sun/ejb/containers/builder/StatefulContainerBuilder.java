@@ -81,11 +81,11 @@ import org.glassfish.ha.store.api.BackingStoreConfiguration;
 import org.glassfish.ha.store.api.BackingStoreException;
 import org.glassfish.ha.store.api.BackingStoreFactory;
 import org.glassfish.ha.store.util.SimpleMetadata;
+import org.glassfish.hk2.Services;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.component.PerLookup;
-import org.jvnet.hk2.component.Habitat;
 
 /**
  * A builder for StatefulSessionContainer. Takes care of
@@ -112,7 +112,7 @@ public class StatefulContainerBuilder
     private SFSBContainerInitialization containerInitialization;
 
     @Inject
-    private Habitat habitat;
+    private Services services;
 
     @Inject
     private CacheProperties cacheProps;
@@ -285,7 +285,7 @@ public class StatefulContainerBuilder
         
         BackingStoreFactory factory = null;
         try {
-            factory = habitat.getComponent(BackingStoreFactory.class, persistenceStoreType);
+            factory = services.forContract(BackingStoreFactory.class).named(persistenceStoreType).get();
         } catch (Exception ex) {
             _logger.log(Level.WARNING, "ejb.sfsb_builder_instantiate_backing_store_exception", persistenceStoreType);
             _logger.log(Level.WARNING, "", ex);
@@ -293,7 +293,7 @@ public class StatefulContainerBuilder
 
         try {
             if (factory == null) {
-                factory = habitat.getComponent(BackingStoreFactory.class, "noop");
+                factory = services.forContract(BackingStoreFactory.class).named("noop").get();
             }
             this.backingStore = factory.createBackingStore(conf);
         } catch (Exception ex) {

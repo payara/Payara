@@ -72,6 +72,7 @@ import org.glassfish.api.naming.GlassfishNamingManager;
 import org.glassfish.enterprise.iiop.api.GlassFishORBHelper;
 import org.glassfish.ejb.spi.WSEjbEndpointRegistry;
 import org.glassfish.ejb.api.EjbEndpointFacade;
+import org.glassfish.hk2.Services;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.deployment.common.DeploymentException;
 
@@ -100,8 +101,6 @@ import java.util.*;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import org.jvnet.hk2.component.Habitat;
 
 /**
  * This class implements part of the com.sun.ejb.Container interface.
@@ -1171,8 +1170,8 @@ public abstract class BaseContainer
                         new EjbEndpointFacadeImpl(this, ejbContainerUtilImpl);
 
 
-            wsejbEndpointRegistry = Globals.getDefaultHabitat().getComponent(
-                    WSEjbEndpointRegistry.class);
+            wsejbEndpointRegistry = Globals.getDefaultHabitat().byType(
+                    WSEjbEndpointRegistry.class).get();
             if (wsejbEndpointRegistry != null ) {
                 wsejbEndpointRegistry.registerEndpoint(webServiceEndpoint,endpointFacade,servant,tieClass);
             } else {
@@ -1610,9 +1609,9 @@ public abstract class BaseContainer
 
     protected EJBContextImpl createEjbInstanceAndContext() throws Exception {
 
-	Habitat h = ejbContainerUtilImpl.getDefaultHabitat();
+        Services services = ejbContainerUtilImpl.getServices();
 
-        JCDIService jcdiService = h.getByContract(JCDIService.class);
+        JCDIService jcdiService = services.forContract(JCDIService.class).get();
 
         EjbBundleDescriptor ejbBundle = ejbDescriptor.getEjbBundleDescriptor();
 
@@ -1662,9 +1661,9 @@ public abstract class BaseContainer
 
     protected void injectEjbInstance(EJBContextImpl context) throws Exception {
         
-        Habitat h = ejbContainerUtilImpl.getDefaultHabitat();
+        Services services = ejbContainerUtilImpl.getServices();
 
-        JCDIService jcdiService = h.getByContract(JCDIService.class);
+        JCDIService jcdiService = services.forContract(JCDIService.class).get();
 
         EjbBundleDescriptor ejbBundle = ejbDescriptor.getEjbBundleDescriptor();
 

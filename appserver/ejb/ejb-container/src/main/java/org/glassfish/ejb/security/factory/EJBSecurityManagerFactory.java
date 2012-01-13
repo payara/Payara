@@ -80,13 +80,7 @@ public final class EJBSecurityManagerFactory extends SecurityManagerFactory {
     static {
         _logger = LogDomains.getLogger(EJBSecurityManagerFactory.class, LogDomains.SECURITY_LOGGER);
     }
-   
-    /*
-    private Map CONTEXT_ID = new HashMap();
 
-    @Inject
-    private Habitat habitat;
-    */
     @Inject
     InvocationManager invMgr;
      
