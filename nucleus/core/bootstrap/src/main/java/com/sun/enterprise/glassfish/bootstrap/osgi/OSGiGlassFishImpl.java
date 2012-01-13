@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -48,18 +48,20 @@ import org.osgi.framework.BundleContext;
 import org.osgi.service.startlevel.StartLevel;
 
 /**
- * A specialized implementation of GlassFishImpl which takes care of setting final start level.
+ * A specialized implementation of {@link EmbeddedOSGiGlassFishImpl} which takes care of setting final start level.
  * This is done so as to avoid any impact on startup time by optional services.
+ *
+ * This object is created by {@link OSGiGlassFishRuntime}
  *
  * @author sanjeeb.sahoo@oracle.com
  */
-class OSGiGlassFishImpl extends GlassFishDecorator {
+class OSGiGlassFishImpl extends EmbeddedOSGiGlassFishImpl {
     private int finalStartLevel;
     private final BundleContext bundleContext;
 
-    public OSGiGlassFishImpl(GlassFish decoratedGf, BundleContext bundleContext, int finalStartLevel)
+    public OSGiGlassFishImpl(OSGiGlassFishRuntime gfr, GlassFish decoratedGf, BundleContext bundleContext, int finalStartLevel)
             throws GlassFishException {
-        super(decoratedGf);
+        super(gfr, decoratedGf);
         this.bundleContext = bundleContext;
         this.finalStartLevel = finalStartLevel;
     }

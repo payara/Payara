@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2011-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,55 +41,30 @@
 
 package com.sun.enterprise.glassfish.bootstrap.osgi;
 
-import com.sun.enterprise.glassfish.bootstrap.GlassFishImpl;
-import com.sun.enterprise.module.bootstrap.ModuleStartup;
+import com.sun.enterprise.glassfish.bootstrap.GlassFishDecorator;
 import org.glassfish.embeddable.GlassFish;
 import org.glassfish.embeddable.GlassFishException;
-import org.jvnet.hk2.component.Habitat;
-import org.osgi.framework.BundleException;
-import org.osgi.framework.launch.Framework;
-
-import java.util.Properties;
 
 /**
- * This is a special implementation used in non-embedded environment. It assumes that it has launched the
- * framework during bootstrap and hence can stop it upon shutdown.
- * It also creates a specialized GlassFishImpl called {@link OSGiGlassFishImpl}
+ * A specialized implementation of GlassFish which takes care of calling
+ * {@link EmbeddedOSGiGlassFishRuntime#remove(GlassFish)} when {@link #dispose()} is called.
+ * This is done so that GlassFish service can be unregistered from service registry.
  *
- * @author Sanjeeb.Sahoo@Sun.COM
+ * This object is created by {@link EmbeddedOSGiGlassFishRuntime}
+ *
+ * @author sanjeeb.sahoo@oracle.com
  */
-public class OSGiGlassFishRuntime extends EmbeddedOSGiGlassFishRuntime {
+public class EmbeddedOSGiGlassFishImpl extends GlassFishDecorator {
+    private final EmbeddedOSGiGlassFishRuntime gfr; // needed during dispose
 
-    // cache the value, because we can't use bundleContext after this bundle is stopped.
-    Framework framework; // system bundle is the framework
-
-    public OSGiGlassFishRuntime(final Framework framework) {
-        super();
-        this.framework = framework;
+    public EmbeddedOSGiGlassFishImpl(EmbeddedOSGiGlassFishRuntime gfr, GlassFish decoratedGf) {
+        super(decoratedGf);
+        this.gfr = gfr;
     }
 
     @Override
-    public void shutdown() throws GlassFishException {
-        if (framework == null) {
-            return; // already shutdown
-        }
-        try {
-            framework.stop();
-            framework.waitForStop(0);
-        } catch (InterruptedException ex) {
-            throw new GlassFishException(ex);
-        } catch (BundleException ex) {
-            throw new GlassFishException(ex);
-        }
-        super.shutdown();
-        framework = null; // guard against repeated calls.
-    }
-
-    @Override
-    protected GlassFish createGlassFish(ModuleStartup gfKernel, Habitat habitat, Properties gfProps) throws GlassFishException {
-        GlassFish gf = new GlassFishImpl(gfKernel, habitat, gfProps);
-        int finalStartLevel = Integer.valueOf(gfProps.getProperty(
-                Constants.FINAL_START_LEVEL_PROP, "2"));
-        return new OSGiGlassFishImpl(this, gf, framework.getBundleContext(), finalStartLevel);
+    public void dispose() throws GlassFishException {
+        super.dispose();
+        gfr.remove(this);
     }
 }

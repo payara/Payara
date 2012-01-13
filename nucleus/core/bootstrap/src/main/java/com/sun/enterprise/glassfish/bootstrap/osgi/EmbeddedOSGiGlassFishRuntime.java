@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -55,12 +55,11 @@ import org.glassfish.embeddable.GlassFishRuntime;
 import org.jvnet.hk2.component.Habitat;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
+import org.osgi.framework.ServiceRegistration;
 import org.osgi.util.tracker.ServiceTracker;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 
 /**
 * @author Sanjeeb.Sahoo@Sun.COM
@@ -69,7 +68,7 @@ public class EmbeddedOSGiGlassFishRuntime extends GlassFishRuntime {
 
     // TODO(Sahoo): Merge with StarticGlassFishRuntime and elevate to higher package level.
 
-    List<GlassFish> gfs = new ArrayList<GlassFish>();
+    Map<GlassFish, ServiceRegistration> gfs = new HashMap<GlassFish, ServiceRegistration>();
 
     public EmbeddedOSGiGlassFishRuntime() {
     }
@@ -89,8 +88,8 @@ public class EmbeddedOSGiGlassFishRuntime extends GlassFishRuntime {
             final Habitat habitat = main.createHabitat(mr, startupContext);
             final ModuleStartup gfKernel = main.findStartupService(mr, habitat, null, startupContext);
             GlassFish glassFish = createGlassFish(gfKernel, habitat, gfProps.getProperties());
-            gfs.add(glassFish);
-            getBundleContext().registerService(GlassFish.class.getName(), glassFish, gfProps.getProperties());
+            ServiceRegistration registration = getBundleContext().registerService(GlassFish.class.getName(), glassFish, gfProps.getProperties());
+            gfs.put(glassFish,  registration);
             return glassFish;
         } catch (BootException ex) {
             throw new GlassFishException(ex);
@@ -100,7 +99,8 @@ public class EmbeddedOSGiGlassFishRuntime extends GlassFishRuntime {
     }
 
     public synchronized void shutdown() throws GlassFishException {
-        for (GlassFish gf : gfs) {
+        // make a copy as calling gf.dispose() causes it to remove itself from the map we are iterating
+        for (GlassFish gf : new HashSet<GlassFish>(gfs.keySet())) {
             if (gf.getStatus() != GlassFish.Status.DISPOSED) {
                 try {
                     gf.dispose();
@@ -134,10 +134,16 @@ public class EmbeddedOSGiGlassFishRuntime extends GlassFishRuntime {
     }
 
     protected GlassFish createGlassFish(ModuleStartup gfKernel, Habitat habitat, Properties gfProps) throws GlassFishException {
-        return new GlassFishImpl(gfKernel, habitat, gfProps);
+        GlassFish gf = new GlassFishImpl(gfKernel, habitat, gfProps);
+        return new EmbeddedOSGiGlassFishImpl(this, gf);
     }
 
     public BundleContext getBundleContext() {
         return FrameworkUtil.getBundle(getClass()).getBundleContext();
+    }
+
+    public void remove(GlassFish gf) {
+        ServiceRegistration reg = gfs.remove(gf);
+        reg.unregister();
     }
 }
