@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -52,7 +52,7 @@ import com.sun.enterprise.util.io.FileUtils;
 import com.sun.enterprise.v3.logging.AgentFormatterDelegate;
 import com.sun.logging.LogDomains;
 import org.glassfish.api.admin.FileMonitoring;
-import org.glassfish.internal.api.Init;
+import org.glassfish.internal.api.InitRunLevel;
 import org.glassfish.internal.config.UnprocessedConfigListener;
 import org.glassfish.server.ServerEnvironmentImpl;
 import org.jvnet.hk2.annotations.Inject;
@@ -81,7 +81,8 @@ import java.util.logging.*;
 
 @Service
 @Scoped(Singleton.class)
-public class LogManagerService implements Init, PostConstruct, PreDestroy, org.glassfish.internal.api.LogManager {
+@InitRunLevel
+public class LogManagerService implements PostConstruct, PreDestroy, org.glassfish.internal.api.LogManager {
 
     @Inject
     ServerEnvironmentImpl env;
