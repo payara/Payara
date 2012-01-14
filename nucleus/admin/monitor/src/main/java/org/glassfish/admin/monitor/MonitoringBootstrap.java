@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -99,7 +99,7 @@ import org.glassfish.flashlight.impl.client.AgentAttacher;
 import org.glassfish.flashlight.provider.ProbeProviderFactory;
 import org.glassfish.flashlight.provider.ProbeProviderEventListener;
 import org.glassfish.flashlight.provider.ProbeRegistry;
-import org.glassfish.internal.api.Init;
+import org.glassfish.internal.api.InitRunLevel;
 import org.jvnet.hk2.config.Transactions;
 
 /**
@@ -108,7 +108,8 @@ import org.jvnet.hk2.config.Transactions;
  */
 @Service
 @Scoped(Singleton.class)
-public class MonitoringBootstrap implements Init, PostConstruct, PreDestroy, EventListener, ModuleLifecycleListener, ConfigListener {
+@InitRunLevel
+public class MonitoringBootstrap implements PostConstruct, PreDestroy, EventListener, ModuleLifecycleListener, ConfigListener {
     @Inject
     private MonitoringRuntimeDataRegistry mrdr;
     @Inject
