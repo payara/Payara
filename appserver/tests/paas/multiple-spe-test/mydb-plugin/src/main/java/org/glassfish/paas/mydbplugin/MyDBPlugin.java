@@ -120,7 +120,7 @@ public class MyDBPlugin extends DerbyPlugin {
         serviceProperties.put(HOST, ipAddress);
         serviceProperties.put(PORT, DERBY_PORT);
         serviceProperties.put(DATABASENAME, getDatabaseName());
-        serviceProperties.put("CONNECTIONATTRIBUTES", ";create\\=true");
+        serviceProperties.put("CONNECTIONATTRIBUTES", ";create=true");
         serviceProperties.put(RESOURCE_TYPE, "javax.sql.XADataSource");
         serviceProperties.put(CLASSNAME, "org.apache.derby.jdbc.ClientXADataSource");
         return serviceProperties;
