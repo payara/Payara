@@ -79,7 +79,7 @@ import java.util.logging.Logger;
 import com.sun.enterprise.module.Module;
 import com.sun.enterprise.module.ModulesRegistry;
 
-import org.jvnet.hk2.component.Habitat;
+import org.glassfish.hk2.Services;
 import org.jvnet.hk2.config.types.Property;
 
 /**
@@ -184,7 +184,7 @@ public final class GlassFishORBManager {
     public static final String S1AS_ORB_ID = "S1AS-ORB";
 
     // Set in constructor
-    private Habitat habitat;
+    private Services services;
     private IIOPUtils iiopUtils;
 
     // the ORB instance
@@ -210,15 +210,15 @@ public final class GlassFishORBManager {
      * move all public statics or change them to package private.
      * All external orb/iiop access should go through orb-connector module
      */
-    GlassFishORBManager(Habitat h ) {
+    GlassFishORBManager(Services h ) {
         fineLog( "GlassFishORBManager: Constructing GlassFishORBManager: h {0}",
             h ) ;
-        habitat = h;
+        services = h;
 
-        iiopUtils = habitat.getComponent(IIOPUtils.class);
+        iiopUtils = services.byType(IIOPUtils.class).get();
 
-        ProcessEnvironment processEnv = habitat.getComponent(
-            ProcessEnvironment.class);
+        ProcessEnvironment processEnv = services.byType(
+            ProcessEnvironment.class).get();
 
         processType = processEnv.getProcessType();
 
@@ -419,7 +419,7 @@ public final class GlassFishORBManager {
        
 
         if (processType.isServer()) {
-            gmsClient = new IiopFolbGmsClient( habitat ) ;
+            gmsClient = new IiopFolbGmsClient( services ) ;
 
             if (gmsClient.isGMSAvailable()) {
                 fineLog( "GMS available and enabled - doing EE initialization");
@@ -558,7 +558,7 @@ public final class GlassFishORBManager {
                     Module corbaOrbModule = null;
 
                     // start glassfish-corba-orb bundle
-                    ModulesRegistry modulesRegistry = habitat.getComponent(ModulesRegistry.class);
+                    ModulesRegistry modulesRegistry = services.forContract(ModulesRegistry.class).get();
 
                     for(Module m : modulesRegistry.getModules()) {
                         if( m.getName().equals("glassfish-corba-orb") ) {

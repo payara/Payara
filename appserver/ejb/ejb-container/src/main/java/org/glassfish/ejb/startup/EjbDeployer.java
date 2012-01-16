@@ -240,7 +240,8 @@ public class EjbDeployer
         }
         //Register the EjbSecurityComponentInvocationHandler
 
-        RegisteredComponentInvocationHandler handler = habitat.getComponent(RegisteredComponentInvocationHandler.class,"ejbSecurityCIH");
+        RegisteredComponentInvocationHandler handler = habitat.forContract(RegisteredComponentInvocationHandler.class)
+            .named("ejbSecurityCIH").get();
         handler.register();
 
         EjbBundleDescriptor ejbBundle = dc.getModuleMetaData(EjbBundleDescriptor.class);
@@ -253,7 +254,7 @@ public class EjbDeployer
         ejbBundle.setClassLoader(dc.getClassLoader());
 
         if (ejbBundle.containsCMPEntity()) {
-            CMPService cmpService = habitat.getByContract(CMPService.class);
+            CMPService cmpService = habitat.forContract(CMPService.class).get();
             if (cmpService == null) {
                 throw new RuntimeException("CMP Module is not available");
             } else if (!cmpService.isReady()) {
@@ -646,7 +647,7 @@ public class EjbDeployer
     private void initCMPDeployer() {
         if (cmpDeployer == null) {
             synchronized(lock) {
-                cmpDeployer = habitat.getByContract(CMPDeployer.class);
+                cmpDeployer = habitat.forContract(CMPDeployer.class).get();
             }
         }
     }

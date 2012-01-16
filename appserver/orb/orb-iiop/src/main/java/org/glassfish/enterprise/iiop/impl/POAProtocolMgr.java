@@ -82,7 +82,7 @@ import java.util.logging.Logger;
 import javax.rmi.CORBA.Tie;
 
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
+import org.glassfish.hk2.Services;
 import org.jvnet.hk2.annotations.Inject;
 import org.omg.CORBA.CompletionStatus;
 import org.omg.CORBA.INVALID_TRANSACTION;
@@ -122,7 +122,7 @@ public final class POAProtocolMgr extends org.omg.CORBA.LocalObject
     private PresentationManager presentationMgr;
 
     @Inject
-    private Habitat habitat;
+    private Services services;
 
     public POAProtocolMgr() {}
 
@@ -404,7 +404,7 @@ public final class POAProtocolMgr extends org.omg.CORBA.LocalObject
                     new Object[]{ejbKey, ejbId});
             }
 
-            EjbService ejbService = habitat.getByContract(EjbService.class);
+            EjbService ejbService = services.forContract(EjbService.class).get();
 
             result = ejbService.ejbIdToDescriptor(ejbId);
         } finally {

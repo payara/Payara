@@ -42,7 +42,7 @@ package org.glassfish.enterprise.iiop.api;
 
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
+import org.glassfish.hk2.Services;
 import org.omg.CORBA.ORB;
 import org.omg.PortableInterceptor.ServerRequestInfo;
 
@@ -76,7 +76,7 @@ import java.util.logging.Logger;
 public class GlassFishORBHelper implements PostConstruct, ORBLocator {
 
     @Inject
-    private Habitat habitat;
+    private Services services;
 
     @Inject
     private ProcessEnvironment processEnv;
@@ -95,7 +95,7 @@ public class GlassFishORBHelper implements PostConstruct, ORBLocator {
     private SelectableChannelDelegate selectableChannelDelegate;
 
     public void postConstruct() {
-        orbFactory = habitat.getByContract(GlassFishORBFactory.class);
+        orbFactory = services.forContract(GlassFishORBFactory.class).get();
     }
 
     public void onShutdown() {
@@ -115,7 +115,7 @@ public class GlassFishORBHelper implements PostConstruct, ORBLocator {
                     }
                 }
             };
-            habitat.getByContract(Events.class).register(glassfishEventListener);
+            services.forContract(Events.class).get().register(glassfishEventListener);
         }
     }
 
@@ -151,7 +151,7 @@ public class GlassFishORBHelper implements PostConstruct, ORBLocator {
                         if (isServer) {
                             if (protocolManager == null) {
                                 ProtocolManager tempProtocolManager =
-                                                habitat.getByContract(ProtocolManager.class);
+                                                services.forContract(ProtocolManager.class).get();
 
                                 tempProtocolManager.initialize(orb);
                                 // Move startup of naming to PEORBConfigurator so it runs
@@ -163,7 +163,7 @@ public class GlassFishORBHelper implements PostConstruct, ORBLocator {
                                 protocolManager = tempProtocolManager;
                                 
                                 GlassfishNamingManager namingManager =
-                                    habitat.getByContract(GlassfishNamingManager.class);
+                                    services.forContract(GlassfishNamingManager.class).get();
 
                                 Remote remoteSerialProvider =
                                     namingManager.initializeRemoteNamingSupport(orb);

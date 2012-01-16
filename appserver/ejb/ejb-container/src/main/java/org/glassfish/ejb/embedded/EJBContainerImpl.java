@@ -65,6 +65,8 @@ import org.glassfish.embeddable.GlassFish;
 import org.glassfish.embeddable.GlassFishException;
 import org.glassfish.embeddable.archive.ScatteredArchive;
 
+import org.glassfish.hk2.Provider;
+import org.glassfish.hk2.Providers;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.Inhabitant;
 
@@ -210,6 +212,16 @@ public class EJBContainerImpl extends EJBContainer {
 
     private void cleanupTransactions() {
         try {
+            /*
+            Providers<TransactionManager> txProviders = habitat.forContract(TransactionManager.class);
+            if (txProviders != null) {
+                Provider<TransactionManager> provider = txProviders.getProvider();
+                if (provider != null && provider.isActive()) {
+                    TransactionManager txMgr = provider.get();
+                    txMgr.rollback();
+                }
+            }
+            */
             Inhabitant<TransactionManager> inhabitant =
                     habitat.getInhabitantByType(TransactionManager.class);
             if (inhabitant != null && inhabitant.isActive()) {
@@ -224,6 +236,16 @@ public class EJBContainerImpl extends EJBContainer {
 
     private void cleanupConnectorRuntime() {
         try {
+            /*
+            Providers<ConnectorRuntime> txProviders = habitat.forContract(ConnectorRuntime.class);
+            if (txProviders != null) {
+                Provider<ConnectorRuntime> provider = txProviders.getProvider();
+                if (provider != null && provider.isActive()) {
+                    ConnectorRuntime connectorRuntime = provider.get();
+                    connectorRuntime.cleanUpResourcesAndShutdownAllActiveRAs();
+                }
+            }
+            */
             Inhabitant<ConnectorRuntime> inhabitant =
                     habitat.getInhabitantByType(ConnectorRuntime.class);
             if (inhabitant != null && inhabitant.isActive()) {

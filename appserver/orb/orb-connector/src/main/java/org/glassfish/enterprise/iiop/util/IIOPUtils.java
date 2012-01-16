@@ -48,9 +48,11 @@ import java.util.TreeSet;
 
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Configs;
+import org.glassfish.hk2.Provider;
+import org.glassfish.hk2.Providers;
+import org.glassfish.hk2.Services;
 import org.glassfish.orb.admin.config.IiopListener;
 import org.glassfish.orb.admin.config.IiopService;
-import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.config.serverbeans.ServerRef;
 import org.glassfish.grizzly.config.dom.NetworkListener;
 import org.glassfish.grizzly.config.dom.ThreadPool;
@@ -76,7 +78,7 @@ public class IIOPUtils implements PostConstruct {
     private static IIOPUtils _me;
 
     @Inject
-    Habitat habitat ;
+    Services services;
 
     @Inject
     private ClassLoaderHierarchy clHierarchy;
@@ -103,10 +105,10 @@ public class IIOPUtils implements PostConstruct {
 
         if( processEnv.getProcessType().isServer()) {
 
-            iiopService = habitat.getComponent(IiopService.class,
-                    ServerEnvironment.DEFAULT_INSTANCE_NAME);
+            iiopService = services.forContract(IiopService.class)
+                    .named(ServerEnvironment.DEFAULT_INSTANCE_NAME).get();
             final Collection<ThreadPool> threadPool = iiopService.getParent(Config.class).getThreadPools().getThreadPool();
-            final Collection<NetworkListener> listeners = habitat.getAllByContract(NetworkListener.class);
+            final Collection<NetworkListener> listeners = allByContract(NetworkListener.class);
             final Set<String> names = new TreeSet<String>();
             threadPools = new ArrayList<ThreadPool>();
             for (NetworkListener listener : listeners) {
@@ -117,8 +119,8 @@ public class IIOPUtils implements PostConstruct {
                     threadPools.add(pool);
                 }
             }
-            serverRefs  = habitat.getAllByContract(ServerRef.class);
-            configs     = habitat.getComponent(Configs.class);
+            serverRefs  = allByContract(ServerRef.class);
+            configs     = services.forContract(Configs.class).get();
         }
 
         IIOPUtils.initMe(this);
@@ -179,19 +181,23 @@ public class IIOPUtils implements PostConstruct {
     }
 
     public Collection<IIOPInterceptorFactory> getAllIIOPInterceptrFactories() {
-        return habitat.getAllByContract(IIOPInterceptorFactory.class);
+        return allByContract(IIOPInterceptorFactory.class);
     }
 
     public Collection<GlassFishORBLifeCycleListener> getGlassFishORBLifeCycleListeners() {
-        return habitat.getAllByContract(GlassFishORBLifeCycleListener.class);
+        return allByContract(GlassFishORBLifeCycleListener.class);
     }
 
     public ProcessType getProcessType() {
         return processType;
     }
 
-    public Habitat getHabitat() {
-        return habitat;
+    public Services getHabitat() {
+        return services;
+    }
+
+    public Services getServices() {
+        return services;
     }
 
 
@@ -203,6 +209,21 @@ public class IIOPUtils implements PostConstruct {
     // GlassFishORBHelper to acquire default ORB.
     public ORB getORB() {
         return defaultORB;
+    }
+    
+    private <T> Collection<T> allByContract(Class<T> contractClass) {
+        return ((Habitat) services).getAllByContract(contractClass);
+        /*
+        Collection<Provider<T>> providers = services.forContract(contractClass).all();
+        ArrayList<T> list = new ArrayList<T>();
+        for (Provider<T> provider : providers) {
+            if (provider.isActive()) {
+                list.add(provider.get());
+            }
+        }
+
+        return list;
+        */
     }
 
 }

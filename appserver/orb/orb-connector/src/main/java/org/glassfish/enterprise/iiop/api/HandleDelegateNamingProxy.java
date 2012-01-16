@@ -45,7 +45,7 @@ import org.glassfish.api.naming.NamedNamingObjectProxy;
 
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Inject;
-import org.jvnet.hk2.component.Habitat;
+import org.glassfish.hk2.Services;
 
 import javax.ejb.spi.HandleDelegate;
 
@@ -65,7 +65,7 @@ public class HandleDelegateNamingProxy implements NamedNamingObjectProxy {
             = "java:comp/HandleDelegate";
 
     @Inject
-    private Habitat habitat;
+    private Services services;
 
     private volatile HandleDelegateFacade facade;
 
@@ -76,7 +76,7 @@ public class HandleDelegateNamingProxy implements NamedNamingObjectProxy {
         if (HANDLE_DELEGATE.equals(name)) {
             try {
                 if (facade == null) {
-                    HandleDelegateFacade hd = habitat.getByContract(HandleDelegateFacade.class);
+                    HandleDelegateFacade hd = services.forContract(HandleDelegateFacade.class).get();
                     facade = hd;
                 }
                 delegate = facade.getHandleDelegate();

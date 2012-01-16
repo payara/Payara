@@ -107,8 +107,8 @@ public class PEORBConfigurator implements ORBConfigurator {
 
     private GlassFishORBHelper getHelper() {
         IIOPUtils iiopUtils = IIOPUtils.getInstance();
-        return iiopUtils.getHabitat().getComponent( 
-            GlassFishORBHelper.class);
+        return iiopUtils.getServices().byType(
+            GlassFishORBHelper.class).get();
     }
 
     public void configure(DataCollector dc, ORB orb) {
