@@ -215,19 +215,19 @@ public class RegenerateGlassFishTemplate implements AdminCommand, Runnable {
                                 "stop-local-instance"});
                     logger.log(Level.INFO, "Output of command stop instance" + commandOutput);
                     commandOutput = vm.executeOn(new String[]{"rm -rf /opt/glassfishvm/glassfish3"});
-                    logger.log(Level.INFO, "Output of command rm" + commandOutput);
+                    logger.log(Level.INFO, "Output of command rm to remove prev installation" + commandOutput);
                     commandOutput = vm.executeOn(new String[]{"unzip -d /opt/glassfishvm/ glassfish.zip"});
-                    logger.log(Level.INFO, "Output of command unzip" + commandOutput);
+                    logger.log(Level.INFO, "Output of command unzip latest glassfish" + commandOutput);
                     commandOutput = vm.executeOn(new String[]{"sudo -S rm /etc/opt/glassfishvm/configured_ip < /home/cloud/p"});
-                    logger.log(Level.INFO, "Output of command umount" + commandOutput);
+                    logger.log(Level.INFO, "Output of command rm configured ip file" + commandOutput);
                     commandOutput = vm.executeOn(new String[]{"sudo -S umount /etc/opt/glassfishvm/cust < /home/cloud/p"});
-                    logger.log(Level.INFO, "Output of command rm" + commandOutput);
+                    logger.log(Level.INFO, "Output of command unmount cust folder" + commandOutput);
                     commandOutput = vm.executeOn(new String[]{"sudo -S rm -rf /etc/opt/glassfishvm/cust < /home/cloud/p"});
-                    logger.log(Level.INFO, "Output of command echo" + commandOutput);
-                    commandOutput = vm.executeOn(new String[]{"rm /home/cloud/p"});
-                    logger.log(Level.INFO, "Output of command rm" + commandOutput);
-                    commandOutput = vm.executeOn(new String[]{"rm /home/cloud/glassfish.zip*"});
-                    logger.log(Level.INFO, "Output of command rm" + commandOutput);
+                    logger.log(Level.INFO, "Output of command rm cust folder" + commandOutput);
+                    commandOutput = vm.executeOn(new String[]{"rm", "/home/cloud/p"});
+                    logger.log(Level.INFO, "Output of command rm /home/cloud/p" + commandOutput);
+                    commandOutput = vm.executeOn(new String[]{"rm", "/home/cloud/glassfish.zip"});
+                    logger.log(Level.INFO, "Output of command rm /home/cloud/glassfish.zip" + commandOutput);
 
                     vm.stop();
                     FileUtils.copy(System.getenv("HOME") + "/virt/disks/glassfish1.img", targetdir + "/glassfish.img");
