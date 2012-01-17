@@ -73,6 +73,7 @@ import org.glassfish.internal.api.*;
 
 import org.glassfish.api.admin.ProcessEnvironment;
 import org.glassfish.api.admin.ProcessEnvironment.ProcessType;
+import org.glassfish.api.Startup;
 
 import com.sun.enterprise.container.common.spi.util.InterceptorInfo;
 import com.sun.enterprise.container.common.spi.*;
@@ -82,8 +83,7 @@ import org.glassfish.api.naming.NamingObjectProxy;
 /**
  */
 @Service(name="ManagedBeanManagerImpl")
-@PostStartupRunLevel
-public class ManagedBeanManagerImpl implements ManagedBeanManager, PostConstruct, EventListener {
+public class ManagedBeanManagerImpl implements ManagedBeanManager, PostStartup, PostConstruct, EventListener {
 
      private static final Logger _logger = LogDomains.getLogger(ManagedBeanManagerImpl.class,
             LogDomains.CORE_LOGGER);
@@ -119,6 +119,8 @@ public class ManagedBeanManagerImpl implements ManagedBeanManager, PostConstruct
         events.register(this);
         processType = processEnv.getProcessType();
     }
+
+    public Startup.Lifecycle getLifecycle() { return Startup.Lifecycle.SERVER; }
 
     public void event(Event event) {
         
