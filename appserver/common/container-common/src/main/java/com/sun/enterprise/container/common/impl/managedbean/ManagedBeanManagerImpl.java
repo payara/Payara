@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -73,7 +73,6 @@ import org.glassfish.internal.api.*;
 
 import org.glassfish.api.admin.ProcessEnvironment;
 import org.glassfish.api.admin.ProcessEnvironment.ProcessType;
-import org.glassfish.api.Startup;
 
 import com.sun.enterprise.container.common.spi.util.InterceptorInfo;
 import com.sun.enterprise.container.common.spi.*;
@@ -83,7 +82,8 @@ import org.glassfish.api.naming.NamingObjectProxy;
 /**
  */
 @Service(name="ManagedBeanManagerImpl")
-public class ManagedBeanManagerImpl implements ManagedBeanManager, PostStartup, PostConstruct, EventListener {
+@PostStartupRunLevel
+public class ManagedBeanManagerImpl implements ManagedBeanManager, PostConstruct, EventListener {
 
      private static final Logger _logger = LogDomains.getLogger(ManagedBeanManagerImpl.class,
             LogDomains.CORE_LOGGER);
@@ -119,8 +119,6 @@ public class ManagedBeanManagerImpl implements ManagedBeanManager, PostStartup, 
         events.register(this);
         processType = processEnv.getProcessType();
     }
-
-    public Startup.Lifecycle getLifecycle() { return Startup.Lifecycle.SERVER; }
 
     public void event(Event event) {
         
