@@ -70,6 +70,7 @@ public class DerbyPlugin extends DatabaseSPEBase {
     private static final MessageFormat ASADMIN_COMMAND = new MessageFormat(
             "{0}" + File.separator + "lib" + File.separator + "nadmin" +
                     (OS.isWindows() ? ".bat" : "")); // {0} must be install root.
+    private static final String DERBY_DRIVER_CLASSNAME = "org.apache.derby.jdbc.ClientDriver";
 
     public String getDefaultServiceName() {
         return "default-derby-db-service";
@@ -79,10 +80,7 @@ public class DerbyPlugin extends DatabaseSPEBase {
     public void executeInitSql(Properties dbProps, String sqlFile) {
         try {
             logger.log(Level.INFO, "javadb.spe.init_sql.exec.start", sqlFile);
-            String url = "jdbc:derby://" + dbProps.getProperty(HOST) + ":" +
-                    dbProps.getProperty(PORT) + "/" +
-                    dbProps.getProperty(DATABASENAME) + ";create=true";
-            executeAntTask(dbProps, "org.apache.derby.jdbc.ClientDriver", url, sqlFile, true);
+            executeSql(dbProps, DERBY_DRIVER_CLASSNAME, sqlFile);
             logger.log(Level.INFO, "javadb.spe.init_sql.exec.stop", sqlFile);
         } catch (Exception ex) {
             Object[] args = new Object[] {sqlFile, ex};
@@ -91,12 +89,22 @@ public class DerbyPlugin extends DatabaseSPEBase {
     }
 
     @Override
+    public void executeTearDownSql(Properties dbProps, String sqlFile) {
+        try {
+            logger.log(Level.INFO, "javadb.spe.tear_down_sql.exec.start", sqlFile);
+            executeSql(dbProps, DERBY_DRIVER_CLASSNAME, sqlFile);
+            logger.log(Level.INFO, "javadb.spe.tear_down_sql.exec.stop", sqlFile);
+        } catch (Exception ex) {
+            Object[] args = new Object[] {sqlFile, ex};
+            logger.log(Level.WARNING, "javadb.spe.tear_down_sql.fail.ex", args);
+        }
+    }
+
+    @Override
     public void createDatabase(Properties dbProps) {
         try {
             logger.log(Level.INFO, "javadb.spe.custom_db_creation.exec.start", dbProps.getProperty(DATABASENAME));
-            String url = "jdbc:derby://" + dbProps.getProperty(HOST) + ":" +
-                    dbProps.getProperty(PORT) + "/" +
-                    dbProps.getProperty(DATABASENAME) + ";create=true";
+            String url = dbProps.getProperty(URL);
             String sql = "VALUES(1)";
             executeAntTask(dbProps, "org.apache.derby.jdbc.ClientDriver", url, sql, false);
             logger.log(Level.INFO, "javadb.spe.custom_db_creation.exec.stop", dbProps.getProperty(DATABASENAME));
@@ -117,6 +125,8 @@ public class DerbyPlugin extends DatabaseSPEBase {
         serviceProperties.put("CONNECTIONATTRIBUTES", ";create=true");
         serviceProperties.put(RESOURCE_TYPE, "javax.sql.XADataSource");
         serviceProperties.put(CLASSNAME, "org.apache.derby.jdbc.ClientXADataSource");
+        serviceProperties.put(URL, "jdbc:derby://" + ipAddress + ":" + DERBY_PORT +
+                "/" + getDatabaseName() + ";create=true");
         return serviceProperties;
     }
 

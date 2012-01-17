@@ -305,7 +305,37 @@ public abstract class DatabaseSPEBase extends ServiceProvisioningEngineBase<RDBM
     public void dissociateServices(Service serviceConsumer,
                                    ServiceReference svcRef, Service serviceProvider,
                                    boolean beforeUndeploy, PaaSDeploymentContext dc) {
-        //no-op
+        //post undeployment phase - skip it
+        if(!beforeUndeploy) {
+            return;
+        }
+        final DeploymentContext context = dc.getDeploymentContext();
+        try {
+            Boolean isDatabaseUnInitialized = context.getTransientAppMetaData(
+                    getClass().getName() + DB_UNINITIALIZED, Boolean.class);
+            if (isDatabaseUnInitialized == null || !isDatabaseUnInitialized) {
+
+                final ReadableArchive readableArchive = context.getSource();
+                String tearDownSqlFile = null;
+                String ipAddress = serviceConsumer.getProperties().getProperty(VIRTUAL_MACHINE_IP_ADDRESS);
+
+                //Execute Tear down SQL
+                if (DeploymentUtils.isWebArchive(readableArchive)) {
+                    tearDownSqlFile = dc.getDeploymentContext().getSource().getURI().getPath() +
+                            "WEB-INF" + File.separator + "teardown.sql";
+                } else {
+                    tearDownSqlFile = dc.getDeploymentContext().getSource().getURI().getPath() +
+                            "META-INF" + File.separator + "teardown.sql";
+                }
+                if (new File(tearDownSqlFile).exists()) {
+                    executeTearDownSql(getServiceProperties(ipAddress), tearDownSqlFile);
+                }
+            }
+        } finally {
+            //Since dissociateServices are called multiple times, this ensures that
+            //the tear down sql execution is executed just once.
+            context.addTransientAppMetaData(getClass().getName()+DB_UNINITIALIZED, true);
+        }
     }
 
     /**
@@ -422,6 +452,19 @@ public abstract class DatabaseSPEBase extends ServiceProvisioningEngineBase<RDBM
      * @param initSqlFile initialization SQL file
      */
     public abstract void executeInitSql(Properties dbProps, String initSqlFile);
+
+    /**
+     * Execute Tear down SQL file provided
+     *
+     * @param dbProps Database connection properties
+     * @param teardownSqlFile tear down SQL file
+     */
+    public abstract void executeTearDownSql(Properties dbProps, String teardownSqlFile);
+
+    protected void executeSql(Properties dbProps, String driverClassName, String sqlFile) {
+        String url = dbProps.getProperty(URL);
+        executeAntTask(dbProps, driverClassName, url, sqlFile, true);
+    }
 
     /**
      * Execute ant task using the driverName and url supplied. The task of a sql

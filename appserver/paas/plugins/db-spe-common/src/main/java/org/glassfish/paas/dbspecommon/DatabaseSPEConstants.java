@@ -95,4 +95,6 @@ public interface DatabaseSPEConstants {
      * Temporary constants
      */
     public String DB_INITIALIZED = "_db_initialized";
+
+    public String DB_UNINITIALIZED = "_db_uninitialized";
 }

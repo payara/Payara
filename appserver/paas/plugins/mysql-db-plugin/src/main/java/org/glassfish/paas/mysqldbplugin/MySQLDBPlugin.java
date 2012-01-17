@@ -64,6 +64,7 @@ public class MySQLDBPlugin  extends DatabaseSPEBase {
     // TODO :: grab the actual port.
     private static final String MYSQL_PORT = "3306";
     private static Logger logger = LogDomains.getLogger(MySQLDBPlugin.class, LogDomains.PAAS_LOGGER);
+    private static final String MYSQL_DRIVER_CLASSNAME = "com.mysql.jdbc.Driver";
 
     public String getDefaultServiceName() {
         return "default-mysql-db-service";
@@ -73,11 +74,7 @@ public class MySQLDBPlugin  extends DatabaseSPEBase {
     public void executeInitSql(Properties dbProps, String sqlFile) {
         try {
             logger.log(Level.INFO, "mysqldb.spe.init_sql.exec.start", sqlFile);
-            String url = "jdbc:mysql://" + dbProps.getProperty(HOST) +
-                    ":" + dbProps.getProperty(PORT) + "/" +
-                    dbProps.getProperty(DATABASENAME) +
-                    "?createDatabaseIfNotExist=true";
-            executeAntTask(dbProps, "com.mysql.jdbc.Driver", url, sqlFile, true);
+            executeSql(dbProps, MYSQL_DRIVER_CLASSNAME, sqlFile);
             logger.log(Level.INFO, "mysqldb.spe.init_sql.exec.stop", sqlFile);
         } catch (Exception ex) {
             Object[] args = new Object[] {sqlFile, ex};
@@ -86,14 +83,23 @@ public class MySQLDBPlugin  extends DatabaseSPEBase {
     }
 
     @Override
+    public void executeTearDownSql(Properties dbProps, String sqlFile) {
+        try {
+            logger.log(Level.INFO, "mysqldb.spe.tear_down_sql.exec.start", sqlFile);
+            executeSql(dbProps, MYSQL_DRIVER_CLASSNAME, sqlFile);
+            logger.log(Level.INFO, "mysqldb.spe.tear_down_sql.exec.stop", sqlFile);
+        } catch (Exception ex) {
+            Object[] args = new Object[] {sqlFile, ex};
+            logger.log(Level.WARNING, "mysqldb.spe.tear_down_sql.fail.ex", args);
+        }
+    }
+
+    @Override
     public void createDatabase(Properties dbProps) {
         try {
             logger.log(Level.INFO, "mysqldb.spe.custom_db_creation.exec.start",
                     dbProps.getProperty(DATABASENAME));
-            String url = "jdbc:mysql://" + dbProps.getProperty(HOST) +
-                    ":" + dbProps.getProperty(PORT) + "/" +
-                    dbProps.getProperty(DATABASENAME) +
-                    "?createDatabaseIfNotExist=true";
+            String url = dbProps.getProperty(URL);
             String sql = "SELECT '1'";
             executeAntTask(dbProps, "com.mysql.jdbc.Driver", url, sql, false);
             logger.log(Level.INFO, "mysqldb.spe.custom_db_creation.exec.stop",
@@ -113,7 +119,7 @@ public class MySQLDBPlugin  extends DatabaseSPEBase {
         serviceProperties.put(HOST, ipAddress);
         serviceProperties.put(PORT, MYSQL_PORT);
         serviceProperties.put(URL, "jdbc:mysql://" + ipAddress + ":" +
-                MYSQL_PORT + "/" + getDatabaseName());
+                MYSQL_PORT + "/" + getDatabaseName() + "?createDatabaseIfNotExist=true");
         serviceProperties.put(RESOURCE_TYPE, "javax.sql.XADataSource");
         serviceProperties.put(CLASSNAME, "com.mysql.jdbc.jdbc2.optional.MysqlXADataSource");
         serviceProperties.put("createDatabaseIfNotExist", "true");
