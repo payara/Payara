@@ -49,13 +49,13 @@ import org.glassfish.api.admin.CommandLock;
 import org.glassfish.paas.orchestrator.provisioning.ServiceInfo;
 
 import static org.glassfish.paas.orchestrator.provisioning.ServiceInfo.State.*;
-
-
 import static org.glassfish.paas.orchestrator.provisioning.cli.ServiceType.*;
+import org.glassfish.virtualization.runtime.VirtualMachineLifecycle;
 
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
+import org.jvnet.hk2.annotations.Inject;
 
 import org.glassfish.paas.lbplugin.LBProvisionerFactory;
 import org.glassfish.paas.lbplugin.logger.LBPluginLogger;
@@ -71,6 +71,9 @@ public class StartLBService extends BaseLBService implements AdminCommand {
     @Param(name = "startvm", optional = true)
     boolean startVM;
 
+    @Inject
+    VirtualMachineLifecycle vmlifecycle;
+        
     @Override
     public void execute(AdminCommandContext context) {
 
@@ -92,7 +95,7 @@ public class StartLBService extends BaseLBService implements AdminCommand {
             try {
                 retrieveVirtualMachine();
                 if (startVM) {
-                    virtualMachine.start();
+                    vmlifecycle.start(virtualMachine);
                 }
                 LBProvisionerFactory.getInstance().getLBProvisioner().startLB(virtualMachine);
                 lbServiceUtil.updateState(serviceName, appName, Running.toString(), LB);

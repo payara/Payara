@@ -50,8 +50,6 @@ import org.glassfish.paas.lbplugin.LBServiceUtil;
 import org.glassfish.paas.orchestrator.provisioning.ServiceInfo;
 
 import static org.glassfish.paas.orchestrator.provisioning.ServiceInfo.State.*;
-
-
 import static org.glassfish.paas.orchestrator.provisioning.cli.ServiceType.*;
 
 import org.jvnet.hk2.annotations.Inject;
@@ -61,6 +59,7 @@ import org.jvnet.hk2.component.PerLookup;
 
 import org.glassfish.paas.lbplugin.LBProvisionerFactory;
 import org.glassfish.paas.lbplugin.logger.LBPluginLogger;
+import org.glassfish.virtualization.runtime.VirtualMachineLifecycle;
 
 /**
  * @author Jagadish Ramu
@@ -72,7 +71,10 @@ public class StopLBService extends BaseLBService implements AdminCommand {
 
     @Param(name = "stopvm", optional = true)
     boolean stopVM;
-
+    
+    @Inject
+    VirtualMachineLifecycle vmlifecycle;
+    
     @Override
     public void execute(AdminCommandContext context) {
 
@@ -98,7 +100,7 @@ public class StopLBService extends BaseLBService implements AdminCommand {
                 LBProvisionerFactory.getInstance().getLBProvisioner().stopLB(virtualMachine);
                 lbServiceUtil.updateState(serviceName, appName, NotRunning.toString(), LB);
                 if(stopVM){
-                    virtualMachine.stop();
+                    vmlifecycle.stop(virtualMachine);
                 }
                 report.setMessage("lb-service [" + serviceName + "] stopped");
                 report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
