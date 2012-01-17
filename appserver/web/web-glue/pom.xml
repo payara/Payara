@@ -248,6 +248,11 @@
             <artifactId>gf-web-connector</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.glassfish.web</groupId>
+            <artifactId>web-sse</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 	
     </dependencies>
 </project>

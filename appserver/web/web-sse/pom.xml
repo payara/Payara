@@ -3,7 +3,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -41,49 +41,37 @@
 
 -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-    <modelVersion>4.0.0</modelVersion>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <parent>
-        <groupId>org.glassfish</groupId>
-        <artifactId>glassfish-parent</artifactId>
+        <groupId>org.glassfish.web</groupId>
+        <artifactId>web</artifactId>
         <version>4.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
-    <groupId>org.glassfish.web</groupId>
-    <artifactId>web</artifactId>
-    <packaging>pom</packaging>
-    <name>GlassFish Web container related modules</name>  
-    <modules>
-        <module>web-naming</module>
-        <module>web-core</module>
-        <module>war-util</module>
-        <module>jstl-connector</module>
-        <module>jsf-connector</module>
-        <module>jspcaching-connector</module>
-        <module>gui-plugin-common</module>
-        <module>web-glue</module>
-        <module>webtier-all</module>
-        <module>admin</module>
-        <module>gf-web-connector</module>
-        <module>gf-weld-connector</module>
-        <module>weld-integration</module>
-        <module>weld-integration-fragment</module>
-        <module>weld-integration-test-fragment</module>
-        <module>web-embed</module>
-        <module>web-ha</module>
-        <module>web-sse</module>
-    </modules>
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>web-sse</artifactId>
+    <packaging>hk2-jar</packaging>
+    <name>Server Sent Events</name>
 
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.glassfish.hk2</groupId>
-                <artifactId>hk2-maven-plugin</artifactId>
-                <configuration>
-                    <compilerArgument>-Xlint:unchecked</compilerArgument>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
+    <developers>
+        <developer>
+            <id>jitu</id>
+            <name>Jitendra Kotamraju</name>
+            <url>http://weblogs.java.net/blog/jitu</url>
+            <organization>Oracle</organization>
+            <roles>
+                <role>developer</role>
+            </roles>
+        </developer>
+    </developers>
+    <dependencies>
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.weld</groupId>
+            <artifactId>weld-osgi-bundle</artifactId>
+        </dependency>
+    </dependencies>
 </project>
