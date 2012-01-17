@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2007-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,193 +40,39 @@
 
 package com.sun.enterprise.admin.util;
 
-import com.sun.enterprise.config.serverbeans.Domain;
-import com.sun.enterprise.config.serverbeans.Server;
-import com.sun.logging.LogDomains;
-import java.util.logging.Level;
-import org.glassfish.api.Startup;
-import org.glassfish.api.admin.*;
-import org.glassfish.api.admin.ServerEnvironment;
-import org.jvnet.hk2.annotations.Inject;
-import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Singleton;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
+import com.sun.enterprise.config.serverbeans.Server;
+import org.glassfish.api.admin.InstanceCommand;
+import org.glassfish.api.admin.InstanceCommandResult;
+import org.glassfish.api.admin.InstanceState;
+import org.glassfish.api.admin.ParameterMap;
+import org.jvnet.hk2.annotations.Contract;
+
 import java.util.List;
 import java.util.concurrent.Future;
-import java.util.logging.Logger;
+
 
 /**
- * This service is called at startup and parses the instance state file
+ * Interface for service that parses the instance state file.
+ *
  * @author Vijay Ramachandran
  */
-@Service
-@Scoped(Singleton.class)
-public class InstanceStateService implements Startup {
+@Contract
+public interface InstanceStateService {
 
-    @Inject
-    private ServerEnvironment serverEnv;
+    public void addServerToStateService(String instanceName);
 
-    @Inject
-    private Domain domain;
+    public void addFailedCommandToInstance(String instance, String cmd, ParameterMap params);
 
-    @Inject
-    private CommandThreadPool cmdPool;
+    public void removeFailedCommandsForInstance(String instance);
 
-    private InstanceStateFileProcessor stateProcessor;
-    private HashMap<String, InstanceState> instanceStates;
-    private final int MAX_RECORDED_FAILED_COMMANDS = 10;
-    private final static Logger logger = LogDomains.getLogger(InstanceStateService.class, LogDomains.ADMIN_LOGGER);
+    public InstanceState.StateType getState(String instanceName);
 
-    public InstanceStateService() {}
+    public List<String> getFailedCommands(String instanceName);
 
-    /*
-     * Perform lazy-initialization for the object, since this InstanceStateService
-     * is not needed if there are not any instances.
-     */
-    private void init() {
-        if (instanceStates != null) return;
-        instanceStates = new HashMap<String, InstanceState>();
-        File stateFile = new File(serverEnv.getConfigDirPath().getAbsolutePath(),
-                            ".instancestate");
-        try {
-            stateProcessor = new InstanceStateFileProcessor(instanceStates,
-                        stateFile);
-        } catch (IOException ioe) {
-            logger.log(Level.FINE, "ISS.cannotread", stateFile);
-            instanceStates = new HashMap<String, InstanceState>();
-            // Even though instances may already exist, do not populate the
-            // instancesStates array because it will be repopulated as it is
-            // used. Populating it early causes problems during instance
-            // creation.
-            try {
-                stateProcessor = InstanceStateFileProcessor.createNew(instanceStates, stateFile);
-            } catch (IOException ex) {
-                logger.log(Level.SEVERE, "ISS.cannotcreate", ex);
-                stateProcessor = null;
-            }
-        }
-    }
+    public InstanceState.StateType setState(String name, InstanceState.StateType newState, boolean force);
 
-    public synchronized void addServerToStateService(String instanceName) {
-        init();
-        instanceStates.put(instanceName, new InstanceState(InstanceState.StateType.NEVER_STARTED));
-        try {
-            stateProcessor.addNewServer(instanceName);
-        } catch (Exception e) {
-            logger.log(Level.SEVERE, "ISS.addstateerror", e.getLocalizedMessage());
-        }
-    }
+    public void removeInstanceFromStateService(String name);
 
-    public synchronized void addFailedCommandToInstance(String instance, String cmd, ParameterMap params) {
-        init();
-        String cmdDetails = cmd;
-        String defArg = params.getOne("DEFAULT");
-        if (defArg != null) cmdDetails += " " + defArg;
-
-        try {
-            InstanceState i = instanceStates.get(instance);
-            if (i != null && i.getState() != InstanceState.StateType.NEVER_STARTED &&
-                    i.getFailedCommands().size() < MAX_RECORDED_FAILED_COMMANDS) {
-                i.addFailedCommands(cmdDetails);
-                stateProcessor.addFailedCommand(instance, cmdDetails);
-            }
-        } catch (Exception e) {
-            logger.log(Level.SEVERE, "ISS.addcmderror", e.getLocalizedMessage());
-        }
-    }
-
-    public synchronized void removeFailedCommandsForInstance(String instance) {
-        init();
-        try {
-            InstanceState i = instanceStates.get(instance);
-            if(i != null) {
-                i.removeFailedCommands();
-                stateProcessor.removeFailedCommands(instance);
-            }
-        } catch (Exception e) {
-            logger.log(Level.SEVERE, "ISS.remcmderror", e.getLocalizedMessage());
-        }
-    }
-
-    public synchronized InstanceState.StateType getState(String instanceName) {
-        init();
-        InstanceState s = instanceStates.get(instanceName);
-        if (s == null)
-            return InstanceState.StateType.NEVER_STARTED;
-        return s.getState();
-    }
-
-    public synchronized List<String> getFailedCommands(String instanceName) {
-        init();
-        InstanceState s = instanceStates.get(instanceName);
-        if(s == null)
-            return new ArrayList<String>();
-        return s.getFailedCommands();
-    }
-
-    public synchronized InstanceState.StateType setState(String name, InstanceState.StateType newState, boolean force) {
-        init();
-        boolean updateXML = false;
-        InstanceState.StateType ret = newState;
-        InstanceState is = instanceStates.get(name);
-        InstanceState.StateType currState;
-        if (is == null || (currState = is.getState()) == null) {
-            instanceStates.put(name, new InstanceState(newState));
-            updateXML = true;
-            ret = newState;
-        } else if (!force && currState == InstanceState.StateType.RESTART_REQUIRED) {
-            // If current state is RESTART_REQUIRED, no updates to state is allowed because
-            // only an instance restart can move this instance out of RESTART_REQD state
-            updateXML = false;
-            ret = currState;
-        } else if (!force && currState == InstanceState.StateType.NEVER_STARTED &&
-                    (newState == InstanceState.StateType.NOT_RUNNING ||
-                     newState == InstanceState.StateType.RESTART_REQUIRED ||
-                     newState == InstanceState.StateType.NO_RESPONSE)) {
-            // invalid state change
-            updateXML = false;
-            ret = currState;
-        } else if (!currState.equals(newState)) {
-            instanceStates.get(name).setState(newState);
-            updateXML = true;
-            ret = newState;
-        }
-
-        try {
-            if (updateXML) {
-                stateProcessor.updateState(name, newState.getDescription());
-            }
-        } catch (Exception e) {
-            logger.log(Level.SEVERE, "ISS.setstateerror", e.getLocalizedMessage());
-        }
-        return ret;
-    }
-
-    public synchronized void removeInstanceFromStateService(String name) {
-        init();
-        instanceStates.remove(name);
-        try {
-            stateProcessor.removeInstanceNode(name);
-        } catch (Exception e) {
-            logger.log(Level.SEVERE, "ISS.remstateerror", e.getLocalizedMessage());
-        }
-    }
-
-    /*
-     * For now, this just submits the job directly to the pool.  In the future
-     * it might be possible to avoid submitting the job
-     */
-    public Future<InstanceCommandResult> submitJob(Server server, InstanceCommand ice, InstanceCommandResult r) {
-        return cmdPool.submitJob(ice, r);
-    }
-
-    @Override
-    public Lifecycle getLifecycle() {
-        return Startup.Lifecycle.SERVER;
-    }
+    public Future<InstanceCommandResult> submitJob(Server server, InstanceCommand ice, InstanceCommandResult r);
 }
