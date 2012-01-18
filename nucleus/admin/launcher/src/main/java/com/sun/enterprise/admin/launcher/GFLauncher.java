@@ -190,9 +190,7 @@ public abstract class GFLauncher {
         GFLauncherLogger.addLogFileHandler(logFilename, info);
         setJavaExecutable();
         setClasspath();
-        setJvmOptions();
         setCommandLine();
-        logJvmOptions();
         logCommandLine();
         // if no <network-config> element, we need to upgrade this domain
         needsAutoUpgrade = !parser.hasNetworkConfig();
@@ -419,10 +417,6 @@ public abstract class GFLauncher {
         return commandLine;
     }
 
-    public final List<String> getJvmOptions() {
-        return jvmOptionsList;
-    }
-
     final long getStartTime() {
         return startTime;
     }
@@ -548,15 +542,6 @@ public abstract class GFLauncher {
         }
     }
 
-    void setJvmOptions() throws GFLauncherException {
-        List<String> jvmOpts = getJvmOptions();
-        jvmOpts.clear();
-
-        if (jvmOptions != null)
-            addIgnoreNull(jvmOpts, jvmOptions.toStringArray());
-
-    }
-
     void setCommandLine() throws GFLauncherException {
         List<String> cmdLine = getCommandLine();
         cmdLine.clear();
@@ -570,6 +555,9 @@ public abstract class GFLauncher {
         if (CLIStartTime != null && CLIStartTime.length() > 0) {
             cmdLine.add("-DWALL_CLOCK_START=" + CLIStartTime);
         }
+
+        if (jvmOptions != null)
+            addIgnoreNull(cmdLine, jvmOptions.toStringArray());
 
         GFLauncherNativeHelper nativeHelper = new GFLauncherNativeHelper(info, javaConfig, jvmOptions, profiler);
         addIgnoreNull(cmdLine, nativeHelper.getCommands());
@@ -878,18 +866,6 @@ public abstract class GFLauncher {
         }
     }
 
-    void logJvmOptions() {
-        StringBuilder sb = new StringBuilder();
-        for (String s : jvmOptionsList) {
-            // newline before the first line...
-            sb.append(NEWLINE);
-            sb.append(s);
-        }
-        if (!isFakeLaunch()) {
-            GFLauncherLogger.info("commandline", sb.toString());
-        }
-    }
-
     String getClasspath() {
         return classpath;
     }
@@ -967,7 +943,6 @@ public abstract class GFLauncher {
         }
     }
     private List<String> commandLine = new ArrayList<String>();
-    private List<String> jvmOptionsList = new ArrayList<String>();
     private GFLauncherInfo info;
     private Map<String, String> asenvProps;
     private JavaConfig javaConfig;
