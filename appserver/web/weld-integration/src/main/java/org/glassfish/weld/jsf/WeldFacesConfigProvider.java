@@ -59,7 +59,7 @@ import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.weld.WeldApplicationContainer;
 import org.glassfish.weld.WeldDeployer;
-import org.jvnet.hk2.component.Habitat;
+import org.glassfish.hk2.Services;
 
 /**
  * This provider returns the Web Beans faces-config.xml to the JSF runtime.
@@ -77,9 +77,9 @@ public class WeldFacesConfigProvider implements FacesConfigResourceProvider {
 
     public Collection<URI> getResources(ServletContext context) {
 
-        Habitat defaultHabitat = (Habitat)context.getAttribute(
+        Services defaultServices = (Services)context.getAttribute(
                 HABITAT_ATTRIBUTE);
-        invokeMgr = defaultHabitat.getByContract(InvocationManager.class);
+        invokeMgr = defaultServices.forContract(InvocationManager.class).get();
         ComponentInvocation inv = invokeMgr.getCurrentInvocation();
         WebModule webModule = (WebModule)inv.getContainer();
         WebBundleDescriptor wdesc = webModule.getWebBundleDescriptor();

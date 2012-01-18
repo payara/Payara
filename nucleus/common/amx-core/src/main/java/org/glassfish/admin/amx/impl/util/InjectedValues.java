@@ -39,6 +39,7 @@
  */
 package org.glassfish.admin.amx.impl.util;
 
+import org.glassfish.hk2.Services;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.internal.api.Globals;
@@ -49,10 +50,10 @@ import javax.management.MBeanServer;
 import org.glassfish.server.ServerEnvironmentImpl;
 
 import org.glassfish.internal.config.UnprocessedConfigListener;
-import org.jvnet.hk2.component.Habitat;
 import com.sun.enterprise.module.ModulesRegistry;
 
 import com.sun.enterprise.config.serverbeans.Domain;
+import org.jvnet.hk2.component.Habitat;
 
 /**
 Utility class that gets various useful values injected into it for use
@@ -96,12 +97,12 @@ public class InjectedValues {
         return mModulesRegistry;
     }
 
-    public static Habitat getDefaultHabitat() {
-        return Globals.getDefaultHabitat();
+    public static Services getDefaultServices() {
+        return Globals.getDefaultServices();
     }
 
     public static InjectedValues getInstance() {
-        return getDefaultHabitat().getByType(InjectedValues.class);
+        return getDefaultServices().byType(InjectedValues.class).get();
     }
 
     public InjectedValues() {

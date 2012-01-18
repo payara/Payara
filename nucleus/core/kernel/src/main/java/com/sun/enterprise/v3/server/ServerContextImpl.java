@@ -40,6 +40,7 @@
 
 package com.sun.enterprise.v3.server;
 
+import org.glassfish.hk2.Services;
 import org.glassfish.server.ServerEnvironmentImpl;
 import com.sun.enterprise.module.bootstrap.StartupContext;
 import com.sun.enterprise.glassfish.bootstrap.StartupContextUtil;
@@ -50,14 +51,12 @@ import org.glassfish.api.naming.GlassfishNamingManager;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.PostConstruct;
 import org.jvnet.hk2.component.Singleton;
 
 import javax.naming.InitialContext;
 import java.io.File;
 import java.util.Map;
-import java.util.List;
 
 /**
  * This is the Server Context object.
@@ -75,7 +74,7 @@ public class ServerContextImpl implements ServerContext, PostConstruct {
     StartupContext startupContext;
 
     @Inject
-    Habitat habitat;
+    Services services;
 
     File instanceRoot;
     String[] args;
@@ -114,40 +113,40 @@ public class ServerContextImpl implements ServerContext, PostConstruct {
     }
 
     public com.sun.enterprise.config.serverbeans.Server getConfigBean() {
-        return habitat.getComponent(com.sun.enterprise.config.serverbeans.Server.class);
+        return services.forContract(com.sun.enterprise.config.serverbeans.Server.class).get();
     }
 
     public InitialContext getInitialContext() {
         GlassfishNamingManager gfNamingManager = 
-            habitat.getComponent(GlassfishNamingManager.class);
+            services.forContract(GlassfishNamingManager.class).get();
         return (InitialContext)gfNamingManager.getInitialContext();
     }
 
     public ClassLoader getCommonClassLoader() {
-        return habitat.getByType(CommonClassLoaderServiceImpl.class).getCommonClassLoader();
+        return services.byType(CommonClassLoaderServiceImpl.class).get().getCommonClassLoader();
     }
 
     public ClassLoader getSharedClassLoader() {
-        return habitat.getByContract(ClassLoaderHierarchy.class).getConnectorClassLoader(null);
+        return services.forContract(ClassLoaderHierarchy.class).get().getConnectorClassLoader(null);
     }
 
     public ClassLoader getLifecycleParentClassLoader() {
-        return habitat.getByContract(ClassLoaderHierarchy.class).getConnectorClassLoader(null);
+        return services.forContract(ClassLoaderHierarchy.class).get().getConnectorClassLoader(null);
     }
 
     public InvocationManager getInvocationManager() {
-        return habitat.getComponent(InvocationManager.class);          
+        return services.forContract(InvocationManager.class).get();
     }
 
     public String getDefaultDomainName() {
         return "glassfish-web";
     }
     /**
-     * Returns the default habitat for this instance
-     * @return default habitat
+     * Returns the default services for this instance
+     * @return default services
      */
-    public Habitat getDefaultHabitat() {
-        return habitat;
+    public Services getDefaultServices() {
+        return services;
         
     }
 }

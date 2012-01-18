@@ -356,7 +356,7 @@ public class WebContainerImpl implements WebContainer {
         listenerName = webListener.getId();
 
         try {
-            Ports ports = habitat.getComponent(Ports.class);
+            Ports ports = habitat.forContract(Ports.class).get();
             Port port = ports.createPort(webListener.getPort());
             bind(port, webListener, vsId);
         } catch (java.io.IOException ex) {
@@ -499,7 +499,7 @@ public class WebContainerImpl implements WebContainer {
 
             }
 
-            EmbeddedWebArchivist archivist = habitat.getComponent(EmbeddedWebArchivist.class);
+            EmbeddedWebArchivist archivist = habitat.byType(EmbeddedWebArchivist.class).get();
             archivist.setDefaultWebXml(config.getDefaultWebXml());
 
             embedded.setDirectoryListing(config.getListings());
@@ -540,9 +540,9 @@ public class WebContainerImpl implements WebContainer {
     public List<Sniffer> getSniffers() {
 
         List<Sniffer> sniffers = new ArrayList<Sniffer>();
-        sniffers.add(habitat.getComponent(Sniffer.class, "web"));
-        sniffers.add(habitat.getComponent(Sniffer.class, "weld"));        
-        Sniffer security = habitat.getComponent(Sniffer.class, "Security");
+        sniffers.add(habitat.forContract(Sniffer.class).named("web").get());
+        sniffers.add(habitat.forContract(Sniffer.class).named("weld").get());
+        Sniffer security = habitat.forContract(Sniffer.class).named("Security").get();
         if (security!=null) {
             sniffers.add(security);
         }

@@ -65,7 +65,7 @@ import org.glassfish.config.support.TargetType;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
+import org.glassfish.hk2.Services;
 import org.jvnet.hk2.component.PerLookup;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.ConfigCode;
@@ -91,7 +91,7 @@ public class DeleteNetworkListener implements AdminCommand {
     @Inject(name = ServerEnvironment.DEFAULT_INSTANCE_NAME)
     Config config;
     @Inject
-    Habitat habitat;
+    Services services;
     @Inject
     Domain domain;
 
@@ -102,7 +102,7 @@ public class DeleteNetworkListener implements AdminCommand {
      * @param context information
      */
     public void execute(AdminCommandContext context) {
-        Target targetUtil = habitat.getComponent(Target.class);
+        Target targetUtil = services.byType(Target.class).get();
         Config newConfig = targetUtil.getConfig(target);
         if (newConfig!=null) {
             config = newConfig;

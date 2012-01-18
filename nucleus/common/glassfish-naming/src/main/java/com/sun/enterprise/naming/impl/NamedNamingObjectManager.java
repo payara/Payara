@@ -60,7 +60,7 @@ import java.util.logging.Logger;
  */
 public class NamedNamingObjectManager {
 
-    private static final AtomicReference<Habitat> habitat
+    private static final AtomicReference<Habitat> habitatRef
             = new AtomicReference<Habitat>();
 
     private static final Map<String, NamedNamingObjectProxy> proxies = new HashMap<String, NamedNamingObjectProxy>();
@@ -71,12 +71,12 @@ public class NamedNamingObjectManager {
 
     public static void checkAndLoadProxies(Habitat habitat)
             throws NamingException {
-        if (NamedNamingObjectManager.habitat.get() != habitat) {
+        if (NamedNamingObjectManager.habitatRef.get() != habitat) {
             if (habitat != null) {
                 rwLock.writeLock().lock();
                 try {
-                    if (NamedNamingObjectManager.habitat.get() != habitat) {
-                        NamedNamingObjectManager.habitat.set(habitat);
+                    if (NamedNamingObjectManager.habitatRef.get() != habitat) {
+                        NamedNamingObjectManager.habitatRef.set(habitat);
                         proxies.clear();
                     }
                 } finally {
@@ -120,7 +120,7 @@ public class NamedNamingObjectManager {
     }
 
     private static Habitat getHabitat() {
-        return habitat.get();
+        return habitatRef.get();
     }
 
     private static NamedNamingObjectProxy getCachedProxy(String name) {

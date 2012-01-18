@@ -84,7 +84,7 @@ import org.jboss.weld.transaction.spi.TransactionServices;
 import org.jboss.weld.validation.spi.ValidationServices;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
+import org.glassfish.hk2.Services;
 import org.jvnet.hk2.component.PostConstruct;
 
 import com.sun.enterprise.container.common.spi.util.InjectionManager;
@@ -117,7 +117,7 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
     private Events events;
 
     @Inject
-    private Habitat habitat;
+    private Services services;
 
     @Inject
     private ApplicationRegistry applicationRegistry;
@@ -371,7 +371,7 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
 
         if( ejbBundle != null ) {
             ejbs = ejbBundle.getEjbs();
-            ejbServices = new EjbServicesImpl(habitat);
+            ejbServices = new EjbServicesImpl(services);
         }
 
         // Check if we already have a Deployment
@@ -386,7 +386,7 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
             deploymentImpl = new DeploymentImpl(archive, ejbs, context);
 
             // Add services
-            TransactionServices transactionServices = new TransactionServicesImpl(habitat);
+            TransactionServices transactionServices = new TransactionServicesImpl(services);
             deploymentImpl.getServices().add(TransactionServices.class, transactionServices);
 
             ValidationServices validationServices = new ValidationServicesImpl();
@@ -395,7 +395,7 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
             SecurityServices securityServices = new SecurityServicesImpl();
             deploymentImpl.getServices().add(SecurityServices.class, securityServices);
            
-            ProxyServices proxyServices = new ProxyServicesImpl(habitat);
+            ProxyServices proxyServices = new ProxyServicesImpl(services);
             deploymentImpl.getServices().add(ProxyServices.class, proxyServices);
 
         } else {
@@ -428,7 +428,7 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
             // injection instead of the per-dependency-type InjectionPoint approach.
             // Each InjectionServicesImpl instance knows its associated GlassFish bundle.
 
-            InjectionManager injectionMgr = habitat.getByContract(InjectionManager.class);
+            InjectionManager injectionMgr = services.forContract(InjectionManager.class).get();
             InjectionServices injectionServices = new InjectionServicesImpl(injectionMgr, bundle);
 
             if(_logger.isLoggable(Level.FINE)) {

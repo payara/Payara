@@ -42,7 +42,7 @@ package com.sun.enterprise.naming.impl;
 
 import com.sun.enterprise.naming.util.LogFacade;
 import org.glassfish.api.naming.NamingObjectProxy;
-import org.jvnet.hk2.component.Habitat;
+import org.glassfish.hk2.Services;
 
 import org.glassfish.api.admin.ProcessEnvironment;
 import org.glassfish.api.admin.ProcessEnvironment.ProcessType;
@@ -66,6 +66,8 @@ import javax.naming.NamingException;
 import javax.naming.NotContextException;
 import javax.naming.Reference;
 import javax.naming.Referenceable;
+
+import org.jvnet.hk2.component.Habitat;
 import org.omg.CORBA.ORBPackage.InvalidName;
 
 import org.omg.CosNaming.NamingContext;
@@ -127,7 +129,7 @@ public class SerialContext implements Context {
 
     private final JavaURLContext javaUrlContext;
 
-    private Habitat habitat;
+    private Services services;
 
     private boolean testMode = false;
 
@@ -225,10 +227,10 @@ public class SerialContext implements Context {
      * Constructor for the context. Initializes the object reference to the
      * remote provider object.
      */
-    public SerialContext(String name, Hashtable environment, Habitat h)
+    public SerialContext(String name, Hashtable environment, Services h)
             throws NamingException {
 
-        habitat = h;
+        services = h;
 
         myEnv = (environment != null) ? (Hashtable) (environment.clone())
                 : null;
@@ -249,20 +251,20 @@ public class SerialContext implements Context {
             System.out.println("SerialContext in test mode");
         }
 
-        if( (habitat == null) && !testMode ) {
+        if( (services == null) && !testMode ) {
             synchronized(SerialContext.class) {
-                if( SerialInitContextFactory.getDefaultHabitat() == null ) {
+                if( SerialInitContextFactory.getDefaultServices() == null ) {
 
                     // Bootstrap a hk2 environment.
                     // TODO This will need to be moved somewhere else.  Potentially any
                     // piece of glassfish code that can be an initial entry point from a
                     // Java SE client will need to make this happen.
 
-                    habitat = Globals.getStaticHabitat();
+                    services = Globals.getStaticHabitat();
 
-                    SerialInitContextFactory.setDefaultHabitat(habitat);
+                    SerialInitContextFactory.setDefaultServices(services);
                 } else {
-                    habitat = SerialInitContextFactory.getDefaultHabitat();
+                    services = SerialInitContextFactory.getDefaultServices();
                 }
 
             }
@@ -271,7 +273,7 @@ public class SerialContext implements Context {
         if( testMode ) {
             processType = ProcessType.Server;
         } else {
-            ProcessEnvironment processEnv = habitat.getComponent(ProcessEnvironment.class);
+            ProcessEnvironment processEnv = services.byType(ProcessEnvironment.class).get();
             processType = processEnv.getProcessType();
             if (_logger.isLoggable(Level.FINE)) {
                 _logger.log(Level.FINE,
@@ -318,8 +320,8 @@ public class SerialContext implements Context {
         }
 
         orb = orbFromEnv;
-        if (habitat != null) { // can happen in test mode
-            ServerContext sc = habitat.getByContract(ServerContext.class);
+        if (services != null) { // can happen in test mode
+            ServerContext sc = services.forContract(ServerContext.class).get();
             if (sc != null) {
                 commonCL = sc.getCommonClassLoader();
             }
@@ -330,8 +332,8 @@ public class SerialContext implements Context {
      * This constructor takes the component id as an argument. All name
      * arguments to operations are prepended by the component id.
      */
-    public SerialContext(Hashtable env, Habitat habitat) throws NamingException {
-        this("", env, habitat);
+    public SerialContext(Hashtable env, Services services) throws NamingException {
+        this("", env, services);
     }
 
     private SerialContextProvider getProvider() throws NamingException {
@@ -359,7 +361,7 @@ public class SerialContext implements Context {
     }
 
     private ORB getORB() {
-        ORBLocator orbHelper = habitat.getComponent(ORBLocator.class);
+        ORBLocator orbHelper = services.forContract(ORBLocator.class).get();
         if (orb == null) {
             orb = orbHelper.getORB() ;
         }
@@ -459,7 +461,7 @@ public class SerialContext implements Context {
         // Before any lookup bind any NamedNamingObjectProxy
         // Skip if in plain Java SE client
         // TODO this should really be moved somewhere else
-        NamedNamingObjectManager.checkAndLoadProxies(habitat);
+        NamedNamingObjectManager.checkAndLoadProxies((Habitat) services);
 
         if (_logger.isLoggable(Level.FINE)) {
             _logger.log(Level.FINE, "SerialContext ==> lookup( {0})", name);
@@ -482,7 +484,7 @@ public class SerialContext implements Context {
             if (name.isEmpty()) {
                 // Asking to look up this context itself. Create and return
                 // a new instance with its own independent environment.
-                return (new SerialContext(myName, myEnv, habitat));
+                return (new SerialContext(myName, myEnv, services));
             }
 
             name = getRelativeName(name);
@@ -508,7 +510,7 @@ public class SerialContext implements Context {
                 }
 
                 if (obj instanceof Context) {
-                    return new SerialContext(name, myEnv, habitat);
+                    return new SerialContext(name, myEnv, services);
                 }
 
                 Object retObj = getObjectInstance(name, obj);
@@ -941,7 +943,7 @@ public class SerialContext implements Context {
                  * not resolved properly due to rmi
                  */
                 if (c instanceof Context) {
-                    c = new SerialContext(name, myEnv, habitat);
+                    c = new SerialContext(name, myEnv, services);
                 }
             } catch (RemoteException e) {
                 CommunicationException ce = new CommunicationException(e

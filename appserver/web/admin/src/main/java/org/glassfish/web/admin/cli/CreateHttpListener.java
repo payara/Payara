@@ -72,7 +72,7 @@ import org.glassfish.internal.api.Target;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
+import org.glassfish.hk2.Services;
 import org.jvnet.hk2.component.PerLookup;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
@@ -118,7 +118,7 @@ public class CreateHttpListener implements AdminCommand {
     @Inject(name = ServerEnvironment.DEFAULT_INSTANCE_NAME)
     Config config;
     @Inject
-    Habitat habitat;
+    Services services;
     @Inject
     CommandRunner runner;
     @Inject
@@ -139,7 +139,7 @@ public class CreateHttpListener implements AdminCommand {
         if(!validateInputs(report)) {
             return;
         }
-        Target targetUtil = habitat.getComponent(Target.class);
+        Target targetUtil = services.byType(Target.class).get();
         Config newConfig = targetUtil.getConfig(target);
         if (newConfig!=null) {
             config = newConfig;
@@ -232,7 +232,7 @@ public class CreateHttpListener implements AdminCommand {
                 return newListener;
             }
         }, networkConfig.getNetworkListeners());
-        habitat.getComponent(Transactions.class).waitForDrain();
+        services.byType(Transactions.class).get().waitForDrain();
         return true;
     }
 

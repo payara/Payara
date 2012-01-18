@@ -141,7 +141,7 @@ public class ContainerStarter {
                         if (containerClass!=null) {
                             provider = habitat.getInhabitantByType(containerClass);
                             if (provider==null) {
-                                logger.severe("Cannot find the container " + name + " in the habitat, is it annotated with @Service");
+                                logger.severe("Cannot find the container " + name + " in the services, is it annotated with @Service");
                                 return null;
                             }
                         }

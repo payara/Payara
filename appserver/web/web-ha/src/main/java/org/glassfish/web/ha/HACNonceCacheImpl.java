@@ -40,6 +40,7 @@
 
 package org.glassfish.web.ha;
 
+import org.glassfish.hk2.Services;
 import org.glassfish.security.common.NonceInfo;
 import org.glassfish.security.common.CNonceCache;
 import com.sun.enterprise.security.CNonceCacheFactory;
@@ -55,11 +56,9 @@ import org.glassfish.ha.store.api.BackingStoreFactory;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.PerLookup;
 import com.sun.logging.LogDomains;
 import com.sun.web.security.CNonceCacheImpl;
-import java.util.Map.Entry;
 
 /**
  *
@@ -70,7 +69,7 @@ import java.util.Map.Entry;
 public class HACNonceCacheImpl  implements CNonceCache {
 
     @Inject
-    private Habitat habitat;
+    private Services services;
 
     private CNonceCacheImpl localStore;
     private BackingStore<String, NonceInfo> backingStore = null;
@@ -237,7 +236,7 @@ public class HACNonceCacheImpl  implements CNonceCache {
                     setInstanceName(props.get(CNonceCacheFactory.INSTANCE_NAME_PROP)).
                     setStoreName(storeName).setKeyClazz(String.class)
                     .setValueClazz(NonceInfo.class);
-            BackingStoreFactory bsFactory = habitat.getComponent(BackingStoreFactory.class,BS_TYPE_REPLICATED);
+            BackingStoreFactory bsFactory = services.forContract(BackingStoreFactory.class).named(BS_TYPE_REPLICATED).get();
             backingStore = bsFactory.createBackingStore(bsConfig);
         } catch (BackingStoreException ex) {
             logger.log(Level.WARNING, null, ex);

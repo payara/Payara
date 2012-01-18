@@ -405,7 +405,8 @@ abstract class NativeRemoteCommandsBase extends CLICommand {
                 //the following property is required for initializing the password helper
                 System.setProperty(SystemPropertyConstants.INSTANCE_ROOT_PROPERTY, f.getAbsolutePath());
                 try {
-                    final MasterPassword masterPasswordHelper = Globals.getDefaultHabitat().getComponent(MasterPassword.class, "Security SSL Password Provider Service");
+                    final MasterPassword masterPasswordHelper =
+                            Globals.getDefaultServices().forContract(MasterPassword.class).named("Security SSL Password Provider Service").get();
 
                     final PasswordAdapter pa = masterPasswordHelper.getMasterPasswordAdapter();
                     final boolean exists = pa.aliasExists(alias);

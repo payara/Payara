@@ -44,11 +44,11 @@ import com.sun.enterprise.web.PEWebContainerFeatureFactoryImpl;
 import com.sun.enterprise.web.PESSOFactory;
 import com.sun.enterprise.web.ServerConfigLookup;
 import com.sun.enterprise.web.SSOFactory;
+import org.glassfish.hk2.Services;
 import org.glassfish.web.ha.authenticator.HASSOFactory;
 
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
 
 /**
  * Implementation of WebContainerFeatureFactory which returns web container
@@ -59,7 +59,7 @@ import org.jvnet.hk2.component.Habitat;
 @Service(name="ha")
 public class HAWebContainerFeatureFactoryImpl extends PEWebContainerFeatureFactoryImpl {
     @Inject
-    private Habitat habitat;
+    private Services services;
 
     @Inject
     private ServerConfigLookup serverConfigLookup;
@@ -67,7 +67,7 @@ public class HAWebContainerFeatureFactoryImpl extends PEWebContainerFeatureFacto
     @Override
     public SSOFactory getSSOFactory() {
         if (isSsoFailoverEnabled()) {
-            return habitat.getComponent(HASSOFactory.class);
+            return services.byType(HASSOFactory.class).get();
         } else {
             return new PESSOFactory();
         }

@@ -47,9 +47,9 @@ import java.util.Hashtable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.glassfish.hk2.Services;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.api.naming.ComponentNamingUtil;
-import org.jvnet.hk2.component.Habitat;
 import org.glassfish.api.admin.ProcessEnvironment;
 import org.glassfish.api.admin.ProcessEnvironment.ProcessType;
 
@@ -185,8 +185,8 @@ public final class JavaURLContext implements Context, Cloneable {
             return obj;
         } catch (NamingException ex) {
 
-            Habitat habitat = Globals.getDefaultHabitat();
-            ProcessEnvironment processEnv = habitat.getComponent(ProcessEnvironment.class);
+            Services services = Globals.getDefaultServices();
+            ProcessEnvironment processEnv = services.byType(ProcessEnvironment.class).get();
             if( fullName.startsWith("java:app/") &&
                 processEnv.getProcessType() == ProcessType.ACC ) {
 
@@ -219,7 +219,7 @@ public final class JavaURLContext implements Context, Cloneable {
                 }
 
                 if( obj == null ) {
-                   ComponentNamingUtil compNamingUtil = habitat.getByContract(ComponentNamingUtil.class);
+                   ComponentNamingUtil compNamingUtil = services.forContract(ComponentNamingUtil.class).get();
                    String internalGlobalJavaAppName =
                     compNamingUtil.composeInternalGlobalJavaAppName(appName, fullName);
 

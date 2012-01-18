@@ -79,8 +79,7 @@ public class CustomSocketFactory extends SocketFactory implements Comparator<Soc
         StringManager.getManager(CustomSocketFactory.class);
 
     public  CustomSocketFactory() {
-        Habitat habitat = Globals.getDefaultHabitat();
-        SSLUtils sslUtils = habitat.getComponent(SSLUtils.class);
+        SSLUtils sslUtils = Globals.getDefaultServices().byType(SSLUtils.class).get();
         SSLContext sc = null;
         try {
             sc = SSLContext.getInstance(SSL);

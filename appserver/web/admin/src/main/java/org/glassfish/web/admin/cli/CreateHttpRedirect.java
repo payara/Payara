@@ -59,7 +59,7 @@ import org.glassfish.internal.api.Target;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
+import org.glassfish.hk2.Services;
 import org.jvnet.hk2.component.PerLookup;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
@@ -117,7 +117,7 @@ public class CreateHttpRedirect implements AdminCommand {
     Config config;
 
     @Inject
-    Habitat habitat;
+    Services services;
 
     @Inject
     Domain domain;
@@ -127,7 +127,7 @@ public class CreateHttpRedirect implements AdminCommand {
 
     @Override
     public void execute(AdminCommandContext context) {
-        Target targetUtil = habitat.getComponent(Target.class);
+        Target targetUtil = services.byType(Target.class).get();
         Config newConfig = targetUtil.getConfig(target);
         if (newConfig!=null) {
             config = newConfig;

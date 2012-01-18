@@ -44,7 +44,7 @@ package com.sun.enterprise.web;
 import com.sun.enterprise.web.session.PersistenceType;
 import com.sun.logging.LogDomains;
 import org.apache.catalina.Context;
-import org.jvnet.hk2.component.Habitat;
+import org.glassfish.hk2.Services;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -58,7 +58,7 @@ public class PersistenceStrategyBuilderFactory {
     private static final Logger _logger = LogDomains.getLogger(
             PersistenceStrategyBuilderFactory.class, LogDomains.WEB_LOGGER);
 
-    Habitat habitat;
+    Services services;
 
 
 
@@ -66,9 +66,9 @@ public class PersistenceStrategyBuilderFactory {
      * Constructor.
      */
     public PersistenceStrategyBuilderFactory(
-            ServerConfigLookup serverConfigLookup, Habitat habitat) {
+            ServerConfigLookup serverConfigLookup, Services services) {
 
-        this.habitat = habitat;
+        this.services = services;
     }
 
 
@@ -101,7 +101,7 @@ public class PersistenceStrategyBuilderFactory {
                            resolvedPersistenceScope);
         }
 
-        PersistenceStrategyBuilder builder = habitat.getComponent(PersistenceStrategyBuilder.class, persistenceType);
+        PersistenceStrategyBuilder builder = services.forContract(PersistenceStrategyBuilder.class).named(persistenceType).get();
         if (builder == null) {
             builder = new MemoryStrategyBuilder();
             if (_logger.isLoggable(Level.FINEST)) {

@@ -70,6 +70,7 @@ import org.apache.jasper.JspC;
 import org.glassfish.deployment.common.DeploymentException;
 import org.glassfish.internal.api.ServerContext;
 import org.glassfish.loader.util.ASClassLoaderUtil;
+import org.jvnet.hk2.component.Habitat;
 
 import java.io.File;
 import java.util.Enumeration;
@@ -122,7 +123,7 @@ public final class JSPCompiler {
         // so far, this is not segragated per web bundle, all web-bundles will get the
         // same sysClassPath
         String sysClassPath = ASClassLoaderUtil.getModuleClassPath(
-            serverContext.getDefaultHabitat(), appName, null);
+            (Habitat) serverContext.getDefaultServices(), appName, null);
         jspc.setSystemClassPath(sysClassPath);
         // END SJSAS 6311155
 

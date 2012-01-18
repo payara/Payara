@@ -170,7 +170,7 @@ public abstract class AppservPasswordLoginModule
         // Add a Principal (authenticated identity) to the Subject
         // Assume the user we authenticated is the PrincipalImpl [RI]
         String realm_name = _currentRealm.getName();
-        PrincipalGroupFactory factory = Globals.getDefaultHabitat().getComponent(PrincipalGroupFactory.class);
+        PrincipalGroupFactory factory = Globals.getDefaultServices().forContract(PrincipalGroupFactory.class).get();
         _userPrincipal = 
             factory.getPrincipalInstance(getUsername(),realm_name);
         Set<Principal> principalSet = _subject.getPrincipals();

@@ -52,6 +52,7 @@ import com.sun.logging.LogDomains;
 import org.apache.catalina.*;
 import org.apache.catalina.valves.ValveBase;
 import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.hk2.Services;
 import org.jvnet.hk2.component.Habitat;
 
 import java.io.File;
@@ -703,7 +704,7 @@ public final class PEAccessLogValve
             String vsId,
             VirtualServer vsBean,
             Domain domain,
-            Habitat habitat,
+            Services services,
             String accessLogBufferSize,
             String accessLogWriteInterval) {
 
@@ -739,7 +740,7 @@ public final class PEAccessLogValve
             if (logRoot != null) {
                 dir = new File(logRoot, accessLog);
             } else {
-                ServerEnvironment env = habitat.getComponent(ServerEnvironment.class);
+                ServerEnvironment env = services.forContract(ServerEnvironment.class).get();
                 dir = new File(env.getDomainRoot(), accessLog);
             }
         }

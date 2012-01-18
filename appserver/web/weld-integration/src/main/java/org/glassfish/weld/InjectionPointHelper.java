@@ -40,7 +40,7 @@
 
 package org.glassfish.weld;
 
-import org.jvnet.hk2.component.Habitat;
+import org.glassfish.hk2.Services;
 import com.sun.enterprise.deployment.*;
 import com.sun.enterprise.container.common.spi.util.ComponentEnvManager;
 import org.glassfish.api.naming.GlassfishNamingManager;
@@ -52,15 +52,15 @@ import java.lang.annotation.Annotation;
 
 public class InjectionPointHelper {
 
-    private final Habitat habitat;
+    private final Services services;
     private final ComponentEnvManager compEnvManager;
     private final GlassfishNamingManager namingManager;
 
-    public InjectionPointHelper(Habitat h) {
-        habitat = h;
+    public InjectionPointHelper(Services h) {
+        services = h;
 
-        compEnvManager = habitat.getByContract(ComponentEnvManager.class);
-        namingManager = habitat.getByContract(GlassfishNamingManager.class);
+        compEnvManager = services.forContract(ComponentEnvManager.class).get();
+        namingManager = services.forContract(GlassfishNamingManager.class).get();
 
     }
 

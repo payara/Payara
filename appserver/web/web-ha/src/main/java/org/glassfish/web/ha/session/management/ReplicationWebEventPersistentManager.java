@@ -47,10 +47,8 @@
 
 package org.glassfish.web.ha.session.management;
 
-import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.logging.LogDomains;
 import org.apache.catalina.Context;
-import org.apache.catalina.LifecycleException;
 import org.apache.catalina.Session;
 import org.glassfish.gms.bootstrap.GMSAdapterService;
 import org.glassfish.ha.common.GlassFishHAReplicaPredictor;
@@ -60,16 +58,14 @@ import org.glassfish.ha.common.NoopHAReplicaPredictor;
 import org.glassfish.ha.store.api.BackingStoreConfiguration;
 import org.glassfish.ha.store.api.BackingStoreException;
 import org.glassfish.ha.store.api.BackingStoreFactory;
-import org.glassfish.web.config.serverbeans.WebContainer;
+import org.glassfish.hk2.Services;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.PerLookup;
 
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
-import java.io.File;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
@@ -91,7 +87,7 @@ public class ReplicationWebEventPersistentManager extends ReplicationManagerBase
     
 
     @Inject
-    private Habitat habitat;
+    private Services services;
 
     @Inject
     private GMSAdapterService gmsAdapterService;
@@ -262,7 +258,7 @@ public class ReplicationWebEventPersistentManager extends ReplicationManagerBase
         if (_logger.isLoggable(Level.FINE)) {
             _logger.fine("Create backing store invoked with persistence type " + persistenceType + " and store name " + storeName);
         }
-        BackingStoreFactory factory = habitat.getComponent(BackingStoreFactory.class, persistenceType);
+        BackingStoreFactory factory = services.forContract(BackingStoreFactory.class).named(persistenceType).get();
         BackingStoreConfiguration<String, T> conf = new BackingStoreConfiguration<String, T>();
 
         if(gmsAdapterService.isGmsEnabled()) {

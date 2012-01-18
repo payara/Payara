@@ -44,7 +44,8 @@ import com.sun.corba.ee.spi.folb.GroupInfoService;
 import com.sun.logging.LogDomains;
 import java.util.ArrayList;
 import org.glassfish.api.naming.NamingObjectsProvider;
-import org.jvnet.hk2.component.Habitat;
+import org.glassfish.hk2.Provider;
+import org.glassfish.hk2.Services;
 
 import javax.naming.Context;
 import javax.naming.NamingException;
@@ -101,7 +102,7 @@ public class SerialInitContextFactory implements InitialContextFactory {
 
     private static String defaultPort = null ;
 
-    private static Habitat defaultHabitat = null ;
+    private static Services defaultServices = null ;
 
     static void setDefaultHost(String host) {
         defaultHost = host;
@@ -111,18 +112,18 @@ public class SerialInitContextFactory implements InitialContextFactory {
         defaultPort = port;
     }
 
-    static void setDefaultHabitat(Habitat h) {
-        defaultHabitat = h;
+    static void setDefaultServices(Services h) {
+        defaultServices = h;
 
     }
 
-    static Habitat getDefaultHabitat() {
-        return defaultHabitat;
+    static Services getDefaultServices() {
+        return defaultServices;
     }
 
     private boolean useLB ;
 
-    private final Habitat habitat ;
+    private final Services services;
 
 
     private boolean propertyIsSet( Hashtable env, String pname ) {
@@ -227,20 +228,20 @@ public class SerialInitContextFactory implements InitialContextFactory {
 
     public SerialInitContextFactory() {
         // Issue 14396
-        Habitat temp = defaultHabitat ;
+        Services temp = defaultServices;
         if (temp == null) {
-            temp = Globals.getDefaultHabitat() ;
+            temp = Globals.getDefaultServices() ;
         }
         if (temp == null) {
             // May need to initialize hk2 component model in standalone client
             temp = Globals.getStaticHabitat() ;
         }
-        habitat = temp ;
+        services = temp ;
     }
 
     private ORB getORB() {
-        if (habitat != null) {
-            ORBLocator orbLocator = habitat.getByContract(ORBLocator.class) ;
+        if (services != null) {
+            ORBLocator orbLocator = services.forContract(ORBLocator.class).get() ;
             if (orbLocator != null) {
                 return orbLocator.getORB() ;
             }
@@ -287,11 +288,15 @@ public class SerialInitContextFactory implements InitialContextFactory {
                     // fineLog( "getInitialContext: rrPolicy = {0}", rrPolicy );
 
                     // this should force the initialization of the resources providers
-                    if (habitat!=null) {
-                        for (NamingObjectsProvider provider :
-                            habitat.getAllByContract(NamingObjectsProvider.class)) {
-                            // no-op
+                    if (services !=null) {
+                        for (Provider<NamingObjectsProvider> provider : services.forContract(NamingObjectsProvider.class).all()) {
+                            provider.get();
+                            // no - op. Do nothing with the provided object
                         }
+//                        for (NamingObjectsProvider provider :
+//                            services.getAllByContract(NamingObjectsProvider.class)) {
+//                            // no-op
+//                        }
                     }
 
                     // Get the actual content, not just the configured
@@ -355,7 +360,7 @@ public class SerialInitContextFactory implements InitialContextFactory {
 
     private Context createInitialContext(Hashtable env) throws NamingException
     {
-        SerialContext serialContext = new SerialContext(env, habitat);
+        SerialContext serialContext = new SerialContext(env, services);
         if (NamingManager.hasInitialContextFactoryBuilder()) {
             // When builder is used, JNDI does not go through
             // URL Context discovery anymore. To address that

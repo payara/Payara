@@ -55,6 +55,7 @@ import com.sun.logging.LogDomains;
 import org.apache.catalina.*;
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.api.web.TldProvider;
+import org.glassfish.hk2.Services;
 import org.glassfish.loader.util.ASClassLoaderUtil;
 import org.jvnet.hk2.component.Habitat;
 
@@ -221,12 +222,12 @@ final class WebModuleListener
         servletContext.setAttribute(
             "com.sun.appserv.tldlistener.map", tldListenerMap);
 
-        Habitat defaultHabitat =
-                webContainer.getServerContext().getDefaultHabitat();
+        Services defaultServices =
+                webContainer.getServerContext().getDefaultServices();
 
-        // set habitat for jsf injection
+        // set services for jsf injection
         servletContext.setAttribute(
-                Constants.HABITAT_ATTRIBUTE, defaultHabitat);
+                Constants.HABITAT_ATTRIBUTE, defaultServices);
 
         SunWebApp bean = webModule.getIasWebAppConfigBean();
 
@@ -265,7 +266,7 @@ final class WebModuleListener
 
         // START SJSAS 6311155
         String sysClassPath = ASClassLoaderUtil.getModuleClassPath(
-            defaultHabitat,
+            (Habitat) defaultServices,
             webModule.getID(), null
         );
         // If the configuration flag usMyFaces is set, remove javax.faces.jar
@@ -286,7 +287,7 @@ final class WebModuleListener
                 sysClassPath + "\n");
         }
         if (sysClassPath.equals("")) {
-            // In embedded mode, habitat returns SingleModulesRegistry and
+            // In embedded mode, services returns SingleModulesRegistry and
             // it has no modules.
             // Try "java.class.path" system property instead.
             sysClassPath = System.getProperty("java.class.path"); 
@@ -308,7 +309,7 @@ final class WebModuleListener
         WebComponentInvocation inv = new WebComponentInvocation(webModule);
         try {
             invocationMgr.preInvoke(inv);
-            JCDIService jcdiService = defaultHabitat.getByContract(JCDIService.class);
+            JCDIService jcdiService = defaultServices.forContract(JCDIService.class).get();
             // JCDIService can be absent if weld integration is missing in the runtime, so check for null is needed.
             if (jcdiService != null && jcdiService.isCurrentModuleJCDIEnabled()) {
                 jcdiService.setELResolver(servletContext);

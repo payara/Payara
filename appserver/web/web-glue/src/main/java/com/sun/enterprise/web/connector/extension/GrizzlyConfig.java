@@ -49,8 +49,8 @@ import com.sun.enterprise.config.serverbeans.ModuleMonitoringLevels;
 import com.sun.enterprise.web.WebContainer;
 import com.sun.logging.LogDomains;
 import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.hk2.Services;
 import org.glassfish.j2ee.statistics.Stats;
-import org.jvnet.hk2.component.Habitat;
 
 import javax.management.MBeanServer;
 import javax.management.MBeanServerFactory;
@@ -103,9 +103,9 @@ public class GrizzlyConfig implements MonitoringLevelListener{
     
   
     /**
-     * This server context's default habitat.
+     * This server context's default services.
      */
-    private Habitat habitat = null;
+    private Services services = null;
     
 
     // --------------------------------------------------------------- //
@@ -119,7 +119,7 @@ public class GrizzlyConfig implements MonitoringLevelListener{
         this.domain = domain;
         this.port = port;
 
-        this.habitat = webContainer.getServerContext().getDefaultHabitat();
+        this.services = webContainer.getServerContext().getDefaultServices();
 
         // get an instance of the MBeanServer
         ArrayList servers = MBeanServerFactory.findMBeanServer(null);
@@ -143,7 +143,7 @@ public class GrizzlyConfig implements MonitoringLevelListener{
     
     private void initMonitoringLevel() {
         try{
-            Config cfg = habitat.getComponent(Config.class, ServerEnvironment.DEFAULT_INSTANCE_NAME );
+            Config cfg = services.forContract(Config.class).named(ServerEnvironment.DEFAULT_INSTANCE_NAME).get();
             
             MonitoringLevel monitoringLevel = MonitoringLevel.OFF; // default per DTD
 
@@ -174,7 +174,7 @@ public class GrizzlyConfig implements MonitoringLevelListener{
     
     
     public void registerMonitoringLevelEvents() {
-        MonitoringRegistry monitoringRegistry = habitat.getComponent(MonitoringRegistry.class);
+        MonitoringRegistry monitoringRegistry = services.forContract(MonitoringRegistry.class).get();
         if (monitoringRegistry!=null) {
             monitoringRegistry.registerMonitoringLevelListener(
                 this, MonitoredObjectType.HTTP_LISTENER);
@@ -183,7 +183,7 @@ public class GrizzlyConfig implements MonitoringLevelListener{
 
     
     private void unregisterMonitoringLevelEvents() {
-        MonitoringRegistry monitoringRegistry = habitat.getComponent(MonitoringRegistry.class);
+        MonitoringRegistry monitoringRegistry = services.forContract(MonitoringRegistry.class).get();
         if (monitoringRegistry!=null) {
             monitoringRegistry.unregisterMonitoringLevelListener(this);
         }

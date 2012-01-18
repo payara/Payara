@@ -869,7 +869,7 @@ public class PECoyoteConnector extends Connector {
             _logger.log(Level.WARNING, msg, ex);
         }
         /* TODO
-        WebContainerFeatureFactory wcFeatureFactory = _serverContext.getDefaultHabitat().getComponent(WebContainerFeatureFactory.class);
+        //WebContainerFeatureFactory wcFeatureFactory = _serverContext.getDefaultHabitat().getComponent(WebContainerFeatureFactory.class);
         String sslImplementationName = 
             webFeatureFactory.getSSLImplementationName();
         

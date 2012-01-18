@@ -58,8 +58,8 @@ import org.apache.catalina.deploy.ContextResource;
 import org.apache.catalina.deploy.LoginConfig;
 import org.apache.catalina.startup.ContextConfig;
 import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.hk2.Services;
 import org.glassfish.web.valve.GlassFishValve;
-import org.jvnet.hk2.component.Habitat;
 
 import javax.naming.NamingException;
 import java.io.File;
@@ -98,7 +98,7 @@ public class WebModuleContextConfig extends ContextConfig {
     public final static int MESSAGE_DESTINATION_REFS = 12;
     public final static int MIME_MAPPINGS = 13;
     
-    protected Habitat habitat;
+    protected Services services;
     
     /**
      * The <code>File</code> reffering to the default-web.xml 
@@ -149,8 +149,8 @@ public class WebModuleContextConfig extends ContextConfig {
     /**
      * Set the DOL object associated with this class.
      */
-    public void setHabitat(Habitat habitat){
-        this.habitat = habitat;
+    public void setServices(Services services){
+        this.services = services;
     }
     
     
@@ -227,8 +227,8 @@ public class WebModuleContextConfig extends ContextConfig {
 
         context.setConfigured(false);
 
-        ComponentEnvManager namingMgr = habitat.getComponent(
-            com.sun.enterprise.container.common.spi.util.ComponentEnvManager.class);
+        ComponentEnvManager namingMgr = services.forContract(
+            com.sun.enterprise.container.common.spi.util.ComponentEnvManager.class).get();
         if (namingMgr != null) {
             try {
                 boolean webBundleContainsEjbs =
@@ -393,7 +393,7 @@ public class WebModuleContextConfig extends ContextConfig {
         }
 
         if (authenticator instanceof DigestAuthenticator) {
-            Config config = habitat.getComponent(Config.class, ServerEnvironment.DEFAULT_INSTANCE_NAME);
+            Config config = services.forContract(Config.class).named(ServerEnvironment.DEFAULT_INSTANCE_NAME).get();
             SecurityService securityService = config.getSecurityService();
             String digestAlgorithm = null;
             if (securityService != null) {
@@ -424,8 +424,8 @@ public class WebModuleContextConfig extends ContextConfig {
     protected synchronized void stop() {
         
         super.stop();
-        ComponentEnvManager namingMgr = habitat.getComponent(
-            com.sun.enterprise.container.common.spi.util.ComponentEnvManager.class);
+        ComponentEnvManager namingMgr = services.forContract(
+            com.sun.enterprise.container.common.spi.util.ComponentEnvManager.class).get();
         unbindFromComponentNamespace(namingMgr);
 
     }

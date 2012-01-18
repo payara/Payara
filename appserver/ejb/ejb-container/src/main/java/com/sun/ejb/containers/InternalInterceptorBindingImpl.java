@@ -104,6 +104,8 @@ public class InternalInterceptorBindingImpl  {
         // Register interceptor for any managed beans
         // TODO Handle 299-enabled case
         ManagedBeanManager managedBeanManager = services.forContract(ManagedBeanManager.class).get();
+        System.out.println("** INTERNAL_INTERCEPTOR_BINDING_IMPL: Got managedBeanManager: "
+                + ManagedBeanManager.class.getCanonicalName() + "; "  + managedBeanManager);
         managedBeanManager.registerRuntimeInterceptor(systemInterceptor, webBundle);
 
 

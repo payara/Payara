@@ -57,7 +57,6 @@ import com.sun.enterprise.deployment.archivist.WebArchivist;
 import com.sun.enterprise.security.web.GlassFishSingleSignOn;
 import com.sun.enterprise.server.logging.GFFileHandler;
 import com.sun.enterprise.util.StringUtils;
-import com.sun.enterprise.util.io.FileUtils;
 import com.sun.enterprise.v3.common.PlainTextActionReporter;
 import com.sun.enterprise.v3.services.impl.GrizzlyProxy;
 import com.sun.enterprise.v3.services.impl.GrizzlyService;
@@ -112,6 +111,7 @@ import org.glassfish.grizzly.http.TransferEncoding;
 import org.glassfish.grizzly.http.util.HttpStatus;
 import org.glassfish.grizzly.filterchain.FilterChainContext;
 
+import org.glassfish.hk2.Services;
 import org.glassfish.internal.api.ClassLoaderHierarchy;
 import org.glassfish.internal.api.ServerContext;
 import org.glassfish.internal.api.Globals;
@@ -251,7 +251,7 @@ public class VirtualServer extends StandardHost
 
     private transient Domain domain;
 
-    private Habitat habitat;
+    private Services services;
 
     private transient ServerEnvironment instance;
 
@@ -410,8 +410,8 @@ public class VirtualServer extends StandardHost
         this.runner = runner;
     }
 
-    public void setHabitat(Habitat habitat) {
-        this.habitat = habitat;
+    public void setServices(Services services) {
+        this.services = services;
     }
 
     public String getInfo() {
@@ -638,7 +638,7 @@ public class VirtualServer extends StandardHost
             loader.start();            
             wmInfo.setAppClassLoader(loader);
             if ( wbd.getApplication() == null ) {
-                Application application = new Application(Globals.getDefaultHabitat());
+                Application application = new Application((Habitat) Globals.getDefaultServices());
                 application.setVirtual(true);
                 application.setName(Constants.DEFAULT_WEB_MODULE_NAME);
                 wbd.setApplication(application);
@@ -750,7 +750,7 @@ public class VirtualServer extends StandardHost
      */
     private String getVirtualServers(String appName) {
         String ret = null;
-        Server server = Globals.getDefaultHabitat().getComponent(Server.class);
+        Server server = Globals.getDefaultServices().forContract(Server.class).get();
         for (ApplicationRef appRef : server.getApplicationRef()) {
             if (appRef.getRef().equals(appName)) {
                 return appRef.getVirtualServers();
@@ -1748,7 +1748,7 @@ public class VirtualServer extends StandardHost
      */
     void reconfigureAccessLog(String globalAccessLogBufferSize,
                               String globalAccessLogWriteInterval,
-                              Habitat habitat,
+                              Services services,
                               Domain domain,
                               boolean globalAccessLoggingEnabled) {
         try {
@@ -1756,7 +1756,7 @@ public class VirtualServer extends StandardHost
                 accessLogValve.stop();
             }
             boolean start = accessLogValve.updateVirtualServerProperties(
-                vsBean.getId(), vsBean, domain, habitat,
+                vsBean.getId(), vsBean, domain, services,
                 globalAccessLogBufferSize, globalAccessLogWriteInterval);
             if (start && isAccessLoggingEnabled(globalAccessLoggingEnabled)) {
                 enableAccessLogging();
@@ -2051,7 +2051,7 @@ public class VirtualServer extends StandardHost
 
         try {
             if (factory==null)
-                factory = habitat.getComponent(ArchiveFactory.class);
+                factory = services.byType(ArchiveFactory.class).get();
 
             ContextFacade facade = (ContextFacade) context;
             File docRoot = facade.getDocRoot();
@@ -2061,7 +2061,7 @@ public class VirtualServer extends StandardHost
             if (report==null)
                 report = new PlainTextActionReporter();
 
-            ServerEnvironment env = habitat.getComponent(ServerEnvironment.class);
+            ServerEnvironment env = services.forContract(ServerEnvironment.class).get();
 
             DeployCommandParameters params = new DeployCommandParameters();
             params.contextroot = contextRoot;
@@ -2074,7 +2074,7 @@ public class VirtualServer extends StandardHost
                     new DeploymentContextImpl(report, _logger, archive, params, env);
 
             if (deployment==null)
-                deployment = habitat.getComponent(Deployment.class);
+                deployment = services.forContract(Deployment.class).get();
 
             ArchiveHandler archiveHandler = deployment.getArchiveHandler(archive);
             if (archiveHandler==null) {
@@ -2228,8 +2228,8 @@ public class VirtualServer extends StandardHost
      * <tt>VirtualServer</tt>.
      */
     public void removeContext(Context context) throws GlassFishException {
-        ActionReport report = habitat.getComponent(ActionReport.class, "plain");
-        Deployment deployment = habitat.getComponent(Deployment.class);
+        ActionReport report = services.forContract(ActionReport.class).named("plain").get();
+        Deployment deployment = services.forContract(Deployment.class).get();
         String name = ((ContextFacade)context).getAppName();
         ApplicationInfo appInfo = deployment.get(name);
 
@@ -2308,8 +2308,8 @@ public class VirtualServer extends StandardHost
         
         this.config = config;
         configureSingleSignOn(config.isSsoEnabled(), 
-                Globals.getDefaultHabitat().getComponent(
-                PEWebContainerFeatureFactoryImpl.class),
+                Globals.getDefaultServices().byType(
+                PEWebContainerFeatureFactoryImpl.class).get(),
                 false);
         if (config.isAccessLoggingEnabled()) {
             enableAccessLogging();

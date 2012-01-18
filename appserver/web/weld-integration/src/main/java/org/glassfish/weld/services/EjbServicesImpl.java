@@ -65,7 +65,7 @@ import org.jboss.weld.ejb.api.SessionObjectReference;
 import org.jboss.weld.ejb.spi.EjbDescriptor;
 import org.jboss.weld.ejb.spi.EjbServices;
 import org.jboss.weld.ejb.spi.InterceptorBindings;
-import org.jvnet.hk2.component.Habitat;
+import org.glassfish.hk2.Services;
 
 import com.sun.enterprise.deployment.EjbBundleDescriptor;
 import com.sun.enterprise.deployment.EjbInterceptor;
@@ -80,12 +80,12 @@ import com.sun.enterprise.deployment.LifecycleCallbackDescriptor;
 public class EjbServicesImpl implements EjbServices
 {
 
-    private Habitat habitat;
+    private Services services;
     private Logger logger = Logger.getLogger(EjbServicesImpl.class.getName());
 
 
-    public EjbServicesImpl(Habitat h) {
-        habitat = h;
+    public EjbServicesImpl(Services h) {
+        services = h;
     }
 
    /**
@@ -111,7 +111,7 @@ public class EjbServicesImpl implements EjbServices
 
                 Object ejbRef = ic.lookup(globalJndiName);
 
-                EjbContainerServices containerServices = habitat.getByContract(EjbContainerServices.class);
+                EjbContainerServices containerServices = services.forContract(EjbContainerServices.class).get();
 
                 sessionObj = new SessionObjectReferenceImpl(containerServices, ejbRef);
 

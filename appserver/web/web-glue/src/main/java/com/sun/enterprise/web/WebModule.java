@@ -72,6 +72,7 @@ import org.glassfish.embeddable.web.config.FormLoginConfig;
 import org.glassfish.embeddable.web.config.LoginConfig;
 import org.glassfish.embeddable.web.config.SecurityConfig;
 import org.glassfish.embeddable.web.config.TransportGuarantee;
+import org.glassfish.hk2.Services;
 import org.glassfish.hk2.classmodel.reflect.Types;
 import org.glassfish.internal.api.ServerContext;
 import org.glassfish.security.common.Role;
@@ -80,7 +81,6 @@ import org.glassfish.web.admin.monitor.SessionProbeProvider;
 import org.glassfish.web.admin.monitor.WebModuleProbeProvider;
 import org.glassfish.web.loader.ServletContainerInitializerUtil;
 import org.glassfish.web.valve.GlassFishValve;
-import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.types.Property;
 
 import javax.annotation.security.DeclareRoles;
@@ -175,7 +175,7 @@ public class WebModule extends PwcWebModule implements Context {
     // true if standalone WAR, false if embedded in EAR file
     private boolean isStandalone = true;
 
-    private transient Habitat habitat;
+    private transient Services services;
 
     /**
      * Constructor.
@@ -184,9 +184,9 @@ public class WebModule extends PwcWebModule implements Context {
         this(null);
     }
 
-    public WebModule(Habitat habitat) {
+    public WebModule(Services services) {
         super();
-        this.habitat = habitat;
+        this.services = services;
         this.adHocPaths = new HashMap<String,AdHocServletInfo>();
         this.adHocSubtrees = new HashMap<String,AdHocServletInfo>();
 
@@ -1786,7 +1786,7 @@ public class WebModule extends PwcWebModule implements Context {
 
         PersistenceStrategyBuilderFactory factory =
             new PersistenceStrategyBuilderFactory(
-                webContainer.getServerConfigLookup(), habitat);
+                webContainer.getServerConfigLookup(), services);
         PersistenceStrategyBuilder builder =
             factory.createPersistenceStrategyBuilder(persistence.getType(),
                                                      frequency, scope, this);

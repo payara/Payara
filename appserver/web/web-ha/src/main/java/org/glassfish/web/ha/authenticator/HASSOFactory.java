@@ -58,10 +58,10 @@ import org.glassfish.ha.store.api.BackingStore;
 import org.glassfish.ha.store.api.BackingStoreConfiguration;
 import org.glassfish.ha.store.api.BackingStoreException;
 import org.glassfish.ha.store.api.BackingStoreFactory;
+import org.glassfish.hk2.Services;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.PerLookup;
 
 /**
@@ -77,7 +77,7 @@ public class HASSOFactory implements SSOFactory {
     private static BackingStore ssoEntryMetadataBackingStore = null;
 
     @Inject
-    private Habitat habitat;
+    private Services services;
    
     @Inject
     private JavaEEIOUtils ioUtils;
@@ -91,20 +91,20 @@ public class HASSOFactory implements SSOFactory {
     public GlassFishSingleSignOn createSingleSignOnValve(String virtualServerName) {
         String persistenceType = PersistenceType.REPLICATED.getType();
         return new HASingleSignOn(ioUtils,
-                getSsoEntryMetadataBackingStore(persistenceType, STORE_NAME, habitat));
+                getSsoEntryMetadataBackingStore(persistenceType, STORE_NAME, services));
     }   
     
     protected static synchronized BackingStore getSsoEntryMetadataBackingStore(
-            String persistenceType, String storeName, Habitat habitat) {
+            String persistenceType, String storeName, Services services) {
 
         if (ssoEntryMetadataBackingStore == null) {
-            BackingStoreFactory factory = habitat.getComponent(BackingStoreFactory.class, persistenceType);
+            BackingStoreFactory factory = services.forContract(BackingStoreFactory.class).named(persistenceType).get();
             BackingStoreConfiguration<String, HASingleSignOnEntryMetadata> conf =
                     new BackingStoreConfiguration<String, HASingleSignOnEntryMetadata>();
 
             String clusterName = "";
             String instanceName = "";
-            GMSAdapterService gmsAdapterService = habitat.getComponent(GMSAdapterService.class);
+            GMSAdapterService gmsAdapterService = services.byType(GMSAdapterService.class).get();
             if(gmsAdapterService.isGmsEnabled()) {
                 clusterName = gmsAdapterService.getGMSAdapter().getClusterName();
                 instanceName = gmsAdapterService.getGMSAdapter().getModule().getInstanceName();

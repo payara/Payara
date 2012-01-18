@@ -56,6 +56,7 @@ import org.glassfish.loader.util.ASClassLoaderUtil;
 import org.glassfish.web.jsp.JSPCompiler;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.component.Habitat;
 
 import java.io.File;
 import java.text.MessageFormat;
@@ -217,7 +218,7 @@ public class WebDeployer extends JavaEEDeployer<WebContainer, WebApplication>{
                 super.getCommonClassPath());
             classpath.append(File.pathSeparatorChar);
             classpath.append(ASClassLoaderUtil.getModuleClassPath(
-                    sc.getDefaultHabitat(),
+                    (Habitat) sc.getDefaultServices(),
                     wbd.getApplication().getName(), 
                     dc.getCommandParameters(
                         DeployCommandParameters.class).libraries)); 

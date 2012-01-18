@@ -133,8 +133,8 @@ public class SecuritySupportImpl extends SecuritySupport {
         char[] keyStorePass = null;
         char[] trustStorePass = null;
         if (!isInstantiated()) {
-            if (masterPasswordHelper == null && Globals.getDefaultHabitat() != null) {
-                masterPasswordHelper = Globals.getDefaultHabitat().getByType(MasterPasswordImpl.class);
+            if (masterPasswordHelper == null && Globals.getDefaultServices() != null) {
+                masterPasswordHelper = Globals.getDefaultServices().byType(MasterPasswordImpl.class).get();
             }
             if (masterPasswordHelper != null) {
                 keyStorePass = masterPasswordHelper.getMasterPassword();

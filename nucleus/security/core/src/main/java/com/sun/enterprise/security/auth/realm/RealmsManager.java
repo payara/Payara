@@ -97,7 +97,7 @@ public class RealmsManager {
     }
     /**
      * Checks if the given realm name is loaded/valid.
-     * @param String name of the realm to check.
+     * @param name of the realm to check.
      * @return true if realm present, false otherwise.
      */
     public  boolean isValidRealm(String name){
@@ -110,7 +110,7 @@ public class RealmsManager {
 
     /**
      * Checks if the given realm name is loaded/valid.
-     * @param String name of the realm to check.
+     * @param name of the realm to check.
      * @return true if realm present, false otherwise.
      */
     public  boolean isValidRealm(String configName, String name){
