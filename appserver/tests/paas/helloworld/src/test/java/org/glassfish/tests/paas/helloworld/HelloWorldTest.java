@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -55,6 +55,8 @@ import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.List;
+import java.util.ArrayList;
 import java.util.regex.*;
 
 /**
@@ -105,7 +107,7 @@ public class HelloWorldTest {
 	private void runTests(GlassFish glassfish) throws Exception {
 		// 2. Deploy the PaaS application.
 		File archive = new File(System.getProperty("basedir")
-				+ "/target/helloworld_sample.war");
+				+ "/target/helloworld.war");
 
 		Assert.assertTrue(archive.exists());
 		Deployer deployer = null;
@@ -126,14 +128,16 @@ public class HelloWorldTest {
 			String HTTP_PORT = (System.getProperty("http.port") != null) ? System
 					.getProperty("http.port") : "28080";
 
-			String instanceIP = getLBIPAddress(glassfish);
+			List<String> ips = getLBIPAddress(glassfish);
 
-			get("http://" + instanceIP + ":" + HTTP_PORT
-					+ "/helloworld_sample/hi.jsp",
+                        //wait for instances to come up
+                        //Thread.sleep(60000);
+
+                        for (String ip:ips) {
+                            get("http://" + ip + ":" + HTTP_PORT
+                                        + "/helloworld/hi.jsp",
 					"PaaS says Hello World!");
-		//	get("http://" + instanceIP + ":28081" 
-		//			+ "/helloworld_sample/hi.jsp",
-		//			"PaaS says Hello World!");
+                        }
 
 			// 4. Undeploy the PaaS application.
 		} finally {
@@ -170,12 +174,12 @@ public class HelloWorldTest {
 		return glassfish;
 	}
 
-	private String getLBIPAddress(GlassFish glassfish) {
-		String lbIP = null;
-		String IPAddressPattern = "IP-ADDRESS\\s*\n*(.*)\\s*\n(([01]?\\d*|2[0-4]\\d|25[0-5])\\."
-				+ "([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\."
-				+ "([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\."
-				+ "([0-9]?\\d\\d?|2[0-4]\\d|25[0-5]))";
+	private List<String> getLBIPAddress(GlassFish glassfish) {
+                List<String> lbIPs = new ArrayList<String>();
+		String IPAddressPattern = "(([01]?\\d*|2[0-4]\\d|25[0-5])\\."
+				        + "([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\."
+				        + "([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\."
+				        + "([0-9]?\\d\\d?|2[0-4]\\d|25[0-5]))";
 		try {
 			CommandRunner commandRunner = glassfish.getCommandRunner();
 			String result = commandRunner
@@ -189,29 +193,27 @@ public class HelloWorldTest {
                                 System.out.println("#####" + result);
 				Pattern p = Pattern.compile(IPAddressPattern);
 				Matcher m = p.matcher(result);
-				if (m.find()) {
-					lbIP = m.group(2);
-				} else {
-					lbIP = "localhost";
-				}
-                                System.out.println("LB IP = " + lbIP);
+                                while (m.find()) {
+                                    lbIPs.add(m.group(1));
+                                }
+
+                                System.out.println("LB IPs = " + lbIPs.toString());
 			} else {
 				Pattern p = Pattern.compile(IPAddressPattern);
 				Matcher m = p.matcher(result);
-				if (m.find()) {
-					lbIP = m.group(2);
-				} else {
-					lbIP = "localhost";
-				}
+                                while (m.find()) {
+                                    lbIPs.add(m.group(1));
+                                }
 
+                                System.out.println("LB IPs = " + lbIPs.toString());
 			}
 
 		} catch (Exception e) {
 			System.out.println("Regex has thrown an exception "
 					+ e.getMessage());
-			return "localhost";
+			lbIPs.add("localhost");
 		}
-		return lbIP;
+		return lbIPs;
 	}
 
 }
