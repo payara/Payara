@@ -108,11 +108,11 @@ public class GFLauncherTest {
     public void test2() throws GFLauncherException, MiniXmlParserException {
         info.setDomainName("domain1");
         launcher.launch();
-        List<String> cmdline = launcher.getCommandLine();
+        List<String> cmdline = launcher.getJvmOptions();
 
         assertTrue(cmdline.contains("-XX:+UnlockDiagnosticVMOptions"));
         // 0 --> java, 1 --> "-cp" 2 --> the classpath, 3 -->first arg
-        assertEquals(cmdline.get(3), "-XX:+UnlockDiagnosticVMOptions");
+        assertEquals(cmdline.get(0), "-XX:+UnlockDiagnosticVMOptions");
         
         /* Too noisy, todo figure out how to get it into the test report
         System.out.println("COMMANDLINE:");
@@ -130,7 +130,7 @@ public class GFLauncherTest {
     public void test3() throws GFLauncherException, MiniXmlParserException {
         info.setDomainName("domain2");
         launcher.launch();
-        List<String> cmdline = launcher.getCommandLine();
+        List<String> cmdline = launcher.getJvmOptions();
         assertFalse(cmdline.contains("-XX:+UnlockDiagnosticVMOptions"));
 
         /*
