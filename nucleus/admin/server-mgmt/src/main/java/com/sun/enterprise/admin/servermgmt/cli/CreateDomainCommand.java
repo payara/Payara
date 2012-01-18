@@ -40,39 +40,43 @@
 
 package com.sun.enterprise.admin.servermgmt.cli;
 
-import org.glassfish.security.common.FileRealmHelper;
-import com.sun.enterprise.admin.servermgmt.KeystoreManager;
-import java.io.File;
-import java.io.Console;
-import java.util.*;
-import java.util.logging.*;
-import org.jvnet.hk2.annotations.*;
-import org.jvnet.hk2.component.*;
-import org.glassfish.internal.embedded.*;
-import org.glassfish.api.admin.config.*;
-import org.glassfish.api.admin.*;
-import org.glassfish.api.Param;
-import org.glassfish.internal.embedded.Server;
-import com.sun.enterprise.admin.cli.*;
-import org.glassfish.api.admin.CommandModel.ParamModel;
-import com.sun.enterprise.admin.util.CommandModelData.ParamModelData;
-import com.sun.enterprise.admin.servermgmt.DomainConfig;
-import com.sun.enterprise.admin.servermgmt.DomainsManager;
-import com.sun.enterprise.admin.servermgmt.DomainException;
-import com.sun.enterprise.admin.servermgmt.RepositoryManager;
-import com.sun.enterprise.admin.servermgmt.pe.PEDomainsManager;
-import com.sun.enterprise.universal.i18n.LocalStringsImpl;
-import com.sun.enterprise.util.SystemPropertyConstants;
-import com.sun.enterprise.util.net.NetUtils;
-import com.sun.enterprise.util.io.FileUtils;
-import com.sun.enterprise.config.serverbeans.*;
-import com.sun.enterprise.module.bootstrap.*;
-
 import com.sun.appserv.management.client.prefs.LoginInfo;
 import com.sun.appserv.management.client.prefs.LoginInfoStore;
 import com.sun.appserv.management.client.prefs.LoginInfoStoreFactory;
-import com.sun.logging.*;
+import com.sun.enterprise.admin.cli.CLICommand;
+import com.sun.enterprise.admin.cli.CLIConstants;
+import com.sun.enterprise.admin.servermgmt.*;
+import com.sun.enterprise.admin.servermgmt.pe.PEDomainsManager;
+import com.sun.enterprise.admin.util.CommandModelData.ParamModelData;
+import com.sun.enterprise.config.serverbeans.Config;
 import static com.sun.enterprise.config.util.PortConstants.*;
+import com.sun.enterprise.module.bootstrap.StartupContext;
+import com.sun.enterprise.universal.i18n.LocalStringsImpl;
+import com.sun.enterprise.util.SystemPropertyConstants;
+import com.sun.enterprise.util.io.FileUtils;
+import com.sun.enterprise.util.net.NetUtils;
+import com.sun.logging.LogDomains;
+import java.io.Console;
+import java.io.File;
+import java.util.*;
+import java.util.logging.Level;
+import org.glassfish.api.Param;
+import org.glassfish.api.admin.CommandException;
+import org.glassfish.api.admin.CommandModel.ParamModel;
+import org.glassfish.api.admin.CommandValidationException;
+import org.glassfish.api.admin.config.Container;
+import org.glassfish.api.admin.config.DomainContext;
+import org.glassfish.api.admin.config.DomainInitializer;
+import org.glassfish.embeddable.BootstrapProperties;
+import org.glassfish.embeddable.GlassFish;
+import org.glassfish.embeddable.GlassFishException;
+import org.glassfish.embeddable.GlassFishProperties;
+import org.glassfish.embeddable.GlassFishRuntime;
+import org.glassfish.security.common.FileRealmHelper;
+import org.jvnet.hk2.annotations.Scoped;
+import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.PerLookup;
 
 /**
  *  This is a local command that creates a domain.
@@ -771,33 +775,34 @@ public final class CreateDomainCommand extends CLICommand {
     /*
      */
     private void modifyInitialDomainXml(DomainConfig domainConfig)
-                                throws LifecycleException {
+                                throws GlassFishException {
         // for each module implementing the @Contract DomainInitializer, extract
         // the initial domain.xml and insert it into the existing domain.xml
 
-        Server.Builder builder = new Server.Builder("dummylaunch");
-        EmbeddedFileSystem.Builder efsb = new EmbeddedFileSystem.Builder();
-        efsb.installRoot(new File(domainConfig.getInstallRoot()));
-        File domainDir = new File(domainConfig.getDomainRoot(),
-                                        domainConfig.getDomainName());
-        File configDir = new File(domainDir, "config");
-        efsb.configurationFile(new File(configDir, "domain.xml"), false);
-        builder.embeddedFileSystem(efsb.build());
+        BootstrapProperties bootstrapProperties = new BootstrapProperties();
+        bootstrapProperties.setInstallRoot(domainConfig.getInstallRoot());
+        GlassFishRuntime runtime = GlassFishRuntime.bootstrap(bootstrapProperties);
 
-        Properties properties = new Properties();
-        properties.setProperty(StartupContext.STARTUP_MODULESTARTUP_NAME,
+        File domDir = new File(domainConfig.getDomainRoot(),
+                               domainConfig.getDomainName());
+        File configDir = new File(domDir, "config");
+        GlassFishProperties glassFishProperties = new GlassFishProperties();
+        glassFishProperties.setConfigFileURI(new File(configDir, 
+                "domain.xml").toURI().toString());
+        glassFishProperties.setConfigFileReadOnly(false);
+        glassFishProperties.setProperty(StartupContext.STARTUP_MODULESTARTUP_NAME,
                                         "DomainCreation");
-        properties.setProperty("-domain", domainConfig.getDomainName());
-        Server server = builder.build(properties);
-
-        server.start();
-        Habitat habitat = server.getHabitat();
+        glassFishProperties.setProperty("-domain", domainConfig.getDomainName());
+ 
+        GlassFish glassfish = runtime.newGlassFish(glassFishProperties);
+        glassfish.start();
+        
         // Will always need DAS's name & config. No harm using the name 'server'
         // to fetch <server-config>
         com.sun.enterprise.config.serverbeans.Server serverConfig =
-            habitat.getComponent(
-                com.sun.enterprise.config.serverbeans.Server.class, "server");
-        Config config = habitat.getComponent(
+            glassfish.getService(com.sun.enterprise.config.serverbeans.Server.class, 
+                "server");
+        Config config = glassfish.getService(
             Config.class, serverConfig.getConfigRef());
 
         // Create a context object for this domain creation to enable the new
@@ -811,6 +816,7 @@ public final class CreateDomainCommand extends CLICommand {
 
         // now for every such Inhabitant, fetch the actual initial config and
         // insert it into the module that initial config was targeted for.
+        Habitat habitat = glassfish.getService(Habitat.class);
         Collection<DomainInitializer> inits =
                 habitat.getAllByContract(DomainInitializer.class);
         if (inits.isEmpty()) {
@@ -823,7 +829,7 @@ public final class CreateDomainCommand extends CLICommand {
             Container newContainerConfig = inhabitant.getInitialConfig(ctx);
             config.getContainers().add(newContainerConfig);
         }
-        server.stop();
+        glassfish.dispose();
     }
     
     private void initSecureAdminSettings(final DomainConfig config) {
