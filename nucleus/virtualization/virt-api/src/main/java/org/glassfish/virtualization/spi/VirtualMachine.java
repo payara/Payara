@@ -159,6 +159,7 @@ public interface VirtualMachine {
      * @param localFile             Location of the file in the local system.
      * @param remoteTargetDirectory An existing directory inside the
      *                              virtual machine where the file needs to be uploaded to.
+     * @return true if upload is successful, false otherwise
      */
     boolean upload(File localFile, File remoteTargetDirectory);
 
@@ -168,6 +169,7 @@ public interface VirtualMachine {
      * @param remoteFile           Location of the file in the virtual machine.
      * @param localTargetDirectory An existing directory in the local system
      *                             where the file needs to be downloaded to.
+     * @return true if download is successful, false otherwise
      */
     boolean download(File remoteFile, File localTargetDirectory);
 
