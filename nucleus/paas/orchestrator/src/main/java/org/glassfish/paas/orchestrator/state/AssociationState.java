@@ -57,7 +57,12 @@ public abstract class AssociationState extends AbstractPaaSDeploymentState {
 
     protected void associateProvisionedServices(PaaSDeploymentContext context, boolean preDeployment)
             throws PaaSDeploymentException {
-        logger.entering(getClass().getName(), "associateProvisionedServices-beforeDeployment=" + preDeployment);
+        String state="after";
+        if(preDeployment){
+            state="before";
+        }
+
+        logger.log(Level.FINER, localStrings.getString("associate.provisioned.services.predeployment",state));
         String appName = context.getAppName();
         final ServiceMetadata appServiceMetadata = orchestrator.getServiceMetadata(appName);
         final Set<ServicePlugin> plugins = orchestrator.getPlugins(appServiceMetadata);
@@ -73,8 +78,9 @@ public abstract class AssociationState extends AbstractPaaSDeploymentState {
                         Set<ServiceReference> appSRs = appServiceMetadata.getServiceReferences();
                         for (ServiceReference serviceRef : appSRs) {
                             if(serviceRef.getType() != null){
-                                logger.log(Level.INFO, "Associating ProvisionedService " + serviceProducer
-                                        + " for ServiceReference " + serviceRef + " through " + svcPlugin);
+                                Object args[]=new Object[]{serviceProducer,serviceRef,svcPlugin};
+                                logger.log(Level.INFO, "associate.provisionedservice",args);
+
                                 Collection<org.glassfish.paas.orchestrator.service.spi.Service> serviceConsumers =
                                         orchestrator.getServicesManagedByPlugin(svcPlugin, servicesForAssociation);
                                 for (org.glassfish.paas.orchestrator.service.spi.Service serviceConsumer : serviceConsumers) {
@@ -83,9 +89,8 @@ public abstract class AssociationState extends AbstractPaaSDeploymentState {
                                         associatedServicesList.add(
                                                 new AssociatedServiceRecord(serviceProducer, serviceConsumer, serviceRef, svcPlugin));
                                     } catch (Exception e) {
-                                        logger.log(Level.WARNING, "Failure while associating " + serviceConsumer.getName()
-                                                + " and " + serviceProducer.getName() + " " +
-                                                "via service-reference " + serviceRef, e);
+                                        Object args1[]= new Object[]{serviceConsumer.getName(),serviceProducer.getName(),serviceRef,e};
+                                        logger.log(Level.WARNING,"failure.while.associating.service",args1);
                                         rollback(associatedServicesList, context, preDeployment);
                                         throw new PaaSDeploymentException(e);
                                     }
@@ -111,9 +116,8 @@ public abstract class AssociationState extends AbstractPaaSDeploymentState {
                 plugin.dissociateServices(serviceConsumer, serviceRef, serviceProvider, preDeployment,
                         context);
             }catch(Exception e){
-                logger.log(Level.WARNING, "Failure while dissociating " + serviceConsumer.getName()
-                        + " and " + serviceProvider.getName() + " " +
-                        "via service-reference " + serviceRef, e);
+                Object args[]= new Object[]{serviceConsumer.getName(),serviceProvider.getName(),serviceRef,e};
+               logger.log(Level.WARNING,"failure.while.associating.service",args);
 
             }
         }

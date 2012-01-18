@@ -40,6 +40,7 @@
 
 package org.glassfish.paas.orchestrator.state;
 
+import com.sun.enterprise.util.i18n.StringManager;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.paas.orchestrator.*;
@@ -77,7 +78,7 @@ public class ServiceDependencyDiscoveryState extends AbstractPaaSDeploymentState
     }
 
     private ServiceMetadata serviceDependencyDiscovery(PaaSDeploymentContext context) throws PaaSDeploymentException {
-        logger.entering(getClass().getName(), "serviceDependencyDiscovery");
+        logger.log(Level.FINER, localStrings.getString("METHOD.serviceDependencyDiscovery"));
 
         final DeploymentContext dc = context.getDeploymentContext();
         String appName = context.getAppName();
@@ -107,7 +108,7 @@ public class ServiceDependencyDiscoveryState extends AbstractPaaSDeploymentState
                 appServiceMetadata.setAppName(appName);
             }
 
-            logger.log(Level.INFO, "Discovered declared service metadata via glassfish-services.xml = " + appServiceMetadata);
+            logger.log(Level.INFO, "discovered.declared.metadata", appServiceMetadata);
 
             Map<ServiceDescription, ServicePlugin> pluginsToHandleSDs = new LinkedHashMap<ServiceDescription, ServicePlugin>();
 
@@ -198,7 +199,7 @@ public class ServiceDependencyDiscoveryState extends AbstractPaaSDeploymentState
                     Set<ServiceDescription> implicitServiceDescs = svcPlugin.getImplicitServiceDescriptions(archive, appName);
 
                     for (ServiceDescription sd : implicitServiceDescs) {
-                        logger.log(Level.INFO, "Implicit ServiceDescription:" + sd);
+                        logger.log(Level.FINEST, localStrings.getString("implicit.SD",sd));
                         pluginsToHandleSDs.put(sd, svcPlugin);
                         sd.setPlugin(svcPlugin);
                         sd.setServiceScope(ServiceScope.APPLICATION);
@@ -210,7 +211,7 @@ public class ServiceDependencyDiscoveryState extends AbstractPaaSDeploymentState
 
             setPluginForSD(orchestrator, pluginsToHandleSDs, installedPlugins, appServiceMetadata);
 
-            logger.log(Level.INFO, "After adding implicit ServiceDescriptions = " + appServiceMetadata);
+            logger.log(Level.FINEST, "after.implicit.SD", appServiceMetadata);
 
 
             //1.2 Get implicit ServiceReferences
@@ -219,7 +220,7 @@ public class ServiceDependencyDiscoveryState extends AbstractPaaSDeploymentState
                 Set<ServiceReference> implicitServiceRefs = svcPlugin.getServiceReferences(appName, archive, context);
                 for (ServiceReference sr : implicitServiceRefs) {
                     sr.setRequestingPlugin(svcPlugin);
-                    logger.log(Level.INFO, "ServiceReference:" + sr);
+                    logger.log(Level.FINEST, localStrings.getString("serviceReference",sr));
                     appServiceMetadata.addServiceReference(sr);
                     //if the service-ref refers a service-name, retrieve the service-description of the service.
                     if(sr.getServiceName() != null){
@@ -233,7 +234,7 @@ public class ServiceDependencyDiscoveryState extends AbstractPaaSDeploymentState
                 }
                 //}
             }
-            logger.log(Level.INFO, "After adding ServiceReferences = " + appServiceMetadata);
+            logger.log(Level.FINEST, localStrings.getString("after.serviceref ",appServiceMetadata));
             Map<ServiceReference, ServiceDescription> serviceRefToSD = new HashMap<ServiceReference, ServiceDescription>();
 
             //1.3 Ensure all service references have a related service description
@@ -326,7 +327,7 @@ public class ServiceDependencyDiscoveryState extends AbstractPaaSDeploymentState
                 }
             }
 
-            logger.log(Level.INFO, "Final Service Metadata = " + appServiceMetadata);
+            logger.log(Level.INFO, "final.servicemetadata",appServiceMetadata);
             return appServiceMetadata;
         } catch (Exception e) {
             throw new PaaSDeploymentException(e);

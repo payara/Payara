@@ -71,7 +71,8 @@ public class UndeployState extends AbstractPaaSDeploymentState {
         ActionReport report =  habitat.getComponent(ActionReport.class);
         CommandRunner.CommandInvocation invocation = commandRunner.getCommandInvocation("undeploy", report);
         invocation.parameters(parameterMap).execute();
-        logger.log(Level.INFO, "Undeploying application ["+appName+"], status : " + report.getMessage());
+        Object args[]=new Object[]{appName,report.getMessage()};
+        logger.log(Level.FINEST, "undeploying.app",args);
     }
 
     public Class<PaaSDeploymentState> getRollbackState() {

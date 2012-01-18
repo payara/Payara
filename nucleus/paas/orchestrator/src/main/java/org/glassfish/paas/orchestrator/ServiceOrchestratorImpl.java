@@ -44,6 +44,8 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.sun.enterprise.util.i18n.StringManager;
+import com.sun.logging.LogDomains;
 import org.glassfish.api.admin.AdminCommandLock;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.OpsParams;
@@ -110,10 +112,14 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
             };
     private static final List<Class> DEPLOYMENT_STATES = new ArrayList<Class>();
 
-    private static Logger logger = Logger.getLogger(ServiceOrchestratorImpl.class.getName());
+    private static Logger logger = LogDomains.getLogger(ServiceOrchestratorImpl.class,LogDomains.PAAS_LOGGER);
+
     private Set<ServicePlugin> pluginsSet = null;
 
     public static final String ORCHESTRATOR_UNDEPLOY_CALL = "orchestrator.undeploy.call";
+
+    private static StringManager localStrings = StringManager.getManager(ServiceOrchestratorImpl.class);
+
 
     static{
         composeDeploymentStates();
@@ -156,7 +162,7 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
         if(pluginsSet == null){
             Set<ServicePlugin> plugins = new LinkedHashSet<ServicePlugin>();
             plugins.addAll(habitat.getAllByContract(ServicePlugin.class));
-            logger.log(Level.INFO, "Discovered plugins:" + plugins);
+            logger.log(Level.INFO,"discovered.plugins",plugins);
             pluginsSet = plugins;
         }
         return pluginsSet;
@@ -226,7 +232,8 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
 
     private void handleFailure(String appName, Class[] tasks, boolean deployment, PaaSDeploymentState state,
                                PaaSDeploymentContext pc, Exception e) {
-        logger.log(Level.WARNING, "Failure while handling [ " + state.getClass().getSimpleName() + " ] : ", e);
+        Object[] args=new Object[]{state.getClass().getSimpleName(),e};
+        logger.log(Level.WARNING, "failure.handling",args);
         if(deployment){
             rollbackDeployment(pc, state, DEPLOYMENT_STATES);
             DeploymentException de = new DeploymentException("Failure while deploying application [ "+appName+" ], " +
@@ -244,7 +251,7 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
     private void rollbackDeployment(PaaSDeploymentContext context, PaaSDeploymentState failedState, List<Class> tasksList) {
         int index = tasksList.indexOf(failedState.getClass());
         if(index == -1){
-            logger.log(Level.WARNING, "No such task [ "+failedState.getClass()+" ] found to initiate RollBack");
+            logger.log(Level.WARNING, "no.such.task.to.initiate.rollback",failedState.getClass());
             return;
         }
         List<Class> tmpTasksList = new ArrayList<Class>();
@@ -261,9 +268,8 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
                 }catch(Exception e){
                     // we cannot handle failures while rolling back.
                     // continue rolling back.
-                    logger.log(Level.WARNING,
-                            "Failure while rolling back [Application : "+context.getAppName()+"], " +
-                                    "[State : "+rollbackState.getClass().getSimpleName()+"]", e);
+                    Object args[]=new Object[] {context.getAppName(),rollbackState.getClass().getSimpleName(),e};
+                    logger.log(Level.WARNING,"failure.while.rollback",args);
                 }
             }
         }
@@ -277,49 +283,49 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
      * @param dc DeploymentContext associated with the current deployment operation
      */
     private void provisionServicesForApplication(String appName, DeploymentContext dc) {
-        logger.entering(getClass().getName(), "provisionServicesForApplication");
+        logger.log(Level.FINER, localStrings.getString("METHOD.provisionServicesForApplication"));
         orchestrateTask(PRE_DEPLOY_PHASE_STATES, appName, dc, true);
-        logger.exiting(getClass().getName(), "provisionServicesForApplication");
+        logger.log(Level.FINER, localStrings.getString("METHOD.provisionServicesForApplication"));
     }
 
     public void postDeploy(String appName, DeploymentContext dc) {
-        logger.entering(getClass().getName(), "postDeploy");
+        logger.log(Level.FINER, localStrings.getString("METHOD.postDeploy"));
         orchestrateTask(POST_DEPLOY_PHASE_STATES, appName, dc, true);
-        logger.exiting(getClass().getName(), "postDeploy");
+        logger.log(Level.FINER, localStrings.getString("METHOD.postDeploy"));
     }
 
     public void startup(String appName, DeploymentContext dc) {
-        logger.entering(getClass().getName(), "server-startup");
+        logger.log(Level.FINER, localStrings.getString("METHOD.startup"));
         orchestrateTask(SERVER_STARTUP_PHASE_STATES, appName, dc, false);
-        logger.exiting(getClass().getName(), "server-startup");
+        logger.log(Level.FINER, localStrings.getString("METHOD.startup"));
     }
 
     public void enable(String appName, DeploymentContext dc) {
-        logger.entering(getClass().getName(), "enable");
+        logger.log(Level.FINER, localStrings.getString("METHOD.enable"));
         orchestrateTask(ENABLE_PHASE_STATES, appName, dc, false);
-        logger.exiting(getClass().getName(), "enable");
+        logger.log(Level.FINER, localStrings.getString("METHOD.enable"));
     }
 
     public void disable(String appName, ExtendedDeploymentContext dc) {
-        logger.entering(getClass().getName(), "disable");
+        logger.log(Level.FINER, localStrings.getString("METHOD.disable"));
         orchestrateTask(DISABLE_PHASE_STATES, appName, dc, false);
-        logger.exiting(getClass().getName(), "disable");
+        logger.log(Level.FINER, localStrings.getString("METHOD.disable"));
     }
 
     public void preUndeploy(String appName, DeploymentContext dc) {
-        logger.entering(getClass().getName(), "preUndeploy");
+        logger.log(Level.FINER, localStrings.getString("METHOD.preUndeploy"));
         if(!isOrchestratorInitiatedUndeploy(dc.getCommandParameters(OpsParams.class))){
             orchestrateTask(PRE_UNDEPLOY_PHASE_STATES, appName, dc, false);
         }
-        logger.exiting(getClass().getName(), "preUndeploy");
+        logger.log(Level.FINER, localStrings.getString("METHOD.preUndeploy"));
     }
 
     public void postUndeploy(String appName, DeploymentContext dc) {
-        logger.entering(getClass().getName(), "postUndeploy");
+        logger.log(Level.FINER, localStrings.getString("METHOD.postUndeploy"));
         if(!isOrchestratorInitiatedUndeploy(dc.getCommandParameters(OpsParams.class))){
             orchestrateTask(POST_UNDEPLOY_PHASE_STATES, appName, dc, false);
         }
-        logger.exiting(getClass().getName(), "postUndeploy");
+        logger.log(Level.FINER, localStrings.getString("METHOD.postUndeploy"));
     }
 
     private boolean isOrchestratorInitiatedUndeploy(OpsParams params) {
@@ -401,7 +407,8 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
                 virtualClusters.remove(virtualCluster);  // removes config.
             }
         } catch (Exception ex) {
-            logger.log(Level.WARNING, ex.getLocalizedMessage(), ex);
+            Object args[]=new Object[]{ex.getLocalizedMessage(),ex};
+            logger.log(Level.WARNING,"exception.while.remove.cluster",args);
         }
 
         /*
@@ -416,11 +423,14 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
        }
         */
         CommandResult commandResult = commandRunner.run("delete-cluster", virtualClusterName);
-        logger.info("Command delete-cluster [" + virtualClusterName + "] executed. " +
-                "Command Output [" + commandResult.getOutput() + "]");
+        Object args[]=new Object[]{virtualClusterName,commandResult.getOutput()};
+        logger.log(Level.INFO,"delete.cluster.exec.output",args);
         Throwable failureCause = commandResult.getFailureCause();
         if (failureCause != null) {
-            logger.log(Level.WARNING, failureCause.getLocalizedMessage(), failureCause);
+            args[0]= failureCause.getLocalizedMessage();
+            args[1]=failureCause;
+            logger.log(Level.WARNING,"failure.cause",args);
+
         }
     }
 
@@ -475,9 +485,10 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
     @Override
     public boolean scaleService(final String appName, final String svcName,
             final int scaleCount, final AllocationStrategy allocStrategy) {
-        logger.log(Level.INFO, "Scaling Service " + svcName + " for Apprelication "
-                + appName + " by " + scaleCount + " instances");
-        
+
+        Object args[] =new Object[]{svcName,appName,scaleCount};
+        logger.log(Level.INFO, "scale.services",args);
+
         
         AdminCommandLock.runWithSuspendedLock(new Runnable() {
             public void run() {
@@ -490,7 +501,7 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
             
             String tmpAppName = null;
             for (String app: provisionedServices.keySet()){
-                logger.log(Level.INFO, "Checking app for Service " + svcName);
+                logger.log(Level.FINER, localStrings.getString("check.app.for.service ", svcName));
                 Set<ProvisionedService> appsServices = getProvisionedServices(app);
                 for(ProvisionedService p: appsServices){
                     if (p.getName().equals(svcName)) {
@@ -500,18 +511,18 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
             }
             if (tmpAppName != null) {
                 effectiveAppName = tmpAppName; //reset
-                logger.log(Level.INFO, "Setting application name as appName");
+                logger.log(Level.FINER, localStrings.getString("setAppName"));
             }
             //Hack ends here.
     
             //Get Old PS
             Set<ProvisionedService> appPS = getProvisionedServices(effectiveAppName);
-            logger.log(Level.FINE, "appPS: " + appPS);
+            logger.log(Level.FINER, localStrings.getString("appPS", appPS));
             ProvisionedService oldPS = null;
             for(ProvisionedService ps: appPS) {
                 if (ps.getName().equals(svcName)) oldPS = ps;
             }
-            logger.log(Level.FINE, "oldPS: " + oldPS);
+            logger.log(Level.FINER, localStrings.getString("oldPS",oldPS));
             
             //Find Plugin that provided this Service
             //Set<Plugin> installedPlugins = getPlugins();
@@ -522,13 +533,16 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
             ServicePlugin<?> chosenPlugin = oldPS.getServiceDescription().getPlugin();
 
             //ask it to scale the service and get new PS
-            logger.log(Level.INFO, "Scaling Service " + svcName 
-                    + " using Plugin:" + chosenPlugin);
+
+            Object args[]=new Object[]{svcName,chosenPlugin};
+            logger.log(Level.INFO, "scale.service.using.plugin",args);
+
             ProvisionedService newPS = chosenPlugin.scaleService(
                     oldPS.getServiceDescription(), scaleCount, allocStrategy);
-            logger.log(Level.INFO, "New Provisioned Service after scaling " + svcName 
-                    + " is:" + newPS);
-            
+            args[0]=svcName;
+            args[1]=newPS;
+            logger.log(Level.INFO, "new.provisioned.service",args);
+
             //Simple assertions to ensure that we have the scaled Service.
             assert newPS.getName().equals(oldPS.getName());
             assert newPS.getServiceType().equals(oldPS.getServiceType());
@@ -541,9 +555,9 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
                 if (!newPS.getServiceType().equals(svcPlugin.getServiceType())) {
                     Set<ServiceReference> appSRs = appServiceMetadata.getServiceReferences();
                     for (ServiceReference serviceRef : appSRs) {
-                        logger.log(Level.INFO, "Re-associating New ProvisionedService " 
-                                + newPS + " for ServiceReference " + serviceRef 
-                                + " through " + svcPlugin);
+                        Object args1[]=new Object[]{newPS,serviceRef,svcPlugin};
+                        logger.log(Level.INFO,"reassociate.provisionedservice.serviceref",args1);
+
                         Collection<org.glassfish.paas.orchestrator.service.spi.Service> serviceConsumers =
                                 getServicesManagedByPlugin(svcPlugin, getServicesForAssociation(appName));
                         for(org.glassfish.paas.orchestrator.service.spi.Service serviceConsumer : serviceConsumers){

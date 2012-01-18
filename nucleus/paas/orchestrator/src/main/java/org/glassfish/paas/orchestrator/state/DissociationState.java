@@ -55,12 +55,16 @@ import java.util.logging.Level;
 public abstract class DissociationState extends AbstractPaaSDeploymentState {
 
     protected void dissociateProvisionedServices(PaaSDeploymentContext context, boolean beforeUndeploy) {
+        String state="after";
+        if(beforeUndeploy){
+            state="before";
+        }
         String appName = context.getAppName();
         final ServiceMetadata appServiceMetadata = orchestrator.getServiceMetadata(appName);
         Set<org.glassfish.paas.orchestrator.service.spi.Service> allServices =
                 orchestrator.getServicesForDissociation(appName);
         final Set<ServicePlugin> installedPlugins = orchestrator.getPlugins(appServiceMetadata);
-        logger.entering(getClass().getName(), "dissociateProvisionedServices=" + beforeUndeploy);
+        logger.log(Level.FINEST,localStrings.getString("dissociate.provisioned.services.preundeployment",state));
         boolean failed = false;
         Exception failureCause = null;
         for (org.glassfish.paas.orchestrator.service.spi.Service serviceProvider : allServices) {
@@ -71,8 +75,10 @@ public abstract class DissociationState extends AbstractPaaSDeploymentState {
                     Set<ServiceReference> appSRs = appServiceMetadata.getServiceReferences();
                     for (ServiceReference serviceRef : appSRs) {
                         if(serviceRef.getType() != null){
-                            logger.log(Level.INFO, "Dissociating ProvisionedService " + serviceProvider +
-                                    " for ServiceReference " + serviceRef + " through " + svcPlugin);
+                            /*logger.log(Level.INFO, "Dissociating ProvisionedService " + serviceProvider +
+                                    " for ServiceReference " + serviceRef + " through " + svcPlugin);*/
+                            Object args[]=new Object[]{serviceProvider,serviceProvider,svcPlugin};
+                            logger.log(Level.INFO,"dissociate.provisionedservice",args);
                             Collection<org.glassfish.paas.orchestrator.service.spi.Service> serviceConsumers =
                                     orchestrator.getServicesManagedByPlugin(svcPlugin, allServices);
                             for (org.glassfish.paas.orchestrator.service.spi.Service serviceConsumer : serviceConsumers) {

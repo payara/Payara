@@ -41,6 +41,8 @@
 package org.glassfish.paas.orchestrator.provisioning.cli;
 
 import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.util.i18n.StringManager;
+import com.sun.logging.LogDomains;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
@@ -60,6 +62,7 @@ import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
 
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 
@@ -91,11 +94,12 @@ public class DeleteSharedService implements AdminCommand {
     @Inject
     private ServiceOrchestratorImpl serviceOrchestrator;
 
-    private static Logger logger = Logger.getLogger(ServiceOrchestratorImpl.class.getName());
+    private static Logger logger = LogDomains.getLogger(ServiceOrchestratorImpl.class,LogDomains.PAAS_LOGGER);
+
+    private static StringManager localStrings = StringManager.getManager(ServiceOrchestratorImpl.class);
 
     public void execute(AdminCommandContext context) {
         final ActionReport report = context.getActionReport();
-
         Services services = serviceUtil.getServices();
         boolean found = false;
         for (final org.glassfish.paas.orchestrator.config.Service service : services.getServices()) {
@@ -121,8 +125,9 @@ public class DeleteSharedService implements AdminCommand {
                     // delete virtual cluster
                     String virtualClusterName = service.getServiceName();
                     CommandResult result = commandRunner.run("delete-cluster", virtualClusterName);
-                    logger.finest("Command delete-cluster [" + virtualClusterName + "] executed. " +
-                            "Command Output [" + result.getOutput() + "]");
+                    Object[] args = new Object[] {virtualClusterName,result.getOutput()};
+                    logger.log(Level.FINEST,localStrings.getString("delete.cluster.exec.output",args));
+
                     if (result.getExitStatus().equals(CommandResult.ExitStatus.FAILURE)) {
                         throw new RuntimeException("Failure while deleting virtual-cluster, " +
                                 "Unable to delete virtual-cluster [" + virtualClusterName + "]");

@@ -65,23 +65,28 @@ public class ServerStartupState extends AbstractPaaSDeploymentState {
     }
 
     public Set<ProvisionedService> retrieveProvisionedServices(PaaSDeploymentContext context) {
-        logger.entering(getClass().getName(), "retrieveProvisionedServices");
+        logger.log(Level.FINER, localStrings.getString("METHOD.retrieveProvisionedServices"));
         String appName = context.getAppName();
         final ServiceMetadata appServiceMetadata = orchestrator.getServiceMetadata(appName);
 
         final Set<ProvisionedService> appPSs = new HashSet<ProvisionedService>();
         String virtualClusterName = orchestrator.getVirtualClusterName(appServiceMetadata);
-        logger.log(Level.INFO, "Retrieve PS for app=" + appName + " virtualCluster=" + virtualClusterName);
+        Object args[]={appName,virtualClusterName};
+        logger.log(Level.FINEST, localStrings.getString("retrieve.provisionedservice",args));
         Set<ServiceDescription> appSDs = appServiceMetadata.getServiceDescriptions();
         for (final ServiceDescription sd : appSDs) {
                 ServicePlugin<?> chosenPlugin = sd.getPlugin();
-                logger.log(Level.INFO, "Retrieving provisioned Service for " + sd + " through " + chosenPlugin);
+                args[0]=sd;
+                args[1]=chosenPlugin;
+                logger.log(Level.FINEST, localStrings.getString("retrieving.provisionedservice.viaplugin",args));
                 ServiceInfo serviceInfo = serviceUtil.getServiceInfo(sd.getName(), appName, null);
                 if(serviceInfo != null){
                     ProvisionedService ps = chosenPlugin.getProvisionedService(sd, serviceInfo);
                     appPSs.add(ps);
                 }else{
-                    logger.warning("unable to retrieve service-info for service : " + sd.getName() + " of application : " + appName);
+                    args[0]=sd.getName();
+                    args[1]=appName;
+                    logger.log(Level.WARNING,"unable.retrieve.serviceinfo",args);
                 }
         }
         orchestrator.registerProvisionedServices(appName, appPSs);

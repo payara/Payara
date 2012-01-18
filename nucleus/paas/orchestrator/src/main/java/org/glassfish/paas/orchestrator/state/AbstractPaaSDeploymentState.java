@@ -41,6 +41,8 @@
 
 package org.glassfish.paas.orchestrator.state;
 
+import com.sun.enterprise.util.i18n.StringManager;
+import com.sun.logging.LogDomains;
 import org.glassfish.paas.orchestrator.PaaSDeploymentContext;
 import org.glassfish.paas.orchestrator.PaaSDeploymentException;
 import org.glassfish.paas.orchestrator.PaaSDeploymentState;
@@ -57,7 +59,9 @@ import java.util.logging.Logger;
  */
 public abstract class AbstractPaaSDeploymentState implements PaaSDeploymentState {
 
-    protected final static Logger logger = Logger.getLogger(ServiceOrchestratorImpl.class.getName());
+    protected final static Logger logger = LogDomains.getLogger(ServiceOrchestratorImpl.class,LogDomains.PAAS_LOGGER);
+
+    protected static StringManager localStrings = StringManager.getManager(ServiceOrchestratorImpl.class);
 
     @Inject
     protected Habitat habitat;

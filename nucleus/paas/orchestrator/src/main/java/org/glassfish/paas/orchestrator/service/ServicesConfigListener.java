@@ -41,6 +41,7 @@
 package org.glassfish.paas.orchestrator.service;
 
 import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.logging.LogDomains;
 import org.glassfish.embeddable.CommandResult;
 import org.glassfish.embeddable.CommandRunner;
 import org.glassfish.internal.api.PostStartup;
@@ -88,7 +89,7 @@ public class ServicesConfigListener implements ConfigListener, PostConstruct, Pr
     private CommandRunner commandRunner;
 
     private static final Logger logger =
-            Logger.getLogger(ServiceOrchestratorImpl.class.getName());
+            LogDomains.getLogger(ServiceOrchestratorImpl.class,LogDomains.PAAS_LOGGER);
 
 
     /**
@@ -110,7 +111,7 @@ public class ServicesConfigListener implements ConfigListener, PostConstruct, Pr
             ObservableBean bean = (ObservableBean) ConfigSupport.getImpl(services);
             bean.addListener(this);
         } else {
-            logger.warning("Unable to register listener to <services> configuration");
+            logger.log(Level.WARNING,"unable.to.register.listenersto.servicesconfig");
         }
     }
 
@@ -128,24 +129,25 @@ public class ServicesConfigListener implements ConfigListener, PostConstruct, Pr
 
         public <T extends ConfigBeanProxy> NotProcessed changed(TYPE type, Class<T> changedType, T changedInstance) {
             NotProcessed np = null;
+            Object args[]= new Object[]{changedType.getName(),changedInstance};
             switch (type) {
                 case ADD:
                     if (logger.isLoggable(Level.FINE)) {
-                        logger.fine("A new " + changedType.getName() + " was added : " + changedInstance);
+                        logger.log(Level.FINE,"added.instance",args);
                     }
                     np = handleAddEvent(changedInstance);
                     break;
 
                 case CHANGE:
                     if (logger.isLoggable(Level.FINE)) {
-                        logger.fine("A " + changedType.getName() + " was changed : " + changedInstance);
+                        logger.log(Level.FINE,"changed.instance",args);
                     }
                     np = handleChangeEvent(changedInstance);
                     break;
 
                 case REMOVE:
                     if (logger.isLoggable(Level.FINE)) {
-                        logger.fine("A " + changedType.getName() + " was removed : " + changedInstance);
+                        logger.log(Level.FINE,"removed.instance",args);
                     }
                     np = handleRemoveEvent(changedInstance);
                     break;
@@ -161,7 +163,8 @@ public class ServicesConfigListener implements ConfigListener, PostConstruct, Pr
             NotProcessed np = null;
             if (instance instanceof SharedService) {
                 SharedService service = (SharedService) instance;
-                System.out.println("shared service [" + service.getServiceName() + "] added");
+                //System.out.println("shared service [" + service.getServiceName() + "] added");
+                logger.log(Level.INFO,"shared.service.added",service.getServiceName());
 
 
                 //construct service-description.
@@ -207,8 +210,8 @@ public class ServicesConfigListener implements ConfigListener, PostConstruct, Pr
                 // create one virtual cluster per deployment unit.
                 String virtualClusterName = service.getServiceName();
                 CommandResult result = commandRunner.run("create-cluster", virtualClusterName);
-                logger.info("Command create-cluster [" + virtualClusterName + "] executed. " +
-                        "Command Output [" + result.getOutput() + "]");
+                Object args[]=new Object[]{virtualClusterName,result.getOutput()};
+                logger.log(Level.INFO,"create.cluster.exec.output",args);
                 if (result.getExitStatus().equals(CommandResult.ExitStatus.FAILURE)) {
                     throw new RuntimeException("Failure while provisioning services, " +
                             "Unable to create cluster [" + virtualClusterName + "]");

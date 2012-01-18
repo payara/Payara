@@ -42,6 +42,7 @@ package org.glassfish.paas.orchestrator;
 
 import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.logging.LogDomains;
 import org.glassfish.api.admin.AdminCommandLock;
 import org.glassfish.api.admin.CommandRunner;
 import org.glassfish.api.admin.ServerEnvironment;
@@ -85,7 +86,7 @@ public class ApplicationLifecycleInterceptorImpl implements ApplicationLifecycle
     private ServerEnvironment serverEnvironment;
 
 
-    private static Logger logger = Logger.getLogger(ServiceOrchestratorImpl.class.getName());
+    private static Logger logger = LogDomains.getLogger(ServiceOrchestratorImpl.class,LogDomains.PAAS_LOGGER);
 
     //NOTE : refer & update isValidDeploymentTarget if needed as we are dependent on the list of "Origins" used in this method.
     public void before(final ExtendedDeploymentContext.Phase phase, final ExtendedDeploymentContext context) {

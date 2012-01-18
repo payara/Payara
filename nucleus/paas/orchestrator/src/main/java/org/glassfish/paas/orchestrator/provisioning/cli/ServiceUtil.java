@@ -41,6 +41,7 @@ package org.glassfish.paas.orchestrator.provisioning.cli;
 
 
 import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.logging.LogDomains;
 import org.glassfish.hk2.scopes.Singleton;
 import org.glassfish.paas.orchestrator.ServiceOrchestratorImpl;
 import org.glassfish.paas.orchestrator.config.*;
@@ -82,7 +83,7 @@ public class ServiceUtil implements PostConstruct {
     @Inject
     private Habitat habitat;
 
-    private static Logger logger = Logger.getLogger(ServiceOrchestratorImpl.class.getName());
+    private static Logger logger = LogDomains.getLogger(ServiceOrchestratorImpl.class,LogDomains.PAAS_LOGGER);
 
     public static ExecutorService getThreadPool() {
         return threadPool;
@@ -566,7 +567,6 @@ public class ServiceUtil implements PostConstruct {
     }
 
     public void registerService(final ServiceInfo entry) {
-        System.out.println("In registerService::IP address is : "+entry.getIpAddress());
         Services services = getServices();
         try {
             //TODO for now, if app-name is null, check whether its a shared service and
@@ -674,10 +674,10 @@ public class ServiceUtil implements PostConstruct {
                         return spes;
                     }
                 }, domain) == null) {
-                    logger.log(Level.SEVERE, "Unable to create 'service-provisioning-engines' config");
+                    logger.log(Level.SEVERE, "unable.tocreate.spe");
                 }
             } catch (TransactionFailure transactionFailure) {
-                logger.log(Level.SEVERE, "Unable to create 'service-provisioning-engines' config", transactionFailure);
+                logger.log(Level.SEVERE, "unable.tocreate.spe",transactionFailure);
                 throw new RuntimeException(transactionFailure.getMessage(), transactionFailure);
             }
         }

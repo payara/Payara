@@ -83,16 +83,17 @@ public class EnableState extends AbstractPaaSDeploymentState {
                     appPSs.add(ps);
                     provisionedSDs.add(sd);
                 } catch (Exception e) {
-                    logger.log(Level.WARNING, "Exception while starting service " +
-                            "[ " + sd.getName() + " ] for application [ " + appName + " ]", e);
+                    Object args[]=new Object[]{sd.getName(),appName,e};
+                    logger.log(Level.WARNING, "exception.start.service",args);
 
                     DisableState disableState = habitat.getComponent(DisableState.class);
                     for (ServiceDescription provisionedSD : provisionedSDs) {
                         try {
                             disableState.stopService(context, appName, provisionedSD);
                         } catch (Exception stopException) {
-                            logger.log(Level.WARNING, "Exception while stopping service " +
-                                    "[ " + sd.getName() + " ] for application [ " + appName + " ]", stopException);
+                            args[0]=provisionedSD.getName();
+                            args[2]=stopException;
+                            logger.log(Level.WARNING, "exception.stop.service",args);
                         }
                     }
                     throw new PaaSDeploymentException(e);
@@ -105,12 +106,14 @@ public class EnableState extends AbstractPaaSDeploymentState {
 
     public ProvisionedService startService(PaaSDeploymentContext context, String appName, ServiceDescription sd) {
         ServicePlugin<?> chosenPlugin = sd.getPlugin();
-        logger.log(Level.INFO, "Retrieving provisioned Service for " + sd + " through " + chosenPlugin);
+        Object[] args=new Object[]{sd,chosenPlugin};
+        logger.log(Level.FINEST,"retrieving.provisionedservice.viaplugin",args);
         ServiceInfo serviceInfo = serviceUtil.getServiceInfo(sd.getName(), appName, null);
         if(serviceInfo != null){
             return chosenPlugin.startService(sd, serviceInfo);
         }else{
-            logger.warning("unable to retrieve service-info for service : " + sd.getName() + " of application : " + appName);
+            Object[] args1=new Object[]{sd.getName(),appName};
+            logger.log(Level.WARNING,"unable.retrieve.serviceinfo",args1);
             return null;
         }
     }

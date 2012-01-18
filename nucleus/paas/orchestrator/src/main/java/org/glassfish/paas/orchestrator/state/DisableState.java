@@ -74,16 +74,18 @@ public class DisableState extends AbstractPaaSDeploymentState {
                     stopService(context, appName, sd);
                     stoppedServiceSDs.add(sd);
                 } catch (Exception e) {
-                    logger.log(Level.WARNING, "Exception while stopping service " +
-                            "[ " + sd.getName() + " ] for application [ " + appName + " ]", e);
+                    Object args[]=new Object[]{sd.getName(),appName,e};
+                    logger.log(Level.WARNING, "exception.stop.service",args);
 
                     EnableState enableState = habitat.getComponent(EnableState.class);
                     for (ServiceDescription stoppedSD : stoppedServiceSDs) {
                         try {
                             enableState.startService(context, appName, stoppedSD);
                         } catch (Exception stopException) {
-                            logger.log(Level.WARNING, "Exception while starting service " +
-                                    "[ " + sd.getName() + " ] for application [ " + appName + " ]", stopException);
+                            args[0]=stoppedSD.getName();
+                            args[2]=stopException;
+                            logger.log(Level.WARNING, "exception.start.service",args);
+
                         }
                     }
                     throw new PaaSDeploymentException(e);
@@ -99,7 +101,8 @@ public class DisableState extends AbstractPaaSDeploymentState {
             chosenPlugin.stopService(sd, serviceInfo);
             return true;
         }else{
-            logger.warning("unable to retrieve service-info for service : " + sd.getName() + " of application : " + appName);
+            Object[] args=new Object[]{sd.getName(),appName};
+            logger.log(Level.WARNING,"unable.retrieve.serviceinfo",args);
             return false;
         }
     }

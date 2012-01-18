@@ -106,6 +106,14 @@ public class RegisterServiceProvisioningEngine implements AdminCommand {
 
         final ServiceProvisioningEngines serviceProvisioningEngines = serviceUtil.getServiceProvisioningEngines();
 
+        for(ServiceProvisioningEngine serviceProvisioningEngine:serviceProvisioningEngines.getServiceProvisioningEngines()){
+            if(serviceProvisioningEngine.getClassName().equals(className)){
+                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                report.setMessage("Duplicate key name. A service provisioning engine with name [ "+className+" ] is already registered.");
+                return;
+            }
+        }
+
         if (defaultService) {
             if (!force) {
                 for (ServiceProvisioningEngine serviceProvisioningEngine : serviceProvisioningEngines.getServiceProvisioningEngines()) {
@@ -152,7 +160,7 @@ public class RegisterServiceProvisioningEngine implements AdminCommand {
                                     break;
                                 }
                             }
-                        }
+                        }                                                                                                  []
                     }
 
                     return serviceProvisioningEngines;

@@ -42,12 +42,13 @@ package org.glassfish.paas.orchestrator.state;
 
 import org.glassfish.embeddable.CommandResult;
 import org.glassfish.embeddable.CommandRunner;
-import org.glassfish.paas.orchestrator.*;
+import org.glassfish.paas.orchestrator.PaaSDeploymentContext;
+import org.glassfish.paas.orchestrator.PaaSDeploymentException;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceUtil;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceDescription;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceMetadata;
-import org.glassfish.paas.orchestrator.service.spi.ServicePlugin;
 import org.glassfish.paas.orchestrator.service.spi.ProvisionedService;
+import org.glassfish.paas.orchestrator.service.spi.ServicePlugin;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
 
@@ -85,7 +86,7 @@ public class ProvisioningState extends AbstractPaaSDeploymentState {
         //TODO refactor such that rollback is done in a different state.
         //TODO add exception handling for the entire task
         //TODO pass the exception via the PaaSDeploymentContext ?
-        logger.entering(getClass().getName(), "provisionServices");
+        logger.log(Level.FINER, localStrings.getString("METHOD.provisionServices"));
         final Set<ProvisionedService> appPSs = new HashSet<ProvisionedService>();
         String appName = context.getAppName();
         final ServiceMetadata appServiceMetadata = orchestrator.getServiceMetadata(appName);
@@ -95,8 +96,8 @@ public class ProvisioningState extends AbstractPaaSDeploymentState {
         String virtualClusterName = orchestrator.getVirtualClusterName(appServiceMetadata);
         if(virtualClusterName != null){
             CommandResult result = commandRunner.run("create-cluster", virtualClusterName);
-            logger.info("Command create-cluster [" + virtualClusterName + "] executed. " +
-                    "Command Output [" + result.getOutput() + "]");
+            Object args[]=new Object[]{virtualClusterName,result.getOutput()};
+            logger.log(Level.INFO,"create.cluster.exec.output",args);
             if (result.getExitStatus().equals(CommandResult.ExitStatus.FAILURE)) {
                 throw new RuntimeException("Failure while provisioning services, " +
                         "Unable to create cluster [" + virtualClusterName + "]");
@@ -113,7 +114,8 @@ public class ProvisioningState extends AbstractPaaSDeploymentState {
                 Future<ProvisionedService> future = ServiceUtil.getThreadPool().submit(new Callable<ProvisionedService>() {
                     public ProvisionedService call() {
                         ServicePlugin<?> chosenPlugin = sd.getPlugin();
-                        logger.log(Level.INFO, "Started Provisioning Service in parallel for " + sd + " through " + chosenPlugin);
+                        Object args[]=new Object[]{sd,chosenPlugin};
+                        logger.log(Level.FINEST, localStrings.getString("started.provisioningservice.parallel",args));
                         return chosenPlugin.provisionService(sd, context);
                     }
                 });
@@ -125,10 +127,10 @@ public class ProvisioningState extends AbstractPaaSDeploymentState {
                 try {
                     ProvisionedService ps = future.get();
                     appPSs.add(ps);
-                    logger.log(Level.INFO, "Completed Provisioning Service in parallel " + ps);
+                    logger.log(Level.FINEST, localStrings.getString("completed.provisioningservice.parallel",ps));
                 } catch (Exception e) {
                     failed = true;
-                    logger.log(Level.WARNING, "Failure while provisioning service", e);
+                    logger.log(Level.WARNING, "failure.provisioningservice", e);
                     if (rootCause == null) {
                         rootCause = e; //we are caching only the first failure and logging all failures
                     }
@@ -139,13 +141,15 @@ public class ProvisioningState extends AbstractPaaSDeploymentState {
             for (final ServiceDescription sd : serviceDescriptionsToProvision) {
                 try {
                     ServicePlugin<?> chosenPlugin = sd.getPlugin();
-                    logger.log(Level.INFO, "Started Provisioning Service serially for " + sd + " through " + chosenPlugin);
+                    Object args[]=new Object[]{sd,chosenPlugin};
+                    logger.log(Level.FINEST, localStrings.getString("started.provisioningservice.serial",args));
                     ProvisionedService ps = chosenPlugin.provisionService(sd, context);
                     appPSs.add(ps);
-                    logger.log(Level.INFO, "Completed Provisioning Service serially " + ps);
+                    logger.log(Level.FINEST, localStrings.getString("completed.provisioningservice.serial",ps));
                 } catch (Exception e) {
+                    Object args[]=new Object[]{sd.getName(),sd.getPlugin(),e};
                     failed = true;
-                    logger.log(Level.WARNING, "Failure while provisioning service", e);
+                    logger.log(Level.WARNING, "failure.provisioningservice", args);
                     rootCause = e;
                     break; //since we are provisioning serially, we can abort
                 }
@@ -159,11 +163,13 @@ public class ProvisioningState extends AbstractPaaSDeploymentState {
                 try{
                     ServiceDescription sd = ps.getServiceDescription();
                     ServicePlugin<?> chosenPlugin = sd.getPlugin();
-                    logger.log(Level.INFO, "Rolling back provisioned-service for " + sd + " through " + chosenPlugin );
+                    Object args[]=new Object[]{sd,chosenPlugin};
+                    logger.log(Level.INFO, "rollingback.provisioningservice",args);
                     chosenPlugin.unprovisionService(sd, context); //TODO we could do unprovisioning in parallel.
-                    logger.log(Level.INFO, "Rolled back provisioned-service for " + sd + " through " + chosenPlugin );
+                    logger.log(Level.INFO, "rolledback.provisioningservice",args);
                 }catch(Exception e){
-                    logger.log(Level.FINEST, "Failure while rolling back provisioned service " + ps, e);
+                    Object args[]={ps,e};
+                    logger.log(Level.WARNING, "failure.while.rollingback.ps",args);
                 }
             }
 
