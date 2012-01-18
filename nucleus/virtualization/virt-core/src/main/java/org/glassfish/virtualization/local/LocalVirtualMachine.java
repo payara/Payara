@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -43,12 +43,14 @@ package org.glassfish.virtualization.local;
 import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.util.ExecException;
 import com.sun.enterprise.util.ProcessExecutor;
+import com.sun.enterprise.util.io.FileUtils;
 import org.glassfish.virtualization.config.VirtUser;
 import org.glassfish.virtualization.config.VirtualMachineConfig;
 import org.glassfish.virtualization.spi.*;
 import org.glassfish.virtualization.util.AbstractVirtualMachine;
 import org.glassfish.virtualization.util.RuntimeContext;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
@@ -57,6 +59,7 @@ import java.net.UnknownHostException;
 import java.util.Enumeration;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * abstraction of a non virtualization bare metal PC.
@@ -68,6 +71,7 @@ class LocalVirtualMachine extends AbstractVirtualMachine {
     final String vmName;
     final Machine machine;
     final LocalServerPool pool;
+    private static final Logger logger = RuntimeContext.logger;
 
     LocalVirtualMachine(VirtualMachineConfig config, VirtUser user, LocalServerPool pool, Machine machine, String vmName) {
         super(config, user);
@@ -222,6 +226,30 @@ class LocalVirtualMachine extends AbstractVirtualMachine {
             return stringBuffer.toString();
         } catch (ExecException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    public boolean upload(File localFile, File remoteTargetDirectory) {
+        try {
+            FileUtils.copy(localFile, new File(remoteTargetDirectory, localFile.getName()));
+            logger.log(Level.INFO, "Successfully copied file {0} to directory {1}",
+                    new Object[]{localFile.getAbsolutePath(), remoteTargetDirectory.getAbsolutePath()});
+            return true;
+        } catch (Exception e) {
+            RuntimeContext.logger.log(Level.WARNING, e.getMessage(), e);
+            return false;
+        }
+    }
+
+    public boolean download(File remoteFile, File localTargetDirectory) {
+        try {
+            FileUtils.copy(remoteFile, new File(localTargetDirectory, remoteFile.getName()));
+            logger.log(Level.INFO, "Successfully copied file {0} to directory {2}",
+                    new Object[]{remoteFile.getAbsolutePath(), localTargetDirectory.getAbsolutePath()});
+            return true;
+        } catch (Exception e) {
+            RuntimeContext.logger.log(Level.WARNING, e.getMessage(), e);
+            return false;
         }
     }
 }

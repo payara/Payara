@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -43,6 +43,7 @@ package org.glassfish.virtualization.spi;
 import org.glassfish.virtualization.config.VirtUser;
 import org.glassfish.virtualization.config.VirtualMachineConfig;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 
@@ -151,6 +152,24 @@ public interface VirtualMachine {
 
 
     String executeOn(String[] args) throws IOException, InterruptedException;
+
+    /**
+     * Upload a file to the virtual machine.
+     *
+     * @param localFile             Location of the file in the local system.
+     * @param remoteTargetDirectory An existing directory inside the
+     *                              virtual machine where the file needs to be uploaded to.
+     */
+    boolean upload(File localFile, File remoteTargetDirectory);
+
+    /**
+     * Download a file from the virtual machine.
+     *
+     * @param remoteFile           Location of the file in the virtual machine.
+     * @param localTargetDirectory An existing directory in the local system
+     *                             where the file needs to be downloaded to.
+     */
+    boolean download(File remoteFile, File localTargetDirectory);
 
     /**
      * Returns the persisted information for this virtual machine.

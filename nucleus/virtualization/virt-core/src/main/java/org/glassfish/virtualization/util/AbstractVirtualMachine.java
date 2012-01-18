@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,12 +40,17 @@
 
 package org.glassfish.virtualization.util;
 
+import com.trilead.ssh2.SCPClient;
+import org.glassfish.cluster.ssh.launcher.SSHLauncher;
 import org.glassfish.virtualization.config.VirtUser;
 import org.glassfish.virtualization.config.VirtualMachineConfig;
 import org.glassfish.virtualization.spi.VirtualMachine;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Common behaviors of a {@link VirtualMachine} implementation
@@ -56,6 +61,8 @@ public abstract class AbstractVirtualMachine implements VirtualMachine {
     final VirtUser user;
     final Map<PropertyName, String> properties = new HashMap<PropertyName, String>();
     final VirtualMachineConfig config;
+    protected SSHLauncher sshLauncher;
+    private static final Logger logger = RuntimeContext.logger;
 
     protected AbstractVirtualMachine(VirtualMachineConfig config, VirtUser user) {
         this.config = config;
@@ -81,4 +88,48 @@ public abstract class AbstractVirtualMachine implements VirtualMachine {
     public VirtualMachineConfig getConfig() {
         return config;
     }
+
+    public boolean upload(File localFile, File remoteTargetDirectory) {
+        try {
+            SCPClient scpClient = getSSHLauncher().getSCPClient();
+            scpClient.put(localFile.getAbsolutePath(),
+                    remoteTargetDirectory.getAbsolutePath());
+            logger.log(Level.INFO, "Successfully uploaded local file {0} to remote location {1} in VM {2}",
+                    new Object[]{localFile.getAbsolutePath(), remoteTargetDirectory.getAbsolutePath(), getName()});
+            return true;
+        } catch (Exception ex) {
+            Logger.getAnonymousLogger().log(Level.WARNING, ex.getMessage(), ex);
+            return false;
+        }
+    }
+
+    public boolean download(File remoteFile, File localTargetDirectory) {
+        try {
+            SCPClient scpClient = getSSHLauncher().getSCPClient();
+            scpClient.get(remoteFile.getAbsolutePath(),
+                    localTargetDirectory.getAbsolutePath());
+            logger.log(Level.INFO, "Successfully downloaded remote file {0} from VM {2} to local directory {1}",
+                    new Object[]{remoteFile.getAbsolutePath(), localTargetDirectory.getAbsolutePath(), getName()});
+            return true;
+        } catch (Exception ex) {
+            Logger.getAnonymousLogger().log(Level.WARNING, ex.getMessage(), ex);
+            return false;
+        }
+    }
+
+    protected SSHLauncher getSSHLauncher() {
+        if (sshLauncher == null) {
+            synchronized (this) {
+                if(sshLauncher == null) {
+                    sshLauncher = new SSHLauncher();
+                    File home = new File(System.getProperty("user.home"));
+                    String keyFile = new File(home, ".ssh/id_dsa").getAbsolutePath();
+                    sshLauncher.init(getUser().getName(), getAddress().getHostAddress(), 22, null,
+                            keyFile, null, Logger.getAnonymousLogger());
+                }
+            }
+        }
+        return sshLauncher;
+    }
+
 }
