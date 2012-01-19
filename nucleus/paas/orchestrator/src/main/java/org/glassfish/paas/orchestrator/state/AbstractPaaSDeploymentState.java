@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -61,7 +61,7 @@ public abstract class AbstractPaaSDeploymentState implements PaaSDeploymentState
 
     protected final static Logger logger = LogDomains.getLogger(ServiceOrchestratorImpl.class,LogDomains.PAAS_LOGGER);
 
-    protected static StringManager localStrings = StringManager.getManager(ServiceOrchestratorImpl.class);
+    protected final static StringManager localStrings = StringManager.getManager(ServiceOrchestratorImpl.class);
 
     @Inject
     protected Habitat habitat;
