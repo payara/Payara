@@ -163,7 +163,7 @@ public class DnsPlugin implements ServicePlugin {
     }
 
     @Override
-    public boolean stopService(ServiceDescription serviceDescription, ServiceInfo serviceInfo) {
+    public boolean stopService(ProvisionedService provisionedSvc, ServiceInfo serviceInfo) {
         //currently DNS is only supported as a external service
         //so it cannot be controlled by this plugin
         throw new UnsupportedOperationException("Stopping of Dns Service " +
@@ -185,7 +185,7 @@ public class DnsPlugin implements ServicePlugin {
 
 
     @Override
-    public ProvisionedService scaleService(ServiceDescription serviceDesc,
+    public ProvisionedService scaleService(ProvisionedService provisionedService,
             int scaleCount, AllocationStrategy allocStrategy) {
         //no-op
         throw new UnsupportedOperationException("Scaling of Dns Service " +
@@ -244,7 +244,8 @@ public class DnsPlugin implements ServicePlugin {
 
     private void updateDnsEntry(Service serviceConsumer,
             Service serviceProvider, String appName, boolean isAdd) {
-        
+
+        //TODO retrieve IP address from ServiceProvider's ServiceProperties ?
         String lbIPAddr = dnsServiceUtil.getIPAddress(
                 serviceProvider.getServiceDescription().getName(),
                 appName, ServiceType.LB);

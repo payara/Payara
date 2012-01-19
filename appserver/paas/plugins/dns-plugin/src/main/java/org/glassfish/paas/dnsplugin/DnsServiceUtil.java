@@ -40,13 +40,9 @@
 
 package org.glassfish.paas.dnsplugin;
 
-import java.util.Collection;
 import org.glassfish.hk2.scopes.Singleton;
-import org.glassfish.paas.orchestrator.config.Services;
-import org.glassfish.paas.orchestrator.provisioning.ServiceInfo;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceType;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceUtil;
-import org.glassfish.paas.orchestrator.service.ServiceStatus;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 
@@ -57,48 +53,7 @@ public class DnsServiceUtil {
     @Inject
     private ServiceUtil serviceUtil;
 
-    public ServiceInfo retrieveCloudEntry(String serviceName, String appName, ServiceType type) {
-        return serviceUtil.getServiceInfo(serviceName, appName, type);
-    }
-
-    public boolean isServiceAlreadyConfigured(String serviceName, String appName, ServiceType type) {
-        return serviceUtil.isServiceAlreadyConfigured(serviceName, appName, type);
-    }
-
-    public boolean isValidService(String serviceName, String appName, ServiceType type) {
-        return serviceUtil.isValidService(serviceName, appName, type);
-    }
-
     public String getIPAddress(String serviceName, String appName, ServiceType type) {
         return serviceUtil.getIPAddress(serviceName, appName, type);
     }
-
-    public void registerDnsInfo(ServiceInfo entry) {
-        serviceUtil.registerService(entry);
-    }
-
-    public void updateState(String serviceName, String appName, String state, ServiceType type) {
-        serviceUtil.updateState(serviceName, appName, state, type);
-    }
-
-    public Services getServices(){
-        return serviceUtil.getServices();
-    }
-
-    public String getInstanceID(String instance, String appName, ServiceType serviceType) {
-        return serviceUtil.getInstanceID(instance, appName, serviceType);
-    }
-
-    public void unregisterDnsInfo(String instance, String appName) {
-        serviceUtil.unregisterServiceInfo(instance, appName);
-    }
-
-    public ServiceStatus getServiceStatus(ServiceInfo entry) {
-        return serviceUtil.getServiceStatus(entry);
-    }
-
-    public Collection<String> getApplicationsUsingSharedService(String sharedService){
-        return serviceUtil.getApplicationsUsingService(sharedService);
-    }
-
 }

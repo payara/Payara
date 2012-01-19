@@ -68,6 +68,10 @@ public class BaseLBService {
     String appName;
     @Inject
     LBServiceUtil lbServiceUtil;
+
+    @Param(name="_vmid", optional=true)
+    private String _vmId;
+
     // TODO :: remove dependency on VirtualCluster(s).
     @Inject(optional = true) // // made it optional for non-virtual scenario to work
     VirtualClusters virtualClusters;
@@ -84,8 +88,14 @@ public class BaseLBService {
     void retrieveVirtualMachine() throws VirtException {
         if (virtualClusters != null && serviceName != null && virtualClusterName != null) {
             virtualCluster = virtualClusters.byName(virtualClusterName);
-            String vmId = lbServiceUtil.getInstanceID(
+            String vmId = null;
+            if(_vmId != null){
+                vmId = _vmId;
+            }else{
+                vmId = lbServiceUtil.getInstanceID(
                     serviceName, appName, ServiceType.LB);
+            }
+
             if (vmId != null) {
                 LBPluginLogger.getLogger().log(Level.INFO,"Found VirtualMachine for load-balancer with id : " + vmId);
                 virtualMachine = virtualCluster.vmByName(vmId);

@@ -90,4 +90,12 @@ public abstract class AbstractPaaSDeploymentState implements PaaSDeploymentState
                     "[ "+this.getClass().getSimpleName()+" ], " + executionState);
         }
     }
+
+    protected boolean isAtomicDeploymentEnabled(){
+        return orchestrator.isAtomicDeploymentEnabled();
+    }
+
+    protected boolean isParallelProvisioningEnabled(){
+        return orchestrator.isParallelProvisioningEnabled();
+    }
 }

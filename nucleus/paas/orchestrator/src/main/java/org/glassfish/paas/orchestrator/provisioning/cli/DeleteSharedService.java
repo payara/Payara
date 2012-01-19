@@ -54,6 +54,7 @@ import org.glassfish.paas.orchestrator.PaaSDeploymentContext;
 import org.glassfish.paas.orchestrator.ServiceOrchestratorImpl;
 import org.glassfish.paas.orchestrator.config.Services;
 import org.glassfish.paas.orchestrator.config.SharedService;
+import org.glassfish.paas.orchestrator.provisioning.ServiceInfo;
 import org.glassfish.paas.orchestrator.service.spi.ServicePlugin;
 import org.glassfish.paas.orchestrator.service.spi.ProvisionedService;
 import org.jvnet.hk2.annotations.Inject;
@@ -119,8 +120,12 @@ public class DeleteSharedService implements AdminCommand {
                     ProvisionedService provisionedService = serviceOrchestrator.getSharedService(sharedService.getServiceName());
                     ServicePlugin plugin = provisionedService.getServiceDescription().getPlugin();
                     PaaSDeploymentContext pdc = new PaaSDeploymentContext(null, null);
+                    //we are caching service-info before unprovision just to make sure any Plugin
+                    //does not remove the child services during unprovision.
+                    ServiceInfo serviceInfo = serviceUtil.getServiceInfo(provisionedService.getName(), null, null);
                     plugin.unprovisionService(provisionedService.getServiceDescription(), pdc);
                     serviceOrchestrator.removeSharedService(sharedService.getServiceName());
+                    serviceUtil.unregisterService(serviceInfo);
 
                     // delete virtual cluster
                     String virtualClusterName = service.getServiceName();

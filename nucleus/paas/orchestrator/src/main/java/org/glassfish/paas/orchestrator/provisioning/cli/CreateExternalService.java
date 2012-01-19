@@ -142,6 +142,14 @@ public class CreateExternalService implements AdminCommand {
                             configs.getConfiguration().add(config);
                         }
                         externalService.setConfigurations(configs);
+                        //TODO need a better mechanism. Setting configuration as property so that
+                        //TODO list-services can show them.
+                        for (Map.Entry e : configuration.entrySet()) {
+                            Property prop = externalService.createChild(Property.class);
+                            prop.setName((String)e.getKey());
+                            prop.setValue((String)e.getValue());
+                            externalService.getProperty().add(prop);
+                        }
                     }
 
                     if (properties != null) {
@@ -151,12 +159,6 @@ public class CreateExternalService implements AdminCommand {
                             prop.setValue((String) e.getValue());
                             externalService.getProperty().add(prop);
                         }
-                    }
-                    for (Map.Entry e : configuration.entrySet()) {
-                        Property prop = externalService.createChild(Property.class);
-                        prop.setName((String)e.getKey());
-                        prop.setValue((String)e.getValue());
-                        externalService.getProperty().add(prop);
                     }
                     param.getServices().add(externalService);
                     return externalService;

@@ -40,19 +40,8 @@
 package org.glassfish.paas.gfplugin.cli;
 
 import org.glassfish.hk2.scopes.Singleton;
-import org.glassfish.paas.orchestrator.config.ApplicationScopedService;
-import org.glassfish.paas.orchestrator.config.Service;
-import org.glassfish.paas.orchestrator.config.Services;
-import org.glassfish.paas.orchestrator.provisioning.ServiceInfo;
-import org.glassfish.paas.orchestrator.provisioning.cli.ServiceType;
-import org.glassfish.paas.orchestrator.provisioning.cli.ServiceUtil;
-import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.config.types.Property;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 
 @org.jvnet.hk2.annotations.Service
 @Scoped(Singleton.class)
@@ -62,66 +51,7 @@ public class GlassFishServiceUtil{
     public static final String NODE_PREFIX = "node-";
     public static final String INSTANCE_PREFIX = "instance-";
 
-    @Inject
-    private ServiceUtil serviceUtil;
 
-    public boolean isServiceAlreadyConfigured(String serviceName, String appName, ServiceType type) {
-        return serviceUtil.isServiceAlreadyConfigured(serviceName, appName, type);
-    }
-
-    public String getServiceState(String serviceName, String appName, ServiceType type) {
-        return serviceUtil.getServiceState(serviceName, appName, type);
-    }
-
-    public void updateVMID(String serviceName, String appName, String instanceID, ServiceType type) {
-        serviceUtil.updateVMID(serviceName, appName, instanceID, type);
-    }
-
-    // Set the value of a property in application-scoped-service config element for given service name.
-    public void setProperty(String serviceName, String appName, String propName, String propValue) {
-        serviceUtil.setProperty(serviceName, appName, propName, propValue);
-    }
-
-    // Get the value of a property in application-scoped-service config element for given service name.
-    public String getProperty(String serviceName, String property) {
-        for(Service service : serviceUtil.getServices().getServices()) {
-            if(service.getServiceName().equals(serviceName)){
-                Property p = service.getProperty(property);
-                if(p != null){
-                    return p.getValue();
-                }else{
-                    return null;
-                }
-            }
-        }
-        return null;
-    }
-    
-    public void updateIPAddress(String serviceName, String appName, String IPAddress, ServiceType type) {
-        serviceUtil.updateIPAddress(serviceName, appName, IPAddress, type);
-    }
-
-    public String getIPAddress(String serviceName, String appName,ServiceType type) {
-        return serviceUtil.getIPAddress(serviceName, appName, type);
-    }
-
-    public String getInstanceID(String serviceName,  String appName,ServiceType type) {
-        return serviceUtil.getInstanceID(serviceName, appName, type);
-    }
-
-/*
-    public String getServiceName(final String ipAddress, ServiceType type) {
-        return serviceUtil.getServiceName(ipAddress, type);
-    }
-*/
-
-    public void registerASInfo(ServiceInfo entry) {
-        serviceUtil.registerService(entry);
-    }
-
-    public void unregisterASInfo(String serviceName, String appName) {
-        serviceUtil.unregisterServiceInfo(serviceName, appName);
-    }
 
     public boolean isInstance(String serviceName) {
         boolean instance = false;
@@ -156,6 +86,7 @@ public class GlassFishServiceUtil{
     }
 */
 
+/*
     public String getClusterName(String serviceName, String appName) {
         String clusterName = null;
         if (isCluster(serviceName, appName)) {
@@ -176,6 +107,7 @@ public class GlassFishServiceUtil{
         }
         return clusterName;
     }
+*/
 
     public String getClusteredInstanceName(String serviceName) {
         String instanceName = null;
@@ -203,6 +135,7 @@ public class GlassFishServiceUtil{
         return isInstance;
     }
 
+/*
     public boolean isCluster(String serviceName, String appName) {
         boolean isCluster = false;
         if(!serviceName.contains(SEPARATOR)){
@@ -216,7 +149,6 @@ public class GlassFishServiceUtil{
         return isCluster;
     }
 
-/*
     public boolean isStandaloneInstance(String serviceName) {
         boolean isStandaloneInstance = false;
         if (serviceName.contains(SEPARATOR) && serviceName.indexOf(SEPARATOR) == serviceName.lastIndexOf(SEPARATOR)) {
@@ -227,9 +159,6 @@ public class GlassFishServiceUtil{
         }
         return isStandaloneInstance;
     }
-*/
-
-/*
     public boolean hasDomainName(String serviceName) {
         boolean hasDomainName = false;
         if (serviceName != null && !serviceName.isEmpty()) {
@@ -237,9 +166,7 @@ public class GlassFishServiceUtil{
         }
         return hasDomainName;
     }
-*/
 
-/*
     public String getDomainName(String serviceName) {
         if (hasDomainName(serviceName)) {
             if (!serviceName.contains(SEPARATOR)) {
@@ -251,9 +178,7 @@ public class GlassFishServiceUtil{
             throw new RuntimeException("Invalid service-name  [" + serviceName + "]");
         }
     }
-*/
 
-/*
     public boolean isDomain(String serviceName) {
         boolean isDomain = false;
         if (!serviceName.contains(SEPARATOR)) {
@@ -261,8 +186,6 @@ public class GlassFishServiceUtil{
         }
         return isDomain;
     }
-*/
-
     public Collection<String> getAllSubComponents(String serviceName, String appName){
         Services services = serviceUtil.getServices();
         List<String> subComponents = new ArrayList<String>();
@@ -281,8 +204,6 @@ public class GlassFishServiceUtil{
         }
         return subComponents;
     }
-
-/*
     public Collection<String> getAllSubComponents(String serviceName) {
         List<String> subComponents = new ArrayList<String>();
         Connection con = null;
@@ -305,8 +226,6 @@ public class GlassFishServiceUtil{
         }
         return subComponents;
     }
-*/
-
     public String getNextID(String serviceName, String appName) {
         String clusterName = getClusterName(serviceName, appName);
 
@@ -333,7 +252,6 @@ public class GlassFishServiceUtil{
         return Integer.toString(maxValue + 1);
     }
 
-/*
     public String getNextID(String serviceName, String appName) {
         String clusterName = getClusterName(serviceName, appName);
 
@@ -391,14 +309,6 @@ public class GlassFishServiceUtil{
         return INSTANCE_PREFIX + suffix;
     }
 
-    public void updateState(String serviceName, String appName, String state, ServiceType type) {
-        serviceUtil.updateState(serviceName, appName, state, type);
-    }
-
-    public boolean isValidService(String serviceName, String appName, ServiceType type) {
-        return serviceUtil.isValidService(serviceName, appName, type);
-    }
-
     public String getDASIPAddress(String serviceName){
     /*
         String domainName = getDomainName(serviceName);
@@ -407,10 +317,6 @@ public class GlassFishServiceUtil{
         //TODO for now CPAS is DAS.
         String dasIPAddress = "localhost";
         return dasIPAddress;
-    }
-
-    public Services getServices(){
-        return serviceUtil.getServices();
     }
 
 }

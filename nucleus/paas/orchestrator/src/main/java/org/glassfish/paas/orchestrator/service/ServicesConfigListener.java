@@ -223,7 +223,8 @@ public class ServicesConfigListener implements ConfigListener, PostConstruct, Pr
                 sd.setServiceScope(ServiceScope.SHARED);
                 PaaSDeploymentContext pdc = new PaaSDeploymentContext(null, null);
                 ProvisionedService ps = defaultPlugin.provisionService(sd, pdc);
-                serviceOrchestrator.addSharedService(sd.getName(), ps);
+                serviceUtil.registerService(null, ps);
+                //serviceOrchestrator.addSharedService(sd.getName(), ps);
             }else if (instance instanceof ExternalService){
                 ExternalService externalService = (ExternalService)instance;
                 ConfiguredService configuredService = serviceUtil.getExternalService(externalService.getServiceName());

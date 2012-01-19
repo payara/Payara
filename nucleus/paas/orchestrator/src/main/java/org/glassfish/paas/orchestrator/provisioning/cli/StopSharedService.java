@@ -56,6 +56,7 @@ import org.glassfish.paas.orchestrator.config.SharedService;
 import org.glassfish.paas.orchestrator.provisioning.ServiceInfo;
 import org.glassfish.paas.orchestrator.service.ServiceStatus;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceDescription;
+import org.glassfish.paas.orchestrator.service.spi.ProvisionedService;
 import org.glassfish.paas.orchestrator.service.spi.ServicePlugin;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
@@ -146,7 +147,8 @@ public class StopSharedService implements AdminCommand {
                                 ServicePlugin plugin = serviceDescription.getPlugin();
                                 /*ServiceDescription serviceDescription = serviceUtil.getSharedServiceDescription(serviceInfo);
                                 Plugin plugin = orchestrator.getPlugin(serviceDescription);*/
-                                boolean serviceStopped = plugin.stopService(serviceDescription, serviceInfo);
+                                ProvisionedService ps = orchestrator.getSharedService(serviceName);
+                                boolean serviceStopped = plugin.stopService(ps, serviceInfo);
                                 if (serviceStopped) {
                                     orchestrator.removeSharedService(serviceName);
                                     try {
@@ -159,6 +161,7 @@ public class StopSharedService implements AdminCommand {
                                                             Transaction t = Transaction.getTransaction(param);
                                                             SharedService sharedService_w = t.enroll(sharedSvc);
                                                             sharedService_w.setState(ServiceStatus.STOPPED.toString());
+                                                            //TODO handle service-nodes
                                                         }
                                                     }
                                                 }

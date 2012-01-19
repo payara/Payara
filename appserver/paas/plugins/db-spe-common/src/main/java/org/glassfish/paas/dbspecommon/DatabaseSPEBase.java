@@ -294,7 +294,7 @@ public abstract class DatabaseSPEBase extends ServiceProvisioningEngineBase<RDBM
     /**
      * {@inheritDoc}
      */
-    public ProvisionedService scaleService(ServiceDescription serviceDesc,
+    public ProvisionedService scaleService(ProvisionedService provisionedService,
                                            int scaleCount, AllocationStrategy allocStrategy) {
         return null;
     }
@@ -366,13 +366,19 @@ public abstract class DatabaseSPEBase extends ServiceProvisioningEngineBase<RDBM
     /**
      * {@inheritDoc}
      */
-    public boolean stopService(ServiceDescription serviceDescription, ServiceInfo serviceInfo) {
+    public boolean stopService(ProvisionedService provisionedService, ServiceInfo serviceInfo) {
         //Stop database
-        Properties properties = getProvisionedService(serviceDescription).getProperties();
+        ServiceDescription serviceDescription = provisionedService.getServiceDescription();
+        Properties properties = provisionedService.getProperties();
         VirtualMachine vm = getVmByID(serviceDescription.getVirtualClusterName(),
                 properties.getProperty(VIRTUAL_MACHINE_ID));
         stopDatabase(vm);
-        return stopService(serviceDescription);
+
+        boolean stopped = stopService(serviceDescription);
+        if(stopped){
+            provisionedService.setStatus(ServiceStatus.STOPPED);
+        }
+        return stopped;
     }
 
     /**

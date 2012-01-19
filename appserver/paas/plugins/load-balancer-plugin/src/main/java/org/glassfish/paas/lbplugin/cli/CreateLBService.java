@@ -57,6 +57,7 @@ import org.glassfish.paas.lbplugin.util.LBServiceConfiguration;
 import org.glassfish.paas.orchestrator.provisioning.*;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceType;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceUtil;
+import org.glassfish.paas.orchestrator.service.ServiceStatus;
 import org.glassfish.virtualization.config.TemplateIndex;
 import org.glassfish.virtualization.spi.VirtualCluster;
 import org.glassfish.virtualization.spi.*;
@@ -99,13 +100,17 @@ public class CreateLBService extends BaseLBService implements AdminCommand, Runn
     @Inject
     Habitat habitat;
 
+    private ActionReport report;
+
     private static final String VENDOR_NAME = "vendor-name";
     private static final String SCRIPTS_DIR_PROP_NAME = "scripts-dir";
     private static final String INSTALL_DIR_PROP_NAME = "install-dir";
 
     @Override
     public void execute(AdminCommandContext context) {
-        final ActionReport report = context.getActionReport();
+        report = context.getActionReport();
+        //using extra-properties to return the provisioned VM and IP Address related information.
+        report.setExtraProperties(new Properties());
 
         LBPluginLogger.getLogger().log(Level.INFO,"_create-lb-service called.");
 
@@ -236,14 +241,19 @@ public class CreateLBService extends BaseLBService implements AdminCommand, Runn
                 entry.setServiceName(serviceName);
                 entry.setServerType(ServiceType.LB.toString());
                 entry.setIpAddress(vm.getAddress().getHostAddress());
+                report.getExtraProperties().put("ip-address", vm.getAddress().getHostAddress());
                 entry.setInstanceId(vm.getName());
-                entry.setState(ServiceInfo.State.NotRunning.toString());
+                report.getExtraProperties().put("vm-id", vm.getName());
+                entry.setState(ServiceStatus.NOT_RUNNING.toString());
                 entry.setAppName(appName);
                 if(domainName != null){
                     entry.setProperty(Constants.DOMAIN_NAME, domainName);
+                    report.getExtraProperties().put(Constants.DOMAIN_NAME, domainName);
                 }
                 configuration.updateServiceInfo(entry);
-                lbServiceUtil.registerLBInfo(entry);
+
+                //lbServiceUtil.registerLBInfo(entry);
+
             } catch (Throwable ex) {
                 LBPluginLogger.getLogger().log(Level.INFO,"Exception : " + ex);
                 LBPluginLogger.getLogger().log(Level.INFO,"exception",ex);

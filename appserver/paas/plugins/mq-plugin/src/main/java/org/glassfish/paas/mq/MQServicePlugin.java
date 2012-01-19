@@ -40,15 +40,11 @@
 package org.glassfish.paas.mq;
 
 import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.lang.reflect.Array;
 import java.util.*;
 import java.util.logging.Level;
 
 import com.sun.enterprise.deployment.*;
 import com.sun.enterprise.deployment.archivist.ApplicationFactory;
-import com.sun.enterprise.util.OS;
 import org.glassfish.api.deployment.ApplicationContainer;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.deployment.common.DeploymentUtils;
@@ -70,7 +66,6 @@ import org.glassfish.paas.orchestrator.service.spi.ServiceProvisioningException;
 import org.glassfish.paas.spe.common.BasicProvisionedService;
 import org.glassfish.paas.spe.common.ServiceProvisioningEngineBase;
 import org.glassfish.virtualization.spi.AllocationStrategy;
-import org.glassfish.virtualization.spi.TemplateRepository;
 import org.glassfish.virtualization.spi.VirtualMachine;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
@@ -89,9 +84,6 @@ import static org.glassfish.paas.mq.Constants.*;
 public class MQServicePlugin extends ServiceProvisioningEngineBase<MQServiceType> {
 
     @Inject
-    private MQServiceUtil mqServiceUtil;
-
-    @Inject
     private ServiceUtil serviceUtil;
 
     @Inject
@@ -101,14 +93,8 @@ public class MQServicePlugin extends ServiceProvisioningEngineBase<MQServiceType
     private ApplicationFactory applicationFactory;
 
     @Inject
-    private MQNativeTemplateCustomizer customizer;
-
-    @Inject
     private DolProvider dolProvider;
 
-
-    @Inject(optional = true) // made it optional for non-virtual scenario to work
-    private TemplateRepository templateRepository;
 
     public MQServiceType getServiceType() {
         return new MQServiceType();
@@ -127,9 +113,9 @@ public class MQServicePlugin extends ServiceProvisioningEngineBase<MQServiceType
     }
 
     public Set getServiceReferences(String appName, ReadableArchive cloudArchive, PaaSDeploymentContext dc) {
-        HashSet<ServiceReference> serviceReferences = new HashSet<ServiceReference>();
+        Set<ServiceReference> serviceReferences = new LinkedHashSet<ServiceReference>();
         serviceReferences.add(new ServiceReference(cloudArchive.getName(), JAVAEE_SERVICE_REFERENCE, null));
-        serviceReferences.addAll(getResourceRefsAsServiceReferences(cloudArchive, appName));
+        serviceReferences.addAll(discoverServiceReferences(cloudArchive, appName));
         return serviceReferences;
     }
 
@@ -144,7 +130,7 @@ public class MQServicePlugin extends ServiceProvisioningEngineBase<MQServiceType
                 configurations);
     }
 
-    private Set<ServiceReference> getResourceRefsAsServiceReferences(ReadableArchive cloudArchive, String appName) {
+    private Set<ServiceReference> discoverServiceReferences(ReadableArchive cloudArchive, String appName) {
         Set<ServiceReference> serviceReferences = new HashSet<ServiceReference>();
 
         Application application = null;
@@ -191,7 +177,7 @@ public class MQServicePlugin extends ServiceProvisioningEngineBase<MQServiceType
         if (!DeploymentUtils.isJavaEE(cloudArchive, habitat)) {
             return implicitServiceDescriptions;
         }
-        Set<ServiceReference> serviceReferences = getResourceRefsAsServiceReferences(cloudArchive, appName);
+        Set<ServiceReference> serviceReferences = discoverServiceReferences(cloudArchive, appName);
 
         boolean hasJMSReference = false;
         for (ServiceReference serviceReference : serviceReferences) {
@@ -259,7 +245,7 @@ public class MQServicePlugin extends ServiceProvisioningEngineBase<MQServiceType
 
         try {
             String output = virtualMachine.executeOn(args);
-            MQServicePluginLogger.getLogger().log(Level.INFO, ("Command [" + commandArgs.toString() + "] output : " + output));
+            MQServicePluginLogger.getLogger().log(Level.FINEST, ("Command [" + commandArgs.toString() + "] output : " + output));
         } catch (Exception e) {
             MQServicePluginLogger.getLogger().log(Level.WARNING, "Unable to execute command ["+commandArgs.toString()+"]", e);
         }
@@ -385,8 +371,9 @@ public class MQServicePlugin extends ServiceProvisioningEngineBase<MQServiceType
         return provisionedService;
     }
 
-    public boolean stopService(ServiceDescription serviceDescription, ServiceInfo serviceInfo) {
-        Properties properties = getProvisionedService(serviceDescription).getProperties();
+    public boolean stopService(ProvisionedService provisionedService, ServiceInfo serviceInfo) {
+        ServiceDescription serviceDescription = provisionedService.getServiceDescription();
+        Properties properties = provisionedService.getProperties();
         VirtualMachine vm = getVmByID(serviceDescription.getVirtualClusterName(),
                 properties.getProperty(VIRTUAL_MACHINE_ID));
         stopMQ(vm);
@@ -403,7 +390,7 @@ public class MQServicePlugin extends ServiceProvisioningEngineBase<MQServiceType
     }
 
 
-    public ProvisionedService scaleService(ServiceDescription serviceDesc,
+    public ProvisionedService scaleService(ProvisionedService provisionedService,
                                            int scaleCount, AllocationStrategy allocStrategy) {
         //no-op
         throw new UnsupportedOperationException("Scaling of MQ Service " +
@@ -417,7 +404,6 @@ public class MQServicePlugin extends ServiceProvisioningEngineBase<MQServiceType
                 "not supported in this release");
     }
 
-    //TODO use ip-address (for non-native-mode)
     public void dissociateServices(Service serviceConsumer, ServiceReference svcRef,
                                    Service serviceProvider, boolean beforeUndeploy, PaaSDeploymentContext dc) {
         if (beforeUndeploy) {
@@ -444,12 +430,11 @@ public class MQServicePlugin extends ServiceProvisioningEngineBase<MQServiceType
 
                 deleteResource(commandRunner, parameters);
 
-                resetJmsService(commandRunner, serviceConsumer, serviceProvider);
+                resetJMSService(commandRunner, serviceConsumer, serviceProvider);
             }
         }
     }
 
-    //TODO use ip-address (for non-native-mode)
     public void associateServices(Service serviceConsumer, ServiceReference svcRef,
                                   Service serviceProvider, boolean beforeDeployment, PaaSDeploymentContext dc) {
 
@@ -465,7 +450,7 @@ public class MQServicePlugin extends ServiceProvisioningEngineBase<MQServiceType
             CommandRunner commandRunner = getCommandRunner(serviceProvider);
             String target = serviceProvider.getServiceDescription().getName();
 
-            initializeJmsService(commandRunner, serviceConsumer, serviceProvider);
+            configureJMSService(commandRunner, serviceConsumer, serviceProvider);
 
             if (svcRef.getType().equals(QUEUE) ||
                     svcRef.getType().equals(TOPIC)) {
@@ -495,7 +480,7 @@ public class MQServicePlugin extends ServiceProvisioningEngineBase<MQServiceType
         }
     }
 
-    private void resetJmsService(CommandRunner commandRunner, Service serviceConsumer, Service serviceProvider) {
+    private void resetJMSService(CommandRunner commandRunner, Service serviceConsumer, Service serviceProvider) {
 
         String clusterName = serviceProvider.getName();
 
@@ -525,7 +510,7 @@ public class MQServicePlugin extends ServiceProvisioningEngineBase<MQServiceType
     }
 
 
-    private void initializeJmsService(CommandRunner commandRunner, Service serviceConsumer, Service serviceProvider ) {
+    private void configureJMSService(CommandRunner commandRunner, Service serviceConsumer, Service serviceProvider) {
 
         String clusterName = serviceProvider.getName();
 

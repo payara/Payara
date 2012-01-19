@@ -72,7 +72,7 @@ public class DeleteLBService extends BaseLBService implements AdminCommand {
             if (virtualMachine != null) {
                 LBPluginLogger.getLogger().log(Level.INFO,"Calling delete on load-balancer VM with id : " + virtualMachine.getName());
                 vmlifecycle.delete(virtualMachine); // TODO :: use executor service.
-                lbServiceUtil.unregisterLBInfo(serviceName, appName);
+                //lbServiceUtil.unregisterLBInfo(serviceName, appName);
             }
         } catch (Exception ex) {
             LBPluginLogger.getLogger().log(Level.INFO,"exception",ex);

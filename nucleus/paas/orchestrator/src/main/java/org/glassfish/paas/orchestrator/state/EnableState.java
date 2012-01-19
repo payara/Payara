@@ -110,7 +110,15 @@ public class EnableState extends AbstractPaaSDeploymentState {
         logger.log(Level.FINEST,"retrieving.provisionedservice.viaplugin",args);
         ServiceInfo serviceInfo = serviceUtil.getServiceInfo(sd.getName(), appName, null);
         if(serviceInfo != null){
-            return chosenPlugin.startService(sd, serviceInfo);
+            ProvisionedService ps = chosenPlugin.startService(sd, serviceInfo);
+            serviceUtil.updateState(ps.getName(), appName, ps.getStatus().toString(), null);
+            if(ps.getChildServices() != null){
+                for(org.glassfish.paas.orchestrator.service.spi.Service serviceNode : ps.getChildServices()){
+                    ProvisionedService provisionedService = (ProvisionedService)serviceNode;
+                    serviceUtil.updateState(provisionedService.getName(), appName, provisionedService.getStatus().toString(), null);
+                }
+            }
+            return ps;
         }else{
             Object[] args1=new Object[]{sd.getName(),appName};
             logger.log(Level.WARNING,"unable.retrieve.serviceinfo",args1);

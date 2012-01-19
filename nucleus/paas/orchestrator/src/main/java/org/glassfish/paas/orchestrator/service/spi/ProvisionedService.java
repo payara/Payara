@@ -41,6 +41,9 @@
 package org.glassfish.paas.orchestrator.service.spi;
 
 import org.glassfish.paas.orchestrator.service.ServiceStatus;
+
+import java.util.Set;
+
 /**
  * Represents a Service provisioned by the PaaS runtime
  * <p/>
@@ -54,5 +57,7 @@ import org.glassfish.paas.orchestrator.service.ServiceStatus;
 public interface ProvisionedService extends Service {
 
     public ServiceStatus getStatus();
+
+    public void setStatus(ServiceStatus status);
 
 }

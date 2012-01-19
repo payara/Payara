@@ -46,6 +46,7 @@ import org.glassfish.paas.orchestrator.PaaSDeploymentState;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceUtil;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceDescription;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceMetadata;
+import org.glassfish.paas.orchestrator.service.spi.ProvisionedService;
 import org.glassfish.paas.orchestrator.service.spi.ServicePlugin;
 import org.jvnet.hk2.annotations.Service;
 
@@ -67,7 +68,7 @@ public class UnprovisioningState extends AbstractPaaSDeploymentState {
     }
 
     private void unprovisionServices(final PaaSDeploymentContext context) throws PaaSDeploymentException {
-        String appName = context.getAppName();
+        final String appName = context.getAppName();
 
         Collection<ServiceDescription> serviceDescriptionsToUnprovision = orchestrator.getServiceDescriptionsToUnprovision(appName);
         List<Future> unprovisioningFutures = new ArrayList<Future>();
@@ -79,6 +80,12 @@ public class UnprovisioningState extends AbstractPaaSDeploymentState {
                     Object args[]=new Object[]{sd, chosenPlugin};
                     logger.log(Level.FINEST, localStrings.getString("unprovision.service",args));
                     chosenPlugin.unprovisionService(sd, context);
+                    Collection<ProvisionedService> servicesToUnprovision = orchestrator.getServicesToUnprovision(appName);
+                    for(ProvisionedService ps : servicesToUnprovision){
+                        if(sd.getName().equals(ps.getName())){
+                            serviceUtil.unregisterService(appName, ps);
+                        }
+                    }
                 }
             });
             unprovisioningFutures.add(future);

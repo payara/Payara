@@ -47,6 +47,7 @@ import org.glassfish.paas.orchestrator.service.spi.ServiceLogRecord;
 import org.glassfish.paas.orchestrator.service.spi.ServiceLogType;
 
 import java.util.Date;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -63,6 +64,7 @@ public class ConfiguredServiceImpl implements ConfiguredService {
     private ServiceDescription serviceDescription;
     private Properties serviceProperties = new Properties();
     private Properties properties = new Properties();
+    private Set<Service> childServices ;
 
     public ConfiguredServiceImpl(String serviceName, ServiceType serviceType, ServiceDescription serviceDescription,
                                  Properties serviceProperties){
@@ -70,6 +72,7 @@ public class ConfiguredServiceImpl implements ConfiguredService {
         this.serviceName = serviceName;
         this.serviceType = serviceType;
         this.serviceProperties = serviceProperties;
+        this.childServices = new LinkedHashSet<Service>();
     }
 
     public ServiceType getServiceType() {
@@ -86,6 +89,10 @@ public class ConfiguredServiceImpl implements ConfiguredService {
 
     public String getName() {
         return serviceName;
+    }
+
+    public Set<Service> getChildServices() {
+        return childServices;
     }
 
     public Properties getProperties() {

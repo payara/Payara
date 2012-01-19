@@ -220,7 +220,7 @@ public interface ServicePlugin<T extends ServiceType> {
     /**
      * Scales the size of a Service up or down as per the provided scalingFactor.
      * 
-     * @param serviceDesc The original ServiceDescription of the Service
+     * @param provisionedService Existing <code>ProvisionedService</code>
      * @param scaleCount Number of units of the Service that needs to be scaled.
      * A positive number for scaling up and a negative number for scaling down.
      * @param allocStrategy The allocationStrategy that needs to be utilized
@@ -231,7 +231,7 @@ public interface ServicePlugin<T extends ServiceType> {
      * 
      * @return the new ProvisionedService scaling operation was successful
      */
-    public ProvisionedService scaleService(ServiceDescription serviceDesc, 
+    public ProvisionedService scaleService(ProvisionedService provisionedService,
             int scaleCount, AllocationStrategy allocStrategy);
 
 
@@ -307,14 +307,14 @@ public interface ServicePlugin<T extends ServiceType> {
     /**
      * Stop a <code>ProvisionedService</code>.
      * 
-     * @param serviceDescription The <code>ServiceDescription</code> of the 
+     * @param provisionedService The <code>ProvisionedService</code> of the
      * Service that needs to be stopped
      * @param serviceInfo The <code>ServiceInfo</code> that captures the 
      * provisioned state of the Service 
      * 
      * @return True if the Service was successfully stopped, False otherwise.
      */
-    public boolean stopService(ServiceDescription serviceDescription, ServiceInfo serviceInfo);
+    public boolean stopService(ProvisionedService provisionedService, ServiceInfo serviceInfo);
 
     // The methods that follow are not relevant for the first prototype
     // Capturing these here for completeness

@@ -50,6 +50,7 @@ import org.glassfish.paas.orchestrator.service.spi.ServiceLogRecord;
 import org.glassfish.paas.orchestrator.service.spi.ServiceLogType;
 
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -94,6 +95,10 @@ public class GlassFishLBProvisionedService implements ProvisionedService {
 
     public String getName(){
         return serviceDescription.getName();
+    }
+
+    public Set<Service> getChildServices() {
+        return new HashSet<Service>();
     }
 
     public Properties getProperties() {

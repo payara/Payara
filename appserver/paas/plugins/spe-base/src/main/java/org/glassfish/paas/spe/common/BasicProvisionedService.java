@@ -41,8 +41,6 @@
 package org.glassfish.paas.spe.common;
 
 import org.glassfish.internal.api.Globals;
-import org.glassfish.paas.orchestrator.provisioning.ServiceInfo;
-import org.glassfish.paas.orchestrator.provisioning.cli.ServiceUtil;
 import org.glassfish.paas.orchestrator.service.ServiceStatus;
 import org.glassfish.paas.orchestrator.service.ServiceType;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceDescription;
@@ -54,6 +52,7 @@ import org.glassfish.paas.orchestrator.service.spi.ServiceLogType;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -67,10 +66,10 @@ import java.util.logging.Level;
 
 public class BasicProvisionedService implements ProvisionedService {
 
-    private ServiceUtil serviceUtil;
     private ServiceDescription serviceDescription;
     private Properties serviceProperties;
     private ServiceStatus status;
+    private Set<Service> childServices;
 
     /*
     private ServiceInfo serviceInfo;
@@ -83,26 +82,9 @@ public class BasicProvisionedService implements ProvisionedService {
     public BasicProvisionedService(ServiceDescription serviceDescription,
                                    Properties serviceProperties, ServiceStatus status) {
         this.serviceDescription = serviceDescription;
-        this.serviceUtil = Globals.getDefaultHabitat().getComponent(ServiceUtil.class);
         this.status = status;
-        
-        // create the service info configuration in domain.xml
-        ServiceInfo entry = new ServiceInfo();
-        entry.setServerType(serviceDescription.getServiceType());
-        entry.setServiceName(serviceDescription.getName());
-        entry.setAppName(serviceDescription.getAppName());
-        entry.setState(status.toString());
-        for (String prop : serviceProperties.stringPropertyNames()) {
-            entry.setProperty(prop, serviceProperties.getProperty(prop));
-        }
-        if (!serviceUtil.isServiceAlreadyConfigured(
-                serviceDescription.getName(), serviceDescription.getAppName(), null)) {
-            serviceUtil.registerService(entry);
-        } else { // update only the state.
-            serviceUtil.updateState(serviceDescription.getName(),
-                    serviceDescription.getAppName(), status.toString(), null);
-        }
-        this.serviceProperties = new InterceptedProperties(entry, serviceProperties);
+	    this.serviceProperties = serviceProperties;
+        childServices = new LinkedHashSet<Service>();
     }
 
     public ServiceType getServiceType() {
@@ -130,8 +112,20 @@ public class BasicProvisionedService implements ProvisionedService {
         return status;
     }
 
+    public void setStatus(ServiceStatus status){
+        this.status = status;
+    }
+
     public String getName() {
         return serviceDescription.getName();
+    }
+
+    public Set<Service> getChildServices() {
+        return childServices;
+    }
+
+    public void addChildService(ProvisionedService provisionedService){
+        childServices.add(provisionedService);
     }
 
     public Properties getProperties() {
@@ -152,39 +146,6 @@ public class BasicProvisionedService implements ProvisionedService {
 
     public ServiceLogType getDefaultLogType() {
         throw new UnsupportedOperationException("Not yet implemented");
-    }
-
-    class InterceptedProperties extends Properties {
-
-        ServiceInfo serviceInfo;
-
-        InterceptedProperties(ServiceInfo serviceInfo,
-                              Properties properties) {
-            super(properties);
-            this.serviceInfo = serviceInfo;
-        }
-
-        @Override
-        public Object put(Object key, Object value) {
-            Object object = super.put(key, value);
-            // update the domain.xml configuration
-            if (key instanceof String && value instanceof String) {
-                serviceUtil.setProperty(serviceInfo.getServiceName(),
-                        serviceInfo.getAppName(), (String) key, (String) value);
-            }
-            return object;
-        }
-
-        @Override
-        public Object remove(Object key) {
-            Object object = super.remove(key);
-            // update the domain.xml configuration
-            if (key instanceof String && object instanceof String) {
-                serviceUtil.removeProperty(serviceInfo.getServiceName(),
-                        serviceInfo.getAppName(), (String) key);
-            }
-            return object;
-        }
     }
 
 }

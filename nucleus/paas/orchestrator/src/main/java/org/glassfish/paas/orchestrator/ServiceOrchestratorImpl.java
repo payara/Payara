@@ -64,6 +64,7 @@ import org.glassfish.paas.orchestrator.service.metadata.ServiceDescription;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceMetadata;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceReference;
 import org.glassfish.paas.orchestrator.service.spi.*;
+import org.glassfish.paas.orchestrator.service.spi.Service;
 import org.glassfish.paas.orchestrator.state.*;
 import org.glassfish.virtualization.spi.VirtualCluster;
 import org.glassfish.virtualization.runtime.VirtualClusters;
@@ -117,12 +118,26 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
     private Set<ServicePlugin> pluginsSet = null;
 
     public static final String ORCHESTRATOR_UNDEPLOY_CALL = "orchestrator.undeploy.call";
+    public static final String PARALLEL_PROVISIONING_FLAG = "org.glassfish.paas.orchestrator.parallel-provisioning";
+    public static final String ATOMIC_DEPLOYMENT_FLAG = "org.glassfish.paas.orchestrator.atomic-deployment";
+
+    public static boolean parallelProvisioningEnabled ;
+    public static boolean atomicDeploymentEnabled ;
 
     private static StringManager localStrings = StringManager.getManager(ServiceOrchestratorImpl.class);
 
-
     static{
         composeDeploymentStates();
+        detectParallalProvisioningSetting();
+        detectAtomicDeploymentSetting();
+    }
+
+    private static void detectAtomicDeploymentSetting() {
+        atomicDeploymentEnabled = Boolean.valueOf(System.getProperty(ServiceOrchestratorImpl.ATOMIC_DEPLOYMENT_FLAG, "true"));
+    }
+
+    private static void detectParallalProvisioningSetting() {
+        parallelProvisioningEnabled = Boolean.valueOf(System.getProperty(ServiceOrchestratorImpl.PARALLEL_PROVISIONING_FLAG, "true"));
     }
 
     private static void composeDeploymentStates() {
@@ -235,9 +250,15 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
         Object[] args=new Object[]{state.getClass().getSimpleName(),e};
         logger.log(Level.WARNING, "failure.handling",args);
         if(deployment){
-            rollbackDeployment(pc, state, DEPLOYMENT_STATES);
-            DeploymentException de = new DeploymentException("Failure while deploying application [ "+appName+" ], " +
-                    "rolled back all deploy operations.");
+            DeploymentException de = null;
+            if(isAtomicDeploymentEnabled()){
+                rollbackDeployment(pc, state, DEPLOYMENT_STATES);
+                de = new DeploymentException("Failure while deploying application [ "+appName+" ], " +
+                        "rolled back all deploy operations.");
+            }else{
+                de = new DeploymentException("Failure while deploying application [ "+appName+" ]. Atomic" +
+                        "deployment is disabled, manual cleanup is required");
+            }
             de.initCause(e);
             throw de;
 
@@ -383,6 +404,28 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
         return virtualClusterName;
     }
 
+    public Collection<ProvisionedService> getServicesToUnprovision(String appName){
+        Set<ProvisionedService> provisionedServices = getProvisionedServices(appName);
+        Set<ProvisionedService> servicesToUnprovision = new LinkedHashSet<ProvisionedService>();
+        for(ProvisionedService ps : provisionedServices){
+            if(ServiceScope.APPLICATION.equals(ps.getServiceDescription().getServiceScope())){
+                servicesToUnprovision.add(ps);
+            }
+        }
+        return servicesToUnprovision;
+    }
+
+    public ProvisionedService getProvisionedService(ServiceDescription sd, String appName){
+        ProvisionedService provisionedService = null;
+        Set<ProvisionedService> provisionedServices = getProvisionedServices(appName);
+        for(ProvisionedService ps : provisionedServices){
+            if(sd.getName().equals(ps.getName())){
+                provisionedService = ps;
+                break;
+            }
+        }
+        return provisionedService;
+    }
     public Collection<ServiceDescription> getServiceDescriptionsToProvision(String appName){
         ServiceMetadata appServiceMetadata = getServiceMetadata(appName);
         Collection<ServiceDescription> serviceDescriptions = appServiceMetadata.getServiceDescriptions();
@@ -531,18 +574,20 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
                     installedPlugins, oldPS.getServiceDescription().getServiceType());
 */
             ServicePlugin<?> chosenPlugin = oldPS.getServiceDescription().getPlugin();
+            ServiceInfo oldServiceInfo = serviceUtil.getServiceInfo(oldPS.getName(), appName, null);
 
             //ask it to scale the service and get new PS
 
             Object args[]=new Object[]{svcName,chosenPlugin};
             logger.log(Level.INFO, "scale.service.using.plugin",args);
 
-            ProvisionedService newPS = chosenPlugin.scaleService(
-                    oldPS.getServiceDescription(), scaleCount, allocStrategy);
+            ProvisionedService newPS = chosenPlugin.scaleService(oldPS, scaleCount, allocStrategy);
+            serviceUtil.unregisterService(oldServiceInfo);
+            serviceUtil.registerService(appName, newPS);
             args[0]=svcName;
             args[1]=newPS;
             logger.log(Level.INFO, "new.provisioned.service",args);
-
+            
             //Simple assertions to ensure that we have the scaled Service.
             assert newPS.getName().equals(oldPS.getName());
             assert newPS.getServiceType().equals(oldPS.getServiceType());
@@ -774,5 +819,13 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
 
     public void preDeploy(String appName, ExtendedDeploymentContext context) {
         provisionServicesForApplication(appName, context);
+    }
+
+    public boolean isParallelProvisioningEnabled(){
+        return parallelProvisioningEnabled;
+    }
+
+    public boolean isAtomicDeploymentEnabled(){
+        return atomicDeploymentEnabled;
     }
 }

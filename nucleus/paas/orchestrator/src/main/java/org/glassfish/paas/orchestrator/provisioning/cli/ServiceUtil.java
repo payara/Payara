@@ -53,10 +53,10 @@ import org.glassfish.paas.orchestrator.service.metadata.ServiceCharacteristics;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceDescription;
 import org.glassfish.paas.orchestrator.service.metadata.TemplateIdentifier;
 import org.glassfish.paas.orchestrator.service.spi.ConfiguredService;
+import org.glassfish.paas.orchestrator.service.spi.ProvisionedService;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.component.Habitat;
-import org.jvnet.hk2.component.PostConstruct;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.Transaction;
@@ -73,7 +73,7 @@ import java.util.logging.Logger;
 
 @org.jvnet.hk2.annotations.Service
 @Scoped(Singleton.class)
-public class ServiceUtil implements PostConstruct {
+public class ServiceUtil {
 
     private static ExecutorService threadPool = Executors.newCachedThreadPool();
 
@@ -89,15 +89,11 @@ public class ServiceUtil implements PostConstruct {
         return threadPool;
     }
 
-    public void postConstruct() {
-    }
-
     public boolean isValidService(String serviceName, String appName, ServiceType type) {
         ServiceInfo entry = getServiceInfo(serviceName, appName, type);
         return entry != null;
     }
 
-    // set a general property for application-scoped-service config element.
     public void setProperty(String serviceName, String appName,
                             final String propName, final String propValue) {
         Service matchingService = getService(serviceName, appName);
@@ -133,7 +129,6 @@ public class ServiceUtil implements PostConstruct {
         }
     }
 
-    // set a general property for application-scoped-service config element.
     public void removeProperty(String serviceName, String appName,
                                final String propName) {
         Service matchingService = getService(serviceName, appName);
@@ -159,42 +154,6 @@ public class ServiceUtil implements PostConstruct {
         } else {
             throw new RuntimeException("Invalid service, no such service [" + serviceName + "] found");
         }
-    }
-
-    public void updateVMID(String serviceName, String appName, final String vmId, ServiceType type) {
-        /*Service matchingService = getService(serviceName, appName);
-        if (matchingService != null) {
-            try {
-                if (ConfigSupport.apply(new SingleConfigCode<Service>() {
-                    public Object run(Service serviceConfig) throws PropertyVetoException, TransactionFailure {
-                        Property property = serviceConfig.getProperty("vm-id");
-                        if (property != null) {
-                            Transaction t = Transaction.getTransaction(serviceConfig);
-                            Property p_w = t.enroll(property);
-                            p_w.setValue(vmId);
-
-                        } else {
-                            Property prop = serviceConfig.createChild(Property.class);
-                            //TODO should this be changed to vm-id
-                            prop.setName("vm-id");
-                            prop.setValue(vmId);
-                            serviceConfig.getProperty().add(prop);
-                        }
-                        return serviceConfig;
-                    }
-                }, matchingService) == null) {
-                    String msg = "Unable to update vm-id [" + vmId + "] of service [" + serviceName + "]";
-                    System.out.println(msg);
-                    throw new RuntimeException(msg);
-                }
-            } catch (TransactionFailure transactionFailure) {
-                transactionFailure.printStackTrace();
-                throw new RuntimeException(transactionFailure.getMessage(), transactionFailure);
-            }
-        } else {
-            throw new RuntimeException("Invalid service, no such service [" + serviceName + "] found");
-        }*/
-        setProperty(serviceName,appName,"vm-id",vmId);
     }
 
     public void updateState(String serviceName, String appName, final String state, ServiceType type) {
@@ -261,42 +220,6 @@ public class ServiceUtil implements PostConstruct {
         return applications;
     }
 
-    public void updateIPAddress(String serviceName, String appName, final String IPAddress, ServiceType type) {
-        /*Service matchingService = getService(serviceName, appName);
-        if (matchingService != null) {
-            try {
-
-                if (ConfigSupport.apply(new SingleConfigCode<Service>() {
-                    public Object run(Service serviceConfig) throws PropertyVetoException, TransactionFailure {
-                        Property property = serviceConfig.getProperty("ip-address");
-                        if (property != null) {
-                            Transaction t = Transaction.getTransaction(serviceConfig);
-                            Property p_w = t.enroll(property);
-                            p_w.setValue(IPAddress);
-                        } else {
-                            Property prop = serviceConfig.createChild(Property.class);
-                            //TODO should this be changed to vm-id
-                            prop.setName("ip-address");
-                            prop.setValue(IPAddress);
-                            serviceConfig.getProperty().add(prop);
-                        }
-                        return serviceConfig;
-                    }
-                }, matchingService) == null) {
-                    String msg = "Unable to update ip-address [" + IPAddress + "] of service [" + serviceName + "]";
-                    System.out.println(msg);
-                    throw new RuntimeException(msg);
-                }
-            } catch (TransactionFailure transactionFailure) {
-                transactionFailure.printStackTrace();
-                throw new RuntimeException(transactionFailure.getMessage(), transactionFailure);
-            }
-        } else {
-            throw new RuntimeException("Invalid service, no such service [" + serviceName + "] found");
-        }*/
-        setProperty(serviceName,appName,"ip-address",IPAddress);
-    }
-
     public boolean isServiceAlreadyConfigured(String serviceName, String appName, ServiceType type) {
         //TODO hack, ignoring the shared-service/external-service related call for now.
         if(appName==null){
@@ -354,36 +277,54 @@ public class ServiceUtil implements PostConstruct {
 
     public ServiceInfo getServiceInfo(String serviceName, String appName, ServiceType type) {
         Service matchingService = null;
-        ServiceInfo cre = null;
+        ServiceInfo serviceInfo = null;
         matchingService = getService(serviceName, appName);
 
         if (matchingService != null) {
-            cre = new ServiceInfo();
-            cre.setServiceName(matchingService.getServiceName());
+            serviceInfo = new ServiceInfo();
+            serviceInfo.setAppName(appName);
+            serviceInfo.setServiceName(matchingService.getServiceName());
             if (matchingService.getProperty() != null) {
                 if (matchingService.getProperty("ip-address") != null) {
-                    cre.setIpAddress(matchingService.getProperty("ip-address").getValue());
+                    serviceInfo.setIpAddress(matchingService.getProperty("ip-address").getValue());
                 }
 
                 if (matchingService.getProperty("vm-id") != null) {
-                    cre.setInstanceId(matchingService.getProperty("vm-id").getValue());
+                    serviceInfo.setInstanceId(matchingService.getProperty("vm-id").getValue());
                 }
 
                 List<Property> properties = matchingService.getProperty();
                 for (Property property : properties) {
-                    cre.getProperties().put(property.getName(), property.getValue());
+                    serviceInfo.getProperties().put(property.getName(), property.getValue());
                 }
             }
 
             //TODO need a "Stateful" service type ?
             if (matchingService instanceof ApplicationScopedService) {
-                cre.setState(((ApplicationScopedService) matchingService).getState());
+                serviceInfo.setState(((ApplicationScopedService) matchingService).getState());
             } else if (matchingService instanceof SharedService) {
-                cre.setState(((SharedService) matchingService).getState());
+                serviceInfo.setState(((SharedService) matchingService).getState());
             }
-            cre.setServerType(matchingService.getType());
+            serviceInfo.setServerType(matchingService.getType());
+
+            for(Service service : getServices().getServices()){
+                if(service.getParentService() != null && service.getParentService().equals(serviceName)){
+                    if(appName != null && matchingService instanceof ApplicationScopedService){
+                        if(service instanceof ApplicationScopedService){
+                            ApplicationScopedService childService = (ApplicationScopedService)service;
+                            if(!appName.equals(childService.getApplicationName())){
+                                continue;
+                            }
+                        }else{
+                            continue;
+                        }
+                    }
+                    ServiceInfo childServiceInfo = getServiceInfo(service.getServiceName(), appName, type);
+                    serviceInfo.addChildService(childServiceInfo);
+                }
+            }
         }
-        return cre;
+        return serviceInfo;
     }
 
     public ConfiguredService getExternalService(String serviceName){
@@ -620,6 +561,9 @@ public class ServiceUtil implements PostConstruct {
                     if (entry.getAppName() != null) {
                         service.setApplicationName(entry.getAppName());
                     }
+                    if(entry.getParentService() != null){
+                        service.setParentService(entry.getParentService().getServiceName());
+                    }
                     service.setState(entry.getState());
 
                     Map<String, String> properties = entry.getProperties();
@@ -646,16 +590,16 @@ public class ServiceUtil implements PostConstruct {
     }
 
     public ServiceStatus getServiceStatus(ServiceInfo entry) {
-        if (entry.getState() != null && entry.getState().equals(ServiceInfo.State.Running.toString())) {
+        if (entry.getState() != null && entry.getState().equalsIgnoreCase(ServiceStatus.RUNNING.toString())) {
             return ServiceStatus.RUNNING;
         }
-        if (entry.getState() != null && entry.getState().equals(ServiceInfo.State.Start_in_progress.toString())) {
+        if (entry.getState() != null && entry.getState().equalsIgnoreCase(ServiceStatus.STARTING.toString())) {
             return ServiceStatus.STARTING;
         }
-        if (entry.getState() != null && entry.getState().equals(ServiceInfo.State.Stop_in_progress.toString())) {
+        if (entry.getState() != null && entry.getState().equalsIgnoreCase(ServiceStatus.STOPPED.toString())) {
             return ServiceStatus.STOPPED;
         }
-        if (entry.getState() != null && entry.getState().equals(ServiceInfo.State.NotRunning.toString())) {
+        if (entry.getState() != null && entry.getState().equalsIgnoreCase(ServiceStatus.STOPPED.toString())) {
             return ServiceStatus.STOPPED;
         }
         //TODO handle delete in progress/create in progress later.
@@ -777,4 +721,76 @@ public class ServiceUtil implements PostConstruct {
         throw new RuntimeException("Unable to determine the type");
     }
 
+    public void unregisterService(String appName, org.glassfish.paas.orchestrator.service.spi.Service service) {
+        ServiceInfo serviceInfo = new ServiceInfo();
+        serviceInfo.setServiceName(service.getName());
+        serviceInfo.setAppName(appName);
+        serviceInfo.setInstanceId(service.getServiceProperties().getProperty("vm-id"));
+        serviceInfo.setIpAddress(service.getServiceProperties().getProperty("ip-address"));
+        serviceInfo.setServerType(service.getServiceType().toString());
+        if(service instanceof ProvisionedService){
+            serviceInfo.setState(((ProvisionedService)service).getStatus().toString());
+        }
+        unregisterServiceInfo(service.getName(), appName);
+        if(service.getChildServices() != null){
+            for(org.glassfish.paas.orchestrator.service.spi.Service serviceNode : service.getChildServices()){
+                unregisterServiceInfo(serviceNode.getName(), appName);
+            }
+        }
+    }
+
+    public void unregisterService(ServiceInfo serviceInfo) {
+        unregisterServiceInfo(serviceInfo.getServiceName(), serviceInfo.getAppName());
+        if(serviceInfo.getChildServices() != null){
+            for(ServiceInfo serviceNode : serviceInfo.getChildServices()){
+                unregisterServiceInfo(serviceNode.getServiceName(), serviceNode.getAppName());
+            }
+        }
+    }
+
+    public void registerService(String appName, org.glassfish.paas.orchestrator.service.spi.Service service) {
+        ServiceInfo serviceInfo = new ServiceInfo();
+        serviceInfo.setServiceName(service.getName());
+        serviceInfo.setAppName(appName);
+        if(service.getServiceProperties().getProperty("vm-id") != null){
+            serviceInfo.setInstanceId(service.getServiceProperties().getProperty("vm-id"));
+        }
+        if(service.getServiceProperties().getProperty("ip-address") != null){
+            serviceInfo.setIpAddress(service.getServiceProperties().getProperty("ip-address"));
+        }
+        serviceInfo.setServerType(service.getServiceType().toString());
+        if(service instanceof ProvisionedService){
+            serviceInfo.setState(((ProvisionedService)service).getStatus().toString());
+        }
+        registerService(serviceInfo);
+        if(service.getChildServices() != null){
+            for(org.glassfish.paas.orchestrator.service.spi.Service serviceNode : service.getChildServices()){
+                ServiceInfo serviceNodeInfo = createServiceInfo(appName, serviceNode, serviceInfo);
+                serviceInfo.addChildService(serviceNodeInfo);
+                registerService(serviceNodeInfo);
+            }
+        }
+    }
+
+
+    private ServiceInfo createServiceInfo(String appName, org.glassfish.paas.orchestrator.service.spi.Service serviceNode,
+                                          ServiceInfo parentServiceInfo) {
+        ServiceInfo serviceInfo = new ServiceInfo();
+        serviceInfo.setServiceName(serviceNode.getName());
+        serviceInfo.setAppName(appName);
+        serviceInfo.setInstanceId(serviceNode.getServiceProperties().getProperty("vm-id"));
+        serviceInfo.setIpAddress(serviceNode.getServiceProperties().getProperty("ip-address"));
+        serviceInfo.setServerType(serviceNode.getServiceType().toString());
+        if(serviceNode instanceof ProvisionedService){
+            serviceInfo.setState(((ProvisionedService) serviceNode).getStatus().toString());
+        }
+        Properties serviceProperties = serviceNode.getServiceProperties();
+        if(serviceProperties != null){
+            for (String key : serviceProperties.stringPropertyNames()) {
+                serviceInfo.setProperty(key, (String)serviceProperties.get(key));
+            }
+        }
+        serviceInfo.setParentService(parentServiceInfo);
+        return serviceInfo;
+    }
 }

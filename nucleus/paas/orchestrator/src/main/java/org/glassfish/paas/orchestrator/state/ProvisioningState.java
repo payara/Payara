@@ -108,7 +108,7 @@ public class ProvisioningState extends AbstractPaaSDeploymentState {
                 orchestrator.getServiceDescriptionsToProvision(appName);
         boolean failed = false;
         Exception rootCause = null;
-        if (Boolean.getBoolean("org.glassfish.paas.orchestrator.parallel-provisioning")) {
+        if (isParallelProvisioningEnabled()) {
             List<Future<ProvisionedService>> provisioningFutures = new ArrayList<Future<ProvisionedService>>();
             for (final ServiceDescription sd : serviceDescriptionsToProvision) {
                 Future<ProvisionedService> future = ServiceUtil.getThreadPool().submit(new Callable<ProvisionedService>() {
@@ -126,6 +126,7 @@ public class ProvisioningState extends AbstractPaaSDeploymentState {
             for (Future<ProvisionedService> future : provisioningFutures) {
                 try {
                     ProvisionedService ps = future.get();
+                    serviceUtil.registerService(appName, ps);
                     appPSs.add(ps);
                     logger.log(Level.FINEST, localStrings.getString("completed.provisioningservice.parallel",ps));
                 } catch (Exception e) {
@@ -144,6 +145,7 @@ public class ProvisioningState extends AbstractPaaSDeploymentState {
                     Object args[]=new Object[]{sd,chosenPlugin};
                     logger.log(Level.FINEST, localStrings.getString("started.provisioningservice.serial",args));
                     ProvisionedService ps = chosenPlugin.provisionService(sd, context);
+                    serviceUtil.registerService(appName, ps);
                     appPSs.add(ps);
                     logger.log(Level.FINEST, localStrings.getString("completed.provisioningservice.serial",ps));
                 } catch (Exception e) {
@@ -159,31 +161,34 @@ public class ProvisioningState extends AbstractPaaSDeploymentState {
             orchestrator.registerProvisionedServices(context.getAppName(), appPSs);
             return appPSs;
         }else{
-            for(ProvisionedService ps : appPSs){
-                try{
-                    ServiceDescription sd = ps.getServiceDescription();
-                    ServicePlugin<?> chosenPlugin = sd.getPlugin();
-                    Object args[]=new Object[]{sd,chosenPlugin};
-                    logger.log(Level.INFO, "rollingback.provisioningservice",args);
-                    chosenPlugin.unprovisionService(sd, context); //TODO we could do unprovisioning in parallel.
-                    logger.log(Level.INFO, "rolledback.provisioningservice",args);
-                }catch(Exception e){
-                    Object args[]={ps,e};
-                    logger.log(Level.WARNING, "failure.while.rollingback.ps",args);
+            if(isAtomicDeploymentEnabled()){
+                for(ProvisionedService ps : appPSs){
+                    try{
+                        ServiceDescription sd = ps.getServiceDescription();
+                        ServicePlugin<?> chosenPlugin = sd.getPlugin();
+                        Object args[]=new Object[]{sd,chosenPlugin};
+                        logger.log(Level.INFO, "rollingback.provisioningservice",args);
+                        chosenPlugin.unprovisionService(sd, context); //TODO we could do unprovisioning in parallel.
+                        serviceUtil.unregisterServiceInfo(sd.getName(), sd.getAppName());
+                        logger.log(Level.INFO, "rolledback.provisioningservice",args);
+                    }catch(Exception e){
+                        Object args[]={ps,e};
+                        logger.log(Level.WARNING, "failure.while.rollingback.ps",args);
+                    }
                 }
-            }
 
-            // Clean up the virtual cluster config if is application-scoped.
-            if(virtualClusterName != null){
-                orchestrator.removeVirtualCluster(virtualClusterName);
+                // Clean up the virtual cluster config if is application-scoped.
+                if(virtualClusterName != null){
+                    orchestrator.removeVirtualCluster(virtualClusterName);
+                }
+                orchestrator.removeProvisionedServices(appName);
+                orchestrator.removeServiceMetadata(appName);
             }
 
             PaaSDeploymentException re = new PaaSDeploymentException("Failure while provisioning services");
             if(rootCause != null){
                 re.initCause(rootCause);
             }
-            orchestrator.removeProvisionedServices(appName);
-            orchestrator.removeServiceMetadata(appName);
 
             throw re;
         }

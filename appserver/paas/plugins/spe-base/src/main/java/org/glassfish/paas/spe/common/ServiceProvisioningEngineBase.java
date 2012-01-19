@@ -136,13 +136,6 @@ public abstract class ServiceProvisioningEngineBase<T extends org.glassfish.paas
         // Note :: since allocationStrategy and listeners can not be passed to an admin
         // command, create-service can not be implemented as a command.
 
-        // See if the service already exists.
-        if (serviceUtil.isServiceAlreadyConfigured(serviceDescription.getName(),
-                serviceDescription.getAppName(), null)) {
-            throw new ServiceProvisioningException("Duplicate service name [" +
-                    serviceDescription.getName() + "]");
-        }
-
         String virtualClusterName = serviceDescription.getVirtualClusterName();
 
         TemplateIdentifier ti = serviceDescription.getTemplateIdentifier();
@@ -224,8 +217,6 @@ public abstract class ServiceProvisioningEngineBase<T extends org.glassfish.paas
             if (vm.getMachine() == null || // TODO :: for Native mode, vm.getState() does not return correct values. Hence do this check is a workaround for Native mode.
                     vmState.equals(Machine.State.SUSPENDED) ||
                     vmState.equals(Machine.State.SUSPENDING)) {
-                serviceUtil.updateState(serviceName, appName,
-                        ServiceStatus.STOPPED.toString(), null);
                 logger.log(Level.INFO, "service.stopped",
                         new Object[]{serviceName, serviceDescription.getServiceType()});
             } else {
@@ -252,8 +243,6 @@ public abstract class ServiceProvisioningEngineBase<T extends org.glassfish.paas
                 VirtualMachine vm = virtualCluster.vmByName(vmId);
                 vmLifecycle.delete(vm);
             }
-            serviceUtil.unregisterServiceInfo(serviceDescription.getName(),
-                    serviceDescription.getAppName());
             return true;
         } catch (Exception exception) {
             throw new ServiceProvisioningException(exception);

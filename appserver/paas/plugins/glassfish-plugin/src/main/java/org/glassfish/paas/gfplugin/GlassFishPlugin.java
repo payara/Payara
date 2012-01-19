@@ -233,6 +233,7 @@ public class GlassFishPlugin extends ServiceProvisioningEngineBase<JavaEEService
         // wait for the completion of node/instance creations.
         for(ProvisioningFuture future : futures) {
             ProvisionedService provisionedService = future.get();
+            gfps.addChildService(provisionedService);
             // further customize the provisioned node/instance
         }
 
@@ -265,30 +266,7 @@ public class GlassFishPlugin extends ServiceProvisioningEngineBase<JavaEEService
                                            ServiceInfo serviceInfo) {
         String serviceName = serviceDescription.getName();
         /**
-         * Step 1. Start all the instances.
-         */
-        // Start all the instances
-        String clusterName = serviceDescription.getVirtualClusterName();
-        for (int currentClusterSize = domain.getClusterNamed(clusterName).
-                getInstances().size(); currentClusterSize > 0 ; currentClusterSize--) {
-            serviceDescription.setName(serviceName + "." + currentClusterSize);
-            ProvisionedService provisionedService = super.startService(serviceDescription);
-            // customize the VM after start???
-        }
-        serviceDescription.setName(serviceName); // reset the name.
-
-        /**
-         * Step 2. Start cluster. TODO :: remove start-cluster call once LocalGlassFishTemplateCustomizer's start is fixed.
-         */
-        commandRunner.run(START_CLUSTER, serviceDescription.getVirtualClusterName());
-
-        /**
-         * Step 3. Enable elastic service.
-         */
-        commandRunner.run(ENABLE_AUTO_SCALING, serviceName);
-
-        /**
-         * Step 4. Create a ProvisionedService object representing the DAS/cluster.
+         * Step 1. Create a ProvisionedService object representing the DAS/cluster.
          */
         Properties serviceProperties = new Properties();
         String dasIPAddress = LOCALHOST;
@@ -297,15 +275,42 @@ public class GlassFishPlugin extends ServiceProvisioningEngineBase<JavaEEService
         GlassFishProvisioner gfProvisioner = (GlassFishProvisioner)
                 provisionerUtil.getAppServerProvisioner(dasIPAddress);
         GlassFish provisionedGlassFish = gfProvisioner.getGlassFish();
-        ProvisionedService service =  new GlassFishProvisionedService(serviceDescription,
+        GlassFishProvisionedService service =  new GlassFishProvisionedService(serviceDescription,
                 serviceProperties, ServiceStatus.RUNNING, provisionedGlassFish);
+
+        /**
+         * Step 2. Start all the instances.
+         */
+        // Start all the instances
+        String clusterName = serviceDescription.getVirtualClusterName();
+        for (int currentClusterSize = domain.getClusterNamed(clusterName).
+                getInstances().size(); currentClusterSize > 0 ; currentClusterSize--) {
+            ServiceDescription sd = new ServiceDescription(serviceDescription);
+            sd.setName(serviceName + "." + currentClusterSize);
+            ProvisionedService provisionedService = super.startService(sd);
+            service.addChildService(provisionedService);
+            // customize the VM after start???
+        }
+        //serviceDescription.setName(serviceName); // reset the name.
+
+        /**
+         * Step 3. Start cluster. TODO :: remove start-cluster call once LocalGlassFishTemplateCustomizer's start is fixed.
+         */
+        commandRunner.run(START_CLUSTER, serviceDescription.getVirtualClusterName());
+
+        /**
+         * Step 4. Enable elastic service.
+         */
+        commandRunner.run(ENABLE_AUTO_SCALING, serviceName);
+
 
         fireServiceChangeEvent(ServiceChangeEvent.Type.STARTED, service);
 
         return service;
     }
 
-    public boolean stopService(ServiceDescription serviceDescription, ServiceInfo serviceInfo) {
+    public boolean stopService(ProvisionedService provisionedService, ServiceInfo serviceInfo) {
+        ServiceDescription serviceDescription = provisionedService.getServiceDescription();
         String serviceName = serviceDescription.getName();
         /**
          * Step 1. Disable elastic service.
@@ -319,11 +324,21 @@ public class GlassFishPlugin extends ServiceProvisioningEngineBase<JavaEEService
         String clusterName = serviceDescription.getVirtualClusterName();
         for (int currentClusterSize = domain.getClusterNamed(clusterName).
                 getInstances().size(); currentClusterSize > 0 ; currentClusterSize--) {
-        serviceDescription.setName(serviceName + "." + currentClusterSize);
+            ServiceDescription sd = new ServiceDescription(serviceDescription);
+            sd.setName(serviceName + "." + currentClusterSize);
+
             // customize the VM before stop???
-            stopSuccessful =  super.stopService(serviceDescription) || stopSuccessful;
+            stopSuccessful =  super.stopService(sd) || stopSuccessful;
+            for(org.glassfish.paas.orchestrator.service.spi.Service childService : provisionedService.getChildServices()){
+                ProvisionedService ps = (ProvisionedService)childService;
+                if(sd.getName().equals(ps.getName())){
+                    if(stopSuccessful){
+                        ps.setStatus(ServiceStatus.STOPPED);
+                    }
+                }
+            }
         }
-        serviceDescription.setName(serviceName); // reset the service name.
+        //serviceDescription.setName(serviceName); // reset the service name.
 
         /**
          * Step 3. Stop the cluster/DAS.
@@ -332,10 +347,11 @@ public class GlassFishPlugin extends ServiceProvisioningEngineBase<JavaEEService
          * representing cluster so that State gets updated correctly.
          */
         commandRunner.run(STOP_CLUSTER, serviceDescription.getVirtualClusterName());
-        ProvisionedService service = new GlassFishProvisionedService(serviceDescription,
-                new Properties(), ServiceStatus.STOPPED, null);
+        //ProvisionedService service = new GlassFishProvisionedService(serviceDescription,
+        //        new Properties(), ServiceStatus.STOPPED, null);
+        provisionedService.setStatus(ServiceStatus.STOPPED);
 
-        fireServiceChangeEvent(ServiceChangeEvent.Type.STOPPED, service);
+        fireServiceChangeEvent(ServiceChangeEvent.Type.STOPPED, provisionedService);
 
         return stopSuccessful;
     }
@@ -353,6 +369,17 @@ public class GlassFishPlugin extends ServiceProvisioningEngineBase<JavaEEService
         //serviceDescription.setVirtualClusterName(serviceDescription.getName());
         GlassFishProvisionedService gfps =new GlassFishProvisionedService(
                 serviceDescription, serviceProperties, ServiceStatus.RUNNING, provisionedGlassFish);
+        if(serviceInfo.getChildServices() != null){
+            for(ServiceInfo childService : serviceInfo.getChildServices()){
+                ServiceDescription childSD = new ServiceDescription(serviceDescription);
+                childSD.setName(childService.getServiceName());
+                Properties childServiceProperties = new Properties();
+                childServiceProperties.putAll(serviceInfo.getProperties());
+                GlassFishProvisionedService childPS =
+                        new GlassFishProvisionedService(childSD, childServiceProperties, ServiceStatus.RUNNING, null);
+                gfps.addChildService(childPS);
+            }
+        }
         return gfps;
     }
 
@@ -398,7 +425,8 @@ public class GlassFishPlugin extends ServiceProvisioningEngineBase<JavaEEService
 //                String domainName = glassfishProvisionedService.getServiceProperties().getProperty("domainName"); // serviceUtil.getDomainName(serviceName);
             //String clusterName = gfServiceUtil.getClusterName(serviceName);
             //String dasIPAddress = glassfishProvisionedService.getServiceProperties().getProperty(HOST); // serviceUtil.getIPAddress(domainName, ServiceUtil.SERVICE_TYPE.APPLICATION_SERVER);
-            String clusterName = gfServiceUtil.getClusterName(serviceName, serviceDescription.getAppName());
+            //String clusterName = gfServiceUtil.getClusterName(serviceName, serviceDescription.getAppName());
+            String clusterName = serviceName;
             String dasIPAddress = gfServiceUtil.getDASIPAddress(serviceConsumer.getServiceDescription().getName());
 
             String poolName = svcRef.getName();
@@ -567,7 +595,8 @@ public class GlassFishPlugin extends ServiceProvisioningEngineBase<JavaEEService
                // if (svcRef.getServiceRefType().equals(JAVAEE_SERVICE_TYPE)) {
                     GlassFishProvisionedService gfps = (GlassFishProvisionedService) serviceConsumer;
                     String serviceName = gfps.getServiceDescription().getName();
-                    String clusterName = gfServiceUtil.getClusterName(serviceName, gfps.getServiceDescription().getAppName());
+                    //String clusterName = gfServiceUtil.getClusterName(serviceName, gfps.getServiceDescription().getAppName());
+                    String clusterName = serviceName;
 
                     /*if (dc != null) { //TODO remove once "deploy-service" is made obselete
                         UndeployCommandParameters ucp = dc.getCommandParameters(UndeployCommandParameters.class);
@@ -582,7 +611,8 @@ public class GlassFishPlugin extends ServiceProvisioningEngineBase<JavaEEService
                 //if (serviceProvider instanceof GlassFishProvisionedService) {
                     GlassFishProvisionedService glassfishProvisionedService = (GlassFishProvisionedService) serviceConsumer;
                     String serviceName = glassfishProvisionedService.getServiceDescription().getName();
-                    String clusterName = gfServiceUtil.getClusterName(serviceName, glassfishProvisionedService.getServiceDescription().getAppName());
+                    //String clusterName = gfServiceUtil.getClusterName(serviceName, glassfishProvisionedService.getServiceDescription().getAppName());
+                    String clusterName = serviceName;
                     String poolName = svcRef.getName();
                     String resourceName = svcRef.getName();
 
@@ -654,13 +684,14 @@ public class GlassFishPlugin extends ServiceProvisioningEngineBase<JavaEEService
     }
 
     @Override
-    public ProvisionedService scaleService(ServiceDescription serviceDescription,
+    public ProvisionedService scaleService(ProvisionedService provisionedService,
                                            int scaleCount, AllocationStrategy allocStrategy) {
         if(scaleCount > 0) {
-            scaleUpService(serviceDescription, scaleCount, allocStrategy);
+            scaleUpService(provisionedService, scaleCount, allocStrategy);
         } else {
-            scaleDownService(serviceDescription, -scaleCount);
+            scaleDownService(provisionedService, -scaleCount);
         }
+    /*
         // TODO :: Return the provisioned service with the new cluster shape.
         String dasIPAddress = LOCALHOST; // TODO :: change it when DAS is also provisioned separately.
         Properties serviceProperties = new Properties();
@@ -670,11 +701,14 @@ public class GlassFishPlugin extends ServiceProvisioningEngineBase<JavaEEService
         GlassFish provisionedGlassFish = gfProvisioner.getGlassFish();
         return new GlassFishProvisionedService(serviceDescription, serviceProperties,
                 ServiceStatus.RUNNING, provisionedGlassFish);
+    */
+        return provisionedService;
     }
 
-    private void scaleUpService(ServiceDescription serviceDescription,
+    private void scaleUpService(ProvisionedService provisionedService,
                                            int scaleCount, AllocationStrategy allocStrategy) {
         // Check for max.clustersize bound.
+        ServiceDescription serviceDescription = provisionedService.getServiceDescription();
         String serviceName = serviceDescription.getName();
         String clusterName = serviceDescription.getVirtualClusterName();
         int currentClusterSize = domain.getClusterNamed(clusterName).getInstances().size();
@@ -686,7 +720,7 @@ public class GlassFishPlugin extends ServiceProvisioningEngineBase<JavaEEService
                     "current size is [" + currentClusterSize + "]";
             throw new ServiceProvisioningException(errMsg);
         }
-        List<ProvisioningFuture> futures = new ArrayList();
+        List<ProvisioningFuture> futures = new ArrayList<ProvisioningFuture>();
         for (int i = currentClusterSize+1; scaleCount > 0 ; scaleCount--, i++) {
             ServiceDescription sd = new ServiceDescription(serviceDescription);
             sd.setName(serviceName + "." + (i+1));
@@ -694,15 +728,17 @@ public class GlassFishPlugin extends ServiceProvisioningEngineBase<JavaEEService
         }
         // wait for the completion of node/instance creations.
         for(ProvisioningFuture future : futures) {
-            ProvisionedService provisionedService = future.get();
+            ProvisionedService ps = future.get();
+            provisionedService.getChildServices().add(ps);
             // further customize the provisioned node/instance
         }
     }
 
-    private void scaleDownService(ServiceDescription serviceDescription,
+    private void scaleDownService(ProvisionedService provisionedService,
                                            int scaleCount) throws ServiceProvisioningException {
         // Check for max.clustersize bound.
         // make sure we don't scale down below min.clustersize.
+        ServiceDescription serviceDescription = provisionedService.getServiceDescription();
         String serviceName = serviceDescription.getName();
         String clusterName = serviceDescription.getVirtualClusterName();
         int currentClusterSize = domain.getClusterNamed(clusterName).getInstances().size();
@@ -719,6 +755,18 @@ public class GlassFishPlugin extends ServiceProvisioningEngineBase<JavaEEService
             sd.setName(serviceName + "." + (i+1));
             // perform operation on VM before deleting??
             boolean deleteSuccessful = super.deleteService(sd);
+            if(deleteSuccessful){
+                org.glassfish.paas.orchestrator.service.spi.Service serviceToPurge = null;
+                for(org.glassfish.paas.orchestrator.service.spi.Service service : provisionedService.getChildServices()){
+                    if(service.getName().equals(sd.getName())){
+                        serviceToPurge = service;
+                        break;
+                    }
+                }
+                if(serviceToPurge != null){
+                    provisionedService.getChildServices().remove(serviceToPurge);
+                }
+            }
         }
     }
 

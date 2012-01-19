@@ -61,20 +61,8 @@ public class LBServiceUtil {
         return serviceUtil.getServiceInfo(serviceName, appName, type);
     }
 
-    public boolean isServiceAlreadyConfigured(String serviceName, String appName, ServiceType type) {
-        return serviceUtil.isServiceAlreadyConfigured(serviceName, appName, type);
-    }
-
     public boolean isValidService(String serviceName, String appName, ServiceType type) {
         return serviceUtil.isValidService(serviceName, appName, type);
-    }
-
-    public String getIPAddress(String serviceName, String appName, ServiceType type) {
-        return serviceUtil.getIPAddress(serviceName, appName, type);
-    }
-
-    public void registerLBInfo(ServiceInfo entry) {
-        serviceUtil.registerService(entry);
     }
 
     public void updateState(String serviceName, String appName, String state, ServiceType type) {
@@ -87,10 +75,6 @@ public class LBServiceUtil {
 
     public String getInstanceID(String instance, String appName, ServiceType serviceType) {
         return serviceUtil.getInstanceID(instance, appName, serviceType);
-    }
-
-    public void unregisterLBInfo(String instance, String appName) {
-        serviceUtil.unregisterServiceInfo(instance, appName);
     }
 
     public ServiceStatus getServiceStatus(ServiceInfo entry) {

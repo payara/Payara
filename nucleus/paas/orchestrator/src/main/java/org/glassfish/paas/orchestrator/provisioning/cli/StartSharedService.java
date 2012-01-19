@@ -128,6 +128,7 @@ public class StartSharedService implements AdminCommand {
                                                         Transaction t = Transaction.getTransaction(param);
                                                         SharedService sharedService_w = t.enroll(sharedSvc);
                                                         sharedService_w.setState(ServiceStatus.RUNNING.toString());
+                                                        //TODO handle service-nodes
                                                     }
                                                 }
                                             }

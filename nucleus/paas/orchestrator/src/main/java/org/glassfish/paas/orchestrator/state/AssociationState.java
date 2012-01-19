@@ -107,18 +107,19 @@ public abstract class AssociationState extends AbstractPaaSDeploymentState {
 
     private void rollback(List<AssociatedServiceRecord> associatedServices, PaaSDeploymentContext context,
                           boolean preDeployment) {
-        for(AssociatedServiceRecord asr : associatedServices){
-            org.glassfish.paas.orchestrator.service.spi.Service serviceProvider = asr.getProvider();
-            org.glassfish.paas.orchestrator.service.spi.Service serviceConsumer = asr.getConsumer();
-            ServiceReference serviceRef = asr.getServiceReference();
-            ServicePlugin plugin = asr.getPlugin();
-            try{
-                plugin.dissociateServices(serviceConsumer, serviceRef, serviceProvider, preDeployment,
-                        context);
-            }catch(Exception e){
-                Object args[]= new Object[]{serviceConsumer.getName(),serviceProvider.getName(),serviceRef,e};
-               logger.log(Level.WARNING,"failure.while.associating.service",args);
-
+        if(isAtomicDeploymentEnabled()){
+            for(AssociatedServiceRecord asr : associatedServices){
+                org.glassfish.paas.orchestrator.service.spi.Service serviceProvider = asr.getProvider();
+                org.glassfish.paas.orchestrator.service.spi.Service serviceConsumer = asr.getConsumer();
+                ServiceReference serviceRef = asr.getServiceReference();
+                ServicePlugin plugin = asr.getPlugin();
+                try{
+                    plugin.dissociateServices(serviceConsumer, serviceRef, serviceProvider, preDeployment,
+                            context);
+                }catch(Exception e){
+                    Object args[]= new Object[]{serviceConsumer.getName(),serviceProvider.getName(),serviceRef,e};
+                    logger.log(Level.WARNING,"failure.while.associating.service",args);
+                }
             }
         }
     }

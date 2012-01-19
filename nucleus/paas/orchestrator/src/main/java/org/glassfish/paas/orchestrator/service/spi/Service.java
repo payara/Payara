@@ -85,6 +85,13 @@ public interface Service {
     public String getName();
 
     /**
+     * returns the list of Child Services for this Service<br>
+     * eg: GlassFish service is represented by multiple instances of a cluster.
+     * @return Set<Service>
+     */
+    public Set<Service> getChildServices();
+
+    /**
      * placeholder for extra-properties.
      * @return Properties
      */

@@ -81,4 +81,10 @@ public interface Service extends ConfigBeanProxy, Injectable, PropertyBag{
     String getServiceName();
 
     void setServiceName(String name) throws PropertyVetoException;
+
+    @Attribute
+    @Param
+    String getParentService();
+
+    void setParentService(String serviceName) throws PropertyVetoException;
 }

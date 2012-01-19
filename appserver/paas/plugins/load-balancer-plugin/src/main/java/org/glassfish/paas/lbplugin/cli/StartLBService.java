@@ -48,10 +48,10 @@ import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.CommandLock;
 import org.glassfish.paas.orchestrator.provisioning.ServiceInfo;
 
-import static org.glassfish.paas.orchestrator.provisioning.ServiceInfo.State.*;
 import static org.glassfish.paas.orchestrator.provisioning.cli.ServiceType.*;
 import org.glassfish.virtualization.runtime.VirtualMachineLifecycle;
 
+import org.glassfish.paas.orchestrator.service.ServiceStatus;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
@@ -80,38 +80,42 @@ public class StartLBService extends BaseLBService implements AdminCommand {
         final ActionReport report = context.getActionReport();
         LBPluginLogger.getLogger().log(Level.INFO,"_start-lb-service called.");
 
-        if (lbServiceUtil.isValidService(serviceName, appName, LB)) {
+        //if (lbServiceUtil.isValidService(serviceName, appName, LB)) {
+/*
             ServiceInfo entry = lbServiceUtil.retrieveCloudEntry(serviceName, appName, LB);
             String ipAddress = entry.getIpAddress();
             String status = entry.getState();
-            if (status == null || status.equalsIgnoreCase(ServiceInfo.State.Start_in_progress.toString())
-                    || status.equalsIgnoreCase(Running.toString())) {
+            if (status == null || status.equalsIgnoreCase(ServiceStatus.START_IN_PROGRESS.toString())
+                    || status.equalsIgnoreCase(ServiceStatus.RUNNING.toString())) {
                 report.setMessage("Invalid lb-service [" + serviceName + "] state [" + status + "]");
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                 return;
             }
+*/
 
-            lbServiceUtil.updateState(serviceName, appName, Start_in_progress.toString(), LB);
+            //lbServiceUtil.updateState(serviceName, appName, ServiceStatus.START_IN_PROGRESS.toString(), LB);
             try {
                 retrieveVirtualMachine();
                 if (startVM) {
                     vmlifecycle.start(virtualMachine);
                 }
                 LBProvisionerFactory.getInstance().getLBProvisioner().startLB(virtualMachine);
-                lbServiceUtil.updateState(serviceName, appName, Running.toString(), LB);
+                //lbServiceUtil.updateState(serviceName, appName, ServiceStatus.RUNNING.toString(), LB);
                 report.setMessage("lb-service [" + serviceName + "] started");
                 report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
             } catch (Exception ex) {
                 LBPluginLogger.getLogger().log(Level.INFO,"exception",ex);
-                lbServiceUtil.updateState(serviceName, appName, ServiceInfo.State.NotRunning.toString(), LB);
+                //lbServiceUtil.updateState(serviceName, appName, ServiceStatus.NOT_RUNNING.toString(), LB);
                 report.setMessage("lb-service [" + serviceName + "] start failed");
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             }
             
 
+/*
         } else {
             report.setMessage("Invalid lb-service name [" + serviceName + "]");
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
         }
+*/
     }
 }

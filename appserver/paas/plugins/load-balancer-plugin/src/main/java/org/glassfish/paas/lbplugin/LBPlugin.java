@@ -47,16 +47,17 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.glassfish.api.ActionReport;
+import org.glassfish.api.admin.CommandRunner;
+import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.api.deployment.ApplicationContainer;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.embeddable.CommandResult;
-import org.glassfish.embeddable.CommandRunner;
 import org.glassfish.paas.lbplugin.cli.GlassFishLBProvisionedService;
 import org.glassfish.paas.lbplugin.logger.LBPluginLogger;
 import org.glassfish.paas.orchestrator.PaaSDeploymentContext;
 import org.glassfish.paas.orchestrator.ServiceOrchestrator;
 import org.glassfish.paas.orchestrator.provisioning.ServiceInfo;
-import org.glassfish.paas.orchestrator.provisioning.cli.ServiceType;
 import org.glassfish.paas.orchestrator.service.HTTPLoadBalancerServiceType;
 import org.glassfish.paas.orchestrator.service.ServiceStatus;
 import org.glassfish.paas.orchestrator.service.metadata.Property;
@@ -68,6 +69,7 @@ import org.glassfish.virtualization.spi.AllocationStrategy;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.PerLookup;
 
 import com.sun.enterprise.deployment.Application;
@@ -91,10 +93,16 @@ public class LBPlugin implements ServicePlugin {
     private CommandRunner commandRunner;
 
     @Inject
+    private org.glassfish.embeddable.CommandRunner embeddedCommandRunner;
+
+    @Inject
     private LBServiceUtil lbServiceUtil;
 
     @Inject
     private ApplicationFactory applicationFactory;
+
+    @Inject
+    private Habitat habitat;
 
     @Inject(optional = true) // made it optional for non-virtual scenario to work
     private TemplateRepository templateRepository;
@@ -187,78 +195,73 @@ public class LBPlugin implements ServicePlugin {
         ArrayList<String> params;
         String[] parameters;
 
-        CommandResult result;// = commandRunner.run("_list-lb-services");
+        //CommandResult result;// = commandRunner.run("_list-lb-services");
         //if (!result.getOutput().contains(serviceName)) {
             //_create-lb-service
             params = new ArrayList<String>();
             //params.add("--_ignore_appserver_association");
             //params.add("true");
-            if(serviceDescription.getAppName() != null){
-                params.add("--appname");
-                params.add(serviceDescription.getAppName());
-            }
-            if (serviceDescription.getServiceCharacteristics() != null) {
-                String serviceCharacteristics = formatArgument(serviceDescription
-                        .getServiceCharacteristics().getServiceCharacteristics());
-                params.add("--servicecharacteristics=" + serviceCharacteristics);
-            }else if(serviceDescription.getTemplateIdentifier() != null){
-                String templateID = serviceDescription.getTemplateIdentifier().getId();
-                params.add("--templateid=" + templateID);
-            }
-            String serviceConfigurations =
-                    formatArgument(serviceDescription.getConfigurations());
-            params.add("--serviceconfigurations");
-            params.add(serviceConfigurations);
-            params.add("--waitforcompletion=true");
-            params.add("--virtualcluster");
-            params.add(serviceDescription.getVirtualClusterName());
-            String domainName = System.getProperty(Constants.DOMAIN_NAME_SYSTEM_PROPERTY);
-            if(domainName != null){
-               params.add("--domainname");
-               params.add(domainName);
-            }
-            params.add(serviceName);
-            parameters = new String[params.size()];
-            parameters = params.toArray(parameters);
 
-            result = commandRunner.run("_create-lb-service", parameters);
-            if (result.getExitStatus().equals(CommandResult.ExitStatus.FAILURE)) {
-                LBPluginLogger.getLogger().log(Level.INFO,"_create-lb-service [" + serviceName + "] failed");
-            }
-        //}
+        ActionReport report = habitat.getComponent(ActionReport.class);
+        org.glassfish.api.admin.CommandRunner.CommandInvocation invocation = commandRunner.getCommandInvocation("_create-lb-service", report);
+        ParameterMap parameterMap=new ParameterMap();
 
-        ServiceInfo entry = lbServiceUtil.retrieveCloudEntry(serviceName, serviceDescription.getAppName(), ServiceType.LB);
-        if (entry == null) {
-            throw new RuntimeException("unable to get LB service : " + serviceName);
+        if(serviceDescription.getAppName() != null){
+            parameterMap.add("appname",serviceDescription.getAppName());
+        }
+        if (serviceDescription.getServiceCharacteristics() != null) {
+            String serviceCharacteristics = formatArgument(serviceDescription
+                    .getServiceCharacteristics().getServiceCharacteristics());
+            parameterMap.add("servicecharacteristics",serviceCharacteristics);
+        }else if(serviceDescription.getTemplateIdentifier() != null){
+            String templateID = serviceDescription.getTemplateIdentifier().getId();
+            parameterMap.add("templateid",templateID);
+        }
+        String serviceConfigurations =
+                formatArgument(serviceDescription.getConfigurations());
+        parameterMap.add("serviceconfigurations",serviceConfigurations);
+        parameterMap.add("waitforcompletion","true");
+        parameterMap.add("virtualcluster",serviceDescription.getVirtualClusterName());
+
+        String domainName = System.getProperty(Constants.DOMAIN_NAME_SYSTEM_PROPERTY);
+        if(domainName != null){
+           parameterMap.add("domainname",domainName);
+        }
+        parameterMap.add("DEFAULT", serviceName);
+        invocation.parameters(parameterMap).execute();
+
+        if(report.getActionExitCode().equals(ActionReport.ExitCode.FAILURE)){
+            LBPluginLogger.getLogger().log(Level.INFO,"_create-lb-service [" + serviceName + "] failed");
         }
 
-        
-        params = new ArrayList<String>();
+        Properties serviceProperties = report.getExtraProperties();
+
+        parameterMap = new ParameterMap();
         if (serviceDescription.getAppName() != null) {
-            params.add("--appname");
-            params.add(serviceDescription.getAppName());
+            parameterMap.add("appname", serviceDescription.getAppName());
         }
-        params.add("--virtualcluster");
-        params.add(serviceDescription.getVirtualClusterName());
-        params.add(serviceName);
-        parameters = new String[params.size()];
-        parameters = params.toArray(parameters);
+        parameterMap.add("virtualcluster", serviceDescription.getVirtualClusterName());
+        parameterMap.add("_vmid", serviceProperties.getProperty("vm-id"));
+        parameterMap.add("DEFAULT", serviceName);
 
-        result = commandRunner.run("_start-lb-service", parameters);
-        if (result.getExitStatus().equals(CommandResult.ExitStatus.FAILURE)) {
-            LBPluginLogger.getLogger().log(Level.INFO,"_start-lb-service [" + serviceName + "] failed");
+        report = habitat.getComponent(ActionReport.class);
+        invocation = commandRunner.getCommandInvocation("_start-lb-service", report);
+        invocation.parameters(parameterMap).execute();
+
+        if(report.getActionExitCode().equals(ActionReport.ExitCode.FAILURE)){
+            LBPluginLogger.getLogger().log(Level.WARNING,"_start-lb-service [" + serviceName + "] failed", report.getFailureCause());
         }
 
-        GlassFishLBProvisionedService ps = new GlassFishLBProvisionedService(serviceDescription, new Properties());
-        ps.setStatus(ServiceStatus.STARTED);
-        return (ProvisionedService) ps;
+        GlassFishLBProvisionedService ps = new GlassFishLBProvisionedService(serviceDescription, serviceProperties);
+        ps.setStatus(ServiceStatus.RUNNING);
+        return ps;
     }
 
     @Override
     public ProvisionedService getProvisionedService(ServiceDescription serviceDescription, ServiceInfo serviceInfo) {
-        ServiceInfo entry = lbServiceUtil.retrieveCloudEntry(serviceDescription.getName(), serviceDescription.getAppName(), ServiceType.LB);
+        //ServiceInfo entry = lbServiceUtil.retrieveCloudEntry(serviceDescription.getName(), serviceDescription.getAppName(), ServiceType.LB);
         GlassFishLBProvisionedService ps = new GlassFishLBProvisionedService(serviceDescription, new Properties());
-        ps.setStatus(lbServiceUtil.getServiceStatus(entry));
+        ps.setStatus(lbServiceUtil.getServiceStatus(serviceInfo));
         return (ProvisionedService) ps;
     }
    
@@ -304,7 +307,7 @@ public class LBPlugin implements ServicePlugin {
         params.add(serviceName);
         parameters = new String[params.size()];
         parameters = params.toArray(parameters);
-        CommandResult result = commandRunner.run("_associate-lb-service", parameters);
+        CommandResult result = embeddedCommandRunner.run("_associate-lb-service", parameters);
         if (result.getExitStatus().equals(CommandResult.ExitStatus.FAILURE)) {
             LBPluginLogger.getLogger().log(Level.INFO, "_associate-lb-service [" + serviceName + "] failed");
         }
@@ -329,17 +332,18 @@ public class LBPlugin implements ServicePlugin {
         String[] parameters = new String[params.size()];
         parameters = (String[]) params.toArray(parameters);
 
-        CommandResult result = commandRunner.run("_start-lb-service", parameters);
+        CommandResult result = embeddedCommandRunner.run("_start-lb-service", parameters);
         if (result.getExitStatus().equals(CommandResult.ExitStatus.FAILURE)) {
             LBPluginLogger.getLogger().log(Level.INFO,"_start-lb-service [" + serviceName + "] failed");
         }
 
         GlassFishLBProvisionedService ps = new GlassFishLBProvisionedService(serviceDescription, new Properties());
-        ps.setStatus(ServiceStatus.STARTED);
+        ps.setStatus(ServiceStatus.RUNNING);
         return ps;
     }
 
-    public boolean stopService(ServiceDescription serviceDescription, ServiceInfo serviceInfo) {
+    public boolean stopService(ProvisionedService ps, ServiceInfo serviceInfo) {
+        ServiceDescription serviceDescription = ps.getServiceDescription();
         String serviceName = serviceDescription.getName();
         ArrayList params = new ArrayList<String>();
 
@@ -354,11 +358,12 @@ public class LBPlugin implements ServicePlugin {
         String[] parameters = new String[params.size()];
         parameters = (String[]) params.toArray(parameters);
 
-        CommandResult result = commandRunner.run("_stop-lb-service", parameters);
+        CommandResult result = embeddedCommandRunner.run("_stop-lb-service", parameters);
         if (result.getExitStatus().equals(CommandResult.ExitStatus.FAILURE)) {
             LBPluginLogger.getLogger().log(Level.INFO,"_stop-lb-service [" + serviceName + "] failed");
         }
 
+        ps.setStatus(ServiceStatus.STOPPED);
         return true;
     }
 
@@ -421,7 +426,7 @@ public class LBPlugin implements ServicePlugin {
         String[] parameters = new String[params.size()];
         parameters = (String[]) params.toArray(parameters);
 
-        CommandResult result = commandRunner.run("_stop-lb-service", parameters);
+        CommandResult result = embeddedCommandRunner.run("_stop-lb-service", parameters);
         if (result.getExitStatus().equals(CommandResult.ExitStatus.FAILURE)) {
             LBPluginLogger.getLogger().log(Level.INFO,"_stop-lb-service [" + serviceName + "] failed");
         }
@@ -437,7 +442,7 @@ public class LBPlugin implements ServicePlugin {
         parameters = new String[params.size()];
         parameters = (String[]) params.toArray(parameters);
 
-        result = commandRunner.run("_delete-lb-service", parameters);
+        result = embeddedCommandRunner.run("_delete-lb-service", parameters);
         if (result.getExitStatus().equals(CommandResult.ExitStatus.FAILURE)) {
             LBPluginLogger.getLogger().log(Level.INFO,"_delete-lb-service [" + serviceName + "] failed");
             return false;
@@ -481,7 +486,7 @@ public class LBPlugin implements ServicePlugin {
         params.add(serviceName);
         parameters = new String[params.size()];
         parameters = params.toArray(parameters);
-        CommandResult result = commandRunner.run("_dissociate-lb-service", parameters);
+        CommandResult result = embeddedCommandRunner.run("_dissociate-lb-service", parameters);
         if (result.getExitStatus().equals(CommandResult.ExitStatus.FAILURE)) {
             LBPluginLogger.getLogger().log(Level.INFO, "_dissociate-lb-service [" + serviceName + "] failed");
         }
@@ -503,7 +508,7 @@ public class LBPlugin implements ServicePlugin {
     }
 
     @Override
-    public ProvisionedService scaleService(ServiceDescription serviceDesc,
+    public ProvisionedService scaleService(ProvisionedService provisionedService,
             int scaleCount, AllocationStrategy allocStrategy) {
         //no-op
         throw new UnsupportedOperationException("Scaling of LB Service " +

@@ -49,9 +49,9 @@ import org.glassfish.api.admin.CommandLock;
 import org.glassfish.paas.lbplugin.LBServiceUtil;
 import org.glassfish.paas.orchestrator.provisioning.ServiceInfo;
 
-import static org.glassfish.paas.orchestrator.provisioning.ServiceInfo.State.*;
 import static org.glassfish.paas.orchestrator.provisioning.cli.ServiceType.*;
 
+import org.glassfish.paas.orchestrator.service.ServiceStatus;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
@@ -86,19 +86,19 @@ public class StopLBService extends BaseLBService implements AdminCommand {
             ServiceInfo entry = lbServiceUtil.retrieveCloudEntry(serviceName, appName, LB);
             String ipAddress = entry.getIpAddress();
             String status = entry.getState();
-            if (status == null || status.equalsIgnoreCase(Stop_in_progress.toString())
-                    || status.equalsIgnoreCase(NotRunning.toString())) {
+            if (status == null || status.equalsIgnoreCase(ServiceStatus.STOP_IN_PROGRESS.toString())
+                    || status.equalsIgnoreCase(ServiceStatus.NOT_RUNNING.toString())) {
                 report.setMessage("Invalid lb-service [" + serviceName + "] state [" + status + "]");
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                 return;
             }
 
-            lbServiceUtil.updateState(serviceName, appName, Stop_in_progress.toString(), LB);
+            lbServiceUtil.updateState(serviceName, appName, ServiceStatus.STOP_IN_PROGRESS.toString(), LB);
 
             try {
                 retrieveVirtualMachine();
                 LBProvisionerFactory.getInstance().getLBProvisioner().stopLB(virtualMachine);
-                lbServiceUtil.updateState(serviceName, appName, NotRunning.toString(), LB);
+                lbServiceUtil.updateState(serviceName, appName, ServiceStatus.NOT_RUNNING.toString(), LB);
                 if(stopVM){
                     vmlifecycle.stop(virtualMachine);
                 }
@@ -106,7 +106,7 @@ public class StopLBService extends BaseLBService implements AdminCommand {
                 report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
             } catch (Exception ex) {
                 LBPluginLogger.getLogger().log(Level.INFO,"exception",ex);
-                lbServiceUtil.updateState(serviceName, appName, ServiceInfo.State.NotRunning.toString(), LB);
+                lbServiceUtil.updateState(serviceName, appName, ServiceStatus.NOT_RUNNING.toString(), LB);
                 report.setMessage("lb-service [" + serviceName + "] stop failed");
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             }

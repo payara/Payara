@@ -46,6 +46,7 @@ import org.glassfish.paas.orchestrator.provisioning.ServiceInfo;
 import org.glassfish.paas.orchestrator.provisioning.ServiceScope;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceDescription;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceMetadata;
+import org.glassfish.paas.orchestrator.service.spi.ProvisionedService;
 import org.glassfish.paas.orchestrator.service.spi.ServicePlugin;
 import org.jvnet.hk2.annotations.Service;
 
@@ -98,7 +99,15 @@ public class DisableState extends AbstractPaaSDeploymentState {
         ServicePlugin chosenPlugin = sd.getPlugin();
         ServiceInfo serviceInfo = serviceUtil.getServiceInfo(sd.getName(), appName, null);
         if(serviceInfo != null){
-            chosenPlugin.stopService(sd, serviceInfo);
+            ProvisionedService ps = orchestrator.getProvisionedService(sd, appName);
+            chosenPlugin.stopService(ps, serviceInfo);
+            serviceUtil.updateState(ps.getName(), appName, ps.getStatus().toString(),  null);
+            if(ps.getChildServices() != null){
+                for(org.glassfish.paas.orchestrator.service.spi.Service serviceNode : ps.getChildServices()){
+                    ProvisionedService provisionedService = (ProvisionedService)serviceNode;
+                    serviceUtil.updateState(provisionedService.getName(), appName, provisionedService.getStatus().toString(), null);
+                }
+            }
             return true;
         }else{
             Object[] args=new Object[]{sd.getName(),appName};

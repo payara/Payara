@@ -40,10 +40,10 @@
 
 package org.glassfish.paas.orchestrator.provisioning;
 
-import org.jvnet.hk2.config.types.Property;
-
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * A subset of a <code>ProvisionedService</code> that is persisted in CPAS'
@@ -63,16 +63,11 @@ public class ServiceInfo {
     private String appName;
 
     // general name-values.
-    Map<String,String> properties = new HashMap<String, String>();
+    private Map<String,String> properties = new HashMap<String, String>();
 
-    public static enum State {
-        Initializing, NotRunning, Running, Stop_in_progress, Start_in_progress, Delete_in_progress
-    }
+    private Set<ServiceInfo> childServices = new LinkedHashSet<ServiceInfo>();
 
-    //TODO should not be in Orchestrator ?
-    public static enum Type {
-        Domain, Cluster, StandAloneInstance, ClusterInstance
-    }
+    private ServiceInfo parentService;
 
     public String getServiceName() {
         return serviceName;
@@ -133,6 +128,24 @@ public class ServiceInfo {
     public Map<String,String> getProperties() {
         return properties;
     }
+
+    public Set<ServiceInfo> getChildServices(){
+        return childServices;
+    }
+
+    public void addChildService(ServiceInfo serviceInfo){
+        childServices.add(serviceInfo);
+    }
+
+    public ServiceInfo getParentService(){
+        return parentService;
+    }
+
+    public void setParentService(ServiceInfo serviceInfo){
+        this.parentService = serviceInfo;
+    }
+
+    //TODO need equals and hashcode implementation.
     
     @Override
     public String toString() {

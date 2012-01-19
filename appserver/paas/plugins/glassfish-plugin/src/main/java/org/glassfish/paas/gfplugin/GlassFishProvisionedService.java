@@ -67,11 +67,13 @@ public class GlassFishProvisionedService extends BasicProvisionedService {
         this.provisionedGlassFish = provisionedGlassFish;
     }
 
+/*
     @Override
     public ServiceStatus getStatus() {
         // TODO :: make sure the cluster is running.
         return ServiceStatus.RUNNING;
     }
+*/
 
     public GlassFish getProvisionedGlassFish() {
         return provisionedGlassFish;
