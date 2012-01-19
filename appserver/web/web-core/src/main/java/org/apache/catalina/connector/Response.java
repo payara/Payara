@@ -1699,22 +1699,28 @@ public class Response
 
         boolean leadingSlash = location.startsWith("/");
 
-        if (leadingSlash || (location.indexOf("://") == -1)) {
+        if (location.startsWith("//")) {
+            // Scheme relative, network-path reference in RFC 3986
+            redirectURLCC.recycle();
+            // Add the scheme
+            String scheme = getRedirectScheme();
+            try {
+                redirectURLCC.append(scheme, 0, scheme.length());
+                redirectURLCC.append(':');
+                redirectURLCC.append(location, 0, location.length());
+                return redirectURLCC.toString();
+            } catch (IOException e) {
+                IllegalArgumentException iae =
+                    new IllegalArgumentException(location);
+                iae.initCause(e);
+                throw iae;
+            }
+
+        } else if (leadingSlash || (location.indexOf("://") == -1)) {
 
             redirectURLCC.recycle();
 
-            String scheme = request.getScheme();
-
-            // START S1AS 6170450
-            if (getConnector() != null
-                    && getConnector().getAuthPassthroughEnabled()) {
-                ProxyHandler proxyHandler = getConnector().getProxyHandler();
-                if (proxyHandler != null
-                        && proxyHandler.getSSLKeysize(request) > 0) {
-                    scheme = "https";
-                }
-            }
-            // END S1AS 6170450
+            String scheme = getRedirectScheme();
 
             String name = request.getServerName();
             int port = request.getServerPort();
@@ -1774,6 +1780,27 @@ public class Response
 
         }
 
+    }
+
+
+    /**
+     * Returns the scheme for a redirect if it is not specified.
+     */
+    private String getRedirectScheme() {
+        String scheme = request.getScheme();
+
+        // START S1AS 6170450
+        if (getConnector() != null
+                && getConnector().getAuthPassthroughEnabled()) {
+            ProxyHandler proxyHandler = getConnector().getProxyHandler();
+            if (proxyHandler != null
+                    && proxyHandler.getSSLKeysize(request) > 0) {
+                scheme = "https";
+            }
+        }
+        // END S1AS 6170450
+
+        return scheme;
     }
 
 
