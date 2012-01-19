@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright (c) 2010-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2012 Oracle and/or its affiliates. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -45,7 +45,7 @@ import com.sun.enterprise.config.serverbeans.SecureAdmin;
 import com.sun.logging.LogDomains;
 import java.beans.PropertyChangeEvent;
 import java.util.logging.Logger;
-import org.glassfish.internal.api.PostStartup;
+import org.glassfish.internal.api.PostStartupRunLevel;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
@@ -66,7 +66,8 @@ import org.jvnet.hk2.config.UnprocessedChangeEvents;
  */
 @Service
 @Scoped(Singleton.class)
-public class SecureAdminConfigMonitor implements ConfigListener, PostStartup {
+@PostStartupRunLevel
+public class SecureAdminConfigMonitor implements ConfigListener {
 
     private static final String restartRequiredMsg = Strings.get("secure.admin.change.requires.restart");
 

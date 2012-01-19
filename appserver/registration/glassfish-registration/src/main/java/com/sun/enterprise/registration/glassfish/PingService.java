@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2006-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,6 +41,7 @@
 package com.sun.enterprise.registration.glassfish;
 
 import java.util.logging.Level;
+
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.component.PostConstruct;
@@ -53,14 +54,14 @@ import com.sun.enterprise.registration.RegistrationException;
 
 import com.sun.pkg.client.Image;
 import com.sun.pkg.client.SystemInfo;
-import org.glassfish.internal.api.PostStartup;
+import org.glassfish.internal.api.PostStartupRunLevel;
 
 import com.sun.appserv.server.util.Version;
-import com.sun.enterprise.module.ModulesRegistry;
 
 
 @Service(name = "PingService")
-public class PingService implements PostStartup, PostConstruct {
+@PostStartupRunLevel
+public class PingService implements PostConstruct {
 
     @Inject
     Logger logger;

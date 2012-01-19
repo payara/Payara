@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -47,9 +47,7 @@ import org.jvnet.hk2.component.ComponentException;
 
 import javax.management.MBeanServer;
 
-import org.glassfish.api.Startup;
-import org.glassfish.api.Async;
-import org.glassfish.internal.api.*;
+import org.glassfish.internal.api.PostStartupRunLevel;
 
 /**
     Factory for the MBeanServer.  Required so that HK2 can find an MBeanServer
@@ -57,7 +55,8 @@ import org.glassfish.internal.api.*;
  */
 @Service
 @FactoryFor(MBeanServer.class)
-public final class MBeanServerFactory implements Factory, PostStartup {
+@PostStartupRunLevel
+public final class MBeanServerFactory implements Factory {
     private static void debug( final String s ) { System.out.println(s); }
     
     private final MBeanServer     mMBeanServer;

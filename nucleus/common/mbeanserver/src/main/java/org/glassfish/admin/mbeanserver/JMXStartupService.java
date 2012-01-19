@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -50,9 +50,6 @@ import org.jvnet.hk2.annotations.Service;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 
-import org.glassfish.api.Startup;
-import org.glassfish.api.Async;
-
 import org.glassfish.external.amx.BootAMXMBean;
 
 import org.jvnet.hk2.component.PostConstruct;
@@ -82,14 +79,15 @@ import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.EventTypes;
 import org.glassfish.api.event.Events;
-import org.glassfish.internal.api.*;
+import org.glassfish.internal.api.PostStartupRunLevel;
 
 /**
  * Responsible for creating the {@link BootAMXMBean}, and starting JMXConnectors,
  * which will initialize (boot) AMX when a connection arrives.
  */
 @Service
-public final class JMXStartupService implements PostStartup, PostConstruct {
+@PostStartupRunLevel
+public final class JMXStartupService implements PostConstruct {
 
     private static void debug(final String s) {
         System.out.println("### " + s);
