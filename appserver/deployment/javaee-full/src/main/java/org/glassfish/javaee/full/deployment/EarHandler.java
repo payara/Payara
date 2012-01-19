@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -292,8 +292,8 @@ public class EarHandler extends AbstractArchiveHandler implements CompositeHandl
             getApplicationHolder(archive, context, true);
 
         // the ear classloader hierachy will be 
-        // ear lib classloader -> embedded rar classloader -> 
-        // ear classloader -> various module classloaders
+        // ear lib classloader <- embedded rar classloader <- 
+        // ear classloader <- various module classloaders
         final DelegatingClassLoader embeddedConnCl;
         final EarClassLoader cl;
         // add the libraries packaged in the application library directory
