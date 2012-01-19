@@ -192,13 +192,13 @@ public class LBPlugin implements ServicePlugin {
         String serviceName = serviceDescription.getName();
         LBPluginLogger.getLogger().log(Level.INFO,"Given serviceName : " + serviceName);
         logger.entering(getClass().getName(), "provisionService");
-        ArrayList<String> params;
-        String[] parameters;
+        //ArrayList<String> params;
+        //String[] parameters;
 
         //CommandResult result;// = commandRunner.run("_list-lb-services");
         //if (!result.getOutput().contains(serviceName)) {
             //_create-lb-service
-            params = new ArrayList<String>();
+            //params = new ArrayList<String>();
             //params.add("--_ignore_appserver_association");
             //params.add("true");
 
