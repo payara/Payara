@@ -178,10 +178,19 @@ public class ExportHttpLbConfig implements AdminCommand {
             lbConfigFile = new File(loadbalancerDir, fileName);
         }
 
-        if (type!=null && type.equals("apache")) {
+        if (type !=null){
+            if(!(type.equals("otd") || type.equals("apache"))){
+                String msg = LbLogUtil.getStringManager().getString(
+                        "InvalidType");
+                throw new Exception(msg);
+            }
             File tmpLbWorkerFile = null;
             if (retrieveFile) {
-                tmpLbWorkerFile = File.createTempFile("worker", ".properties");
+                if (type.equals("apache")) {
+                    tmpLbWorkerFile = File.createTempFile("worker", ".properties");
+                } else {
+                    tmpLbWorkerFile = File.createTempFile("otd", ".properties");
+                }
                 tmpLbWorkerFile.deleteOnExit();
             } else {
                 if (lbConfigFile.exists()) {
@@ -202,7 +211,11 @@ public class ExportHttpLbConfig implements AdminCommand {
 
             try {
                 fo = new FileOutputStream(tmpLbWorkerFile);
-                LbConfigHelper.exportWorkerProperties(lbr, fo);
+                if (type.equals("apache")) {
+                    LbConfigHelper.exportWorkerProperties(lbr, fo);
+                } else {
+                    LbConfigHelper.exportOtdProperties(lbr, fo);
+                }
                 if (retrieveFile) {
                     retrieveLbConfig(context, lbConfigFile, tmpLbWorkerFile);
                 }

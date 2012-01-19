@@ -44,7 +44,6 @@ import java.io.OutputStream;
 import java.util.Date;
 import java.util.Properties;
 import java.util.StringTokenizer;
-import java.util.Vector;
 
 import org.glassfish.loadbalancer.admin.cli.reader.api.ClusterReader;
 import org.glassfish.loadbalancer.admin.cli.reader.api.InstanceReader;
@@ -63,7 +62,6 @@ import org.glassfish.internal.data.ApplicationRegistry;
 import org.glassfish.loadbalancer.admin.cli.LbLogUtil;
 import org.glassfish.loadbalancer.admin.cli.beans.Loadbalancer;
 
-import javax.print.DocFlavor;
 
 /**
  * Export support class
@@ -176,7 +174,7 @@ public class LbConfigHelper {
         ClusterReader clusterReaders[] = lbRdr.getClusters();
 
         int c;
-        buffer.append("worker.properties\n");
+        buffer.append("worker.properties");
 
         for(int i=0;i<clusterReaders.length;i++) {
             String clusterWorkerList = "";
@@ -216,8 +214,8 @@ public class LbConfigHelper {
             props.setProperty(WORKER+SEPARATOR+clusterName+LOADBALANCER + SEPARATOR+BALANCER_WORKERS,clusterWorkerList.substring(0,clusterWorkerList.length()-1));
 
             for (int m=0; m<webmoduleReaders.length;m++) {
-               buffer.append(CONTEXT_ROOT_MAPPING+SEPARATOR+webmoduleReaders[m].getContextRoot()
-                       +"="+clusterName+LOADBALANCER+"\n");
+               buffer.append("\n" + CONTEXT_ROOT_MAPPING+SEPARATOR+webmoduleReaders[m].getContextRoot()
+                       +"="+clusterName+LOADBALANCER);
             }
 
         }
@@ -233,6 +231,82 @@ public class LbConfigHelper {
             }
         }
     }
+
+
+   /**
+     * exports the otd.properties from the config to the outputstream provided
+     * @param ctx ConfigContext
+     * @param lbConfigName name of lb-config
+     */
+    public static void exportOtdProperties(LoadbalancerReader lbRdr, OutputStream out)
+            throws Exception {
+
+        // tranform the data using visitor pattern
+        Loadbalancer _lb = new Loadbalancer();
+
+        Properties props = new Properties();
+
+        String CLUSTER = "cluster";
+        String LISTENER = "listeners";
+        String WEB = "web-modules";
+        String SEPARATOR = ".";
+        StringBuffer buffer = new StringBuffer();
+
+
+        LoadbalancerVisitor lbVstr = new LoadbalancerVisitor(_lb);
+        lbRdr.accept(lbVstr);
+
+        ClusterReader clusterReaders[] = lbRdr.getClusters();
+
+
+        buffer.append("otd.properties");
+
+        for(int i=0;i<clusterReaders.length;i++) {
+            String clusterHostList = "";
+            String clusterWebList = "";
+            ClusterReader clusterReader = clusterReaders[i];
+            String clusterName = clusterReader.getName();
+            WebModuleReader webmoduleReaders[] = clusterReader.getWebModules();
+            InstanceReader instanceReaders[] = clusterReader.getInstances();
+
+            for(int j =0; j<instanceReaders.length;j++) {
+                InstanceReader instanceReader = instanceReaders[j];
+                String listenerHost = "";
+                String listenerPort = "";
+                StringTokenizer st = new StringTokenizer(instanceReader.getListeners(), " ");
+                while (st.hasMoreElements()) {
+                    String listener = st.nextToken();
+                    if (listener.contains("http://")) {
+                        listenerHost = listener.substring(listener.lastIndexOf("/") + 1, listener.lastIndexOf(":"));
+                        listenerPort = listener.substring(listener.lastIndexOf(":") + 1, listener.length());
+                        break;
+                    }
+                }
+                clusterHostList = clusterHostList + (j > 0 ? "," : "") + listenerHost + ":" + listenerPort;
+            }
+
+            props.setProperty(CLUSTER+SEPARATOR+clusterName+SEPARATOR+LISTENER,clusterHostList);
+
+
+            for (int m=0; m<webmoduleReaders.length;m++) {
+               clusterWebList = clusterWebList + (m > 0 ? "," : "") + webmoduleReaders[m].getContextRoot();
+            }
+
+            props.setProperty(CLUSTER+SEPARATOR+clusterName+SEPARATOR+WEB,clusterWebList);
+        }
+
+        try {
+
+        props.store(out,buffer.toString());
+
+        } finally {
+            if (out != null) {
+                out.close();
+                out = null;
+            }
+        }
+    }
+
     private static final String PUBLICID =
             "-//Sun Microsystems Inc.//DTD Sun Java System Application Server 9.1//EN";
     private static final String SYSTEMID = "glassfish-loadbalancer_1_3.dtd";
