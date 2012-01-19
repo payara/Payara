@@ -103,7 +103,9 @@ public class ServerRemoteAdminCommand extends RemoteAdminCommand {
             final String certAlias = SecureAdmin.Util.isUsingUsernamePasswordAuth(secureAdmin) ?
                     null : getCertAlias();
             return new HttpConnectorAddress(host, port,
-                    sslUtils().getAdminSocketFactory(certAlias, SSL_SOCKET_PROTOCOL));
+                    certAlias == null 
+                        ? null 
+                        : sslUtils().getAdminSocketFactory(certAlias, SSL_SOCKET_PROTOCOL));
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
