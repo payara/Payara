@@ -47,7 +47,7 @@ import com.sun.enterprise.deployment.*;
 import com.sun.enterprise.deployment.archivist.ApplicationFactory;
 import org.glassfish.api.deployment.ApplicationContainer;
 import org.glassfish.api.deployment.archive.ReadableArchive;
-import org.glassfish.deployment.common.DeploymentUtils;
+import org.glassfish.javaee.core.deployment.JavaEEDeploymentUtils;
 import org.glassfish.deployment.common.Descriptor;
 import org.glassfish.embeddable.CommandResult;
 import org.glassfish.embeddable.CommandRunner;
@@ -140,7 +140,7 @@ public class MQServicePlugin extends ServiceProvisioningEngineBase<MQServiceType
             MQServicePluginLogger.getLogger().log(Level.INFO, "exception", ex);
         }
 
-        if (!DeploymentUtils.isJavaEE(cloudArchive, habitat)) {
+        if (!JavaEEDeploymentUtils.isJavaEE(cloudArchive, habitat)) {
             return serviceReferences;
         }
 
@@ -174,7 +174,7 @@ public class MQServicePlugin extends ServiceProvisioningEngineBase<MQServiceType
     public Set<ServiceDescription> getImplicitServiceDescriptions(ReadableArchive cloudArchive, String appName) {
         HashSet<ServiceDescription> implicitServiceDescriptions = new HashSet<ServiceDescription>();
 
-        if (!DeploymentUtils.isJavaEE(cloudArchive, habitat)) {
+        if (!JavaEEDeploymentUtils.isJavaEE(cloudArchive, habitat)) {
             return implicitServiceDescriptions;
         }
         Set<ServiceReference> serviceReferences = discoverServiceReferences(cloudArchive, appName);

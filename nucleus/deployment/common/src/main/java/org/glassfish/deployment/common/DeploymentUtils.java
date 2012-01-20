@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -205,21 +205,6 @@ public class DeploymentUtils {
         }
     }
 
-    /**
-     * check whether the archive is a JavaEE archive
-     * @param archive archive to be tested
-     * @param habitat
-     * @return whether the archive is a JavaEE archive
-     */
-    public static boolean isJavaEE(ReadableArchive archive, Habitat habitat) {
-        if (isEAR(archive) || isWebArchive(archive) || isCAR(archive) ||
-            isRAR(archive, habitat) || isEjbJar(archive, habitat)) {
-            return true;
-        }
-        return false;
-    }
-
-    
     // checking whether the archive is a web archive
     public static boolean isWebArchive(ReadableArchive archive) {
         try {

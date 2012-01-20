@@ -52,7 +52,7 @@ import org.glassfish.api.deployment.DeployCommandParameters;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.api.deployment.archive.WritableArchive;
-import org.glassfish.deployment.common.DeploymentUtils;
+import org.glassfish.javaee.core.deployment.JavaEEDeploymentUtils;
 import org.glassfish.embeddable.CommandRunner;
 import org.glassfish.embeddable.GlassFish;
 import org.glassfish.javaee.core.deployment.ApplicationHolder;
@@ -129,7 +129,7 @@ public class GlassFishPlugin extends ServiceProvisioningEngineBase<JavaEEService
     }
 
     public boolean handles(ReadableArchive cloudArchive) {
-        return DeploymentUtils.isJavaEE(cloudArchive, habitat);
+        return JavaEEDeploymentUtils.isJavaEE(cloudArchive, habitat);
     }
 
     public boolean handles(ServiceDescription serviceDescription) {
@@ -665,7 +665,7 @@ public class GlassFishPlugin extends ServiceProvisioningEngineBase<JavaEEService
             ReadableArchive readableArchive, String appName) {
         HashSet<ServiceDescription> defs = new HashSet<ServiceDescription>();
 
-        if (DeploymentUtils.isJavaEE(readableArchive, habitat)) {
+        if (JavaEEDeploymentUtils.isJavaEE(readableArchive, habitat)) {
             ServiceDescription sd = generateDefaultServiceDescription(appName);
             defs.add(sd);
         }
