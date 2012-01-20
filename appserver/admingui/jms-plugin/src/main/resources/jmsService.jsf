@@ -2,7 +2,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -195,10 +195,10 @@
                                     />
                                 </sun:dropDown>
                             </sun:property>
-                            <sun:property id="behaviorProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18njms.jms.Behavior}" helpText="$resource{i18njms.jms.BehaviorHelp}">
+                            <sun:property id="behaviorProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18njms.jms.AddressListBehavior}" helpText="$resource{i18njms.jms.BehaviorHelp}">
                                 <sun:dropDown id="Behavior" selected="#{pageSession.valueMap['addresslistBehavior']}" labels={"random" "priority"} />
                             </sun:property>
-                            <sun:property id="iterationsProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18njms.jms.Iterations}" helpText="$resource{i18njms.jms.IterationsHelp}">
+                            <sun:property id="iterationsProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18njms.jms.AddressListIterations}" helpText="$resource{i18njms.jms.IterationsHelp}">
                                 <sun:textField id="Iterations" styleClass="intAllowMinusOne" columns="$int{10}" maxLength="#{sessionScope.fieldLengths['maxLength.jms.Iterations']}" text="#{pageSession.valueMap['addresslistIterations']}" />
                             </sun:property>
                             <sun:property id="schemeProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18njms.jms.Scheme}" helpText="$resource{i18njms.jms.SchemeHelp}">

@@ -2,7 +2,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -57,7 +57,7 @@
     getRequestValue(key="logFile" value=>$attribute{reqLogFile});
     getRequestValue(key="timestamp" value=>$attribute{timestamp});
     getRequestValue(key="onlyLevel" value=>$attribute{reqOnlyLevel});
-    getRequestValue(key="loglevel" value=>$attribute{reqLogLevel});
+    getRequestValue(key="loglevel" value=>$attribute{reqLogLevel}, default="INFO" );
     getRequestValue(key="logger" value=>$attribute{reqCustomLogger});
     if($attribute{reqLogFile}) {
 	setAttribute(key="logFile" value="$attribute{reqLogFile}" );
@@ -300,9 +300,7 @@
 
 	    </sun:property>
 	    <sun:property id="logLevelProp" labelAlign="left" noWrap="true" overlapLabel="false" label="$resource{i18nc.logViewer.levelLabel}" helpText="$resource{i18nc.logViewer.levelLabelHelp}">
-		<sun:dropDown id="logLevel" selected="#{logLevel}" labels={"$resource{i18nc.logging.Default}" "$resource{i18nc.logging.Finest}" "$resource{i18nc.logging.Finer}" "$resource{i18nc.logging.Fine}" "$resource{i18nc.logging.Config}" "$resource{i18nc.logging.Info}" "$resource{i18nc.logging.Warning}" "$resource{i18nc.logging.Severe}"}
-			values={"INFO" "FINEST" "FINE" "FINER" "CONFIG" "INFO" "WARNING" "SEVERE"} >
-		</sun:dropDown>
+		<sun:dropDown id="logLevel" selected="#{logLevel}" labels={"INFO" "FINEST" "FINE" "FINER" "CONFIG" "INFO" "WARNING" "SEVERE"} />
 		<sun:checkbox label="$resource{i18nc.logViewer.noSevereMessages}" selected="#{requestScope.onlyLevel}" selectedValue="true" />
 	    </sun:property>
 	   "<br /><br />

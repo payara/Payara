@@ -2,7 +2,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 2011-2012 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -51,7 +51,7 @@
 <sun:form id="propertyForm">
 #include "/common/shared/alertMsg.inc"
     <sun:title id="propertyContentPage" title="$resource{i18n.commonTasks.group.Monitoring}"
-               helpText="$resource{i18n.monitoringInfo.pageHelp}" />
+               helpText="$resource{common.monitoringInfo.pageHelp}" />
     "<br />
 #include "/common/shared/monitorHandlers.inc"
     <sun:table id="monitorInstancesTable" title="$resource{i18n.commonTasks.group.Monitoring}">
