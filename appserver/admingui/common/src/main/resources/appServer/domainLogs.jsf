@@ -129,6 +129,7 @@
 		    </sun:propertySheetSection>
 		
 		</sun:propertySheet>
+    <sun:hidden id="helpKey" value="$resource{help_common.serverInstDomainLogs}" />
     </sun:form>
     <f:verbatim>
         <script type="text/javascript">
