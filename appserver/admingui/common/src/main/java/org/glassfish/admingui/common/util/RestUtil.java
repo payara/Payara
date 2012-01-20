@@ -222,6 +222,9 @@ public class RestUtil {
 
     public static Map maskOffPassword(Map<String, Object> attrs){
         Map masked = new HashMap();
+        if (attrs == null){
+            return masked;
+        }
 
         for(String key : attrs.keySet()){
             if (pswdAttrList.contains(key.toLowerCase())){
@@ -305,11 +308,15 @@ public class RestUtil {
         return (message==null)? "" : message;
     }
 
-    public static Map<String, Object> parseResponse(RestResponse response, HandlerContext handlerCtx, String endpoint, Object attrs, boolean quiet, boolean throwException) {
+    public static Map<String, Object> parseResponse(RestResponse response, HandlerContext handlerCtx, String endpoint,
+            Object attrs, boolean quiet, boolean throwException) {
         // Parse the response
         String message = "";
         ExitCode exitCode = ExitCode.FAILURE;
-        Map maskedAttr = maskOffPassword((Map<String, Object>)attrs);
+        Object maskedAttr = attrs;
+        if ((attrs != null) && (attrs instanceof Map)) {
+            maskedAttr = maskOffPassword((Map<String, Object>)attrs);
+        }
         if (response != null) {
             try {
                 int status = response.getResponseCode();
@@ -393,7 +400,7 @@ public class RestUtil {
                     //If this is called from the jsf as handler, we want to stop processing and show error
                     //instead of dumping the exception on screen.
                     if (throwException) {
-                        if ("".equals(message)) {
+                        if ("".equals(message) || message == null ) {
                             GuiUtil.handleException(handlerCtx, ex);
                         } else {
                             GuiUtil.handleError(handlerCtx, message);
@@ -401,7 +408,7 @@ public class RestUtil {
                     }
                 } else {
                     //if this is called by other java handler, we tell the called handle the exception.
-                    if ("".equals(message)) {
+                    if ("".equals(message) || message == null ) {
                         throw new RuntimeException(ex);
                     }else{
                         throw new RuntimeException(message, ex);
