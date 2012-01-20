@@ -120,7 +120,7 @@
                     gf.redirect(page="serverRecoverTransactions.jsf?instanceName=#{pageSession.instanceName}");
                 />
                 </sun:button>
-                <sun:button id="secureAdmin" text="$resource{i18n.button.secureAdmin}" primary="#{false}">
+                <sun:button id="secureAdmin" text="$resource{i18nc.button.secureAdmin}" primary="#{false}">
                 <!command
                     setSessionAttribute(key="secureCancelUrl" value="#{facesContext.externalContext.requestContextPath}/common/appServer/serverInstGeneralPe.jsf")
                     gf.redirect(page="securityAdmin.jsf");

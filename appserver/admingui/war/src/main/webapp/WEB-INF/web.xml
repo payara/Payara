@@ -93,10 +93,6 @@
         <load-on-startup>1</load-on-startup>
     </servlet>
     <servlet>
-        <servlet-name>jMaki XmlHttpProxy Servlet</servlet-name>
-        <servlet-class>jmaki.xhp.XmlHttpProxyServlet</servlet-class>
-    </servlet>
-    <servlet>
         <servlet-name>ThemeServlet</servlet-name>
         <servlet-class>com.sun.webui.theme.ThemeServlet</servlet-class>
         <load-on-startup>2</load-on-startup>
@@ -124,10 +120,6 @@
     <servlet-mapping>
         <servlet-name>FacesServlet</servlet-name>
         <url-pattern>/resource/*</url-pattern>
-    </servlet-mapping>
-    <servlet-mapping>
-        <servlet-name>jMaki XmlHttpProxy Servlet</servlet-name>
-        <url-pattern>/xhp</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
         <servlet-name>FacesServlet</servlet-name>
