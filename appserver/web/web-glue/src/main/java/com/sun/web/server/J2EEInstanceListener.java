@@ -55,7 +55,10 @@ import org.apache.catalina.servlets.DefaultServlet;
 import org.apache.jasper.servlet.JspServlet;
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.api.invocation.InvocationManager;
+import org.glassfish.hk2.Services;
 import org.glassfish.internal.api.ServerContext;
+import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.Inhabitant;
 
 import javax.servlet.Servlet;
 import javax.servlet.ServletRequest;
@@ -63,7 +66,7 @@ import javax.servlet.ServletRequestWrapper;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.transaction.Transaction;
+import javax.transaction.TransactionManager;
 import java.security.*;
 import java.text.MessageFormat;
 import java.util.ResourceBundle;
@@ -123,12 +126,10 @@ public final class J2EEInstanceListener implements InstanceListener {
             msg = MessageFormat.format(msg, wm.getName());
             throw new IllegalStateException(msg);
         }
-        im = serverContext.getDefaultServices().forContract(
-                InvocationManager.class).get();
-        tm = serverContext.getDefaultServices().forContract(
-                JavaEETransactionManager.class).get();
-        injectionMgr = serverContext.getDefaultServices().forContract(
-                InjectionManager.class).get();
+        Services services = serverContext.getDefaultServices();
+        im = services.forContract(InvocationManager.class).get();
+        tm = getJavaEETransactionManager(services);
+        injectionMgr = services.forContract(InjectionManager.class).get();
         initialized = true;
 
         securityContext = serverContext.getDefaultServices().forContract(AppServSecurityContext.class).get();
@@ -251,7 +252,9 @@ public final class J2EEInstanceListener implements InstanceListener {
                 // Emit monitoring probe event
                 wm.beforeServiceEvent(event.getWrapper().getName());
                 // enlist resources with TM for service method
-                tm.enlistComponentResources();
+                if (tm != null) {
+                    tm.enlistComponentResources();
+                }
             }
         } catch (Exception ex) {
             im.postInvoke(inv); // See CR 6920895 
@@ -340,7 +343,9 @@ public final class J2EEInstanceListener implements InstanceListener {
             throw new RuntimeException(msg, ex);
         } finally {
             if (eventType == InstanceEvent.EventType.AFTER_DESTROY_EVENT) {
-                tm.componentDestroyed(instance, inv);                
+                if (tm != null) {
+                    tm.componentDestroyed(instance, inv);
+                }
             } else if (eventType == InstanceEvent.EventType.AFTER_FILTER_EVENT ||
                     eventType == InstanceEvent.EventType.AFTER_SERVICE_EVENT) {
                 // Emit monitoring probe event
@@ -373,16 +378,32 @@ public final class J2EEInstanceListener implements InstanceListener {
                             new Object[] { eventType, wm });
                         _logger.log(Level.SEVERE, msg,  ex);
                     }
-                    try {
-                        if (tm.getTransaction() != null) {
-                            tm.rollback();
-                        }
-                        tm.cleanTxnTimeout();
-                    } catch (Exception ex) {}
+
+                    if (tm != null) {
+                        try {
+                            if (tm.getTransaction() != null) {
+                                tm.rollback();
+                            }
+                            tm.cleanTxnTimeout();
+                        } catch (Exception ex) {}
+                    }
                 }
-                tm.componentDestroyed(instance, inv);
+
+                if (tm != null) {
+                    tm.componentDestroyed(instance, inv);
+                }
             }
         }
+    }
+
+    private JavaEETransactionManager getJavaEETransactionManager(Services services) {
+        JavaEETransactionManager tm = null;
+        Inhabitant<TransactionManager> inhabitant = ((Habitat)services).getInhabitantByType(TransactionManager.class);
+        if (inhabitant != null && inhabitant.isActive()) {
+            tm = (JavaEETransactionManager)inhabitant.get();
+        }
+        
+        return tm;
     }
 }
 
