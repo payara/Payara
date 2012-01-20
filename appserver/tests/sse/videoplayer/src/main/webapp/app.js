@@ -51,7 +51,10 @@ var network = function (eventSource) {
 
             eventSource = new EventSource(url);
             eventSource.onmessage = function (event) {
-                var command = JSON.parse(event.data);
+                // We should use JSON.parse to avoid any security holes,
+                // but that also needs json2.js
+                //var command = JSON.parse(event.data);
+                var command = eval('('+event.data+')');
                 if (command.type == "pause") {
                     APP.pauseVideo();
                 } else if (command.type == "play") {
