@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -177,9 +177,11 @@ public interface ServicePlugin<T extends ServiceType> {
      * action is atomic. That is, the Service that is being provisioned must be
      * completely provisioned or not at all.
      * 
+     * @param serviceDescription ServiceDescription that will be used to provision a service.
+     * @param paasDC PaaSDeploymentContext that provides application deployment context
      * @return a Set of <code>ProvisionedService</code>s
      */
-    public ProvisionedService provisionService(ServiceDescription serviceDescription, PaaSDeploymentContext dc);
+    public ProvisionedService provisionService(ServiceDescription serviceDescription, PaaSDeploymentContext paasDC);
 
     /**
      * When CPAS is restarted, the CPAS uses this method to get the 
@@ -213,7 +215,7 @@ public interface ServicePlugin<T extends ServiceType> {
      * @param dc The <code>DeploymentContext</code> associated with the
      * undeployment operation that initiated this decomissioning process.
      * 
-     * @return true if the Service was successful unprovisioned, false otherwise.
+     * @return true if the Service was successfully unprovisioned, false otherwise.
      */
     public boolean unprovisionService(ServiceDescription serviceDescription, PaaSDeploymentContext dc);
 

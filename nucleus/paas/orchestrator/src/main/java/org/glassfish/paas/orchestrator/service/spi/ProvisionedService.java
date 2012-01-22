@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,8 +41,6 @@
 package org.glassfish.paas.orchestrator.service.spi;
 
 import org.glassfish.paas.orchestrator.service.ServiceStatus;
-
-import java.util.Set;
 
 /**
  * Represents a Service provisioned by the PaaS runtime
