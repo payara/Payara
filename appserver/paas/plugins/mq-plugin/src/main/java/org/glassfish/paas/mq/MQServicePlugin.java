@@ -254,6 +254,7 @@ public class MQServicePlugin extends ServiceProvisioningEngineBase<MQServiceType
 
     public void startMQ(final VirtualMachine virtualMachine){
         if (virtualMachine.getMachine() == null) {
+            //native mode, taken care by NativeTemplateCustomizer
             return;
         }
         final String fileName = "~/mq.plugin.broker.password.txt";
@@ -286,6 +287,7 @@ public class MQServicePlugin extends ServiceProvisioningEngineBase<MQServiceType
     public void stopMQ(VirtualMachine virtualMachine){
 
         if (virtualMachine.getMachine() == null) {
+            //native mode, taken care by NativeTemplateCustomizer
             return;
         }
         String fileName = "~/mq.plugin.broker.password.txt";
