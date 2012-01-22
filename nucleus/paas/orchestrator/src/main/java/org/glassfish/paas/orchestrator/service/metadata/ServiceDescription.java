@@ -73,7 +73,6 @@ public class ServiceDescription {
 
     private List<Property> configurations = new ArrayList<Property>();
     private ServicePlugin plugin;
-    private List<ServiceReference> serviceReferences = new ArrayList<ServiceReference>();
 
     public ServiceDescription() {
         // default constructor required for JAXB.
@@ -149,7 +148,8 @@ public class ServiceDescription {
                     templateOrCharacteristics instanceof ServiceCharacteristics) {
                 this.templateOrCharacteristics = templateOrCharacteristics;
             } else {
-                throw new RuntimeException("Invalid type [" + templateOrCharacteristics.getClass() + "], neither TemplateIdentifier nor ServiceCharacteristics");
+                throw new RuntimeException("Invalid type [" + templateOrCharacteristics.getClass() + "], " +
+                        "neither TemplateIdentifier nor ServiceCharacteristics");
             }
         }
     }
@@ -238,18 +238,6 @@ public class ServiceDescription {
         this.plugin = plugin;
     }
 
-
-/*
-    public void addServiceReference(ServiceReference serviceReference){
-        serviceReferences.add(serviceReference);
-    }
-
-    @XmlTransient
-    public Collection<ServiceReference> getServiceReferences(){
-        return serviceReferences;
-    }
-*/
-
     @XmlTransient
     public ServiceScope getServiceScope(){
         return serviceScope;
@@ -257,5 +245,43 @@ public class ServiceDescription {
 
     public void setServiceScope(ServiceScope serviceScope){
         this.serviceScope = serviceScope;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof ServiceDescription)) return false;
+
+        ServiceDescription sd = (ServiceDescription) o;
+
+        if (appName != null ? !appName.equals(sd.appName) : sd.appName != null) return false;
+        if (configurations != null ? !configurations.equals(sd.configurations) : sd.configurations != null)
+            return false;
+        if (initType != null ? !initType.equals(sd.initType) : sd.initType != null) return false;
+        if (name != null ? !name.equals(sd.name) : sd.name != null) return false;
+        if (plugin != null ? !plugin.equals(sd.plugin) : sd.plugin != null) return false;
+        if (serviceScope != sd.serviceScope) return false;
+        if (serviceType != null ? !serviceType.equals(sd.serviceType) : sd.serviceType != null) return false;
+        if (templateOrCharacteristics != null ? !templateOrCharacteristics.equals(sd.templateOrCharacteristics) :
+                sd.templateOrCharacteristics != null)
+            return false;
+        if (virtualClusterName != null ? !virtualClusterName.equals(sd.virtualClusterName) : sd.virtualClusterName != null)
+            return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = name != null ? name.hashCode() : 0;
+        result = 31 * result + (initType != null ? initType.hashCode() : 0);
+        result = 31 * result + (appName != null ? appName.hashCode() : 0);
+        result = 31 * result + (virtualClusterName != null ? virtualClusterName.hashCode() : 0);
+        result = 31 * result + (serviceScope != null ? serviceScope.hashCode() : 0);
+        result = 31 * result + (serviceType != null ? serviceType.hashCode() : 0);
+        result = 31 * result + (templateOrCharacteristics != null ? templateOrCharacteristics.hashCode() : 0);
+        result = 31 * result + (configurations != null ? configurations.hashCode() : 0);
+        result = 31 * result + (plugin != null ? plugin.hashCode() : 0);
+        return result;
     }
 }
