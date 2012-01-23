@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -47,6 +47,9 @@ import org.glassfish.api.admin.*;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.paas.orchestrator.config.*;
+import org.glassfish.virtualization.config.Template;
+import org.glassfish.virtualization.config.Virtualization;
+import org.glassfish.virtualization.config.Virtualizations;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
@@ -107,6 +110,8 @@ public class CreateSharedService implements AdminCommand {
     @Inject
     private ServiceUtil serviceUtil;
 
+    private boolean templateFound=false;
+
     //TODO logging
     //TODO java-doc
     public void execute(AdminCommandContext context) {
@@ -126,6 +131,27 @@ public class CreateSharedService implements AdminCommand {
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             return;
         }
+
+        //Check if the template provided by the user exists
+        if(template!=null){
+            Virtualizations virtualizations=domain.getExtensionByType(Virtualizations.class);
+            if(virtualizations!=null){
+                     for(Virtualization virtualization:virtualizations.getVirtualizations()){
+                        for(Template tmplt:virtualization.getTemplates()){
+                            if(template.equalsIgnoreCase(tmplt.getName())){
+                                templateFound=true;
+                                break;
+                            }
+                        }
+                    }
+                    if(!templateFound){
+                        report.setMessage("A template named [ "+template+" ] does not exist.");
+                        report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                        return;
+                    }
+            }
+        }
+
 
         if (defaultService) {
             if (force) {
