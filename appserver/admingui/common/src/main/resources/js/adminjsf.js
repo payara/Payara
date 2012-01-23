@@ -1855,9 +1855,7 @@ function checkForSelectedValue(fieldId) {
 
 function reloadHeaderFrame() {
     var mastheadForm = document.getElementById('af');
-    admingui.ajax.postAjaxRequest(mastheadForm, {
-        render: 'af'
-    }, 'af');
+    admingui.ajax.postAjaxRequest(mastheadForm, { render: 'af' }, 'af', false);
 }
 
 admingui.deploy = {
@@ -2158,7 +2156,7 @@ admingui.ajax = {
     },
 
     ajaxStart : function() {
-        admingui.ajax._setVisibility('ajaxIndicator', 'visible');
+//        admingui.ajax._setVisibility('ajaxIndicator', 'visible');
         admingui.ajax._clearAjaxTimer();
         admingui.ajax.ajaxTimer = setTimeout("admingui.ajax._displayAjaxLoadingPanel()", 2000);
     },
@@ -2243,8 +2241,10 @@ admingui.ajax = {
         admingui.nav.selectTreeNodeWithURL(o.argument.url);
     },
 
-    postAjaxRequest : function (component, args, respTarget) {
-        admingui.ajax.ajaxStart();
+    postAjaxRequest : function (component, args, respTarget, displayLoading) {
+        if (displayLoading !== false) {
+            admingui.ajax.ajaxStart();
+        }
         if ((respTarget === null) || (typeof(respTarget) === 'undefined')) {
             respTarget = 'content';
         }
@@ -2273,6 +2273,7 @@ admingui.ajax = {
     },
 
     defaultGetCallback: function(xmlReq, target, url) {
+        admingui.ajax.ajaxComplete();
         if (window != top) {
             // May be inside a frame...
             return top.admingui.ajax.defaultGetCallback(xmlReq, target, url);
@@ -2301,7 +2302,6 @@ admingui.ajax = {
         document.body.style.cursor = 'auto';
 
         admingui.nav.selectTreeNodeWithURL(url);
-        admingui.ajax.ajaxComplete();
     },
 
     /**
@@ -2314,6 +2314,7 @@ admingui.ajax = {
      *	innerHTML.
      */
     handleResponse : function () {
+        admingui.ajax.ajaxComplete();
         admingui.ajax.fixQue(this.que);
         //admingui.ajax.updateCurrentPageLink(o.argument.url);  <-- find a better way to get the viewId
         var contentNode = null;
@@ -2385,7 +2386,6 @@ admingui.ajax = {
             admingui.nav.selectTreeNodeById(node.parentNode.parentNode.id);
         }
 	*/
-        admingui.ajax.ajaxComplete();
     },
 
     fixQue: function(que) {
