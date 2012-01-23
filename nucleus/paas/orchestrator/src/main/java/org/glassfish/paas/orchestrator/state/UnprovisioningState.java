@@ -104,14 +104,16 @@ public class UnprovisioningState extends AbstractPaaSDeploymentState {
             }
         }
         // Clean up the glassfish cluster, virtual cluster config, etc.. if they are application scoped.
-        final ServiceMetadata appServiceMetadata = orchestrator.getServiceMetadata(appName);
+        final ServiceMetadata appServiceMetadata = appInfoRegistry.getServiceMetadata(appName);
         String virtualClusterName = orchestrator.getVirtualClusterName(appServiceMetadata);
         if(virtualClusterName != null){
             orchestrator.removeVirtualCluster(virtualClusterName);
         }
 
-        orchestrator.removeProvisionedServices(appName);
-        orchestrator.removeServiceMetadata(appName);
+        appInfoRegistry.removeProvisionedServices(appName);
+        appInfoRegistry.removeServiceMetadata(appName);
+        appInfoRegistry.removePluginsToHandleSDs(appName);
+        appInfoRegistry.removeSRToSDMap(appName);
 
         if(failed){
             throw new PaaSDeploymentException("Failure while unprovisioning services, refer server.log for more details");

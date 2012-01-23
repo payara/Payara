@@ -41,11 +41,15 @@
 package org.glassfish.paas.orchestrator.state;
 
 import org.glassfish.paas.orchestrator.PaaSDeploymentContext;
+import org.glassfish.paas.orchestrator.PaaSDeploymentException;
+import org.glassfish.paas.orchestrator.service.metadata.ServiceDescription;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceMetadata;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceReference;
+import org.glassfish.paas.orchestrator.service.spi.Service;
 import org.glassfish.paas.orchestrator.service.spi.ServicePlugin;
 
 import java.util.Collection;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 
@@ -60,35 +64,35 @@ public abstract class DissociationState extends AbstractPaaSDeploymentState {
             state="before";
         }
         String appName = context.getAppName();
-        final ServiceMetadata appServiceMetadata = orchestrator.getServiceMetadata(appName);
+        final ServiceMetadata appServiceMetadata = appInfoRegistry.getServiceMetadata(appName);
         Set<org.glassfish.paas.orchestrator.service.spi.Service> allServices =
                 orchestrator.getServicesForDissociation(appName);
-        final Set<ServicePlugin> installedPlugins = orchestrator.getPlugins(appServiceMetadata);
         logger.log(Level.FINEST,localStrings.getString("dissociate.provisioned.services.preundeployment",state));
         boolean failed = false;
         Exception failureCause = null;
-        for (org.glassfish.paas.orchestrator.service.spi.Service serviceProvider : allServices) {
-            for (ServicePlugin<?> svcPlugin : installedPlugins) {
-                //Dissociate the provisioned service only with plugins that handle other service types.
-                //TODO why is this check done ?
-                if (!serviceProvider.getServiceType().equals(svcPlugin.getServiceType())) {
-                    Set<ServiceReference> appSRs = appServiceMetadata.getServiceReferences();
-                    for (ServiceReference serviceRef : appSRs) {
-                        if(serviceRef.getType() != null){
-                            /*logger.log(Level.INFO, "Dissociating ProvisionedService " + serviceProvider +
-                                    " for ServiceReference " + serviceRef + " through " + svcPlugin);*/
-                            Object args[]=new Object[]{serviceProvider,serviceProvider,svcPlugin};
-                            logger.log(Level.INFO,"dissociate.provisionedservice",args);
-                            Collection<org.glassfish.paas.orchestrator.service.spi.Service> serviceConsumers =
-                                    orchestrator.getServicesManagedByPlugin(svcPlugin, allServices);
-                            for (org.glassfish.paas.orchestrator.service.spi.Service serviceConsumer : serviceConsumers) {
-                                try {
-                                    svcPlugin.dissociateServices(serviceConsumer, serviceRef, serviceProvider, beforeUndeploy, context);
-                                } catch (Exception e) {
+
+        for (Service serviceProvider : allServices) {
+        ServiceDescription sd = serviceProvider.getServiceDescription();
+            Set<ServiceReference> appSRs = appServiceMetadata.getServiceReferences();
+            for(ServiceReference serviceRef : appSRs){
+                Map<ServiceReference, ServiceDescription> srToSDMap = appInfoRegistry.getSRToSDMap(appName);
+                for(Map.Entry<ServiceReference, ServiceDescription> entry : srToSDMap.entrySet()){
+                    ServiceReference ref = entry.getKey();
+                    if(ref.equals(serviceRef) && sd.equals(entry.getValue())){
+                        ServicePlugin requestingPlugin = ref.getRequestingPlugin();
+                        Collection<Service> serviceConsumers =
+                                    orchestrator.getServicesManagedByPlugin(requestingPlugin, allServices);
+                        for (Service serviceConsumer : serviceConsumers) {
+                            try {
+                                Object args[]=new Object[]{serviceProvider,serviceRef,requestingPlugin};
+                                logger.log(Level.INFO, "dissociate.provisionedservice",args);
+                                requestingPlugin.dissociateServices(serviceConsumer, serviceRef, serviceProvider,
+                                        beforeUndeploy, context);
+                            } catch (Exception e) {
                                     //TODO need to handle exception or continue ?
+
                                    failed = true;
                                    failureCause = e;
-                                }
                             }
                         }
                     }

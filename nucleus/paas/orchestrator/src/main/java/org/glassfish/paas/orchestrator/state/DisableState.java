@@ -66,7 +66,7 @@ public class DisableState extends AbstractPaaSDeploymentState {
 
     private void stopServices(PaaSDeploymentContext context) throws PaaSDeploymentException {
         String appName = context.getAppName();
-        final ServiceMetadata appServiceMetadata = orchestrator.getServiceMetadata(appName);
+        final ServiceMetadata appServiceMetadata = appInfoRegistry.getServiceMetadata(appName);
 
         List<ServiceDescription> stoppedServiceSDs = new ArrayList<ServiceDescription>();
         for (ServiceDescription sd : appServiceMetadata.getServiceDescriptions()) {

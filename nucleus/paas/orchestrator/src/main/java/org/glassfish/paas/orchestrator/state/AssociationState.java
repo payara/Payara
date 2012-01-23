@@ -43,8 +43,10 @@ package org.glassfish.paas.orchestrator.state;
 
 import org.glassfish.paas.orchestrator.PaaSDeploymentContext;
 import org.glassfish.paas.orchestrator.PaaSDeploymentException;
+import org.glassfish.paas.orchestrator.service.metadata.ServiceDescription;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceMetadata;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceReference;
+import org.glassfish.paas.orchestrator.service.spi.Service;
 import org.glassfish.paas.orchestrator.service.spi.ServicePlugin;
 
 import java.util.*;
@@ -64,36 +66,35 @@ public abstract class AssociationState extends AbstractPaaSDeploymentState {
 
         logger.log(Level.FINER, localStrings.getString("associate.provisioned.services.predeployment",state));
         String appName = context.getAppName();
-        final ServiceMetadata appServiceMetadata = orchestrator.getServiceMetadata(appName);
-        final Set<ServicePlugin> plugins = orchestrator.getPlugins(appServiceMetadata);
-        Set<org.glassfish.paas.orchestrator.service.spi.Service> servicesForAssociation =
+        final ServiceMetadata appServiceMetadata = appInfoRegistry.getServiceMetadata(appName);
+        Set<Service> servicesForAssociation =
                 orchestrator.getServicesForAssociation(appName);
-
-        List<AssociatedServiceRecord> associatedServicesList = new ArrayList<AssociatedServiceRecord>();
+        List<ServiceAssociationRecord> associatedServicesList = new ArrayList<ServiceAssociationRecord>();
         try{
-            for (org.glassfish.paas.orchestrator.service.spi.Service serviceProducer : servicesForAssociation) {
-                for (ServicePlugin<?> svcPlugin : plugins) {
-                    //associate the provisioned service only with plugins that handle other service types.
-                    if (!serviceProducer.getServiceType().equals(svcPlugin.getServiceType())) {
-                        Set<ServiceReference> appSRs = appServiceMetadata.getServiceReferences();
-                        for (ServiceReference serviceRef : appSRs) {
-                            if(serviceRef.getType() != null){
-                                Object args[]=new Object[]{serviceProducer,serviceRef,svcPlugin};
-                                logger.log(Level.INFO, "associate.provisionedservice",args);
+            for (Service serviceProvider : servicesForAssociation) {
 
-                                Collection<org.glassfish.paas.orchestrator.service.spi.Service> serviceConsumers =
-                                        orchestrator.getServicesManagedByPlugin(svcPlugin, servicesForAssociation);
-                                for (org.glassfish.paas.orchestrator.service.spi.Service serviceConsumer : serviceConsumers) {
-                                    try {
-                                        svcPlugin.associateServices(serviceConsumer, serviceRef, serviceProducer, preDeployment, context);
-                                        associatedServicesList.add(
-                                                new AssociatedServiceRecord(serviceProducer, serviceConsumer, serviceRef, svcPlugin));
-                                    } catch (Exception e) {
-                                        Object args1[]= new Object[]{serviceConsumer.getName(),serviceProducer.getName(),serviceRef,e};
-                                        logger.log(Level.WARNING,"failure.while.associating.service",args1);
-                                        rollback(associatedServicesList, context, preDeployment);
-                                        throw new PaaSDeploymentException(e);
-                                    }
+                ServiceDescription sd = serviceProvider.getServiceDescription();
+                Set<ServiceReference> appSRs = appServiceMetadata.getServiceReferences();
+                for(ServiceReference serviceRef : appSRs){
+                    Map<ServiceReference, ServiceDescription> srToSDMap = appInfoRegistry.getSRToSDMap(appName);
+                    for(Map.Entry<ServiceReference, ServiceDescription> entry : srToSDMap.entrySet()){
+                        ServiceReference ref = entry.getKey();
+                        if(ref.equals(serviceRef) && sd.equals(entry.getValue())){
+                            ServicePlugin requestingPlugin = ref.getRequestingPlugin();
+                            Collection<Service> serviceConsumers =
+                                        orchestrator.getServicesManagedByPlugin(requestingPlugin, servicesForAssociation);
+                            for (Service serviceConsumer : serviceConsumers) {
+                                try {
+                                    Object args[]=new Object[]{serviceProvider,serviceRef,requestingPlugin};
+                                    logger.log(Level.INFO, "associate.provisionedservice",args);
+                                    requestingPlugin.associateServices(serviceConsumer, serviceRef, serviceProvider, preDeployment, context);
+                                    associatedServicesList.add(
+                                        new ServiceAssociationRecord(serviceProvider, serviceConsumer, serviceRef, requestingPlugin));
+                                } catch (Exception e) {
+                                    Object args1[]= new Object[]{serviceConsumer.getName(),serviceProvider.getName(),serviceRef,e};
+                                    logger.log(Level.WARNING,"failure.while.associating.service",args1);
+                                    rollback(associatedServicesList, context, preDeployment);
+                                    throw new PaaSDeploymentException(e);
                                 }
                             }
                         }
@@ -101,16 +102,19 @@ public abstract class AssociationState extends AbstractPaaSDeploymentState {
                 }
             }
         }finally{
+            if(logger.isLoggable(Level.FINEST)){
+                logger.log(Level.FINEST, "associated-services-records for application [ "+appName+" ]: " + associatedServicesList);
+            }
             associatedServicesList.clear();
         }
     }
 
-    private void rollback(List<AssociatedServiceRecord> associatedServices, PaaSDeploymentContext context,
+    private void rollback(List<ServiceAssociationRecord> associatedServices, PaaSDeploymentContext context,
                           boolean preDeployment) {
         if(isAtomicDeploymentEnabled()){
-            for(AssociatedServiceRecord asr : associatedServices){
-                org.glassfish.paas.orchestrator.service.spi.Service serviceProvider = asr.getProvider();
-                org.glassfish.paas.orchestrator.service.spi.Service serviceConsumer = asr.getConsumer();
+            for(ServiceAssociationRecord asr : associatedServices){
+                Service serviceProvider = asr.getProvider();
+                Service serviceConsumer = asr.getConsumer();
                 ServiceReference serviceRef = asr.getServiceReference();
                 ServicePlugin plugin = asr.getPlugin();
                 try{
@@ -124,14 +128,14 @@ public abstract class AssociationState extends AbstractPaaSDeploymentState {
         }
     }
 
-    class AssociatedServiceRecord {
-        private org.glassfish.paas.orchestrator.service.spi.Service provider;
-        private org.glassfish.paas.orchestrator.service.spi.Service consumer;
+    class ServiceAssociationRecord {
+        private Service provider;
+        private Service consumer;
         private ServiceReference serviceRef;
         private ServicePlugin plugin;
 
-        public AssociatedServiceRecord(org.glassfish.paas.orchestrator.service.spi.Service serviceProvider,
-                                       org.glassfish.paas.orchestrator.service.spi.Service serviceConsumer,
+        public ServiceAssociationRecord(Service serviceProvider,
+                                       Service serviceConsumer,
                                        ServiceReference serviceRef, ServicePlugin plugin){
             this.provider = serviceProvider;
             this.consumer = serviceConsumer;
@@ -139,11 +143,11 @@ public abstract class AssociationState extends AbstractPaaSDeploymentState {
             this.plugin = plugin;
         }
 
-        public org.glassfish.paas.orchestrator.service.spi.Service getProvider(){
+        public Service getProvider(){
             return provider;
         }
 
-        public org.glassfish.paas.orchestrator.service.spi.Service getConsumer(){
+        public Service getConsumer(){
             return consumer;
         }
 
@@ -153,6 +157,16 @@ public abstract class AssociationState extends AbstractPaaSDeploymentState {
 
         public ServicePlugin getPlugin(){
             return plugin;
+        }
+
+        @Override
+        public String toString() {
+            return "AssociatedServiceRecord{" +
+                    "provider=" + provider +
+                    ", consumer=" + consumer +
+                    ", serviceRef=" + serviceRef +
+                    ", plugin=" + plugin +
+                    '}';
         }
     }
 }

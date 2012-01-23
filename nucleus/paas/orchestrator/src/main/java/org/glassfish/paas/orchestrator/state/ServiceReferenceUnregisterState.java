@@ -57,7 +57,7 @@ public class ServiceReferenceUnregisterState extends AbstractPaaSDeploymentState
     public void handle(PaaSDeploymentContext context) throws PaaSDeploymentException {
 
         String appName = context.getAppName();
-        ServiceMetadata serviceMetadata = orchestrator.getServiceMetadata(appName);
+        ServiceMetadata serviceMetadata = appInfoRegistry.getServiceMetadata(appName);
         Collection<ServiceDescription> serviceDescriptions =  serviceMetadata.getServiceDescriptions();
         for(ServiceDescription sd : serviceDescriptions){
             if(ServiceScope.SHARED.equals(sd.getServiceScope()) || ServiceScope.EXTERNAL.equals(sd.getServiceScope())){

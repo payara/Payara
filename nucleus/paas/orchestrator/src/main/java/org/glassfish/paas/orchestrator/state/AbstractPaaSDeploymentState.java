@@ -43,10 +43,7 @@ package org.glassfish.paas.orchestrator.state;
 
 import com.sun.enterprise.util.i18n.StringManager;
 import com.sun.logging.LogDomains;
-import org.glassfish.paas.orchestrator.PaaSDeploymentContext;
-import org.glassfish.paas.orchestrator.PaaSDeploymentException;
-import org.glassfish.paas.orchestrator.PaaSDeploymentState;
-import org.glassfish.paas.orchestrator.ServiceOrchestratorImpl;
+import org.glassfish.paas.orchestrator.*;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceUtil;
 import org.glassfish.paas.orchestrator.provisioning.util.FailureInducer;
 import org.jvnet.hk2.annotations.Inject;
@@ -71,6 +68,9 @@ public abstract class AbstractPaaSDeploymentState implements PaaSDeploymentState
 
     @Inject
     protected ServiceOrchestratorImpl orchestrator;
+
+    @Inject
+    protected PaaSAppInfoRegistry appInfoRegistry;
 
     public void beforeExecution(PaaSDeploymentContext context) throws PaaSDeploymentException {
         detectAndFail(true);

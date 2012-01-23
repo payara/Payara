@@ -54,8 +54,10 @@ public class DisableCompletionState extends AbstractPaaSDeploymentState {
 
     public void handle(PaaSDeploymentContext context) throws PaaSDeploymentException {
         String appName = context.getAppName();
-        orchestrator.removeProvisionedServices(appName);
-        orchestrator.removeServiceMetadata(appName);
+        appInfoRegistry.removeProvisionedServices(appName);
+        appInfoRegistry.removeServiceMetadata(appName);
+        appInfoRegistry.removePluginsToHandleSDs(appName);
+        appInfoRegistry.removeSRToSDMap(appName);
     }
 
     public Class getRollbackState() {

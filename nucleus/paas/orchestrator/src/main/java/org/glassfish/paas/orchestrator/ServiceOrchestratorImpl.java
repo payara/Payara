@@ -64,7 +64,6 @@ import org.glassfish.paas.orchestrator.service.metadata.ServiceDescription;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceMetadata;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceReference;
 import org.glassfish.paas.orchestrator.service.spi.*;
-import org.glassfish.paas.orchestrator.service.spi.Service;
 import org.glassfish.paas.orchestrator.state.*;
 import org.glassfish.virtualization.spi.VirtualCluster;
 import org.glassfish.virtualization.runtime.VirtualClusters;
@@ -90,12 +89,11 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
     @Inject
     private VirtualClusters virtualClusters;
 
-    private Map<String, ServiceMetadata> serviceMetadata = new LinkedHashMap<String, ServiceMetadata>();
-    private Map<String, Set<ProvisionedService>> provisionedServices = new LinkedHashMap<String, Set<ProvisionedService>>();
-    private Map<String, Set<ConfiguredService>> configuredServices = new LinkedHashMap<String, Set<ConfiguredService>>();
+    @Inject
+    private PaaSAppInfoRegistry appRegistry;
+
     private Map<String, ProvisionedService> sharedServices = new LinkedHashMap<String, ProvisionedService>();
     private Map<String, ConfiguredService> externalServices = new LinkedHashMap<String, ConfiguredService>();
-
     private static final Class [] PRE_DEPLOY_PHASE_STATES = {ServiceDependencyDiscoveryState.class, ProvisioningState.class,
             SharedServiceRegistrationState.class, ConfiguredServiceRegistrationState.class, ServiceReferenceRegistrationState.class,
             PreDeployAssociationState.class};
@@ -216,17 +214,13 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
     public Set<org.glassfish.paas.orchestrator.service.spi.Service> getServicesForAssociation(String appName){
         Set<org.glassfish.paas.orchestrator.service.spi.Service> servicesSet =
                 new LinkedHashSet<org.glassfish.paas.orchestrator.service.spi.Service>();
-            servicesSet.addAll(getProvisionedServices(appName));
-            servicesSet.addAll(getConfiguredServices(appName));
+            servicesSet.addAll(appRegistry.getProvisionedServices(appName));
+            servicesSet.addAll(appRegistry.getConfiguredServices(appName));
         return servicesSet;
     }
 
     public Set<org.glassfish.paas.orchestrator.service.spi.Service> getServicesForDissociation(String appName){
         return getServicesForAssociation(appName);
-    }
-
-    public ServiceMetadata getServiceMetadata(String appName) {
-        return serviceMetadata.get(appName);
     }
 
     private void orchestrateTask(Class[] tasks, String appName, DeploymentContext dc, boolean deployment) {
@@ -405,7 +399,7 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
     }
 
     public Collection<ProvisionedService> getServicesToUnprovision(String appName){
-        Set<ProvisionedService> provisionedServices = getProvisionedServices(appName);
+        Set<ProvisionedService> provisionedServices = appRegistry.getProvisionedServices(appName);
         Set<ProvisionedService> servicesToUnprovision = new LinkedHashSet<ProvisionedService>();
         for(ProvisionedService ps : provisionedServices){
             if(ServiceScope.APPLICATION.equals(ps.getServiceDescription().getServiceScope())){
@@ -417,7 +411,7 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
 
     public ProvisionedService getProvisionedService(ServiceDescription sd, String appName){
         ProvisionedService provisionedService = null;
-        Set<ProvisionedService> provisionedServices = getProvisionedServices(appName);
+        Set<ProvisionedService> provisionedServices = appRegistry.getProvisionedServices(appName);
         for(ProvisionedService ps : provisionedServices){
             if(sd.getName().equals(ps.getName())){
                 provisionedService = ps;
@@ -427,7 +421,7 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
         return provisionedService;
     }
     public Collection<ServiceDescription> getServiceDescriptionsToProvision(String appName){
-        ServiceMetadata appServiceMetadata = getServiceMetadata(appName);
+        ServiceMetadata appServiceMetadata = appRegistry.getServiceMetadata(appName);
         Collection<ServiceDescription> serviceDescriptions = appServiceMetadata.getServiceDescriptions();
         List<ServiceDescription> sdsToProvision = new ArrayList<ServiceDescription>();
         for(ServiceDescription sd : serviceDescriptions){
@@ -525,6 +519,7 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
         return defaultPlugin;
     }
 
+    //TODO revisit this for a shared-service as app-name is used here.
     @Override
     public boolean scaleService(final String appName, final String svcName,
             final int scaleCount, final AllocationStrategy allocStrategy) {
@@ -543,9 +538,9 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
             String effectiveAppName = appName;
             
             String tmpAppName = null;
-            for (String app: provisionedServices.keySet()){
+            for (String app: appRegistry.getAllProvisionedServices().keySet()){
                 logger.log(Level.FINER, localStrings.getString("check.app.for.service ", svcName));
-                Set<ProvisionedService> appsServices = getProvisionedServices(app);
+                Set<ProvisionedService> appsServices = appRegistry.getProvisionedServices(app);
                 for(ProvisionedService p: appsServices){
                     if (p.getName().equals(svcName)) {
                         tmpAppName = app;
@@ -559,7 +554,7 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
             //Hack ends here.
     
             //Get Old PS
-            Set<ProvisionedService> appPS = getProvisionedServices(effectiveAppName);
+            Set<ProvisionedService> appPS = appRegistry.getProvisionedServices(effectiveAppName);
             logger.log(Level.FINER, localStrings.getString("appPS", appPS));
             ProvisionedService oldPS = null;
             for(ProvisionedService ps: appPS) {
@@ -593,7 +588,7 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
             assert newPS.getServiceType().equals(oldPS.getServiceType());
             
             //now re-associate all plugins with the new PS.
-            ServiceMetadata appServiceMetadata = serviceMetadata.get(effectiveAppName);
+            ServiceMetadata appServiceMetadata = appRegistry.getServiceMetadata(effectiveAppName);
             Set<ServicePlugin> plugins = getPlugins(appServiceMetadata);
             for (ServicePlugin<?> svcPlugin : plugins) {
                 //re-associate the new PS only with plugins that handle other service types.
@@ -624,7 +619,7 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
      */
     @Override
     public ServiceDescription getServiceDescription (String appName, String service) {
-        ServiceMetadata appServiceMetadata = getServiceMetadata(appName);
+        ServiceMetadata appServiceMetadata = appRegistry.getServiceMetadata(appName);
         for(ServiceDescription desc : appServiceMetadata.getServiceDescriptions()){
             if (desc.getName().equals(service)){
                 return desc;
@@ -638,42 +633,8 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
         postUndeploy(appName, context);
     }
 
-    public void addServiceMetadata(String appName, ServiceMetadata appServiceMetadata) {
-        serviceMetadata.put(appName, appServiceMetadata);
-    }
-
-    public boolean unregisterProvisionedServices(String appName, Collection<ProvisionedService> provisionedServices) {
-        return getProvisionedServices(appName).removeAll(provisionedServices);
-    }
-
-    public boolean unregisterConfiguredServices(String appName, Collection<ConfiguredService> configuredServices) {
-        return getConfiguredServices(appName).removeAll(configuredServices);
-    }
-
-    public void registerProvisionedServices(String appName, Collection<ProvisionedService> provisionedServices) {
-        getProvisionedServices(appName).addAll(provisionedServices);
-    }
-
-    public void registerConfiguredServices(String appName, Collection<ConfiguredService> configuredServices) {
-        getConfiguredServices(appName).addAll(configuredServices);
-    }
-
-    private Set<ProvisionedService> getProvisionedServices(String appName) {
-        Set<ProvisionedService> ps = provisionedServices.get(appName);
-        if(ps == null){
-            ps = new LinkedHashSet<ProvisionedService>();
-            provisionedServices.put(appName, ps);
-        }
-        return provisionedServices.get(appName);
-    }
-
-    private Set<ConfiguredService> getConfiguredServices(String appName) {
-        Set<ConfiguredService> cs = configuredServices.get(appName);
-        if(cs == null){
-            cs = new LinkedHashSet<ConfiguredService>();
-            configuredServices.put(appName, cs);
-        }
-        return configuredServices.get(appName);
+    public void preDeploy(String appName, ExtendedDeploymentContext context) {
+        provisionServicesForApplication(appName, context);
     }
 
     public void addSharedService(String serviceName, ProvisionedService provisionedService) {
@@ -681,6 +642,11 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
     }
 
     public void addExternalService(String serviceName, ConfiguredService configuredService){
+        ServiceDescription sd = configuredService.getServiceDescription();
+        if(configuredService.getServiceDescription().getPlugin() == null){
+            ServicePlugin plugin = getPlugin(sd);
+            sd.setPlugin(plugin);
+        }
         externalServices.put(serviceName, configuredService);
     }
 
@@ -695,9 +661,9 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
     public ConfiguredService getConfiguredService(String serviceName){
         ConfiguredService configuredService = externalServices.get(serviceName);
         if(configuredService == null){
-            ServiceDescription sd = getExternalServiceDescription(serviceName);
+            //ServiceDescription sd = getExternalServiceDescription(serviceName);
             configuredService = serviceUtil.getExternalService(serviceName);
-            externalServices.put(serviceName, configuredService);
+            addExternalService(serviceName, configuredService);
         }
         if(configuredService == null){
             throw new RuntimeException("No such external service ["+serviceName+"] is available");
@@ -721,25 +687,7 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
     }
 
     public ServiceDescription getExternalServiceDescription(String serviceName){
-        ServiceDescription sd = null;
-        ServiceInfo serviceInfo = serviceUtil.getServiceInfo(serviceName, null, null);
-
-        if(serviceInfo != null){
-            sd = serviceUtil.getExternalServiceDescription(serviceInfo);
-            if(sd != null){
-                sd.setServiceScope(ServiceScope.EXTERNAL);
-            }else{
-                throw new RuntimeException("Could not retrieve external-service-description ["+serviceName+"] ");
-            }
-            sd.setServiceType(serviceInfo.getServerType());
-            //TODO should we associate a plugin for external service's service-description as
-            //TODO external-service is not handled by a plugin ?
-            ServicePlugin plugin = getPlugin(sd);
-            sd.setPlugin(plugin);
-        }else{
-            throw new RuntimeException("No such external service ["+serviceName+"] is available");
-        }
-        return sd;
+        return getConfiguredService(serviceName).getServiceDescription();
     }
 
     public ServiceDescription getServiceDescriptionForSharedOrExternalService(String serviceName)
@@ -809,17 +757,6 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
         return matchingPlugin;
     }
 
-    public ServiceMetadata removeServiceMetadata(String appName) {
-        return serviceMetadata.remove(appName);
-    }
-
-    public Set<ProvisionedService> removeProvisionedServices(String appName) {
-        return provisionedServices.remove(appName);
-    }
-
-    public void preDeploy(String appName, ExtendedDeploymentContext context) {
-        provisionServicesForApplication(appName, context);
-    }
 
     public boolean isParallelProvisioningEnabled(){
         return parallelProvisioningEnabled;

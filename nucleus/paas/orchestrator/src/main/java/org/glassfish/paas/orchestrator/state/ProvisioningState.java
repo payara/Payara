@@ -89,7 +89,7 @@ public class ProvisioningState extends AbstractPaaSDeploymentState {
         logger.log(Level.FINER, localStrings.getString("METHOD.provisionServices"));
         final Set<ProvisionedService> appPSs = new HashSet<ProvisionedService>();
         String appName = context.getAppName();
-        final ServiceMetadata appServiceMetadata = orchestrator.getServiceMetadata(appName);
+        final ServiceMetadata appServiceMetadata = appInfoRegistry.getServiceMetadata(appName);
 
 
         // create one virtual cluster per deployment unit.
@@ -158,7 +158,7 @@ public class ProvisioningState extends AbstractPaaSDeploymentState {
             }
         }
         if(!failed){
-            orchestrator.registerProvisionedServices(context.getAppName(), appPSs);
+            appInfoRegistry.registerProvisionedServices(context.getAppName(), appPSs);
             return appPSs;
         }else{
             if(isAtomicDeploymentEnabled()){
@@ -181,8 +181,10 @@ public class ProvisioningState extends AbstractPaaSDeploymentState {
                 if(virtualClusterName != null){
                     orchestrator.removeVirtualCluster(virtualClusterName);
                 }
-                orchestrator.removeProvisionedServices(appName);
-                orchestrator.removeServiceMetadata(appName);
+                appInfoRegistry.removeProvisionedServices(appName);
+                appInfoRegistry.removeServiceMetadata(appName);
+                appInfoRegistry.removePluginsToHandleSDs(appName);
+                appInfoRegistry.removeSRToSDMap(appName);
             }
 
             PaaSDeploymentException re = new PaaSDeploymentException("Failure while provisioning services");

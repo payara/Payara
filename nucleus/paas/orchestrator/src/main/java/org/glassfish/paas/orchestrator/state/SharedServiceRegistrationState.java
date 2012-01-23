@@ -60,7 +60,7 @@ public class SharedServiceRegistrationState extends AbstractPaaSDeploymentState 
 
     public void handle(PaaSDeploymentContext context) throws PaaSDeploymentException {
         String appName = context.getAppName();
-        ServiceMetadata serviceMetadata = orchestrator.getServiceMetadata(appName);
+        ServiceMetadata serviceMetadata = appInfoRegistry.getServiceMetadata(appName);
         Collection<ServiceDescription> serviceDescriptions =  serviceMetadata.getServiceDescriptions();
         Collection<ProvisionedService> sharedServices = new LinkedHashSet<ProvisionedService>();
         for(ServiceDescription sd : serviceDescriptions){
@@ -68,7 +68,7 @@ public class SharedServiceRegistrationState extends AbstractPaaSDeploymentState 
                 sharedServices.add(orchestrator.getSharedService(sd.getName()));
             }
         }
-        orchestrator.registerProvisionedServices(appName, sharedServices);
+        appInfoRegistry.registerProvisionedServices(appName, sharedServices);
     }
 
     public Class getRollbackState() {

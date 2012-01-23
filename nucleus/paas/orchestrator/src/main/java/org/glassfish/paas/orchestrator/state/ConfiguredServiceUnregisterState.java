@@ -62,7 +62,7 @@ public class ConfiguredServiceUnregisterState extends AbstractPaaSDeploymentStat
 
     public void handle(PaaSDeploymentContext context) throws PaaSDeploymentException {
         String appName = context.getAppName();
-        ServiceMetadata serviceMetadata = orchestrator.getServiceMetadata(appName);
+        ServiceMetadata serviceMetadata = appInfoRegistry.getServiceMetadata(appName);
         Collection<ServiceDescription> serviceDescriptions =  serviceMetadata.getServiceDescriptions();
         Set<ConfiguredService> configuredServicesSet = new LinkedHashSet<ConfiguredService>();
         for(ServiceDescription sd : serviceDescriptions){
@@ -70,7 +70,7 @@ public class ConfiguredServiceUnregisterState extends AbstractPaaSDeploymentStat
                 configuredServicesSet.add(orchestrator.getConfiguredService(sd.getName()));
             }
         }
-        orchestrator.unregisterConfiguredServices(appName, configuredServicesSet);
+        appInfoRegistry.unregisterConfiguredServices(appName, configuredServicesSet);
     }
 
 

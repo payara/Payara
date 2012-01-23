@@ -54,7 +54,6 @@ import org.glassfish.paas.orchestrator.service.metadata.Property;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceCharacteristics;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceDescription;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceReference;
-import org.glassfish.paas.orchestrator.service.spi.ServicePlugin;
 import org.glassfish.paas.orchestrator.service.spi.ProvisionedService;
 import org.glassfish.paas.orchestrator.service.spi.Service;
 import org.glassfish.paas.spe.common.ServiceProvisioningEngineBase;
@@ -115,8 +114,26 @@ public abstract class DatabaseSPEBase extends ServiceProvisioningEngineBase<RDBM
      */
     public Set<ServiceReference> getServiceReferences(String appName,
                                                       ReadableArchive cloudArchive,
-                                                      PaaSDeploymentContext context) {
-        return new HashSet<ServiceReference>();
+                                                      PaaSDeploymentContext dc) {
+        Set<ServiceReference> servicesReferences = new LinkedHashSet<ServiceReference>();
+        if(dc.getDeploymentContext() != null){
+            //TODO : Jagadish : we are returning service-reference on own service, which can be
+            //avoided when new contract on ServicePlugin is introduced.
+            String initSqlFile = null;
+            initSqlFile = getInitSQLFileName(cloudArchive, dc);
+            if (new File(initSqlFile).exists()) {
+                servicesReferences.add(new ServiceReference("init-sql-ref","javax.sql.DataSource", null));
+                return servicesReferences; //no need to check service properties as one service-ref is sufficient.
+            }
+            String servicePropertiesFile = null;
+            servicePropertiesFile = getServicePropertiesFileName(dc, cloudArchive);
+
+            if (new File(servicePropertiesFile).exists()) {
+                servicesReferences.add(new ServiceReference("service-properties-ref","javax.sql.DataSource", null));
+                return servicesReferences;
+            }
+        }
+        return servicesReferences;
     }
 
     /**
@@ -222,13 +239,7 @@ public abstract class DatabaseSPEBase extends ServiceProvisioningEngineBase<RDBM
                 String servicePropertiesFile = null;
                 String ipAddress = serviceConsumer.getProperties().getProperty(VIRTUAL_MACHINE_IP_ADDRESS);
                 //Create Custom database
-                if (DeploymentUtils.isWebArchive(readableArchive)) {
-                    servicePropertiesFile = dc.getDeploymentContext().getSource().getURI().getPath() +
-                            "WEB-INF" + File.separator + "service.properties";
-                } else {
-                    servicePropertiesFile = dc.getDeploymentContext().getSource().getURI().getPath() +
-                            "META-INF" + File.separator + "service.properties";
-                }
+                servicePropertiesFile = getServicePropertiesFileName(dc, readableArchive);
 
                 if (new File(servicePropertiesFile).exists()) {
                     //Get the database name from this file
@@ -249,13 +260,7 @@ public abstract class DatabaseSPEBase extends ServiceProvisioningEngineBase<RDBM
                 }
 
                 //Execute Init SQL
-                if (DeploymentUtils.isWebArchive(readableArchive)) {
-                    initSqlFile = dc.getDeploymentContext().getSource().getURI().getPath() +
-                            "WEB-INF" + File.separator + "init.sql";
-                } else {
-                    initSqlFile = dc.getDeploymentContext().getSource().getURI().getPath() +
-                            "META-INF" + File.separator + "init.sql";
-                }
+                initSqlFile = getInitSQLFileName(readableArchive, dc);
                 if (new File(initSqlFile).exists()) {
                     executeInitSql(getServiceProperties(ipAddress), initSqlFile);
                 }
@@ -265,6 +270,30 @@ public abstract class DatabaseSPEBase extends ServiceProvisioningEngineBase<RDBM
             //the custom db name creation and init sql execution are executed just once.
             context.addTransientAppMetaData(getClass().getName()+DB_INITIALIZED, true);
         }
+    }
+
+    private String getServicePropertiesFileName(PaaSDeploymentContext dc, ReadableArchive readableArchive) {
+        String servicePropertiesFile;
+        if (DeploymentUtils.isWebArchive(readableArchive)) {
+            servicePropertiesFile = dc.getDeploymentContext().getSource().getURI().getPath() +
+                    "WEB-INF" + File.separator + "service.properties";
+        } else {
+            servicePropertiesFile = dc.getDeploymentContext().getSource().getURI().getPath() +
+                    "META-INF" + File.separator + "service.properties";
+        }
+        return servicePropertiesFile;
+    }
+
+    private String getInitSQLFileName(ReadableArchive cloudArchive, PaaSDeploymentContext dc) {
+        String initSqlFile;
+        if (DeploymentUtils.isWebArchive(cloudArchive)) {
+            initSqlFile = dc.getDeploymentContext().getSource().getURI().getPath() +
+                    "WEB-INF" + File.separator + "init.sql";
+        } else {
+            initSqlFile = dc.getDeploymentContext().getSource().getURI().getPath() +
+                    "META-INF" + File.separator + "init.sql";
+        }
+        return initSqlFile;
     }
 
     /**

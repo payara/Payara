@@ -73,7 +73,7 @@ public class EnableState extends AbstractPaaSDeploymentState {
     private Set<ProvisionedService> startServices(PaaSDeploymentContext context) throws PaaSDeploymentException {
         Set<ProvisionedService> appPSs = new HashSet<ProvisionedService>();
         String appName = context.getAppName();
-        final ServiceMetadata appServiceMetadata = orchestrator.getServiceMetadata(appName);
+        final ServiceMetadata appServiceMetadata = appInfoRegistry.getServiceMetadata(appName);
 
         List<ServiceDescription> provisionedSDs = new ArrayList<ServiceDescription>();
         for (ServiceDescription sd : appServiceMetadata.getServiceDescriptions()) {
@@ -100,7 +100,7 @@ public class EnableState extends AbstractPaaSDeploymentState {
                 }
             }
         }
-        orchestrator.registerProvisionedServices(appName, appPSs);
+        appInfoRegistry.registerProvisionedServices(appName, appPSs);
         return appPSs;
     }
 

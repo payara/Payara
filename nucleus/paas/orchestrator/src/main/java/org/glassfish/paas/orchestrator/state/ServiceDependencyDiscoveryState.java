@@ -69,7 +69,7 @@ public class ServiceDependencyDiscoveryState extends AbstractPaaSDeploymentState
             String appName = context.getAppName();
             //registering metadata with Orchestrator must be the last operation (only if service dependency discovery
             //completes without any errors).
-            orchestrator.addServiceMetadata(appName, appServiceMetadata);
+            appInfoRegistry.addServiceMetadata(appName, appServiceMetadata);
         }catch(Exception e){
             throw new PaaSDeploymentException(e);
         }
@@ -120,9 +120,32 @@ public class ServiceDependencyDiscoveryState extends AbstractPaaSDeploymentState
             for(ServiceReference serviceReference : appServiceMetadata.getServiceReferences()){
                 String serviceName = serviceReference.getServiceName();
                 ServiceDescription sd = orchestrator.getServiceDescriptionForSharedOrExternalService(serviceName);
-                appServiceMetadata.addServiceDescription(sd);
-                wiredServiceReferences.add(serviceReference);
-                pluginsToHandleSDs.put(sd, sd.getPlugin());
+                if(sd == null){
+                    boolean found = false;
+                    //it's possible that the reference here is an application-scoped-service. Ignore it.
+                    //This can happen in GUI mode of deployment where glassfish-services.xml
+                    //is generated based on the first introspection of the archive for service dependencies
+                    //and service-references.
+                    for(ServiceDescription serviceDescription : appServiceMetadata.getServiceDescriptions()){
+                        if(serviceDescription.getName().equals(serviceName)){
+                            found = true;
+                            if(logger.isLoggable(Level.FINEST)){
+                                logger.log(Level.FINEST, "service-reference [ "+serviceReference+" ] is referring an " +
+                                    "application-scoped-service [ "+serviceDescription+" ], ignoring wiring" +
+                                    " for now");
+                            }
+                            break;
+                        }
+                    }
+                    if(!found){
+                        throw new PaaSDeploymentException("Unable to find service ["+serviceName+"], " +
+                                "as referred via service-reference [ "+serviceReference+" ]");
+                    }
+                }else{
+                    appServiceMetadata.addServiceDescription(sd);
+                    wiredServiceReferences.add(serviceReference);
+                    pluginsToHandleSDs.put(sd, sd.getPlugin());
+                }
             }
 
             //make sure that each service-description is wired to appropriate plugin.
@@ -215,6 +238,7 @@ public class ServiceDependencyDiscoveryState extends AbstractPaaSDeploymentState
 
             logger.log(Level.FINEST, "after.implicit.SD", appServiceMetadata);
 
+            Map<ServiceReference, ServiceDescription> serviceRefToSD = new HashMap<ServiceReference, ServiceDescription>();
 
             //1.2 Get implicit ServiceReferences
             for (ServicePlugin svcPlugin : resolvedPluginsList) {
@@ -231,13 +255,14 @@ public class ServiceDependencyDiscoveryState extends AbstractPaaSDeploymentState
                             appServiceMetadata.addServiceDescription(sd);
                             pluginsToHandleSDs.put(sd, sd.getPlugin());
                             wiredServiceReferences.add(sr);
+                            serviceRefToSD.put(sr, sd);
                         }
                     }
                 }
                 //}
             }
             logger.log(Level.FINEST, localStrings.getString("after.serviceref ",appServiceMetadata));
-            Map<ServiceReference, ServiceDescription> serviceRefToSD = new HashMap<ServiceReference, ServiceDescription>();
+
 
             //1.3 Ensure all service references have a related service description
             Set<ServiceDescription> appSDs = appServiceMetadata.getServiceDescriptions();
@@ -328,6 +353,8 @@ public class ServiceDependencyDiscoveryState extends AbstractPaaSDeploymentState
                     sd.setVirtualClusterName(virtualClusterName);
                 }
             }
+            appInfoRegistry.getPluginsToHandleSDs(appName).putAll(pluginsToHandleSDs);
+            appInfoRegistry.getSRToSDMap(appName).putAll(serviceRefToSD);
 
             logger.log(Level.INFO, "final.servicemetadata",appServiceMetadata);
             return appServiceMetadata;

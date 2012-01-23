@@ -56,7 +56,7 @@ import java.util.Collection;
 public class ServiceReferenceRegistrationState extends AbstractPaaSDeploymentState {
     public void handle(PaaSDeploymentContext context) throws PaaSDeploymentException {
         String appName = context.getAppName();
-        ServiceMetadata serviceMetadata = orchestrator.getServiceMetadata(appName);
+        ServiceMetadata serviceMetadata = appInfoRegistry.getServiceMetadata(appName);
         Collection<ServiceDescription> serviceDescriptions = serviceMetadata.getServiceDescriptions();
 
         for(ServiceDescription sd : serviceDescriptions){

@@ -61,7 +61,7 @@ public class ConfiguredServiceRegistrationState extends AbstractPaaSDeploymentSt
 
     public void handle(PaaSDeploymentContext context) throws PaaSDeploymentException {
         String appName = context.getAppName();
-        ServiceMetadata serviceMetadata = orchestrator.getServiceMetadata(appName);
+        ServiceMetadata serviceMetadata = appInfoRegistry.getServiceMetadata(appName);
         Collection<ServiceDescription> serviceDescriptions =  serviceMetadata.getServiceDescriptions();
         Set<ConfiguredService> configuredServicesSet = new LinkedHashSet<ConfiguredService>();
 
@@ -70,7 +70,7 @@ public class ConfiguredServiceRegistrationState extends AbstractPaaSDeploymentSt
                 configuredServicesSet.add(orchestrator.getConfiguredService(sd.getName()));
             }
         }
-        orchestrator.registerConfiguredServices(appName, configuredServicesSet);
+        appInfoRegistry.registerConfiguredServices(appName, configuredServicesSet);
     }
 
 

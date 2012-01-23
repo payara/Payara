@@ -54,6 +54,7 @@ import org.glassfish.paas.orchestrator.service.metadata.ServiceDescription;
 import org.glassfish.paas.orchestrator.service.metadata.TemplateIdentifier;
 import org.glassfish.paas.orchestrator.service.spi.ConfiguredService;
 import org.glassfish.paas.orchestrator.service.spi.ProvisionedService;
+import org.glassfish.paas.orchestrator.service.spi.ServicePlugin;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.component.Habitat;
@@ -129,6 +130,7 @@ public class ServiceUtil {
         }
     }
 
+/*
     public void removeProperty(String serviceName, String appName,
                                final String propName) {
         Service matchingService = getService(serviceName, appName);
@@ -156,6 +158,7 @@ public class ServiceUtil {
         }
     }
 
+*/
     public void updateState(String serviceName, String appName, final String state, ServiceType type) {
         Service matchingService = getService(serviceName, appName);
         if (matchingService != null) {
@@ -220,6 +223,7 @@ public class ServiceUtil {
         return applications;
     }
 
+/*
     public boolean isServiceAlreadyConfigured(String serviceName, String appName, ServiceType type) {
         //TODO hack, ignoring the shared-service/external-service related call for now.
         if(appName==null){
@@ -228,6 +232,7 @@ public class ServiceUtil {
         Service matchingService = getService(serviceName, appName);
         return matchingService != null;
     }
+*/
 
     public String getServiceType(String serviceName, String appName, ServiceType type) {
         ServiceInfo entry = getServiceInfo(serviceName, appName, type);
@@ -238,6 +243,7 @@ public class ServiceUtil {
         }
     }
 
+/*
     public String getServiceState(String serviceName, String appName, ServiceType type) {
         ServiceInfo entry = getServiceInfo(serviceName, appName, type);
         if (entry != null) {
@@ -246,6 +252,7 @@ public class ServiceUtil {
             return null;
         }
     }
+*/
 
     public String getIPAddress(String serviceName, String appName, ServiceType type) {
         ServiceInfo entry = getServiceInfo(serviceName, appName, type);
@@ -357,9 +364,8 @@ public class ServiceUtil {
             }
             sd.setConfigurations(configurationList);
         }
-        ConfiguredServiceImpl configuredService = new ConfiguredServiceImpl(externalService.getServiceName(),
+        return new ConfiguredServiceImpl(externalService.getServiceName(),
                 getServiceType(externalService.getType()), sd, properties);
-        return configuredService;
     }
     public Service getService(String serviceName, String appName) {
         Service matchingService = null;
@@ -630,7 +636,7 @@ public class ServiceUtil {
         return spes;
     }
 
-    public ServiceDescription getExternalServiceDescription(ServiceInfo serviceInfo){
+/*    public ServiceDescription getExternalServiceDescription(ServiceInfo serviceInfo){
         ServiceDescription sd = null;
         Service service = getService(serviceInfo.getServiceName(), serviceInfo.getAppName());
         if(service != null){
@@ -657,7 +663,7 @@ public class ServiceUtil {
             throw new RuntimeException("No such service ["+serviceInfo.getServiceName()+"] is available");
         }
         return sd;
-    }
+    }*/
 
     //TODO implementation for external and app-scoped-service also.
     public ServiceDescription getSharedServiceDescription(ServiceInfo serviceInfo){

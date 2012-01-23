@@ -67,7 +67,7 @@ public class ServerStartupState extends AbstractPaaSDeploymentState {
     public Set<ProvisionedService> retrieveProvisionedServices(PaaSDeploymentContext context) {
         logger.log(Level.FINER, localStrings.getString("METHOD.retrieveProvisionedServices"));
         String appName = context.getAppName();
-        final ServiceMetadata appServiceMetadata = orchestrator.getServiceMetadata(appName);
+        final ServiceMetadata appServiceMetadata = appInfoRegistry.getServiceMetadata(appName);
 
         final Set<ProvisionedService> appPSs = new HashSet<ProvisionedService>();
         String virtualClusterName = orchestrator.getVirtualClusterName(appServiceMetadata);
@@ -89,7 +89,7 @@ public class ServerStartupState extends AbstractPaaSDeploymentState {
                     logger.log(Level.WARNING,"unable.retrieve.serviceinfo",args);
                 }
         }
-        orchestrator.registerProvisionedServices(appName, appPSs);
+        appInfoRegistry.registerProvisionedServices(appName, appPSs);
         return appPSs;
     }
 
