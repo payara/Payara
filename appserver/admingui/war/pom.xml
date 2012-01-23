@@ -64,16 +64,58 @@
             <plugin>
                 <artifactId>maven-war-plugin</artifactId>
                 <version>2.0.2</version>
-                <configuration>
-                    <archive>
-                        <manifestEntries>
-                            <Glassfish-require-services>org.glassfish.api.admingui.ConsoleProvider</Glassfish-require-services>
-                            <HK2-Import-Bundles>org.glassfish.admingui.console-common,org.glassfish.hk2.hk2,org.glassfish.admingui.console-plugin-service, org.glassfish.deployment.deployment-client,org.glassfish.registration.registration-api,org.glassfish.registration.registration-impl, javax.servlet-api, javax.servlet.jsp-api, javax.el-api, com.sun.jsftemplating, org.glassfish.admingui.dataprovider, com.sun.pkg.client  </HK2-Import-Bundles>
-                        </manifestEntries>
-                    </archive>
-                </configuration>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <configuration>
+                            <archive>
+                                <manifestEntries>
+                                    <Glassfish-require-services>org.glassfish.api.admingui.ConsoleProvider</Glassfish-require-services>
+                                    <HK2-Import-Bundles>org.glassfish.main.admingui.console-common,org.glassfish.hk2.hk2,org.glassfish.main.admingui.console-plugin-service, org.glassfish.main.deployment.deployment-client,org.glassfish.main.registration.registration-api,org.glassfish.main.registration.registration-impl, javax.servlet-api, javax.servlet.jsp-api, javax.el-api, com.sun.jsftemplating, org.glassfish.main.admingui.dataprovider, com.sun.pkg.client  </HK2-Import-Bundles>
+                                </manifestEntries>
+                            </archive>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
+
+            <plugin>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <executions>
+                    <execution>
+				<phase>package</phase>
+                        <configuration>
+                            <tasks>
+                                <unzip src="target/admingui.war" dest="target/temp"/>
+                                <delete file="target/admingui.war" />
+                                <mkdir dir="target/temp/WEB-INF/extra"/>
+                                <move todir="target/temp/WEB-INF/extra">
+                                    <fileset dir="target/admingui/WEB-INF/lib" includes="**/*.jar" excludes="console-core*.jar"/>
+                                </move>
+                                <delete>
+                                    <fileset dir="target/temp/WEB-INF/lib" includes="**/*.jar" excludes="console-core*.jar"/>
+                                </delete>
+                               <jar jarfile="target/admingui.war" basedir="target/temp" >
+                                    <manifest>
+                                      <attribute name="Glassfish-require-services"
+                                            value="org.glassfish.api.admingui.ConsoleProvider"/>
+                                      <attribute name="HK2-Import-Bundles"
+                                            value="org.glassfish.main.admingui.console-common,org.glassfish.hk2.hk2,org.glassfish.main.admingui.console-plugin-service, org.glassfish.main.deployment.deployment-client,org.glassfish.main.registration.registration-api,org.glassfish.main.registration.registration-impl, javax.servlet-api, javax.servlet.jsp-api, javax.el-api, com.sun.jsftemplating, org.glassfish.main.admingui.dataprovider, com.sun.pkg.client "/>
+                                    </manifest>
+                                </jar>
+                                <delete dir="target/temp" />
+
+                            </tasks>
+                        </configuration>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
         </plugins>
+
     </build>
 
     <dependencies>
