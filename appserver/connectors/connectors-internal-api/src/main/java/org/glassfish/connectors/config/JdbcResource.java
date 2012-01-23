@@ -42,6 +42,7 @@ package org.glassfish.connectors.config;
 
 import com.sun.enterprise.config.serverbeans.BindableResource;
 import com.sun.enterprise.config.serverbeans.Resource;
+import com.sun.enterprise.config.serverbeans.customvalidators.ReferenceConstraint;
 import org.glassfish.connectors.config.validators.ResourcePoolReferenceConstraint;
 import org.jvnet.hk2.config.*;
 import org.jvnet.hk2.component.Injectable;
@@ -75,7 +76,7 @@ import javax.validation.constraints.NotNull;
  @RestRedirect(opType = RestRedirect.OpType.POST, commandName = "create-jdbc-resource"),
  @RestRedirect(opType = RestRedirect.OpType.DELETE, commandName = "delete-jdbc-resource")
 })
-@ResourcePoolReferenceConstraint(message="{resource.invalid}", payload=JdbcResource.class)
+//@ReferenceConstraint(skipDuringCreation=true, payload=JdbcResource.class)
 public interface JdbcResource extends ConfigBeanProxy, Injectable, Resource,
         PropertyBag, BindableResource, Payload {
     
@@ -88,6 +89,7 @@ public interface JdbcResource extends ConfigBeanProxy, Injectable, Resource,
     @Attribute
     @NotNull
     @Param(name="connectionpoolid")
+    @ReferenceConstraint.RemoteKey(message="{resourceref.invalid.poolname}", type=JdbcConnectionPool.class)
     String getPoolName();
 
     /**

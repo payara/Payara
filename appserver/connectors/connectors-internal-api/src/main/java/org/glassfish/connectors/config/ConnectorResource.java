@@ -42,6 +42,7 @@ package org.glassfish.connectors.config;
 
 import com.sun.enterprise.config.serverbeans.BindableResource;
 import com.sun.enterprise.config.serverbeans.Resource;
+import com.sun.enterprise.config.serverbeans.customvalidators.ReferenceConstraint;
 import org.glassfish.connectors.config.validators.ResourcePoolReferenceConstraint;
 import org.jvnet.hk2.config.*;
 import org.jvnet.hk2.component.Injectable;
@@ -73,7 +74,7 @@ import javax.validation.constraints.NotNull;
  @RestRedirect(opType = RestRedirect.OpType.POST, commandName = "create-connector-resource"),
  @RestRedirect(opType = RestRedirect.OpType.DELETE, commandName = "delete-connector-resource")
 })
-@ResourcePoolReferenceConstraint(message="{resource.invalid}", payload=ConnectorResource.class)
+//@ReferenceConstraint(skipDuringCreation=true, payload=ConnectorResource.class)
 public interface ConnectorResource extends ConfigBeanProxy, Injectable, Resource,
     PropertyBag, BindableResource, Payload {
 
@@ -86,6 +87,7 @@ public interface ConnectorResource extends ConfigBeanProxy, Injectable, Resource
      */
     @Attribute
     @NotNull
+    @ReferenceConstraint.RemoteKey(message="{resourceref.invalid.poolname}", type=ConnectorConnectionPool.class)
     String getPoolName();
 
     /**
