@@ -63,6 +63,7 @@
 	<module>multiple-spe-test</module>
 	<module>basic-db-with-resources-xml</module>
 	<module>basic-db-teardown-sql</module>
+	<module>basic-service-discovery</module>
     </modules>
     <reporting>
         <plugins>
@@ -95,12 +96,12 @@
                         </reportsDirectory>
                         <reportsDirectory>${env.PAAS_TESTS_HOME}/external-and-shared-service/target/surefire-reports
                         </reportsDirectory>
-                        <reportsDirectory>
-                            ${env.PAAS_TESTS_HOME}/ext-shared-service-enable-disable-test/target/surefire-reports
+                        <reportsDirectory>${env.PAAS_TESTS_HOME}/ext-shared-service-enable-disable-test/target/surefire-reports
                         </reportsDirectory>
                         <reportsDirectory>${env.PAAS_TESTS_HOME}/multiple-spe-test/target/surefire-reports</reportsDirectory>
-			<reportsDirectory>${env.PAAS_TESTS_HOME}/basic-db-with-resources-xml/target/surefire-reports</reportsDirectory>
+			            <reportsDirectory>${env.PAAS_TESTS_HOME}/basic-db-with-resources-xml/target/surefire-reports</reportsDirectory>
                         <reportsDirectory>${env.PAAS_TESTS_HOME}/basic-db-teardown-sql/target/surefire-reports</reportsDirectory>
+                        <reportsDirectory>${env.PAAS_TESTS_HOME}/basic-service-discovery/target/surefire-reports</reportsDirectory>
                     </reportsDirectories>
                 </configuration>
             </plugin>
