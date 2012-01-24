@@ -53,13 +53,13 @@ import org.glassfish.embeddable.GlassFishException;
 import org.glassfish.embeddable.GlassFishProperties;
 import org.glassfish.embeddable.GlassFishRuntime;
 import org.jvnet.hk2.component.Habitat;
-import org.osgi.framework.BundleContext;
-import org.osgi.framework.FrameworkUtil;
-import org.osgi.framework.ServiceRegistration;
+import org.osgi.framework.*;
 import org.osgi.util.tracker.ServiceTracker;
 
 import java.io.File;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
 * @author Sanjeeb.Sahoo@Sun.COM
@@ -69,6 +69,8 @@ public class EmbeddedOSGiGlassFishRuntime extends GlassFishRuntime {
     // TODO(Sahoo): Merge with StarticGlassFishRuntime and elevate to higher package level.
 
     Map<GlassFish, ServiceRegistration> gfs = new HashMap<GlassFish, ServiceRegistration>();
+
+    Logger logger = Logger.getLogger(getClass().getPackage().getName());
 
     public EmbeddedOSGiGlassFishRuntime() {
     }
@@ -144,6 +146,12 @@ public class EmbeddedOSGiGlassFishRuntime extends GlassFishRuntime {
 
     public void remove(GlassFish gf) {
         ServiceRegistration reg = gfs.remove(gf);
-        reg.unregister();
+        if (getBundleContext() != null) { // bundle is still active
+            try {
+                reg.unregister();
+            } catch (IllegalStateException e) {
+                logger.logp(Level.WARNING, "EmbeddedOSGiGlassFishRuntime", "remove", "Exception while unregistering " + gf, e);
+            }
+        }
     }
 }
