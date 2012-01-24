@@ -82,8 +82,8 @@ public class StopLBService extends BaseLBService implements AdminCommand {
 
         final ActionReport report = context.getActionReport();
 
-        if (lbServiceUtil.isValidService(serviceName, appName, LB)) {
-            ServiceInfo entry = lbServiceUtil.retrieveCloudEntry(serviceName, appName, LB);
+        if (lbServiceUtil.isValidService(serviceName, appName)) {
+            ServiceInfo entry = lbServiceUtil.retrieveCloudEntry(serviceName, appName);
             String ipAddress = entry.getIpAddress();
             String status = entry.getState();
             if (status == null || status.equalsIgnoreCase(ServiceStatus.STOP_IN_PROGRESS.toString())
@@ -93,12 +93,12 @@ public class StopLBService extends BaseLBService implements AdminCommand {
                 return;
             }
 
-            lbServiceUtil.updateState(serviceName, appName, ServiceStatus.STOP_IN_PROGRESS.toString(), LB);
+            lbServiceUtil.updateState(serviceName, appName, ServiceStatus.STOP_IN_PROGRESS.toString());
 
             try {
                 retrieveVirtualMachine();
                 LBProvisionerFactory.getInstance().getLBProvisioner().stopLB(virtualMachine);
-                lbServiceUtil.updateState(serviceName, appName, ServiceStatus.NOT_RUNNING.toString(), LB);
+                lbServiceUtil.updateState(serviceName, appName, ServiceStatus.NOT_RUNNING.toString());
                 if(stopVM){
                     vmlifecycle.stop(virtualMachine);
                 }
@@ -106,7 +106,7 @@ public class StopLBService extends BaseLBService implements AdminCommand {
                 report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
             } catch (Exception ex) {
                 LBPluginLogger.getLogger().log(Level.INFO,"exception",ex);
-                lbServiceUtil.updateState(serviceName, appName, ServiceStatus.NOT_RUNNING.toString(), LB);
+                lbServiceUtil.updateState(serviceName, appName, ServiceStatus.NOT_RUNNING.toString());
                 report.setMessage("lb-service [" + serviceName + "] stop failed");
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             }

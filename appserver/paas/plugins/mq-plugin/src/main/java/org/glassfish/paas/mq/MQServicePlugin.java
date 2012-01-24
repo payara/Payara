@@ -330,7 +330,7 @@ public class MQServicePlugin extends ServiceProvisioningEngineBase<MQServiceType
             String serviceName = serviceDescription.getName();
             String appName = serviceDescription.getAppName();
             ServiceInfo serviceInfo = serviceUtil.getServiceInfo(
-                    serviceName, appName, null);
+                    serviceName, appName);
             Properties properties = new Properties();
             properties.putAll(serviceInfo.getProperties());
             properties.putAll(getServiceProperties(

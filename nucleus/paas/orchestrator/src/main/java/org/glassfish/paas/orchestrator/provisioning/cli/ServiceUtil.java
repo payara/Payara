@@ -90,8 +90,8 @@ public class ServiceUtil {
         return threadPool;
     }
 
-    public boolean isValidService(String serviceName, String appName, ServiceType type) {
-        ServiceInfo entry = getServiceInfo(serviceName, appName, type);
+    public boolean isValidService(String serviceName, String appName) {
+        ServiceInfo entry = getServiceInfo(serviceName, appName);
         return entry != null;
     }
 
@@ -159,7 +159,7 @@ public class ServiceUtil {
     }
 
 */
-    public void updateState(String serviceName, String appName, final String state, ServiceType type) {
+    public void updateState(String serviceName, String appName, final String state) {
         Service matchingService = getService(serviceName, appName);
         if (matchingService != null) {
             if (matchingService instanceof ApplicationScopedService) {
@@ -212,7 +212,7 @@ public class ServiceUtil {
      */
     public List<String> getApplicationsUsingService(String service){
         List<String> applications = new ArrayList<String>();
-        ServiceInfo serviceInfo = getServiceInfo(service, null, null);
+        ServiceInfo serviceInfo = getServiceInfo(service, null);
         if(serviceInfo != null){
             for(ServiceRef serviceRef : getServices().getServiceRefs()){
                 if(serviceRef.getServiceName().equals(service)){
@@ -222,6 +222,7 @@ public class ServiceUtil {
         }
         return applications;
     }
+
 
 /*
     public boolean isServiceAlreadyConfigured(String serviceName, String appName, ServiceType type) {
@@ -234,14 +235,15 @@ public class ServiceUtil {
     }
 */
 
-    public String getServiceType(String serviceName, String appName, ServiceType type) {
-        ServiceInfo entry = getServiceInfo(serviceName, appName, type);
+    public String getServiceType(String serviceName, String appName) {
+        ServiceInfo entry = getServiceInfo(serviceName, appName);
         if (entry != null) {
             return entry.getServerType();
         } else {
             return null;
         }
     }
+
 
 /*
     public String getServiceState(String serviceName, String appName, ServiceType type) {
@@ -254,8 +256,8 @@ public class ServiceUtil {
     }
 */
 
-    public String getIPAddress(String serviceName, String appName, ServiceType type) {
-        ServiceInfo entry = getServiceInfo(serviceName, appName, type);
+    public String getIPAddress(String serviceName, String appName) {
+        ServiceInfo entry = getServiceInfo(serviceName, appName);
         if (entry != null) {
             return entry.getIpAddress();
         } else {
@@ -263,8 +265,8 @@ public class ServiceUtil {
         }
     }
 
-    public String getInstanceID(String serviceName, String appName, ServiceType type) {
-        ServiceInfo entry = getServiceInfo(serviceName, appName, type);
+    public String getInstanceID(String serviceName, String appName) {
+        ServiceInfo entry = getServiceInfo(serviceName, appName);
         if (entry != null) {
             return entry.getInstanceId();
         } else {
@@ -272,8 +274,8 @@ public class ServiceUtil {
         }
     }
 
-    public String getProperty(String serviceName, String appName, String propertyName, ServiceType type) {
-        ServiceInfo entry = getServiceInfo(serviceName, appName, type);
+    public String getProperty(String serviceName, String appName, String propertyName) {
+        ServiceInfo entry = getServiceInfo(serviceName, appName);
         if (entry != null) {
             return entry.getProperties().get(propertyName);
         } else {
@@ -282,7 +284,7 @@ public class ServiceUtil {
     }
 
 
-    public ServiceInfo getServiceInfo(String serviceName, String appName, ServiceType type) {
+    public ServiceInfo getServiceInfo(String serviceName, String appName) {
         Service matchingService = null;
         ServiceInfo serviceInfo = null;
         matchingService = getService(serviceName, appName);
@@ -326,7 +328,7 @@ public class ServiceUtil {
                             continue;
                         }
                     }
-                    ServiceInfo childServiceInfo = getServiceInfo(service.getServiceName(), appName, type);
+                    ServiceInfo childServiceInfo = getServiceInfo(service.getServiceName(), appName);
                     serviceInfo.addChildService(childServiceInfo);
                 }
             }

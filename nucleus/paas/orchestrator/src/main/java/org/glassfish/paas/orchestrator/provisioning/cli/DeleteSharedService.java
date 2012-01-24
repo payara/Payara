@@ -122,7 +122,7 @@ public class DeleteSharedService implements AdminCommand {
                     PaaSDeploymentContext pdc = new PaaSDeploymentContext(null, null);
                     //we are caching service-info before unprovision just to make sure any Plugin
                     //does not remove the child services during unprovision.
-                    ServiceInfo serviceInfo = serviceUtil.getServiceInfo(provisionedService.getName(), null, null);
+                    ServiceInfo serviceInfo = serviceUtil.getServiceInfo(provisionedService.getName(), null);
                     plugin.unprovisionService(provisionedService.getServiceDescription(), pdc);
                     serviceOrchestrator.removeSharedService(sharedService.getServiceName());
                     serviceUtil.unregisterService(serviceInfo);

@@ -53,7 +53,7 @@ public class DnsServiceUtil {
     @Inject
     private ServiceUtil serviceUtil;
 
-    public String getIPAddress(String serviceName, String appName, ServiceType type) {
-        return serviceUtil.getIPAddress(serviceName, appName, type);
+    public String getIPAddress(String serviceName, String appName) {
+        return serviceUtil.getIPAddress(serviceName, appName);
     }
 }

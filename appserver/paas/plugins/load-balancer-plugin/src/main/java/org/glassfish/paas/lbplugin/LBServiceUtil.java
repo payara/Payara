@@ -57,24 +57,24 @@ public class LBServiceUtil {
     @Inject
     private ServiceUtil serviceUtil;
 
-    public ServiceInfo retrieveCloudEntry(String serviceName, String appName, ServiceType type) {
-        return serviceUtil.getServiceInfo(serviceName, appName, type);
+    public ServiceInfo retrieveCloudEntry(String serviceName, String appName) {
+        return serviceUtil.getServiceInfo(serviceName, appName);
     }
 
-    public boolean isValidService(String serviceName, String appName, ServiceType type) {
-        return serviceUtil.isValidService(serviceName, appName, type);
+    public boolean isValidService(String serviceName, String appName) {
+        return serviceUtil.isValidService(serviceName, appName);
     }
 
-    public void updateState(String serviceName, String appName, String state, ServiceType type) {
-        serviceUtil.updateState(serviceName, appName, state, type);
+    public void updateState(String serviceName, String appName, String state) {
+        serviceUtil.updateState(serviceName, appName, state);
     }
 
     public Services getServices(){
         return serviceUtil.getServices();
     }
 
-    public String getInstanceID(String instance, String appName, ServiceType serviceType) {
-        return serviceUtil.getInstanceID(instance, appName, serviceType);
+    public String getInstanceID(String instance, String appName) {
+        return serviceUtil.getInstanceID(instance, appName);
     }
 
     public ServiceStatus getServiceStatus(ServiceInfo entry) {

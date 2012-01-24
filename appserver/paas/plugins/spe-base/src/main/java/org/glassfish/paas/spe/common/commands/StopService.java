@@ -89,12 +89,12 @@ public class StopService implements AdminCommand {
     public void execute(AdminCommandContext context) {
         final ActionReport report = context.getActionReport();
         try {
-            String vmId = serviceUtil.getInstanceID(serviceName, appName, null);
+            String vmId = serviceUtil.getInstanceID(serviceName, appName);
             VirtualCluster virtualCluster = virtualClusters.byName(virtualClusterName);
             VirtualMachine vm = virtualCluster.vmByName(vmId);
             vmLifecycle.stop(vm);
             serviceUtil.updateState(serviceName, appName,
-                    ServiceStatus.STOPPED.toString(), null);
+                    ServiceStatus.STOPPED.toString());
             report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
             report.setMessage("Successfully stopped service [" + serviceName + "]");
         } catch (Exception exception) {

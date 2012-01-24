@@ -110,7 +110,7 @@ public class StartSharedService implements AdminCommand {
                             report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
                             return;
                         } else {
-                            ServiceInfo serviceInfo = serviceUtil.getServiceInfo(serviceName, null, null);
+                            ServiceInfo serviceInfo = serviceUtil.getServiceInfo(serviceName, null);
                             ServiceDescription serviceDescription = orchestrator.getSharedServiceDescription(serviceName);
                             ServicePlugin plugin = serviceDescription.getPlugin();
                             /*ServiceDescription serviceDescription = serviceUtil.getSharedServiceDescription(serviceInfo);

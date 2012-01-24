@@ -94,7 +94,7 @@ public class GetLBLaunchURLsCommand implements AdminCommand {
 
         ServiceInfo entry = lbServiceUtil.retrieveCloudEntry(
                 lbService.getServiceName(),
-                appName, ServiceType.LB);
+                appName);
         if(entry == null){
             throw new RuntimeException("Unable to get entry for lb service");
         }

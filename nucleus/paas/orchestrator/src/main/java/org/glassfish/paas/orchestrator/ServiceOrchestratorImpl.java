@@ -569,7 +569,7 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
                     installedPlugins, oldPS.getServiceDescription().getServiceType());
 */
             ServicePlugin<?> chosenPlugin = oldPS.getServiceDescription().getPlugin();
-            ServiceInfo oldServiceInfo = serviceUtil.getServiceInfo(oldPS.getName(), appName, null);
+            ServiceInfo oldServiceInfo = serviceUtil.getServiceInfo(oldPS.getName(), appName);
 
             //ask it to scale the service and get new PS
 
@@ -676,7 +676,7 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
         if(provisionedService == null){
             ServiceDescription sd = getSharedServiceDescription(serviceName);
             ServicePlugin plugin = sd.getPlugin();
-            ServiceInfo serviceInfo = serviceUtil.getServiceInfo(serviceName, null, null);
+            ServiceInfo serviceInfo = serviceUtil.getServiceInfo(serviceName, null);
             provisionedService = plugin.getProvisionedService(sd, serviceInfo);
             sharedServices.put(serviceName, provisionedService);
         }
@@ -711,7 +711,7 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
     public ServiceDescription getSharedServiceDescription(String serviceName){
 
         ServiceDescription sd = null;
-        ServiceInfo serviceInfo = serviceUtil.getServiceInfo(serviceName, null, null);
+        ServiceInfo serviceInfo = serviceUtil.getServiceInfo(serviceName, null);
         if(serviceInfo != null){
             sd = serviceUtil.getSharedServiceDescription(serviceInfo);
             if(sd != null){

@@ -155,7 +155,7 @@ public abstract class ServiceProvisioningEngineBase<T extends org.glassfish.paas
             String serviceName = serviceDescription.getName();
             String appName = serviceDescription.getAppName();
             ServiceInfo serviceInfo = serviceUtil.getServiceInfo(
-                    serviceName, appName, null);
+                    serviceName, appName);
             String virtualClusterName = serviceDescription.getVirtualClusterName();
             String vmId = serviceInfo.getInstanceId();
             VirtualCluster virtualCluster = virtualClusters.byName(virtualClusterName);
@@ -198,7 +198,7 @@ public abstract class ServiceProvisioningEngineBase<T extends org.glassfish.paas
             String serviceName = serviceDescription.getName();
             String appName = serviceDescription.getAppName();
             ServiceInfo serviceInfo = serviceUtil.getServiceInfo(
-                    serviceName, appName, null);
+                    serviceName, appName);
             String virtualClusterName = serviceDescription.getVirtualClusterName();
             String vmId = serviceInfo.getInstanceId();
             VirtualCluster virtualCluster = virtualClusters.byName(virtualClusterName);
@@ -234,7 +234,7 @@ public abstract class ServiceProvisioningEngineBase<T extends org.glassfish.paas
 
     public boolean deleteService(ServiceDescription serviceDescription) {
         ServiceInfo serviceInfo = serviceUtil.getServiceInfo(serviceDescription.getName(),
-                serviceDescription.getAppName(), null);
+                serviceDescription.getAppName());
         String virtualClusterName = serviceDescription.getVirtualClusterName();
         try {
             VirtualCluster virtualCluster = virtualClusters.byName(virtualClusterName);
@@ -323,7 +323,7 @@ public abstract class ServiceProvisioningEngineBase<T extends org.glassfish.paas
             String serviceName = serviceDescription.getName();
             String appName = serviceDescription.getAppName();
             ServiceInfo serviceInfo = serviceUtil.getServiceInfo(
-                    serviceName, appName, null);
+                    serviceName, appName);
             Properties properties = new Properties();
             properties.putAll(serviceInfo.getProperties());
 

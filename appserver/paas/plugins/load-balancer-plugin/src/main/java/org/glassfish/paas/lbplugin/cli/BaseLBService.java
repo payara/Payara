@@ -93,7 +93,7 @@ public class BaseLBService {
                 vmId = _vmId;
             }else{
                 vmId = lbServiceUtil.getInstanceID(
-                    serviceName, appName, ServiceType.LB);
+                    serviceName, appName);
             }
 
             if (vmId != null) {

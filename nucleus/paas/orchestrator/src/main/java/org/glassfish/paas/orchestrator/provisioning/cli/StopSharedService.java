@@ -142,7 +142,7 @@ public class StopSharedService implements AdminCommand {
                                 }
                             }
                             if (!appEnabled) {
-                                ServiceInfo serviceInfo = serviceUtil.getServiceInfo(serviceName, null, null);
+                                ServiceInfo serviceInfo = serviceUtil.getServiceInfo(serviceName, null);
                                 ServiceDescription serviceDescription = orchestrator.getSharedServiceDescription(serviceName);
                                 ServicePlugin plugin = serviceDescription.getPlugin();
                                 /*ServiceDescription serviceDescription = serviceUtil.getSharedServiceDescription(serviceInfo);

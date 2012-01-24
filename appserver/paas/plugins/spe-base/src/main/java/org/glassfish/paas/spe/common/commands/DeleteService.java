@@ -90,7 +90,7 @@ public class DeleteService implements AdminCommand {
     public void execute(AdminCommandContext context) {
         final ActionReport report = context.getActionReport();
         try {
-            String vmId = serviceUtil.getInstanceID(serviceName, appName, null);
+            String vmId = serviceUtil.getInstanceID(serviceName, appName);
             VirtualCluster virtualCluster = virtualClusters.byName(virtualClusterName);
             VirtualMachine vm = virtualCluster.vmByName(vmId);
             vmLifecycle.delete(vm);

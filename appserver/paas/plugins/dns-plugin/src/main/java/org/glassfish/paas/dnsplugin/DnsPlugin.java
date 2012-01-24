@@ -248,7 +248,7 @@ public class DnsPlugin implements ServicePlugin {
         //TODO retrieve IP address from ServiceProvider's ServiceProperties ?
         String lbIPAddr = dnsServiceUtil.getIPAddress(
                 serviceProvider.getServiceDescription().getName(),
-                appName, ServiceType.LB);
+                appName);
 
         Properties serviceProperties = serviceConsumer.getServiceProperties();
         String domainName = serviceProperties.getProperty(Constants.DOMAIN_NAME);

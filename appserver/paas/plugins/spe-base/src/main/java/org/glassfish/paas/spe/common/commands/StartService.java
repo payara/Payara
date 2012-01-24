@@ -89,12 +89,12 @@ public class StartService implements AdminCommand {
     public void execute(AdminCommandContext context) {
         final ActionReport report = context.getActionReport();
         try {
-            String vmId = serviceUtil.getInstanceID(serviceName, appName, null);
+            String vmId = serviceUtil.getInstanceID(serviceName, appName);
             VirtualCluster virtualCluster = virtualClusters.byName(virtualClusterName);
             VirtualMachine vm = virtualCluster.vmByName(vmId);
             vmLifecycle.start(vm);
             serviceUtil.updateState(serviceName, appName,
-                    ServiceStatus.RUNNING.toString(), null);
+                    ServiceStatus.RUNNING.toString());
             report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
             report.setMessage("Successfully started service [" + serviceName + "]");
         } catch (Exception exception) {

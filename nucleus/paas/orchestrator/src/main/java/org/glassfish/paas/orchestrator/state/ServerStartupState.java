@@ -79,7 +79,7 @@ public class ServerStartupState extends AbstractPaaSDeploymentState {
                 args[0]=sd;
                 args[1]=chosenPlugin;
                 logger.log(Level.FINEST, localStrings.getString("retrieving.provisionedservice.viaplugin",args));
-                ServiceInfo serviceInfo = serviceUtil.getServiceInfo(sd.getName(), appName, null);
+                ServiceInfo serviceInfo = serviceUtil.getServiceInfo(sd.getName(), appName);
                 if(serviceInfo != null){
                     ProvisionedService ps = chosenPlugin.getProvisionedService(sd, serviceInfo);
                     appPSs.add(ps);
