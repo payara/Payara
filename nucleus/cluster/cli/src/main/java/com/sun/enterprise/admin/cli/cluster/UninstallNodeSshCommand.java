@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -108,6 +108,7 @@ public class UninstallNodeSshCommand extends UninstallNodeBaseCommand {
 
     @Override
     void deleteFromHosts() throws CommandException {
+        SFTPClient sftpClient = null;
         try {
             List<String> files = getListOfInstallFiles(getInstallDir());
 
@@ -125,7 +126,7 @@ public class UninstallNodeSshCommand extends UninstallNodeBaseCommand {
                     sshLauncher.init(getRemoteUser(), host, getRemotePort(), sshpassword, sshkeyfile, sshkeypassphrase, logger);
                 }
 
-                SFTPClient sftpClient = sshLauncher.getSFTPClient();
+                sftpClient = sshLauncher.getSFTPClient();
 
                 if (!sftpClient.exists(getInstallDir())) {
                     throw new IOException(getInstallDir() + " Directory does not exist");
@@ -136,6 +137,7 @@ public class UninstallNodeSshCommand extends UninstallNodeBaseCommand {
                 if (isRemoteDirectoryEmpty(sftpClient, getInstallDir())) {
                     sftpClient.rmdir(getInstallDir());
                 }
+                sftpClient.close();
             }
         }
         catch (CommandException ce) {
@@ -143,6 +145,10 @@ public class UninstallNodeSshCommand extends UninstallNodeBaseCommand {
         }
         catch (Exception ex) {
             throw new CommandException(ex);
+        } finally {
+            if (sftpClient != null) {
+                sftpClient.close();
+            }
         }
     }
 }

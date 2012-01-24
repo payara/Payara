@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -689,8 +689,10 @@ public class SSHLauncher {
             sftp.chmod(".", 0755);
             sftp.chmod(SSH_DIR, 0700);
             sftp.chmod(SSH_DIR + AUTH_KEY_FILE, 0644);
-            connection.close();
+            //release the connections
+            sftp.close();
             conn.close();
+            conn = null;
         }
     }
 
