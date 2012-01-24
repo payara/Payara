@@ -131,7 +131,7 @@ public class ProvisioningState extends AbstractPaaSDeploymentState {
                     logger.log(Level.FINEST, localStrings.getString("completed.provisioningservice.parallel",ps));
                 } catch (Exception e) {
                     failed = true;
-                    logger.log(Level.WARNING, "failure.provisioningservice", e);
+                    logger.log(Level.WARNING, "failure.provisioningservice.parallel", e);
                     if (rootCause == null) {
                         rootCause = e; //we are caching only the first failure and logging all failures
                     }
