@@ -46,7 +46,7 @@ import java.io.File;
 import java.text.MessageFormat;
 
 /**
- * @author bhavanishankar@java.net
+ * @author Bhavanishankar S
  */
 
 public interface GlassFishPluginConstants {
@@ -88,6 +88,10 @@ public interface GlassFishPluginConstants {
     public String JNDI_NAME = "jndi-name";
 
     public String JDBC_DATASOURCE = "javax.sql.DataSource";
+    
+    public String JDBC_DS_CLASSNAME = "datasource-classname";
+
+    public String JDBC_DS_RESTYPE = "res-type";
 
     /**
      * Temporary constants

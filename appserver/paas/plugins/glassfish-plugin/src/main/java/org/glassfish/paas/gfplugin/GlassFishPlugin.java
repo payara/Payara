@@ -91,7 +91,7 @@ import java.util.Set;
 import java.util.logging.Logger;
 
 /**
- * @author bhavanishankar@java.net
+ * @author Bhavanishankar S
  */
 @Service
 @Scoped(PerLookup.class)
@@ -450,18 +450,26 @@ public class GlassFishPlugin extends ServiceProvisioningEngineBase<JavaEEService
                             parser = resourceXmlParsers.get(connPool);
                             // Clone the jdbc-connection-pool resource and modify
                             // "service-name" property with its actual co-ordinates
-                            Resource modifiedConnPool = null;
-                            modifiedConnPool = new Resource(connPool.getType());
-                            //TODO: set res-type and datasource-classname as pool attributes
-                            dbProperties.remove(RESOURCE_TYPE);
-                            dbProperties.remove(CLASSNAME);
-                            dbProperties.remove("host");
+                            dbProperties.remove(HOST);
+
+                            // create the modified jdbc-connection-pool which has actual service' co-ordinates.
+                            Resource modifiedConnPool = new Resource(connPool.getType());
                             modifiedConnPool.setDescription(connPool.getDescription());
+
+                            // Set attributes for jdbc-connection-pool element
                             modifiedConnPool.getAttributes().putAll(connPool.getAttributes());
+                            modifiedConnPool.getAttributes().put(JDBC_DS_CLASSNAME,
+                                    dbProperties.remove(CLASSNAME));
+                            modifiedConnPool.getAttributes().put(JDBC_DS_RESTYPE,
+                                    dbProperties.remove(RESOURCE_TYPE));
+
+                            // Set properties for jdbc-connection-pool element
                             modifiedConnPool.getProperties().putAll(connPool.getProperties());
                             modifiedConnPool.getProperties().putAll(dbProperties);
                             modifiedConnPool.getProperties().remove(SERVICE_NAME);
+
                             parser.updateDocumentNode(connPool, modifiedConnPool);
+
                             break; // jdbc-connection-pool with a given name is unique in glassfish-resources.xml
                         }
                     }
