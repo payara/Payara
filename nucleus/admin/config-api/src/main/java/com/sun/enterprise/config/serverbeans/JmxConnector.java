@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,6 +40,7 @@
 
 package com.sun.enterprise.config.serverbeans;
 
+import com.sun.enterprise.config.serverbeans.customvalidators.ReferenceConstraint;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 
 import java.beans.PropertyVetoException;
@@ -69,6 +70,7 @@ import org.jvnet.hk2.config.*;
 }) */
 
 @Configured
+@ReferenceConstraint(skipDuringCreation=true, payload=JmxConnector.class)
 public interface JmxConnector extends ConfigBeanProxy, Injectable, Named, PropertyBag, Payload {
     final static String PORT_PATTERN = "\\$\\{[\\p{L}\\p{N}_][\\p{L}\\p{N}\\-_./;#]*\\}"
             + "|[1-9]|[1-9][0-9]|[1-9][0-9][0-9]|[1-9][0-9][0-9][0-9]"
@@ -195,6 +197,7 @@ public interface JmxConnector extends ConfigBeanProxy, Injectable, Named, Proper
     @Attribute
     @NotNull
     @Pattern(regexp=NAME_REGEX)
+    @ReferenceConstraint.RemoteKey(message="{resourceref.invalid.auth-realm-name}", type=AuthRealm.class)
     String getAuthRealmName();
 
     /**

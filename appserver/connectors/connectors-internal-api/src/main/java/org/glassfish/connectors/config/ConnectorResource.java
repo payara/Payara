@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -43,7 +43,6 @@ package org.glassfish.connectors.config;
 import com.sun.enterprise.config.serverbeans.BindableResource;
 import com.sun.enterprise.config.serverbeans.Resource;
 import com.sun.enterprise.config.serverbeans.customvalidators.ReferenceConstraint;
-import org.glassfish.connectors.config.validators.ResourcePoolReferenceConstraint;
 import org.jvnet.hk2.config.*;
 import org.jvnet.hk2.component.Injectable;
 
@@ -74,7 +73,7 @@ import javax.validation.constraints.NotNull;
  @RestRedirect(opType = RestRedirect.OpType.POST, commandName = "create-connector-resource"),
  @RestRedirect(opType = RestRedirect.OpType.DELETE, commandName = "delete-connector-resource")
 })
-//@ReferenceConstraint(skipDuringCreation=true, payload=ConnectorResource.class)
+@ReferenceConstraint(skipDuringCreation=true, payload=ConnectorResource.class)
 public interface ConnectorResource extends ConfigBeanProxy, Injectable, Resource,
     PropertyBag, BindableResource, Payload {
 

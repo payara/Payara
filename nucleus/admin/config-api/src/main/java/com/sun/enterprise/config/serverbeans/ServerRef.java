@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,6 +40,7 @@
 
 package com.sun.enterprise.config.serverbeans;
 
+import com.sun.enterprise.config.serverbeans.customvalidators.ReferenceConstraint;
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.Configured;
 import org.jvnet.hk2.config.Element;
@@ -60,6 +61,7 @@ import javax.validation.constraints.Pattern;
 }) */
 
 @Configured
+@ReferenceConstraint(skipDuringCreation=true, payload=ServerRef.class)
 public interface ServerRef extends ConfigBeanProxy, Injectable, Ref, Payload  {
 
     /**
@@ -74,6 +76,7 @@ public interface ServerRef extends ConfigBeanProxy, Injectable, Ref, Payload  {
     @Attribute(key=true)
     @NotNull
     @Pattern(regexp=NAME_SERVER_REGEX, message="{server.invalid.name}", payload=ServerRef.class)
+    @ReferenceConstraint.RemoteKey(message="{resourceref.invalid.server-ref}", type=Server.class)
     public String getRef();
 
     /**

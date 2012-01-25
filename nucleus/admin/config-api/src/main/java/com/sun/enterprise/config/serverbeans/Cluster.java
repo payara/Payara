@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -44,6 +44,7 @@ import com.sun.enterprise.config.serverbeans.customvalidators.NotTargetKeyword;
 import com.sun.enterprise.config.serverbeans.customvalidators.NotDuplicateTargetName;
 import com.sun.enterprise.config.serverbeans.customvalidators.ConfigRefConstraint;
 import com.sun.enterprise.config.serverbeans.customvalidators.ConfigRefValidator;
+import com.sun.enterprise.config.serverbeans.customvalidators.ReferenceConstraint;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.io.FileUtils;
 import com.sun.logging.LogDomains;
@@ -94,6 +95,7 @@ import javax.validation.constraints.Pattern;
 @SuppressWarnings("unused")
 @ConfigRefConstraint(message="{configref.invalid}", payload= ConfigRefValidator.class)
 @NotDuplicateTargetName(message="{cluster.duplicate.name}", payload=Cluster.class)
+@ReferenceConstraint(skipDuringCreation=true, payload=Cluster.class)
 public interface Cluster extends ConfigBeanProxy, Injectable, PropertyBag, Named, SystemPropertyBag, ReferenceContainer, RefContainer, Payload {
 
     /**
@@ -119,6 +121,7 @@ public interface Cluster extends ConfigBeanProxy, Injectable, PropertyBag, Named
     @Attribute
     @NotNull
     @Pattern(regexp=NAME_SERVER_REGEX)
+    @ReferenceConstraint.RemoteKey(message="{resourceref.invalid.configref}", type=Config.class)
     String getConfigRef();
 
     /**

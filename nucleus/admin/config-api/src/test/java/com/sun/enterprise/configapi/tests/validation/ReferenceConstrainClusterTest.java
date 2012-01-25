@@ -38,14 +38,14 @@
  * holder.
  */
 
-package org.glassfish.resources.config.validation;
+package com.sun.enterprise.configapi.tests.validation;
 
-import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.config.serverbeans.Cluster;
+import com.sun.enterprise.config.serverbeans.ServerRef;
+import com.sun.enterprise.configapi.tests.ConfigApiTest;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import javax.validation.ConstraintViolationException;
-import org.glassfish.connectors.config.JdbcResource;
 import org.junit.Test;
 import org.junit.Before;
 import org.jvnet.hk2.component.Habitat;
@@ -53,7 +53,6 @@ import org.glassfish.tests.utils.Utils;
 import org.jvnet.hk2.config.ConfigBean;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.TransactionFailure;
-import org.glassfish.resources.config.ConfigApiTest;
 
 import static org.junit.Assert.*;
 
@@ -61,14 +60,14 @@ import static org.junit.Assert.*;
  *
  * @author mmares
  */
-public class ReferenceConstrainTest extends ConfigApiTest {
+public class ReferenceConstrainClusterTest extends ConfigApiTest {
     
 //    private Logger logger = Logger.getLogger(ReferenceConstrainTest.class.getName());
     private Habitat habitat;
 
     @Override
     public String getFileName() {
-        return "DomainTest";
+        return "ClusterDomain";
     }
 
     @Override
@@ -92,59 +91,76 @@ public class ReferenceConstrainTest extends ConfigApiTest {
     }
     
     @Test
-    public void doChangeToValidPool() throws TransactionFailure {
-        Domain domain = habitat.getComponent(Domain.class);
-        //Find JdbcResource to chenge its values
-        Iterator<JdbcResource> iterator = domain.getResources().getResources(JdbcResource.class).iterator();
-        JdbcResource jdbc = null;
-        while (iterator.hasNext()) {
-            JdbcResource res = iterator.next();
-            if ("__TimerPool".equals(res.getPoolName())) {
-                jdbc = res;
-                break;
-            }
-        }
-        assertNotNull(jdbc);
-        ConfigBean poolConfig = (ConfigBean) ConfigBean.unwrap(jdbc);
+    public void clusterServerRefInvalid() throws TransactionFailure {
+        Cluster cluster = habitat.getComponent(Cluster.class, "clusterA");
+        assertNotNull(cluster);
+        ServerRef sref = cluster.getServerRef().get(0);
+        ConfigBean serverConfig = (ConfigBean) ConfigBean.unwrap(sref);
         Map<ConfigBean, Map<String, String>> changes = new HashMap<ConfigBean, Map<String, String>>();
         Map<String, String> configChanges = new HashMap<String, String>();
-        configChanges.put("pool-name", "DerbyPool");
-        changes.put(poolConfig, configChanges);
-        try {
-            ConfigSupport cs = getHabitat().getComponent(ConfigSupport.class);
-            cs.apply(changes);
-        } catch (TransactionFailure tf) {
-            fail();
-        }
-    }
-    
-    @Test
-    public void doChangeToInValidPool() throws TransactionFailure {
-        Domain domain = habitat.getComponent(Domain.class);
-        //Find JdbcResource to chenge its values
-        Iterator<JdbcResource> iterator = domain.getResources().getResources(JdbcResource.class).iterator();
-        JdbcResource jdbc = null;
-        while (iterator.hasNext()) {
-            JdbcResource res = iterator.next();
-            if ("__TimerPool".equals(res.getPoolName())) {
-                jdbc = res;
-                break;
-            }
-        }
-        assertNotNull(jdbc);
-        ConfigBean poolConfig = (ConfigBean) ConfigBean.unwrap(jdbc);
-        Map<ConfigBean, Map<String, String>> changes = new HashMap<ConfigBean, Map<String, String>>();
-        Map<String, String> configChanges = new HashMap<String, String>();
-        configChanges.put("pool-name", "WrongPointer");
-        changes.put(poolConfig, configChanges);
+        configChanges.put("ref", "server-nonexist");
+        changes.put(serverConfig, configChanges);
         try {
             ConfigSupport cs = getHabitat().getComponent(ConfigSupport.class);
             cs.apply(changes);
             fail("Can not reach this point");
         } catch (TransactionFailure tf) {
             ConstraintViolationException cv = findConstrViolation(tf);
-//            cv.printStackTrace(System.out);
             assertNotNull(cv);
+        }
+    }
+    
+    @Test
+    public void clusterServerRefValid() throws TransactionFailure {
+        Cluster cluster = habitat.getComponent(Cluster.class, "clusterA");
+        assertNotNull(cluster);
+        ServerRef sref = cluster.getServerRef().get(0);
+        ConfigBean serverConfig = (ConfigBean) ConfigBean.unwrap(sref);
+        Map<ConfigBean, Map<String, String>> changes = new HashMap<ConfigBean, Map<String, String>>();
+        Map<String, String> configChanges = new HashMap<String, String>();
+        configChanges.put("ref", "server");
+        changes.put(serverConfig, configChanges);
+        try {
+            ConfigSupport cs = getHabitat().getComponent(ConfigSupport.class);
+            cs.apply(changes);
+        } catch (TransactionFailure tf) {
+            fail("Can not reach this point");
+        }
+    }
+    
+    @Test
+    public void clusterConfigRefInvalid() throws TransactionFailure {
+        Cluster cluster = habitat.getComponent(Cluster.class, "clusterA");
+        assertNotNull(cluster);
+        ConfigBean serverConfig = (ConfigBean) ConfigBean.unwrap(cluster);
+        Map<ConfigBean, Map<String, String>> changes = new HashMap<ConfigBean, Map<String, String>>();
+        Map<String, String> configChanges = new HashMap<String, String>();
+        configChanges.put("config-ref", "server-config-nonexist");
+        changes.put(serverConfig, configChanges);
+        try {
+            ConfigSupport cs = getHabitat().getComponent(ConfigSupport.class);
+            cs.apply(changes);
+            fail("Can not reach this point");
+        } catch (TransactionFailure tf) {
+            ConstraintViolationException cv = findConstrViolation(tf);
+            assertNotNull(cv);
+        }
+    }
+    
+    @Test
+    public void clusterConfigRefValid() throws TransactionFailure {
+        Cluster cluster = habitat.getComponent(Cluster.class, "clusterA");
+        assertNotNull(cluster);
+        ConfigBean serverConfig = (ConfigBean) ConfigBean.unwrap(cluster);
+        Map<ConfigBean, Map<String, String>> changes = new HashMap<ConfigBean, Map<String, String>>();
+        Map<String, String> configChanges = new HashMap<String, String>();
+        configChanges.put("config-ref", "server-config");
+        changes.put(serverConfig, configChanges);
+        try {
+            ConfigSupport cs = getHabitat().getComponent(ConfigSupport.class);
+            cs.apply(changes);
+        } catch (TransactionFailure tf) {
+            fail("Can not reach this point");
         }
     }
     

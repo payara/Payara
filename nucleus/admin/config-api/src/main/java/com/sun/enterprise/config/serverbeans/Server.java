@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -57,9 +57,7 @@ import java.io.*;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.config.support.*;
-import com.sun.enterprise.config.serverbeans.BindableResource;
-import com.sun.enterprise.config.serverbeans.Resource;
-import com.sun.enterprise.config.serverbeans.ResourceRef;
+import com.sun.enterprise.config.serverbeans.customvalidators.ReferenceConstraint;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
@@ -102,6 +100,7 @@ import org.glassfish.api.admin.CommandRunner;
 @ConfigRefConstraint(message="{configref.invalid}", payload=ConfigRefValidator.class)
 @SuppressWarnings("unused")
 @NotDuplicateTargetName(message="{server.duplicate.name}", payload=Server.class)
+@ReferenceConstraint(skipDuringCreation=true, payload=Server.class)
 public interface Server extends ConfigBeanProxy, Injectable, PropertyBag, Named, SystemPropertyBag, ReferenceContainer, RefContainer, Payload {
 
     String lbEnabledSystemProperty = "org.glassfish.lb-enabled-default";
@@ -128,6 +127,7 @@ public interface Server extends ConfigBeanProxy, Injectable, PropertyBag, Named,
     @NotNull
     @NotTargetKeyword(message="{server.reserved.name}", payload=Server.class)
     @Pattern(regexp = NAME_SERVER_REGEX)
+    @ReferenceConstraint.RemoteKey(message="{resourceref.invalid.configref}", type=Config.class)
     String getConfigRef();
 
     /**
