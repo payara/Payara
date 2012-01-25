@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -53,6 +53,7 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
+import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;  
 import org.xml.sax.InputSource;
@@ -206,6 +207,11 @@ public class ResourcesXMLParser implements EntityResolver
         // Remove all the existing property nodes.
         while (resourceNode.hasChildNodes()) {
             resourceNode.removeChild(resourceNode.getFirstChild());
+        }
+
+        HashMap<String,String> attrs = modifiedResource.getAttributes();
+        for (String key : attrs.keySet()) {
+            ((Element)resourceNode).setAttribute(key, attrs.get(key));
         }
 
         // Put the new/modified property nodes.
