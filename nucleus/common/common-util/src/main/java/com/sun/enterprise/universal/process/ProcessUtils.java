@@ -74,6 +74,12 @@ public final class ProcessUtils {
         }
     }
 
+    /**
+     * Look for <strong>name</strong> in the Path.  If it is found and if it is
+     * executable then return a File object pointing to it.  Otherwise return nu
+     * @param name the name of the file with no path
+     * @return the File object or null
+     */
     public static File getExe(String name) {
         for (String path : paths) {
             File f = new File(path + "/" + name);
