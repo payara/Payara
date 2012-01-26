@@ -268,7 +268,10 @@ public class InstanceDeployCommand extends InstanceDeployCommandParameters imple
         }
 
         final File baseDir = deploymentContext.getScratchDir("xml").getParentFile().getParentFile();
-        baseDir.mkdirs();
+        if ( ! baseDir.mkdirs()) {
+            throw new IOException(localStrings.getLocalString("instancedeploy.command.errcredir",
+                        "Error creating directory {0}.  No further information about the failure is available.", baseDir.getAbsolutePath()));
+        }
 
         final URI baseURI = baseDir.toURI();
         final ZipFile zipFile = new ZipFile(generatedContentParam);
@@ -280,7 +283,11 @@ public class InstanceDeployCommand extends InstanceDeployCommandParameters imple
                 outputFile.mkdirs();
             } else {
                 final FileOutputStream os = new FileOutputStream(outputFile);
-                FileUtils.copy(zipFile.getInputStream(zipEntry), os, zipEntry.getSize());
+                try {
+                    FileUtils.copy(zipFile.getInputStream(zipEntry), os, zipEntry.getSize());
+                } catch (IOException e) {
+                    os.close();
+                }
             }
         }
     }
