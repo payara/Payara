@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2007-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -95,21 +95,26 @@ public class ConnectorClassLoaderServiceImpl implements ConnectorClassLoaderServ
        // and also cannot initialize globalConnectorCL during postConstruct via ClassLoaderHierarchy
        // which will result in circular dependency injection between kernel and connector module
        // Hence initializing globalConnectorCL lazily
-       if(globalConnectorCL == null){
-           synchronized (ConnectorClassLoaderServiceImpl.class){
-               if(globalConnectorCL == null){
-                   final ClassLoader parent = getCommonClassLoader();
-                   globalConnectorCL =  AccessController.doPrivileged(new PrivilegedAction<DelegatingClassLoader>() {
-                       public DelegatingClassLoader run() {
-                           return new DelegatingClassLoader(parent);
-                       }
-                   });
+        if (globalConnectorCL == null) {
+            synchronized (ConnectorClassLoaderServiceImpl.class) {
+                if (globalConnectorCL == null) {
+                    //[parent is assumed to be common-class-loader in ConnectorClassLoaderUtil.createRARClassLoader() also]
+                    final ClassLoader parent = getCommonClassLoader();
+                    globalConnectorCL = AccessController.doPrivileged(new PrivilegedAction<DelegatingClassLoader>() {
+                        public DelegatingClassLoader run() {
+                            DelegatingClassLoader dcl = new DelegatingClassLoader(parent);
+                            for (DelegatingClassLoader.ClassFinder cf : appsSpecificCCLUtil.getSystemRARClassLoaders()) {
+                                dcl.addDelegate(cf);
+                            }
+                            return dcl;
+                        }
+                    });
 
-                    for(DelegatingClassLoader.ClassFinder cf : appsSpecificCCLUtil.getSystemRARClassLoaders()){
+                    for (DelegatingClassLoader.ClassFinder cf : appsSpecificCCLUtil.getSystemRARClassLoaders()) {
                         globalConnectorCL.addDelegate(cf);
                     }
-               }
-           }
+                }
+            }
         }
         if (hasGlobalAccessForRARs(appName)) {
             assert (globalConnectorCL != null);

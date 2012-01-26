@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -105,12 +105,12 @@ public class ConnectorsClassLoaderUtil {
 
         //For standalone rar :
         //this is not a normal application and hence cannot use the provided parent during deployment.
-        //setting the parent to connector-class-loader's parent as this is a .rar
+        //setting the parent to connector-class-loader's parent (common class-loader) as this is a .rar
         //For embedded rar :
         //use the deploymentParent as the class-finder created won't be part of connector class loader
         //service hierarchy
         if(deploymentParent == null){
-            parent = clh.getConnectorClassLoader(null).getParent();
+            parent = clh.getCommonClassLoader();
         }else{
             parent = deploymentParent;
         }
