@@ -67,7 +67,7 @@ public final class ProcessUtils {
         for (String s : args) {
             String ret = killJvm(s);
 
-            if(ret == null)
+            if (ret == null)
                 ret = "SUCCESS!!";
 
             System.out.println(s + " ===> " + ret);
@@ -186,10 +186,10 @@ public final class ProcessUtils {
         pm.execute();
         String out = pm.getStdout() + pm.getStderr();
 
-        /* output is either 
-        (1) 
+        /* output is either
+        (1)
         INFO: No tasks running with the specified criteria.
-        (2) 
+        (2)
         java.exe                    3760 Console                 0     64,192 K
          */
 
@@ -200,8 +200,8 @@ public final class ProcessUtils {
         }
 
         if (ok(out)) {
-            // check for java.exe because tasklist or some other command might 
-            // be reusing the pid. This isn't a guarantee because some other 
+            // check for java.exe because tasklist or some other command might
+            // be reusing the pid. This isn't a guarantee because some other
             // java process might be reusing the pid.
             if (out.indexOf("java.exe") >= 0 && out.indexOf(pidString) >= 0)
                 return true;
