@@ -268,7 +268,7 @@ public class InstanceDeployCommand extends InstanceDeployCommandParameters imple
         }
 
         final File baseDir = deploymentContext.getScratchDir("xml").getParentFile().getParentFile();
-        if ( ! baseDir.mkdirs()) {
+        if ( ! baseDir.exists() && ! baseDir.mkdirs()) {
             throw new IOException(localStrings.getLocalString("instancedeploy.command.errcredir",
                         "Error creating directory {0}.  No further information about the failure is available.", baseDir.getAbsolutePath()));
         }
