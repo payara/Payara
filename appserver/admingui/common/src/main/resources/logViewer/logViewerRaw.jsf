@@ -57,7 +57,7 @@
 <sun:head id="propertyhead" title="$resource{i18nc.logViewerRaw.PageTitle}" debug="false" parseOnLoad="false">
     <sun:script url="/resource/common/js/adminjsf.js" />
 </sun:head>
-<sun:body onLoad="javascript: logViewerRaw('/management/domain/view-log/?instanceName=' + encodeURIComponent('#{instanceName}'))" id="body3">
+<sun:body onLoad="javascript: logViewerRaw('/download/log/?contentSourceId=LogViewer&start=0&instanceName=' + encodeURIComponent('#{instanceName}') + '&restUrl=' + encodeURIComponent('#{sessionScope.REST_URL}'))" id="body3">
 <sun:form id="propertyForm">
 #include "/common/shared/alertMsg.inc"
     <!-- Page Title -->
@@ -97,8 +97,8 @@ function logViewerRaw(url) {
     var timeout = 1000;
     
     var success = function(xhr, targetId, requestedUrl) {
-        if (xhr.status == 200) {
-            if (xhr.responseText) {
+        if (xhr.status == 200 && xhr.getResponseHeader('Content-Type') == "text/plain") {
+            if (xhr.responseText ) {
                 var records = document.createTextNode(xhr.responseText);
                 var documentX = window.pageXOffset || document.body.scrollLeft /* IE */;
                 var documentY = window.pageYOffset || document.body.scrollTop /* IE */;
@@ -112,15 +112,19 @@ function logViewerRaw(url) {
                 }
             }
             // get only new records next time
-            url = xhr.getResponseHeader('X-Text-Append-Next');
+            var nextRestUrl = xhr.getResponseHeader('X-Text-Append-Next');
+            if (nextRestUrl != undefined) {
+	            var matches = nextRestUrl.match(/start=\\d+/)
+	            if (matches) {
+	                url = url.replace(/start=\\d+/, matches[0]);
+	            }
+            }
         }
         setTimeout(poll, timeout);
     };
 
     var poll = function() {
-        admingui.ajax.get(url, 'log', success, function(req) {
-            req.setRequestHeader('X-Auth-Token', '#{sessionScope.__rTkn__}');
-        });
+        admingui.ajax.get(url, 'log', success);
     }
     
     poll();

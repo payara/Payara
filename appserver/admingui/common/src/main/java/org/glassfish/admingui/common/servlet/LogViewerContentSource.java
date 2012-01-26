@@ -40,24 +40,21 @@
 
 package org.glassfish.admingui.common.servlet;
 
-import java.io.File;
 import java.io.InputStream;
 
-import java.io.FileInputStream;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.servlet.ServletRequest;
+import javax.servlet.http.HttpServletRequest;
 import org.glassfish.admingui.common.util.RestUtil;
+
+import com.sun.jersey.api.client.ClientResponse;
 
 /**
  *
  * @author andriy.zhdanov
  */
-public class ClientStubsContentSource  implements DownloadServlet.ContentSource {
+public class LogViewerContentSource  implements DownloadServlet.ContentSource {
     
      /**
      *  <p> This method returns a unique string used to identify this
@@ -67,7 +64,7 @@ public class ClientStubsContentSource  implements DownloadServlet.ContentSource 
      *      {@link DownloadServlet}.</p>
      */
     public String getId() {
-        return "ClientStubs";                                 // NOI18N
+        return "LogViewer";                                 // NOI18N
     }
 
     /**
@@ -79,34 +76,31 @@ public class ClientStubsContentSource  implements DownloadServlet.ContentSource 
      */
     public InputStream getInputStream(DownloadServlet.Context ctx) {
         // Set the extension so it can be mapped to a MIME type
-        ctx.setAttribute(DownloadServlet.EXTENSION, "zip");
+        ctx.setAttribute(DownloadServlet.EXTENSION, "asc");
 
-        // Get appName
-        ServletRequest request = ctx.getServletRequest();
-        String appName = request.getParameter("appName");
+        HttpServletRequest request = (HttpServletRequest) ctx.getServletRequest();
+        //http://localhost:4848/management/domain/view-log/?start=180427&instanceName=server
         String restUrl = request.getParameter("restUrl");
+        String start = request.getParameter("start");
+        String instanceName = request.getParameter("instanceName");
         
         // Create the tmpFile
         InputStream tmpFile = null;
         try {
-            String endpoint = restUrl + "/applications/application/" + appName + "/get-client-stubs";
-            DateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
-            Date date = new Date();
-            Map attrsMap = new HashMap();
-            String tempDir = System.getProperty("java.io.tmpdir");
-            String fileName = "client-stubs-" + appName + "-" + dateFormat.format(date) + ".zip";
-            String filePath = tempDir + System.getProperty("file.separator") + fileName;
-            File file = new File(filePath);
-            attrsMap.put("localDir", filePath); // CAUTION: file instead of dir
-            RestUtil.restRequest( endpoint , attrsMap, "get", null, false);
-            tmpFile = new FileInputStream(file);
-            file.delete();
+            String endpoint = restUrl + "/view-log/";
+            Map<String, Object> attrsMap = new HashMap<String, Object>();
+            attrsMap.put("start", start); 
+            attrsMap.put("instanceName", instanceName);
+            ClientResponse cr = RestUtil.getRequestFromServlet(request, endpoint, attrsMap);
+            Map<String, String> headers = new HashMap<String, String>();
+            if (cr.getHeaders().containsKey("X-Text-Append-Next")) {
+                headers.put("X-Text-Append-Next", cr.getHeaders().getFirst("X-Text-Append-Next"));
+            }
+            ctx.setAttribute(DownloadServlet.HEADERS, headers);
+            tmpFile = cr.getEntityInputStream();
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
-
-        // Save some important stuff for cleanUp
-        ctx.setAttribute("tmpFile", tmpFile);                   // NOI18N
 
         // Return an InputStream to the tmpFile
         return tmpFile;
@@ -118,20 +112,7 @@ public class ClientStubsContentSource  implements DownloadServlet.ContentSource 
      *      completely read.</p>
      */
     public void cleanUp(DownloadServlet.Context ctx) {
-        // Get the File information
-        InputStream tmpFile =
-            (InputStream) ctx.getAttribute("tmpFile");          // NOI18N
-
-        // Close the InputStream
-        if (tmpFile != null) {
-            try {
-                tmpFile.close();
-            } catch (Exception ex) {
-                // Ignore...
-            }
-        }
-
-        ctx.removeAttribute("tmpFile");                 // NOI18N
+        // Nothing to do
     }
 
     /**

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -79,7 +79,7 @@ public class LogFilesContentSource  implements DownloadServlet.ContentSource {
      */
     public InputStream getInputStream(DownloadServlet.Context ctx) {
         // Set the extension so it can be mapped to a MIME type
-        ctx.setAttribute(DownloadServlet.EXTENSION, "CLIENT-STUBS");
+        ctx.setAttribute(DownloadServlet.EXTENSION, "zip");
 
         // Get appName
         ServletRequest request = ctx.getServletRequest();

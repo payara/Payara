@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -264,6 +264,18 @@ public class DownloadServlet extends HttpServlet {
 	    }
 	}
 	((HttpServletResponse) resp).setHeader("Content-type", contentType);
+	
+	// Write additional headers
+	Object o = context.getAttribute(HEADERS);
+	if (o instanceof Map) {
+	    @SuppressWarnings("unchecked")
+	    Map<String, String> headers = (Map<String, String>) o;
+	    for (Map.Entry<String, String> h: headers.entrySet()) {
+    	        ((HttpServletResponse) resp).setHeader(h.getKey(), h.getValue());
+	    }
+	}
+	// TODO: log warning
+	
     }
 
     /**
@@ -690,4 +702,12 @@ public class DownloadServlet extends HttpServlet {
      *	    the content if it were saved to a filesystem.</p>
      */
     public static final String EXTENSION = "extension";
+
+    /**
+     *  <p> This is the {@link DownloadServlet#Context} attribute name used to
+     *      specify optional additional headers.  It must be set to
+     *      <codde>Map<String, String></code> object when needed.</p>
+     */
+    public static final String HEADERS = "Headers";
 }
+

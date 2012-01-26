@@ -714,6 +714,16 @@ public class RestUtil {
         return token;
     }
 
+    public static ClientResponse getRequestFromServlet(HttpServletRequest request, String endpoint, Map<String, Object> attrs) {
+        String token = (String) request.getSession().getAttribute(AdminConsoleAuthModule.REST_TOKEN);
+        WebResource webResource = JERSEY_CLIENT.resource(endpoint).queryParams(buildMultivalueMap(attrs));
+        ClientResponse cr = webResource
+                .cookie(new Cookie(REST_TOKEN_COOKIE, token))
+                .get(ClientResponse.class);
+        
+        return cr;
+    }
+
     //******************************************************************************************************************
     // Jersey client methods
     //******************************************************************************************************************

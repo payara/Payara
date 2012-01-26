@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -88,7 +88,7 @@ public class LBConfigContentSource  implements DownloadServlet.ContentSource {
      */
     public InputStream getInputStream(DownloadServlet.Context ctx) {
 	// Set the extension so it can be mapped to a MIME type
-	ctx.setAttribute(DownloadServlet.EXTENSION, "LB-CONFIG");
+	ctx.setAttribute(DownloadServlet.EXTENSION, "xml");
 
 	// Get appName
 	HttpServletRequest request = (HttpServletRequest) ctx.getServletRequest();
