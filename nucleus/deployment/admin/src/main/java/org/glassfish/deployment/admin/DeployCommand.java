@@ -687,6 +687,7 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
             final boolean reportErrorsInTopReport) {
 
         Logger logger = context.getLogger();
+        FileOutputStream targetStream = null;
         try {
             Payload.Outbound outboundPayload = context.getOutboundPayload();
             // GLASSFISH-17554: pass to DownloadServlet
@@ -723,25 +724,38 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
                             "Unable to generate files. Directory [{0}] does not exist.", targetLocalFile.getParent());
                     throw new Exception(msg);
                 }
-                FileOutputStream targetStream = new FileOutputStream(targetLocalFile);
+                targetStream = new FileOutputStream(targetLocalFile);
                 outboundPayload.writeTo(targetStream);
                 targetStream.flush();
-                targetStream.close();
             }
         } catch (Exception e) {
-            final String errorMsg = localStrings.getLocalString(
-                    "download.errDownloading", "Error while downloading generated files");
-            logger.log(Level.SEVERE, errorMsg, e);
-            ActionReport report = context.getActionReport();
-            if ( ! reportErrorsInTopReport) {
-                report = report.addSubActionsReport();
-                report.setActionExitCode(ExitCode.WARNING);
-            } else {
-                report.setActionExitCode(ExitCode.FAILURE);
+            handleRetrieveException(e, context, reportErrorsInTopReport);
+        } finally {
+            if (targetStream != null) {
+                try {
+                    targetStream.close();
+                } catch (IOException ex) {
+                    handleRetrieveException(ex, context, reportErrorsInTopReport);
+                }
             }
-            report.setMessage(errorMsg);
-            report.setFailureCause(e);
         }
+    }
+    
+    private static void handleRetrieveException(final Exception e, 
+            final AdminCommandContext context, final boolean reportErrorsInTopReport) {
+        final String errorMsg = localStrings.getLocalString(
+                    "download.errDownloading", "Error while downloading generated files");
+        final Logger logger = context.getLogger();
+        logger.log(Level.SEVERE, errorMsg, e);
+        ActionReport report = context.getActionReport();
+        if ( ! reportErrorsInTopReport) {
+            report = report.addSubActionsReport();
+            report.setActionExitCode(ExitCode.WARNING);
+        } else {
+            report.setActionExitCode(ExitCode.FAILURE);
+        }
+        report.setMessage(errorMsg);
+        report.setFailureCause(e);
     }
 
     
