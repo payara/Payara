@@ -81,7 +81,7 @@ public class InstanceStateServiceImpl implements InstanceStateService {
 
     private InstanceStateFileProcessor stateProcessor;
     private HashMap<String, InstanceState> instanceStates;
-    private final int MAX_RECORDED_FAILED_COMMANDS = 10;
+    private final static int MAX_RECORDED_FAILED_COMMANDS = 10;
     private final static Logger logger = LogDomains.getLogger(InstanceStateService.class, LogDomains.ADMIN_LOGGER);
 
     public InstanceStateServiceImpl() {}

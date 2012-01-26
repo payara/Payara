@@ -46,7 +46,6 @@ import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.config.serverbeans.SystemProperty;
 import com.sun.enterprise.util.io.FileUtils;
-import java.io.*;
 import java.io.File;
 import java.util.Collections;
 import java.util.List;
@@ -123,7 +122,9 @@ public class SystemTasksImpl implements SystemTasks, PostConstruct {
             _logger.warning(strings.get("internal_error", e));
         }
         finally {
-            pidFile.deleteOnExit();
+            if (pidFile != null) {
+                pidFile.deleteOnExit();
+            }
         }
     }
 
@@ -265,9 +266,7 @@ public class SystemTasksImpl implements SystemTasks, PostConstruct {
             File pidFile = new File(configDir, "pid");
 
             if (pidFile.exists()) {
-                pidFile.delete();
-
-                if (pidFile.exists()) {
+                if (!pidFile.delete() || pidFile.exists()) {
                     throw new PidException(strings.get("cant_delete_pid_file", pidFile));
                 }
             }
