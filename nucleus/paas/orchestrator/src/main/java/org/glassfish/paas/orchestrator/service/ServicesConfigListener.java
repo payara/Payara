@@ -161,7 +161,7 @@ public class ServicesConfigListener implements ConfigListener, PostConstruct, Pr
 
         private <T extends ConfigBeanProxy> NotProcessed handleAddEvent(T instance) {
             NotProcessed np = null;
-            if (instance instanceof SharedService) {
+/*            if (instance instanceof SharedService) {
                 SharedService service = (SharedService) instance;
                 //System.out.println("shared service [" + service.getServiceName() + "] added");
                 logger.log(Level.INFO,"shared.service.added",service.getServiceName());
@@ -225,7 +225,7 @@ public class ServicesConfigListener implements ConfigListener, PostConstruct, Pr
                 ProvisionedService ps = defaultPlugin.provisionService(sd, pdc);
                 serviceUtil.registerService(null, ps);
                 //serviceOrchestrator.addSharedService(sd.getName(), ps);
-            }else if (instance instanceof ExternalService){
+            }else*/ if (instance instanceof ExternalService){
                 ExternalService externalService = (ExternalService)instance;
                 ConfiguredService configuredService = serviceUtil.getExternalService(externalService.getServiceName());
                 serviceOrchestrator.addExternalService(externalService.getServiceName(), configuredService);

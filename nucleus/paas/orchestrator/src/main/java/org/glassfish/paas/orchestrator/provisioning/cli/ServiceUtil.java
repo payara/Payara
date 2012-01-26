@@ -518,47 +518,32 @@ public class ServiceUtil {
     public void registerService(final ServiceInfo entry) {
         Services services = getServices();
         try {
-            //TODO for now, if app-name is null, check whether its a shared service and
-            //TODO update instead of registering the entry.
             if (entry.getAppName() == null) {
-                boolean serviceFound = false;
-                for (Service service : services.getServices()) {
-                    if (service.getServiceName().equals(entry.getServiceName())) {
-                        serviceFound = true;
-                        break;
-                    }
-                }
+                ConfigSupport.apply(new SingleConfigCode<Services>() {
+                    public Object run(Services servicesConfig) throws PropertyVetoException, TransactionFailure {
+                        SharedService service = servicesConfig.createChild(SharedService.class);
+                        service.setServiceName(entry.getServiceName());
+                        service.setType(entry.getServerType());
 
-                if (serviceFound) {
-                    ConfigSupport.apply(new SingleConfigCode<Services>() {
-                        Service matchingService = null;
-                        public Object run(Services param) throws PropertyVetoException, TransactionFailure {
-                            for (Service service : param.getServices()) {
-                                if (service.getServiceName().equals(entry.getServiceName())) {
-                                    if (service instanceof SharedService) {
-                                        SharedService sharedService = (SharedService) service;
-                                        Transaction t = Transaction.getTransaction(param);
-                                        SharedService t_service = t.enroll(sharedService);
-                                        t_service.setState(entry.getState());
-                                        matchingService = service;
-                                        break;
-                                    }
-                                }
+                        if (entry.getParentService() != null) {
+                            service.setParentService(entry.getParentService().getServiceName());
+                        }
+                        service.setState(entry.getState());
+
+                        Map<String, String> properties = entry.getProperties();
+                        if (properties != null) {
+                            for (Map.Entry<String, String> entry : properties.entrySet()) {
+                                Property prop = service.createChild(Property.class);
+                                prop.setName(entry.getKey());
+                                prop.setValue(entry.getValue());
+                                service.getProperty().add(prop);
                             }
-                            return matchingService;
                         }
-                    }, services);
 
-                    Map<String, String> properties = entry.getProperties();
-                    if (properties != null) {
-                        for (Map.Entry<String, String> property : properties.entrySet()) {
-                            setProperty(entry.getServiceName(), null, property.getKey(), property.getValue());
-                        }
+                        servicesConfig.getServices().add(service);
+                        return service;
                     }
-                } else {
-                    throw new RuntimeException("unable to find a shared or" +
-                            " external service by name [" + entry.getServiceName() + "]");
-                }
+                }, services);
             } else if (ConfigSupport.apply(new SingleConfigCode<Services>() {
                 public Object run(Services servicesConfig) throws PropertyVetoException, TransactionFailure {
                     ApplicationScopedService service = servicesConfig.createChild(ApplicationScopedService.class);
@@ -569,7 +554,7 @@ public class ServiceUtil {
                     if (entry.getAppName() != null) {
                         service.setApplicationName(entry.getAppName());
                     }
-                    if(entry.getParentService() != null){
+                    if (entry.getParentService() != null) {
                         service.setParentService(entry.getParentService().getServiceName());
                     }
                     service.setState(entry.getState());
@@ -588,8 +573,8 @@ public class ServiceUtil {
                     return service;
                 }
             }, services) == null) {
-                String msg = "Unable to service [" + entry.getServiceName() + "]";
-                System.out.println(msg);
+                String msg = "Unable to register service [" + entry.getServiceName() + "]";
+                logger.log(Level.WARNING, msg);
                 throw new RuntimeException(msg);
             }
         } catch (TransactionFailure exception) {
@@ -756,20 +741,13 @@ public class ServiceUtil {
         }
     }
 
-    public void registerService(String appName, org.glassfish.paas.orchestrator.service.spi.Service service) {
-        ServiceInfo serviceInfo = new ServiceInfo();
-        serviceInfo.setServiceName(service.getName());
-        serviceInfo.setAppName(appName);
-        if(service.getServiceProperties().getProperty("vm-id") != null){
-            serviceInfo.setInstanceId(service.getServiceProperties().getProperty("vm-id"));
+    public void registerService(String appName, org.glassfish.paas.orchestrator.service.spi.Service service,
+                                org.glassfish.paas.orchestrator.service.spi.Service parentService) {
+        ServiceInfo parentServiceInfo = null;
+        if(parentService != null){
+            parentServiceInfo = createServiceInfo(appName, parentService, null);
         }
-        if(service.getServiceProperties().getProperty("ip-address") != null){
-            serviceInfo.setIpAddress(service.getServiceProperties().getProperty("ip-address"));
-        }
-        serviceInfo.setServerType(service.getServiceType().toString());
-        if(service instanceof ProvisionedService){
-            serviceInfo.setState(((ProvisionedService)service).getStatus().toString());
-        }
+        ServiceInfo serviceInfo = createServiceInfo(appName, service, parentServiceInfo);
         registerService(serviceInfo);
         if(service.getChildServices() != null){
             for(org.glassfish.paas.orchestrator.service.spi.Service serviceNode : service.getChildServices()){
@@ -786,8 +764,13 @@ public class ServiceUtil {
         ServiceInfo serviceInfo = new ServiceInfo();
         serviceInfo.setServiceName(serviceNode.getName());
         serviceInfo.setAppName(appName);
-        serviceInfo.setInstanceId(serviceNode.getServiceProperties().getProperty("vm-id"));
-        serviceInfo.setIpAddress(serviceNode.getServiceProperties().getProperty("ip-address"));
+        if(serviceNode.getServiceProperties().getProperty("vm-id") != null){
+            serviceInfo.setInstanceId(serviceNode.getServiceProperties().getProperty("vm-id"));
+        }
+        if(serviceNode.getServiceProperties().getProperty("ip-address") != null){
+            serviceInfo.setIpAddress(serviceNode.getServiceProperties().getProperty("ip-address"));
+        }
+
         serviceInfo.setServerType(serviceNode.getServiceType().toString());
         if(serviceNode instanceof ProvisionedService){
             serviceInfo.setState(((ProvisionedService) serviceNode).getStatus().toString());

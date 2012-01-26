@@ -41,33 +41,45 @@
 package org.glassfish.paas.orchestrator.provisioning.cli;
 
 import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.logging.LogDomains;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
+import org.glassfish.paas.orchestrator.PaaSDeploymentContext;
+import org.glassfish.paas.orchestrator.ServiceOrchestratorImpl;
 import org.glassfish.paas.orchestrator.config.*;
+import org.glassfish.paas.orchestrator.provisioning.ServiceScope;
+import org.glassfish.paas.orchestrator.service.metadata.ServiceCharacteristics;
+import org.glassfish.paas.orchestrator.service.metadata.ServiceDescription;
+import org.glassfish.paas.orchestrator.service.metadata.TemplateIdentifier;
+import org.glassfish.paas.orchestrator.service.spi.ProvisionedService;
+import org.glassfish.paas.orchestrator.service.spi.ServicePlugin;
 import org.glassfish.virtualization.config.Template;
 import org.glassfish.virtualization.config.Virtualization;
 import org.glassfish.virtualization.config.Virtualizations;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.PerLookup;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
-import org.jvnet.hk2.config.Transaction;
 import org.jvnet.hk2.config.TransactionFailure;
 import org.jvnet.hk2.config.types.Property;
 
 import java.beans.PropertyVetoException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * @author Jagadish Ramu
  */
-@Service(name = "create-shared-service")
+@org.jvnet.hk2.annotations.Service(name = "create-shared-service")
 @Scoped(PerLookup.class)
 @ExecuteOn(RuntimeType.DAS)
 @TargetType(value = {CommandTarget.DAS})
@@ -110,10 +122,19 @@ public class CreateSharedService implements AdminCommand {
     @Inject
     private ServiceUtil serviceUtil;
 
+    @Inject
+    private Habitat habitat;
+
     private boolean templateFound=false;
 
-    //TODO logging
-    //TODO java-doc
+    @Inject
+    private CommandRunner commandRunner;
+
+    private static Logger logger = LogDomains.getLogger(ServiceOrchestratorImpl.class, LogDomains.PAAS_LOGGER);
+
+    @Inject
+    private ServiceOrchestratorImpl serviceOrchestrator;
+
     public void execute(AdminCommandContext context) {
 
         final ActionReport report = context.getActionReport();
@@ -123,8 +144,6 @@ public class CreateSharedService implements AdminCommand {
             report.setFailureCause(new UnsupportedOperationException("Init type 'lazy' not supported. Set init-mode of service as 'eager'"));
             return;
         }
-
-        //TODO accept either template-id or characteristics but not both.
 
         if (template != null && characteristics != null) {
             report.setMessage("Provide either template or characteristics and not both while creating a shared service");
@@ -152,6 +171,16 @@ public class CreateSharedService implements AdminCommand {
             }
         }
 
+        //check whether any service by this name exist
+        //For now, service-name is unique across all scoped (shared/external/app-scoped)
+        for(Service service : serviceUtil.getServices().getServices()){
+            if(service.getServiceName().equals(serviceName)){
+                report.setMessage("Service by name ["+serviceName+"] already exist");
+                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                return;
+            }
+        }
+
 
         if (defaultService) {
             if (force) {
@@ -173,11 +202,84 @@ public class CreateSharedService implements AdminCommand {
             }
         }
 
-
         //TODO interact with Orchestrator to see whether this particular service-configuration can
         //TODO be really supported.
+        ServiceDescription sd = new ServiceDescription();
+        sd.setName(serviceName);
+
+        List<org.glassfish.paas.orchestrator.service.metadata.Property> configurationList =
+                new ArrayList<org.glassfish.paas.orchestrator.service.metadata.Property>();
+        if(configuration != null){
+            for(String name : configuration.stringPropertyNames()){
+                org.glassfish.paas.orchestrator.service.metadata.Property property =
+                        new org.glassfish.paas.orchestrator.service.metadata.Property();
+                property.setName(name);
+                property.setValue((String)configuration.get(name));
+                configurationList.add(property);
+            }
+            sd.setConfigurations(configurationList);
+        }
+
+        if(template != null){
+            TemplateIdentifier tid = new TemplateIdentifier();
+            tid.setId(template);
+            sd.setTemplateOrCharacteristics(tid);
+        }
+
+        if(characteristics != null){
+            List<org.glassfish.paas.orchestrator.service.metadata.Property> characteristicsList =
+                    new ArrayList<org.glassfish.paas.orchestrator.service.metadata.Property>();
+            for(String name : characteristics.stringPropertyNames()){
+                org.glassfish.paas.orchestrator.service.metadata.Property property =
+                        new org.glassfish.paas.orchestrator.service.metadata.Property();
+                property.setName(name);
+                property.setValue((String)characteristics.get(name));
+                characteristicsList.add(property);
+            }
+            ServiceCharacteristics serviceCharacteristics = new ServiceCharacteristics(characteristicsList);
+            sd.setTemplateOrCharacteristics(serviceCharacteristics);
+        }
+
+        //create virtual cluster for the shared-service.
+        //TODO we need to see the impact of virtual-cluster for service-names
+        //TODO as service-names are unique only per scope whereas virtual-cluster
+        //TODO may not be.
 
 
+        // create one virtual cluster per shared-service.
+        String virtualClusterName = serviceName;
+
+        ActionReport actionReport = habitat.getComponent(ActionReport.class);
+        CommandRunner.CommandInvocation commandInvocation =
+                commandRunner.getCommandInvocation("create-cluster", actionReport);
+        ParameterMap parameterMap = new ParameterMap();
+        parameterMap.add("DEFAULT", virtualClusterName);
+        commandInvocation.parameters(parameterMap).execute();
+
+        Object args[]=new Object[]{virtualClusterName,actionReport.getMessage()};
+        logger.log(Level.INFO,"create.cluster.exec.output",args);
+        if (actionReport.getActionExitCode().equals(ActionReport.ExitCode.FAILURE)) {
+            if(actionReport.getFailureCause() != null){
+                report.setFailureCause(actionReport.getFailureCause());
+            }
+            report.setMessage(actionReport.getMessage());
+            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            return;
+        }
+
+        //set the virtual-cluster name in the service-description.
+        sd.setVirtualClusterName(virtualClusterName);
+        ServicePlugin defaultPlugin = serviceOrchestrator.getPlugin(sd);
+        sd.setPlugin(defaultPlugin);
+        sd.setServiceScope(ServiceScope.SHARED);
+        PaaSDeploymentContext pdc = new PaaSDeploymentContext(null, null);
+        ProvisionedService ps = defaultPlugin.provisionService(sd, pdc);
+
+        registerSharedService(ps, report);
+        //TODO if there is a failure, delete virtual cluster ?
+    }
+
+    private void registerSharedService(final ProvisionedService ps, ActionReport report) {
         Services services = serviceUtil.getServices();
         try {
             if (ConfigSupport.apply(new SingleConfigCode<Services>() {
@@ -188,19 +290,28 @@ public class CreateSharedService implements AdminCommand {
                     sharedService.setTemplate(template);
                     sharedService.setInitMode(initMode);
                     sharedService.setServiceName(serviceName);
-                    if (properties != null) {
-                        for (Map.Entry e : properties.entrySet()) {
-                            Property prop = sharedService.createChild(Property.class);
-                            prop.setName((String) e.getKey());
-                            prop.setValue((String) e.getValue());
-                            sharedService.getProperty().add(prop);
-                        }
+
+                    sharedService.setState(ps.getStatus().toString());
+
+                    //merge the properties given in the command and from serviceProperties of provisioned-service.
+                    Properties mergedProperties = new Properties();
+                    if(properties != null){
+                        mergedProperties.putAll(properties);
+                    }
+                    if(ps.getServiceProperties() != null){
+                        mergedProperties.putAll(ps.getServiceProperties());
+                    }
+
+                    for (Map.Entry e : mergedProperties.entrySet()) {
+                        Property prop = sharedService.createChild(Property.class);
+                        prop.setName((String) e.getKey());
+                        prop.setValue((String) e.getValue());
+                        sharedService.getProperty().add(prop);
                     }
 
                     if (characteristics != null) {
                         Characteristics chars
                                 = sharedService.createChild(Characteristics.class);
-                        Transaction t = Transaction.getTransaction(chars);
                         for (Map.Entry e : characteristics.entrySet()) {
                             Characteristic characteristic = chars.createChild(Characteristic.class);
                             characteristic.setName((String) e.getKey());
@@ -229,12 +340,22 @@ public class CreateSharedService implements AdminCommand {
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                 report.setMessage("Unable to create shared service");
             } else {
-                report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
+                //check whether provisioned-service has child nodes and register them.
+
+                //we are not passing the parent as its already persisted above.
+                //we persist only necessary information of child services (eg: type, state, service-properties and
+                //not service-description/characteristics/configuration.
+                if(ps.getChildServices()!= null && ps.getChildServices().size() > 0){
+                    for(org.glassfish.paas.orchestrator.service.spi.Service childPS : ps.getChildServices()){
+                        serviceUtil.registerService(null, childPS, ps);
+                    }
+                }
             }
         } catch (Exception e) {
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setMessage("Unable to create shared service [" + serviceName + "] due to : " + e.getMessage());
             report.setFailureCause(e);
         }
+        //TODO rollback in case of failure.
     }
 }

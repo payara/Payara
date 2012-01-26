@@ -126,7 +126,7 @@ public class ProvisioningState extends AbstractPaaSDeploymentState {
             for (Future<ProvisionedService> future : provisioningFutures) {
                 try {
                     ProvisionedService ps = future.get();
-                    serviceUtil.registerService(appName, ps);
+                    serviceUtil.registerService(appName, ps, null);
                     appPSs.add(ps);
                     logger.log(Level.FINEST, localStrings.getString("completed.provisioningservice.parallel",ps));
                 } catch (Exception e) {
@@ -145,7 +145,7 @@ public class ProvisioningState extends AbstractPaaSDeploymentState {
                     Object args[]=new Object[]{sd,chosenPlugin};
                     logger.log(Level.FINEST, localStrings.getString("started.provisioningservice.serial",args));
                     ProvisionedService ps = chosenPlugin.provisionService(sd, context);
-                    serviceUtil.registerService(appName, ps);
+                    serviceUtil.registerService(appName, ps, null);
                     appPSs.add(ps);
                     logger.log(Level.FINEST, localStrings.getString("completed.provisioningservice.serial",ps));
                 } catch (Exception e) {

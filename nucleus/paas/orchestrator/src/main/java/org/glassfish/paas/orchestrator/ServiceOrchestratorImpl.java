@@ -578,7 +578,7 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
 
             ProvisionedService newPS = chosenPlugin.scaleService(oldPS, scaleCount, allocStrategy);
             serviceUtil.unregisterService(oldServiceInfo);
-            serviceUtil.registerService(appName, newPS);
+            serviceUtil.registerService(appName, newPS, null);
             args[0]=svcName;
             args[1]=newPS;
             logger.log(Level.INFO, "new.provisioned.service",args);
@@ -729,14 +729,30 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
     }
 
     public ServicePlugin getPlugin(ServiceDescription sd){
-                        Collection<ServicePlugin> plugins = new LinkedHashSet<ServicePlugin>();
+            Collection<ServicePlugin> plugins = new LinkedHashSet<ServicePlugin>();
             for(ServicePlugin plugin : getPlugins()){
-                if( plugin.handles(sd) ){
-                    plugins.add(plugin);
-                }
-
                 if(sd.getServiceType().equalsIgnoreCase(plugin.getServiceType().toString())){
                     plugins.add(plugin);
+                }
+            }
+            if(plugins.size() > 0){
+                //lets try to find which one of the selected plugins can handle the service-description.
+                List<ServicePlugin> pluginsHandlingSD = new ArrayList<ServicePlugin>();
+                for(ServicePlugin plugin : plugins){
+                    if(plugin.handles(sd)){
+                        pluginsHandlingSD.add(plugin);
+                    }
+                }
+
+                if(pluginsHandlingSD.size() == 1){
+                    return pluginsHandlingSD.get(0);
+                }else if(pluginsHandlingSD.size() > 1){
+                    ServicePlugin matchingPlugin = getDefaultPlugin(pluginsHandlingSD, sd.getServiceType());
+                    if(matchingPlugin == null){
+                        throw new RuntimeException("Unable to resolve conflict among multiple service-provisioning engines " +
+                                "that can handle service-type ["+sd.getServiceType()+"]" +
+                                " specified in the service-description ["+sd+"]");
+                    }
                 }
             }
 
