@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -43,7 +43,6 @@ package com.sun.enterprise.v3.server;
 import org.jvnet.hk2.config.TransactionListener;
 import org.jvnet.hk2.config.Transactions;
 import org.jvnet.hk2.config.UnprocessedChangeEvents;
-import org.jvnet.hk2.config.types.Property;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
@@ -54,7 +53,7 @@ import com.sun.enterprise.module.bootstrap.StartupContext;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.deployment.UndeployCommandParameters;
-import org.glassfish.internal.api.PostStartup;
+import org.glassfish.internal.api.PostStartupRunLevel;
 import org.glassfish.internal.data.ApplicationRegistry;
 import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.deployment.Deployment;
@@ -75,16 +74,12 @@ import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.Map;
 import java.util.Calendar;
-import java.io.File;
-import java.io.IOException;
-import java.net.URI;
 
 @Service
 @Scoped(Singleton.class)
-public class ApplicationConfigListener implements TransactionListener, 
-    PostStartup, PostConstruct {
+@PostStartupRunLevel
+public class ApplicationConfigListener implements TransactionListener, PostConstruct {
 
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ApplicationConfigListener.class);
 
