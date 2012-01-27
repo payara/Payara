@@ -40,6 +40,6 @@
 #
 --> 
 
-<frame id="gFrame" MinimumSize="${frame_size}" Title="${PRODUCT_NAME}" IconImage="${icon_image}" Resizable="true" DefaultCloseOperation="JFrame.EXIT_ON_CLOSE">
+<frame id="gFrame" Size="${frame_size}" MinimumSize="${frame_size}" Title="${PRODUCT_NAME}" IconImage="${icon_image}" Layout="BorderLayout" Resizable="true" DefaultCloseOperation="JFrame.EXIT_ON_CLOSE">
 
 </frame>

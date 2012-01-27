@@ -63,7 +63,7 @@
               apt:dataPath="Configuration.DOMAIN_NAME"
               apt:type="xs:string">
             <apt:visual>
-                <apt:textField apt:columns="15" apt:minimumSize="210,17" apt:toolTip="$DOMAIN_NAME_TOOL_TIP"/>
+                <apt:textField apt:columns="15" apt:toolTip="$DOMAIN_NAME_TOOL_TIP"/>
             </apt:visual>
 	</apt:property>
 
@@ -73,7 +73,7 @@
               apt:dataPath="Configuration.ADMIN_PORT"
               apt:type="xs:string">
             <apt:visual>
-                <apt:textField apt:columns="6" apt:minimumSize="85,17" apt:toolTip="$ADMIN_PORT_TOOL_TIP"/>
+                <apt:textField apt:columns="6" apt:toolTip="$ADMIN_PORT_TOOL_TIP"/>
             </apt:visual>
 	</apt:property>
 
@@ -82,7 +82,7 @@
               apt:dataPath="Configuration.HTTP_PORT"
               apt:type="xs:string">
             <apt:visual>
-                <apt:textField apt:columns="6" apt:minimumSize="85,17" apt:toolTip="$HTTP_PORT_TOOL_TIP"/>
+                <apt:textField apt:columns="6" apt:toolTip="$HTTP_PORT_TOOL_TIP"/>
             </apt:visual>
 	</apt:property>
 
@@ -90,7 +90,7 @@
                 apt:dataPath="Configuration.ADMIN_USER"
                 apt:type="xs:string">
           <apt:visual>
-            <apt:textField apt:columns="15" apt:minimumSize="210,17" apt:toolTip="$ADMIN_USER_TOOL_TIP"/>
+            <apt:textField apt:columns="15" apt:toolTip="$ADMIN_USER_TOOL_TIP"/>
           </apt:visual>
         </apt:property>
 
@@ -98,7 +98,7 @@
                       apt:dataPath="Configuration.ADMIN_PASSWORD"
                       apt:type="xs:string">
           <apt:visual>
-            <apt:password apt:columns="15" apt:minimumSize="210,17" apt:toolTip="$ADMIN_PASSWORD_TOOL_TIP"/>
+            <apt:password apt:columns="15" apt:toolTip="$ADMIN_PASSWORD_TOOL_TIP"/>
           </apt:visual>
         </apt:property>
 
@@ -106,7 +106,7 @@
                       apt:dataPath="Configuration.ADMIN_PASSWORD_REENTER"
                       apt:type="xs:string">
           <apt:visual>
-            <apt:password apt:columns="15" apt:minimumSize="210,17" apt:toolTip="$ADMIN_PASSWORD_TOOL_TIP"/>
+            <apt:password apt:columns="15" apt:toolTip="$ADMIN_PASSWORD_TOOL_TIP"/>
           </apt:visual>
         </apt:property>
 
@@ -142,7 +142,7 @@
                       apt:dataPath="Configuration.SERVICE_NAME"
                       apt:type="xs:string">
           <apt:visual>
-            <apt:textField apt:columns="15" apt:minimumSize="210,17" apt:toolTip="$ADMIN_SERVICE_NAME_TOOL_TIP"/>
+            <apt:textField apt:columns="15" apt:toolTip="$ADMIN_SERVICE_NAME_TOOL_TIP"/>
           </apt:visual>
         </apt:property>
 

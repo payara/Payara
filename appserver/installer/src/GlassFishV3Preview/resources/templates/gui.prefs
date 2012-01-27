@@ -54,11 +54,11 @@ sizeAttr=preferredsize
 
 # Insets (GridBagConstraints) for panels
 mainpanel_insets=0,25,0,0
-leftpanel_insets=0,10,20,20
+leftpanel_insets=5,0,55,0
 logopanel_insets=0,25,0,0
 contentpanel_insets=11,11,0,36
-buttonpanel_insets=25,23,25,80
-leftpanel_button_insets=4,0,4,0
+buttonpanel_insets=25,11,25,0
+leftpanel_button_insets=0,5,0,0
 
 shadow_border_color=BLACK
 
@@ -73,6 +73,7 @@ nonlabel_insets=0,12,17,12
 buttongroup_insets=0,12,6,0
 
 # Insets (GridBagConstraints) for button panel
+btnPanel_constraints=insets="0,12,0,80"
 btnCancel_constraints=ipady="3" ipadx="30"
 btnHelp_constraints=ipady="3" ipadx="40" insets="0,10,0,0"
 btnBack_constraints=ipady="3" ipadx="40" insets="0,0,0,10"

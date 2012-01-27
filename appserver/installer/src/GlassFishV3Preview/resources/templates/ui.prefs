@@ -96,7 +96,7 @@ button_font=Sans-Serif-BOLD-14
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~W E L C O M E   P A G E~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Welcome_WELCOME_TEXT=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;\
-            Welcome to the ${PRODUCT_NAME} installation.&lt;BR&gt;This is a tool for installing ${PRODUCT_NAME}. &lt;P&gt;GlassFish Server is a production ready Java EE 6 compliant application server developed under an open source license. Benefits include a modular, runtime that minimizes resource consumption, an easy-to-use administration console, a feature-rich command line tool,centralized administration and high-availability clustering. GlassFish Server is also the fastest open source application server available.&lt;/P&gt;&lt;P&gt;Please visit &lt;a href=https://glassfish.dev.java.net&gt; GlassFish Project Page&lt;/a&gt; for more information. &lt;/P&gt;&lt;P&gt;Please click Next to proceed. &lt;/P&gt; &lt;/BODY&gt;&lt;/HTML&gt;
+            Welcome to the ${PRODUCT_NAME} installation.&lt;BR&gt;This is a tool for installing ${PRODUCT_NAME}. &lt;BR&gt;&lt;BR&gt;GlassFish Server is a production ready Java EE 6 compliant application server &lt;BR&gt;developed under an open source license. Benefits include a modular, &lt;BR&gt; runtime that minimizes resource consumption, an easy-to-use &lt;BR&gt;administration console, a feature-rich command line tool,centralized &lt;BR&gt;administration and high-availability clustering. GlassFish Server is also &lt;BR&gt;the fastest open source application server available.&lt;BR&gt;&lt;BR&gt;Please visit &lt;a href=https://glassfish.dev.java.net&gt; GlassFish Project Page&lt;/a&gt; for more information. &lt;BR&gt;&lt;BR&gt;Please click Next to proceed. &lt;BR&gt;&lt;BR&gt; &lt;/BODY&gt;&lt;/HTML&gt;
 
 
 
@@ -139,15 +139,15 @@ JDK_TYPE_IN_TOOLTIP=Type the location of a Java(TM) SDK in this text box.
 AVAILABLE_JDK=Available Java(TM) SDKs
 ALTERNATE_JDK=Alternate Java(TM) SDK Location
 
-UPDATETOOL_TOP_TEXT=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt; &lt;P&gt;The Update Tool periodically checks for GlassFish Server updates; enabling you to stay up-to-date with the latest builds.&lt;/P&gt;&lt;/BODY&gt;&lt;/HTML&gt;
+UPDATETOOL_TOP_TEXT=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt; The Update Tool periodically checks for GlassFish Server updates; enabling&lt;BR&gt;you to stay up-to-date with the latest builds.&lt;BODY&gt;&lt;HTML&gt;
 
 
-UPDATE_TOOL_PRIVACY_NOTICE=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;&lt;P&gt;The Update Tool periodically checks for available updates and collects some system data. For more information, see &lt;a href=http://wikis.sun.com/display/glassfish/UsageMetricsV3&gt; GlassFish Usage Metrics&lt;/a&gt; page, at http://wikis.sun.com/display/GlassFish/UsageMetricsV3.&lt;/P&gt;&lt;/BODY&gt;&lt;/HTML&gt;
+UPDATE_TOOL_PRIVACY_NOTICE=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt; The Update Tool periodically checks for available updates and collects &lt;BR&gt; some system data. For more information, see &lt;a href=http://wikis.sun.com/display/glassfish/UsageMetricsV3&gt; GlassFish Usage Metrics&lt;/a&gt; &lt;BR&gt;page, at http://wikis.sun.com/display/GlassFish/UsageMetricsV3.&lt;BODY&gt;&lt;HTML&gt;
 
 
-ADMINISTRATION_SERVICE_TEXT=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;&lt;P&gt;Provide the name of the Windows Service or a Solaris SMF service.&lt;/P&gt;&lt;/BODY&gt;&lt;/HTML&gt;
+ADMINISTRATION_SERVICE_TEXT=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;Provide the name of the Windows Service or a Solaris SMF service.&lt;BODY&gt;&lt;HTML&gt;
 
-ADMINISTRATION_TOP_TEXT=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt; &lt;P&gt;Configure the administration settings for the server. Please provide the username and password for the server. You may leave the passwords empty if you would like to configure the server for unauthenticated logins.&lt;/P&gt;&lt;/BODY&gt;&lt;/HTML&gt;
+ADMINISTRATION_TOP_TEXT=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt; &lt;BR&gt;Configure the administration settings for the server. Please provide &lt;BR&gt;the username and password for the server. You may leave the passwords &lt;BR&gt; empty if you would like to configure the server for unauthenticated logins. &lt;/BODY&gt;&lt;HTML&gt;
 
 ANONYMOUS=Configure as anonymous user
 NON_ANONYMOUS=Provide username and password 
@@ -180,9 +180,9 @@ CUSTOM=Custom
 SELECT_DESIRED_MODE_TEXT=&lt;HTML&gt;&lt;BODY&gt;
             Select the mode of configuration.
             &lt;/BODY&gt;&lt;/HTML&gt;
-CUSTOM_CDATA_TXT=&lt;HTML&gt;&lt;BODY&gt;&lt;P&gt;&lt;B&gt;Custom&lt;/B&gt; mode installs
+CUSTOM_CDATA_TXT=&lt;HTML&gt;&lt;BODY&gt;&lt;B&gt;Custom&lt;/B&gt; mode installs
  the  software  and configures it with the values
-that you specify in the configuration pages that follow.&lt;/P&gt;
+that you specify in the configuration pages that follow.&lt;BR&gt;
           &lt;/BODY&gt;&lt;/HTML&gt;
 EXPRESS_CDATA_TXT=&lt;HTML&gt;&lt;BODY&gt;&lt;B&gt;Express&lt;/B&gt; mode installs the  software and configures it with default values.
 CONFIGURE_SELECTED_COMPONENTS_MSG=Configures the selected software components with default or custom values.
@@ -207,7 +207,7 @@ FIRSTNAME=First Name
 LASTNAME=Last Name
 COUNTRY=Country
 COMPANYNAME=Company Name
-ACCOUNT_CREATION_HEADER_TEXT=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;&lt;P&gt;Provide the following information to create a Sun online account. All field values are required.&lt;/P&gt;&lt;BODY&gt;&lt;HTML&gt;
+ACCOUNT_CREATION_HEADER_TEXT=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;Provide the following information to create a Sun online account. All field&lt;BR&gt;values are required.&lt;BODY&gt;&lt;HTML&gt;
 ACCOUNT_CREATION_FOOTER_TEXT=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;&lt;a href=http://www.sun.com/privacy/&gt;Oracle's Privacy Policy&lt;BODY&gt;&lt;HTML&gt;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~USER TYPE OPTIONS PAGE~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -215,38 +215,38 @@ INSTALLUSERTYPE_OPTIONS_HEADER=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif
 
 BASIC_USER_FOOTER_TEXT=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;Installs a GlassFish Server management domain; ideal for development&lt;BR&gt;or non business critical use. Please make sure that the ports 4848 and&lt;BR&gt; 8080 are free.&lt;BODY&gt;&lt;HTML&gt;
 
-ADVANCED_USER_FOOTER_TEXT=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;&lt;P&gt;Offers the option to install the binaries only, a management domain, a stand alone instance or a cluster. This option is ideal for production deployments.&lt;/P&gt;&lt;BODY&gt;&lt;HTML&gt;
+ADVANCED_USER_FOOTER_TEXT=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;Offers the option to install the binaries only, a management domain, a &lt;BR&gt;stand alone instance or a cluster. This option is ideal for production&lt;BR&gt;deployments.&lt;BODY&gt;&lt;HTML&gt;
 
 BASIC_USER=Typical Installation
 ADVANCED_USER=Custom Installation
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~INSTALLATION/CONFIGUARATION OPTIONS PAGE~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-INSTALL_CONFIG_OPTIONS_HEADER=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;&lt;P&gt;This program can perform a fresh installation and configuration of GlassFish Server or can use existing installed binaries to perform the required configuration. You may also choose to just install the binaries and skip configuration. Please select an option that meets your needs.&lt;/P&gt;&lt;BODY&gt;&lt;HTML&gt;
+INSTALL_CONFIG_OPTIONS_HEADER=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;This program can perform a fresh installation and configuration of&lt;BR&gt;GlassFish Server or can use existing installed binaries to perform the &lt;BR&gt;required configuration. You may also choose to just install the binaries&lt;BR&gt;and skip configuration. Please select an option that meets your needs.&lt;BODY&gt;&lt;HTML&gt; 
 
-INSTALL_ONLY_OPTIONS_HEADER=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;&lt;P&gt;Choose this option to perform an installation and skip any configuration. To configure this installation, re-run the installer and select 'Configure an existing installation' option below.&lt;/P&gt;&lt;BODY&gt;&lt;HTML&gt;
+INSTALL_ONLY_OPTIONS_HEADER=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;Choose this option to perform an installation and skip any configuration.&lt;BR&gt;To configure this installation, re-run the installer and select 'Configure&lt;BR&gt;an existing installation' option below.&lt;BODY&gt;&lt;HTML&gt; 
 
-INSTALL_AND_CONFIG_OPTIONS_HEADER=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;&lt;P&gt;Choose this option to install and configure GlassFish Server.&lt;/P&gt;&lt;BODY&gt;&lt;HTML&gt;
+INSTALL_AND_CONFIG_OPTIONS_HEADER=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;Choose this option to install and configure GlassFish Server.&lt;BODY&gt;&lt;HTML&gt; 
 
-CONFIG_ONLY_OPTIONS_HEADER=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;&lt;P&gt;Choose this option to configure a previously installed version of this product.&lt;/P&gt;&lt;BODY&gt;&lt;HTML&gt;
+CONFIG_ONLY_OPTIONS_HEADER=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;Choose this option to configure a previously installed version of this product.&lt;BODY&gt;&lt;HTML&gt; 
 
 INSTALL_AND_CONFIG=Install and Configure
 INSTALL_ONLY=Install Only
 CONFIG_ONLY=Configure an existing installation 
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~CONFIGURATION ONLY SUMMARY PANEL PAGE~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-SUMMARY_HEADER_EXECUTING=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;&lt;P&gt;Please wait till this tool is configuring your environment.&lt;/P&gt;&lt;BODY&gt;&lt;HTML&gt;
-SUMMARY_HEADER=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;&lt;P&gt;This tool has performed the required configuration with input given by you. Please check the data and log outputs to make sure that everything is correct. You may rerun the program to configure GlassFish again.&lt;/P&gt;&lt;BODY&gt;&lt;HTML&gt;
+SUMMARY_HEADER_EXECUTING=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;Please wait till this tool is configuring your environment.&lt;BODY&gt;&lt;HTML&gt;
+SUMMARY_HEADER=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;This tool has performed the required configuration with input given by you. &lt;BR&gt;Please check the data and log outputs to make sure that everything is correct&lt;BR&gt; You may rerun the program to configure GlassFish again.&lt;BODY&gt;&lt;HTML&gt; 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~CONFIGURATION OPTIONS PAGE~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-CONFIG_OPTIONS_HEADER=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;&lt;P&gt;Please select the appropriate configuration option.&lt;/P&gt;&lt;BODY&gt;&lt;HTML&gt;
+CONFIG_OPTIONS_HEADER=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;Please select the appropriate configuration option.&lt;BODY&gt;&lt;HTML&gt; 
 
-DOMAIN_OPTIONS_HEADER=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;&lt;P&gt;Choose this option to create a Domain Administration Server.&lt;/P&gt;&lt;BODY&gt;&lt;HTML&gt;
+DOMAIN_OPTIONS_HEADER=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;Choose this option to create a Domain Administration Server.&lt;BODY&gt;&lt;HTML&gt; 
 
-STANDALONEINSTANCE_OPTIONS_HEADER=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;&lt;P&gt;Choose this option to create a local standalone instance that is managed by a Domain Administration Server. The Domain Administration Server must be running for this option to complete successfully. &lt;P&gt;&lt;BODY&gt;&lt;HTML&gt;
+STANDALONEINSTANCE_OPTIONS_HEADER=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;Choose this option to create a local standalone instance that is managed&lt;BR&gt;by a Domain Administration Server. The Domain Administration Server &lt;BR&gt;must be running for this option to complete successfully. &lt;BODY&gt;&lt;HTML&gt; 
 
-CLUSTEREDINSTANCE_OPTIONS_HEADER=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;&lt;P&gt;Choose this option to create a clustered instance that is managed by a Domain Administration Server. The Domain Administration Server must be running for this option to complete successfully.&lt;/P&gt;&lt;BODY&gt;&lt;HTML&gt;
+CLUSTEREDINSTANCE_OPTIONS_HEADER=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;Choose this option to create a clustered instance that is managed by a &lt;BR&gt;Domain Administration Server. The Domain Administration Server must&lt;BR&gt;be running for this option to complete successfully.&lt;BODY&gt;&lt;HTML&gt; 
 
 
-NOCONFIG_OPTIONS_HEADER=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;&lt;P&gt;Choose this option to install GlassFish Server and skip configuration.&lt;/P&gt;&lt;BODY&gt;&lt;HTML&gt;
+NOCONFIG_OPTIONS_HEADER=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;Choose this option to install GlassFish Server and skip configuration.&lt;BODY&gt;&lt;HTML&gt; 
 
 CREATE_DOMAIN=Create a server domain
 CREATE_STANDALONEINSTANCE=Create a stand alone server instance 
@@ -255,11 +255,11 @@ NO_CONFIGURATION=Skip configuration
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~INSTANCE INFORMATION PAGE~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-CONFIGURATION_TOP_TEXT=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;&lt;P&gt;To create and configure an instance, please provide the following information.&lt;/P&gt;&lt;P&gt;The Domain Administration Server must be running at the specified host and port.&lt;/P&gt;&lt;BODY&gt;&lt;HTML&gt;
+CONFIGURATION_TOP_TEXT=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;To create and configure an instance, please provide the following &lt;BR&gt;information.&lt;BR&gt;&lt;BR&gt; The Domain Administration Server must be running at the specified &lt;BR&gt; host and port.&lt;BODY&gt;&lt;HTML&gt; 
 
-CLUSTERED_CONFIGURATION_TOP_TEXT=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;&lt;P&gt;Provide information required to create a local server instance. You may also choose to add this instance to the cluster.&lt;/P&gt;&lt;BODY&gt;&lt;HTML&gt;
+CLUSTERED_CONFIGURATION_TOP_TEXT=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;Provide information required to create a local server instance. You may&lt;BR&gt; also choose to add this instance to the cluster.&lt;BODY&gt;&lt;HTML&gt; 
 
-DAS_PARTITION_TEXT=&lt;HTML&gt;&lt;BODY&gt;&lt;font size='5' face='Sans-Serif'&gt;&lt;P&gt;Domain Administration Server&lt;/P&gt;&lt;BODY&gt;&lt;HTML&gt;
+DAS_PARTITION_TEXT=&lt;HTML&gt;&lt;BODY&gt;&lt;font size='5' face='Sans-Serif'&gt;&lt;BR&gt;&lt;BR&gt;Domain Administration Server&lt;BODY&gt;&lt;HTML&gt; 
 
 INSTANCE_NAME_TEXT=Instance Name
 INSTANCE_NAME_TOOL_TIP=Provide the name of the instance to be created. Default is instance1
@@ -270,7 +270,7 @@ SERVER_ADMIN_PORT_TOOL_TIP=Provide the Domain Administration Port
 SERVER_HOST_NAME_TEXT=Host Name 
 SERVER_HOST_NAME_TOOL_TIP=Provide the Host Name where Domain is located
 
-CREATE_CLUSTER_INFO_TEXT=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;&lt;P&gt;Provide the name of the cluster that this instance belongs to. A cluster can be created if one does not already exist.&lt;P&gt;&lt;BODY&gt;&lt;HTML&gt;
+CREATE_CLUSTER_INFO_TEXT=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;Provide the name of the cluster that this instance belongs to. A cluster can&lt;BR&gt;be created if one does not already exist. &lt;BODY&gt;&lt;HTML&gt;
 
 CREATE_CLUSTER_CHOICE_TEXT=Create Cluster
 

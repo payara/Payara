@@ -69,7 +69,7 @@
     <apt:property apt:name="TOP_MESSAGE"
                   apt:dataPath=""
                   apt:type="xs:string">
-<!--      <apt:prop-value><![CDATA[<HTML><BODY>0%</BODY></HTML>]]></apt:prop-value>-->
+      <apt:prop-value><![CDATA[<HTML><BODY>0%</BODY></HTML>]]></apt:prop-value>
       <apt:visual>
         <apt:htmlPanel/>
       </apt:visual>

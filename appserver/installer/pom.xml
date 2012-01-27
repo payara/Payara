@@ -98,7 +98,7 @@
         <dependency>
            <groupId>org.openinstaller</groupId>
            <artifactId>engine</artifactId>
-           <version>0.9.5.5</version>
+           <version>0.9.5.3</version>
            <type>zip</type>
         </dependency> 
         <dependency>

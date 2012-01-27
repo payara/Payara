@@ -51,10 +51,10 @@
 
             <apt:section apt:name="Option" apt:label="Option" >
 
-                <apt:property apt:name="CONFIG_OPTIONS_HEADER" apt:dataPath="" apt:type="xs:string" apt:iPadY="15">
+                <apt:property apt:name="CONFIG_OPTIONS_HEADER" apt:dataPath="" apt:type="xs:string">
                     <apt:prop-value>$CONFIG_OPTIONS_HEADER</apt:prop-value>
                     <apt:visual>
-                        <apt:htmlPanel />
+                        <apt:htmlPanel/>
                     </apt:visual>
                 </apt:property>
 

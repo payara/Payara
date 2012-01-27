@@ -40,45 +40,27 @@
 #
 --> 
 
-  <panel id="gMainPanel" name="gMainPanel" background="${mainpanel_bgcolor}" Layout="GridBagLayout">
+  <panel id="gMainPanel" name="gMainPanel" background="${mainpanel_bgcolor}" constraints="BorderLayout.CENTER" insets="12,12,12,12" Layout="GridBagLayout">
 
     <#--      L E F T   N A V I G A T I O N   P A N E L    -->
-    <panel id="gLeftPanelHolder" background="e8e9ed" Layout="GridBagLayout">
-        <gridbagconstraints
-            gridx="0" gridy="0"
-            gridwidth="1" gridheight="4"
-            weightx="0" weighty="1"
-            fill="GridBagConstraints.VERTICAL"
-            anchor="GridBagConstraints.NORTHWEST" />
-        <bgimagepanel name="topImagePanel" bgImage="${top_left_image}" >
-            <gridbagconstraints
-                gridx="0" gridy="0"
-                gridwidth="1" gridheight="1"
-                insets="20,40,25,20"
-                anchor="GridBagConstraints.NORTHWEST" />
-        </bgimagepanel>
-        <#include "leftpanel.ftl">
-        <bgimagepanel name="bottomImagePanel"  bgImage="${bottom_left_image}" >
-            <gridbagconstraints
-                gridx="0" gridy="3"
-                weightx="0" weighty="1"
-                gridwidth="1" gridheight="1"
-                anchor="GridBagConstraints.SOUTHWEST"
-                insets="20,25,60,25" />
-        </bgimagepanel>
-    </panel>
+    <bgimagepanel id="gLeftPanelHolder" bgImage="${navigpanel_image}" Layout="GridBagLayout">
+      <gridbagconstraints gridx="0" gridy="0" gridwidth="1" gridheight="4" weightx="0" weighty="1" fill="GridBagConstraints.VERTICAL" anchor="GridBagConstraints.NORTHWEST"/>
+      <bgimagepanel name="topImagePanel"  bgImage="${top_left_image}" >
+            <gridbagconstraints gridx="0" gridy="0" gridwidth="1" gridheight="1" weightx="0" weighty="0" insets="20,0,20,0" />
+      </bgimagepanel>
+      <#include "leftpanel.ftl">
+      <bgimagepanel name="bottomImagePanel"  bgImage="${bottom_left_image}" >
+            <gridbagconstraints gridx="0" gridy="3" gridwidth="1" gridheight="1" weightx="1" weighty="1" anchor="GridBagConstraints.SOUTH" insets="20,5,60,0" />
+         </bgimagepanel>
+    </bgimagepanel>
 
     <#--      T O P   L O G O   P A N E L    -->
-    <panel id="gLogoPanel" Layout="GridBagLayout" opaque="false">
-        <gridbagconstraints gridx="1" gridy="0" gridwidth="1" gridheight="1" fill="GridBagConstraints.HORIZONTAL" insets="50,0,0,0" anchor="GridBagConstraints.NORTHWEST"/>
-        <smoothlabel id="gTitle1" Font="${title1_font}" Foreground="${title1_color}" text="${curPageTitle}">
-            <gridbagconstraints
-                gridx="0" gridy="0"
-                weightx="1" weighty="0"
-                anchor="GridBagConstraints.NORTHWEST"
-                insets="${contentpanel_insets}" />
-        </smoothlabel>
-    </panel>
+    <bgimagepanel id="gLogoPanel" bgImage="${logopanel_image}" Layout="GridBagLayout">
+      <gridbagconstraints gridx="1" gridy="0" gridwidth="1" gridheight="1" weightx="1" weighty="0" fill="GridBagConstraints.HORIZONTAL" anchor="GridBagConstraints.NORTHEAST"/>
+      <smoothlabel id="gTitle1" Font="${title1_font}" Foreground="${title1_color}" text="${curPageTitle}">
+        <gridbagconstraints gridx="1" gridy="0" weightx="1" weighty="1" anchor="GridBagConstraints.SOUTHWEST" insets="${contentpanel_insets}"/>
+      </smoothlabel>
+    </bgimagepanel>
 
     <#--      C O N T E N T   P A N E L    -->
     <shadowborderpanel id="gContentComponentHolder" name="gContentComponentHolder" <#if (sections?size = 1)> bordercolor="${shadow_border_color}" </#if> background="grey" minimumSize="${contentpanel_size}" preferredSize="${contentpanel_size}" Layout="GridBagLayout">
