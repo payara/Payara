@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -119,6 +119,9 @@ public class FileMonitoringImpl implements FileMonitoring, PostConstruct {
         }
     }
 
+    public synchronized void fileModified(File file) {
+        monitored.put(file, 0L);
+    }
 
     private void removed(final File file) {
         for (final FileChangeListener listener : listeners.get(file)) {

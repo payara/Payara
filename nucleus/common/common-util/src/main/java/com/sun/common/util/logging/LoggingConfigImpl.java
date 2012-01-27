@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -55,6 +55,7 @@ import java.util.logging.LogManager;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+import org.glassfish.api.admin.FileMonitoring;
 
 /**
  * Implementation of Logging Commands
@@ -71,6 +72,9 @@ public class LoggingConfigImpl implements LoggingConfig, PostConstruct {
 
     @Inject
     ServerEnvironmentImpl env;
+
+    @Inject 
+    FileMonitoring fileMonitoring;
 
     Properties props = new Properties();
     FileInputStream fis;
@@ -176,6 +180,7 @@ public class LoggingConfigImpl implements LoggingConfig, PostConstruct {
             FileOutputStream ois = new FileOutputStream(file);
             props.store(ois, "GlassFish logging.properties list");
             ois.close();
+            fileMonitoring.fileModified(file);
         } catch (FileNotFoundException e) {
             Logger.getAnonymousLogger().log(Level.SEVERE, "Cannot close logging.properties file : ", e);
             throw new IOException();
@@ -204,7 +209,7 @@ public class LoggingConfigImpl implements LoggingConfig, PostConstruct {
      * @param propertyValue Value to set
      * @throws IOException
      */
-    public String setLoggingProperty(String propertyName, String propertyValue) throws IOException {
+    public synchronized String setLoggingProperty(String propertyName, String propertyValue) throws IOException {
         try {
             if (!openPropFile())
                 return null;
@@ -236,7 +241,7 @@ public class LoggingConfigImpl implements LoggingConfig, PostConstruct {
      * @param propertyValue Value to set
      * @throws IOException
      */
-    public String setLoggingProperty(String propertyName, String propertyValue, String targetConfigName) throws IOException {
+    public synchronized String setLoggingProperty(String propertyName, String propertyValue, String targetConfigName) throws IOException {
         try {
             if (!openPropFile(targetConfigName))
                 return null;
@@ -268,7 +273,7 @@ public class LoggingConfigImpl implements LoggingConfig, PostConstruct {
       * @throws  IOException
       */
 
-    public Map<String, String> updateLoggingProperties(Map<String, String> properties) throws IOException {
+    public synchronized Map<String, String> updateLoggingProperties(Map<String, String> properties) throws IOException {
         Map<String, String> m = new HashMap<String, String>();
         try {
             if (!openPropFile())
@@ -310,7 +315,7 @@ public class LoggingConfigImpl implements LoggingConfig, PostConstruct {
       * @throws  IOException
       */
 
-    public Map<String, String> updateLoggingProperties(Map<String, String> properties, String targetConfigName) throws IOException {
+    public synchronized Map<String, String> updateLoggingProperties(Map<String, String> properties, String targetConfigName) throws IOException {
         Map<String, String> m = new HashMap<String, String>();
         try {
             if (!openPropFile(targetConfigName))
@@ -347,7 +352,7 @@ public class LoggingConfigImpl implements LoggingConfig, PostConstruct {
       * @throws  IOException
       */
 
-    public Map<String, String> getLoggingProperties(String targetConfigName) throws IOException {
+    public synchronized Map<String, String> getLoggingProperties(String targetConfigName) throws IOException {
         Map<String, String> m = new HashMap<String, String>();
         try {
             if (!openPropFile(targetConfigName))
@@ -374,7 +379,7 @@ public class LoggingConfigImpl implements LoggingConfig, PostConstruct {
       * @throws  IOException
       */
 
-    public Map<String, String> getLoggingProperties() throws IOException {
+    public synchronized Map<String, String> getLoggingProperties() throws IOException {
         Map<String, String> m = new HashMap<String, String>();
         try {
             if (!openPropFile())
@@ -405,7 +410,7 @@ public class LoggingConfigImpl implements LoggingConfig, PostConstruct {
       * @throws  IOException
       */
 
-    public void deleteLoggingProperties(Map<String, String> properties) throws IOException {
+    public synchronized void deleteLoggingProperties(Map<String, String> properties) throws IOException {
         try {
             openPropFile();
 
@@ -433,7 +438,7 @@ public class LoggingConfigImpl implements LoggingConfig, PostConstruct {
       * @throws  IOException
       */
 
-    public void deleteLoggingProperties(Map<String, String> properties, String targetConfigName) throws IOException {
+    public synchronized void deleteLoggingProperties(Map<String, String> properties, String targetConfigName) throws IOException {
         try {
             openPropFile(targetConfigName);
 
@@ -580,7 +585,7 @@ public class LoggingConfigImpl implements LoggingConfig, PostConstruct {
       * @throws  IOException
       */
 
-    public String getLoggingFileDetails() throws IOException {
+    public synchronized String getLoggingFileDetails() throws IOException {
         try {
             if (!openPropFile())
                 return null;
@@ -607,7 +612,7 @@ public class LoggingConfigImpl implements LoggingConfig, PostConstruct {
       * @throws  IOException
       */
 
-    public String getLoggingFileDetails(String targetConfigName) throws IOException {
+    public synchronized String getLoggingFileDetails(String targetConfigName) throws IOException {
         try {
             if (!openPropFile(targetConfigName))
                 return null;

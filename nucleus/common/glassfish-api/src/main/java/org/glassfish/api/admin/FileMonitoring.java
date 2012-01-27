@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2008-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -58,6 +58,13 @@ public interface FileMonitoring {
      * @param listener the listener to notify
      */
     public void monitors(File file, FileChangeListener listener); 
+
+    /**
+     * Informs the monitor that a file has been changed.  This is a hint to 
+     * the monitor to prevent missing changes that occur within the granularity
+     * of the operating system's file modification time, typically 1 second. 
+     */
+    public void fileModified(File file);
 
     public interface FileChangeListener {
         public void changed(File changedFile);
