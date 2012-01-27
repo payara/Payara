@@ -7,6 +7,11 @@ LPCTSTR REG_WMI_FULL = TEXT("CLASSES_ROOT\\CLSID\\{76A64158-CB41-11D1-8B02-00600
 
 LPCTSTR REG_SCRIPTING_WOW = TEXT("Wow6432Node\\CLSID\\{72C24DD5-D70A-438B-8A42-98424B88AFB8}");
 LPCTSTR REG_WMI_WOW = TEXT("Wow6432Node\\CLSID\\{76A64158-CB41-11D1-8B02-00600806D9B6}");
+BOOL verbose = false;
+
+void setVerbose() {
+	verbose = TRUE;
+}
 
 bool is64()
 {
@@ -43,7 +48,7 @@ BOOL TakeOwnership(LPTSTR key)
 		0, 0, 0, 0, 0, 0,
 		&pSIDEveryone)) 
 	{
-		printf("AllocateAndInitializeSid (Everyone) error %u\n",
+		wprintf(L"AllocateAndInitializeSid (Everyone) error %u\n",
 			GetLastError());
 		goto Cleanup;
 	}
@@ -55,7 +60,7 @@ BOOL TakeOwnership(LPTSTR key)
 		0, 0, 0, 0, 0, 0,
 		&pSIDAdmin)) 
 	{
-		printf("AllocateAndInitializeSid (Admin) error %u\n",
+		wprintf(L"AllocateAndInitializeSid (Admin) error %u\n",
 			GetLastError());
 		goto Cleanup;
 	}
@@ -105,7 +110,9 @@ BOOL TakeOwnership(LPTSTR key)
 
 	if (ERROR_SUCCESS == dwRes) 
 	{
-		printf("Successfully changed DACL\n");
+		if(verbose)
+			printf("Successfully changed DACL\n");
+
 		bRetval = TRUE;
 		// No more processing needed.
 
@@ -222,7 +229,6 @@ static BOOL SetPrivilege(
 		printf("LookupPrivilegeValue error: %u\n", GetLastError() ); 
 		return FALSE; 
 	}
-
 	tp.PrivilegeCount = 1;
 	tp.Privileges[0].Luid = luid;
 	if (bEnablePrivilege)

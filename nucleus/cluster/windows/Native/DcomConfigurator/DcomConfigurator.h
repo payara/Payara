@@ -20,6 +20,7 @@ private:
 	void configureRegKeys();
 	void DcomConfigurator::parse(int argc, _TCHAR* argv[]);
 	void p(LPCSTR);
+	void wp(LPCWSTR);
 	bool verbose;
 	bool force;
 	bool notReally;

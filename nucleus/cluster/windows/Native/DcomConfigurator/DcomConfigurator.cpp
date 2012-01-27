@@ -3,6 +3,7 @@
 
 #include "stdafx.h"
 
+static WCHAR BUF[1024];
 
 int _tmain(int argc, _TCHAR* argv[])
 {
@@ -12,7 +13,7 @@ int _tmain(int argc, _TCHAR* argv[])
 		return 0;
 	}
 	con.configure();
-
+	
 	return 0;
 }
 
@@ -26,6 +27,9 @@ DcomConfigurator::DcomConfigurator(int argc, _TCHAR* argv[]) {
 	scriptingOwnerId = getOwnerString(HKEY_CLASSES_ROOT, REG_SCRIPTING);
 	wmiOwnerId = getOwnerString(HKEY_CLASSES_ROOT, REG_WMI);
 	parse(argc, argv);
+	
+	if(verbose)
+		setVerbose(); // let utils know
 }
 
 DcomConfigurator::~DcomConfigurator() {
@@ -34,25 +38,26 @@ DcomConfigurator::~DcomConfigurator() {
 
 void DcomConfigurator::usage()
 {
-	printf("Usage: DCOMConfigurator [-h|--help] [-v|--verbose] [-f|--force] [-n|--dry-run]\n");
-	printf("\n");
-	printf("DCOM Configurator attempts to change permissions and possibly the ownership of 2 Registry keys.\nThe keys allow access to WMI and Scripting.\n");
-	printf("\n");
-	printf("[-h|--help]    Show this help\n");
-	printf("[-v|--verbose] Explain what happened\n");
-	printf("[-f|--force]   XXXXXXXX\n");
-	printf("[-n|--dry-run] Don't really do it\n");
+	verbose = true;
+	p("Usage: DCOMConfigurator [-h|--help] [-v|--verbose] [-f|--force] [-n|--dry-run]\n");
+	p("\n");
+	p("DCOM Configurator attempts to change permissions and possibly the ownership of 2 Registry keys.\nThe keys allow access to WMI and Scripting.\n");
+	p("\n");
+	p("[-h|--help]    Show this help\n");
+	p("[-v|--verbose] Explain what happened\n");
+	p("[-f|--force]   XXXXXXXX\n");
+	p("[-n|--dry-run] Don't really do it\n");
 	
 	
 	bool b = is64();
 	if(b) {
-		printf("\nYou are running on 64 bit Windows.  The 2 keys are automatically mapped to 32-bit registry keys.\n");
-		printf("This is of no concern unless you use the Registry Editor (regedit.exe).  In that case you need to look in (1) instead of (2)\n");
-		printf("(1) HKEY_CLASSES_ROOT\\Wow6432Node\\CLSID\\...\n");
-		printf("(2) HKEY_CLASSES_ROOT\\CLSID\\...\n");
+		p("\nYou are running on 64 bit Windows.  The 2 keys are automatically mapped to 32-bit registry keys.\n");
+		p("This is of no concern unless you use the Registry Editor (regedit.exe).  In that case you need to look in (1) instead of (2)\n");
+		p("(1) HKEY_CLASSES_ROOT\\Wow6432Node\\CLSID\\...\n");
+		p("(2) HKEY_CLASSES_ROOT\\CLSID\\...\n");
 	}
 	else
-		printf("\nYou are running on 32 bit Windows.");
+		p("\nYou are running on 32 bit Windows.");
 }
 
 /**
@@ -67,9 +72,9 @@ void DcomConfigurator::parse(int argc, _TCHAR* argv[])
 		if(verbose == false) {
 			if(!lstrcmpi(L"-v", argv[i]) || !lstrcmpi(L"--verbose", argv[i])) {
 				verbose = true;
-				wprintf(L">>>>>>>>>>>>>                          <<<<<<<<<<<<<\n");
-				wprintf(L">>>>>>>>>>>>>   Set to Verbose Mode    <<<<<<<<<<<<<\n");
-				wprintf(L">>>>>>>>>>>>>                          <<<<<<<<<<<<<\n");
+				wp(L">>>>>>>>>>>>>                          <<<<<<<<<<<<<\n");
+				wp(L">>>>>>>>>>>>>   Set to Verbose Mode    <<<<<<<<<<<<<\n");
+				wp(L">>>>>>>>>>>>>                          <<<<<<<<<<<<<\n");
 			}
 		}
 		if(!lstrcmpi(L"-h", argv[i]) || !lstrcmpi(L"--help", argv[i])) {
@@ -91,7 +96,9 @@ void DcomConfigurator::configure() {
 		printOwners();
 
 	configureRegKeys();
-	cout <<  message;
+	
+	if(verbose)
+		cout <<  message;
 }
 
 void DcomConfigurator::printOwners() {
@@ -126,4 +133,8 @@ void DcomConfigurator::p(LPCSTR msg) {
 		printf(msg);
 }
 
+void DcomConfigurator::wp(LPCWSTR wmsg) {
+	if(verbose)
+		wprintf(wmsg);
+}
 
