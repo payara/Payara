@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -250,21 +250,23 @@ public class JWSAdapterManager implements PostConstruct {
         result.put(systemPath(gfClientJARURI, signingAlias),
                 systemJarSignedContent(gfClientJAR, signingAlias));
 
-        for (String classPathElement : classPathExpr.split(" ")) {
-            final URI uri = gfClientJARURI.resolve(classPathElement);
-            final String systemPath = systemPath(uri, signingAlias);
-            /*
-             * There may be elements in the class path which do not exist
-             * on some platforms.  So make sure the file exists before we offer
-             * to serve it.
-             */
-            final File candidateFile = new File(uri);
-            final String relativeSystemPath = relativeSystemPath(uri);
-            if (candidateFile.exists() && 
-                ( ! candidateFile.isDirectory()) && ( ! DO_NOT_SERVE_LIST.contains(relativeSystemPath))) {
-                result.put(systemPath,
-                           systemJarSignedContent(candidateFile, signingAlias));
-                systemJARRelativeURIs.add(relativeSystemPath(uri));
+        if (classPathExpr != null) {
+            for (String classPathElement : classPathExpr.split(" ")) {
+                final URI uri = gfClientJARURI.resolve(classPathElement);
+                final String systemPath = systemPath(uri, signingAlias);
+                /*
+                * There may be elements in the class path which do not exist
+                * on some platforms.  So make sure the file exists before we offer
+                * to serve it.
+                */
+                final File candidateFile = new File(uri);
+                final String relativeSystemPath = relativeSystemPath(uri);
+                if (candidateFile.exists() && 
+                    ( ! candidateFile.isDirectory()) && ( ! DO_NOT_SERVE_LIST.contains(relativeSystemPath))) {
+                    result.put(systemPath,
+                            systemJarSignedContent(candidateFile, signingAlias));
+                    systemJARRelativeURIs.add(relativeSystemPath(uri));
+                }
             }
         }
 
