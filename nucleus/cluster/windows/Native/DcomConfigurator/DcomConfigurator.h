@@ -23,7 +23,6 @@ private:
 	void wp(LPCWSTR);
 	bool verbose;
 	bool force;
-	bool notReally;
 
 	LPCTSTR scriptingOwnerId;
 	LPCTSTR wmiOwnerId;

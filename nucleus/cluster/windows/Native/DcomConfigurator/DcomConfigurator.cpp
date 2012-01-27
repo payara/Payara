@@ -21,7 +21,6 @@ DcomConfigurator::DcomConfigurator(int argc, _TCHAR* argv[]) {
 	verbose = false;
 	help = false;
 	force = false;
-	notReally = false;
 	admin = new Persona(WinBuiltinAdministratorsSid);
 	adminOwnerId = admin->getSidString();
 	scriptingOwnerId = getOwnerString(HKEY_CLASSES_ROOT, REG_SCRIPTING);
@@ -45,7 +44,7 @@ void DcomConfigurator::usage()
 	p("\n");
 	p("[-h|--help]    Show this help\n");
 	p("[-v|--verbose] Explain what happened\n");
-	p("[-f|--force]   XXXXXXXX\n");
+	p("[-f|--force]   Forces Ownership Takeover of a Registry Key\n");
 	p("[-n|--dry-run] Don't really do it\n");
 	
 	
@@ -82,9 +81,6 @@ void DcomConfigurator::parse(int argc, _TCHAR* argv[])
 		}
 		if(!lstrcmpi(L"-f", argv[i]) || !lstrcmpi(L"--force", argv[i])) {
 			force = true;
-		}
-		if(!lstrcmpi(L"-n", argv[i]) || !lstrcmpi(L"--dry-run", argv[i])) {
-			notReally = true;
 		}
 	}
 }
