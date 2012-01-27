@@ -7,7 +7,6 @@
 int _tmain(int argc, _TCHAR* argv[])
 {
 	DcomConfigurator con(argc, argv);
-
 	if(con.isHelp()) {
 		con.usage();
 		return 0;
@@ -121,4 +120,10 @@ void DcomConfigurator::configureRegKeys() {
 	else
 		message += "No need to adjust the WMI Registry Key.\n";
 }
+
+void DcomConfigurator::p(LPCSTR msg) {
+	if(verbose)
+		printf(msg);
+}
+
 

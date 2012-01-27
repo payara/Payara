@@ -1,4 +1,6 @@
 #pragma once
+using namespace std;
+
 #include "Persona.h"
 #include <string>
 
@@ -17,7 +19,7 @@ private:
 	void printOwners(Persona& admin);
 	void configureRegKeys();
 	void DcomConfigurator::parse(int argc, _TCHAR* argv[]);
-	
+	void p(LPCSTR);
 	bool verbose;
 	bool force;
 	bool notReally;
