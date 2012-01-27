@@ -105,6 +105,7 @@
                     <include>**/*.xml</include>
                     <include>**/*.1</include>
                     <include>**/*.1m</include>
+                    <include>**/*.exe</include>
                 </includes>
             </resource>
             <resource>
