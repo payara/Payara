@@ -1,7 +1,7 @@
 #
 # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 #
-# Copyright (c) 2008-2010 Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008-2012 Oracle and/or its affiliates. All rights reserved.
 #
 # The contents of this file are subject to the terms of either the GNU
 # General Public License Version 2 only ("GPL") or the Common Development
@@ -146,7 +146,7 @@ ALTERNATE_JDK=\u66ff\u4ee3\u7684 Java(TM) SDK \u4f4d\u7f6e
 
 UPDATETOOL_TOP_TEXT=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;\u5982\u679c\u9023\u7dda\u53ef\u7528\uff0c\u5b89\u88dd\u7a0b\u5f0f\u5c07\u6703\u5617\u8a66\u4e0b\u8f09\u4e26\u914d\u7f6e\u9069\u7528\u65bc\u6b64\u5b89\u88dd\u7684\u66f4\u65b0\u5de5\u5177\u3002&lt;BR&gt;&lt;/BODY&gt;&lt;/HTML&gt;
 
-UPDATE_TOOL_PRIVACY_NOTICE=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;\u66f4\u65b0\u5de5\u5177\u6703\u5b9a\u671f\u6aa2\u67e5\u53ef\u7528\u7684\u66f4\u65b0\uff0c\u4e26\u6536\u96c6\u67d0\u4e9b\u7cfb\u7d71\u8cc7\u6599\u3002\u5982\u9700\u6709\u95dc\u6240\u6536\u96c6\u8cc7\u6599\u7684\u66f4\u591a\u8cc7\u8a0a\uff0c\u8acb\u53c3\u95b1 &lt;a href=http://wiki.glassfish.java.net/Wiki.jsp?page=UsageMetricsV3&gt;GlassFish Usage Metrics&lt;/a&gt; \u7db2\u9801 (http://wiki.glassfish.java.net/Wiki.jsp?page=UsageMetricsV3)\u3002&lt;BR&gt;&lt;/BODY&gt;&lt;/HTML&gt;
+UPDATE_TOOL_PRIVACY_NOTICE=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;\u66f4\u65b0\u5de5\u5177\u6703\u5b9a\u671f\u6aa2\u67e5\u53ef\u7528\u7684\u66f4\u65b0\uff0c\u4e26\u6536\u96c6\u67d0\u4e9b\u7cfb\u7d71\u8cc7\u6599\u3002\u5982\u9700\u6709\u95dc\u6240\u6536\u96c6\u8cc7\u6599\u7684\u66f4\u591a\u8cc7\u8a0a\uff0c\u8acb\u53c3\u95b1 &lt;a href=https://wikis.oracle.com/display/GlassFish/UsageMetricsV3&gt;GlassFish Usage Metrics&lt;/a&gt; \u7db2\u9801 (https://wikis.oracle.com/display/GlassFish/UsageMetricsV3)\u3002&lt;BR&gt;&lt;/BODY&gt;&lt;/HTML&gt;
 
 ADMINISTRATION_TOP_TEXT=&lt;HTML&gt;&lt;BODY&gt;&lt;p&gt;&lt;font face='Sans-Serif'&gt;\u914d\u7f6e\u4f3a\u670d\u5668\u7684\u7ba1\u7406\u8a2d\u5b9a\u3002\u60a8\u53ef\u4ee5\u5c07\u4f3a\u670d\u5668\u4f7f\u7528\u8005\u540d\u7a31\u548c\u5bc6\u78bc\u914d\u7f6e\u70ba\u533f\u540d\uff0c\u6216\u662f\u63d0\u4f9b\u6709\u6548\u7684\u7ba1\u7406\u4f7f\u7528\u8005\u540d\u7a31\u548c\u5bc6\u78bc\u4ee5\u9032\u884c\u767b\u5165\u3002&lt;/font&gt;&lt;/p&gt;&lt;/BODY&gt;&lt;/HTML&gt;
 
@@ -192,7 +192,7 @@ LASTNAME=\u59d3\u6c0f
 COUNTRY=\u570b\u5bb6/\u5730\u5340
 COMPANYNAME=\u516c\u53f8\u540d\u7a31
 ACCOUNT_CREATION_HEADER_TEXT=${BODY_START}\u63d0\u4f9b\u4e0b\u5217\u8cc7\u8a0a\u4ee5\u5efa\u7acb Sun \u7dda\u4e0a\u5e33\u865f\u3002\u6240\u6709\u6b04\u4f4d\u7686\u662f\u5fc5\u586b\u6b04\u4f4d\u3002${BODY_END}
-ACCOUNT_CREATION_FOOTER_TEXT=${BODY_START}&lt;a href=http://www.sun.com/privacy/&gt;Sun \u96b1\u79c1\u6b0a\u653f\u7b56&lt;/a&gt;\u3002${BODY_END}
+ACCOUNT_CREATION_FOOTER_TEXT=${BODY_START}&lt;a href=http://www.oracle.com/us/legal/privacy/index.html&gt;Sun \u96b1\u79c1\u6b0a\u653f\u7b56&lt;/a&gt;\u3002${BODY_END}
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~REGISTRATION OPTIONS PAGE~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

@@ -1,7 +1,7 @@
 #
 # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 #
-# Copyright (c) 2008-2010 Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008-2012 Oracle and/or its affiliates. All rights reserved.
 #
 # The contents of this file are subject to the terms of either the GNU
 # General Public License Version 2 only ("GPL") or the Common Development
@@ -93,7 +93,7 @@ btnpanel_bgcolor=e8e9ed
 button_font=Sans-Serif-BOLD-14
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~W E L C O M E   P A G E~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Welcome_WELCOME_TEXT=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;Bienvenido a la instalaci\u00f3n de ${PRODUCT_NAME}.&lt;BR&gt;Esta herramienta permite instalar ${PRODUCT_NAME}. &lt;BR&gt;&lt;BR&gt;GlassFish Server es un servidor de aplicaciones compatible con Java EE 6 y listo para empezar a producir, que se ha desarrollado con una licencia de c\u00f3digo abierto. Entre las ventajas que ofrece se incluyen el dise\u00f1o modular, el tiempo de ejecuci\u00f3n que reduce el consumo de recursos, una consola de administraci\u00f3n f\u00e1cil de usar, una herramienta de l\u00ednea de comandos con funciones completas, la administraci\u00f3n centralizada y la agrupaci\u00f3n en cl\u00fasteres de alta disponibilidad. Adem\u00e1s, GlassFish Server es el servidor de aplicaciones de c\u00f3digo abierto m\u00e1s r\u00e1pido que existe actualmente.&lt;BR&gt;&lt;BR&gt;Visite la &lt;a href=https://glassfish.dev.java.net&gt; p\u00e1gina del proyecto GlassFish&lt;/a&gt; para obtener m\u00e1s informaci\u00f3n. &lt;BR&gt;&lt;BR&gt;Haga clic en Siguiente para continuar. &lt;BR&gt;&lt;BR&gt;&lt;/BODY&gt;&lt;/HTML&gt;
+Welcome_WELCOME_TEXT=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;Bienvenido a la instalaci\u00f3n de ${PRODUCT_NAME}.&lt;BR&gt;Esta herramienta permite instalar ${PRODUCT_NAME}. &lt;BR&gt;&lt;BR&gt;GlassFish Server es un servidor de aplicaciones compatible con Java EE 6 y listo para empezar a producir, que se ha desarrollado con una licencia de c\u00f3digo abierto. Entre las ventajas que ofrece se incluyen el dise\u00f1o modular, el tiempo de ejecuci\u00f3n que reduce el consumo de recursos, una consola de administraci\u00f3n f\u00e1cil de usar, una herramienta de l\u00ednea de comandos con funciones completas, la administraci\u00f3n centralizada y la agrupaci\u00f3n en cl\u00fasteres de alta disponibilidad. Adem\u00e1s, GlassFish Server es el servidor de aplicaciones de c\u00f3digo abierto m\u00e1s r\u00e1pido que existe actualmente.&lt;BR&gt;&lt;BR&gt;Visite la &lt;a href=http://glassfish.java.net&gt; p\u00e1gina del proyecto GlassFish&lt;/a&gt; para obtener m\u00e1s informaci\u00f3n. &lt;BR&gt;&lt;BR&gt;Haga clic en Siguiente para continuar. &lt;BR&gt;&lt;BR&gt;&lt;/BODY&gt;&lt;/HTML&gt;
 
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~I N S T A L L    H O M E   P A G E~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -128,7 +128,7 @@ ALTERNATE_JDK=Ubicaci\u00f3n alternativa del SDK de Java(TM)
 UPDATETOOL_TOP_TEXT=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt; La herramienta de actualizaci\u00f3n busca peri\u00f3dicamente actualizaciones&lt;BR&gt;de GlassFish Server, lo que le permite estar al d\u00eda con respecto a las&lt;BR&gt;compilaciones m\u00e1s recientes.&lt;BODY&gt;&lt;HTML&gt;
 
 
-UPDATE_TOOL_PRIVACY_NOTICE=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;La herramienta de actualizaci\u00f3n comprueba peri\u00f3dicamente las&lt;BR&gt;actualizaciones disponibles y recopila algunos datos del sistema.&lt;BR&gt;Para obtener m\u00e1s informaci\u00f3n, consulte la p\u00e1gina&lt;BR&gt;&lt;a href=http://wikis.sun.com/display/glassfish/UsageMetricsV3&gt; Medici\u00f3n del uso de GlassFish (en ingl\u00e9s)&lt;/a&gt; &lt;BR&gt;en http://wikis.sun.com/display/GlassFish/UsageMetricsV3.&lt;BODY&gt;&lt;HTML&gt;
+UPDATE_TOOL_PRIVACY_NOTICE=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;La herramienta de actualizaci\u00f3n comprueba peri\u00f3dicamente las&lt;BR&gt;actualizaciones disponibles y recopila algunos datos del sistema.&lt;BR&gt;Para obtener m\u00e1s informaci\u00f3n, consulte la p\u00e1gina&lt;BR&gt;&lt;a href=https://wikis.oracle.com/display/GlassFish/UsageMetricsV3&gt; Medici\u00f3n del uso de GlassFish (en ingl\u00e9s)&lt;/a&gt; &lt;BR&gt;en https://wikis.oracle.com/display/GlassFish/UsageMetricsV3.&lt;BODY&gt;&lt;HTML&gt;
 
 ADMINISTRATION_SERVICE_TEXT=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;Proporcione el nombre del servicio de Windows o un servicio de Solaris SMF.&lt;BODY&gt;&lt;HTML&gt;
 
@@ -193,7 +193,7 @@ LASTNAME=Apellidos
 COUNTRY=Pa\u00eds
 COMPANYNAME=Nombre de la compa\u00f1\u00eda
 ACCOUNT_CREATION_HEADER_TEXT=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;Proporcione la informaci\u00f3n siguiente para crear una cuenta en l\u00ednea de Sun. Todos los campos&lt;BR&gt;son obligatorios.&lt;BODY&gt;&lt;HTML&gt;
-ACCOUNT_CREATION_FOOTER_TEXT=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;&lt;a href=http://www.sun.com/privacy/&gt;Directiva de privacidad de Oracle&lt;BODY&gt;&lt;HTML&gt;
+ACCOUNT_CREATION_FOOTER_TEXT=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;&lt;a href=http://www.oracle.com/us/legal/privacy/index.html&gt;Directiva de privacidad de Oracle&lt;BODY&gt;&lt;HTML&gt;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~USER TYPE OPTIONS PAGE~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 INSTALLUSERTYPE_OPTIONS_HEADER=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;Elija el tipo de instalaci\u00f3n.&lt;BODY&gt;&lt;HTML&gt;

@@ -1,7 +1,7 @@
 #
 # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 #
-# Copyright (c) 2008-2010 Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008-2012 Oracle and/or its affiliates. All rights reserved.
 #
 # The contents of this file are subject to the terms of either the GNU
 # General Public License Version 2 only ("GPL") or the Common Development
@@ -146,7 +146,7 @@ ALTERNATE_JDK=Ubicaci\u00f3n alternativa del SDK de Java(TM)
 
 UPDATETOOL_TOP_TEXT=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;Si hay una conexi\u00f3n disponible, el instalador intentar\u00e1 descargar y configurar la herramienta de actualizaci\u00f3n para esta instalaci\u00f3n.&lt;BR&gt;&lt;/BODY&gt;&lt;/HTML&gt;
 
-UPDATE_TOOL_PRIVACY_NOTICE=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;La herramienta de actualizaci\u00f3n comprueba peri\u00f3dicamente las actualizaciones disponibles y recopila algunos datos del sistema. Para obtener m\u00e1s informaci\u00f3n acerca de los datos que se recopilan, consulte la p\u00e1gina &lt;a href=http://wiki.glassfish.java.net/Wiki.jsp?page=UsageMetricsV3&gt;Medici\u00f3n de uso de GlassFish&lt;/a&gt; (http://wiki.glassfish.java.net/Wiki.jsp?page=UsageMetricsV3).&lt;BR&gt;&lt;/BODY&gt;&lt;/HTML&gt;
+UPDATE_TOOL_PRIVACY_NOTICE=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;La herramienta de actualizaci\u00f3n comprueba peri\u00f3dicamente las actualizaciones disponibles y recopila algunos datos del sistema. Para obtener m\u00e1s informaci\u00f3n acerca de los datos que se recopilan, consulte la p\u00e1gina &lt;a href=https://wikis.oracle.com/display/GlassFish/UsageMetricsV3&gt;Medici\u00f3n de uso de GlassFish&lt;/a&gt; (https://wikis.oracle.com/display/GlassFish/UsageMetricsV3).&lt;BR&gt;&lt;/BODY&gt;&lt;/HTML&gt;
 
 ADMINISTRATION_TOP_TEXT=&lt;HTML&gt;&lt;BODY&gt;&lt;p&gt;&lt;font face='Sans-Serif'&gt;Configure los ajustes de administraci\u00f3n del servidor. Puede configurar el nombre de usuario y la contrase\u00f1a del servidor como valores an\u00f3nimos O proporcionar un nombre de usuario y contrase\u00f1a de administraci\u00f3n v\u00e1lidos para el inicio de sesi\u00f3n.&lt;/font&gt;&lt;/p&gt;&lt;/BODY&gt;&lt;/HTML&gt;
 
@@ -192,7 +192,7 @@ LASTNAME=Apellidos
 COUNTRY=Pa\u00eds
 COMPANYNAME=Nombre de la compa\u00f1\u00eda
 ACCOUNT_CREATION_HEADER_TEXT=${BODY_START}Proporcione la siguiente informaci\u00f3n para crear una cuenta en l\u00ednea de Sun. Todos los campos son obligatorios.${BODY_END}
-ACCOUNT_CREATION_FOOTER_TEXT=${BODY_START}&lt;a href=http://www.sun.com/privacy/&gt;Directiva de privacidad de Sun&lt;/a&gt;.${BODY_END}
+ACCOUNT_CREATION_FOOTER_TEXT=${BODY_START}&lt;a href=http://www.oracle.com/us/legal/privacy/index.html&gt;Directiva de privacidad de Sun&lt;/a&gt;.${BODY_END}
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~REGISTRATION OPTIONS PAGE~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

@@ -1,7 +1,7 @@
 #
 # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 #
-# Copyright (c) 2008-2010 Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008-2012 Oracle and/or its affiliates. All rights reserved.
 #
 # The contents of this file are subject to the terms of either the GNU
 # General Public License Version 2 only ("GPL") or the Common Development
@@ -146,7 +146,7 @@ ALTERNATE_JDK=Alternativer Speicherort f\u00fcr Java(TM) SDK
 
 UPDATETOOL_TOP_TEXT=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;Wenn eine Verbindung steht, versucht das Installationsprogramm das Aktualisierungstool f\u00fcr diese Installation herunterzuladen und zu konfigurieren.&lt;BR&gt;&lt;/BODY&gt;&lt;/HTML&gt;
 
-UPDATE_TOOL_PRIVACY_NOTICE=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;Das Aktualisierungstool sucht regelm\u00e4\u00dfig nach Updates und erfasst einige Systemdaten. Weitere Informationen zu den erfassten Daten finden Sie auf der &lt;a href=http://wiki.glassfish.java.net/Wiki.jsp?page=UsageMetricsV3&gt;GlassFish Usage Metrics&lt;/a&gt;-Seite (http://wiki.glassfish.java.net/Wiki.jsp?page=UsageMetricsV3).&lt;BR&gt;&lt;/BODY&gt;&lt;/HTML&gt;
+UPDATE_TOOL_PRIVACY_NOTICE=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;Das Aktualisierungstool sucht regelm\u00e4\u00dfig nach Updates und erfasst einige Systemdaten. Weitere Informationen zu den erfassten Daten finden Sie auf der &lt;a href=https://wikis.oracle.com/display/GlassFish/UsageMetricsV3&gt;GlassFish Usage Metrics&lt;/a&gt;-Seite (https://wikis.oracle.com/display/GlassFish/UsageMetricsV3).&lt;BR&gt;&lt;/BODY&gt;&lt;/HTML&gt;
 
 ADMINISTRATION_TOP_TEXT=&lt;HTML&gt;&lt;BODY&gt;&lt;p&gt;&lt;font face='Sans-Serif'&gt;Konfigurieren Sie die Verwaltungseinstellungen f\u00fcr den Server. Sie k\u00f6nnen den Benutzernamen und das Passwort f\u00fcr den Server anonym konfigurieren ODER Sie geben einen g\u00fcltigen Administratorbenutzernamen und ein Passwort f\u00fcr die Anmeldung an.&lt;/font&gt;&lt;/p&gt;&lt;/BODY&gt;&lt;/HTML&gt;
 
@@ -192,7 +192,7 @@ LASTNAME=Nachname
 COUNTRY=Land
 COMPANYNAME=Company Name
 ACCOUNT_CREATION_HEADER_TEXT=${BODY_START}Geben Sie die folgenden Informationen zur Erstellung eines Sun-Onlinekontos ein. Alle Felder m\u00fcssen ausgef\u00fcllt werden.${BODY_END}
-ACCOUNT_CREATION_FOOTER_TEXT=${BODY_START}&lt;a href=http://www.sun.com/privacy/&gt;Datenschutzrichtlinien von Sun&lt;/a&gt;.${BODY_END}
+ACCOUNT_CREATION_FOOTER_TEXT=${BODY_START}&lt;a href=http://www.oracle.com/us/legal/privacy/index.html&gt;Datenschutzrichtlinien von Sun&lt;/a&gt;.${BODY_END}
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~REGISTRATION OPTIONS PAGE~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

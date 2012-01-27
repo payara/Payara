@@ -1,7 +1,7 @@
 #
 # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 #
-# Copyright (c) 2008-2010 Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008-2012 Oracle and/or its affiliates. All rights reserved.
 #
 # The contents of this file are subject to the terms of either the GNU
 # General Public License Version 2 only ("GPL") or the Common Development
@@ -96,7 +96,7 @@ button_font=Sans-Serif-BOLD-14
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~W E L C O M E   P A G E~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Welcome_WELCOME_TEXT=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;\
-            Welcome to the ${PRODUCT_NAME} installation.&lt;BR&gt;This is a tool for installing ${PRODUCT_NAME}. &lt;BR&gt;&lt;BR&gt;GlassFish Server is a production ready Java EE 6 compliant application server &lt;BR&gt;developed under an open source license. Benefits include a modular, &lt;BR&gt; runtime that minimizes resource consumption, an easy-to-use &lt;BR&gt;administration console, a feature-rich command line tool,centralized &lt;BR&gt;administration and high-availability clustering. GlassFish Server is also &lt;BR&gt;the fastest open source application server available.&lt;BR&gt;&lt;BR&gt;Please visit &lt;a href=https://glassfish.dev.java.net&gt; GlassFish Project Page&lt;/a&gt; for more information. &lt;BR&gt;&lt;BR&gt;Please click Next to proceed. &lt;BR&gt;&lt;BR&gt; &lt;/BODY&gt;&lt;/HTML&gt;
+            Welcome to the ${PRODUCT_NAME} installation.&lt;BR&gt;This is a tool for installing ${PRODUCT_NAME}. &lt;BR&gt;&lt;BR&gt;GlassFish Server is a production ready Java EE 6 compliant application server &lt;BR&gt;developed under an open source license. Benefits include a modular, &lt;BR&gt; runtime that minimizes resource consumption, an easy-to-use &lt;BR&gt;administration console, a feature-rich command line tool,centralized &lt;BR&gt;administration and high-availability clustering. GlassFish Server is also &lt;BR&gt;the fastest open source application server available.&lt;BR&gt;&lt;BR&gt;Please visit &lt;a href=http://glassfish.java.net&gt; GlassFish Project Page&lt;/a&gt; for more information. &lt;BR&gt;&lt;BR&gt;Please click Next to proceed. &lt;BR&gt;&lt;BR&gt; &lt;/BODY&gt;&lt;/HTML&gt;
 
 
 
@@ -142,7 +142,7 @@ ALTERNATE_JDK=Alternate Java(TM) SDK Location
 UPDATETOOL_TOP_TEXT=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt; The Update Tool periodically checks for GlassFish Server updates; enabling&lt;BR&gt;you to stay up-to-date with the latest builds.&lt;BODY&gt;&lt;HTML&gt;
 
 
-UPDATE_TOOL_PRIVACY_NOTICE=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt; The Update Tool periodically checks for available updates and collects &lt;BR&gt; some system data. For more information, see &lt;a href=http://wikis.sun.com/display/glassfish/UsageMetricsV3&gt; GlassFish Usage Metrics&lt;/a&gt; &lt;BR&gt;page, at http://wikis.sun.com/display/GlassFish/UsageMetricsV3.&lt;BODY&gt;&lt;HTML&gt;
+UPDATE_TOOL_PRIVACY_NOTICE=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt; The Update Tool periodically checks for available updates and collects &lt;BR&gt; some system data. For more information, see &lt;a href=https://wikis.oracle.com/display/GlassFish/UsageMetricsV3&gt; GlassFish Usage Metrics&lt;/a&gt; &lt;BR&gt;page, at https://wikis.oracle.com/display/GlassFish/UsageMetricsV3.&lt;BODY&gt;&lt;HTML&gt;
 
 
 ADMINISTRATION_SERVICE_TEXT=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;Provide the name of the Windows Service or a Solaris SMF service.&lt;BODY&gt;&lt;HTML&gt;
@@ -208,7 +208,7 @@ LASTNAME=Last Name
 COUNTRY=Country
 COMPANYNAME=Company Name
 ACCOUNT_CREATION_HEADER_TEXT=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;Provide the following information to create a Sun online account. All field&lt;BR&gt;values are required.&lt;BODY&gt;&lt;HTML&gt;
-ACCOUNT_CREATION_FOOTER_TEXT=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;&lt;a href=http://www.sun.com/privacy/&gt;Oracle's Privacy Policy&lt;BODY&gt;&lt;HTML&gt;
+ACCOUNT_CREATION_FOOTER_TEXT=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;&lt;a href=http://www.oracle.com/us/legal/privacy/index.html&gt;Oracle's Privacy Policy&lt;BODY&gt;&lt;HTML&gt;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~USER TYPE OPTIONS PAGE~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 INSTALLUSERTYPE_OPTIONS_HEADER=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;Choose installation type.&lt;BODY&gt;&lt;HTML&gt;

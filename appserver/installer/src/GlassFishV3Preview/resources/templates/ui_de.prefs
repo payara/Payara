@@ -1,7 +1,7 @@
 #
 # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 #
-# Copyright (c) 2008-2010 Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008-2012 Oracle and/or its affiliates. All rights reserved.
 #
 # The contents of this file are subject to the terms of either the GNU
 # General Public License Version 2 only ("GPL") or the Common Development
@@ -93,7 +93,7 @@ btnpanel_bgcolor=e8e9ed
 button_font=Sans-Serif-BOLD-14
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~W E L C O M E   P A G E~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Welcome_WELCOME_TEXT=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;Willkommen zur ${PRODUCT_NAME}-Installation.&lt;BR&gt;Dieses Tool dient zum Installieren von ${PRODUCT_NAME}. &lt;BR&gt;&lt;BR&gt;GlassFish Server ist ein serienreifer Java EE 6-kompatibler Anwendungsserver, der unter einer Open Source-Lizenz entwickelt wurde. Zu den Vorteilen z\u00e4hlen eine modulare Laufzeitumgebung, die den Ressourcenverbrauch minimiert, eine benutzerfreundliche Administrationskonsole, ein Befehlszeilen-Tool mit umfangreichen Funktionen, eine zentrale Administration und hochverf\u00fcgbares Clustering. Au\u00dferdem ist GlassFish Server der derzeit schnellste Open Source-Anwendungsserver.&lt;BR&gt;&lt;BR&gt;Weitere Informationen finden Sie auf der &lt;a href=https://glassfish.dev.java.net&gt; GlassFish-Projektseite&lt;/a&gt;. &lt;BR&gt;&lt;BR&gt;Klicken Sie zum Fortfahren auf 'Weiter'. &lt;BR&gt;&lt;BR&gt;&lt;/BODY&gt;&lt;/HTML&gt;
+Welcome_WELCOME_TEXT=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;Willkommen zur ${PRODUCT_NAME}-Installation.&lt;BR&gt;Dieses Tool dient zum Installieren von ${PRODUCT_NAME}. &lt;BR&gt;&lt;BR&gt;GlassFish Server ist ein serienreifer Java EE 6-kompatibler Anwendungsserver, der unter einer Open Source-Lizenz entwickelt wurde. Zu den Vorteilen z\u00e4hlen eine modulare Laufzeitumgebung, die den Ressourcenverbrauch minimiert, eine benutzerfreundliche Administrationskonsole, ein Befehlszeilen-Tool mit umfangreichen Funktionen, eine zentrale Administration und hochverf\u00fcgbares Clustering. Au\u00dferdem ist GlassFish Server der derzeit schnellste Open Source-Anwendungsserver.&lt;BR&gt;&lt;BR&gt;Weitere Informationen finden Sie auf der &lt;a href=http://glassfish.java.net&gt; GlassFish-Projektseite&lt;/a&gt;. &lt;BR&gt;&lt;BR&gt;Klicken Sie zum Fortfahren auf 'Weiter'. &lt;BR&gt;&lt;BR&gt;&lt;/BODY&gt;&lt;/HTML&gt;
 
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~I N S T A L L    H O M E   P A G E~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -128,7 +128,7 @@ ALTERNATE_JDK=Alternativer Speicherort f\u00fcr Java(TM) SDK
 UPDATETOOL_TOP_TEXT=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt; Das Aktualisierungstool sucht regelm\u00e4\u00dfig nach Updates f\u00fcr GlassFish Server, &lt;BR&gt;sodass Sie immer \u00fcber die aktuellen Builds verf\u00fcgen.&lt;BODY&gt;&lt;HTML&gt;
 
 
-UPDATE_TOOL_PRIVACY_NOTICE=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt; Das Aktualisierungstool sucht regelm\u00e4\u00dfig nach Updates und erfasst &lt;BR&gt; einige Systemdaten. Weitere Informationen erhalten Sie auf der Webseite&lt;BR&gt;&lt;a href=http://wikis.sun.com/display/glassfish/UsageMetricsV3&gt; GlassFish Usage Metrics&lt;/a&gt; unter &lt;BR&gt;&lt;http://wikis.sun.com/display/GlassFish/UsageMetricsV3.&lt;BODY&gt;&lt;HTML&gt;
+UPDATE_TOOL_PRIVACY_NOTICE=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt; Das Aktualisierungstool sucht regelm\u00e4\u00dfig nach Updates und erfasst &lt;BR&gt; einige Systemdaten. Weitere Informationen erhalten Sie auf der Webseite&lt;BR&gt;&lt;a href=https://wikis.oracle.com/display/GlassFish/UsageMetricsV3&gt; GlassFish Usage Metrics&lt;/a&gt; unter &lt;BR&gt;&lt;https://wikis.oracle.com/display/GlassFish/UsageMetricsV3.&lt;BODY&gt;&lt;HTML&gt;
 
 ADMINISTRATION_SERVICE_TEXT=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;Geben Sie den Namen des Windows-Diensts oder eines Solaris SMF-Diensts an.&lt;BODY&gt;&lt;HTML&gt;
 
@@ -193,7 +193,7 @@ LASTNAME=Nachname
 COUNTRY=Land
 COMPANYNAME=Company Name
 ACCOUNT_CREATION_HEADER_TEXT=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;Geben Sie die folgenden Informationen zur Erstellung eines Sun-Onlinekontos an Alle Feldwerte&lt;BR&gt;m\u00fcssen angegeben werden.&lt;BODY&gt;&lt;HTML&gt;
-ACCOUNT_CREATION_FOOTER_TEXT=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;&lt;a href=http://www.sun.com/privacy/&gt;Datenschutzrichtlinien von Oracle&lt;BODY&gt;&lt;HTML&gt;
+ACCOUNT_CREATION_FOOTER_TEXT=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;&lt;a href=http://www.oracle.com/us/legal/privacy/index.html&gt;Datenschutzrichtlinien von Oracle&lt;BODY&gt;&lt;HTML&gt;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~USER TYPE OPTIONS PAGE~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 INSTALLUSERTYPE_OPTIONS_HEADER=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;W\u00e4hlen Sie den Installationstyp.&lt;BODY&gt;&lt;HTML&gt;

@@ -1,7 +1,7 @@
 #
 # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 #
-# Copyright (c) 2008-2010 Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008-2012 Oracle and/or its affiliates. All rights reserved.
 #
 # The contents of this file are subject to the terms of either the GNU
 # General Public License Version 2 only ("GPL") or the Common Development
@@ -95,7 +95,7 @@ btnpanel_bgcolor=e8e9ed
 button_font=Sans-Serif-BOLD-14
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~W E L C O M E   P A G E~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Welcome_WELCOME_TEXT=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;\u6b22\u8fce\u4f7f\u7528 ${PRODUCT_NAME} \u5b89\u88c5\u3002&lt;BR&gt;\u8fd9\u662f\u4e00\u4e2a\u7528\u4e8e\u5b89\u88c5 ${PRODUCT_NAME} \u7684\u5de5\u5177\u3002&lt;BR&gt;&lt;BR&gt;GlassFish Server \u662f\u5728\u5f00\u6e90\u8bb8\u53ef\u8bc1\u4e0b\u5f00\u53d1\u7684\u4e00\u79cd\u53ef\u7528\u4e8e\u751f\u4ea7\u73af\u5883\u7684 Java EE 6 \u517c\u5bb9\u5e94\u7528\u670d\u52a1\u5668&lt;BR&gt;\u3002\u4f18\u70b9\u5305\u62ec\uff1a\u6a21\u5757\u5316\u8bbe\u8ba1\u3001&lt;BR&gt;\u53ef\u6700\u5927\u7a0b\u5ea6\u964d\u4f4e\u8d44\u6e90\u6d88\u8017\u7684\u8fd0\u884c\u65f6\u3001\u6613\u4e8e\u4f7f\u7528\u7684&lt;BR&gt;\u7ba1\u7406\u63a7\u5236\u53f0\u3001\u529f\u80fd\u4e30\u5bcc\u7684\u547d\u4ee4\u884c\u5de5\u5177\u3001\u96c6\u4e2d\u5f0f&lt;BR&gt;\u7ba1\u7406\u4ee5\u53ca\u9ad8\u53ef\u7528\u6027\u7fa4\u96c6\u3002GlassFish Server \u4e5f\u662f&lt;BR&gt;\u53ef\u7528\u7684\u6700\u5feb\u7684\u5f00\u6e90\u5e94\u7528\u670d\u52a1\u5668\u3002&lt;BR&gt;&lt;BR&gt;\u6709\u5173\u66f4\u591a\u4fe1\u606f\uff0c\u8bf7\u8bbf\u95ee &lt;a href=https://glassfish.dev.java.net&gt; GlassFish \u9879\u76ee\u9875\u9762&lt;/a&gt;\u3002&lt;BR&gt;&lt;BR&gt;\u8bf7\u5355\u51fb\u201c\u4e0b\u4e00\u6b65\u201d\u7ee7\u7eed\u3002&lt;BR&gt;&lt;BR&gt;&lt;/BODY&gt;&lt;/HTML&gt;
+Welcome_WELCOME_TEXT=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;\u6b22\u8fce\u4f7f\u7528 ${PRODUCT_NAME} \u5b89\u88c5\u3002&lt;BR&gt;\u8fd9\u662f\u4e00\u4e2a\u7528\u4e8e\u5b89\u88c5 ${PRODUCT_NAME} \u7684\u5de5\u5177\u3002&lt;BR&gt;&lt;BR&gt;GlassFish Server \u662f\u5728\u5f00\u6e90\u8bb8\u53ef\u8bc1\u4e0b\u5f00\u53d1\u7684\u4e00\u79cd\u53ef\u7528\u4e8e\u751f\u4ea7\u73af\u5883\u7684 Java EE 6 \u517c\u5bb9\u5e94\u7528\u670d\u52a1\u5668&lt;BR&gt;\u3002\u4f18\u70b9\u5305\u62ec\uff1a\u6a21\u5757\u5316\u8bbe\u8ba1\u3001&lt;BR&gt;\u53ef\u6700\u5927\u7a0b\u5ea6\u964d\u4f4e\u8d44\u6e90\u6d88\u8017\u7684\u8fd0\u884c\u65f6\u3001\u6613\u4e8e\u4f7f\u7528\u7684&lt;BR&gt;\u7ba1\u7406\u63a7\u5236\u53f0\u3001\u529f\u80fd\u4e30\u5bcc\u7684\u547d\u4ee4\u884c\u5de5\u5177\u3001\u96c6\u4e2d\u5f0f&lt;BR&gt;\u7ba1\u7406\u4ee5\u53ca\u9ad8\u53ef\u7528\u6027\u7fa4\u96c6\u3002GlassFish Server \u4e5f\u662f&lt;BR&gt;\u53ef\u7528\u7684\u6700\u5feb\u7684\u5f00\u6e90\u5e94\u7528\u670d\u52a1\u5668\u3002&lt;BR&gt;&lt;BR&gt;\u6709\u5173\u66f4\u591a\u4fe1\u606f\uff0c\u8bf7\u8bbf\u95ee &lt;a href=http://glassfish.java.net&gt; GlassFish \u9879\u76ee\u9875\u9762&lt;/a&gt;\u3002&lt;BR&gt;&lt;BR&gt;\u8bf7\u5355\u51fb\u201c\u4e0b\u4e00\u6b65\u201d\u7ee7\u7eed\u3002&lt;BR&gt;&lt;BR&gt;&lt;/BODY&gt;&lt;/HTML&gt;
 
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~I N S T A L L    H O M E   P A G E~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -130,7 +130,7 @@ ALTERNATE_JDK=\u5907\u7528\u7684 Java(TM) SDK \u4f4d\u7f6e
 UPDATETOOL_TOP_TEXT=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;\u66f4\u65b0\u5de5\u5177\u4f1a\u5b9a\u671f\u68c0\u67e5 GlassFish Server \u66f4\u65b0\uff1b\u4f7f&lt;BR&gt;\u60a8\u53ef\u4ee5\u4e0e\u6700\u65b0\u5185\u90e8\u7248\u672c\u4fdd\u6301\u4e00\u81f4\u3002&lt;BODY&gt;&lt;HTML&gt;
 
 
-UPDATE_TOOL_PRIVACY_NOTICE=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;\u66f4\u65b0\u5de5\u5177\u4f1a\u5b9a\u671f\u68c0\u67e5\u53ef\u7528\u66f4\u65b0\uff0c\u5e76\u6536\u96c6\u67d0\u4e9b\u7cfb\u7edf\u6570&lt;BR&gt;\u636e\u3002\u6709\u5173\u66f4\u591a\u4fe1\u606f\uff0c\u8bf7\u8bbf\u95ee &lt;a href=http://wikis.sun.com/display/glassfish/UsageMetricsV3&gt; GlassFish Usage Metrics\uff08GlassFish \u4f7f\u7528\u6570\u636e\uff09&lt;/a&gt; &lt;BR&gt;\u9875\u9762\uff0c\u7f51\u5740\u4e3a http://wikis.sun.com/display/GlassFish/UsageMetricsV3\u3002&lt;BODY&gt;&lt;HTML&gt;
+UPDATE_TOOL_PRIVACY_NOTICE=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;\u66f4\u65b0\u5de5\u5177\u4f1a\u5b9a\u671f\u68c0\u67e5\u53ef\u7528\u66f4\u65b0\uff0c\u5e76\u6536\u96c6\u67d0\u4e9b\u7cfb\u7edf\u6570&lt;BR&gt;\u636e\u3002\u6709\u5173\u66f4\u591a\u4fe1\u606f\uff0c\u8bf7\u8bbf\u95ee &lt;a href=https://wikis.oracle.com/display/GlassFish/UsageMetricsV3&gt; GlassFish Usage Metrics\uff08GlassFish \u4f7f\u7528\u6570\u636e\uff09&lt;/a&gt; &lt;BR&gt;\u9875\u9762\uff0c\u7f51\u5740\u4e3a https://wikis.oracle.com/display/GlassFish/UsageMetricsV3\u3002&lt;BODY&gt;&lt;HTML&gt;
 
 ADMINISTRATION_SERVICE_TEXT=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;\u63d0\u4f9b Windows \u670d\u52a1\u6216 Solaris SMF \u670d\u52a1\u7684\u540d\u79f0\u3002&lt;BODY&gt;&lt;HTML&gt;
 
@@ -195,7 +195,7 @@ LASTNAME=\u59d3
 COUNTRY=\u56fd\u5bb6/\u5730\u533a
 COMPANYNAME=\u516c\u53f8\u540d\u79f0
 ACCOUNT_CREATION_HEADER_TEXT=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;\u63d0\u4f9b\u4ee5\u4e0b\u4fe1\u606f\u4ee5\u521b\u5efa\u4e00\u4e2a Sun \u8054\u673a\u5e10\u6237\u3002\u6240\u6709\u5b57\u6bb5&lt;BR&gt;\u503c\u90fd\u662f\u5fc5\u9700\u7684\u3002&lt;BODY&gt;&lt;HTML&gt;
-ACCOUNT_CREATION_FOOTER_TEXT=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;&lt;a href=http://www.sun.com/privacy/&gt;Oracle \u7684\u9690\u79c1\u653f\u7b56&lt;BODY&gt;&lt;HTML&gt;
+ACCOUNT_CREATION_FOOTER_TEXT=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;&lt;a href=http://www.oracle.com/us/legal/privacy/index.html&gt;Oracle \u7684\u9690\u79c1\u653f\u7b56&lt;BODY&gt;&lt;HTML&gt;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~USER TYPE OPTIONS PAGE~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 INSTALLUSERTYPE_OPTIONS_HEADER=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;\u9009\u62e9\u5b89\u88c5\u7c7b\u578b\u3002&lt;BODY&gt;&lt;HTML&gt;

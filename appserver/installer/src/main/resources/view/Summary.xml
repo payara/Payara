@@ -99,7 +99,7 @@ void run ()  {
     String mode = (String)modeResp.getResult();
 
     theSumURL = theSummaryFile.toURI().toURL();
-	theNextStepsURL = new URI("http://docs.sun.com/doc/820-7689").toURL();
+	theNextStepsURL = new URI("http://www.oracle.com/pls/topic/lookup?ctx=821-2427&id=sjsaseeig").toURL();
 	theLogURL = logsLocation.toURI().toURL();
 
   /* determine if anything failed */
