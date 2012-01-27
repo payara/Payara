@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,7 +40,7 @@
 
 package com.sun.enterprise.naming;
 
-import org.glassfish.api.Startup;
+import org.glassfish.api.StartupRunLevel;
 import org.glassfish.internal.api.*;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Inject;
@@ -65,7 +65,7 @@ import java.lang.reflect.Field;
 import com.sun.enterprise.naming.util.LogFacade;
 
 /**
- * This is both a {@link Startup} service as well as our implementation of
+ * This is both a startup run level service as well as our implementation of
  * {@link InitialContextFactoryBuilder}. When GlassFish starts up, this
  * startup service configures NamingManager with appropriate builder by calling
  * {@link javax.naming.spi.NamingManager#setInitialContextFactoryBuilder}.
@@ -78,7 +78,8 @@ import com.sun.enterprise.naming.util.LogFacade;
  * @author Sanjeeb.Sahoo@Sun.COM
  */
 @Service
-public class GlassFishNamingBuilder implements InitialContextFactoryBuilder, Startup, PostConstruct, PreDestroy
+@StartupRunLevel
+public class GlassFishNamingBuilder implements InitialContextFactoryBuilder, PostConstruct, PreDestroy
 {
     @Inject
     private ServerContext sc;
@@ -120,11 +121,6 @@ public class GlassFishNamingBuilder implements InitialContextFactoryBuilder, Sta
         }
         // default case
         return new SerialInitContextFactory();
-    }
-
-    public Lifecycle getLifecycle()
-    {
-        return Lifecycle.SERVER;
     }
 
     private Class loadClass(String className) throws ClassNotFoundException
