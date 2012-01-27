@@ -11,15 +11,17 @@ public:
 	inline bool isHelp() { return help; }
 	void usage();
 protected:
-	bool test;
 	bool help;
 private:
 	void printOwners();
 	void printOwners(Persona& admin);
 	void configureRegKeys();
 	void DcomConfigurator::parse(int argc, _TCHAR* argv[]);
+	
 	bool verbose;
 	bool force;
+	bool notReally;
+
 	LPCTSTR scriptingOwnerId;
 	LPCTSTR wmiOwnerId;
 	LPCTSTR adminOwnerId;

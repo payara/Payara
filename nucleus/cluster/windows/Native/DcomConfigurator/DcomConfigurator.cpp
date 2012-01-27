@@ -21,6 +21,7 @@ DcomConfigurator::DcomConfigurator(int argc, _TCHAR* argv[]) {
 	verbose = false;
 	help = false;
 	force = false;
+	notReally = false;
 	admin = new Persona(WinBuiltinAdministratorsSid);
 	adminOwnerId = admin->getSidString();
 	scriptingOwnerId = getOwnerString(HKEY_CLASSES_ROOT, REG_SCRIPTING);
@@ -34,8 +35,14 @@ DcomConfigurator::~DcomConfigurator() {
 
 void DcomConfigurator::usage()
 {
-	printf("Usage: DCOMConfigurator [-h|--help] [-v|--verbose] [-f|--force]\n");
+	printf("Usage: DCOMConfigurator [-h|--help] [-v|--verbose] [-f|--force] [-n|--dry-run]\n");
+	printf("\n");
 	printf("DCOM Configurator attempts to change permissions and possibly the ownership of 2 Registry keys.\nThe keys allow access to WMI and Scripting.\n");
+	printf("\n");
+	printf("[-h|--help]    Show this help\n");
+	printf("[-v|--verbose] Explain what happened\n");
+	printf("[-f|--force]   XXXXXXXX\n");
+	printf("[-n|--dry-run] Don't really do it\n");
 	
 	
 	bool b = is64();
@@ -45,7 +52,14 @@ void DcomConfigurator::usage()
 		printf("(1) HKEY_CLASSES_ROOT\\Wow6432Node\\CLSID\\...\n");
 		printf("(2) HKEY_CLASSES_ROOT\\CLSID\\...\n");
 	}
+	else
+		printf("\nYou are running on 32 bit Windows.");
 }
+
+/**
+  * Ugly and fast to develop.  Feel free to improve it...
+  * Probably should re-work if an item #5 or 6 is added.  
+  */
 
 void DcomConfigurator::parse(int argc, _TCHAR* argv[])
 {
@@ -64,6 +78,9 @@ void DcomConfigurator::parse(int argc, _TCHAR* argv[])
 		}
 		if(!lstrcmpi(L"-f", argv[i]) || !lstrcmpi(L"--force", argv[i])) {
 			force = true;
+		}
+		if(!lstrcmpi(L"-n", argv[i]) || !lstrcmpi(L"--dry-run", argv[i])) {
+			notReally = true;
 		}
 	}
 }
