@@ -92,8 +92,8 @@ public class ServiceDescription {
         setAppName(other.getAppName());
         setVirtualClusterName(other.getVirtualClusterName());
         setInitType(other.getInitType());
-        setTemplateOrCharacteristics(other.getTemplateOrCharacteristics()); // TODO :: clone??
-        configurations.addAll(other.getConfigurations());
+        cloneTemplateOrCharacteristics(other.getTemplateOrCharacteristics());
+        cloneConfigurations(other.getConfigurations());
     }
 
     @XmlAttribute(name = "name", required = true)
@@ -151,6 +151,28 @@ public class ServiceDescription {
                 throw new RuntimeException("Invalid type [" + templateOrCharacteristics.getClass() + "], " +
                         "neither TemplateIdentifier nor ServiceCharacteristics");
             }
+        }
+    }
+
+    public void cloneTemplateOrCharacteristics(Object templateOrCharacteristics) {
+        //for an external-service, neither template nor characteristics will be applicable.
+        if (templateOrCharacteristics != null) {
+            if(templateOrCharacteristics instanceof TemplateIdentifier){
+                this.templateOrCharacteristics=new TemplateIdentifier();
+                ((TemplateIdentifier)this.templateOrCharacteristics).setId(((TemplateIdentifier) templateOrCharacteristics).getId());
+
+            }else if(templateOrCharacteristics instanceof ServiceCharacteristics){
+                this.templateOrCharacteristics=new ServiceCharacteristics((ServiceCharacteristics)templateOrCharacteristics);
+            }else{
+               throw new RuntimeException("Invalid type [" + templateOrCharacteristics.getClass() + "], " +
+                        "neither TemplateIdentifier nor ServiceCharacteristics");
+            }
+        }
+    }
+
+    private void cloneConfigurations(List<Property> configurations) {
+        for(Property property:configurations){
+            this.configurations.add(new Property(property.getName(),property.getValue()));
         }
     }
 
