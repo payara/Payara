@@ -50,7 +50,8 @@ BOOL TakeOwnership(LPTSTR key)
 	{
 		wprintf(L"AllocateAndInitializeSid (Everyone) error %u\n",
 			GetLastError());
-		goto Cleanup;
+		
+goto Cleanup;
 	}
 
 	// Create a SID for the BUILTIN\Administrators group.

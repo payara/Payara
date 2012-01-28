@@ -12,9 +12,7 @@ int _tmain(int argc, _TCHAR* argv[])
 		con.usage();
 		return 0;
 	}
-	con.configure();
-	
-	return 0;
+	return con.configure();
 }
 
 DcomConfigurator::DcomConfigurator(int argc, _TCHAR* argv[]) {
@@ -85,16 +83,18 @@ void DcomConfigurator::parse(int argc, _TCHAR* argv[])
 	}
 }
 
-void DcomConfigurator::configure() {
+int DcomConfigurator::configure() {
 	Persona admin(WinBuiltinAdministratorsSid);
 
 	if(verbose)
 		printOwners();
 
-	configureRegKeys();
-	
+	int ret = configureRegKeys() == TRUE ? 0 : 1;
+ 	
 	if(verbose)
 		cout <<  message;
+	
+	return ret;
 }
 
 void DcomConfigurator::printOwners() {
@@ -108,20 +108,26 @@ void DcomConfigurator::printOwners() {
 	}
 }
 
-void DcomConfigurator::configureRegKeys() {
+BOOL DcomConfigurator::configureRegKeys() {
+	BOOL ret = TRUE;	
+	BOOL ret2 = TRUE;
+
 	if(!Equal(adminOwnerId, scriptingOwnerId) || force) {
-		TakeOwnership((LPTSTR)REG_SCRIPTING_FULL);
+		ret = TakeOwnership((LPTSTR)REG_SCRIPTING_FULL);
 		message += "Took ownership and adjusted permissions of Scripting Registry Key.\n";
 	}
 	else
 		message += "No need to adjust the Scripting Registry Key.\n";
 
+	
 	if(!Equal(adminOwnerId, wmiOwnerId) || force) {
-		TakeOwnership((LPTSTR)REG_WMI_FULL);
+		ret2 = TakeOwnership((LPTSTR)REG_WMI_FULL);
 		message += "Took ownership and adjusted permissions of WMI Registry Key.\n";
 	}
 	else
 		message += "No need to adjust the WMI Registry Key.\n";
+
+	return ret && ret2;
 }
 
 void DcomConfigurator::p(LPCSTR msg) {

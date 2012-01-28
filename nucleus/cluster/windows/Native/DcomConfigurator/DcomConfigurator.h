@@ -9,7 +9,7 @@ class DcomConfigurator
 public:
 	DcomConfigurator(int argc, _TCHAR* argv[]);
 	~DcomConfigurator();
-	void configure();
+	int configure();
 	inline bool isHelp() { return help; }
 	void usage();
 protected:
@@ -17,7 +17,7 @@ protected:
 private:
 	void printOwners();
 	void printOwners(Persona& admin);
-	void configureRegKeys();
+	BOOL configureRegKeys();
 	void DcomConfigurator::parse(int argc, _TCHAR* argv[]);
 	void p(LPCSTR);
 	void wp(LPCWSTR);
