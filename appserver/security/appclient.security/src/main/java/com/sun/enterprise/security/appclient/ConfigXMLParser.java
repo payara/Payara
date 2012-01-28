@@ -242,14 +242,19 @@ public class ConfigXMLParser implements ConfigParser {
         String sun_acc = System.getProperty(ACC_XML, "glassfish-acc.xml");
         List<MessageSecurityConfig> msgconfigs = null;
         if (Globals.getDefaultHabitat() == null && sun_acc != null) {
+            InputStream is = null;
             try {
-                InputStream is = new FileInputStream(sun_acc);
+                is = new FileInputStream(sun_acc);
                 JAXBContext jc = JAXBContext.newInstance(ClientContainer.class);
                 Unmarshaller u = jc.createUnmarshaller();
                 ClientContainer cc = (ClientContainer) u.unmarshal(is);
                 msgconfigs = cc.getMessageSecurityConfig();
             } catch (JAXBException ex) {
                 _logger.log(Level.SEVERE, null, ex);
+            } finally {
+                if (is != null) {
+                    is.close();
+                }
             }
         } else {
             Util util = Util.getInstance();
