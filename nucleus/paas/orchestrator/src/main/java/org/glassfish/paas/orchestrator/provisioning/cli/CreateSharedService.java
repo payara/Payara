@@ -141,7 +141,8 @@ public class CreateSharedService implements AdminCommand {
 
         if (initMode.equalsIgnoreCase("lazy")) {
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            report.setFailureCause(new UnsupportedOperationException("Init type 'lazy' not supported. Set init-mode of service as 'eager'"));
+            report.setFailureCause(new UnsupportedOperationException("Init type 'lazy' not supported. " +
+                    "Set init-mode of service as 'eager'"));
             return;
         }
 
@@ -172,7 +173,7 @@ public class CreateSharedService implements AdminCommand {
         }
 
         //check whether any service by this name exist
-        //For now, service-name is unique across all scoped (shared/external/app-scoped)
+        //For now, service-name is unique across all scopes (shared/external/app-scoped)
         for(Service service : serviceUtil.getServices().getServices()){
             if(service.getServiceName().equals(serviceName)){
                 report.setMessage("Service by name ["+serviceName+"] already exist");
