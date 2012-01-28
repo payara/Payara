@@ -160,11 +160,13 @@ public class UndeployCommand extends UndeployCommandParameters implements AdminC
          */
         name = (new File(name)).getName();
 
+/*
         // I should really look if the associated cluster is virtual
         Cluster cluster = domain.getClusterNamed(name);
         if (cluster!=null) {
             target = name;
         }
+*/
 
         // retrieve matched version(s) if exist
         List<String> matchedVersions = null;
