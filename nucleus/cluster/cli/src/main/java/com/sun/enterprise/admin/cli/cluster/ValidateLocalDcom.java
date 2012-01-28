@@ -39,9 +39,12 @@
  */
 package com.sun.enterprise.admin.cli.cluster;
 
+import com.sun.enterprise.universal.process.ProcessManager;
+import com.sun.enterprise.universal.process.ProcessManagerException;
 import java.io.*;
 import java.io.File;
 import java.util.*;
+import org.glassfish.api.Param;
 import static com.sun.enterprise.universal.process.ProcessUtils.getExe;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -58,6 +61,9 @@ import com.sun.enterprise.util.SystemPropertyConstants;
 @Service(name = "validate-local-dcom")
 @Scoped(PerLookup.class)
 public final class ValidateLocalDcom extends CLICommand {
+    @Param(name = "verbose", primary = false, optional = true)
+    boolean verbose;
+
     private final static String[] DEPENDENCIES = new String[]{
         //"msvcp100.dll",
         //"msvcr100.dll",
@@ -80,10 +86,23 @@ public final class ValidateLocalDcom extends CLICommand {
     }
 
     @Override
-    protected int executeCommand()
-            throws CommandException, CommandValidationException {
+    protected int executeCommand() throws CommandException, CommandValidationException {
+        try {
+            List<String> cmds = new ArrayList<String>();
+            cmds.add(CPP_APP.getAbsolutePath());
+            ProcessManager pm = new ProcessManager(cmds);
+            pm.execute();
 
-        throw new CommandException("Not implemented");
+            int ret = pm.getExitValue();
+
+            if(verbose || ret != 0)
+                logger.info(pm.getStdout() + pm.getStderr());
+
+            return ret;
+        }
+        catch (ProcessManagerException ex) {
+            throw new CommandException(ex);
+        }
     }
 
     /**
