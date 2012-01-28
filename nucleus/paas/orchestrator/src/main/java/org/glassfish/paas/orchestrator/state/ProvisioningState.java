@@ -40,10 +40,13 @@
 
 package org.glassfish.paas.orchestrator.state;
 
+import org.glassfish.api.deployment.DeployCommandParameters;
+import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.embeddable.CommandResult;
 import org.glassfish.embeddable.CommandRunner;
 import org.glassfish.paas.orchestrator.PaaSDeploymentContext;
 import org.glassfish.paas.orchestrator.PaaSDeploymentException;
+import org.glassfish.paas.orchestrator.provisioning.ServiceScope;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceUtil;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceDescription;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceMetadata;
@@ -85,7 +88,6 @@ public class ProvisioningState extends AbstractPaaSDeploymentState {
     private Set<ProvisionedService> provisionServices(final PaaSDeploymentContext context) throws PaaSDeploymentException {
         //TODO refactor such that rollback is done in a different state.
         //TODO add exception handling for the entire task
-        //TODO pass the exception via the PaaSDeploymentContext ?
         logger.log(Level.FINER, localStrings.getString("METHOD.provisionServices"));
         final Set<ProvisionedService> appPSs = new HashSet<ProvisionedService>();
         String appName = context.getAppName();
@@ -93,7 +95,7 @@ public class ProvisioningState extends AbstractPaaSDeploymentState {
 
 
         // create one virtual cluster per deployment unit.
-        String virtualClusterName = orchestrator.getVirtualClusterName(appServiceMetadata);
+        String virtualClusterName = orchestrator.getVirtualClusterForApplication(appName, appServiceMetadata);
         if(virtualClusterName != null){
             CommandResult result = commandRunner.run("create-cluster", virtualClusterName);
             Object args[]=new Object[]{virtualClusterName,result.getOutput()};
@@ -102,6 +104,25 @@ public class ProvisioningState extends AbstractPaaSDeploymentState {
                 throw new RuntimeException("Failure while provisioning services, " +
                         "Unable to create cluster [" + virtualClusterName + "]");
             }
+        }
+        //TODO what happens if there is a shared-gf-service and app-scoped-gf-service ?
+
+        //let's set the target here as there is no other appropriate phase available.
+        for(ServiceDescription sd : appServiceMetadata.getServiceDescriptions()) {
+            if("JavaEE".equalsIgnoreCase(sd.getServiceType()) && ServiceScope.SHARED.equals(sd.getServiceScope())) {
+                virtualClusterName = sd.getName();
+                break;
+            }
+        }
+        if(virtualClusterName != null){
+            DeploymentContext dc = context.getDeploymentContext();
+            if(dc != null){
+                DeployCommandParameters dcp = dc.getCommandParameters(DeployCommandParameters.class);
+                dcp.target = virtualClusterName;
+            }
+        }else{
+            throw new PaaSDeploymentException("Unable to determine virtual-cluster-name " +
+                    "for the application ["+appName+"]");
         }
 
         Collection<ServiceDescription> serviceDescriptionsToProvision =

@@ -385,15 +385,27 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
         return services;
     }
 
-    // Name of the JavaEE service will be the name of the virtual cluster.
-    public String getVirtualClusterName(ServiceMetadata appServiceMetadata) {
+    /**
+     * Name of the JavaEE service will be the name of the virtual cluster.
+     * This method is used to create a virtual-cluster per deployment unit, meant
+     * for all application-scoped-services. </br>
+     * If there is no application scoped service, application-name will be chosen as virtual-cluster-name
+     * @param appName application-name
+     * @param appServiceMetadata meta-data
+     * @return String virtual-cluster-name
+     */
+    public String getVirtualClusterForApplication(String appName, ServiceMetadata appServiceMetadata) {
         Set<ServiceDescription> appSDs = appServiceMetadata.getServiceDescriptions();
         String virtualClusterName = null;
         for(ServiceDescription sd : appSDs) {
-            //TODO check whether the service-scope is app-scoped and set it.
-            if("JavaEE".equalsIgnoreCase(sd.getServiceType()) && !ServiceScope.SHARED.equals(sd.getServiceScope())) {
+            if("JavaEE".equalsIgnoreCase(sd.getServiceType()) && ServiceScope.APPLICATION.equals(sd.getServiceScope())) {
                 virtualClusterName = sd.getName();
+                break;
             }
+        }
+        //no application scoped glassfish service is available, choose app-name as virtual-cluster-name
+        if(virtualClusterName == null){
+            virtualClusterName = appName;
         }
         return virtualClusterName;
     }

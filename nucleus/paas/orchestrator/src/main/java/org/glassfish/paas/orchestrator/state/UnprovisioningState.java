@@ -105,7 +105,7 @@ public class UnprovisioningState extends AbstractPaaSDeploymentState {
         }
         // Clean up the glassfish cluster, virtual cluster config, etc.. if they are application scoped.
         final ServiceMetadata appServiceMetadata = appInfoRegistry.getServiceMetadata(appName);
-        String virtualClusterName = orchestrator.getVirtualClusterName(appServiceMetadata);
+        String virtualClusterName = orchestrator.getVirtualClusterForApplication(appName, appServiceMetadata);
         if(virtualClusterName != null){
             orchestrator.removeVirtualCluster(virtualClusterName);
         }

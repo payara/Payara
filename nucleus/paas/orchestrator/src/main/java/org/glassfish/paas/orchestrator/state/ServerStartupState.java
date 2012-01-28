@@ -70,7 +70,7 @@ public class ServerStartupState extends AbstractPaaSDeploymentState {
         final ServiceMetadata appServiceMetadata = appInfoRegistry.getServiceMetadata(appName);
 
         final Set<ProvisionedService> appPSs = new HashSet<ProvisionedService>();
-        String virtualClusterName = orchestrator.getVirtualClusterName(appServiceMetadata);
+        String virtualClusterName = orchestrator.getVirtualClusterForApplication(appName, appServiceMetadata);
         Object args[]={appName,virtualClusterName};
         logger.log(Level.FINEST, localStrings.getString("retrieve.provisionedservice",args));
         Set<ServiceDescription> appSDs = appServiceMetadata.getServiceDescriptions();

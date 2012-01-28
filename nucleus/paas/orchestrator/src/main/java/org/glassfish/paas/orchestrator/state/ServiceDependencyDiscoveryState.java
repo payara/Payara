@@ -347,7 +347,7 @@ public class ServiceDependencyDiscoveryState extends AbstractPaaSDeploymentState
             assertMetadataComplete(appSDs, appSRs);
 
             //set virtual-cluster name
-            String virtualClusterName = orchestrator.getVirtualClusterName(appServiceMetadata);
+            String virtualClusterName = orchestrator.getVirtualClusterForApplication(appName, appServiceMetadata);
             for (ServiceDescription sd : appServiceMetadata.getServiceDescriptions()) {
                 if(ServiceScope.APPLICATION.equals(sd.getServiceScope())){
                     sd.setVirtualClusterName(virtualClusterName);

@@ -241,12 +241,12 @@ public class GlassFishPlugin extends ServiceProvisioningEngineBase<JavaEEService
          * Step 3. Set the target to the newly created cluster.
          * TODO what if someone requests for multiple GlassFish services ? As of now, the last one is considered as deployment target.
          */
-        String clusterName = serviceName;
+/*        String clusterName = serviceName;
         DeploymentContext dc = pdc.getDeploymentContext();
         if(dc != null){
             DeployCommandParameters dcp = dc.getCommandParameters(DeployCommandParameters.class);
             dcp.target = clusterName;
-        }
+        }*/
 
         /**
          * Step 4. Create elastic service.
