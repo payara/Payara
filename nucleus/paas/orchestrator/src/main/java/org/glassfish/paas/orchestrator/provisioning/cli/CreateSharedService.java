@@ -65,6 +65,7 @@ import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.PerLookup;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
+import org.jvnet.hk2.config.Transaction;
 import org.jvnet.hk2.config.TransactionFailure;
 import org.jvnet.hk2.config.types.Property;
 
@@ -182,11 +183,7 @@ public class CreateSharedService implements AdminCommand {
             }
         }
 
-
-        if (defaultService) {
-            if (force) {
-                //TODO unset default=true in any other shared service that already exists.
-            } else {
+        if (defaultService && !force) {
                 Services services = domain.getExtensionByType(Services.class);
                 if (services != null) {
                     for (org.glassfish.paas.orchestrator.config.Service service : services.getServices()) {
@@ -200,7 +197,6 @@ public class CreateSharedService implements AdminCommand {
                         }
                     }
                 }
-            }
         }
 
         //TODO interact with Orchestrator to see whether this particular service-configuration can
@@ -291,7 +287,6 @@ public class CreateSharedService implements AdminCommand {
                     sharedService.setTemplate(template);
                     sharedService.setInitMode(initMode);
                     sharedService.setServiceName(serviceName);
-
                     sharedService.setState(ps.getStatus().toString());
 
                     //merge the properties given in the command and from serviceProperties of provisioned-service.
@@ -335,6 +330,24 @@ public class CreateSharedService implements AdminCommand {
                     }
 
                     param.getServices().add(sharedService);
+
+                    //while creating a shared service created if --defaultservice=true and --force=true,
+                    // any other existing default shared service,if any, is set as non-default service.
+                    if(defaultService && force){
+                        Services services = domain.getExtensionByType(Services.class);
+                        for(Service service:services.getServices()){
+                            if(service instanceof SharedService){
+                                SharedService existingSharedService=(SharedService)service;
+                                if(existingSharedService.getDefault() && serviceType.equalsIgnoreCase(existingSharedService.getType()) && !existingSharedService.getServiceName().equalsIgnoreCase(serviceName)){
+                                    Transaction transaction=Transaction.getTransaction(param);
+                                    SharedService wShService=transaction.enroll(existingSharedService);
+                                    wShService.setDefault(false);
+                                    break;
+                                }
+                            }
+                        }
+
+                    }
                     return sharedService;
                 }
             }, services) == null) {
