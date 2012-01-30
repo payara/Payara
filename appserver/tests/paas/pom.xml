@@ -64,6 +64,7 @@
 	<module>basic-db-with-resources-xml</module>
 	<module>basic-db-teardown-sql</module>
 	<module>basic-service-discovery</module>
+	<module>javaee_shared_service</module>
     </modules>
     <reporting>
         <plugins>
@@ -102,6 +103,7 @@
 			            <reportsDirectory>${env.PAAS_TESTS_HOME}/basic-db-with-resources-xml/target/surefire-reports</reportsDirectory>
                         <reportsDirectory>${env.PAAS_TESTS_HOME}/basic-db-teardown-sql/target/surefire-reports</reportsDirectory>
                         <reportsDirectory>${env.PAAS_TESTS_HOME}/basic-service-discovery/target/surefire-reports</reportsDirectory>
+                        <reportsDirectory>${env.PAAS_TESTS_HOME}/javaee_shared_service/target/surefire-reports</reportsDirectory>
                     </reportsDirectories>
                 </configuration>
             </plugin>
