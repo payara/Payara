@@ -51,6 +51,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.servlet.ServletRequest;
+import javax.servlet.http.HttpServletRequest;
 import org.glassfish.admingui.common.util.RestUtil;
 
 /**
@@ -79,10 +80,10 @@ public class ClientStubsContentSource  implements DownloadServlet.ContentSource 
      */
     public InputStream getInputStream(DownloadServlet.Context ctx) {
         // Set the extension so it can be mapped to a MIME type
-        ctx.setAttribute(DownloadServlet.EXTENSION, "zip");
+        ctx.setAttribute(DownloadServlet.EXTENSION, "CLIENT-STUBS");
 
         // Get appName
-        ServletRequest request = ctx.getServletRequest();
+        HttpServletRequest request = (HttpServletRequest) ctx.getServletRequest();
         String appName = request.getParameter("appName");
         String restUrl = request.getParameter("restUrl");
         
@@ -98,7 +99,7 @@ public class ClientStubsContentSource  implements DownloadServlet.ContentSource 
             String filePath = tempDir + System.getProperty("file.separator") + fileName;
             File file = new File(filePath);
             attrsMap.put("localDir", filePath); // CAUTION: file instead of dir
-            RestUtil.restRequest( endpoint , attrsMap, "get", null, false);
+            RestUtil.getRestRequestFromServlet(request, endpoint, attrsMap, true, true);
             tmpFile = new FileInputStream(file);
             file.delete();
         } catch (Exception ex) {
