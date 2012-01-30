@@ -280,7 +280,10 @@ public class InstanceDeployCommand extends InstanceDeployCommandParameters imple
             final URI outputFileURI = Util.resolve(baseURI, zipEntry.getName());
             final File outputFile = new File(outputFileURI);
             if (zipEntry.isDirectory()) {
-                outputFile.mkdirs();
+                if ( ! outputFile.exists() && ! outputFile.mkdirs()) {
+                    throw new IOException(localStrings.getLocalString("instancedeploy.command.errcredir",
+                        "Error creating directory {0}.  No further information about the failure is available.", baseDir.getAbsolutePath()));
+                }
             } else {
                 final FileOutputStream os = new FileOutputStream(outputFile);
                 try {
