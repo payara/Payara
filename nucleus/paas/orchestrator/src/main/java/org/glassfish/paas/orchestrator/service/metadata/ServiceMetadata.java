@@ -40,9 +40,12 @@
 
 package org.glassfish.paas.orchestrator.service.metadata;
 
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.Marshaller;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
+import java.io.StringWriter;
 import java.util.*;
 
 /**
@@ -106,9 +109,16 @@ public class ServiceMetadata {
 
     @Override
     public String toString() {
-        return super.toString()  + "\n [ServiceDescriptions = \n"
-                + serviceDescriptions + " ]" + ". ServiceReferences = ["
-                + serviceReferences + "]";
+        try {
+            JAXBContext jaxbContext = JAXBContext.newInstance(ServiceMetadata.class);
+            Marshaller marshaller = jaxbContext.createMarshaller();
+            marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+            StringWriter writer  = new StringWriter();
+            marshaller.marshal(this, writer);
+            return writer.toString();
+        } catch (Exception ex) {
+            return ex.getMessage();
+        }
     }
 
 }
