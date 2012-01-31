@@ -237,9 +237,9 @@ public class ServiceDescription {
 
     @Override
     public String toString() {
-        return " \n[name=" + getName() + ", initType=" + getInitType()
-                + (templateOrCharacteristics instanceof TemplateIdentifier ? ", template=" : ", characteristics = \n")
-                + templateOrCharacteristics + ", configurations=" + configurations + "]";
+        return "{name = " + getName() + ", init-type = " + getInitType()
+                + (templateOrCharacteristics instanceof TemplateIdentifier ? ", template-id = " : ", service-characteristics = ")
+                + templateOrCharacteristics + ", service-configurations = " + configurations + "}";
     }
 
     @XmlTransient

@@ -110,6 +110,6 @@ public class ServiceCharacteristics {
 
     @Override
     public String toString() {
-        return "[characteristics = \n" + serviceCharacteristics + "]";
+        return serviceCharacteristics.toString() != null ? serviceCharacteristics.toString() : super.toString();
     }
 }

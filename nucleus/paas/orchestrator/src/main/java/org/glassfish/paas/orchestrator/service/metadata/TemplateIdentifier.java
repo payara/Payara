@@ -78,6 +78,6 @@ public class TemplateIdentifier {
 
     @Override
     public String toString() {
-        return "[id = " + id + "]";
+        return id;
     }
 }

@@ -99,7 +99,7 @@ public class Property {
 
     @Override
     public String toString() {
-        return "\n[name = " + getName() + ", value = " + getValue() + "]";
+        return getName() + "=" + getValue();
     }
 
 }
