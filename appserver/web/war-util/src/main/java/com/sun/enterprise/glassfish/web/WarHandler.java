@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2008-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,15 +40,15 @@
 
 package com.sun.enterprise.glassfish.web;
 
-import org.glassfish.deployment.common.DeploymentProperties;
 import com.sun.enterprise.deploy.shared.AbstractArchiveHandler;
 import com.sun.logging.LogDomains;
 import org.apache.naming.resources.FileDirContext;
 import org.glassfish.api.deployment.DeploymentContext;
-import org.glassfish.api.deployment.archive.ArchiveHandler;
+import org.glassfish.api.deployment.archive.ArchiveDetector;
 import org.glassfish.api.deployment.archive.ReadableArchive;
-import org.glassfish.deployment.common.DeploymentUtils;
 import org.glassfish.web.loader.WebappClassLoader;
+import org.glassfish.web.sniffer.WarDetector;
+import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.xml.stream.XMLStreamException;
@@ -69,10 +69,12 @@ import static javax.xml.stream.XMLStreamConstants.*;
 /**
  * Implementation of the ArchiveHandler for war files.
  *
- * @author Jerome Dochez
+ * @author Jerome Dochez, Sanjeeb Sahoo
  */
-@Service(name="war")
+@Service(name= WarDetector.ARCHIVE_TYPE)
 public class WarHandler extends AbstractArchiveHandler {
+    @Inject(name = WarDetector.ARCHIVE_TYPE)
+    ArchiveDetector detector;
     private static final String GLASSFISH_WEB_XML = "WEB-INF/glassfish-web.xml";
     private static final String SUN_WEB_XML = "WEB-INF/sun-web.xml";
     private static final String WEBLOGIC_XML = "WEB-INF/weblogic.xml";
@@ -81,7 +83,7 @@ public class WarHandler extends AbstractArchiveHandler {
 
     @Override
     public String getArchiveType() {
-        return "war";               
+        return WarDetector.ARCHIVE_TYPE;
     }
 
     @Override
@@ -99,15 +101,8 @@ public class WarHandler extends AbstractArchiveHandler {
     }
 
     @Override
-    public boolean handles(ReadableArchive archive) {
-        if (DeploymentUtils.isEAR(archive)) {
-            // I should not handle ear, so ear support must not be available
-            // in this distribution
-            throw new RuntimeException(
-                "no container associated with application of type : ear");
-        }
-
-        return DeploymentUtils.isWebArchive(archive);
+    public boolean handles(ReadableArchive archive) throws IOException {
+        return detector.handles(archive);
     }
 
     @Override

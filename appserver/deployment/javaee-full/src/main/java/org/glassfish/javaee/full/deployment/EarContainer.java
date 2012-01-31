@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -44,14 +44,7 @@ import org.glassfish.api.container.Container;
 import org.glassfish.api.deployment.Deployer;
 import org.jvnet.hk2.annotations.Service;
 
-/**
- * Created by IntelliJ IDEA.
- * User: dochez
- * Date: Jan 8, 2009
- * Time: 11:00:31 AM
- * To change this template use File | Settings | File Templates.
- */
-@Service(name="ear")
+@Service(name="org.glassfish.javaee.full.deployment.EarContainer")
 public class EarContainer implements Container {
 
     public Class<? extends Deployer> getDeployer() {

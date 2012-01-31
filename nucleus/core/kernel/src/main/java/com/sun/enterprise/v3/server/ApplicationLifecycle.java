@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2008-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,7 +40,7 @@
 
 package com.sun.enterprise.v3.server;
 
-import org.glassfish.api.deployment.archive.WritableArchive;
+import org.glassfish.api.deployment.archive.*;
 import org.glassfish.deployment.versioning.VersioningUtils;
 import org.glassfish.deployment.versioning.VersioningSyntaxException;
 import java.io.BufferedInputStream;
@@ -116,7 +116,7 @@ import java.lang.instrument.ClassFileTransformer;
 /**
  * Application Loader is providing useful methods to load applications
  *
- * @author Jerome Dochez
+ * @author Jerome Dochez, Sanjeeb Sahoo
  */
 @Service
 @Scoped(Singleton.class)
@@ -207,41 +207,56 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
      * @throws IOException when an error occur
      */
     public ArchiveHandler getArchiveHandler(ReadableArchive archive, String type) throws IOException {
-        // first we try the composite handlers as archive handlers can be fooled with the
-        // sub directories and such.
-        for (CompositeHandler handler : habitat.getAllByContract(CompositeHandler.class)) {
-            if (type == null || !type.equals(DeploymentProperties.OSGI)) {
-                if (DeploymentProperties.OSGI.equals(handler.getClass().getAnnotation(Service.class).name())) { 
-                    // skip osgi archive handler if the type is not "osgi"
-                    continue;
-                }
+//        // first we try the composite handlers as archive handlers can be fooled with the
+//        // sub directories and such.
+//        for (CompositeHandler handler : habitat.getAllByContract(CompositeHandler.class)) {
+//            if (type == null || !type.equals(DeploymentProperties.OSGI)) {
+//                if (DeploymentProperties.OSGI.equals(handler.getClass().getAnnotation(Service.class).name())) {
+//                    // skip osgi archive handler if the type is not "osgi"
+//                    continue;
+//                }
+//            }
+//            if (handler.handles(archive)) {
+//                return handler;
+//            }
+//        }
+//
+//        // re-order the list so the ConnectorHandler gets picked up last
+//        // before the default
+//        // this will avoid un-necessary annotation scanning in some cases
+//        LinkedList<ArchiveHandler> handlerList = new LinkedList<ArchiveHandler>();
+//        for (ArchiveHandler handler : habitat.getAllByContract(ArchiveHandler.class)) {
+//            if (!(handler instanceof CompositeHandler) && !"DEFAULT".equals(handler.getClass().getAnnotation(Service.class).name())) {
+//                if ("connector".equals(handler.getClass().getAnnotation(
+//                    Service.class).name())) {
+//                    handlerList.addLast(handler);
+//                } else {
+//                    handlerList.addFirst(handler);
+//                }
+//            }
+//        }
+//
+//        for (ArchiveHandler handler : handlerList) {
+//            if (handler.handles(archive)) {
+//                return handler;
+//            }
+//        }
+        if (type != null) {
+            return habitat.getComponent(ArchiveDetector.class, type).getArchiveHandler();
+        }
+        List<ArchiveDetector> detectors = new ArrayList<ArchiveDetector>(habitat.getAllByContract(ArchiveDetector.class));
+        Collections.sort(detectors, new Comparator<ArchiveDetector>() {
+            // rank 2 is considered lower than rank 1, let's sort them in inceasing order
+            @Override
+            public int compare(ArchiveDetector o1, ArchiveDetector o2) {
+                return o1.rank() - o2.rank();
             }
-            if (handler.handles(archive)) {
-                return handler;
+        });
+        for (ArchiveDetector ad : detectors) {
+            if (ad.handles(archive)) {
+                return ad.getArchiveHandler();
             }
         }
-
-        // re-order the list so the ConnectorHandler gets picked up last
-        // before the default
-        // this will avoid un-necessary annotation scanning in some cases
-        LinkedList<ArchiveHandler> handlerList = new LinkedList<ArchiveHandler>();
-        for (ArchiveHandler handler : habitat.getAllByContract(ArchiveHandler.class)) {
-            if (!(handler instanceof CompositeHandler) && !"DEFAULT".equals(handler.getClass().getAnnotation(Service.class).name())) {
-                if ("connector".equals(handler.getClass().getAnnotation(
-                    Service.class).name())) {
-                    handlerList.addLast(handler);
-                } else {
-                    handlerList.addFirst(handler);
-                }
-            }
-        }
-
-        for (ArchiveHandler handler : handlerList) {
-            if (handler.handles(archive)) {
-                return handler;
-            }
-        }
-
         return habitat.getComponent(ArchiveHandler.class, "DEFAULT");
     }
 

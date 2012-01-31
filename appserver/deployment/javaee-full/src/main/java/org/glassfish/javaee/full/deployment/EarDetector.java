@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2008-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,52 +38,65 @@
  * holder.
  */
 
-package com.sun.enterprise.deploy.jar;
 
-import com.sun.enterprise.deploy.shared.AbstractArchiveHandler;
-import com.sun.enterprise.loader.ASURLClassLoader;
-import org.glassfish.api.deployment.DeploymentContext;
+package org.glassfish.javaee.full.deployment;
+
+import org.glassfish.api.deployment.archive.ArchiveDetector;
+import org.glassfish.api.deployment.archive.ArchiveHandler;
 import org.glassfish.api.deployment.archive.ReadableArchive;
+import org.glassfish.deployment.common.DeploymentUtils;
+import org.glassfish.hk2.Services;
+import org.jvnet.hk2.annotations.Inject;
+import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.component.Singleton;
 
-import java.net.MalformedURLException;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
+import java.io.IOException;
+import java.util.logging.Logger;
 
 /**
- * ArchiveHandler implementation for jar files
+ * Detects ear type archives.
+ * It's rank can be set using system property {@link #EAR_DETECTOR_RANK_PROP}.
+ * Default rank is {@link #DEFAULT_EAR_DETECTOR_RANK}.
  *
- * @author Jerome Dochez, Sanjeeb Sahoo
+ * @author sanjeeb.sahoo@oracle.com
  */
-@Service(name="DEFAULT")
-public class JarHandler extends AbstractArchiveHandler {
+@Service(name = EarDetector.EAR_TYPE)
+@Scoped(Singleton.class)
+public class EarDetector implements ArchiveDetector {
 
-    public String getArchiveType() {
-        return "jar";
-    }
+    public static final String EAR_DETECTOR_RANK_PROP = "glassfish.ear.detector.rank";
+    public static final int DEFAULT_EAR_DETECTOR_RANK = 100;
+    public static final String EAR_TYPE = "ear";
 
-    public String getVersionIdentifier(ReadableArchive archive) {
-        return null;
-    }
+    @Inject private Services services;
+    @Inject private EarSniffer sniffer;
+    private ArchiveHandler archiveHandler;
 
-    public boolean handles(ReadableArchive archive) {
-        return true; // we handle everything that looks like a jar
+    private Logger logger = Logger.getLogger(getClass().getPackage().getName());
+
+    @Override
+    public int rank() {
+        return Integer.getInteger(EAR_DETECTOR_RANK_PROP, DEFAULT_EAR_DETECTOR_RANK);
     }
 
     @Override
-    public ClassLoader getClassLoader(final ClassLoader parent, DeploymentContext context) {
-        ASURLClassLoader cloader = AccessController.doPrivileged(new PrivilegedAction<ASURLClassLoader>() {
-            @Override
-            public ASURLClassLoader run() {
-                return new ASURLClassLoader(parent);
-            }
-        });
-        try {
-            cloader.addURL(context.getSource().getURI().toURL());
-        } catch (MalformedURLException e) {
-            throw new RuntimeException(e);
-        }
-        return cloader;
+    public boolean handles(ReadableArchive archive) throws IOException {
+        return DeploymentUtils.isEAR(archive); // logic should be moved from DeploymentUtils to here
     }
 
+    @Override
+    public ArchiveHandler getArchiveHandler() {
+        synchronized (this) {
+            if(archiveHandler == null) {
+                try {
+                    sniffer.setup(null, logger);
+                } catch (IOException e) {
+                    throw new RuntimeException(e); // TODO(Sahoo): Proper Exception Handling
+                }
+                archiveHandler = services.forContract(ArchiveHandler.class).named(EAR_TYPE).get();
+            }
+            return archiveHandler;
+        }
+    }
 }

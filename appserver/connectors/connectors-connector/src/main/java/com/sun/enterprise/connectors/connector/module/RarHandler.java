@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,28 +40,23 @@
 
 package com.sun.enterprise.connectors.connector.module;
 
-import com.sun.enterprise.deploy.shared.AbstractArchiveHandler;
-import com.sun.enterprise.deploy.shared.FileArchive;
-import com.sun.enterprise.deployment.Application;
-import com.sun.appserv.connectors.internal.api.ConnectorsClassLoaderUtil;
 import com.sun.appserv.connectors.internal.api.ConnectorRuntimeException;
+import com.sun.appserv.connectors.internal.api.ConnectorsClassLoaderUtil;
 import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
+import com.sun.enterprise.deploy.shared.AbstractArchiveHandler;
 import com.sun.logging.LogDomains;
-import org.glassfish.api.deployment.archive.ArchiveHandler;
-import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.api.deployment.DeploymentContext;
-import org.glassfish.deployment.common.GenericAnnotationDetector;
-import org.glassfish.deployment.common.DeploymentUtils;
-import org.jvnet.hk2.annotations.Service;
+import org.glassfish.api.deployment.archive.ArchiveDetector;
+import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.jvnet.hk2.annotations.Inject;
+import org.jvnet.hk2.annotations.Service;
 
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
-import java.util.ArrayList;
-import java.util.logging.Logger;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 /**
@@ -69,35 +64,29 @@ import java.util.logging.Level;
  *
  * @author Jagadish Ramu 
  */
-@Service(name="connector")
-public class ConnectorHandler extends AbstractArchiveHandler {
+@Service(name= RarDetector.ARCHIVE_TYPE)
+public class RarHandler extends AbstractArchiveHandler {
+    // This class should be moved to connector runtime along with ConnectorClassLoaderUtil.
+    // We should also consider merging connectors-connector with connectors-internal-api
 
     @Inject
     private ConnectorsClassLoaderUtil loader;
+    @Inject(name = RarDetector.ARCHIVE_TYPE) private ArchiveDetector detector;
 
-    private static final Class[] connectorAnnotations = new Class[] {
-            javax.resource.spi.Connector.class };
-
-    private Logger _logger = LogDomains.getLogger(ConnectorHandler.class, LogDomains.RSR_LOGGER);
+    private Logger _logger = LogDomains.getLogger(RarHandler.class, LogDomains.RSR_LOGGER);
 
     /**
      * {@inheritDoc}
      */
     public String getArchiveType() {
-        return "rar";
+        return RarDetector.ARCHIVE_TYPE;
     }
 
     /**
      * {@inheritDoc}
      */
     public boolean handles(ReadableArchive archive) throws IOException {
-        boolean handles =  DeploymentUtils.isRAR(archive);
-        if (!handles && (archive instanceof FileArchive)) {
-            GenericAnnotationDetector detector =
-                new GenericAnnotationDetector(connectorAnnotations);
-            handles = detector.hasAnnotationInArchive(archive);
-        }
-        return handles;
+        return detector.handles(archive);
     }
 
     /**
@@ -121,7 +110,7 @@ public class ConnectorHandler extends AbstractArchiveHandler {
             if (isEmbedded(context)) {
                 String applicationName = ConnectorsUtil.getApplicationName(context);
                 String embeddedRarName = ConnectorsUtil.getEmbeddedRarModuleName(applicationName, moduleName);
-                // ear's classloader hierarchy is : module-CL -> ear-CL
+                // ear's classloader hierarchy is : module-CL -> ear-CL (contains all ejb module classpath)
                 // -> embedded-RAR-CL -> ear-lib-CL.
                 // parent provided here is ear-CL, we need to use
                 // ear-lib-CL as parent for embedded-RAR module-CL 

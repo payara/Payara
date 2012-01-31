@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2006-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -55,13 +55,10 @@ import org.jvnet.hk2.annotations.Inject;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.*;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.lang.annotation.Annotation;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import javax.xml.stream.events.StartDocument;
 
 /**
@@ -146,10 +143,22 @@ public abstract class GenericSniffer implements Sniffer {
      *
      * @throws java.io.IOException exception if something goes sour
      */
-    public Module[] setup(String containerHome, Logger logger) throws IOException {
-       return null;
+    public Module[] setup(String containerHome, Logger logger) throws IOException {   // TODO(Sahoo): Change signature to not accept containerHome or logger
+        List<Module> modules = new ArrayList<Module>();
+        for (String moduleName : getContainerModuleNames()) {
+            Module m = modulesRegistry.makeModuleFor(moduleName, null);
+            if (m != null) {
+                modules.add(m);
+            } else {
+                throw new RuntimeException("Unable to set up module " + moduleName);
+            }
+        }
+        return modules.toArray(new Module[modules.size()]);
     }
 
+    protected String[] getContainerModuleNames() {
+        return new String[0];
+    }
     /**
      * Tears down a container, remove all imported libraries from the module
      * subsystem.

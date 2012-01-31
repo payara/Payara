@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,58 +38,69 @@
  * holder.
  */
 
+
 package org.glassfish.extras.osgicontainer;
 
-import org.glassfish.api.deployment.archive.*;
-import org.glassfish.api.deployment.DeploymentContext;
-import org.glassfish.internal.deployment.GenericHandler;
-import org.glassfish.internal.api.DelegatingClassLoader;
-import org.jvnet.hk2.annotations.Service;
+import org.glassfish.api.deployment.archive.ArchiveDetector;
+import org.glassfish.api.deployment.archive.ArchiveHandler;
+import org.glassfish.api.deployment.archive.ReadableArchive;
+import org.glassfish.hk2.Services;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.component.PreDestroy;
+import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Singleton;
 
 import java.io.IOException;
-import java.io.File;
-import java.util.jar.Manifest;
-import java.util.*;
-import java.net.URL;
-import java.net.URI;
-import java.lang.ref.WeakReference;
-
-import com.sun.enterprise.module.ModulesRegistry;
-import com.sun.enterprise.module.Module;
-import com.sun.enterprise.module.ModuleDefinition;
-import com.sun.enterprise.module.common_impl.DefaultModuleDefinition;
-import com.sun.enterprise.util.io.FileUtils;
+import java.util.logging.Logger;
 
 /**
- * Archive Handler for OSGi modules.
+ * Detects OSGi type archives.
+ * This never participates in detection process. it is explicitly specified in user input (in --type argument).
+ * So, it always returns false in {@link #handles(ReadableArchive)}.
  *
- * @author Jerome Dochez
+ * It's rank can be set using system property {@link #OSGI_ARCHIVE_DETECTOR_RANK_PROP}.
+ * Default rank is {@link #DEFAULT_OSGI_ARCHIVE_DETECTOR_RANK}.
+ *
+ * @author sanjeeb.sahoo@oracle.com
  */
-@Service(name=OSGiArchiveDetector.OSGI_ARCHIVE_TYPE)
+@Service(name = OSGiArchiveDetector.OSGI_ARCHIVE_TYPE)
 @Scoped(Singleton.class)
-public class OSGiArchiveHandler extends GenericHandler implements CompositeHandler {
+public class OSGiArchiveDetector implements ArchiveDetector {
+    public static final String OSGI_ARCHIVE_DETECTOR_RANK_PROP = "glassfish.ear.detector.rank";
+    public static final int DEFAULT_OSGI_ARCHIVE_DETECTOR_RANK = Integer.MAX_VALUE; // the last one to be tried.
+    public static final String OSGI_ARCHIVE_TYPE = "osgi"; // this is what is accepted in deploy --type command
 
-    @Inject private OSGiArchiveDetector detector;
+    @Inject
+    private Services services;
+    @Inject
+    private OSGiSniffer sniffer;
+    private ArchiveHandler archiveHandler;
 
-    public String getArchiveType() {
-        return OSGiArchiveDetector.OSGI_ARCHIVE_TYPE;
+    private Logger logger = Logger.getLogger(getClass().getPackage().getName());
+
+    @Override
+    public int rank() {
+        return Integer.getInteger(OSGI_ARCHIVE_DETECTOR_RANK_PROP, DEFAULT_OSGI_ARCHIVE_DETECTOR_RANK);
     }
 
-    public boolean accept(ReadableArchive source, String entryName) {
-        // we hide everything so far.
+    @Override
+    public boolean handles(ReadableArchive archive) throws IOException {
+        // this never participates in detection process. it is explicitly specified in user input (in --type argument)
         return false;
     }
 
-    public boolean handles(ReadableArchive archive) throws IOException {
-        return detector.handles(archive);
+    @Override
+    public ArchiveHandler getArchiveHandler() {
+        synchronized (this) {
+            if (archiveHandler == null) {
+                try {
+                    sniffer.setup(null, logger);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+                archiveHandler = services.forContract(ArchiveHandler.class).named(OSGI_ARCHIVE_TYPE).get();
+            }
+            return archiveHandler;
+        }
     }
-
-    public ClassLoader getClassLoader(ClassLoader parent, DeploymentContext context) {
-        return parent;
-    }
-
 }

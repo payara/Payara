@@ -40,24 +40,24 @@
 
 package org.glassfish.javaee.full.deployment;
 
+import com.sun.enterprise.connectors.connector.module.RarDetector;
 import com.sun.enterprise.deployment.deploy.shared.InputJarArchive;
 import java.net.URI;
 
 import org.glassfish.api.ActionReport;
-import org.glassfish.api.deployment.archive.Archive;
-import org.glassfish.api.deployment.archive.ArchiveHandler;
-import org.glassfish.api.deployment.archive.ReadableArchive;
-import org.glassfish.api.deployment.archive.WritableArchive;
-import org.glassfish.api.deployment.archive.CompositeHandler;
+import org.glassfish.api.deployment.archive.*;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.DeployCommandParameters;
+import org.glassfish.appclient.server.connector.CarDetector;
 import org.glassfish.deployment.common.*;
+import org.glassfish.ejb.EjbJarDetector;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
 import org.glassfish.internal.api.DelegatingClassLoader;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.javaee.core.deployment.ApplicationHolder;
 import org.glassfish.loader.util.ASClassLoaderUtil;
 import org.glassfish.internal.deployment.Deployment;
+import org.glassfish.web.sniffer.WarDetector;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.component.PreDestroy;
@@ -84,14 +84,7 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import static javax.xml.stream.XMLStreamConstants.*;
 
-/*;
- * Created by IntelliJ IDEA.
- * User: dochez
- * Date: Jan 16, 2009
- * Time: 3:33:40 PM
- * To change this template use File | Settings | File Templates.
- */
-@Service(name="ear")
+@Service(name=EarDetector.EAR_TYPE)
 public class EarHandler extends AbstractArchiveHandler implements CompositeHandler {
 
     @Inject
@@ -106,6 +99,9 @@ public class EarHandler extends AbstractArchiveHandler implements CompositeHandl
     @Inject
     DasConfig dasConfig;
 
+    @Inject(name = EarDetector.EAR_TYPE)
+    ArchiveDetector detector;
+
     private static final String EAR_LIB = "ear_lib";
     private static final String EMBEDDED_RAR = "embedded_rar";
 
@@ -113,7 +109,7 @@ public class EarHandler extends AbstractArchiveHandler implements CompositeHandl
 
 
     public String getArchiveType() {
-        return "ear";
+        return EarDetector.EAR_TYPE;
     }
 
     public String getVersionIdentifier(ReadableArchive archive) {
@@ -130,7 +126,7 @@ public class EarHandler extends AbstractArchiveHandler implements CompositeHandl
     }
 
     public boolean handles(ReadableArchive archive) throws IOException {
-        return DeploymentUtils.isEAR(archive);
+        return detector.handles(archive);
     }
 
     @Override
@@ -146,7 +142,7 @@ public class EarHandler extends AbstractArchiveHandler implements CompositeHandl
              */
             source2 = (FileArchive) target;
 
-            ApplicationHolder holder = 
+            ApplicationHolder holder =
                 getApplicationHolder(source2, context, false);
 
             // now start to expand the sub modules 
@@ -158,8 +154,8 @@ public class EarHandler extends AbstractArchiveHandler implements CompositeHandl
                 try {
                     subArchive = source2.getSubArchive(moduleUri);
                     if (subArchive == null) {
-                        _logger.log(Level.WARNING, 
-                            "Exception while locating sub archive: " + 
+                        _logger.log(Level.WARNING,
+                            "Exception while locating sub archive: " +
                             moduleUri);
                         continue;
                     }
@@ -212,7 +208,7 @@ public class EarHandler extends AbstractArchiveHandler implements CompositeHandl
 */
                     }
                 } catch(IOException ioe) {
-                    _logger.log(Level.FINE, "Exception while processing " + 
+                    _logger.log(Level.FINE, "Exception while processing " +
                         moduleUri, ioe);
                 } finally {
                     try {
@@ -288,7 +284,7 @@ public class EarHandler extends AbstractArchiveHandler implements CompositeHandl
     public ClassLoader getClassLoader(final ClassLoader parent, DeploymentContext context) {
         final ReadableArchive archive  = context.getSource();
 
-        ApplicationHolder holder = 
+        ApplicationHolder holder =
             getApplicationHolder(archive, context, true);
 
         // the ear classloader hierachy will be 
@@ -314,7 +310,7 @@ public class EarHandler extends AbstractArchiveHandler implements CompositeHandl
             // if user does not specify the compatibility property
             // let's see if it's defined in sun-application.xml
             if (compatProp == null) {
-                SunApplicationXmlParser sunApplicationXmlParser = 
+                SunApplicationXmlParser sunApplicationXmlParser =
                     new SunApplicationXmlParser(context.getSourceDir());
                 compatProp = sunApplicationXmlParser.getCompatibilityValue();
                 if (compatProp != null) {
@@ -367,7 +363,7 @@ public class EarHandler extends AbstractArchiveHandler implements CompositeHandl
             }
             if (sub!=null) {
                 try {
-                    ArchiveHandler handler = 
+                    ArchiveHandler handler =
                         context.getModuleArchiveHandlers().get(moduleUri);
                     if (handler == null) {
                         handler = getArchiveHandlerFromModuleType(md.getModuleType());
@@ -379,14 +375,14 @@ public class EarHandler extends AbstractArchiveHandler implements CompositeHandl
                     }
 
                     if (handler!=null) {
-                        ActionReport subReport = 
+                        ActionReport subReport =
                             context.getActionReport().addSubActionsReport();
                         // todo : this is a hack, once again, 
                         // the handler is assuming a file:// url
-                        ExtendedDeploymentContext subContext = 
-                            new DeploymentContextImpl(subReport, 
-                            context.getLogger(), 
-                            sub, 
+                        ExtendedDeploymentContext subContext =
+                            new DeploymentContextImpl(subReport,
+                            context.getLogger(),
+                            sub,
                             context.getCommandParameters(
                                 DeployCommandParameters.class), env) {
 
@@ -424,12 +420,12 @@ public class EarHandler extends AbstractArchiveHandler implements CompositeHandl
                             cl.addModuleClassLoader(moduleUri, subCl);
                         } else {
                             Boolean isTempClassLoader = context.getTransientAppMetaData(ExtendedDeploymentContext.IS_TEMP_CLASSLOADER, Boolean.class);
-                            if (subCl instanceof URLClassLoader && 
-                                (isTempClassLoader != null) && 
+                            if (subCl instanceof URLClassLoader &&
+                                (isTempClassLoader != null) &&
                                 isTempClassLoader) {
                                 // for temp classloader, we add all the module
                                 // urls to the top level EarClassLoader
-                                URL[] moduleURLs = 
+                                URL[] moduleURLs =
                                     ((URLClassLoader)subCl).getURLs();
                                 for (URL moduleURL : moduleURLs) {
                                     cl.addURL(moduleURL);
@@ -452,7 +448,7 @@ public class EarHandler extends AbstractArchiveHandler implements CompositeHandl
 
     }
 
-    private ApplicationHolder getApplicationHolder(ReadableArchive source, 
+    private ApplicationHolder getApplicationHolder(ReadableArchive source,
         DeploymentContext context, boolean isDirectory) {
         ApplicationHolder holder = context.getModuleMetaData(ApplicationHolder.class);
         if (holder==null || holder.app==null) {
@@ -489,12 +485,13 @@ public class EarHandler extends AbstractArchiveHandler implements CompositeHandl
     // the normal way which might involve annotation scanning
     private ArchiveHandler getArchiveHandlerFromModuleType(XModuleType type) {
         if (type.equals(XModuleType.WAR)) {
-            return habitat.getComponent(ArchiveHandler.class, "war");
+            return habitat.getComponent(ArchiveHandler.class, WarDetector.ARCHIVE_TYPE);
         } else if (type.equals(XModuleType.RAR)) {
-            return habitat.getComponent(ArchiveHandler.class, "connector");
-        } else if (type.equals(XModuleType.EJB) || 
-            type.equals(XModuleType.CAR)) {
-            return habitat.getComponent(ArchiveHandler.class, "DEFAULT");
+            return habitat.getComponent(ArchiveHandler.class, RarDetector.ARCHIVE_TYPE);
+        } else if (type.equals(XModuleType.EJB)) {
+            return habitat.getComponent(ArchiveHandler.class, EjbJarDetector.ARCHIVE_TYPE);
+        } else if (type.equals(XModuleType.CAR)) {
+            return habitat.getComponent(ArchiveHandler.class, CarDetector.ARCHIVE_TYPE);
         } else {
             return null;
         }

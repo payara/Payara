@@ -134,4 +134,11 @@ public class WebSniffer  extends GenericSniffer {
     public String[] getIncompatibleSnifferTypes() {
         return new String[] {"connector"};
     }
+
+    private String[] containerModuleNames = {"org.glassfish.web.glue"};
+
+    @Override
+    protected String[] getContainerModuleNames() {
+        return containerModuleNames;
+    }
 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2006-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -57,10 +57,7 @@ import java.io.*;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Collection;
+import java.util.*;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
@@ -70,7 +67,7 @@ import java.util.logging.Logger;
  * This class is responsible for starting containers, it will look for the container
  * installation location, will eventually download the container and install it locally.
  *
- * @author Jerome Dochez
+ * @author Jerome Dochez, Sanjeeb Sahoo
  */
 @Service
 public class ContainerStarter {
@@ -85,6 +82,8 @@ public class ContainerStarter {
 
     @Inject
     ServerEnvironmentImpl env;
+
+    @Inject ContainerRegistry registry;
 
     public Collection<EngineInfo> startContainer(Sniffer sniffer, Module snifferModule) {
 
@@ -108,17 +107,19 @@ public class ContainerStarter {
         }
 
         Module[] modules;
-        ClassLoader containerClassLoader;
+//        ClassLoader containerClassLoader;
         // I do the container setup first so the code has a chance to set up
         // repositories which would allow access to the connector module.
         try {
 
             modules = sniffer.setup(containerHome, logger);
-            if (modules!=null && modules.length>0) {
-                containerClassLoader = setContainerClassLoader(modules);
-            } else {
-                containerClassLoader = snifferModule.getClassLoader();
-            }
+            logger.logp(Level.INFO, "ContainerStarter", "startContainer", "Snifer {0} set up following modules: {1}",
+                    new Object[]{sniffer, Arrays.toString(modules)});
+//            if (modules!=null && modules.length>0) {
+//                containerClassLoader = setContainerClassLoader(modules);
+//            } else {
+//                containerClassLoader = snifferModule.getClassLoader();
+//            }
         } catch(FileNotFoundException fnf) {
             logger.log(Level.SEVERE, fnf.getMessage());
             return null;
@@ -129,47 +130,58 @@ public class ContainerStarter {
         }
 
         // first the right container from that module.
-        ClassLoader cl = Thread.currentThread().getContextClassLoader();
-        List<EngineInfo> containers = new ArrayList<EngineInfo>();
+//        ClassLoader cl = Thread.currentThread().getContextClassLoader();
+        Map<String, EngineInfo> containers = new HashMap<String, EngineInfo>();
         for (String name : sniffer.getContainersNames()) {
 
-            try {
-                Inhabitant<? extends Container> provider = habitat.getInhabitant(Container.class, name);
-                if (provider==null) {
-                    try {
-                        Class<? extends Container> containerClass = containerClassLoader.loadClass(name).asSubclass(Container.class);
-                        if (containerClass!=null) {
-                            provider = habitat.getInhabitantByType(containerClass);
-                            if (provider==null) {
-                                logger.severe("Cannot find the container " + name + " in the services, is it annotated with @Service");
-                                return null;
-                            }
-                        }
-                    } catch (ClassNotFoundException e) {
-                        logger.log(Level.SEVERE, "Exception while loading container class ", e);
-                    }
-
-                    if (provider==null) {
-                        logger.severe("Cannot find Container named " + name);
-                        logger.severe("Cannot start " + sniffer.getModuleType() + " container");
-                        return null;
-                    }
-                }
-                Thread.currentThread().setContextClassLoader(containerClassLoader);
-                EngineInfo info = new EngineInfo(provider, sniffer, containerClassLoader);
-
-                ContainerRegistry registry = habitat.getComponent(ContainerRegistry.class);
-                registry.addContainer(name, info);
-                containers.add(info);
-            } catch (ComponentException e) {
-                logger.log(Level.SEVERE, "Cannot create or inject Container", e);
+//            try {
+//                Inhabitant<? extends Container> provider = habitat.getInhabitant(Container.class, name);
+//                if (provider==null) {
+//                    try {
+//                        Class<? extends Container> containerClass = containerClassLoader.loadClass(name).asSubclass(Container.class);
+//                        if (containerClass!=null) {
+//                            provider = habitat.getInhabitantByType(containerClass);
+//                            if (provider==null) {
+//                                logger.severe("Cannot find the container " + name + " in the habitat, is it annotated with @Service");
+//                                return null;
+//                            }
+//                        }
+//                    } catch (ClassNotFoundException e) {
+//                        logger.log(Level.SEVERE, "Exception while loading container class ", e);
+//                    }
+//
+//                    if (provider==null) {
+//                        logger.severe("Cannot find Container named " + name);
+//                        logger.severe("Cannot start " + sniffer.getModuleType() + " container");
+//                        return null;
+//                    }
+//                }
+//                Thread.currentThread().setContextClassLoader(containerClassLoader);
+//                EngineInfo info = new EngineInfo(provider, sniffer, containerClassLoader);
+//
+//                ContainerRegistry registry = habitat.getComponent(ContainerRegistry.class);
+//                registry.addContainer(name, info);
+//                containers.add(info);
+//            } catch (ComponentException e) {
+//                logger.log(Level.SEVERE, "Cannot create or inject Container", e);
+//                return null;
+//            } finally {
+//                Thread.currentThread().setContextClassLoader(cl);
+//            }
+            Inhabitant<? extends Container> provider = habitat.getInhabitant(Container.class, name);
+            if (provider == null) {
+                logger.severe("Cannot find Container named " + name);
+                logger.severe("Cannot start " + sniffer.getModuleType() + " container");
                 return null;
-            } finally {
-                Thread.currentThread().setContextClassLoader(cl);
             }
-
-        }                                       
-        return containers;
+            EngineInfo info = new EngineInfo(provider, sniffer, null /* never used */);
+            containers.put(name, info);
+        }
+        // Now that we have successfully created all containers, let's register them as well.
+        for (Map.Entry<String, EngineInfo> entry : containers.entrySet()) {
+            registry.addContainer(entry.getKey(), entry.getValue());
+        }
+        return containers.values();
     }
 
     /**
