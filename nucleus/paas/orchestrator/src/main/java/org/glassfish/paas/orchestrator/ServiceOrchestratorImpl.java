@@ -241,8 +241,7 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
 
     private void handleFailure(String appName, Class[] tasks, boolean deployment, PaaSDeploymentState state,
                                PaaSDeploymentContext pc, Exception e) {
-        Object[] args=new Object[]{state.getClass().getSimpleName(),e};
-        logger.log(Level.WARNING, "failure.handling",args);
+        logger.log(Level.WARNING, localStrings.getString("failure.handling",state.getClass().getSimpleName()),e);
         if(deployment){
             DeploymentException de = null;
             if(isAtomicDeploymentEnabled()){
@@ -283,8 +282,8 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
                 }catch(Exception e){
                     // we cannot handle failures while rolling back.
                     // continue rolling back.
-                    Object args[]=new Object[] {context.getAppName(),rollbackState.getClass().getSimpleName(),e};
-                    logger.log(Level.WARNING,"failure.while.rollback",args);
+                    Object args[]=new Object[] {context.getAppName(),rollbackState.getClass().getSimpleName()};
+                    logger.log(Level.WARNING,localStrings.getString("failure.while.rollback",args),e);
                 }
             }
         }
@@ -456,8 +455,7 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
                 virtualClusters.remove(virtualCluster);  // removes config.
             }
         } catch (Exception ex) {
-            Object args[]=new Object[]{ex.getLocalizedMessage(),ex};
-            logger.log(Level.WARNING,"exception.while.remove.cluster",args);
+            logger.log(Level.WARNING,localStrings.getString("exception.while.remove.cluster",ex.getLocalizedMessage()),ex);
         }
 
         /*
@@ -478,7 +476,7 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
         if (failureCause != null) {
             args[0]= failureCause.getLocalizedMessage();
             args[1]=failureCause;
-            logger.log(Level.WARNING,"failure.cause",args);
+            logger.log(Level.WARNING,localStrings.getString("failure.cause",args[0]),args[1]);
 
         }
     }

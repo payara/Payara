@@ -91,8 +91,8 @@ public abstract class AssociationState extends AbstractPaaSDeploymentState {
                                     associatedServicesList.add(
                                         new ServiceAssociationRecord(serviceProvider, serviceConsumer, serviceRef, requestingPlugin));
                                 } catch (Exception e) {
-                                    Object args1[]= new Object[]{serviceConsumer.getName(),serviceProvider.getName(),serviceRef,e};
-                                    logger.log(Level.WARNING,"failure.while.associating.service",args1);
+                                    Object args1[]= new Object[]{serviceConsumer.getName(),serviceProvider.getName(),serviceRef};
+                                    logger.log(Level.WARNING,localStrings.getString("failure.while.associating.service",args1),e);
                                     rollback(associatedServicesList, context, preDeployment);
                                     throw new PaaSDeploymentException(e);
                                 }
@@ -121,8 +121,8 @@ public abstract class AssociationState extends AbstractPaaSDeploymentState {
                     plugin.dissociateServices(serviceConsumer, serviceRef, serviceProvider, preDeployment,
                             context);
                 }catch(Exception e){
-                    Object args[]= new Object[]{serviceConsumer.getName(),serviceProvider.getName(),serviceRef,e};
-                    logger.log(Level.WARNING,"failure.while.associating.service",args);
+                    Object args[]= new Object[]{serviceConsumer.getName(),serviceProvider.getName(),serviceRef};
+                    logger.log(Level.WARNING,localStrings.getString("failure.while.associating.service",args),e);
                 }
             }
         }

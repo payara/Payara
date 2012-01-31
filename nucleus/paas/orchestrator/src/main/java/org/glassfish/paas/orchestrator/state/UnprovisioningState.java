@@ -97,10 +97,10 @@ public class UnprovisioningState extends AbstractPaaSDeploymentState {
                 future.get();
             } catch (InterruptedException e) {
                 failed = true;
-                logger.log(Level.WARNING, "failure.while.unprovisioning.service", e);
+                logger.log(Level.WARNING, localStrings.getString("failure.while.unprovisioning.service"), e);
             } catch (ExecutionException e) {
                 failed = true;
-                logger.log(Level.WARNING, "failure.while.unprovisioning.service", e);
+                logger.log(Level.WARNING, localStrings.getString("failure.while.unprovisioning.service"), e);
             }
         }
         // Clean up the glassfish cluster, virtual cluster config, etc.. if they are application scoped.

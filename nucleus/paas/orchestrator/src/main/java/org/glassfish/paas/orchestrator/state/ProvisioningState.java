@@ -152,7 +152,7 @@ public class ProvisioningState extends AbstractPaaSDeploymentState {
                     logger.log(Level.FINEST, localStrings.getString("completed.provisioningservice.parallel",ps));
                 } catch (Exception e) {
                     failed = true;
-                    logger.log(Level.WARNING, "failure.provisioningservice.parallel", e);
+                    logger.log(Level.WARNING, localStrings.getString("failure.provisioningservice.parallel"), e);
                     if (rootCause == null) {
                         rootCause = e; //we are caching only the first failure and logging all failures
                     }
@@ -170,9 +170,9 @@ public class ProvisioningState extends AbstractPaaSDeploymentState {
                     appPSs.add(ps);
                     logger.log(Level.FINEST, localStrings.getString("completed.provisioningservice.serial",ps));
                 } catch (Exception e) {
-                    Object args[]=new Object[]{sd.getName(),sd.getPlugin(),e};
+                    Object args[]=new Object[]{sd.getName(),sd.getPlugin()};
                     failed = true;
-                    logger.log(Level.WARNING, "failure.provisioningservice", args);
+                    logger.log(Level.WARNING, localStrings.getString("failure.provisioningservice", args),e);
                     rootCause = e;
                     break; //since we are provisioning serially, we can abort
                 }
@@ -193,8 +193,7 @@ public class ProvisioningState extends AbstractPaaSDeploymentState {
                         serviceUtil.unregisterServiceInfo(sd.getName(), sd.getAppName());
                         logger.log(Level.INFO, "rolledback.provisioningservice",args);
                     }catch(Exception e){
-                        Object args[]={ps,e};
-                        logger.log(Level.WARNING, "failure.while.rollingback.ps",args);
+                        logger.log(Level.WARNING, localStrings.getString("failure.while.rollingback.ps",ps),e);
                     }
                 }
 

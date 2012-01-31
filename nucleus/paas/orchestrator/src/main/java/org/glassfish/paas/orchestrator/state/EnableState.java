@@ -83,17 +83,16 @@ public class EnableState extends AbstractPaaSDeploymentState {
                     appPSs.add(ps);
                     provisionedSDs.add(sd);
                 } catch (Exception e) {
-                    Object args[]=new Object[]{sd.getName(),appName,e};
-                    logger.log(Level.WARNING, "exception.start.service",args);
+                    Object args[]=new Object[]{sd.getName(),appName};
+                    logger.log(Level.WARNING, localStrings.getString("exception.start.service",args),e);
 
                     DisableState disableState = habitat.getComponent(DisableState.class);
                     for (ServiceDescription provisionedSD : provisionedSDs) {
                         try {
                             disableState.stopService(context, appName, provisionedSD);
                         } catch (Exception stopException) {
-                            args[0]=provisionedSD.getName();
-                            args[2]=stopException;
-                            logger.log(Level.WARNING, "exception.stop.service",args);
+                           args=new Object[]{provisionedSD.getName(),appName};
+                           logger.log(Level.WARNING, localStrings.getString("exception.stop.service",args),e);
                         }
                     }
                     throw new PaaSDeploymentException(e);
