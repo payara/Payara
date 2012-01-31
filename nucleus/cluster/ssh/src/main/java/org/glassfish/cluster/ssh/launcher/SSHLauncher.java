@@ -692,7 +692,6 @@ public class SSHLauncher {
             //release the connections
             sftp.close();
             conn.close();
-            conn = null;
         }
     }
 
