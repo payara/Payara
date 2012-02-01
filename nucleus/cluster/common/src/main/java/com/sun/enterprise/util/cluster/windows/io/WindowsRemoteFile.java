@@ -106,6 +106,14 @@ public final class WindowsRemoteFile {
         }
     }
 
+    /**
+     * THis returns 3 states:
+     * 1. FIle system can't be accessed or found
+     * 2. it exists
+     * 3. it doesn't exist
+     * @return
+     * @throws WindowsException
+     */
     public final boolean exists() throws WindowsException {
         try {
             return smbFile.exists();

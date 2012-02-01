@@ -95,6 +95,7 @@
         <module>gms-bootstrap</module>
         <module>gms-adapter</module>
         <module>ssh</module>
+        <module>vld</module>
     </modules>
 </project>
 

@@ -46,14 +46,11 @@ import java.io.File;
 import java.util.*;
 import org.glassfish.api.Param;
 import static com.sun.enterprise.universal.process.ProcessUtils.getExe;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.jvnet.hk2.annotations.*;
 import org.jvnet.hk2.component.*;
 import org.glassfish.api.admin.*;
 import com.sun.enterprise.admin.cli.*;
 import com.sun.enterprise.util.OS;
-import com.sun.enterprise.util.SystemPropertyConstants;
 
 /*
  * @author Byron Nevins
@@ -61,7 +58,7 @@ import com.sun.enterprise.util.SystemPropertyConstants;
 @Service(name = "validate-local-dcom")
 @Scoped(PerLookup.class)
 public final class ValidateLocalDcom extends CLICommand {
-    @Param(name = "verbose", primary = false, optional = true)
+    @Param(name = "verbose", shortName = "v", primary = false, optional = true)
     boolean verbose;
 
     private final static String[] DEPENDENCIES = new String[]{
@@ -90,6 +87,10 @@ public final class ValidateLocalDcom extends CLICommand {
         try {
             List<String> cmds = new ArrayList<String>();
             cmds.add(CPP_APP.getAbsolutePath());
+
+            if(verbose)
+                cmds.add("--verbose");
+
             ProcessManager pm = new ProcessManager(cmds);
             pm.execute();
 

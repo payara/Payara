@@ -215,7 +215,7 @@ public class ValidateDcom implements AdminCommand {
             }
         }
         catch (WindowsException ex) {
-            setError(ex, Strings.get("dcom.no.remote.file", testdir, host));
+            setError(ex, Strings.get("dcom.no.remote.file.access", testdir, host));
             return false;
         }
         out.append(Strings.get("dcom.access.ok", testdir, host)).append('\n');
