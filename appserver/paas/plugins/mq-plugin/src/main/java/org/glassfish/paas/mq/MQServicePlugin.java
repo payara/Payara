@@ -114,8 +114,10 @@ public class MQServicePlugin extends ServiceProvisioningEngineBase<MQServiceType
 
     public Set getServiceReferences(String appName, ReadableArchive cloudArchive, PaaSDeploymentContext dc) {
         Set<ServiceReference> serviceReferences = new LinkedHashSet<ServiceReference>();
-        serviceReferences.add(new ServiceReference(cloudArchive.getName(), JAVAEE_SERVICE_REFERENCE, null));
-        serviceReferences.addAll(discoverServiceReferences(cloudArchive, appName));
+
+        if(discoverServiceReferences(cloudArchive).size() > 0){
+            serviceReferences.add(new ServiceReference(cloudArchive.getName(), JAVAEE_SERVICE_REFERENCE, null));
+        }
         return serviceReferences;
     }
 
@@ -130,7 +132,9 @@ public class MQServicePlugin extends ServiceProvisioningEngineBase<MQServiceType
                 configurations);
     }
 
-    private Set<ServiceReference> discoverServiceReferences(ReadableArchive cloudArchive, String appName) {
+    //TODO instead of returning ServiceReference, return Resource/Resource-env-refs
+    //TODO as these ServiceReferences are not passed to OE.
+    private Set<ServiceReference> discoverServiceReferences(ReadableArchive cloudArchive) {
         Set<ServiceReference> serviceReferences = new HashSet<ServiceReference>();
 
         Application application = null;
@@ -177,7 +181,7 @@ public class MQServicePlugin extends ServiceProvisioningEngineBase<MQServiceType
         if (!JavaEEDeploymentUtils.isJavaEE(cloudArchive, habitat)) {
             return implicitServiceDescriptions;
         }
-        Set<ServiceReference> serviceReferences = discoverServiceReferences(cloudArchive, appName);
+        Set<ServiceReference> serviceReferences = discoverServiceReferences(cloudArchive);
 
         boolean hasJMSReference = false;
         for (ServiceReference serviceReference : serviceReferences) {
@@ -406,78 +410,82 @@ public class MQServicePlugin extends ServiceProvisioningEngineBase<MQServiceType
                 "not supported in this release");
     }
 
-    public void dissociateServices(Service serviceConsumer, ServiceReference svcRef,
+    public void dissociateServices(Service serviceConsumer, ServiceReference serviceReference,
                                    Service serviceProvider, boolean beforeUndeploy, PaaSDeploymentContext dc) {
         if (beforeUndeploy) {
             return;
         }
 
-        if ((serviceReferenceTypes.contains(svcRef.getType()))
-                && serviceConsumer.getServiceType().toString().equals(MQ_SERVICE_TYPE)
-                && serviceProvider.getServiceType().toString().equals(JAVAEE_SERVICE_TYPE)) {
+        ReadableArchive archive = dc.getDeploymentContext().getSource();
+        Set<ServiceReference> serviceReferences = discoverServiceReferences(archive);
 
+        if (serviceReferences.size() > 0) {
+            for (ServiceReference svcRef : serviceReferences) {
                 CommandRunner commandRunner = getCommandRunner(serviceProvider);
-            String target = serviceProvider.getServiceDescription().getName();
+                String target = serviceProvider.getServiceDescription().getName();
 
-            if (svcRef.getType().equals(QUEUE) ||
-                    svcRef.getType().equals(TOPIC) ||
-                    svcRef.getType().equals(QCF) ||
-                    svcRef.getType().equals(TCF)) {
-                ArrayList<String> params = new ArrayList<String>();
-                params.add("--target=" + target);
-                params.add(svcRef.getName()); //resource-name
+                if (svcRef.getType().equals(QUEUE) ||
+                        svcRef.getType().equals(TOPIC) ||
+                        svcRef.getType().equals(QCF) ||
+                        svcRef.getType().equals(TCF)) {
+                    ArrayList<String> params = new ArrayList<String>();
+                    params.add("--target=" + target);
+                    params.add(svcRef.getName()); //resource-name
 
-                String[] parameters = new String[params.size()];
-                parameters = params.toArray(parameters);
+                    String[] parameters = new String[params.size()];
+                    parameters = params.toArray(parameters);
 
-                deleteResource(commandRunner, parameters);
+                    deleteResource(commandRunner, parameters);
 
-                resetJMSService(commandRunner, serviceConsumer, serviceProvider);
+                    resetJMSService(commandRunner, serviceConsumer, serviceProvider);
+                }
             }
         }
     }
 
-    public void associateServices(Service serviceConsumer, ServiceReference svcRef,
+    public void associateServices(Service serviceConsumer, ServiceReference serviceReference,
                                   Service serviceProvider, boolean beforeDeployment, PaaSDeploymentContext dc) {
 
         if (!beforeDeployment) {
             return;
         }
 
-        if ((serviceReferenceTypes.contains(svcRef.getType()))
-                && serviceConsumer.getServiceType().toString().equals(MQ_SERVICE_TYPE)
-                && serviceProvider.getServiceType().toString().equals(JAVAEE_SERVICE_TYPE)) {
+        ReadableArchive archive = dc.getDeploymentContext().getSource();
+        Set<ServiceReference> serviceReferences = discoverServiceReferences(archive);
 
+        if (serviceReferences.size() > 0) {
+            for (ServiceReference svcRef : serviceReferences) {
 
-            CommandRunner commandRunner = getCommandRunner(serviceProvider);
-            String target = serviceProvider.getServiceDescription().getName();
+                CommandRunner commandRunner = getCommandRunner(serviceProvider);
+                String target = serviceProvider.getServiceDescription().getName();
 
-            configureJMSService(commandRunner, serviceConsumer, serviceProvider);
+                configureJMSService(commandRunner, serviceConsumer, serviceProvider);
 
-            if (svcRef.getType().equals(QUEUE) ||
-                    svcRef.getType().equals(TOPIC)) {
-                ArrayList<String> params = new ArrayList<String>();
-                params.add("--restype=" + svcRef.getType());
-                params.add("--target=" + target);
-                String destinationName = svcRef.getName().replaceAll("/","_");
-                params.add("--property=" + "imqDestinationName=" + destinationName + ":" + "Name=" + destinationName);
-                params.add(svcRef.getName()); //resource-name
+                if (svcRef.getType().equals(QUEUE) ||
+                        svcRef.getType().equals(TOPIC)) {
+                    ArrayList<String> params = new ArrayList<String>();
+                    params.add("--restype=" + svcRef.getType());
+                    params.add("--target=" + target);
+                    String destinationName = svcRef.getName().replaceAll("/", "_");
+                    params.add("--property=" + "imqDestinationName=" + destinationName + ":" + "Name=" + destinationName);
+                    params.add(svcRef.getName()); //resource-name
 
-                String[] parameters = new String[params.size()];
-                parameters = params.toArray(parameters);
+                    String[] parameters = new String[params.size()];
+                    parameters = params.toArray(parameters);
 
-                createResource(commandRunner, parameters);
-            } else if (svcRef.getType().equals(QCF) ||
-                    svcRef.getType().equals(TCF)) {
-                ArrayList<String> params = new ArrayList<String>();
-                params.add("--restype=" + svcRef.getType());
-                params.add("--target=" + target);
-                params.add(svcRef.getName()); //resource-name
+                    createResource(commandRunner, parameters);
+                } else if (svcRef.getType().equals(QCF) ||
+                        svcRef.getType().equals(TCF)) {
+                    ArrayList<String> params = new ArrayList<String>();
+                    params.add("--restype=" + svcRef.getType());
+                    params.add("--target=" + target);
+                    params.add(svcRef.getName()); //resource-name
 
-                String[] parameters = new String[params.size()];
-                parameters = params.toArray(parameters);
+                    String[] parameters = new String[params.size()];
+                    parameters = params.toArray(parameters);
 
-                createResource(commandRunner, parameters);
+                    createResource(commandRunner, parameters);
+                }
             }
         }
     }
