@@ -202,7 +202,7 @@ public abstract class DatabaseSPEBase extends ServiceProvisioningEngineBase<RDBM
         String databaseName = serviceDescription.getConfiguration(DATABASE_NAME_SVC_CONFIG);
         if (databaseName != null && databaseName.trim().length() > 0) {
             setDatabaseName(databaseName);
-            createDatabase(getServiceProperties(ipAddress));
+            createDatabase(getServiceProperties(ipAddress),vm);
         }
 
         //Execute Init SQL
@@ -458,6 +458,13 @@ public abstract class DatabaseSPEBase extends ServiceProvisioningEngineBase<RDBM
      * template.
      */
     protected abstract void stopDatabase(VirtualMachine virtualMachine);
+
+    /**
+     * Create database if it does not exist
+     *
+     * @param dbProps Database connection properties
+     */
+    public abstract void createDatabase(Properties dbProps,VirtualMachine vm);
 
     /**
      * Create database if it does not exist
