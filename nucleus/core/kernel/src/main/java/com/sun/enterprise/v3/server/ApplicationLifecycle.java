@@ -110,8 +110,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.concurrent.*;
 import java.net.URI;
-import java.net.URLClassLoader;
-import java.lang.instrument.ClassFileTransformer;
 
 /**
  * Application Loader is providing useful methods to load applications
@@ -293,8 +291,14 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
         }
 
         ProgressTracker tracker = new ProgressTracker() {
+            @Override
             public void actOn(Logger logger) {
-                for (EngineRef module : get("started", EngineRef.class)) {
+                //loaded is used instead of started to include more modules to
+                //stop. In some modules, the setup and cleanup steps are not
+                //fully symmetric, and to ensure thorough cleanup, we need to
+                //call module.stop() for started modules, and modules that are 
+                //loaded but may not be started. Issue 18263
+                for (EngineRef module : get("loaded", EngineRef.class)) {
                     try {
                         module.stop(context);
                     } catch (Exception e) {
