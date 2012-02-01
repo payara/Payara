@@ -135,7 +135,7 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
     }
 
     private static void detectParallalProvisioningSetting() {
-        parallelProvisioningEnabled = Boolean.valueOf(System.getProperty(ServiceOrchestratorImpl.PARALLEL_PROVISIONING_FLAG, "true"));
+        parallelProvisioningEnabled = Boolean.valueOf(System.getProperty(ServiceOrchestratorImpl.PARALLEL_PROVISIONING_FLAG, "false"));
     }
 
     private static void composeDeploymentStates() {
