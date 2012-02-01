@@ -99,7 +99,11 @@ public class DerbyPlugin extends DatabaseSPEBase {
             logger.log(Level.WARNING, "javadb.spe.tear_down_sql.fail.ex", args);
         }
     }
-
+    
+    @Override
+    public void createDatabase(Properties dbProps,VirtualMachine vm) {
+        createDatabase(dbProps);
+    } 
     @Override
     public void createDatabase(Properties dbProps) {
         try {
