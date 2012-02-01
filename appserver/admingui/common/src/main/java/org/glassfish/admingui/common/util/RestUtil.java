@@ -342,7 +342,9 @@ public class RestUtil {
                     }else{
                         Object msgs = responseMap.get("message");
                         if (msgs == null) {
-                            message =  "REST Request '"  + endpoint + "' failed with response code '" + status + "'.";
+				//According to security guideline, we shouldn't expose the endpoint to user for the error.
+				//message =  "REST Request '"  + endpoint + "' failed with response code '" + status + "'.";
+				message = "";
                         } else if (msgs instanceof List) {
                             StringBuilder builder = new StringBuilder("");
                             for (Object obj : ((List<Object>) msgs)) {
