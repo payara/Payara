@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2008-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -300,6 +300,45 @@ public class AppTest extends TestCase {
         } catch (Exception ex) {
             ex.printStackTrace();
             assert (false);
+        }
+
+    }
+
+    public void testSetRollbackOnlyBeforeEnlist() {
+      try {
+            t.begin();
+            Transaction tx = t.getTransaction();
+            System.out.println("**Testing resource status in setRollbackOnly ===>");
+            tx.setRollbackOnly();
+            String status = JavaEETransactionManagerSimplified.getStatusAsString(tx.getStatus());
+            System.out.println("**Status after setRollbackOnly: "  + status + " <===");
+            assertEquals(status, "MarkedRollback");
+
+            TestResource theResource = new TestResource(tx);
+            try {
+                t.enlistResource(tx, new TestResourceHandle(theResource));
+                t.delistResource(tx, new TestResourceHandle(theResource), XAResource.TMSUCCESS);
+                System.out.println("**Did NOT get RollbackException from t.enlistResource <===");
+                assert (false);
+            } catch (RollbackException ex) {
+                System.out.println("**Caught expected RollbackException from t.enlistResource <===");
+            }
+
+            status = JavaEETransactionManagerSimplified.getStatusAsString(tx.getStatus());
+            System.out.println("**Status after setRollbackOnly & enlist: "  + status + " <===");
+            assertEquals(status, "MarkedRollback");
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            assert (false);
+        } finally {
+            try {
+                t.rollback();
+                String status = JavaEETransactionManagerSimplified.getStatusAsString(t.getStatus());
+                System.out.println("**Status after rollback: "  + status + " <===");
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                assert (false);
+            }
         }
 
     }

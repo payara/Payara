@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -85,6 +85,11 @@ public final class JavaEETransactionImpl extends TimerTask implements
     // Local Tx ids are just numbers: they dont need to be unique across
     // processes or across multiple activations of this server process.
     private static long txIdCounter = 1;
+
+    // Fall back to the old (wrong) behavior for the case when setRollbackOnly
+    // was called before XA transaction started
+    private static boolean DISABLE_STATUS_CHECK_ON_SWITCH_TO_XA = 
+            Boolean.getBoolean("com.sun.jts.disable_status_check_on_switch_to_xa");
 
     private long txId;
     private JavaEEXid xid;
@@ -356,8 +361,11 @@ public final class JavaEETransactionImpl extends TimerTask implements
     }
 
     void setJTSTx(TransactionInternal jtsTx) throws RollbackException, SystemException {
+        // Remember the status from this transaction
+        boolean marked_for_rollback = isRollbackOnly();
+
         this.jtsTx = jtsTx;
-    
+
         if ( !commitStarted ) {
             // register syncs
             for ( int i=0; i<syncs.size(); i++ )
@@ -366,6 +374,11 @@ public final class JavaEETransactionImpl extends TimerTask implements
             for ( int i=0; i<interposedSyncs.size(); i++ )
                 jtsTx.registerInterposedSynchronization(
                         (Synchronization)interposedSyncs.elementAt(i));
+        }
+
+        // Now adjust the status
+        if (!DISABLE_STATUS_CHECK_ON_SWITCH_TO_XA && marked_for_rollback) {
+            jtsTx.setRollbackOnly();
         }
     }
 
