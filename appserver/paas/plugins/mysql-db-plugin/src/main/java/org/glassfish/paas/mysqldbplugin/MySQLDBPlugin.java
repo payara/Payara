@@ -95,6 +95,10 @@ public class MySQLDBPlugin  extends DatabaseSPEBase {
     }
 
     @Override
+    public void createDatabase(Properties dbProps,VirtualMachine vm) {
+        createDatabase(dbProps);
+    }
+    @Override
     public void createDatabase(Properties dbProps) {
         try {
             logger.log(Level.INFO, "mysqldb.spe.custom_db_creation.exec.start",
