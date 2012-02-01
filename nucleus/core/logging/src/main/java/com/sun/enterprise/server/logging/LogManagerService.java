@@ -160,6 +160,8 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
     String recordFieldSeparator;
     String recordDateFormat;
 
+    Vector<Logger> loggerReference = new Vector<Logger>();
+
     /*
         Returns properties based on the DAS/Cluster/Instance
       */
@@ -438,6 +440,7 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
                         try {
 
                             Map<String, String> props = getLoggingProperties();
+                            loggerReference = new Vector<Logger>();
                             if (props == null)
                                 return;
                             Set<String> keys = props.keySet();
@@ -445,8 +448,10 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
                                 if (a.endsWith(".level")) {
                                     String n = a.substring(0, a.lastIndexOf(".level"));
                                     Level l = Level.parse(props.get(a));
-                                    if (logMgr.getLogger(n) != null) {
-                                        logMgr.getLogger(n).setLevel(l);
+                                    Logger appLogger = logMgr.getLogger(n);
+                                    if (appLogger != null) {
+                                        appLogger.setLevel(l);
+                                        loggerReference.add(appLogger);
                                     } else if (gfHandlers.containsKey(n)) {
                                         // check if this is one of our handlers
                                         Handler h = (Handler) gfHandlers.get(n);

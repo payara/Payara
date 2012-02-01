@@ -55,6 +55,7 @@ import java.util.logging.LogManager;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+
 import org.glassfish.api.admin.FileMonitoring;
 
 /**
@@ -73,7 +74,7 @@ public class LoggingConfigImpl implements LoggingConfig, PostConstruct {
     @Inject
     ServerEnvironmentImpl env;
 
-    @Inject 
+    @Inject
     FileMonitoring fileMonitoring;
 
     Properties props = new Properties();
@@ -292,8 +293,23 @@ public class LoggingConfigImpl implements LoggingConfig, PostConstruct {
                     setWebLoggers(e.getValue());
                 }
 
+                if (property == null) {
+                    property = (String) props.setProperty(key, e.getValue());
+                }
+
                 //build Map of entries to return
                 m.put(key, property);
+
+                String loggerName = key.substring(0, key.lastIndexOf("."));
+                Logger existing = LogManager.getLogManager().getLogger(loggerName);
+                if (existing == null) {
+                    Logger newLogger = new Logger(loggerName, null) {
+                    };
+                    newLogger.setLevel(Level.parse(property));
+                    synchronized (Logger.class) {
+                        LogManager.getLogManager().addLogger(newLogger);
+                    }
+                }
 
             }
             closePropFile();
@@ -334,8 +350,23 @@ public class LoggingConfigImpl implements LoggingConfig, PostConstruct {
                     setWebLoggers(e.getValue());
                 }
 
+                if (property == null) {
+                    property = (String) props.setProperty(key, e.getValue());
+                }
+
                 //build Map of entries to return
                 m.put(key, property);
+
+                String loggerName = key.substring(0, key.lastIndexOf("."));
+                Logger existing = LogManager.getLogManager().getLogger(loggerName);
+                if (existing == null) {
+                    Logger newLogger = new Logger(loggerName, null) {
+                    };
+                    newLogger.setLevel(Level.parse(property));
+                    synchronized (Logger.class) {
+                        LogManager.getLogManager().addLogger(newLogger);
+                    }
+                }
 
             }
             closePropFile();
@@ -504,8 +535,7 @@ public class LoggingConfigImpl implements LoggingConfig, PostConstruct {
 
             //close the ZipOutputStream
             zout.close();
-        }
-        catch (IOException ioe) {
+        } catch (IOException ioe) {
             Logger.getAnonymousLogger().log(Level.SEVERE, "Error while creating zip file :", ioe);
             throw ioe;
         }
@@ -572,8 +602,7 @@ public class LoggingConfigImpl implements LoggingConfig, PostConstruct {
                 fin.close();
 
                 zipDone = true;
-            }
-            catch (IOException ioe) {
+            } catch (IOException ioe) {
                 Logger.getAnonymousLogger().log(Level.SEVERE, "Error while creating zip file :", ioe);
                 throw ioe;
             }
