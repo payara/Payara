@@ -582,7 +582,7 @@ public class DeploymentUtils {
             if (webInfLib.exists()) {
                 moduleLibraryURLs = getLibDirectoryJars(webInfLib);
             }
-        } else if (handlerName.equals("connector")) {
+        } else if (handlerName.equals("rar")) {
             // we should add the top level jars for connector module
             moduleLibraryURLs = getLibDirectoryJars(archiveFile);
         }
