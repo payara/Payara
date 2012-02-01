@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -85,11 +85,10 @@ import java.util.logging.Level;
  * @author  Jerome Dochez
  * @version 
  */
-@Service
 public abstract class DeploymentDescriptorNode<T> implements XMLNode<T>  {
 
 
-    public Habitat habitat = Globals.getDefaultHabitat();
+    protected Habitat habitat = Globals.getDefaultHabitat();
     
     private static final String QNAME_SEPARATOR = ":";
 
@@ -223,7 +222,7 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T>  {
      * @param element XMLElement is the XML tag this XMLNode will handle
      * @param handler the class implemenenting the XMLNode interface
      */
-    protected void registerElementHandler(XMLElement element, Class  handler) {
+    protected void registerElementHandler(XMLElement element, Class handler) {
         if (handlers==null) {
             handlers = new Hashtable();
         }
@@ -238,8 +237,7 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T>  {
      * @param addMethodName is the method name for adding the descriptor
      * extracted by the handler node to the current descriptor
      */
-    public void registerElementHandler(XMLElement element, Class  handler, 
-                                            String addMethodName) {
+    public void registerElementHandler(XMLElement element, Class handler, String addMethodName) {
                                                                                              
        registerElementHandler(element, handler);       
        if (addMethods==null) {
@@ -276,22 +274,32 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T>  {
                 DOLUtils.getDefaultLogger().log(Level.WARNING, "enterprise.deployment.backend.invalidDescriptorMappingFailure",
                     new Object[] {element.getQName(), "No handler registered"});
                 return null;
-            } 
+            }
             if (DOLUtils.getDefaultLogger().isLoggable(Level.FINER)) {        
                 DOLUtils.getDefaultLogger().finer("New Handler requested for " + c);
             }
             DeploymentDescriptorNode node;
             try {
-                node = (DeploymentDescriptorNode) c.newInstance(); 
+                node = (DeploymentDescriptorNode) c.newInstance();
                 node.setParentNode(this);
-		node.setXMLRootTag(element);
+                node.setXMLRootTag(element);
                 node.getDescriptor();
             } catch(Exception e) {
                 DOLUtils.getDefaultLogger().log(Level.WARNING, "Error occurred", e); 
                 return null;
             }
-	    return node;
+            return node;
         }
+    }
+    
+    private Class getExtensionHandler(final XMLElement element) {
+        DeploymentDescriptorNode extNode = 
+            (DeploymentDescriptorNode)habitat.getComponent(XMLNode.class,
+                element.getQName());
+        if (extNode == null) {
+            return null;
+        }    
+        return (Class)extNode.getClass(); 
     }
     
     /**
@@ -363,18 +371,30 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T>  {
      * current XMLNode
      */
     public boolean handlesElement(XMLElement element) {
-        // If we have no handlers for sub-nodes, it means we handle this XML tag
-        if (handlers==null) 
-            return true;
-        
-        // Let's iterator over all registered handlers to find one which is responsible 
-        // for handling the XML tag.
-        for (Enumeration handlersIterator = handlers.keys();handlersIterator.hasMoreElements();) {
-            String subElement  = (String) handlersIterator.nextElement();  
-            if (element.getQName().equals(subElement)) {
-                return false;
+
+        // Let's iterator over all the statically registered handlers to 
+        // find one which is responsible for handling the XML tag.
+        if (handlers != null) {
+            for (Enumeration handlersIterator = handlers.keys();handlersIterator.hasMoreElements();) {
+                String subElement  = (String) handlersIterator.nextElement();
+                if (element.getQName().equals(subElement)) {
+                    return false;
+                }
             }
         }
+
+        // let's now find if there is any dynamically registered handler
+        // to handle this XML tag
+        Class extHandler = getExtensionHandler(element);
+        if (extHandler != null) {
+            // if yes, we should add this handler to the table so 
+            // we don't need to look it up again later and also return
+            // false
+            registerElementHandler(new XMLElement(element.getQName()), 
+                extHandler);
+            return false;
+        }
+
         return true;
     }       
     

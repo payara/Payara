@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -45,7 +45,9 @@ import org.glassfish.deployment.common.Descriptor;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * This base class defines common behaviour and data for all runtime
@@ -56,7 +58,19 @@ import java.util.List;
 public abstract class RuntimeDescriptor extends Descriptor {
     
     protected PropertyChangeSupport propListeners;
+    
+    private Map<Class<? extends Descriptor>,Descriptor> descriptorExtensions =
+            new HashMap<Class<? extends Descriptor>, Descriptor>(); 
 
+    public <T extends Descriptor> T getDescriptorExtension(final Class<T> c) {
+        return (T)descriptorExtensions.get(c);
+    }
+    
+    public void addDescriptorExtension(final Descriptor dde) {
+         descriptorExtensions.put((Class<? extends Descriptor>)dde.getClass(), dde);
+    }
+
+    
     /** Creates a new instance of RuntimeDescriptor */
     public RuntimeDescriptor(RuntimeDescriptor other) {
 	super(other);
