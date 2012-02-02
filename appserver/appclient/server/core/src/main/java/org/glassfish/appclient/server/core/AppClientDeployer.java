@@ -56,7 +56,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.jar.Attributes;
 import java.util.logging.Logger;
-import org.glassfish.api.deployment.DeployCommandParameters;
+
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.MetaData;
 import org.glassfish.api.deployment.UndeployCommandParameters;
@@ -203,11 +203,6 @@ public class AppClientDeployer
             new HashSet<AppClientServerApplication>();
 
     public AppClientDeployer() {
-    }
-
-    @Override
-    protected String getModuleType() {
-        return "appclient";
     }
 
     @Override

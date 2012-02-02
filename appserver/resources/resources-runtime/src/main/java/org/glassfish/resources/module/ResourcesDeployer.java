@@ -140,11 +140,6 @@ public class ResourcesDeployer extends JavaEEDeployer<ResourcesContainer, Resour
         events.unregister(this);
     }
 
-    @Override
-    protected String getModuleType() {
-        return GF_RESOURCES_MODULE_EAR;
-    }
-
     /**
      * Loads a previously prepared application in its execution environment and
      * return a ContractProvider instance that will identify this environment in
