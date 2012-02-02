@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+
 package com.sun.enterprise.util.cluster;
 
 import com.sun.enterprise.config.serverbeans.Node;
@@ -52,17 +53,20 @@ public final class Paths {
     public final static String DAS_PROPS_SUBPATH =  "agent/config/" + DAS_PROPS_FILENAME;
 
     // TODO: the Node class ought to do this!
-    public final static String getNodeDir(final Node node) {
+    public final static String getNodesDir(final Node node) {
         if (node == null) // don't do that!
             throw new NullPointerException();
 
-        // forward slashes are fine for ALL supported platforms
-        String nodeDir = node.getNodeDirAbsoluteUnixStyle();
+        String nodesDir = node.getNodeDirAbsoluteUnixStyle();
 
-        if (nodeDir == null)
-            nodeDir = node.getInstallDirUnixStyle() + "/glassfish/nodes/" + node.getName();
+        if (nodesDir == null)
+            nodesDir = node.getInstallDirUnixStyle() + "/glassfish/nodes";
 
-        return nodeDir;
+        return nodesDir;
+    }
+
+    public final static String getNodeDir(final Node node) {
+        return getNodesDir(node) + "/" + node.getName();
     }
 
     public final static String getDasPropsPath(final Node node) {
