@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2006-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -92,10 +92,10 @@ public interface Sniffer {
     public Class<? extends Annotation>[] getAnnotationTypes();
     
     /**
-     * Returns the module type associated with this sniffer
-     * @return the container name
+     * Returns the container type associated with this sniffer
+     * @return the container type
      */
-    public String getModuleType();
+    public String getModuleType(); // This method should be renamed to getContainerType
 
    /**                                          
      * Sets up the container libraries so that any imported bundle from the
