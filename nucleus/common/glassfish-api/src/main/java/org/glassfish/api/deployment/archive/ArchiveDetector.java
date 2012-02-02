@@ -1,4 +1,5 @@
-package org.glassfish.api.deployment.archive;/*
+package org.glassfish.api.deployment.archive;
+/*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  * Copyright (c) 2011-2012 Oracle and/or its affiliates. All rights reserved.
