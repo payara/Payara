@@ -53,10 +53,13 @@
     <event>
     <!beforeCreate
         setSessionAttribute(key="clusterInstanceTabs" value="general");
-        getRequestValue(key="clusterName" value="#{pageSession.clusterName}");
-        urlencode(value="#{pageSession.clusterName}" encoding="UTF-8" result="#{pageSession.encodedClusterName}");
         getRequestValue(key="instanceName" value="#{pageSession.instanceName}");
         urlencode(value="#{pageSession.instanceName}" encoding="UTF-8" result="#{pageSession.encodedInstanceName}");
+        getRequestValue(key="clusterName" value="#{pageSession.clusterName}");
+	if("!#{pageSession.clusterName}"){
+            gf.getClusterNameForInstance(instanceName="#{pageSession.instanceName}", clusterName="#{pageSession.clusterName}");
+        }
+        urlencode(value="#{pageSession.clusterName}" encoding="UTF-8" result="#{pageSession.encodedClusterName}");
         setPageSessionAttribute(key="selfPage" value="#{request.contextPath}/cluster/cluster/clusterInstanceEdit.jsf?clusterName=#{pageSession.encodedClusterName}&instanceName=#{pageSession.encodedInstanceName}&alertType=${alertType}&alertSummary=${alertSummary}&alertDetail=${alertDetail}");
         gfr.getStatusString();
         gf.getEntityAttrs(endpoint="#{sessionScope.REST_URL}/servers/server/#{pageSession.encodedInstanceName}", valueMap="#{pageSession.vMap}");
@@ -70,9 +73,6 @@
         if ("#{pageSession.status}=REQUIRES_RESTART"){
             setAttribute(key="isRestartRequired" value="#{true}");
         }
-        gf.restRequest( endpoint="#{sessionScope.REST_URL}/clusters/cluster/#{pageSession.encodedClusterName}/get-health" , method="GET"   result="#{pageSession.health}");
-        mapGet(Map="#{pageSession.health.data.properties}" Key="#{pageSession.encodedInstanceName}" Value="#{pageSession.healthInfo}");
-
     />
     </event>
     <sun:form id="propertyForm">
@@ -165,10 +165,6 @@
 
             <sun:property id="instanceName"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18ncs.instanceName}" >
                 <sun:staticText id="instanceName" text="#{pageSession.instanceName}" />
-            </sun:property>
-
-            <sun:property id="statusProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.common.status}">
-                <sun:staticText id="status" text="#{pageSession.statusImage} #{pageSession.healthInfo}" />
             </sun:property>
 
         <sun:property id="jvmProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.inst.JVMLabel}">
