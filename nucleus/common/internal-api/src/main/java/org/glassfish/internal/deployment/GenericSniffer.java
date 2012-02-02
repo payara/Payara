@@ -56,6 +56,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.*;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.lang.annotation.Annotation;
@@ -64,7 +65,7 @@ import javax.xml.stream.events.StartDocument;
 /**
  * Generic implementation of the Sniffer service that can be programmatically instantiated
  *
- * @author Jerome Dochez
+ * @author Jerome Dochez, Sanjeeb Sahoo
  */
 public abstract class GenericSniffer implements Sniffer {
 
@@ -76,6 +77,7 @@ public abstract class GenericSniffer implements Sniffer {
     final private String urlPattern;
     
     final private static XMLInputFactory xmlInputFactory = XMLInputFactory.newInstance();
+    private Module[] modules;
 
     public GenericSniffer(String containerName, String appStigma, String urlPattern) {
         this.containerName = containerName;
@@ -137,23 +139,30 @@ public abstract class GenericSniffer implements Sniffer {
      * will be locked as long as there is at least one module loaded in the
      * associated container.
      *
-     * @param containerHome is where the container implementation resides
+     * @param containerHome is where the container implementation resides (Not used anymore)
      * @param logger the logger to use
      * @return the module definition of the core container implementation.
      *
      * @throws java.io.IOException exception if something goes sour
      */
-    public Module[] setup(String containerHome, Logger logger) throws IOException {   // TODO(Sahoo): Change signature to not accept containerHome or logger
-        List<Module> modules = new ArrayList<Module>();
+    public synchronized Module[] setup(String containerHome, Logger logger) throws IOException {   // TODO(Sahoo): Change signature to not accept containerHome or logger
+        if (modules != null) {
+            if (logger.isLoggable(Level.FINE)) {
+                logger.logp(Level.FINE, "GenericSniffer", "setup", "{0} has already setup {1} container, so just returning.", new Object[]{this, containerName});
+            }
+            return modules;
+        }
+        List<Module> tmp = new ArrayList<Module>();
         for (String moduleName : getContainerModuleNames()) {
             Module m = modulesRegistry.makeModuleFor(moduleName, null);
             if (m != null) {
-                modules.add(m);
+                tmp.add(m);
             } else {
                 throw new RuntimeException("Unable to set up module " + moduleName);
             }
         }
-        return modules.toArray(new Module[modules.size()]);
+        modules = tmp.toArray(new Module[tmp.size()]);
+        return modules;
     }
 
     protected String[] getContainerModuleNames() {
@@ -165,6 +174,8 @@ public abstract class GenericSniffer implements Sniffer {
      * 
      */
     public void tearDown() {
+        // It is not safe to uninstall modules in a running server as there might be existing
+        // references to objects loaded from those modules, so we don't uninstall modules at this point of time.
     }
 
     /**

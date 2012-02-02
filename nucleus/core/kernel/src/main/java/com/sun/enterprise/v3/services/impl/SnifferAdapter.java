@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2007-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -127,9 +127,8 @@ public class SnifferAdapter extends HttpHandler {
             } else {
                 final long startTime = System.currentTimeMillis();
                 LOGGER.log(Level.INFO, "core.snifferadapter.starting.container", sniffer.getModuleType());
-                Module snifferModule = modulesRegistry.find(sniffer.getClass());
                 try {
-                    Collection<EngineInfo> containersInfo = containerStarter.startContainer(sniffer, snifferModule);
+                    Collection<EngineInfo> containersInfo = containerStarter.startContainer(sniffer);
                     if (containersInfo != null && !containersInfo.isEmpty()) {
                         // force the start on each container
                         for (EngineInfo info : containersInfo) {

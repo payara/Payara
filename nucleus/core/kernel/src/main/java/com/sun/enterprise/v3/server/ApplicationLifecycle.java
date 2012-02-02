@@ -690,11 +690,6 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                 return null;
             }
 
-            Module snifferModule = modulesRegistry.find(sniffer.getClass());
-            if (snifferModule == null) {
-                report.failure(logger, "cannot find container module from service implementation " + sniffer.getClass(), null);
-                return null;
-            }
             final String containerName = sniffer.getContainersNames()[0];
             if (tracing!=null) {
                 tracing.addContainerMark(DeploymentTracing.ContainerMark.SNIFFER_DONE, containerName );
@@ -714,7 +709,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                                 DeploymentTracing.ContainerMark.BEFORE_CONTAINER_SETUP, containerName );
                         }
 
-                        containersInfo = setupContainer(sniffer, snifferModule, logger, context);
+                        containersInfo = setupContainer(sniffer, logger, context);
                         if (tracing!=null) {
                             tracing.addContainerMark(
                                 DeploymentTracing.ContainerMark.AFTER_CONTAINER_SETUP, containerName );
@@ -1003,10 +998,10 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
         return mi;
     }
 
-    protected Collection<EngineInfo> setupContainer(Sniffer sniffer, Module snifferModule,  Logger logger, DeploymentContext context) {
+    protected Collection<EngineInfo> setupContainer(Sniffer sniffer, Logger logger, DeploymentContext context) {
         ActionReport report = context.getActionReport();
         ContainerStarter starter = habitat.getComponent(ContainerStarter.class);
-        Collection<EngineInfo> containersInfo = starter.startContainer(sniffer, snifferModule);
+        Collection<EngineInfo> containersInfo = starter.startContainer(sniffer);
         if (containersInfo == null || containersInfo.size()==0) {
             report.failure(logger, "Cannot start container(s) associated to application of type : " + sniffer.getModuleType(), null);
             return null;

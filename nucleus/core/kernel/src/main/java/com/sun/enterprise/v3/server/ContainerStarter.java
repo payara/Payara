@@ -63,8 +63,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * This class is responsible for starting containers, it will look for the container
- * installation location, will eventually download the container and install it locally.
+ * This class is responsible for starting containers.
  *
  * @author Jerome Dochez, Sanjeeb Sahoo
  */
@@ -82,33 +81,17 @@ public class ContainerStarter {
 
     @Inject ContainerRegistry registry;
 
-    public Collection<EngineInfo> startContainer(Sniffer sniffer, Module snifferModule) {
+    public Collection<EngineInfo> startContainer(Sniffer sniffer) {
 
         assert sniffer!=null;
         String containerName = sniffer.getModuleType();
         assert containerName!=null;
         
-        // get the container installation
-        String containerHome = StringUtils.getProperty(containerName + ".home");
-        if (containerHome==null) {
-            // the container could be installed at the default location
-            // which is in <Root Installation>/modules/containerName
-            String root = System.getProperty("com.sun.aas.installRoot");
-            if(root!=null) {
-                File location = new File(root);
-                location = new File(location, "modules");
-                location = new File(location, containerName);
-                containerHome = location.getAbsolutePath();
-                System.setProperty(containerName + ".home", containerHome);
-            }
-        }
-
-        Module[] modules;
         // I do the container setup first so the code has a chance to set up
-        // repositories which would allow access to the connector module.
+        // repositories which would allow access to the container module.
         try {
 
-            modules = sniffer.setup(containerHome, logger);
+            Module[] modules = sniffer.setup(null, logger);
             logger.logp(Level.INFO, "ContainerStarter", "startContainer", "Snifer {0} set up following modules: {1}",
                     new Object[]{sniffer, Arrays.toString(modules)});
         } catch(FileNotFoundException fnf) {

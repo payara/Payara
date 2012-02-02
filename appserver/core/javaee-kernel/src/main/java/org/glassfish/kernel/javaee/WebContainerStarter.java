@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -192,10 +192,9 @@ public class WebContainerStarter
             containerRegistry.getContainer(
                     webSniffer.getContainersNames()[0]).getContainer();
         } else {
-            Module snifferModule = modulesRegistry.find(webSniffer.getClass());
             try {
                 Collection<EngineInfo> containersInfo =
-                    containerStarter.startContainer(webSniffer, snifferModule);
+                    containerStarter.startContainer(webSniffer);
                 if (containersInfo != null && !containersInfo.isEmpty()) {
                     // Start each container
                     for (EngineInfo info : containersInfo) {
