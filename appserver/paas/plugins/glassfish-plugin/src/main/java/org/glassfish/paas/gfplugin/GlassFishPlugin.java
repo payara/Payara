@@ -391,96 +391,131 @@ public class GlassFishPlugin extends ServiceProvisioningEngineBase<JavaEEService
      */
     public void associateServices(org.glassfish.paas.orchestrator.service.spi.Service serviceConsumer, ServiceReference svcRef,
                                   org.glassfish.paas.orchestrator.service.spi.Service serviceProvider, boolean beforeDeployment, PaaSDeploymentContext dc) {
-//        if (provisionedSvc instanceof DerbyProvisionedService) {
         if (JDBC_DATASOURCE.equals(svcRef.getType()) &&
 	        serviceProvider.getServiceType().toString().equals(DATABASE_SERVICE_TYPE)  &&
             serviceConsumer.getServiceType().toString().equals(JAVAEE_SERVICE_TYPE)) {
 
             if (!beforeDeployment) return;
 
-            // JDBC connection properties
-            ServiceDescription serviceDescription = serviceProvider.getServiceDescription();
-//                        (SimpleServiceDefinition) derbyProvisionedService.getServiceDefinition();
-            Properties dbProperties = new Properties();
+            Properties databaseServiceProperties = new Properties();
             if(svcRef.getProperties() != null){
-                dbProperties.putAll(svcRef.getProperties());
+                databaseServiceProperties.putAll(svcRef.getProperties());
             }
             if(serviceProvider.getServiceProperties() != null){
-                dbProperties.putAll(serviceProvider.getServiceProperties());
+                databaseServiceProperties.putAll(serviceProvider.getServiceProperties());
                 String serverName = serviceProvider.getServiceProperties().getProperty(HOST);
                 String url = serviceProvider.getServiceProperties().getProperty(JDBC_URL);
                 if(serverName != null) {
-                    dbProperties.setProperty(JDBC_SERVERNAME, serverName);
+                    databaseServiceProperties.setProperty(JDBC_SERVERNAME, serverName);
                 }
-                if(url != null) {
-                    dbProperties.setProperty(JDBC_URL, url);
+                if (url != null) {
+                    databaseServiceProperties.setProperty(JDBC_URL, url);
                 }
             }
-//                serviceDescription.getProperties();
-
-            // Get the domain and cluster names.
-//                SimpleServiceDefinition serviceDefinition =
-//                        (SimpleServiceDefinition) glassfishProvisionedService.getServiceDesription();
             String serviceName = serviceConsumer.getServiceDescription().getName();
-//                String domainName = glassfishProvisionedService.getServiceProperties().getProperty("domainName"); // serviceUtil.getDomainName(serviceName);
-            //String clusterName = gfServiceUtil.getClusterName(serviceName);
-            //String dasIPAddress = glassfishProvisionedService.getServiceProperties().getProperty(HOST); // serviceUtil.getIPAddress(domainName, ServiceUtil.SERVICE_TYPE.APPLICATION_SERVER);
-            //String clusterName = gfServiceUtil.getClusterName(serviceName, serviceDescription.getAppName());
             String clusterName = serviceName;
             String dasIPAddress = gfServiceUtil.getDASIPAddress(serviceConsumer.getServiceDescription().getName());
 
             String poolName = svcRef.getName();
             String resourceName = svcRef.getName();
 
-            // If the user has supplied glassfish-resources.xml with 'service-name' in it,
-            // then substitute 'service-name' with actual co-ordinates of the service.
-            if(dc != null && dc.getDeploymentContext() != null) {
-                Map<Resource, ResourcesXMLParser> resourceXmlParsers =
-                        dc.getDeploymentContext().getTransientAppMetaData(RESOURCE_XML_PARSERS, Map.class);
-                List<Resource> nonConnectorResources =
-                        dc.getDeploymentContext().getTransientAppMetaData(NON_CONNECTOR_RESOURCES, List.class);
-                ResourcesXMLParser parser = null;
-                // Find correct jdbc connection pool corresponding to the referenced resource
-                // and substitute values for 'service-name' property.
-                for(Resource res : nonConnectorResources) {
-                    if(res.getType().equals(JDBC_RESOURCE)) {
-                        if(res.getAttributes().get(JNDI_NAME).equals(resourceName)) {
-                            Resource connPool = archiveProcessor.getConnectionPool(
-                                    res, resourceXmlParsers);
-                            parser = resourceXmlParsers.get(connPool);
-                            // Clone the jdbc-connection-pool resource and modify
-                            // "service-name" property with its actual co-ordinates
-                            dbProperties.remove(HOST);
+            if(processResourcesXML(dc, resourceName, databaseServiceProperties)) {
+                // Deployment backend will take care of creating required jdbc pool
+                // and resources using the generated deployment plan.
+            } else {
+                // Create global JDBC pool and resource.
+                GlassFishProvisioner glassFishProvisioner = (GlassFishProvisioner)
+                        provisionerUtil.getAppServerProvisioner(dasIPAddress);
+                glassFishProvisioner.createJdbcConnectionPool(dasIPAddress, clusterName,
+                        databaseServiceProperties, poolName);
+                glassFishProvisioner.createJdbcResource(dasIPAddress, clusterName,
+                        poolName, resourceName);
+            }
+        }
+    }
 
-                            // create the modified jdbc-connection-pool which has actual service' co-ordinates.
-                            Resource modifiedConnPool = new Resource(connPool.getType());
-                            modifiedConnPool.setDescription(connPool.getDescription());
+    /**
+     * Process glassfish-resources.xml and substitute the service-name property
+     * in a resource with service's actual coordinates.
+     *
+     * @param dc PaaS deployment context
+     * @param resourceName name of the resource that needs to be processed in glassfish-resources.xml
+     * @param databaseServiceProperties Service properties that contains the actual co-ordinates of the Database service.
+     *
+     * @return TRUE if glassfish-resources.xml had a resource referring to a service
+     * and it has been successfully substituted with actual service co-ordinates, FALSE otherwise.
+     */
+    private boolean processResourcesXML(PaaSDeploymentContext dc,
+                                        String resourceName,
+                                        Properties databaseServiceProperties) {
+        // If the user has supplied glassfish-resources.xml with 'service-name' in it,
+        // then substitute 'service-name' with actual co-ordinates of the service.
+        if(dc != null && dc.getDeploymentContext() != null) {
+            Map<Resource, ResourcesXMLParser> resourceXmlParsers =
+                    dc.getDeploymentContext().getTransientAppMetaData(RESOURCE_XML_PARSERS, Map.class);
+            List<Resource> nonConnectorResources =
+                    dc.getDeploymentContext().getTransientAppMetaData(NON_CONNECTOR_RESOURCES, List.class);
+            ResourcesXMLParser parser = null;
+            // Find correct jdbc connection pool corresponding to the referenced resource
+            // and substitute values for 'service-name' property.
+            boolean isDeploymentPlanComplete = true;
+            Resource processedResource = null;
+            for(Resource res : nonConnectorResources) {
+                if(res.getType().equals(JDBC_RESOURCE)) {
+                    if(res.getAttributes().get(JNDI_NAME).equals(resourceName)) {
+                        Resource connPool = archiveProcessor.getConnectionPool(
+                                res, resourceXmlParsers);
+                        parser = resourceXmlParsers.get(connPool);
+                        // Clone the jdbc-connection-pool resource and modify
+                        // "service-name" property with its actual co-ordinates
+                        databaseServiceProperties.remove(HOST);
 
-                            // Set attributes for jdbc-connection-pool element
-                            modifiedConnPool.getAttributes().putAll(connPool.getAttributes());
-                            modifiedConnPool.getAttributes().put(JDBC_DS_CLASSNAME,
-                                    dbProperties.remove(CLASSNAME));
-                            modifiedConnPool.getAttributes().put(JDBC_DS_RESTYPE,
-                                    dbProperties.remove(RESOURCE_TYPE));
+                        // create the modified jdbc-connection-pool which has actual service' co-ordinates.
+                        Resource modifiedConnPool = new Resource(connPool.getType());
+                        modifiedConnPool.setDescription(connPool.getDescription());
 
-                            // Set properties for jdbc-connection-pool element
-                            modifiedConnPool.getProperties().putAll(connPool.getProperties());
-                            modifiedConnPool.getProperties().putAll(dbProperties);
-                            modifiedConnPool.getProperties().remove(SERVICE_NAME);
+                        // Set attributes for jdbc-connection-pool element
+                        modifiedConnPool.getAttributes().putAll(connPool.getAttributes());
+                        modifiedConnPool.getAttributes().put(JDBC_DS_CLASSNAME,
+                                databaseServiceProperties.remove(CLASSNAME));
+                        modifiedConnPool.getAttributes().put(JDBC_DS_RESTYPE,
+                                databaseServiceProperties.remove(RESOURCE_TYPE));
 
-                            parser.updateDocumentNode(connPool, modifiedConnPool);
+                        // Set properties for jdbc-connection-pool element
+                        modifiedConnPool.getProperties().putAll(connPool.getProperties());
+                        modifiedConnPool.getProperties().putAll(databaseServiceProperties);
+                        modifiedConnPool.getProperties().remove(SERVICE_NAME);
 
-                            break; // jdbc-connection-pool with a given name is unique in glassfish-resources.xml
+                        parser.updateDocumentNode(connPool, modifiedConnPool);
+
+                        processedResource = res;
+//                            break; // jdbc-connection-pool with a given name is unique in glassfish-resources.xml
+                    } else { // see if there is any other resource that refers to a service
+                        Resource connPool = archiveProcessor.getConnectionPool(
+                                res, resourceXmlParsers);
+                        if (connPool.getProperties().getProperty(SERVICE_NAME) != null) {
+                            isDeploymentPlanComplete = false;
                         }
                     }
                 }
-                if (parser != null) { // generate deployment plan
-                    File dir = new File(System.getProperty(TMR_DIR),
-                            serviceName + DEPLOYMENT_PLAN_DIR);
-                    dir.mkdirs();
-                    String xmlName = parser.getResourceFile().getName();
-                    parser.persist(new File(dir, xmlName));
+            }
+
+            if (processedResource != null) { // glassfish-resources.xml had a resource referring to a service.
+                // When associateService is called next time, make sure we won't process
+                // the already processed resource. Hence remove it from the datastructures.
+                resourceXmlParsers.remove(processedResource);
+                nonConnectorResources.remove(processedResource);
+
+                // generate deployment plan only when all resources with service
+                // references are substituted with service's actual co-ordinates.
+                if (isDeploymentPlanComplete) {
                     try {
+                        File dir = File.createTempFile(DEPLOYMENT_PLAN_DIR, null);
+                        dir.delete();
+                        dir.mkdirs();
+                        dir.deleteOnExit();
+                        String xmlName = parser.getResourceFile().getName();
+                        parser.persist(new File(dir, xmlName));
                         ZipWriter zipWriter = new ZipWriter(dir + JAR_EXTN, dir.getAbsolutePath());
                         zipWriter.write();
                         DeployCommandParameters dcp = dc.getDeploymentContext().
@@ -499,73 +534,11 @@ public class GlassFishPlugin extends ServiceProvisioningEngineBase<JavaEEService
                     } catch (Exception ex) {
                         ex.printStackTrace();
                     }
-                    return; // we are done, deployment backend will take care of creating required jdbc pool and resources using the generated deployment plan.
                 }
+                return true;
             }
-
-            // Create global JDBC pool and resource.
-            GlassFishProvisioner glassFishProvisioner = (GlassFishProvisioner)
-                    provisionerUtil.getAppServerProvisioner(dasIPAddress);
-            glassFishProvisioner.createJdbcConnectionPool(dasIPAddress, clusterName,
-                    dbProperties, poolName);
-            glassFishProvisioner.createJdbcResource(dasIPAddress, clusterName,
-                    poolName, resourceName);
         }
-//        }
-
-//        if (provisionedSvc instanceof GlassFishLBProvisionedService) {
-/*
-        if (svcRef.getServiceRefType().equals("HTTP_LOAD_BALANCER")) {
-
-//                SimpleServiceDefinition gfServiceDefinition =
-//                        (SimpleServiceDefinition) glassfishProvisionedService.getServiceDesription();
-            String appServerServiceName = serviceConsumer.getServiceDescription().getName();//gfServiceDefinition.getProperties().getProperty("servicename");
-            //String domainName = glassfishProvisionedService.getServiceProperties().getProperty("domainName");//serviceUtil.getDomainName(appServerServiceName);
-            //String clusterName = gfServiceUtil.getClusterName(appServerServiceName);
-            //String dasIPAddress = glassfishProvisionedService.getServiceProperties().getProperty(HOST); //serviceUtil.getIPAddress(domainName, ServiceUtil.SERVICE_TYPE.APPLICATION_SERVER);
-            String clusterName = gfServiceUtil.getClusterName(appServerServiceName, serviceConsumer.getServiceDescription().getAppName());
-            String dasIPAddress = gfServiceUtil.getDASIPAddress(serviceConsumer.getServiceDescription().getName());
-
-            ApplicationServerProvisioner appServerProvisioner = provisionerUtil.getAppServerProvisioner(dasIPAddress);
-
-//                GlassFishLBProvisionedService gfLBProvisionedService =
-//                        (GlassFishLBProvisionedService) provisionedSvc;
-//                SimpleServiceDefinition lbServiceDefinition = (SimpleServiceDefinition)
-//                        gfLBProvisionedService.getServiceDescription();
-            String lbServiceName = serviceProvider.getServiceDescription().getName();
-
-            String domainName = domain.getProperty(Domain.DOMAIN_NAME_PROPERTY).getValue();
-            if (beforeDeployment) {
-                LBProvisioner lbProvisioner = provisionerUtil.getLBProvisioner();
-                String lbIPAddress = gfServiceUtil.getIPAddress(lbServiceName, serviceConsumer.getServiceDescription().getAppName(), ServiceType.LOAD_BALANCER);
-                lbProvisioner.associateApplicationServerWithLB(lbIPAddress, dasIPAddress, domainName);
-
-                //restart
-                lbProvisioner.stopLB(lbIPAddress);
-                lbProvisioner.startLB(lbIPAddress);
-
-                appServerProvisioner.associateLBWithApplicationServer(dasIPAddress, clusterName, lbIPAddress, lbServiceName);
-            } else {
-                appServerProvisioner.refreshLBConfiguration(dasIPAddress, lbServiceName);
-            }
-//            }
-
-            }
-*/
-
-            //if (svcRef.getServiceRefType().equals(JAVAEE_SERVICE_TYPE)) {
-                //if (serviceConsumer instanceof GlassFishProvisionedService) {
-         /*           if (beforeDeployment) {
-                        GlassFishProvisionedService gfps = (GlassFishProvisionedService) serviceConsumer;
-                        String clusterServiceName = gfServiceUtil.getClusterName(serviceConsumer.getName(), gfps.getServiceDescription().getAppName());
-                        if (dc != null) { //TODO remove once "deploy-service" is made obselete
-                            DeployCommandParameters ucp = dc.getCommandParameters(DeployCommandParameters.class);
-                            ucp.target = clusterServiceName;
-                        }
-                  //  }
-              //  }
-
-        }*/
+        return false;
     }
 
     // This method is copied from DolProvider. This method is not used when glassfish-resources.xml is modified inline.
