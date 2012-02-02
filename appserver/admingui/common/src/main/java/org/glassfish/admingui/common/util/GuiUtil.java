@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -228,6 +228,38 @@ public class GuiUtil {
                 nfe.printStackTrace();
             }
         }
+        try {
+            setTimeStamp();
+        } catch (Exception ex) {
+            logger.log(Level.FINE, ex.getMessage());
+        }
+        
+    }
+
+    private static File getTimeStampFile() {
+        Map result = RestUtil.restRequest(GuiUtil.getSessionValue("REST_URL") +
+                "/location", null, "GET", null, false);
+        String configDir = (String) ((Map)((Map)result.get("data")).get("properties")).get("Config-Dir");
+        if (configDir != null)
+            return new File(configDir, ".consolestate");
+        return null;
+    }
+
+    public static void setTimeStamp() throws Exception {
+        File f = getTimeStampFile();
+        if (!f.createNewFile()) {
+            f.setLastModified(System.currentTimeMillis());
+        }
+
+    }
+
+    public static long getTimeStamp() throws Exception {
+        File f = getTimeStampFile();
+        if (f == null)
+            throw new Exception("Could not get TimeStamp file for admin console");
+        if (!f.exists())
+            return 0L;
+        return f.lastModified();
     }
 
 

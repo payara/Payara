@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2008-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU 
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -283,37 +283,40 @@ public final class AdminConsoleAdapter extends HttpHandler implements Adapter, P
             if (!isRestStarted) {
                 forceRestModuleLoad(req);
             }
-            synchronized (this) {
-
-
-                if (isInstalling()) {
-                    sendStatusPage(req, res);
-                } else {
+	    synchronized(this) {
+		if (isInstalling()) {
+		    sendStatusPage(req, res);
+		} else {
                     if (isApplicationLoaded()) {
-                        // Double check here that it is not yet loaded (not
-                        // likely, but possible)
-                        handleLoadedState();
-                    } else {
-                        try {
-                            // We have permission and now we should install
-                            // (or load) the application.
-                            setInstalling(true);
-                            startThread();  // Thread must set installing false
-                        } catch (Exception ex) {
-                            // Ensure we haven't crashed with the installing
-                            // flag set to true (not likely).
-                            setInstalling(false);
-                            throw new RuntimeException(
-                                    "Unable to install Admin Console!", ex);
-                        }
-                        sendStatusPage(req, res);
-                    }
-                }
-            }
+			// Double check here that it is not yet loaded (not
+			// likely, but possible)
+			handleLoadedState();
+		    }else {
+                        loadConsole();
+			sendStatusPage(req, res);
+		    }
+		}
+	    }
+
         }
 
     }
 
+    void loadConsole() {
+        try {
+            // We have permission and now we should install
+            // (or load) the application.
+            setInstalling(true);
+            startThread();  // Thread must set installing false
+        } catch (Exception ex) {
+            // Ensure we haven't crashed with the installing
+            // flag set to true (not likely).
+            setInstalling(false);
+            throw new RuntimeException(
+                    "Unable to install Admin Console!", ex);
+        }
+    }
+    
     /**
      * @param req the Request
      * @return <code>true</code> if the request is for a resource with a known content
@@ -329,38 +332,14 @@ public final class AdminConsoleAdapter extends HttpHandler implements Adapter, P
      * then close the stream and move on.
      */
     private void forceRestModuleLoad(final Request req) {
-        if (isRestBeingStarted == true) {
+        if (isRestBeingStarted==true){
             return;
         }
         isRestBeingStarted = true;
-        Thread thread = new Thread() {
-
+        Thread thread = new Thread("Force REST Module Load Thread") {
             @Override
             public void run() {
-                InputStream is = null;
-                try {
-                    NetworkListener nl = domain.getServerNamed("server").getConfig().getNetworkConfig().getNetworkListener("admin-listener");
-                    SecureAdmin secureAdmin = habitat.getComponent(SecureAdmin.class);
-
-                    URL url = new URL(
-                            (SecureAdmin.Util.isEnabled(secureAdmin) ? "https" : "http"),
-                            nl.getAddress(),
-                            Integer.parseInt(nl.getPort()),
-                            "/management/domain");
-                    URLConnection conn = url.openConnection();
-                    is = conn.getInputStream();
-                    isRestStarted = true;
-                } catch (Exception ex) {
-                    Logger.getLogger(AdminConsoleAdapter.class.getName()).log(Level.FINE, null, ex);
-                } finally {
-                    if (is != null) {
-                        try {
-                            is.close();
-                        } catch (IOException ex1) {
-                            Logger.getLogger(AdminConsoleAdapter.class.getName()).log(Level.SEVERE, null, ex1);
-                        }
-                    }
-                }
+                initRest();
             }
         };
         thread.setDaemon(true);
@@ -425,7 +404,7 @@ public final class AdminConsoleAdapter extends HttpHandler implements Adapter, P
 
     }
 
-    private boolean isApplicationLoaded() {
+    boolean isApplicationLoaded() {
         return (stateMsg == AdapterState.APPLICATION_LOADED);
     }
 
@@ -528,6 +507,35 @@ public final class AdminConsoleAdapter extends HttpHandler implements Adapter, P
         epd = new AdminEndpointDecider(serverConfig, logger);
         contextRoot = epd.getGuiContextRoot();
     }
+    
+    void initRest() {
+        InputStream is = null;
+        try {
+            NetworkListener nl = domain.getServerNamed("server").getConfig().getNetworkConfig()
+                    .getNetworkListener("admin-listener");
+            SecureAdmin secureAdmin = habitat.getComponent(SecureAdmin.class);
+
+            URL url = new URL(
+                    (SecureAdmin.Util.isEnabled(secureAdmin) ? "https" : "http"),
+                    nl.getAddress(),
+                    Integer.parseInt(nl.getPort()),
+                    "/management/domain");
+            URLConnection conn = url.openConnection();
+            is = conn.getInputStream();
+            isRestStarted = true;
+        } catch (Exception ex) {
+           Logger.getLogger(AdminConsoleAdapter.class.getName()).log(Level.FINE, null, ex);
+        } finally {
+            if (is != null) {
+                try {
+                    is.close();
+                } catch (IOException ex1) {
+                    Logger.getLogger(AdminConsoleAdapter.class.getName()).log(Level.SEVERE, null, ex1);
+                }
+            }
+        }
+    }
+    
 
     /**
      *
