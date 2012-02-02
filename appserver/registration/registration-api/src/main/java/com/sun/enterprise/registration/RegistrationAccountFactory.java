@@ -68,7 +68,6 @@ public class RegistrationAccountFactory {
         throws ClassNotFoundException, NoSuchMethodException, InstantiationException, 
                 IllegalAccessException, InvocationTargetException {
         
-        final String className = rc.getClassName();
         Class registrationClass = Class.forName(rc.getClassName());
         if (rc.getParams() != null) {
             Class[] types = {RegistrationAccountConfig.class};
@@ -79,5 +78,5 @@ public class RegistrationAccountFactory {
         return (RegistrationAccount)registrationClass.newInstance();
     }
     
-    private static RegistrationAccountFactory instance = null;
+    private static volatile RegistrationAccountFactory instance = null;
 }
