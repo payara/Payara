@@ -64,7 +64,7 @@
         setSessionAttribute(key="onlyDASExist" value="#{true}");
         createMap(result="#{pageSession.attrs}")
         mapPut(map="#{pageSession.attrs}"  key="target"  value="#{pageSession.clusterName}")
-        gf.restRequest( endpoint="#{sessionScope.REST_URL}/applications/application/list-components.json" , method="GET"  attrs="#{pageSession.attrs}" result="#{requestScope.result}");
+        gf.restRequest( endpoint="#{sessionScope.REST_URL}/list-components.json" , method="GET"  attrs="#{pageSession.attrs}" result="#{requestScope.result}");
         setPageSessionAttribute(key="appRefEndpoint" value="/clusters/cluster/#{pageSession.encodedClusterName}/application-ref/");
         gf.getSingleTargetAppsInfo(appPropsMap="#{requestScope.result.data.properties}" appRefEndpoint="#{pageSession.appRefEndpoint}" target="#{pageSession.clusterName}"  filterValue="#{pageSession.filterValue}", filters="#{requestScope.filters}" result="#{requestScope.listOfRows}" );
         setPageSessionAttribute(key="editLink" value="/common/applications/applicationEdit.jsf");

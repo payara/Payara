@@ -40,8 +40,6 @@
 
 -->
 
-<!-- cluster/clusters.jsf -->
-
 <!initPage
     setResourceBundle(key="i18nc" bundle="org.glassfish.common.admingui.Strings")
     setResourceBundle(key="i18ncs" bundle="org.glassfish.cluster.admingui.Strings")
@@ -63,7 +61,18 @@
         />
     </sun:button>
 </define>
-
+<!define name="extraButton2">
+    <sun:button id="button2" text="$resource{i18ncs.button.DeleteAndUninstall}" disabled="#{true}" primary="#{false}"
+            onClick="if ( getConfirm(this,'$resource{i18ncs.msg.JS.confirmUninstallNodes}') )
+                { return submitAndDisable(this, '$resource{i18n.button.Processing}');}  else {return false;} " >
+        <!command
+            getUIComponent(clientId="$pageSession{tableRowGroupId}", component="#{requestScope.tableRowGroup}");
+            getSelectedSingleMapRows(TableRowGroup="${tableRowGroup}" selectedRows="#{requestScope.selectedRows}");
+            gf.nodeAction(rows="#{requestScope.selectedRows}", action="delete-node-uninstall" , nodeInstanceMap="#{pageSession.nodeInstanceMap}");
+            gf.redirect(page="/cluster/node/nodes.jsf?alertType=${alertType}&alertSummary=${alertSummary}&alertDetail=${alertDetail}");
+        />
+    </sun:button>
+</define>
 
 <!define name="content">
     <event>
@@ -71,6 +80,18 @@
         setPageSessionAttribute(key="parentUrl" value="#{sessionScope.REST_URL}/nodes");
         setPageSessionAttribute(key="childType" value="node");
         gf.getChildList(parentEndpoint="#{pageSession.parentUrl}", childType="#{pageSession.childType}", result="#{requestScope.listOfRows}");
+        foreach(var="oneNode" list="#{requestScope.listOfRows}"){
+            mapPut(map="#{oneNode}" key="hasPing" value="#{false}");
+            mapPut(map="#{oneNode}" key="cmd" value="");
+            if ("#{oneNode.type}=SSH"){
+                mapPut(map="#{oneNode}" key="hasPing" value="#{true}");
+                mapPut(map="#{oneNode}" key="cmd" value="ping-node-ssh");
+            }
+            if ("#{oneNode.type}=DCOM"){
+                mapPut(map="#{oneNode}" key="hasPing" value="#{true}");
+                mapPut(map="#{oneNode}" key="cmd" value="ping-node-dcom");
+            }
+         }
         setPageSessionAttribute(key="confirmDeleteMsg" value="$resource{i18ncs.msg.JS.confirmDeleteNodes}");
         setPageSessionAttribute(key="createLink" value="#{request.contextPath}/cluster/node/nodeNew.jsf");
         setPageSessionAttribute(key="listLink" value="#{request.contextPath}/cluster/node/nodes.jsf");
@@ -88,9 +109,9 @@
 
 <sun:table id="nodesTable" title="#{tableTitle}"
     deselectMultipleButton="$boolean{true}"
-    deselectMultipleButtonOnClick="setTimeout('admingui.table.changeOneTableButton(\\\\\'#{pageSession.topActionGroup}\\\\\', \\\\\'#{pageSession.tableId}\\\\\');', 0)"
+    deselectMultipleButtonOnClick="setTimeout('admingui.table.changeThreeTableButtons(\\\\\'#{pageSession.topActionGroup}\\\\\', \\\\\'#{pageSession.tableId}\\\\\');', 0)"
     selectMultipleButton="$boolean{true}"
-    selectMultipleButtonOnClick="setTimeout('admingui.table.changeOneTableButton(\\\\\'#{pageSession.topActionGroup}\\\\\', \\\\\'#{pageSession.tableId}\\\\\');', 0)" >
+    selectMultipleButtonOnClick="setTimeout('admingui.table.changeThreeTableButtons(\\\\\'#{pageSession.topActionGroup}\\\\\', \\\\\'#{pageSession.tableId}\\\\\');', 0)" >
      <!afterCreate
         getClientId(component="$this{component}" clientId=>$page{tableId});
     />
@@ -107,10 +128,9 @@
             toolTip="$resource{i18n.common.select}"
             selected="#{td.value.selected}"
             selectedValue="$boolean{true}"
-            onClick="setTimeout('admingui.table.changeOneTableButton(\\\\\'#{pageSession.topActionGroup}\\\\\', \\\\\'#{pageSession.tableId}\\\\\'); admingui.table.initAllRows(\\\\\'#{pageSession.tableId}\\\\\');', 0);"
+            onClick="setTimeout('admingui.table.changeThreeTableButtons(\\\\\'#{pageSession.topActionGroup}\\\\\', \\\\\'#{pageSession.tableId}\\\\\'); admingui.table.initAllRows(\\\\\'#{pageSession.tableId}\\\\\');', 0);"
         />
     </sun:tableColumn>
-
     <sun:tableColumn headerText="$resource{i18n.common.name.header}"  sort="name" rowHeader="$boolean{true}" valign="top" id="col1">
         <event>
             <!beforeEncode
@@ -160,6 +180,23 @@
                 "<br />
             </foreach>
             </if>
+    </sun:tableColumn>
+
+    <sun:tableColumn headerText="$resource{i18n.common.Action}" embeddedActions="#{false}" rowHeader="$boolean{true}" id="col4">
+        <sun:hyperlink id="pingLink" text="$resource{i18n.button.Ping}" rendered="#{td.value.hasPing}"  >
+            <!command
+                gf.restRequest(endpoint="#{sessionScope.REST_URL}/nodes/node/#{td.value.name}/#{td.value.cmd}.json"
+                   attrs="#{requestScope.attrMap}"
+                   method="GET"
+                   result="#{requestScope.result}");
+                if ("#{requestScope.result.data['exit_code']} = SUCCESS") {
+                    prepareAlertMsg(type="success", summary="#{requestScope.result.data.message}");
+                }
+                if ("!#{requestScope.result.data['exit_code']} = SUCCESS") {
+                    gf.handleError(detail="#{requestScope.result.data.message}");
+                }
+            />
+        </sun:hyperlink>
     </sun:tableColumn>
 
     </sun:tableRowGroup>

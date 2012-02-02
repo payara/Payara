@@ -2,7 +2,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 2010 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 2010-2011 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -46,26 +46,43 @@
     setResourceBundle(key="help_cluster" bundle="org.glassfish.cluster.admingui.Helplinks");
 />
 <!composition template="/templates/default.layout"  guiTitle="$resource{i18ncs.node.NewPageTitle}" 
-        guiOnLoad="showPswdSection('#{pageSession.psSelected}', '#{pageSession.ps1Id}', '#{pageSession.ps2Id}', '#{pageSession.pswdAliasId}');" >
+        guiOnLoad="showSshPswdSection('#{pageSession.psSelected}', '#{pageSession.ps1PropId}',  '#{pageSession.pswdAliasPropId}');
+                   showPswdSection('#{pageSession.winPsSelected}', '#{pageSession.winPs1PropId}',  '#{pageSession.winPswdAliasPropId}'); " >
 <!define name="content">
     <event>
     <!beforeCreate
         setPageSessionAttribute(key="edit" value="#{false}");
         setPageSessionAttribute(key="parentPage" value="#{request.contextPath}/cluster/node/nodes.jsf");
         setPageSessionAttribute(key="parentUrl", value="#{sessionScope.REST_URL}/nodes");
-        setPageSessionAttribute(key="childType" value="create-node");
-        setPageSessionAttribute(key="selfUrl", value="#{pageSession.parentUrl}/#{pageSession.childType}");
-        gf.getDefaultValues(endpoint="#{pageSession.selfUrl}", valueMap="#{pageSession.valueMap}");
+
+        setPageSessionAttribute(key="selfUrl", value="#{pageSession.parentUrl}/create-node-ssh");
+        gf.getDefaultValues(endpoint="#{pageSession.selfUrl}",  valueMap="#{pageSession.valueMap}");
+        gf.getDefaultValues(endpoint="#{pageSession.parentUrl}/create-node-dcom",  valueMap="#{requestScope.dcMap}");
+        gf.getDefaultValues(endpoint="#{pageSession.parentUrl}/validate-dcom",    valueMap="#{requestScope.vMap}");
+        mapPut(map="#{pageSession.valueMap}", key="windowsuser" value="#{requestScope.dcMap['windowsuser']}");
+        mapPut(map="#{pageSession.valueMap}", key="remotetestdir" value="#{requestScope.vMap['remotetestdir']}");
+        mapPut(map="#{pageSession.valueMap}", key="validateDcom" value="true");
         mapPut(map="#{pageSession.valueMap}", key="type" value="SSH");
         mapPut(map="#{pageSession.valueMap}", key="installdirConfig" value="");
+        mapPut(map="#{pageSession.valueMap}", key="setupSsh" value="false");
 
         setPageSessionAttribute(key="showInstalldirSSH" value="#{true}");
         setPageSessionAttribute(key="showInstalldirConfig" value="#{false}");
 
+        setPageSessionAttribute(key="showSetupSsh" value="#{true}");
+        setPageSessionAttribute(key="showGenerateKey" value="#{false}");
+        setPageSessionAttribute(key="showPublicKey" value="#{false}");
+        setPageSessionAttribute(key="showSetupPswd" value="#{false}");
+        setPageSessionAttribute(key="showKeyFile" value="#{true}");
+
+
+        setPageSessionAttribute(key="showTestdir" value="#{true}");
         setPageSessionAttribute(key="title" value="$resource{i18ncs.node.NewPageTitle}");
         setPageSessionAttribute(key="titleHelp" value="$resource{i18ncs.node.NewPageTitleHelp}");
         setPageSessionAttribute(key="convertToFalseList" value="force");
         setPageSessionAttribute(key="psSelected" value="1");
+        setPageSessionAttribute(key="winPsSelected" value="2");
+
     />
     </event>
 <sun:form id="propertyForm">

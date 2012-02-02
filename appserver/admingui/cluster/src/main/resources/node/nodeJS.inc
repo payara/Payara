@@ -2,7 +2,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 2010 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 2010-2011 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -42,64 +42,203 @@
 
 <f:verbatim>
     <script type="text/javascript">
-    function showSshSection(type, sheet1, sshDirId, configDirId ){
-         var sheet1 = document.getElementById(sheet1);
+    function showSection(type, sshSection, dcomSection, sshDirId, configDirId, installProp, archProp){
+         var sshSheet = document.getElementById(sshSection);
+         var dcomSheet = document.getElementById(dcomSection);
          if (type == 'CONFIG'){
-             sheet1.style.display = 'none';
+             sshSheet.style.display = 'none';
+             dcomSheet.style.display = 'none';
              webui.suntheme.common.setVisible(sshDirId, false);
              webui.suntheme.common.setVisible(configDirId, true);
-             //document.getElementById(sshDirId).style.display = 'none';
-             //document.getElementById(configDirId).style.display = 'block';
-         }else{
-             sheet1.style.display = 'block';
+
+             if (installProp != null){
+                 webui.suntheme.common.setVisible(installProp, false);
+                 webui.suntheme.common.setVisible(archProp, false);
+             }
+         }
+         if (type == 'SSH'){
+             sshSheet.style.display = 'block';
+             dcomSheet.style.display = 'none';
              webui.suntheme.common.setVisible(sshDirId, true);
              webui.suntheme.common.setVisible(configDirId, false);
-             //document.getElementById(sshDirId).style.display = 'block';
-             //document.getElementById(configDirId).style.display = 'none';
+             if(installProp != null){
+                 webui.suntheme.common.setVisible(installProp, true);
+                 webui.suntheme.common.setVisible(archProp, true);
+             }
+         }
+         if (type == 'DCOM'){
+             sshSheet.style.display = 'none';
+             dcomSheet.style.display = 'block';
+             webui.suntheme.common.setVisible(sshDirId, true);
+             webui.suntheme.common.setVisible(configDirId, false);
+             if(installProp != null){
+                 webui.suntheme.common.setVisible(installProp, true);
+                 webui.suntheme.common.setVisible(archProp, true);
+             }
          }
     }
 
-    function showPswdSection(type, ps1Id, ps2Id, pswdAId){
-        var p1 = document.getElementById(ps1Id);
-        var p2 = document.getElementById(ps2Id);
-        var pas = document.getElementById(pswdAId);
+    function showSshPswdSection(type, ps1Id, pswdAId){
         if (type == '1'){
-            disableComponent(ps1Id, 'text');
-            disableComponent(ps2Id, 'text');
-            disableComponent(pswdAId, 'select');
+            hide(ps1Id);
+            hide(pswdAId);
+            show('#{pageSession.setupSshPropId}');
+            show('#{pageSession.keyfilePropId}');
+            showSetupSSH();
             return;
         }
         if (type == '2'){
-            enableComponent(ps1Id, 'text');
-            enableComponent(ps2Id, 'text');
-            disableComponent(pswdAId, 'select');
+            show(ps1Id);
+            hide(pswdAId);
+            hide('#{pageSession.setupSshPropId}');
+            hide('#{pageSession.keyfilePropId}');
+            hide('#{pageSession.generateId}');
+            hide('#{pageSession.setupPswdPropId}');
+            hide('#{pageSession.publicKeyId}');
             return;
         }
         if (type == '3'){
-            disableComponent(ps1Id, 'text');
-            disableComponent(ps2Id, 'text');
-            enableComponent(pswdAId, 'select');
+            hide(ps1Id);
+            show(pswdAId);
+            hide('#{pageSession.setupSshPropId}');
+            hide('#{pageSession.keyfilePropId}');
+            hide('#{pageSession.generateId}');
+            hide('#{pageSession.setupPswdPropId}');
+            hide('#{pageSession.publicKeyId}');
             return;
         }
     }
 
-    function checkSSHPswd(typeId, nodeHostId, psSelectId, ps1Id, ps2Id, notMatchMsg, emptyMsg, nodeHostRequiredMsg){
-	if (! guiValidate('#{reqMsg}','#{reqInt}','#{reqPort}')){
+    function showPswdSection(type, ps1Id, pswdAId){
+        if (type == '1'){
+            hide(ps1Id);
+            hide(pswdAId);
+            return;
+        }
+        if (type == '2'){
+            show(ps1Id);
+            hide(pswdAId);
+            return;
+        }
+        if (type == '3'){
+            hide(ps1Id);
+            show(pswdAId);
+            return;
+        }
+    }
+
+    function showSetupSSH(){
+        var checked = document.getElementById('#{pageSession.setupSshId}').checked;
+        if (checked){
+            show('#{pageSession.generateId}');
+            show('#{pageSession.setupPswdPropId}');
+            show('#{pageSession.publicKeyId}');
+        }else{
+            hide('#{pageSession.generateId}');
+            hide('#{pageSession.setupPswdPropId}');
+            hide('#{pageSession.publicKeyId}');
+        }
+
+    }
+    function checkSSHPswd(typeId, nodeHostId, psSelectId, ps1Id, setupSshId, setupPswdId, winPsSelectId, winPs1Id){
+        if (! guiValidate('#{reqMsg}','#{reqInt}','#{reqPort}')){
 	    return false;
 	}
-        if (document.getElementById(typeId).value == 'CONFIG'){
+        var atype=document.getElementById(typeId).value;
+        if ( atype == 'CONFIG'){
             return true;
         }
-        var comp = document.getElementById(nodeHostId);
-        if (comp.value=='') {
-            comp.select();
-            comp.focus();
-            return showAlert(nodeHostRequiredMsg);
+
+        if (!checkRequired(nodeHostId, '#{reqMsg}')){
+            return false;
         }
-        if ( document.getElementById(psSelectId).value == '2'){
-            return checkPSW( ps1Id, ps2Id, notMatchMsg, emptyMsg);
+        if (atype == 'SSH'){
+            if ( document.getElementById(psSelectId).value == '2'){
+                if (!checkRequired(ps1Id, '#{reqMsg}')){
+                    return false;
+                }else{
+                    //ensure don't call setup-ssh'
+                    document.getElementById(setupSshId).checked=false;
+                    return true;
+                }
+            }
+            if ( document.getElementById(psSelectId).value == '3'){
+                //must have pswd alias specified
+                var alcomp = document.getElementById('#{pageSession.pswdAliasId}');
+                if (alcomp.value=='') {
+                    return showAlert('$resource{i18ncs.msg.JS.noPasswordAlias}');
+                }else{
+                    //ensure don't call setup-ssh'
+                    document.getElementById(setupSshId).checked=false;
+                    return true;
+                }
+            }
+            if ( (document.getElementById(psSelectId).value == '1') &&
+                 (document.getElementById(setupSshId).checked ) &&
+                 (document.getElementById(setupPswdId).value == '' ) ){
+                    return checkRequired(setupPswdId, '#{reqMsg}');
+                 }
+            return true;
+        }
+
+        if (atype == 'DCOM'){
+            if ( document.getElementById(winPsSelectId).value == '2'){
+                //empty password is not allowed.
+                return checkRequired(winPs1Id, '#{reqMsg}');
+            }
+
+            if ( document.getElementById(winPsSelectId).value == '3'){
+                //must have pswd alias specified
+                var aliascomp = document.getElementById('#{pageSession.winPswdAliasId}');
+                if (aliascomp.value=='') {
+                    return showAlert('$resource{i18ncs.msg.JS.noPasswordAlias}');
+                }
+            }
         }
         return true;
+    }
+
+
+function confirmEmptyPswd(ps1Id, emptyMsg) {
+    var psComp = document.getElementById(ps1Id);
+    var pswd = psComp.value;
+    if (pswd == null || pswd == ''){
+        psComp.select();
+        psComp.focus();
+        if ( getConfirm(this, emptyMsg) ){
+            return true;
+        }else{
+            return false;
+        }
+    }
+    return true;
+}
+
+    
+    function disableTextComponent(textId) {
+        var comp = document.getElementById(textId);
+        if (comp != null){
+            var textVal = comp.value;
+            disableComponent(textId, 'text');
+            comp.value=textVal;
+        }
+    }
+
+    function  showTestDir(validateId, testdirId ){
+        var ss = document.getElementById(validateId).checked;
+        if (ss){
+             webui.suntheme.common.setVisible(testdirId, true);
+        }else{
+            webui.suntheme.common.setVisible(testdirId, false);
+        }
+    }
+
+    function show(compId){
+        webui.suntheme.common.setVisible(compId, true);
+    }
+
+    function hide(compId){
+        webui.suntheme.common.setVisible(compId, false);
     }
 
     </script>

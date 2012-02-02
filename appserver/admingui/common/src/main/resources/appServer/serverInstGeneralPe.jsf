@@ -2,7 +2,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -98,7 +98,7 @@
                     onClick="javascript:var win=window.open('#{facesContext.externalContext.requestContextPath}/common/logViewer/logViewer.jsf?instanceName=#{instanceName}&loglevel=INFO&viewResults=true','LogViewerWindow','width='+(screen.width-300)+',height='+(screen.height-75)+',top=0,left=0,toolbar=no,status=no,menubar=no,scrollbars=yes,resizable=yes,directories=no,location=no');win.focus(); return false;"
                 />
                 <sun:button id="logViewerRaw" text="$resource{i18n.button.logViewerRaw}"  primary="#{false}"
-                    onClick="javascript:var win=window.open('#{facesContext.externalContext.requestContextPath}/common/logViewer/logViewerRaw.jsf?instanceName=#{instanceName}','LogViewerWindow','width='+(screen.width-300)+',height='+(screen.height-75)+',top=0,left=0,toolbar=no,status=no,menubar=no,scrollbars=yes,resizable=yes,directories=no,location=no');win.focus(); return false;"
+                    onClick="javascript:var win=window.open('#{facesContext.externalContext.requestContextPath}/common/logViewer/logViewerRaw.jsf?instanceName=#{instanceName}','LogViewerRawWindow','width='+(screen.width-300)+',height='+(screen.height-75)+',top=0,left=0,toolbar=no,status=no,menubar=no,scrollbars=yes,resizable=yes,directories=no,location=no');win.focus(); return false;"
                 />
                 <sun:button id="rotateLog" text="$resource{i18n.button.rotateLog}" primary="#{false}"
                     onClick="if ( getConfirm(this, '$resource{i18nc.msg.JS.confirmRotateLog}') )
@@ -120,6 +120,7 @@
                     gf.redirect(page="serverRecoverTransactions.jsf?instanceName=#{pageSession.instanceName}");
                 />
                 </sun:button>
+
                 <sun:button id="secureAdmin" text="$resource{i18nc.button.secureAdmin}" primary="#{false}">
                 <!command
                     setSessionAttribute(key="secureCancelUrl" value="#{facesContext.externalContext.requestContextPath}/common/appServer/serverInstGeneralPe.jsf")

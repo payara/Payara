@@ -120,8 +120,8 @@
         <sun:button id="logViewer" text="$resource{i18n.button.logViewer}"  disabled="#{pageSession.isStopped}" primary="#{false}"
             onClick="javascript:var win=window.open('#{facesContext.externalContext.requestContextPath}/common/logViewer/logViewer.jsf?instanceName=#{instanceName}&loglevel=INFO&viewResults=true','LogViewerWindow','width='+(screen.width-300)+',height='+(screen.height-75)+',top=0,left=0,toolbar=no,status=no,menubar=no,scrollbars=yes,resizable=yes,directories=no,location=no');win.focus(); return false;"
         />
-        <sun:button id="logViewerRaw" text="$resource{i18n.button.logViewerRaw}"  primary="#{false}"
-            onClick="javascript:var win=window.open('#{facesContext.externalContext.requestContextPath}/common/logViewer/logViewerRaw.jsf?instanceName=#{instanceName}','LogViewerWindow','width='+(screen.width-300)+',height='+(screen.height-75)+',top=0,left=0,toolbar=no,status=no,menubar=no,scrollbars=yes,resizable=yes,directories=no,location=no');win.focus(); return false;"
+        <sun:button id="logViewerRaw" text="$resource{i18n.button.logViewerRaw}"  disabled="#{pageSession.isStopped}" primary="#{false}"
+            onClick="javascript:var win=window.open('#{facesContext.externalContext.requestContextPath}/common/logViewer/logViewerRaw.jsf?instanceName=#{instanceName}','LogViewerRawWindow','width='+(screen.width-300)+',height='+(screen.height-75)+',top=0,left=0,toolbar=no,status=no,menubar=no,scrollbars=yes,resizable=yes,directories=no,location=no');win.focus(); return false;"
         />
 
         <sun:button id="rotateLog" text="$resource{i18n.button.rotateLog}" primary="#{false}" disabled="#{pageSession.isStopped}"

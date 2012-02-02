@@ -75,6 +75,10 @@
     />
     </event>
             <sun:form id="propertyForm">
+                <!afterCreate
+                    getClientId(component="$this{component}" clientId=>$attribute{sheetId});
+                />
+
 #include "/cluster/cluster/clusterTabs.inc"
 #include "/common/shared/alertMsg.inc"
 
@@ -121,11 +125,13 @@
         />
     </sun:button>
 
-    <sun:button id="migrateTimesButton" text="$resource{i18ncs.button.migrateEjbTimer}"  disabled="#{disableEjb}" primary="false">
-        <!command
-            gf.redirect(page="#{request.contextPath}/cluster/migrateEjbTimers.jsf?clusterName=#{pageSession.encodedClusterName}");
+    <event>
+        <!afterCreate
+            getUIComponent(clientId="#{sheetId}"  component=>$attribute{component})
+            includeIntegrations(type="org.glassfish.admingui:ejbTimerButtons" root="#{component}");
         />
-    </sun:button>
+    </event>
+
 
     <sun:button id="rotateLog" text="$resource{i18n.button.rotateLog}" primary="#{false}"
         onClick="if ( getConfirm(this, '$resource{i18nc.msg.JS.confirmRotateLog}') )
@@ -143,6 +149,9 @@
     </sun:button>
 
     <sun:propertySheet id="propertySheet">
+                <!afterCreate
+                    getClientId(component="$this{component}" clientId=>$attribute{sheetId});
+                />
 
         <!-- Text Field section -->
         <sun:propertySheetSection id="propertSectionTextField">
