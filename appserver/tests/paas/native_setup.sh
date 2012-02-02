@@ -1,7 +1,7 @@
 #
 # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 #
-# Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011-2012 Oracle and/or its affiliates. All rights reserved.
 #
 # The contents of this file are subject to the terms of either the GNU
 # General Public License Version 2 only ("GPL") or the Common Development
@@ -39,7 +39,6 @@
 #
 GF_HOME=${GF_HOME:-$S1AS_HOME}
 echo "Your GlassFish is at $GF_HOME"
-rm $GF_HOME/modules/paas.lbplugin.jar
 $GF_HOME/bin/asadmin start-domain --debug
 $GF_HOME/bin/asadmin create-ims-config-native
 $GF_HOME/bin/asadmin stop-domain 
