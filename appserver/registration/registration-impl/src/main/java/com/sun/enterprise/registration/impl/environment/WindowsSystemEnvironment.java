@@ -49,16 +49,16 @@ package com.sun.enterprise.registration.impl.environment;
 // package. JDK and users of the com.sun.servicetag API
 // (e.g. NetBeans and SunStudio) will use the version in JDK.
 
-import java.io.*;
-import java.util.ArrayList;
-import java.util.List;
+import com.sun.enterprise.registration.impl.RegistrationLogger;
 import java.util.HashSet;
 import java.util.Set;
-
+import java.util.logging.Logger;
+import java.io.*;
 /**
  * Windows implementation of the SystemEnvironment class.
  */
 class WindowsSystemEnvironment extends SystemEnvironment {
+    private static final Logger logger = RegistrationLogger.getLogger();
     WindowsSystemEnvironment() {
         super();
 
@@ -95,9 +95,12 @@ class WindowsSystemEnvironment extends SystemEnvironment {
             // look in the current working directory
             File f = new File("TempWmicBatchFile.bat");
             if (f.exists()) {
-                f.delete();
+                boolean b = f.delete();
+                if (!b)
+                    logger.finest("Could not delete" + f.getAbsolutePath());
             }
         } catch (Exception e) {
+            logger.finest(e.getMessage());
             // ignore the exception
         }
     }

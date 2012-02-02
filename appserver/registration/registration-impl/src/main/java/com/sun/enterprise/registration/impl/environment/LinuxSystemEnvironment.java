@@ -70,7 +70,6 @@ class LinuxSystemEnvironment extends SystemEnvironment {
         setClockRate(getLinuxClockRate());
     }
     private String dmiInfo = null;
-    private String kstatCpuInfo = null;
 
     private static final int SN  = 1;
     private static final int SYS = 2;
