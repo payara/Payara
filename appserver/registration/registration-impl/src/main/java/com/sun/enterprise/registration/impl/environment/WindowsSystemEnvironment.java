@@ -2,7 +2,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -170,17 +170,15 @@ class WindowsSystemEnvironment extends SystemEnvironment {
     private String getWmicResult(String alias, String verb, String property) {
         String res = "";
         BufferedReader in = null;
+        BufferedWriter bw = null; 
         try {
             ProcessBuilder pb = new ProcessBuilder("cmd", "/C", "WMIC", alias, verb, property);
             Process p = pb.start();
             // need this for executing windows commands (at least
             // needed for executing wmic command)
-            BufferedWriter bw = new BufferedWriter(
-                new OutputStreamWriter(p.getOutputStream()));
+            bw = new BufferedWriter(new OutputStreamWriter(p.getOutputStream()));
             bw.write(13);
-            bw.flush();
-            bw.close();
-
+            
             p.waitFor();
             if (p.exitValue() == 0) {
                 in = new BufferedReader(new InputStreamReader(p.getInputStream()));
@@ -205,6 +203,16 @@ class WindowsSystemEnvironment extends SystemEnvironment {
                 } catch (IOException e) {
                     // ignore
                 }
+            }
+            if (bw != null) {
+                try {
+                    bw.flush();
+                } catch (Exception ex) {                    //ignore...
+                }
+                try {
+                    bw.close();
+                } catch (Exception ex) {                    //ignore...
+                }     
             }
         }
         return res.trim();
