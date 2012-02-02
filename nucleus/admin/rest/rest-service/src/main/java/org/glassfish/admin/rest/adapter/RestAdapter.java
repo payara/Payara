@@ -49,8 +49,6 @@ import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.v3.admin.adapter.AdminEndpointDecider;
 import com.sun.logging.LogDomains;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.net.HttpURLConnection;
 import java.net.InetAddress;
 import java.util.HashSet;
@@ -95,7 +93,7 @@ import org.jvnet.hk2.component.PostConstruct;
  */
 public abstract class RestAdapter extends HttpHandler implements Adapter, PostStartup, PostConstruct {
 
-    public final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(RestAdapter.class);
+    public final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(RestService.class);
 
     @Inject(name=ServerEnvironment.DEFAULT_INSTANCE_NAME)
     volatile AdminService as;
@@ -174,33 +172,36 @@ public abstract class RestAdapter extends HttpHandler implements Adapter, PostSt
                     int status;
                     if(access == AdminAccessController.Access.NONE) {
                         status = HttpURLConnection.HTTP_UNAUTHORIZED;
-                        msg = localStrings.getLocalString("rest.adapter.auth.userpassword", "Invalid user name or password");
+                        msg = localStrings.getLocalString("rest.adapter.auth.userpassword", 
+                                "Invalid user name or password");
                         res.setHeader("WWW-Authenticate", "BASIC");
                     } else {
                         assert access == AdminAccessController.Access.FORBIDDEN;
                         status = HttpURLConnection.HTTP_FORBIDDEN;
-                        msg = localStrings.getLocalString("rest.adapter.auth.forbidden", "Remote access not allowed. If you desire remote access, please turn on secure admin");
+                        msg = localStrings.getLocalString("rest.adapter.auth.forbidden", 
+                                "Remote access not allowed. If you desire remote access, please turn on secure admin");
                     }
                     reportError(req, res, status, msg);
                 }
             } else { // !latch.await(...)
-                String msg = localStrings.getLocalString("rest.adapter.server.wait", "Server cannot process this command at this time, please wait");
+                String msg = localStrings.getLocalString("rest.adapter.server.wait", 
+                        "Server cannot process this command at this time, please wait");
                 reportError(req, res, HttpURLConnection.HTTP_UNAVAILABLE, msg);
             }
         } catch(InterruptedException e) {
-                String msg = localStrings.getLocalString("rest.adapter.server.wait", "Server cannot process this command at this time, please wait");
+                String msg = localStrings.getLocalString("rest.adapter.server.wait", 
+                        "Server cannot process this command at this time, please wait");
                 reportError(req, res, HttpURLConnection.HTTP_UNAVAILABLE, msg); //service unavailable
         } catch(IOException e) {
-                String msg = localStrings.getLocalString("rest.adapter.server.ioexception", "REST: IO Exception "+e.getLocalizedMessage());
+                String msg = localStrings.getLocalString("rest.adapter.server.ioexception", 
+                        "REST: IO Exception "+e.getLocalizedMessage());
                 reportError(req, res, HttpURLConnection.HTTP_UNAVAILABLE, msg); //service unavailable
         } catch(LoginException e) {
             String msg = localStrings.getLocalString("rest.adapter.auth.error", "Error authenticating");
             reportError(req, res, HttpURLConnection.HTTP_UNAUTHORIZED, msg); //authentication error
         } catch (Exception e) {
-            StringWriter result = new StringWriter();
-            PrintWriter printWriter = new PrintWriter(result);
-            e.printStackTrace(printWriter);
-            String msg = localStrings.getLocalString("rest.adapter.server.exception", "REST:  Exception " + result.toString());
+            String msg = localStrings.getLocalString("rest.adapter.server.exception", 
+                    "An error occurred while processing the request. Please see the server logs for details.");
             reportError(req, res, HttpURLConnection.HTTP_UNAVAILABLE, msg); //service unavailable
         }
     }
