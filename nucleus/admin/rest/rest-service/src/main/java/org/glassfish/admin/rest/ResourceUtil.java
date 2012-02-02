@@ -241,6 +241,7 @@ public class ResourceUtil {
         commandInvocation.outbound(outbound).parameters(parameters).execute();
         addCommandLog(ar, commandName, parameters);
 
+        /*
         Collection<Payload.Part> parts = outbound.getParts();
         if (!parts.isEmpty()) {
             Properties props = ar.getExtraProperties();
@@ -253,8 +254,9 @@ public class ResourceUtil {
                     put ("data", encoder.encode(getBytesFromStream(part.getInputStream())));
                 }});
             }
-            props.put("restAttachements", attachments);
+            props.put("restAttachments", attachments);
         }
+        */
 
         return ar;
     }
