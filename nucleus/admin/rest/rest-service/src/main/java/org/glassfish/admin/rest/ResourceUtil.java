@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,9 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
 package org.glassfish.admin.rest;
-
 
 import javax.ws.rs.core.PathSegment;
 import com.sun.enterprise.config.serverbeans.AdminService;
@@ -87,6 +85,10 @@ import org.jvnet.hk2.config.Dom;
 import org.jvnet.hk2.config.DomDocument;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.universal.GFBase64Encoder;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import org.glassfish.admin.payload.PayloadImpl;
 import org.glassfish.admin.rest.provider.MethodMetaData;
 import org.glassfish.admin.rest.provider.ParameterMetaData;
 import org.glassfish.admin.rest.provider.ProviderUtil;
@@ -98,41 +100,62 @@ import org.glassfish.admin.rest.utils.xml.RestActionReporter;
 
 import static org.glassfish.admin.rest.Util.*;
 import static org.glassfish.admin.rest.provider.ProviderUtil.getElementLink;
-
+import org.glassfish.api.admin.CommandRunner.CommandInvocation;
+import org.glassfish.api.admin.Payload;
+import org.glassfish.api.admin.Payload.Part;
 
 /**
  * Resource utilities class. Used by resource templates,
- * <code>TemplateListOfResource</code> and <code>TemplateRestResource</code>
+ * <code>TemplateListOfResource</code> and
+ * <code>TemplateRestResource</code>
  *
  * @author Rajeshwar Patil
  */
 public class ResourceUtil {
+
     private static final String DAS_LOOK_FOR_CERT_PROPERTY_NAME = "org.glassfish.admin.DASCheckAdminCert";
     private static final String QUERY_PARAMETERS = "queryParameters";
     private static final String MESSAGE_PARAMETERS = "messageParameters";
     private static RestConfig restConfig = null;
-
     //TODO this is copied from org.jvnet.hk2.config.Dom. If we are not able to encapsulate the conversion in Dom, need to make sure that the method convertName is refactored into smaller methods such that trimming of prefixes stops. We will need a promotion of HK2 for this.
     static final Pattern TOKENIZER;
 
     static {
         String pattern = or(
-                split("x", "X"),     // AbcDef -> Abc|Def
-                split("X", "Xx"),    // USArmy -> US|Army
+                split("x", "X"), // AbcDef -> Abc|Def
+                split("X", "Xx"), // USArmy -> US|Army
                 //split("\\D","\\d"), // SSL2 -> SSL|2
-                split("\\d", "\\D")  // SSL2Connector -> SSL|2|Connector
-        );
+                split("\\d", "\\D") // SSL2Connector -> SSL|2|Connector
+                );
         pattern = pattern.replace("x", "\\p{Lower}").replace("X", "\\p{Upper}");
         TOKENIZER = Pattern.compile(pattern);
     }
 
-    private ResourceUtil() {
+    protected static byte[] getBytesFromStream(final InputStream is) {
+        final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+        byte[] bytes = null;
+        int nRead;
+        byte[] data = new byte[16384];
+        try {
+            while ((nRead = is.read(data, 0, data.length)) != -1) {
+                buffer.write(data, 0, nRead);
+            }
+            buffer.flush();
+            bytes = buffer.toByteArray();
+            buffer.close();
+        } catch (IOException ex) {
+            Logger.getLogger(ResourceUtil.class.getName()).log(Level.SEVERE, null, ex);
+        }
 
+        return bytes;
+    }
+
+    private ResourceUtil() {
     }
 
     /**
-     * Adjust the input parameters. In case of POST and DELETE methods, user
-     * can provide name, id or DEFAULT parameter for primary parameter(i.e the
+     * Adjust the input parameters. In case of POST and DELETE methods, user can
+     * provide name, id or DEFAULT parameter for primary parameter(i.e the
      * object to create or delete). This method is used to rename primary
      * parameter name to DEFAULT irrespective of what user provides.
      */
@@ -148,10 +171,10 @@ public class ResourceUtil {
     }
 
     /**
-     * Adjust the input parameters. In case of POST and DELETE methods, user
-     * can provide id or DEFAULT parameter for primary parameter(i.e the
-     * object to create or delete). This method is used to rename primary
-     * parameter name to DEFAULT irrespective of what user provides.
+     * Adjust the input parameters. In case of POST and DELETE methods, user can
+     * provide id or DEFAULT parameter for primary parameter(i.e the object to
+     * create or delete). This method is used to rename primary parameter name
+     * to DEFAULT irrespective of what user provides.
      */
     public static void defineDefaultParameters(Map<String, String> data) {
         if (data != null) {
@@ -162,8 +185,8 @@ public class ResourceUtil {
     }
 
     /**
-     * Returns the name of the command associated with
-     * this resource,if any, for the given operation.
+     * Returns the name of the command associated with this resource,if any, for
+     * the given operation.
      *
      * @param type the given resource operation
      * @return String the associated command name for the given operation.
@@ -195,8 +218,8 @@ public class ResourceUtil {
      * Executes the specified __asadmin command.
      *
      * @param commandName the command to execute
-     * @param parameters  the command parameters
-     * @param habitat     the habitat
+     * @param parameters the command parameters
+     * @param habitat the habitat
      * @return ActionReport object with command execute status details.
      */
     public static RestActionReporter runCommand(String commandName, Map<String, String> parameters, Habitat habitat, String resultType) {
@@ -211,14 +234,33 @@ public class ResourceUtil {
     public static RestActionReporter runCommand(String commandName, ParameterMap parameters, Habitat habitat, String resultType) {
         CommandRunner cr = habitat.getComponent(CommandRunner.class);
         RestActionReporter ar = new RestActionReporter();
+        final Payload.Outbound outbound = PayloadImpl.Outbound.newInstance();
 
-        cr.getCommandInvocation(commandName, ar).parameters(parameters).execute();
+        final CommandInvocation commandInvocation = cr.getCommandInvocation(commandName, ar);
+
+        commandInvocation.outbound(outbound).parameters(parameters).execute();
         addCommandLog(ar, commandName, parameters);
+
+        Collection<Payload.Part> parts = outbound.getParts();
+        if (!parts.isEmpty()) {
+            Properties props = ar.getExtraProperties();
+            List<Map<String, String>> attachments = new ArrayList<Map<String, String>>();
+            final GFBase64Encoder encoder = new GFBase64Encoder();
+            for (final Payload.Part part : parts) {
+                attachments.add(new HashMap<String, String>() {{
+                    put("name", part.getName());
+                    put("type", part.getContentType());
+                    put ("data", encoder.encode(getBytesFromStream(part.getInputStream())));
+                }});
+            }
+            props.put("restAttachements", attachments);
+        }
+
         return ar;
     }
 
     public static void addCommandLog(RestActionReporter ar, String commandName, ParameterMap parameters) {
-        List<String> logs = (List<String>)ar.getExtraProperties().get("commandLog");
+        List<String> logs = (List<String>) ar.getExtraProperties().get("commandLog");
         if (logs == null) {
             logs = new ArrayList<String>();
             ar.getExtraProperties().put("commandLog", logs);
@@ -233,10 +275,7 @@ public class ResourceUtil {
         for (Map.Entry<String, List<String>> entry : parameters.entrySet()) {
             String paramName = entry.getKey();
             for (String param : entry.getValue()) {
-                sb.append(" --")
-                        .append(paramName)
-                        .append(" ")
-                        .append(param);
+                sb.append(" --").append(paramName).append(" ").append(param);
             }
         }
 
@@ -244,51 +283,29 @@ public class ResourceUtil {
     }
 
     /**
-     * Executes the specified __asadmin command.
-     *
-     * @param commandName the command to execute
-     * @param parameters  the command parameters
-     * @param habitat     the habitat
-     * @return ActionReport object with command execute status details.
-     */
-/*    public static ActionReport runCommand(String commandName,
-                                          Properties parameters, Habitat habitat, String typeOfResult) {
-        CommandRunner cr = habitat.getComponent(CommandRunner.class);
-        ActionReport ar = new RestActionReporter();
-        ParameterMap p = new ParameterMap();
-        for (String prop : parameters.stringPropertyNames()) {
-            p.set(prop, parameters.getProperty(prop));
-        }
-
-        cr.getCommandInvocation(commandName, ar).parameters(p).execute();
-        return ar;
-    }*/
-
-
-    /**
      * Constructs and returns the resource method meta-data.
      *
-     * @param command       the command associated with the resource method
-     * @param habitat       the habitat
-     * @param logger        the logger to use
+     * @param command the command associated with the resource method
+     * @param habitat the habitat
+     * @param logger the logger to use
      * @return MethodMetaData the meta-data store for the resource method.
      */
-    public static MethodMetaData getMethodMetaData(String command,  Habitat habitat, Logger logger) {
-        return getMethodMetaData(command, null,  habitat, logger);
+    public static MethodMetaData getMethodMetaData(String command, Habitat habitat, Logger logger) {
+        return getMethodMetaData(command, null, habitat, logger);
     }
 
     /**
      * Constructs and returns the resource method meta-data.
      *
-     * @param command             the command assocaited with the resource method
+     * @param command the command assocaited with the resource method
      * @param commandParamsToSkip the command parameters for which not to
-     *                            include the meta-data.
-     * @param habitat             the habitat
-     * @param logger              the logger to use
+     * include the meta-data.
+     * @param habitat the habitat
+     * @param logger the logger to use
      * @return MethodMetaData the meta-data store for the resource method.
      */
     public static MethodMetaData getMethodMetaData(String command, HashMap<String, String> commandParamsToSkip,
-                                                   Habitat habitat, Logger logger) {
+            Habitat habitat, Logger logger) {
         MethodMetaData methodMetaData = new MethodMetaData();
 
         if (command != null) {
@@ -325,8 +342,8 @@ public class ResourceUtil {
     }
 
     /**
-     * Resolve command parameter value of $parent for the parameter
-     * in the given map.
+     * Resolve command parameter value of $parent for the parameter in the given
+     * map.
      *
      * @param uriInfo the uri context to extract parent name value.
      */
@@ -348,17 +365,17 @@ public class ResourceUtil {
         Map<String, String> processParams = new HashMap<String, String>();
         processParams.putAll(commandParams);
 
-        for (Map.Entry<String,String> entry : commandParams.entrySet()) {
+        for (Map.Entry<String, String> entry : commandParams.entrySet()) {
             String value = entry.getValue();
             if (value.equals(Constants.VAR_PARENT)) {
-                processParams.put(entry.getKey(), pathSegments.get(pathSegments.size()-2).getPath());
+                processParams.put(entry.getKey(), pathSegments.get(pathSegments.size() - 2).getPath());
             } else if (value.startsWith(Constants.VAR_GRANDPARENT)) {
                 int number =
-                        (value.equals(Constants.VAR_GRANDPARENT)) ?
-                        1 : // no number given
+                        (value.equals(Constants.VAR_GRANDPARENT))
+                        ? 1 : // no number given
                         Integer.parseInt(value.substring(Constants.VAR_GRANDPARENT.length()));
 
-                processParams.put(entry.getKey(), pathSegments.get(pathSegments.size()-(number + 2)).getPath());
+                processParams.put(entry.getKey(), pathSegments.get(pathSegments.size() - (number + 2)).getPath());
             }
         }
 
@@ -366,12 +383,11 @@ public class ResourceUtil {
         commandParams.putAll(processParams);
     }
 
-
     /**
      * Constructs and returns the resource method meta-data. This method is
      * called to get meta-data in case of update method (POST).
      *
-     * @param configBeanModel    the config bean associated with the resource.
+     * @param configBeanModel the config bean associated with the resource.
      * @return MethodMetaData the meta-data store for the resource method.
      */
     public static MethodMetaData getMethodMetaData(ConfigModel configBeanModel) {
@@ -496,22 +512,24 @@ public class ResourceUtil {
         }
     }
 
-    /* test if a command really exists in the current runningVM
-     *
+    /*
+     * test if a command really exists in the current runningVM
      */
-    public static boolean commandIsPresent(Habitat habitat , String commandName){
+    public static boolean commandIsPresent(Habitat habitat, String commandName) {
         CommandRunner cr = habitat.getComponent(CommandRunner.class);
         CommandModel cm = cr.getModel(commandName, RestService.logger);
-        return (cm!=null);
+        return (cm != null);
 
     }
+
     /**
      * Constructs and returns the parameter meta-data.
      *
      * @param commandName the command associated with the resource method
      * @param habitat the habitat
-     * @param logger  the logger to use
-     * @return Collection the meta-data for the parameter of the resource method.
+     * @param logger the logger to use
+     * @return Collection the meta-data for the parameter of the resource
+     * method.
      */
     public static Collection<CommandModel.ParamModel> getParamMetaData(
             String commandName, Habitat habitat, Logger logger) {
@@ -525,12 +543,13 @@ public class ResourceUtil {
     /**
      * Constructs and returns the parameter meta-data.
      *
-     * @param commandName             the command associated with the resource method
+     * @param commandName the command associated with the resource method
      * @param commandParamsToSkip the command parameters for which not to
-     *                            include the meta-data.
-     * @param habitat             the habitat
-     * @param logger              the logger to use
-     * @return Collection the meta-data for the parameter of the resource method.
+     * include the meta-data.
+     * @param habitat the habitat
+     * @param logger the logger to use
+     * @return Collection the meta-data for the parameter of the resource
+     * method.
      */
     public static Collection<CommandModel.ParamModel> getParamMetaData(
             String commandName, Collection<String> commandParamsToSkip,
@@ -550,8 +569,8 @@ public class ResourceUtil {
                 skipParameter = commandParamsToSkip.contains(parameterName);
             } catch (Exception e) {
                 String errorMessage = localStrings.getLocalString("rest.metadata.skip.error",
-                                "Parameter \"{0}\" may be redundant and not required.",
-                                new Object[]{parameterName});
+                        "Parameter \"{0}\" may be redundant and not required.",
+                        new Object[]{parameterName});
                 // TODO: Why are we logging twice?
                 Logger.getLogger(ResourceUtil.class.getName()).log(Level.INFO, null, errorMessage);
                 Logger.getLogger(ResourceUtil.class.getName()).log(Level.INFO, null, e);
@@ -567,7 +586,6 @@ public class ResourceUtil {
     }
 
     //removes entries with empty value from the given Map
-
     public static void purgeEmptyEntries(Map<String, String> data) {
 
         //hack-2 : remove empty entries if the form has a hidden param for __remove_empty_entries__
@@ -586,10 +604,11 @@ public class ResourceUtil {
     }
 
     /**
-     * Constructs and returns the appropriate response object based on the client.
+     * Constructs and returns the appropriate response object based on the
+     * client.
      *
-     * @param status         the http status code for the response
-     * @param message        message for the response
+     * @param status the http status code for the response
+     * @param message message for the response
      * @param requestHeaders request headers of the request
      * @return Response the response object to be returned to the client
      */
@@ -624,8 +643,8 @@ public class ResourceUtil {
     }
 
     /**
-     * special case for the delete operation: we need to give back the URI of the parent
-     * since the resource we are on is deleted
+     * special case for the delete operation: we need to give back the URI of
+     * the parent since the resource we are on is deleted
      *
      * @param status
      * @param message
@@ -635,20 +654,19 @@ public class ResourceUtil {
      */
     // FIXME: This doesn't do what the javadoc says it should
     public static Response getDeleteResponse(int status, String message,
-                                             HttpHeaders requestHeaders, UriInfo uriInfo) {
+            HttpHeaders requestHeaders, UriInfo uriInfo) {
         if (isBrowser(requestHeaders)) {
             message = getHtml(message, uriInfo, true);
         }
         return Response.status(status).entity(message).build();
     }
 
-
     /**
-     * <p>This method takes any query string parameters and adds them to the specified map.  This
-     * is used, for example, with the delete operation when cascading deletes are required:</p>
-     * <code style="margin-left: 3em">DELETE http://localhost:4848/.../foo?cascade=true</code>
-     * <p>The reason we need to use query parameters versus "body" variables is the limitation
-     * that HttpURLConnection has in this regard.
+     * <p>This method takes any query string parameters and adds them to the
+     * specified map. This is used, for example, with the delete operation when
+     * cascading deletes are required:</p> <code style="margin-left: 3em">DELETE http://localhost:4848/.../foo?cascade=true</code>
+     * <p>The reason we need to use query parameters versus "body" variables is
+     * the limitation that HttpURLConnection has in this regard.
      *
      * @param data
      */
@@ -687,7 +705,6 @@ public class ResourceUtil {
     }
 
     //Construct parameter meta-data from the attribute annotation
-
     static ParameterMetaData getParameterMetaData(Attribute attribute) {
         ParameterMetaData parameterMetaData = new ParameterMetaData();
         parameterMetaData.putAttribute(Constants.TYPE, getXsdType(attribute.dataType().toString()));
@@ -704,9 +721,8 @@ public class ResourceUtil {
     }
 
     //rename the given input parameter
-
     private static boolean renameParameter(Map<String, String> data,
-                                           String parameterToRename, String newName) {
+            String parameterToRename, String newName) {
         if ((data.containsKey(parameterToRename))) {
             String value = data.get(parameterToRename);
             data.remove(parameterToRename);
@@ -717,7 +733,6 @@ public class ResourceUtil {
     }
 
     //returns true only if the request is from browser
-
     private static boolean isBrowser(HttpHeaders requestHeaders) {
         boolean isClientAcceptsHtml = false;
         MediaType media = requestHeaders.getMediaType();
@@ -732,8 +747,8 @@ public class ResourceUtil {
         }
 
         if (media != null) {
-            if ((media.equals(MediaType.APPLICATION_FORM_URLENCODED_TYPE)) &&
-                    (isClientAcceptsHtml)) {
+            if ((media.equals(MediaType.APPLICATION_FORM_URLENCODED_TYPE))
+                    && (isClientAcceptsHtml)) {
                 return true;
             }
         }
@@ -742,22 +757,24 @@ public class ResourceUtil {
     }
 
     private static String getXsdType(String javaType) {
-        if (javaType.indexOf(Constants.JAVA_STRING_TYPE) != -1)
+        if (javaType.indexOf(Constants.JAVA_STRING_TYPE) != -1) {
             return Constants.XSD_STRING_TYPE;
-        if (javaType.indexOf(Constants.JAVA_BOOLEAN_TYPE) != -1)
+        }
+        if (javaType.indexOf(Constants.JAVA_BOOLEAN_TYPE) != -1) {
             return Constants.XSD_BOOLEAN_TYPE;
-        if (javaType.indexOf(Constants.JAVA_INT_TYPE) != -1)
+        }
+        if (javaType.indexOf(Constants.JAVA_INT_TYPE) != -1) {
             return Constants.XSD_INT_TYPE;
-        if (javaType.indexOf(Constants.JAVA_PROPERTIES_TYPE) != -1)
+        }
+        if (javaType.indexOf(Constants.JAVA_PROPERTIES_TYPE) != -1) {
             return Constants.XSD_PROPERTIES_TYPE;
+        }
         return javaType;
     }
 
     public static String getAttributeMethodName(String attributeName) {
         return methodNameFromDtdName(attributeName, "get");
     }
-
-
 
     private static String split(String lookback, String lookahead) {
         return "((?<=" + lookback + ")(?=" + lookahead + "))";
@@ -766,7 +783,9 @@ public class ResourceUtil {
     private static String or(String... tokens) {
         StringBuilder buf = new StringBuilder();
         for (String t : tokens) {
-            if (buf.length() > 0) buf.append('|');
+            if (buf.length() > 0) {
+                buf.append('|');
+            }
             buf.append(t);
         }
         return buf.toString();
@@ -785,7 +804,9 @@ public class ResourceUtil {
     }
 
     /**
-     * @return A copy of given <code>sourceData</code> where key of each entry from it is converted to xml name
+     * @return A copy of given
+     * <code>sourceData</code> where key of each entry from it is converted to
+     * xml name
      */
     public static HashMap<String, String> translateCamelCasedNamesToXMLNames(Map<String, String> sourceData) {
         HashMap<String, String> convertedData = new HashMap<String, String>(sourceData.size());
@@ -797,9 +818,10 @@ public class ResourceUtil {
         return convertedData;
     }
 
-    /* we try to prefer html by default for all browsers (safari, chrome, firefox).
-     * Same if the request is asking for "*"
-     * among all the possible AcceptableMediaTypes
+    /*
+     * we try to prefer html by default for all browsers (safari, chrome,
+     * firefox). Same if the request is asking for "*" among all the possible
+     * AcceptableMediaTypes
      */
     public static String getResultType(HttpHeaders requestHeaders) {
         String result = "html";
@@ -826,12 +848,12 @@ public class ResourceUtil {
 
     public static Map buildMethodMetadataMap(MethodMetaData mmd) { // yuck
         Map<String, Map> map = new TreeMap<String, Map>();
-        Set<String> params =  mmd.parameters();
+        Set<String> params = mmd.parameters();
         Iterator<String> iterator = params.iterator();
         String param;
         while (iterator.hasNext()) {
             param = iterator.next();
-            ParameterMetaData parameterMetaData =  mmd.getParameterMetaData(param);
+            ParameterMetaData parameterMetaData = mmd.getParameterMetaData(param);
             map.put(param, processAttributes(parameterMetaData.attributes(), parameterMetaData));
         }
 
@@ -839,21 +861,22 @@ public class ResourceUtil {
     }
 
     private static Map<String, String> processAttributes(Set<String> attributes, ParameterMetaData parameterMetaData) {
-        Map <String, String> pmdm = new HashMap<String, String>();
+        Map<String, String> pmdm = new HashMap<String, String>();
 
         Iterator<String> attriter = attributes.iterator();
         String attributeName;
         while (attriter.hasNext()) {
-           attributeName = attriter.next();
-           String attributeValue = parameterMetaData.getAttributeValue(attributeName);
-           pmdm.put(attributeName, attributeValue);
+            attributeName = attriter.next();
+            String attributeValue = parameterMetaData.getAttributeValue(attributeName);
+            pmdm.put(attributeName, attributeValue);
         }
 
         return pmdm;
     }
 
-    /* REST can now be configured via RestConfig to show or hide the deprecated elements and attributes
-     * @return true if this model is deprecated
+    /*
+     * REST can now be configured via RestConfig to show or hide the deprecated
+     * elements and attributes @return true if this model is deprecated
      */
     static public boolean isDeprecated(ConfigModel model) {
         Class<? extends ConfigBeanProxy> cbp = null;
@@ -918,17 +941,16 @@ public class ResourceUtil {
 
     /**
      * @param qualifiedTypeName
-     * @return unqualified type name for given qualified type name. This is a substring of qualifiedTypeName after last "."
+     * @return unqualified type name for given qualified type name. This is a
+     * substring of qualifiedTypeName after last "."
      */
     public static String getUnqualifiedTypeName(String qualifiedTypeName) {
         return qualifiedTypeName.substring(qualifiedTypeName.lastIndexOf(".") + 1, qualifiedTypeName.length());
     }
 
-
-  public static boolean isOnlyATag (ConfigModel model){
+    public static boolean isOnlyATag(ConfigModel model) {
         return (model.getAttributeNames().isEmpty()) && (model.getElementNames().isEmpty());
     }
-
 
     public static List<ConfigModel> getRealChildConfigModels(ConfigModel childModel, DomDocument domDocument) {
         List<ConfigModel> retlist = new ArrayList<ConfigModel>();
@@ -951,10 +973,11 @@ public class ResourceUtil {
 
             }
         } catch (ClassNotFoundException e) {
-                    throw new RuntimeException(e);
+            throw new RuntimeException(e);
         }
         return retlist;
     }
+
     /**
      * @param model
      * @return name of the key attribute for the given model.
@@ -964,25 +987,24 @@ public class ResourceUtil {
         if (key == null) {
             for (String s : model.getAttributeNames()) {//no key, by default use the name attr
                 if (s.equals("name")) {
-                    key = model.attribute(s) ;
+                    key = model.attribute(s);
                 }
             }
             if (key == null)//nothing, so pick the first one
             {
-                Set<String> attributeNames =  model.getAttributeNames();
-                if(!attributeNames.isEmpty()) {
+                Set<String> attributeNames = model.getAttributeNames();
+                if (!attributeNames.isEmpty()) {
                     key = model.attribute(attributeNames.iterator().next());
                 } else {
                     //TODO carried forward from old generator. Should never reach here. But we do for ConfigExtension and WebModuleConfig
                     key = "ThisIsAModelBug:NoKeyAttr"; //no attr choice fo a key!!! Error!!!
-                    key="";
+                    key = "";
                 }
 
             }
         }
         return key;
     }
-
 
     public static Map<String, String> getResourceLinks(List<Dom> proxyList, UriInfo uriInfo) {
         Map<String, String> links = new TreeMap<String, String>();
@@ -1016,15 +1038,20 @@ public class ResourceUtil {
     public static void addMethodMetaData(ActionReport ar, Map<String, MethodMetaData> mmd) {
         List<Map> methodMetaData = new ArrayList<Map>();
 
-       MethodMetaData getMetaData = mmd.get("GET");
-       methodMetaData.add(new HashMap() {{ put("name", "GET"); }});
-       if (getMetaData != null) { //are they extra params for a GET command?
-        Map<String, Object> getMetaDataMap = new HashMap<String, Object>();
-        if (getMetaData.sizeParameterMetaData() > 0) {
+        MethodMetaData getMetaData = mmd.get("GET");
+        methodMetaData.add(new HashMap() {
+
+            {
+                put("name", "GET");
+            }
+        });
+        if (getMetaData != null) { //are they extra params for a GET command?
+            Map<String, Object> getMetaDataMap = new HashMap<String, Object>();
+            if (getMetaData.sizeParameterMetaData() > 0) {
                 getMetaDataMap.put(MESSAGE_PARAMETERS, buildMethodMetadataMap(getMetaData));
             }
-        methodMetaData.add(getMetaDataMap);
-       }
+            methodMetaData.add(getMetaDataMap);
+        }
 
         MethodMetaData postMetaData = mmd.get("POST");
         Map<String, Object> postMetaDataMap = new HashMap<String, Object>();
@@ -1044,14 +1071,14 @@ public class ResourceUtil {
             Map<String, Object> deleteMetaDataMap = new HashMap<String, Object>();
 
             deleteMetaDataMap.put("name", "DELETE");
-            deleteMetaDataMap.put(MESSAGE_PARAMETERS,  buildMethodMetadataMap(deleteMetaData));
+            deleteMetaDataMap.put(MESSAGE_PARAMETERS, buildMethodMetadataMap(deleteMetaData));
             methodMetaData.add(deleteMetaDataMap);
         }
 
         ar.getExtraProperties().put("methods", methodMetaData);
     }
 
-     public static synchronized RestConfig getRestConfig(Habitat habitat) {
+    public static synchronized RestConfig getRestConfig(Habitat habitat) {
         if (restConfig == null) {
             if (habitat == null) {
                 return null;
@@ -1069,8 +1096,8 @@ public class ResourceUtil {
         return restConfig;
     }
     /*
-     * returns true if the HTML viewer displays the deprecated elements or attributes
-     * of a config bean
+     * returns true if the HTML viewer displays the deprecated elements or
+     * attributes of a config bean
      */
 
     public static boolean canShowDeprecatedItems(Habitat habitat) {
@@ -1083,10 +1110,12 @@ public class ResourceUtil {
     }
 
     /**
-     * Authenticate the given req as originated from given remoteHost against admin realm.
+     * Authenticate the given req as originated from given remoteHost against
+     * admin realm.
+     *
      * @return Access as granted by authenticator
      */
-    public static  AdminAccessController.Access authenticateViaAdminRealm(Habitat habitat, Request req, String remoteHost) throws LoginException, IOException {
+    public static AdminAccessController.Access authenticateViaAdminRealm(Habitat habitat, Request req, String remoteHost) throws LoginException, IOException {
         String[] up = AdminAdapter.getUserPassword(req);
         String user = up[0];
         String password = up.length > 1 ? up[1] : "";
@@ -1101,29 +1130,30 @@ public class ResourceUtil {
             final Principal sslPrincipal = !serverEnvironment.isDas() || Boolean.getBoolean(DAS_LOOK_FOR_CERT_PROPERTY_NAME) ? req.getUserPrincipal() : null;
 
             AdminService as = habitat.getByType(AdminService.class);
-            access =  authenticator.loginAsAdmin(user, password, as.getAuthRealmName(), remoteHost, getAuthRelatedHeaders(req), sslPrincipal);
+            access = authenticator.loginAsAdmin(user, password, as.getAuthRealmName(), remoteHost, getAuthRelatedHeaders(req), sslPrincipal);
         }
         return access;
     }
 
     /**
-     * Extract authentication related headers from Grizzly request.
-     * This headers enables us to authenticate a request coming from DAS without a password.
-     * The headers will be present if secured admin is not turned on and a request is sent from DAS to an instance.
+     * Extract authentication related headers from Grizzly request. This headers
+     * enables us to authenticate a request coming from DAS without a password.
+     * The headers will be present if secured admin is not turned on and a
+     * request is sent from DAS to an instance.
+     *
      * @param req
      * @return Authentication related headers
      */
     private static Map<String, String> getAuthRelatedHeaders(Request req) {
-        Map<String, String> authRelatedHeaders = new HashMap<String,String>();
+        Map<String, String> authRelatedHeaders = new HashMap<String, String>();
         String adminIndicatorHeader = req.getHeader(SecureAdmin.Util.ADMIN_INDICATOR_HEADER_NAME);
-        if(adminIndicatorHeader != null) {
+        if (adminIndicatorHeader != null) {
             authRelatedHeaders.put(SecureAdmin.Util.ADMIN_INDICATOR_HEADER_NAME, adminIndicatorHeader);
         }
         String authToken = req.getHeader(SecureAdmin.Util.ADMIN_ONE_TIME_AUTH_TOKEN_HEADER_NAME);
-        if(authToken != null) {
-	    authRelatedHeaders.put(SecureAdmin.Util.ADMIN_ONE_TIME_AUTH_TOKEN_HEADER_NAME, authToken);
-	}
+        if (authToken != null) {
+            authRelatedHeaders.put(SecureAdmin.Util.ADMIN_ONE_TIME_AUTH_TOKEN_HEADER_NAME, authToken);
+        }
         return authRelatedHeaders;
     }
-
 }

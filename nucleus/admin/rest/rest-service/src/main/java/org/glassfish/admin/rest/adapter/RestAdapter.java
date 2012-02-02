@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,9 +40,6 @@
 
 package org.glassfish.admin.rest.adapter;
 
-
-
-import com.sun.enterprise.config.serverbeans.AdminService;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.module.common_impl.LogHelper;
 import com.sun.enterprise.util.LocalStringManagerImpl;
@@ -92,28 +89,31 @@ import org.jvnet.hk2.component.PostConstruct;
  * @author Rajeshwar Patil, Ludovic Champenois
  */
 public abstract class RestAdapter extends HttpHandler implements Adapter, PostStartup, PostConstruct {
+    protected static final String COOKIE_REST_TOKEN = "gfresttoken";
+    protected static final String COOKIE_GF_REST_UID = "gfrestuid";
+    protected static final String HEADER_ACCEPT = "Accept";
+    protected static final String HEADER_USER_AGENT = "User-Agent";
+    protected static final String HEADER_X_AUTH_TOKEN = "X-Auth-Token";
+    protected static final String HEADER_AUTHENTICATE = "WWW-Authenticate";
 
     public final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(RestService.class);
 
-    @Inject(name=ServerEnvironment.DEFAULT_INSTANCE_NAME)
-    volatile AdminService as;
-
     @Inject
-    Habitat habitat;
+    protected Habitat habitat;
 
     @Inject(name=ServerEnvironment.DEFAULT_INSTANCE_NAME)
-    Config config;
+    private Config config;
 
-    CountDownLatch latch = new CountDownLatch(1);
-
-    @Inject
-    ServerContext sc;
+    private CountDownLatch latch = new CountDownLatch(1);
 
     @Inject
-    ServerEnvironment serverEnvironment;
+    private ServerContext sc;
 
     @Inject
-    SessionManager sessionManager;
+    private ServerEnvironment serverEnvironment;
+
+    @Inject
+    private SessionManager sessionManager;
 
     protected abstract Set<Class<?>> getResourcesConfig();
     private volatile LazyJerseyInterface lazyJerseyInterface =null;
@@ -129,15 +129,6 @@ public abstract class RestAdapter extends HttpHandler implements Adapter, PostSt
     @Override
     public void postConstruct() {
         epd = new AdminEndpointDecider(config, logger);
-        //        events.register(this);
-        /*
-        try {
-            exposeContext();
-        } catch (EndpointRegistrationException ex) {
-            Logger.getLogger(RestAdapter.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        */
-
         latch.countDown();
     }
 
@@ -156,8 +147,9 @@ public abstract class RestAdapter extends HttpHandler implements Adapter, PostSt
             if (latch.await(20L, TimeUnit.SECONDS)) {
                 if(serverEnvironment.isInstance()) {
                     if(!Method.GET.equals(req.getMethod())) {
-                        String msg = localStrings.getLocalString("rest.resource.only.GET.on.instance", "Only GET requests are allowed on an instance that is not DAS.");
-                        reportError(req, res, HttpURLConnection.HTTP_FORBIDDEN, msg);
+                        reportError(req, res, HttpURLConnection.HTTP_FORBIDDEN, 
+                                localStrings.getLocalString("rest.resource.only.GET.on.instance", 
+                                "Only GET requests are allowed on an instance that is not DAS."));
                         return;
                     }
                 }
@@ -174,7 +166,7 @@ public abstract class RestAdapter extends HttpHandler implements Adapter, PostSt
                         status = HttpURLConnection.HTTP_UNAUTHORIZED;
                         msg = localStrings.getLocalString("rest.adapter.auth.userpassword", 
                                 "Invalid user name or password");
-                        res.setHeader("WWW-Authenticate", "BASIC");
+                        res.setHeader(HEADER_AUTHENTICATE, "BASIC");
                     } else {
                         assert access == AdminAccessController.Access.FORBIDDEN;
                         status = HttpURLConnection.HTTP_FORBIDDEN;
@@ -232,14 +224,14 @@ public abstract class RestAdapter extends HttpHandler implements Adapter, PostSt
         String restToken = null;
         if (cookies != null) {
             for (Cookie cookie : cookies) {
-                if ("gfresttoken".equals(cookie.getName())) {
+                if (COOKIE_REST_TOKEN.equals(cookie.getName())) {
                     restToken = cookie.getValue();
                 }
             }
         }
         
         if (restToken == null) {
-            restToken = req.getHeader("X-Auth-Token");
+            restToken = req.getHeader(HEADER_X_AUTH_TOKEN);
         }
 
         if(restToken != null) {
@@ -255,7 +247,7 @@ public abstract class RestAdapter extends HttpHandler implements Adapter, PostSt
         if (uid != null) {
             if (cookies != null) {
                 for (Cookie cookie : cookies) {
-                    if (cookie.getName().equals("gfrestuid")) {
+                    if (cookie.getName().equals(COOKIE_GF_REST_UID)) {
                         if (cookie.getValue().equals(uid)) {
                             authenticated = true;
                             break;
@@ -275,7 +267,6 @@ public abstract class RestAdapter extends HttpHandler implements Adapter, PostSt
         return isRegistered;
     }
 
-
     /**
      * Marks this adapter as having been registered or unregistered as a
      * network endpoint
@@ -285,18 +276,15 @@ public abstract class RestAdapter extends HttpHandler implements Adapter, PostSt
         this.isRegistered = isRegistered;
     }
 
-
     @Override
     public int getListenPort() {
         return epd.getListenPort();
     }
 
-
     @Override
     public InetAddress getListenAddress() {
         return epd.getListenAddress();
     }
-
 
     @Override
     public List<String> getVirtualServers() {
@@ -315,9 +303,9 @@ public abstract class RestAdapter extends HttpHandler implements Adapter, PostSt
         if (requestURI.indexOf('.')!=-1) {
             type = requestURI.substring(requestURI.indexOf('.')+1);
         } else {
-            String userAgent = req.getHeader("User-Agent");
+            String userAgent = req.getHeader(HEADER_USER_AGENT);
             if (userAgent != null) {
-                String accept = req.getHeader("Accept");
+                String accept = req.getHeader(HEADER_ACCEPT);
                 if (accept != null) {
                     if (accept.indexOf("html") != -1) {//html is possible so get it...
                         return "html";

@@ -40,7 +40,6 @@
 package org.glassfish.admin.rest.adapter;
 
 import java.util.Set;
-
 import org.jvnet.hk2.annotations.Service;
 
 /**
@@ -58,10 +57,6 @@ public class RestManagementAdapter extends RestAdapter {
 
     @Override
     protected Set<Class<?>> getResourcesConfig() {
-
          return getLazyJersey().getResourcesConfigForManagement(habitat);
-
     }
-
-
 }
