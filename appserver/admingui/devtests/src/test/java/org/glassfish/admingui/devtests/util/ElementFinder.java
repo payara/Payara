@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011-2012 Oracle and/or its affiliates. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,6 +40,7 @@
 package org.glassfish.admingui.devtests.util;
 
 import com.google.common.base.Function;
+import com.thoughtworks.selenium.Wait;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openqa.selenium.By;
@@ -47,6 +48,7 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.openqa.selenium.NoSuchElementException;
+import org.openqa.selenium.support.ui.ExpectedCondition;
 
 /**
  *
@@ -62,6 +64,13 @@ public class ElementFinder {
     public WebElement findElement(By locatorname, int timeout) {
         WebDriverWait wait = new WebDriverWait(driver, timeout);
         return wait.until(presenceOfElementLocated(locatorname));
+    }
+
+    public WebElement findElement(By locator, int timeout, ExpectedCondition<Boolean> condition) {
+        WebDriverWait w = new WebDriverWait(driver, timeout);
+        w.until(condition);
+
+        return driver.findElement(locator);
     }
 
     private static Function<WebDriver, WebElement> presenceOfElementLocated(final By locator) {

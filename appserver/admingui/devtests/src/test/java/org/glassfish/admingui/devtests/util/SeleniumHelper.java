@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
- *
+ * 
+ * Copyright (c) 2011-2012 Oracle and/or its affiliates. All rights reserved.
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
  * and Distribution License("CDDL") (collectively, the "License").  You
@@ -39,16 +39,18 @@
  */
 package org.glassfish.admingui.devtests.util;
 
-import com.gargoylesoftware.htmlunit.BrowserVersion;
+import com.thoughtworks.selenium.Selenium;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.glassfish.admingui.devtests.BaseSeleniumTestClass;
+import org.openqa.selenium.OutputType;
+import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.firefox.FirefoxDriver;
-import org.openqa.selenium.firefox.FirefoxProfile;
-import org.openqa.selenium.firefox.internal.ProfilesIni;
-import org.openqa.selenium.htmlunit.HtmlUnitDriver;
 import org.openqa.selenium.ie.InternetExplorerDriver;
 
 /**
@@ -80,19 +82,12 @@ public class SeleniumHelper {
             }
             String browser = getParameter("browser", "firefox");
 
-            if ("firefox".equalsIgnoreCase(browser)) {
-                ProfilesIni allProfiles = new ProfilesIni();
-                FirefoxProfile profile = allProfiles.getProfile("default");
-                profile.setPreference("dom.disable_window_move_resize", false);
-                final FirefoxDriver firefoxDriver = new FirefoxDriver(profile);
-                driver = firefoxDriver;
-                firefoxDriver.executeScript("window.resizeTo(screen.availWidth, screen.availHeight);", new Object[]{});
-            } else if ("chrome".equalsIgnoreCase(browser)) {
+            if ("firefox".equals(browser)) {
+                driver = new FirefoxDriver();
+            } else if ("chrome".equals(browser)) {
                 driver = new ChromeDriver();
-            } else if ("ie".equalsIgnoreCase(browser)) {
+            } else if ("ie".contains(browser)) {
                 driver = new InternetExplorerDriver();
-            } else if ("htmlunit".equalsIgnoreCase(browser)) {
-                driver = new HtmlUnitDriver(BrowserVersion.FIREFOX_3_6);
             }
             elementFinder = new ElementFinder(driver);
 
@@ -104,6 +99,7 @@ public class SeleniumHelper {
         selenium.windowFocus();
         selenium.windowMaximize();
         selenium.setTimeout("90000");
+        
         return selenium;
     }
 
@@ -134,5 +130,22 @@ public class SeleniumHelper {
         String value = System.getProperty(paramName);
 
         return value != null ? value : defaultValue;
+    }
+
+    public static String captureScreenshot() {
+        return captureScreenshot("" + (Math.abs(new Random().nextInt()) + 1));
+    }
+    
+    public static String captureScreenshot(String fileName) {
+        try {
+            new File("target/surefire-reports/").mkdirs(); // Insure directory is there
+            FileOutputStream out = new FileOutputStream("target/surefire-reports/screenshot-" + fileName + ".png");
+            out.write(((TakesScreenshot)getInstance().getDriver()).getScreenshotAs(OutputType.BYTES));
+            out.close();
+        } catch (Exception e) {
+            // No need to crash the tests if the screenshot fails
+        }
+        
+        return fileName;
     }
 }

@@ -96,8 +96,12 @@ public class SpecificTestRule implements MethodRule {
                     }
                     try {
                         statement.evaluate();
-                    } catch (Exception e) {
-                        statement.evaluate(); // try again. Ugly hack, but if it works...
+                    } catch (Throwable t) {
+                        SeleniumHelper.captureScreenshot(frameworkMethod.getName());
+                        throw t; // rethrow
+                        // No explanation as to why this was done, so we'll disable
+                        // it and see what happens
+                        //statement.evaluate(); // try again. Ugly hack, but if it works...
                     }
                 } else {
                     logger.log(Level.INFO, "\tSkipping.");

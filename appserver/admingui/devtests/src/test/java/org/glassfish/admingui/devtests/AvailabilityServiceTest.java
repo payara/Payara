@@ -40,9 +40,10 @@
 
 package org.glassfish.admingui.devtests;
 
-import org.junit.Test;
-
+import org.junit.Assert;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import org.junit.Test;
 
 public class AvailabilityServiceTest extends BaseSeleniumTestClass {
     public static final String ID_AVAILABILITY_SERVICE_TREE_NODE = "treeForm:tree:configurations:default-config:availabilityService:availabilityService_link";
@@ -64,8 +65,8 @@ public class AvailabilityServiceTest extends BaseSeleniumTestClass {
 
         int count = addTableRow("propertyForm:basicTable", "propertyForm:basicTable:topActionsGroup1:addSharedTableButton");
         setFieldValue("propertyForm:basicTable:rowGroup1:0:col2:col1St", generateRandomString());
-        setFieldValue("propertyForm:basicTable:rowGroup1:0:col3:col1St", "b");
-        setFieldValue("propertyForm:basicTable:rowGroup1:0:col4:col1St", "c");
+        setFieldValue("propertyForm:basicTable:rowGroup1:0:col3:col1St", generateRandomString());
+        setFieldValue("propertyForm:basicTable:rowGroup1:0:col4:col1St", generateRandomString());
         clickAndWait("propertyForm:propertyContentPage:topButtons:saveButton", TRIGGER_NEW_VALUES_SAVED);
         assertTableRowCount("propertyForm:basicTable", count);
     }
@@ -80,8 +81,8 @@ public class AvailabilityServiceTest extends BaseSeleniumTestClass {
 
         int count = addTableRow("propertyForm:basicTable", "propertyForm:basicTable:topActionsGroup1:addSharedTableButton");
         setFieldValue("propertyForm:basicTable:rowGroup1:0:col2:col1St", generateRandomString());
-        setFieldValue("propertyForm:basicTable:rowGroup1:0:col3:col1St", "b");
-        setFieldValue("propertyForm:basicTable:rowGroup1:0:col4:col1St", "c");
+        setFieldValue("propertyForm:basicTable:rowGroup1:0:col3:col1St", generateRandomString());
+        setFieldValue("propertyForm:basicTable:rowGroup1:0:col4:col1St", generateRandomString());
         clickAndWait("propertyForm:propertyContentPage:topButtons:saveButton", TRIGGER_NEW_VALUES_SAVED);
         assertTableRowCount("propertyForm:basicTable", count);
     }
@@ -96,52 +97,56 @@ public class AvailabilityServiceTest extends BaseSeleniumTestClass {
 
         int count = addTableRow("propertyForm:basicTable", "propertyForm:basicTable:topActionsGroup1:addSharedTableButton");
         setFieldValue("propertyForm:basicTable:rowGroup1:0:col2:col1St", generateRandomString());
-        setFieldValue("propertyForm:basicTable:rowGroup1:0:col3:col1St", "b");
-        setFieldValue("propertyForm:basicTable:rowGroup1:0:col4:col1St", "c");
+        setFieldValue("propertyForm:basicTable:rowGroup1:0:col3:col1St", generateRandomString());
+        setFieldValue("propertyForm:basicTable:rowGroup1:0:col4:col1St", generateRandomString());
         clickAndWait("propertyForm:propertyContentPage:topButtons:saveButton", TRIGGER_NEW_VALUES_SAVED);
         assertTableRowCount("propertyForm:basicTable", count);
     }
 
     @Test
     public void testJMSAvailability() {
-        final String configName = "Config-" + generateRandomString();
-        MsgSecurityTest msgS = new MsgSecurityTest();
-        msgS.copyConfig("default-config", configName);
+        final String clusterName = "cluster" + generateRandomString();
+        final String CLUSTER_TYPE = "enhanced";
+        final String DB_VENDOR = "mysql";
+        final String DB_USER = generateRandomString();
+        final String DB_URL = "jdbc:mysql://hostname:portno/dbname?password=" + generateRandomString();
+        final String DB_PASSWORD = generateRandomString();
 
-//        if (!isTextPresent(TRIGGER_AVAILABILTY_SERVICE_NODE)) {
-//            clickAndWait(ID_DEFAULT_CONFIG_TURNER, TRIGGER_AVAILABILTY_SERVICE_NODE);
-//        }
+        ClusterTest ct = new ClusterTest();
+        ct.createCluster(clusterName);
 
-        clickAndWait(getAvailabilityLink(configName), TRIGGER_AVAILABILTY_SERVICE_PAGE);
-        clickAndWait("propertyForm:availabilityTabs:jmsAvailabilityTab", TRIGGER_JMS_AVAILABILTY);
-        markCheckbox("propertyForm:propertySheet:propertSectionTextField:AvailabilityEnabledProp:avail");
-        selectDropdownOption("propertyForm:propertySheet:propertSectionTextField:ConfigStoreTypeProp:ConfigStoreType", "shareddb");
-        selectDropdownOption("propertyForm:propertySheet:propertSectionTextField:MessageStoreTypeProp:MessageStoreType", "file");
-        setFieldValue("propertyForm:propertySheet:propertSectionTextField:DbVendorProp:DbVendor", "Vendor");
-	setFieldValue("propertyForm:propertySheet:propertSectionTextField:DbUserNameProp:DbUserName", "USERNAME");
-	setFieldValue("propertyForm:propertySheet:propertSectionTextField:DbPasswordProp:DbPassword", "PSWD");
-	setFieldValue("propertyForm:propertySheet:propertSectionTextField:DbUrlProp:DbUrl", "URL");
-        clickAndWait("propertyForm:propertyContentPage:topButtons:saveButton", TRIGGER_NEW_VALUES_SAVED);
+        try {
+            clickAndWait("treeForm:tree:configurations:" + clusterName + "-config:availabilityService:availabilityService_link", TRIGGER_AVAILABILTY_SERVICE_PAGE);
+            clickAndWait("propertyForm:availabilityTabs:jmsAvailabilityTab", TRIGGER_JMS_AVAILABILTY);
+
+            clickAndWait("propertyForm:jmsTypePropertySheet:jmsTypeSection:jmsTypeProp:optLocal", "i18ncs.cluster.jms.mqClusterTypeEnhanced");
+            selenium.check("propertyForm:jmsPropertySheet:configureJmsClusterSection:ClusterTypeProp:optEnhanced");
+//            selectDropdownOption("propertyForm:jmsPropertySheet:configureJmsClusterSection:ClusterTypeProp:clusterType", CLUSTER_TYPE);
+            
+            setFieldValue("propertyForm:jmsPropertySheet:configureJmsClusterSection:DbVendorProp:dbVendor", DB_VENDOR);
+            setFieldValue("propertyForm:jmsPropertySheet:configureJmsClusterSection:DbUserProp:dbUser", DB_USER);
+            setFieldValue("propertyForm:jmsPropertySheet:configureJmsClusterSection:DbUrlProp:dbUrl", DB_URL);
+            setFieldValue("propertyForm:jmsPropertySheet:configureJmsClusterSection:PswdTextProp:NewPassword", DB_PASSWORD);
+
+            clickAndWait("propertyForm:propertyContentPage:topButtons:saveButton", TRIGGER_NEW_VALUES_SAVED);
 
         clickAndWait("propertyForm:availabilityTabs:availabilityTab", TRIGGER_AVAILABILTY_SERVICE_PAGE);
         clickAndWait("propertyForm:availabilityTabs:jmsAvailabilityTab", TRIGGER_JMS_AVAILABILTY);
 
-        assertEquals(getSelectedValue("propertyForm:propertySheet:propertSectionTextField:ConfigStoreTypeProp:ConfigStoreType"), "shareddb");
-        assertEquals(getSelectedValue("propertyForm:propertySheet:propertSectionTextField:MessageStoreTypeProp:MessageStoreType"), "file");
-        assertEquals("Vendor", getFieldValue("propertyForm:propertySheet:propertSectionTextField:DbVendorProp:DbVendor"));
-	assertEquals("USERNAME", getFieldValue("propertyForm:propertySheet:propertSectionTextField:DbUserNameProp:DbUserName"));
-	assertEquals( "PSWD", getFieldValue("propertyForm:propertySheet:propertSectionTextField:DbPasswordProp:DbPassword"));
-	assertEquals( "URL", getFieldValue("propertyForm:propertySheet:propertSectionTextField:DbUrlProp:DbUrl"));
+            assertTrue(selenium.isChecked("propertyForm:jmsPropertySheet:configureJmsClusterSection:ClusterTypeProp:optEnhanced"));
+            assertEquals(DB_VENDOR, getFieldValue("propertyForm:jmsPropertySheet:configureJmsClusterSection:DbVendorProp:dbVendor"));
+            assertEquals(DB_USER, getFieldValue("propertyForm:jmsPropertySheet:configureJmsClusterSection:DbUserProp:dbUser"));
+            assertEquals(DB_PASSWORD, getFieldValue("propertyForm:jmsPropertySheet:configureJmsClusterSection:PswdTextProp:NewPassword"));
+            assertEquals(DB_URL, getFieldValue("propertyForm:jmsPropertySheet:configureJmsClusterSection:DbUrlProp:dbUrl"));
 
-        int count = addTableRow("propertyForm:basicTable", "propertyForm:basicTable:topActionsGroup1:addSharedTableButton");
-        setFieldValue("propertyForm:basicTable:rowGroup1:0:col2:col1St", generateRandomString());
-        setFieldValue("propertyForm:basicTable:rowGroup1:0:col3:col1St", "b");
-        setFieldValue("propertyForm:basicTable:rowGroup1:0:col4:col1St", "c");
-        clickAndWait("propertyForm:propertyContentPage:topButtons:saveButton", TRIGGER_NEW_VALUES_SAVED);
-        assertTableRowCount("propertyForm:basicTable", count);
-    }
-
-    private static String getAvailabilityLink(String configName){
-       return  "treeForm:tree:configurations:" + configName + ":availabilityService:availabilityService_link";
+            int count = addTableRow("propertyForm:basicTable", "propertyForm:basicTable:topActionsGroup1:addSharedTableButton");
+            setFieldValue("propertyForm:basicTable:rowGroup1:0:col2:col1St", generateRandomString());
+            setFieldValue("propertyForm:basicTable:rowGroup1:0:col3:col1St", generateRandomString());
+            setFieldValue("propertyForm:basicTable:rowGroup1:0:col4:col1St", generateRandomString());
+            clickAndWait("propertyForm:propertyContentPage:topButtons:saveButton", TRIGGER_NEW_VALUES_SAVED);
+            assertTableRowCount("propertyForm:basicTable", count);
+        } finally {
+            ct.deleteAllClusters();
+        }
     }
 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -225,15 +225,22 @@ public class ClusterTest extends BaseSeleniumTestClass {
     @Test
     public void testClusterWithJmsOptions() {
         String clusterName = "cluster" + generateRandomString();
-        gotoClusterPage();
-        clickAndWait("propertyForm:clustersTable:topActionsGroup1:newButton", TRIGGER_NEW_CLUSTER_PAGE);
-        setFieldValue("propertyForm:propertySheet:propertySectionTextField:NameTextProp:NameText", clusterName);
-        selectDropdownOption("propertyForm:propertySheet:propertySectionTextField:jmsConfigTypeProp:configType", "Custom");
-        waitForPageLoad("i18ncs.cluster.jms.configStoreTypeHelp", TIMEOUT);
+        try {
+            gotoClusterPage();
+            clickAndWait("propertyForm:clustersTable:topActionsGroup1:newButton", TRIGGER_NEW_CLUSTER_PAGE);
+            setFieldValue("propertyForm:propertySheet:propertySectionTextField:NameTextProp:NameText", clusterName);
 
-        selectDropdownOption("propertyForm:jmsPropertySheet:configureJmsClusterSection:ClusterTypeProp:clusterType", "Conventional");
-        selectDropdownOption("propertyForm:jmsPropertySheet:configureJmsClusterSection:ConfigStoreTypeProp:configStoreType", "Master Broker");
-        selectDropdownOption("propertyForm:jmsPropertySheet:configureJmsClusterSection:MessageStoreTypeProp:messageStoreType", "File");
+            markCheckbox("propertyForm:propertySheet:propertySectionTextField:jmsConfigTypeProp:optCustom:optCustom_label");
+
+            waitForPageLoad("i18ncs.cluster.jms.ClusterTypeName", TIMEOUT);
+
+            clickAndWait("propertyForm:jmsTypePropertySheet:jmsTypeSection:jmsTypeProp:optLocal", "i18ncs.cluster.jms.mqClusterTypeEnhanced");
+            selenium.check("propertyForm:jmsPropertySheet:configureJmsClusterSection:ClusterTypeProp:optConventional");
+    //        selectDropdownOption("propertyForm:jmsPropertySheet:configureJmsClusterSection:ClusterTypeProp:clusterType", "Conventional");
+
+            selectDropdownOption("propertyForm:jmsPropertySheet:configureJmsClusterSection:ConfigStoreTypeProp:configStoreType", "Master Broker");
+            selectDropdownOption("propertyForm:jmsPropertySheet:configureJmsClusterSection:MessageStoreTypeProp:messageStoreType", "File");
+            setFieldValue("propertyForm:jmsPropertySheet:configureJmsClusterSection:PropertiesProp:properties", "prop1=value1:prop2=value2\\:with\\:colons:prop3=value3");
 
         addTableRow("propertyForm:basicTable", "propertyForm:basicTable:topActionsGroup1:addSharedTableButton",
                 "Server Instances to Be Created");
@@ -242,8 +249,42 @@ public class ClusterTest extends BaseSeleniumTestClass {
                 "Server Instances to Be Created");
         setFieldValue("propertyForm:basicTable:rowGroup1:0:col2:name", clusterName + "in2");
 
-        clickAndWait("propertyForm:propertyContentPage:topButtons:newButton", TRIGGER_CLUSTER_PAGE);
-        assertTrue(isTextPresent(clusterName));
+            clickAndWait("propertyForm:propertyContentPage:topButtons:newButton", TRIGGER_CLUSTER_PAGE);
+            assertTrue(isTextPresent(clusterName));
+        } finally {
+            deleteCluster(clusterName);
+        }
+    }
+
+    @Test
+    public void testClusterWithEnhancedJmsOptions() {
+        String clusterName = "cluster" + generateRandomString();
+        try {
+            gotoClusterPage();
+            clickAndWait("propertyForm:clustersTable:topActionsGroup1:newButton", TRIGGER_NEW_CLUSTER_PAGE);
+            setFieldValue("propertyForm:propertySheet:propertySectionTextField:NameTextProp:NameText", clusterName);
+            markCheckbox("propertyForm:propertySheet:propertySectionTextField:jmsConfigTypeProp:optCustom:optCustom_label");
+            waitForPageLoad("i18ncs.cluster.jms.ClusterTypeName", TIMEOUT);
+
+            clickAndWait("propertyForm:jmsTypePropertySheet:jmsTypeSection:jmsTypeProp:optLocal", "i18ncs.cluster.jms.mqClusterTypeEnhanced");
+            selenium.check("propertyForm:jmsPropertySheet:configureJmsClusterSection:ClusterTypeProp:optEnhanced");
+
+            setFieldValue("propertyForm:jmsPropertySheet:configureJmsClusterSection:DbVendorProp:dbVendor", "mysql");
+            setFieldValue("propertyForm:jmsPropertySheet:configureJmsClusterSection:DbUserProp:dbUser", "root");
+            setFieldValue("propertyForm:jmsPropertySheet:configureJmsClusterSection:DbUrlProp:dbUrl", "jdbc:mysql://hostname:portno/dbname?password=xxx");
+
+            addTableRow("propertyForm:basicTable", "propertyForm:basicTable:topActionsGroup1:addSharedTableButton",
+                    "Server Instances to Be Created");
+            setFieldValue("propertyForm:basicTable:rowGroup1:0:col2:name", clusterName + "in1");
+            addTableRow("propertyForm:basicTable", "propertyForm:basicTable:topActionsGroup1:addSharedTableButton",
+                    "Server Instances to Be Created");
+            setFieldValue("propertyForm:basicTable:rowGroup1:0:col2:name", clusterName + "in2");
+
+            clickAndWait("propertyForm:propertyContentPage:topButtons:newButton", TRIGGER_CLUSTER_PAGE);
+            assertTrue(isTextPresent(clusterName));
+        } finally {
+            deleteCluster(clusterName);
+        }
     }
 
     @Test
@@ -252,10 +293,13 @@ public class ClusterTest extends BaseSeleniumTestClass {
         gotoClusterPage();
         clickAndWait("propertyForm:clustersTable:topActionsGroup1:newButton", TRIGGER_NEW_CLUSTER_PAGE);
         setFieldValue("propertyForm:propertySheet:propertySectionTextField:NameTextProp:NameText", clusterName);
-        selectDropdownOption("propertyForm:propertySheet:propertySectionTextField:jmsConfigTypeProp:configType", "Custom");
-        waitForPageLoad("i18ncs.cluster.jms.configStoreTypeHelp", TIMEOUT);
+        markCheckbox("propertyForm:propertySheet:propertySectionTextField:jmsConfigTypeProp:optCustom:optCustom_label");
+        waitForPageLoad("i18ncs.cluster.jms.ClusterTypeName", TIMEOUT);
 
-        selectDropdownOption("propertyForm:jmsPropertySheet:configureJmsClusterSection:ClusterTypeProp:clusterType", "Conventional");
+        clickAndWait("propertyForm:jmsTypePropertySheet:jmsTypeSection:jmsTypeProp:optLocal", "i18ncs.cluster.jms.mqClusterTypeEnhanced");
+        selenium.check("propertyForm:jmsPropertySheet:configureJmsClusterSection:ClusterTypeProp:optConventional");
+//        selectDropdownOption("propertyForm:jmsPropertySheet:configureJmsClusterSection:ClusterTypeProp:clusterType", "Conventional");
+        
         selectDropdownOption("propertyForm:jmsPropertySheet:configureJmsClusterSection:ConfigStoreTypeProp:configStoreType", "Master Broker");
         selectDropdownOption("propertyForm:jmsPropertySheet:configureJmsClusterSection:MessageStoreTypeProp:messageStoreType", "JDBC");
 

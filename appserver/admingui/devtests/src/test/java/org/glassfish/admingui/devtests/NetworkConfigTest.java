@@ -166,7 +166,7 @@ public class NetworkConfigTest extends BaseSeleniumTestClass {
             assertEquals(headerBLength, getFieldValue("propertyForm:propertySheet:httpTextField:headerBLength:headerBLength"));
             assertEquals(maxPostSize, getFieldValue("propertyForm:propertySheet:httpTextField:MaxPostSize:headerBLength"));
             assertEquals(compressableMime, getFieldValue("propertyForm:propertySheet:httpTextField:compressableMime:compressableMime"));
-            assertEquals("on", getFieldValue("propertyForm:propertySheet:httpTextField:Comet:cometEnabled"));
+            assertEquals("true", getFieldValue("propertyForm:propertySheet:httpTextField:Comet:cometEnabled"));
 
             clickAndWait("propertyForm:protocolTabs:fileCacheTab", "Modify file cache settings for the protocol.");
             assertEquals(maxAge, getFieldValue("propertyForm:propertySheet:fileTextField:maxAge:maxAge"));

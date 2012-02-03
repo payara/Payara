@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,46 +37,26 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
 package org.glassfish.admingui.devtests;
 
 import com.google.common.base.Function;
+import com.thoughtworks.selenium.Selenium;
 import com.thoughtworks.selenium.SeleniumException;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.FileNotFoundException;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import org.junit.*;
+import org.openqa.selenium.*;
+
+import java.io.*;
 import java.math.BigInteger;
 import java.net.URL;
 import java.security.SecureRandom;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.ResourceBundle;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.glassfish.admingui.common.util.RestResponse;
 import org.glassfish.admingui.common.util.RestUtil;
 import org.glassfish.admingui.devtests.util.ElementFinder;
 import org.glassfish.admingui.devtests.util.SeleniumHelper;
-import org.glassfish.admingui.devtests.util.SeleniumWrapper;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.openqa.selenium.By;
-import org.openqa.selenium.StaleElementReferenceException;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 public class BaseSeleniumTestClass {
@@ -87,42 +67,42 @@ public class BaseSeleniumTestClass {
     public static final String TRIGGER_REGISTRATION_PAGE = "Receive patch information and bug updates, screencasts and tutorials, support and training offerings, and more";
     public static final String TRIGGER_ERROR_OCCURED = "An error has occurred";
     public static final boolean DEBUG = Boolean.parseBoolean(SeleniumHelper.getParameter("debug", "false"));
-
     @Rule
     public SpecificTestRule specificTestRule = new SpecificTestRule();
-
-    protected static final int TIMEOUT = 120;
+    protected static final int TIMEOUT = 90;
     protected static final int BUTTON_TIMEOUT = 750;
     protected static final Logger logger = Logger.getLogger(BaseSeleniumTestClass.class.getName());
-
-    protected static SeleniumWrapper selenium;
+    protected static Selenium selenium;
     protected static WebDriver driver;
     private static String currentTestClass = "";
     private boolean processingLogin = false;
     private static final String AJAX_INDICATOR = "ajaxIndicator";
-    private static final Map<String, String> bundles = new HashMap<String, String>() {{
-        put("i18n", "org.glassfish.admingui.core.Strings"); // core
-        put("i18nUC", "org.glassfish.updatecenter.admingui.Strings"); // update center
-        put("i18n_corba", "org.glassfish.corba.admingui.Strings");
-        put("i18n_ejb", "org.glassfish.ejb.admingui.Strings");
-        put("i18n_ejbLite", "org.glassfish.ejb-lite.admingui.Strings");
-        put("i18n_jts" ,"org.glassfish.jts.admingui.Strings"); // JTS
-        put("i18n_web", "org.glassfish.web.admingui.Strings"); // WEB
-        put("common", "org.glassfish.common.admingui.Strings");
-        put("i18nc", "org.glassfish.common.admingui.Strings"); // common -- apparently we use both in the app :|
-        put("i18nce", "org.glassfish.admingui.community-theme.Strings");
-        put("i18ncs", "org.glassfish.cluster.admingui.Strings"); // cluster
-        put("i18njca", "org.glassfish.jca.admingui.Strings"); // JCA
-        put("i18njdbc", "org.glassfish.jdbc.admingui.Strings"); // JDBC
-        put("i18njmail", "org.glassfish.full.admingui.Strings");
-        put("i18njms", "org.glassfish.jms.admingui.Strings"); // JMS
-        put("theme", "org.glassfish.admingui.community-theme.Strings");
+    private static final Map<String, String> bundles = new HashMap<String, String>() {
 
-        // TODO: These conflict with core and should probably be changed in the pages
-        //put("i18n", "org.glassfish.common.admingui.Strings");
-        //put("i18n", "org.glassfish.web.admingui.Strings");
-        //put("i18nc", "org.glassfish.web.admingui.Strings");
-    }};
+        {
+            put("i18n", "org.glassfish.admingui.core.Strings"); // core
+            put("i18nUC", "org.glassfish.updatecenter.admingui.Strings"); // update center
+            put("i18n_corba", "org.glassfish.corba.admingui.Strings");
+            put("i18n_ejb", "org.glassfish.ejb.admingui.Strings");
+            put("i18n_ejbLite", "org.glassfish.ejb-lite.admingui.Strings");
+            put("i18n_jts", "org.glassfish.jts.admingui.Strings"); // JTS
+            put("i18n_web", "org.glassfish.web.admingui.Strings"); // WEB
+            put("common", "org.glassfish.common.admingui.Strings");
+            put("i18nc", "org.glassfish.common.admingui.Strings"); // common -- apparently we use both in the app :|
+            put("i18nce", "org.glassfish.admingui.community-theme.Strings");
+            put("i18ncs", "org.glassfish.cluster.admingui.Strings"); // cluster
+            put("i18njca", "org.glassfish.jca.admingui.Strings"); // JCA
+            put("i18njdbc", "org.glassfish.jdbc.admingui.Strings"); // JDBC
+            put("i18njmail", "org.glassfish.full.admingui.Strings");
+            put("i18njms", "org.glassfish.jms.admingui.Strings"); // JMS
+            put("theme", "org.glassfish.admingui.community-theme.Strings");
+
+            // TODO: These conflict with core and should probably be changed in the pages
+            //put("i18n", "org.glassfish.common.admingui.Strings");
+            //put("i18n", "org.glassfish.web.admingui.Strings");
+            //put("i18nc", "org.glassfish.web.admingui.Strings");
+        }
+    };
     private static final SeleniumHelper helper = SeleniumHelper.getInstance();
     private ElementFinder elementFinder;
 
@@ -136,12 +116,10 @@ public class BaseSeleniumTestClass {
         }
     }
 
-
     @BeforeClass
     public static void setUp() throws Exception {
         if (!DEBUG) {
-            RestResponse rr = RestUtil.post(helper.getBaseUrl() + "/management/domain/rotate-log", new HashMap<String, Object>());
-            System.out.println(rr.isSuccess());
+            RestUtil.post(helper.getBaseUrl() + "/management/domain/rotate-log", new HashMap<String, Object>());
         }
     }
 
@@ -157,15 +135,13 @@ public class BaseSeleniumTestClass {
                 BufferedReader in = new BufferedReader(new InputStreamReader(is));
                 String line = in.readLine();
                 while (line != null) {
-                    out.write(line+System.getProperty("line.separator"));
+                    out.write(line + System.getProperty("line.separator"));
                     line = in.readLine();
                 }
                 in.close();
                 out.close();
             }
         } catch (FileNotFoundException fnfe) {
-            //
-        } catch (IOException ioe) {
             //
         } catch (Exception ex) {
             Logger.getLogger(BaseSeleniumTestClass.class.getName()).log(Level.INFO, null, ex);
@@ -182,7 +158,7 @@ public class BaseSeleniumTestClass {
     @After
     public void afterTest() {
         if (Boolean.parseBoolean(SeleniumHelper.getParameter("releaseAfter", "false"))) {
-//            helper.releaseSeleniumInstance();
+            helper.releaseSeleniumInstance();
         }
     }
 
@@ -196,7 +172,6 @@ public class BaseSeleniumTestClass {
      * @return
      */
     public String getFieldValue(String elem) {
-        waitForElement(elem);
         return selenium.getValue(elem);
     }
     /**
@@ -205,7 +180,7 @@ public class BaseSeleniumTestClass {
      * @param text
      */
     public void setFieldValue(String elem, String text) {
-        waitForElement(elem);
+        selenium.focus(elem);
         selenium.type(elem, text);
     }
 
@@ -240,9 +215,15 @@ public class BaseSeleniumTestClass {
         selenium.uncheck(elem);
     }
 
-    public void pressButton(String elem) {
-        waitForElement(elem);
-        selenium.click(elem);
+    public void pressButton(final String button) {
+        waitForElement(button);
+        new ExceptionSwallowingLoop<Void>() {
+            @Override
+            public Void operation() {
+                selenium.click(button);
+                return null;
+            }
+        }.get();
     }
 
     /**
@@ -264,6 +245,10 @@ public class BaseSeleniumTestClass {
         return selenium.isElementPresent(elem);
     }
 
+    protected String captureScreenshot() {
+        return SeleniumHelper.captureScreenshot();
+    }
+    
     /**
      * Select the option requested in the given select element
      * @param id
@@ -274,11 +259,15 @@ public class BaseSeleniumTestClass {
             label = resolveTriggerText(label);
             selenium.select(id, "label="+label);
         } catch (SeleniumException se) {
-            logger.log(Level.INFO, "An invalid option was requested.  Here are the valid options:");
-            for (String option : selenium.getSelectOptions(id)) {
-                logger.log(Level.INFO, "\t{0}", option);
+            try {
+                selenium.select(id, "value=" + label);
+            } catch (SeleniumException se1) {
+                logger.log(Level.INFO, "An invalid option was requested.  Here are the valid options:");
+                for (String option : selenium.getSelectOptions(id)) {
+                    logger.log(Level.INFO, "\t{0}", option);
+                }
+                throw se1;
             }
-            throw se;
         }
     }
 
@@ -310,9 +299,9 @@ public class BaseSeleniumTestClass {
         return selenium.isChecked(elem);
     }
 
-    protected void selectFile(String elem, String archivePath) {
-        waitForElement(elem);
-        selenium.attachFile(elem, archivePath);
+    protected void selectFile(String uploadElement, String archivePath) {
+        waitForElement(uploadElement);
+        selenium.attachFile(uploadElement, archivePath);
     }
 
     protected boolean isAlertPresent() {
@@ -348,6 +337,7 @@ public class BaseSeleniumTestClass {
     }
     
     protected String getSelectedLabel(String elem) {
+        waitForElement(elem);
         return selenium.getSelectedLabel(elem);
     }
 
@@ -393,7 +383,7 @@ public class BaseSeleniumTestClass {
         return count;
     }
 
-    public void openAndWait(String url, String triggerText) {
+    protected void openAndWait(String url, String triggerText) {
         openAndWait(url, triggerText, TIMEOUT);
     }
 
@@ -477,20 +467,24 @@ public class BaseSeleniumTestClass {
                 Assert.fail("The operation timed out waiting for the page to load.");
             }
 
-            WebElement ajaxPanel = null;
-            boolean panelIsDisplayed = false;
+            WebElement ajaxPanel = (WebElement) elementFinder.findElement(By.id(AJAX_INDICATOR), TIMEOUT,
+                    new ExpectedCondition<Boolean>() {
 
-            try {
-                ajaxPanel = selenium.findElement(By.id(AJAX_INDICATOR));
-                panelIsDisplayed = ajaxPanel.isDisplayed();
-            } catch (Exception ex) {
-
+                        @Override
+                        public Boolean apply(WebDriver driver) {
+                            try {
+                                WebElement ajaxPanel = (WebElement) driver.findElement(By.id(AJAX_INDICATOR));
+                                return !ajaxPanel.isDisplayed();
+                            } catch (Exception e) {
+                                return false;
+                            }
+                        }
+                    });
+//                if (!ajaxPanel.isDisplayed()) {
+            if (callback.executeTest()) {
+                break;
             }
-            if (!panelIsDisplayed) {
-                if (callback.executeTest()) {
-                    break;
-                }
-            }
+//                }
 
             sleep(TIMEOUT_CALLBACK_LOOP);
         }
@@ -580,20 +574,15 @@ public class BaseSeleniumTestClass {
      * @param value
      * @return
      */
-    protected String getLinkIdByLinkText(String baseId, String value) {
-        String id = null;
-        WebElement link = null;
-        try {
-            link = selenium.findElement(By.linkText(value));
-            id = ((link == null) ?  null : (String)link.getAttribute("id"));
-        } catch (StaleElementReferenceException sere) {
-            // Sleep and try again
-            sleep(1000);
-            link = selenium.findElement(By.linkText(value));
-            id = ((link == null) ?  null : (String)link.getAttribute("id"));
-        }
-                //;
-        return id;
+    protected String getLinkIdByLinkText(final String baseId, final String value) {
+        final ExceptionSwallowingLoop<String> loop = new ExceptionSwallowingLoop<String>() {
+            @Override
+            public String operation() {
+                WebElement link = elementFinder.findElement(By.linkText(value), TIMEOUT);
+                return (link == null) ? null : (String) link.getAttribute("id");
+            }
+        };
+        return loop.get();
     }
 
     protected boolean isTextPresent(String text) {
@@ -653,7 +642,7 @@ public class BaseSeleniumTestClass {
         }
 
         if (iterations >= 50) {
-            throw new RuntimeException("Timed out wait for row in " + rowId + " to be selected.");
+            Assert.fail("Timed out wait for row in " + rowId + " to be selected");
         }
     }
 
@@ -989,32 +978,22 @@ public class BaseSeleniumTestClass {
         }
 
         try {
-            WebElement element = (WebElement) selenium.findElement(By.id(id), TIMEOUT);
+            WebElement element = (WebElement) elementFinder.findElement(By.id(id), TIMEOUT);
+            //driver.findElement(By.id(id));
             if (element.isDisplayed()) {
                 return;
             }
-        } catch (Exception ex) {
-
+        } catch (StaleElementReferenceException sere) {
         }
 
         final String parentId = id.substring(0, id.lastIndexOf(":"));
-        boolean parentIsDisplayed = false;
-
-        try {
-            WebElement parentElement = (WebElement) selenium.findElement(By.id(parentId), TIMEOUT);
-            parentIsDisplayed = parentElement.isDisplayed();
-        } catch (StaleElementReferenceException sere) {
-            sleep(1000);
-            WebElement parentElement = (WebElement) selenium.findElement(By.id(parentId), TIMEOUT);
-            parentIsDisplayed = parentElement.isDisplayed();
-
-        }
-
-        if (!parentIsDisplayed) {
+        final WebElement parentElement = (WebElement) elementFinder.findElement(By.id(parentId), TIMEOUT);
+//                driver.findElement(By.id(parentId));
+        if (!parentElement.isDisplayed()) {
             insureElementIsVisible(parentId);
             String grandParentId = parentId.substring(0, parentId.lastIndexOf(":"));
-            String nodeId = grandParentId.substring(grandParentId.lastIndexOf(":")+1);
-            pressButton(grandParentId + ":" + nodeId+"_turner");
+            String nodeId = grandParentId.substring(grandParentId.lastIndexOf(":") + 1);
+            pressButton(grandParentId + ":" + nodeId + "_turner");
         }
     }
 
@@ -1037,7 +1016,8 @@ public class BaseSeleniumTestClass {
                 }
                 if (!textShouldBeMissing) {
                     boolean visible = false;
-                    final List<WebElement> elements = driver.findElements(By.xpath("//*[contains(text(), '" + triggerText + "')]"));
+                    final List<WebElement> elements = driver.findElements(By.xpath("//*[contains(text(), \"" + 
+                            triggerText.replace("\"", "\\\"") + "\")]"));
                     if (!elements.isEmpty()) {
                         for (WebElement e : elements) {
                             if (e.isDisplayed()) {
@@ -1056,13 +1036,13 @@ public class BaseSeleniumTestClass {
 
                 } else {
                     if (isTextPresent("RuntimeException")) {
-                        throw new RuntimeException("Exception detected on page. Please check the logs for details");
+                        Assert.fail("Exception detected on page. Please check the logs for details");
                     }
                 }
             } catch (SeleniumException se) {
                 String message = se.getMessage();
-                if (!"ERROR: Couldn't access document.body.  Is this HTML page fully loaded?".equals(se.getMessage())) {
-                    throw new RuntimeException(se);
+                if (!"ERROR: Couldn't access document.body.  Is this HTML page fully loaded?".equals(message)) {
+                    Assert.fail(message);
                 }
             }
 
@@ -1104,10 +1084,13 @@ public class BaseSeleniumTestClass {
 
         @Override
         public boolean executeTest() {
-            int count = getTableRowCount(tableId);
-            return count > initialCount;
+            try {
+                int count = getTableRowCount(tableId);
+                return count > initialCount;
+            } catch (Exception e) {
+                return false;
+            }
         }
-
     };
 
     class ButtonDisabledStateCallBack implements WaitForLoadCallBack {
@@ -1124,15 +1107,33 @@ public class BaseSeleniumTestClass {
 //            String attr = selenium.getEval("this.browserbot.findElement('id=" + buttonId + "').disabled"); // "Classic" Selenium
             try {
                 String attr =
-                        elementFinder.findElement(By.id(buttonId), TIMEOUT)
-//                        driver.findElement(By.id(buttonId))
+                        elementFinder.findElement(By.id(buttonId), TIMEOUT) //                        driver.findElement(By.id(buttonId))
                         .getAttribute("disabled"); // WebDriver-backed Selenium
                 return (Boolean.parseBoolean(attr) == desiredState);
             } catch (Exception ex) {
                 return true;// ???
             }
         }
+    }
 
+    abstract class ExceptionSwallowingLoop<T> {
+        public T get() {
+            T value = null;
+            boolean success = false;
+            int count = 0;
+            while (!success && (count < TIMEOUT /2 )) {
+                try {
+                    value = operation();
+                    success = true;
+                } catch (Exception e) {
+                    logger.log(Level.FINE, "Exception caught ('{0}'). Sleeping...", e.getMessage());
+                    count++;
+                }
+            }
 
+            return value;
+        }
+
+        public abstract T operation();
     }
 }
