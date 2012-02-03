@@ -38,7 +38,7 @@
  * holder.
  */
 
-package org.glassfish.javaee.services;
+package org.glassfish.grizzly.extras.addons;
 
 import org.glassfish.grizzly.http.server.AddOn;
 import org.glassfish.grizzly.websockets.WebSocketAddOn;

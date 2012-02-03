@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package org.glassfish.javaee.services;
+package org.glassfish.grizzly.extras.addons;
 
 import com.sun.logging.LogDomains;
 import java.io.BufferedInputStream;
