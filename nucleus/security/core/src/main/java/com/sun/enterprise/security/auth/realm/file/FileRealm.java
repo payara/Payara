@@ -54,6 +54,7 @@ import com.sun.enterprise.config.serverbeans.AuthRealm;
 import com.sun.enterprise.config.serverbeans.SecurityService;
 import com.sun.enterprise.security.common.Util;
 import com.sun.enterprise.security.util.IASSecurityException;
+import org.glassfish.internal.api.RelativePathResolver;
 import org.glassfish.security.common.FileRealmHelper;
 import org.jvnet.hk2.annotations.Service;
 
@@ -156,6 +157,9 @@ public final class FileRealm extends IASRealm
             String file = authRealm.getPropertyValue("file");
             if (file == null)           // skip if no "file" property
                 continue;
+            if (file.contains("$")) {
+                file = RelativePathResolver.resolvePath(file);
+            }
             files.add(file);
         }
         return files;
@@ -184,6 +188,10 @@ public final class FileRealm extends IASRealm
             String msg = sm.getString("filerealm.nofile");
             throw new BadRealmException(msg);
         }
+        if (file.contains("$")) {
+                file = RelativePathResolver.resolvePath(file);
+        }
+        
         this.setProperty(PARAM_KEYFILE, file);
         
         String jaasCtx = props.getProperty(IASRealm.JAAS_CONTEXT_PARAM);

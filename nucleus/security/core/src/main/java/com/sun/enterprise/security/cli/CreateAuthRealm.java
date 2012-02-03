@@ -219,9 +219,6 @@ public class CreateAuthRealm implements AdminCommand {
                 Property newprop = newAuthRealm.createChild(Property.class);
                 newprop.setName((String) propname);
                 String propValue = properties.getProperty((String) propname);
-                if (propValue != null && propValue.contains("$")) {
-                    propValue = RelativePathResolver.resolvePath(propValue);
-                }
                 newprop.setValue(propValue);
                 newAuthRealm.getProperty().add(newprop);    
             }
