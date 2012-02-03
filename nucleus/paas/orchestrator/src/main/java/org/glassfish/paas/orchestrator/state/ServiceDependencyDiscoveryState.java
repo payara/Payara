@@ -120,32 +120,16 @@ public class ServiceDependencyDiscoveryState extends AbstractPaaSDeploymentState
             for(ServiceReference serviceReference : appServiceMetadata.getServiceReferences()){
                 String serviceName = serviceReference.getServiceName();
                 ServiceDescription sd = orchestrator.getServiceDescriptionForSharedOrExternalService(serviceName);
-                if(sd == null){
-                    boolean found = false;
-                    //it's possible that the reference here is an application-scoped-service. Ignore it.
-                    //This can happen in GUI mode of deployment where glassfish-services.xml
-                    //is generated based on the first introspection of the archive for service dependencies
-                    //and service-references.
-                    for(ServiceDescription serviceDescription : appServiceMetadata.getServiceDescriptions()){
-                        if(serviceDescription.getName().equals(serviceName)){
-                            found = true;
-                            if(logger.isLoggable(Level.FINEST)){
-                                logger.log(Level.FINEST, "service-reference [ "+serviceReference+" ] is referring an " +
-                                    "application-scoped-service [ "+serviceDescription+" ], ignoring wiring" +
-                                    " for now");
-                            }
-                            break;
-                        }
-                    }
-                    if(!found){
-                        throw new PaaSDeploymentException("Unable to find service ["+serviceName+"], " +
-                                "as referred via service-reference [ "+serviceReference+" ]");
-                    }
-                }else{
+                if(sd != null){
                     appServiceMetadata.addServiceDescription(sd);
                     wiredServiceReferences.add(serviceReference);
                     pluginsToHandleSDs.put(sd, sd.getPlugin());
                 }
+                //if sd == null, its possible that the reference is on an application-scoped-service
+                //Such reference need not be satisfied as the service-reference via the descriptor is only
+                //meant for including shared/external-service in the meta-data (and hence the runtime).
+                //we will ignore processing it and hence it will not be part of srToSD mapping
+                //or wiredServiceReferences and will not be used for association/dissociation phases.
             }
 
             //make sure that each service-description is wired to appropriate plugin.
@@ -242,24 +226,41 @@ public class ServiceDependencyDiscoveryState extends AbstractPaaSDeploymentState
 
             //1.2 Get implicit ServiceReferences
             for (ServicePlugin svcPlugin : resolvedPluginsList) {
-                //if (svcPlugin.handles(archive)) {
                 Set<ServiceReference> implicitServiceRefs = svcPlugin.getServiceReferences(appName, archive, context);
                 for (ServiceReference sr : implicitServiceRefs) {
                     sr.setRequestingPlugin(svcPlugin);
                     logger.log(Level.FINEST, localStrings.getString("serviceReference",sr));
                     appServiceMetadata.addServiceReference(sr);
-                    //if the service-ref refers a service-name, retrieve the service-description of the service.
-                    if(sr.getServiceName() != null){
-                        ServiceDescription sd = orchestrator.getServiceDescriptionForSharedOrExternalService(sr.getServiceName());
+                    //if the service-ref refers a service-name, retrieve the service-description of the service
+                    //and add the shared/external service-description to meta-data.
+                    String serviceName = sr.getServiceName();
+                    if(serviceName != null){
+                        ServiceDescription sd = orchestrator.getServiceDescriptionForSharedOrExternalService(serviceName);
                         if(sd != null){
                             appServiceMetadata.addServiceDescription(sd);
                             pluginsToHandleSDs.put(sd, sd.getPlugin());
                             wiredServiceReferences.add(sr);
                             serviceRefToSD.put(sr, sd);
                         }
+
+                        //it's possible that the reference here is an application-scoped-service.
+                        if(sd == null){
+                            for(ServiceDescription serviceDescription : appServiceMetadata.getServiceDescriptions()){
+                                if(serviceDescription.getName().equals(serviceName)){
+                                    sd = serviceDescription;
+                                    break;
+                                }
+                            }
+                            if(sd != null){
+                                wiredServiceReferences.add(sr);
+                                serviceRefToSD.put(sr, sd);
+                            }else{
+                                throw new PaaSDeploymentException("unable to find the service ["+sr.getServiceName()+"] " +
+                                        "for service-reference [ "+sr+" ]");
+                            }
+                        }
                     }
                 }
-                //}
             }
             logger.log(Level.FINEST, localStrings.getString("after.serviceref ",appServiceMetadata));
 
@@ -272,13 +273,12 @@ public class ServiceDependencyDiscoveryState extends AbstractPaaSDeploymentState
                     String targetSD = sr.getServiceName();
                     boolean serviceDescriptionExists = false;
                     for (ServiceDescription sd : appSDs) {
-                        //scan through available service-descriptions (app-scoped is of our interest)
-                        //to see whether the referred service-description matches the service-name
+                        //scan through available service-descriptions to see whether the referred
+                        //service-description matches the service-name
                         //specified by service-reference.
                         if (sd.getName().equals(targetSD)) {
                             serviceDescriptionExists = true;
                             break;
-                            //sd.addServiceReference(sr);
                         }
                     }
 
@@ -361,7 +361,6 @@ public class ServiceDependencyDiscoveryState extends AbstractPaaSDeploymentState
         } catch (Exception e) {
             throw new PaaSDeploymentException(e);
         }
-        //return null;
     }
 
     private void setPluginForSD(ServiceOrchestratorImpl orchestrator, Map<ServiceDescription, ServicePlugin> pluginsToHandleSDs,
@@ -396,6 +395,7 @@ public class ServiceDependencyDiscoveryState extends AbstractPaaSDeploymentState
         }
     }
 
+/*
     private void addServiceDescriptionWithoutDuplicate(ServiceMetadata appServiceMetadata, ServiceDescription defSD) {
         Set<ServiceDescription> serviceDescriptions = appServiceMetadata.getServiceDescriptions();
         for (ServiceDescription sd : serviceDescriptions) {
@@ -408,6 +408,7 @@ public class ServiceDependencyDiscoveryState extends AbstractPaaSDeploymentState
         }
         appServiceMetadata.addServiceDescription(defSD);
     }
+*/
 
     private void assertMetadataComplete(Set<ServiceDescription> appSDs,
                                         Set<ServiceReference> appSRs) {
