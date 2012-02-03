@@ -41,7 +41,7 @@
   -->
 
 <glassfish-services>
-<service-description name="enable-disable-ext-shared-service" init-type="lazy">
+<!--service-description name="enable-disable-ext-shared-service" init-type="lazy">
   <characteristics>
     <characteristic name="service-type" value="JavaEE"/>
   </characteristics>
@@ -49,8 +49,10 @@
     <configuration name="min.clustersize" value="2"/>
     <configuration name="max.clustersize" value="4"/>
   </configurations>
-</service-description>
-    <service-reference name="db-ref" service-name="my-external-db-service">
+</service-description -->
+<service-reference name="gf-ref" service-name="my-shared-gf-service">
+</service-reference>
+<service-reference name="db-ref" service-name="my-external-db-service">
 </service-reference>
 <service-reference name="lb-ref" service-name="my-shared-lb-service">
 </service-reference>

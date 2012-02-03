@@ -222,9 +222,19 @@ public class BasicSharedServiceTest {
 
         org.glassfish.api.admin.CommandRunner.CommandInvocation invocation = commandRunner.getCommandInvocation("create-shared-service", report);
         ParameterMap parameterMap = new ParameterMap();
+        parameterMap.add("servicetype","JavaEE");
+        parameterMap.add("characteristics","service-type=JavaEE");
+        parameterMap.add("configuration","min.clustersize=2:max.clustersize=4");
+        parameterMap.add("DEFAULT","my-shared-gf-service");
+        invocation.parameters(parameterMap).execute();
+
+        System.out.println("Created shared service 'my-shared-gf-service' :" + !report.hasFailures());
+        Assert.assertFalse(report.hasFailures());
+
 
         //Create shared service of type Database
         // asadmin create-shared-service --characteristics service-type=Database --configuration database.name=my-shared-db-service --servicetype Database my-shared-db-service
+        parameterMap=new ParameterMap();
         parameterMap.add("servicetype", "Database");
         parameterMap.add("characteristics", "service-type=Database");
         parameterMap.add("configuration", "database.name=my-shared-db-service");
@@ -471,6 +481,12 @@ public class BasicSharedServiceTest {
 
         parameterMap = new ParameterMap();
         parameterMap.add("DEFAULT", "my-shared-db-service");
+        invocation.parameters(parameterMap).execute();
+
+        Assert.assertFalse(report.hasFailures());
+
+        parameterMap = new ParameterMap();
+        parameterMap.add("DEFAULT", "my-shared-gf-service");
         invocation.parameters(parameterMap).execute();
 
         Assert.assertFalse(report.hasFailures());

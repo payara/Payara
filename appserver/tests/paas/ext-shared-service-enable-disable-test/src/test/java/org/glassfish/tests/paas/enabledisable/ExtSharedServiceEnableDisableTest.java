@@ -277,20 +277,34 @@ public class ExtSharedServiceEnableDisableTest {
         org.glassfish.api.admin.CommandRunner commandRunner = habitat.getComponent(org.glassfish.api.admin.CommandRunner.class);
         ActionReport report = habitat.getComponent(ActionReport.class);
 
+        //Created external service of type JavaEE
+        //asadmin create-shared-service --servicetype=JavaEE --configuration min.clustersize=2:max.clustersize=4 --characteristics service-type=JavaEE my-shared-gf-service.
+        org.glassfish.api.admin.CommandRunner.CommandInvocation invocation = commandRunner.getCommandInvocation("create-shared-service", report);
+        ParameterMap parameterMap = new ParameterMap();
+        parameterMap.add("servicetype","JavaEE");
+        parameterMap.add("characteristics","service-type=JavaEE");
+        parameterMap.add("configuration","min.clustersize=2:max.clustersize=4");
+        parameterMap.add("DEFAULT","my-shared-gf-service");
+        invocation.parameters(parameterMap).execute();
+
+        System.out.println("Created shared service 'my-shared-gf-service' :" + !report.hasFailures());
+        Assert.assertFalse(report.hasFailures());
+
+
         //Create external service of type Database
         // asadmin create-external-service --servicetype=Database --configuration ip-address=127.0.0.1:databasename=sun-appserv-samples:port=1527:user=APP:password=APP:host=127.0.0.1:classname=org.apache.derby.jdbc.ClientXADataSource:resourcetype=javax.sql.XADataSource my-external-db-service
-        org.glassfish.api.admin.CommandRunner.CommandInvocation invocation = commandRunner.getCommandInvocation("create-external-service", report);
-        ParameterMap parameterMap = new ParameterMap();
+        invocation = commandRunner.getCommandInvocation("create-external-service", report);
+        parameterMap = new ParameterMap();
         parameterMap.add("servicetype", "Database");
         parameterMap.add("configuration", "ip-address="+ipAddress_DAS+":databasename=sun-appserv-samples:connectionAttributes=;'create=true':port=1527:user=APP:password=APP:host="+ipAddress_DAS+":classname=org.apache.derby.jdbc.ClientXADataSource:resourcetype=javax.sql.XADataSource");
         //parameterMap.add("configuration", "ip-address=127.0.0.1:databasename=${com.sun.aas.installRoot}/databases/sun-appserv-samples:port=1527:user=APP:password=APP:connectionAttributes=;'create\\=true':host=127.0.0.1:classname=org.apache.derby.jdbc.EmbeddedXADataSource:resourcetype=javax.sql.XADataSource");
         parameterMap.add("DEFAULT", "my-external-db-service");
 
         invocation.parameters(parameterMap).execute();
+        System.out.println("Created external service 'my-external-db-service' :" + !report.hasFailures());
         Assert.assertFalse(report.hasFailures());
 
 
-       Assert.assertFalse(report.hasFailures());
 
         // Create shared service of type LB
         //asadmin create-shared-service --template LBNative --configuration http-port=50080:https-port=50081:ssl-enabled=true --servicetype LB my-shared-lb-service
@@ -360,6 +374,14 @@ public class ExtSharedServiceEnableDisableTest {
         Assert.assertTrue(report.hasFailures());
         System.out.println("Expected Failure Msg: " + report.getMessage());
 
+        invocation = commandRunner.getCommandInvocation("stop-shared-service", report);
+        parameterMap = new ParameterMap();
+        parameterMap.add("DEFAULT", "my-shared-gf-service");
+        invocation.parameters(parameterMap).execute();
+
+        Assert.assertFalse(report.hasFailures());
+        System.out.println("MSG: " + report.getMessage());
+
 
         //List the services and check the status of both the services - it should be 'STOPPED'
         parameterMap = new ParameterMap();
@@ -384,6 +406,13 @@ public class ExtSharedServiceEnableDisableTest {
 
         // Start the shared services.
         invocation = commandRunner.getCommandInvocation("start-shared-service", report);
+        parameterMap = new ParameterMap();
+        parameterMap.add("DEFAULT", "my-shared-gf-service");
+        invocation.parameters(parameterMap).execute();
+
+        Assert.assertFalse(report.hasFailures());
+        System.out.println("MSG: " + report.getMessage());
+
         parameterMap = new ParameterMap();
         parameterMap.add("DEFAULT", "my-shared-lb-service");
         invocation.parameters(parameterMap).execute();
@@ -448,18 +477,22 @@ public class ExtSharedServiceEnableDisableTest {
         ActionReport report = habitat.getComponent(ActionReport.class);
 
         org.glassfish.api.admin.CommandRunner.CommandInvocation invocation =
-                commandRunner.getCommandInvocation("delete-shared-service", report);
+        commandRunner.getCommandInvocation("delete-shared-service", report);
         ParameterMap parameterMap = new ParameterMap();
         parameterMap.add("DEFAULT", "my-shared-lb-service");
         invocation.parameters(parameterMap).execute();
-
         Assert.assertFalse(report.hasFailures());
 
         invocation = commandRunner.getCommandInvocation("delete-external-service", report);
         parameterMap = new ParameterMap();
         parameterMap.add("DEFAULT", "my-external-db-service");
         invocation.parameters(parameterMap).execute();
+        Assert.assertFalse(report.hasFailures());
 
+        invocation =commandRunner.getCommandInvocation("delete-shared-service", report);
+        parameterMap = new ParameterMap();
+        parameterMap.add("DEFAULT", "my-shared-gf-service");
+        invocation.parameters(parameterMap).execute();
         Assert.assertFalse(report.hasFailures());
     }
 
