@@ -315,7 +315,7 @@ public class UniformLogFormatter extends Formatter {
                     recordBuffer.append(logMessage);
                 }
             } else {
-                if (logMessage.indexOf("{0}") >= 0 && record.getParameters() != null) {
+                if (logMessage.indexOf("{0") >= 0 && logMessage.contains("}") && record.getParameters() != null) {
                     // If we find {0} or {1} etc., in the message, then it's most
                     // likely finer level messages for Method Entry, Exit etc.,
                     logMessage = java.text.MessageFormat.format(

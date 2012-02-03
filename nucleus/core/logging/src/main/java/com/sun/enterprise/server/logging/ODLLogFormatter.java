@@ -331,7 +331,7 @@ public class ODLLogFormatter extends Formatter {
                 logMessage = "The log message is empty or null. Please log an issue against the component in the logger field.";
             }
         } else {
-            if (logMessage.indexOf("{0}") >= 0 && record.getParameters() != null) {
+            if (logMessage.indexOf("{0") >= 0 && logMessage.contains("}") && record.getParameters() != null) {
                 // If we find {0} or {1} etc., in the message, then it's most
                 // likely finer level messages for Method Entry, Exit etc.,
                 logMessage = java.text.MessageFormat.format(
