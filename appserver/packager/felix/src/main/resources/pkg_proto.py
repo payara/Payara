@@ -57,7 +57,6 @@ pkg = {
                         "glassfish/osgi/felix/conf" : {},
                       },
     "files"         : { "glassfish/config/osgi.properties" : { "preserve" : "renameold"},
-                        "glassfish/modules/autostart/org.apache.felix.fileinstall-autodeploy-bundles.cfg" : { "preserve" : "renameold"},
                       },
     "licenses"      : {
                         "../../../../ApacheLicense.txt" : {"license" : "ApacheV2"},
