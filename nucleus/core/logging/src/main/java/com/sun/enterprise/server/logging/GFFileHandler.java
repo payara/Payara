@@ -158,12 +158,23 @@ public class GFFileHandler extends StreamHandler implements PostConstruct, PreDe
     String recordFieldSeparator;
     String recordDateFormat;
 
+    String logFileProperty = "";
+
     public void postConstruct() {
 
         LogManager manager = LogManager.getLogManager();
         String cname = getClass().getName();
 
-        String filename = TranslatedConfigView.getTranslatedValue(manager.getProperty(cname + ".file")).toString();
+        if(manager!=null) {
+            logFileProperty = manager.getProperty(cname + ".file");
+        }
+
+        if(logFileProperty==null || logFileProperty.trim().equals("")) {
+            logFileProperty = env.getInstanceRoot().getAbsolutePath() + File.separator + LOGS_DIR + File.separator +
+                    logFileName;
+        }
+
+        String filename = TranslatedConfigView.getTranslatedValue(logFileProperty).toString();
 
         File serverLog = new File(filename);
         absoluteServerLogName = filename;
