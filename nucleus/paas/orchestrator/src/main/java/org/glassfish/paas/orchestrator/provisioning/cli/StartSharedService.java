@@ -118,16 +118,17 @@ public class StartSharedService implements AdminCommand {
                             /*ServiceDescription serviceDescription = serviceUtil.getSharedServiceDescription(serviceInfo);
                             Plugin plugin = orchestrator.getPlugin(serviceDescription);*/
                             ProvisionedService provisionedService = plugin.startService(serviceDescription, serviceInfo);
-                            List<String> serviceNames = new ArrayList<String>();
-                            if (provisionedService.getChildServices() != null) {
-                                for (org.glassfish.paas.orchestrator.service.spi.Service childService : provisionedService.getChildServices()) {
-                                    serviceNames.add(childService.getName());
-                                }
-                            }
-                            //Getting the list of all the services whose state needs to be updated in correspondence to the Provisioned service
-                            serviceNames.add(serviceName);
-
                             if (provisionedService != null) {
+                                List<String> serviceNames = new ArrayList<String>();
+                                if (provisionedService.getChildServices() != null) {
+                                    for (org.glassfish.paas.orchestrator.service.spi.Service childService : provisionedService.getChildServices()) {
+                                        serviceNames.add(childService.getName());
+                                    }
+                                }
+                                //Getting the list of all the services whose state needs to be updated in correspondence to the Provisioned service
+                                serviceNames.add(serviceName);
+
+
                                 orchestrator.addSharedService(serviceName, provisionedService);
                                 for (String sharedSvcName : serviceNames) {
                                     serviceUtil.updateState(sharedSvcName, null, provisionedService.getStatus().toString());
