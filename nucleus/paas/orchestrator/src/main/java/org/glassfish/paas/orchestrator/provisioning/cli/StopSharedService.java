@@ -68,6 +68,7 @@ import org.jvnet.hk2.config.Transaction;
 import org.jvnet.hk2.config.TransactionFailure;
 
 import java.beans.PropertyVetoException;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -137,7 +138,6 @@ public class StopSharedService implements AdminCommand {
                                                 }
                                             }
                                         }
-
                                     }
                                 }
                             }
@@ -148,39 +148,21 @@ public class StopSharedService implements AdminCommand {
                                 /*ServiceDescription serviceDescription = serviceUtil.getSharedServiceDescription(serviceInfo);
                                 Plugin plugin = orchestrator.getPlugin(serviceDescription);*/
                                 ProvisionedService ps = orchestrator.getSharedService(serviceName);
+                                List<String> serviceNames = new ArrayList<String>();
+                                if (ps.getChildServices() != null) {
+                                    for (org.glassfish.paas.orchestrator.service.spi.Service childService : ps.getChildServices()) {
+                                        serviceNames.add(childService.getName());
+                                    }
+                                }
+                                //Getting the list of all the services whose state needs to be updated in correspondence to the Provisioned service
+                                serviceNames.add(serviceName);
+
                                 boolean serviceStopped = plugin.stopService(ps, serviceInfo);
                                 if (serviceStopped) {
                                     orchestrator.removeSharedService(serviceName);
-                                    try {
-                                        if (ConfigSupport.apply(new SingleConfigCode<Services>() {
-                                            public Object run(Services param) throws PropertyVetoException, TransactionFailure {
-                                                for (org.glassfish.paas.orchestrator.config.Service service : param.getServices()) {
-                                                    if (service instanceof SharedService) {
-                                                        SharedService sharedSvc = (SharedService) service;
-                                                        if (sharedSvc.getServiceName().equalsIgnoreCase(serviceName)) {
-                                                            Transaction t = Transaction.getTransaction(param);
-                                                            SharedService sharedService_w = t.enroll(sharedSvc);
-                                                            sharedService_w.setState(ServiceStatus.STOPPED.toString());
-                                                            //TODO handle service-nodes
-                                                        }
-                                                    }
-                                                }
-                                                return param;
-                                            }
-                                        }, services) == null) {
-                                            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-                                            report.setMessage("Unable to stop the shared service [" + serviceName + "]");
-                                        } else {
-                                            report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
-                                            return;
-                                        }
-                                    } catch (TransactionFailure transactionFailure) {
-                                        report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-                                        report.setFailureCause(transactionFailure);
-                                        return;
-
+                                    for (String sharedSvcName : serviceNames) {
+                                        serviceUtil.updateState(sharedSvcName, null, ps.getStatus().toString());
                                     }
-
                                 } else {
                                     report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                                     report.setMessage("Unable to stop shared service [" + serviceName + "]");

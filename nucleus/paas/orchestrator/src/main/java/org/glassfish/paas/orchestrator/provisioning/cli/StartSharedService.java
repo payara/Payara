@@ -65,6 +65,8 @@ import org.jvnet.hk2.config.Transaction;
 import org.jvnet.hk2.config.TransactionFailure;
 
 import java.beans.PropertyVetoException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author: Sandhya Kripalani K
@@ -116,37 +118,19 @@ public class StartSharedService implements AdminCommand {
                             /*ServiceDescription serviceDescription = serviceUtil.getSharedServiceDescription(serviceInfo);
                             Plugin plugin = orchestrator.getPlugin(serviceDescription);*/
                             ProvisionedService provisionedService = plugin.startService(serviceDescription, serviceInfo);
+                            List<String> serviceNames = new ArrayList<String>();
+                            if (provisionedService.getChildServices() != null) {
+                                for (org.glassfish.paas.orchestrator.service.spi.Service childService : provisionedService.getChildServices()) {
+                                    serviceNames.add(childService.getName());
+                                }
+                            }
+                            //Getting the list of all the services whose state needs to be updated in correspondence to the Provisioned service
+                            serviceNames.add(serviceName);
+
                             if (provisionedService != null) {
                                 orchestrator.addSharedService(serviceName, provisionedService);
-                                try {
-                                    if (ConfigSupport.apply(new SingleConfigCode<Services>() {
-                                        public Object run(Services param) throws PropertyVetoException, TransactionFailure {
-                                            for (org.glassfish.paas.orchestrator.config.Service service : param.getServices()) {
-                                                if (service instanceof SharedService) {
-                                                    SharedService sharedSvc = (SharedService) service;
-                                                    if (sharedSvc.getServiceName().equalsIgnoreCase(serviceName)) {
-                                                        Transaction t = Transaction.getTransaction(param);
-                                                        SharedService sharedService_w = t.enroll(sharedSvc);
-                                                        sharedService_w.setState(ServiceStatus.RUNNING.toString());
-                                                        //TODO handle service-nodes
-                                                    }
-                                                }
-                                            }
-                                            return param;
-                                        }
-                                    }, services) == null) {
-                                        report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-                                        report.setMessage("Unable to start the shared service [" + serviceName + "]");
-                                    } else {
-                                        report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
-                                        return;
-                                    }
-
-                                } catch (TransactionFailure transactionFailure) {
-                                    report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-                                    report.setFailureCause(transactionFailure);
-                                    return;
-
+                                for (String sharedSvcName : serviceNames) {
+                                    serviceUtil.updateState(sharedSvcName, null, provisionedService.getStatus().toString());
                                 }
 
                             } else {
