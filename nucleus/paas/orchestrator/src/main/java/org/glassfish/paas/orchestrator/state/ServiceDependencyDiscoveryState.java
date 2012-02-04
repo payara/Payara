@@ -254,7 +254,7 @@ public class ServiceDependencyDiscoveryState extends AbstractPaaSDeploymentState
                             if(sd != null){
                                 wiredServiceReferences.add(sr);
                                 serviceRefToSD.put(sr, sd);
-                            }else{
+                            }else if(!sr.isOptional()){
                                 throw new PaaSDeploymentException("unable to find the service ["+sr.getServiceName()+"] " +
                                         "for service-reference [ "+sr+" ]");
                             }
@@ -286,10 +286,16 @@ public class ServiceDependencyDiscoveryState extends AbstractPaaSDeploymentState
                     //multiple plugins support same service-type) and get service-description.
                     if (!serviceDescriptionExists) {
                         //a plugin has asked for specific service which is not found.
-                        //fail deployment.
+                        //fail deployment for mandatory service-references.
                         if(sr.getServiceName() != null){
-                            throw new PaaSDeploymentException("unable to find the service ["+sr.getServiceName()+"] " +
+                            if(!sr.isOptional()){
+                                throw new PaaSDeploymentException("unable to find the service ["+sr.getServiceName()+"] " +
                                     "for service-reference [ "+sr+" ]");
+                            }else{
+                                logger.log(Level.INFO, "Unable to find the service ["+sr.getServiceName()+"] for " +
+                                        "'optional' service-reference ["+sr+"]");
+                                continue;
+                            }
                         }
 
                         List<ServicePlugin> pluginsList = new ArrayList<ServicePlugin>();
@@ -302,7 +308,13 @@ public class ServiceDependencyDiscoveryState extends AbstractPaaSDeploymentState
                         if (pluginsList.size() == 1) {
                             matchingPlugin = pluginsList.get(0);
                         } else if (pluginsList.size() == 0) {
-                            throw new PaaSDeploymentException("No service-provisioning-engine available to handle service-ref [ " + sr + " ]");
+                            if(!sr.isOptional()){
+                                throw new PaaSDeploymentException("No service-provisioning-engine available to handle service-ref [ " + sr + " ]");
+                            }else{
+                                logger.log(Level.INFO, "Unable to find a plugin to handle " +
+                                        "'optional' service-reference ["+sr+"] requirement");
+                                continue;
+                            }
                         } else {
                             matchingPlugin = orchestrator.getDefaultPluginForServiceRef(sr.getType());
                         }
@@ -411,17 +423,21 @@ public class ServiceDependencyDiscoveryState extends AbstractPaaSDeploymentState
 */
 
     private void assertMetadataComplete(Set<ServiceDescription> appSDs,
-                                        Set<ServiceReference> appSRs) {
-        //Assert that all SRs have their corresponding SDs
+                                        Set<ServiceReference> appSRs) throws PaaSDeploymentException {
+        //Make sure that all SRs have their corresponding SDs
         for (ServiceReference sr : appSRs) {
             String targetSD = sr.getServiceName();
             boolean serviceDescriptionExists = false;
             for (ServiceDescription sd : appSDs) {
                 if (sd.getName().equals(targetSD)) {
                     serviceDescriptionExists = true;
+                    break;
                 }
             }
-            assert serviceDescriptionExists;
+            //assert serviceDescriptionExists;
+            if(!serviceDescriptionExists && !sr.isOptional()){
+                throw new PaaSDeploymentException("A ServiceDescription is not available for ServiceReference : " + sr);
+            }
         }
     }
 

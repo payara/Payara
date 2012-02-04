@@ -77,8 +77,11 @@ public class ServiceReference {
     // TODO :: instead of storing resource properties, we can directly have a reference to the resource itself.
     private Properties properties = new Properties();
 
+    //indicates whether the service-reference must be satisfied by the runtime or not.
+    private boolean optional;
+
     //Plugin that requested this service-reference.
-    private ServicePlugin requestingPlugin = null;
+    private ServicePlugin requestingPlugin;
 
     public ServiceReference() {}
     
@@ -126,6 +129,15 @@ public class ServiceReference {
         this.referenceType = type;
     }
 
+    @XmlAttribute(name = "optional")
+    public boolean isOptional() {
+        return optional;
+    }
+
+    public void setOptional(boolean optional){
+        this.optional = optional;
+    }
+
     public void setRequestingPlugin(ServicePlugin plugin){
         this.requestingPlugin = plugin;
     }
@@ -138,7 +150,7 @@ public class ServiceReference {
     @Override
     public String toString() {
         return "ServiceReference [ name = " + name + ", referenceType = " + referenceType +
-                ", serviceName = " + serviceName + " ]";
+                ", serviceName = " + serviceName + ", optional = " +optional+" ]";
     }
 
     public Properties getProperties() {
@@ -156,6 +168,7 @@ public class ServiceReference {
 
         ServiceReference that = (ServiceReference) o;
 
+        if (optional != that.optional) return false;
         if (name != null ? !name.equals(that.name) : that.name != null) return false;
         if (properties != null ? !properties.equals(that.properties) : that.properties != null) return false;
         if (referenceType != null ? !referenceType.equals(that.referenceType) : that.referenceType != null)
@@ -173,6 +186,7 @@ public class ServiceReference {
         result = 31 * result + (serviceName != null ? serviceName.hashCode() : 0);
         result = 31 * result + (referenceType != null ? referenceType.hashCode() : 0);
         result = 31 * result + (properties != null ? properties.hashCode() : 0);
+        result = 31 * result + (optional ? 1 : 0);
         result = 31 * result + (requestingPlugin != null ? requestingPlugin.hashCode() : 0);
         return result;
     }
