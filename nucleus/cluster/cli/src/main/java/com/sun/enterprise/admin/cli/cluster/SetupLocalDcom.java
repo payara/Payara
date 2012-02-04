@@ -55,21 +55,21 @@ import com.sun.enterprise.util.OS;
 /*
  * @author Byron Nevins
  */
-@Service(name = "validate-local-dcom")
+@Service(name = "setup-local-dcom")
 @Scoped(PerLookup.class)
-public final class ValidateLocalDcom extends CLICommand {
+public final class SetupLocalDcom extends CLICommand {
     @Param(name = "verbose", shortName = "v", primary = false, optional = true)
     boolean verbose;
-
+    @Param(name = "force", shortName = "f", primary = false, optional = true)
+    boolean force;
     private final static String[] DEPENDENCIES = new String[]{
-        //"msvcp100.dll",
-        //"msvcr100.dll",
         "advapi32.dll",
         "kernel32.dll", //"test32.dll",
     };
     private static final String CPP_APP_FILENAME = "DcomConfigurator.exe";
     private static final File TMPDIR = new File(System.getProperty("java.io.tmpdir"));
     private static final File CPP_APP = new File(TMPDIR, CPP_APP_FILENAME);
+    private final Console console = System.console();
 
     @Override
     protected void validate() throws CommandException {
@@ -77,6 +77,12 @@ public final class ValidateLocalDcom extends CLICommand {
 
         if (!OS.isWindowsForSure())
             throw new CommandException(Strings.get("vld.windows.only"));
+
+        if (console == null)
+            throw new CommandException(Strings.get("vld.noconsole"));
+
+        if(!force)
+            areYouSure();
 
         checkPath();
         prepareCppApp();
@@ -88,7 +94,7 @@ public final class ValidateLocalDcom extends CLICommand {
             List<String> cmds = new ArrayList<String>();
             cmds.add(CPP_APP.getAbsolutePath());
 
-            if(verbose)
+            if (verbose)
                 cmds.add("--verbose");
 
             ProcessManager pm = new ProcessManager(cmds);
@@ -96,7 +102,7 @@ public final class ValidateLocalDcom extends CLICommand {
 
             int ret = pm.getExitValue();
 
-            if(verbose || ret != 0)
+            if (verbose || ret != 0)
                 logger.info(pm.getStdout() + pm.getStderr());
 
             return ret;
@@ -196,5 +202,16 @@ public final class ValidateLocalDcom extends CLICommand {
 
     private void finer(String key, Object... args) {
         logger.finer(Strings.get(key, args));
+    }
+
+    private void areYouSure() throws CommandException {
+        if (!programOpts.isInteractive())
+            throw new CommandException(Strings.get("vld.not.interactive"));
+
+        String msg = Strings.get("vld.areyousure");
+        String answer = console.readLine("%s:  ", msg);
+
+        if (!"yes".equalsIgnoreCase(answer))
+            throw new CommandException(Strings.get("vld.no"));
     }
 }

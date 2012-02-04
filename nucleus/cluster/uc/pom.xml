@@ -50,9 +50,9 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>cluster-vld</artifactId>
+    <artifactId>cluster-uc</artifactId>
     <packaging>hk2-jar</packaging>
-    <name>validate-local-dcom</name>
+    <name>setup-local-dcom</name>
 
     <build>
         <finalName>validate-local-dcom</finalName>
