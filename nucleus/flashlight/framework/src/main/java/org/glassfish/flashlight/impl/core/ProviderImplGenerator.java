@@ -87,6 +87,9 @@ public class ProviderImplGenerator {
             }
         }
 
+        if (jm == null)
+            throw new RuntimeException();
+
         final java.lang.reflect.Method clM = jm;
         try {
             java.security.AccessController.doPrivileged(
@@ -146,15 +149,16 @@ public class ProviderImplGenerator {
 
         Type probeType = Type.getType(FlashlightProbe.class);
         for (FlashlightProbe probe : provider.getProbes()) {
-            String methodDesc = "void " + probe.getProviderJavaMethodName();
-            methodDesc += "(";
+            StringBuilder methodDesc = new StringBuilder();
+            methodDesc.append("void ").append(probe.getProviderJavaMethodName());
+            methodDesc.append("(");
             String delim = "";
             for (Class paramType : probe.getParamTypes()) {
-                methodDesc += delim + paramType.getName();
+                methodDesc.append(delim).append(paramType.getName());
                 delim = ", ";
             }
-            methodDesc += ")";
-            Method m = Method.getMethod(methodDesc);
+            methodDesc.append(")");
+            Method m = Method.getMethod(methodDesc.toString());
             GeneratorAdapter gen = new GeneratorAdapter(Opcodes.ACC_PUBLIC, m, null, null, cw);
 
             String fieldName = "_flashlight_" + probe.getProbeName();
@@ -267,13 +271,6 @@ public class ProviderImplGenerator {
         //return the value from constructor
         gen.returnValue();
         gen.endMethod();
-    }
-
-    private void generateSystemOutPrintln(GeneratorAdapter mg, String msg) {
-        mg.getStatic(Type.getType(System.class), "out", Type.getType(PrintStream.class));
-        mg.push(msg);
-        mg.invokeVirtual(Type.getType(PrintStream.class), Method.getMethod("void println (String)"));
-        mg.returnValue();
     }
 }
 /*************
