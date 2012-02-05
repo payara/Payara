@@ -170,7 +170,7 @@ public class ProbeProviderClassFileTransformer implements ClassFileTransformer {
         }
     }
 
-    private class ProbeProviderMethodVisitor
+    private static class ProbeProviderMethodVisitor
             extends MethodAdapter {
         private FlashlightProbe probe;
         private int access;
