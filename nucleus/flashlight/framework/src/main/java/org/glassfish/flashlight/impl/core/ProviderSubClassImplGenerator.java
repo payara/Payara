@@ -45,6 +45,7 @@ package org.glassfish.flashlight.impl.core;
  */
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.logging.LogDomains;
+import java.security.*;
 import org.objectweb.asm.*;
 
 import java.io.InputStream;
@@ -67,7 +68,7 @@ public class ProviderSubClassImplGenerator {
         this.invokerId = invokerId;
     }
 
-    public <T> Class<T> generateAndDefineClass(Class<T> providerClazz, String invokerId) {
+    public <T> Class<T> generateAndDefineClass(final Class<T> providerClazz, String invokerId) {
 
         int id = counter.incrementAndGet();
         String providerClassName = providerClazz.getName().replace('.', '/');
@@ -99,7 +100,11 @@ public class ProviderSubClassImplGenerator {
 
         ProtectionDomain pd = providerClazz.getProtectionDomain();
 
-        SubClassLoader scl = new SubClassLoader(providerClazz.getClassLoader());
+        SubClassLoader scl = createSubClassLoader(providerClazz);
+
+        if(scl == null)
+            return null;
+
         try {
             String gcName = scl.defineClass(generatedClassName, classData, pd);
             if (logger.isLoggable(Level.FINE))
@@ -110,6 +115,26 @@ public class ProviderSubClassImplGenerator {
             ex.printStackTrace();
         }
         return null;
+    }
+
+    /**
+     * Byron Nevins Feb 2012 FindBugs fix
+     * Hide this ugly access control code in this method
+     * @return the SubClassLoader or null if error(s)
+     */
+    private SubClassLoader createSubClassLoader(final Class theClass) {
+        try {
+            return AccessController.doPrivileged(
+                    new PrivilegedExceptionAction<SubClassLoader>() {
+                        @Override
+                        public SubClassLoader run() throws Exception {
+                            return new SubClassLoader(theClass.getClassLoader());
+                        }
+                    });
+        }
+        catch (Exception e) {
+            return null;
+        }
     }
 
     class SubClassLoader
