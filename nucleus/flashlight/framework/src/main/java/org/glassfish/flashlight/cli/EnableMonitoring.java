@@ -69,8 +69,8 @@ import com.sun.enterprise.config.serverbeans.MonitoringService;
 @TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CONFIG})
 @RestEndpoints({
     @RestEndpoint(configBean=Domain.class,
-        opType=RestEndpoint.OpType.POST, 
-        path="enable-monitoring", 
+        opType=RestEndpoint.OpType.POST,
+        path="enable-monitoring",
         description="enable-monitoring")
 })
 public class EnableMonitoring implements AdminCommand {
@@ -195,9 +195,5 @@ public class EnableMonitoring implements AdminCommand {
         return ((level.equals("OFF")) || (level.equals("HIGH")) || (level.equals("LOW")));
     }
 
-    // Old code re-arranged.  Please redo later!!
-    private File getAgentJar(File installDir) {
-        return new File(installDir, FLASHLIGHT_AGENT_PATH);
-    }
     static final String FLASHLIGHT_AGENT_PATH = "lib/monitor/flashlight-agent.jar";
 }
