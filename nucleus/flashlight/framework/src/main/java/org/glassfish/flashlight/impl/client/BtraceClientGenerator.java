@@ -88,15 +88,17 @@ public class BtraceClientGenerator {
         for (FlashlightProbe probe : probes) {
             //Preparing the class method header and params (type) for @OnMethod annotation
             String typeDesc = "void ";
-            String methodDesc = "void __" + probe.getProviderJavaMethodName() + "__" + clientID + "_" + methodCounter + "_";
-            methodDesc += "(";
+            StringBuilder methodDesc = new StringBuilder("void __");
+            methodDesc.append(probe.getProviderJavaMethodName()).append("__");
+            methodDesc.append(clientID).append("_").append(methodCounter).append("_");
+            methodDesc.append("(");
             typeDesc += "(";
             String delim = "";
             String typeDelim = "";
             Class[] paramTypes = probe.getParamTypes();
             for (int index = 0; index < paramTypes.length; index++) {
                 Class paramType = paramTypes[index];
-                methodDesc += delim + paramType.getName();
+                methodDesc.append(delim).append(paramType.getName());
                 // Dont add the param type for type desc, if self is the first index
                 if (!(probe.hasSelf() && (index == 0))) {
                     typeDesc += typeDelim + paramType.getName();
@@ -104,10 +106,10 @@ public class BtraceClientGenerator {
                 }
                 delim = ", ";
             }
-            methodDesc += ")";
+            methodDesc.append(")");
             typeDesc += ")";
             //Creating the class method
-            Method m = Method.getMethod(methodDesc);
+            Method m = Method.getMethod(methodDesc.toString());
             GeneratorAdapter gen = new GeneratorAdapter(Opcodes.ACC_PUBLIC + Opcodes.ACC_STATIC, m, null, null, cw);
             // Add the @Self annotation
             if (probe.hasSelf()) {
