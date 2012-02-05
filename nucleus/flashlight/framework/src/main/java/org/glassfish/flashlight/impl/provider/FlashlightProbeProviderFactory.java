@@ -86,7 +86,7 @@ public class FlashlightProbeProviderFactory
 
     @Inject
     ProbeProviderEventManager ppem;
-    
+
     @Inject
     Habitat habitat;
 
@@ -124,14 +124,14 @@ public class FlashlightProbeProviderFactory
 
         if(newValue == false)
             return;
-        
+
         // if it still is not available -- return.  E.g. they set the flag
         // but they don't have the native libs
-        
+
         if(!FlashlightUtils.isDtraceAvailable())
             return;
-        
-        // if false-> true we might need to create all the DTrace classes.  It 
+
+        // if false-> true we might need to create all the DTrace classes.  It
         // depends on whether the server started up with it true, etc.
         // loop through all the Providers -- if any don't have DTrace then
         // instrument with DTrace
@@ -154,7 +154,7 @@ public class FlashlightProbeProviderFactory
         if(newValue == true && FlashlightUtils.isDtraceEnabled())
             dtraceEnabledChanged(true);
     }
-    
+
     public <T> T getProbeProvider(Class<T> providerClazz)
             throws InstantiationException, IllegalAccessException {
         return getProbeProvider(providerClazz, null);
@@ -247,7 +247,7 @@ public class FlashlightProbeProviderFactory
 
         // IT 10269 -- silently return a fresh instance if it is already registered
         // don't waste time -- return right away...
-        
+
         FlashlightProbeProvider alreadyExists = ppRegistry.getProbeProvider(provider);
 
         if(alreadyExists != null) {
@@ -258,11 +258,11 @@ public class FlashlightProbeProviderFactory
         }
 
         List<Method> methods = FlashlightUtils.getProbeMethods(providerClazz);
-        
+
         // If none of the method are annotated with @Probe, then register all
         // public methods as probe providers
         boolean isProbeAnnotationPresent = false;
-        
+
         for (Method m : methods) {
             Probe pnameAnn = m.getAnnotation(Probe.class);
             boolean self = false;
@@ -275,13 +275,13 @@ public class FlashlightProbeProviderFactory
                 if (pnameAnn.name() != null && !pnameAnn.name().isEmpty()) {
                     probeName = pnameAnn.name();
                 }
-                
-                createProbe(origProbeProviderName, genericProvider, provider, 
-                        probeName, self, hidden, m, moduleProviderName, moduleName, probeProviderName, 
+
+                createProbe(origProbeProviderName, genericProvider, provider,
+                        probeName, self, hidden, m, moduleProviderName, moduleName, probeProviderName,
                         invokerId, providerClazz);
             }
         }
-        
+
         if (!isProbeAnnotationPresent) {  //Let's do all public methods
             for (Method m : providerClazz.getDeclaredMethods()) {
                 String methodName = m.getName();
@@ -291,7 +291,7 @@ public class FlashlightProbeProviderFactory
                         invokerId, providerClazz);
             }
         }
-        
+
         handleDTrace(provider);
 
         Class<T> tClazz = providerClazz;
@@ -334,12 +334,12 @@ public class FlashlightProbeProviderFactory
         return inst;
     }
 
-    private void createProbe(String origProbeProviderName, FlashlightProbeProvider genericProvider, 
+    private void createProbe(String origProbeProviderName, FlashlightProbeProvider genericProvider,
             FlashlightProbeProvider provider, String probeName, boolean self, boolean hidden,
             Method m, String moduleProviderName, String moduleName,
     		String probeProviderName, String invokerId,
     		Class providerClazz) {
-        
+
             String[] probeParamNames = FlashlightUtils.getParamNames(m);
             FlashlightProbe probe = ProbeFactory.createProbe(
                     providerClazz, moduleProviderName, moduleName, probeProviderName, probeName,
@@ -360,9 +360,9 @@ public class FlashlightProbeProviderFactory
 
                 }
             }
-        
 
-        
+
+
     }
 
     public void unregisterProbeProvider(Object probeProvider) {
@@ -382,8 +382,6 @@ public class FlashlightProbeProviderFactory
     }
 
     private <T> Class<T> getGeneratedProbeProviderClass(Class<T> oldProviderClazz, String invokerId) {
-        String generatedClassName = oldProviderClazz.getName() + invokerId;
-
         Class<T> genClazz = null;
 
         try {
@@ -440,11 +438,11 @@ public class FlashlightProbeProviderFactory
     public void addProbeProviderEventListener(ProbeProviderEventListener listener) {
         listeners.add(listener);
     }
- 
+
     @Override
     public void removeProbeProviderEventListener(ProbeProviderEventListener listener) {
         listeners.remove(listener);
-    } 
+    }
 
     @Override
 	public String toString() {
@@ -484,7 +482,7 @@ public class FlashlightProbeProviderFactory
         }
 
         provider.setDTraceInstrumented(true);
- 
+
          Collection<FlashlightProbe> probes = provider.getProbes();
          boolean onlyHidden = true;
 
