@@ -149,6 +149,7 @@ public class BtraceClientGenerator {
 //            return;
 
         System.out.println("**** Generated BTRACE Client " + generatedClassName);
+        FileOutputStream fos = null;
 
         try {
             int index = generatedClassName.lastIndexOf('/');
@@ -159,12 +160,20 @@ public class BtraceClientGenerator {
             //System.out.println("***ClassFile: " + fileName);
             File file = new File(fileName);
 
-            FileOutputStream fos = new FileOutputStream(file);
+            fos = new FileOutputStream(file);
             fos.write(classData);
             fos.flush();
-            fos.close();
         } catch (Exception ex) {
             ex.printStackTrace();
+        } finally {
+            if(fos != null) {
+                try {
+                    fos.close();
+                }
+                catch(Exception e) {
+                // can't do anything...
+                }
+            }
         }
     }
 
