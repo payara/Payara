@@ -42,6 +42,7 @@ package org.glassfish.flashlight.impl.core;
 /**
  * @author Mahesh Kannan
  *         Date: Nov 8, 2009
+ * Fixed a bunch of FindBugs problem, 2/2012, Byron Nevins
  */
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.logging.LogDomains;
@@ -198,16 +199,6 @@ public class ProviderSubClassImplGenerator {
             else {
                 return super.visitMethod(access, name, desc, signature, strings);
             }
-        }
-    }
-
-    private static class ConstructorGenerator
-            extends MethodAdapter {
-        private MethodVisitor mv;
-
-        ConstructorGenerator(MethodVisitor mv) {
-            super(mv);
-            this.mv = mv;
         }
     }
 
