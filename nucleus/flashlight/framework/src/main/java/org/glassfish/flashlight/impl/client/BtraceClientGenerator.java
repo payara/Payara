@@ -81,7 +81,7 @@ public class BtraceClientGenerator {
         cw.visit(Opcodes.V1_5, access, generatedClassName, null,
                 "java/lang/Object", null);
         //Need a @OnMethod annotation, so prepare your Annotation Visitor for that
-        AnnotationVisitor av = cw.visitAnnotation("Lcom/sun/btrace/annotations/BTrace;", true);
+        cw.visitAnnotation("Lcom/sun/btrace/annotations/BTrace;", true);
 
         //Iterate through the probes, so you will create one method for each probe
         int methodCounter = 0;
@@ -120,7 +120,7 @@ public class BtraceClientGenerator {
                 }
             }
             //Add the @OnMethod annotation to this method
-            av = gen.visitAnnotation("Lcom/sun/btrace/annotations/OnMethod;", true);
+            AnnotationVisitor av = gen.visitAnnotation("Lcom/sun/btrace/annotations/OnMethod;", true);
             av.visit("clazz", "" + probe.getProviderClazz().getName());
             av.visit("method", probe.getProviderJavaMethodName());
             av.visit("type", typeDesc);
