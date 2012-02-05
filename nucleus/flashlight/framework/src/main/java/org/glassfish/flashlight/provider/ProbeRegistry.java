@@ -59,7 +59,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Scoped(Singleton.class)
 public class ProbeRegistry {
 
-    private static ProbeRegistry _me = new ProbeRegistry();
+    private static volatile ProbeRegistry _me = new ProbeRegistry();
 
     private static ConcurrentHashMap<Integer, FlashlightProbe> probeMap =
                 new ConcurrentHashMap<Integer, FlashlightProbe>();
@@ -79,7 +79,7 @@ public class ProbeRegistry {
     	if (_me == null) {
     		_me = new ProbeRegistry();
     	}
-    	
+
     	return _me;
     }
 
@@ -117,7 +117,7 @@ public class ProbeRegistry {
     public static FlashlightProbe getProbeById(int id) {
         return _me.getProbe(id);
     }
-    
+
     public Collection<FlashlightProbe> getAllProbes() {
        Collection<FlashlightProbe> allProbes = probeMap.values();
        Collection<FlashlightProbe> visibleProbes = new ArrayList<FlashlightProbe>();
