@@ -37,14 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
 package org.glassfish.flashlight.impl.core;
 
 /**
  * @author Mahesh Kannan
  *         Date: Nov 8, 2009
  */
-
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.logging.LogDomains;
 import org.objectweb.asm.*;
@@ -55,18 +53,13 @@ import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.util.concurrent.atomic.AtomicInteger;
 
-
 public class ProviderSubClassImplGenerator {
-
     private static final Logger logger =
             LogDomains.getLogger(ProviderSubClassImplGenerator.class, LogDomains.MONITORING_LOGGER);
     public final static LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(ProviderSubClassImplGenerator.class);
-
     private String invokerId;
-
     private Class providerClazz;
-
     private static AtomicInteger counter = new AtomicInteger();
 
     public ProviderSubClassImplGenerator(Class providerClazz, String invokerId) {
@@ -91,7 +84,8 @@ public class ProviderSubClassImplGenerator {
                     index += r;
                 }
             }
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             return null;
         }
 
@@ -111,7 +105,8 @@ public class ProviderSubClassImplGenerator {
             if (logger.isLoggable(Level.FINE))
                 logger.fine("**** DEFINE CLASS SUCCEEDED for " + gcName + "," + generatedClassName);
             return (Class<T>) scl.loadClass(gcName);
-        } catch (Throwable ex) {
+        }
+        catch (Throwable ex) {
             ex.printStackTrace();
         }
         return null;
@@ -119,7 +114,6 @@ public class ProviderSubClassImplGenerator {
 
     class SubClassLoader
             extends ClassLoader {
-
         SubClassLoader(ClassLoader cl) {
             super(cl);
         }
@@ -133,10 +127,8 @@ public class ProviderSubClassImplGenerator {
         }
     }
 
-
     private static class ProbeProviderSubClassGenerator
             extends ClassAdapter {
-
         String superClassName;
         String token;
         String id;
@@ -158,7 +150,8 @@ public class ProviderSubClassImplGenerator {
             AnnotationVisitor delegate = super.visitAnnotation(desc, visible);
             if ("Lorg/glassfish/external/probe/provider/annotations/ProbeProvider;".equals(desc)) {
                 return new ProbeProviderAnnotationVisitor(delegate, token);
-            } else {
+            }
+            else {
                 return delegate;
             }
         }
@@ -176,15 +169,15 @@ public class ProviderSubClassImplGenerator {
                 mv.visitEnd();
 
                 return null;
-            } else {
-            return super.visitMethod(access, name, desc, signature, strings);
+            }
+            else {
+                return super.visitMethod(access, name, desc, signature, strings);
             }
         }
     }
 
     private static class ConstructorGenerator
-        extends MethodAdapter {
-
+            extends MethodAdapter {
         private MethodVisitor mv;
 
         ConstructorGenerator(MethodVisitor mv) {
@@ -195,9 +188,7 @@ public class ProviderSubClassImplGenerator {
 
     private static class ProbeProviderAnnotationVisitor
             implements AnnotationVisitor {
-
         private AnnotationVisitor delegate;
-
         private String token;
 
         ProbeProviderAnnotationVisitor(AnnotationVisitor delegate, String token) {
