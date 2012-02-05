@@ -246,8 +246,4 @@ public class ProviderSubClassImplGenerator {
             delegate.visitEnd();
         }
     }
-
-    private void printd(String pstring) {
-        logger.log(Level.FINEST, pstring);
-    }
 }
