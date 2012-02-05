@@ -137,7 +137,7 @@ public class ProviderSubClassImplGenerator {
         }
     }
 
-    class SubClassLoader
+    static class SubClassLoader
             extends ClassLoader {
         SubClassLoader(ClassLoader cl) {
             super(cl);
