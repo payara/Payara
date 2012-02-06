@@ -42,11 +42,15 @@ package org.glassfish.paas.orchestrator.state;
 
 import org.glassfish.paas.orchestrator.PaaSDeploymentContext;
 import org.glassfish.paas.orchestrator.PaaSDeploymentException;
-import org.glassfish.paas.orchestrator.ServiceOrchestratorImpl;
+import org.glassfish.paas.orchestrator.config.SharedService;
 import org.glassfish.paas.orchestrator.provisioning.ServiceScope;
+import org.glassfish.paas.orchestrator.provisioning.cli.ServiceUtil;
+import org.glassfish.paas.orchestrator.provisioning.cli.SharedServiceLazyInitializer;
+import org.glassfish.paas.orchestrator.service.ServiceStatus;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceDescription;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceMetadata;
 import org.glassfish.paas.orchestrator.service.spi.ProvisionedService;
+import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
 
 import java.util.Collection;
@@ -58,14 +62,30 @@ import java.util.LinkedHashSet;
 @Service
 public class SharedServiceRegistrationState extends AbstractPaaSDeploymentState {
 
+    @Inject
+    private ServiceUtil serviceUtil;
+
+    @Inject
+    private SharedServiceLazyInitializer sharedServiceLazyInitializer;
+
+
     public void handle(PaaSDeploymentContext context) throws PaaSDeploymentException {
         String appName = context.getAppName();
         ServiceMetadata serviceMetadata = appInfoRegistry.getServiceMetadata(appName);
-        Collection<ServiceDescription> serviceDescriptions =  serviceMetadata.getServiceDescriptions();
+        Collection<ServiceDescription> serviceDescriptions = serviceMetadata.getServiceDescriptions();
         Collection<ProvisionedService> sharedServices = new LinkedHashSet<ProvisionedService>();
-        for(ServiceDescription sd : serviceDescriptions){
-            if(ServiceScope.SHARED.equals(sd.getServiceScope())){
-                sharedServices.add(orchestrator.getSharedService(sd.getName()));
+
+        ProvisionedService provisionedService = null;
+        for (ServiceDescription sd : serviceDescriptions) {
+            if (ServiceScope.SHARED.equals(sd.getServiceScope())) {
+                final SharedService sharedService = (SharedService) serviceUtil.getService(sd.getName(), null);
+                //If the service is created but not provisioned- which we identify by the 'NOT_RUNNING" state, we PROVISION the service.
+                if (ServiceStatus.UNINITIALIZED.toString().equalsIgnoreCase(sharedService.getState())) {
+                    provisionedService=sharedServiceLazyInitializer.provisionService(sharedService.getServiceName());
+                    sharedServices.add(provisionedService);
+                } else {
+                    sharedServices.add(orchestrator.getSharedService(sd.getName()));
+                }
             }
         }
         appInfoRegistry.registerProvisionedServices(appName, sharedServices);
