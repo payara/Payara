@@ -73,7 +73,7 @@ public class LogFilterForInstance {
 
     public File downloadGivenInstanceLogFile(Habitat habitat, Server targetServer, Domain domain, Logger logger,
                                              String instanceName, String domainRoot, String logFileName, String instanceLogFileName)
-            throws IOException, WindowsException {
+            throws IOException {
 
         File instanceLogFile = null;
 
@@ -168,17 +168,22 @@ public class LogFilterForInstance {
 
             String loggingDir = getLoggingDirectoryForNode(instanceLogFileName, node, sNode, instanceName);
 
-            DcomInfo info = new DcomInfo(node);
-            WindowsRemoteFileSystem wrfs = new WindowsRemoteFileSystem(info.getHost(), info.getUser(), info.getPassword());
+            try {
+                DcomInfo info = new DcomInfo(node);
+                WindowsRemoteFileSystem wrfs = new WindowsRemoteFileSystem(info.getHost(), info.getUser(), info.getPassword());
 
-            if (logFileName == null || logFileName.equals("")) {
-                logFileName = "server.log";
+                if (logFileName == null || logFileName.equals("")) {
+                    logFileName = "server.log";
+                }
+                WindowsRemoteFile wrf = new WindowsRemoteFile(wrfs, loggingDir + File.separator + logFileName);
+
+                instanceLogFile = new File(logFileDirectoryOnServer + File.separator + logFileName);
+
+                wrf.copyTo(instanceLogFile);
+            } catch (WindowsException ex) {
+                throw new IOException("Unable to download instance log file from DCOM Instance Node");
             }
-            WindowsRemoteFile wrf = new WindowsRemoteFile(wrfs, loggingDir + File.separator + logFileName);
 
-            instanceLogFile = new File(logFileDirectoryOnServer + File.separator + logFileName);
-
-            wrf.copyTo(instanceLogFile);
 
         }
 
@@ -188,7 +193,7 @@ public class LogFilterForInstance {
 
     public void downloadAllInstanceLogFiles(Habitat habitat, Server targetServer, Domain domain, Logger logger,
                                             String instanceName, String tempDirectoryOnServer, String instanceLogFileDirectory)
-            throws IOException, WindowsException {
+            throws IOException {
 
         // method is used from collect-log-files command
         // for Instance it's going through this loop. This will use ssh utility to get file from instance machine(remote machine) and
@@ -246,23 +251,28 @@ public class LogFilterForInstance {
 
             String sourceDir = getLoggingDirectoryForNode(instanceLogFileDirectory, node, sNode, instanceName);
 
-            DcomInfo info = new DcomInfo(node);
+            try {
+                DcomInfo info = new DcomInfo(node);
 
-            WindowsRemoteFileSystem wrfs = new WindowsRemoteFileSystem(info.getHost(), info.getUser(), info.getPassword());
+                WindowsRemoteFileSystem wrfs = new WindowsRemoteFileSystem(info.getHost(), info.getUser(), info.getPassword());
 
-            for (int i = 0; i < instanceLogFileNames.size(); i++) {
+                for (int i = 0; i < instanceLogFileNames.size(); i++) {
 
-                String logFileName = (String) instanceLogFileNames.get(i);
-                WindowsRemoteFile wrf = new WindowsRemoteFile(wrfs, sourceDir + File.separator + logFileName);
-                File instanceLogFile = new File(tempDirectoryOnServer + File.separator + logFileName);
-                wrf.copyTo(instanceLogFile);
+                    String logFileName = (String) instanceLogFileNames.get(i);
+                    WindowsRemoteFile wrf = new WindowsRemoteFile(wrfs, sourceDir + File.separator + logFileName);
+                    File instanceLogFile = new File(tempDirectoryOnServer + File.separator + logFileName);
+                    wrf.copyTo(instanceLogFile);
+                }
+            } catch (WindowsException ex) {
+                throw new IOException("Unable to download instance log file from DCOM Instance Node");
             }
+
 
         }
     }
 
     public Vector getInstanceLogFileNames(Habitat habitat, Server targetServer, Domain domain, Logger logger,
-                                          String instanceName, String instanceLogFileDirectory) throws IOException, WindowsException {
+                                          String instanceName, String instanceLogFileDirectory) throws IOException {
 
         // helper method to get all log file names for given instance
         String sNode = targetServer.getNodeRef();
@@ -357,19 +367,23 @@ public class LogFilterForInstance {
 
             String loggingDir = getLoggingDirectoryForNode(instanceLogFileDirectory, node, sNode, instanceName);
 
-            DcomInfo info = new DcomInfo(node);
-            WindowsRemoteFileSystem wrfs = new WindowsRemoteFileSystem(info.getHost(), info.getUser(), info.getPassword());
-            WindowsRemoteFile wrf = new WindowsRemoteFile(wrfs, loggingDir);
-            String[] allLogFileNames = wrf.list();
+            try {
+                DcomInfo info = new DcomInfo(node);
+                WindowsRemoteFileSystem wrfs = new WindowsRemoteFileSystem(info.getHost(), info.getUser(), info.getPassword());
+                WindowsRemoteFile wrf = new WindowsRemoteFile(wrfs, loggingDir);
+                String[] allLogFileNames = wrf.list();
 
-            for (int i = 0; i < allLogFileNames.length; i++) {
-                File file = new File(allLogFileNames[i]);
-                String fileName = file.getName();
-                // code to remove . and .. file which is return
-                if (!fileName.equals(".") && !fileName.equals("..") && fileName.contains(".log")
-                        && !fileName.contains(".log.")) {
-                    instanceLogFileNamesAsString.add(fileName);
+                for (int i = 0; i < allLogFileNames.length; i++) {
+                    File file = new File(allLogFileNames[i]);
+                    String fileName = file.getName();
+                    // code to remove . and .. file which is return
+                    if (!fileName.equals(".") && !fileName.equals("..") && fileName.contains(".log")
+                            && !fileName.contains(".log.")) {
+                        instanceLogFileNamesAsString.add(fileName);
+                    }
                 }
+            } catch (WindowsException ex) {
+                throw new IOException("Unable to get instance log file names from DCOM Instance Node");
             }
 
         }
