@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -42,7 +42,7 @@ package com.sun.enterprise.jbi.serviceengine.core;
 
 
 import com.sun.enterprise.deployment.archivist.Archivist;
-import org.glassfish.deployment.common.XModuleType;
+import org.glassfish.api.deployment.archive.ArchiveType;
 import java.net.URISyntaxException;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.deployment.common.ModuleExploder;
@@ -442,20 +442,20 @@ public class JavaEEServiceEngineSUManager implements ServiceUnitManager, JBICons
             File f = new File(dir);
             sourceArchive = runtimeHelper.getArchiveFactory().openArchive(f);
             Archivist archivist = runtimeHelper.getArchivistFactory().getArchivist(sourceArchive,(this.getClass()).getClassLoader());
-            XModuleType moduleType = archivist.getModuleType();
+            ArchiveType moduleType = archivist.getModuleType();
             String pathExtn = ".jar";
-            if (XModuleType.EAR.equals(moduleType)) {
-                pathExtn = ".ear";
-            } else if (XModuleType.WAR.equals(moduleType)) {
-                pathExtn = ".war";
-            } else if (XModuleType.RAR.equals(moduleType)) {
-                pathExtn = ".rar";
+            if (moduleType.equals(org.glassfish.deployment.common.DeploymentUtils.earType())) {
+                pathExtn = moduleType.getModuleExtension();
+            } else if (org.glassfish.deployment.common.DeploymentUtils.warType().equals(moduleType)) {
+                pathExtn = moduleType.getModuleExtension();
+            } else if (org.glassfish.deployment.common.DeploymentUtils.rarType().equals(moduleType)) {
+                pathExtn = moduleType.getModuleExtension();
             }
             String workspaceDir =
                     JavaEEServiceEngineContext.getInstance().
                     getJBIContext().getWorkspaceRoot();
             archivePath = workspaceDir + File.separator + archiveName + pathExtn;
-            if (XModuleType.EAR.equals(moduleType)) {
+            if (org.glassfish.deployment.common.DeploymentUtils.earType().equals(moduleType)) {
                 createEar(dir, archivePath);
             } else {
                 createJar(dir, archivePath);
@@ -559,15 +559,15 @@ public class JavaEEServiceEngineSUManager implements ServiceUnitManager, JBICons
         try {
             ReadableArchive sourceArchive = runtimeHelper.getArchiveFactory().openArchive(srcFile);
             Archivist archivist = runtimeHelper.getArchivistFactory().getArchivist(sourceArchive,(this.getClass()).getClassLoader());
-            XModuleType moduleType = archivist.getModuleType();
-            if(XModuleType.EAR.equals(moduleType)) {
+            ArchiveType moduleType = archivist.getModuleType();
+            if(org.glassfish.deployment.common.DeploymentUtils.earType().equals(moduleType)) {
                 //J2EEModuleExploder.explodeEar(srcFile, destFile);
                 //ModuleExploder.explodeJar(srcFile,destFile);
                 /*TODO: explodeEar function not present */
-            } else if ( XModuleType.EJB.equals(moduleType) ||
-                    XModuleType.CAR.equals(moduleType) ||
-                    XModuleType.RAR.equals(moduleType) ||
-                    XModuleType.WAR.equals(moduleType) ) {
+            } else if ( org.glassfish.deployment.common.DeploymentUtils.ejbType().equals(moduleType) ||
+                    org.glassfish.deployment.common.DeploymentUtils.carType().equals(moduleType) ||
+                    org.glassfish.deployment.common.DeploymentUtils.rarType().equals(moduleType) ||
+                    org.glassfish.deployment.common.DeploymentUtils.warType().equals(moduleType) ) {
                 //J2EEModuleExploder.explodeJar(srcFile, destFile);
                 ModuleExploder.explodeJar(srcFile,destFile);
             }

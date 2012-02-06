@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -47,7 +47,6 @@ import com.sun.enterprise.deployment.node.ws.WLDescriptorConstants;
 import com.sun.enterprise.deployment.node.ws.WLWebServicesDescriptorNode;
 import org.glassfish.deployment.common.Descriptor;
 import org.glassfish.deployment.common.RootDeploymentDescriptor;
-import org.glassfish.deployment.common.XModuleType;
 
 import java.util.Vector;
 
@@ -62,7 +61,7 @@ public class WLWebServicesDeploymentDescriptorFile extends DeploymentDescriptorF
     private String descriptorPath;
 
     public WLWebServicesDeploymentDescriptorFile(RootDeploymentDescriptor desc) {
-        descriptorPath = (((WebServicesDescriptor)desc).getBundleDescriptor().getModuleType().equals(XModuleType.WAR)) ?
+        descriptorPath = (((WebServicesDescriptor)desc).getBundleDescriptor().getModuleType().equals(org.glassfish.deployment.common.DeploymentUtils.warType())) ?
                 WLDescriptorConstants.WL_WEB_WEBSERVICES_JAR_ENTRY : WLDescriptorConstants.WL_EJB_WEBSERVICES_JAR_ENTRY;
     }
 

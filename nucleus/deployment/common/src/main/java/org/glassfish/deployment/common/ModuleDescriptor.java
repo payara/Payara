@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -45,6 +45,7 @@ import java.util.Iterator;
 import java.util.Vector;
 import java.util.jar.Manifest;
 
+import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.deployment.versioning.VersioningUtils;
 
 /**
@@ -58,7 +59,7 @@ public class ModuleDescriptor<T extends RootDeploymentDescriptor> extends Descri
     /**
      * type of the module, currently EJB, WEB...
      */
-    private XModuleType type;
+    private ArchiveType type;
     
     /**
      * path for the module bundle
@@ -96,7 +97,7 @@ public class ModuleDescriptor<T extends RootDeploymentDescriptor> extends Descri
     public ModuleDescriptor() {
     }
 
-    public void setModuleType(XModuleType type) {
+    public void setModuleType(ArchiveType type) {
         this.type = type;
     }
     
@@ -104,7 +105,7 @@ public class ModuleDescriptor<T extends RootDeploymentDescriptor> extends Descri
     /** 
      * @return the module type for this module
      */
-    public XModuleType getModuleType() {
+    public ArchiveType getModuleType() {
         if (descriptor!=null) {
             return descriptor.getModuleType();
         } 

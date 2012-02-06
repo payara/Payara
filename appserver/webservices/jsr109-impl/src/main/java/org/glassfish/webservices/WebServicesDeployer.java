@@ -45,7 +45,8 @@ import com.sun.enterprise.deployment.*;
 import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.deployment.archivist.Archivist;
 import com.sun.enterprise.deployment.util.WebServerInfo;
-import org.glassfish.deployment.common.XModuleType;
+import org.glassfish.api.deployment.archive.ArchiveType;
+import org.glassfish.deployment.common.DeploymentUtils;
 import com.sun.enterprise.deployment.web.AppListenerDescriptor;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.io.FileUtils;
@@ -103,7 +104,7 @@ public class WebServicesDeployer extends JavaEEDeployer<WebServicesContainer,Web
         return deploymentNotifier;
     }
 
-    private Logger logger = LogDomains.getLogger(this.getClass(),LogDomains.WEBSERVICES_LOGGER);
+    private Logger logger = LogDomains.getLogger(this.getClass(), LogDomains.WEBSERVICES_LOGGER);
 
     private ResourceBundle rb = logger.getResourceBundle();
 
@@ -215,8 +216,8 @@ public class WebServicesDeployer extends JavaEEDeployer<WebServicesContainer,Web
         stubsDir.mkdirs();
 
 
-        if (!XModuleType.WAR.equals(bundle.getModuleType()) &&
-                !XModuleType.EJB.equals(bundle.getModuleType())) {
+        if (!org.glassfish.deployment.common.DeploymentUtils.warType().equals(bundle.getModuleType()) &&
+                !org.glassfish.deployment.common.DeploymentUtils.ejbType().equals(bundle.getModuleType())) {
             // unknown module type with @WebService, just ignore...
             return;
         }
@@ -818,11 +819,11 @@ public class WebServicesDeployer extends JavaEEDeployer<WebServicesContainer,Web
             copyExtraFilesToGeneratedFolder(dc);
             BundleDescriptor bundle = webService.getBundleDescriptor();
 
-            XModuleType moduleType = bundle.getModuleType();
+            ArchiveType moduleType = bundle.getModuleType();
             //only EAR, WAR and EJB archives could contain wsdl files for publish
-            if (!(XModuleType.EAR.equals(moduleType) ||
-                    XModuleType.WAR.equals(moduleType) ||
-                    XModuleType.EJB.equals(moduleType))) {
+            if (moduleType==null || !(moduleType.equals(DeploymentUtils.earType()) ||
+                    moduleType.equals(DeploymentUtils.warType()) ||
+                    moduleType.equals(DeploymentUtils.ejbType()))) {
                 return publishedFiles;
             }
 

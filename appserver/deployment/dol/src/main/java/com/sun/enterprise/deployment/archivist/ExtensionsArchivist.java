@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,8 +41,8 @@
 package com.sun.enterprise.deployment.archivist;
 
 import com.sun.enterprise.deployment.io.DeploymentDescriptorFile;
+import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.deployment.common.RootDeploymentDescriptor;
-import org.glassfish.deployment.common.XModuleType;
 import com.sun.enterprise.deployment.annotation.impl.ModuleScanner;
 import com.sun.logging.LogDomains;
 import org.glassfish.api.deployment.archive.ReadableArchive;
@@ -74,9 +74,7 @@ public abstract class ExtensionsArchivist  {
 
     public abstract DeploymentDescriptorFile getConfigurationDDFile(RootDeploymentDescriptor descriptor);
 
-    public abstract XModuleType getModuleType();
-
-    public abstract boolean supportsModuleType(XModuleType moduleType);
+    public abstract boolean supportsModuleType(ArchiveType moduleType);
 
     public abstract <T extends RootDeploymentDescriptor> T getDefaultDescriptor();
 

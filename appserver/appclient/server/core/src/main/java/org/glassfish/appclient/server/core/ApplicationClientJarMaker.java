@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -45,21 +45,15 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
-import javax.enterprise.deploy.shared.ModuleType;
 
 import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.archivist.ApplicationArchivist;
-import com.sun.enterprise.deployment.archivist.Archivist;
-import com.sun.enterprise.deployment.archivist.ArchivistFactory;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.api.deployment.archive.WritableArchive;
 import org.glassfish.deployment.common.RootDeploymentDescriptor;
 import org.glassfish.deployment.common.ModuleDescriptor;
-import org.glassfish.deployment.common.XModuleType;
 import com.sun.enterprise.util.zip.ZipItem;
 
 /**
@@ -138,8 +132,8 @@ class ApplicationClientJarMaker implements ClientJarMaker {
         Application app = Application.class.cast(descriptor);
         for (ModuleDescriptor md : app.getModules()) {
             //ignore the war and rar modules, include both appclient and ejb
-            if ( ! (md.getModuleType().equals(XModuleType.WAR) 
-                || md.getModuleType().equals(XModuleType.RAR)) ){
+            if ( ! (md.getModuleType().equals(org.glassfish.deployment.common.DeploymentUtils.warType())
+                || md.getModuleType().equals(org.glassfish.deployment.common.DeploymentUtils.rarType())) ){
 
                 ReadableArchive subSource = source.getSubArchive(md.getArchiveUri());
                 ReadableArchive subSource2 = null;

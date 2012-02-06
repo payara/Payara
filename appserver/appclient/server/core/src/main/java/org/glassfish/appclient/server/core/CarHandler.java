@@ -72,7 +72,7 @@ public class CarHandler extends AbstractArchiveHandler {
 
     @Override
     public String getArchiveType() {
-        return CarDetector.ARCHIVE_TYPE;
+        return detector.getArchiveType().toString();
     }
 
     @Override

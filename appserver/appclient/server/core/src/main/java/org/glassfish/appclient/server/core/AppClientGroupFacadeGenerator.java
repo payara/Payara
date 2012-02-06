@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -44,7 +44,6 @@ import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.BundleDescriptor;
 import com.sun.enterprise.deployment.deploy.shared.OutputJarArchive;
 import org.glassfish.deployment.common.ModuleDescriptor;
-import org.glassfish.deployment.common.XModuleType;
 import com.sun.enterprise.module.Module;
 import com.sun.enterprise.module.ModulesRegistry;
 import java.io.BufferedInputStream;
@@ -144,7 +143,7 @@ public class AppClientGroupFacadeGenerator {
 
         final Application application = dc.getModuleMetaData(Application.class);
         final Collection<ModuleDescriptor<BundleDescriptor>> appClients =
-                application.getModuleDescriptorsByType(XModuleType.CAR);
+                application.getModuleDescriptorsByType(org.glassfish.deployment.common.DeploymentUtils.carType());
 
         final StringBuilder appClientGroupListSB = new StringBuilder();
 

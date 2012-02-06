@@ -100,4 +100,13 @@ public interface ArchiveDetector {
      * @return
      */
     ArchiveHandler getArchiveHandler();
+
+    /**
+     * Returns the type of the deployment unit or archive or module whichever way you want to call what's being
+     * depoyed. Each archive handler is responsible for only one type of archive and the type of the archive is
+     * represented by {@link ArchiveType}.
+     *
+     * @return the type of the archive or deployment unit that can be detected by this detector
+     */
+    ArchiveType getArchiveType();
 }

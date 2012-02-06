@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -65,7 +65,6 @@ import com.sun.enterprise.deployment.WebService;
 import com.sun.enterprise.deployment.WebServiceEndpoint;
 import com.sun.enterprise.deployment.EjbDescriptor;
 import com.sun.enterprise.deployment.WebComponentDescriptor;
-import org.glassfish.deployment.common.XModuleType;
 
 import javax.xml.namespace.QName;
 
@@ -264,7 +263,7 @@ public class WebServiceProviderHandler extends AbstractHandler {
             endpoint.setServiceEndpointInterface(serviceEndpointIntf.getName());
         }
 
-        if (XModuleType.WAR.equals(bundleDesc.getModuleType())) {
+        if (org.glassfish.deployment.common.DeploymentUtils.warType().equals(bundleDesc.getModuleType())) {
             if(endpoint.getServletImplClass() == null) {
                 // Set servlet impl class here
                 endpoint.setServletImplClass(((Class)annElem).getName());

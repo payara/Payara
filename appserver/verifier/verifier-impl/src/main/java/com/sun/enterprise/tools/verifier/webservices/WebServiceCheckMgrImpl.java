@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -49,7 +49,7 @@ import com.sun.enterprise.tools.verifier.JarCheck;
 import com.sun.enterprise.tools.verifier.Result;
 import com.sun.enterprise.tools.verifier.tests.ComponentNameConstructor;
 import org.glassfish.deployment.common.Descriptor;
-import org.glassfish.deployment.common.XModuleType;
+import org.glassfish.api.deployment.archive.ArchiveType;
 
 /**
  * WebServices harness
@@ -76,11 +76,11 @@ public class WebServiceCheckMgrImpl extends CheckMgr implements JarCheck {
      */
     public void check(Descriptor descriptor) throws Exception {
         WebServicesDescriptor rootDescriptor = (WebServicesDescriptor) descriptor;
-        XModuleType moduleType = rootDescriptor.getBundleDescriptor()
+        ArchiveType moduleType = rootDescriptor.getBundleDescriptor()
                 .getModuleType();
-        if (moduleType == XModuleType.EJB)
+        if (moduleType != null && moduleType.equals(org.glassfish.deployment.common.DeploymentUtils.ejbType()))
             moduleName = Result.EJB;
-        else if (moduleType == XModuleType.WAR)
+        else if (moduleType != null && moduleType.equals(org.glassfish.deployment.common.DeploymentUtils.warType()))
             moduleName = Result.WEB;
         for (Iterator itr = rootDescriptor.getWebServices().iterator();
              itr.hasNext();) {

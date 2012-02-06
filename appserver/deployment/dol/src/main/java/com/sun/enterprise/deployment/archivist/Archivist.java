@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -58,6 +58,7 @@ import com.sun.enterprise.util.shared.ArchivistUtils;
 import org.glassfish.apf.*;
 import org.glassfish.apf.Scanner;
 import org.glassfish.apf.impl.DefaultErrorHandler;
+import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.api.deployment.archive.Archive;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.api.deployment.archive.WritableArchive;
@@ -1178,15 +1179,11 @@ public abstract class Archivist<T extends RootDeploymentDescriptor> {
         return dependenciesSatisfied;
     }
 
-    public boolean supportsModuleType(XModuleType moduleType) {
-        return getModuleType().equals(moduleType);
-    }
-
     /**
      * @return the  module type handled by this archivist
      *         as defined in the application DTD
      */              
-    public abstract XModuleType getModuleType();
+    public abstract ArchiveType getModuleType();
 
     /**
      * @return the DeploymentDescriptorFile responsible for handling

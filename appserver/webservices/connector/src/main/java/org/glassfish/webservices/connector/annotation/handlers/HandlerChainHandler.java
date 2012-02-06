@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -70,7 +70,6 @@ import com.sun.enterprise.deployment.EjbDescriptor;
 import com.sun.enterprise.deployment.EjbBundleDescriptor;
 import org.glassfish.deployment.common.Descriptor;
 import com.sun.enterprise.deployment.ServiceReferenceDescriptor;
-import org.glassfish.deployment.common.XModuleType;
 
 import com.sun.enterprise.deployment.xml.WebServicesTagNames;
 import com.sun.enterprise.deployment.types.HandlerChainContainer;
@@ -302,14 +301,14 @@ public class HandlerChainHandler extends AbstractHandler {
                 Descriptor jndiContainer=null;
                 if (serviceSideChain) { 
                     WebServiceEndpoint endpoint = (WebServiceEndpoint) container; 
-                    if (XModuleType.WAR.equals(endpoint.getBundleDescriptor().getModuleType())) { 
+                    if (org.glassfish.deployment.common.DeploymentUtils.warType().equals(endpoint.getBundleDescriptor().getModuleType())) {
                         jndiContainer = endpoint.getBundleDescriptor();                 
                     } else {
                         jndiContainer = endpoint.getEjbComponentImpl();
                     }
                 } else { 
                     ServiceReferenceDescriptor ref = (ServiceReferenceDescriptor) container;
-                    if(XModuleType.EJB.equals(ref.getBundleDescriptor().getModuleType())) {
+                    if(org.glassfish.deployment.common.DeploymentUtils.ejbType().equals(ref.getBundleDescriptor().getModuleType())) {
                         EjbBundleDescriptor ejbBundle = (EjbBundleDescriptor) ref.getBundleDescriptor();
                         Iterator<EjbDescriptor> ejbsIter = ejbBundle.getEjbs().iterator();
                         while(ejbsIter.hasNext()) {

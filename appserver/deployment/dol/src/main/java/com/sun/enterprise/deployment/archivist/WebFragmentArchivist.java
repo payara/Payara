@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -44,10 +44,7 @@ import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.WebFragmentDescriptor;
 import com.sun.enterprise.deployment.io.DeploymentDescriptorFile;
 import com.sun.enterprise.deployment.io.WebFragmentDeploymentDescriptorFile;
-import com.sun.enterprise.deployment.util.ApplicationValidator;
-import com.sun.enterprise.deployment.util.ComponentPostVisitor;
-import com.sun.enterprise.deployment.util.WebBundleVisitor;
-import org.glassfish.deployment.common.XModuleType;
+import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.api.deployment.archive.Archive;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.jvnet.hk2.component.Habitat;
@@ -83,7 +80,7 @@ class WebFragmentArchivist extends Archivist<WebFragmentDescriptor> {
      *
      */
     @Override
-    public XModuleType getModuleType() {
+    public ArchiveType getModuleType() {
         return null;
     }        
 

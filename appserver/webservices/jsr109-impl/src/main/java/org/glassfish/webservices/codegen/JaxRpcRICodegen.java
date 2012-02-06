@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -60,7 +60,6 @@ import com.sun.enterprise.util.LocalStringManagerImpl;
 // DOL imports
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.deployment.common.Descriptor;
-import org.glassfish.deployment.common.XModuleType;
 import org.glassfish.loader.util.ASClassLoaderUtil;
 import com.sun.enterprise.deploy.shared.FileArchive;
 import com.sun.enterprise.deployment.io.JaxrpcMappingDeploymentDescriptorFile;
@@ -211,7 +210,7 @@ public class JaxRpcRICodegen extends ModuleContentLinker
                     } else {
                         portInfo.addStubProperty(Stub.ENDPOINT_ADDRESS_PROPERTY, actualAddress.toExternalForm());
                     }
-                    if (serviceRef.getBundleDescriptor().getModuleType().equals(XModuleType.CAR)) {
+                    if (serviceRef.getBundleDescriptor().getModuleType().equals(org.glassfish.deployment.common.DeploymentUtils.carType())) {
                         wsdlOverride = serviceRef.getWsdlOverride();
                         if (wsdlOverride!=null) {
                             wsdlOverriden = true;
@@ -827,17 +826,17 @@ public class JaxRpcRICodegen extends ModuleContentLinker
     public void accept (BundleDescriptor descriptor) {
         if (descriptor instanceof Application) {
             Application application = (Application)descriptor;
-            for (BundleDescriptor ebd : application.getBundleDescriptorsOfType(XModuleType.EJB)) {
+            for (BundleDescriptor ebd : application.getBundleDescriptorsOfType(org.glassfish.deployment.common.DeploymentUtils.ejbType())) {
                 ebd.visit(getSubDescriptorVisitor(ebd));
             }
 
-            for (BundleDescriptor wbd : application.getBundleDescriptorsOfType(XModuleType.WAR)) {
+            for (BundleDescriptor wbd : application.getBundleDescriptorsOfType(org.glassfish.deployment.common.DeploymentUtils.warType())) {
                 if (wbd != null) {
                     wbd.visit(getSubDescriptorVisitor(wbd));
                 }
             }
 
-            for (BundleDescriptor acd : application.getBundleDescriptorsOfType(XModuleType.CAR)) {
+            for (BundleDescriptor acd : application.getBundleDescriptorsOfType(org.glassfish.deployment.common.DeploymentUtils.carType())) {
                 acd.visit(getSubDescriptorVisitor(acd));
             }
         } else {

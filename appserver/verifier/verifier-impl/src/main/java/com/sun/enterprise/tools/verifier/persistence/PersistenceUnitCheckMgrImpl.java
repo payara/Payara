@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -42,6 +42,7 @@ package com.sun.enterprise.tools.verifier.persistence;
 
 import com.sun.enterprise.tools.verifier.*;
 import com.sun.enterprise.tools.verifier.tests.ComponentNameConstructor;
+import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.deployment.common.Descriptor;
 import com.sun.enterprise.deployment.PersistenceUnitDescriptor;
 import com.sun.enterprise.deployment.BundleDescriptor;
@@ -49,7 +50,6 @@ import org.glassfish.deployment.common.ModuleDescriptor;
 import com.sun.enterprise.util.io.FileUtils;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.deployment.common.RootDeploymentDescriptor;
-import org.glassfish.deployment.common.XModuleType;
 
 /**
  * This class is responsible for checking a PU represented by a {@link
@@ -80,12 +80,12 @@ public class PersistenceUnitCheckMgrImpl extends CheckMgr {
         } else {
             ModuleDescriptor mdesc =
                     BundleDescriptor.class.cast(rootDD).getModuleDescriptor();
-            final XModuleType moduleType = mdesc.getModuleType();
-            if(moduleType == XModuleType.EJB) {
+            final ArchiveType moduleType = mdesc.getModuleType();
+            if(moduleType != null && moduleType.equals(org.glassfish.deployment.common.DeploymentUtils.ejbType())) {
                 moduleName = Result.EJB;
-            } else if (moduleType == XModuleType.WAR) {
+            } else if (moduleType != null && moduleType.equals(org.glassfish.deployment.common.DeploymentUtils.warType())) {
                 moduleName = Result.WEB;
-            } else if (moduleType == XModuleType.CAR) {
+            } else if (moduleType != null && moduleType.equals(org.glassfish.deployment.common.DeploymentUtils.carType())) {
                 moduleName = Result.APPCLIENT;
             } else {
                 throw new RuntimeException(

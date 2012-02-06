@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -48,7 +48,7 @@ import com.sun.enterprise.deployment.util.ConnectorValidator;
 import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.deployment.util.ComponentVisitor;
 import org.glassfish.deployment.common.DescriptorVisitor;
-import org.glassfish.deployment.common.XModuleType;
+import org.glassfish.api.deployment.archive.ArchiveType;
 
 import java.io.IOException;
 import java.util.*;
@@ -843,8 +843,8 @@ public class ConnectorDescriptor extends BundleDescriptor {
     /**
      * @return the module type for this bundle descriptor
      */
-    public XModuleType getModuleType() {
-        return XModuleType.RAR;
+    public ArchiveType getModuleType() {
+        return org.glassfish.deployment.common.DeploymentUtils.rarType();
     }
 
     /**

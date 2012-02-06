@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,6 +40,7 @@
 
 package com.sun.enterprise.deployment;
 
+import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.deployment.common.SecurityRoleMapper;
 import org.glassfish.deployment.common.SecurityRoleMapperFactory;
 import com.sun.enterprise.deployment.node.ApplicationNode;
@@ -1016,11 +1017,10 @@ public class Application extends BundleDescriptor
     /**
      * Lookup module by uri.
      *
-     * @param uri the module path in the application archive
      * @return a bundle descriptor in this application identified by uri
      *         or null if not found.
      */
-    public Collection<ModuleDescriptor<BundleDescriptor>> getModuleDescriptorsByType(XModuleType type) {
+    public Collection<ModuleDescriptor<BundleDescriptor>> getModuleDescriptorsByType(ArchiveType type) {
         if (type==null) {
             throw new IllegalArgumentException("type cannot be null");
         }
@@ -1155,9 +1155,9 @@ public class Application extends BundleDescriptor
      * @param bundleType the bundle descriptor type requested
      * @return the set of bundle descriptors
      */
-    public Set<BundleDescriptor> getBundleDescriptorsOfType(XModuleType bundleType) {
+    public Set<BundleDescriptor> getBundleDescriptorsOfType(ArchiveType bundleType) {
         if (bundleType == null) {
-            return null;
+            return Collections.emptySet();
         }
         Set<BundleDescriptor> bundleSet = new OrderedSet<BundleDescriptor>();
         for (ModuleDescriptor aModule : getModules()) {
@@ -1533,8 +1533,8 @@ public class Application extends BundleDescriptor
     /**
      * @return the module type for this bundle descriptor
      */
-    public XModuleType getModuleType() {
-        return XModuleType.EAR;
+    public ArchiveType getModuleType() {
+        return DeploymentUtils.earType();
     }
 
     public void addSecurityRoleMapping(SecurityRoleMapping roleMapping) {

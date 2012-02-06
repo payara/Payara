@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -60,7 +60,7 @@ import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.PerLookup;
 import com.sun.enterprise.deployment.*;
 import org.glassfish.deployment.common.ModuleDescriptor;
-import org.glassfish.deployment.common.XModuleType;
+import org.glassfish.api.deployment.archive.ArchiveType;
 import com.sun.enterprise.deploy.shared.ArchiveFactory;
 import com.sun.enterprise.deployment.deploy.shared.Util;
 import com.sun.enterprise.util.LocalStringManagerImpl;
@@ -214,7 +214,7 @@ public class EarDeployer implements Deployer {
     }
 
     private Collection<ModuleDescriptor<BundleDescriptor>>
-                doOnAllTypedBundles(Application application, XModuleType type, BundleBlock runnable)
+                doOnAllTypedBundles(Application application, ArchiveType type, BundleBlock runnable)
                     throws Exception {
 
         final Collection<ModuleDescriptor<BundleDescriptor>> typedBundles = application.getModuleDescriptorsByType(type);
@@ -241,17 +241,17 @@ public class EarDeployer implements Deployer {
         // artifacts that should be included in the generated app client JAR
         else {
             // first we take care of the connectors
-            bundles.removeAll(doOnAllTypedBundles(application, XModuleType.RAR, runnable));
+            bundles.removeAll(doOnAllTypedBundles(application, org.glassfish.deployment.common.DeploymentUtils.rarType(), runnable));
 
             // now the EJBs
-            bundles.removeAll(doOnAllTypedBundles(application, XModuleType.EJB, runnable));
+            bundles.removeAll(doOnAllTypedBundles(application, org.glassfish.deployment.common.DeploymentUtils.ejbType(), runnable));
 
             // finally the war files.
-            bundles.removeAll(doOnAllTypedBundles(application, XModuleType.WAR, runnable));
+            bundles.removeAll(doOnAllTypedBundles(application, org.glassfish.deployment.common.DeploymentUtils.warType(), runnable));
 
             // extract the app client bundles to take care of later
             Collection<ModuleDescriptor<BundleDescriptor>> appClientBundles =
-                    application.getModuleDescriptorsByType(XModuleType.CAR);
+                    application.getModuleDescriptorsByType(org.glassfish.deployment.common.DeploymentUtils.carType());
             bundles.removeAll(appClientBundles);
             
             // now ther remaining bundles
@@ -457,14 +457,14 @@ public class EarDeployer implements Deployer {
     }
 
 
-    private String getTypeFromModuleType(XModuleType moduleType) {
-        if (moduleType.equals(XModuleType.WAR)) {
+    private String getTypeFromModuleType(ArchiveType moduleType) {
+        if (moduleType.equals(org.glassfish.deployment.common.DeploymentUtils.warType())) {
             return "web";
-        } else if (moduleType.equals(XModuleType.EJB)) {
+        } else if (moduleType.equals(org.glassfish.deployment.common.DeploymentUtils.ejbType())) {
             return "ejb";
-        } else if (moduleType.equals(XModuleType.CAR)) {
+        } else if (moduleType.equals(org.glassfish.deployment.common.DeploymentUtils.carType())) {
             return "appclient";
-        } else if (moduleType.equals(XModuleType.RAR)) {
+        } else if (moduleType.equals(org.glassfish.deployment.common.DeploymentUtils.rarType())) {
             return "connector";
         }
         return null;

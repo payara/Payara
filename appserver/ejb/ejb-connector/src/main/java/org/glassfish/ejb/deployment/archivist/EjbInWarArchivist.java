@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -42,8 +42,8 @@ package org.glassfish.ejb.deployment.archivist;
 
 import com.sun.enterprise.deployment.archivist.*;
 import com.sun.enterprise.deployment.EjbBundleDescriptor;
+import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.deployment.common.RootDeploymentDescriptor;
-import org.glassfish.deployment.common.XModuleType;
 import org.glassfish.ejb.deployment.annotation.impl.EjbInWarScanner;
 import com.sun.enterprise.deployment.annotation.impl.ModuleScanner;
 import com.sun.enterprise.deployment.io.DeploymentDescriptorFile;
@@ -113,13 +113,8 @@ public class EjbInWarArchivist
 
 
     @Override
-    public boolean supportsModuleType(XModuleType moduleType) {
-        return XModuleType.WAR ==moduleType;
-    }
-
-    @Override
-    public XModuleType getModuleType() {
-        return XModuleType.EjbInWar;
+    public boolean supportsModuleType(ArchiveType moduleType) {
+        return moduleType != null && moduleType.equals(org.glassfish.deployment.common.DeploymentUtils.warType());
     }
 
     public RootDeploymentDescriptor getDefaultDescriptor() {

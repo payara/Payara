@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -44,7 +44,6 @@ import com.sun.enterprise.deployment.*;
 import com.sun.enterprise.deployment.types.*;
 import org.glassfish.deployment.common.Descriptor;
 import org.glassfish.deployment.common.DescriptorVisitor;
-import org.glassfish.deployment.common.XModuleType;
 
 import java.util.Iterator;
 import java.util.Set;
@@ -65,11 +64,11 @@ public class TracerVisitor extends DefaultDOLVisitor implements ApplicationVisit
             Application application = (Application)descriptor;
             accept(application);
 
-            for (BundleDescriptor ebd : application.getBundleDescriptorsOfType(XModuleType.EJB)) {
+            for (BundleDescriptor ebd : application.getBundleDescriptorsOfType(org.glassfish.deployment.common.DeploymentUtils.ejbType())) {
                 ebd.visit(getSubDescriptorVisitor(ebd));
             }
 
-            for (BundleDescriptor wbd : application.getBundleDescriptorsOfType(XModuleType.WAR)) {
+            for (BundleDescriptor wbd : application.getBundleDescriptorsOfType(org.glassfish.deployment.common.DeploymentUtils.warType())) {
                 // This might be null in the case of an appclient
                 // processing a client stubs .jar whose original .ear contained
                 // a .war.  This will be fixed correctly in the deployment
@@ -80,11 +79,11 @@ public class TracerVisitor extends DefaultDOLVisitor implements ApplicationVisit
                 }
             }
 
-            for (BundleDescriptor cd :  application.getBundleDescriptorsOfType(XModuleType.RAR)) {
+            for (BundleDescriptor cd :  application.getBundleDescriptorsOfType(org.glassfish.deployment.common.DeploymentUtils.rarType())) {
                 cd.visit(getSubDescriptorVisitor(cd));
             }
 
-            for (BundleDescriptor acd : application.getBundleDescriptorsOfType(XModuleType.CAR)) {
+            for (BundleDescriptor acd : application.getBundleDescriptorsOfType(org.glassfish.deployment.common.DeploymentUtils.carType())) {
                acd.visit(getSubDescriptorVisitor(acd));
             }
             super.accept(descriptor);

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -44,7 +44,7 @@ import com.sun.enterprise.deploy.shared.ArchiveFactory;
 import com.sun.enterprise.deployment.ApplicationClientDescriptor;
 import org.glassfish.deployment.common.RootDeploymentDescriptor;
 import com.sun.enterprise.deployment.deploy.shared.MultiReadableArchive;
-import org.glassfish.deployment.common.XModuleType;
+import org.glassfish.api.deployment.archive.ArchiveType;
 import java.io.IOException;
 import java.net.URI;
 import java.util.HashMap;
@@ -78,8 +78,8 @@ public class ACCPersistenceArchivist extends PersistenceArchivist {
     private ArchiveFactory archiveFactory;
 
     @Override
-    public boolean supportsModuleType(XModuleType moduleType) {
-        return (XModuleType.CAR == moduleType) && (env.getProcessType() == ProcessType.ACC) ;
+    public boolean supportsModuleType(ArchiveType moduleType) {
+        return (moduleType != null && moduleType.equals(org.glassfish.deployment.common.DeploymentUtils.carType())) && (env.getProcessType() == ProcessType.ACC) ;
     }
 
     @Override

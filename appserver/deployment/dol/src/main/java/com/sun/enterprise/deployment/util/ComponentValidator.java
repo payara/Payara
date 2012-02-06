@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -48,9 +48,6 @@ package com.sun.enterprise.deployment.util;
 
 import com.sun.enterprise.deployment.*;
 import com.sun.enterprise.deployment.types.*;
-import org.glassfish.deployment.common.XModuleType;
-import org.glassfish.deployment.common.Descriptor;
-import org.glassfish.deployment.common.DescriptorVisitor;
 
 import java.util.Iterator;
 import java.util.Set;
@@ -167,7 +164,7 @@ public class ComponentValidator extends DefaultDOLVisitor implements ComponentVi
 
                 // In app-client, keep lookup local to JVM so it doesn't need to access
                 // server's global JNDI namespace for managed bean.
-                String jndiName = ( bundleDescriptor.getModuleType() == XModuleType.CAR )
+                String jndiName = ( bundleDescriptor.getModuleType() == org.glassfish.deployment.common.DeploymentUtils.carType() )
                         ?  desc.getAppJndiName() : desc.getGlobalJndiName();
 
                 jmsDestRef.setJndiName(jndiName);

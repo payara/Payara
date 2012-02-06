@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -43,7 +43,6 @@ package org.glassfish.webservices;
 import com.sun.enterprise.v3.admin.AdminAdapter;
 import com.sun.enterprise.v3.admin.adapter.AdminConsoleAdapter;
 import org.glassfish.deployment.common.ModuleDescriptor;
-import org.glassfish.deployment.common.XModuleType;
 import org.glassfish.grizzly.config.dom.NetworkListener;
 import com.sun.xml.ws.api.server.SDDocumentSource;
 import com.sun.xml.ws.api.WSBinding;
@@ -343,7 +342,7 @@ public class WsUtil {
      * @return module-specific dedicated wsdl directory 
      */
     public String getWsdlDir(BundleDescriptor bundle) {
-        boolean isWar = bundle.getModuleType().equals(XModuleType.WAR);
+        boolean isWar = bundle.getModuleType().equals(org.glassfish.deployment.common.DeploymentUtils.warType());
         return isWar ? "WEB-INF/wsdl" : "META-INF/wsdl";
     }
 

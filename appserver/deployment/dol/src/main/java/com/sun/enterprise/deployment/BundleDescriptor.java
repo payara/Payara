@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -44,8 +44,8 @@ import com.sun.enterprise.deployment.types.EntityManagerFactoryReference;
 import com.sun.enterprise.deployment.types.EntityManagerReference;
 import com.sun.enterprise.deployment.util.ComponentVisitor;
 import com.sun.enterprise.deployment.util.ApplicationValidator;
+import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.deployment.common.RootDeploymentDescriptor;
-import org.glassfish.deployment.common.XModuleType;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.io.FileUtils;
 import org.glassfish.deployment.common.Descriptor;
@@ -591,7 +591,7 @@ public abstract class BundleDescriptor extends RootDeploymentDescriptor implemen
     /**
      * @return the  type of this bundle descriptor
      */
-    public abstract XModuleType getModuleType();
+    public abstract ArchiveType getModuleType();
 
     /**
      * @return the visitor for this bundle descriptor

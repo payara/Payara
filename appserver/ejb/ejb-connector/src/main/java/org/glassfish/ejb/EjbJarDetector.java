@@ -43,6 +43,7 @@ package org.glassfish.ejb;
 
 import org.glassfish.api.deployment.archive.ArchiveDetector;
 import org.glassfish.api.deployment.archive.ArchiveHandler;
+import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.deployment.common.DeploymentUtils;
 import org.glassfish.hk2.Services;
@@ -67,10 +68,12 @@ import java.util.logging.Logger;
 public class EjbJarDetector implements ArchiveDetector {
     public static final String EJB_JAR_DETECTOR_RANK_PROP = "glassfish.ejb.jar.detector.rank";
     public static final int DEFAULT_EJB_JAR_DETECTOR_RANK = 400;
-    public static final String ARCHIVE_TYPE = "ejb"; // Should be replaced by XModuleType.EJB
+    public static final String ARCHIVE_TYPE = EjbType.ARCHIVE_TYPE;
 
     @Inject
     private EjbSniffer sniffer;
+    @Inject
+    private EjbType archiveType;
     @Inject
     private Services services;
     private ArchiveHandler archiveHandler; // lazy initialisation
@@ -100,5 +103,10 @@ public class EjbJarDetector implements ArchiveDetector {
             }
             return archiveHandler;
         }
+    }
+
+    @Override
+    public ArchiveType getArchiveType() {
+        return archiveType;
     }
 }

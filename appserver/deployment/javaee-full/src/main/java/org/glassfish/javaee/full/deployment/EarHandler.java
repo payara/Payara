@@ -45,6 +45,7 @@ import com.sun.enterprise.deployment.deploy.shared.InputJarArchive;
 import java.net.URI;
 
 import org.glassfish.api.ActionReport;
+import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.api.deployment.archive.*;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.DeployCommandParameters;
@@ -66,7 +67,6 @@ import com.sun.enterprise.deploy.shared.AbstractArchiveHandler;
 import com.sun.enterprise.deploy.shared.ArchiveFactory;
 import com.sun.enterprise.deployment.deploy.shared.Util;
 import com.sun.enterprise.util.io.FileUtils;
-import org.glassfish.deployment.common.XModuleType;
 import com.sun.enterprise.deployment.archivist.ApplicationArchivist;
 import com.sun.enterprise.config.serverbeans.DasConfig;
 import com.sun.enterprise.deploy.shared.FileArchive;
@@ -84,7 +84,7 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import static javax.xml.stream.XMLStreamConstants.*;
 
-@Service(name=EarDetector.EAR_TYPE)
+@Service(name=EarDetector.ARCHIVE_TYPE)
 public class EarHandler extends AbstractArchiveHandler implements CompositeHandler {
 
     @Inject
@@ -99,7 +99,7 @@ public class EarHandler extends AbstractArchiveHandler implements CompositeHandl
     @Inject
     DasConfig dasConfig;
 
-    @Inject(name = EarDetector.EAR_TYPE)
+    @Inject(name = EarDetector.ARCHIVE_TYPE)
     ArchiveDetector detector;
 
     private static final String EAR_LIB = "ear_lib";
@@ -109,7 +109,7 @@ public class EarHandler extends AbstractArchiveHandler implements CompositeHandl
 
 
     public String getArchiveType() {
-        return EarDetector.EAR_TYPE;
+        return EarDetector.ARCHIVE_TYPE;
     }
 
     public String getVersionIdentifier(ReadableArchive archive) {
@@ -403,7 +403,7 @@ public class EarHandler extends AbstractArchiveHandler implements CompositeHandl
                         sub.setParentArchive(context.getSource());
 
                         ClassLoader subCl = handler.getClassLoader(cl, subContext);
-                        if (md.getModuleType().equals(XModuleType.EJB)) {
+                        if (md.getModuleType().equals(org.glassfish.deployment.common.DeploymentUtils.ejbType())) {
                             // for ejb module, we just add the ejb urls 
                             // to EarClassLoader and use that to load 
                             // ejb module
@@ -414,7 +414,7 @@ public class EarHandler extends AbstractArchiveHandler implements CompositeHandl
                             }
                             cl.addModuleClassLoader(moduleUri, cl);
                             PreDestroy.class.cast(subCl).preDestroy();
-                        } else if (md.getModuleType().equals(XModuleType.RAR)) {
+                        } else if (md.getModuleType().equals(org.glassfish.deployment.common.DeploymentUtils.rarType())) {
                             embeddedConnCl.addDelegate(
                                 (DelegatingClassLoader.ClassFinder)subCl);
                             cl.addModuleClassLoader(moduleUri, subCl);
@@ -483,14 +483,14 @@ public class EarHandler extends AbstractArchiveHandler implements CompositeHandl
     // get archive handler from module type
     // performance optimization so we don't need to retrieve archive handler
     // the normal way which might involve annotation scanning
-    private ArchiveHandler getArchiveHandlerFromModuleType(XModuleType type) {
-        if (type.equals(XModuleType.WAR)) {
+    private ArchiveHandler getArchiveHandlerFromModuleType(ArchiveType type) {
+        if (type.equals(org.glassfish.deployment.common.DeploymentUtils.warType())) {
             return habitat.getComponent(ArchiveHandler.class, WarDetector.ARCHIVE_TYPE);
-        } else if (type.equals(XModuleType.RAR)) {
+        } else if (type.equals(org.glassfish.deployment.common.DeploymentUtils.rarType())) {
             return habitat.getComponent(ArchiveHandler.class, RarDetector.ARCHIVE_TYPE);
-        } else if (type.equals(XModuleType.EJB)) {
+        } else if (type.equals(org.glassfish.deployment.common.DeploymentUtils.ejbType())) {
             return habitat.getComponent(ArchiveHandler.class, EjbJarDetector.ARCHIVE_TYPE);
-        } else if (type.equals(XModuleType.CAR)) {
+        } else if (type.equals(org.glassfish.deployment.common.DeploymentUtils.carType())) {
             return habitat.getComponent(ArchiveHandler.class, CarDetector.ARCHIVE_TYPE);
         } else {
             return null;

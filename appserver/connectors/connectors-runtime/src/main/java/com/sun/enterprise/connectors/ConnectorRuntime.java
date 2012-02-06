@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -46,7 +46,6 @@ import com.sun.enterprise.connectors.util.*;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.lang.reflect.Proxy;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.*;
@@ -83,7 +82,6 @@ import org.glassfish.connectors.config.ResourceAdapterConfig;
 import org.glassfish.connectors.config.SecurityMap;
 import org.glassfish.connectors.config.WorkSecurityMap;
 import org.glassfish.deployment.common.SecurityRoleMapperFactory;
-import org.glassfish.deployment.common.XModuleType;
 import com.sun.enterprise.resource.deployer.DataSourceDefinitionDeployer;
 import com.sun.enterprise.resource.pool.PoolManager;
 import com.sun.enterprise.resource.pool.monitor.ConnectionPoolProbeProviderUtil;
@@ -1277,7 +1275,7 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
     public ConnectorArchivist getConnectorArchvist() throws ConnectorRuntimeException {
         try{
             ArchivistFactory archivistFactory = habitat.getComponent(ArchivistFactory.class);
-            return (ConnectorArchivist)archivistFactory.getArchivist(XModuleType.RAR);
+            return (ConnectorArchivist)archivistFactory.getArchivist(org.glassfish.deployment.common.DeploymentUtils.rarType());
         }catch(IOException ioe){
             _logger.log(Level.WARNING, "unable to get Connector Archivist : ", ioe);
             ConnectorRuntimeException cre = new ConnectorRuntimeException(ioe.getMessage());

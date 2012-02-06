@@ -43,9 +43,11 @@ package org.glassfish.web.sniffer;
 
 import org.glassfish.api.deployment.archive.ArchiveDetector;
 import org.glassfish.api.deployment.archive.ArchiveHandler;
+import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.deployment.common.DeploymentUtils;
 import org.glassfish.hk2.Services;
+import org.glassfish.web.WarType;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
@@ -66,10 +68,11 @@ import java.util.logging.Logger;
 public class WarDetector implements ArchiveDetector {
     public static final String WAR_DETECTOR_RANK_PROP = "glassfish.war.detector.rank";
     public static final int DEFAULT_WAR_DETECTOR_RANK = 200;
-    public static final String ARCHIVE_TYPE = "war";    // This should be replaced by use of XModuleType.WAR
+    public static final String ARCHIVE_TYPE = WarType.ARCHIVE_TYPE;
 
     @Inject WebSniffer sniffer;
     @Inject Services services;
+    @Inject WarType archiveType;
     private ArchiveHandler archiveHandler;
     private Logger logger = Logger.getLogger(getClass().getPackage().getName());
 
@@ -96,5 +99,10 @@ public class WarDetector implements ArchiveDetector {
             }
             return archiveHandler;
         }
+    }
+
+    @Override
+    public ArchiveType getArchiveType() {
+        return archiveType;
     }
 }

@@ -59,7 +59,7 @@ import com.sun.enterprise.module.Module;
  *
  * @author Jerome Dochez
  */
-@Service(name="osgi")
+@Service(name = OSGiSniffer.CONTAINER_NAME)
 @Scoped(Singleton.class)
 public class OSGiContainer implements Container {
 
@@ -68,7 +68,7 @@ public class OSGiContainer implements Container {
     }
 
     public String getName() {
-        return "osgi";
+        return OSGiSniffer.CONTAINER_NAME; // used for reporting purpose,so any string is fine actually
     }
 
 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,35 +38,35 @@
  * holder.
  */
 
-package com.sun.enterprise.deployment.archivist;
+
+package org.glassfish.web;
 
 import org.glassfish.api.deployment.archive.ArchiveType;
-import org.glassfish.api.deployment.archive.ReadableArchive;
-import org.glassfish.api.admin.*;
+import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.annotations.Inject;
-
 
 /**
- * Archivist that reads persitence.xml for ejb jars and appclient while running on server side
+ * {@link ArchiveType} corresponding to {@link javax.enterprise.deploy.shared.ModuleType#WAR}
+ *
+ * @author sanjeeb.sahoo@oracle.com
  */
-@Service
-public class ServerSidePersistenceArchivist extends PersistenceArchivist {
-    @Inject
-    private ProcessEnvironment env;
+@Service(name = WarType.ARCHIVE_TYPE)
+@Scoped(org.jvnet.hk2.component.Singleton.class)
+public class WarType extends ArchiveType {
+    /**
+     * same as what's returned by {@link javax.enterprise.deploy.shared.ModuleType#WAR#toString()}
+     * We have inlined the value here as opposed to initializing by calling a method on ModuleType.toString().
+     * This is done so that we can refer it in annotation attributes
+     */
+    public static final String ARCHIVE_TYPE = "war";
 
-    @Override
-    public boolean supportsModuleType(ArchiveType moduleType) {
-        // Reads persitence.xml for ejb jars
-        return moduleType != null && (moduleType.equals(org.glassfish.deployment.common.DeploymentUtils.ejbType()) ||
-                // Or App client modules if running inside server
-                (moduleType.equals(org.glassfish.deployment.common.DeploymentUtils.carType()) && env.getProcessType().isServer()));
+    /**
+     * same as what's returned by {@link javax.enterprise.deploy.shared.ModuleType#WAR#getExtension()}
+     * This has been inlined so that other modules can refer to it as a constant in annotation attributes for example.
+     */
+    public static final String ARCHIVE_EXTENSION = ".war";
+
+    public WarType() {
+        super(ARCHIVE_TYPE, ARCHIVE_EXTENSION);
     }
-
-    @Override
-    protected String getPuRoot(ReadableArchive archive) {
-        //PU root for ejb jars and acc (while on server) is the current exploded archive on server side  
-        return "";
-    }
-
 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -47,6 +47,7 @@ import com.sun.enterprise.deployment.BundleDescriptor;
 import com.sun.enterprise.deployment.archivist.AppClientArchivist;
 import com.sun.enterprise.deployment.archivist.Archivist;
 import com.sun.enterprise.deployment.archivist.ArchivistFactory;
+import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.deployment.common.ModuleDescriptor;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 import java.io.IOException;
@@ -58,7 +59,6 @@ import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.deployment.common.RootDeploymentDescriptor;
-import org.glassfish.deployment.common.XModuleType;
 import org.jvnet.hk2.component.Habitat;
 import org.xml.sax.SAXParseException;
 
@@ -101,11 +101,12 @@ public class UndeployedLaunchable implements Launchable {
             throw new UserError(localStrings.get("appclient.invalidArchive",
                     ra.getURI().toASCIIString()));
         }
-        
-        if (archivist.getModuleType().equals(XModuleType.CAR)) {
+
+        final ArchiveType moduleType = archivist.getModuleType();
+        if (moduleType != null && moduleType.equals(org.glassfish.deployment.common.DeploymentUtils.carType())) {
             return new UndeployedLaunchable(habitat, ra,
                     (AppClientArchivist) archivist, callerSuppliedMainClassName);
-        } else if (archivist.getModuleType().equals(XModuleType.EAR)) {
+        } else if (moduleType != null && moduleType.equals(org.glassfish.deployment.common.DeploymentUtils.earType())) {
             /*
              * Locate the app client submodule that matches the main class name
              * or the app client name.
@@ -113,7 +114,7 @@ public class UndeployedLaunchable implements Launchable {
 
             Application app = (Application) archivist.open(ra);
             for (ModuleDescriptor<BundleDescriptor> md : app.getModules()) {
-                if ( ! md.getModuleType().equals(XModuleType.CAR)) {
+                if ( ! md.getModuleType().equals(org.glassfish.deployment.common.DeploymentUtils.carType())) {
                     continue;
                 }
 
@@ -156,7 +157,7 @@ public class UndeployedLaunchable implements Launchable {
              * of archivist - such as the EJB archivist.  Now see if the app
              * client archivist will work when selected directly.
              */
-            archivist = af.getArchivist(XModuleType.CAR);
+            archivist = af.getArchivist(org.glassfish.deployment.common.DeploymentUtils.carType());
 
             /*
              * Try to open the archive as an app client archive just to see
@@ -168,7 +169,7 @@ public class UndeployedLaunchable implements Launchable {
                  * Start with a fresh archivist - unopened - so we can request
                  * anno processing, etc. before opening it for real.
                  */
-                archivist = af.getArchivist(XModuleType.CAR);
+                archivist = af.getArchivist(org.glassfish.deployment.common.DeploymentUtils.carType());
                 return new UndeployedLaunchable(habitat, ra, (AppClientArchivist) archivist,
                                 callerSuppliedMainClassName);
             }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,6 +41,7 @@
 package org.glassfish.deployment.common;
 
 import com.sun.logging.LogDomains;
+import org.glassfish.api.deployment.archive.ArchiveType;
 
 import java.util.*;
 import java.util.logging.Level;
@@ -167,7 +168,7 @@ public abstract class RootDeploymentDescriptor extends Descriptor {
     /**
      * @return the module type for this bundle descriptor
      */
-    public abstract XModuleType getModuleType();
+    public abstract ArchiveType getModuleType();
 
     /**
      * @return the tracer visitor for this descriptor
@@ -417,18 +418,18 @@ public abstract class RootDeploymentDescriptor extends Descriptor {
      *   d. connector module and schema version earlier than 1.6
      */
     public boolean isDDWithNoAnnotationAllowed() {
-        XModuleType mType = getModuleType();
-
+        ArchiveType mType = getModuleType();
+        if (mType == null) return false;
         double specVersion = Double.parseDouble(getSpecVersion());
 
             // we do not process annotations for earlier versions of DD
-            if ( (mType.equals(XModuleType.EJB) &&
+            if ( (mType.equals(org.glassfish.deployment.common.DeploymentUtils.ejbType()) &&
                   specVersion < ANNOTATION_EJB_VER) ||
-                 (mType.equals(XModuleType.WAR) &&
+                 (mType.equals(org.glassfish.deployment.common.DeploymentUtils.warType()) &&
                   specVersion < ANNOTATION_WAR_VER) ||
-                 (mType.equals(XModuleType.CAR) &&
+                 (mType.equals(org.glassfish.deployment.common.DeploymentUtils.carType()) &&
                   specVersion < ANNOTATION_CAR_VER)  ||
-                 (mType.equals(XModuleType.RAR) &&
+                 (mType.equals(org.glassfish.deployment.common.DeploymentUtils.rarType()) &&
                   specVersion < ANNOTATION_RAR_VER)) {
                 return true;
             } else {

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,21 +40,33 @@
 
 package org.glassfish.extras.osgicontainer;
 
+import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.archive.ReadableArchive;
+import org.glassfish.internal.deployment.GenericCompositeSniffer;
 import org.glassfish.internal.deployment.GenericSniffer;
+import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
 
 /**
  * Sniffer for OSGi bundles
  *
- * @author Jerome Dochez
+ * @author Jerome Dochez, Sanjeeb Sahoo
  */
 
-@Service(name="osgi")
-public class OSGiSniffer extends GenericSniffer {
+@Service(name = "osgi")
+public class OSGiSniffer extends GenericSniffer  {
+
+    /*
+    It should extends from GenericCompositeSniffer, but I think there is some issues in deployment backend if we
+    model it as a composite sniffer, so for now we treat osgi slightly differently.
+     */
+
+    @Inject
+    private OSGiArchiveType osgiArchiveType;
+    public static final String CONTAINER_NAME = "osgi";
 
     public OSGiSniffer() {
-        super("osgi", null , null);
+        super(CONTAINER_NAME, null, null);
     }
 
     @Override
@@ -65,7 +77,7 @@ public class OSGiSniffer extends GenericSniffer {
     }
 
     public String[] getContainersNames() {
-        return new String[] { "osgi" };
+        return new String[]{CONTAINER_NAME};
     }
 
     @Override
@@ -75,5 +87,12 @@ public class OSGiSniffer extends GenericSniffer {
      */
     public boolean isUserVisible() {
         return true;
+    }
+
+//    @Override
+    public boolean handles(DeploymentContext context) {
+        // We don't depend on DeploymentUtils as we don't want to introduce a dependency on deployment-common
+        // from this connector module.
+        return osgiArchiveType.toString().equals(context.getArchiveHandler().getArchiveType());
     }
 }

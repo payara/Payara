@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,35 +38,27 @@
  * holder.
  */
 
-package com.sun.enterprise.deployment.archivist;
+
+package org.glassfish.extras.osgicontainer;
 
 import org.glassfish.api.deployment.archive.ArchiveType;
-import org.glassfish.api.deployment.archive.ReadableArchive;
-import org.glassfish.api.admin.*;
+import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.annotations.Inject;
-
 
 /**
- * Archivist that reads persitence.xml for ejb jars and appclient while running on server side
+ * {@link ArchiveType} corresponding to OSGi archives deployed to GlassFish.
+ *
+ * @author sanjeeb.sahoo@oracle.com
  */
-@Service
-public class ServerSidePersistenceArchivist extends PersistenceArchivist {
-    @Inject
-    private ProcessEnvironment env;
+@Service(name = OSGiArchiveType.ARCHIVE_TYPE)
+@Scoped(org.jvnet.hk2.component.Singleton.class)
+public class OSGiArchiveType extends ArchiveType {
+    /**
+     * String value of this module type. This is what is accepted in --type argument of deploy command.
+     */
+    public static final String ARCHIVE_TYPE = "osgi";
 
-    @Override
-    public boolean supportsModuleType(ArchiveType moduleType) {
-        // Reads persitence.xml for ejb jars
-        return moduleType != null && (moduleType.equals(org.glassfish.deployment.common.DeploymentUtils.ejbType()) ||
-                // Or App client modules if running inside server
-                (moduleType.equals(org.glassfish.deployment.common.DeploymentUtils.carType()) && env.getProcessType().isServer()));
+    public OSGiArchiveType() {
+        super(ARCHIVE_TYPE); // there is no definite extension for OSGi bundles.
     }
-
-    @Override
-    protected String getPuRoot(ReadableArchive archive) {
-        //PU root for ejb jars and acc (while on server) is the current exploded archive on server side  
-        return "";
-    }
-
 }

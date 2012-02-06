@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -49,18 +49,14 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URLClassLoader;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.jar.Attributes;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import org.glassfish.api.deployment.archive.ReadableArchive;
-import org.glassfish.deployment.common.XModuleType;
 import org.jvnet.hk2.component.Habitat;
 import org.xml.sax.SAXParseException;
 
@@ -196,7 +192,7 @@ public class
              * factory would understand.
              */
             archivist = completeInit((AppClientArchivist) 
-                    af.getArchivist(XModuleType.CAR));
+                    af.getArchivist(org.glassfish.deployment.common.DeploymentUtils.carType()));
         }
         return archivist;
     }

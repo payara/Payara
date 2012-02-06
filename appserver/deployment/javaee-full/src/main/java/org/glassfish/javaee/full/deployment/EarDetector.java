@@ -41,8 +41,10 @@
 
 package org.glassfish.javaee.full.deployment;
 
+import com.sun.enterprise.deployment.EarType;
 import org.glassfish.api.deployment.archive.ArchiveDetector;
 import org.glassfish.api.deployment.archive.ArchiveHandler;
+import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.deployment.common.DeploymentUtils;
 import org.glassfish.hk2.Services;
@@ -61,16 +63,17 @@ import java.util.logging.Logger;
  *
  * @author sanjeeb.sahoo@oracle.com
  */
-@Service(name = EarDetector.EAR_TYPE)
+@Service(name = EarDetector.ARCHIVE_TYPE)
 @Scoped(Singleton.class)
 public class EarDetector implements ArchiveDetector {
 
     public static final String EAR_DETECTOR_RANK_PROP = "glassfish.ear.detector.rank";
     public static final int DEFAULT_EAR_DETECTOR_RANK = 100;
-    public static final String EAR_TYPE = "ear";
+    public static final String ARCHIVE_TYPE = EarType.ARCHIVE_TYPE;
 
     @Inject private Services services;
     @Inject private EarSniffer sniffer;
+    @Inject private EarType archiveType;
     private ArchiveHandler archiveHandler;
 
     private Logger logger = Logger.getLogger(getClass().getPackage().getName());
@@ -94,9 +97,14 @@ public class EarDetector implements ArchiveDetector {
                 } catch (IOException e) {
                     throw new RuntimeException(e); // TODO(Sahoo): Proper Exception Handling
                 }
-                archiveHandler = services.forContract(ArchiveHandler.class).named(EAR_TYPE).get();
+                archiveHandler = services.forContract(ArchiveHandler.class).named(ARCHIVE_TYPE).get();
             }
             return archiveHandler;
         }
+    }
+
+    @Override
+    public ArchiveType getArchiveType() {
+        return archiveType;
     }
 }

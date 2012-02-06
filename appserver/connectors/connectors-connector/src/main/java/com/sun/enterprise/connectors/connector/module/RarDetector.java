@@ -44,6 +44,7 @@ package com.sun.enterprise.connectors.connector.module;
 import com.sun.enterprise.deploy.shared.FileArchive;
 import org.glassfish.api.deployment.archive.ArchiveDetector;
 import org.glassfish.api.deployment.archive.ArchiveHandler;
+import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.deployment.common.DeploymentUtils;
 import org.glassfish.deployment.common.GenericAnnotationDetector;
@@ -71,7 +72,9 @@ public class RarDetector implements ArchiveDetector {
 
     public static final String RAR_DETECTOR_RANK_PROP = "glassfish.rar.detector.rank";
     public static final int DEFAULT_RAR_DETECTOR_RANK = 300;
-    public static final String ARCHIVE_TYPE = "rar";    // This should be replaced by use of XModuleType.RAR
+    public static final String ARCHIVE_TYPE = RarType.ARCHIVE_TYPE;
+    @Inject
+    private RarType archiveType;
     @Inject
     private ConnectorSniffer sniffer;
     @Inject
@@ -98,6 +101,11 @@ public class RarDetector implements ArchiveDetector {
             }
             return archiveHandler;
         }
+    }
+
+    @Override
+    public ArchiveType getArchiveType() {
+        return archiveType;
     }
 
     /**

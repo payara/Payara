@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,7 +40,7 @@
 
 package com.sun.enterprise.deployment.io;
 
-import org.glassfish.deployment.common.XModuleType;
+import org.glassfish.api.deployment.archive.ArchiveType;
 
 /**
  * Repository of descriptors
@@ -82,17 +82,17 @@ public class DescriptorList {
 		DescriptorConstants.S1AS_APP_CLIENT_DD_ENTRY
 	};
 
-	public final static String [] getDescriptorsList (XModuleType moduleType) {
+	public final static String [] getDescriptorsList (ArchiveType moduleType) {
 		if (moduleType == null) return null;
-		if (moduleType == XModuleType.EAR) {
+		if (moduleType.equals(org.glassfish.deployment.common.DeploymentUtils.earType())) {
 			return (String[])earList.clone();
-		} else if (moduleType == XModuleType.EJB) {
+		} else if (moduleType.equals(org.glassfish.deployment.common.DeploymentUtils.ejbType())) {
 			return (String[])ejbList.clone();
-		} else if (moduleType == XModuleType.WAR) {
+		} else if (moduleType.equals(org.glassfish.deployment.common.DeploymentUtils.warType())) {
 			return (String[])warList.clone();
-		} else if (moduleType == XModuleType.RAR) {
+		} else if (moduleType.equals(org.glassfish.deployment.common.DeploymentUtils.rarType())) {
 			return (String[])rarList.clone();
-		} else if (moduleType == XModuleType.CAR) {
+		} else if (moduleType.equals(org.glassfish.deployment.common.DeploymentUtils.carType())) {
 			return (String[])carList.clone();
 		}
 		return null;

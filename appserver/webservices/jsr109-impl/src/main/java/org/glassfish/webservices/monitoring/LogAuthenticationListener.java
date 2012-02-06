@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -46,7 +46,6 @@ import java.util.logging.Level;
 
 import com.sun.logging.LogDomains;
 import com.sun.enterprise.deployment.BundleDescriptor;
-import org.glassfish.deployment.common.XModuleType;
 
 /**
  * Log all authentication successes and failures.
@@ -70,7 +69,7 @@ public class LogAuthenticationListener implements AuthenticationListener {
      * a web service invocation.
      */
     public void authSucess(BundleDescriptor bundleDesc, Endpoint endpoint, Principal principal) {
-        if (XModuleType.EJB.equals(bundleDesc.getModuleType())) {
+        if (org.glassfish.deployment.common.DeploymentUtils.ejbType().equals(bundleDesc.getModuleType())) {
             if (ejbLogger.isLoggable(Level.FINER)) {
                 ejbLogger.finer("LOG LISTENER : authentication succeeded for " 
                         +  endpoint.getEndpointSelector());                
@@ -89,7 +88,7 @@ public class LogAuthenticationListener implements AuthenticationListener {
      * @param principal Optional principal that failed
      */
     public void authFailure(BundleDescriptor bundleDesc, Endpoint endpoint, Principal principal) {
-        if (XModuleType.EJB.equals(bundleDesc.getModuleType())) {
+        if (org.glassfish.deployment.common.DeploymentUtils.ejbType().equals(bundleDesc.getModuleType())) {
             if (ejbLogger.isLoggable(Level.FINE)) {
                 ejbLogger.fine("authentication failure for " 
                         +  endpoint.getEndpointSelector());                

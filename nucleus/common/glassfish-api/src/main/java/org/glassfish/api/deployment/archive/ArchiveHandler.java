@@ -48,16 +48,26 @@ import java.util.jar.Manifest;
 
 /**
  * ArchiveHandlers are handling certain archive type. An archive has a unique type which is usually defines how
- * classes and resources are loaded from the archive. 
+ * classes and resources are loaded from the archive. An archive is also known as a module. It represents a unit
+ * of deployment.
  *
  * ArchiveHandler should be stateless objects although the implementations of this contract can
  * control that using the scope element of the @Service annotation.
  * 
- * @author Jerome Dochez
+ * @author Jerome Dochez, Sanjeeb Sahoo
  */
 @Contract
 public interface ArchiveHandler {
 
+    // TODO(Sahoo): Introduce abstraction like DeploymentUnit that's stateful and maps straight to a war/jar/ear/etc.
+
+    /**
+     * This method is semantically equivalent to {@link ArchiveDetector#getArchiveType()} except that
+     * this method returns string equivalent of ArchiveType because of backward compatibility reasons.
+     *
+     * @return the type of the archive or deployment unit handled by this handler
+     * @see ArchiveDetector#getArchiveType()
+     */
     public String getArchiveType();
 
     /**

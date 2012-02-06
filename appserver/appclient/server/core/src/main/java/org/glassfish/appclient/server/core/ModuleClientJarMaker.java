@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -42,10 +42,8 @@ package org.glassfish.appclient.server.core;
 
 import java.io.IOException;
 import java.util.Enumeration;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
-import javax.enterprise.deploy.shared.ModuleType;
 
 import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.archivist.ApplicationArchivist;
@@ -53,7 +51,6 @@ import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.api.deployment.archive.WritableArchive;
 import org.glassfish.deployment.common.RootDeploymentDescriptor;
 import org.glassfish.deployment.common.ModuleDescriptor;
-import org.glassfish.deployment.common.XModuleType;
 import com.sun.enterprise.util.zip.ZipItem;
 
 /**
@@ -142,7 +139,7 @@ class ModuleClientJarMaker implements ClientJarMaker {
             //there should only be one appclient in this ear file
             for (ModuleDescriptor md : 
                 Application.class.cast(descriptor).getModules()) {
-                if (md.getModuleType().equals(XModuleType.CAR)) {
+                if (md.getModuleType().equals(org.glassfish.deployment.common.DeploymentUtils.carType())) {
                     appclientSource = source.getSubArchive(md.getArchiveUri());
                     if (source2 != null) {
                         appclientSource2 = 
@@ -178,7 +175,7 @@ class ModuleClientJarMaker implements ClientJarMaker {
         if (descriptor.isApplication()) {
             for (ModuleDescriptor md : 
                 Application.class.cast(descriptor).getModules()) {
-                if (md.getModuleType().equals(XModuleType.EJB)) {
+                if (md.getModuleType().equals(org.glassfish.deployment.common.DeploymentUtils.ejbType())) {
                     ReadableArchive subSource = 
                         source.getSubArchive(md.getArchiveUri());
                     for (Enumeration e = subSource.entries();e.hasMoreElements();) {

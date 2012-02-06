@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -44,8 +44,8 @@ import com.sun.enterprise.deployment.*;
 import com.sun.enterprise.deployment.types.*;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.logging.LogDomains;
+import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.internal.api.Globals;
-import org.glassfish.deployment.common.XModuleType;
 
 import java.lang.reflect.Method;
 import java.util.*;
@@ -493,7 +493,7 @@ public class EjbBundleValidator extends ComponentValidator implements EjbBundleV
                                     " for Singleton " + sessionDesc.getName());
                         }
 
-                        EjbBundleDescriptor ejbBundle = (bundle.getModuleType() == XModuleType.WAR) ?
+                        EjbBundleDescriptor ejbBundle = (bundle.getModuleType() != null && bundle.getModuleType().equals(org.glassfish.deployment.common.DeploymentUtils.warType())) ?
                                 bundle.getExtensionsDescriptors(EjbBundleDescriptor.class).iterator().next()
                                 :  (EjbBundleDescriptor) bundle;
 
@@ -800,7 +800,8 @@ public class EjbBundleValidator extends ComponentValidator implements EjbBundleV
                 DOLUtils.getDefaultLogger().severe("Unresolved <ejb-link>: "+linkName);
                 throw new RuntimeException("Error: Unresolved <ejb-link>: "+linkName);
             } else {
-                if( ejbRef.getReferringBundleDescriptor().getModuleType() == XModuleType.CAR ) {
+                final ArchiveType moduleType = ejbRef.getReferringBundleDescriptor().getModuleType();
+                if(moduleType != null && moduleType.equals(org.glassfish.deployment.common.DeploymentUtils.carType())) {
                     // Because no annotation processing is done within ACC runtime, this case typically
                     // arises for remote @EJB annotations, so don't log it as warning.
                     DOLUtils.getDefaultLogger().fine("Unresolved <ejb-link>: "+linkName);
@@ -821,10 +822,10 @@ public class EjbBundleValidator extends ComponentValidator implements EjbBundleV
                 // it must be remote business.
                 if( ( (referringBundle == null) && (ejbBundleDescriptor == null) )
                     ||
-                    (referringBundle.getModuleType() == XModuleType.CAR) 
+                    (referringBundle.getModuleType() == org.glassfish.deployment.common.DeploymentUtils.carType())
                     ||
                     ( (getApplication() == null) &&
-                      (referringBundle.getModuleType() == XModuleType.WAR) ) ) {
+                      (referringBundle.getModuleType() != null && referringBundle.getModuleType().equals(org.glassfish.deployment.common.DeploymentUtils.warType())) ) ) {
 
                     ejbRef.setLocal(false);
 

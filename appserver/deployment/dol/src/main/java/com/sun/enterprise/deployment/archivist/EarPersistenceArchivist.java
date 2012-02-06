@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -42,7 +42,7 @@ package com.sun.enterprise.deployment.archivist;
 
 import org.glassfish.deployment.common.RootDeploymentDescriptor;
 import com.sun.enterprise.deployment.Application;
-import org.glassfish.deployment.common.XModuleType;
+import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.api.deployment.archive.Archive;
 import org.xml.sax.SAXParseException;
@@ -57,8 +57,8 @@ import java.util.HashMap;
 public class EarPersistenceArchivist extends PersistenceArchivist {
 
     @Override
-    public boolean supportsModuleType(XModuleType moduleType) {
-        return XModuleType.EAR==moduleType;
+    public boolean supportsModuleType(ArchiveType moduleType) {
+        return moduleType!=null && moduleType.equals(org.glassfish.deployment.common.DeploymentUtils.earType());
     }
 
 

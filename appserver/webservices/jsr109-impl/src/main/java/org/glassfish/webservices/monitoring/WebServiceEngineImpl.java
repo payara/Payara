@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -47,7 +47,7 @@
 package org.glassfish.webservices.monitoring;
 
 import com.sun.enterprise.deployment.WebServiceEndpoint;
-import org.glassfish.deployment.common.XModuleType;
+import org.glassfish.api.deployment.archive.ArchiveType;
 
 import com.sun.logging.LogDomains;
 import org.glassfish.webservices.SOAPMessageContext;
@@ -181,8 +181,8 @@ public final class WebServiceEngineImpl implements WebServiceEngine {
         try { 
             String endpointURL = endpoint.getEndpointAddressUri();
             EndpointType endpointType;            
-            XModuleType moduleType = endpoint.getWebService().getWebServicesDescriptor().getModuleType();
-            if (XModuleType.EJB == moduleType) {
+            ArchiveType moduleType = endpoint.getWebService().getWebServicesDescriptor().getModuleType();
+            if (moduleType != null && moduleType.equals(org.glassfish.deployment.common.DeploymentUtils.ejbType())) {
                 endpointType = EndpointType.EJB_ENDPOINT;
             } else {
                 endpointType = EndpointType.SERVLET_ENDPOINT;

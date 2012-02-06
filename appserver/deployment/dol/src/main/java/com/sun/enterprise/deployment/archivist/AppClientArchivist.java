@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -49,8 +49,7 @@ import com.sun.enterprise.deployment.io.runtime.AppClientRuntimeDDFile;
 import com.sun.enterprise.deployment.io.runtime.GFAppClientRuntimeDDFile;
 import com.sun.enterprise.deployment.util.AppClientValidator;
 import com.sun.enterprise.deployment.util.DOLUtils;
-import com.sun.enterprise.deployment.util.ComponentPostVisitor;
-import org.glassfish.deployment.common.XModuleType;
+import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.api.deployment.archive.WritableArchive;
 import org.jvnet.hk2.annotations.Scoped;
@@ -102,8 +101,8 @@ public class AppClientArchivist extends Archivist<ApplicationClientDescriptor> {
      *         as defined in the application DTD
      */
     @Override
-    public XModuleType getModuleType() {
-        return XModuleType.CAR;
+    public ArchiveType getModuleType() {
+        return org.glassfish.deployment.common.DeploymentUtils.carType();
     }
 
     public ApplicationClientDescriptor open(final ReadableArchive archive,

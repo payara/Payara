@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -42,9 +42,9 @@ package com.sun.enterprise.deployment.archivist;
 
 import com.sun.enterprise.deployment.io.DeploymentDescriptorFile;
 import com.sun.enterprise.deployment.io.PersistenceDeploymentDescriptorFile;
+import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.deployment.common.RootDeploymentDescriptor;
 import com.sun.enterprise.deployment.PersistenceUnitsDescriptor;
-import org.glassfish.deployment.common.XModuleType;
 import com.sun.logging.LogDomains;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.deployment.common.DeploymentUtils;
@@ -73,13 +73,9 @@ public abstract class PersistenceArchivist extends ExtensionsArchivist {
         return null; 
     }
 
-    public XModuleType getModuleType() {
-        return XModuleType.Persistence;
-    }
-
     @Override
     // Need to be overridden in derived class to define module type it supports
-    public abstract boolean supportsModuleType(XModuleType moduleType);
+    public abstract boolean supportsModuleType(ArchiveType moduleType);
 
     @Override
     public Object open(Archivist main, ReadableArchive archive, RootDeploymentDescriptor descriptor)

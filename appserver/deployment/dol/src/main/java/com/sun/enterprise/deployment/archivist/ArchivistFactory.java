@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,7 +41,7 @@
 package com.sun.enterprise.deployment.archivist;
 
 import com.sun.enterprise.deploy.shared.ArchiveFactory;
-import org.glassfish.deployment.common.XModuleType;
+import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.api.ContractProvider;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.jvnet.hk2.annotations.Inject;
@@ -95,12 +95,12 @@ public class ArchivistFactory implements ContractProvider, PostConstruct {
     }
 
 
-    public Archivist getArchivist(XModuleType moduleType)
+    public Archivist getArchivist(ArchiveType moduleType)
         throws IOException {
         return getPrivateArchivistFor(moduleType);
     }
 
-    public List<ExtensionsArchivist> getExtensionsArchists(XModuleType moduleType) {
+    public List<ExtensionsArchivist> getExtensionsArchists(ArchiveType moduleType) {
 
         List<ExtensionsArchivist> archivists = new ArrayList<ExtensionsArchivist>();
         for (ExtensionsArchivist ea : extensionsArchivists) {
@@ -117,8 +117,9 @@ public class ArchivistFactory implements ContractProvider, PostConstruct {
      * @return
      * @throws IOException
      */
-    Archivist getPrivateArchivistFor(XModuleType moduleType)
+    Archivist getPrivateArchivistFor(ArchiveType moduleType)
         throws IOException {
+        if (moduleType == null) return null;
         for (Archivist pa : archivists) {
             Archivist a = Archivist.class.cast(pa);
             if (a.getModuleType().equals(moduleType)) {

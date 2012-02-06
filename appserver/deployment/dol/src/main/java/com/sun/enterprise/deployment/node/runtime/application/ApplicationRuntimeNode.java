@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -42,7 +42,6 @@ package com.sun.enterprise.deployment.node.runtime.application;
 
 import com.sun.enterprise.deployment.Application;
 import org.glassfish.deployment.common.ModuleDescriptor;
-import org.glassfish.deployment.common.XModuleType;
 import org.glassfish.security.common.Role;
 import org.glassfish.deployment.common.SecurityRoleMapper;
 import com.sun.enterprise.deployment.node.XMLElement;
@@ -194,7 +193,7 @@ public class ApplicationRuntimeNode extends RuntimeBundleNode<Application> {
                     throw new RuntimeException("No bundle in application with uri " + currentWebUri);
                 }
 		currentWebUri=null;
-		if (md.getModuleType().equals(XModuleType.WAR)) {
+		if (md.getModuleType().equals(org.glassfish.deployment.common.DeploymentUtils.warType())) {
 		    md.setContextRoot(value);
 		} else {
 		    throw new RuntimeException(currentWebUri + " uri does not point to a web bundle");
@@ -250,7 +249,7 @@ public class ApplicationRuntimeNode extends RuntimeBundleNode<Application> {
 	
         // web*
 	for (ModuleDescriptor module : application.getModules()) {
-	    if (module.getModuleType().equals(XModuleType.WAR)) {
+	    if (module.getModuleType().equals(org.glassfish.deployment.common.DeploymentUtils.warType())) {
 		Node web = appendChild(appNode, RuntimeTagNames.WEB);
 		appendTextChild(web, RuntimeTagNames.WEB_URI, module.getArchiveUri());
 		appendTextChild(web, RuntimeTagNames.CONTEXT_ROOT, module.getContextRoot());

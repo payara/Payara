@@ -43,6 +43,7 @@ package org.glassfish.extras.osgicontainer;
 
 import org.glassfish.api.deployment.archive.ArchiveDetector;
 import org.glassfish.api.deployment.archive.ArchiveHandler;
+import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.hk2.Services;
 import org.jvnet.hk2.annotations.Inject;
@@ -68,12 +69,14 @@ import java.util.logging.Logger;
 public class OSGiArchiveDetector implements ArchiveDetector {
     public static final String OSGI_ARCHIVE_DETECTOR_RANK_PROP = "glassfish.ear.detector.rank";
     public static final int DEFAULT_OSGI_ARCHIVE_DETECTOR_RANK = Integer.MAX_VALUE; // the last one to be tried.
-    public static final String OSGI_ARCHIVE_TYPE = "osgi"; // this is what is accepted in deploy --type command
+    public static final String OSGI_ARCHIVE_TYPE = OSGiArchiveType.ARCHIVE_TYPE; // this is what is accepted in deploy --type command
 
     @Inject
     private Services services;
     @Inject
     private OSGiSniffer sniffer;
+    @Inject
+    private OSGiArchiveType archiveType;
     private ArchiveHandler archiveHandler;
 
     private Logger logger = Logger.getLogger(getClass().getPackage().getName());
@@ -102,5 +105,10 @@ public class OSGiArchiveDetector implements ArchiveDetector {
             }
             return archiveHandler;
         }
+    }
+
+    @Override
+    public ArchiveType getArchiveType() {
+        return archiveType;
     }
 }

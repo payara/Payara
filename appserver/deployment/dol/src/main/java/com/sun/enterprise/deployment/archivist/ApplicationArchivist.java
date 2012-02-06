@@ -43,6 +43,7 @@ package com.sun.enterprise.deployment.archivist;
 import com.sun.enterprise.deploy.shared.FileArchive;
 import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.BundleDescriptor;
+import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.deployment.common.RootDeploymentDescriptor;
 import com.sun.enterprise.deployment.annotation.introspection.EjbComponentAnnotationScanner;
 import com.sun.enterprise.deployment.io.ApplicationDeploymentDescriptorFile;
@@ -58,7 +59,6 @@ import com.sun.hk2.component.Holder;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.api.deployment.archive.WritableArchive;
 import org.glassfish.deployment.common.ModuleDescriptor;
-import org.glassfish.deployment.common.XModuleType;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
@@ -110,8 +110,8 @@ public class ApplicationArchivist extends Archivist<Application>
      *
      */
     @Override
-    public XModuleType getModuleType() {
-        return XModuleType.EAR;
+    public ArchiveType getModuleType() {
+        return org.glassfish.deployment.common.DeploymentUtils.earType();
     }
     
             
@@ -342,7 +342,7 @@ public class ApplicationArchivist extends Archivist<Application>
                                 name.endsWith(".war")))) {
                     ModuleDescriptor<BundleDescriptor> md = new ModuleDescriptor<BundleDescriptor>();
                     md.setArchiveUri(uri);
-                    md.setModuleType(XModuleType.WAR);
+                    md.setModuleType(org.glassfish.deployment.common.DeploymentUtils.warType());
                     // the context root will be set later after 
                     // we process the sub modules
                     app.addModule(md);
@@ -354,7 +354,7 @@ public class ApplicationArchivist extends Archivist<Application>
                                 name.endsWith(".rar")))) {
                     ModuleDescriptor<BundleDescriptor> md = new ModuleDescriptor<BundleDescriptor>();
                     md.setArchiveUri(uri);
-                    md.setModuleType(XModuleType.RAR);
+                    md.setModuleType(org.glassfish.deployment.common.DeploymentUtils.rarType());
                     app.addModule(md);
                 } else if ((!directory && name.endsWith(".jar"))
                         || (directory &&
@@ -369,7 +369,7 @@ public class ApplicationArchivist extends Archivist<Application>
 
                             ModuleDescriptor<BundleDescriptor> md = new ModuleDescriptor<BundleDescriptor>();
                             md.setArchiveUri(uri);
-                            md.setModuleType(XModuleType.CAR);
+                            md.setModuleType(org.glassfish.deployment.common.DeploymentUtils.carType());
                             md.setManifest(subArchive.getManifest());
                             app.addModule(md);
                             continue;
@@ -382,7 +382,7 @@ public class ApplicationArchivist extends Archivist<Application>
 
                             ModuleDescriptor<BundleDescriptor> md = new ModuleDescriptor<BundleDescriptor>();
                             md.setArchiveUri(uri);
-                            md.setModuleType(XModuleType.EJB);
+                            md.setModuleType(org.glassfish.deployment.common.DeploymentUtils.ejbType());
                             app.addModule(md);
                             continue;
                         }
@@ -422,7 +422,7 @@ public class ApplicationArchivist extends Archivist<Application>
                         //Section EE.8.4.2.1.d.ii, alas EJB
                         ModuleDescriptor<BundleDescriptor> md = new ModuleDescriptor<BundleDescriptor>();
                         md.setArchiveUri(uri);
-                        md.setModuleType(XModuleType.EJB);
+                        md.setModuleType(org.glassfish.deployment.common.DeploymentUtils.ejbType());
                         app.addModule(md);
                     }
                     /*
@@ -677,7 +677,7 @@ public class ApplicationArchivist extends Archivist<Application>
                 // for optional application.xml case, set the 
                 // context root as module name for web modules
                 if (!appArchive.exists("META-INF/application.xml")) {
-                    if (aModule.getModuleType().equals(XModuleType.WAR)) {
+                    if (aModule.getModuleType().equals(org.glassfish.deployment.common.DeploymentUtils.warType())) {
                         aModule.setContextRoot(aModule.getModuleName());
                     }
                 }
@@ -703,10 +703,10 @@ public class ApplicationArchivist extends Archivist<Application>
     private List<ModuleDescriptor> sortModules(Application app) {
         List<ModuleDescriptor> sortedModules = 
             new ArrayList<ModuleDescriptor>();
-        sortedModules.addAll(app.getModuleDescriptorsByType(XModuleType.RAR));
-        sortedModules.addAll(app.getModuleDescriptorsByType(XModuleType.EJB));
-        sortedModules.addAll(app.getModuleDescriptorsByType(XModuleType.WAR));
-        sortedModules.addAll(app.getModuleDescriptorsByType(XModuleType.CAR));
+        sortedModules.addAll(app.getModuleDescriptorsByType(org.glassfish.deployment.common.DeploymentUtils.rarType()));
+        sortedModules.addAll(app.getModuleDescriptorsByType(org.glassfish.deployment.common.DeploymentUtils.ejbType()));
+        sortedModules.addAll(app.getModuleDescriptorsByType(org.glassfish.deployment.common.DeploymentUtils.warType()));
+        sortedModules.addAll(app.getModuleDescriptorsByType(org.glassfish.deployment.common.DeploymentUtils.carType()));
         return sortedModules;
     }
   

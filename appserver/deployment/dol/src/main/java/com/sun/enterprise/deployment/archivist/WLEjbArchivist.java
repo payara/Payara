@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,12 +40,9 @@
 
 package com.sun.enterprise.deployment.archivist;
 
-import com.sun.enterprise.deployment.archivist.ExtensionsArchivist;
-import com.sun.enterprise.deployment.archivist.Archivist;
-
 import com.sun.enterprise.deployment.EjbBundleDescriptor;
+import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.deployment.common.RootDeploymentDescriptor;
-import org.glassfish.deployment.common.XModuleType;
 import com.sun.enterprise.deployment.io.DeploymentDescriptorFile;
 import com.sun.enterprise.deployment.io.runtime.EjbRuntimeDDFile;
 import com.sun.enterprise.deployment.io.runtime.GFEjbRuntimeDDFile;
@@ -77,13 +74,8 @@ public class WLEjbArchivist extends ExtensionsArchivist {
     }
 
     @Override
-    public boolean supportsModuleType(XModuleType moduleType) {
-        return XModuleType.EJB ==moduleType;
-    }
-
-    @Override
-    public XModuleType getModuleType() {
-        return XModuleType.EJB;
+    public boolean supportsModuleType(ArchiveType moduleType) {
+        return moduleType != null && moduleType.equals(org.glassfish.deployment.common.DeploymentUtils.ejbType());
     }
 
     @Override

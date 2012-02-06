@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2008-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -47,7 +47,6 @@ import org.glassfish.api.Param;
 import org.glassfish.api.I18n;
 import org.glassfish.api.admin.ExecuteOn;
 import org.glassfish.deployment.common.ModuleDescriptor;
-import org.glassfish.deployment.common.XModuleType;
 import org.glassfish.internal.deployment.Deployment;
 import com.sun.enterprise.deployment.BundleDescriptor;
 import com.sun.enterprise.deployment.WebBundleDescriptor;
@@ -261,7 +260,7 @@ public class ListSubComponentsCommand implements AdminCommand {
         for (ModuleDescriptor moduleDesc : application.getModules()) { 
             String moduleInfo = moduleDesc.getArchiveUri() + ":" + 
                 moduleDesc.getModuleType(); 
-             if (moduleDesc.getModuleType().equals(XModuleType.WAR)) {
+             if (moduleDesc.getModuleType().equals(org.glassfish.deployment.common.DeploymentUtils.warType())) {
                  moduleInfo = moduleInfo + ":" + moduleDesc.getContextRoot(); 
              }
              moduleInfoList.add(moduleInfo);
@@ -284,13 +283,13 @@ public class ListSubComponentsCommand implements AdminCommand {
                 modules = application.getModules();
             } else if (type.equals("servlets")) {
                 modules = application.getModuleDescriptorsByType(
-                    XModuleType.WAR);
+                    org.glassfish.deployment.common.DeploymentUtils.warType());
             } else if (type.equals("ejbs")) {    
                 modules = application.getModuleDescriptorsByType(
-                    XModuleType.EJB);
+                    org.glassfish.deployment.common.DeploymentUtils.ejbType());
                 // ejb in war case
                 Collection<ModuleDescriptor<BundleDescriptor>> webModules = 
-                    application.getModuleDescriptorsByType(XModuleType.WAR);
+                    application.getModuleDescriptorsByType(org.glassfish.deployment.common.DeploymentUtils.warType());
                 for (ModuleDescriptor webModule : webModules) {
                     if (webModule.getDescriptor().getExtensionsDescriptors(EjbBundleDescriptor.class).size() > 0) {
                         modules.add(webModule);
@@ -385,13 +384,13 @@ public class ListSubComponentsCommand implements AdminCommand {
 
     private String getModuleType(ModuleDescriptor modDesc) {
         String type = null;
-        if (modDesc.getModuleType().equals(XModuleType.EJB)) {
+        if (modDesc.getModuleType().equals(org.glassfish.deployment.common.DeploymentUtils.ejbType())) {
             type = "EJBModule";
-        } else if (modDesc.getModuleType().equals(XModuleType.WAR)) {
+        } else if (modDesc.getModuleType().equals(org.glassfish.deployment.common.DeploymentUtils.warType())) {
             type = "WebModule";
-        } else if (modDesc.getModuleType().equals(XModuleType.CAR)) {
+        } else if (modDesc.getModuleType().equals(org.glassfish.deployment.common.DeploymentUtils.carType())) {
             type = "AppClientModule";
-        } else if (modDesc.getModuleType().equals(XModuleType.RAR)) {
+        } else if (modDesc.getModuleType().equals(org.glassfish.deployment.common.DeploymentUtils.rarType())) {
             type = "ConnectorModule";
         }
 

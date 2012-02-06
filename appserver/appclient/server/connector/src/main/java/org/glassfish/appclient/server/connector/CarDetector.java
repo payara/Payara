@@ -43,6 +43,7 @@ package org.glassfish.appclient.server.connector;
 
 import org.glassfish.api.deployment.archive.ArchiveDetector;
 import org.glassfish.api.deployment.archive.ArchiveHandler;
+import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.deployment.common.DeploymentUtils;
 import org.glassfish.hk2.Services;
@@ -66,12 +67,14 @@ import java.util.logging.Logger;
 public class CarDetector implements ArchiveDetector {
     public static final String CAR_DETECTOR_RANK_PROP = "glassfish.car.detector.rank";
     public static final int DEFAULT_CAR_DETECTOR_RANK = 500;
-    public static final String ARCHIVE_TYPE = "car"; //Should be replaced by use of XModuleType.CAR
+    public static final String ARCHIVE_TYPE = CarType.ARCHIVE_TYPE;
 
     @Inject
     private Services services;
     @Inject
     private AppClientSniffer sniffer;
+    @Inject
+    private CarType archiveType;
     private ArchiveHandler archiveHandler;
 
     private Logger logger = Logger.getLogger(getClass().getPackage().getName());
@@ -99,5 +102,10 @@ public class CarDetector implements ArchiveDetector {
             }
             return archiveHandler;
         }
+    }
+
+    @Override
+    public ArchiveType getArchiveType() {
+        return archiveType;
     }
 }
