@@ -66,7 +66,6 @@ public abstract class GFLauncher {
     ///////////////////////////////////////////////////////////////////////////
     //////     PUBLIC api area starts here             ////////////////////////
     ///////////////////////////////////////////////////////////////////////////
-
     /**
      *
      * @return The info object that contains startup info
@@ -156,19 +155,19 @@ public abstract class GFLauncher {
         javaConfig = new JavaConfig(parser.getJavaConfig());
         setupProfilerAndJvmOptions(parser);
         setupUpgradeSecurity();
-        
-        Map<String,String> realmprops = parser.getAdminRealmProperties();
+
+        Map<String, String> realmprops = parser.getAdminRealmProperties();
         if (realmprops != null) {
             String classname = realmprops.get("classname");
             String keyfile = realmprops.get("file");
-            if ("com.sun.enterprise.security.auth.realm.file.FileRealm".equals(classname) &&
-                    keyfile != null) {
+            if ("com.sun.enterprise.security.auth.realm.file.FileRealm".equals(classname)
+                    && keyfile != null) {
                 adminFileRealmKeyFile = keyfile;
-            }     
+            }
         }
-        
+
         secureAdminEnabled = parser.getSecureAdminEnabled();
-        
+
         renameOsgiCache();
         setupMonitoring(parser);
         sysPropsFromXml = parser.getSystemProperties();
@@ -204,17 +203,17 @@ public abstract class GFLauncher {
      * Otherwise return null. This value can be used to create a FileRealm for
      * the server.
      */
-    public String getAdminRealmKeyFile() {  
+    public String getAdminRealmKeyFile() {
         return adminFileRealmKeyFile;
     }
-    
+
     /**
      * Returns true if secure admin is enabled
      */
-    public boolean isSecureAdminEnabled() {  
+    public boolean isSecureAdminEnabled() {
         return secureAdminEnabled;
     }
-    
+
     /**
      * Returns the exit value of the process.  This only makes sense when we ran
      * in verbose mode and waited for the process to exit in the wait() method.
@@ -681,7 +680,7 @@ public abstract class GFLauncher {
         //resolver.resolve(sysPropsFromXml);
         logFilename = resolver.resolve(logFilename);
         adminFileRealmKeyFile = resolver.resolve(adminFileRealmKeyFile);
-        
+
         // TODO ?? Resolve sysPropsFromXml ???
     }
 
