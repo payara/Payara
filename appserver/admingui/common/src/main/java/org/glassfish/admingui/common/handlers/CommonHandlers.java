@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -80,6 +80,7 @@ import org.glassfish.admingui.common.tree.FilterTreeEvent;
 
 import org.glassfish.admingui.common.util.GuiUtil;
 import org.glassfish.admingui.common.util.MiscUtil;
+import org.glassfish.admingui.common.util.RestUtil;
 import org.glassfish.admingui.common.util.TargetUtil;
 
 
@@ -795,6 +796,40 @@ public class CommonHandlers {
         }
         return result;
     }
+
+    /**
+     *  <p> This handler filters out AdminObjects from a list-jms-resources, only return Connection Factories.
+     */
+    @Handler( id="filterAdminObjects")
+    public static List filterAdminObjects(HandlerContext context) {
+        List result = new ArrayList();
+        try{
+            FilterTreeEvent event = (FilterTreeEvent) context.getEventObject();
+            List<String> jmsResources = event.getChildObjects();
+            if (jmsResources == null || jmsResources.size() <=0){
+                return result;
+            }
+            List adminObjs = new ArrayList();
+            Map responseMap = RestUtil.restRequest(GuiUtil.getSessionValue("REST_URL") +"/resources/admin-object-resource" , null, "GET", null, false);
+            Map<String, Object> extraPropsMap = (Map<String, Object>) ((Map<String, Object>) responseMap.get("data")).get("extraProperties");
+            if ( extraPropsMap != null) {
+                Map<String, Object> childRes = (Map<String, Object> )extraPropsMap.get("childResources");
+                if (childRes != null){
+                    adminObjs = new ArrayList(childRes.keySet());
+                }
+            }
+            for(String oneJms: jmsResources){
+                if (!adminObjs.contains(oneJms)){
+                    result.add(oneJms);
+                }
+            }
+        }catch(Exception ex){
+            //shouldn't happen.  But weill log in and return empty list.
+            GuiUtil.getLogger().warning("Exception in filterAdminObjects()");
+        }
+        return result;
+    }
+
 
     /**
      * If the bare attribute is found in the query string and the value is "true",
