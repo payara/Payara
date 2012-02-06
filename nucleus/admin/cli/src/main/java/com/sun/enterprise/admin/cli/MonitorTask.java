@@ -52,7 +52,6 @@ public class MonitorTask extends TimerTask {
     private String type = null;
     private String filter = null;
     private Timer timer = null;
-    private File fileName = null;
     private String[] remoteArgs;
     private String exceptionMessage = null;
     private RemoteCommand cmd;
@@ -73,7 +72,6 @@ public class MonitorTask extends TimerTask {
             this.type = type;
         if ((filter != null) && (filter.length() > 0))
             this.filter = filter;
-        this.fileName = fileName;
         this.remoteArgs = remoteArgs;
         cmd = new RemoteCommand(remoteArgs[0], programOpts, env);
         displayHeader(type);
@@ -130,7 +128,7 @@ public class MonitorTask extends TimerTask {
     public void run() {
         try {
             cmd.execute(remoteArgs);
-            allOK = new Boolean(true);
+            allOK = true;
             if (counter == NUM_ROWS) {
                 displayHeader(type);
                 counter = 0;
@@ -140,7 +138,7 @@ public class MonitorTask extends TimerTask {
         catch (Exception e) {
             //logger.severe(
             //strings.get("monitorCommand.errorRemote", e.getMessage()));
-            allOK = new Boolean(false);
+            allOK = false;
             cancelMonitorTask();
             exceptionMessage = e.getMessage();
         }

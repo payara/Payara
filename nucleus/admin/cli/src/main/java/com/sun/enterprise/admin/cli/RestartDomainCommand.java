@@ -84,7 +84,7 @@ public class RestartDomainCommand extends StopDomainCommand {
     @Override
     protected void doCommand()
             throws CommandException {
-        
+
         if(!isRestartable())
             throw new CommandException(Strings.get("restartDomain.notRestartable"));
 
@@ -94,8 +94,6 @@ public class RestartDomainCommand extends StopDomainCommand {
         // run the remote restart-domain command and throw away the output
         RemoteCommand cmd =
                 new RemoteCommand("restart-domain", programOpts, env);
-        String oldpw = programOpts.getPassword();
-
 
         File pwFile = getServerDirs().getLocalPasswordFile();
         long stamp = -1;
