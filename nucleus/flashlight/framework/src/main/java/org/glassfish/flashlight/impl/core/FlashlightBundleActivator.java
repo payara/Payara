@@ -46,18 +46,17 @@ import org.osgi.framework.BundleContext;
 /**
  * @author Mahesh Kannan
  *         Date: Jul 15, 2008
+ * Byron Nevins - this class appears to not be used anywhere.
+ * Unfortunately it's public...
  */
 public class FlashlightBundleActivator
     implements BundleActivator {
 
-    BundleContext myBundleContext;
-
     public void start(BundleContext bCtx) {
-        this.myBundleContext = bCtx;
     }
 
     public void stop(BundleContext bCtx) {
-        
+
     }
 
 

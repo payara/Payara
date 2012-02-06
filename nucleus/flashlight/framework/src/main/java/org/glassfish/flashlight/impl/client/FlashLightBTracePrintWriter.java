@@ -54,7 +54,7 @@ public class FlashLightBTracePrintWriter extends PrintWriter {
 
     private final Logger l;
     private final Level logLevel = Level.WARNING ;
-    private final String BTRACE_PREFIX = "btrace:";
+    private final static String BTRACE_PREFIX = "btrace:";
 
     FlashLightBTracePrintWriter(OutputStream out, Logger l) {
         super(out);
@@ -137,5 +137,5 @@ public class FlashLightBTracePrintWriter extends PrintWriter {
         l.log(logLevel, BTRACE_PREFIX + s);
     }
 
-    
+
 }

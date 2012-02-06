@@ -87,12 +87,12 @@ public class BtraceClientGenerator {
         int methodCounter = 0;
         for (FlashlightProbe probe : probes) {
             //Preparing the class method header and params (type) for @OnMethod annotation
-            String typeDesc = "void ";
+            StringBuilder typeDesc = new StringBuilder("void ");
             StringBuilder methodDesc = new StringBuilder("void __");
             methodDesc.append(probe.getProviderJavaMethodName()).append("__");
             methodDesc.append(clientID).append("_").append(methodCounter).append("_");
             methodDesc.append("(");
-            typeDesc += "(";
+            typeDesc.append("(");
             String delim = "";
             String typeDelim = "";
             Class[] paramTypes = probe.getParamTypes();
@@ -101,13 +101,13 @@ public class BtraceClientGenerator {
                 methodDesc.append(delim).append(paramType.getName());
                 // Dont add the param type for type desc, if self is the first index
                 if (!(probe.hasSelf() && (index == 0))) {
-                    typeDesc += typeDelim + paramType.getName();
+                    typeDesc.append(typeDelim).append(paramType.getName());
                     typeDelim = ",";
                 }
                 delim = ", ";
             }
             methodDesc.append(")");
-            typeDesc += ")";
+            typeDesc.append(")");
             //Creating the class method
             Method m = Method.getMethod(methodDesc.toString());
             GeneratorAdapter gen = new GeneratorAdapter(Opcodes.ACC_PUBLIC + Opcodes.ACC_STATIC, m, null, null, cw);
@@ -125,7 +125,7 @@ public class BtraceClientGenerator {
             AnnotationVisitor av = gen.visitAnnotation("Lcom/sun/btrace/annotations/OnMethod;", true);
             av.visit("clazz", "" + probe.getProviderClazz().getName());
             av.visit("method", probe.getProviderJavaMethodName());
-            av.visit("type", typeDesc);
+            av.visit("type", typeDesc.toString());
             av.visitEnd();
             //Add the body
             gen.push(probe.getId());
