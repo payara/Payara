@@ -64,10 +64,11 @@ public abstract class ResourcesGeneratorBase implements ResourcesGenerator {
     public ResourcesGeneratorBase(Habitat habitat) {
         this.habitat = habitat;
     }
-    @Override
+
     /**
      * Generate REST resource for a single config model.
      */
+    @Override
     public void generateSingle(ConfigModel model, DomDocument domDocument) {
         configModelVisited(model);
         //processRedirectsAnnotation(model); // TODO need to extract info from RestRedirect Annotations
@@ -165,9 +166,9 @@ public abstract class ResourcesGeneratorBase implements ResourcesGenerator {
 
     }
 
-    /* empty method to be overwritten to get a callback when a model is visited.
+    /*
+     * empty method to be overwritten to get a callback when a model is visited.
      */
-
     public void configModelVisited(ConfigModel model) {
     }
 
@@ -185,14 +186,14 @@ public abstract class ResourcesGeneratorBase implements ResourcesGenerator {
         if (metaData != null) {
             if (metaData.postCommandName != null) {
                 if (ResourceUtil.commandIsPresent(habitat, metaData.postCommandName)) {//and the command exits
-                classWriter.createGetPostCommandForCollectionLeafResource(metaData.postCommandName);
-            }
+                    classWriter.createGetPostCommandForCollectionLeafResource(metaData.postCommandName);
+                }
             }
 
             if (metaData.deleteCommandName != null) {
                 if (ResourceUtil.commandIsPresent(habitat, metaData.deleteCommandName)) {//and the command exits
-                classWriter.createGetDeleteCommandForCollectionLeafResource(metaData.deleteCommandName);
-            }
+                    classWriter.createGetDeleteCommandForCollectionLeafResource(metaData.deleteCommandName);
+                }
             }
 
             //display name method
@@ -228,7 +229,9 @@ public abstract class ResourcesGeneratorBase implements ResourcesGenerator {
             if (childElement.isCollection()) {
                 childResourceClassName = "List" + childResourceClassName;
             }
-            classWriter.createGetChildResource(/*childModel.getTagName()*/elementName, childResourceClassName);
+            classWriter.createGetChildResource(/*
+                     * childModel.getTagName()
+                     */elementName, childResourceClassName);
         }
 
         if (childElement.isCollection()) {
@@ -240,6 +243,7 @@ public abstract class ResourcesGeneratorBase implements ResourcesGenerator {
 
     /**
      * process given childConfigModel.
+     *
      * @param childConfigModel
      * @param childElement
      * @param domDocument
@@ -261,9 +265,9 @@ public abstract class ResourcesGeneratorBase implements ResourcesGenerator {
         String commandName = configBeanToDELETECommand.get(beanName);
         if (commandName != null) {
             if (ResourceUtil.commandIsPresent(habitat, commandName)) {//and the command exits
-            classWriter.createGetDeleteCommand(commandName);
+                classWriter.createGetDeleteCommand(commandName);
+            }
         }
-    }
     }
 
     private void generateCustomResourceMapping(String beanName, ClassWriter classWriter) {
@@ -283,6 +287,7 @@ public abstract class ResourcesGeneratorBase implements ResourcesGenerator {
 
     /**
      * Generate resources for commands mapped under given parentBeanName
+     *
      * @param parentBeanName
      * @param parentWriter
      */
@@ -291,8 +296,8 @@ public abstract class ResourcesGeneratorBase implements ResourcesGenerator {
         if (commandMetaData.size() > 0) {
             for (CommandResourceMetaData metaData : commandMetaData) {
                 if (ResourceUtil.commandIsPresent(habitat, metaData.command)) { //only if the command really exists
-                String commandResourceName = parentBeanName + getBeanName(metaData.resourcePath);
-                String commandResourceClassName = getClassName(commandResourceName);
+                    String commandResourceName = parentBeanName + getBeanName(metaData.resourcePath);
+                    String commandResourceClassName = getClassName(commandResourceName);
 
                     //Generate command resource class
                     generateCommandResourceClass(parentBeanName, metaData);
@@ -309,6 +314,7 @@ public abstract class ResourcesGeneratorBase implements ResourcesGenerator {
 
     /**
      * Generate code for Resource class corresponding to given parentBeanName and command
+     *
      * @param parentBeanName
      * @param metaData
      */
@@ -332,7 +338,7 @@ public abstract class ResourcesGeneratorBase implements ResourcesGenerator {
         }
 
         ClassWriter writer = getClassWriter(commandResourceClassName, baseClassName, null);
-        
+
         boolean isLinkedToParent = false;
         if (metaData.commandParams != null) {
             for (CommandResourceMetaData.ParameterMetaData parameterMetaData : metaData.commandParams) {
@@ -342,8 +348,8 @@ public abstract class ResourcesGeneratorBase implements ResourcesGenerator {
             }
         }
 
-        writer.createCommandResourceConstructor(commandResourceClassName, commandName, httpMethod, 
-            isLinkedToParent, metaData.commandParams, commandDisplayName, commandAction);
+        writer.createCommandResourceConstructor(commandResourceClassName, commandName, httpMethod,
+                isLinkedToParent, metaData.commandParams, commandDisplayName, commandAction);
         writer.done();
     }
 
@@ -370,8 +376,8 @@ public abstract class ResourcesGeneratorBase implements ResourcesGenerator {
 
     /**
      * @param elementName
-     * @return bean name for the given element name. The name is derived by uppercasing first letter of elementName,
-     *         eliminating hyphens from elementName and uppercasing letter followed by hyphen
+     * @return bean name for the given element name. The name is derived by uppercasing first letter of elementName, eliminating
+     * hyphens from elementName and uppercasing letter followed by hyphen
      */
     public static String getBeanName(String elementName) {
         StringBuilder ret = new StringBuilder();
@@ -422,57 +428,29 @@ public abstract class ResourcesGeneratorBase implements ResourcesGenerator {
     }
 
     private boolean hasSingletonAnnotation(ConfigModel model) {
-        
+
         Class<? extends ConfigBeanProxy> cbp = null;
         try {
             cbp = (Class<? extends ConfigBeanProxy>) model.classLoaderHolder.get().loadClass(model.targetTypeName);
             if (cbp != null) {
                 org.glassfish.config.support.Singleton sing = cbp.getAnnotation(org.glassfish.config.support.Singleton.class);
-                return (sing!=null);       
+                return (sing != null);
             }
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
         return false;
     }
-    
     //TODO - fetch command name from config bean(RestRedirect annotation).
     //RESTREdirect currently only support automatically these deletes:
     /*
-        delete-admin-object
-        delete-audit-module
-        delete-auth-realm
-        delete-connector-connection-pool
-        delete-connector-resource
-        delete-custom-resource
-        delete-http-listener
-        delete-iiop-listener
-        delete-javamail-resource
-        delete-jdbc-connection-pool
-        delete-jdbc-resource
-        delete-jms-host
-        delete-message-security-provider
-        delete-profiler
-        delete-resource-adapter-config
-        delete-resource-ref
-        delete-system-property
-        delete-virtual-server
-    What is missing is:
-        delete-jms-resource
-        delete-jmsdest
-        delete-jndi-resource
-        delete-lifecycle-module
-        delete-message-security-provider
-        delete-connector-security-map
-        delete-connector-work-security-map
-        delete-node-config
-        delete-node-ssh
-        delete-file-user
-        delete-password-alias
-        delete-http-health-checker
-        delete-http-lb-ref
-        delete-http-redirect
-        delete-instance
+     * delete-admin-object delete-audit-module delete-auth-realm delete-connector-connection-pool delete-connector-resource
+     * delete-custom-resource delete-http-listener delete-iiop-listener delete-javamail-resource delete-jdbc-connection-pool
+     * delete-jdbc-resource delete-jms-host delete-message-security-provider delete-profiler delete-resource-adapter-config
+     * delete-resource-ref delete-system-property delete-virtual-server What is missing is: delete-jms-resource delete-jmsdest
+     * delete-jndi-resource delete-lifecycle-module delete-message-security-provider delete-connector-security-map
+     * delete-connector-work-security-map delete-node-config delete-node-ssh delete-file-user delete-password-alias
+     * delete-http-health-checker delete-http-lb-ref delete-http-redirect delete-instance
      */
     private static final Map<String, String> configBeanToDELETECommand = new HashMap<String, String>() {
 
@@ -560,8 +538,8 @@ public abstract class ResourcesGeneratorBase implements ResourcesGenerator {
 
                 {
                     put("JvmOptions", new CollectionLeafMetaData("create-jvm-options", "delete-jvm-options", "JvmOption"));
-          //          put("Principal", new CollectionLeafMetaData("__create-principal", "__delete-principal", "Principal"));
-          //          put("UserGroup", new CollectionLeafMetaData("__create-user-group", "__delete-user-group", "User Group"));
+                    //          put("Principal", new CollectionLeafMetaData("__create-principal", "__delete-principal", "Principal"));
+                    //          put("UserGroup", new CollectionLeafMetaData("__create-user-group", "__delete-user-group", "User Group"));
                 }
             };
 }
