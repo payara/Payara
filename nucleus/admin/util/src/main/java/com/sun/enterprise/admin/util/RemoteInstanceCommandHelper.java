@@ -70,8 +70,6 @@ public final class RemoteInstanceCommandHelper {
         try {
             habitat = habitatIn;
             servers = habitat.getByType(Servers.class).getServer();
-            domain = habitat.getByType(Domain.class);
-            nodes = habitat.getByType(Nodes.class);
         }
         catch (Exception e) {
             throw new RuntimeException(e);
@@ -130,7 +128,5 @@ public final class RemoteInstanceCommandHelper {
     ///////////////////////////////////////////////////////////////////////////
 
     final private List<Server> servers;
-    final private Nodes nodes;
     final private Habitat habitat;
-    final private Domain domain;
 }
