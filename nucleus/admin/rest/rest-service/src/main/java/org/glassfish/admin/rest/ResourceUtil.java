@@ -100,6 +100,7 @@ import org.glassfish.admin.rest.utils.xml.RestActionReporter;
 
 import static org.glassfish.admin.rest.Util.*;
 import static org.glassfish.admin.rest.provider.ProviderUtil.getElementLink;
+import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.CommandRunner.CommandInvocation;
 import org.glassfish.api.admin.Payload;
 import org.glassfish.api.admin.Payload.Part;
@@ -518,10 +519,13 @@ public class ResourceUtil {
      * test if a command really exists in the current runningVM
      */
     public static boolean commandIsPresent(Habitat habitat, String commandName) {
-        CommandRunner cr = habitat.getComponent(CommandRunner.class);
-        CommandModel cm = cr.getModel(commandName, RestService.logger);
-        return (cm != null);
-
+        try {
+            habitat.getComponent(AdminCommand.class, commandName);
+            return true;
+        } catch (Exception e) {
+            
+        }
+        return false;
     }
 
     /**
