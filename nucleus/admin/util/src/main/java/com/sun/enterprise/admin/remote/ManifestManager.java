@@ -64,11 +64,11 @@ class ManifestManager implements ResponseManager {
     public Map<String,String> getMainAtts() {
         return response.getMainAtts();
     }
-    
+
     public void process() throws RemoteException {
         logger.finer("PROCESSING MANIFEST...");
-        
-        // remember these are "succeed-fast".  They will throw a 
+
+        // remember these are "succeed-fast".  They will throw a
         // RemoteSuccessException if they succeed...
         processGeneratedManPage();
         processManPage();
@@ -78,11 +78,11 @@ class ManifestManager implements ResponseManager {
         throw new RemoteFailureException("Could not process");
     }
 
-    
+
     private void processManPage() throws RemoteSuccessException {
         String manPage = response.getValue(AdminCommandResponse.MANPAGE);
 
-        if(!ok(manPage)) 
+        if(!ok(manPage))
             return;
 
         throw new RemoteSuccessException(manPage);
@@ -117,17 +117,17 @@ class ManifestManager implements ResponseManager {
                     if (sb.length() > 0) sb.append(EOL);
                     sb.append(cause);
                 }
-                throw new RemoteFailureException(sb.toString(), cause);                    
+                throw new RemoteFailureException(sb.toString(), cause);
             }
             throw new RemoteFailureException(sb.toString());
-        }        
+        }
 
         throw new RemoteSuccessException(sb.toString());
     }
 
-    // this is just HORRIBLE -- but that's the way it is presented from the 
+    // this is just HORRIBLE -- but that's the way it is presented from the
     // server.  I imagine tons of bug reports on this coming up...
-    private void processOneLevel(String prefix, String key, 
+    private void processOneLevel(String prefix, String key,
             Map<String,String> atts, StringBuilder sb) {
 
         if(atts == null)
@@ -138,52 +138,21 @@ class ManifestManager implements ResponseManager {
         processChildren(prefix, key, atts, sb);
     }
 
-    private void processProps(String prefix, Map<String, String> atts, StringBuilder sb) {
-        // output "properties=(a=b,c=d)"
-        List<NameValue<String,String>> props = response.getKeys(atts);
-
-        for(Iterator<NameValue<String,String>> it = props.iterator(); it.hasNext(); ) {
-            NameValue<String,String> nv = it.next();
-            if(nv.getName().startsWith("nb-"))
-                it.remove();
-        }
-        
-        if(props == null || props.isEmpty()) 
-            return;
-        
-        if (sb.length() > 0) sb.append(EOL);
-        sb.append(prefix).append("properties=(");
-        boolean first = true;
-
-        for(NameValue<String,String> nv : props) {
-            String name = nv.getName();
-            String value = nv.getValue();
-
-            if(first)
-                first = false;
-            else
-                sb.append(",");
-
-            sb.append(name + "=" + value);
-        }
-        sb.append(")");
-    }
-
     private void processChildren(String prefix, String parent, Map<String, String> atts, StringBuilder sb) {
 
         Map<String,Map<String,String>> kids = response.getChildren(atts);
-        
+
         if(kids == null || kids.isEmpty())
             return;
 
         String childrenType = atts.get(AdminCommandResponse.CHILDREN_TYPE);
-        int index = (parent == null) ? 0 : parent.length() + 1; 
-        
+        int index = (parent == null) ? 0 : parent.length() + 1;
+
         for(Map.Entry<String, Map<String,String>> entry : kids.entrySet()) {
             String container = entry.getKey();
-            
+
             if (sb.length() > 0) sb.append(EOL);
-            if(ok(childrenType)) {  
+            if(ok(childrenType)) {
                 sb.append(prefix).append(childrenType).append(" : ");
             }
             try {
@@ -210,10 +179,6 @@ class ManifestManager implements ResponseManager {
         return sb;
     }
 
-    private void dump() {
-        
-    }
-    
     private boolean ok(String s) {
         return s != null && s.length() > 0 && !s.equals("null");
     }
@@ -227,10 +192,10 @@ class ManifestManager implements ResponseManager {
             return value;
         }
     }
-    
+
     private Logger logger;
     private AdminCommandResponse response;
     private static final String EOL = StringUtils.NEWLINE;
     private static final String TAB = "    ";
 }
- 
+
