@@ -474,9 +474,6 @@ public abstract class GFLauncher {
             throw new GFLauncherException("jvmfailure", e, e);
         }
 
-        long endTime = System.currentTimeMillis();
-        //GFLauncherLogger.info("launchTime", (endTime - getStartTime()));
-
         //if verbose, hang around until the domain stops
         if (getInfo().isVerboseOrWatchdog())
             wait(process);
