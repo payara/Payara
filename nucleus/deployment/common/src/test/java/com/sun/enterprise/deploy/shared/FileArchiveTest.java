@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright (c) 2010-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2012 Oracle and/or its affiliates. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -434,12 +434,29 @@ public class FileArchiveTest {
     }
 
     private void createPreexistingDir() throws IOException {
-        for (String entryName : usualEntryNames) {
-            final File f = new File(archiveDir, entryName);
-            f.mkdirs();
-            f.createNewFile();
-        }
-    }
+         for (String entryName : usualEntryNames) {
+             final File f = fileForPath(archiveDir, entryName);
+             final File parentDir = f.getParentFile();
+             if(parentDir != null) {
+                 parentDir.mkdirs();
+             }
+             try {
+                 f.createNewFile();
+             } catch (Exception ex) {
+                 throw new IOException(f.getAbsolutePath(), ex);
+             }
+         }
+     }
+
+    private File fileForPath(File anchor, final String path) {
+         final String[] interveningDirNames = path.split("/");
+         File interveningDir = anchor;
+         for (int i = 0; i < interveningDirNames.length - 1; i++) {
+             String name = interveningDirNames[i];
+             interveningDir = new File(interveningDir, name + "/");
+         }
+         return new File(interveningDir,interveningDirNames[interveningDirNames.length - 1]);
+     }
 
     @Ignore
     @Test
@@ -530,5 +547,5 @@ public class FileArchiveTest {
         }
 
     }
-
 }
+
