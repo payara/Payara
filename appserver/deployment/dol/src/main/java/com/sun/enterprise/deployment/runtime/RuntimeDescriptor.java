@@ -59,18 +59,6 @@ public abstract class RuntimeDescriptor extends Descriptor {
     
     protected PropertyChangeSupport propListeners;
     
-    private Map<Class<? extends Descriptor>,Descriptor> descriptorExtensions =
-            new HashMap<Class<? extends Descriptor>, Descriptor>(); 
-
-    public <T extends Descriptor> T getDescriptorExtension(final Class<T> c) {
-        return (T)descriptorExtensions.get(c);
-    }
-    
-    public void addDescriptorExtension(final Descriptor dde) {
-         descriptorExtensions.put((Class<? extends Descriptor>)dde.getClass(), dde);
-    }
-
-    
     /** Creates a new instance of RuntimeDescriptor */
     public RuntimeDescriptor(RuntimeDescriptor other) {
 	super(other);
