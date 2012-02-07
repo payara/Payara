@@ -238,7 +238,7 @@ public class DefaultServlet
     /**
      * Alternate doc bases
      */
-    protected ArrayList<AlternateDocBase> alternateDocBases = null;
+    protected transient ArrayList<AlternateDocBase> alternateDocBases = null;
 
 
     /**
