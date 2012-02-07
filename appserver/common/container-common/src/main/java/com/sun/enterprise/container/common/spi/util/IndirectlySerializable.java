@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,47 +38,26 @@
  * holder.
  */
 
-package com.sun.ejb.spi.io;
+package com.sun.enterprise.container.common.spi.util;
 
 import org.jvnet.hk2.annotations.Contract;
 
-import java.io.*;
-
 /**
- *
- * A Factory interface for creating an Object{Input | Output}Stream that
- *  allows serialization / de-serialization of "standard"
- *  J2EE Objects like EJBLocalObject, JNDIContext, UserTransaction etc.
- *
+ * An interface that allows Non-Serializable objects to be persisted. Any non
+ * serializable object that needs to be persisted needs to implement this
+ * interface. The getSerializableObjectFactory() method will be called to get a
+ * SerilizableObjectFactory that can be persisted. The SerializableObjectFactory
+ * can later be de-serialized and the createObject() will be invoked to get the
+ * original Non-Serializable object. It is assumed that the
+ * SerializableObjectFactory contains enough data that can be used to restore
+ * the original state of the object that existed at the time of Serilization
+ * 
  * @author Mahesh Kannan
  */
 @Contract
-public interface J2EEObjectStreamFactory {
+public interface IndirectlySerializable {
 
-    /**
-     *
-     * Obtain an ObjectOutputStream that allows serialization
-     *  of a graph of objects. The objects can be plain Serializable objects
-     *  or can be converted into Serializable objects using
-     *  the handler
-     *
-     *@throws IOException when the serialziation fails
-     *@return an ObjectOutputStream that can be used to serialize objects
-     */
-    public ObjectOutputStream createObjectOutputStream(OutputStream os,
-            boolean replaceObject)
-        throws IOException;
-
-    /**
-     *
-     * Obtain an ObjectInputStream that allows de-serialization
-     *  of a graph of objects.
-     *
-     *@throws IOException when the de-serialziation fails
-     *@return an ObjectInputStream that can be used to deserialize objects
-     */
-	public ObjectInputStream createObjectInputStream(InputStream is,
-            boolean resolveObject, ClassLoader appClassLoader)
-        throws Exception;
+	public SerializableObjectFactory getSerializableObjectFactory()
+			throws java.io.IOException;
 
 }

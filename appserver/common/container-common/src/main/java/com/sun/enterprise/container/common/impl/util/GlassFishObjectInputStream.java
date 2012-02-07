@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,49 +38,46 @@
  * holder.
  */
 
-package com.sun.ejb.base.io;
+package com.sun.enterprise.container.common.impl.util;
 
-import com.sun.ejb.spi.io.SerializableObjectFactory;
-
+import com.sun.enterprise.container.common.spi.util.SerializableObjectFactory;
 import com.sun.enterprise.naming.util.ObjectInputOutputStreamFactoryFactory;
 
 import com.sun.enterprise.naming.util.ObjectInputOutputStreamFactory;
 
+import com.sun.enterprise.container.common.spi.util.GlassFishInputStreamHandler;
 import com.sun.logging.LogDomains;
 
 import java.io.*;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Proxy;
-import java.rmi.Remote;
+import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.glassfish.enterprise.iiop.api.GlassFishORBHelper;
-import org.glassfish.enterprise.iiop.api.ProtocolManager;
-import org.glassfish.internal.api.Globals;
-
 /**
- * A class that is used to restore SFSB conversational state
+ * A class that is used to restore conversational state
  *
  * @author Mahesh Kannan
  */
-class EJBObjectInputStream extends ObjectInputStream
+class GlassFishObjectInputStream extends ObjectInputStream
 {
     private ClassLoader appLoader;
 
-    private static final Logger _ejbLogger =
-       LogDomains.getLogger(EJBObjectInputStream.class, LogDomains.EJB_LOGGER);
+	private static Logger _logger = LogDomains.getLogger(GlassFishObjectInputStream.class, LogDomains.JNDI_LOGGER);
 
     private ObjectInputOutputStreamFactory inputStreamHelper;
 
-    EJBObjectInputStream(InputStream in, ClassLoader appCl, boolean resolve)
+    private Collection<GlassFishInputStreamHandler> handlers;
+    
+    GlassFishObjectInputStream(Collection<GlassFishInputStreamHandler> handlers,  InputStream in, ClassLoader appCl, boolean resolve)
         throws IOException, StreamCorruptedException
     {
         super(in);
-        
         appLoader = appCl;
+        this.handlers = handlers;
         
-        if (resolve == true) {
+        if (resolve) {
             enableResolveObject(resolve);
 
         }
@@ -92,48 +89,39 @@ class EJBObjectInputStream extends ObjectInputStream
     protected Object resolveObject(Object obj)
         throws IOException
     {
-
-	// Until we've identified a remote object, we can't assume the orb is
-	// available in the container.  If the orb is not present, this will be null.
-        ProtocolManager protocolMgr = getProtocolManager();
-
+    	Object result = obj;
         try {
-            if ( (protocolMgr != null) && protocolMgr.isStub(obj) ) {
-                protocolMgr.connectObject((Remote)obj);
-                return obj;
-            } else if (obj instanceof SerializableObjectFactory) {
+            if (obj instanceof SerializableObjectFactory) {
                 return ((SerializableObjectFactory) obj).createObject();
             } else {
-                return obj;
+            	for (GlassFishInputStreamHandler handler : handlers) {
+					Object r = handler.resolveObject(obj);
+					if (r != null) {
+						result = r == GlassFishInputStreamHandler.NULL_OBJECT ? null : r;
+						break;
+					}
+				}
+            	
+            	return result;
             }
         } catch (IOException ioEx ) {
-            _ejbLogger.log(Level.SEVERE, "ejb.resolve_object_exception", ioEx);
+            _logger.log(Level.SEVERE, "ejb.resolve_object_exception", ioEx);
             throw ioEx;
         } catch (Exception ex) {
-            _ejbLogger.log(Level.SEVERE, "ejb.resolve_object_exception", ex);
+            _logger.log(Level.SEVERE, "ejb.resolve_object_exception", ex);
             IOException ioe = new IOException();
             ioe.initCause(ex);
             throw ioe;
         }
     }
 
-    /**
-     * Do all ProtocolManager access lazily and only request orb if it has already been
-     * initialized so that code doesn't make the assumption that an orb is available in
-     * this runtime.
-     */
-    private ProtocolManager getProtocolManager() {
-	GlassFishORBHelper orbHelper = Globals.getDefaultHabitat().byType(GlassFishORBHelper.class).get();
-	return orbHelper.isORBInitialized() ? orbHelper.getProtocolManager() : null;
-    }
-
     @Override
-    protected Class resolveProxyClass(String[] interfaces)
+    protected Class<?> resolveProxyClass(String[] interfaces)
         throws IOException, ClassNotFoundException
     {
-        Class[] classObjs = new Class[interfaces.length];
+        Class<?>[] classObjs = new Class[interfaces.length];
         for (int i = 0; i < interfaces.length; i++) {
-            Class cl = Class.forName(interfaces[i], false, appLoader);
+            Class<?> cl = Class.forName(interfaces[i], false, appLoader);
             // If any non-public interfaces, delegate to JDK's
             // implementation of resolveProxyClass.
             if ((cl.getModifiers() & Modifier.PUBLIC) == 0) {
@@ -153,7 +141,7 @@ class EJBObjectInputStream extends ObjectInputStream
     protected Class<?> resolveClass(ObjectStreamClass desc)
                 throws IOException, ClassNotFoundException
     {
-        Class clazz = inputStreamHelper.resolveClass(this, desc);
+        Class<?> clazz = inputStreamHelper.resolveClass(this, desc);
         if( clazz == null ) {
             try {
                 // First try app class loader

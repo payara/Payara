@@ -61,6 +61,8 @@ import javax.ejb.ConcurrentAccessException;
 import javax.persistence.PersistenceContextType;
 
 import com.sun.ejb.*;
+import com.sun.enterprise.container.common.spi.util.IndirectlySerializable;
+import com.sun.enterprise.container.common.spi.util.SerializableObjectFactory;
 import com.sun.enterprise.util.Utility;
 import com.sun.enterprise.deployment.*;
 
@@ -71,8 +73,6 @@ import java.util.logging.*;
 import com.sun.logging.*;
 
 import com.sun.appserv.util.cache.CacheListener;
-
-import com.sun.ejb.base.io.IOUtils;
 
 import com.sun.ejb.base.stats.StatefulSessionStoreMonitor;
 import com.sun.ejb.base.stats.HAStatefulSessionStoreMonitor;
@@ -90,9 +90,6 @@ import com.sun.ejb.spi.sfsb.util.SFSBVersionManager;
 import com.sun.enterprise.deployment.runtime.IASEjbExtraDescriptors;
 import com.sun.enterprise.deployment.runtime.CheckpointAtEndOfMethodDescriptor;
 import com.sun.enterprise.admin.monitor.callflow.ComponentType;
-
-import com.sun.ejb.spi.io.IndirectlySerializable;
-import com.sun.ejb.spi.io.SerializableObjectFactory;
 
 import com.sun.enterprise.container.common.impl.EntityManagerFactoryWrapper;
 import org.glassfish.api.invocation.ComponentInvocation;
@@ -1934,7 +1931,7 @@ public final class StatefulSessionContainer
                             CallbackType.PRE_PASSIVATE, sc);
                     sc.setLastPersistedAt(System.currentTimeMillis());
                     long newCtxVersion = sc.incrementAndGetVersion();
-                    byte[] serializedState = IOUtils.serializeObject(sc, true);
+                    byte[] serializedState = EjbContainerUtilImpl.getInstance().getJavaEEIOUtils().serializeObject(sc, true);
                     simpleMetadata = new SimpleMetadata(sc.getVersion(),
                             System.currentTimeMillis(),
                             removalGracePeriodInSeconds*1000L, serializedState);
@@ -2988,7 +2985,7 @@ public final class StatefulSessionContainer
                     byte[] serializedState = null;
                     try {
                         long newCtxVersion = sc.incrementAndGetVersion();
-                        serializedState = IOUtils.serializeObject(sc, true);
+                        serializedState = EjbContainerUtilImpl.getInstance().getJavaEEIOUtils().serializeObject(sc, true);
                         SimpleMetadata beanState =
                                new SimpleMetadata(
                                         sc.getVersion(), sc.getLastAccessTime(),

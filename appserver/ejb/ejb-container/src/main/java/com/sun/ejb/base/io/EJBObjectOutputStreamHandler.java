@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -44,8 +44,7 @@ import com.sun.ejb.containers.BaseContainer;
 import com.sun.ejb.EJBUtils;
 import com.sun.ejb.containers.EjbContainerUtilImpl;
 import com.sun.ejb.containers.RemoteBusinessWrapperBase;
-import com.sun.ejb.spi.io.IndirectlySerializable;
-import com.sun.ejb.spi.io.SerializableObjectFactory;
+import com.sun.enterprise.container.common.spi.util.JavaEEIOUtils;
 import com.sun.logging.LogDomains;
 
 
@@ -54,9 +53,7 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.Serializable;
-import java.io.ObjectOutputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -65,22 +62,22 @@ import org.glassfish.enterprise.iiop.api.GlassFishORBHelper;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.api.naming.GlassfishNamingManager;
 
-import com.sun.enterprise.naming.util.ObjectInputOutputStreamFactoryFactory;
-import com.sun.enterprise.naming.util.ObjectInputOutputStreamFactory;
-
+import com.sun.enterprise.container.common.spi.util.GlassFishOutputStreamHandler;
+import com.sun.enterprise.container.common.spi.util.IndirectlySerializable;
+import com.sun.enterprise.container.common.spi.util.SerializableObjectFactory;
 
 /**
  * A class that is used to passivate SFSB conversational state
  *
  * @author Mahesh Kannan
  */
-class EJBObjectOutputStream
-    extends java.io.ObjectOutputStream
+public class EJBObjectOutputStreamHandler
+    implements GlassFishOutputStreamHandler
 {
+    static JavaEEIOUtils _javaEEIOUtils;
 
     protected static final Logger _ejbLogger =
-            LogDomains.getLogger(EJBObjectOutputStream.class, LogDomains.EJB_LOGGER);
-
+            LogDomains.getLogger(EJBObjectOutputStreamHandler.class, LogDomains.EJB_LOGGER);
 
     static final int EJBID_OFFSET = 0;
     static final int INSTANCEKEYLEN_OFFSET = 8;
@@ -88,67 +85,36 @@ class EJBObjectOutputStream
 
     private static final byte HOME_KEY = (byte)0xff;
 
-    private ObjectInputOutputStreamFactory outputStreamHelper;
-
-    EJBObjectOutputStream(OutputStream out,
-            boolean replaceObject)
-        throws IOException
-    {
-        super(out);
-        if (replaceObject == true) {
-           enableReplaceObject(replaceObject);
-        }
-
-        outputStreamHelper = ObjectInputOutputStreamFactoryFactory.getFactory();
-
+    //Ugly,
+    public static final void setJavaEEIOUtils(JavaEEIOUtils javaEEIOUtils) {
+        _javaEEIOUtils = javaEEIOUtils;
     }
 
     /**
      * This code is needed to serialize non-Serializable objects that
      * can be part of a bean's state. See EJB2.0 section 7.4.1.
      */
-    protected Object replaceObject(Object obj)
-        throws IOException
-    {
-	Object result = obj;
- 
-	// Until we've identified a remote object, we can't assume the orb is
-	// available in the container.  If the orb is not present, this will be null.
+    public Object replaceObject(Object obj)
+            throws IOException {
+        Object result = obj;
+
+        // Until we've identified a remote object, we can't assume the orb is
+        // available in the container.  If the orb is not present, this will be null.
         ProtocolManager protocolMgr = getProtocolManager();
 
-	if (obj instanceof IndirectlySerializable) {
-	    result = ((IndirectlySerializable) obj).getSerializableObjectFactory();
-
-	} else if (obj instanceof RemoteBusinessWrapperBase) {
+        if (obj instanceof RemoteBusinessWrapperBase) {
             result = getRemoteBusinessObjectFactory
-                ((RemoteBusinessWrapperBase)obj);
-	} else if ((protocolMgr != null) && protocolMgr.isStub(obj) && protocolMgr.isLocal(obj)) {
-	    org.omg.CORBA.Object target = (org.omg.CORBA.Object) obj;
+                    ((RemoteBusinessWrapperBase) obj);
+        } else if ((protocolMgr != null) && protocolMgr.isStub(obj) && protocolMgr.isLocal(obj)) {
+            org.omg.CORBA.Object target = (org.omg.CORBA.Object) obj;
             // If we're here, it's always for the 2.x RemoteHome view.
             // There is no remote business wrapper class.
-	    result = getSerializableEJBReference(target, protocolMgr, null);
+            result = getSerializableEJBReference(target, protocolMgr, null);
+        }
 
-	} else if ( obj instanceof Serializable ) {
-	    result = obj;
-	} else if (obj instanceof Context) {
-            result = new SerializableJNDIContext((Context) obj);
-        } else {
-	    if (_ejbLogger.isLoggable(Level.FINE)) {
-		_ejbLogger.log(Level.FINE,
-		    "EJBObjectInputStream_handling_non_serializable_object",
-		    obj.getClass().getName());
-	    }
-
-	    result = obj;
-	}
-
-	return result;
+        return result;
     }
 
-    public void annotateClass(Class<?> cl) throws IOException
-    {
-        outputStreamHelper.annotateClass(this, cl);           
-    }
 
     /**
      * Do all ProtocolManager access lazily and only request orb if it has already been
@@ -156,7 +122,7 @@ class EJBObjectOutputStream
      * this runtime.
      */
     private ProtocolManager getProtocolManager() {
-	GlassFishORBHelper orbHelper = Globals.getDefaultHabitat().byType(GlassFishORBHelper.class).get();
+	GlassFishORBHelper orbHelper = Globals.getDefaultHabitat().getComponent(GlassFishORBHelper.class);
 	return orbHelper.isORBInitialized() ? orbHelper.getProtocolManager() : null;
     }
 
@@ -252,7 +218,7 @@ final class SerializableJNDIContext
             if ((name == null) || (name.length() == 0)) {
                 return new InitialContext();
             } else {
-                return Globals.getDefaultHabitat().forContract(GlassfishNamingManager.class).get().restoreJavaCompEnvContext(name);
+                return Globals.getDefaultHabitat().getComponent(GlassfishNamingManager.class).restoreJavaCompEnvContext(name);
             }
         } catch (NamingException namEx) {
             IOException ioe = new IOException();
@@ -301,10 +267,10 @@ abstract class AbstractSerializableS1ASEJBReference
         if( reference.getClass().getClassLoader() !=
             contextClassLoader) {
             try {
-                byte[] serializedRef = IOUtils.serializeObject
+                byte[] serializedRef = EJBObjectOutputStreamHandler._javaEEIOUtils.serializeObject
                     (reference, false);
                 returnReference = (java.rmi.Remote)
-                    IOUtils.deserializeObject(serializedRef, false,
+                        EJBObjectOutputStreamHandler._javaEEIOUtils.deserializeObject(serializedRef, false,
                                              contextClassLoader);
                 GlassFishORBHelper orbHelper = EjbContainerUtilImpl.getInstance().getORBHelper();
                 ProtocolManager protocolMgr = orbHelper.getProtocolManager();
@@ -376,7 +342,7 @@ final class SerializableS1ASEJBObjectReference
         }
         remoteBusinessInterface = remoteBusinessInterfaceName;
         instanceKey = new byte[keySize];
-        System.arraycopy(objKey, EJBObjectOutputStream.INSTANCEKEY_OFFSET,
+        System.arraycopy(objKey, EJBObjectOutputStreamHandler.INSTANCEKEY_OFFSET,
                 instanceKey, 0, keySize);
     }
     

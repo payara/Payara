@@ -52,7 +52,7 @@ import javax.ejb.EJBLocalObject;
 import com.sun.ejb.EjbInvocation;
 import com.sun.ejb.InvocationInfo;
 import com.sun.ejb.containers.util.MethodMap;
-import com.sun.ejb.spi.io.IndirectlySerializable;
+import com.sun.enterprise.container.common.spi.util.IndirectlySerializable;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.Utility;
 

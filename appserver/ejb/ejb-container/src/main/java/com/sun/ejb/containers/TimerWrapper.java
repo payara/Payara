@@ -52,14 +52,13 @@ import javax.ejb.ScheduleExpression;
 import javax.ejb.FinderException;
 
 
+import com.sun.enterprise.container.common.spi.util.IndirectlySerializable;
+import com.sun.enterprise.container.common.spi.util.SerializableObjectFactory;
 import org.glassfish.api.invocation.InvocationException;
 import org.glassfish.api.invocation.ComponentInvocation;
 
 import com.sun.ejb.EjbInvocation;
 import com.sun.ejb.ComponentContext;
-
-import com.sun.ejb.spi.io.IndirectlySerializable;
-import com.sun.ejb.spi.io.SerializableObjectFactory;
 
 /*
  * TimerWrapper is the application-level representation

@@ -42,8 +42,7 @@ package com.sun.ejb.containers.util.cache;
 
 import com.sun.appserv.util.cache.CacheListener;
 
-import com.sun.ejb.base.io.IOUtils;
-
+import com.sun.ejb.containers.EjbContainerUtilImpl;
 import com.sun.ejb.spi.container.SFSBContainerCallback;
 import com.sun.ejb.spi.container.StatefulEJBContext;
 
@@ -470,7 +469,7 @@ public class LruSessionCache
             }  else {
 		//sfsbStoreMonitor.setActivationSize(data.length);
                 incrementLoadFromBackupCount();
-                object = IOUtils.deserializeObject(data, true,
+                object = EjbContainerUtilImpl.getInstance().getJavaEEIOUtils().deserializeObject(data, true,
                         container.getClassLoader());
             }
         } catch ( Exception ex ) {
@@ -487,7 +486,7 @@ public class LruSessionCache
     private boolean saveStateToStore(Serializable sessionKey, StatefulEJBContext ctx)
 	throws java.io.NotSerializableException, java.io.IOException
     {
-        byte[] data = IOUtils.serializeObject(ctx.getSessionContext(), true);
+        byte[] data = EjbContainerUtilImpl.getInstance().getJavaEEIOUtils().serializeObject(ctx.getSessionContext(), true);
 
 	//If we are here then we were able to serialize the object successfully
         boolean status = false;

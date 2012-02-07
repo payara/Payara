@@ -40,6 +40,9 @@
 
 package com.sun.ejb.containers;
 
+import com.sun.ejb.base.io.EJBObjectInputStreamHandler;
+import com.sun.ejb.base.io.EJBObjectOutputStreamHandler;
+import com.sun.enterprise.container.common.spi.util.JavaEEIOUtils;
 import com.sun.enterprise.transaction.api.JavaEETransaction;
 import com.sun.enterprise.transaction.api.JavaEETransactionManager;
 import com.sun.enterprise.container.common.spi.util.ComponentEnvManager;
@@ -129,6 +132,9 @@ public class EjbContainerUtilImpl
 
     @Inject
     private ServerContext serverContext;
+    
+    @Inject
+    JavaEEIOUtils javaEEIOUtils;
 
     // Flag that allows to load EJBTimerService on the 1st access and
     // distinguish between not available and not loaded
@@ -231,6 +237,8 @@ public class EjbContainerUtilImpl
             }
         }
 
+        javaEEIOUtils.addGlassFishOutputStreamHandler(new EJBObjectOutputStreamHandler());
+        javaEEIOUtils.addGlassFishInputStreamHandler(new EJBObjectInputStreamHandler());
         _me = this;
     }
 
@@ -751,4 +759,7 @@ public class EjbContainerUtilImpl
 //        TODO retrieve the named ThreadPoolExecutor
     }
 
+    public JavaEEIOUtils getJavaEEIOUtils() {
+        return javaEEIOUtils;
+    }
 }

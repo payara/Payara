@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,23 +37,29 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+package com.sun.enterprise.container.common.spi.util;
 
-package com.sun.ejb.spi.io;
-
+import java.io.IOException;
 import java.io.Serializable;
 
+import org.jvnet.hk2.annotations.Contract;
+
 /**
- * An interface that creates an Object that was
- *  serialized using IndirectlySerializable
+ * A class to save state during Serialization. GlassFishOutputStreamHandlers
+ *   are called from GlassFishObjectOutputStream
  *
  * @author Mahesh Kannan
  */
+@Contract
+public interface GlassFishOutputStreamHandler {
 
-public interface SerializableObjectFactory
-    extends Serializable
-{
-
-    public Object createObject()
-        throws java.io.IOException;
-
+	/**
+	 * Called from JavaEEIOUtils' replaceObject. The implementation
+	 *  must return the object that needs to be written out to the
+	 *  stream OR null if it cannot handle the serialization of this
+	 *  object
+	 *  
+	 */
+	public Object replaceObject(Object obj) throws IOException;
+	
 }

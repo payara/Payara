@@ -40,7 +40,6 @@
 
 package com.sun.ejb;
 
-import com.sun.ejb.base.io.IOUtils;
 import com.sun.ejb.codegen.ClassGeneratorFactory;
 import com.sun.ejb.codegen.AsmSerializableBeanGenerator;
 import com.sun.ejb.codegen.GenericHomeGenerator;
@@ -120,13 +119,13 @@ public class EJBUtils {
                                                boolean replaceObject)
 	    throws IOException
     {
-        return IOUtils.serializeObject(obj, replaceObject);
+        return EjbContainerUtilImpl.getInstance().getJavaEEIOUtils().serializeObject(obj, replaceObject);
     }
 
     public static final byte[] serializeObject(Object obj)
         throws IOException
     {
-        return IOUtils.serializeObject(obj, true);
+        return EjbContainerUtilImpl.getInstance().getJavaEEIOUtils().serializeObject(obj, true);
     }
 
     /**
@@ -139,14 +138,14 @@ public class EJBUtils {
             ClassLoader loader, boolean resolveObject)
         throws Exception
     {
-        return IOUtils.deserializeObject(data, resolveObject, loader);
+        return EjbContainerUtilImpl.getInstance().getJavaEEIOUtils().deserializeObject(data, resolveObject, loader);
     }
 
     public static final Object deserializeObject(byte[] data, 
                                                  ClassLoader loader)
         throws Exception
     {
-        return IOUtils.deserializeObject(data, true, loader);
+        return EjbContainerUtilImpl.getInstance().getJavaEEIOUtils().deserializeObject(data, true, loader);
     }
 
     public static boolean useStaticCodegen() {

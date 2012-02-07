@@ -40,12 +40,12 @@
 
 package com.sun.ejb.containers;
 
+import com.sun.enterprise.container.common.spi.util.IndirectlySerializable;
+import com.sun.enterprise.container.common.spi.util.SerializableObjectFactory;
+
 import java.io.IOException;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
-
-import com.sun.ejb.spi.io.IndirectlySerializable;
-import com.sun.ejb.spi.io.SerializableObjectFactory;
 
 /**
  * This class is used as a "proxy" or adapter between the business interface

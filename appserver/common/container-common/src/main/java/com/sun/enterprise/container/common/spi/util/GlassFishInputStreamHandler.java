@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,29 +37,30 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+package com.sun.enterprise.container.common.spi.util;
 
-package com.sun.ejb.spi.io;
+import java.io.IOException;
 
 import org.jvnet.hk2.annotations.Contract;
 
 /**
- * An interface that allows Non-Serializable objects
- *  to be persisted. Any non serializable object that
- *  needs to be persisted needs to implement this
- *  interface. The getSerializableObjectFactory()
- *  method will be called to get a SerilizableObjectFactory
- *  that can be persisted. The SerializableObjectFactory
- *  can later be de-serialized and the createObject()
- *  will be invoked to get the original Non-Serializable
- *  object. It is assumed that the SerializableObjectFactory
- *  contains enough data that can be used to restore the original
- *  state of the object that existed at the time of Serilization
+ * A class that is used to restore state  during deserialization
  *
  * @author Mahesh Kannan
  */
-public interface IndirectlySerializable { //TODO extends BaseIndirectlySerializable {
+@Contract
+public interface GlassFishInputStreamHandler {
 
-    public SerializableObjectFactory getSerializableObjectFactory()
-        throws java.io.IOException;
-
+        public static final Object NULL_OBJECT = new Object();
+	
+	/**
+	 * Called from JavaEEIOUtils' replaceObject. The implementation
+	 *  must return the object that needs to be written out to the
+	 *  stream OR null if it cannot handle the serialization of this
+	 *  object
+	 *  
+	 */
+	public Object resolveObject(Object obj) throws IOException;
+	
+	
 }

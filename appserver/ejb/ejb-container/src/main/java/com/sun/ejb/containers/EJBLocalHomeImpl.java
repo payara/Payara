@@ -40,6 +40,9 @@
 
 package com.sun.ejb.containers;
 
+import com.sun.enterprise.container.common.spi.util.IndirectlySerializable;
+import com.sun.enterprise.container.common.spi.util.SerializableObjectFactory;
+
 import java.lang.reflect.Method;
 
 
@@ -48,9 +51,6 @@ import javax.ejb.*;
 import java.util.logging.*;
 
 import java.io.IOException;
-
-import com.sun.ejb.spi.io.IndirectlySerializable;
-import com.sun.ejb.spi.io.SerializableObjectFactory;
 
 /**
  * Implementation of the EJBLocalHome interface.
@@ -108,7 +108,7 @@ public abstract class EJBLocalHomeImpl
 
     /**
      * Create a new EJBLocalBusinessObjectImpl and new EJB if necessary.
-     * @param s
+     * @param intfName
      */
     protected final EJBLocalObjectImpl createEJBLocalBusinessObjectImpl(String intfName)
         throws CreateException

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,39 +38,19 @@
  * holder.
  */
 
-package com.sun.ejb.base.io;
+package com.sun.enterprise.container.common.spi.util;
 
-import com.sun.enterprise.container.common.spi.util.JavaEEIOUtils;
-import org.jvnet.hk2.annotations.Service;
-
-import java.io.*;
+import java.io.Serializable;
 
 /**
- * Simple wrapper to IOUtils
+ * An interface that creates an Object that was serialized using
+ * IndirectlySerializable
  * 
+ * @author Mahesh Kannan
  */
-@Service
-public class JavaEEIOUtilsImpl
-    implements JavaEEIOUtils {
 
-    @Override
-    public ObjectInputStream createObjectInputStream(InputStream is, boolean resolveObject, ClassLoader loader) throws Exception {
-        return IOUtils.createObjectInputStream(is, resolveObject, loader);
-    }
+public interface SerializableObjectFactory extends Serializable {
 
-    @Override
-    public ObjectOutputStream createObjectOutputStream(OutputStream os, boolean replaceObject) throws IOException {
-        return IOUtils.createObjectOutputStream(os, replaceObject);
-    }
-
-    @Override
-    public byte[] serializeObject(Object obj, boolean replaceObject) throws IOException {
-        return IOUtils.serializeObject(obj, replaceObject);
-    }
-
-    @Override
-    public Object deserializeObject(byte[] data, boolean resolveObject, ClassLoader appClassLoader) throws Exception {
-        return IOUtils.deserializeObject(data, resolveObject, appClassLoader);
-    }
+	public Object createObject() throws java.io.IOException;
 
 }

@@ -40,6 +40,8 @@
 
 package com.sun.ejb.containers;
 
+import com.sun.enterprise.container.common.spi.util.IndirectlySerializable;
+import com.sun.enterprise.container.common.spi.util.SerializableObjectFactory;
 import org.objectweb.asm.*;
 import org.objectweb.asm.commons.GeneratorAdapter;
 import org.objectweb.asm.commons.Method;
@@ -181,7 +183,7 @@ public class EjbOptionalIntfGenerator
         
         String[] interfaces = new String[] {
                 OptionalLocalInterfaceProvider.class.getName().replace('.', '/'),
-                com.sun.ejb.spi.io.IndirectlySerializable.class.getName().replace('.', '/')
+                IndirectlySerializable.class.getName().replace('.', '/')
         };
 
         tv.visit(V1_1, ACC_PUBLIC, subClassName.replace('.', '/'), null,
@@ -361,11 +363,14 @@ public class EjbOptionalIntfGenerator
                                                                    String fieldDesc,
                                                                    String classDesc) {
 
-        MethodVisitor cv = classVisitor.visitMethod(ACC_PUBLIC, "getSerializableObjectFactory", "()Lcom/sun/ejb/spi/io/SerializableObjectFactory;", null, new String[] { "java/io/IOException" });
+        MethodVisitor cv = classVisitor.visitMethod(ACC_PUBLIC, "getSerializableObjectFactory",
+                "()L" + SerializableObjectFactory.class.getName().replace('.', '/') + ";", null, new String[] { "java/io/IOException" });
         cv.visitVarInsn(ALOAD, 0);
         cv.visitFieldInsn(GETFIELD, classDesc, DELEGATE_FIELD_NAME, fieldDesc);
-        cv.visitTypeInsn(CHECKCAST, "com/sun/ejb/spi/io/IndirectlySerializable");
-        cv.visitMethodInsn(INVOKEINTERFACE, "com/sun/ejb/spi/io/IndirectlySerializable", "getSerializableObjectFactory", "()Lcom/sun/ejb/spi/io/SerializableObjectFactory;");
+        cv.visitTypeInsn(CHECKCAST, IndirectlySerializable.class.getName().replace('.', '/'));
+        cv.visitMethodInsn(INVOKEINTERFACE,
+                IndirectlySerializable.class.getName().replace('.', '/'), "getSerializableObjectFactory",
+                "()L" + SerializableObjectFactory.class.getName().replace('.', '/') + ";");
         cv.visitInsn(ARETURN);
         cv.visitMaxs(1, 1);
 

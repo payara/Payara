@@ -40,11 +40,10 @@
 
 package com.sun.ejb.containers;
 
-import com.sun.ejb.containers.EJBLocalRemoteObject;
 import com.sun.ejb.EjbInvocation;
 import com.sun.ejb.InvocationInfo;
 import com.sun.ejb.containers.util.MethodMap;
-import com.sun.ejb.spi.io.IndirectlySerializable;
+import com.sun.enterprise.container.common.spi.util.IndirectlySerializable;
 import com.sun.enterprise.deployment.EjbDescriptor;
 import com.sun.enterprise.deployment.EjbSessionDescriptor;
 import com.sun.enterprise.util.LocalStringManagerImpl;
