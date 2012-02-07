@@ -412,6 +412,35 @@ public abstract class AbstractTreeNode implements TreeNode, Comparable<TreeNode>
     }
 
     @Override
+    public boolean equals(Object o) {
+        if(this == o)
+            return true;
+
+        // don't waste time checking o for null
+        // if instanceof's first param is null it will return false
+        // see JLS, 15.19.2
+        if(!(o instanceof AbstractTreeNode))
+            return false;
+
+        // guaranteed to not throw an Exception because of above!
+        AbstractTreeNode other = (AbstractTreeNode) o;
+
+        // work hard to avoid NPE's !!
+        return (name == null ? other.name == null : name.equals(other.name))
+                && (category == null ? other.category == null : category.equals(other.category))
+                && (description == null ? other.description == null : description.equals(other.description));
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 23 * hash + (this.name != null ? this.name.hashCode() : 0);
+        hash = 23 * hash + (this.category != null ? this.category.hashCode() : 0);
+        hash = 23 * hash + (this.description != null ? this.description.hashCode() : 0);
+        return hash;
+    }
+
+    @Override
     public TreeNode getPossibleParentNode(String pattern) {
         // simplify by bailing out early if preconditions are not met...
         if (pattern == null || pattern.length() <= 0 || pattern.indexOf('*') >= 0)
