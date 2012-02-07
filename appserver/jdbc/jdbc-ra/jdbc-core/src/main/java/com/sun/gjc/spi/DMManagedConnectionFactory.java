@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -49,6 +49,7 @@ import javax.resource.ResourceException;
 import javax.resource.spi.ConnectionRequestInfo;
 import javax.resource.spi.security.PasswordCredential;
 import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
@@ -117,6 +118,7 @@ public class DMManagedConnectionFactory extends ManagedConnectionFactory {
         }
 
         java.sql.Connection dsConn = null;
+        com.sun.gjc.spi.ManagedConnection mc = null;
 
         Properties driverProps = new Properties();
         //Will return a set of properties that would have setURL and <url> as objects
@@ -164,11 +166,23 @@ public class DMManagedConnectionFactory extends ManagedConnectionFactory {
                     sqle.getMessage());
         }
 
-        com.sun.gjc.spi.ManagedConnection mc = constructManagedConnection(
-                null, dsConn, pc, this);
+        try {
 
-        //GJCINT
-        validateAndSetIsolation(mc);
+            mc = constructManagedConnection(null, dsConn, pc, this);
+
+            //GJCINT
+            validateAndSetIsolation(mc);
+        } finally {
+            if (mc == null) {
+                if (dsConn != null) {
+                    try {
+                        dsConn.close();
+                    } catch (SQLException e) {
+                        _logger.log(Level.FINEST, "Exception while closing connection : createManagedConnection" + dsConn);
+                    }
+                }
+            }
+        }
         return mc;
     }
 

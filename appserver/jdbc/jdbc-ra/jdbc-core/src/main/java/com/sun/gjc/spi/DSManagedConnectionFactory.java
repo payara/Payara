@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -49,6 +49,7 @@ import javax.resource.ResourceException;
 import javax.resource.spi.ConnectionRequestInfo;
 import javax.resource.spi.ResourceAllocationException;
 import javax.resource.spi.security.PasswordCredential;
+import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.resource.spi.ConnectionDefinition;
@@ -101,6 +102,7 @@ public class DSManagedConnectionFactory extends ManagedConnectionFactory {
         javax.sql.DataSource dataSource = getDataSource();
 
         java.sql.Connection dsConn = null;
+        com.sun.gjc.spi.ManagedConnection mc = null;
 
         try {
             /* For the case where the user/passwd of the connection pool is
@@ -129,10 +131,23 @@ public class DSManagedConnectionFactory extends ManagedConnectionFactory {
             throw rae;
         }
 
-        ManagedConnection mc = constructManagedConnection(null, dsConn, pc, this);
+        try {
+            mc = constructManagedConnection(null, dsConn, pc, this);
 
-        //GJCINT
-        validateAndSetIsolation(mc);
+            //GJCINT
+            validateAndSetIsolation(mc);
+        } finally {
+            if (mc == null) {
+                if (dsConn != null) {
+                    try {
+                        dsConn.close();
+                    } catch (SQLException e) {
+                        _logger.log(Level.FINEST, "Exception while closing connection : " +
+                                "createManagedConnection" + dsConn);
+                    }
+                }
+            }
+        }
         return mc;
     }
 

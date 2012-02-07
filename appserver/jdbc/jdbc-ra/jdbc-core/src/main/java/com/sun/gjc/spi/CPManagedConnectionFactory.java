@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -50,6 +50,7 @@ import javax.resource.ResourceException;
 import javax.resource.spi.ConnectionRequestInfo;
 import javax.resource.spi.ResourceAllocationException;
 import javax.resource.spi.security.PasswordCredential;
+import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.resource.spi.ConnectionDefinition;
@@ -120,6 +121,7 @@ public class CPManagedConnectionFactory extends ManagedConnectionFactory {
         javax.sql.ConnectionPoolDataSource dataSource = getDataSource();
 
         javax.sql.PooledConnection cpConn = null;
+        com.sun.gjc.spi.ManagedConnection mc = null;
 
         try {
             /* For the case where the user/passwd of the connection pool is
@@ -147,14 +149,25 @@ public class CPManagedConnectionFactory extends ManagedConnectionFactory {
             throw rae;
         }
 
+        try {
 
-        com.sun.gjc.spi.ManagedConnection mc = constructManagedConnection(
-                cpConn, null, pc, this);
+            mc = constructManagedConnection(cpConn, null, pc, this);
 
-        mc.initializeConnectionType(ManagedConnection.ISPOOLEDCONNECTION);
+            mc.initializeConnectionType(ManagedConnection.ISPOOLEDCONNECTION);
 
-        //GJCINT
-        validateAndSetIsolation(mc);
+            //GJCINT
+            validateAndSetIsolation(mc);
+        } finally {
+            if (mc == null) {
+                if (cpConn != null) {
+                    try {
+                        cpConn.close();
+                    } catch (SQLException e) {
+                        _logger.log(Level.FINEST, "Exception while closing connection : createManagedConnection" + cpConn);
+                    }
+                }
+            }
+        }
         return mc;
     }
 

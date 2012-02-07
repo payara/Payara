@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -50,6 +50,7 @@ import javax.resource.ResourceException;
 import javax.resource.spi.ConnectionRequestInfo;
 import javax.resource.spi.ResourceAllocationException;
 import javax.resource.spi.security.PasswordCredential;
+import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.resource.spi.ConfigProperty;
@@ -102,6 +103,7 @@ public class XAManagedConnectionFactory extends ManagedConnectionFactory {
         javax.sql.XADataSource dataSource = getDataSource();
 
         javax.sql.XAConnection xaConn = null;
+        com.sun.gjc.spi.ManagedConnection mc = null;
 
         try {
             /* For the case where the user/passwd of the connection pool is
@@ -128,12 +130,24 @@ public class XAManagedConnectionFactory extends ManagedConnectionFactory {
             throw new ResourceAllocationException(msg, sqle);
         }
 
-        com.sun.gjc.spi.ManagedConnection mc = constructManagedConnection(
-                xaConn, null, pc, this);
+        try{
+            mc = constructManagedConnection(
+                    xaConn, null, pc, this);
 
-        mc.initializeConnectionType(ManagedConnection.ISXACONNECTION);
-        //GJCINT
-        validateAndSetIsolation(mc);
+            mc.initializeConnectionType(ManagedConnection.ISXACONNECTION);
+            //GJCINT
+            validateAndSetIsolation(mc);
+        } finally {
+            if (mc == null) {
+                if (xaConn != null) {
+                    try {
+                        xaConn.close();
+                    } catch (SQLException e) {
+                        _logger.log(Level.FINEST, "Exception while closing connection : createManagedConnection" + xaConn);
+                    }
+                }
+            }
+        }
         return mc;
     }
 
