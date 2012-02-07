@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -46,7 +46,6 @@ import org.glassfish.virtualization.config.*;
 import org.glassfish.virtualization.libvirt.config.LibvirtVirtualization;
 import org.glassfish.virtualization.libvirt.jna.Connect;
 import org.glassfish.virtualization.libvirt.jna.Domain;
-import org.glassfish.virtualization.spi.FileOperations;
 import org.glassfish.virtualization.runtime.*;
 import org.glassfish.virtualization.spi.*;
 import org.glassfish.virtualization.spi.VirtualMachine;
@@ -136,7 +135,8 @@ public class LibVirtLocalMachine extends AbstractMachine implements PostConstruc
                        "    <permissions>\n").append(
                        "      <mode>0700</mode>\n").append(
                        "      <owner>").append(getUser().getUserId()).append("</owner>\n").append(
-                       "      <serverPool>").append(getUser().getUserId()).append("</serverPool>\n").append(
+                       "      <group>").append(getUser().getGroupId()).append("</group>\n").append(
+                       "      <serverPool>").append(getServerPool().getName()).append("</serverPool>\n").append(
                        "    </permissions>\n").append(
                        "  </target>\n").append(
                        "</pool>");

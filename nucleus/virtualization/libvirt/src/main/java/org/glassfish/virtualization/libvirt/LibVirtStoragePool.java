@@ -2,7 +2,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -43,13 +43,10 @@ package org.glassfish.virtualization.libvirt;
 import org.glassfish.virtualization.spi.Machine;
 import org.glassfish.virtualization.spi.StoragePool;
 import org.glassfish.virtualization.spi.VirtException;
-import org.glassfish.virtualization.util.RuntimeContext;
-
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.logging.Level;
 
 /**
  * Representation of a storage pool in libvirt
@@ -88,7 +85,8 @@ class LibVirtStoragePool implements StoragePool {
                 "</key><source></source><capacity>").append(capacity).append("</capacity><allocation>0</allocation>").append(
                 "<target><path>").append(owner).append("/").append(name).append(".img</path>").append(
                 "<format type='raw'/><permissions><mode>0600</mode><owner>").append(owner.getUser().getUserId()).append(
-                "</owner><serverPool>").append(owner.getUser().getGroupId()).append("</serverPool></permissions></target></volume>");
+                "</owner><group>").append(owner.getUser().getGroupId()).append(
+                "</group><serverPool>").append(owner.getServerPool().getName()).append("</serverPool></permissions></target></volume>");
 
         return new LibVirtStorageVol(this, pool.storageVolCreateXML(sb.toString(), 0));
 

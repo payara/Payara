@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -127,7 +127,7 @@ public class VBoxVirtualMachine extends AbstractVirtualMachine {
         SSHLauncher sshLauncher = new SSHLauncher();
         File home = new File(System.getProperty("user.home"));
         String keyFile = new File(home,".ssh/id_rsa").getAbsolutePath();
-        sshLauncher.init(getUser().getUserId(), address.getHostAddress(), 22, null, keyFile, null, Logger.getAnonymousLogger());
+        sshLauncher.init(getUser().getName(), address.getHostAddress(), 22, null, keyFile, null, Logger.getAnonymousLogger());
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         StringBuilder stringBuilder = new StringBuilder();
         for (String arg : args) {
