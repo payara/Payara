@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -144,7 +144,7 @@ public class ListTreeAdaptor extends TreeAdaptorBase {
 	if (nodeObject == null) {
 	    return null;
 	}
-	if (nodeObject == TOP_ID) {
+	if ((nodeObject instanceof Integer) && nodeObject == TOP_ID) {
 	    // In this implementation TOP_ID represents the top-level,
 	    // Find/Return children here
 	    if (_children != null) {
@@ -211,7 +211,7 @@ public class ListTreeAdaptor extends TreeAdaptorBase {
 
 	LayoutComponent desc = getLayoutComponent();
 	Map<String, Object> props = new HashMap<String, Object>();
-	if (nodeObject == TOP_ID) {
+	if ((nodeObject instanceof Integer) && nodeObject == TOP_ID) {
 	    // This case deals with the top node.
 
 	    // NOTE: All supported options must be handled here,
@@ -293,7 +293,7 @@ public class ListTreeAdaptor extends TreeAdaptorBase {
 	if (nodeObject == null) {
 	    return "nullNodeObject";
 	}
-	if (nodeObject == TOP_ID) {
+	if ((nodeObject instanceof Integer) && nodeObject == TOP_ID) {
 	    // Top level can use the ID of the LayoutComponent
 	    return getLayoutComponent().getId(
 		FacesContext.getCurrentInstance(), getParentUIComponent());
@@ -321,7 +321,7 @@ public class ListTreeAdaptor extends TreeAdaptorBase {
 	if (nodeObject == null){
 	    return null;
 	}
-	if (nodeObject == TOP_ID) {
+	if ((nodeObject instanceof Integer) && nodeObject == TOP_ID) {
 	    // Top-level facets can be added directly, not needed here
 	    return null;
 	}
