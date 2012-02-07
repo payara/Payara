@@ -61,7 +61,6 @@ package org.apache.catalina.core;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
-import java.io.Serializable;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
@@ -166,7 +165,7 @@ import org.glassfish.web.valve.GlassFishValve;
  */
 
 public abstract class ContainerBase
-    implements Container, Lifecycle, Pipeline, MBeanRegistration, Serializable {
+    implements Container, Lifecycle, Pipeline, MBeanRegistration {
 
     private static Logger log = Logger.getLogger(
         ContainerBase.class.getName());
@@ -1605,7 +1604,7 @@ public abstract class ContainerBase
     protected String suffix;
     protected ObjectName oname;
     protected ObjectName controller;
-    protected transient MBeanServer mserver;
+    protected MBeanServer mserver;
 
     public ObjectName getJmxName() {
         return oname;

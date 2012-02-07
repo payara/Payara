@@ -198,7 +198,7 @@ public class VirtualServer extends StandardHost
      * - state (disabled/off)
      * - redirects
      */
-    private transient VirtualServerPipeline vsPipeline;
+    private VirtualServerPipeline vsPipeline;
 
     /*
      * The original (standard) pipeline of this VirtualServer.
@@ -217,7 +217,7 @@ public class VirtualServer extends StandardHost
     /**
      * The logger to use for logging this virtual server
      */
-    protected transient volatile Logger _logger = DEFAULT_LOGGER;
+    protected volatile Logger _logger = DEFAULT_LOGGER;
 
     /**
      * The descriptive information about this implementation.
@@ -228,7 +228,7 @@ public class VirtualServer extends StandardHost
     /**
      * The config bean associated with this VirtualServer
      */
-    private transient com.sun.enterprise.config.serverbeans.VirtualServer vsBean;
+    private com.sun.enterprise.config.serverbeans.VirtualServer vsBean;
 
     /**
      * The mime mapping associated with this VirtualServer
@@ -245,15 +245,15 @@ public class VirtualServer extends StandardHost
 
     private String[] cacheControls;
 
-    private transient CommandRunner runner;
+    private CommandRunner runner;
 
     private ClassLoaderHierarchy clh;
 
-    private transient Domain domain;
+    private Domain domain;
 
     private Services services;
 
-    private transient ServerEnvironment instance;
+    private ServerEnvironment instance;
 
     // Is this virtual server active?
     private boolean isActive;
@@ -277,7 +277,7 @@ public class VirtualServer extends StandardHost
 
     private String defaultContextPath = null;
 
-    private transient ServerContext serverContext;
+    private ServerContext serverContext;
 
     private Config serverConfig;
 
@@ -287,9 +287,9 @@ public class VirtualServer extends StandardHost
 
     private boolean ssoFailoverEnabled = false;
 
-    private transient volatile FileLoggerHandler fileLoggerHandler = null;
+    private volatile FileLoggerHandler fileLoggerHandler = null;
 
-    private transient volatile FileLoggerHandlerFactory fileLoggerHandlerFactory = null;
+    private volatile FileLoggerHandlerFactory fileLoggerHandlerFactory = null;
 
     private Deployment deployment = null;
 

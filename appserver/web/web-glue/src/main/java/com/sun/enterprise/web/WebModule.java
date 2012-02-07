@@ -132,7 +132,7 @@ public class WebModule extends PwcWebModule implements Context {
      */
     private boolean hasBeenXmlConfigured = false;
 
-    private transient WebContainer webContainer;
+    private WebContainer webContainer;
 
     private final Map<String,AdHocServletInfo> adHocPaths;
     private boolean hasAdHocPaths;
@@ -140,7 +140,7 @@ public class WebModule extends PwcWebModule implements Context {
     private final Map<String,AdHocServletInfo> adHocSubtrees;
     private boolean hasAdHocSubtrees;
 
-    private transient StandardPipeline adHocPipeline;
+    private StandardPipeline adHocPipeline;
 
     // File encoding of static resources
     private String fileEncoding;
@@ -150,19 +150,19 @@ public class WebModule extends PwcWebModule implements Context {
      */
     protected Object[] cachedFinds;
 
-    private transient Application bean;
+    private Application bean;
 
     private WebBundleDescriptor webBundleDescriptor;
 
     private boolean hasStarted = false;
     private String compEnvId = null;
-    private transient ServerContext serverContext = null;
+    private ServerContext serverContext = null;
 
-    private transient ServletProbeProvider servletProbeProvider = null;
-    private transient SessionProbeProvider sessionProbeProvider = null;
-    private transient WebModuleProbeProvider webModuleProbeProvider = null;
+    private ServletProbeProvider servletProbeProvider = null;
+    private SessionProbeProvider sessionProbeProvider = null;
+    private WebModuleProbeProvider webModuleProbeProvider = null;
 
-    private transient JavaEEIOUtils javaEEIOUtils;
+    private JavaEEIOUtils javaEEIOUtils;
 
     // The id of the parent container (i.e., virtual server) on which this
     // web module was deployed
@@ -170,12 +170,12 @@ public class WebModule extends PwcWebModule implements Context {
 
     private String monitoringNodeName;
 
-    private transient WebModuleConfig wmInfo;
+    private WebModuleConfig wmInfo;
 
     // true if standalone WAR, false if embedded in EAR file
     private boolean isStandalone = true;
 
-    private transient Services services;
+    private Services services;
 
     /**
      * Constructor.
@@ -2126,7 +2126,7 @@ public class WebModule extends PwcWebModule implements Context {
         }
     }
 
-    private transient SecurityConfig config = null;
+    private SecurityConfig config = null;
 
     public SecurityConfig getSecurityConfig() {
         return config;

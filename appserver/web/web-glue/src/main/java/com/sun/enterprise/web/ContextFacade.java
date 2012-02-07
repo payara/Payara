@@ -84,7 +84,7 @@ public class ContextFacade extends WebModule {
      */
     private String appName = null;
 
-    private transient SecurityConfig config = null;
+    private SecurityConfig config = null;
 
     /**
      * Wrapped web module.
@@ -95,7 +95,7 @@ public class ContextFacade extends WebModule {
 
     private String contextRoot;
 
-    private transient ClassLoader classLoader;
+    private ClassLoader classLoader;
 
     private Map<String, String> filters = new HashMap<String, String>();
 

@@ -121,7 +121,7 @@ public class StandardContext
     extends ContainerBase
     implements Context, ServletContext
 {
-    private static final transient Logger log = Logger.getLogger(
+    private static final Logger log = Logger.getLogger(
         StandardContext.class.getName());
 
     private static final ClassLoader standardContextClassLoader =
@@ -192,19 +192,19 @@ public class StandardContext
     /**
      * The list of instantiated application event listeners
      */
-    private transient List<EventListener> eventListeners =
+    private List<EventListener> eventListeners =
         new ArrayList<EventListener>();
 
     /**
      * The list of ServletContextListeners
      */
-    protected transient ArrayList<ServletContextListener> contextListeners =
+    protected ArrayList<ServletContextListener> contextListeners =
         new ArrayList<ServletContextListener>();
 
     /**
      * The list of HttpSessionListeners
      */
-    private transient List<HttpSessionListener> sessionListeners =
+    private List<HttpSessionListener> sessionListeners =
         new ArrayList<HttpSessionListener>();
 
     /**
@@ -221,12 +221,12 @@ public class StandardContext
     /**
      * The broadcaster that sends j2ee notifications.
      */
-    private transient NotificationBroadcasterSupport broadcaster = null;
+    private NotificationBroadcasterSupport broadcaster = null;
 
     /**
      * The Locale to character set mapper for this application.
      */
-    private transient CharsetMapper charsetMapper = null;
+    private CharsetMapper charsetMapper = null;
 
     /**
      * The Java class name of the CharsetMapper class to be created.
@@ -256,7 +256,7 @@ public class StandardContext
     /*
     private transient ApplicationContext context = null;
     */
-    protected transient ApplicationContext context = null;
+    protected ApplicationContext context = null;
     // END RIMOD 4894300
 
     /**
@@ -311,7 +311,7 @@ public class StandardContext
     /**
      * Thread local data used during request dispatch.
      */
-    private transient ThreadLocal<DispatchData> dispatchData =
+    private ThreadLocal<DispatchData> dispatchData =
         new ThreadLocal<DispatchData>();
 
     /**
@@ -378,12 +378,12 @@ public class StandardContext
     /**
      * The mapper associated with this context.
      */
-    private transient Mapper mapper = new Mapper();
+    private Mapper mapper = new Mapper();
 
     /**
      * The naming context listener for this web application.
      */
-    private transient NamingContextListener namingContextListener = null;
+    private NamingContextListener namingContextListener = null;
 
     /**
      * The naming resources for this web application.
@@ -591,7 +591,7 @@ public class StandardContext
     /**
      * Non proxied resources.
      */
-    private transient DirContext webappResources = null;
+    private DirContext webappResources = null;
 
     /*
      * Time (in milliseconds) it took to start this context
@@ -644,7 +644,7 @@ public class StandardContext
     /**
      * List of configured Auditors for this context.
      */
-    private transient Auditor[] auditors = null;
+    private Auditor[] auditors = null;
     // END IASRI 4823322
 
     // START RIMOD 4868393
@@ -736,7 +736,7 @@ public class StandardContext
      * Security manager responsible for enforcing permission check on
      * ServletContext#getClassLoader
      */
-    private transient MySecurityManager mySecurityManager;
+    private MySecurityManager mySecurityManager;
 
     // Iterable over all ServletContainerInitializers that were discovered
     private Iterable<ServletContainerInitializer> servletContainerInitializers = null;

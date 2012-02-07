@@ -368,7 +368,7 @@ public final class EmbeddedWebContainer extends Embedded implements PostConstruc
 
     static class WebEngine extends StandardEngine {
 
-        private transient WebContainer webContainer;
+        private WebContainer webContainer;
 
         public WebEngine(WebContainer webContainer) {
             this.webContainer = webContainer;
