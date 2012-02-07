@@ -39,7 +39,7 @@
  */
 package com.sun.enterprise.v3.admin.cluster;
 
-import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.config.serverbeans.Nodes;
 import com.sun.enterprise.util.cluster.windows.process.WindowsException;
 import com.sun.enterprise.universal.glassfish.TokenResolver;
 import com.sun.enterprise.util.cluster.windows.process.WindowsCredentials;
@@ -80,7 +80,7 @@ import org.glassfish.cluster.ssh.util.DcomUtils;
 @CommandLock(CommandLock.LockType.NONE)
 @ExecuteOn({RuntimeType.DAS})
 @RestEndpoints({
-    @RestEndpoint(configBean=Domain.class,
+    @RestEndpoint(configBean=Nodes.class,
         opType=RestEndpoint.OpType.GET,
         path="validate-dcom",
         description="Validate DCOM")
