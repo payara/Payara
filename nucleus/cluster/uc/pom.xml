@@ -55,7 +55,7 @@
     <name>setup-local-dcom</name>
 
     <build>
-        <finalName>validate-local-dcom</finalName>
+        <finalName>setup-local-dcom</finalName>
         <resources>
             <resource>
                 <directory>src/main/resources</directory>
