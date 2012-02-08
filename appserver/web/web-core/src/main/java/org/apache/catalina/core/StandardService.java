@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -145,6 +145,7 @@ public class StandardService
      */
     protected Connector connectors[] = new Connector[0];
 
+    protected final Object connectorsMonitor = new Object();
 
     /**
      * The Container associated with this Service. (In the case of the
@@ -196,7 +197,7 @@ public class StandardService
                 // Ignore
             }
         }
-        synchronized (connectors) {
+        synchronized (connectorsMonitor) {
             for (int i = 0; i < connectors.length; i++)
                 connectors[i].setContainer(this.container);
         }
@@ -313,7 +314,7 @@ public class StandardService
      */
     public void addConnector(Connector connector) {
 
-        synchronized (connectors) {
+        synchronized (connectorsMonitor) {
             connector.setContainer(this.container);
             connector.setService(this);
             Connector results[] = new Connector[connectors.length + 1];
@@ -404,7 +405,7 @@ public class StandardService
     public void removeConnector(Connector connector) throws LifecycleException{
     // END SJSAS 6231069
 
-        synchronized (connectors) {
+        synchronized (connectorsMonitor) {
             int j = -1;
             for (int i = 0; i < connectors.length; i++) {
                 if (connector == connectors[i]) {
@@ -543,7 +544,7 @@ public class StandardService
         }
 
         // Start our defined Connectors second
-        synchronized (connectors) {
+        synchronized (connectorsMonitor) {
             for (int i = 0; i < connectors.length; i++) {
                 if (connectors[i] instanceof Lifecycle)
                     ((Lifecycle) connectors[i]).start();
@@ -583,7 +584,7 @@ public class StandardService
         started = false;
 
         // Stop our defined Connectors first
-        synchronized (connectors) {
+        synchronized (connectorsMonitor) {
             for (int i = 0; i < connectors.length; i++) {
                 if (connectors[i] instanceof Lifecycle)
                     ((Lifecycle) connectors[i]).stop();
@@ -656,7 +657,7 @@ public class StandardService
                
 
         // Initialize our defined Connectors
-        synchronized (connectors) {
+        synchronized (connectorsMonitor) {
                 for (int i = 0; i < connectors.length; i++) {
                     connectors[i].initialize();
                 }

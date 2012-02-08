@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -87,18 +87,18 @@ public class ManagedBean implements java.io.Serializable
      * to this <code>ManagedBean</code> instance.
      */
     transient ModelMBeanInfo info = null;
-    protected AttributeInfo attributes[] = new AttributeInfo[0];
+    protected List<AttributeInfo> attributes = new ArrayList<AttributeInfo>();
     protected String className =
             "org.apache.tomcat.util.modeler.BaseModelMBean";
-    protected ConstructorInfo constructors[] = new ConstructorInfo[0];
+    protected List<ConstructorInfo> constructors = new ArrayList<ConstructorInfo>();
     protected String description = null;
     protected String domain = null;
     protected String group = null;
     protected String name = null;
 
     protected List<FieldInfo> fields = new ArrayList<FieldInfo>();
-    protected NotificationInfo notifications[] = new NotificationInfo[0];
-    protected OperationInfo operations[] = new OperationInfo[0];
+    protected List<NotificationInfo> notifications = new ArrayList<NotificationInfo>();
+    protected List<OperationInfo> operations = new ArrayList<OperationInfo>();
     protected String type = null;
 
     /** Constructor. Will add default attributes. 
@@ -119,7 +119,7 @@ public class ManagedBean implements java.io.Serializable
      * The collection of attributes for this MBean.
      */
     public AttributeInfo[] getAttributes() {
-        return (this.attributes);
+        return (this.attributes.toArray(new AttributeInfo[this.attributes.size()]));
     }
 
 
@@ -143,7 +143,7 @@ public class ManagedBean implements java.io.Serializable
      * The collection of constructors for this MBean.
      */
     public ConstructorInfo[] getConstructors() {
-        return (this.constructors);
+        return (this.constructors.toArray(new ConstructorInfo[this.constructors.size()]));
     }
 
 
@@ -213,7 +213,7 @@ public class ManagedBean implements java.io.Serializable
      * The collection of notifications for this MBean.
      */
     public NotificationInfo[] getNotifications() {
-        return (this.notifications);
+        return (this.notifications.toArray(new NotificationInfo[this.notifications.size()]));
     }
 
 
@@ -221,7 +221,7 @@ public class ManagedBean implements java.io.Serializable
      * The collection of operations for this MBean.
      */
     public OperationInfo[] getOperations() {
-        return (this.operations);
+        return (this.operations.toArray(new OperationInfo[this.operations.size()]));
     }
 
 
@@ -251,11 +251,7 @@ public class ManagedBean implements java.io.Serializable
     public void addAttribute(AttributeInfo attribute) {
 
         synchronized (attributes) {
-            AttributeInfo results[] =
-                new AttributeInfo[attributes.length + 1];
-            System.arraycopy(attributes, 0, results, 0, attributes.length);
-            results[attributes.length] = attribute;
-            attributes = results;
+            attributes.add(attribute);
             this.info = null;
         }
 
@@ -270,11 +266,7 @@ public class ManagedBean implements java.io.Serializable
     public void addConstructor(ConstructorInfo constructor) {
 
         synchronized (constructors) {
-            ConstructorInfo results[] =
-                new ConstructorInfo[constructors.length + 1];
-            System.arraycopy(constructors, 0, results, 0, constructors.length);
-            results[constructors.length] = constructor;
-            constructors = results;
+            constructors.add(constructor);
             this.info = null;
         }
 
@@ -300,12 +292,7 @@ public class ManagedBean implements java.io.Serializable
     public void addNotification(NotificationInfo notification) {
 
         synchronized (notifications) {
-            NotificationInfo results[] =
-                new NotificationInfo[notifications.length + 1];
-            System.arraycopy(notifications, 0, results, 0,
-                             notifications.length);
-            results[notifications.length] = notification;
-            notifications = results;
+            notifications.add(notification);
             this.info = null;
         }
 
@@ -319,11 +306,7 @@ public class ManagedBean implements java.io.Serializable
      */
     public void addOperation(OperationInfo operation) {
         synchronized (operations) {
-            OperationInfo results[] =
-                new OperationInfo[operations.length + 1];
-            System.arraycopy(operations, 0, results, 0, operations.length);
-            results[operations.length] = operation;
-            operations = results;
+            operations.add(operation);
             this.info = null;
         }
 

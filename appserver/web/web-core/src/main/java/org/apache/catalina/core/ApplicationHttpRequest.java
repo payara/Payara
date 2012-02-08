@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -733,17 +733,15 @@ public class ApplicationHttpRequest extends HttpServletRequestWrapper {
      *
      * @param orig Origin Map to be copied
      */
-    Map<String, String[]> copyMap(Map<String, String[]> orig) {
+    void copyMap(Map<String, String[]> orig, Map<String, String[]> dest) {
 
         if (orig == null)
-            return (new HashMap<String, String[]>());
-        HashMap<String, String[]> dest = new HashMap<String, String[]>();
+            return;
         synchronized (orig) {
             for (Map.Entry<String, String[]> entry : orig.entrySet()) {
                 dest.put(entry.getKey(), entry.getValue());
             }
         }
-        return (dest);
     }
 
     /**
@@ -826,9 +824,9 @@ public class ApplicationHttpRequest extends HttpServletRequestWrapper {
 
         parameters = new HashMap<String, String[]>();
         synchronized (parameters) {
-            parameters = copyMap(getRequest().getParameterMap());
-	    mergeParameters();
-	    parsedParams = true;
+            copyMap(getRequest().getParameterMap(), parameters);
+            mergeParameters();
+            parsedParams = true;
         }
     }
 
