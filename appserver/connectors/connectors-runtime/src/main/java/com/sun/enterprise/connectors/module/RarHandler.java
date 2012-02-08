@@ -38,11 +38,12 @@
  * holder.
  */
 
-package com.sun.enterprise.connectors.connector.module;
+package com.sun.enterprise.connectors.module;
 
 import com.sun.appserv.connectors.internal.api.ConnectorRuntimeException;
 import com.sun.appserv.connectors.internal.api.ConnectorsClassLoaderUtil;
 import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
+import com.sun.enterprise.connectors.connector.module.RarDetector;
 import com.sun.enterprise.deploy.shared.AbstractArchiveHandler;
 import com.sun.logging.LogDomains;
 import org.glassfish.api.deployment.DeploymentContext;
