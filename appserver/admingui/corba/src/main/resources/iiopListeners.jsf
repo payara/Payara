@@ -50,12 +50,13 @@
 />
 <!composition template="/templates/default.layout"
     guiTitle="$resource{i18n_corba.iiopListeners.ListPageTitle}"
-    guiTemplateOnLoad="admingui.nav.refreshTree('treeForm:tree:configurations:#{pageSession.configName}:orb:iiopListeners');"
+    guiTemplateOnLoad="admingui.nav.refreshTree('treeForm:tree:configurations:#{pageSession.encodedConfigName}:orb:iiopListeners');"
 >
 <!define name="content">
     <event>
     <!beforeCreate
-        getRequestValue(key="configName" value=>$page{configName} default="server-config");
+        getRequestValue(key="configName" value=>$page{configName}");
+        urlencode(value="#{pageSession.configName}" encoding="UTF-8" result="#{pageSession.encodedConfigName}");
         setPageSessionAttribute(key="childType" value="iiop-listener");
         setPageSessionAttribute(key="parentUrl", value="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/iiop-service");
         setPageSessionAttribute(key="selfUrl", value="#{pageSession.parentUrl}/#{pageSession.childType}");
@@ -70,7 +71,7 @@
         setPageSessionAttribute(key="tableTitle" value="$resource{i18n_corba.iiopListeners.TableTitle}");
     />
     </event>
-"    <script type="text/javascript">admingui.nav.selectTreeNodeById(admingui.nav.TREE_ID+":configurations:#{pageSession.configName}:orb:iiopListeners");</script>
+"    <script type="text/javascript">admingui.nav.selectTreeNodeById(admingui.nav.TREE_ID+":configurations:#{pageSession.encodedConfigName}:orb:iiopListeners");</script>
             <sun:form id="propertyForm">
 #include "/common/shared/alertMsg.inc"
          <sun:title id="propertyContentPage" title="$resource{i18n_corba.iiopListeners.ListPageTitle}"
