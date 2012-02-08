@@ -57,7 +57,7 @@
         setPageSessionAttribute(key="selfUrl", value="#{pageSession.parentUrl}/#{pageSession.childType}");
         setPageSessionAttribute(key="rest-api" value="true");
         gf.getDefaultValues(endpoint="#{pageSession.selfUrl}", valueMap="#{pageSession.valueMap}");
-#include "/common/shared/targetsConfig.inc"
+        mapPut(map="#{pageSession.valueMap}" key="target" value="#{pageSession.configName}");
         createList(size="0", result="#{pageSession.tableList}");
         mapPut(map="#{pageSession.valueMap}" key="docroot" value="");
         mapPut(map="#{pageSession.valueMap}" key="ssoEnabled" value="inherit");
