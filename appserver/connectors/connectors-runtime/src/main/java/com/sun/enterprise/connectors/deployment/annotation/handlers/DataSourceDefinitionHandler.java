@@ -38,8 +38,9 @@
  * holder.
  */
 
-package com.sun.enterprise.deployment.annotation.handlers;
+package com.sun.enterprise.connectors.deployment.annotation.handlers;
 
+import com.sun.enterprise.deployment.annotation.handlers.AbstractResourceHandler;
 import org.glassfish.apf.AnnotationHandlerFor;
 import org.glassfish.deployment.common.RootDeploymentDescriptor;
 import org.jvnet.hk2.annotations.Service;

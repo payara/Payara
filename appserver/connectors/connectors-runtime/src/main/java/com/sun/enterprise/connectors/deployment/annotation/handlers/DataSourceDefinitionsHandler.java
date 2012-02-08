@@ -38,8 +38,9 @@
  * holder.
  */
 
-package com.sun.enterprise.deployment.annotation.handlers;
+package com.sun.enterprise.connectors.deployment.annotation.handlers;
 
+import com.sun.enterprise.deployment.annotation.handlers.*;
 import org.glassfish.apf.*;
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.apf.impl.HandlerProcessingResultImpl;
@@ -63,7 +64,7 @@ import com.sun.enterprise.util.LocalStringManagerImpl;
 public class DataSourceDefinitionsHandler extends AbstractResourceHandler {
 
     protected final static LocalStringManagerImpl localStrings =
-            new LocalStringManagerImpl(AbstractHandler.class);
+            new LocalStringManagerImpl(DataSourceDefinitionsHandler.class);
     
     public DataSourceDefinitionsHandler() {
     }

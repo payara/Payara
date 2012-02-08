@@ -70,7 +70,7 @@ import org.jvnet.hk2.annotations.Service;
 public class AdministeredObjectHandler extends AbstractHandler {
 
     protected final static LocalStringManagerImpl localStrings =
-            new LocalStringManagerImpl(AbstractHandler.class);
+            new LocalStringManagerImpl(AdministeredObjectHandler.class);
     
     public HandlerProcessingResult processAnnotation(AnnotationInfo element) throws AnnotationProcessorException {
         AnnotatedElementHandler aeHandler = element.getProcessingContext().getHandler();

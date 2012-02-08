@@ -38,59 +38,80 @@
  * holder.
  */
 
-package com.sun.enterprise.deployment.annotation.handlers;
+package com.sun.enterprise.connectors.deployment.annotation.handlers;
 
 import com.sun.enterprise.deployment.annotation.context.RarBundleContext;
 import com.sun.enterprise.deployment.ConnectorDescriptor;
+import com.sun.enterprise.deployment.OutboundResourceAdapter;
+import com.sun.enterprise.deployment.AuthMechanism;
+import com.sun.enterprise.deployment.PoolManagerConstants;
+import com.sun.enterprise.deployment.annotation.handlers.AbstractHandler;
+import com.sun.enterprise.deployment.xml.ConnectorTagNames;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 
+import javax.resource.spi.AuthenticationMechanism;
 import javax.resource.spi.Connector;
-import javax.resource.spi.SecurityPermission;
+import javax.resource.spi.security.GenericCredential;
+import javax.resource.spi.security.PasswordCredential;
 import java.lang.annotation.Annotation;
-import java.util.logging.Logger;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
+import org.ietf.jgss.GSSCredential;
 import org.glassfish.apf.*;
 import org.glassfish.apf.impl.AnnotationUtils;
 import org.glassfish.apf.impl.HandlerProcessingResultImpl;
 import org.jvnet.hk2.annotations.Service;
 
+
 /**
  * @author Jagadish Ramu
  */
 @Service
-@AnnotationHandlerFor(SecurityPermission.class)
-public class SecurityPermissionHandler extends AbstractHandler {
+@AnnotationHandlerFor(AuthenticationMechanism.class)
+public class AuthenticationMechanismHandler extends AbstractHandler {
 
     protected final static LocalStringManagerImpl localStrings =
-            new LocalStringManagerImpl(AbstractHandler.class);
-    
+            new LocalStringManagerImpl(AuthenticationMechanismHandler.class);
+
     public HandlerProcessingResult processAnnotation(AnnotationInfo element) throws AnnotationProcessorException {
         AnnotatedElementHandler aeHandler = element.getProcessingContext().getHandler();
-        SecurityPermission securityPermission = (SecurityPermission) element.getAnnotation();
+        AuthenticationMechanism authMechanism = (AuthenticationMechanism) element.getAnnotation();
 
         if (aeHandler instanceof RarBundleContext) {
             boolean isConnectionDefinition = hasConnectorAnnotation(element);
             if (isConnectionDefinition) {
                 RarBundleContext rarContext = (RarBundleContext) aeHandler;
                 ConnectorDescriptor desc = rarContext.getDescriptor();
-                //XXX: Siva : For now use the first provided description
-                String firstDesc = "";
-                if (securityPermission.description().length > 0) {
-                    firstDesc = securityPermission.description()[0];
+                if (!desc.getOutBoundDefined()) {
+                    OutboundResourceAdapter ora = new OutboundResourceAdapter();
+                    desc.setOutboundResourceAdapter(ora);
                 }
-                com.sun.enterprise.deployment.SecurityPermission permission =
-                        new com.sun.enterprise.deployment.SecurityPermission(firstDesc,
-                                securityPermission.permissionSpec());
-                desc.addSecurityPermission(permission);
+                OutboundResourceAdapter ora = desc.getOutboundResourceAdapter();
+                String[] description = authMechanism.description();
+                int authMechanismValue = getAuthMechVal(authMechanism.authMechanism());
+                AuthenticationMechanism.CredentialInterface ci = authMechanism.credentialInterface();
+                String credentialInterface = ora.getCredentialInterfaceName(ci);
+                //XXX: Siva: For now use the first description
+                String firstDesc = "";
+                if(description.length > 0) {
+                    firstDesc = description[0];
+                }
+                AuthMechanism auth = new AuthMechanism(firstDesc, authMechanismValue, credentialInterface);
+                ora.addAuthMechanism(auth);
             } else {
-                getFailureResult(element, "Not a @Connector annotation : @SecurityPermission must " +
+                getFailureResult(element, "Not a @Connector annotation : @AuthenticationMechanism must " +
                         "be specified along with @Connector annotation", true);
             }
         } else {
             getFailureResult(element, "Not a rar bundle context", true);
         }
         return getDefaultProcessedResult();
+    }
+
+    private boolean hasConnectorAnnotation(AnnotationInfo element) {
+        Class c = (Class) element.getAnnotatedElement();
+        return c.getAnnotation(Connector.class) != null;
     }
 
     public Class<? extends Annotation>[] getTypeDependencies() {
@@ -105,9 +126,17 @@ public class SecurityPermissionHandler extends AbstractHandler {
                 getAnnotationType(), ResultType.PROCESSED);
     }
 
-    private boolean hasConnectorAnnotation(AnnotationInfo element) {
-        Class c = (Class) element.getAnnotatedElement();
-        return c.getAnnotation(Connector.class) != null;
+    /**
+     * Set the authentication mechanism value.
+     */
+    public int getAuthMechVal(String value) {
+        int authMechVal;
+        if ((value.trim()).equals(ConnectorTagNames.DD_BASIC_PASSWORD))
+            authMechVal = PoolManagerConstants.BASIC_PASSWORD;
+        else if ((value.trim()).equals(ConnectorTagNames.DD_KERBEROS))
+            authMechVal = PoolManagerConstants.KERBV5;
+        else throw new IllegalArgumentException("Invalid auth-mech-type");// put this in localStrings...
+        return authMechVal;
     }
 
     private HandlerProcessingResultImpl getFailureResult(AnnotationInfo element, String message, boolean doLog) {
@@ -128,5 +157,4 @@ public class SecurityPermissionHandler extends AbstractHandler {
         }
         return result;
     }
-
 }
