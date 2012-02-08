@@ -802,7 +802,6 @@ public class RestUtil {
         ClientResponse cr = webResource.queryParams(buildMultivalueMap(payload))
                 .cookie(new Cookie(REST_TOKEN_COOKIE, getRestToken()))
                 .accept(RESPONSE_TYPE).delete(ClientResponse.class);
-        checkStatusForSuccess(cr);
         return RestResponse.getRestResponse(cr);
     }
 
@@ -811,7 +810,6 @@ public class RestUtil {
         ClientResponse cr = webResource
                 .cookie(new Cookie(REST_TOKEN_COOKIE, getRestToken()))
                 .accept(responseType).options(ClientResponse.class);
-        checkStatusForSuccess(cr);
         return RestResponse.getRestResponse(cr);
     }
 

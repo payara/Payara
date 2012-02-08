@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -267,7 +267,7 @@ public class ClusterHandler {
             nodeInstanceMap=new HashMap();
         }
         List<Map> rows =  (List<Map>) handlerCtx.getInputValue("rows");
-        String prefix = GuiUtil.getSessionValue("REST_URL") + "/nodes/node/";
+        String prefix = GuiUtil.getSessionValue("REST_URL") + "/nodes/";
 
         for (Map oneRow : rows) {
             String nodeName = (String) oneRow.get("name");
@@ -285,15 +285,47 @@ public class ClusterHandler {
             }
             if(action.equals("delete-node")){
                 try{
-                    String endpoint = prefix + nodeName + "/" + action;
+                    String endpoint = prefix + "node/" + nodeName;
                     GuiUtil.getLogger().info(endpoint);
-                    RestUtil.restRequest(endpoint, null, "post",null, false);
+                    RestUtil.restRequest(endpoint, null, "DELETE",null, false);
                 }catch (Exception ex){
                     GuiUtil.getLogger().severe(
-                            GuiUtil.getCommonMessage("LOG_NODE_ACTION_ERROR", new Object[]{prefix + nodeName, action , "null"}));
+                            GuiUtil.getCommonMessage("LOG_NODE_ACTION_ERROR", new Object[]{prefix + nodeName, "DELETE" , "null"}));
                     GuiUtil.prepareAlert("error", GuiUtil.getMessage("msg.Error"), ex.getMessage());
                     return;
                 }
+                continue;
+            }
+            Map payload = null;
+            String type = (String) oneRow.get("type");
+            String endpoint = "";
+            if(action.equals("delete-node-uninstall")){
+                try{
+                    if ("CONFIG".equals(type)){
+                        endpoint = prefix + "delete-node-config";
+                        payload = new HashMap();
+                        payload.put("id", nodeName);
+                    }else
+                    if ("SSH".equals(type)){
+                        endpoint = prefix +  "delete-node-ssh";
+                        payload = new HashMap();
+                        payload.put("id", nodeName);
+                        payload.put("uninstall", "true");
+                    }else
+                    if ("DCOM".equals(type)){
+                        endpoint = prefix +  "delete-node-dcom";
+                        payload = new HashMap();
+                        payload.put("id", nodeName);
+                        payload.put("uninstall", "true");
+        }
+                    GuiUtil.getLogger().info(endpoint);
+                    RestUtil.restRequest(endpoint, payload, "DELETE",null, false);
+                }catch (Exception ex){
+                    GuiUtil.getLogger().severe(
+                            GuiUtil.getCommonMessage("LOG_NODE_ACTION_ERROR", new Object[]{endpoint,"" , payload}));
+                    GuiUtil.prepareAlert("error", GuiUtil.getMessage("msg.Error"), ex.getMessage());
+                    return;
+     }
             }
         }
      }
