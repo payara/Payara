@@ -357,7 +357,6 @@ public abstract class AbstractPool
                 }
             }
             _logger.log(Level.FINE,"[AbstractPool]: Pool closed....");
-            list = new ArrayList();
             unregisterProbeProvider();
             Utility.setContextClassLoader(origLoader);
         }
