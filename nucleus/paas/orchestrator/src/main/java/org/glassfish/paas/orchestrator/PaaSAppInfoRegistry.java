@@ -46,9 +46,9 @@ import org.glassfish.paas.orchestrator.service.metadata.ServiceMetadata;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceReference;
 import org.glassfish.paas.orchestrator.service.spi.ConfiguredService;
 import org.glassfish.paas.orchestrator.service.spi.ProvisionedService;
+import org.glassfish.paas.orchestrator.service.spi.Service;
 import org.glassfish.paas.orchestrator.service.spi.ServicePlugin;
 import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.annotations.Service;
 
 import java.util.*;
 
@@ -56,7 +56,7 @@ import java.util.*;
  * @author Jagadish Ramu
  */
 @Scoped(Singleton.class)
-@Service
+@org.jvnet.hk2.annotations.Service
 public class PaaSAppInfoRegistry {
 
     private Map<String, ServiceMetadata> serviceMetadata = new LinkedHashMap<String, ServiceMetadata>();
@@ -150,5 +150,12 @@ public class PaaSAppInfoRegistry {
 
     public void registerConfiguredServices(String appName, Collection<ConfiguredService> configuredServices) {
         getConfiguredServices(appName).addAll(configuredServices);
+    }
+
+    public Set<Service> getServices(String appName){
+        Set<Service> allServices = new LinkedHashSet<Service>();
+        allServices.addAll(getConfiguredServices(appName));
+        allServices.addAll(getProvisionedServices(appName));
+        return allServices;
     }
 }

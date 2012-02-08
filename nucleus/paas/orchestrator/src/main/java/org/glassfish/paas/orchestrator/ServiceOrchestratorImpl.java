@@ -64,6 +64,7 @@ import org.glassfish.paas.orchestrator.service.metadata.ServiceDescription;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceMetadata;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceReference;
 import org.glassfish.paas.orchestrator.service.spi.*;
+import org.glassfish.paas.orchestrator.service.spi.Service;
 import org.glassfish.paas.orchestrator.state.*;
 import org.glassfish.virtualization.spi.VirtualCluster;
 import org.glassfish.virtualization.runtime.VirtualClusters;
@@ -790,5 +791,18 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
 
     public boolean isAtomicDeploymentEnabled(){
         return atomicDeploymentEnabled;
+    }
+
+    /**
+     * returns the effective set of services that the application uses.
+     * ie., application-scoped ({@link org.glassfish.paas.orchestrator.service.spi.ProvisionedService ProvisionedService}),
+     * shared ({@link org.glassfish.paas.orchestrator.service.spi.ProvisionedService ProvisionedService}),
+     * external ({@link org.glassfish.paas.orchestrator.service.spi.ConfiguredService ConfiguredService})
+     * services used/referred by the application
+     * @param appName application-name
+     * @return Set of Services
+     */
+    public Set<Service> getServices(String appName){
+        return appRegistry.getServices(appName);
     }
 }
