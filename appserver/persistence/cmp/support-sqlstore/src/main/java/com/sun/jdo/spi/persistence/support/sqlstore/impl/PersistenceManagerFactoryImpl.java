@@ -81,7 +81,7 @@ public class PersistenceManagerFactoryImpl implements PersistenceManagerFactory
 	private int connectionLoginTimeout = 0;
 	private int connectionMsWait = 0;
 	private int txIsolation = -1;
-	private PrintWriter connectionLogWriter;
+	private transient PrintWriter connectionLogWriter; //We do not expect instance of this class to be serialized. Marking a non serializable member as transient to make findbugs happy.
 	private boolean optimistic = true;
 	private boolean retainValues = true;
 	private boolean nontransactionalRead = true;

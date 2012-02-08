@@ -67,8 +67,11 @@ import java.util.Set;
 
 public class WeakValueHashMap extends HashMap {
 
-    /* Reference queue for cleared WeakValues */
-    private ReferenceQueue queue = new ReferenceQueue();
+    /**
+     *  Reference queue for cleared WeakValues.
+     *  We do not expect instance of this class to be serialized. Marking a non serializable member as transient to make findbugs happy.
+     */
+    private transient ReferenceQueue queue = new ReferenceQueue();
 
     /**
      * Returns the number of key-value mappings in this map.<p>
