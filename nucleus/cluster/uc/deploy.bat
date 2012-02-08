@@ -1,1 +1,1 @@
-copy target\validate-local-dcom.jar %GF_HOME%\lib\asadmin
+copy target\setup-local-dcom.jar %GF_HOME%\lib\asadmin

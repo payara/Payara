@@ -55,6 +55,10 @@ import com.sun.enterprise.util.OS;
 /*
  * @author Byron Nevins
  */
+// I give up!  I spent 2 hours trying to get at the properties file.  No way!
+// classloader has no clue where it is!!!
+// It isn't worth the effort - so I embedded the strings in here.
+// http://java.net/jira/browse/GLASSFISH-18338
 @Service(name = "setup-local-dcom")
 @Scoped(PerLookup.class)
 public final class SetupLocalDcom extends CLICommand {
@@ -76,12 +80,13 @@ public final class SetupLocalDcom extends CLICommand {
         super.validate();
 
         if (!OS.isWindowsForSure())
-            throw new CommandException(Strings.get("vld.windows.only"));
+            throw new CommandException("This command is exclusively for Windows computers.");
 
         if (console == null)
-            throw new CommandException(Strings.get("vld.noconsole"));
+            throw new CommandException("This command can only be run from a "
+                    + "console.  Please try again with a console attached.");
 
-        if(!force)
+        if (!force)
             areYouSure();
 
         checkPath();
@@ -139,21 +144,29 @@ public final class SetupLocalDcom extends CLICommand {
         for (String dll : notFound) {
             sb.append('\t').append(dll).append('\n');
         }
-        String msg = Strings.get("vld.missing.dlls", sb.toString());
+        String msg = "This command runs a native Windows program that requires "
+                + "other files to run.  \nHere are the missing file(s):\n"
+                + sb.toString();
+
         return new CommandException(msg);
     }
 
     private void prepareCppApp() throws CommandException {
         if (!TMPDIR.isDirectory())
-            throw exceptionMaker("internal.error", Strings.get("vld.badtempdir", TMPDIR));
+            throw new CommandException("Internal Error: The Java-provided temp "
+                    + "dir (java.io.tmpdir), " + TMPDIR
+                    + ", is not a directory.");
 
         if (CPP_APP.exists()) {
             CPP_APP.delete();
 
             if (CPP_APP.exists())
-                throw exceptionMaker("vld.app.exists", CPP_APP);
+                throw new CommandException("The DCOM tool already exists ("
+                        + CPP_APP + ") and can't be deleted.\n"
+                        + "Please delete it manually and re-run this command.");
 
-            finer("vld.app.deleted", CPP_APP);
+            logger.finer("This is unusual.  The app, " + CPP_APP + ", already existed.  "
+                    + "It was deleted with no problem.");
         }
 
         CPP_APP.deleteOnExit();
@@ -167,11 +180,13 @@ public final class SetupLocalDcom extends CLICommand {
             copyStream(in, out);
         }
         catch (IOException ex) {
-            throw exceptionMaker("vld.error.extracting.ex", CPP_APP, ex);
+            throw new CommandException("Error while attempting to extract DCOM Configuration tool "
+                    + CPP_APP + "\n" + ex);
         }
 
         if (!CPP_APP.canExecute())
-            throw exceptionMaker("vld.error.extracting", CPP_APP);
+            throw new CommandException("Error while attempting to extract DCOM "
+                    + "Configuration tool " + CPP_APP);
     }
 
     private static void copyStream(InputStream in, OutputStream out) throws IOException {
@@ -193,25 +208,23 @@ public final class SetupLocalDcom extends CLICommand {
      * and private...
      */
 
-    private CommandException exceptionMaker(String key, Object... args) {
-        if (args == null || args.length == 0)
-            return new CommandException(Strings.get(key));
-        else
-            return new CommandException(Strings.get(key, args));
-    }
-
-    private void finer(String key, Object... args) {
-        logger.finer(Strings.get(key, args));
-    }
-
     private void areYouSure() throws CommandException {
         if (!programOpts.isInteractive())
-            throw new CommandException(Strings.get("vld.not.interactive"));
+            throw new CommandException(
+                    "This command can only run in interactive mode.  \n"
+                    + "Please make sure you have the interactive flag set to true.  "
+                    + "See 'asadmin --help' for details\n"
+                    + "The other option is to use the --force option");
 
-        String msg = Strings.get("vld.areyousure");
+        String msg =
+                "Caution: This command might modify the permissions of some keys in the Windows registry.\n"
+                + "Before running this command, back up the Windows registry.\n"
+                + "The modification allows the Windows user full control over these keys.\n"
+                + "\nAre you sure that you want to edit the Windows registry? If so, type yes in full";
+
         String answer = console.readLine("%s:  ", msg);
 
         if (!"yes".equalsIgnoreCase(answer))
-            throw new CommandException(Strings.get("vld.no"));
+            throw new CommandException("You chose to not run the command.");
     }
 }
