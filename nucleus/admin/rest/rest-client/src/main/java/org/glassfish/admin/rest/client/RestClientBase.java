@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -162,12 +162,12 @@ public abstract class RestClientBase {
                 break;
             }
             case DELETE: {
-                addQueryParams(payload, request);
+//                addQueryParams(payload, request);
                 clientResponse = request.queryParams(buildMultivalueMap(payload)).accept(RESPONSE_TYPE).delete(ClientResponse.class);
                 break;
             }
             default: {
-                addQueryParams(payload, request);
+//                addQueryParams(payload, request);
                 clientResponse = request.queryParams(buildMultivalueMap(payload)).accept(RESPONSE_TYPE).get(ClientResponse.class);
             }
         }
@@ -277,6 +277,7 @@ public abstract class RestClientBase {
         }
     }
 
+    /*
     protected void addQueryParams(Map<String, Object> payload, WebResource resource) {
         if ((payload != null) && !payload.isEmpty()) {
 //            resource.queryParams(buildMultivalueMap(payload));
@@ -284,6 +285,7 @@ public abstract class RestClientBase {
 
 
     }
+    */
 
     protected FormDataMultiPart buildFormDataMultipart(Map<String, Object> payload) {
         FormDataMultiPart formData = new FormDataMultiPart();

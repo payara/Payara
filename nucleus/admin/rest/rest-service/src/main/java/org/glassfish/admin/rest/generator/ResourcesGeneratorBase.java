@@ -327,11 +327,11 @@ public abstract class ResourcesGeneratorBase implements ResourcesGenerator {
         String commandAction = metaData.displayName;
         String baseClassName;
 
-        if (httpMethod.equals("GET")) {
+        if ("GET".equals(httpMethod)) {
             baseClassName = "org.glassfish.admin.rest.resources.TemplateCommandGetResource";
-        } else if (httpMethod.equals("DELETE")) {
+        } else if ("DELETE".equals(httpMethod)) {
             baseClassName = "org.glassfish.admin.rest.resources.TemplateCommandDeleteResource";
-        } else if (httpMethod.equals("POST")) {
+        } else if ("POST".equals(httpMethod)) {
             baseClassName = "org.glassfish.admin.rest.resources.TemplateCommandPostResource";
         } else {
             throw new GeneratorException("Invalid httpMethod specified: " + httpMethod);

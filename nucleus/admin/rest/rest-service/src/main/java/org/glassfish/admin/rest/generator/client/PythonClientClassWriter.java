@@ -86,7 +86,6 @@ class PythonClientClassWriter implements ClientClassWriter {
 
     public PythonClientClassWriter(ConfigModel model, String className, Class parent, File baseDirectory) {
         this.className = className;
-        final boolean hasKey = Util.getKeyAttributeName(model) != null;
 
         packageDir = baseDirectory;
         packageDir.deleteOnExit();

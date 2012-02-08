@@ -121,7 +121,7 @@ public class XmlInputObject extends InputObject {
         token = reader.nextToken();
 
         // <!
-        if (token == BANG) {
+        if (BANG.equals(token) ) {
             character = reader.next();
             if (character == '-') {
                 if (reader.next() == '-') {
@@ -131,7 +131,7 @@ public class XmlInputObject extends InputObject {
                 reader.back();
             } else if (character == '[') {
                 token = reader.nextToken();
-                if (token.equals("CDATA")) {
+                if ("CDATA".equals(token) ) {
                     if (reader.next() == '[') {
                         string = reader.nextCDATA();
                         if (string.length() > 0) {
@@ -148,27 +148,27 @@ public class XmlInputObject extends InputObject {
                 token = reader.nextMeta();
                 if (token == null) {
                     throw reader.error("Missing '>' after '<!'.");
-                } else if (token == LT) {
+                } else if (LT.equals(token) ) {
                     i += 1;
-                } else if (token == GT) {
+                } else if (GT.equals(token) ) {
                     i -= 1;
                 }
             } while (i > 0);
             return false;
-        } else if (token == QUEST) { 
+        } else if (QUEST.equals(token) ) { 
             // <?
             reader.skipPast("?>");
             return false;
-        } else if (token == SLASH) {
+        } else if (SLASH.equals(token) ) {
             // Close tag </
             token = reader.nextToken();
             if (name == null) {
                 throw reader.error("Mismatched close tag " + token);
             }            
-            if (!token.equals(name)) {
+            if (!name.equals(token) ) {
                 throw reader.error("Mismatched " + name + " and " + token);
             }
-            if (reader.nextToken() != GT) {
+            if (!GT.equals(reader.nextToken())) {
                 throw reader.error("Misshaped close tag");
             }
             return true;
@@ -190,7 +190,7 @@ public class XmlInputObject extends InputObject {
                 if (token instanceof String) {
                     string = (String)token;
                     token = reader.nextToken();
-                    if (token == EQ) {
+                    if (EQ.equals(token)) {
                         token = reader.nextToken();
                         if (!(token instanceof String)) {
                             throw reader.error("Missing value");
@@ -202,15 +202,15 @@ public class XmlInputObject extends InputObject {
                     }
 
                 // Empty tag <.../>
-                } else if (token == SLASH) {
-                    if (reader.nextToken() != GT) {
+                } else if (SLASH.equals(token) ) {
+                    if (!reader.nextToken().equals(GT)) {
                         throw reader.error("Misshaped tag");
                     }
                     context.putMap(n, subContext.getMap());
                     return false;
 
                 // Content, between <...> and </...>
-                } else if (token == GT) {
+                } else if (GT.equals(token) ) {
                     for (;;) {
                         token = reader.nextContent();
                         if (token == null) {
@@ -225,7 +225,7 @@ public class XmlInputObject extends InputObject {
                             }
 
                         // Nested element
-                        } else if (token == LT) {
+                        } else if (LT.equals(token) ) {
                             if (parse(reader, subContext, n)) {
                                 if (subContext.length() == 0) {
                                     context.put(n, "");

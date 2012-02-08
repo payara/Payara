@@ -118,7 +118,9 @@ public class ResourceUtil {
     private static final String QUERY_PARAMETERS = "queryParameters";
     private static final String MESSAGE_PARAMETERS = "messageParameters";
     private static RestConfig restConfig = null;
-    //TODO this is copied from org.jvnet.hk2.config.Dom. If we are not able to encapsulate the conversion in Dom, need to make sure that the method convertName is refactored into smaller methods such that trimming of prefixes stops. We will need a promotion of HK2 for this.
+    // TODO: this is copied from org.jvnet.hk2.config.Dom. If we are not able to encapsulate the conversion in Dom, need to make 
+    // sure that the method convertName is refactored into smaller methods such that trimming of prefixes stops. We will need a 
+    // promotion of HK2 for this.
     static final Pattern TOKENIZER;
 
     static {
@@ -342,25 +344,6 @@ public class ResourceUtil {
         }
 
         return methodMetaData;
-    }
-
-    /**
-     * Resolve command parameter value of $parent for the parameter in the given
-     * map.
-     *
-     * @param uriInfo the uri context to extract parent name value.
-     */
-    private static void resolveParentParamValue(Map<String, String> commandParams, UriInfo uriInfo) {
-        String parent = getParentName(uriInfo);
-        if (parent != null) {
-            for (String key : commandParams.keySet()) {
-                if (commandParams.get(key).equals(Constants.VAR_PARENT)) {
-                    commandParams.put(key, parent);
-                    break;
-                }
-
-            }
-        }
     }
 
     public static void resolveParamValues(Map<String, String> commandParams, UriInfo uriInfo) {

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -75,12 +75,12 @@ public class Util {
     public final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(Util.class);
     private static Client client;
     private static Logger logger = Logger.getLogger(Util.class.getName());
-    private static SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss.SSS");
 
     private Util() {
     }
 
     public static void logTimingMessage(String msg) {
+        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss.SSS");
         logger.log(Level.INFO, "{0}:  {1}", new Object[]{sdf.format(new Date()), msg});
     }
 
@@ -270,15 +270,13 @@ public class Util {
      * @return a method name formed from the given name and the prefix
      */
     public static String methodNameFromBeanName(String elementName, String prefix) {
-        if ((null == elementName) || (null == prefix)
-                || (prefix.length() <= 0)) {
+        if ((null == elementName) || (null == prefix) || (prefix.length() <= 0)) {
             return elementName;
         }
-        String methodName = upperCaseFirstLetter(elementName);
-        return methodName = prefix + methodName;
+        return prefix + upperCaseFirstLetter(elementName);
     }
 
-    public static Client getJerseyClient() {
+    public static synchronized Client getJerseyClient() {
         if (client == null) {
             client = Client.create();
         }

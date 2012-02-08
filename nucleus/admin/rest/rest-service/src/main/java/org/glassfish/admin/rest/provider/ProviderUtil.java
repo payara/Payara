@@ -65,7 +65,6 @@ import org.glassfish.admin.rest.Util;
 import org.glassfish.admin.rest.results.OptionsResult;
 import org.glassfish.external.statistics.Statistic;
 import org.glassfish.external.statistics.impl.StatisticImpl;
-import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.ConfigBean;
 
 
@@ -224,20 +223,25 @@ public class ProviderUtil {
         return  statsMap;
     }
 
-    static public HashMap<String, String> getStringMap(Map map) {
+    static public HashMap<String, String> getStringMap(Map<String, Object> map) {
         HashMap<String, String> stringMap = new HashMap<String, String>();
         if (map != null) {
             //Convert attribute value to String if that's not the case.
             //Attribute value can be Boolean, Interger etc.
             String key = null;
             Object value = null;
-            //We know keys in the map are always stoared as String objects
+            //We know keys in the map are always stored as String objects
+            for (Map.Entry<String, Object> entry : map.entrySet()) {
+                stringMap.put(entry.getKey(), entry.getValue().toString());
+            }
+            /*
             Iterator<String> iterator = map.keySet().iterator();
             while (iterator.hasNext()) {
                 key = iterator.next();
                 value = map.get(key);
                 stringMap.put(key, value.toString());
             }
+            */
         }
         return stringMap;
     }

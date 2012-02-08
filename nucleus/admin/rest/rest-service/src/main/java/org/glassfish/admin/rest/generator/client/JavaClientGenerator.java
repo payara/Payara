@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -43,12 +43,14 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Scanner;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 import java.util.logging.Level;
@@ -61,9 +63,6 @@ import org.glassfish.admin.rest.Util;
 import org.glassfish.loader.util.ASClassLoaderUtil;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.ConfigModel;
-
-import java.io.FileWriter;
-import java.util.Scanner;
 
 /**
  *
@@ -122,12 +121,13 @@ public class JavaClientGenerator extends ClientGenerator {
             options.add(sb.toString());
             
             Iterable<? extends JavaFileObject> compilationUnits = fileManager.getJavaFileObjectsFromFiles(files);
-            boolean success = compiler.getTask(null, fileManager, null, options, null, compilationUnits).call();
+            if (!compiler.getTask(null, fileManager, null, options, null, compilationUnits).call()) {
+                Logger.getLogger(JavaClientGenerator.class.getName()).log(Level.INFO, "Compilation failed.");
+            }
             
             fileManager.close();
         } catch (IOException ex) {
-            Logger.getLogger(JavaClientGenerator.class.getName()).
-                    log(Level.SEVERE, null, ex);
+            Logger.getLogger(JavaClientGenerator.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
@@ -177,18 +177,26 @@ public class JavaClientGenerator extends ClientGenerator {
     }
     
     private void addPom(String versionString)  {
+        FileWriter writer = null;
         try {
-            String pom = new Scanner(getClass().getResourceAsStream("/client/pom.template.xml")).useDelimiter("\\Z").next();
+            String pom = new Scanner(Thread.currentThread().getContextClassLoader().getResourceAsStream("/client/pom.template.xml")).useDelimiter("\\Z").next();
             pom = pom.replace("${glassfish.version}", versionString);
             File out = File.createTempFile("pom", "xml");
             out.deleteOnExit();
-            FileWriter writer = new FileWriter(out);
+            writer = new FileWriter(out);
             writer.write(pom);
             writer.close();
             
             artifacts.put("pom.xml", out.toURI());
         } catch (IOException ex) {
             Logger.getLogger(JavaClientGenerator.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            if (writer != null) {
+                try {
+                    writer.close();
+                } catch (Exception e) {
+                }
+            }
         }
     }
 
@@ -214,6 +222,7 @@ public class JavaClientGenerator extends ClientGenerator {
     private void add(File source, JarOutputStream target) throws IOException {
         BufferedInputStream in = null;
         try {
+            /*
             if (source.isDirectory()) {
                 String name = source.getPath().replace("\\", "/");
                 if (!name.isEmpty()) {
@@ -230,6 +239,7 @@ public class JavaClientGenerator extends ClientGenerator {
                 }
                 return;
             }
+            */
 
             String sourcePath = source.getPath()
                     .replace("\\\\", "/")
