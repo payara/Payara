@@ -5,9 +5,9 @@
   xmlns:javaee="http://java.sun.com/xml/ns/javaee"
   elementFormDefault = "qualified"
   attributeFormDefault = "unqualified"
-  version="1.0">
+  version="1.4">
 
-  <xs:include schemaLocation = "http://xmlns.oracle.com/weblogic/weblogic-javaee/1.0/weblogic-javaee.xsd"/>
+  <xs:include schemaLocation = "http://xmlns.oracle.com/weblogic/weblogic-javaee/1.4/weblogic-javaee.xsd"/>
   <xs:import namespace="http://java.sun.com/xml/ns/javaee"
     schemaLocation="http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"/>
 
@@ -76,6 +76,9 @@
         minOccurs="0" />
 
       <xs:element name="container-descriptor" type="wls:container-descriptorType"
+        minOccurs="0" />
+
+      <xs:element name="async-descriptor" type="wls:async-descriptorType"
         minOccurs="0" />
 
       <xs:element name="charset-params" type="wls:charset-paramsType"
@@ -149,9 +152,10 @@
       -->
       <xs:element name="library-ref"
         type="wls:library-refType" minOccurs="0" maxOccurs="unbounded"/>
-
     </xs:choice>
+    <xs:element name="jaspic-provider" type="wls:jaspic-providerType" minOccurs="0" maxOccurs="1" />
     <xs:element name="fast-swap" type="wls:fast-swapType" minOccurs="0" />        
+    <xs:element name="coherence-cluster-ref" type="wls:coherence-cluster-refType" minOccurs="0" maxOccurs="1" />
     </xs:sequence>
     <xs:attribute name="id" type="xs:ID"/>
     <xs:attribute name="version" type="xs:string" use="optional"/>
@@ -177,6 +181,19 @@
         <xs:attribute name="id" type="xs:ID"/>
       </xs:extension>
     </xs:simpleContent>
+  </xs:complexType>
+
+  <!--
+  The jaspic-provider specifies the AuthConfigProvider to be
+  used for the web application represented by the weblogic-web-app
+
+  Used in: weblogic-web-app
+  -->
+  <xs:complexType name="jaspic-providerType">
+    <xs:sequence>
+      <xs:element name="enabled" type="wls:true-falseType" minOccurs="0" />
+      <xs:element name="auth-config-provider-name" type="xs:string" minOccurs="0"/>
+    </xs:sequence>
   </xs:complexType>
 
   <!--
@@ -230,6 +247,10 @@
       <xs:element name="compress-html-template" type="wls:true-falseType" minOccurs="0"/>
       <xs:element name="optimize-java-expression" type="wls:true-falseType" minOccurs="0"/>
       <xs:element name="resource-provider-class" type="xs:string" minOccurs="0"/>
+      <!--when set to true, the compiler will use != to compare the timestamp during stale check
+          for exploded jar        
+      -->
+      <xs:element name="strict-stale-check" type="wls:true-falseType" minOccurs="0"/>
     </xs:sequence>
   </xs:complexType>
 
@@ -417,9 +438,13 @@
       in the application or system classloader. Defaults to
       false. Value specified via console will be given
       precedence over this setting.
+      Neither prefer-application-packages nor prefer-application-resources
+      can be specified when prefer-web-inf-classes is turned on in
+      weblogic.xml.
       -->
       <xs:element name="prefer-web-inf-classes" type="wls:true-falseType"
         minOccurs="0" />
+      <xs:group ref="wls:filtering-configurationGroup" />
       <!--
       The default mime type to be used for all extensions without
       an explicit Mime map in web.xml
@@ -575,8 +600,80 @@
       <xs:element name="access-logging-disabled" type="wls:true-falseType"
         minOccurs="0"/>
         
+      <!--
+      This element specifies whether or not to prefer the forward query string
+      in forward scenario.
+
+      If it is set to "true" and the forward target url contains a query string,
+      only the new forward query string is used, and the existing query string
+      sent by client or added in previous forwards is ignored. If the current
+      forward does not specify any query string, the existing one is used.
+
+      If it is set to "false", all the query strings, including those sent from
+       client and added in previous forwards, are add-up and the new forward
+      query string appears in the front.
+
+      defaults to "true".
+      -->
+      <xs:element name="prefer-forward-query-string" type="wls:true-falseType"
+        minOccurs="0"/>
+
+      <!--
+      This element specifies whether or not to proceed with deployment when
+      an exception incurs in filter.init(). If it is set to "false", the
+      webapp deployment would proceed.
+
+      This param is a backward compatibility switch to restore old behavior.
+      Default behavior is consistent with the reference implementation, Glassfish.
+
+      defaults to "true".
+      --> 
+      <xs:element name="fail-deploy-on-filter-init-error" type="wls:true-falseType"
+        minOccurs="0"/>
+		
+	  <!--
+      This element specifies whether or not to HTTP 301 is sent (Permanent Redirect)
+	  during javax.servlet.HttpServletResponse.sendRedirect(location) call.
+      defaults to "false".
+      --> 
+      <xs:element name="send-permanent-redirects" type="wls:true-falseType"
+        minOccurs="0"/>
+
     </xs:sequence>
     <xs:attribute name="id" type="xs:ID"/>
+  </xs:complexType>
+
+  <!--
+  The async-descriptor specifies a list of parameters that affect
+  the behavior of the asynchronous processing of web application.
+  Used in: weblogic-web-app
+  -->
+  <xs:complexType name="async-descriptorType">
+    <xs:sequence>
+      <!--
+        timeout of asynchronous job. Setting timeout to -1 indicates
+        asynchronous job never timeout.
+        default=120 secs.
+      -->
+      <xs:element name="timeout-secs" type="javaee:xsdIntegerType"
+        minOccurs="0" />
+
+      <!--
+        timeout trigger interval, in seconds.
+        default=30 secs
+      -->
+      <xs:element name="timeout-check-interval-secs" type="javaee:xsdIntegerType"
+        minOccurs="0" />
+
+      <!--
+        This element specifies a work manager for asynchronous jobs, including
+        asynchronous dispatchs initiated via AsyncContext#dispatch methods and
+        runnable jobs started via AsyncContext#start method.
+        If no work manager is specified, the asynchronous jobs will be executed
+        in the current request work manager.
+      -->
+      <xs:element name="async-work-manager" type="xs:string" minOccurs="0" />
+    </xs:sequence>
   </xs:complexType>
 
   <!--
@@ -865,6 +962,7 @@
     </xs:simpleContent>
   </xs:complexType>
 
+
   <xs:complexType name="fast-swapType">
     <xs:sequence> 
         <xs:element name="enabled" type="wls:true-falseType" minOccurs="0" maxOccurs="1"/>
@@ -872,5 +970,4 @@
         <xs:element name="redefinition-task-limit" type="javaee:xsdIntegerType" minOccurs="0" maxOccurs="1"/>
     </xs:sequence>
   </xs:complexType>
-
 </xs:schema>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<schema targetNamespace="http://xmlns.oracle.com/weblogic/weblogic-jms" xmlns="http://www.w3.org/2001/XMLSchema" xmlns:jmsmd="http://xmlns.oracle.com/weblogic/weblogic-jms" elementFormDefault="qualified" attributeFormDefault="unqualified" version="1.0">
+<schema targetNamespace="http://xmlns.oracle.com/weblogic/weblogic-jms" xmlns="http://www.w3.org/2001/XMLSchema" xmlns:jmsmd="http://xmlns.oracle.com/weblogic/weblogic-jms" elementFormDefault="qualified" attributeFormDefault="unqualified" version="1.2">
   <element name="weblogic-jms" type="jmsmd:jms-type"/>
   <complexType name="jms-type">
     <sequence>
@@ -295,6 +295,8 @@ consumed by prior WebLogic Server versions</documentation>
   <complexType name="client-params-type">
     <sequence>
       <element name="client-id" type="string" nillable="true" minOccurs="0"/>
+      <element name="client-id-policy" type="jmsmd:client-id-policy-type" minOccurs="0"/>
+      <element name="subscription-sharing-policy" type="jmsmd:subscription-sharing-policy-type" minOccurs="0"/>
       <element name="acknowledge-policy" type="jmsmd:acknowledge-policy-type" minOccurs="0"/>
       <element name="allow-close-in-onMessage" type="boolean" default="true" minOccurs="0"/>
       <element name="messages-maximum" type="int" minOccurs="0"/>
@@ -453,6 +455,39 @@ consumed by prior WebLogic Server versions
       <enumeration value="Discard"/>
       <enumeration value="Log"/>
       <enumeration value="Redirect"/>
+    </restriction>
+  </simpleType>
+  <simpleType name="client-id-policy-type">
+    <annotation>
+      <documentation>This element was introduced in the 10.3.4(11gR1PS3) version of WebLogic Server.  
+      It should not be used in instance documents that may be consumed by prior WebLogic Server versions
+	  </documentation>
+    </annotation>
+    <restriction base="string">
+      <enumeration value="Restricted"/>
+      <enumeration value="Unrestricted"/>
+    </restriction>
+  </simpleType>
+  <simpleType name="forwarding-policy-type">
+    <annotation>
+      <documentation>This element was introduced in the 10.3.4(11gR1PS3) version of WebLogic Server.  
+      It should not be used in instance documents that may be consumed by prior WebLogic Server versions
+	  </documentation>
+    </annotation>
+    <restriction base="string">
+      <enumeration value="Partitioned"/>
+      <enumeration value="Replicated"/>
+    </restriction>
+  </simpleType>
+  <simpleType name="subscription-sharing-policy-type">
+    <annotation>
+      <documentation>This element was introduced in the 10.3.4(11gR1PS3) version of WebLogic Server.  
+      It should not be used in instance documents that may be consumed by prior WebLogic Server versions
+	  </documentation>
+    </annotation>
+    <restriction base="string">
+      <enumeration value="Exclusive"/>
+      <enumeration value="Sharable"/>
     </restriction>
   </simpleType>
   <simpleType name="delivery-mode-type">
@@ -638,6 +673,7 @@ consumed by prior WebLogic Server versions
     <complexContent>
       <extension base="jmsmd:uniform-distributed-destination-type">
         <sequence>
+          <element name="forwarding-policy" type="jmsmd:forwarding-policy-type" minOccurs="0"/>
           <element name="multicast" type="jmsmd:multicast-params-type" minOccurs="0"/>
         </sequence>
       </extension>

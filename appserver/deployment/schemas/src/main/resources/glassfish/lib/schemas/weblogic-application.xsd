@@ -5,8 +5,8 @@
 	xmlns:javaee="http://java.sun.com/xml/ns/javaee"
 	elementFormDefault="qualified" 
 	attributeFormDefault="unqualified" 
-	version="1.0">
-  <include schemaLocation = "http://xmlns.oracle.com/weblogic/weblogic-javaee/1.0/weblogic-javaee.xsd"/>
+	version="1.4">
+  <include schemaLocation = "http://xmlns.oracle.com/weblogic/weblogic-javaee/1.4/weblogic-javaee.xsd"/>
   <import namespace="http://java.sun.com/xml/ns/javaee" 
     schemaLocation="http://java.sun.com/xml/ns/javaee/javaee_5.xsd"/>
 	<element name="weblogic-application" type="wls:weblogic-applicationType"/>
@@ -31,6 +31,7 @@
 			<element name="min-threads-constraint" type="wls:min-threads-constraintType" minOccurs="0" maxOccurs="unbounded"/>
 			<element name="capacity" type="wls:capacityType" minOccurs="0" maxOccurs="unbounded"/>
 			<element name="work-manager" type="wls:work-managerType" minOccurs="0" maxOccurs="unbounded"/>
+
 			      <!-- Enable the Spring extension by setting the component-factory-class-name element to org.springframework.jee.interfaces.SpringComponentFactory.
 			        This element exists in EJB, Web, and application descriptors. A module level descriptor overwrites an application level descriptor. 
 			        If the tag is set to null (default), the Spring extension is disabled.                
@@ -41,9 +42,10 @@
 
       <element name="session-descriptor" type="wls:session-descriptorType" minOccurs="0" />
       <element name="library-context-root-override" type="wls:library-context-root-overrideType" minOccurs="0" maxOccurs="unbounded"/>
-      <element name="prefer-application-packages" type="wls:prefer-application-packagesType" minOccurs="0" maxOccurs="1"/>
-      <element name="prefer-application-resources" type="wls:prefer-application-resourcesType" minOccurs="0" maxOccurs="1"/>
+      <group ref="wls:filtering-configurationGroup" />
       <element name="fast-swap" type="wls:fast-swapType" minOccurs="0" maxOccurs="1"/>
+      <element name="coherence-cluster-ref" type="wls:coherence-cluster-refType" minOccurs="0" maxOccurs="1"/>
+      
 			<!-- The ejb element contains information that is specific to the EJB
           modules that are part of a WebLogic application.  Currently, one can
           use the ejb element to specify one or more application level caches
@@ -58,6 +60,8 @@
           application scoped JDBC pool declaration.
         -->
 			<!-- The jms element specifies the URI of a JMS destination group module-->
+      <group ref="wls:reference-descriptorGroup"/>
+      <element name="message-destination-descriptor" type="wls:message-destination-descriptorType" minOccurs="0" maxOccurs="unbounded"/>
 		</sequence>
 		<attribute name="version" type="string" use="optional"/>
 	</complexType>
@@ -1053,7 +1057,7 @@
      to point to mywebapp.  
 
      <library-context-root-override>
-       <library-context-root>webapp</library-context-root>
+       <context-root>webapp</context-root>
        <override-value>mywebapp</override-value>
      </library-context-root-override>
   -->
@@ -1061,41 +1065,6 @@
     <sequence>
       <element name="context-root" type="string"/>
       <element name="override-value" type="string"/>
-    </sequence>
-  </complexType>
-
-
-  <!--
-     A list of packages for classes that must always be loaded from the application.
-     Even if the listed classes are found in the System Class Loader, they are loaded
-     by the Application Class Loader providing a way for an application to use classes
-     from a different version of the same classes.
-     <prefer-application-packages>
-      <package-name>antlr.*</package-name>
-      <package-name>org.apache.struts.*</package-name>
-     </use-application-packages>
-  -->
-  <complexType name="prefer-application-packagesType">
-    <sequence>
-      <element name="package-name" type="string" minOccurs="0" maxOccurs="unbounded" />
-    </sequence>
-  </complexType>
-  <!--
-     A list of resource that must always be loaded from the application.
-     Even if the listed resources are found in the System Class Loader.
-     Note that resource loading behavior is different from the resource
-     loading behavior when only <prefer-application-packages> is used.
-     In that case, application resources get a preference over system
-     resources. But the resource captured in this element are never looked
-     up in system class loader.
-     <prefer-application-resources>
-      <resource-name>properties.txt</resource-name>
-      <resource-name>meta-inf/schemas/*</resource-name>
-     </use-application-resources>
-  -->
-  <complexType name="prefer-application-resourcesType">
-    <sequence>
-      <element name="resource-name" type="string" minOccurs="0" maxOccurs="unbounded" />
     </sequence>
   </complexType>
 
