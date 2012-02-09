@@ -60,10 +60,10 @@ import javax.management.MBeanServer;
 @Service(name="application_deploy")
 public class ApplicationVisitorImpl implements ApplicationVisitor {
     
-    @Inject
+    @javax.inject.Inject
     ApplicationRegistry appReg;
 
-    @Inject
+    @javax.inject.Inject
     MBeanServer mbs;
 
     /**

@@ -87,10 +87,10 @@ public class JMXHTTPAdapter implements Adapter {
     public final static Logger logger = LogDomains.getLogger(ServerEnvironmentImpl.class, LogDomains.ADMIN_LOGGER);
     public final static LocalStringManagerImpl adminStrings = new LocalStringManagerImpl(JMXHTTPAdapter.class);
 
-    @Inject
+    @javax.inject.Inject
     Habitat habitat;
 
-    @Inject
+    @javax.inject.Inject
     ModulesRegistry modulesRegistry;
 
 
