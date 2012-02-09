@@ -47,6 +47,9 @@ import java.util.List;
 import java.util.ArrayList;
 import java.io.File;
 
+import javax.inject.Inject;
+import javax.inject.Named;
+
 import com.sun.enterprise.config.serverbeans.*;
 import org.glassfish.api.admin.config.ConfigurationUpgrade;
 import org.jvnet.hk2.config.types.Property;
@@ -69,7 +72,7 @@ import org.jvnet.hk2.config.types.PropertyBag;
 @Service
 public class UpgradeService implements ConfigurationUpgrade, PostConstruct {
 
-    @javax.inject.Inject
+    @Inject
     Domain domain;
 
     /*
@@ -77,8 +80,8 @@ public class UpgradeService implements ConfigurationUpgrade, PostConstruct {
      * or config can be saved. This is because GMS changed attribute
      * names from v2 to 3.1. (Issue 15195.)
      */
-    @javax.inject.Inject
-    @javax.inject.Named("gmsupgrade")
+    @Inject
+    @Named("gmsupgrade")
     @Optional
     ConfigurationUpgrade precondition = null;
 

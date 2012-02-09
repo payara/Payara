@@ -41,7 +41,6 @@
 package org.glassfish.admin.runtime.jsr77;
 
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.annotations.Inject;
 import com.sun.enterprise.deployment.util.ApplicationVisitor;
 import com.sun.enterprise.deployment.util.AppClientVisitor;
 import com.sun.enterprise.deployment.util.WebBundleVisitor;
@@ -49,6 +48,7 @@ import com.sun.enterprise.deployment.util.EjbBundleVisitor;
 import com.sun.enterprise.deployment.util.ConnectorVisitor;
 import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.v3.data.ApplicationRegistry;
+import javax.inject.Inject;
 import javax.management.MBeanServer;
 
 /**
@@ -60,10 +60,10 @@ import javax.management.MBeanServer;
 @Service(name="application_deploy")
 public class ApplicationVisitorImpl implements ApplicationVisitor {
     
-    @javax.inject.Inject
+    @Inject
     ApplicationRegistry appReg;
 
-    @javax.inject.Inject
+    @Inject
     MBeanServer mbs;
 
     /**

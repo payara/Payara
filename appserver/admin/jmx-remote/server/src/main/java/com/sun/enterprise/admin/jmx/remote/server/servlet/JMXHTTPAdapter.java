@@ -58,7 +58,6 @@ import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.container.Adapter;
-import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.ComponentException;
 import org.jvnet.hk2.component.Habitat;
@@ -76,6 +75,8 @@ import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.inject.Inject;
+
 /**
  * Service the JMX HTTP clients talking to GF v3 using JMX Service URL...
  * @author ne110415
@@ -87,10 +88,10 @@ public class JMXHTTPAdapter implements Adapter {
     public final static Logger logger = LogDomains.getLogger(ServerEnvironmentImpl.class, LogDomains.ADMIN_LOGGER);
     public final static LocalStringManagerImpl adminStrings = new LocalStringManagerImpl(JMXHTTPAdapter.class);
 
-    @javax.inject.Inject
+    @Inject
     Habitat habitat;
 
-    @javax.inject.Inject
+    @Inject
     ModulesRegistry modulesRegistry;
 
 
