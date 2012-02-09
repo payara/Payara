@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -60,11 +60,12 @@ public class HASingleSignOn extends GlassFishSingleSignOn {
     private static final Logger logger = LogDomains.getLogger(
             HASingleSignOn.class, LogDomains.WEB_LOGGER);
 
-    private BackingStore ssoEntryMetadataBackingStore = null;
+    private BackingStore<String, HASingleSignOnEntryMetadata> ssoEntryMetadataBackingStore = null;
 
     private JavaEEIOUtils ioUtils = null;
 
-    public HASingleSignOn(JavaEEIOUtils ioUtils, BackingStore ssoEntryMetadataBackingStore) {
+    public HASingleSignOn(JavaEEIOUtils ioUtils,
+            BackingStore<String, HASingleSignOnEntryMetadata> ssoEntryMetadataBackingStore) {
         super();
         this.ioUtils = ioUtils;
         this.ssoEntryMetadataBackingStore = ssoEntryMetadataBackingStore;
@@ -162,7 +163,7 @@ public class HASingleSignOn extends GlassFishSingleSignOn {
             // load from ha store
             try {
                 HASingleSignOnEntryMetadata mdata =
-                    (HASingleSignOnEntryMetadata)ssoEntryMetadataBackingStore.load(ssoId, null);
+                    ssoEntryMetadataBackingStore.load(ssoId, null);
                 if (mdata != null) {
                     ssoEntry = new HASingleSignOnEntry(getContainer(), mdata, ioUtils);
                     cache.put(ssoId, ssoEntry);

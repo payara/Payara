@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -74,7 +74,7 @@ import org.jvnet.hk2.component.PerLookup;
 public class HASSOFactory implements SSOFactory {
     private static final String STORE_NAME = "SSOStore";
 
-    private static BackingStore ssoEntryMetadataBackingStore = null;
+    private static BackingStore<String, HASingleSignOnEntryMetadata> ssoEntryMetadataBackingStore = null;
 
     @Inject
     private Services services;
@@ -94,7 +94,8 @@ public class HASSOFactory implements SSOFactory {
                 getSsoEntryMetadataBackingStore(persistenceType, STORE_NAME, services));
     }   
     
-    protected static synchronized BackingStore getSsoEntryMetadataBackingStore(
+    protected static synchronized BackingStore<String, HASingleSignOnEntryMetadata>
+            getSsoEntryMetadataBackingStore(
             String persistenceType, String storeName, Services services) {
 
         if (ssoEntryMetadataBackingStore == null) {
