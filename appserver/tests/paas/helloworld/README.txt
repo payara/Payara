@@ -45,7 +45,7 @@ Tests Setup commands:
 1) Native mode
 setup.sh -r native
 2) KVM
-setup.sh -r -d /srv/kvm/yamini/images -s j2ee kvm
+setup.sh -r -d /srv/kvm/yamini/images -s jee kvm
 
 Test Duration: It takes approx. 20min for a successful run on OVM setup and 10min on KVM.
 

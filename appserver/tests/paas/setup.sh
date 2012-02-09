@@ -40,27 +40,27 @@
 #
 
 # This script helps setup services for running PaaS native, kvm or ovm tests.
-# setup.sh -r -d <templates-dir> -s j2ee,javadb,mysql,oracle,apachemodjk,otd,lb native|kvm|ovm
+# setup.sh -r -d <templates-dir> -s jee,javadb,mysql,oracle,apachemodjk,otd,lb native|kvm|ovm
 # Examples:
 #   1) Plain native setup
 #      setup.sh native
 #   2) Native with lb service
 #      setup.sh -s lb native
-#   3) KVM with j2ee service
-#      setup.sh -t /kvm/images -s j2ee kvm
-#   4) KVM with j2ee,javadb,apachemodjk services
-#      setup.sh -t /kvm/images -s j2ee,javadb,apachemodjk kvm
-#   5) OVM with j2ee service
-#      setup.sh -t /ovm/templates -s j2ee ovm
-#   6) OVM with j2ee,otd services
-#      setup.sh -t /ovm/templates -s j2ee,otd ovm
+#   3) KVM with jee service
+#      setup.sh -t /kvm/images -s jee kvm
+#   4) KVM with jee,javadb,apachemodjk services
+#      setup.sh -t /kvm/images -s jee,javadb,apachemodjk kvm
+#   5) OVM with jee service
+#      setup.sh -t /ovm/templates -s jee ovm
+#   6) OVM with jee,otd services
+#      setup.sh -t /ovm/templates -s jee,otd ovm
 #   7) Recreate domain1 before setting up
 #      setup.sh -r native
 # Author: Yamini K B
 # Date  : 8-FEB-2012
 
 GF_HOME=${GF_HOME:-$S1AS_HOME}
-USAGE="Usage: $(basename $0) -r -d <templates-dir> -s j2ee,javadb,mysql,oracle,apachemodjk,otd,lb native|kvm|ovm"
+USAGE="Usage: $(basename $0) -r -d <templates-dir> -s jee,javadb,mysql,oracle,apachemodjk,otd,lb native|kvm|ovm"
 
 [ -z "$GF_HOME" ] && echo "Please set GF_HOME or S1AS_HOME" && exit 1;
 
@@ -122,7 +122,7 @@ setup_kvm ()
     for s in $SERVICES
     do
         case $s in
-                 "j2ee") log "Creating template for j2ee service..."
+                 "jee") log "Creating template for jee service..."
                          $A create-template --virtualization kvm --files $templates_dir/glassfish.img,$templates_dir/glassfish.xml --indexes ServiceType=JavaEE,VirtualizationType=libvirt glassfish
                          $A create-template-user --virtualization kvm --template glassfish cloud
                          ;;
@@ -174,7 +174,7 @@ setup_ovm ()
     for s in $SERVICES
     do
         case $s in
-            "j2ee") log "Creating template for j2ee service..."
+            "jee") log "Creating template for jee service..."
                     touch $templates_dir/GLASSFISH_TINY.tgz
                     $A create-template --files $templates_dir/GLASSFISH_TINY.tgz --indexes ServiceType=JavaEE,VirtualizationType=OVM GLASSFISH_TINY_JAN18
                     $A create-template-user --virtualization ovm --template GLASSFISH_TINY_JAN18 glassfish
