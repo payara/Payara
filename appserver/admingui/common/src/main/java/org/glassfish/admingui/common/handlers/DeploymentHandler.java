@@ -201,7 +201,9 @@ public class DeploymentHandler {
                 List clusters = TargetUtil.getClusters();
                 List standalone = TargetUtil.getStandaloneInstances();
                 for(int i=0; i< appRefs.size(); i++){
-                    AppUtil.manageAppTarget((String)attrMap.get("name"), appRefs.get(i), true, (String)attrMap.get("enabled"), clusters, standalone, handlerCtx);
+                    AppUtil.manageAppTarget((String)attrMap.get("name"), 
+                            appRefs.get(i), true, (String)attrMap.get("enabled"), 
+                            clusters, standalone, handlerCtx);
                 }
             }
         } catch (Exception ex) {

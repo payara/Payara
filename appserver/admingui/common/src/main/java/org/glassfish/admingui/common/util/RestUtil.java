@@ -102,10 +102,19 @@ public class RestUtil {
     //default to .json instead of .xml
     public static final String RESPONSE_TYPE = "application/json";
     public static final String GUI_TOKEN_FOR_EMPTY_PROPERTY_VALUE = "()";
-    public static final Client JERSEY_CLIENT = Client.create();
 
     private static final String REST_TOKEN_COOKIE = "gfresttoken";
+    private static Client JERSEY_CLIENT;
 
+    public static Client getJerseyClient() {
+        if (JERSEY_CLIENT == null) {
+            JERSEY_CLIENT = new Client();
+            JERSEY_CLIENT.addFilter(new CsrfProtectionFilter());
+
+        }
+        
+        return JERSEY_CLIENT;
+    }
 
     public static String getPropValue(String endpoint, String propName, HandlerContext handlerCtx){
         Map responseMap = (Map) restRequest(endpoint+"/property.json", null, "GET", handlerCtx, false);
@@ -174,7 +183,11 @@ public class RestUtil {
         if (logger.isLoggable(Level.FINEST)) {
             Map maskedAttr = maskOffPassword(attrs);
             logger.log(Level.FINEST,
-                    GuiUtil.getCommonMessage("LOG_REST_REQUEST_INFO", new Object[]{endpoint, (useData && "post".equals(method))? data: maskedAttr, method}));
+                    GuiUtil.getCommonMessage("LOG_REST_REQUEST_INFO", 
+                        new Object[]{
+                            endpoint, 
+                            (useData && "post".equals(method))? data: attrs, method
+                        }));
         }
 
         // Execute the request...
@@ -437,7 +450,7 @@ public class RestUtil {
      * @return
      */
     public static String appendEncodedSegment(String base, String segment) {
-        String encodedUrl = JERSEY_CLIENT.resource(base).getUriBuilder().segment(segment).build().toASCIIString();
+        String encodedUrl = getJerseyClient().resource(base).getUriBuilder().segment(segment).build().toASCIIString();
             //segment(elementName)
 
         return encodedUrl;
@@ -741,9 +754,6 @@ public class RestUtil {
     // Jersey client methods
     //******************************************************************************************************************
 
-    /**
-     *
-     */
     public static RestResponse get(String address) {
         return get(address, new HashMap<String, Object>());
     }
@@ -752,7 +762,7 @@ public class RestUtil {
         if (address.startsWith("/")) {
             address = FacesContext.getCurrentInstance().getExternalContext().getSessionMap().get("REST_URL") + address;
         }
-        WebResource webResource = JERSEY_CLIENT.resource(address).queryParams(buildMultivalueMap(payload));
+        WebResource webResource = getJerseyClient().resource(address).queryParams(buildMultivalueMap(payload));
         ClientResponse resp = webResource
                 .cookie(new Cookie(REST_TOKEN_COOKIE, getRestToken()))
                 .accept(RESPONSE_TYPE).get(ClientResponse.class);
@@ -760,7 +770,7 @@ public class RestUtil {
     }
 
     public static RestResponse post(String address, Object payload, String contentType) {
-        WebResource webResource = JERSEY_CLIENT.resource(address);
+        WebResource webResource = getJerseyClient().resource(address);
         if (contentType == null) {
             contentType = MediaType.APPLICATION_JSON;
         }
@@ -776,7 +786,7 @@ public class RestUtil {
     }
 
     public static RestResponse post(String address, Map<String, Object> payload) {
-        WebResource webResource = JERSEY_CLIENT.resource(address);
+        WebResource webResource = getJerseyClient().resource(address);
         MultivaluedMap formData = buildMultivalueMap(payload);
         ClientResponse cr = webResource
                 .cookie(new Cookie(REST_TOKEN_COOKIE, getRestToken()))
@@ -787,7 +797,7 @@ public class RestUtil {
     }
 
     public static RestResponse put(String address, Map<String, Object> payload) {
-        WebResource webResource = JERSEY_CLIENT.resource(address);
+        WebResource webResource = getJerseyClient().resource(address);
         MultivaluedMap formData = buildMultivalueMap(payload);
         ClientResponse cr = webResource
                 .cookie(new Cookie(REST_TOKEN_COOKIE, getRestToken()))
@@ -798,7 +808,7 @@ public class RestUtil {
     }
 
     public static RestResponse delete(String address, Map<String, Object> payload) {
-        WebResource webResource = JERSEY_CLIENT.resource(address);
+        WebResource webResource = getJerseyClient().resource(address);
         ClientResponse cr = webResource.queryParams(buildMultivalueMap(payload))
                 .cookie(new Cookie(REST_TOKEN_COOKIE, getRestToken()))
                 .accept(RESPONSE_TYPE).delete(ClientResponse.class);
@@ -806,7 +816,7 @@ public class RestUtil {
     }
 
     public static RestResponse options(String address, String responseType) {
-        WebResource webResource = JERSEY_CLIENT.resource(address);
+        WebResource webResource = getJerseyClient().resource(address);
         ClientResponse cr = webResource
                 .cookie(new Cookie(REST_TOKEN_COOKIE, getRestToken()))
                 .accept(responseType).options(ClientResponse.class);

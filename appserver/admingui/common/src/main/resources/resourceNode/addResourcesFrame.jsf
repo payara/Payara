@@ -95,7 +95,7 @@
                     createMap(result="#{pageSession.argsMap}");
                     mapPut(map="#{pageSession.argsMap}" key="id" value="#{filePath}");
                     mapPut(map="#{pageSession.argsMap}" key="target" value="#{pageSession.selectedTarget}");
-                    gf.restRequest(endpoint="#{sessionScope.REST_URL}/resources/add-resources.json"
+                    gf.restRequest(endpoint="#{sessionScope.REST_URL}/resources/add-resources"
                             attrs="#{pageSession.argsMap}"
                             method="POST"
                             result="#{requestScope.result}");

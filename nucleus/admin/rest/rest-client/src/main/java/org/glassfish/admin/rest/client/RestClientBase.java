@@ -39,8 +39,6 @@
  */
 package org.glassfish.admin.rest.client;
 
-
-import org.glassfish.admin.rest.client.utils.Util;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
@@ -48,12 +46,17 @@ import com.sun.jersey.core.util.MultivaluedMapImpl;
 import com.sun.jersey.multipart.FormDataMultiPart;
 import com.sun.jersey.multipart.file.FileDataBodyPart;
 import java.io.File;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import org.codehaus.jettison.json.JSONObject;
+import org.glassfish.admin.rest.client.utils.Util;
 
 /**
  *
@@ -176,8 +179,8 @@ public abstract class RestClientBase {
     }
 
     protected boolean isSuccess(ClientResponse response) {
-        int status = response.getStatus();
-        return ((status == 200) || (status == 201));
+        int responseStatus = response.getStatus();
+        return ((responseStatus == 200) || (responseStatus == 201));
     }
 
     protected boolean isNew() {
@@ -282,8 +285,6 @@ public abstract class RestClientBase {
         if ((payload != null) && !payload.isEmpty()) {
 //            resource.queryParams(buildMultivalueMap(payload));
         }
-
-
     }
     */
 
