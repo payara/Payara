@@ -49,7 +49,7 @@
 />
 <!composition template="/templates/default.layout"
     guiTitle="$resource{i18n.applicationTargetListing.PageTitle}"
-    guiOnLoad="admingui.nav.selectTreeNodeWithURL('#{request.contextPath}/common/applications/applicationEdit.jsf?appName=#{pageSession.appName}');"
+    guiOnLoad="admingui.nav.selectTreeNodeWithURL('#{request.contextPath}/common/applications/applicationEdit.jsf?appName=#{pageSession.encodedAppName}');"
 >
 <!define name="content">
     <event>
