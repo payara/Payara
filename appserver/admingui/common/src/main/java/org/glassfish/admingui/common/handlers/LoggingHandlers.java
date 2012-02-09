@@ -132,12 +132,18 @@ public class LoggingHandlers {
         String config = (String)handlerCtx.getInputValue("config");
         Map<String, Object> props = new HashMap();
         try{
+            StringBuilder sb = new StringBuilder();
+            String sep = "";
             for(Map<String, Object> oneRow : allRows){
-                props.put("id", oneRow.get("loggerName") + "=" + oneRow.get("level"));
-                props.put("target", config);
-                RestUtil.restRequest((String)GuiUtil.getSessionValue("REST_URL") + "/set-log-levels.json",
-                    props, "POST", null, false, true);
+                if ( !GuiUtil.isEmpty((String) oneRow.get("loggerName"))){
+                    sb.append(sep).append(oneRow.get("loggerName")).append("=").append(oneRow.get("level"));
+                    sep=":";
+                }
             }
+            props.put("id", sb.toString());
+            props.put("target", config);
+            RestUtil.restRequest((String)GuiUtil.getSessionValue("REST_URL") + "/set-log-levels.json",
+                    props, "POST", null, false, true);
             // after saving logger levels remove the deleted loggers
             deleteLoggers(allRows, config);
         }catch(Exception ex){
@@ -160,17 +166,22 @@ public class LoggingHandlers {
             newLoggers.add((String)oneRow.get("loggerName"));
         }
         // delete the removed loggers
-        attrs = new HashMap();
+        StringBuilder sb = new StringBuilder();
+        String sep = "";
         for (String logger : oldLoggers) {
             if (!newLoggers.contains(logger)) {
-                attrs.put("id", logger);
-                attrs.put("target", configName);
-                RestUtil.restRequest((String)GuiUtil.getSessionValue("REST_URL") + "/delete-log-levels",
-                    attrs, "POST", null, false);
+                sb.append(sep).append(logger);
+                sep=":";
             }
         }
+        if (sb.length() > 0){
+            attrs = new HashMap();
+            attrs.put("id", sb.toString());
+            attrs.put("target", configName);
+            RestUtil.restRequest((String)GuiUtil.getSessionValue("REST_URL") + "/delete-log-levels", attrs, "POST", null, false);
+        }
     }
-    
+
     @Handler(id = "saveLoggingAttributes",
     input = {
         @HandlerInput(name = "attrs", type = Map.class, required=true),
@@ -210,7 +221,7 @@ public class LoggingHandlers {
     public static void getValidLogLevels(HandlerContext handlerCtx) {
         handlerCtx.setOutputValue("loggerList",  levels);
      }
-    
+
     final private static List<String> levels= new ArrayList();
     static{
         levels.add("OFF");
@@ -224,5 +235,5 @@ public class LoggingHandlers {
         levels.add("ALL");
     }
 }
-        
- 
+
+
