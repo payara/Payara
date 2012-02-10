@@ -107,6 +107,8 @@ public class LBPlugin implements ServicePlugin {
     @Inject(optional = true) // made it optional for non-virtual scenario to work
     private TemplateRepository templateRepository;
 
+    private static final String APPLICATION_DOMAIN_NAME = "application-domain-name";
+
     private static Logger logger = Logger.getLogger(LBPlugin.class.getName());
 
     public HTTPLoadBalancerServiceType getServiceType() {
@@ -130,6 +132,12 @@ public class LBPlugin implements ServicePlugin {
     @Override
     public Set getServiceReferences(String appName, ReadableArchive cloudArchive, PaaSDeploymentContext dc) {
         HashSet<ServiceReference> serviceReferences = new HashSet<ServiceReference>();
+        //LB will optionally associate with DNS service if present
+        //Since association is bidirectional, this ref will ensure DNS service will associate with LB
+        ServiceReference dnsServiceReference = 
+                new ServiceReference(cloudArchive.getName(), "DNS", null);
+        dnsServiceReference.setOptional(true);
+        serviceReferences.add(dnsServiceReference);
         serviceReferences.add(new ServiceReference(cloudArchive.getName(), "JavaEE", null));
         return serviceReferences;
     }
@@ -277,11 +285,15 @@ public class LBPlugin implements ServicePlugin {
                 && serviceProvider.getServiceType().toString().equals("JavaEE"))){
             return;
         }
-        callAssociateService(serviceConsumer, serviceProvider, false);
+        
+        String appDomainName = dc.getDeploymentContext().getTransientAppMetaData
+                (APPLICATION_DOMAIN_NAME, String.class);
+        callAssociateService(serviceConsumer, serviceProvider, false, appDomainName);
+        
     }
 
     private void callAssociateService(org.glassfish.paas.orchestrator.service.spi.Service serviceConsumer,
-            org.glassfish.paas.orchestrator.service.spi.Service serviceProvider, boolean isReconfig) {
+            org.glassfish.paas.orchestrator.service.spi.Service serviceProvider, boolean isReconfig, String appDomainName) {
         ServiceDescription serviceDescription = serviceConsumer.getServiceDescription();
         String serviceName = serviceDescription.getName();
         logger.entering(getClass().getName(), "provisionService");
@@ -297,6 +309,10 @@ public class LBPlugin implements ServicePlugin {
         params.add(serviceProvider.getServiceDescription().getName());
         params.add("--virtualcluster");
         params.add(serviceDescription.getVirtualClusterName());
+        if (appDomainName != null) {
+            params.add("--domainname");
+            params.add(appDomainName);
+        }
         ServiceScope scope = serviceDescription.getServiceScope();
         if(scope != null && scope.equals(ServiceScope.SHARED)){
             if (lbServiceUtil.getApplicationsUsingSharedService(
@@ -528,7 +544,7 @@ public class LBPlugin implements ServicePlugin {
             org.glassfish.paas.orchestrator.service.spi.Service oldServiceProvider,
             org.glassfish.paas.orchestrator.service.spi.Service newServiceProvider,
             ServiceOrchestrator.ReconfigAction reason) {
-        callAssociateService(serviceConsumer, newServiceProvider, true);
+        callAssociateService(serviceConsumer, newServiceProvider, true, null);
         return true;
     }
     

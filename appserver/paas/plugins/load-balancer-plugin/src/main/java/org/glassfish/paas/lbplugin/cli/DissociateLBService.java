@@ -85,7 +85,7 @@ public class DissociateLBService extends BaseLBService implements AdminCommand {
         try {
             retrieveVirtualMachine();
             LBProvisionerFactory.getInstance().getLBProvisioner()
-                    .dissociateApplicationServerWithLB(virtualMachine,
+                    .dissociateApplicationServerWithLB(appName, virtualMachine,
                     serviceName, commandRunner, clusterName, habitat,
                     serverContext.getInstallRoot().getAbsolutePath(), isLast);
             report.setActionExitCode(ActionReport.ExitCode.SUCCESS);

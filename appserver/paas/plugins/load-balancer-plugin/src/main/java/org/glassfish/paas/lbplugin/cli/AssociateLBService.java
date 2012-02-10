@@ -74,6 +74,9 @@ public class AssociateLBService extends BaseLBService implements AdminCommand {
 
     @Param(name = "clustername")
     String clusterName;
+    
+    @Param(name = "domainname", optional=true)
+    String domainName;
 
     @Param(name = "first", optional=true, defaultValue="true")
     boolean isFirst;
@@ -88,8 +91,8 @@ public class AssociateLBService extends BaseLBService implements AdminCommand {
         try {
             retrieveVirtualMachine();
             LBProvisionerFactory.getInstance().getLBProvisioner()
-                    .associateApplicationServerWithLB(virtualMachine,
-                    serviceName, commandRunner, clusterName, habitat,
+                    .associateApplicationServerWithLB(appName, virtualMachine,
+                    serviceName, domainName, commandRunner, clusterName, habitat,
                     serverContext.getInstallRoot().getAbsolutePath(),
                     isFirst, isReconfig);
             report.setActionExitCode(ActionReport.ExitCode.SUCCESS);

@@ -58,11 +58,11 @@ public interface LBProvisioner {
 
     public void stopLB(VirtualMachine virtualMachine) throws Exception;
 
-    public void associateApplicationServerWithLB(VirtualMachine virtualMachine,
-            String serviceName, CommandRunner commandRunner, String clusterName,
+    public void associateApplicationServerWithLB(String appName, VirtualMachine virtualMachine,
+            String serviceName, String domainName, CommandRunner commandRunner, String clusterName,
             Habitat habitat, String glassfishHome, boolean isFirst, boolean isReconfig) throws Exception;
 
-    public void dissociateApplicationServerWithLB(VirtualMachine virtualMachine,
+    public void dissociateApplicationServerWithLB(String appName, VirtualMachine virtualMachine,
             String serviceName, CommandRunner commandRunner, String clusterName,
             Habitat habitat, String glassfishHome, boolean isLast) throws Exception;
 

@@ -50,7 +50,10 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Level;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.glassfish.api.deployment.ApplicationContainer;
+import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.paas.orchestrator.PaaSDeploymentContext;
 import org.glassfish.paas.orchestrator.ServiceOrchestrator;
@@ -65,7 +68,6 @@ import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.component.PerLookup;
 
 import org.glassfish.paas.dnsplugin.logger.DnsPluginLogger;
-import org.glassfish.paas.orchestrator.provisioning.cli.ServiceType;
 import org.glassfish.paas.orchestrator.service.DnsServiceType;
 import org.glassfish.paas.orchestrator.service.spi.Service;
 
@@ -82,6 +84,8 @@ public class DnsPlugin implements ServicePlugin {
 
     @Inject
     private DnsServiceUtil dnsServiceUtil;
+    
+    private static final String APPLICATION_DOMAIN_NAME = "application-domain-name";
 
     @Override
     public DnsServiceType getServiceType() {
@@ -107,7 +111,9 @@ public class DnsPlugin implements ServicePlugin {
     @Override
     public Set getServiceReferences(String appName, ReadableArchive cloudArchive, PaaSDeploymentContext dc) {
         HashSet<ServiceReference> serviceReferences = new HashSet<ServiceReference>();
-        serviceReferences.add(new ServiceReference(cloudArchive.getName(), "LB", null));
+        //No need to provide any reference
+        //Service(s) which want to get associated with DNS service will provide service ref to DNS
+        //and since association is bidirectional, DNS will associate with that service
         return serviceReferences;
     }
 
@@ -207,13 +213,13 @@ public class DnsPlugin implements ServicePlugin {
             return;
         }
 
-        if (!("LB".equals(svcRef.getType())
-                && serviceConsumer.getServiceType().toString().equals("DNS")
-                && serviceProvider.getServiceType().toString().equals("LB"))){
+        if (!(Constants.DNS.equals(svcRef.getType())
+                && serviceConsumer.getServiceType().toString().equals("LB")
+                && serviceProvider.getServiceType().toString().equals(Constants.DNS))){
             return;
         }
 
-        updateDnsEntry(serviceConsumer, serviceProvider, dc.getAppName(), true);
+        updateDnsEntry(serviceProvider, serviceConsumer, dc, true);
     }
 
     @Override
@@ -223,13 +229,13 @@ public class DnsPlugin implements ServicePlugin {
             return;
         }
 
-        if (!("LB".equals(svcRef.getType())
-                && serviceConsumer.getServiceType().toString().equals("DNS")
-                && serviceProvider.getServiceType().toString().equals("LB"))){
+        if (!(Constants.DNS.equals(svcRef.getType())
+                && serviceConsumer.getServiceType().toString().equals("LB")
+                && serviceProvider.getServiceType().toString().equals(Constants.DNS))){
             return;
         }
 
-        updateDnsEntry(serviceConsumer, serviceProvider, dc.getAppName(), false);
+        updateDnsEntry(serviceProvider, serviceConsumer, dc, false);
     }
 
     @Override
@@ -243,8 +249,11 @@ public class DnsPlugin implements ServicePlugin {
     }
 
     private void updateDnsEntry(Service serviceConsumer,
-            Service serviceProvider, String appName, boolean isAdd) {
+            Service serviceProvider, PaaSDeploymentContext dc, boolean isAdd) {
 
+        String appName = dc.getAppName();
+        DeploymentContext context = dc.getDeploymentContext();
+        
         //TODO retrieve IP address from ServiceProvider's ServiceProperties ?
         String lbIPAddr = dnsServiceUtil.getIPAddress(
                 serviceProvider.getServiceDescription().getName(),
@@ -264,6 +273,7 @@ public class DnsPlugin implements ServicePlugin {
          * show
          * send
          */
+        String appDomainName = replace(appName) + "." + domainName;
         File tmpFile = null;
         BufferedWriter writer = null;
         try {
@@ -274,9 +284,9 @@ public class DnsPlugin implements ServicePlugin {
             writer.append("zone ").append(domainName);
             writer.newLine();
             if (isAdd) {
-                writer.append("update add ").append(appName).append(".").append(domainName).append(" 86400 A ").append(lbIPAddr);
+                writer.append("update add ").append(appDomainName).append(" 86400 A ").append(lbIPAddr);
             } else {
-                writer.append("update delete ").append(appName).append(".").append(domainName).append(" A");
+                writer.append("update delete ").append(appDomainName).append(" A");
             }
             writer.newLine();
             writer.append("show");
@@ -313,6 +323,10 @@ public class DnsPlugin implements ServicePlugin {
                DnsPluginLogger.getLogger().log(Level.SEVERE, "DNS update failed");
                DnsPluginLogger.getLogger().log(Level.WARNING, "DNS update command output : "
                     + executor.getLastExecutionError());
+            } else {
+                if(isAdd){
+                    context.addTransientAppMetaData(APPLICATION_DOMAIN_NAME, appDomainName);
+                }
             }
         } catch (ExecException ex) {
             DnsPluginLogger.getLogger().log(Level.SEVERE,
@@ -324,6 +338,13 @@ public class DnsPlugin implements ServicePlugin {
             tmpFile.delete();
         }
         
+    }
+
+    /* Replaces all special characters(except hyphen) with hyphen */
+    private String replace(String appName) {
+        Pattern specialCharPattern = Pattern.compile("[^a-zA-Z0-9-]");
+        Matcher matcher = specialCharPattern.matcher(appName);
+        return matcher.replaceAll("-");
     }
     
 }

@@ -46,7 +46,7 @@ package org.glassfish.paas.dnsplugin;
  */
 public class Constants {
 
-    public static final String DNS = "DOMAIN_NAME_SERVER";
+    public static final String DNS = "DNS";
     public static final String DOMAIN_NAME = "domain-name";
     public static final String DNS_IP = "dns-ip";
     public static final String DNS_PRIVATE_KEY_FILE_LOCATION =

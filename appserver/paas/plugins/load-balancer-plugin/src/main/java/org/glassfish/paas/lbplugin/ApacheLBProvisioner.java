@@ -141,8 +141,8 @@ public class ApacheLBProvisioner implements LBProvisioner{
     }
 
     @Override
-    public void associateApplicationServerWithLB(VirtualMachine virtualMachine,
-            String serviceName, CommandRunner commandRunner, String clusterName,
+    public void associateApplicationServerWithLB(String appName, VirtualMachine virtualMachine,
+            String serviceName, String domainName, CommandRunner commandRunner, String clusterName,
             Habitat habitat, String glassfishHome, boolean isFirst, boolean isReconfig) throws Exception{
         if(!isReconfig){
             createApacheConfig(clusterName, commandRunner, habitat, serviceName, isFirst);
@@ -245,7 +245,7 @@ public class ApacheLBProvisioner implements LBProvisioner{
     }
     
     @Override
-    public void dissociateApplicationServerWithLB(VirtualMachine virtualMachine,
+    public void dissociateApplicationServerWithLB(String appName, VirtualMachine virtualMachine,
             String serviceName, CommandRunner commandRunner, String clusterName,
             Habitat habitat, String glassfishHome, boolean isLast) throws Exception {
         ArrayList params = new ArrayList();
