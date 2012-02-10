@@ -3,7 +3,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -60,7 +60,10 @@
                 <artifactId>maven-jar-plugin</artifactId>
                 <configuration>
                     <archive>
-                        <manifestFile>src/main/resources/META-INF/MANIFEST.MF</manifestFile>
+	                <manifestEntries>
+	                    <Class-Path>../modules/javax.servlet.jar ../modules/endorsed/javax.annotation.jar ../modules/javax.ejb.jar ../modules/javax.transaction.jar ../modules/javax.enterprise.deploy.jar ../modules/javax.management.j2ee.jar ../modules/javax.resource.jar ../modules/javax.security.auth.message.jar ../modules/javax.security.jacc.jar ../modules/webservices-osgi.jar ../modules/jaxb-osgi.jar ../modules/endorsed/jaxb-api-osgi.jar ../modules/endorsed/webservices-api-osgi.jar ../modules/javax.mail.jar ../modules/javax.faces.jar ../modules/javax.servlet.jsp.jar ../modules/javax.servlet.jsp.jstl.jar ../modules/javax.persistence.jar ../modules/javax.jms.jar ../modules/bean-validator.jar ../modules/weld-osgi-bundle.jar ../../mq/lib/jaxm-api.jar ../modules/jersey-core.jar</Class-Path>
+	                    <GlassFish-ServerExcluded>true</GlassFish-ServerExcluded>
+	                </manifestEntries>
                     </archive>
                 </configuration>
             </plugin>

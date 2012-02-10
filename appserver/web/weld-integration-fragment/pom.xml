@@ -3,7 +3,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -78,14 +78,7 @@
 <!-- The export of javassist.util.proxy is done to ensure that the weld-generated proxy has access to the ProxyFactory class
 in that package. This "partial" export of the javassist package would not cause the problem described in IT 12368, because
 javassist has fixed the issue in JASSIST-104, and as part of WELD-570, the new javassist version is integrated in Weld 1.1.Beta2 -->
-                            <Export-Package>
-org.jboss.weld.proxy.util,
-org.jboss.weld.bean.proxy.util,
-org.jboss.weld.context.http,
-org.jboss.weld.context.cache,
-org.jboss.weld.bean.builtin.ee,
-javassist.util.proxy
-                            </Export-Package>
+                            <Export-Package>org.jboss.weld.proxy.util, org.jboss.weld.bean.proxy.util, org.jboss.weld.context.http, org.jboss.weld.context.cache, org.jboss.weld.bean.builtin.ee, javassist.util.proxy</Export-Package>
                             <Bundle-Description>${project.description}</Bundle-Description> 
                         </manifestEntries>
                     </archive>
