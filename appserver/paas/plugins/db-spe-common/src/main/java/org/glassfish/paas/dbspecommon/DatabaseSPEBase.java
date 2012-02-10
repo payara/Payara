@@ -237,7 +237,7 @@ public abstract class DatabaseSPEBase extends ServiceProvisioningEngineBase<RDBM
                 String initSqlFile = null;
                 String databaseName = null;
                 String servicePropertiesFile = null;
-                String ipAddress = serviceConsumer.getProperties().getProperty(VIRTUAL_MACHINE_IP_ADDRESS);
+                String ipAddress = serviceConsumer.getServiceProperties().getProperty(VIRTUAL_MACHINE_IP_ADDRESS);
                 //Create Custom database
                 servicePropertiesFile = getServicePropertiesFileName(dc, readableArchive);
 
@@ -262,6 +262,7 @@ public abstract class DatabaseSPEBase extends ServiceProvisioningEngineBase<RDBM
                 //Execute Init SQL
                 initSqlFile = getInitSQLFileName(readableArchive, dc);
                 if (new File(initSqlFile).exists()) {
+                    setDatabaseName(serviceConsumer.getServiceProperties().getProperty(DATABASENAME));
                     executeInitSql(getServiceProperties(ipAddress), initSqlFile);
                 }
             }
