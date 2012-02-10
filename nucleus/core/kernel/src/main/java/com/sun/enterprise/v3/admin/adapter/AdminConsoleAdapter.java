@@ -83,6 +83,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.glassfish.grizzly.config.dom.NetworkConfig;
 import org.glassfish.grizzly.http.Method;
 
 /**
@@ -482,7 +483,6 @@ public final class AdminConsoleAdapter extends HttpHandler implements Adapter, P
      *
      */
     private void init() {
-
         Property locProp = adminService.getProperty(ServerTags.ADMIN_CONSOLE_DOWNLOAD_LOCATION);
         if (locProp == null || locProp.getValue() == null || locProp.getValue().equals("")) {
             String iRoot = System.getProperty(INSTALL_ROOT) + "/lib/install/applications/admingui.war";
@@ -503,6 +503,17 @@ public final class AdminConsoleAdapter extends HttpHandler implements Adapter, P
             logger.log(Level.FINE, "Admin Console download location: {0}", warFile.getAbsolutePath());
         }
 
+        NetworkConfig nwc = serverConfig.getNetworkConfig();
+        if (nwc == null) {
+            logger.log(Level.INFO, "No <http-service> found, not initializing console");
+            return;
+        }            
+        List<NetworkListener> lss = nwc.getNetworkListeners().getNetworkListener();
+        if (lss == null || lss.isEmpty()) {
+            logger.log(Level.INFO, "No network listeners found, not initializing console");            
+            return;
+        }
+        
         initState();
         epd = new AdminEndpointDecider(serverConfig, logger);
         contextRoot = epd.getGuiContextRoot();
