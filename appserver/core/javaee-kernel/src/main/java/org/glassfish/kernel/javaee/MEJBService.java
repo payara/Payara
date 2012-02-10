@@ -40,7 +40,9 @@
 
 package org.glassfish.kernel.javaee;
 
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
+import javax.inject.Provider;
+
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PostConstruct;
 import org.jvnet.hk2.component.Habitat;
@@ -69,12 +71,16 @@ public class MEJBService implements PostConstruct {
     @Inject
     Habitat habitat;
 
+    @Inject 
+    Provider<GlassfishNamingManager> gfNamingManagerProvider;
+
     private static final Logger _logger = LogDomains.getLogger(
         MEJBService.class, LogDomains.EJB_LOGGER);
   
     public void postConstruct() {
         GlassfishNamingManager gfNamingManager =
-            habitat.getComponent(GlassfishNamingManager.class);
+            gfNamingManagerProvider.get();
+
         MEJBNamingObjectProxy mejbProxy = 
             new MEJBNamingObjectProxy(habitat);
         for(String next : MEJBNamingObjectProxy.getJndiNames()) {

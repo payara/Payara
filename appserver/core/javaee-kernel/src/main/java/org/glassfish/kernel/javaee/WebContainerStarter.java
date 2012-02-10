@@ -51,10 +51,11 @@ import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.container.Sniffer;
 import org.glassfish.internal.data.ContainerRegistry;
 import org.glassfish.internal.data.EngineInfo;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.inject.Provider;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.PostConstruct;
 import org.jvnet.hk2.component.Singleton;
 import org.jvnet.hk2.config.*;
@@ -94,7 +95,8 @@ public class WebContainerStarter
 
     private static final String TRACE_ENABLED_PROP = "traceEnabled";
 
-    private Domain domain;
+    @Inject
+    private Provider<Domain> domainProvider;
 
     @Inject
     private ContainerRegistry containerRegistry;
@@ -105,11 +107,11 @@ public class WebContainerStarter
     @Inject
     private ModulesRegistry modulesRegistry;
 
-    private Config serverConfig;
+    @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    private Provider<Config> serverConfigProvider;
 
-    @Inject
-    private Habitat habitat;
-
+    @Inject @Named("web")
+    private Provider<Sniffer> webSnifferProvider;
 
     /**
      * Scans the domain.xml to see if it specifies any configuration
@@ -117,8 +119,8 @@ public class WebContainerStarter
      * the web container
      */ 
     public void postConstruct() {
-        domain = habitat.getComponent(Domain.class);
-        serverConfig = habitat.getComponent(Config.class, ServerEnvironment.DEFAULT_INSTANCE_NAME);
+        Domain domain = domainProvider.get();
+        Config serverConfig = serverConfigProvider.get();
 
         boolean isStartNeeded = false;
         if (serverConfig != null) {
@@ -179,7 +181,7 @@ public class WebContainerStarter
      * Starts the web container
      */
     private void startWebContainer() {
-        Sniffer webSniffer = habitat.getComponent(Sniffer.class,"web");
+        Sniffer webSniffer = webSnifferProvider.get();
         if (webSniffer==null) {
             if (logger.isLoggable(Level.INFO)) {
                 logger.info("core.web_container_not_installed");
