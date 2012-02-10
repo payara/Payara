@@ -47,13 +47,14 @@ import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.deployment.common.DeploymentUtils;
 import org.glassfish.hk2.Services;
-import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Singleton;
 
 import java.io.IOException;
 import java.util.logging.Logger;
+
+import javax.inject.Inject;
 
 /**
  * Detects client archive (car) type archives.

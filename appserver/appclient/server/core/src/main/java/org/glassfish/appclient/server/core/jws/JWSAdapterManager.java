@@ -62,6 +62,8 @@ import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.inject.Inject;
+import javax.inject.Named;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.container.EndpointRegistrationException;
 import org.glassfish.api.container.RequestDispatcher;
@@ -76,7 +78,6 @@ import org.glassfish.appclient.server.core.jws.servedcontent.SimpleDynamicConten
 import org.glassfish.appclient.server.core.jws.servedcontent.StaticContent;
 import org.glassfish.enterprise.iiop.api.GlassFishORBFactory;
 import org.glassfish.internal.api.ServerContext;
-import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PostConstruct;
@@ -108,10 +109,11 @@ public class JWSAdapterManager implements PostConstruct {
     @Inject
     private ASJarSigner jarSigner;
 
-    @Inject(name = ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     private Config config;
 
-    @Inject AppClientDeployer appClientDeployer;
+    @Inject 
+    AppClientDeployer appClientDeployer;
 
     @Inject
     private GlassFishORBFactory orbFactory;

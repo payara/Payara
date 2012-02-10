@@ -56,6 +56,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.jar.Attributes;
 import java.util.logging.Logger;
+import javax.inject.Inject;
+import javax.inject.Named;
 
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.MetaData;
@@ -63,7 +65,6 @@ import org.glassfish.api.deployment.UndeployCommandParameters;
 import org.glassfish.appclient.server.core.jws.servedcontent.ASJarSigner;
 import org.glassfish.deployment.common.DeploymentException;
 import org.glassfish.javaee.core.deployment.JavaEEDeployer;
-import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PostConstruct;
@@ -173,7 +174,7 @@ public class AppClientDeployer
     @Inject
     private ASJarSigner jarSigner;
 
-    @Inject(name = ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     Config config;
 
 //    private DownloadableArtifacts downloadInfo = null;

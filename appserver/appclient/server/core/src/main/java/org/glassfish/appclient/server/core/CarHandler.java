@@ -47,9 +47,10 @@ import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.archive.ArchiveDetector;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.appclient.server.connector.CarDetector;
-import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
 
+import javax.inject.Inject;
+import javax.inject.Named;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import java.io.IOException;
@@ -67,7 +68,7 @@ import static javax.xml.stream.XMLStreamConstants.*;
 @Service(name = CarDetector.ARCHIVE_TYPE)
 public class CarHandler extends AbstractArchiveHandler {
 
-    @Inject(name = CarDetector.ARCHIVE_TYPE)
+    @Inject @Named(CarDetector.ARCHIVE_TYPE)
     private ArchiveDetector detector;
 
     @Override
