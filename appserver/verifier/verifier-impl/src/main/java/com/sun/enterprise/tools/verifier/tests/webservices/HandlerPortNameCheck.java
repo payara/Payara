@@ -73,9 +73,12 @@ public class HandlerPortNameCheck extends WSTest implements WSCheck {
 
         if (descriptor.hasHandlers()) {
            Collection allPortNames = getAllPortNamesInService(descriptor);
-           List handlerChain = descriptor.getHandlerChain();
-           for (Iterator it = handlerChain.iterator(); it.hasNext();) {
-               Collection c = ((WebServiceHandler)it.next()).getPortNames();
+           List<WebServiceHandlerChain> handlerChains = descriptor.getHandlerChain();
+           for (WebServiceHandlerChain handlerChain : handlerChains) {
+               Collection c = new HashSet();
+               for (WebServiceHandler wsh : handlerChain.getHandlers()) {
+                   c.addAll(wsh.getPortNames());
+               }
                Collection invalid = getInvalidHandlerPortNames(c,allPortNames);
                if (invalid.size() > 0) {
                   //result.fail
