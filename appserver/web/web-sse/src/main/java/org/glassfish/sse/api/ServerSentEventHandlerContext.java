@@ -43,14 +43,25 @@ package org.glassfish.sse.api;
 import java.util.Set;
 
 /**
- * WebCommunicationContext class
+ * A context class that gives access to all the active handlers for a
+ * Server-Sent Event path.
  *
  * @author Santiago.PericasGeertsen@oracle.com
  */
 public interface ServerSentEventHandlerContext {
 
+    /**
+     * Returns the path for Server-Sent event handlers
+     *
+     * @return path for the Server-Sent event handlers
+     */
     public String getPath();
 
+    /**
+     * Returns all the active Server-Sent event handlers for a path
+     *
+     * @return all the active handlers
+     */
     public Set<ServerSentEventHandler> getHandlers();
     
 }

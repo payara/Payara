@@ -51,7 +51,13 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>web-sse</artifactId>
     <packaging>hk2-jar</packaging>
-    <name>Server Sent Events</name>
+    <name>Server-Sent Events</name>
+    <description>
+        Server-Sent Events specification (http://dev.w3.org/html5/eventsource)         defines an JavaScript API for clients for receiving push notifications         from a server on a HTTP connection.
+
+        This module has an API and implementation for server components
+        to send such event notifications.
+    </description>
 
     <developers>
         <developer>
