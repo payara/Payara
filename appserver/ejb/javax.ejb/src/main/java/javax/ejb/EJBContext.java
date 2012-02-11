@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -237,9 +237,13 @@ public interface EJBContext
     Object lookup(String name) throws IllegalArgumentException;
 
     /**
-     * Returns the context data associated with this invocation or
-     * lifecycle callback.  If there is no context data, an
-     * empty <code>Map&#060;String,Object&#062;</code> object will be returned.
+     * The <code>getContextData</code> method enables a business method, lifecycle 
+     * callback method, or timeout method to retrieve any interceptor/webservices context 
+     * associated with its invocation.
+     * 
+     * @return the context data that interceptor context associated with this invocation. 
+     * If there is no context data, an empty <code>Map&#060;String,Object&#062;</code> 
+     * object will be returned.
      *
      * @since EJB 3.1
      */

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -131,7 +131,13 @@ public interface InvocationContext {
     public void setParameters(Object[] params);
 
     /**
-     * Returns the context data associated with this invocation or
+     * Enables an interceptor to retrieve or update the data associated with 
+     * the invocation by another interceptor, business method,and/or webservices 
+     * context in the invocation chain.  If interceptors are invoked as a result
+     * of the invocation on a web service endpoint, the returned value will be 
+     * an instance of javax.xml.rpc.handler.MessageContext
+     * 
+     * @return the context data associated with this invocation or
      * lifecycle callback.  If there is no context data, an
      * empty {@code Map<String,Object>} object will be returned.
      * 

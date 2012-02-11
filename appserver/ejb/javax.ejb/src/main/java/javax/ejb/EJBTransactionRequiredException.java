@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,11 +41,10 @@
 package javax.ejb;
 
 /**
- * This exception is thrown to a remote client to indicate that a
- * request carried a null transaction context, but the target object
- * requires an active transaction.
+ * This exception indicates that a request carried a null transaction context,
+ * but the target object requires an active transaction.
  *
- * @since EJB 2.0
+ * @since EJB 3.0
  */
 public class EJBTransactionRequiredException extends EJBException {
 
