@@ -63,7 +63,7 @@
         setSessionAttribute(key="onlyDASExist" value="#{false}");
         createMap(result="#{pageSession.attrs}")
         mapPut(map="#{pageSession.attrs}"  key="target"  value="#{pageSession.instanceName}")
-        gf.restRequest( endpoint="#{sessionScope.REST_URL}/applications/application/list-components.json" , method="GET"  attrs="#{pageSession.attrs}" result="#{requestScope.result}");
+        gf.restRequest( endpoint="#{sessionScope.REST_URL}/applications/list-components" , method="GET"  attrs="#{pageSession.attrs}" result="#{requestScope.result}");
         setPageSessionAttribute(key="appRefEndpoint" value="/servers/server/#{pageSession.encodedInstanceName}/application-ref/");
         gf.getSingleTargetAppsInfo(appPropsMap="#{requestScope.result.data.properties}" appRefEndpoint="#{pageSession.appRefEndpoint}" target="#{pageSession.instanceName}" filterValue="#{pageSession.filterValue}", filters="#{requestScope.filters}" result="#{requestScope.listOfRows}" );
         setPageSessionAttribute(key="editLink" value="/common/applications/applicationEdit.jsf");
