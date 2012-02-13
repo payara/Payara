@@ -168,6 +168,7 @@
         <shoal.version>1.6.17</shoal.version>
         <ha-api.version>3.1.8</ha-api.version>
         <glassfishbuild.version>3.2.2</glassfishbuild.version>
+        <websocket.version>0.1</websocket.version>
     </properties>
 
 
@@ -1418,6 +1419,11 @@
                 <groupId>org.glassfish.ha</groupId>
                 <artifactId>ha-api</artifactId>
                 <version>${ha-api.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.glassfish.websocket</groupId>
+                <artifactId>websocket-osgi</artifactId>
+                <version>${websocket.version}</version>
             </dependency>
 
         </dependencies>

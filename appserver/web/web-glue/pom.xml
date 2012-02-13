@@ -253,6 +253,10 @@
             <artifactId>web-sse</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.glassfish.websocket</groupId>
+            <artifactId>websocket-osgi</artifactId>
+        </dependency>
 	
     </dependencies>
 </project>
