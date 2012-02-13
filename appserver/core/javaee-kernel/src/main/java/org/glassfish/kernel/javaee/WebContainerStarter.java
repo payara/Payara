@@ -119,7 +119,7 @@ public class WebContainerStarter
      * the web container
      */ 
     public void postConstruct() {
-        Domain domain = domainProvider.get();
+        domainProvider.get();
         Config serverConfig = serverConfigProvider.get();
 
         boolean isStartNeeded = false;
