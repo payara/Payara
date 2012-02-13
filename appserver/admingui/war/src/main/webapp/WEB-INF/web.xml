@@ -165,6 +165,8 @@
             <role-name>admin</role-name>
         </auth-constraint>
     </security-constraint>
+
+    <!-- resources like images, css, etc.  that don't need protection -->
     <security-constraint>
         <web-resource-collection>
             <web-resource-name>public</web-resource-name>
@@ -175,6 +177,7 @@
             <http-method>GET</http-method>
         </web-resource-collection>
     </security-constraint>
+
     <login-config>
         <auth-method>FORM</auth-method>
         <realm-name>admin-realm</realm-name>
