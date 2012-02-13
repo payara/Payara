@@ -48,6 +48,7 @@ import com.sun.enterprise.deployment.ConnectorDescriptor;
 import com.sun.enterprise.deployment.EjbMessageBeanDescriptor;
 import com.sun.enterprise.deployment.ConnectorConfigProperty;
 import com.sun.enterprise.deployment.EnvironmentProperty;
+import com.sun.enterprise.deployment.MessageDestinationDescriptor;
 import com.sun.enterprise.deployment.runtime.BeanPoolDescriptor;
 import com.sun.appserv.connectors.internal.api.ConnectorRuntimeException;
 import com.sun.appserv.connectors.internal.api.*;
@@ -1848,6 +1849,11 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
                                      BeanPoolDescriptor poolDescriptor) throws ConnectorRuntimeException{
 
         String jndiName = descriptor_.getJndiName();
+        if (jndiName == null || "".equals(jndiName)) {
+          MessageDestinationDescriptor destDescriptor = descriptor_.getMessageDestination();
+          if (destDescriptor != null)
+            jndiName = destDescriptor.getJndiName();
+        }
 
         //handling of MDB 1.3 runtime deployment descriptor
         //if no RA-mid is specified, assume it is a 1.3 DD
