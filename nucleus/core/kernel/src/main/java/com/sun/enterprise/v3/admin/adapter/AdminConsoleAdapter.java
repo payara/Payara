@@ -502,21 +502,16 @@ public final class AdminConsoleAdapter extends HttpHandler implements Adapter, P
         if (logger.isLoggable(Level.FINE)) {
             logger.log(Level.FINE, "Admin Console download location: {0}", warFile.getAbsolutePath());
         }
-
-        NetworkConfig nwc = serverConfig.getNetworkConfig();
-        if (nwc == null) {
-            logger.log(Level.INFO, "No <http-service> found, not initializing console");
-            return;
-        }            
-        List<NetworkListener> lss = nwc.getNetworkListeners().getNetworkListener();
-        if (lss == null || lss.isEmpty()) {
-            logger.log(Level.INFO, "No network listeners found, not initializing console");            
-            return;
-        }
         
         initState();
-        epd = new AdminEndpointDecider(serverConfig, logger);
-        contextRoot = epd.getGuiContextRoot();
+        
+        try {
+            epd = new AdminEndpointDecider(serverConfig, logger);
+            contextRoot = epd.getGuiContextRoot();
+        } catch (Exception ex) {
+            logger.log(Level.INFO, "Console cannot be initialized. " + ex.getMessage());
+            return;
+        }
     }
     
     void initRest() {
