@@ -184,12 +184,18 @@ public class PluginHandlers {
 	String type = (String) handlerCtx.getInputValue("type");
 	UIComponent root = (UIComponent) handlerCtx.getInputValue("root");
 
+        try{
 	// Get the IntegrationPoints
-	FacesContext ctx = handlerCtx.getFacesContext();
-	List<IntegrationPoint> points = getIntegrationPoints(ctx, type);
-
-	// Include them
-	includeIntegrationPoints(ctx, root, getSortedIntegrationPoints(points));
+            FacesContext ctx = handlerCtx.getFacesContext();
+            List<IntegrationPoint> points = getIntegrationPoints(ctx, type);
+            // Include them
+            includeIntegrationPoints(ctx, root, getSortedIntegrationPoints(points));
+        }catch(Exception ex){
+            GuiUtil.getLogger().severe("Error in includeIntegrations ; \ntype = " + type + "; root=" + root.toString());
+            if (GuiUtil.getLogger().isLoggable(Level.FINE)){
+                ex.printStackTrace();
+            }
+        }
     }
 
     /**

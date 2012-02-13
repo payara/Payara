@@ -239,11 +239,12 @@ public class RestUtil {
             return masked;
         }
 
-        for(String key : attrs.keySet()){
-            if (pswdAttrList.contains(key.toLowerCase())){
+        for(Map.Entry<String,Object> e : attrs.entrySet()){
+            String key = e.getKey().toLowerCase(GuiUtil.guiLocale);
+            if (pswdAttrList.contains(key)){
                 masked.put(key, "*******");
             }else{
-                masked.put(key, attrs.get(key));
+                masked.put(key, e.getValue());
             }
         }
         return masked;
@@ -519,7 +520,7 @@ public class RestUtil {
     protected static Map<String, Object> fixKeyNames(Map<String, Object> map) {
         Map<String, Object> results = new HashMap<String, Object>();
         for (Map.Entry<String, Object> entry : map.entrySet()) {
-            String key = entry.getKey().substring(0, 1).toLowerCase() + entry.getKey().substring(1);
+            String key = entry.getKey().substring(0, 1).toLowerCase(GuiUtil.guiLocale) + entry.getKey().substring(1);
             Object value = entry.getValue();
             results.put(key, value);
         }
