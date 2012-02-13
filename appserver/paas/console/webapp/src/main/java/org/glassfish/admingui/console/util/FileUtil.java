@@ -70,7 +70,9 @@ public class FileUtil {
         String tmpdir = System.getProperty("java.io.tmpdir");
         File tmpFile = new File(tmpdir, origFileName);
         if (tmpFile.exists()){
-            tmpFile.delete();
+            if (!tmpFile.delete()){
+                System.out.println("tmpFile cannot be deleted: " + tmpFile.getAbsolutePath());
+            }
             tmpFile = new File(tmpdir, origFileName);
         }
         tmpFile.deleteOnExit();

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -117,13 +117,14 @@ public class CommandUtil {
                     String templateEndpoint = REST_URL+"/virtualizations/" + virtType + "/" + virtInstances.get(0) + "/template";
                     if (RestUtil.doesProxyExist(templateEndpoint )){
                         Map<String, String> templateEndpoints = RestUtil.getChildMap(templateEndpoint);
-                        for(String oneT : templateEndpoints.keySet()){
-                            Map<String, String> tempIndexes = RestUtil.getChildMap(templateEndpoints.get(oneT) + "/template-index");
-                            for(String oneI : tempIndexes.keySet()){
-                                Map attrs = RestUtil.getAttributesMap(tempIndexes.get(oneI));
+
+                        for(Map.Entry<String,String> endpointE : templateEndpoints.entrySet()){
+                            Map<String, String> tempIndexes = RestUtil.getChildMap(endpointE.getValue() + "/template-index");
+                            for(Map.Entry<String,String> indexE : tempIndexes.entrySet()){
+                                Map attrs = RestUtil.getAttributesMap(indexE.getValue());
                                 if ("ServiceType".equals (attrs.get("type"))  &&  type.equals(attrs.get("value"))){
                                     //finally found it
-                                    tList.add(oneT);
+                                    tList.add(endpointE.getKey());
                                 }
                             }
                         }
