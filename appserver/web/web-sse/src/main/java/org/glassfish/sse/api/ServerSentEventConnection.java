@@ -70,11 +70,20 @@ public abstract class ServerSentEventConnection implements Closeable {
 
     /**
      * Sends the Server-Sent event to client
+     *
      * @param eventData Server-Sent event data
      * @throws IOException when there is an error in sending
      * @see ServerSentEventData
      */
-    public abstract void sendMessageToClient(ServerSentEventData eventData)
+    public abstract void sendMessage(String eventData) throws IOException;
+
+    /**
+     * Sends the Server-Sent event to client
+     * @param eventData Server-Sent event data
+     * @throws IOException when there is an error in sending
+     * @see ServerSentEventData
+     */
+    public abstract void sendMessage(ServerSentEventData eventData)
             throws IOException;
 
     /**

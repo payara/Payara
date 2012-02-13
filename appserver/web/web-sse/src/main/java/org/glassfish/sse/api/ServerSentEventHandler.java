@@ -87,36 +87,9 @@ public abstract class ServerSentEventHandler {
     }
 
     /**
-     * Sends the Server-Sent event to client. This is equivalent to 
-     * {@link org.glassfish.sse.api.ServerSentEventData#data(String)}
-     *
-     * @param data value of the data field
-     */
-    public void sendMessage(String data) throws IOException {
-        sendMessage(new ServerSentEventData().data(data));
-    }
-
-    /**
-     * Sends the Server-Sent event to client
-     *
-     * @see ServerSentEventData
-     */
-    public void sendMessage(ServerSentEventData eventData) throws IOException {
-        connection.sendMessageToClient(eventData);
-    }
-
-    /**
-     * Close the Server-Sent Event connection
-     */
-    public void close() {
-        connection.close();
-    }
-
-    /**
      * Callback to indicate that the client closed the connection
      */
-    public void onClose() {
-        connection.close();
+    public void onClosed() {
     }
 
 }

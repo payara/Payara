@@ -48,7 +48,7 @@ import java.util.Set;
  *
  * @author Santiago.PericasGeertsen@oracle.com
  */
-public interface ServerSentEventHandlerContext {
+public interface ServerSentEventHandlerContext<T extends ServerSentEventHandler> {
 
     /**
      * Returns the path for Server-Sent event handlers
@@ -62,6 +62,6 @@ public interface ServerSentEventHandlerContext {
      *
      * @return all the active handlers
      */
-    public Set<ServerSentEventHandler> getHandlers();
+    public Set<T> getHandlers();
     
 }

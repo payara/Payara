@@ -85,7 +85,13 @@ final class ServerSentEventConnectionImpl extends ServerSentEventConnection impl
     }
 
     @Override
-    public void sendMessageToClient(ServerSentEventData eventData) throws IOException {
+    public void sendMessage(String eventData) throws IOException {
+        // Can avoid creating ServerSentEventData for performance(if required)
+        sendMessage(new ServerSentEventData().data(eventData));
+    }
+
+    @Override
+    public void sendMessage(ServerSentEventData eventData) throws IOException {
         synchronized (sseh) {       // so that events don't interleave
             try {
                 // Write message on response and flush

@@ -48,8 +48,10 @@ import javax.enterprise.event.Observes;
 import javax.enterprise.inject.spi.*;
 import javax.enterprise.util.AnnotationLiteral;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.*;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -93,16 +95,33 @@ public class ServerSentEventCdiExtension implements Extension {
 
         private final String path;
         private final ServerSentEventHandlerContext instance;
+        private final Class<?> handlerClass;
 
-        ServerSentEventHandlerContextBean(String path, ServerSentEventHandlerContext instance) {
+        ServerSentEventHandlerContextBean(String path, ServerSentEventHandlerContext instance, Class<?> handlerClass) {
             this.path = path;
             this.instance = instance;
+            this.handlerClass = handlerClass;
         }
 
         @Override
         public Set<Type> getTypes() {
             Set<Type> types = new HashSet<Type>();
-            types.add(ServerSentEventHandlerContext.class);
+            types.add(new ParameterizedType() {
+                @Override
+                public Type[] getActualTypeArguments() {
+                    return new Type[] {handlerClass};
+                }
+
+                @Override
+                public Type getRawType() {
+                    return ServerSentEventHandlerContext.class;
+                }
+
+                @Override
+                public Type getOwnerType() {
+                    return null;
+                }
+            });
             return types;
         }
 
@@ -156,6 +175,7 @@ public class ServerSentEventCdiExtension implements Extension {
         @Override
         public void destroy(ServerSentEventHandlerContext instance, CreationalContext<ServerSentEventHandlerContext> context) {
         }
+
     }
 
     // For each ServerSentEvent hanlder, it creates a corresponding ServerSentHandlerContext
@@ -163,14 +183,17 @@ public class ServerSentEventCdiExtension implements Extension {
     @SuppressWarnings("UnusedDeclaration")
     void afterBeanDiscovery(@Observes AfterBeanDiscovery bbd) {
         for(Map.Entry<String, ServerSentEventApplication> entry : applicationMap.entrySet()) {
-            bbd.addBean(new ServerSentEventHandlerContextBean(entry.getKey(), entry.getValue().getHandlerContext()));
+            bbd.addBean(new ServerSentEventHandlerContextBean(entry.getKey(), entry.getValue().getHandlerContext(),
+                    entry.getValue().getHandlerClass()));
         }
     }
 
     @SuppressWarnings("UnusedDeclaration")
     <T> void processAnnotatedType(@Observes ProcessAnnotatedType<T> pat,
             BeanManager beanManager) {
-        LOGGER.info("scanning type: " + pat.getAnnotatedType().getJavaClass().getName());
+        if (LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.fine("scanning type: " + pat.getAnnotatedType().getJavaClass().getName());
+        }
 
         for (Annotation an : pat.getAnnotatedType().getAnnotations()) {
             Class clazz = pat.getAnnotatedType().getJavaClass();

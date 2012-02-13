@@ -58,19 +58,18 @@ public class NotificationsHandler extends ServerSentEventHandler {
         super.onConnected(client);
         String command = "{\"type\":\""+ playingStatus.getStatus()+"\"}";
         System.out.println("Connected a new client="+client+" Sending initial command="+command);
+        sendMessage(command);
+    }
+
+    public void sendMessage(String data) {
+        System.out.println("Handler="+this+" Sending data="+data);
         try {
-            sendMessage(command);
+            connection.sendMessage(data);
         } catch(IOException ioe) {
             // May be client is already disconnected. Just close it
             ioe.printStackTrace();
-            close();
+            connection.close();
         }
-    }
-
-    @Override
-    public void sendMessage(String data) throws IOException {
-        System.out.println("Handler="+this+" Sending data="+data);
-        super.sendMessage(data);
     }
 
 }

@@ -56,7 +56,7 @@ public class PlayerServlet extends HttpServlet {
     PlayingStatus broadcastStatus;
 
     @Inject @ServerSentEventContext("/notifications")
-    ServerSentEventHandlerContext ctxt;
+    ServerSentEventHandlerContext<NotificationsHandler> ctxt;
 
     public void doGet(HttpServletRequest req, HttpServletResponse res) {
         System.out.println("Got Servlet Request Path="+req.getPathInfo());
@@ -79,14 +79,8 @@ public class PlayerServlet extends HttpServlet {
 
     private void sendEvent(String event) {
         String command = "{\"type\":\""+event+"\"}";
-        for(ServerSentEventHandler handler : ctxt.getHandlers()) {
-            try {
-                handler.sendMessage(command);
-            } catch(Exception e) {
-				// May be client is disconnnected, just close the handler
-                e.printStackTrace();
-                handler.close();
-            }
+        for(NotificationsHandler handler : ctxt.getHandlers()) {
+            handler.sendMessage(command);
         }
     }
 
