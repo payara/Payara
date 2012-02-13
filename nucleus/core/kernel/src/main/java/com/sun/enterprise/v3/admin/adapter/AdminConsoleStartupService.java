@@ -85,7 +85,7 @@ public class AdminConsoleStartupService implements  PostConstruct {
         if (adminConsoleAdapter == null) { // there may be no console in this environment.
             return;
         }
-
+            
         /* This service must run only on the server where the console should run. Currently, that server is DAS. If and when
          *  the console becomes dis-associated with DAS, this logic will need to be modified.
          */
