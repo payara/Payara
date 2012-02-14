@@ -326,6 +326,8 @@ public class SharedAndExternalServiceTest {
                 String state = map.get("STATE");
                 if ("RUNNING".equalsIgnoreCase(state)) {
                     sharedServiceStarted = true;
+                }else{
+                    break;
                 }
             }
             Assert.assertTrue(sharedServiceStarted);//check if the shared services are started.
@@ -390,6 +392,8 @@ public class SharedAndExternalServiceTest {
             String state = map.get("STATE");
             if ("RUNNING".equalsIgnoreCase(state)) {
                 sharedServiceStarted = true;
+            }else{
+                break;
             }
         }
         Assert.assertTrue(sharedServiceStarted);//check if the shared services are started.

@@ -333,6 +333,8 @@ public class ExtSharedServiceEnableDisableTest {
                 String state = map.get("STATE");
                 if ("RUNNING".equalsIgnoreCase(state)) {
                     sharedServiceStarted = true;
+                }else{
+                    break;
                 }
             }
             Assert.assertTrue(sharedServiceStarted);//check if the shared services are started.
@@ -405,6 +407,7 @@ public class ExtSharedServiceEnableDisableTest {
         Assert.assertTrue(sharedServiceStopped);//check if the shared services are stopped
 
         // Start the shared services.
+        report = habitat.getComponent(ActionReport.class);
         invocation = commandRunner.getCommandInvocation("start-shared-service", report);
         parameterMap = new ParameterMap();
         parameterMap.add("DEFAULT", "my-shared-gf-service");
@@ -435,7 +438,6 @@ public class ExtSharedServiceEnableDisableTest {
             if ("STARTED".equalsIgnoreCase(state) || "RUNNING".equalsIgnoreCase(state)) {
                 sharedServiceStarted = true;
             } else {
-                sharedServiceStarted = false;
                 break;
             }
         }
@@ -454,6 +456,7 @@ public class ExtSharedServiceEnableDisableTest {
             //List the services and check the status of both the services - it should be 'RUNNING'
             invocation = commandRunner.getCommandInvocation("list-services", report);
             parameterMap = new ParameterMap();
+            parameterMap.add("scope", "shared");
             parameterMap.add("output", "service-name,state");
             invocation.parameters(parameterMap).execute();
 
@@ -464,6 +467,8 @@ public class ExtSharedServiceEnableDisableTest {
                 String state = map.get("STATE");
                 if ("RUNNING".equalsIgnoreCase(state)) {
                     sharedServiceStarted = true;
+                }else{
+                    break;
                 }
             }
             Assert.assertTrue(sharedServiceStarted);//check if the shared services are started.
