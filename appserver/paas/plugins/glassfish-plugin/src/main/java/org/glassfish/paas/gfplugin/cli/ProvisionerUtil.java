@@ -103,6 +103,22 @@ public class ProvisionerUtil {
         }
     }
 
+    public ApplicationServerProvisioner getAppServerProvisioner(Properties properties) {
+        String host = properties.getProperty("ip-address");
+        if (appserverProvisioners.containsKey(host)) {
+            return appserverProvisioners.get(host);
+        } else {
+            properties.put("APPLICATION_SERVER_PROVIDER", "GLASSFISH");
+            properties.put("GF_HOST", host);
+            properties.put("GF_PORT", "24848");
+            org.glassfish.paas.gfplugin.cli.ApplicationServerProvisioner provisioner = (org.glassfish.paas.gfplugin.cli.ApplicationServerProvisioner)
+                    getProvisioner(properties, org.glassfish.paas.gfplugin.cli.ApplicationServerProvisioner.class);
+            provisioner.initialize(properties);
+            appserverProvisioners.put(host, provisioner);
+            return provisioner;
+        }
+    }
+
     public org.glassfish.paas.gfplugin.cli.ApplicationServerProvisioner getAppServerProvisioner(String host) {
         if (appserverProvisioners.containsKey(host)) {
             return appserverProvisioners.get(host);
@@ -111,7 +127,7 @@ public class ProvisionerUtil {
             properties.put("GF_HOST", host);
             if(!properties.containsKey("APPLICATION_SERVER_PROVIDER")) { // in the absense of cloud-config.properties insert default values.
                 properties.put("APPLICATION_SERVER_PROVIDER", "GLASSFISH");
-                properties.put("GF_PORT", "4848");
+                properties.put("GF_PORT", "24848");
             }
             org.glassfish.paas.gfplugin.cli.ApplicationServerProvisioner provisioner = (org.glassfish.paas.gfplugin.cli.ApplicationServerProvisioner)
                     getProvisioner(properties, org.glassfish.paas.gfplugin.cli.ApplicationServerProvisioner.class);

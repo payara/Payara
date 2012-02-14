@@ -129,7 +129,9 @@ public class GlassFishClient implements GlassFish {
 
     public CommandRunner getCommandRunner() throws GlassFishException {
         if (commandRunner == null) {
-            commandRunner = new CommandRunnerClient(habitat);
+            commandRunner = glassfishProperties.getProperty("host").equals("localhost") ?
+                    new CommandRunnerClient(habitat) :
+                    new RemoteCommandRunnerClient(glassfishProperties);
         }
         return commandRunner;
     }

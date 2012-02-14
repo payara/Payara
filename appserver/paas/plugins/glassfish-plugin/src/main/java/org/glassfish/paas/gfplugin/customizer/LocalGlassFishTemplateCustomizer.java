@@ -91,7 +91,9 @@ public class LocalGlassFishTemplateCustomizer implements TemplateCustomizer,
 
     @Override
     public void customize(final VirtualCluster cluster, final VirtualMachine virtualMachine) throws VirtException {
-
+        if(provisionDAS) {
+            return;
+        }
         ActionReport report = services.forContract(ActionReport.class)
                 .named(PLAIN_ACTION_REPORT).get();
        // this line below needs to come from the template...
@@ -140,6 +142,9 @@ public class LocalGlassFishTemplateCustomizer implements TemplateCustomizer,
 
     @Override
     public void clean(VirtualMachine virtualMachine) {
+        if(provisionDAS) {
+            return;
+        }
         // let's find our instance name.
         String instanceName = virtualMachine.getName();
         Server instance = domain.getServerNamed(instanceName);
@@ -157,6 +162,9 @@ public class LocalGlassFishTemplateCustomizer implements TemplateCustomizer,
 
     @Override
     public void start(VirtualMachine virtualMachine, boolean firstStart) {
+        if(provisionDAS) {
+            return;
+        }
         String[] startArgs = {getAsAdminCommand(),
                 START_LOCAL_INSTANCE,
                  virtualMachine.getName()};
@@ -170,6 +178,9 @@ public class LocalGlassFishTemplateCustomizer implements TemplateCustomizer,
 
     @Override
     public void stop(VirtualMachine virtualMachine) {
+        if(provisionDAS) {
+            return;
+        }
         String instanceName = virtualMachine.getName();
         Server instance = domain.getServerNamed(instanceName);
         if (instance != null) {

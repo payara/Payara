@@ -57,6 +57,8 @@ import org.glassfish.embeddable.CommandRunner;
 import org.glassfish.embeddable.GlassFish;
 import org.glassfish.javaee.core.deployment.ApplicationHolder;
 import org.glassfish.paas.gfplugin.cli.GlassFishServiceUtil;
+import org.glassfish.paas.gfplugin.customizer.DASProvisioner;
+import org.glassfish.paas.gfplugin.customizer.InstanceProvisioner;
 import org.glassfish.paas.orchestrator.PaaSDeploymentContext;
 import org.glassfish.paas.orchestrator.ServiceOrchestrator;
 import org.glassfish.paas.orchestrator.provisioning.ServiceInfo;
@@ -74,6 +76,7 @@ import org.glassfish.paas.spe.common.ServiceProvisioningEngineBase;
 import org.glassfish.resources.admin.cli.ResourcesXMLParser;
 import org.glassfish.resources.api.Resource;
 import org.glassfish.virtualization.spi.AllocationStrategy;
+import org.glassfish.virtualization.spi.VirtualMachine;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
@@ -121,6 +124,12 @@ public class GlassFishPlugin extends ServiceProvisioningEngineBase<JavaEEService
 
     @Inject
     private Habitat habitat;
+
+    @Inject
+    private DASProvisioner dasProvisioner;
+
+    @Inject
+    private InstanceProvisioner instanceProvisioner;
 
     private static Logger logger = Logger.getLogger(GlassFishPlugin.class.getName());
 
@@ -207,17 +216,24 @@ public class GlassFishPlugin extends ServiceProvisioningEngineBase<JavaEEService
          * Step 1. Provision DAS and cluster
          * For now, just create provisioned service object pointing to the local DAS
          */
-        String dasIPAddress = LOCALHOST;
-        Properties serviceProperties = new Properties();
-        serviceProperties.setProperty(MIN_CLUSTERSIZE,
-                serviceDescription.getConfiguration(MIN_CLUSTERSIZE));
-        serviceProperties.setProperty(MAX_CLUSTERSIZE,
-                serviceDescription.getConfiguration(MAX_CLUSTERSIZE));
-        GlassFishProvisioner gfProvisioner = (GlassFishProvisioner)
-                provisionerUtil.getAppServerProvisioner(dasIPAddress);
-        GlassFish provisionedGlassFish = gfProvisioner.getGlassFish();
-        GlassFishProvisionedService gfps = new GlassFishProvisionedService(
-                serviceDescription, serviceProperties, ServiceStatus.RUNNING, provisionedGlassFish);
+        GlassFishProvisionedService gfps = null;
+
+        if (provisionDAS) {
+            ProvisioningFuture future = createService(serviceDescription);
+            gfps = dasProvisioner.provision(future.get());
+        } else { // TODO :: remove this else block when DAS provisioning becomes default.
+            String dasIPAddress = LOCALHOST;
+            Properties serviceProperties = new Properties();
+            serviceProperties.setProperty(MIN_CLUSTERSIZE,
+                    serviceDescription.getConfiguration(MIN_CLUSTERSIZE));
+            serviceProperties.setProperty(MAX_CLUSTERSIZE,
+                    serviceDescription.getConfiguration(MAX_CLUSTERSIZE));
+            GlassFishProvisioner gfProvisioner = (GlassFishProvisioner)
+                    provisionerUtil.getAppServerProvisioner(dasIPAddress);
+            GlassFish provisionedGlassFish = gfProvisioner.getGlassFish();
+            gfps = new GlassFishProvisionedService(
+                    serviceDescription, serviceProperties, ServiceStatus.RUNNING, provisionedGlassFish);
+        }
 
         /**
          * Step 2. Create as many GlassFish service instances as min.clustersize
@@ -235,6 +251,10 @@ public class GlassFishPlugin extends ServiceProvisioningEngineBase<JavaEEService
             ProvisionedService provisionedService = future.get();
             gfps.addChildService(provisionedService);
             // further customize the provisioned node/instance
+        }
+
+        if(provisionDAS) {
+            instanceProvisioner.provision(gfps, gfps.getChildServices().toArray(new ProvisionedService[]{}));
         }
 
         /**
@@ -610,6 +630,24 @@ public class GlassFishPlugin extends ServiceProvisioningEngineBase<JavaEEService
 
 
     public ApplicationContainer deploy(ReadableArchive cloudArchive) {
+        org.glassfish.paas.orchestrator.service.spi.Service service = null; // TODO :: should be passed in as argument.
+        if (service instanceof GlassFishProvisionedService) {
+            GlassFishProvisionedService gfps = (GlassFishProvisionedService) service;
+            try {
+                File archive = new File(cloudArchive.getURI());
+                logger.info("Deploying " + archive + " using GlassFish plugin");
+                VirtualMachine vm = (VirtualMachine) service.getServiceProperties().get("vm");
+                vm.upload(archive, new File("/tmp"));
+                gfps.getProvisionedGlassFish().getCommandRunner().run("deploy",
+                        "--cluster=" + gfps.getServiceDescription().getVirtualClusterName(),
+                        "/tmp/" + archive.getName());
+            } catch (Exception ex) {
+                throw new RuntimeException(ex);
+            }
+        } else {
+            logger.warning("Unable to deploy " + cloudArchive + " using GlassFish plugin. " +
+                    "The service is not an instance of GlassFishProvisionedService");
+        }
 /*
         GlassFish provisionedGlassFish =
                 glassfishProvisionedService.getProvisionedGlassFish();

@@ -49,10 +49,10 @@ import org.glassfish.gms.bootstrap.GMSAdapterService;
 import org.glassfish.gms.bootstrap.HealthHistory;
 import org.glassfish.hk2.Services;
 import org.glassfish.paas.gfplugin.GlassFishPluginConstants;
-import org.glassfish.virtualization.spi.VirtualCluster;
 import org.glassfish.virtualization.spi.Machine;
 import org.glassfish.virtualization.spi.TemplateCustomizer;
 import org.glassfish.virtualization.spi.VirtException;
+import org.glassfish.virtualization.spi.VirtualCluster;
 import org.glassfish.virtualization.spi.VirtualMachine;
 import org.glassfish.virtualization.util.RuntimeContext;
 import org.jvnet.hk2.annotations.Inject;
@@ -64,7 +64,7 @@ import org.jvnet.hk2.annotations.Service;
  * @author Jerome Dochez
  * @author Bhavanishankar S
  */
-@Service(name="JavaEE")
+@Service(name = "JavaEE")
 public class GlassFishTemplateCustomizer implements TemplateCustomizer,
         GlassFishPluginConstants {
 
@@ -82,6 +82,9 @@ public class GlassFishTemplateCustomizer implements TemplateCustomizer,
 
     @Override
     public void customize(VirtualCluster cluster, VirtualMachine virtualMachine) throws VirtException {
+        if (provisionDAS) {
+            return;
+        }
         ActionReport report = services.forContract(ActionReport.class)
                 .named(PLAIN_ACTION_REPORT).get();
         final String nodeName = getNodeName(virtualMachine);
@@ -113,6 +116,9 @@ public class GlassFishTemplateCustomizer implements TemplateCustomizer,
 
     @Override
     public void start(VirtualMachine virtualMachine, boolean firstStart) {
+        if (provisionDAS) {
+            return;
+        }
         String instanceName = getInstanceName(virtualMachine);
         Server instance = domain.getServerNamed(instanceName);
         if (instance != null) {
@@ -125,19 +131,21 @@ public class GlassFishTemplateCustomizer implements TemplateCustomizer,
 
     @Override
     public void clean(VirtualMachine virtualMachine) {
-
+        if (provisionDAS) {
+            return;
+        }
         // let's find our instance name.
         String instanceName = getInstanceName(virtualMachine);
         Server server = domain.getServerNamed(instanceName);
 
-        if (server!=null) {
+        if (server != null) {
             String nodeName = server.getNodeRef();
             ActionReport report = services.forContract(ActionReport.class).
                     named(PLAIN_ACTION_REPORT).get();
             // TODO :: check for virtualMachine.getInfo().getState()??
             rtContext.executeAdminCommand(report, DELETE_INSTANCE, instanceName);
             Node node = domain.getNodeNamed(nodeName);
-            if (node!=null) {
+            if (node != null) {
                 if (node.getType().equals(NODE_TYPE_SSH)) {
                     rtContext.executeAdminCommand(report, DELETE_NODE_SSH, nodeName);
                 }
@@ -173,6 +181,9 @@ public class GlassFishTemplateCustomizer implements TemplateCustomizer,
 
     @Override
     public void stop(VirtualMachine virtualMachine) {
+        if (provisionDAS) {
+            return;
+        }
         String instanceName = getInstanceName(virtualMachine);
         Server instance = domain.getServerNamed(instanceName);
         if (instance != null) {

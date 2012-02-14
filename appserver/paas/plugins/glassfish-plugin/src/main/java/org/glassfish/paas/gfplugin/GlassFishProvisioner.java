@@ -103,6 +103,8 @@ public class GlassFishProvisioner implements ApplicationServerProvisioner {
     private String keyPair;
     private String awsLocalKeyPairLocation;
 
+    private Properties properties;
+
     public CommandRunner getCommandRunner() {
         if (commandRunner != null) {
             return commandRunner;
@@ -145,6 +147,7 @@ public class GlassFishProvisioner implements ApplicationServerProvisioner {
                 GlassFishProperties gfProperties = new GlassFishProperties();
                 gfProperties.setProperty("host", host);
                 gfProperties.setProperty("port", port);
+                gfProperties.getProperties().putAll(properties);
 
                 glassFish = glassFishRuntime.newGlassFish(gfProperties);
                 System.out.println("GlassFish = [" + glassFish + "]");
@@ -159,6 +162,7 @@ public class GlassFishProvisioner implements ApplicationServerProvisioner {
     }
 
     public void initialize(Properties properties) {
+        this.properties = properties;
         userName = (String) properties.get(AWS_INSTANCE_USERNAME);
 
         port = (String) properties.get(GF_PORT);

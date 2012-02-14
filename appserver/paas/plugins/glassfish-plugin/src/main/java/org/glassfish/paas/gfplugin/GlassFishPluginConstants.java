@@ -70,6 +70,10 @@ public interface GlassFishPluginConstants {
 
     public String DEFAULT_MAX_CLUSTERSIZE = "4";
 
+    public String DEFAULT_DAS_PORT = "24848";
+    
+    public String NATIVE_VIRTUALIZATION = "Native";
+
     /**
      * JDBC related
      */
@@ -110,6 +114,8 @@ public interface GlassFishPluginConstants {
 
     public String HOST = "host";
 
+    public String IP_ADDRESS = "ip-address";
+
     public String LOCALHOST = "localhost";
 
     /**
@@ -130,6 +136,9 @@ public interface GlassFishPluginConstants {
     /**
      * asadmin commands used in customizer
      */
+    
+    public String SETUP_SSH = "setup-ssh";
+
     public String CREATE_NODE_SSH = "create-node-ssh";
 
     public String DELETE_NODE_SSH = "delete-node-ssh";
@@ -180,6 +189,8 @@ public interface GlassFishPluginConstants {
     public String RESOURCE_TYPE = "resourcetype";
 
     public String CLASSNAME = "classname";
+
+    public boolean provisionDAS = Boolean.getBoolean("org.glassfish.paas.provision-das");
 }
 
 
