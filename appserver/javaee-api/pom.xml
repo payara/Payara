@@ -149,7 +149,6 @@ comment out since we don't want dev to generate javaee-api.jar
         <module>javax.annotation</module>
         <module>javax.jms</module>
         <module>javax.jws</module>
-        <module>javax.servlet.jsp.jstl</module>
         <module>javax.xml.rpc</module>
         <module>javax.xml.soap</module>
 <!-- StAX is part of Java SE 6, so need for it to be built anymore.

@@ -103,8 +103,8 @@
         <jsp-impl.version>2.2.3</jsp-impl.version>
         <el-api.version>2.2.4</el-api.version>
         <el-impl.version>2.2.3</el-impl.version>
-        <jstl-impl.version>1.2</jstl-impl.version>
-        <jstl-api.version>1.2</jstl-api.version>
+        <jstl-impl.version>1.2.1</jstl-impl.version>
+        <jstl-api.version>1.2.1</jstl-api.version>
         <mojarra.version>2.1.6</mojarra.version>
         <jsf-ext.version>0.2</jsf-ext.version>
         <woodstock.version>4.0.2.10</woodstock.version>
@@ -1294,25 +1294,13 @@
             </dependency>
             <dependency>
                 <groupId>javax.servlet.jsp.jstl</groupId>
-                <artifactId>jstl-api</artifactId>
+                <artifactId>javax.servlet.jsp.jstl-api</artifactId>
                 <version>${jstl-api.version}</version>
-								<exclusions>
-									<exclusion>
-										<groupId>javax.servlet</groupId>
-										<artifactId>servlet-api</artifactId>
-									</exclusion>
-								</exclusions>
             </dependency>
             <dependency>
                 <groupId>org.glassfish.web</groupId>
-                <artifactId>jstl-impl</artifactId>
+                <artifactId>javax.servlet.jsp.jstl</artifactId>
                 <version>${jstl-impl.version}</version>
-								<exclusions>
-									<exclusion>
-										<groupId>javax.servlet</groupId>
-										<artifactId>servlet-api</artifactId>
-									</exclusion>
-								</exclusions>
             </dependency>
             <dependency>
                 <groupId>javax.xml</groupId>
