@@ -218,7 +218,7 @@ public class GenerateGlassFishServicesDeploymentPlan implements AdminCommand {
             if (sdMap.get("name") != null) {
                 sd.setName((String) sdMap.get("name"));
             } else {
-                //TODO throw exception
+               throw new IllegalArgumentException("Name not available for the ServiceDesciption");
             }
             if (sdMap.get("init-type") != null) {
                 sd.setInitType((String) sdMap.get("init-type"));
@@ -226,7 +226,7 @@ public class GenerateGlassFishServicesDeploymentPlan implements AdminCommand {
             if (sdMap.get("service-type") != null) {
                 sd.setInitType((String) sdMap.get("service-type"));
             } else {
-                //TODO throw exception
+                throw new IllegalArgumentException("Service-type not available for the ServiceDesciption");
             }
             if (sdMap.get("template-id") != null) {
                 String templateID = (String) sdMap.get("template-id");
@@ -252,7 +252,7 @@ public class GenerateGlassFishServicesDeploymentPlan implements AdminCommand {
                 sd.setTemplateOrCharacteristics(serviceCharacteristics);
 
             } else {
-                //TODO throw exception.
+                throw new IllegalArgumentException("Neither template-id nor Characteristics is available for the ServiceDesciption");
             }
 
             if (sdMap.get("configurations") != null) {
