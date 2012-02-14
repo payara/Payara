@@ -44,7 +44,8 @@ import org.glassfish.api.Startup;
 import org.jvnet.hk2.component.PostConstruct;
 
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
+import javax.inject.Named;
 
 import com.sun.enterprise.config.serverbeans.Config;
 import org.glassfish.orb.admin.config.IiopListener;
@@ -93,7 +94,7 @@ public class ORBConnectorStartup implements Startup, PostConstruct {
     private static final String RMI_PRO_CLASS =
                "com.sun.corba.ee.impl.javax.rmi.PortableRemoteObject";
 
-    @Inject(name=ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     Config config;
 
     @Inject

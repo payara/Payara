@@ -43,7 +43,7 @@ package org.glassfish.enterprise.iiop.api;
 import org.glassfish.internal.grizzly.LazyServiceInitializer;
 
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
 import org.jvnet.hk2.component.PostConstruct;
 
 import org.omg.CORBA.ORB;

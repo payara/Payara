@@ -44,11 +44,11 @@ import org.glassfish.api.naming.NamespacePrefixes;
 import org.glassfish.api.naming.NamedNamingObjectProxy;
 
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.annotations.Inject;
-import org.glassfish.hk2.Services;
+import javax.inject.Inject;
 
 import javax.ejb.spi.HandleDelegate;
 
+import javax.inject.Provider;
 import javax.naming.NamingException;
 
 /**
@@ -65,7 +65,7 @@ public class HandleDelegateNamingProxy implements NamedNamingObjectProxy {
             = "java:comp/HandleDelegate";
 
     @Inject
-    private Services services;
+    private Provider<HandleDelegateFacade> handleDelegateFacadeProvider;
 
     private volatile HandleDelegateFacade facade;
 
@@ -76,7 +76,7 @@ public class HandleDelegateNamingProxy implements NamedNamingObjectProxy {
         if (HANDLE_DELEGATE.equals(name)) {
             try {
                 if (facade == null) {
-                    HandleDelegateFacade hd = services.forContract(HandleDelegateFacade.class).get();
+                    HandleDelegateFacade hd = handleDelegateFacadeProvider.get();
                     facade = hd;
                 }
                 delegate = facade.getHandleDelegate();

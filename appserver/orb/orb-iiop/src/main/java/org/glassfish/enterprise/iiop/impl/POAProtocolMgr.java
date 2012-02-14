@@ -79,11 +79,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.inject.Provider;
 import javax.rmi.CORBA.Tie;
 
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.Services;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
 import org.omg.CORBA.CompletionStatus;
 import org.omg.CORBA.INVALID_TRANSACTION;
 import org.omg.CORBA.LocalObject;
@@ -125,6 +126,9 @@ public final class POAProtocolMgr extends org.omg.CORBA.LocalObject
     private Services services;
 
     public POAProtocolMgr() {}
+
+    @Inject
+    private Provider<EjbService> ejbServiceProvider;
 
     @Override
     public void initialize(org.omg.CORBA.ORB o) {
@@ -404,7 +408,7 @@ public final class POAProtocolMgr extends org.omg.CORBA.LocalObject
                     new Object[]{ejbKey, ejbId});
             }
 
-            EjbService ejbService = services.forContract(EjbService.class).get();
+            EjbService ejbService = ejbServiceProvider.get();
 
             result = ejbService.ejbIdToDescriptor(ejbId);
         } finally {

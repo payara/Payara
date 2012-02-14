@@ -62,7 +62,7 @@ import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.enterprise.iiop.api.GlassFishORBLifeCycleListener;
 import org.glassfish.enterprise.iiop.api.IIOPInterceptorFactory;
 import org.glassfish.internal.api.ClassLoaderHierarchy;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.PostConstruct;
@@ -213,17 +213,6 @@ public class IIOPUtils implements PostConstruct {
     
     private <T> Collection<T> allByContract(Class<T> contractClass) {
         return ((Habitat) services).getAllByContract(contractClass);
-        /*
-        Collection<Provider<T>> providers = services.forContract(contractClass).all();
-        ArrayList<T> list = new ArrayList<T>();
-        for (Provider<T> provider : providers) {
-            if (provider.isActive()) {
-                list.add(provider.get());
-            }
-        }
-
-        return list;
-        */
     }
 
 }

@@ -43,7 +43,7 @@ package org.glassfish.enterprise.iiop.impl;
 import com.sun.enterprise.ee.cms.core.GroupManagementService;
 import org.glassfish.enterprise.iiop.api.GlassFishORBFactory;
 import org.glassfish.enterprise.iiop.util.IIOPUtils;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PostConstruct;
 import org.jvnet.hk2.component.Habitat;

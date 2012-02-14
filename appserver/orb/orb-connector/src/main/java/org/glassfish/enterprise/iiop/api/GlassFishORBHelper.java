@@ -40,7 +40,9 @@
 
 package org.glassfish.enterprise.iiop.api;
 
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
+import javax.inject.Provider;
+
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.Services;
 import org.omg.CORBA.ORB;
@@ -84,8 +86,6 @@ public class GlassFishORBHelper implements PostConstruct, ORBLocator {
     private static final Logger _logger =
         LogDomains.getLogger(GlassFishORBHelper.class, LogDomains.CORBA_LOGGER);
 
-    private GlassFishORBFactory orbFactory;
-
     private volatile ORB orb = null ;
 
     private ProtocolManager protocolManager = null ;
@@ -94,9 +94,23 @@ public class GlassFishORBHelper implements PostConstruct, ORBLocator {
 
     private SelectableChannelDelegate selectableChannelDelegate;
 
+    @Inject
+    Provider<ProtocolManager> protocolManagerProvider;
+
+
+    @Inject
+    Provider<GlassfishNamingManager> glassfishNamingManagerProvider;
+
+    @Inject
+    private Provider<Events> eventsProvider;
+
+    //@Inject
+    private GlassFishORBFactory orbFactory;
+
     public void postConstruct() {
         orbFactory = services.forContract(GlassFishORBFactory.class).get();
     }
+
 
     public void onShutdown() {
         _logger.log(Level.FINE, ("ORB Shutdown started"));
@@ -115,7 +129,7 @@ public class GlassFishORBHelper implements PostConstruct, ORBLocator {
                     }
                 }
             };
-            services.forContract(Events.class).get().register(glassfishEventListener);
+            eventsProvider.get().register(glassfishEventListener);
         }
     }
 
@@ -151,7 +165,7 @@ public class GlassFishORBHelper implements PostConstruct, ORBLocator {
                         if (isServer) {
                             if (protocolManager == null) {
                                 ProtocolManager tempProtocolManager =
-                                                services.forContract(ProtocolManager.class).get();
+                                                protocolManagerProvider.get();
 
                                 tempProtocolManager.initialize(orb);
                                 // Move startup of naming to PEORBConfigurator so it runs
@@ -163,7 +177,7 @@ public class GlassFishORBHelper implements PostConstruct, ORBLocator {
                                 protocolManager = tempProtocolManager;
                                 
                                 GlassfishNamingManager namingManager =
-                                    services.forContract(GlassfishNamingManager.class).get();
+                                    glassfishNamingManagerProvider.get();
 
                                 Remote remoteSerialProvider =
                                     namingManager.initializeRemoteNamingSupport(orb);
