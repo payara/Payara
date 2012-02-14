@@ -2,7 +2,7 @@
 REM
 REM  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 REM 
-REM  Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+REM  Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
 REM 
 REM  The contents of this file are subject to the terms of either the GNU
 REM  General Public License Version 2 only ("GPL") or the Common Development
@@ -41,14 +41,10 @@ REM
 
 
 set AS_INSTALL_LIB=%~dp0..\modules
-set ANT_LIB=%AS_INSTALL_LIB%\ant.jar
-set SERVLET_API=%AS_INSTALL_LIB%\javax.servlet.jar
-set JSP_API=%AS_INSTALL_LIB%\javax.servlet.jsp.jar
-set JSP_IMPL=%AS_INSTALL_LIB%\jsp-impl.jar
-set EL_IMPL=%AS_INSTALL_LIB%\el-impl.jar
-set JSTL_API=%AS_INSTALL_LIB%\javax.servlet.jsp.jstl.jar
-set JSTL_IMPL=%AS_INSTALL_LIB%\jstl-impl.jar
-set JSF_IMPL=%AS_INSTALL_LIB%\javax.faces.jar
+set JSP_IMPL=%AS_INSTALL_LIB%\javax.servlet.jsp.jar
+set EL_IMPL=%AS_INSTALL_LIB%\javax.el.jar
+set JSTL_IMPL=%AS_INSTALL_LIB%\javax.servlet.jsp.jstl.jar
 set AS_LIB=%~dp0..\lib
+set JAVAEE_API=%AS_LIB%\javaee.jar
 
-java -cp "%SERVLET_API%;%JSP_API%;%JSTL_API%;%JSF_IMPL;%ANT_LIB%;%EL_IMPL%;%JSP_IMPL%;%AS_LIB%" org.apache.jasper.JspC -sysClasspath "%SERVLET_API%;%JSP_API%;%JSP_IMPL%;%JSTL_API%;%JSTL_IMPL%;%JSF_IMPL%;%ANT_LIB%;%AS_LIB%" -schemas "/schemas/" -dtds "/dtds/" %*
+java -cp "%JSP_IMPL%;%JAVAEE_API%;%AS_LIB%" org.apache.jasper.JspC -sysClasspath "%JSP_IMPL%;%EL_IMPL%;%JSTL_IMPL%;%JAVAEE_API%;%AS_LIB%" -schemas "/schemas/" -dtds "/dtds/" %*

@@ -2,7 +2,7 @@
 #
 # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 #
-# Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
 #
 # The contents of this file are subject to the terms of either the GNU
 # General Public License Version 2 only ("GPL") or the Common Development
@@ -41,15 +41,11 @@
 
 AS_INSTALL=`dirname $0`/..
 AS_INSTALL_LIB=$AS_INSTALL/modules
-ANT_LIB=$AS_INSTALL_LIB/ant.jar
-SERVLET_API=$AS_INSTALL_LIB/javax.servlet.jar
-JSP_API=$AS_INSTALL_LIB/javax.servlet.jsp.jar
-JSP_IMPL=$AS_INSTALL_LIB/jsp-impl.jar
-EL_IMPL=$AS_INSTALL_LIB/el-impl.jar
-JSTL_API=$AS_INSTALL_LIB/javax.servlet.jsp.jstl.jar
-JSTL_IMPL=$AS_INSTALL_LIB/jstl-impl.jar
-JSF_IMPL=$AS_INSTALL_LIB/javax.faces.jar
+JSP_IMPL=$AS_INSTALL_LIB/javax.servlet.jsp.jar
+EL_IMPL=$AS_INSTALL_LIB/javax.el.jar
+JSTL_IMPL=$AS_INSTALL_LIB/javax.servlet.jsp.jstl.jar
 AS_LIB=$AS_INSTALL/lib
+JAVAEE_API=$AS_LIB/javaee.jar
 
-java -cp "$SERVLET_API:$JSP_API:$ANT_LIB:$JSTL_API:$JSF_IMPL:$EL_IMPL:$JSP_IMPL:$AS_LIB" org.apache.jasper.JspC -sysClasspath "$SERVLET_API:$JSP_API:$JSP_IMPL:$JSTL_API:$JSTL_IMPL:$JSF_IMPL:$ANT_LIB:$AS_LIB" -schemas "/schemas/" -dtds "/dtds/" "$@"
+java -cp "$JSP_IMPL:$JAVAEE_API:$AS_LIB" org.apache.jasper.JspC -sysClasspath "$JSP_IMPL:$EL_IMPL:$JSTL_IMPL:$JAVAEE_API:$AS_LIB" -schemas "/schemas/" -dtds "/dtds/" "$@"
 
