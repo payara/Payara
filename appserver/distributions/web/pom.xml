@@ -140,6 +140,11 @@
 
 
     <dependencies>
+	<dependency>
+		<groupId>javax.servlet</groupId>
+		<artifactId>javax.servlet-api</artifactId>
+		<scope>test</scope>
+	</dependency>
         <!-- Artifacts to be included in the distribution -->
 
         <!-- All the dependencies are intentionally markes as optional so that one can
