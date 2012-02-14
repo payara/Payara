@@ -63,10 +63,6 @@
                         <Embed-Dependency>
                             *;scope=compile;inline=true
                         </Embed-Dependency>
-                        <!-- Export everything from the embedded jar 
-                             in the final bundle 
-                        -->
-                        <_exportcontents>*</_exportcontents>
 						<Import-Package>!javax.servlet,!javax.servlet.http,*</Import-Package>
                         <!-- !* matches with nothing, so no other class will be included in this bundle,
                          other than what is specified above -->
